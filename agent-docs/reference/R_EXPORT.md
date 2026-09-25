@@ -216,7 +216,7 @@ another dialect:
 | `marks[].mark`, `linkShape` | `geom_*` |
 | `marks[].encoding.{x,y,color,shape,size,text}` | `aes()` |
 | a channel's `{scale, domain, range, scheme}` | `scale_<aes>_*` |
-| `transform[]` — `filter`, `bin`, `aggregate`, `coverage`, `pileup` | the frame the layer reads |
+| `transform[]` — `bin`, `aggregate`, `coverage`, `pileup` | base R over the frame the layer reads |
 | `facet` | `facet_wrap` |
 | `scales.y` | `scale_y_*`, `coord_cartesian` |
 | `rows`, `rowColor` | the row axis and its second colour scale |
@@ -233,6 +233,26 @@ is not a channel — layout, tiering and fetch shape
 ([SESSION_SPEC_FORMAT.md](SESSION_SPEC_FORMAT.md) §"The assessment") — plus
 alignments, whose overlays join by `read_index` and cannot go through the
 generic region reader.
+
+## What is built
+
+`plugins/marks/src/rexport/` translates the stages above for the mark display,
+over BigWig, GFF3 and VCF. `rplot.ts` is the plot model, `markToPlot.ts` the
+mark and channel stages, `transformR.ts` the transform stage, `frameFor.ts` the
+data stage and `rScript.ts` the assembler. The helper library is
+`rhelpers/*.R`, bundled by `pnpm gen:rhelpers` and gated by `pnpm autogen
+--check`.
+
+Four transform steps run as base R: `bin`, `aggregate`, `coverage` and
+`pileup`, the last through `IRanges::disjointBins`, which is what makes a
+`row` a real column rather than an assumption. `filter` and `formula` carry a
+jexl callback and `flatten` and `mate` fan out structure a table does not hold,
+so each is reported in the header instead.
+
+A step's output columns flow into the next step and then into the layer's
+`Aes<C>`, so a mark naming a column no stage produced fails `tsc`.
+`rScriptRun.test.ts` runs the emitted scripts through `Rscript` against
+`test_data/volvox`, and skips itself where R is absent.
 
 ## Open on the branch
 

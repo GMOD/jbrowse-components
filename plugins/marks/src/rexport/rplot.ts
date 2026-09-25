@@ -106,6 +106,8 @@ export function layer<C extends string>(l: {
 
 export type Scale =
   | { kind: 'manual'; values: Record<string, string>; name?: string }
+  | { kind: 'linewidth'; range: [number, number]; name?: string }
+  | { kind: 'linewidthLog'; range: [number, number]; name?: string }
   | { kind: 'gradient'; colours: string[]; log?: boolean; name?: string }
   | { kind: 'steps'; colours: string[]; breaks: number[]; name?: string }
   | { kind: 'identity' }
@@ -145,8 +147,11 @@ function renderAes(aes: Aes<string>) {
     .join(', ')
 }
 
-function renderConstant(v: string | number) {
-  return typeof v === 'number' ? String(v) : rStr(v)
+function renderConstant(key: string, v: string | number) {
+  if (typeof v === 'number') {
+    return String(v)
+  }
+  return rStr(key === 'fill' || key === 'colour' ? rColour(v) : v)
 }
 
 function renderLayer(l: Layer, primary: string) {
@@ -154,7 +159,7 @@ function renderLayer(l: Layer, primary: string) {
     ...(l.frame.name === primary ? [] : [`data = ${l.frame.name}`]),
     `aes(${renderAes(l.aes)})`,
     ...Object.entries({ ...l.constants, ...l.params }).map(
-      ([k, v]) => `${k} = ${renderConstant(v)}`,
+      ([k, v]) => `${k} = ${renderConstant(k, v)}`,
     ),
   ]
   const args = parts.join(', ')
@@ -164,7 +169,10 @@ function renderLayer(l: Layer, primary: string) {
 }
 
 function renderScale(aesthetic: Aesthetic, s: Scale) {
-  const suffix = aesthetic === 'fill' || aesthetic === 'colour' ? aesthetic : ''
+  const suffix = aesthetic
+  // A shape scale hands out R `pch` codes, which are numbers; every other
+  // manual scale hands out colours, which are strings.
+  const value = (v: string) => (aesthetic === 'shape' ? v : rStr(rColour(v)))
   if (s.kind === 'reverse') {
     return `scale_${aesthetic}_reverse()`
   }
@@ -175,9 +183,17 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
     return `scale_${suffix}_identity()`
   }
   const name = s.name ? `name = ${rStr(s.name)}` : ''
+  if (s.kind === 'linewidth' || s.kind === 'linewidthLog') {
+    const args = [
+      `range = c(${s.range[0]}, ${s.range[1]})`,
+      ...(s.kind === 'linewidthLog' ? ['trans = "log10"'] : []),
+      name,
+    ].filter(Boolean)
+    return `scale_linewidth_continuous(${args.join(', ')})`
+  }
   if (s.kind === 'gradient') {
     const args = [
-      `colours = c(${s.colours.map(c => rStr(c)).join(', ')})`,
+      `colours = c(${s.colours.map(c => rStr(rColour(c))).join(', ')})`,
       ...(s.log ? ['trans = "log10"'] : []),
       name,
     ].filter(Boolean)
@@ -185,14 +201,14 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
   }
   if (s.kind === 'steps') {
     const args = [
-      `colours = c(${s.colours.map(c => rStr(c)).join(', ')})`,
+      `colours = c(${s.colours.map(c => rStr(rColour(c))).join(', ')})`,
       `breaks = c(${s.breaks.join(', ')})`,
       name,
     ].filter(Boolean)
     return `scale_${suffix}_stepsn(${args.join(', ')})`
   }
   const values = Object.entries(s.values).map(
-    ([k, v]) => `${rName(k)} = ${rStr(v)}`,
+    ([k, v]) => `${rName(k)} = ${value(v)}`,
   )
   const args = [`values = c(${values.join(', ')})`, name].filter(Boolean)
   return values.length > 3
@@ -201,7 +217,9 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
 }
 
 export function renderPlot(variable: string, plot: Plot) {
-  const primary = plot.layers[0]!.frame.name
+  // No layers is a real state — every mark named no value field — and an empty
+  // panel is what the display shows for it.
+  const primary = plot.layers[0]?.frame.name ?? ''
   const pieces = [
     `ggplot(${primary})`,
     ...plot.layers.map(l => renderLayer(l, primary)),
@@ -246,4 +264,21 @@ export function rName(s: string) {
 
 export function rStr(s: string) {
   return JSON.stringify(s)
+}
+
+/**
+ * A colour R accepts. grDevices takes `#RRGGBB` or one of its own names and
+ * rejects CSS `rgb(r,g,b)` outright — "Unknown colour name" at draw time, after
+ * every read — which is the spelling the baked ramp LUT hands out.
+ */
+export function rColour(css: string) {
+  const m = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(css)
+  if (!m) {
+    return css
+  }
+  const hex = m
+    .slice(1, 4)
+    .map(n => Number(n).toString(16).padStart(2, '0'))
+    .join('')
+  return `#${hex}`
 }

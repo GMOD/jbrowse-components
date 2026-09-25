@@ -1,15 +1,19 @@
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import { isIdentityColor } from '@jbrowse/display-kit/channelSpec'
 
+import { readsValue } from '../LinearMarkDisplay/markSpecs.ts'
 import {
   DEFAULT_LINK_STROKE_PX,
   type LinkShape,
   type MarkType,
 } from '../LinearMarkDisplay/markVocabulary.ts'
 import { colourAesthetic, expr, layer } from './rplot.ts'
+import { applyTransforms } from './transformR.ts'
 
 import type { Aesthetic, Geom, Layer, Plot, RFrame, Scale } from './rplot.ts'
+import type { Step } from './transformR.ts'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type {
   ColorChannel,
@@ -26,16 +30,17 @@ function knownScheme(scheme: string | undefined) {
   return COLOR_SCHEMES.find((s): s is ColorSchemeName => s === scheme)
 }
 
-export interface MarkSpec {
+export interface MarkConfig {
   mark: MarkType
   linkShape?: LinkShape
   size?: number
   source?: string
   minBpPerPx?: number
   maxBpPerPx?: number
+  transform?: Step[]
   encoding: {
     x?: string
-    x2?: string
+    x2?: string | { pos?: string; chrom?: string }
     y?: string
     row?: string
     text?: string
@@ -52,7 +57,8 @@ export interface MarkSpec {
 }
 
 export interface DisplaySpec {
-  marks: MarkSpec[]
+  marks: MarkConfig[]
+  transform?: Step[]
   facet?: { field?: string }
   scales?: {
     y?: {
@@ -166,44 +172,105 @@ function colourOf(
   return { field, scale }
 }
 
-function markAes(m: MarkSpec, origin: number) {
-  const { x = 'start', x2, y, row, text } = m.encoding
+function markAes(m: MarkConfig, origin: number) {
+  const { x = 'start', y, row, text } = m.encoding
+  const x2 = locusField(m.encoding.x2)
   const band = row || 'row'
   switch (m.mark) {
     case 'bar':
       return {
         xmin: x,
-        xmax: x2 ?? 'end',
+        xmax: x2,
         ymin: expr(String(origin)),
-        ymax: y ?? 'score',
+        ymax: y!,
       }
     case 'span':
-      return {
-        xmin: x,
-        xmax: x2 ?? 'end',
-        ymin: band,
-        ymax: expr(`${band} + 0.8`),
-      }
+      return { xmin: x, xmax: x2, ymin: band, ymax: expr(`${band} + 0.8`) }
     case 'point':
-      return { x: midpoint(x, x2 ?? 'end'), y: y ?? 'score' }
+      return { x: midpoint(x, x2), y: y! }
     case 'text':
-      return {
-        x: midpoint(x, x2 ?? 'end'),
-        y: y || band,
-        label: text ?? 'name',
-      }
+      return { x: midpoint(x, x2), y: y || band, label: text ?? 'name' }
     case 'link':
-      return { x, xend: x2 ?? 'end', y: expr('0'), yend: expr('0') }
+      return { x, xend: x2, y: expr('0'), yend: expr('0') }
   }
 }
 
-function markParams(m: MarkSpec) {
+/** A locus channel is a `pos` field, written bare or beside a `chrom`. */
+function locusField(locus: MarkConfig['encoding']['x2']) {
+  if (!locus) {
+    return 'end'
+  }
+  return typeof locus === 'string' ? locus : (locus.pos ?? 'end')
+}
+
+/**
+ * A point symbol as R's `pch`. The names are Vega-Lite's (ADR-159) and R has no
+ * names at all, so the mapping is stated once here rather than at each call.
+ */
+const PCH: Record<string, number> = {
+  circle: 16,
+  'triangle-down': 25,
+  diamond: 18,
+}
+
+function shapeOf(
+  shape: MarkConfig['encoding']['shape'],
+  notes: string[],
+): { field?: string; constant?: number; scale?: Scale } {
+  if (!shape) {
+    return {}
+  }
+  if (typeof shape === 'string') {
+    if (shape.startsWith('jexl:')) {
+      notes.push('shape: a jexl callback has no R counterpart')
+      return {}
+    }
+    return { constant: PCH[shape] }
+  }
+  const field = plainField(shape.field)
+  if (!field) {
+    notes.push('shape: a jexl callback has no R counterpart')
+    return {}
+  }
+  const domain = shape.domain ?? []
+  const range = shape.range ?? SHAPE_NAMES
+  return {
+    field,
+    scale: {
+      kind: 'manual',
+      values: Object.fromEntries(
+        domain.map((v, i) => [
+          v,
+          String(PCH[range[i % range.length] ?? 'circle'] ?? PCH.circle),
+        ]),
+      ),
+    },
+  }
+}
+
+/** A link's stroke: a field through a linear or log scale into a px width. */
+function sizeOf(size: MarkConfig['encoding']['size']) {
+  const field = plainField(size?.field)
+  if (!field || !size) {
+    return {}
+  }
+  const [lo = 0.5, hi = 4] = (size.range ?? []).map(Number)
+  return {
+    field,
+    scale: {
+      kind: size.scale === 'log' ? 'linewidthLog' : 'linewidth',
+      range: [lo, hi],
+    } as Scale,
+  }
+}
+
+function markParams(m: MarkConfig) {
   return m.mark === 'link'
     ? { curvature: m.linkShape === 'arc' ? -0.6 : -0.3 }
     : undefined
 }
 
-function markConstants(m: MarkSpec): Partial<Record<Aesthetic, number>> {
+function markConstants(m: MarkConfig): Partial<Record<Aesthetic, number>> {
   return m.mark === 'link'
     ? { linewidth: m.size ?? DEFAULT_LINK_STROKE_PX }
     : {}
@@ -217,12 +284,18 @@ function markConstants(m: MarkSpec): Partial<Record<Aesthetic, number>> {
  * would silently drop.
  */
 export function markLayer(
-  m: MarkSpec,
+  m: MarkConfig,
   frame: RFrame,
   origin: number,
   notes: string[],
 ) {
   const geom = GEOM_OF[m.mark]
+  // A bar or point reads a value, and the display draws nothing for one naming
+  // none — inventing a field here would draw a figure the browser does not.
+  if (readsValue(m.mark) && !m.encoding.y) {
+    notes.push(`${m.mark}: names no value field, so it draws nothing`)
+    return undefined
+  }
   const colourAes = colourAesthetic(geom)
   const colour = colourOf(m.encoding.color, colourAes, notes)
   const scales: Partial<Record<Aesthetic, Scale>> = {}
@@ -235,11 +308,13 @@ export function markLayer(
   if (m.minBpPerPx !== undefined || m.maxBpPerPx !== undefined) {
     notes.push(`${m.mark}: its zoom range is a live-view rule, not a figure's`)
   }
-  if (m.encoding.shape) {
-    notes.push('shape: the point symbol scale is not translated')
+  const shape = shapeOf(m.encoding.shape, notes)
+  if (shape.scale) {
+    scales.shape = shape.scale
   }
-  if (m.encoding.size?.field) {
-    notes.push('size: a stroke-width scale is not translated')
+  const width = sizeOf(m.encoding.size)
+  if (width.scale) {
+    scales.linewidth = width.scale
   }
   const l = layer({
     geom,
@@ -247,10 +322,13 @@ export function markLayer(
     aes: {
       ...markAes(m, origin),
       ...(colour.field ? { [colourAes]: colour.field } : {}),
+      ...(shape.field ? { shape: shape.field } : {}),
+      ...(width.field ? { linewidth: width.field } : {}),
     },
     constants: {
       ...markConstants(m),
       ...(colour.constant ? { [colourAes]: colour.constant } : {}),
+      ...(shape.constant !== undefined ? { shape: shape.constant } : {}),
     },
     params: markParams(m),
   })
@@ -277,8 +355,22 @@ export function markPlot({
   const origin = display.origin ?? 0
   const layers: Layer[] = []
   const scales: Partial<Record<Aesthetic, Scale>> = {}
+  // The display's steps run before every mark's own, as the encoder runs them:
+  // the shared frame is what each mark then reads, and its columns are what the
+  // steps left rather than what the adapter answered.
+  const shared = applyTransforms({
+    base: frame,
+    steps: display.transform ?? [],
+    notes,
+  })
   for (const m of display.marks) {
-    const built = markLayer(m, frame, origin, notes)
+    const own = m.transform?.length
+      ? applyTransforms({ base: shared, steps: m.transform, notes })
+      : shared
+    const built = markLayer(m, own, origin, notes)
+    if (!built) {
+      continue
+    }
     layers.push(built.layer)
     for (const [aesthetic, scale] of Object.entries(built.scales)) {
       const key = aesthetic as Aesthetic

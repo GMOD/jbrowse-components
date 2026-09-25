@@ -100,7 +100,9 @@ describe('a channel scale becomes a ggplot scale', () => {
       ],
     })
     expect(r).toContain('scale_fill_gradientn(colours = c(')
-    expect(r).toMatch(/colours = c\("rgb\(\d+,\d+,\d+\)"/)
+    // hex, not the LUT's own `rgb(r,g,b)`: grDevices rejects CSS notation at
+    // draw time, after every read
+    expect(r).toMatch(/colours = c\("#[0-9a-f]{6}"/)
   })
 
   it('logs a log ramp rather than redrawing it linear', () => {
@@ -220,16 +222,13 @@ describe('what the figure does not show', () => {
     expect(r).not.toContain('jexl')
   })
 
-  it('names an untranslated shape scale', () => {
+  it('names a jexl shape, which has no counterpart', () => {
     const { notes } = render({
       marks: [
-        {
-          mark: 'point',
-          encoding: { y: 'score', shape: { field: 'type' } },
-        },
+        { mark: 'point', encoding: { y: 'score', shape: 'jexl:get(f,"t")' } },
       ],
     })
-    expect(notes).toContain('shape: the point symbol scale is not translated')
+    expect(notes).toContain('shape: a jexl callback has no R counterpart')
   })
 
   it('names symlog, which ggplot has no counterpart for', () => {
@@ -279,5 +278,54 @@ describe('what the figure does not show', () => {
     )
     expect(Object.keys(plot.scales ?? {})).toEqual(['fill'])
     expect(r.match(/scale_fill_manual/g)).toHaveLength(1)
+  })
+})
+
+describe('a mark reads the grammar’s own vocabulary', () => {
+  it('draws nothing for a bar naming no value, as the display does', () => {
+    const { notes, plot } = render({ marks: [{ mark: 'bar', encoding: {} }] })
+    expect(notes).toContain('bar: names no value field, so it draws nothing')
+    expect(plot.layers).toHaveLength(0)
+  })
+
+  it('still draws a span, which stands at no value', () => {
+    const { plot } = render({ marks: [{ mark: 'span', encoding: {} }] })
+    expect(plot.layers).toHaveLength(1)
+  })
+
+  it('reads x2 written as a locus object, not only as a field', () => {
+    const { r } = render({
+      marks: [{ mark: 'span', encoding: { x2: { pos: 'end' } } }],
+    })
+    expect(r).toContain('xmax = end')
+  })
+
+  it('maps a shape scale onto R pch codes', () => {
+    const { r } = render({
+      marks: [
+        {
+          mark: 'point',
+          encoding: {
+            y: 'score',
+            shape: { field: 'type', domain: ['snv', 'del'] },
+          },
+        },
+      ],
+    })
+    expect(r).toContain('shape = type')
+    expect(r).toContain('scale_shape_manual(values = c(snv = 16, del = 25))')
+  })
+
+  it('scales a link stroke through the size channel', () => {
+    const { r } = render({
+      marks: [
+        {
+          mark: 'link',
+          encoding: { size: { field: 'score', range: ['1', '6'] } },
+        },
+      ],
+    })
+    expect(r).toContain('linewidth = score')
+    expect(r).toContain('scale_linewidth_continuous(range = c(1, 6))')
   })
 })
