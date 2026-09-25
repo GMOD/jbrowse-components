@@ -5237,7 +5237,8 @@
     "@jbrowse/render-core/shaders/curveDistance": {
       "package": "@jbrowse/render-core",
       "names": [
-        "distToWideCirclePx"
+        "distToWideCirclePx",
+        "wideCircleLeg"
       ],
       "worker": "real"
     },
