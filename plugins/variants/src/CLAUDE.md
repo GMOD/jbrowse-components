@@ -173,7 +173,7 @@ expansion recolours nothing. `setRowColorField` writes the object through
 `colorForField`: a new attribute starts with no entries, '' is `scale: 'none'`
 keeping the attribute, and `name` is each row its own. The menu's Samples group
 and the arrangement dialog offer the same choices (`rowColorChoice`), and under
-an attribute the dialog edits each value's colour, never a row's (ADR-163). A
+an attribute the dialog edits each value's colour, never a row's (ADR-164). A
 reset returns `rowColor` only where its `name` pairs differ from the config's,
 so over a config setting no row colour a Color by survives it and a mode switch.
 The flip ADR-160 names puts the row's own colour ahead of the palette here too.

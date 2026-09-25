@@ -174,7 +174,7 @@ What else the mixin owns:
   base's, keeping the attribute, so over a config setting no row colour a Color
   by alone survives a reset and a mode switch.
 - **The dialog shows the `rowColor` object and submits it**
-  (`applyRowEdits(rows, rowColor)`, ADR-163): "Color rows by" None, Each row or
+  (`applyRowEdits(rows, rowColor)`, ADR-164): "Color rows by" None, Each row or
   an attribute; under an attribute a table of its values, each with its colour
   and row count, and read-only row swatches; under Each row editable swatches,
   with "Start from" copying an attribute's colours onto them once. A row's

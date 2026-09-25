@@ -1,6 +1,6 @@
 ---
 name: row-model-colour-and-mark-rows
-description: State of the row-model thread on 2026-09-24. Step 4's first half (ADR-160, one rowColor channel and one dealer) and rows on the mark display (ADR-157's fifth display) are on main, each probed by two review rounds whose defects are fixed, the third finding an undo that blanked a variant display for good; the colour half's zero-image-diff browser run was never recorded; nine calls are Colin's, each answered by a page not yet made, and no visible flip lands before them; call 5 became the dialog redesign of ADR-163 and call 11 was answered as leave it. Read before touching a row display's colour, bands, the mark display's rows or the palette.
+description: State of the row-model thread on 2026-09-24. Step 4's first half (ADR-160, one rowColor channel and one dealer) and rows on the mark display (ADR-157's fifth display) are on main, each probed by two review rounds whose defects are fixed, the third finding an undo that blanked a variant display for good; the colour half's zero-image-diff browser run was never recorded; nine calls are Colin's, each answered by a page not yet made, and no visible flip lands before them; call 5 became the dialog redesign of ADR-164 and call 11 was answered as leave it. Read before touching a row display's colour, bands, the mark display's rows or the palette.
 ---
 
 # Row model: colour and mark rows
@@ -83,7 +83,7 @@ parity everywhere except the deviations ADR-160 already lists.
 10. One row per source as the mark display's default over a multi-BigWig.
 
 **Answered 2026-09-24.** Call 5 (a recolour under a Color by) became a redesign
-of the arrangement dialog around the `rowColor` object, ADR-163. Call 11 (rows
+of the arrangement dialog around the `rowColor` object, ADR-164. Call 11 (rows
 past the pixels): leave them as drawn, with no cap or runtime notice, since a
 dense stack such as 2,504 samples in 400 px is the picture a reader asked for;
 at most a hint where the setting is chosen.

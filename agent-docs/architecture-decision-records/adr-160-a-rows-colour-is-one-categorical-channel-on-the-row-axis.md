@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's `rowColor` is one categorical colour channel on the row axis, display-kit's `RowColor`: `field | { field, scale, domain, range }` on the quantitative, multi-row feature, multi-sample variant, MAF and mark displays, `field` naming a row attribute and defaulting to `name`, the row itself, and `domain`/`range` pairing that field's values with colours, one keyspace per object. `VariantRowColor` folds into it. One dealer, `dealRowColors`, hands a listed value its `range` colour and every other value the next colour of one cursor over the spare `range` then the palette, which wraps; no hash. `TreeSidebarMixin` deals once per change to the rows (`rowColorDeal`, `rowColorScale`), by default over the base arrangement so no reorder, focus or relabel recolours a row. In this step each display hands in the order and palette it dealt before, so every pixel stays; each display still paints the palette in its own `sources`. A dialog recolour where `rowColor` paints by an attribute turned every row's colour into a `name` pair, until ADR-163 made the dialog edit the attribute's values. A capture can replace the dealt palette through `window.jbrowseRowPalette`"
+summary: "A row display's `rowColor` is one categorical colour channel on the row axis, display-kit's `RowColor`: `field | { field, scale, domain, range }` on the quantitative, multi-row feature, multi-sample variant, MAF and mark displays, `field` naming a row attribute and defaulting to `name`, the row itself, and `domain`/`range` pairing that field's values with colours, one keyspace per object. `VariantRowColor` folds into it. One dealer, `dealRowColors`, hands a listed value its `range` colour and every other value the next colour of one cursor over the spare `range` then the palette, which wraps; no hash. `TreeSidebarMixin` deals once per change to the rows (`rowColorDeal`, `rowColorScale`), by default over the base arrangement so no reorder, focus or relabel recolours a row. In this step each display hands in the order and palette it dealt before, so every pixel stays; each display still paints the palette in its own `sources`. A dialog recolour where `rowColor` paints by an attribute turned every row's colour into a `name` pair, until ADR-164 made the dialog edit the attribute's values. A capture can replace the dealt palette through `window.jbrowseRowPalette`"
 ---
 
 # ADR-160: A row's colour is one categorical channel on the row axis
@@ -50,7 +50,7 @@ the way back (ADR-135, ADR-154). Where `rowColor` paints by an attribute, a
 dialog recolour wrote `field: 'name'` and every row's current colour as pairs,
 so the rows the reader left alone kept theirs: about 60 KB for 2,500 rows,
 twice that for phased haplotypes, and 75-160 ms to write the 5,000 phased
-pairs into a session. ADR-163 replaced that: the dialog edits a value's colour
+pairs into a session. ADR-164 replaced that: the dialog edits a value's colour
 under an attribute and reads a row's swatch only under `name`.
 
 **One dealer.** `dealRowColors(order, { domain, range }, palette)`, beside
@@ -124,7 +124,7 @@ calls for `freezeAnimations`; production pays one property read at load.
   custom: a reset or a rendering-mode switch returns the pairs and drops the
   Color by. No shipped config sets pairs on a variant display.
 - A dialog tint under a Color by the reader picked left no attribute to
-  return to, until ADR-163 made the dialog edit the attribute's values instead.
+  return to, until ADR-164 made the dialog edit the attribute's values instead.
 - Past the palette's end the variant displays wrap rather than draw
   `randomColor`, which only a track with more than 40 distinct values reaches.
 - On wiggle, under a colour per source, a subtrack named like a group takes

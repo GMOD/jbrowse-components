@@ -3,7 +3,7 @@ status: Accepted
 summary: "The row displays' arrangement dialog is a view of the `rowColor` object and submits it: \"Color rows by\" None, Each row or an attribute (`rowColorChoice`, over `rowColorFields`); under an attribute a table of its values with their colours and row counts, and read-only row swatches; under Each row editable swatches, with \"Start from\" copying an attribute's colours onto them once. `applyRowEdits(rows, rowColor)` reads a row's swatch only under Each row and writes any other object as shown, so a recolour under a Color by no longer turns every row into a `name` pair. The dialog's own Color by (the palettizer) is gone, the deal hook becomes `rowColorDealFor(setting)` so the dialog can preview a setting, wiggle deals by an attribute and there the attribute's colour leads a subtrack's own, a reset returns an attribute's value colours as well as the `name` pairs, and the variant menu's Samples group gains Each row. Settles ADR-160's call 5. No migration"
 ---
 
-# ADR-163: The arrangement dialog shows the row colour object
+# ADR-164: The arrangement dialog shows the row colour object
 
 ## Status
 
