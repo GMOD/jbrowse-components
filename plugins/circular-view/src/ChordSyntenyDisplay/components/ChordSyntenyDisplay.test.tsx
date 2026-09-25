@@ -68,7 +68,8 @@ function ribbonModel(
     drawnFeatures: [],
     selectedFeatureId: undefined,
     configuration,
-    ribbonFill: () => 'rgba(70,130,180,0.25)',
+    ribbonFill: () => '#4682b4',
+    ribbonOpacity: 0.25,
     radiusPx: 1000,
     bezierRadius: 100,
     sliceFor: (assemblyName, refName) =>

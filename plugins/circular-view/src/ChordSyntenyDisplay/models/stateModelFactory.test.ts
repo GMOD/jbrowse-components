@@ -1,4 +1,5 @@
 import { colord } from '@jbrowse/core/util/colord'
+import { applySnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -155,25 +156,33 @@ test('reload() rewakes the fetch after an error', async () => {
 // query paints the first genome's end and target the second, each in its
 // chromosome's ideogram colour, so a ribbon matches the arc it leaves; every
 // mode paints at the view's alpha
-test("the view's colorBy paints each ribbon, at the view's alpha", async () => {
+// a ribbon paints its colour opaque and every ribbon draws at one opacity, so
+// an opacity drag repaints none of them
+test("the view's color paints each ribbon, at the view's alpha", async () => {
   const { session, view, display } = await setup(['volvox', 'volvox2'])
   const [feature] = display.features!
   const ideogram = (assembly: string, refName: string) =>
-    session.assemblyManager.get(assembly)!.getRefNameColor(refName)!
+    colord(
+      session.assemblyManager.get(assembly)!.getRefNameColor(refName)!,
+    ).toHex()
 
   view.setColorField('query')
-  expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
-    colord(ideogram('volvox', 'ctgA')).alpha(0.25).toRgbString(),
-  )
+  expect(display.ribbonFill(feature)).toBe(ideogram('volvox', 'ctgA'))
   view.setColorField('target')
-  expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
-    colord(ideogram('volvox2', 'ctgB')).alpha(0.25).toRgbString(),
-  )
+  expect(display.ribbonFill(feature)).toBe(ideogram('volvox2', 'ctgB'))
+  expect(display.ribbonOpacity).toBe(0.25)
   view.setColorField('strand')
   view.setAlpha(0.5)
-  expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
-    colord('#00f').alpha(0.5).toRgbString(),
-  )
+  expect(display.ribbonFill(feature)).toBe('#0000ff')
+  expect(display.ribbonOpacity).toBe(0.5)
+}, 20000)
+
+// a hidden row would still take the pointer through its transparent fill
+test('a ribbon its colour paints transparent is not drawn', async () => {
+  const { view, display } = await setup(['volvox', 'volvox2'])
+  expect(display.drawnFeatures).toHaveLength(1)
+  applySnapshot(view.color, { value: 'rgba(0,0,0,0)' })
+  expect(display.drawnFeatures).toHaveLength(0)
 }, 20000)
 
 test("a ribbon shorter than the view's minimum length is not drawn", async () => {

@@ -6,6 +6,9 @@ import {
 } from '@jbrowse/core/util'
 import {
   abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
   abgrToCssRgba,
   cssColorToABGR,
   withAbgrAlpha,
@@ -35,7 +38,17 @@ import type { AttributeRange } from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
 
 // what a ribbon paints under the view's default mode, at the view's `alpha`
-const DEFAULT_RIBBON_COLOR = 'rgb(70,130,180)'
+const DEFAULT_ABGR = cssColorToABGR('rgb(70,130,180)')
+
+function defaultAbgr(value: string | undefined) {
+  return value === undefined ? DEFAULT_ABGR : cssColorToABGR(value)
+}
+
+function opaqueHex(abgr: number) {
+  return `#${[abgrRed(abgr), abgrGreen(abgr), abgrBlue(abgr)]
+    .map(channel => channel.toString(16).padStart(2, '0'))
+    .join('')}`
+}
 
 function atAlpha(abgr: number, alpha: number) {
   return abgrToCssRgba(withAbgrAlpha(abgr, Math.round(abgrAlpha(abgr) * alpha)))
@@ -152,11 +165,12 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * each alignment's resting fill under the view's `color` and `alpha`,
-       * by feature id. A chromosome mode paints the ideogram colour of the
-       * chromosome it joins, so a ribbon matches the arc it leaves
+       * each alignment's packed colour under the view's `color`, by feature
+       * id. A chromosome mode paints the ideogram colour of the chromosome it
+       * joins, so a ribbon matches the arc it leaves; a label the view hides
+       * paints at zero alpha
        */
-      get ribbonColors(): Map<string, string> {
+      get ribbonColors(): Map<string, number> {
         const { view } = self
         const features = self.features ?? []
         const field = view.colorField
@@ -177,7 +191,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           trackColor: view.trackColorFor(
             getContainingTrack(self).configuration.trackId,
           ),
-          defaultColor: cssColorToABGR(view.colorValue ?? DEFAULT_RIBBON_COLOR),
+          defaultColor: defaultAbgr(view.colorValue),
           nameColor: assembly
             ? name =>
                 assembly.getRefNameColor(self.canonicalRefName(genome!, name))
@@ -185,30 +199,42 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           attributeRanges: view.attributeRanges,
           hideUnlabelled: view.hideUnlabelled,
         })
-        return new Map(
-          features.map((f, i) => [f.id(), atAlpha(color(i), view.alpha)]),
-        )
+        return new Map(features.map((f, i) => [f.id(), color(i)]))
       },
       /**
        * #getter
-       * the resting fill of each ribbon
+       * the resting fill of each ribbon, opaque: the ribbons share one
+       * `ribbonOpacity`, so an opacity drag repaints no ribbon
        */
       get ribbonFill(): (feature: Feature) => string {
         const colors = this.ribbonColors
-        return feature => colors.get(feature.id()) ?? DEFAULT_RIBBON_COLOR
+        return feature => opaqueHex(colors.get(feature.id()) ?? DEFAULT_ABGR)
+      },
+      /**
+       * #getter
+       * the fill opacity every resting ribbon draws at: the view's `alpha`,
+       * times the alpha of a `color.value` every ribbon paints
+       */
+      get ribbonOpacity() {
+        const { view } = self
+        return view.colorField === ''
+          ? (view.alpha * abgrAlpha(defaultAbgr(view.colorValue))) / 255
+          : view.alpha
       },
       /**
        * #getter
        * what the ribbons draw: the visible alignments at least the view's
-       * `minAlignmentLength` long on their own side
+       * `minAlignmentLength` long on their own side, less those the view's
+       * colour hides
        */
       get drawnFeatures(): Feature[] | undefined {
         const min = self.view.minAlignmentLength
-        return min > 0
-          ? self.visibleFeatures?.filter(
-              f => Math.abs(f.get('end') - f.get('start')) >= min,
-            )
-          : self.visibleFeatures
+        const colors = this.ribbonColors
+        return self.visibleFeatures?.filter(
+          f =>
+            Math.abs(f.get('end') - f.get('start')) >= min &&
+            abgrAlpha(colors.get(f.id()) ?? DEFAULT_ABGR) > 0,
+        )
       },
       /**
        * #getter
@@ -218,10 +244,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       get legendColor(): string | undefined {
         const { view } = self
         return view.colorField === ''
-          ? atAlpha(
-              cssColorToABGR(view.colorValue ?? DEFAULT_RIBBON_COLOR),
-              view.alpha,
-            )
+          ? atAlpha(defaultAbgr(view.colorValue), view.alpha)
           : undefined
       },
       /**

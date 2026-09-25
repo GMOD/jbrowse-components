@@ -44,12 +44,16 @@ const Ribbon = observer(function Ribbon({
   if (!anchorBlock || !mateBlock || !mate) {
     return null
   }
-  const fill =
+  // a resting ribbon takes its opacity from the group; a hovered or selected
+  // one paints its own
+  const fillProps =
     hovered || selected
-      ? readConfObject(config, hovered ? 'colorHover' : 'colorSelected', {
-          feature,
-        })
-      : restingFill(feature)
+      ? getFillProps(
+          readConfObject(config, hovered ? 'colorHover' : 'colorSelected', {
+            feature,
+          }),
+        )
+      : { fill: restingFill(feature) }
   return (
     <path
       data-testid={`ribbon-${feature.id()}`}
@@ -64,7 +68,7 @@ const Ribbon = observer(function Ribbon({
         radius,
         bezierRadius,
       })}
-      {...getFillProps(fill)}
+      {...fillProps}
       opacity={dimmed && !hovered ? DIMMED_OPACITY : undefined}
       onClick={() => {
         onClick(feature)

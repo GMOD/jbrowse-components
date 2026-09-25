@@ -43,5 +43,6 @@ export interface ChordDisplayModel extends ChordLayerModel {
 
 export interface RibbonDisplayModel extends ChordLayerModel {
   ribbonFill: (feature: Feature) => string
+  ribbonOpacity: number
   onRibbonClick: (feature: Feature) => void
 }

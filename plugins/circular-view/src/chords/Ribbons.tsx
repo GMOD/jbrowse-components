@@ -13,6 +13,7 @@ const Ribbons = observer(function Ribbons({
     drawnFeatures,
     configuration,
     ribbonFill,
+    ribbonOpacity,
     sliceFor,
     radiusPx,
     bezierRadius,
@@ -24,7 +25,11 @@ const Ribbons = observer(function Ribbons({
     // `cursor` is inherited, so it belongs here rather than repeated on every
     // ribbon — a whole-genome alignment is tens of thousands of them, and each
     // copy is also a dead attribute in the SVG export
-    <g data-testid="syntenyRibbonRenderer" cursor="crosshair">
+    <g
+      data-testid="syntenyRibbonRenderer"
+      cursor="crosshair"
+      fillOpacity={ribbonOpacity}
+    >
       {drawnFeatures?.map(feature => (
         <Ribbon
           key={feature.id()}
