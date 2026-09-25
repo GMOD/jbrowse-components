@@ -4,6 +4,7 @@ import path from 'node:path'
 
 import { ipcHandle, ipcSend } from '../ipc/channels.ts'
 import { isAutosave } from '../paths.ts'
+import { readRecentSessions } from '../recentSessions.ts'
 import {
   CODE_TIMEOUT_DEFAULT_MS,
   CODE_TIMEOUT_MAX_MS,
@@ -18,11 +19,7 @@ import { createScreenshotTool } from './screenshot.ts'
 import { defaultSocketPath, ensureSocketDir } from './socketPath.ts'
 import { resultFields } from './stdioServer.ts'
 
-import type {
-  LaunchTarget,
-  McpReadyState,
-  RecentSession,
-} from '../ipc/channelTypes.ts'
+import type { LaunchTarget, McpReadyState } from '../ipc/channelTypes.ts'
 import type { AppPaths } from '../paths.ts'
 import type { BridgeToolResult } from './stdioServer.ts'
 import type { MainToolName, RendererToolName } from './toolDefinitions.ts'
@@ -289,14 +286,7 @@ export function startMcpBridge({
   }
 
   async function listRecentSessions(): Promise<BridgeToolResult> {
-    let sessions: RecentSession[] = []
-    try {
-      sessions = JSON.parse(
-        await fs.promises.readFile(paths.recentSessionsPath, 'utf8'),
-      ) as RecentSession[]
-    } catch {
-      // no recent-sessions file yet
-    }
+    const sessions = await readRecentSessions(paths.recentSessionsPath)
     return {
       result: sessions.map(s => ({
         ...s,

@@ -29,7 +29,7 @@ jest.mock('electron', () => ({
   nativeImage: {},
 }))
 
-jest.mock('../paths.ts', () => ({ isAutosave: () => false }))
+jest.mock('../paths.ts', () => ({ isAutosave: () => false, ENCODING: 'utf8' }))
 
 type IpcListener = (event: unknown, payload: never) => unknown
 
@@ -66,6 +66,7 @@ async function settle(ms = 30) {
 
 function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb-bridge-test-'))
+  const recentSessionsPath = path.join(dir, 'recent.json')
   const socketPath = path.join(dir, 'mcp.sock')
   const pushed: { channel: string; payload: McpBridgeRequest }[] = []
   const launched: unknown[] = []
@@ -97,7 +98,7 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
   } as unknown as BrowserWindow
 
   const stop = startMcpBridge({
-    paths: { recentSessionsPath: path.join(dir, 'recent.json') } as AppPaths,
+    paths: { recentSessionsPath } as AppPaths,
     appVersion: '9.9.9',
     socketPath,
     getWindow: () => win,
@@ -116,6 +117,7 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
   )
   return {
     socketPath,
+    recentSessionsPath,
     pushed,
     launched,
     stop: () => {
@@ -511,6 +513,35 @@ describe('open', () => {
       id: 1,
       result: { opened: url, settled: true },
     })
+  })
+
+  it('with no target, lists the recent sessions', async () => {
+    const b = bridge()
+    fs.writeFileSync(
+      b.recentSessionsPath,
+      JSON.stringify([{ path: '/tmp/a.jbrowse', name: 'A', updated: 0 }]),
+    )
+    const c = b.connect()
+    expect(await c.send(1, 'open')).toEqual({
+      id: 1,
+      result: [
+        {
+          path: '/tmp/a.jbrowse',
+          name: 'A',
+          updated: '1970-01-01T00:00:00.000Z',
+          isAutosave: false,
+        },
+      ],
+    })
+  })
+
+  // the file is the user's to corrupt, and `.map` on the object it parsed to
+  // answered an agent's first call with "sessions.map is not a function"
+  it('with no target and a corrupt list, answers the empty list', async () => {
+    const b = bridge()
+    fs.writeFileSync(b.recentSessionsPath, '{}')
+    const c = b.connect()
+    expect(await c.send(1, 'open')).toEqual({ id: 1, result: [] })
   })
 
   it('refuses a relative path and names the hosted URL for a genome', async () => {

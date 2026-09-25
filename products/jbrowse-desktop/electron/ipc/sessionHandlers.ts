@@ -14,6 +14,7 @@ import {
   stringify,
   stringifySession,
 } from '../paths.ts'
+import { readRecentSessions } from '../recentSessions.ts'
 import { logError } from '../util.ts'
 import { writeFileAtomic } from '../writeFileAtomic.ts'
 import { ipcHandle } from './channels.ts'
@@ -76,24 +77,6 @@ async function captureThumbnail(
     .capturePage()
     .then(page => page.resize({ width: THUMBNAIL_WIDTH }).toDataURL())
     .catch(logError)
-}
-
-async function readRecentSessions(
-  recentSessionsPath: string,
-): Promise<RecentSession[]> {
-  try {
-    const parsed: unknown = JSON.parse(
-      await readFile(recentSessionsPath, ENCODING),
-    )
-    // A corrupt file that parses to a non-array (e.g. {}) must still yield the
-    // empty-list contract; downstream .filter/.findIndex assume an array
-    return Array.isArray(parsed) ? (parsed as RecentSession[]) : []
-  } catch (e) {
-    console.error(
-      `Failed to load recent sessions file ${recentSessionsPath}: ${e}`,
-    )
-    return []
-  }
 }
 
 // The file exactly as it sits on disk. Anything that reads a session in order to
