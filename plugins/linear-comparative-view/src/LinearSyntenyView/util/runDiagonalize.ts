@@ -9,7 +9,7 @@ import type {
 } from '@jbrowse/synteny-core'
 
 // Levels run one after another, each restarting the RPC's phase labels from
-// "Fetching features". On a stacked N-way view that reads as a bar looping
+// "Downloading alignments". On a stacked N-way view that reads as a bar looping
 // forever, so each level's messages say which level they belong to. A single
 // level (the ordinary two-row view) is left unprefixed.
 function levelStatusCallback(

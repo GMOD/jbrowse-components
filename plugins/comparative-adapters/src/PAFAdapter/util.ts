@@ -118,7 +118,7 @@ export function indexPafRecords(records: PAFRecord[]) {
 export function parsePafBuffer(buffer: Uint8Array, opts?: BaseOptions) {
   return collectLines({
     buffer,
-    label: 'Parsing PAF',
+    label: 'Processing alignments',
     parseLine: parsePAFLine,
     opts,
   })
@@ -141,9 +141,9 @@ export async function loadPafRecords<T extends PAFRecord>({
   parse: (buffer: Uint8Array, opts?: BaseOptions) => T[]
   opts?: BaseOptions
 }) {
-  const buffer = await fetchAndMaybeUnzip(file, opts)
+  const buffer = await fetchAndMaybeUnzip(file, opts, 'Downloading alignments')
   const records = parse(buffer, opts)
-  return updateStatus('Computing identities', opts?.statusCallback, () =>
+  return updateStatus('Processing alignments', opts?.statusCallback, () =>
     getWeightedMeans(records),
   )
 }

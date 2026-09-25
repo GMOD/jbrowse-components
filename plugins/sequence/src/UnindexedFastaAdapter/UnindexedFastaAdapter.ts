@@ -62,8 +62,10 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
       opts,
       'Downloading sequence',
     )
-    const res = await updateStatus('Parsing FASTA', opts?.statusCallback, () =>
-      parseSmallFasta(text),
+    const res = await updateStatus(
+      'Processing sequence',
+      opts?.statusCallback,
+      () => parseSmallFasta(text),
     )
 
     const fasta = new Map<string, { description: string; sequence: string }>()

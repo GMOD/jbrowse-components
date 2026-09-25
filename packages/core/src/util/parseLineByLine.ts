@@ -124,7 +124,7 @@ function chunkBoundary(buffer: Uint8Array, start: number) {
  *   contract is built on ("no channel, skip the bookkeeping"), and it used to
  *   default to `() => {}`, which says the opposite.
  * @param opts - `label` names the phase on the progress bar (a multi-phase
- *   adapter wants "Parsing PAF", not another "Loading" indistinguishable from
+ *   adapter wants "Processing alignments", not another "Loading" indistinguishable from
  *   the download that preceded it); `signal` is read on every line, but the
  *   parse never yields, so it sees only an abort that landed before it began.
  */

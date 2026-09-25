@@ -177,7 +177,7 @@ export async function executeVariantCellData({
   } = await withProgress(
     {
       ...progressOpts,
-      label: 'Analyzing variants',
+      label: 'Processing variants',
       total: features.length,
     },
     report =>
@@ -246,7 +246,7 @@ export async function executeVariantCellData({
     const perRegionCellData = await withProgress(
       {
         ...progressOpts,
-        label: 'Computing variant cells',
+        label: 'Processing variants',
         total,
       },
       report => {
@@ -318,7 +318,7 @@ export async function executeVariantCellData({
     const cellData = await withProgress(
       {
         ...progressOpts,
-        label: 'Computing variant matrix cells',
+        label: 'Processing variants',
         total: filteredVariants.length,
       },
       report =>

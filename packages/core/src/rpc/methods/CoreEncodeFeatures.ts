@@ -69,7 +69,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
         {
           jexl,
           report: createProgressReporter({
-            label: 'Encoding features',
+            label: 'Processing features',
             total: features.length,
             statusCallback,
             signal,

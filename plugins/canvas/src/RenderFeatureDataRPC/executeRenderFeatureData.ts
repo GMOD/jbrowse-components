@@ -129,7 +129,7 @@ export async function executeRenderFeatureData({
   let peptideDataMap: Map<string, PeptideData> | undefined
   if (peptides && sequenceAdapter) {
     peptideDataMap = await updateStatus(
-      'Downloading peptide data',
+      'Downloading sequence',
       statusCallback,
       async () =>
         fetchPeptideData(
@@ -151,7 +151,7 @@ export async function executeRenderFeatureData({
   // same walk again, so a second bar would make the first lie about finishing.
   const packed = await withProgress(
     {
-      label: 'Computing layout',
+      label: 'Processing features',
       total: features.size,
       statusCallback,
       signal,

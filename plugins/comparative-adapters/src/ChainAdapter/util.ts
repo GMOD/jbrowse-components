@@ -83,7 +83,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   const { statusCallback, signal } = opts ?? {}
   const decoder = new TextDecoder('utf8')
   const report = createProgressReporter({
-    label: 'Parsing chain',
+    label: 'Processing alignments',
     total: buffer.length,
     statusCallback,
     signal,

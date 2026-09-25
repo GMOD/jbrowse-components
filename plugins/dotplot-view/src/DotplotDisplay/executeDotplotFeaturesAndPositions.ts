@@ -147,7 +147,7 @@ export async function executeDotplotFeaturesAndPositions({
   // the bar held whatever the fetch phase last wrote for the entire CPU pass —
   // seconds on a whole-genome PAF — which reads as a stuck bar. Mirrors the
   // synteny worker's three phases.
-  statusCallback?.('Preparing dotplot features')
+  statusCallback?.('Processing alignments')
   const features = dedupe(rawFeatures, f => f.id())
 
   // RefName aliases are resolved on the main thread before the RPC (the worker
@@ -191,7 +191,7 @@ export async function executeDotplotFeaturesAndPositions({
   const skippedHRefNames = new Set<string>()
   const skippedVRefNames = new Set<string>()
   const report = createProgressReporter({
-    label: 'Computing dotplot positions',
+    label: 'Processing alignments',
     total: count,
     statusCallback,
     signal,
@@ -321,7 +321,7 @@ export async function executeDotplotFeaturesAndPositions({
 
   // Concatenate into the flat (data, offsets) pair the result ships. Offsets are
   // n+1 long so feature i is always cigarData.subarray(off[i], off[i+1]).
-  statusCallback?.('Packing CIGAR data')
+  statusCallback?.('Processing alignments')
   const cigarData = new Uint32Array(cigarTotal)
   const cigarOffsets = new Uint32Array(n + 1)
   let cigarWrite = 0

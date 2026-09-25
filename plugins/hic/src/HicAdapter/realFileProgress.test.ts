@@ -80,15 +80,15 @@ test('a real header read reports the normalization-index walk', async () => {
   // 8 expected-value chunks in this file: 4 normalization types over its 2
   // resolutions. The walk is what makes opening a pre-v9 file slow, and this is
   // the phase that used to say nothing while it ran.
-  expect(determinate(statuses, 'Reading normalization index')).toEqual([
-    { message: 'Reading normalization index', current: 0, total: 8 },
-    { message: 'Reading normalization index', current: 1, total: 8 },
-    { message: 'Reading normalization index', current: 2, total: 8 },
-    { message: 'Reading normalization index', current: 3, total: 8 },
-    { message: 'Reading normalization index', current: 4, total: 8 },
-    { message: 'Reading normalization index', current: 5, total: 8 },
-    { message: 'Reading normalization index', current: 6, total: 8 },
-    { message: 'Reading normalization index', current: 7, total: 8 },
-    { message: 'Reading normalization index', current: 8, total: 8 },
+  expect(determinate(statuses, 'Downloading normalization data')).toEqual([
+    { message: 'Downloading normalization data', current: 0, total: 8 },
+    { message: 'Downloading normalization data', current: 1, total: 8 },
+    { message: 'Downloading normalization data', current: 2, total: 8 },
+    { message: 'Downloading normalization data', current: 3, total: 8 },
+    { message: 'Downloading normalization data', current: 4, total: 8 },
+    { message: 'Downloading normalization data', current: 5, total: 8 },
+    { message: 'Downloading normalization data', current: 6, total: 8 },
+    { message: 'Downloading normalization data', current: 7, total: 8 },
+    { message: 'Downloading normalization data', current: 8, total: 8 },
   ])
 })

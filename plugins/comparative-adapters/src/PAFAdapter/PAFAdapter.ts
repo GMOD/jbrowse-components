@@ -25,7 +25,7 @@ export default class PAFAdapter extends PairwiseAdapterBase {
   setup = cachedSetup({
     setup: async (opts: BaseOptions) => {
       const records = await this.setupPre(opts)
-      opts.statusCallback?.('Indexing alignments by contig')
+      opts.statusCallback?.('Processing alignments')
       return { records, byRefName: indexPafRecords(records) }
     },
   })

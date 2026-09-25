@@ -245,7 +245,7 @@ export default class BlastTabularAdapter extends PairwiseAdapterBase<BlastTabula
         openLocation(this.getConf('blastTableLocation'), this.pluginManager),
         opts,
       ),
-      label: 'Parsing BLAST table',
+      label: 'Processing alignments',
       parseLine: createBlastLineParser(this.getConf('columns')),
       opts,
     })

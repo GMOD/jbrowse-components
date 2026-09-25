@@ -36,7 +36,7 @@ export async function runCircularDiagonalize(
   ) {
     return undefined
   }
-  statusCallback?.('Fetching features')
+  statusCallback?.('Loading features')
   await when(() => displays.every(d => d.loaded || !!d.displayError), {
     signal,
   })

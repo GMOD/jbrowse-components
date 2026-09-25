@@ -13,7 +13,7 @@ export default class MashMapAdapter extends PAFAdapter {
       parse: (buffer, parseOpts) =>
         collectLines({
           buffer,
-          label: 'Parsing MashMap output',
+          label: 'Processing alignments',
           parseLine: parseMashMapLine,
           opts: parseOpts,
         }),

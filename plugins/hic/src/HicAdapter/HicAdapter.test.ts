@@ -139,7 +139,7 @@ test('the normalization-index walk reports its chunks', async () => {
   })
 
   expect(statuses).toContainEqual({
-    message: 'Reading normalization index',
+    message: 'Downloading normalization data',
     current: 3,
     total: 8,
   })

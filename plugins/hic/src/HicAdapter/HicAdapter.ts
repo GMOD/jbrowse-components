@@ -76,7 +76,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     // Its own phase: on a v8 file with no recorded index position this walks
     // the expected-values section, the slowest part of opening a `.hic`.
     const norms = await downloadStatus(
-      'Reading normalization index',
+      'Downloading normalization data',
       statusCallback,
       onProgress => this.hic.getNormalizationOptions({ onProgress }),
       signal,

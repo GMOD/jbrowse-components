@@ -213,7 +213,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // Give this synchronous prepare phase (dedupe + decorate + sort) its own
   // label; otherwise the loading overlay keeps whatever the fetch phase last
   // showed while a large PAF sorts, which reads as a stuck bar.
-  statusCallback?.('Preparing synteny features')
+  statusCallback?.('Processing alignments')
 
   /**
    * What the second fetch found, split three ways by WHERE THE QUERY END LANDS.
@@ -411,7 +411,7 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const channelList = channels.list
   const report = createProgressReporter({
-    label: 'Computing synteny positions',
+    label: 'Processing alignments',
     total: count,
     statusCallback,
     signal,
@@ -715,7 +715,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // model recomputes `colors` on colorBy change without an RPC round-trip.
 
   const instanceData = await updateStatus(
-    'Computing synteny layout',
+    'Processing alignments',
     statusCallback,
     () =>
       buildSyntenyGeometry({

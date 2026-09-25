@@ -178,7 +178,7 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
       return true
     },
     statusCallback,
-    { label: 'Parsing delta', signal: opts?.signal },
+    { label: 'Processing alignments', signal: opts?.signal },
   )
   // the file's last alignment, when it was truncated before its `0`
   flush()

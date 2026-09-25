@@ -68,7 +68,7 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
       parse: parsePafBuffer,
       opts,
     })
-    opts?.statusCallback?.('Indexing alignments by contig')
+    opts?.statusCallback?.('Processing alignments')
 
     // Both sides of every record, oriented. Self-diagonals (minimap2 without
     // `-X` emits one per sequence) drop out here rather than at read time: the

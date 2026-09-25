@@ -105,11 +105,11 @@ export async function executeDiagonalize(
   // while the synteny view worked.
   const targetAssemblyName = currentRegions[0]?.assemblyName
 
-  // The getFeatures call upgrades "Fetching features" to a determinate
+  // The getFeatures call upgrades "Downloading alignments" to a determinate
   // download/parse bar while it runs. Still fetched sequentially: the adapters
   // are typically the same file at different perspectives, so serial fetching
   // keeps peak worker memory to one adapter's records rather than all of them.
-  statusCallback?.('Fetching features')
+  statusCallback?.('Downloading alignments')
 
   const alignments: AlignmentData[] = []
   for (const [
@@ -141,8 +141,8 @@ export async function executeDiagonalize(
     // it is repeating the same step.
     statusCallback?.(
       adapters.length > 1
-        ? `Extracting alignments (${adapterIndex + 1}/${adapters.length})`
-        : 'Extracting alignments',
+        ? `Processing alignments (${adapterIndex + 1}/${adapters.length})`
+        : 'Processing alignments',
     )
     // append element-by-element, not `push(...arr)`: whole-genome synteny
     // yields hundreds of thousands of alignments, and spreading that many

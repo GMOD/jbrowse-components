@@ -116,7 +116,7 @@ export async function diagonalizeRegions(
   // Two reporters because the phases count different things (alignments, then
   // chromosomes). No breakpoint: each pass measured ~50ms over 500k alignments.
   const reportGrouping = createProgressReporter({
-    label: 'Grouping alignments',
+    label: 'Ordering chromosomes',
     total: alignments.length,
     statusCallback,
     signal,
