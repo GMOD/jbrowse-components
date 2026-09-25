@@ -10,7 +10,6 @@ import {
   unmethylated5mC,
 } from '@jbrowse/core/ui/palette'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
-import { formatScore } from '@jbrowse/core/util/numericUtils'
 import { isMethylationFillType } from '@jbrowse/modifications-utils'
 
 import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
@@ -35,14 +34,13 @@ import type {
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
-import type {
-  ArcColorByType,
-  BaseLayer,
-  ColorBy,
-  ColorSchemeType,
-} from './types.ts'
+import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
-import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
+import type {
+  CategoricalScale,
+  ColorScale,
+  RampScale,
+} from '@jbrowse/core/ui/colorScale'
 
 export type { LegendItem } from '@jbrowse/core/ui'
 
@@ -209,6 +207,7 @@ function scaleOf(
  * earns its row.
  */
 export function getAlignmentsColorScales(model: {
+  readRamp?: RampScale
   legendItems: () => LegendItem[]
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
@@ -239,6 +238,7 @@ export function getAlignmentsColorScales(model: {
     [...readSection.items, ...arcSection.items].flatMap(rowKeys),
   )
   return [
+    ...(model.readRamp ? [model.readRamp] : []),
     scaleOf(readSection.id, readSection.title, readSection.items),
     scaleOf(arcSection.id, arcSection.title, arcSection.items),
     scaleOf(
@@ -662,74 +662,11 @@ export const SPLIT_JUNCTION_LABELS: Partial<Record<SwatchCategory, string>> = {
   interchrom: 'Split alignment (interchromosomal)',
 }
 
-// The read-fill scheme each arc coloring mode is the overlay twin of —
-// getArcColorType (features/arcs/arcColors.ts) mirrors that scheme's classifier,
-// so both paint a bucket the same color. Only 'orientation' is spelled
-// differently on the two sides.
-const ARC_SCHEME_AS_READ_SCHEME: Record<ArcColorByType, ColorSchemeType> = {
-  insertSize: 'insertSize',
-  orientation: 'pairOrientation',
-  insertSizeAndOrientation: 'insertSizeAndOrientation',
-}
-
 /**
- * Whether the overlay speaks the reads' own color vocabulary — arc mode against
- * its equivalent read scheme, AND every bucket the arcs are actually painting
- * being one the reads are painting too. The swatches are then identical
- * categories in identical palette colors, so keying both sections lists the same
- * colors twice under two headings; the arc buckets fold into the read key
- * instead.
- *
- * The second half is not belt-and-braces, it is the half that was missing.
- * Folding files an arc bucket under the reads' own heading, so it is an
- * assertion that the reads paint that color — and the scheme names alone do not
- * support it, because the arc classifier is not a re-spelling of the read one:
- *
- * - A SPLIT JUNCTION colors by its two segments' strands (`splitInversion` /
- *   `splitDeletion`), whatever the mode, since it has no TLEN and no pair
- *   orientation to classify. The read fills reach those two categories only in
- *   chain mode, so an ordinary pileup of SA-split long reads paints arc buckets
- *   its reads never paint.
- * - `hasPaired` is a property of the whole fetched set, so a track with no
- *   paired reads at all sends every arc down that same branch.
- *
- * (It used to name a different divergence: the arcs folded a pair whose mates
- * were drawn far apart into `longInsert` while the reads read TLEN alone. That
- * rule is gone — `getArcColorType` keys on TLEN and only TLEN now, for the
- * reasons written there — but the check outlives its first example, which is
- * exactly why it is asked of the categories in hand rather than of a table of
- * what each scheme COULD emit.)
- */
-export function arcKeyFoldsIntoReadKey({
-  arcColorByType,
-  readColorScheme,
-  arcCategories,
-  readCategories,
-}: {
-  arcColorByType: ArcColorByType
-  readColorScheme: ColorSchemeType
-  arcCategories: ReadonlySet<ReadColorCategory>
-  readCategories: ReadonlySet<ReadColorCategory>
-}): boolean {
-  return (
-    ARC_SCHEME_AS_READ_SCHEME[arcColorByType] === readColorScheme &&
-    [...arcCategories].every(c => readCategories.has(c))
-  )
-}
-
-/**
- * Key for the paired-end arc / read-cloud colors when they are their own
- * vocabulary — insert size or pair orientation while the reads underneath are
- * colored by something else — so those get a legend section of their own. When
- * the overlay mirrors the read scheme the caller merges the buckets into the
- * read key instead (`arcColorsMatchReads`), since the two lists would be the
- * same swatches under two headings. No per-scheme rewording either way: an arc
- * never produces a strand bucket.
- *
- * Always the complete arc key. A partial overlap with the read key is resolved
- * in `getAlignmentsColorScales`, by merging the two into one deduped list
- * rather than by subtracting here — a section that lists three of the seven
- * colors its own heading names is worse than the repetition it avoids.
+ * The complete key for the paired-end arc / read-cloud colors.
+ * `getAlignmentsColorScales` merges it with the read key where they share a
+ * color, rather than subtracting here: a section listing three of the seven
+ * colors its heading names is worse than the repetition it avoids.
  */
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
@@ -818,11 +755,7 @@ function bakedValueLegend(
 ): LegendItem[] {
   const field = colorFieldOf(colorBy)
   if (scale?.kind === 'linear') {
-    const [min, max] = scale.domain
-    return scale.stops.map(({ offset, color }) => ({
-      color,
-      label: `${field} ${formatScore(min + offset * (max - min))}`,
-    }))
+    return []
   }
   if (scale?.kind === 'threshold') {
     return scale.bins.map(({ color, label }) => ({
@@ -841,6 +774,22 @@ function bakedValueLegend(
       scale?.color(value) ?? bakedValueColor(colorBy, value, refNamePosition),
     label: value,
   }))
+}
+
+/** The key of a tag or attribute painted through a linear ramp. */
+export function bakedRampScale(
+  colorBy: ColorBy,
+  scale: BakedColorScale | undefined,
+): RampScale | undefined {
+  return scale?.kind === 'linear'
+    ? {
+        kind: 'ramp',
+        id: 'reads-ramp',
+        title: colorFieldOf(colorBy),
+        domain: [...scale.domain],
+        stops: scale.stops,
+      }
+    : undefined
 }
 
 const INTEGER_VALUE = /^-?\d+$/

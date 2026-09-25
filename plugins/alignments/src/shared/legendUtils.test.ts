@@ -8,6 +8,7 @@ import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
+  bakedRampScale,
   getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
@@ -367,10 +368,11 @@ describe('getReadDisplayLegendItems', () => {
       undefined,
       undefined,
     )
-    const rampRows = legendFor(NM, ['tag'], { bakedScale: ramp })
-    expect(rampRows[0]!.label).toBe('tags.NM 0')
-    expect(rampRows.at(-1)!.label).toBe('tags.NM 10')
-    expect(rampRows[0]!.color).toBe(ramp.color('0'))
+    expect(legendFor(NM, ['tag'], { bakedScale: ramp })).toEqual([])
+    const key = bakedRampScale(NM, ramp)!
+    expect(key.title).toBe('tags.NM')
+    expect(key.domain).toEqual([0, 10])
+    expect(key.stops[0]!.color).toBe(ramp.color('0'))
 
     const bins = bakedColorScale(
       NM,
@@ -411,9 +413,10 @@ describe('getReadDisplayLegendItems', () => {
     )
     expect(ramp.color('0')).toBe('rgb(255,255,255)')
     expect(ramp.color('10')).toBe('rgb(255,0,0)')
-    const rows = legendFor(NM, ['tag'], { bakedScale: ramp })
-    expect(rows[0]!.color).toBe(ramp.color('0'))
-    expect(rows.at(-1)!.color).toBe(ramp.color('10'))
+    const { stops } = bakedRampScale(NM, ramp)!
+    expect(stops[0]!.color).toBe(ramp.color('0'))
+    expect(stops.at(-1)!.color).toBe(ramp.color('10'))
+    expect(stops.every(s => s.opacity === 1)).toBe(true)
   })
 
   test('value tag swatches are the color the reads are painted', () => {
@@ -856,6 +859,25 @@ describe('getAlignmentsColorScales', () => {
         s.title,
         s.kind === 'categorical' ? s.entries.map(i => i.label) : [],
       ])
+
+  test('a linear read fill keys as a ramp ahead of the read buckets', () => {
+    const readRamp = {
+      kind: 'ramp' as const,
+      id: 'reads-ramp',
+      title: 'tags.NM',
+      domain: [0, 10] as [number, number],
+      stops: [
+        { offset: 0, color: 'rgb(0,0,0)' },
+        { offset: 1, color: 'rgb(255,0,0)' },
+      ],
+    }
+    const scales = getAlignmentsColorScales({
+      ...model([{ color: '#f0f', label: 'Supplementary' }], []),
+      readRamp,
+    })
+    expect(scales[0]).toBe(readRamp)
+    expect(entries(scales[1]).map(e => e.label)).toEqual(['Supplementary'])
+  })
 
   test('merges reads and arcs into one list when they share a color', () => {
     expect(

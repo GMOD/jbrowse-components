@@ -87,8 +87,8 @@ import {
   workerGroupBy,
 } from '../shared/groupFeatures.ts'
 import {
-  arcKeyFoldsIntoReadKey,
   LEGEND_MAX_WIDTH,
+  bakedRampScale,
   getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
@@ -1144,10 +1144,9 @@ export default function stateModelFactory(
            * curved paired-end arcs and the read cloud's flat lines and endpoint
            * squares alike, since both paint from `arcColorByType`. Its own
            * vocabulary when the fills use a different scheme (a track colored by
-           * strand still draws insert-size-colored arcs), so it keys its own
-           * legend section then and folds into the read key otherwise — see
-           * `arcColorsMatchReads`. Empty unless an overlay is on with the legend
-           * shown.
+           * strand still draws insert-size-colored arcs); `getAlignmentsColorScales`
+           * folds the rows the reads already key. Empty unless an overlay is on
+           * with the legend shown.
            */
           get arcLegendCategories(): Set<ReadColorCategory> {
             const present = new Set<ReadColorCategory>()
@@ -1163,22 +1162,6 @@ export default function stateModelFactory(
               }
             }
             return present
-          },
-
-          /**
-           * #getter
-           * Whether the arc key folds into the read key — the overlay speaking
-           * the reads' own vocabulary, in the categories both are actually
-           * painting. `arcKeyFoldsIntoReadKey` holds the rule and the reasons the
-           * scheme names alone do not settle it.
-           */
-          get arcColorsMatchReads() {
-            return arcKeyFoldsIntoReadKey({
-              arcColorByType: self.arcColorByType,
-              readColorScheme: self.bodyColorScheme,
-              arcCategories: this.arcLegendCategories,
-              readCategories: this.colorLegendCategories,
-            })
           },
 
           /**
@@ -1242,12 +1225,7 @@ export default function stateModelFactory(
               overlaps: this.overlapLegendKind,
               colorBy: self.colorBy,
               baseLayer: self.baseLayer,
-              presentCategories: this.arcColorsMatchReads
-                ? new Set([
-                    ...this.colorLegendCategories,
-                    ...this.arcLegendCategories,
-                  ])
-                : this.colorLegendCategories,
+              presentCategories: this.colorLegendCategories,
               palette: this.colorPalette,
               detectedModifications: this.detectedModifications,
               presentTagValues: this.presentTagValues,
@@ -1261,20 +1239,16 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * Key for the paired-end arc / read-cloud colors. Empty when no overlay
-           * is drawn, or when it shares the reads' scheme and merged into their
-           * key — either way its legend section drops out of the box. A *partial*
-           * overlap is not resolved here: this stays the complete arc key, and
-           * `getAlignmentsColorScales` folds it into one deduped list.
+           * Key for the paired-end arc / read-cloud colors, empty when no overlay
+           * is drawn. `getAlignmentsColorScales` folds the rows the reads already
+           * key.
            */
           arcLegendItems() {
-            return this.arcColorsMatchReads
-              ? []
-              : getArcLegendItems(
-                  this.arcLegendCategories,
-                  this.colorPalette,
-                  this.arcsResult.interchromFromMatePair,
-                )
+            return getArcLegendItems(
+              this.arcLegendCategories,
+              this.colorPalette,
+              this.arcsResult.interchromFromMatePair,
+            )
           },
 
           /**
@@ -2243,6 +2217,7 @@ export default function stateModelFactory(
          */
         get colorScales(): ColorScale[] {
           return getAlignmentsColorScales({
+            readRamp: bakedRampScale(self.colorBy, self.bakedColorScale),
             legendItems: () => self.legendItems(),
             arcLegendTitle: self.arcLegendTitle,
             arcLegendItems: () => self.arcLegendItems(),
