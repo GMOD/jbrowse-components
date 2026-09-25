@@ -1,5 +1,6 @@
 import {
   ENCODED_PREFIX,
+  JSON_PREFIX,
   fromUrlSafeB64,
   toUrlSafeB64,
 } from '@jbrowse/core/util'
@@ -53,10 +54,33 @@ function isSessionSnapshot(value: unknown): value is SessionSnapshot {
   )
 }
 
+// A clipped `json-` link still parses up to the cut, so without this the
+// recipient reads JSON.parse's "Unterminated string in JSON at position 813"
+function parseJsonParam(json: string): unknown {
+  try {
+    return (JSON.parse(json) as { session?: unknown } | null)?.session
+  } catch (e) {
+    throw new Error(
+      "This link's session JSON is incomplete, which is how a link cut short in transit arrives. A short link survives being sent where a long one may not.",
+      { cause: e },
+    )
+  }
+}
+
+async function parseEncodedParam(value: string): Promise<unknown> {
+  return JSON.parse(
+    await fromUrlSafeB64(
+      value.startsWith(ENCODED_PREFIX)
+        ? value.slice(ENCODED_PREFIX.length)
+        : value,
+    ),
+  )
+}
+
 /**
- * Inverse of {@link encodeSessionToUrl}. Accepts the value with or without the
- * `encoded-` prefix, so a raw `?session=` value from either app passes straight
- * through.
+ * Inverse of {@link encodeSessionToUrl}, and of the `json-` form jbrowse-web's
+ * share dialog writes. Accepts an `encoded-` value with or without its prefix,
+ * so a raw `?session=` value from either app passes straight through.
  *
  * Throws on anything that isn't a decodable session — a truncated link, or a
  * `share-`/`spec-` param an embedded product doesn't handle — so a host can
@@ -64,12 +88,11 @@ function isSessionSnapshot(value: unknown): value is SessionSnapshot {
  * half-built session.
  */
 export async function decodeSessionFromUrl(
-  encoded: string,
+  value: string,
 ): Promise<SessionSnapshot> {
-  const b64 = encoded.startsWith(ENCODED_PREFIX)
-    ? encoded.slice(ENCODED_PREFIX.length)
-    : encoded
-  const parsed: unknown = JSON.parse(await fromUrlSafeB64(b64))
+  const parsed = value.startsWith(JSON_PREFIX)
+    ? parseJsonParam(value.slice(JSON_PREFIX.length))
+    : await parseEncodedParam(value)
   if (!isSessionSnapshot(parsed)) {
     throw new Error('not a session snapshot: no "name"')
   }

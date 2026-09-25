@@ -178,4 +178,37 @@ describe('toUrlSafeB64 / fromUrlSafeB64 roundtrip', () => {
     const encoded = await toUrlSafeB64('test data for encoding')
     expect(encoded).not.toMatch(/[+/=]/)
   })
+
+  // made by the pako-esm2 encoder every link before the native streams used
+  it('decodes a link made before the switch to CompressionStream', async () => {
+    expect(
+      JSON.parse(
+        await fromUrlSafeB64(
+          'eJyrVspLzE1VslJKVChIzM7XTS1KVChOLS7OzM9T0lEqy0wtL1ayiq5WykwBqikzBIqVVBaA1Ptk5qUmFrmn5uXnpoYBlSnVxtYCANo5GdA',
+        ),
+      ),
+    ).toEqual({
+      name: 'a pako-era session',
+      views: [{ id: 'v1', type: 'LinearGenomeView' }],
+    })
+  })
+
+  // pako inflated a truncated stream to whatever prefix it held, so a clipped
+  // link failed later as "Unterminated string in JSON"
+  it.each([0.3, 0.6, 0.95])(
+    'rejects a link cut to %p of its length',
+    async fraction => {
+      const encoded = await toUrlSafeB64(
+        JSON.stringify({
+          name: 'x',
+          views: Array.from({ length: 50 }, (_, i) => ({ id: `v${i}` })),
+        }),
+      )
+      let cut = encoded.slice(0, Math.floor(encoded.length * fraction))
+      if (cut.length % 4 === 1) {
+        cut = cut.slice(0, -1)
+      }
+      await expect(fromUrlSafeB64(cut)).rejects.toThrow('incomplete or damaged')
+    },
+  )
 })

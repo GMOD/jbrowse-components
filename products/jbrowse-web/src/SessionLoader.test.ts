@@ -1,3 +1,4 @@
+import { toUrlSafeB64 } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
@@ -833,8 +834,11 @@ describe('SessionLoader', () => {
     // stray loc must not clobber the requested session (generated URLs never
     // combine them, but hand-crafted ones can)
     it('explicit encoded session wins over a stray loc param', async () => {
+      const encoded = await toUrlSafeB64(
+        JSON.stringify({ id: 'test', name: 'Test' }),
+      )
       const loader = createAndInit({
-        sessionQuery: 'encoded-abc',
+        sessionQuery: `encoded-${encoded}`,
         loc: 'chr1:1-1000',
         assembly: 'hg38',
         initialTimestamp: Date.now(),
@@ -842,6 +846,30 @@ describe('SessionLoader', () => {
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
       // resolves the encoded session (a snapshot), not a jb1 loc spec
       expect(loader.sessionSource).toMatchObject({ type: 'snapshot' })
+    })
+
+    // a chat client clipping the link is the usual way to get one of these, and
+    // JSON.parse's own message names a character position instead
+    it.each([
+      [
+        'encoded',
+        async () =>
+          (await toUrlSafeB64(JSON.stringify({ name: 'cut short' }))).slice(
+            0,
+            12,
+          ),
+      ],
+      ['json', async () => '{"session":{"name":"cut sh'],
+    ])('a truncated %s link says it is incomplete', async (kind, value) => {
+      const loader = createAndInit({
+        sessionQuery: `${kind}-${await value()}`,
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      const source = loader.sessionSource
+      expect(source?.type === 'error' && `${source.error}`).toMatch(
+        /incomplete/,
+      )
     })
 
     it('dispatches JB1-style session (loc + assembly)', async () => {

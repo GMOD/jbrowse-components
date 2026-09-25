@@ -5,7 +5,10 @@ import {
 } from '@jbrowse/core/pluginDefinitions'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { scheduleDetachedDestroy } from '@jbrowse/product-core'
+import {
+  decodeSessionFromUrl,
+  scheduleDetachedDestroy,
+} from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 
 import { clearCrashedSession, readCrashedSession } from './crashedSession.ts'
@@ -701,19 +704,12 @@ const SessionLoader = types
     },
     /**
      * #action
+     * an `encoded-` or `json-` session, carried whole in the link
      */
-    async decodeEncodedUrlSession() {
-      const session = JSON.parse(
-        await fromUrlSafeB64(stripPrefix(self.sessionQuery!)),
+    async decodeInlineSession() {
+      await this.loadImportedSession(
+        await decodeSessionFromUrl(self.sessionQuery!),
       )
-      await this.loadImportedSession(session)
-    },
-    /**
-     * #action
-     */
-    async decodeJsonUrlSession() {
-      const { session } = JSON.parse(stripPrefix(self.sessionQuery!))
-      await this.loadImportedSession(session)
     },
     /**
      * #action
@@ -790,10 +786,11 @@ const SessionLoader = types
           await self.fetchSharedSession()
         } else if (self.sessionQueryType === 'spec') {
           self.decodeSessionSpec()
-        } else if (self.sessionQueryType === 'encoded') {
-          await self.decodeEncodedUrlSession()
-        } else if (self.sessionQueryType === 'json') {
-          await self.decodeJsonUrlSession()
+        } else if (
+          self.sessionQueryType === 'encoded' ||
+          self.sessionQueryType === 'json'
+        ) {
+          await self.decodeInlineSession()
         } else if (self.sessionQueryType === 'local') {
           await self.fetchLocalSession()
         } else if (self.extendDefaultSession && self.isJb1StyleSession) {

@@ -23,6 +23,9 @@ extend-ignore-re = [
   # Irish surnames in the reference lists: O'Leary reads as "Leery". The
   # apostrophe-capital prefix is a name, never a word
   "\\bO'[A-Z][a-z]+\\b",
+  # an `encoded-` session: deflate's zlib header always base64s to `eJ`, and
+  # the rest is random letters
+  "\\beJ[A-Za-z0-9_-]{30,}",
 ]
 
 [default.extend-words]

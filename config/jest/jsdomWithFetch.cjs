@@ -33,6 +33,9 @@ const JSDOMEnvironment = require('jest-environment-jsdom').default
 //   jsdom's own FileReader instead. The residual price is that undici
 //   stringifies a jsdom Blob handed to `new Response(blob)`; nothing here does
 //   that.
+//
+// The compression streams ride along: jsdom has none, and they pipe through
+// the ReadableStream installed here.
 const FETCH_GLOBALS = [
   'fetch',
   'Headers',
@@ -40,6 +43,8 @@ const FETCH_GLOBALS = [
   'Response',
   'FormData',
   'ReadableStream',
+  'CompressionStream',
+  'DecompressionStream',
 ]
 
 module.exports = class JSDOMWithFetchEnvironment extends JSDOMEnvironment {

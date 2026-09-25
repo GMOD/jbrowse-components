@@ -39,3 +39,19 @@ test('decodeSessionFromUrl rejects something that is not a session', async () =>
     decodeSessionFromUrl('encoded-@@@not-base64@@@'),
   ).rejects.toThrow()
 })
+
+test('decodeSessionFromUrl reads the json form the share dialog writes', async () => {
+  const snap = { name: 'plain', views: [] }
+  const { sessionParam } = await encodeSessionParam('json', snap, {
+    shareURL: '',
+    referer: '',
+  })
+
+  await expect(decodeSessionFromUrl(sessionParam)).resolves.toEqual(snap)
+  await expect(
+    decodeSessionFromUrl(sessionParam.slice(0, -10)),
+  ).rejects.toThrow('incomplete')
+  await expect(decodeSessionFromUrl('json-{"notSession":1}')).rejects.toThrow(
+    'not a session',
+  )
+})

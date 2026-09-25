@@ -44,18 +44,36 @@ export function b64PadSuffix(b64: string): string {
   return b64 + '='.repeat(num)
 }
 
+async function transformBytes(
+  bytes: Uint8Array<ArrayBuffer>,
+  transform: CompressionStream | DecompressionStream,
+) {
+  const stream = new Response(bytes).body!.pipeThrough(transform)
+  return new Uint8Array(await new Response(stream).arrayBuffer())
+}
+
 /**
  * Decode and inflate a url-safe base64 to a string
  * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ *
+ * A truncated input rejects rather than inflating to a prefix: a link cut short
+ * in transit has to say so, not fail later as a JSON syntax error.
  */
 export async function fromUrlSafeB64(b64: string) {
-  const originalB64 = b64PadSuffix(
-    b64.replaceAll('-', '+').replaceAll('_', '/'),
-  )
-  const { inflate } = await import('pako-esm2')
-  const bytes = Uint8Array.from(atob(originalB64), c => c.charCodeAt(0))
-  const inflated = inflate(bytes, undefined)
-  return new TextDecoder('utf8').decode(inflated)
+  try {
+    const bytes = Uint8Array.from(
+      atob(b64PadSuffix(b64.replaceAll('-', '+').replaceAll('_', '/'))),
+      c => c.charCodeAt(0),
+    )
+    return new TextDecoder().decode(
+      await transformBytes(bytes, new DecompressionStream('deflate')),
+    )
+  } catch (e) {
+    throw new Error(
+      'This session is incomplete or damaged, which is how a link cut short in transit arrives. A short link survives being sent where a long one may not.',
+      { cause: e },
+    )
+  }
 }
 
 /**
@@ -63,9 +81,10 @@ export async function fromUrlSafeB64(b64: string) {
  * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
  */
 export async function toUrlSafeB64(str: string) {
-  const bytes = new TextEncoder().encode(str)
-  const { deflate } = await import('pako-esm2')
-  const deflated = deflate(bytes, undefined)
+  const deflated = await transformBytes(
+    new TextEncoder().encode(str),
+    new CompressionStream('deflate'),
+  )
   const encoded = btoa(bytesToBinaryString(deflated)).replace(/=+$/, '')
   return encoded.replaceAll('+', '-').replaceAll('/', '_')
 }
