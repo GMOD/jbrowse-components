@@ -90,6 +90,14 @@ public struct Uniforms {
   public float  pivot;
   // Where a gradient's middle stop sits, as a normalized score:
   // `domainMid`'s, else 0.5, which runs the ramp straight across the domain.
+  //
+  // The only score the JS side normalizes for the shader, and it does not
+  // generalize to `origin`, `pivot` and `cuts`, whose per-vertex normalize
+  // looks like the same saving. Nothing is ever COMPARED to `rampMidNorm` — it
+  // positions a ramp — while each of those three is tested against a score the
+  // shader normalized itself, and the two tie only while one normalize places
+  // both. `bandCutTie.test.ts` sabotages the cut version; the pivot's is
+  // densityColorParity.test.ts §"the pivot is white on both backends, exactly".
   public float  rampMidNorm;
   // symlog's linear-region width, already resolved on the JS side (a 0 in the
   // config means "derive from the domain", and that rule lives there so both
