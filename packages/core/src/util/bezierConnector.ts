@@ -22,13 +22,19 @@ const SPAN_FACTOR = 0.3
 // inversion flings a ~500px curl back across unrelated reads.
 const MAX_HANDLE_PX = 200
 
+// A symmetric cubic's extreme sits 3/4 of the way from its baseline to its
+// control points, so an arc asked to reach a given apex puts its controls 4/3
+// past it. Exported because the sashimi overlay solves the same equation in the
+// other direction, and the two spellings drifting apart would put the insert-
+// size ruler's labels at heights nothing plots at.
+export const CUBIC_APEX_RATIO = 0.75
+
 // Vertical bow applied to a connection whose two endpoints share (or nearly
 // share) a row — e.g. a chain whose split segments are all laid out on one
 // pileup row. Without it the horizontal-only handles collapse the cubic to a
 // flat, invisible line lying on the row; the bow lifts the control points so
 // the curve arcs into a visible hump. This is the control-point lift, not the
-// height the curve reaches: a cubic with both control points lifted by `bow`
-// apexes at 0.75 * bow.
+// height the curve reaches.
 const MAX_BOW_PX = 30
 
 // A discordant connection bows *down* instead of up, so the two classes read
@@ -61,7 +67,7 @@ const DIP_HALF_SPAN_PX = 500
 // both. A caller that culls off-screen curves has to pad its viewport test by
 // this: the shaping is applied to the *control points*, so a curve whose two
 // endpoints both sit just outside the viewport can still have a visible body.
-export const BEZIER_CONNECTOR_MAX_REACH_PX = 0.75 * MAX_DIP_PX
+export const BEZIER_CONNECTOR_MAX_REACH_PX = CUBIC_APEX_RATIO * MAX_DIP_PX
 
 interface Pt {
   x: number

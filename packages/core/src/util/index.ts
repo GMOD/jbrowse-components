@@ -572,6 +572,7 @@ export {
 export type { TrackConfigChange } from './trackConfigDelta.ts'
 export {
   BEZIER_CONNECTOR_MAX_REACH_PX,
+  CUBIC_APEX_RATIO,
   bezierConnectorPath,
 } from './bezierConnector.ts'
 export {

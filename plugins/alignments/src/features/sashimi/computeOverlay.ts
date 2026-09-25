@@ -1,5 +1,5 @@
 import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
-import { measureText } from '@jbrowse/core/util'
+import { CUBIC_APEX_RATIO, measureText } from '@jbrowse/core/util'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
@@ -129,10 +129,6 @@ function bandGeometry(
         dir: -1,
       }
 }
-
-// A symmetric cubic's extreme is 3/4 of the way from baseline to its controls,
-// so the controls sit 4/3 past the apex the arc is asked to reach.
-const CUBIC_APEX_RATIO = 0.75
 
 function arcCubic(
   span: { left: number; right: number },
