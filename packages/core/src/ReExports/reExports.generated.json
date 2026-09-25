@@ -3084,6 +3084,7 @@
         "MAX_LEGEND_ENTRIES",
         "createLegendCandidateCollector",
         "derivedColorScale",
+        "everyRowPaints",
         "unionLegendCandidates"
       ],
       "worker": "real"

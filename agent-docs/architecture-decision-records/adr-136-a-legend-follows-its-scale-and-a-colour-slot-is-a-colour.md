@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Three legend and colour-slot rules brought level with ggplot2. A derived key row is a colour naming every value painted in it (`CategoricalEntry.values`), so two values on one palette slot read as one swatch with both labels and Pin distinct colors pins them both. Two marks colouring or glyphing by one field through one domain and palette share one key section (`buildMarkLegend` keys on the declaration, not the mark); a ramp with an open end stays per mark. A `color` / `maybeColor` slot refuses a value the painters cannot parse — `color: 'biotype'` fails at load naming the slot and the value — and the JSON schema carries the same check as `CssColor`. Amended 2026-09-23: a ramp pinned at both ends is its declaration, so marks declaring one alike share its key. Amended 2026-09-24: the synteny views' text-column keys merge a colour's labels the same way"
+summary: "Three legend and colour-slot rules brought level with ggplot2. A derived key row is a colour naming every value painted in it (`CategoricalEntry.values`), so two values on one palette slot read as one swatch with both labels and Pin distinct colors pins them both. Two marks colouring or glyphing by one field through one domain and palette share one key section (`buildMarkLegend` keys on the declaration, not the mark); a ramp with an open end stays per mark. A `color` / `maybeColor` slot refuses a value the painters cannot parse — `color: 'biotype'` fails at load naming the slot and the value — and the JSON schema carries the same check as `CssColor`. Amended 2026-09-23: a ramp pinned at both ends is its declaration, so marks declaring one alike share its key. Amended 2026-09-24: the synteny views' text-column keys merge a colour's labels the same way, and the mark, multi-row and multi-sample variant keys run `derivedColorScale` rather than spelling the rule by hand"
 ---
 
 # ADR-136: A legend follows its scale, and a colour slot is a colour
@@ -56,6 +56,13 @@ ggplot2 accepted three findings.
   Amended 2026-09-24: so do the synteny views' text-column keys
   (`getColorBySwatch`), where SyRI's palette paints INVDP in DUP's colour as
   plotsr does; the unlabelled grey is keyed only once a row painted it.
+  Amended again 2026-09-24: the mark display's categorical key, the multi-row
+  display's and the multi-sample variant cells' field rows each spelt this
+  rule by hand, with one row per value, first-seen order or no readability
+  gate between them; all three now run `derivedColorScale`, which takes a
+  `title` and a `swatches` hook for the mark's shapes and the variant's
+  dosage pair. alu_age's FLAM and FRAM, one grey, are one row, and the
+  multi-row key keeps the name field's order across a pan.
 - **Marks sharing a categorical declaration share a key.** `buildMarkLegend`
   (`plugins/marks/src/LinearMarkDisplay/legend.ts`) keys a section on the
   channel's declaration — kind, field, domain, and palette or glyph range,

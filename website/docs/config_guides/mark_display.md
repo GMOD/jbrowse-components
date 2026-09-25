@@ -266,8 +266,10 @@ describes that binding:
   default palette past its end, for when the colours should be spent
   deliberately. A value it leaves out keeps a colour derived from itself that no
   listed value paints, and follows the listed ones in the legend sorted, the
-  order a facet stacks its sections in. The legend lists the values drawn; a
-  listed value the data lacks takes no row.
+  order a facet stacks its sections in. The legend lists the values drawn, a row
+  per colour, so two values `range` paints alike share one row naming both; a
+  listed value the data lacks takes no row. A key of one colour, or of more than
+  20 rows, is not drawn.
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] }`
   reads the value between `domainMin` and `domainMax` into a ramp through the
