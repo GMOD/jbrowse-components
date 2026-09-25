@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-24. Alignments between haplotype lanes were to move off the graph (gbz-base pairAlignments, plugin 3.0.4) to a hosted all-vs-all PAF over a curated panel, which Colin rejected as not pangenome-ready, so the gutter source is open again; an unlanded spike draws each gutter per base. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
+description: The HPRC graph thread as of 2026-09-25. The per-base gutter landed; the blocking decision is now lanePairsOnAnchor, because resyncing the plugin's drifted clipFeatureToRegion is what switches our own DP aligner on in the lower gutters. Walk rows already draws every haplotype on its own bp at ABCA7, which is the large-scale picture nobody has extended to the other loci. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -54,14 +54,12 @@ their width; captures at https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86).
    PIF bytes, and whether its records at the six loci below match the window
    runs). The panel's cost follows: 36 pairs for eight haplotypes plus GRCh38,
    estimated 70-200 CPU-h and ~0.5 GB hosted.
-2. Land the gutter spike: branch `worktree-multiway-pair-cigar`, commit
-   `1fd6d062ce`, worktree `.claude/worktrees/multiway-pair-cigar`. It adds a
-   `keepAlignment` clip option (packed ops in `alignmentOps`) and draws each
-   record's own indels and mismatches where every gutter is a direct pair
-   (`adjacentLanesAlignDirectly`, `addAlignmentDetail`). It needs no plugin
-   change for core adapters; `MULTIWAY_SYNTENY_DISPLAY.md` ("never reads a
-   CIGAR") and the "per-base alignment lanes" paragraph of
-   `ideas/collections/multiway-synteny-lgv-track.md` change with it.
+2. **Landed** as `0d0709c746`, and `code/jb2/main` carries it. The
+   "per-base alignment lanes" paragraph of
+   `ideas/collections/multiway-synteny-lgv-track.md` is half-answered by it: its
+   frame argument is dead (the ops pack on the main thread, where the frames
+   already live), its density argument stands, and the `X` loop in
+   `multiwayGeometry.ts` still has no zoom or count bound.
 3. Build and host the panel all-vs-all for the `demos/hprc_multiway` eight and
    check it at the six loci.
 4. Rework the HPRC tutorials around click paths on a hosted instance, with one
@@ -86,8 +84,26 @@ their width; captures at https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86).
 - HPRC's assemblies publish `.fa.gz` with `.fai` and `.gzi`, so windows are
   range-readable.
 
+**The blocking decision: resyncing the plugin's clip arms our own aligner.**
+The plugin declares `lanePairsOnAnchor`, so `MultiWayLaneLinks` already fires
+and already sends `keepAlignment: true`, and `pairFeatures` already calls
+`subgraph.pairAlignments` — the k-mer chain and DP. None of it shows, for one
+accidental reason: the plugin's vendored `clipFeatureToRegion` (`src/synteny/`)
+has drifted from core's and carries no `keepAlignment`, so it strips every
+alignment field (0 hits for `keepAlignment|alignmentOps` in both shipped
+bundles). **Resyncing that file — which every other step in this thread needs —
+draws the DP's `=`/`X` in the lower gutters in colour**, which is what Colin
+ruled out. Retire the capability or replace the DP with a graph-stated mode
+first; do not resync and then decide. The drift also costs the id scheme that
+keeps a nameless record's group key stable across refetches, which is likely a
+live bug in the hosted demo.
+
 **Found along the way, unfixed.** The hosted `demos/hprc/config.json` still
 names the retired betabuild plugin (bundle of 2026-09-20, no
-`lanePairsOnAnchor`); gbz-base's `Subgraph.alignment()` writes `M` for match
-and mismatch alike; the plugin vendors its own copy of `clipFeatureToRegion`
-(`src/synteny/`), which has drifted from core's.
+`lanePairsOnAnchor`), and turning the capability on costs N−1 extra
+`getSubgraphForRange` calls per settle with no subgraph cache — measure the
+hosted demo before redeploying. `demos/hprc/config.json` also has no
+`defaultSession` and its `hprc_v2_1_gbz_lanes` names only the curated eight, so
+a reader who switches that track on meets the panel Colin rejected. gbz-base's
+`Subgraph.alignment()` writes `M` for match and mismatch alike — that is the
+anchor path, and `pairAlignments` already emits `=`/`X`/`I`/`D`.

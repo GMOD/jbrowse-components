@@ -45,13 +45,18 @@ const DEPENDENT_FETCH_DELAY = 500
 const DESCRIBE_DEADLINE_MS = 20_000
 
 /**
- * The indel size at which a clipped record is cut into separate placements.
- * The display draws a placement as one straight ribbon and keeps no alignment
- * string to draw within it, so an indel this size or larger inside the window
- * would otherwise vanish into a ribbon that says the two sides run straight
- * through. The coarse tier's default bound (`make-pif --coarse`, 10 kb): that
- * tier keeps every indel past half its bound as its own op, so the cut lands
- * the same on either tier.
+ * The indel size at which a clipped record is cut into separate placements, so
+ * an indel this size or larger does not vanish into a ribbon that says the two
+ * sides run straight through. The coarse tier's default bound (`make-pif
+ * --coarse`, 10 kb): that tier keeps every indel past half its bound as its own
+ * op, so the cut lands the same on either tier.
+ *
+ * A gutter that is a direct pair now draws a record's own indels, so for those
+ * the cut is what stops the wedge being drawn. It still holds for every other
+ * consumer of a placement, which reads it as one linear mapping: composed
+ * gutters interpolate within a run, and the lane weights and orientation vote
+ * both count a run's anchor bp. Lifting it belongs with moving those three onto
+ * the ops.
  */
 export const SPLIT_AT_GAP_BP = 10_000
 

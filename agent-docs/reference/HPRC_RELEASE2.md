@@ -489,20 +489,17 @@ not need it for.
 
 ## Cached test data
 
-Re-downloading these is slow and the HPRC slices took scattered BGZF range reads
-to assemble, so they live in `~/scratch/jbrowse-pangenome` (large artifacts go
-under `~/scratch`, not a session scratchpad): the chr20 HPRC slice (6 haplotypes
-vs GRCh38, both haplotypes of three samples), the E. coli hold-out set used to
-measure composition recall, the untangle PAF, and a built `impg` binary. In
-`~/scratch/hprc-gfa`: `chrY.gfa.zst`.
+Large artifacts go under `~/scratch`, not a session scratchpad.
+`~/scratch/jbrowse-pangenome` holds a CAT annotation for HG01433, the MHC gene
+slice for that sample, and the v2.0 `tier10000.segs` index — and nothing else.
 
-For summary-tier work, same directory: both published indexes (`hprc.tai` 5.35 MB
-v2.1 MAF, `hprc_v20.tai` 4.98 MB v2.0 TAF), which answer any "what does a read of
-span X cost" question offline through `queryBlockSpan`; the 200 kb C4 slice
-`hprc_c4_slice.maf.gz` (4.35 MB, chr6:31.9–32.1 Mb, all 464 haplotypes); and
-`hprc_c4.summary.bed.gz` plus its `.tbi`, what `maf2bed --summary` made of it.
-The slice is enough to wire a real `summaryAdapter` against a real HPRC region
-without touching the network.
+**Everything this section used to list is gone**, checked 2026-09-25: the chr20
+HPRC slice, the E. coli hold-out set, the untangle PAF, a built `impg`,
+`~/scratch/hprc-gfa/chrY.gfa.zst`, both published `.tai` indexes, the 200 kb C4
+MAF slice and its summary BED. A session that plans a measurement against one of
+them designs it around a file nobody has, which is how the C4 slice got written
+into a plan on 2026-09-25. Re-fetch, and do not add a file back to this list
+without `ls`-ing it.
 
 ## Related
 

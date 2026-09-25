@@ -99,9 +99,11 @@ tutorials use it for: a gene table over 44 bacterial genomes and a star of eight
 pairwise alignments over one human locus. It is the wrong frame, unmodified, for
 three things: more than one row of content per genome (a lane is a
 display-internal object that hosts one annotation and nothing else), alignment
-sources whose within-record structure matters (the display never reads a CIGAR,
-and at TP53 that turned a 25 kb mouse indel into a straight ribbon until the gap
-split landed), and cohorts of hundreds to thousands of haplotypes (every cost is
+sources whose within-record structure matters (at TP53 a 25 kb mouse indel drew
+as a straight ribbon until the gap split landed; a gutter that is a direct pair
+now draws its record's own indels and mismatches, but `SPLIT_AT_GAP_BP` still
+cuts at 10 kb, so a larger indel is the space between two placements rather than
+a drawn wedge), and cohorts of hundreds to thousands of haplotypes (every cost is
 linear in lanes, the picker is a flat checkbox list, and the graph fetch is the
 whole cohort regardless of the selection). The row-per-haplotype picture should
 be kept as the *reading* for a chosen handful; the *choosing* and the *fetching*
