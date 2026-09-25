@@ -1475,24 +1475,9 @@ function stringPropValues(obj: ts.ObjectLiteralExpression, key: string) {
 }
 
 /**
- * True when the JSDoc tag `#name` *heads* a line of `text`, which is how every
- * tag is actually written (`* #category general`), and matches as a whole token
- * — so `#getter` does not match `#getterById`, nor `#category`
- * `#categoryManagement`.
- *
- * Multiline, so one line and a whole comment ask the same question, and this is
- * the whole scan. A looser `containsTag` used to admit a node while
- * `parseTaggedComment` parsed it by this rule, so the two disagreed about what
- * carried a tag and anything writing ABOUT the tag system got tagged by it. The
- * value tags take the rest of their line and the value regex is greedy, so a
- * mention inside prose ("categorized General rather than View, which the
- * #category tag overrides") took the text after the LAST occurrence and wrote
- * ``sidebar_label: ` tag keeps the -> Base1DView`` into the generated
- * frontmatter with no error. On the member side it made `whenReady` — a
- * TypeScript interface method on both embedded controllers, no MST member at all
- * — a `#getter`, because its docstring says "every `#getter` and `#property` on
- * the view and session models is a MobX observable". Both products carry that
- * sentence and both sat in the orphan-members coverage gap for it.
+ * True when the JSDoc tag `#name` heads a line of `text` (`* #category general`)
+ * and matches as a whole token, so `#getter` does not match `#getterById`. A tag
+ * mentioned inside prose carries nothing. Every scan asks this one question.
  */
 export function startsWithTag(text: string, name: string) {
   return new RegExp(`^\\s*\\*?\\s*#${name}(?![A-Za-z0-9_])`, 'm').test(text)
@@ -1622,11 +1607,8 @@ export function parseTaggedComment(
   const gotchas: string[] = []
   let current: { label: string; lines: string[] } | undefined
   let currentGotcha: string[] | undefined
-  // A #gotcha runs to the next tag or the next blank line, whichever comes
-  // first, so it can wrap across lines without a terminator and without
-  // swallowing the description prose that follows it. Its own line breaks are
-  // collapsed, since they are comment wrapping rather than markdown structure —
-  // the formatter rewraps the rendered callout to the doc's width.
+  // A #gotcha runs to the next tag or blank line, and its own line breaks are
+  // comment wrapping, not markdown.
   const endGotcha = () => {
     if (currentGotcha) {
       const text = currentGotcha.join(' ').replaceAll(/\s+/g, ' ').trim()
@@ -1636,12 +1618,6 @@ export function parseTaggedComment(
       currentGotcha = undefined
     }
   }
-  // Every tag is matched with startsWithTag, not containsTag: a tag only counts
-  // when it heads the line, which is how all of them are actually written. A
-  // bare containsTag lets a mention inside prose ("the #category tag overrides
-  // it") be parsed as the tag, and the greedy value regexes then take the text
-  // after the LAST occurrence on the line — which once wrote a whole sentence
-  // into a page's frontmatter with no error.
   for (const line of lines) {
     if (startsWithTag(line, 'example')) {
       endGotcha()

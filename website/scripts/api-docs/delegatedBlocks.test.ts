@@ -466,13 +466,6 @@ test('a member tag no model claims is reported, and a delegated one is not', () 
   ])
 })
 
-// A docstring that writes ABOUT the tag system is not one that carries a tag. The
-// admission scan matched a tag anywhere in the comment while parseTaggedComment
-// matched only a line the tag heads, so the two disagreed about what was tagged.
-// `whenReady` on both embedded controllers is a TypeScript interface method — no
-// MST member at all — whose docstring says "every `#getter` and `#property` on
-// the view and session models is a MobX observable", and that sentence put it in
-// the orphan-members gap as a #getter of a file documenting no model.
 test('a tag mentioned inside prose does not tag the symbol', () => {
   const file = write(
     'controller.ts',
