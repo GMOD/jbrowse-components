@@ -321,6 +321,9 @@ export interface ClipContext2D {
  * coverage, pileup and arc bands separately within one block clip), where the
  * nesting makes a hand-rolled pairing easy to get wrong: an early
  * `return` inside the band body unbalances the block's `save` too.
+ *
+ * An empty rect paints nothing, as the GPU's empty scissor does; the SVG export
+ * would otherwise record every path of a band nothing can show.
  */
 export function withClip(
   ctx: ClipContext2D,
@@ -330,6 +333,9 @@ export function withClip(
   h: number,
   paint: () => void,
 ) {
+  if (w <= 0 || h <= 0) {
+    return
+  }
   ctx.save()
   ctx.beginPath()
   ctx.rect(x, y, w, h)

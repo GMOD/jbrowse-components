@@ -748,6 +748,17 @@ describe('withClip', () => {
     expect(rects[0]).toEqual([5, 10, 20, 30])
   })
 
+  test('paints nothing into an empty rect', () => {
+    const { ctx, log } = makeRecordingCtx()
+    withClip(ctx, 0, 10, 20, 0, () => {
+      log.push('paint')
+    })
+    withClip(ctx, 0, 10, 0, 20, () => {
+      log.push('paint')
+    })
+    expect(log).toEqual([])
+  })
+
   test('restores when paint throws', () => {
     const { ctx, log } = makeRecordingCtx()
     expect(() => {
