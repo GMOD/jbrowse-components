@@ -1,14 +1,11 @@
-import { CONNECTION_LABELS } from '@jbrowse/alignments-core'
+import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { connectionLabel, useConnectionStyle } from './connectionStyle.ts'
-import { drawnConnections } from './overlayUtils.tsx'
+import { useConnectionStyle } from './connectionStyle.ts'
+import { connectionKeyEntries } from './overlayUtils.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { ConnectionKind } from '@jbrowse/alignments-core'
-
-const KIND_ORDER = Object.keys(CONNECTION_LABELS) as ConnectionKind[]
 
 const useStyles = makeStyles()({
   key: {
@@ -33,35 +30,6 @@ const useStyles = makeStyles()({
   },
 })
 
-function keyEntries(model: BreakpointViewModel) {
-  const { assemblies, overlayMatches, overlayTracks, showIntraviewLinks } =
-    model
-  const entries = new Map<string, { kind: ConnectionKind; isSplit: boolean }>()
-  for (const { configuration } of overlayTracks) {
-    const match = overlayMatches.get(configuration.trackId)
-    const tracks = model.getMatchedTracks(configuration.trackId)
-    if (
-      match?.kind !== 'alignment' ||
-      tracks.some(t => t.displays[0]?.regionTooLarge)
-    ) {
-      continue
-    }
-    const isSplit = !match.hasPairedReads
-    for (const { kind } of drawnConnections({
-      match,
-      assemblies,
-      tracks,
-      levels: model.overlayLinksReads(configuration.trackId),
-      showIntraviewLinks,
-    })) {
-      entries.set(connectionLabel(kind, isSplit), { kind, isSplit })
-    }
-  }
-  return [...entries.values()].sort(
-    (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind),
-  )
-}
-
 const ConnectionKey = observer(function ConnectionKey({
   model,
 }: {
@@ -69,7 +37,7 @@ const ConnectionKey = observer(function ConnectionKey({
 }) {
   const { classes } = useStyles()
   const connectionStyle = useConnectionStyle()
-  const entries = keyEntries(model)
+  const entries = connectionKeyEntries(model)
   return entries.length > 0 ? (
     <div className={classes.key} data-testid="connection-key">
       {entries.map(({ kind, isSplit }) => {
@@ -83,6 +51,26 @@ const ConnectionKey = observer(function ConnectionKey({
       })}
     </div>
   ) : null
+})
+
+export const SvgConnectionKey = observer(function SvgConnectionKey({
+  model,
+  canvasWidth,
+}: {
+  model: BreakpointViewModel
+  canvasWidth: number
+}) {
+  const connectionStyle = useConnectionStyle()
+  return (
+    <SvgColorLegend
+      canvasWidth={canvasWidth}
+      testid="connection-key"
+      entries={connectionKeyEntries(model).map(({ kind, isSplit }) => {
+        const { color, label } = connectionStyle(kind, isSplit)
+        return { key: label, label, color }
+      })}
+    />
+  )
 })
 
 export default ConnectionKey

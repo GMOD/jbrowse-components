@@ -6,6 +6,7 @@ import {
   awaitViewInitialized,
 } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { LEGEND_ROW_HEIGHT } from '@jbrowse/core/ui/SvgColorLegend'
 import { getSession } from '@jbrowse/core/util'
 import {
   SVGStackedRow,
@@ -16,7 +17,9 @@ import {
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { SvgConnectionKey } from '../components/ConnectionKey.tsx'
 import Overlay from '../components/Overlay.tsx'
+import { connectionKeyEntries } from '../components/overlayUtils.tsx'
 import { getTrackOffsets } from './util.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
@@ -99,7 +102,9 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // anchors that view's overlay ribbons, and ends as the total content height,
   // so the canvas size, the rendered bodies and the ribbons share one source of
   // truth.
-  let y = 0
+  const keyRows = connectionKeyEntries(model).length
+  const keyBand = keyRows > 0 ? keyRows * LEGEND_ROW_HEIGHT + 4 : 0
+  let y = keyBand
   const rows = views.map((view, idx) => {
     const top = y
     y += heights[idx]!
@@ -127,6 +132,9 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     Wrapper,
     children: (
       <>
+        {keyBand > 0 ? (
+          <SvgConnectionKey model={model} canvasWidth={w} />
+        ) : null}
         {rows.map(({ view, top }, idx) => (
           <SVGStackedRow
             key={view.id}

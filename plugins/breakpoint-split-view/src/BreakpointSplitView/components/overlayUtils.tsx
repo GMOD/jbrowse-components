@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 
-import { pairDirection } from '@jbrowse/alignments-core'
+import { CONNECTION_LABELS, pairDirection } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
@@ -13,7 +13,7 @@ import { breakendTickPx } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import BreakpointTooltip from './BreakpointTooltip.tsx'
-import { connectionKind } from './connectionStyle.ts'
+import { connectionKind, connectionLabel } from './connectionStyle.ts'
 import { computeOverlayRect, isOffscreenLayout } from './overlayGeometry.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
@@ -467,6 +467,39 @@ export function* drawnConnections({
       }),
     }
   }
+}
+
+const KIND_ORDER = Object.keys(CONNECTION_LABELS) as ConnectionKind[]
+
+// What the key lists: one entry per label the overlay's alignment connectors
+// draw, in CONNECTION_LABELS order.
+export function connectionKeyEntries(model: BreakpointViewModel) {
+  const { assemblies, overlayMatches, overlayTracks, showIntraviewLinks } =
+    model
+  const entries = new Map<string, { kind: ConnectionKind; isSplit: boolean }>()
+  for (const { configuration } of overlayTracks) {
+    const match = overlayMatches.get(configuration.trackId)
+    const tracks = model.getMatchedTracks(configuration.trackId)
+    if (
+      match?.kind !== 'alignment' ||
+      tracks.some(t => t.displays[0]?.regionTooLarge)
+    ) {
+      continue
+    }
+    const isSplit = !match.hasPairedReads
+    for (const { kind } of drawnConnections({
+      match,
+      assemblies,
+      tracks,
+      levels: model.overlayLinksReads(configuration.trackId),
+      showIntraviewLinks,
+    })) {
+      entries.set(connectionLabel(kind, isSplit), { kind, isSplit })
+    }
+  }
+  return [...entries.values()].sort(
+    (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind),
+  )
 }
 
 export interface HighlightRect {
