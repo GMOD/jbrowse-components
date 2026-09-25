@@ -455,7 +455,9 @@ export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
  * A feature widget's view when a launch can copy its tracks: a linear genome
  * view, never a circle, whose tracks carry displays a linear panel cannot draw.
  */
-export function linearGenomeViewOf(view?: { type: string }) {
+export function linearGenomeViewOf(view?: {
+  type: string
+}): LinearGenomeViewModel | undefined {
   return view && isLinearGenomeView(view) ? view : undefined
 }
 

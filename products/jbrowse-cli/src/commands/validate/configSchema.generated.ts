@@ -4826,7 +4826,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0.1
         },
         "onChordClick": {
-          "description": "callback that should be run when a chord in the track is clicked.",
+          "description": "a jexl callback run when a chord is clicked, in place of opening the record's details.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },

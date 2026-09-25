@@ -124,6 +124,18 @@ and with neither the two blocks face each other.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
+### linearGenomeViewOf
+
+A feature widget's view when a launch can copy its tracks: a linear genome view,
+never a circle, whose tracks carry displays a linear panel cannot draw.
+
+```js
+// type signature
+(view?: { type: string; } | undefined) => (ModelInstanceTypeProps<_OverrideProps<…>> & ... 26 more ... & IStateTreeNode<...>) | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
 ### makeFeaturePair
 
 Both ends of a paired record, off whichever of the two things a producer states
@@ -141,6 +153,19 @@ first.
 ```js
 // type signature
 (feature: Feature, alt?: string | undefined) => { k1: { refName: string; start: number; end: number; mateDirection: number; }; k2: FeatureEnd; paired: boolean; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
+### navToLoc
+
+Navigate a feature widget's view to `locString`. A view that cannot navigate to
+a locus, such as the circular view, opens the locus in a linear genome view of
+its first assembly with the widget's track.
+
+```js
+// type signature
+(locString: string, model: IAnyStateTreeNode, grow?: number | undefined) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
