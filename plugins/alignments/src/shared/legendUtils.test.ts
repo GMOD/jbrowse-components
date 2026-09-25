@@ -318,6 +318,39 @@ describe('getReadDisplayLegendItems', () => {
     expect(labelsIn(sectionOrder('tags.HP', ['2']))).toEqual(['2', '1'])
   })
 
+  test('a facet on a read dimension orders its buckets as the sections stack', () => {
+    const labelsIn = (
+      colorBy: ColorBy,
+      categories: ReadColorCategory[],
+      order?: (a: string, b: string) => number,
+    ) =>
+      legendFor(colorBy, categories, { sectionOrder: order }).map(i => i.label)
+    const strands: ReadColorCategory[] = ['fwdStrand', 'revStrand']
+    expect(labelsIn({ type: 'strand' }, strands)).toEqual([
+      'Forward strand',
+      'Reverse strand',
+    ])
+    expect(
+      labelsIn({ type: 'strand' }, strands, sectionOrder('strand', ['-1'])),
+    ).toEqual(['Reverse strand', 'Forward strand'])
+    expect(
+      labelsIn(
+        { type: 'firstOfPairStrand' },
+        strands,
+        sectionOrder('firstOfPairStrand', ['-1']),
+      ),
+    ).toEqual(['First-of-pair reverse', 'First-of-pair forward'])
+    const pairs: ReadColorCategory[] = ['pairLR', 'pairRL', 'pairLL']
+    const [lr, rl, ll] = labelsIn({ type: 'pairOrientation' }, pairs)
+    expect(
+      labelsIn(
+        { type: 'pairOrientation' },
+        pairs,
+        sectionOrder('pairOrientation', ['4', '2']),
+      ),
+    ).toEqual([ll, rl, lr])
+  })
+
   // The swatch resolves through the same `bakedValueColor` the paint path runs
   // per read, so it is the color drawn rather than a second table agreeing with
   // it. There used to be that second table (`colorTagMap`).

@@ -5,6 +5,7 @@
 import {
   CONNECTION_LABELS,
   PAIR_DIRECTION_LABELS,
+  PAIR_DIRECTION_NUM,
   SPLIT_JUNCTION_LABELS,
 } from '@jbrowse/alignments-core'
 import { legendSwatches } from '@jbrowse/core/ui/legendSpec'
@@ -13,6 +14,10 @@ import {
   methylated5mC,
   unmethylated5mC,
 } from '@jbrowse/core/ui/palette'
+import {
+  STRAND_FIELD,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isMethylationFillType } from '@jbrowse/modifications-utils'
 
@@ -571,12 +576,57 @@ function keyedModifications(
 // scheme appends them after its own key rather than any one branch owning them.
 // fwd/rev are reworded per scheme (split read vs. fragment strand) — see
 // strandLabelOverrides.
+const STRANDS = categoricalField(STRAND_FIELD)
+const STRAND_SECTION_KEYS: Partial<Record<SwatchCategory, string>> = {
+  fwdStrand: STRANDS.key(1),
+  revStrand: STRANDS.key(-1),
+}
+
+// The section each bucket of a read-dimension scheme names when the reads are
+// faceted on that dimension, keyed as `groupFeatures.ts` keys the sections.
+const BUCKET_SECTION_KEYS: Partial<
+  Record<ColorSchemeType, Partial<Record<SwatchCategory, string>>>
+> = {
+  strand: STRAND_SECTION_KEYS,
+  firstOfPairStrand: STRAND_SECTION_KEYS,
+  pairOrientation: {
+    pairLR: `${PAIR_DIRECTION_NUM.LR}`,
+    pairRL: `${PAIR_DIRECTION_NUM.RL}`,
+    pairRR: `${PAIR_DIRECTION_NUM.RR}`,
+    pairLL: `${PAIR_DIRECTION_NUM.LL}`,
+  },
+}
+
+// The present buckets in the table's order, those naming a section re-sorted
+// among the slots they hold by the order the sections stack in.
+function orderedBuckets(
+  presentCategories: ReadonlySet<ReadColorCategory>,
+  sectionKeys: Partial<Record<SwatchCategory, string>> | undefined,
+  sectionOrder: ((a: string, b: string) => number) | undefined,
+) {
+  const present = CATEGORY_ORDER.filter(category =>
+    presentCategories.has(category),
+  )
+  if (!sectionKeys || !sectionOrder) {
+    return present
+  }
+  const keyed = present
+    .filter(category => sectionKeys[category] !== undefined)
+    .sort((a, b) => sectionOrder(sectionKeys[a]!, sectionKeys[b]!))
+  let next = 0
+  return present.map(category =>
+    sectionKeys[category] === undefined ? category : keyed[next++]!,
+  )
+}
+
 function bucketItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
   overrides: Partial<Record<SwatchCategory, string>>,
+  sectionKeys?: Partial<Record<SwatchCategory, string>>,
+  sectionOrder?: (a: string, b: string) => number,
 ): LegendItem[] {
-  return CATEGORY_ORDER.filter(category => presentCategories.has(category)).map(
+  return orderedBuckets(presentCategories, sectionKeys, sectionOrder).map(
     category => ({
       color: categorySwatchColor(category, palette),
       label: overrides[category] ?? CATEGORY_LEGEND[category],
@@ -1033,6 +1083,8 @@ export function getReadDisplayLegendItems({
       categories,
       palette,
       readCategoryLabelOverrides(colorBy, chainFramed),
+      colorBy ? BUCKET_SECTION_KEYS[colorBy.type] : undefined,
+      sectionOrder,
     ),
     ...(overlaps === undefined
       ? []
