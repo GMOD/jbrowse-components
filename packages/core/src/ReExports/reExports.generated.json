@@ -2128,6 +2128,7 @@
       "names": [
         "AuthNeededError",
         "BEZIER_CONNECTOR_MAX_REACH_PX",
+        "CUBIC_APEX_RATIO",
         "ENCODED_PREFIX",
         "IUPAC_MOTIF_REGEX",
         "IntervalTree",

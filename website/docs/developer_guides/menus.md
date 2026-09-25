@@ -170,7 +170,7 @@ Every variant except `divider` and `subHeader` also takes these:
 <!-- prettier-ignore -->
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | `string` | stable identifier, for tests and for finding a row again |
+| `id` | `string` | stable identifier; keys the row, and finds it again from a test |
 | `label` (required) | `React.ReactNode` | the row's text |
 | `priority` | `number` | sort weight within the menu; higher sorts earlier |
 | `subLabel` | `string` | secondary text under the label; prefer `withHint` in the label |
