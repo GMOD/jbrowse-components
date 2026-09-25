@@ -105,15 +105,119 @@ export function mergeSettings(
   return target
 }
 
-/** `color.range=tan,teal` as the settings object it writes: `{ color: { range: [...] } }`. */
-export function slotPathSettings(opt: string) {
+/** A `path=value` modifier read apart: the segments it walks, and what it sets. */
+export interface SlotWrite {
+  opt: string
+  segments: string[]
+  value: unknown
+}
+
+/** `color.range=tan,teal` and `marks.0.encoding.y=score`, read apart. */
+export function slotWrite(opt: string): SlotWrite {
   const eq = opt.indexOf('=')
   const segments = opt.slice(0, eq).split('.')
   if (segments.includes('')) {
     throw new Error(`Invalid track option "${opt}": an empty path segment`)
   }
-  return segments.reduceRight<unknown>(
-    (value, segment) => ({ [segment]: value }),
-    slotValue(opt.slice(eq + 1)),
-  ) as Record<string, unknown>
+  for (const segment of segments) {
+    if (UNSAFE_SEGMENTS.has(segment)) {
+      throw new Error(`Invalid track option key "${segment}"`)
+    }
+  }
+  return { opt, segments, value: slotValue(opt.slice(eq + 1)) }
+}
+
+// A segment of digits indexes a list, anything else names a member.
+function indexOf(segment: string) {
+  return /^\d+$/.test(segment) ? Number(segment) : undefined
+}
+
+type Container = Record<string, unknown> | unknown[]
+
+// Where a segment lands: a key on an object, an index on a list. An index past
+// the end would leave a hole no schema accepts, so it names the entry that has
+// to be written first instead.
+function slotAt(container: Container, segment: string, { opt }: SlotWrite) {
+  if (!Array.isArray(container)) {
+    return segment
+  }
+  const i = indexOf(segment)
+  if (i === undefined) {
+    throw new Error(
+      `Invalid track option "${opt}": "${segment}" names a member of a list; use an index`,
+    )
+  }
+  if (i > container.length) {
+    throw new Error(
+      `Invalid track option "${opt}": index ${i} comes before index ${container.length}, which nothing has written`,
+    )
+  }
+  return i
+}
+
+function readSlot(container: Container, at: string | number) {
+  return Array.isArray(container)
+    ? container[at as number]
+    : container[at as string]
+}
+
+function setSlot(container: Container, at: string | number, value: unknown) {
+  if (Array.isArray(container)) {
+    container[at as number] = value
+  } else {
+    container[at as string] = value
+  }
+}
+
+// The container to walk into under `segment`, made to the shape the NEXT
+// segment asks for. A scalar there is replaced — a path keeps the rest of a
+// setting, and a scalar has no rest to keep — but a list where the path wants
+// an object, or the reverse, is two writes disagreeing about one setting, and
+// carrying on would drop whichever came first.
+function containerUnder(
+  container: Container,
+  at: string | number,
+  wantsList: boolean,
+  { opt }: SlotWrite,
+): Container {
+  const existing = readSlot(container, at)
+  if (wantsList ? Array.isArray(existing) : isPlainObject(existing)) {
+    return existing as Container
+  }
+  if (isPlainObject(existing) || Array.isArray(existing)) {
+    throw new Error(
+      `Invalid track option "${opt}": "${at}" is ${wantsList ? 'a setting, not a list' : 'a list, not a setting'}`,
+    )
+  }
+  const made: Container = wantsList ? [] : {}
+  setSlot(container, at, made)
+  return made
+}
+
+/**
+ * Apply one `path=value` write to `target`, creating the objects and lists the
+ * path walks through and leaving everything beside them alone, so the writes of
+ * one command line compose whatever order they come in.
+ *
+ * Indexing a list is what carries the grammar: `marks`, the `transform` steps
+ * under a mark and an aggregate's `ops` are all lists of objects, and while a
+ * path stopped at the first of them a declared figure could only be written as
+ * raw JSON.
+ */
+export function applySlotWrite(
+  target: Record<string, unknown>,
+  write: SlotWrite,
+) {
+  const { segments, value } = write
+  let container: Container = target
+  for (const [i, segment] of segments.slice(0, -1).entries()) {
+    container = containerUnder(
+      container,
+      slotAt(container, segment, write),
+      indexOf(segments[i + 1]!) !== undefined,
+      write,
+    )
+  }
+  setSlot(container, slotAt(container, segments.at(-1)!, write), value)
+  return target
 }

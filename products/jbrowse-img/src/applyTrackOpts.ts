@@ -4,10 +4,11 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
+  applySlotWrite,
   isMemberWrite,
   isSlotPathOption,
   mergeSettings,
-  slotPathSettings,
+  slotWrite,
 } from './slotPath.ts'
 import { trackMatches, trackName } from './trackFields.ts'
 
@@ -368,6 +369,10 @@ const displayTypeAliases: Record<
   string,
   { type: string; settings?: DisplaySnapshot }
 > = {
+  // The grammar-of-graphics display, which every track type a jb2export flag
+  // builds but `--hic` can open. What it draws is the `marks` list, written as
+  // `marks.0.mark=bar` and the rest, in the same paths as any other setting.
+  marks: { type: 'LinearMarkDisplay' },
   multivariant: { type: 'LinearMultiSampleVariantDisplay' },
   multivariantmatrix: {
     type: 'LinearMultiSampleVariantDisplay',
@@ -990,7 +995,7 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
     }
     if (isSlotPathOption(opt)) {
       if (!isMemberWrite(opt)) {
-        mergeSettings(settingsOf(result), slotPathSettings(opt))
+        applySlotWrite(settingsOf(result), slotWrite(opt))
       }
       continue
     }
@@ -1156,13 +1161,13 @@ export function writeMembers(
     const configured: Record<string, unknown> = getSnapshot(
       track.activeDisplay.configuration,
     )
-    const writes = members.map(slotPathSettings)
-    const written = new Set(writes.flatMap(write => Object.keys(write)))
+    const writes = members.map(slotWrite)
+    const written = new Set(writes.map(write => write.segments[0]))
     view.showTrack(
       trackId,
       {},
       writes.reduce(
-        mergeSettings,
+        applySlotWrite,
         structuredClone(
           Object.fromEntries(
             Object.entries(configured).filter(([key]) => written.has(key)),

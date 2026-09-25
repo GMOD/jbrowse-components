@@ -274,3 +274,73 @@ describe('a jexl: colour field', () => {
     expect(svg).toContain('EDEN.1')
   }, 60000)
 })
+
+// `marks`, and the `transform` steps under it, are lists of objects — which the
+// path grammar could not index, so the grammar's own settings were the one
+// thing only a raw-JSON modifier could write. A declared mark now reads the way
+// every other setting does.
+describe('a mark declared in paths', () => {
+  const marksConfig = (...list: Record<string, unknown>[]) =>
+    configWith({ type: 'LinearMarkDisplay', marks: list })
+
+  test('draws what the same list stated as JSON draws', async () => {
+    const written = await exportTrack(configWith(basic), [
+      'display:marks',
+      'marks.0.mark=bar',
+      'marks.0.encoding.y=score',
+      'marks.0.encoding.color.field=strand',
+      'marks.1.mark=point',
+      'marks.1.encoding.y=score',
+      'marks.1.encoding.color=purple',
+    ])
+    const stated = await exportTrack(
+      marksConfig(
+        { mark: 'bar', encoding: { y: 'score', color: { field: 'strand' } } },
+        { mark: 'point', encoding: { y: 'score', color: 'purple' } },
+      ),
+    )
+    expect(written).toBe(stated)
+    expect(written).toContain('<svg')
+  }, 60000)
+
+  test('reaches a transform step and a second mark', async () => {
+    const written = await exportTrack(configWith(basic), [
+      'display:marks',
+      'marks.0.mark=bar',
+      'marks.0.transform.0.type=bin',
+      'marks.0.transform.0.step=5000',
+      'marks.0.transform.1.type=aggregate',
+      'marks.0.transform.1.groupby=start,end',
+      'marks.0.transform.1.ops.0.op=count',
+      'marks.0.encoding.y=count',
+      'marks.1.mark=point',
+      'marks.1.encoding.y=score',
+      'marks.1.encoding.shape=diamond',
+    ])
+    const stated = await exportTrack(
+      marksConfig(
+        {
+          mark: 'bar',
+          transform: [
+            { type: 'bin', step: 5000 },
+            {
+              type: 'aggregate',
+              groupby: ['start', 'end'],
+              ops: [{ op: 'count' }],
+            },
+          ],
+          encoding: { y: 'count' },
+        },
+        { mark: 'point', encoding: { y: 'score', shape: 'diamond' } },
+      ),
+    )
+    expect(written).toBe(stated)
+  }, 60000)
+
+  // the display's own rule list, reached through a path rather than JSON
+  test('a mark the rule list refuses fails the export', async () => {
+    await expect(
+      exportTrack(configWith(basic), ['display:marks', 'marks.0.mark=bar']),
+    ).rejects.toThrow(/mark 0 encoding\.y: /)
+  }, 60000)
+})
