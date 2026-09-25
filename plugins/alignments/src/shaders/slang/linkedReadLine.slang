@@ -56,7 +56,7 @@ struct Instance {
   uint  bp2       : ATTR1;
   float y1        : ATTR2;
   float y2        : ATTR3;
-  float colorType : ATTR4;
+  uint  colorType : ATTR4;
 };
 
 struct VsOut {
@@ -111,8 +111,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.position = float4(flipX(pxToClipX(p.x, u.canvasW), u),
                       yPxToClipY(p.y, u.canvasH), 0.0, 1.0);
 
-  uint idx = uint(inst.colorType + 0.5);
-  o.color = float4(linkedReadColorByIndex(idx, u), LINKED_READ_LINE_ALPHA);
+  o.color = float4(linkedReadColorByIndex(inst.colorType, u), LINKED_READ_LINE_ALPHA);
   return o;
 }
 

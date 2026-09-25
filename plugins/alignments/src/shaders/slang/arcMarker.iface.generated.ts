@@ -144,20 +144,16 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
 export const INSTANCE_STRIDE_BYTES = 12
 export const INSTANCE_STRIDE_WORDS = 3
 
-// Word indices into a Float32Array view over the instance buffer.
-export const INSTANCE_OFFSET_F32 = {
-  colorType: 1,
-} as const
-
 // Word indices into a Uint32Array view over the instance buffer.
 export const INSTANCE_OFFSET_U32 = {
   position: 0,
+  colorType: 1,
   yBp: 2,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_position', components: 1, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_colorType', components: 1, type: 'float', offsetBytes: 4, integer: false },
+  { name: 'a_colorType', components: 1, type: 'uint', offsetBytes: 4, integer: true },
   { name: 'a_yBp', components: 1, type: 'uint', offsetBytes: 8, integer: true },
 ]
 
@@ -172,13 +168,12 @@ export function packInstances(
   numInstances: number,
   buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
 ) {
-  const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
   const { position, colorType, yBp } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = position[i]!
-    f32[o + 1] = colorType[i]!
+    u32[o + 1] = colorType[i]!
     u32[o + 2] = yBp[i]!
   }
   return buf
@@ -194,12 +189,12 @@ export function setInstancePosition(u32: Uint32Array, i: number, v: number) {
 }
 
 // Instance `i`'s `colorType`.
-export function getInstanceColorType(f32: Float32Array, i: number) {
-  return f32[i * INSTANCE_STRIDE_WORDS + 1]!
+export function getInstanceColorType(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
 }
 
-export function setInstanceColorType(f32: Float32Array, i: number, v: number) {
-  f32[i * INSTANCE_STRIDE_WORDS + 1] = v
+export function setInstanceColorType(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
 }
 
 // Instance `i`'s `yBp`.

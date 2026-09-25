@@ -26,7 +26,7 @@ static const float ARC_MARKER_PX = 5.0;
 
 struct Instance {
   uint  position  : ATTR0;
-  float colorType : ATTR1;
+  uint  colorType : ATTR1;
   uint  yBp       : ATTR2;
 };
 
@@ -43,8 +43,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // The arc palette itself — the squares and the curves paint one meaning in
   // one colour. A second `arcMarkerColor` table existed for a short-insert
   // substitution that no longer exists; see arcColor in alignmentsUniforms.
-  uint idx = uint(inst.colorType + 0.5);
-  o.color = float4(arcColorByIndex(idx, u), 1.0);
+  o.color = float4(arcColorByIndex(inst.colorType, u), 1.0);
   return o;
 }
 

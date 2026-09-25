@@ -39,7 +39,7 @@ function packLinkedReadLines(data: LinkedReadLinesUploadData) {
     u32[o + F_U32.bp2] = pos[i * 2 + 1]!
     f32[o + F_F32.y1] = ys[i * 2]!
     f32[o + F_F32.y2] = ys[i * 2 + 1]!
-    f32[o + F_F32.colorType] = cts[i]!
+    u32[o + F_U32.colorType] = cts[i]!
   }
   return buf
 }

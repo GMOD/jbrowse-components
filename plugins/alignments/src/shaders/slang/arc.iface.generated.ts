@@ -148,7 +148,6 @@ export const INSTANCE_STRIDE_WORDS = 5
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
-  colorType: 2,
   lineWidthPx: 4,
 } as const
 
@@ -156,13 +155,14 @@ export const INSTANCE_OFFSET_F32 = {
 export const INSTANCE_OFFSET_U32 = {
   x1: 0,
   x2: 1,
+  colorType: 2,
   yBp: 3,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_x1', components: 1, type: 'uint', offsetBytes: 0, integer: true },
   { name: 'a_x2', components: 1, type: 'uint', offsetBytes: 4, integer: true },
-  { name: 'a_colorType', components: 1, type: 'float', offsetBytes: 8, integer: false },
+  { name: 'a_colorType', components: 1, type: 'uint', offsetBytes: 8, integer: true },
   { name: 'a_yBp', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_lineWidthPx', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
@@ -187,7 +187,7 @@ export function packInstances(
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = x1[i]!
     u32[o + 1] = x2[i]!
-    f32[o + 2] = colorType[i]!
+    u32[o + 2] = colorType[i]!
     u32[o + 3] = yBp[i]!
     f32[o + 4] = lineWidthPx[i]!
   }
@@ -213,12 +213,12 @@ export function setInstanceX2(u32: Uint32Array, i: number, v: number) {
 }
 
 // Instance `i`'s `colorType`.
-export function getInstanceColorType(f32: Float32Array, i: number) {
-  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+export function getInstanceColorType(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 2]!
 }
 
-export function setInstanceColorType(f32: Float32Array, i: number, v: number) {
-  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+export function setInstanceColorType(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 2] = v
 }
 
 // Instance `i`'s `yBp`.

@@ -126,7 +126,7 @@ static const float KIND_CIRCLE  = 1.0;
 struct Instance {
   uint  x1        : ATTR0;
   uint  x2        : ATTR1;
-  float colorType : ATTR2;
+  uint  colorType : ATTR2;
   uint  yBp       : ATTR3;
   // This arc's own stroke width in CSS px. An instance is a junction rather than
   // a read — resolveArcs coalesces identical connections and counts them — so
@@ -343,7 +343,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.radii = cv.radii;
   o.kind = cv.kind;
   o.position = arcBandClipPos(av.screen, u);
-  o.color = float4(arcColorByIndex(uint(inst.colorType + 0.5), u), 1.0);
+  o.color = float4(arcColorByIndex(inst.colorType, u), 1.0);
   return o;
 }
 
