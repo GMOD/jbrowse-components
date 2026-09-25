@@ -11,7 +11,7 @@ import { createBaseTrackConfig } from './index.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 
-// A track with two displays whose color slots differ ('color' vs 'strokeColor'),
+// A track with two displays whose color slots differ ('color' vs 'baseColor'),
 // to exercise slot-name routing of the `displayDefaults: {...}` object shorthand
 // end to end through real config creation.
 function makePluginManager() {
@@ -52,7 +52,7 @@ function makePluginManager() {
     })
   pluginManager.addDisplayType(() => displayType('LinearBasicDisplay', 'color'))
   pluginManager.addDisplayType(() =>
-    displayType('ChordVariantDisplay', 'strokeColor'),
+    displayType('LinearAlignmentsDisplay', 'baseColor'),
   )
   pluginManager.createPluggableElements()
   pluginManager.configure()
@@ -92,13 +92,13 @@ test('settings route by slot name across displays', () => {
   const conf = createTrack({
     trackId: 'mytrack',
     type: 'FeatureTrack',
-    displayDefaults: { color: 'green', strokeColor: 'red' },
+    displayDefaults: { color: 'green', baseColor: 'red' },
   })
   expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
     'green',
   )
   expect(
-    readConfObject(display(conf, 'ChordVariantDisplay'), 'strokeColor'),
+    readConfObject(display(conf, 'LinearAlignmentsDisplay'), 'baseColor'),
   ).toBe('red')
 })
 
@@ -121,15 +121,15 @@ test('displayDefaults folds into an explicit displays array (explicit wins)', ()
     trackId: 'mytrack',
     type: 'FeatureTrack',
     displays: [{ type: 'LinearBasicDisplay', displayId: 'd1', color: 'red' }],
-    displayDefaults: { color: 'green', strokeColor: 'blue' },
+    displayDefaults: { color: 'green', baseColor: 'blue' },
   })
   // explicit array entry keeps its own color; the shorthand still reaches the
-  // other display that defines strokeColor
+  // other display that defines baseColor
   expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
     'red',
   )
   expect(
-    readConfObject(display(conf, 'ChordVariantDisplay'), 'strokeColor'),
+    readConfObject(display(conf, 'LinearAlignmentsDisplay'), 'baseColor'),
   ).toBe('blue')
 })
 

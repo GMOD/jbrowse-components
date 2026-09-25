@@ -22,7 +22,7 @@ const ScaledColor = ConfigurationSchema(
 
 // Three displays of one track: two declare `color`, one as a plain colour
 // slot and one as an object with a scale, and the third names its colour
-// `strokeColor`.
+// `baseColor`.
 const displaySchemas = new Map<string, AnyConfigurationSchemaType>([
   [
     'LinearBasicDisplay',
@@ -36,9 +36,9 @@ const displaySchemas = new Map<string, AnyConfigurationSchemaType>([
     ConfigurationSchema('LinearManhattanDisplay', { color: ScaledColor }),
   ],
   [
-    'ChordVariantDisplay',
-    ConfigurationSchema('ChordVariantDisplay', {
-      strokeColor: { type: 'color', defaultValue: 'goldenrod' },
+    'LinearAlignmentsDisplay',
+    ConfigurationSchema('LinearAlignmentsDisplay', {
+      baseColor: { type: 'color', defaultValue: 'goldenrod' },
       height: { type: 'number', defaultValue: 100 },
     }),
   ],
@@ -51,18 +51,20 @@ describe('collectDisplayOverrides', () => {
       displaySchemas,
     )
     expect(overrides.get('LinearBasicDisplay')).toEqual({ height: 100 })
-    expect(overrides.get('ChordVariantDisplay')).toEqual({ height: 100 })
+    expect(overrides.get('LinearAlignmentsDisplay')).toEqual({ height: 100 })
     expect(unknownKeys).toEqual([])
   })
 
-  test('routes by slot name when displays differ (color vs strokeColor)', () => {
+  test('routes by slot name when displays differ (color vs baseColor)', () => {
     const { overrides } = collectDisplayOverrides(
-      { color: 'green', strokeColor: 'red' },
+      { color: 'green', baseColor: 'red' },
       displaySchemas,
     )
     expect(overrides.get('LinearBasicDisplay')).toEqual({ color: 'green' })
     expect(overrides.get('LinearManhattanDisplay')).toEqual({ color: 'green' })
-    expect(overrides.get('ChordVariantDisplay')).toEqual({ strokeColor: 'red' })
+    expect(overrides.get('LinearAlignmentsDisplay')).toEqual({
+      baseColor: 'red',
+    })
   })
 
   test('routes a value only to the displays whose slot takes it', () => {
@@ -138,16 +140,16 @@ describe('mergeOverridesIntoDisplays', () => {
       [{ type: 'LinearBasicDisplay', displayId: 'd1' }],
       new Map([
         ['LinearBasicDisplay', { color: 'green' }],
-        ['ChordVariantDisplay', { strokeColor: 'red' }],
+        ['LinearAlignmentsDisplay', { baseColor: 'red' }],
       ]),
       'mytrack',
     )
     expect(merged).toHaveLength(2)
     expect(merged[0]).toMatchObject({ displayId: 'd1', color: 'green' })
     expect(merged[1]).toMatchObject({
-      type: 'ChordVariantDisplay',
-      displayId: 'mytrack-ChordVariantDisplay',
-      strokeColor: 'red',
+      type: 'LinearAlignmentsDisplay',
+      displayId: 'mytrack-LinearAlignmentsDisplay',
+      baseColor: 'red',
     })
   })
 })
