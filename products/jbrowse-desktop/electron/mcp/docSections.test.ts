@@ -36,13 +36,30 @@ describe('readDocSection', () => {
     expect(readDocSection(doc, '')).toEqual({ text: doc })
   })
 
-  it('returns a long document as its table of contents', () => {
+  // A generated type page is one `# Name` with Actions/Getters/Properties/
+  // Methods under it, and the summary, the composes line and the example hang
+  // off the title, not above it. Served as "the text above the first heading"
+  // the bare answer was 270 characters of contents for a 71 KB page, whose only
+  // offer was the whole page under its own title and whose next-cheapest was a
+  // 48 KB getter list.
+  it('returns a long document as its title text and a contents below it', () => {
     const long = `${doc}${'x'.repeat(30_000)}\n`
     const { text } = readDocSection(long, '')
-    expect(text).toMatch(/- Title \(\d+ chars\)/)
-    expect(text).toMatch(/\n  - Alpha \(\d+ chars\)/)
-    expect(text).toMatch(/\n    - Alpha child \(\d+ chars\)/)
+    expect(text!.startsWith('# Title\n\nIntro paragraph.')).toBe(true)
+    expect(text).toMatch(/- Alpha \(\d+ chars\)/)
+    expect(text).toMatch(/\n  - Alpha child \(\d+ chars\)/)
+    expect(text).not.toMatch(/- Title \(/)
     expect(text).not.toContain('Alpha body.')
+  })
+
+  // Two titles is a concatenation, not a page, so neither one speaks for the
+  // document and the contents offers both.
+  it('offers both titles when a document has more than one', () => {
+    const two = `${doc}\n# Second\n\n${'x'.repeat(30_000)}\n`
+    const { text } = readDocSection(two, '')
+    expect(text).toMatch(/- Title \(\d+ chars\)/)
+    expect(text).toMatch(/- Second \(\d+ chars\)/)
+    expect(text).not.toContain('Intro paragraph.')
   })
 
   it('drops frontmatter and indents from the shallowest heading present', () => {
@@ -111,8 +128,62 @@ Synteny body.
 
   it('names the sections when the requested one is missing', () => {
     const { error } = readDocSection(doc, 'gamma')
-    expect(error).toContain('No section "gamma"')
+    expect(error).toContain('No section or member "gamma"')
     expect(error).toContain('- Beta')
+  })
+
+  // An agent holding a member name off jb.inspect, a search hit or a config
+  // asks for it as a section. The name is the page's cheapest route and was the
+  // one route that failed — on LinearAlignmentsDisplay the getter list is 48 KB.
+  describe('a member name in place of a heading', () => {
+    const page = `# Model
+
+Summary.
+
+## Actions
+
+- \`setColor(color: string | Partial<Color>) => void\`: Replace the color object whole.
+- \`setColorTag(tag: string) => void\`
+
+## Getters
+
+- \`rowHeight: number\`: What one row takes.
+- \`index.indexType: stringEnum (BAI, CSI)\`
+`
+
+    it('answers with that bullet under the heading it sits in', () => {
+      const { text } = readDocSection(page, 'rowHeight')
+      expect(text).toBe(
+        '## Getters\n- `rowHeight: number`: What one row takes.\n',
+      )
+    })
+
+    it('matches a name the way it matches a heading — the separators collapse', () => {
+      expect(readDocSection(page, 'indexIndexType').text).toContain(
+        'stringEnum (BAI, CSI)',
+      )
+    })
+
+    // The whole point is not to answer with the section, so a name that is a
+    // prefix of another must not silently widen to it — and on the real
+    // alignments page `setColor` is a prefix of the legacy `setColorBy`.
+    it('does not take setColorTag for setColor', () => {
+      const { text } = readDocSection(page, 'setColor')
+      expect(text).toContain('Replace the color object whole.')
+      expect(text).not.toContain('setColorTag')
+    })
+
+    it('answers a partial name with the near names, not their bullets', () => {
+      const { error } = readDocSection(page, 'color')
+      expect(error).toContain('setColor, setColorTag')
+      expect(error).not.toContain('Replace the color object whole.')
+    })
+
+    // A heading wins: `Getters` is a section and not a member, and a document
+    // where a member shares a heading's name means the section.
+    it('prefers a heading over a member of the same name', () => {
+      expect(readDocSection(page, 'Getters').text).toContain('rowHeight')
+    })
   })
 
   it('returns everything for "all"', () => {
@@ -152,7 +223,7 @@ Synteny body.
         'Beta body.',
       )
       expect(readDocSection(doc, 'Beta', { omit: ['Beta'] }).error).toContain(
-        'No section "Beta"',
+        'No section or member "Beta"',
       )
     })
 
@@ -207,5 +278,47 @@ describe('the live-model guide as the docs tool serves it', () => {
       omit: OMITTED_SECTIONS['live-model'],
     })
     expect(text).toContain('view.hideTrack')
+  })
+})
+
+// The real corpus, not a fixture: the shape that made the bare answer useless
+// is the shape every generated page has, and a fixture page small enough to
+// read whole never reaches the branch that drops the title.
+describe('the biggest generated type page as the docs tool serves it', () => {
+  const pages = JSON.parse(
+    fs.readFileSync(`${__dirname}/docs/typeDocs.generated.json`, 'utf8'),
+  ) as { models: Record<string, { text: string }> }
+  const page = pages.models.LinearAlignmentsDisplay!.text
+  const bare = () => readDocSection(page, '').text!
+
+  it('orients before it offers: the composes line and the config route', () => {
+    const text = bare()
+    expect(text).toContain('# LinearAlignmentsDisplay')
+    expect(text).toContain('Composes BaseDisplay')
+    expect(text).toContain('docs topic "config:LinearAlignmentsDisplay"')
+  })
+
+  // The title's own section is the whole page, so offering it is offering
+  // `section:"all"` under another name.
+  it('offers the four member sections and not the page itself', () => {
+    const text = bare()
+    for (const heading of ['Actions', 'Getters', 'Properties', 'Methods']) {
+      expect(text).toMatch(new RegExp(`- ${heading} \\(\\d+ chars\\)`))
+    }
+    expect(text).not.toMatch(/- LinearAlignmentsDisplay \(/)
+  })
+
+  it('costs a fraction of the page it describes', () => {
+    expect(page.length).toBeGreaterThan(50_000)
+    expect(bare().length).toBeLessThan(5000)
+  })
+
+  // The bullet shape the member route matches is the generator's, so pin it
+  // against the generated page rather than only against a fixture of it.
+  it('answers one member by name without the section holding it', () => {
+    const { text } = readDocSection(page, 'setColor')
+    expect(text).toContain('## Actions')
+    expect(text).toContain('`setColor(')
+    expect(text!.length).toBeLessThan(500)
   })
 })

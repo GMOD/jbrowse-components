@@ -3,7 +3,7 @@ import { splitSections } from './docSections.ts'
 import type { BridgeToolResult } from './stdioServer.ts'
 
 // The corpus is reachable by type name and by topic, and not at all by what a
-// page says — so "which display has a colorBy slot" needs the name it is
+// page says — so "which display has a color slot" needs the name it is
 // looking for before it can look. This scans the bundled text instead. It is a
 // substring pass over ~1.7 MB in a process that already parsed the JSON once,
 // which is single-digit ms; an index would be a cache with no measured win.
@@ -15,9 +15,10 @@ export interface SearchableDoc {
 }
 
 const MAX_HITS = 40
-// Breadth beats depth: "colorBy" appears 116 times and the first page alone
-// would have taken four of the forty slots. An agent looking for which display
-// has a setting wants the pages, and reads the one it picks in full.
+// Breadth beats depth: "color" matches 1034 lines across 109 pages, 50 of them
+// on the one that ranks first, so without this the first page would take every
+// slot below. An agent looking for which display has a setting wants the pages,
+// and reads the one it picks in full.
 const MAX_HITS_PER_TOPIC = 3
 const MAX_LINE_CHARS = 300
 

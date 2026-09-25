@@ -91,6 +91,6 @@ export function docsToolResult(
         error: `No topic "${topic}". Available:\n${listing}\n\nOr pass search to look inside every page at once.`,
       }
     : {
-        text: `Pass topic to read one of:\n${listing}\n\nOr pass search to look inside every page at once (e.g. search "colorBy").`,
+        text: `Pass topic to read one of:\n${listing}\n\nOr pass search to look inside every page at once (e.g. search "color").`,
       }
 }

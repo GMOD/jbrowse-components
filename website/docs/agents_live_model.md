@@ -259,7 +259,10 @@ a field.
   `section:"Actions"` — the `modelType` `jb.inspect` answered with — config
   slots by type under `docs topic:"config:BamAdapter"`, every name under
   `docs topic:"types"`. That is where a display's own actions live, for anything
-  a slot does not cover.
+  a slot does not cover. With the name already in hand, pass the name as the
+  `section` — `section:"setColor"` answers with that one line, where the section
+  holding it is the whole getter or action list, and the page's contents says
+  how many characters that is.
 - A track too tall for the window wants a height strategy, not `displayMode`: a
   display may take `heightMode` `fit` or `grow`, and `compact` only shrinks each
   feature. `describeSlots` lists both.

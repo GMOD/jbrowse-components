@@ -64,6 +64,42 @@ function findSection(sections: DocSection[], heading: string) {
   return sections.findIndex(s => s.heading.toLowerCase().includes(loose))
 }
 
+// A generated type page lists each member as one bullet opening with its name
+// in backticks — `rowHeight: number`, `setColor(color) => void`,
+// `index.indexType: stringEnum (BAI, CSI)` — under Actions, Getters, Methods,
+// Properties or Slots.
+const MEMBER_BULLET = /^\s*-\s+`([^`(:\s]+)/
+
+function memberName(line: string) {
+  return MEMBER_BULLET.exec(line)?.[1]
+}
+
+/**
+ * Every member bullet in the document, with the heading it sits under.
+ *
+ * An agent that already has the name — off `jb.inspect`, a search hit or a
+ * config — asks for it as `section`, which names no heading. That answered with
+ * an error whose only offer was the section holding it, and on
+ * LinearAlignmentsDisplay the getter list is 48 KB. One bullet is 60
+ * characters, so the name it asked with is the cheapest route the page has and
+ * it was the one route that failed.
+ */
+function members(sections: DocSection[]) {
+  return sections.flatMap(({ heading, text }) =>
+    text
+      .split('\n')
+      .map(line => ({ heading, line, name: memberName(line) }))
+      .filter((m): m is { heading: string; line: string; name: string } =>
+        Boolean(m.name),
+      ),
+  )
+}
+
+function findMembers(sections: DocSection[], name: string) {
+  const wanted = normalized(name)
+  return members(sections).filter(m => normalized(m.name) === wanted)
+}
+
 function withoutSections(markdown: string, omit: readonly string[]) {
   const sections = splitSections(markdown)
   const dropped = new Set<number>()
@@ -103,6 +139,19 @@ function withoutFrontmatter(preamble: string) {
     : preamble
 }
 
+// Where the contents starts, which is also where the preamble ends. A generated
+// type page opens with its own `# Name` heading and hangs the summary, the
+// composes line, the pointer to its config page and the example under it, so
+// there is no text above the first heading at all: a lone title folds into the
+// preamble instead. Otherwise the answer is a contents whose first row is the
+// whole 71 KB page, and the orientation the agent came for is the one thing it
+// cannot ask for. The website topics carry their title in frontmatter and have
+// no `#` heading, so for them this is the preamble it always was.
+function bodyStart(sections: DocSection[]) {
+  const titles = sections.filter(s => s.level === 1)
+  return titles.length === 1 ? sections.indexOf(titles[0]!) + 1 : 1
+}
+
 export function readDocSection(
   markdown: string,
   section: string,
@@ -127,14 +176,44 @@ export function readDocSection(
     if (served.length <= TOC_ABOVE_CHARS) {
       return { text: served }
     }
+    const start = bodyStart(sections)
+    const preamble = sections
+      .slice(0, start)
+      .map(s => s.text)
+      .join('')
     return {
-      text: `${withoutFrontmatter(sections[0]!.text)}\nThis topic is ${served.length} characters. Sections (pass one as "section", or "all" for everything):\n${tableOfContents(sections)}\n`,
+      text: `${withoutFrontmatter(preamble)}\nThis topic is ${served.length} characters. Sections (pass one as "section", or "all" for everything):\n${tableOfContents(sections, start)}\n`,
     }
   }
   const index = findSection(sections, section)
-  return index === -1
-    ? {
-        error: `No section "${section}". Sections:\n${tableOfContents(sections)}`,
-      }
-    : { text: sectionWithChildren(sections, index) }
+  if (index !== -1) {
+    return { text: sectionWithChildren(sections, index) }
+  }
+  const named = findMembers(sections, section)
+  if (named.length > 0) {
+    return {
+      text: `${named.map(m => `## ${m.heading}\n${m.line.trim()}`).join('\n\n')}\n`,
+    }
+  }
+  // The near member names, not their bullets: a page has 300 members and a
+  // one-word ask matches dozens, so this is the index into the section rather
+  // than a second answer.
+  const loose = normalized(section)
+  const near = [
+    ...new Set(
+      members(sections)
+        .filter(m => normalized(m.name).includes(loose))
+        .map(m => m.name),
+    ),
+  ]
+  return {
+    error: `No section or member "${section}". Sections:\n${tableOfContents(
+      sections,
+      bodyStart(sections),
+    )}${
+      near.length > 0
+        ? `\n\nMembers whose name carries "${section}" — pass one as "section" for its line alone: ${near.slice(0, 40).join(', ')}`
+        : ''
+    }`,
+  }
 }

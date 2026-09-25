@@ -22,11 +22,13 @@ agent three ways:
   for the clients that drop it
 - `docs topic:"live-model"` — read it before your first `run_javascript` call.
   It answers with the contract and a table of contents of its deep dives, which
-  you then ask for by `section` (or `section:"all"` for the whole guide).
-  `docs topic:"recipes"` has a verified snippet for most asks,
-  `docs topic:"hosted-data"` the config URL for any UCSC or GenArk assembly when
-  nothing is open, and `docs topic:"session-spec"` the launch keys for a
-  nontrivial `jb.loadSessionSpec`.
+  you then ask for by `section` (or `section:"all"` for the whole guide). On a
+  generated type page `section` also takes a member name, which answers with
+  that one line instead of the getter list holding it. `docs topic:"recipes"`
+  has a verified snippet for most asks, `docs topic:"hosted-data"` the config
+  URL for any UCSC or GenArk assembly when nothing is open, and
+  `docs topic:"session-spec"` the launch keys for a nontrivial
+  `jb.loadSessionSpec`.
 
 The short version, because it is what gets skipped: orient with
 `jb.sessionSummary()` and never assume state carried over — the user can click
