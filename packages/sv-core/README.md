@@ -99,7 +99,7 @@ through `junctionEnds`; a record naming no other end spans its own extent.
 
 ```js
 // type signature
-({ feature, assembly, }: { feature: Feature; assembly: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<…>>; }> & ... 15 more ... & IStateTreeNode<...>; }) => { ...; }
+({ feature, assembly, }: { feature: Feature; assembly: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<…>>; }> & ... 14 more ... & IStateTreeNode<...>; }) => { ...; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

@@ -20,7 +20,6 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | --- | --- |
 | <span id="volatile-error">**error**</span><br><code>error</code> |  |
 | <span id="volatile-loadingp">**loadingP**</span><br><code>loadingP: undefined as Promise&lt;void&gt; &#124; undefined</code> |  |
-| <span id="volatile-loadepoch">**loadEpoch**</span><br><code>loadEpoch: 0</code> |  |
 | <span id="volatile-adapterloads">**adapterLoads**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>adapterLoads: new QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;({ m…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>adapterLoads: new QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;({&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;maxSize: 1000,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;})</code></pre></dialog></span> |  |
 | <span id="volatile-regions">**regions**</span><br><code>regions: undefined as BasicRegion[] &#124; undefined</code> |  |
 | <span id="volatile-refnamealiases">**refNameAliases**</span><br><code>refNameAliases: undefined as RefNameAliases &#124; undefined</code> |  |
@@ -81,4 +80,3 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | <span id="action-setloadingp">**setLoadingP**</span><br><code>(p?: Promise&lt;void&gt; &#124; undefined) =&gt; void</code> |  |
 | <span id="action-loadpre">**loadPre**</span><br><code>() =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-load">**load**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Resolves once regions + refNameAliases are set, and rejects with the load failure. Idempotent: concurrent callers share one attempt, and a failed attempt is discarded so the next call retries.<br><br>The rejection is the authoritative signal for a caller that awaits it. `self.error` mirrors it for reactive consumers only (the UI renders it), and must not be consulted after an await: a concurrent retry clears it, so an awaiter reading it can see a cleared error and mistake a failed load for a successful one. |
-| <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | Load again from the current config, discarding the attempt in flight and every refName map built against the old one. The loaded state stays on screen until the new load replaces it. |
