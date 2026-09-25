@@ -3626,7 +3626,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": false
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
               "type": "number"
             },
             "domainMin": {
@@ -4364,7 +4364,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": false
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
               "type": "number"
             }
           },
@@ -5074,7 +5074,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": false
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
               "type": "number"
             }
           },
@@ -6347,7 +6347,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": false
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
               "type": "number"
             }
           },
@@ -7508,7 +7508,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": false
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
               "type": "number"
             },
             "title": {

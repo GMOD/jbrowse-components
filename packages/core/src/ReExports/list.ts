@@ -517,6 +517,7 @@ export default [
   '@jbrowse/render-core/shaders/hpmath',
   '@jbrowse/render-core/shaders/linkMark',
   '@jbrowse/render-core/shaders/linkMarkConsts',
+  '@jbrowse/render-core/shaders/markColorConsts',
   '@jbrowse/render-core/shaders/pointGlyph',
   '@jbrowse/render-core/shaders/pointGlyphConsts',
   '@jbrowse/render-core/shaders/pointMark',

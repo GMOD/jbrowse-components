@@ -3460,6 +3460,7 @@
         "NOT_A_NUMBER_LABEL",
         "isMissing",
         "numericDomain",
+        "rampGapScales",
         "thresholdCuts",
         "thresholdField",
         "thresholdIndex",
@@ -4873,7 +4874,9 @@
         "HIDDEN_ROW",
         "LINK_NO_REGION",
         "NO_ROW_COLOR",
-        "RAMP_NOT_FINITE_COLOR",
+        "RAMP_NOT_A_NUMBER_COLOR",
+        "RAMP_NO_VALUE_BITS",
+        "RAMP_NO_VALUE_COLOR",
         "RowKeys",
         "abgrToCssRgba",
         "appendGlyph",
@@ -4884,6 +4887,7 @@
         "ellipseDistance",
         "ellipseNearest",
         "inkOfInstances",
+        "keepRampValues",
         "linkMark",
         "makeAbgrFill",
         "nearestMarkHit",
@@ -4891,6 +4895,7 @@
         "planMarks",
         "pointInsetPx",
         "pointMark",
+        "rampValueBits",
         "spanMark",
         "valueWindow"
       ],
@@ -5265,6 +5270,18 @@
         "LINK_SIZE_CONSTANT",
         "LINK_SIZE_SCALED",
         "LINK_STEM_PX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/markColorConsts": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "RAMP_LINEAR",
+        "RAMP_LOG",
+        "RAMP_NONE",
+        "RAMP_NOT_A_NUMBER_COLOR",
+        "RAMP_NO_VALUE_BITS",
+        "RAMP_NO_VALUE_COLOR"
       ],
       "worker": "real"
     },

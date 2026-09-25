@@ -364,9 +364,10 @@ one that is not throws here.
 
 A continuous colour scale over `extent`, the values it met: the domain its
 declared ends and the extent make, the stops and the table they bake to, and the
-packed colour a value paints through them, the misconfiguration grey for one
-that is not finite. The encoder and every display painting a ramp itself read
-it, so a value takes one colour whoever paints it.
+packed colour a value paints through them: an infinity the end on its side, as a
+threshold places it, and NaN, text that is no number, the misconfiguration grey.
+The encoder and every display painting a ramp itself read it, so a value takes
+one colour whoever paints it.
 
 ```js
 // type signature
@@ -1042,6 +1043,19 @@ holding no value (`[Infinity, -Infinity]`) spans [0, 1].
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
+### rampGapScales
+
+The rows a ramp's key lists beside its bar once a feature painted one: the
+not-a-number and no-value rows a threshold's key ends with. Empty while neither
+painted.
+
+```js
+// type signature
+(id: string, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }) => CategoricalScale[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
 
 ### rampLutOf
 
