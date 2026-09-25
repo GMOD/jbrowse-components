@@ -375,7 +375,6 @@ exports[`every registered schema slot default 1`] = `
     "variantLayout": "stringEnum = "columns" of ["genomic","columns"]",
   },
   "display: LGVSyntenyDisplay": {
-    "arcColorByType": "stringEnum = "insertSizeAndOrientation" of ["insertSizeAndOrientation","insertSize","orientation"]",
     "collapseGroupRows": "boolean = true",
     "colorSupplementaryChains": "boolean = false",
     "coverageHeight": "number = 45",
@@ -425,7 +424,6 @@ exports[`every registered schema slot default 1`] = `
     "splicedReadsFirst": "boolean = false",
   },
   "display: LinearAlignmentsDisplay": {
-    "arcColorByType": "stringEnum = "insertSizeAndOrientation" of ["insertSizeAndOrientation","insertSize","orientation"]",
     "collapseGroupRows": "boolean = false",
     "colorSupplementaryChains": "boolean = false",
     "coverageHeight": "number = 45",
