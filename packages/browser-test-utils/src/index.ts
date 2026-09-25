@@ -35,6 +35,7 @@ export {
   checkDemoAboveFold,
   checkDemoHeights,
   checkPluginTookEffect,
+  checkRingsPainted,
   checkSessionUrlRoundTrip,
   checkTextContrast,
   checkTrackIsShown,

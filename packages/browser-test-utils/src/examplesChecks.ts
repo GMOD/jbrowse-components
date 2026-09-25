@@ -119,6 +119,43 @@ export async function checkTrackIsShown(page: Page): Promise<string[]> {
 }
 
 /**
+ * Confirm every ring on a circular view put ink on its canvas, read once the
+ * page is ready. An empty answer is a finished fetch, so readiness passes a
+ * ring that drew nothing, which is how the gene density rings drew an empty
+ * band against a bigWig spelling its contigs `hg38.chr1`.
+ */
+export async function checkRingsPainted(page: Page): Promise<string[]> {
+  const inked = () =>
+    [...document.querySelectorAll('[data-testid="circular-ring-canvas"]')].map(
+      el => {
+        const canvas = el as HTMLCanvasElement
+        const copy = document.createElement('canvas')
+        copy.width = canvas.width
+        copy.height = canvas.height
+        const ctx = copy.getContext('2d')!
+        ctx.drawImage(canvas, 0, 0)
+        const { data } = ctx.getImageData(0, 0, copy.width, copy.height)
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i]! > 0) {
+            return true
+          }
+        }
+        return false
+      },
+    )
+  const rings = await page.evaluate(inked)
+  const blank = rings.filter(r => !r).length
+  return !rings.length
+    ? ['no ring canvas rendered']
+    : blank
+      ? [
+          `${blank} of ${rings.length} rings drew nothing — check the ` +
+            "track's refNames against the assembly's aliases",
+        ]
+      : []
+}
+
+/**
  * Drive a session-in-url demo's real round trip: save the live session into the
  * URL, reload, and confirm the app came back up from it. Both halves are
  * browser-only — deflate + base64 on the way out, the hash read and restore on

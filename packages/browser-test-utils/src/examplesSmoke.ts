@@ -1,6 +1,10 @@
 import http from 'node:http'
 
-import { findChromeExecutable, isBrowserConsoleNoise } from '@jbrowse/capture'
+import {
+  findChromeExecutable,
+  isBrowserConsoleNoise,
+  waitForFrame,
+} from '@jbrowse/capture'
 import puppeteer from 'puppeteer'
 import handler from 'serve-handler'
 
@@ -40,6 +44,7 @@ export const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 // on healthy code, while the cost of it being loose is only that a genuinely
 // dead page takes this long to say so.
 const MOUNT_TIMEOUT_MS = 15000
+const FRAME_TIMEOUT_MS = 60000
 
 export interface SmokeOptions {
   // absolute path to the built Astro `dist/` directory
@@ -53,7 +58,7 @@ export interface SmokeOptions {
   // a slug that must spawn an RPC web worker (the circular-dependency TDZ guard);
   // its page fails if no worker is created. omit if the site has no worker example
   workerSlug?: string
-  // ms to settle after networkidle before asserting (lets islands mount/draw)
+  // ms to settle on a page that publishes no `[data-app-phase]`
   settleMs?: number
   // the window every page is loaded in. Set explicitly because puppeteer's own
   // default is 800x600, which is *under* these sites' 820px sidebar breakpoint —
@@ -227,9 +232,31 @@ export async function smokeExamplesSite({
         { timeout: MOUNT_TIMEOUT_MS },
       )
       .catch(() => {})
-    // The settle still runs: mounting is not drawing, and the censuses below
-    // need the canvas painted, not just the island hydrated.
-    await new Promise(r => setTimeout(r, settleMs))
+    // Mounting is not drawing. A page whose engines publish `[data-app-phase]`
+    // is held to the contract @jbrowse/capture waits on, so a demo a capture
+    // would photograph half-drawn fails here; one publishing none gets the
+    // settle.
+    await page
+      .waitForFunction(
+        () =>
+          [...document.querySelectorAll('.demo')].every(
+            el => el.innerHTML.length >= 50,
+          ),
+        { timeout: MOUNT_TIMEOUT_MS },
+      )
+      .catch(() => {})
+    const hasMarker = await page
+      .evaluate(() => document.querySelector('[data-app-phase]') !== null)
+      .catch(() => false)
+    if (hasMarker) {
+      const { unsettled } = await waitForFrame(page, {
+        timeout: FRAME_TIMEOUT_MS,
+        allowUnsettled: true,
+      })
+      errors.push(...unsettled.map(u => `not ready for capture: ${u}`))
+    } else {
+      await new Promise(r => setTimeout(r, settleMs))
+    }
     const mountedAt = await page
       .evaluate(
         () =>

@@ -326,6 +326,18 @@ export function findLongDescriptions({
     .sort((a, b) => b.size - a.size)
 }
 
+// every section hydrates a whole engine on load: EXAMPLES_SITES.md §"Pages and groups"
+export const MAX_SECTIONS_PER_PAGE = 4
+
+export function findCrowdedPages(
+  pages: { slug: string; sections: unknown[] }[],
+  max = MAX_SECTIONS_PER_PAGE,
+) {
+  return pages
+    .filter(p => p.sections.length > max)
+    .map(p => ({ slug: p.slug, sections: p.sections.length, limit: max }))
+}
+
 export interface DocSuggestion {
   // the config `type` value found, e.g. 'BigWigAdapter'
   term: string
@@ -483,6 +495,11 @@ export function runExamplesSiteChecks({
     log(`TOO LONG description of ${d.what}  ${d.size} chars (max ${d.limit})`)
   }
 
+  const crowded = findCrowdedPages(pages)
+  for (const c of crowded) {
+    log(`TOO MANY SECTIONS page "${c.slug}"  ${c.sections} (max ${c.limit})`)
+  }
+
   const suggestions = suggestDocLinks({
     exampleDirs: [path.join(src, 'examples')],
     referenceDir,
@@ -532,14 +549,16 @@ export function runExamplesSiteChecks({
   log(
     `\n${broken.length + brokenCross.length} broken link(s), ` +
       `${orphans.length} orphan(s), ` +
-      `${tooLong} over-long prose, ${engines.length} engine(s) in an ` +
-      `initializer, ${suggestions.length} suggestion(s)`,
+      `${tooLong} over-long prose, ${crowded.length} crowded page(s), ` +
+      `${engines.length} engine(s) in an initializer, ` +
+      `${suggestions.length} suggestion(s)`,
   )
   return (
     broken.length +
     brokenCross.length +
     orphans.length +
     tooLong +
+    crowded.length +
     engines.length
   )
 }
