@@ -29,6 +29,11 @@ the barrel put ~80 Material components in every host's first paint.
   element and is the last resort — a builder that sets it drags its whole
   component graph into every caller. `icon` is still an element type;
   `agent-docs/reference/EAGER_BUNDLE.md`.
+- **A row React can't tell apart by its label sets `id`.** `CascadingMenu` keys
+  on `id ?? label`, so a `React.ReactNode` label keys every such row as
+  `[object Object]`, and two rows a list deduped on something other than their
+  text collide the same way. React reports it through `console.error`, which an
+  agent's jest run does not print for a passing suite — so both shipped.
 
 ## State that hides things declares itself: `Reversible`
 
