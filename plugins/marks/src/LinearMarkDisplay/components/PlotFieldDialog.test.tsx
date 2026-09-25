@@ -16,7 +16,7 @@ const EMPTY: PlotSpec = {
 
 function setup(model: Partial<PlotFieldDialogModel>) {
   const setPlotMarks = jest.fn()
-  const openPlotJsonDialog = jest.fn()
+  const openMarkPlotDialog = jest.fn()
   const result = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <PlotFieldDialog
@@ -27,15 +27,14 @@ function setup(model: Partial<PlotFieldDialogModel>) {
           plotSpecReplaces: 0,
           plotScanLocus: 'ctgA:1..20,000',
           setPlotMarks,
-          plotMarkPlot: spec => ({ marks: [{ encoding: { y: spec.field } }] }),
-          openPlotJsonDialog,
+          openMarkPlotDialog,
           ...model,
         }}
         handleClose={() => {}}
       />
     </ThemeProvider>,
   )
-  return { ...result, setPlotMarks, openPlotJsonDialog }
+  return { ...result, setPlotMarks, openMarkPlotDialog }
 }
 
 function pick(label: string, value: string) {
@@ -97,28 +96,23 @@ test('a scan error is reported in the dialog', () => {
   expect(getByText(/no such file/)).toBeTruthy()
 })
 
-// Applying replaces the whole `marks` list, so a config the dialog could not
-// read back loses what it said unless the user has seen that named.
-test('a config the dialog cannot read is named, and Apply waits on the acknowledgement', () => {
-  const { getByText, setPlotMarks } = setup({ plotSpecReplaces: 2 })
+// Applying replaces the whole `marks` list, so a config this form cannot read
+// back is one it must not apply over. It names the count and sends the reader
+// to the editor that holds every mark instead.
+test('a config this form cannot read is never replaced by it', () => {
+  const { getByText, setPlotMarks, openMarkPlotDialog } = setup({
+    plotSpecReplaces: 2,
+  })
   pick('Value field', 'score')
   expect(getByText(/declares 2 marks/)).toBeTruthy()
   expect(getByText('Apply').closest('button')!.disabled).toBe(true)
-  fireEvent.click(getByText('Replace the declared marks'))
-  fireEvent.click(getByText('Apply'))
-  expect(setPlotMarks).toHaveBeenCalledWith({ ...EMPTY, field: 'score' })
+  fireEvent.click(getByText('Edit plot...'))
+  expect(openMarkPlotDialog).toHaveBeenCalled()
+  expect(setPlotMarks).not.toHaveBeenCalled()
 })
 
-// The unapplied form state travels, so an edit made here is not lost on the way
-// to the box that holds everything this dialog cannot say.
-test('Edit as JSON hands the form state over unapplied', () => {
-  const { getByText, openPlotJsonDialog, setPlotMarks } = setup({
-    plotSpecReplaces: 3,
-  })
-  pick('Value field', 'score')
-  fireEvent.click(getByText('Edit as JSON...'))
-  expect(openPlotJsonDialog).toHaveBeenCalledWith({
-    marks: [{ encoding: { y: 'score' } }],
-  })
-  expect(setPlotMarks).not.toHaveBeenCalled()
+test('Edit plot... is there even for a config this form can read', () => {
+  const { getByText, openMarkPlotDialog } = setup({})
+  fireEvent.click(getByText('Edit plot...'))
+  expect(openMarkPlotDialog).toHaveBeenCalled()
 })

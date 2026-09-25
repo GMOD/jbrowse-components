@@ -850,20 +850,30 @@ declares, so editing is the same dialog. A display shown with no `marks` at all
 plots `score` as bars where most features carry a numeric one, and opens this
 dialog where they do not.
 
-**Edit marks as JSON...** writes everything that dialog cannot say: the whole
-`marks` list, the display's `transform`, its `facet` and its `rows`, as the
-config holds them. It opens on what the track declares — a slot left at its
+**Edit plot...** writes everything that dialog cannot say. Down the left are the
+marks in paint order — a later one draws over an earlier one — with what each
+reads, and add, remove and reorder beside them; on the right the selected mark's
+type and a control for each channel that type reads, so a `span` offers no `y`.
+Two things it does rather than pretend: a channel declaring more than a field,
+such as a colour ramp with a `scheme`, is shown but not offered for editing,
+since writing it back would drop the members the control never showed; and a
+channel the type stopped reading — a `y` left behind when a bar became a span —
+is kept and named until you clear it. The rules above run as you type and each
+finding sits under the control that caused it.
+
+Inside it, **Edit as JSON...** opens the same plot as text: the whole `marks`
+list, the display's `transform`, its `facet` and its `rows`, as the config holds
+them. A setting left out stays as it is and `null` clears one. A slot at its
 default is not shown, so the text is what someone wrote rather than every slot
-there is — and a setting left out of the box stays as it is, while `null` clears
-one. The rules above run on the text as you type, and each finding names its
-mark and its slot; a warning or an error is reported, not refused, because the
-display draws what it can and an editor that refused more than the loader would
-leave you nowhere to go. What Apply refuses is text a config file would also be
-refused for: a setting that is not one of the four, a key a schema does not
-declare, or a mark type that does not exist. **Plot field...** carries an **Edit
-as JSON...** button into it with whatever you have typed but not applied, so a
-track whose marks that dialog cannot read has somewhere to go besides replacing
-them.
+there is. Neither editor refuses a plot the rules complain about — the display
+draws what it can, and one stricter than the loader would leave you nowhere to
+go. What Apply refuses is what a config file is refused for: a setting that is
+not one of the four, a key a schema does not declare, or a mark type that does
+not exist.
+
+**Plot field...** stays the quick route for one column, and it no longer
+replaces what it cannot read: over a track declaring more than it can express it
+names the count and sends you to **Edit plot...**, which holds every mark.
 
 <Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the mark, the colour field and the count-per-bin box."/>
 

@@ -648,14 +648,16 @@ The gaps a user meets first, in order:
    bar read worse than the same `minScore`/`maxScore` (ADR-123) as two point
    marks over the mean, and than wiggle's whisker band
    ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)).
-2. **In-app authoring has a text route and no form past one mark.** **Edit
-   marks as JSON...** reaches the whole grammar — `marks`, `transform`, `facet`
-   and `rows`, lifted through the config schema and checked by the rule list as
-   you type, so it refuses what a config file refuses and reports the rest
-   rather than blocking on it (ADR-133). What has no controls is everything past
-   **Plot field...**'s one mark: no second mark, no shape scale, no zoom range,
-   no facet or colour picker. `marks` is also the one list in the grammar the
-   config editor cannot add to, remove from or reorder — `transform` is a
+2. **In-app authoring reaches the marks, and stops at a channel's scale.**
+   **Edit plot...** is the mark list with controls per channel, and the **Edit
+   as JSON...** inside it the same plot as text; both lift through the config
+   schema and run the rule list as you type, so they refuse what a config file
+   refuses and report the rest rather than blocking on it (ADR-133). What has
+   no controls: a colour or shape scale past its field — a `domain`, a `range`,
+   a `scheme`, a threshold's cuts — and the transform steps, both of which the
+   form shows and holds read-only rather than dropping. `facet` and `rows` are
+   the JSON side only. And `marks` is still the one list in the grammar the
+   config editor cannot add to, remove from or reorder: `transform` is a
    `ConfigurationSchemaUnion` array and has all three (`db4ef2f82a`), while a
    plain sub-schema array has none.
 

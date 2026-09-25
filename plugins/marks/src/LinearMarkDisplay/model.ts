@@ -1688,15 +1688,6 @@ export function stateModelFactory(
           self.splitByPlotRows(fields)
         },
         /**
-         * #method
-         * The marks a Plot field... form would write, for handing an edit it
-         * has not applied to the JSON box rather than losing it there.
-         */
-        plotMarkPlot(spec: PlotSpec): MarkPlot {
-          const fields = self.plotFields ?? { numeric: [], categorical: [] }
-          return { marks: plotMarks(spec, fields) }
-        },
-        /**
          * #action
          * Open the plot as JSON, over everything the display declares rather
          * than the one mark Plot field... can read. `seed` overlays a setting

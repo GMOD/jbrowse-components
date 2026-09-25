@@ -12,7 +12,6 @@ import { observer } from 'mobx-react'
 
 import { MARK_TYPE_CHOICES } from '../plotFields.ts'
 
-import type { MarkPlot } from '../markPlot.ts'
 import type { PlotMark, PlotSpec } from '../plotFields.ts'
 import type { PlotFields } from '../scanPlotFields.ts'
 
@@ -25,9 +24,8 @@ export interface PlotFieldDialogModel {
   /** The window the field scan read. */
   plotScanLocus: string | undefined
   setPlotMarks: (spec: PlotSpec) => void
-  /** This form's marks, for handing an unapplied edit to the JSON box. */
-  plotMarkPlot: (spec: PlotSpec) => MarkPlot
-  openPlotJsonDialog: (seed?: MarkPlot) => void
+  /** Where a config this form cannot read is edited instead of replaced. */
+  openMarkPlotDialog: () => void
 }
 
 const NONE = ''
@@ -41,7 +39,6 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
 }) {
   const { plotFields, plotFieldsError, plotSpecReplaces } = model
   const [spec, setSpec] = useState(model.plotSpec)
-  const [acknowledged, setAcknowledged] = useState(false)
   const colorChoices = plotFields
     ? [...plotFields.numeric, ...plotFields.categorical].sort()
     : []
@@ -55,9 +52,7 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
       open
       title="Plot a field"
       submitText="Apply"
-      submitDisabled={
-        spec.field === '' || (plotSpecReplaces > 0 && !acknowledged)
-      }
+      submitDisabled={spec.field === '' || plotSpecReplaces > 0}
       onCancel={handleClose}
       onSubmit={() => {
         model.setPlotMarks(spec)
@@ -66,11 +61,11 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
       actions={
         <Button
           onClick={() => {
-            model.openPlotJsonDialog(model.plotMarkPlot(spec))
+            model.openMarkPlotDialog()
             handleClose()
           }}
         >
-          Edit as JSON...
+          Edit plot...
         </Button>
       }
     >
@@ -81,13 +76,7 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
         <Alert severity="warning">
           This track declares {plotSpecReplaces}{' '}
           {pluralize(plotSpecReplaces, 'mark')} saying more than this dialog can
-          read, so applying replaces {plotSpecReplaces > 1 ? 'them' : 'it'}.
-          Edit as JSON keeps {plotSpecReplaces > 1 ? 'them' : 'it'}.
-          <LabeledCheckbox
-            checked={acknowledged}
-            onChange={setAcknowledged}
-            label="Replace the declared marks"
-          />
+          read. Edit plot... holds {plotSpecReplaces > 1 ? 'them all' : 'it'}.
         </Alert>
       ) : null}
       {plotFieldsError ? <ErrorBanner error={plotFieldsError} /> : null}
