@@ -65,7 +65,7 @@ The track menu's **Color by...** offers several schemes.
 - **Per-base quality** colors every base by Phred score on the same cividis
   ramp, dark blue at 0 to yellow at 40 and above, the quickest way to tell a
   variant from a run of low-confidence calls. A CRAM read stored without quality
-  scores draws its bases grey.
+  scores draws its bases in the plain read colour.
 - **Per-base lettering** draws every aligned base in its nucleotide color, not
   just the mismatches.
 

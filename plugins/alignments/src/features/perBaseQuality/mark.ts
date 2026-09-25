@@ -1,3 +1,4 @@
+import { normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 import { defineMark } from '@jbrowse/render-core/marks'
 
 import * as packedColorQuadShader from '../../shaders/slang/packedColorQuad.generated.ts'
@@ -11,7 +12,7 @@ import {
   pileupShape,
   pileupChannels,
 } from '../pileupShape.ts'
-import { qualityAbgr, qualityCssColors } from './colors.ts'
+import { qualityAbgr, qualityPaintCss } from './colors.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { PileupChannels } from '../pileupShape.ts'
@@ -53,7 +54,7 @@ export function packColorCells(
 // Opaque on both backends: `packedColorQuad.slang` has no fade of any kind and
 // the ramp packs alpha 255 into every entry. The score is carried in the COLOUR,
 // not in the alpha — a low-quality base goes dark rather than faint, which is the
-// whole point of the ramp. The ramp `qualityCssColors` is built from is what the
+// whole point of the ramp. The ramp `qualityPaintCss` is built from is what the
 // packer reads, so the fill and the vertex buffer cannot carry different colours
 // for one score.
 //
@@ -72,9 +73,9 @@ export const PER_BASE_QUALITY_MARK = defineMark({
     // Prebuilt per score, never formatted per base: this is one cell per
     // aligned base of every read on screen, and the layer is opaque, so the
     // faded table is unreachable.
-    paint: () => ({
+    paint: state => ({
       rule: Paint.palette,
-      opaqueCss: qualityCssColors,
+      opaqueCss: qualityPaintCss(normalizedRgbToCss(state.colors.colorPairLR)),
       fadedCss: [],
     }),
   }),

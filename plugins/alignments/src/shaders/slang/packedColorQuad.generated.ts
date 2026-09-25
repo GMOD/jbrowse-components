@@ -4,6 +4,7 @@
 import type { ShaderSource } from '@jbrowse/render-core/hal'
 
 export * from './packedColorQuad.iface.generated.ts'
+export * from './packedColorQuad.consts.generated.ts'
 
 export const SOURCE: ShaderSource = {
   wgsl: () => import('./packedColorQuad.wgsl.generated.ts'),

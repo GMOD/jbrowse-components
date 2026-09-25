@@ -4,10 +4,11 @@
 //   - modification    (features/modification/mark.ts)
 //   - perBaseQuality  (features/perBaseQuality/mark.ts)
 // Both pack ABGR on the CPU so the GPU and Canvas2D paths share the exact
-// color (mod palette / quality ramp) with no UBO palette lookup. They stay
-// separate GPU pipelines (distinct instance buffers, distinct pass ids) but
-// reference this one shader so the two can never silently drift.
+// color (mod palette / quality ramp). They stay separate GPU pipelines
+// (distinct instance buffers, distinct pass ids) but reference this one shader
+// so the two can never silently drift.
 //! targets: wgsl, glsl
+//! export-consts: PLAIN_READ_CATEGORY
 
 import alignmentsUniforms;
 import colorPack;
@@ -15,6 +16,9 @@ import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+// read.slang's RC_PLAIN: a cell packed 0 has no colour of its own and paints
+// the plain read fill.
+public static const uint PLAIN_READ_CATEGORY = 0u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
@@ -36,7 +40,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float2 yy = pileupY(float(inst.y), u);
   o.position = flippedQuadPos(xx.x, xx.y, yy.y, yy.x, local, u);
-  o.color = unpackRGBA(inst.packedColor);
+  o.color = inst.packedColor == 0u
+    ? u.readCategoryColor[PLAIN_READ_CATEGORY]
+    : unpackRGBA(inst.packedColor);
   return o;
 }
 

@@ -26,7 +26,6 @@ import {
   categorySwatchColor,
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import { BASE_QUALITY_UNAVAILABLE_COLOR } from '../features/perBaseQuality/colors.ts'
 import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
@@ -972,7 +971,7 @@ function baseLayerLegend({
     return baseQualityUnavailable
       ? [
           {
-            color: BASE_QUALITY_UNAVAILABLE_COLOR,
+            color: rgb255(palette.colorPairLR),
             label: 'Base quality unavailable',
           },
         ]

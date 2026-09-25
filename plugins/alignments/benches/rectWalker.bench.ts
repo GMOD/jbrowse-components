@@ -104,7 +104,7 @@ import {
   buildBaseFadeCssMap,
 } from '../src/features/mismatch/baseColors.ts'
 import { MISMATCH_MARK } from '../src/features/mismatch/mark.ts'
-import { qualityCssColors } from '../src/features/perBaseQuality/colors.ts'
+import { qualityRampCss } from '../src/features/perBaseQuality/colors.ts'
 import {
   Band,
   Fade,
@@ -597,7 +597,7 @@ const QUALITY_SPEC: PileupPaintSpec = {
   contiguous: true,
   paint: () => ({
     rule: Paint.palette,
-    opaqueCss: qualityCssColors,
+    opaqueCss: qualityRampCss,
     fadedCss: [],
   }),
 }

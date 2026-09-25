@@ -1,4 +1,4 @@
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
@@ -71,6 +71,13 @@ function painted(reversed: boolean) {
   return fills
 }
 
+// A cell packed 0 takes the plain read fill in the shader.
+function shaderCss(packedColor: number) {
+  return packedColor === 0
+    ? normalizedRgbToCss(STATE.colors.colorPairLR)
+    : abgrToCssRgba(packedColor)
+}
+
 function packed() {
   const u32 = new Uint32Array(
     PER_BASE_QUALITY_MARK.pass.pack(DATA) as ArrayBuffer,
@@ -82,7 +89,7 @@ function packed() {
     out.push({
       position: u32[o + F.position]!,
       y: u32[o + F.y]!,
-      css: abgrToCssRgba(u32[o + F.packedColor]!),
+      css: shaderCss(u32[o + F.packedColor]!),
     })
   }
   return out

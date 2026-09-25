@@ -6,12 +6,10 @@ import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
   buildReadColorCategories,
+  rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import {
-  BASE_QUALITY_UNAVAILABLE_COLOR,
-  qualityCssColors,
-} from '../features/perBaseQuality/colors.ts'
+import { qualityRampCss } from '../features/perBaseQuality/colors.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
@@ -630,7 +628,7 @@ describe('getReadDisplayLegendItems', () => {
     expect(rows(false).map(i => i.label)).toEqual(['Read'])
     const [unavailable, read] = rows(true)
     expect(unavailable).toEqual({
-      color: BASE_QUALITY_UNAVAILABLE_COLOR,
+      color: rgb255(makeTestPalette().colorPairLR),
       label: 'Base quality unavailable',
     })
     expect(read?.label).toBe('Read')
@@ -932,10 +930,10 @@ describe('colorRampScales', () => {
     })
     expect(mapq?.title).toBe('Mapping quality')
     expect(rgbOf(baseQuality!.stops[0]!.color)).toEqual(
-      rgbOf(qualityCssColors[0]!),
+      rgbOf(qualityRampCss[0]!),
     )
     expect(rgbOf(baseQuality!.stops.at(-1)!.color)).toEqual(
-      rgbOf(qualityCssColors[40]!),
+      rgbOf(qualityRampCss[40]!),
     )
     expect(bar(baseQuality!).gradient).toMatchObject({
       minLabel: '0',
