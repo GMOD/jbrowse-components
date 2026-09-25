@@ -21,7 +21,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             style="transform: translate(204px,0px);"
           >
             <svg
-              class="css-HASH css-HASH css-HASH"
+              class="css-HASH css-HASH"
               height="400"
               style="transform: rotate(-1.5707963267948966rad); transform-origin: 200px 200px;"
               width="400"
