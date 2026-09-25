@@ -16,6 +16,7 @@ const EMPTY: PlotSpec = {
 
 function setup(model: Partial<PlotFieldDialogModel>) {
   const setPlotMarks = jest.fn()
+  const openPlotJsonDialog = jest.fn()
   const result = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <PlotFieldDialog
@@ -26,13 +27,15 @@ function setup(model: Partial<PlotFieldDialogModel>) {
           plotSpecReplaces: 0,
           plotScanLocus: 'ctgA:1..20,000',
           setPlotMarks,
+          plotMarkPlot: spec => ({ marks: [{ encoding: { y: spec.field } }] }),
+          openPlotJsonDialog,
           ...model,
         }}
         handleClose={() => {}}
       />
     </ThemeProvider>,
   )
-  return { ...result, setPlotMarks }
+  return { ...result, setPlotMarks, openPlotJsonDialog }
 }
 
 function pick(label: string, value: string) {
@@ -104,4 +107,18 @@ test('a config the dialog cannot read is named, and Apply waits on the acknowled
   fireEvent.click(getByText('Replace the declared marks'))
   fireEvent.click(getByText('Apply'))
   expect(setPlotMarks).toHaveBeenCalledWith({ ...EMPTY, field: 'score' })
+})
+
+// The unapplied form state travels, so an edit made here is not lost on the way
+// to the box that holds everything this dialog cannot say.
+test('Edit as JSON hands the form state over unapplied', () => {
+  const { getByText, openPlotJsonDialog, setPlotMarks } = setup({
+    plotSpecReplaces: 3,
+  })
+  pick('Value field', 'score')
+  fireEvent.click(getByText('Edit as JSON...'))
+  expect(openPlotJsonDialog).toHaveBeenCalledWith({
+    marks: [{ encoding: { y: 'score' } }],
+  })
+  expect(setPlotMarks).not.toHaveBeenCalled()
 })

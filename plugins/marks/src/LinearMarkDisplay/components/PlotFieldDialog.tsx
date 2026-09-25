@@ -7,11 +7,12 @@ import {
   SubmitDialog,
 } from '@jbrowse/core/ui'
 import { pluralize } from '@jbrowse/core/util'
-import { Alert, TextField, Typography } from '@mui/material'
+import { Alert, Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { MARK_TYPE_CHOICES } from '../plotFields.ts'
 
+import type { MarkPlot } from '../markPlot.ts'
 import type { PlotMark, PlotSpec } from '../plotFields.ts'
 import type { PlotFields } from '../scanPlotFields.ts'
 
@@ -24,6 +25,9 @@ export interface PlotFieldDialogModel {
   /** The window the field scan read. */
   plotScanLocus: string | undefined
   setPlotMarks: (spec: PlotSpec) => void
+  /** This form's marks, for handing an unapplied edit to the JSON box. */
+  plotMarkPlot: (spec: PlotSpec) => MarkPlot
+  openPlotJsonDialog: (seed?: MarkPlot) => void
 }
 
 const NONE = ''
@@ -59,6 +63,16 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
         model.setPlotMarks(spec)
         handleClose()
       }}
+      actions={
+        <Button
+          onClick={() => {
+            model.openPlotJsonDialog(model.plotMarkPlot(spec))
+            handleClose()
+          }}
+        >
+          Edit as JSON...
+        </Button>
+      }
     >
       <Typography color="text.secondary">
         Draws one mark per feature at the value of the field you pick.
@@ -68,6 +82,7 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
           This track declares {plotSpecReplaces}{' '}
           {pluralize(plotSpecReplaces, 'mark')} saying more than this dialog can
           read, so applying replaces {plotSpecReplaces > 1 ? 'them' : 'it'}.
+          Edit as JSON keeps {plotSpecReplaces > 1 ? 'them' : 'it'}.
           <LabeledCheckbox
             checked={acknowledged}
             onChange={setAcknowledged}

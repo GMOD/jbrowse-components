@@ -1691,6 +1691,29 @@ export function stateModelFactory(
           self.splitByPlotRows(fields)
         },
         /**
+         * #method
+         * The marks a Plot field... form would write, for handing an edit it
+         * has not applied to the JSON box rather than losing it there.
+         */
+        plotMarkPlot(spec: PlotSpec): MarkPlot {
+          const fields = self.plotFields ?? { numeric: [], categorical: [] }
+          return { marks: plotMarks(spec, fields) }
+        },
+        /**
+         * #action
+         * Open the plot as JSON, over everything the display declares rather
+         * than the one mark Plot field... can read. `seed` overlays a setting
+         * the caller has in hand but has not applied. Declared before
+         * `openPlotFieldDialog`, which hands `self` over as that dialog's
+         * model and so needs this on it already.
+         */
+        openPlotJsonDialog(seed?: MarkPlot) {
+          getDialogHost(self).queueDialog(handleClose => [
+            PlotJsonDialog,
+            { model: self, seed, handleClose },
+          ])
+        },
+        /**
          * #action
          */
         toggleCrossHatches() {
@@ -1720,18 +1743,6 @@ export function stateModelFactory(
           getDialogHost(self).queueDialog(handleClose => [
             PlotFieldDialog,
             { model: self, handleClose },
-          ])
-        },
-        /**
-         * #action
-         * Open the plot as JSON, over everything the display declares rather
-         * than the one mark Plot field... can read. `seed` overlays a setting
-         * the caller has in hand but has not applied.
-         */
-        openPlotJsonDialog(seed?: MarkPlot) {
-          getDialogHost(self).queueDialog(handleClose => [
-            PlotJsonDialog,
-            { model: self, seed, handleClose },
           ])
         },
       }))
