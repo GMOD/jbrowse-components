@@ -87,7 +87,7 @@ test('an empty location map is reported rather than read as undefined', async ()
   const adapter = new Adapter(
     configSchema.create({ vcfGzLocationMap: {}, indexType: 'TBI' }),
   )
-  await expect(adapter.getSources()).rejects.toThrow(/empty vcfGzLocationMap/)
+  await expect(adapter.getSources([])).rejects.toThrow(/empty vcfGzLocationMap/)
 })
 
 // The `.tbi` sibling is derived by appending to the uri, so a localPath/blob

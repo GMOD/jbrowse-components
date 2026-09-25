@@ -5,13 +5,17 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // Emit the features of a per-refName interval tree that intersect the query.
-// Shared by the in-memory interval-tree adapters.
+// Shared by the in-memory interval-tree adapters. `loadData` is awaited with
+// the caller's opts ahead of the tree memo, so every fetch joins the whole-file
+// load's progress rather than only the one that started the tree.
 export function intervalTreeFeatures(
   query: Region,
   opts: BaseOptions,
+  loadData: (opts: BaseOptions) => Promise<unknown>,
   loadTree: (refName: string) => Promise<IntervalTree<Feature> | undefined>,
 ) {
   return ObservableCreate<Feature>(async observer => {
+    await loadData(opts)
     const tree = await loadTree(query.refName)
     for (const f of tree?.search([query.start, query.end]) ?? []) {
       observer.next(f)

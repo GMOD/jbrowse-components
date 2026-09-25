@@ -101,7 +101,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter<BedpeAdapterCon
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return intervalTreeFeatures(query, opts, refName =>
+    return intervalTreeFeatures(query, opts, this.loadData, refName =>
       this.loadFeatureTree(refName),
     )
   }

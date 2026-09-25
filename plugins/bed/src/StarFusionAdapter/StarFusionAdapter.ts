@@ -119,7 +119,7 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusion
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return intervalTreeFeatures(query, opts, refName =>
+    return intervalTreeFeatures(query, opts, this.loadData, refName =>
       this.loadFeatureTree(refName),
     )
   }

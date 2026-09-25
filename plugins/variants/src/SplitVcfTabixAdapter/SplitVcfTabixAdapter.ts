@@ -184,21 +184,22 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
   //
   // See VcfTabixAdapter: `getSources` is the base-class contract, this is the
   // one that keeps the samples-metadata warnings.
-  async getSourcesAndWarnings() {
+  async getSourcesAndWarnings(opts?: BaseOptions) {
     const [refName] = Object.keys(this.locationMap())
     if (refName === undefined) {
       throw new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
     }
-    const { parser } = await this.configure(refName)
+    const { parser } = await this.configure(refName, opts)
     return getSamplesTsvSources({
       location: this.getConf('samplesTsvLocation'),
       names: parser.samples,
       namesLabel: 'the VCF',
       pluginManager: this.pluginManager,
+      opts,
     })
   }
 
-  async getSources() {
-    return (await this.getSourcesAndWarnings()).sources
+  async getSources(_regions: Region[], opts?: BaseOptions) {
+    return (await this.getSourcesAndWarnings(opts)).sources
   }
 }

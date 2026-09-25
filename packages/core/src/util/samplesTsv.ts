@@ -4,6 +4,7 @@ import { openLocation } from './io/index.ts'
 import { shorten2 } from './stringUtils.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { BaseOptions } from '../data_adapters/BaseAdapter/types.ts'
 import type { FileLocation } from './types/data.ts'
 
 export type SamplesTsvRow = Record<string, string> & { name: string }
@@ -113,17 +114,21 @@ export async function getSamplesTsvSources({
   names,
   namesLabel,
   pluginManager,
+  opts,
 }: {
   location: FileLocation | undefined
   names: readonly string[] | undefined
   namesLabel: string
   pluginManager?: PluginManager
+  opts?: BaseOptions
 }): Promise<SamplesTsvResult> {
   if (!location) {
     return { sources: (names ?? []).map(name => ({ name })), warnings: [] }
   }
   const txt = await fetchAndMaybeUnzipText(
     openLocation(location, pluginManager),
+    opts,
+    'Downloading sample metadata',
   )
   return parseSamplesTsv(
     txt,

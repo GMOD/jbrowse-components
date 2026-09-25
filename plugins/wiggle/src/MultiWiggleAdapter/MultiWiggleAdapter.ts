@@ -337,7 +337,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   }
 
   getSourcesAndWarnings = cachedSetup({
-    setup: async () => {
+    setup: async opts => {
       const sources = (await this.getAdapters()).map(
         ({ type: _t, bigWigLocation: _bw, dataAdapter: _da, ...rest }) => ({
           ...rest,
@@ -349,6 +349,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         names: sources.map(s => s.name),
         namesLabel: 'the subtrack list',
         pluginManager: this.pluginManager,
+        opts,
       })
       const byName = new Map(sources.map(s => [s.name, s]))
       return {
@@ -358,7 +359,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     },
   })
 
-  async getSources(_regions: Region[]) {
-    return (await this.getSourcesAndWarnings()).sources
+  async getSources(_regions: Region[], opts?: BaseOptions) {
+    return (await this.getSourcesAndWarnings(opts)).sources
   }
 }

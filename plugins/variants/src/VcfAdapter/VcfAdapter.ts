@@ -132,17 +132,18 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
 
   // See VcfTabixAdapter: `getSources` is the base-class contract, this is the
   // one that keeps the samples-metadata warnings.
-  async getSourcesAndWarnings() {
-    const { parser } = await this.setup()
+  async getSourcesAndWarnings(opts?: BaseOptions) {
+    const { parser } = await this.setup(opts)
     return getSamplesTsvSources({
       location: this.getConf('samplesTsvLocation'),
       names: parser.samples,
       namesLabel: 'the VCF',
       pluginManager: this.pluginManager,
+      opts,
     })
   }
 
-  async getSources() {
-    return (await this.getSourcesAndWarnings()).sources
+  async getSources(_regions: Region[], opts?: BaseOptions) {
+    return (await this.getSourcesAndWarnings(opts)).sources
   }
 }

@@ -4,6 +4,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { Source } from '../shared/types.ts'
 import type { MultiSampleVariantGetSourcesArgs } from './types.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -20,7 +21,9 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 // about, and the worker's console is not where anyone sees it. Any other feature
 // adapter has only the base-class `getSources`, and nothing to warn about.
 interface SourcesAndWarningsAdapter {
-  getSourcesAndWarnings(): Promise<{ sources: Source[]; warnings: string[] }>
+  getSourcesAndWarnings(
+    opts: BaseOptions,
+  ): Promise<{ sources: Source[]; warnings: string[] }>
 }
 
 function hasSourcesAndWarnings(
@@ -46,7 +49,7 @@ export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRen
       throw new Error('Expected a feature data adapter')
     }
     if (hasSourcesAndWarnings(dataAdapter)) {
-      return dataAdapter.getSourcesAndWarnings()
+      return dataAdapter.getSourcesAndWarnings(args)
     }
     // The whole deserialized bag as opts, so the handles ride along. The
     // default `getSources` has no index to consult — it scans every feature in

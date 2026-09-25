@@ -139,13 +139,13 @@ function adapterWithSamplesTsv(tsv: string) {
 
 test('a samplesTsv naming no VCF sample fails the sources fetch', async () => {
   await expect(
-    adapterWithSamplesTsv('./test_data/samples_prefixed.tsv').getSources(),
+    adapterWithSamplesTsv('./test_data/samples_prefixed.tsv').getSources([]),
   ).rejects.toThrow(/matches the VCF,/)
 })
 
 test('the error names the metadata file and shows the mismatch', async () => {
   await expect(
-    adapterWithSamplesTsv('./test_data/samples_prefixed.tsv').getSources(),
+    adapterWithSamplesTsv('./test_data/samples_prefixed.tsv').getSources([]),
   ).rejects.toThrow(/samples_prefixed\.tsv.*"1000GP_sample_data/s)
 })
 
@@ -154,7 +154,7 @@ test('the error names the metadata file and shows the mismatch', async () => {
 test('a matching samplesTsv still yields the metadata columns', async () => {
   const adapter = adapterWithSamplesTsv('./test_data/samples.tsv')
 
-  expect(await adapter.getSources()).toEqual([
+  expect(await adapter.getSources([])).toEqual([
     {
       name: 'sample_data/raw/volvox/volvox-sorted.bam',
       population: 'GBR',
