@@ -367,7 +367,12 @@ export function markColorScales(
             kind: 'categorical',
             id,
             title,
-            entries: thresholdKeyEntries(scale.domain, scale.range, scale),
+            entries: thresholdKeyEntries(
+              scale.domain,
+              scale.range,
+              scale,
+              scale.labels,
+            ),
           },
         ]
       case 'ramp':
@@ -422,14 +427,20 @@ export function shapeLabel(scale: ScaleTable | undefined, shape: ShapeName) {
  */
 export function categoryLabel(scale: ScaleTable | undefined, color: number) {
   if (scale?.kind === 'threshold') {
-    return thresholdKeyEntries(scale.domain, scale.range, scale).find(
-      e => cssColorToABGR(e.color) === color,
-    )?.label
+    return thresholdKeyEntries(
+      scale.domain,
+      scale.range,
+      scale,
+      scale.labels,
+    ).find(e => cssColorToABGR(e.color) === color)?.label
   }
   if (scale?.kind !== 'categorical') {
     return undefined
   }
-  const { label } = categoricalField(scale.field)
+  const { label } = categoricalField(scale.field, {
+    domain: scale.domain,
+    labels: scale.labels,
+  })
   const values = scale.entries
     .filter(e => e.color === color)
     .map(e => label(e.value))

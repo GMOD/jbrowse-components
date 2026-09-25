@@ -3598,7 +3598,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order; a value past the list keeps its own name.",
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
               "type": "array",
               "items": {
                 "type": "string"
@@ -7468,7 +7468,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order; a value past the list keeps its own name.",
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
               "type": "array",
               "items": {
                 "type": "string"

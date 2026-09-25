@@ -131,17 +131,21 @@ export function colorProblems(
     }
   }
   const { labels = [] } = color
-  if (
-    labels.length > 0 &&
-    (scale !== 'categorical' || labels.length > domain.length)
-  ) {
+  const named =
+    scale === 'categorical'
+      ? domain.length
+      : scale === 'threshold'
+        ? domain.length + 1
+        : undefined
+  if (labels.length > 0 && (named === undefined || labels.length > named)) {
+    const what = scale === 'categorical' ? 'value' : 'interval'
     problems.push({
       rule: 'labels-domain',
       slot: 'labels',
       message:
-        scale === 'categorical'
-          ? `labels names the domain's values one each, and ${labels.length} ${labels.length === 1 ? 'label names' : 'labels name'} ${domain.length} ${domain.length === 1 ? 'value' : 'values'}: a label past the domain names nothing`
-          : 'labels names the values of a categorical scale, and this colour paints another scale',
+        named === undefined
+          ? "labels names a categorical scale's values or a threshold scale's intervals, and this colour paints neither"
+          : `labels names one ${what} each, and ${labels.length} ${labels.length === 1 ? 'label names' : 'labels name'} ${named} ${named === 1 ? what : `${what}s`}: a label past them names nothing`,
     })
   }
   return problems

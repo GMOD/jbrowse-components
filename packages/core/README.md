@@ -1408,11 +1408,13 @@ value is under.
 A threshold scale read the way every categorical channel reads its field: a
 value files under the label of the bin it falls in, a feature with no value
 under `''`, and text that is no number under NOT_A_NUMBER_LABEL. The bins are
-the whole domain, so a key lists each one.
+the whole domain, so a key lists each one. `labels` names the bins in a key, one
+each from the lowest, where a config spells them for a reader; a bin's key stays
+its interval.
 
 ```js
 // type signature
-(field: string, { domain, range, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; }) => CategoricalField
+(field: string, {…}?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -1440,7 +1442,7 @@ in the order `thresholdField` sorts them.
 
 ```js
 // type signature
-(cuts: readonly number[], range: readonly string[] | undefined, met: {…}) => { value: string; label: string; color: string; missing?: true | undefined; }[]
+(cuts: readonly number[], range: readonly string[] | undefined, met: {…}, names?: readonly string[]) => {…}[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)

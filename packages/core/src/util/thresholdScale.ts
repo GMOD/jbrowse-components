@@ -102,11 +102,16 @@ export function thresholdKeyEntries(
   cuts: readonly number[],
   range: readonly string[] | undefined,
   met: { missing?: boolean; notNumber?: boolean },
+  names: readonly string[] = [],
 ): { value: string; label: string; color: string; missing?: true }[] {
   const labels = thresholdLabels(cuts)
   const colors = thresholdPalette(labels.length, range)
   return [
-    ...labels.map((label, i) => ({ value: label, label, color: colors[i]! })),
+    ...labels.map((label, i) => ({
+      value: label,
+      label: names[i] ?? label,
+      color: colors[i]!,
+    })),
     ...(met.notNumber
       ? [
           {
@@ -145,17 +150,27 @@ export function isMissing(value: unknown) {
  * A threshold scale read the way every categorical channel reads its field: a
  * value files under the label of the bin it falls in, a feature with no value
  * under `''`, and text that is no number under {@link NOT_A_NUMBER_LABEL}.
- * The bins are the whole domain, so a key lists each one.
+ * The bins are the whole domain, so a key lists each one. `labels` names the
+ * bins in a key, one each from the lowest, where a config spells them for a
+ * reader; a bin's key stays its interval.
  */
 export function thresholdField(
   field: string,
   {
     domain = [],
     range = [],
-  }: { domain?: readonly string[]; range?: readonly string[] } = {},
+    labels: names = [],
+  }: {
+    domain?: readonly string[]
+    range?: readonly string[]
+    labels?: readonly string[]
+  } = {},
 ): CategoricalField {
   const cuts = thresholdCuts(domain)
   const labels = thresholdLabels(cuts)
+  const named = new Map(
+    names.flatMap((name, i) => (i < labels.length ? [[labels[i]!, name]] : [])),
+  )
   const palette = thresholdPalette(labels.length, range)
   const colorOf = new Map(labels.map((label, i) => [label, palette[i]!]))
   return {
@@ -170,7 +185,7 @@ export function thresholdField(
       return bin < 0 ? NOT_A_NUMBER_LABEL : labels[bin]!
     },
     compare: groupKeyComparator([...labels, NOT_A_NUMBER_LABEL]),
-    label: key => (key === '' ? NO_VALUE_LABEL : key),
+    label: key => (key === '' ? NO_VALUE_LABEL : (named.get(key) ?? key)),
     sectionLabel: key => `${field}: ${key === '' ? 'none' : key}`,
     color: key =>
       key === ''

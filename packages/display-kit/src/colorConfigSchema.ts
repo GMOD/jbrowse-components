@@ -157,7 +157,7 @@ export const colorLabelsSlot = {
     type: 'stringArray',
     defaultValue: [],
     description:
-      'what the key names each domain value, one each in order; a value past the list keeps its own name',
+      'what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name',
   },
 } as const
 
@@ -340,6 +340,7 @@ export function colorEncodingOf<V extends string | undefined>(
         scale,
         domain: [...color.domain],
         range: listed(color.range),
+        labels: listed(color.labels ?? []),
       }
     case 'linear':
     case 'log':
@@ -437,6 +438,7 @@ export function colorFieldOf(encoding: ColorEncoding | undefined) {
     ? thresholdField(encoding.field, {
         domain: encoding.domain?.map(String),
         range: encoding.range,
+        labels: encoding.labels,
       })
     : categoricalColorField(encoding)
 }

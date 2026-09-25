@@ -49,6 +49,8 @@ export interface ThresholdRef {
   scale: 'threshold'
   domain?: (string | number)[]
   range?: string[]
+  /** What the key names each bin, one each from the lowest. */
+  labels?: string[]
 }
 
 /**
@@ -210,6 +212,8 @@ export type ColorScaleTable =
        * palette fills what the declaration leaves.
        */
       range?: string[]
+      /** What the key names each bin, one each from the lowest. */
+      labels?: string[]
       /**
        * Whether a feature with no value painted here, in the no-value grey:
        * the key's `(no value)` row, as the feature display's threshold gives

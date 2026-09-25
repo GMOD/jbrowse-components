@@ -301,6 +301,20 @@ describe('derived color key', () => {
       expect(display.colorField).toBeUndefined()
     })
 
+    it('names each interval by its label, keyed by the interval still', () => {
+      const display = thresholdDisplay()
+      setConf(display, ['color', 'labels'], ['Loss', 'Neutral', 'Gain'])
+      display.setRpcData(0, paintedData(['0.45'], noSection, 'dif'), ctgA)
+      const items = display.legendSpec.sections[0]?.items ?? []
+      expect(items.map(i => i.label)).toEqual(['Loss', 'Neutral', 'Gain'])
+      expect(items.map(i => i.value)).toEqual(['< -0.3', '-0.3 – 0.3', '≥ 0.3'])
+      expect(display.notices).toEqual([])
+      setConf(display, ['color', 'labels'], ['a', 'b', 'c', 'd'])
+      expect(display.notices).toEqual([
+        expect.stringMatching(/4 labels name 3 intervals/),
+      ])
+    })
+
     it('offers no pin, which would write values into the cuts', () => {
       const item = thresholdDisplay()
         .trackMenuItems()

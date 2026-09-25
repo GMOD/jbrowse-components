@@ -536,6 +536,9 @@ export function encodeFeatures<L extends LaneName>(
       ...(thresholdEncoding.range
         ? { range: [...thresholdEncoding.range] }
         : {}),
+      ...(thresholdEncoding.labels?.length
+        ? { labels: [...thresholdEncoding.labels] }
+        : {}),
       ...(missingMet ? { missing: true } : {}),
       ...(notNumberMet ? { notNumber: true } : {}),
     }
