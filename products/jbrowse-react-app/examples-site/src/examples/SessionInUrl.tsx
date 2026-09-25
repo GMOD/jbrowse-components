@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   JBrowseApp,
+  createViewStateAsync,
   decodeSession,
   encodeSession,
   useCreateViewState,
 } from '@jbrowse/react-app2'
-
-import type { SessionSnapshot } from '@jbrowse/react-app2'
 
 const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
@@ -36,22 +35,33 @@ const config = {
   },
 }
 
-function readSessionParam() {
-  return (
-    new URLSearchParams(window.location.hash.slice(1)).get('session') ??
-    undefined
-  )
-}
-
 function writeSessionParam(value: string) {
   const params = new URLSearchParams(window.location.hash.slice(1))
   params.set('session', value)
   window.history.replaceState(null, '', `#${params.toString()}`)
 }
 
-function App({ session, note }: { session?: SessionSnapshot; note: string }) {
-  const viewState = useCreateViewState({ config, session })
-  const [status, setStatus] = useState(note)
+async function build(report: (status: string) => void) {
+  const param = new URLSearchParams(window.location.hash.slice(1)).get(
+    'session',
+  )
+  if (param) {
+    try {
+      const session = await decodeSession(param)
+      const engine = await createViewStateAsync({ config, session })
+      report(`restored "${session.name}" from the URL`)
+      return engine
+    } catch (e) {
+      console.error(e)
+      report(`could not restore the session in the URL: ${e}`)
+    }
+  }
+  return createViewStateAsync({ config })
+}
+
+export default function SessionInUrl() {
+  const [status, setStatus] = useState('')
+  const viewState = useCreateViewState(() => build(setStatus))
 
   return viewState ? (
     <div>
@@ -83,32 +93,4 @@ function App({ session, note }: { session?: SessionSnapshot; note: string }) {
       />
     </div>
   ) : null
-}
-
-export default function SessionInUrl() {
-  const [session, setSession] = useState<SessionSnapshot | null | undefined>(
-    () => (readSessionParam() ? undefined : null),
-  )
-  const [note, setNote] = useState('')
-
-  useEffect(() => {
-    const param = readSessionParam()
-    if (!param) {
-      return
-    }
-    decodeSession(param)
-      .then(snap => {
-        setSession(snap)
-        setNote(`restored "${snap.name}" from the URL`)
-      })
-      .catch((e: unknown) => {
-        console.error(e)
-        setSession(null)
-        setNote(`could not restore the session in the URL: ${e}`)
-      })
-  }, [])
-
-  return session === undefined ? null : (
-    <App session={session ?? undefined} note={note} />
-  )
 }

@@ -2,25 +2,7 @@ import { JBrowse } from '@jbrowse/react-app2'
 import RpcWorker from '@jbrowse/react-app2/esm/rpcWorker?worker'
 
 const assemblies = [
-  {
-    name: 'volvox',
-    sequence: {
-      adapter: {
-        type: 'TwoBitAdapter',
-        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-      },
-    },
-    refNameAliases: {
-      adapter: {
-        type: 'FromConfigAdapter',
-        adapterId: 'W6DyPGJ0UU',
-        features: [
-          { refName: 'ctgA', uniqueId: 'alias1', aliases: ['A'] },
-          { refName: 'ctgB', uniqueId: 'alias2', aliases: ['B'] },
-        ],
-      },
-    },
-  },
+  { name: 'volvox', uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
 ]
 
 const tracks = [

@@ -1,0 +1,28 @@
+---
+import ObserveSession from '../examples/ObserveSession.tsx'
+import observeSessionCode from '../examples/ObserveSession.tsx?raw'
+import SessionInUrl from '../examples/SessionInUrl.tsx'
+import sessionInUrlCode from '../examples/SessionInUrl.tsx?raw'
+import MultiViewSession from '../examples/MultiViewSession.tsx'
+import multiViewSessionCode from '../examples/MultiViewSession.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('sessions')
+const observeSession = section(page, 'observe-session')
+const sessionInUrl = section(page, 'session-in-url')
+const multiView = section(page, 'multi-view-session')
+---
+
+<Layout page={page}>
+  <Section {...observeSession} code={observeSessionCode}>
+    <ObserveSession client:only="react" />
+  </Section>
+  <Section {...sessionInUrl} code={sessionInUrlCode}>
+    <SessionInUrl client:only="react" />
+  </Section>
+  <Section {...multiView} code={multiViewSessionCode}>
+    <MultiViewSession client:only="react" />
+  </Section>
+</Layout>

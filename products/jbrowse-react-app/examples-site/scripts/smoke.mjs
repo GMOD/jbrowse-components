@@ -21,7 +21,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 
 const checks = {
   plugins: page => checkPluginTookEffect(page, 'JBrowsePluginUCSC'),
-  'customizing-the-app': checkSessionUrlRoundTrip,
+  sessions: checkSessionUrlRoundTrip,
 }
 
 const failures = await smokeExamplesSite({

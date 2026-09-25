@@ -1,75 +1,60 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
-import {
-  JBrowseApp,
-  createViewState,
-  destroyViewState,
-} from '@jbrowse/react-app2'
+import { JBrowseApp, useCreateViewState } from '@jbrowse/react-app2'
 
-type ViewState = ReturnType<typeof createViewState>
+const config = {
+  assemblies: [
+    {
+      name: 'GRCh38',
+      aliases: ['hg38'],
+      uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+      refNameAliases: {
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+      },
+      geneticCodes: { chrM: 2 },
+    },
+  ],
+  tracks: [
+    {
+      type: 'QuantitativeTrack',
+      trackId: 'hg38.100way.phyloP100way',
+      name: 'hg38.100way.phyloP100way',
+      category: ['Conservation'],
+      assemblyNames: ['hg38'],
+      adapter: {
+        type: 'BigWigAdapter',
+        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+      },
+    },
+  ],
+}
 
 export default function WithLaunchLinearGenomeView() {
-  const [viewState, setViewState] = useState<ViewState>()
+  const viewState = useCreateViewState({ config })
+  const launched = useRef(false)
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    const mount = { engine: undefined as ViewState | undefined }
-    void (async () => {
-      try {
-        const state = createViewState({
-          config: {
-            assemblies: [
-              {
-                name: 'GRCh38',
-                aliases: ['hg38'],
-                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-                refNameAliases: {
-                  uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-                },
-                geneticCodes: { chrM: 2 },
-              },
-            ],
-            tracks: [
-              {
-                type: 'QuantitativeTrack',
-                trackId: 'hg38.100way.phyloP100way',
-                name: 'hg38.100way.phyloP100way',
-                category: ['Conservation'],
-                assemblyNames: ['hg38'],
-                adapter: {
-                  type: 'BigWigAdapter',
-                  uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-                },
-              },
-            ],
-          },
-        })
-        const { pluginManager } = getEnv(state)
-
-        mount.engine = state
-        setViewState(state)
-        await pluginManager.evaluateAsyncExtensionPointStrict(
+    if (viewState && !launched.current) {
+      launched.current = true
+      getEnv(viewState)
+        .pluginManager.evaluateAsyncExtensionPointStrict(
           'LaunchView-LinearGenomeView',
           {
             tracks: ['hg38.100way.phyloP100way'],
             loc: 'chr10:1-100000',
             assembly: 'hg38',
-            session: state.session,
+            session: viewState.session,
           },
         )
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-    return () => {
-      if (mount.engine) {
-        destroyViewState(mount.engine)
-      }
+        .catch((e: unknown) => {
+          console.error(e)
+          setError(e)
+        })
     }
-  }, [])
+  }, [viewState])
 
   return viewState ? (
     <>

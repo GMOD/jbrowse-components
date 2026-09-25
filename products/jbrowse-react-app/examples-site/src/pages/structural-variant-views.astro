@@ -7,8 +7,6 @@ import SpreadsheetExample from '../examples/SpreadsheetExample.tsx'
 import spreadsheetCode from '../examples/SpreadsheetExample.tsx?raw'
 import SvInspectorExample from '../examples/SvInspectorExample.tsx'
 import svInspectorCode from '../examples/SvInspectorExample.tsx?raw'
-import MultiViewSession from '../examples/MultiViewSession.tsx'
-import multiViewSessionCode from '../examples/MultiViewSession.tsx?raw'
 import { getPage, section } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
@@ -18,7 +16,6 @@ const circular = section(page, 'circular-example')
 const breakpoint = section(page, 'breakpoint-split-example')
 const spreadsheet = section(page, 'spreadsheet-example')
 const svInspector = section(page, 'sv-inspector-example')
-const multiView = section(page, 'multi-view-session')
 ---
 
 <Layout page={page}>
@@ -33,8 +30,5 @@ const multiView = section(page, 'multi-view-session')
   </Section>
   <Section {...svInspector} code={svInspectorCode}>
     <SvInspectorExample client:only="react" />
-  </Section>
-  <Section {...multiView} code={multiViewSessionCode}>
-    <MultiViewSession client:only="react" />
   </Section>
 </Layout>

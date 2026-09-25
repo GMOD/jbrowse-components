@@ -25,7 +25,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'customizing-the-app',
     title: 'Customizing the app',
-    description: 'Theme, session state, sizing and the web worker.',
+    description: 'Theme, sizing and the web worker.',
     group: 'Getting started',
     sections: [
       {
@@ -33,6 +33,24 @@ export const pages: ExamplePage[] = [
         title: 'Dark theme',
         description: 'palette.mode: dark.',
       },
+      {
+        slug: 'fit-to-container',
+        title: 'Fit the app to a container',
+        description: 'The --jbrowse-app-height CSS variable.',
+      },
+      {
+        slug: 'with-web-worker',
+        title: 'Web worker RPC',
+        description: 'Move parsing and rendering off the main thread.',
+      },
+    ],
+  },
+  {
+    slug: 'sessions',
+    title: 'Sessions',
+    description: 'Read the open views, share them as a link, open several.',
+    group: 'Getting started',
+    sections: [
       {
         slug: 'observe-session',
         title: 'Observe the session',
@@ -44,14 +62,9 @@ export const pages: ExamplePage[] = [
         description: 'encodeSession / decodeSession, for a sharable link.',
       },
       {
-        slug: 'fit-to-container',
-        title: 'Fit the app to a container',
-        description: 'The --jbrowse-app-height CSS variable.',
-      },
-      {
-        slug: 'with-web-worker',
-        title: 'Web worker RPC',
-        description: 'Move parsing and rendering off the main thread.',
+        slug: 'multi-view-session',
+        title: 'Multiple views in one session',
+        description: 'A circular overview above a linear detail view.',
       },
     ],
   },
@@ -158,11 +171,6 @@ export const pages: ExamplePage[] = [
         slug: 'sv-inspector-example',
         title: 'SV inspector',
         description: 'A spreadsheet paired with a circular view.',
-      },
-      {
-        slug: 'multi-view-session',
-        title: 'Multiple views in one session',
-        description: 'A circular overview above a linear detail view.',
       },
     ],
   },
