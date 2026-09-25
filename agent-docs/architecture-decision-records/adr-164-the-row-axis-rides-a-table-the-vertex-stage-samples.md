@@ -3,7 +3,7 @@ status: Accepted
 summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds a two-plane RGBA8 row table the vertex stage samples — key to drawn slot or hidden, and a colour override — so a reorder, focus, hide or recolour uploads one small texture and no instance bytes, the way a y domain rides a uniform. `buildRowTable` writes the texels where the shader's lifted twins put them, `RowKeys` assigns each row name a key at its first arrival and never moves it, the painter, the ink and the hit test read the same table, and a pass binding no table draws `row` as the slot. The multi-row feature display adopts it: its encode runs once per region arrival, a category toggle is the one thing that still re-encodes, and the gated volvox fixture keeps a focus. The mark display waits for stage 2, since its bar and point marks spend their one sampler on the ramp. Measured: a reorder at 1000 rows and 500k features moves from 10.7 ms and 7.8 MB per region to 0.22 ms and 7.8 KB; a heavy focus costs a frame what the unfocused draw costs (6.6 vs 6.9 ms at 500k instances on an Intel UHD 630), against 0.7 ms compacted, which is the alternative recorded"
 ---
 
-# ADR-NNN: The row axis rides a table the vertex stage samples
+# ADR-164: The row axis rides a table the vertex stage samples
 
 ## Status
 

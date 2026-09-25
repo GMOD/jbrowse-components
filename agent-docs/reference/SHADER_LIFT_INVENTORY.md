@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 111 functions
-are inside the emitter's subset, of which **82 are exported**.
+Scanned 45 shaders with entry points. 116 functions
+are inside the emitter's subset, of which **86 are exported**.
 
 ## Candidates
 
@@ -35,6 +35,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | Function | Signature | Why not |
 | --- | --- | --- |
 | `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
+| `byteOf` | `(f32) -> u32` | recovers a byte from a sampled texel; the TS side reads the table's bytes directly |
 | `chevronEdgeDistPx` | `(f32, f32, f32) -> f32` | reached as a private helper inside the generated chevronContains, so the edge geometry is already shared without being public; the shader calls it for its cap vertices, the hit test only ever wants the containment it decides |
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
@@ -78,11 +79,11 @@ noticing in a diff.
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 25 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcFlipX`, `arcStrokeHalfPx`, `arcsPointDown`, … |
-| type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
+| type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'vec4' is outside the supported scalar subset | 12 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, `isCulled`, … |
 | type 'vec3' is outside the supported scalar subset | 6 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, `linkedReadColorByIndex` |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
-| type 'texture_2d' is outside the supported scalar subset | 3 | `markInstanceColor`, `rampColor`, `rampColorPremultiplied` |
+| type 'texture_2d' is outside the supported scalar subset | 4 | `markInstanceColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | type 'VsOut' is outside the supported scalar subset | 2 | `arcDistance`, `linkDistance` |
@@ -96,7 +97,6 @@ noticing in a diff.
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'Curve' is outside the supported scalar subset | 1 | `evalArcVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
-| type 'RowRectInstance' is outside the supported scalar subset | 1 | `rowRectVertex` |
 | type 'RowRectUniforms' is outside the supported scalar subset | 1 | `rowRectClipPos` |
 
 ## Exported, but nothing imports it

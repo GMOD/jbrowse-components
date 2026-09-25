@@ -180,7 +180,7 @@ cost then moves to hidden sources staying in the buffer.
   reflected table says read it (`bindGroupLayoutEntries`, `deviceGpuCache.ts`),
   so a vertex-stage lookup needs nothing of the HAL: `barMark` samples its
   ramp in the vertex stage, and the span pass samples its row table there
-  ([ADR-ROWTABLE](../../architecture-decision-records/ADR-ROWTABLE-FILE)).
+  ([ADR-164](../../architecture-decision-records/ADR-164-FILE)).
 - **`Sampler2D.Load` emits invalid WGSL** with this slangc: `textureLoad` on the
   sampler variable. `SampleLevel` at the texel centre with a `nearest` binding
   compiles to `textureSampleLevel` and `textureLod`, both of which work. Found
@@ -190,7 +190,7 @@ cost then moves to hidden sources staying in the buffer.
 - **The table exists.** `packages/render-core/src/marks/rowTable.ts` and
   `shaders/rowTable.slang` are the two-plane key → slot, hidden, colour
   texture the span pass reads and the multi-row feature display drives
-  (ADR-ROWTABLE). Wiggle's fill and density passes take it once a second
+  (ADR-164). Wiggle's fill and density passes take it once a second
   texture binding lands in both HALs, or the ramp and the table share one
   texture; the line and band passes bind nothing today and can take it as
   span did.
@@ -209,7 +209,7 @@ already colour by side.
 
 **Cost and risk:** medium. The table, its shader module, the shape-side
 binding and the Canvas2D reading of it landed with the span pass
-(ADR-ROWTABLE); what is left here is four wiggle shaders reading it, density's
+(ADR-164); what is left here is four wiggle shaders reading it, density's
 second texture, and the painters reading the table where they read
 `source.color`. Whiskers scatter's per-instance tints (`colorsAbgr`) need a
 band index in the row word, or they keep a colour lane.
