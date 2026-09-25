@@ -171,7 +171,6 @@ export const pages: ExamplePage[] = [
     title: 'Alignments',
     description: 'BAM/CRAM tracks with their display options set up front.',
     group: 'Tracks & styling',
-    skipSmoke: true,
     sections: [
       {
         slug: 'with-init-alignments-display',
@@ -184,9 +183,10 @@ export const pages: ExamplePage[] = [
         description: 'facet splits the pileup into labeled lanes.',
       },
       {
-        slug: 'alignments-track-options',
-        title: 'Custom alignments display options',
-        description: 'The slots worth knowing, on real haplotagged ONT reads.',
+        slug: 'reads-as-marks',
+        title: 'The same reads, declared as marks',
+        description:
+          'A formula, a facet and a span mark over haplotagged reads.',
       },
     ],
   },
