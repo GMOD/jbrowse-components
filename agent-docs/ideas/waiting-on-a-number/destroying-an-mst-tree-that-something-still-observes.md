@@ -252,8 +252,8 @@ Two consequences for the entry:
   start a child chunk's import when the model that will render it is created —
   a view's `ReactComponent` when the view is added, a widget's when `showWidget`
   runs — so the inner `lazy` is resolved by the time the outer boundary renders
-  and the boundary commits once. Not built, and not costed against what it does
-  to the initial bundle graph.
+  and the boundary commits once. Built 2026-09-23/24 (see the top of this
+  doc); what it did to the initial bundle graph was not measured.
 
 Still open, and now the narrower question: a warm second mount stops doubling
 the view and drawer chrome but leaves the track selector's own subtree at 3x,

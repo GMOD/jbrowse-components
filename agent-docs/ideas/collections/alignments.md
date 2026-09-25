@@ -173,6 +173,12 @@ whole-chromosome BAM is ~29 M reads, over 1 GiB in the read pass alone, with the
 GPU-OOM overlay as the backstop. Capping reads per column (reservoir-sampled per
 bin) is what would make force-load survivable.
 
+A BAM with no sidecar has two more paths open. A coverage-only mode above a zoom
+threshold would skip the pileup and mismatch passes; `showPileup` hides the
+pileup on the main thread and never reaches the RPC, so the reads are fetched
+either way. And the byte gate would have to let that coverage-only fetch through,
+since it refuses on the reads' bytes.
+
 **SBX duplex reads — `yc`-tag / duplex-confidence coloring.** Roche's
 sequencing-by-expansion (SBX, AXELIOS platform; XOOS analysis tools) emits
 **duplex consensus reads** (SBX-D) that merge both strands (R1+R2) of one

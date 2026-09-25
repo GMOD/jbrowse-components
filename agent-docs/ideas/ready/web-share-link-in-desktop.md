@@ -1,6 +1,6 @@
 ---
 name: web-share-link-in-desktop
-description: Desktop cannot open the share-, encoded- and json- links web's share button makes. Since Desktop's session took sessionTracks and trackConfigDeltas (2026-09-23), a web snapshot applies whole except `sessionPlugins`, so the work is a decoder plus vetting those plugins.
+description: Desktop cannot open the share-, encoded- and json- links web's share button makes. Since Desktop's session took sessionTracks and trackConfigDeltas (2026-09-23), a web snapshot applies whole except `sessionPlugins` and `sessionConnections`, so the work is a decoder, vetting those plugins, a home for the connections, and a loud failure on any other key.
 ---
 
 # Opening a web share link in Desktop
@@ -24,10 +24,15 @@ a desktop root model dropped `sessionTracks`, `trackConfigDeltas` and
 `sessionPlugins` in silence, because MST drops snapshot keys the target does not
 declare. Since `130e41de08` (2026-09-23) Desktop's session composes the same
 `SessionTracksManagerSessionMixin`, so the first two carry across as they are.
-`sessionPlugins` is still undeclared on Desktop, and dropping it is the one
-silent loss left: a session that needed a plugin opens half-working. Put it
-through `assertPluginsTrusted` (ADR-038) and load it before applying the
-snapshot, the way `loadSessionSpec` vets a spec's plugins.
+`sessionPlugins` and `sessionConnections` (web-core's `SessionConnections`) are
+still undeclared on Desktop. Dropping the plugins opens a session half-working,
+so put them through `assertPluginsTrusted` (ADR-038) and load them before
+applying the snapshot, the way `loadSessionSpec` vets a spec's plugins; the
+connections need a home in Desktop's session or a translation.
+
+Whatever ships must **fail loudly on a key it cannot translate** rather than
+inheriting MST's silent drop — that check is what finds the next key a web
+session grows.
 
 Start with `encoded-`/`json-`: self-contained, no network, no key, no third-party
 store in the test matrix. `share-` is that plus a fetch and a decrypt.

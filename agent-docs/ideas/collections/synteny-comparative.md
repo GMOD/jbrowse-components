@@ -7,6 +7,10 @@ description: `syntenyGroupId`, PIF limits, block-level chaining, the `featureId`
 
 **Linked dotplot + linear synteny.** Selections/zoom propagate between both views.
 
+**Swap axes in a live dotplot.** The import form swaps before launch and the
+linear synteny view has Reverse row order, but an open dotplot cannot trade its
+axes.
+
 **Better defaults for human vs mouse.** Tune color schemes and default display options
 for common interspecies comparisons.
 
@@ -68,6 +72,12 @@ picking, i.e. a second index shape, for a job that is partly done already: the s
 labels the query end, and an exact correspondence takes the
 `SyntenyResolveMatchingRegion` round trip. Worth it only if reading shear off the ticks
 turns out to be something people try to do and can't.
+
+**Phylogeny-aware row ordering** (an NJ tree from synteny distance, as
+ntSynt-viz does) for views of more than three genomes: `diagonalize.ts` orders
+chromosomes within a row by density but never orders rows by relatedness. The
+multiway display's lane half of this is
+[ordering-synteny-lanes-by-similarity](../waiting-on-a-call/ordering-synteny-lanes-by-similarity.md).
 
 **Don't chase native N-way blocks as the primitive** — the pairwise N−1 model is
 the right call for a browser (independently fetchable/zoomable, degrades gracefully

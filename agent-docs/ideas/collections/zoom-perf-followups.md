@@ -43,7 +43,8 @@ there passed the sabotage by one render and caught nothing at all. The headroom
 each keeps is what makes it safe against a residual that includes fetch-driven
 renders, and the links arm's mutation bound is loose for the same reason — the chrome's own
 `data-display-phase` flips when a refetch round lands inside the 20 frames,
-which the arm has seen contribute both 0 and 2 against a per-link cost of 240.
+which the arm has seen contribute both 0 and 2 against the 240 mutations the
+SVG arc plugin once cost.
 
 Three things it found, in the order they mattered:
 
