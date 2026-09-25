@@ -14691,7 +14691,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -14751,35 +14751,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "clusterProvenance": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "clusterTree": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "layout": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showSidebarLabelsSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showTreeSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "subtreeFilter": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "treeAreaWidth": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -14823,39 +14823,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "PileupDisplay": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "SNPCoverageDisplay": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "colorBy": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "colorBySetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "filterBy": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "filterBySetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "hideMismatchesSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "trackMaxHeight": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -14905,7 +14905,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -14949,7 +14949,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -14993,7 +14993,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "alpha": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "colorBy": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "minAlignmentLength": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15043,7 +15055,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "alpha": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "colorBy": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "minAlignmentLength": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15087,7 +15111,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15132,7 +15156,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "laneFilter": {},
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15176,7 +15200,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15280,7 +15304,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15337,39 +15361,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "clusterProvenance": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "clusterTree": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "jexlFilters": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "layout": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showSidebarLabelsSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showTreeSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "subtreeFilter": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "treeAreaWidth": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15418,7 +15442,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15469,75 +15493,75 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "sortRowsBy": {},
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "autoscale": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "clusterProvenance": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "clusterTree": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "color": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "constraints": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "displayCrossHatches": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "layout": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "negColor": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "posColor": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "rendererTypeNameState": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "resolution": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "scale": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showSidebarLabelsSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showTreeSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "subtreeFilter": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "summaryScoreMode": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "treeAreaWidth": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15591,7 +15615,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "sortRowsBy": {},
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15642,7 +15666,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "sortRowsBy": {},
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15693,35 +15717,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "sortRowsBy": {},
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "clusterProvenance": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "clusterTree": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "layout": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showSidebarLabelsSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "showTreeSetting": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "subtreeFilter": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "treeAreaWidth": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15765,7 +15789,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15815,7 +15839,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15872,7 +15896,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "heightPreConfig": {
           "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -18832,6 +18856,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "autoDiagonalize": {
           "description": "Launch key, resolved by the DotplotView launcher on open."
+        },
+        "colorBy": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "colorDomain": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
@@ -19114,6 +19146,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
         },
         "fadeThinAlignments": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "colorBy": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "colorDomain": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }

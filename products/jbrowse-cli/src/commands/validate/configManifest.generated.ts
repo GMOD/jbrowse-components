@@ -6937,6 +6937,10 @@ export const configManifest: ConfigManifest = {
         "highlight",
         "tracks",
         "views"
+      ],
+      "passThrough": [
+        "colorBy",
+        "colorDomain"
       ]
     },
     "LinearSyntenyView": {
@@ -6977,6 +6981,8 @@ export const configManifest: ConfigManifest = {
         "views"
       ],
       "passThrough": [
+        "colorBy",
+        "colorDomain",
         "fadeThinAlignments"
       ]
     },
@@ -7104,6 +7110,16 @@ export const configManifest: ConfigManifest = {
       "showTreeSetting",
       "subtreeFilter",
       "treeAreaWidth"
+    ],
+    "LinearSyntenyDisplay": [
+      "alpha",
+      "colorBy",
+      "minAlignmentLength"
+    ],
+    "DotplotDisplay": [
+      "alpha",
+      "colorBy",
+      "minAlignmentLength"
     ]
   }
 }
