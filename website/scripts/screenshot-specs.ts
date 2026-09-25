@@ -21,7 +21,6 @@ import { annotationSpecs } from './specs/annotation.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
 import { cancerSvSpecs } from './specs/cancer_sv.ts'
 import { circularSpecs } from './specs/circular.ts'
-import { closeUpSpecs } from './specs/close_ups.ts'
 import { cnv1000gSpecs } from './specs/cnv1000g.ts'
 import { cookbookSpecs } from './specs/cookbook.ts'
 import { dog10kSpecs } from './specs/dog10k.ts'
@@ -85,7 +84,6 @@ export const specs: ScreenshotSpec[] = [
   ...featuresSpecs,
   ...proteinStructuresSpecs,
   ...uiSpecs,
-  ...closeUpSpecs,
   ...methylationSpecs,
   ...ldSpecs,
   ...popgenSpecs,

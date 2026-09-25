@@ -6769,8 +6769,6 @@ export const configManifest: ConfigManifest = {
         "tracks",
         "hideHeader",
         "hideHeaderOverview",
-        "closeUps",
-        "closeUpConnectorHeight",
         "hideNoTracksActive",
         "trackSelectorType",
         "showCenterLine",

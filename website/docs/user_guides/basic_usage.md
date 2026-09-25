@@ -253,8 +253,8 @@ The main scale bar's menu holds **Zoom to region**, **Get sequence**, **Copy
 range**, **Highlight region** ([](/docs/user_guides/highlights)), then a
 **Launch** submenu of what can open from the selection:
 
-- [**Close-up view**](#close-up-views), a zoomed-in copy of the view below its
-  tracks
+- **Linear genome view**, a new view of the span with this view's tracks and
+  their settings. It scrolls and zooms on its own, like any other view
 - [](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at),
   when a synteny dataset in the session covers this assembly. It opens one panel
   per assembly aligning to the selection, whether or not the synteny track is
@@ -293,38 +293,6 @@ sessions.
 
 The entry is absent unless the view shows a whole chromosome, since a sub-region
 gives an arbitrary slice of bands.
-
-### Close-up views
-
-Drag a span across the view and pick **Launch → Close-up view**: a zoomed-in
-copy of the view opens below the tracks, showing that span. Drag a narrower span
-and a second close-up opens below the first — genes over a gene's exons over the
-reads at base level, each row a closer look at the one above it. A trapezoid
-joins each row to the one above, marking the span it opens, the same shape the
-header overview draws between the chromosome and the view. A thin frame in the
-trapezoid's colour outlines each close-up, so a row reads as an inset of the one
-above rather than a second view at the same zoom.
-
-The dialog asks one thing. **Copy this view's tracks** opens the close-up
-showing what this view is showing, so Add alone gives a closer look at the same
-data; unchecked, the close-up opens empty and its own track selector fills it.
-
-The stack stays centred on the view, so adding a close-up moves the view to the
-middle of the span you dragged.
-
-Pan or drag a close-up and the view moves by the same number of bases; zoom a
-close-up and only that close-up changes width. Drag a trapezoid itself to set
-how tall its band is, which is how steep the connector reads. **Remove close-up
-view** in a close-up's own hamburger menu takes it away.
-
-**Export SVG** draws the whole stack whichever menu it is asked from, each
-close-up under a bar labelled with the span it covers.
-
-<Figure caption="Close-up view under Launch in the rubberband menu, over a span dragged across the view." src="/img/close_up_menu.png" />
-
-<Figure caption="A linear genome view of hg38 at TP53 with two close-ups, each row the same RefSeq gene track: 2 Mb, then 200 kb, then 20 kb. Each trapezoid marks the span the row below it opens." src="/img/close_ups.png" />
-
-<Video src="/media/ui/close_ups.mp4" caption="Building that stack: a span dragged across the view, Close-up view from its Launch menu, a narrower drag for the row below that, and a navigation the whole stack follows." />
 
 ### Track label positioning
 

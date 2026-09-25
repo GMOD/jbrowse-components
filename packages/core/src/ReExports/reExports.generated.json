@@ -3615,7 +3615,8 @@
         "Region",
         "UriLocation",
         "UriLocationRaw",
-        "createElementId"
+        "createElementId",
+        "renameIds"
       ],
       "worker": "real"
     },

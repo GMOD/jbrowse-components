@@ -77,7 +77,7 @@ whatever order the VCF lists them:
 "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] }
 ```
 
-<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms, chr2L in the middle, with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, a close-up across chr2L adds one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau runs past both." links="Six arms=popgen/fst_in2lt_2L"/>
+<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, a second view of chr2L adds one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau runs past both." links="Six arms=popgen/fst_in2lt_2L"/>
 
 ```json
 "facet": { "field": "karyotype", "domain": ["2L+a/2L+a", "2La/2L+a", "2La/2La"] }

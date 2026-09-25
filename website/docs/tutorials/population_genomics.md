@@ -289,7 +289,7 @@ carriers land at the bottom of the lane:
 Each row is a line colored by its genotype, with the karyotype strip down the
 sidebar and the two classes contiguous.
 
-<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms, chr2L in the middle, with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, a close-up across chr2L adds one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau runs past both." links="Six arms=popgen/fst_in2lt_2L"/>
+<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, a second view of chr2L adds one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau runs past both." links="Six arms=popgen/fst_in2lt_2L"/>
 
 Differentiation decays gradually outside the breakpoints
 ([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the

@@ -515,10 +515,8 @@ export const qcSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The two scales above as one view: the 2.5 Mb frame's lanes on the host, the
-  // 650 kb read frame's lanes on a close-up under it. A close-up shares its
-  // host's centre, so the host is centred on WIDE_LOC and widened to 3.45 Mb to
-  // keep the block's left edge and SMN2 in frame.
+  // The two scales above in one picture: the 2.5 Mb frame's lanes in the top
+  // view, the 650 kb read frame's lanes in a second view under it.
   {
     mode: 'url',
     name: 'qc/smn_block_and_reads',
@@ -528,7 +526,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr5:69,450,000-72,900,000',
+          loc: OVERVIEW_LOC,
           highlight: SMN_HIGHLIGHT,
           tracks: [
             { ...geneTrack(60, true), displayMode: 'compact' },
@@ -544,32 +542,28 @@ export const qcSpecs: ScreenshotSpec[] = [
               height: 100,
             },
           ],
-          closeUps: [
+        },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: WIDE_LOC,
+          tracks: [
+            geneTrack(60, true),
+            mappabilityTrack,
             {
-              type: 'LinearGenomeView',
-              assembly: 'hg38',
-              hideHeader: true,
-              windowWidthBp: 650_000,
-              highlight: [SMN_HIGHLIGHT[0]!],
-              tracks: [
-                geneTrack(60, true),
-                mappabilityTrack,
-                {
-                  trackId: 'na12878_qc_reads',
-                  type: 'LinearAlignmentsDisplay',
-                  color: { field: 'mapq' },
-                  showLegend: true,
-                  forceLoad: true,
-                  scales: { y: { autoscale: 'localsd' } },
-                  height: 260,
-                },
-              ],
+              trackId: 'na12878_qc_reads',
+              type: 'LinearAlignmentsDisplay',
+              color: { field: 'mapq' },
+              showLegend: true,
+              forceLoad: true,
+              scales: { y: { autoscale: 'localsd' } },
+              height: 260,
             },
           ],
         },
       ],
     })}&sessionName=Screenshot`,
-    viewportHeight: 1200,
+    viewportHeight: 1230,
     hideSelectors: HIDE_ISOFORM_CHIP,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 600000,
@@ -602,7 +596,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 330,
         anchor: {
-          view: [0, 0],
+          view: 1,
           track: 'hg38-umap100Quantitative',
           locus: 'chr5:70,940,000',
           alignX: 'left',

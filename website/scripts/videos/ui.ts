@@ -1,5 +1,3 @@
-import { displayPainted } from '@jbrowse/browser-test-utils'
-
 // The tours over the general-usage guides, where the subject IS a route through
 // the app rather than a dataset.
 import {
@@ -13,8 +11,6 @@ import type { VideoSpec } from '../video-spec-types.ts'
 
 const {
   addTrackSession,
-  closeUpSpans,
-  closeUpSession,
   addTrackUrl,
   highlightSession,
   highlightSpan,
@@ -39,10 +35,6 @@ const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 // `.MuiDataGrid-cell` prefix is what tells it from its column header, which
 // carries the same `data-field`.
 const LOCATION_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
-
-// The button that takes the Add close-up view dialog, which is one checkbox the
-// tour leaves checked.
-const CLOSE_UP_SUBMIT = 'form button[type="submit"]'
 
 export const uiVideos: VideoSpec[] = [
   // A LOOP, which is what highlights.md is about and what neither of its two
@@ -128,73 +120,6 @@ export const uiVideos: VideoSpec[] = [
         say: 'Click the row to navigate back',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
-    ],
-    tailMs: 4000,
-  },
-
-  // CLOSE-UPS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
-  // figure holds the finished stack, and the route to it is two things a still
-  // cannot hold: the drag that names each row's span, and the stack staying
-  // centred afterwards, so a navigation at the top moves every row with it.
-  //
-  // One gene track, copied onto each close-up a drag opens, so the three rows
-  // show the same data at three scales — which is the claim, drawn three times
-  // in one frame.
-  {
-    name: 'ui/close_ups',
-    description:
-      'Two close-ups opened by dragging spans across the view, each row a closer look than the one above it, and a navigation the whole stack follows',
-    url: closeUpSession,
-    // three gene rows at 100 with their trapezoids, and the menu that opens
-    // over them on each release
-    viewportHeight: 750,
-    readySelector: displayPainted('feature-display'),
-    readyTimeout: 120000,
-    steps: [
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'delay', ms: 2000 },
-      {
-        type: 'drag',
-        fromAnchor: { locus: closeUpSpans.outer.start, band: RUBBERBAND },
-        toAnchor: { locus: closeUpSpans.outer.end, band: RUBBERBAND },
-        say: 'Drag the span you want a closer look at',
-      },
-      { type: 'waitForText', text: 'Launch' },
-      { type: 'hover', text: 'Launch', hold: 900 },
-      { type: 'click', text: 'Close-up view', hold: 1000 },
-      {
-        type: 'click',
-        selector: CLOSE_UP_SUBMIT,
-        say: 'It opens below the tracks, showing the same track',
-        hold: 900,
-      },
-      { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 2500 },
-      // a narrower span, so the row it opens lands under the first one
-      {
-        type: 'drag',
-        fromAnchor: { locus: closeUpSpans.inner.start, band: RUBBERBAND },
-        toAnchor: { locus: closeUpSpans.inner.end, band: RUBBERBAND },
-        say: 'A narrower drag opens a row under that one',
-      },
-      { type: 'waitForText', text: 'Launch' },
-      { type: 'hover', text: 'Launch', hold: 900 },
-      { type: 'click', text: 'Close-up view', hold: 1000 },
-      { type: 'click', selector: CLOSE_UP_SUBMIT, hold: 900 },
-      { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 2500 },
-      // The claim, performed: the close-ups are centred on the view, so a
-      // navigation at the top moves both of them.
-      {
-        type: 'type',
-        selector: LOCATION_BOX,
-        value: 'chr17:7,660,000-7,860,000',
-        clear: true,
-        say: 'Both close-ups follow the view',
-      },
-      { type: 'press', key: 'Enter' },
-      { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 3000 },
     ],
     tailMs: 4000,
   },

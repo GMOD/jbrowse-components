@@ -459,8 +459,6 @@ restores natively:
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
-| [`closeUpConnectorHeight`](/docs/models/lineargenomeview#property-closeupconnectorheight) | Height of the bands the trapezoids between this view's close-ups are drawn in, dragged by any one of them. One number for the stack: the bands are a ladder the eye reads down, and a rung of its own height reads as a difference in the data rather than in the drawing. |
-| [`closeUps`](/docs/models/lineargenomeview#property-closeups) | Closer views of the same locus stacked under the tracks, widest first, so the page zooms in as it reads down. Each is a LinearGenomeView with tracks of its own whose regions, width and centre this view drives; its window width is the one thing it keeps. See `closeUps.ts`. |
 | [`colorByCDS`](/docs/models/lineargenomeview#property-colorbycds) | color CDS segments by reading frame |
 | [`displayedRegions`](/docs/models/lineargenomeview#property-displayedregions) | currently displayed regions, can be a single chromosome, arbitrary subsections, or the entire set of chromosomes in the genome, but it not advised to use the entire set of chromosomes if your assembly is very fragmented |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |

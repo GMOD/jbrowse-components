@@ -418,10 +418,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // popgen/fst_in2lt_2L plus the genotypes: six arms on the host, chr2L with one row
-  // per DGRP line on a close-up under it. A close-up shares its host's centre,
-  // so the arms are ordered to put chr2L in the middle: chrX and chr3R before
-  // it, 55.6 Mb, nearly balance chr2R, chr3L and chr4 after it, 54.7 Mb.
+  // popgen/fst_in2lt_2L plus the genotypes: six arms in the top view, chr2L with
+  // one row per DGRP line in a second view under it.
   {
     mode: 'url',
     name: 'popgen/in2lt_inversion',
@@ -432,12 +430,12 @@ export const popgenSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'dm6',
           displayedRegionNames: [
-            'chrX',
-            'chr3R',
             'chr2L',
             'chr2R',
             'chr3L',
+            'chr3R',
             'chr4',
+            'chrX',
           ],
           tracks: [
             {
@@ -451,28 +449,25 @@ export const popgenSpecs: ScreenshotSpec[] = [
               height: 160,
             },
           ],
-          closeUps: [
+        },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          loc: 'chr2L',
+          tracks: [
             {
-              type: 'LinearGenomeView',
-              assembly: 'dm6',
-              hideHeader: true,
-              windowWidthBp: 22_400_000,
-              tracks: [
-                {
-                  trackId: 'in2lt_inversion',
-                  type: 'LinearBasicDisplay',
-                  height: 40,
-                },
-                {
-                  trackId: 'fst_in2lt',
-                  type: 'LinearWiggleDisplay',
-                  height: 130,
-                },
-                {
-                  trackId: 'dgrp_In2Lt_sv',
-                  type: 'LinearMultiSampleVariantDisplay',
-                },
-              ],
+              trackId: 'in2lt_inversion',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
+            {
+              trackId: 'fst_in2lt',
+              type: 'LinearWiggleDisplay',
+              height: 130,
+            },
+            {
+              trackId: 'dgrp_In2Lt_sv',
+              type: 'LinearMultiSampleVariantDisplay',
             },
           ],
         },
@@ -483,7 +478,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: '19 In(2L)t carriers',
         anchor: {
-          view: [0, 0],
+          view: 1,
           track: 'dgrp_In2Lt_sv',
           locus: 'chr2L:7,000,000',
           fracY: 0.7,
@@ -492,13 +487,13 @@ export const popgenSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         fromAnchor: {
-          view: [0, 0],
+          view: 1,
           track: 'dgrp_In2Lt_sv',
           locus: 'chr2L:7,000,000',
           fracY: 0.78,
         },
         anchor: {
-          view: [0, 0],
+          view: 1,
           track: 'dgrp_In2Lt_sv',
           locus: 'chr2L:7,000,000',
           fracY: 0.947,
@@ -508,6 +503,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('variant-display'),
     readyText: 'In(2L)t genotyped',
     readyTimeout: 120000,
-    viewportHeight: 1150,
+    viewportHeight: 1180,
   },
 ]

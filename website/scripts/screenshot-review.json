@@ -3870,12 +3870,5 @@
     "note": "",
     "reviewedAt": "2026-09-17T22:14:11.967Z",
     "hash": "6055f5894b15b23f7701c73c0c998be66469a5da"
-  },
-  "close_ups": {
-    "name": "close_ups",
-    "status": "answered",
-    "note": "Re-rendered with the new detail-level styling: each of the 200 kb and 20 kb levels sits in a teal frame, joined to the row above by a bolder outlined trapezoid.",
-    "reviewedAt": "2026-09-18T04:10:47.897Z",
-    "hash": "08b7127b57679909178f7aba4b0117fb2b8cca15"
   }
 }
