@@ -94,6 +94,24 @@ export const pluggableElementTypeGroups = [
 export type PluggableElementTypeGroup =
   (typeof pluggableElementTypeGroups)[number]
 
+function pluggableUnionName(
+  groupName: PluggableElementTypeGroup,
+  fieldName: string,
+) {
+  return `pluggable(${groupName} ${fieldName})`
+}
+
+/**
+ * The group a `pluggableMstType(group, 'stateModel')` union holds, read off
+ * its name: with every member a lazy model not yet loaded, the union has no
+ * members to recognise it by.
+ */
+export function pluggableStateModelGroup(type: IAnyType) {
+  return pluggableElementTypeGroups.find(
+    group => type.name === pluggableUnionName(group, 'stateModel'),
+  )
+}
+
 function isUnloadedLazyElement(
   element: PluggableElementBase,
 ): element is LazyStateModelElement {
@@ -981,7 +999,7 @@ export default class PluginManager {
         .filter(t => isType(t) && isModelType(t)) as IAnyType[]
     let members = modelsOf()
     return types.union({
-      name: `pluggable(${groupName} ${fieldName})`,
+      name: pluggableUnionName(groupName, fieldName),
       members: () => {
         if (members.length !== modelsOf().length) {
           members = modelsOf()

@@ -35,11 +35,9 @@ function fakeBuild(
     { name: string; aliases?: string[]; stateModel: IAnyType }[]
   > = {}
   const pluggable = (group: string) =>
-    types.late(() => {
-      const models = (elements[group] ?? []).map(t => t.stateModel)
-      return models.length > 0
-        ? types.union(...models)
-        : types.maybe(types.null)
+    types.union({
+      name: `pluggable(${group} stateModel)`,
+      members: () => (elements[group] ?? []).map(t => t.stateModel),
     })
   const childPanel = types.model('ChildPanel', {
     id: types.identifier,
@@ -843,4 +841,35 @@ test('holds a display whose lazy state model is not loaded, without reading it',
     { group: 'display', type: 'LinearGwasDisplay' },
     { group: 'track', type: 'FeatureTrack', cascade: true },
   ])
+})
+
+test('holds a display when no display state model has loaded yet', () => {
+  const unloaded = fakeBuild({
+    view: ['LinearGenomeView'],
+    track: ['FeatureTrack'],
+    display: [],
+  })
+  const { snapshot, dropped } = prune(
+    {
+      views: [
+        {
+          id: 'v',
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              id: 't',
+              type: 'FeatureTrack',
+              displays: [{ id: 'd', type: 'LinearGwasDisplay' }],
+            },
+          ],
+        },
+      ],
+    },
+    unloaded,
+  )
+  expect(dropped).toEqual([
+    { group: 'display', type: 'LinearGwasDisplay' },
+    { group: 'track', type: 'FeatureTrack', cascade: true },
+  ])
+  expect(unloaded.sessionType.is(snapshot)).toBe(true)
 })

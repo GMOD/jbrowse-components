@@ -1,4 +1,7 @@
-import { pluggableElementTypeGroups } from '@jbrowse/core/PluginManager'
+import {
+  pluggableElementTypeGroups,
+  pluggableStateModelGroup,
+} from '@jbrowse/core/PluginManager'
 import { isTrackRecipe } from '@jbrowse/core/util/withLaunchInput'
 import {
   asArrayType,
@@ -168,7 +171,8 @@ class Registry {
    * The group a container holds, or undefined for a container of anything else.
    * Identified by member identity rather than by the union object, which
    * `pluggableMstType` rebuilds on every call: the members *are* the registered
-   * `stateModel`s.
+   * `stateModel`s. A union none of whose lazy members has loaded has no member
+   * to match, and answers by its name.
    */
   groupOf(elementType: IAnyType) {
     if (isReferenceType(elementType) || !isUnionType(elementType)) {
@@ -187,7 +191,7 @@ class Registry {
         return group
       }
     }
-    return undefined
+    return pluggableStateModelGroup(elementType)
   }
 
   /**
