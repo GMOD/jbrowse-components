@@ -17,12 +17,14 @@ import {
   connectionLabel,
   isGpuLinkedReadLine,
   iterLinkedPairs,
+  linkedReadLinesByRegion,
 } from './compute.ts'
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedPair, ReadEntry } from './compute.ts'
+import type { LinkedReadLinesUploadData } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // Cull by endpoint Y, padded by the shaping's reach: a curve dips below or bows
@@ -195,16 +197,66 @@ export function enumerateBezierPairs(
   return out
 }
 
-// `enumerateBezierPairs` over every group's laid-out map.
-export function enumerateBezierPairsByGroup(
+export interface GroupConnectors {
+  // the straight-line pass's records, by displayed region index
+  lines: ReadonlyMap<number, LinkedReadLinesUploadData>
+  // what the overlay draws
+  overlayPairs: LinkedPair[]
+}
+
+const NO_LINES: ReadonlyMap<number, LinkedReadLinesUploadData> = new Map()
+
+// Every connector of one group, from one walk of its reads: the straight-line
+// pass takes `isGpuLinkedReadLine` pairs when `lines` is on, and the overlay
+// what its scope admits of the rest.
+//
+// `canonicalRefName` turns on the SA walk that finds hidden segments; without
+// it no pair has any, and a junction across unfetched segments would be drawn
+// solid by the line pass as well as dashed by the overlay.
+export function resolveConnectors(
+  map: ReadonlyMap<number, LaidOutPileupData>,
+  {
+    lines,
+    scope,
+    canonicalRefName,
+  }: {
+    lines: boolean
+    scope: BezierArcScope
+    canonicalRefName?: CanonicalRefName
+  },
+): GroupConnectors {
+  if (!lines) {
+    return {
+      lines: NO_LINES,
+      overlayPairs: enumerateBezierPairs(map, scope, canonicalRefName),
+    }
+  }
+  const straight: LinkedPair[] = []
+  const rest: LinkedPair[] = []
+  for (const pair of iterLinkedPairs(map, canonicalRefName)) {
+    ;(isGpuLinkedReadLine(pair) ? straight : rest).push(pair)
+  }
+  return {
+    lines: linkedReadLinesByRegion(straight),
+    overlayPairs:
+      scope === 'all'
+        ? rest
+        : scope === 'crossRegion'
+          ? rest.filter(isCrossRegionPair)
+          : [],
+  }
+}
+
+// `resolveConnectors` over every group, and nothing at all when neither the
+// line pass nor the overlay draws.
+export function resolveConnectorsByGroup(
   byGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
-  scope: BezierArcScope,
-  canonicalRefName?: CanonicalRefName,
+  opts: Parameters<typeof resolveConnectors>[1],
 ) {
-  const out = new Map<string, LinkedPair[]>()
-  if (scope !== 'none') {
+  const out = new Map<string, GroupConnectors>()
+  if (opts.lines || opts.scope !== 'none') {
     for (const [key, map] of byGroup) {
-      out.set(key, enumerateBezierPairs(map, scope, canonicalRefName))
+      out.set(key, resolveConnectors(map, opts))
     }
   }
   return out

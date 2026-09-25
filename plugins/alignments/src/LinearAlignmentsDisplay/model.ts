@@ -65,7 +65,7 @@ import { computeArcsByGroup } from '../features/arcs/compute.ts'
 import { densityCoverageFields } from '../features/coverage/densityBand.ts'
 import {
   bezierConnectionLegendItems,
-  enumerateBezierPairsByGroup,
+  resolveConnectorsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
@@ -124,6 +124,7 @@ import { colorSchemeIndexFor } from './constants.ts'
 import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
+  attachLinkedReadLinesByGroup,
   collectAcrossGroups,
   fitRowCount,
   fittedReadPitch,
@@ -185,7 +186,6 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
-import type { LinkedPair } from '../features/linkedReads/compute.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
@@ -527,6 +527,27 @@ export default function stateModelFactory(
          */
         get showLinkedReadLines() {
           return self.showBezierConnections && !this.isChainMode
+        },
+
+        /**
+         * #getter
+         * What the SVG connection overlay is responsible for drawing — see
+         * `BezierArcScope`. Chain mode claims `crossRegion` even with the curved
+         * connectors unticked, because it is the only pass that can join a
+         * chain's two ends when they land in different displayed regions; the
+         * per-region connecting line covers everything else.
+         *
+         * One getter rather than a check at each of the four consumers (the live
+         * overlay, the SVG export, the legend, and the pair enumeration itself),
+         * since a scope they disagreed on would draw a curve the key doesn't
+         * name, or the reverse.
+         */
+        get bezierArcScope(): BezierArcScope {
+          return self.showBezierConnections
+            ? 'all'
+            : this.isChainMode
+              ? 'crossRegion'
+              : 'none'
         },
       }))
       // The coverage band's value scale (`scales.y` and its setters) is
@@ -1550,9 +1571,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Per-group laid-out data with the per-read color arrays baked on. Every
-           * consumer reads this one; `laidOutByGroupUncolored` exists only to be
-           * its layout half.
+           * Per-group laid-out data with the per-read color arrays baked on;
+           * consumers read `laidOutByGroup`, which spreads the connector lines
+           * over it, and `laidOutByGroupUncolored` is its layout half.
            *
            * The split keeps recoloring off the layout path. Nothing in
            * `readColorContext` can move a read's row, so a color-scheme change
@@ -1564,10 +1585,42 @@ export default function stateModelFactory(
            * the worker so tag coloring stays a main-thread tier-2 setting (see
            * readTagColors).
            */
-          get laidOutByGroup() {
+          get laidOutByGroupColored() {
             return applyReadColorsByGroup(
               this.laidOutByGroupFramed,
               this.readColorContext,
+            )
+          },
+
+          /**
+           * #getter
+           * `laidOutByGroupColored` with the straight-line pass's records
+           * spread on, so a curved-connector toggle re-spreads the lines and
+           * keeps both the layout and the colours.
+           */
+          get laidOutByGroup() {
+            return attachLinkedReadLinesByGroup(
+              this.laidOutByGroupColored,
+              this.connectorsByGroup,
+            )
+          },
+
+          /**
+           * #getter
+           * Every read connector per group, from one walk of its reads: the
+           * straight-line pass's records and the pairs the bezier overlay
+           * draws. Read off the layout tier, so a band resize, a group-height
+           * drag or a recolor reuses them, and a curved-connector toggle
+           * re-walks the reads without laying them out again.
+           */
+          get connectorsByGroup() {
+            return resolveConnectorsByGroup(
+              self.coarseTierStandsIn ? new Map() : this.laidOutByGroupFramed,
+              {
+                lines: self.showLinkedReadLines,
+                scope: self.bezierArcScope,
+                canonicalRefName: this.canonicalRefName,
+              },
             )
           },
 
@@ -1589,8 +1642,6 @@ export default function stateModelFactory(
               largeFeaturesFirst: self.largeFeaturesFirst,
               splicedReadsFirst: self.splicedReadsFirst,
               regions: self.loadedRegions,
-              showLinkedReadLines: self.showLinkedReadLines,
-              canonicalRefName: this.canonicalRefName,
               collapseGroupRows: this.collapseGroupRows,
             }
           },
@@ -2146,48 +2197,12 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * What the SVG connection overlay is responsible for drawing — see
-         * `BezierArcScope`. Chain mode claims `crossRegion` even with the curved
-         * connectors unticked, because it is the only pass that can join a
-         * chain's two ends when they land in different displayed regions; the
-         * per-region connecting line covers everything else.
-         *
-         * One getter rather than a check at each of the four consumers (the live
-         * overlay, the SVG export, the legend, and the pair enumeration itself),
-         * since a scope they disagreed on would draw a curve the key doesn't
-         * name, or the reverse.
-         */
-        get bezierArcScope(): BezierArcScope {
-          return self.showBezierConnections
-            ? 'all'
-            : self.isChainMode
-              ? 'crossRegion'
-              : 'none'
-        },
-
-        /**
-         * #getter
-         * The linked pairs the bezier connection overlay draws, per group and
-         * narrowed by `bezierArcScope`. Read off the layout tier, so a band
-         * resize, a group-height drag or a recolor reuses them and only a
-         * relayout enumerates again; the per-frame screen projection is
-         * `computePileupBezierArcsFromModel`'s.
-         */
-        get bezierPairsByGroup(): ReadonlyMap<string, LinkedPair[]> {
-          return enumerateBezierPairsByGroup(
-            self.coarseTierStandsIn ? new Map() : self.laidOutByGroupFramed,
-            this.bezierArcScope,
-            self.canonicalRefName,
-          )
-        },
-
-        /**
-         * #getter
-         * `bezierPairsByGroup` placed on each drawn section's pileup band.
+         * The pairs the bezier overlay draws, placed on each drawn section's
+         * pileup band.
          */
         get bezierPairSections() {
           return this.renderSections.flatMap(sec => {
-            const pairs = this.bezierPairsByGroup.get(sec.groupKey)
+            const pairs = self.connectorsByGroup.get(sec.groupKey)?.overlayPairs
             return pairs?.length
               ? [
                   {
@@ -2211,17 +2226,16 @@ export default function stateModelFactory(
         get connectionColorTypes(): Set<number> {
           const present = new Set<number>()
           if (self.showLegend) {
-            for (const sec of this.bezierPairSections) {
-              for (const pair of sec.pairs) {
+            for (const {
+              lines,
+              overlayPairs,
+            } of self.connectorsByGroup.values()) {
+              for (const pair of overlayPairs) {
                 present.add(pair.c.colorType)
               }
-            }
-            if (self.showLinkedReadLines) {
-              for (const sec of this.renderSections) {
-                for (const data of sec.laidOutPileupMap.values()) {
-                  for (const colorType of data.linkedReadLineColorTypes) {
-                    present.add(colorType)
-                  }
+              for (const region of lines.values()) {
+                for (const colorType of region.linkedReadLineColorTypes) {
+                  present.add(colorType)
                 }
               }
             }

@@ -8,7 +8,6 @@ import {
   withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { UNCAPPED, isChainData } from '../RenderAlignmentDataRPC/types.ts'
-import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { getOrCreate } from '../shared/util.ts'
 import { mergeSortedSpans, overlapIntervals } from './spanOverlaps.ts'
@@ -24,7 +23,6 @@ import type {
   RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
-import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
 import type { OverlapsUploadData } from '../features/overlap/types.ts'
 import type { Span } from './spanOverlaps.ts'
 
@@ -431,33 +429,6 @@ function cloneWithChainLayout(
     ...cloneWithLayout(data, readYs, maxY, clippedBy),
     ...buildChainConnectingData(data, readYs),
   }
-}
-
-// Layer linked-read straight-line records on top of an already-laid-out map
-// (pileup or chain). The line builder needs finalized Y values and traverses by
-// readName across regions to classify pairs, so this runs as a post-pass over
-// the whole map. Driven by `showBezierConnections`, orthogonal to layout.
-export function attachLinkedReadLines(
-  laidOutMap: Map<number, LaidOutPileupData>,
-  canonicalRefName?: CanonicalRefName,
-): Map<number, LaidOutPileupData> {
-  const linesByIdx = computeLinkedReadLinesByRegion(
-    laidOutMap,
-    canonicalRefName,
-  )
-  if (linesByIdx.size === 0) {
-    return laidOutMap
-  }
-  const out = new Map<number, LaidOutPileupData>()
-  for (const [idx, data] of laidOutMap) {
-    const lines = linesByIdx.get(idx)
-    if (!lines) {
-      out.set(idx, data)
-      continue
-    }
-    out.set(idx, { ...data, ...lines })
-  }
-  return out
 }
 
 /**

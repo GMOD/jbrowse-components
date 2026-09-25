@@ -9,11 +9,7 @@ import {
   buildCollapsedPileupMap,
   collapsedLayoutMaxY,
 } from './collapsedLayout.ts'
-import {
-  attachLinkedReadLines,
-  buildLaidOutChainMap,
-  chainLayoutMaxY,
-} from './computeChainLayout.ts'
+import { buildLaidOutChainMap, chainLayoutMaxY } from './computeChainLayout.ts'
 import { NORMAL_PITCH } from './menus/compactnessPresets.ts'
 import { overlayReadColorCategories } from './readColorCategories.ts'
 import { overlayReadTagColors } from './readTagColors.ts'
@@ -26,7 +22,7 @@ import type {
   RowCap,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
+import type { GroupConnectors } from '../features/linkedReads/computeOverlay.ts'
 import type { ColorBy, ColorSchemeType, SortedBy } from '../shared/types.ts'
 import type { BakedColorScale } from './bakedColorScale.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
@@ -150,17 +146,6 @@ export interface GroupLayoutContext {
   // Region bounds by displayed-region index, so multi-region layout can locate
   // the sort position's region and detect the single-refName case.
   regions: ReadonlyMap<number, RegionBounds>
-  // Here despite `attachLinkedReadLines` never moving a read — it derives line
-  // records from rows already placed — so toggling it does pay the relayout the
-  // color/layout split exists to avoid. Deliberate: the lines embed `readYs`
-  // values, so they are a function of the layout and have to be rebuilt on every
-  // layout invalidation anyway. A separate memo downstream would buy exactly one
-  // menu click and nothing in steady state, which is not the trap that split
-  // guards against (an input that changes at drag/frame rate).
-  showLinkedReadLines: boolean
-  // What lets the straight-line pass see a junction's hidden segments and leave
-  // it to the overlay (`isGpuLinkedReadLine`).
-  canonicalRefName?: CanonicalRefName
   // Draw each group as a single row, overlap depth carried by the tint layer
   // instead of by stacking (`collapsedLayout.ts`). A group the user has sized
   // explicitly opts back out, which is what makes the label chip's expand
@@ -203,7 +188,7 @@ function layoutOneGroup(
   if (collapse) {
     return buildCollapsedPileupMap(dataMap)
   }
-  const base = ctx.isChainMode
+  return ctx.isChainMode
     ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, rowCap: cap })
     : buildLaidOutPileupMap({
         dataMap,
@@ -214,9 +199,6 @@ function layoutOneGroup(
         largeFeaturesFirst: ctx.largeFeaturesFirst,
         splicedReadsFirst: ctx.splicedReadsFirst,
       })
-  return ctx.showLinkedReadLines
-    ? attachLinkedReadLines(base, ctx.canonicalRefName)
-    : base
 }
 
 // Per-read color inputs. A separate bundle from `GroupLayoutContext` because
@@ -327,6 +309,34 @@ export function applyChainStrandFrames(
  * `readTagColors`, so classifying before that buckets every tag-colored read
  * wrong. One place so the two passes can't be reordered by accident.
  */
+// The straight-line pass's records spread onto the regions holding a line.
+// After the colour bake, so a recolour leaves the line arrays the GPU holds
+// alone and a curved-connector toggle leaves the colours.
+export function attachLinkedReadLinesByGroup(
+  byGroup: ColoredByGroup,
+  connectors: ReadonlyMap<string, GroupConnectors>,
+): ColoredByGroup {
+  if (connectors.size === 0) {
+    return byGroup
+  }
+  const out: ColoredByGroup = new Map()
+  for (const [key, map] of byGroup) {
+    const lines = connectors.get(key)?.lines
+    out.set(
+      key,
+      lines?.size
+        ? new Map(
+            [...map].map(([idx, data]) => {
+              const own = lines.get(idx)
+              return [idx, own ? { ...data, ...own } : data]
+            }),
+          )
+        : map,
+    )
+  }
+  return out
+}
+
 export function applyReadColorsByGroup(
   byGroup: LaidOutByGroup,
   ctx: ReadColorContext,
@@ -397,7 +407,7 @@ function collapsesRows(
 // needs just each group's stack depth to size reads, so it skips the dominant
 // `cloneWithLayout` cost (per-base *Ys arrays) that `buildLaidOutByGroup` pays.
 // Row counts match `groupMaxY(buildLaidOutByGroup(...).get(key))` exactly:
-// `attachLinkedReadLines`/`overlayReadTagColors` never change `maxY`.
+// `attachLinkedReadLinesByGroup`/`overlayReadTagColors` never change `maxY`.
 // A plain row count in, because no entry comes out: `rowCap`'s source labels a
 // clip on a laid-out region and there are none here. The caller's cap is the
 // display ceiling.

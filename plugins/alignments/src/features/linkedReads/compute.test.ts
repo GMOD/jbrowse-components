@@ -22,13 +22,25 @@ import {
   LINKED_READ_COLOR_SPLIT_INV,
   LINKED_READ_COLOR_SPLIT_NORMAL,
   classifyPair,
-  computeLinkedReadLinesByRegion,
   groupReadsByName,
   isNormalOrientation,
 } from './compute.ts'
+import { resolveConnectors } from './computeOverlay.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ReadEntry } from './compute.ts'
+
+// The straight-line pass's records, as the display resolves them.
+function linesOf(
+  map: Parameters<typeof resolveConnectors>[0],
+  canonicalRefName?: (refName: string) => string,
+) {
+  return resolveConnectors(map, {
+    lines: true,
+    scope: 'all',
+    canonicalRefName,
+  }).lines
+}
 
 // Minimal PileupDataResult with only the fields used by these functions.
 function makeData(opts: {
@@ -621,7 +633,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [1, 1],
       ys: [0, 0],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
@@ -645,7 +657,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [3, 3],
       ys: [0, 0],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     expect(result.size).toBe(0)
   })
 
@@ -661,7 +673,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [0, 0],
       ys: [0, 1],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
@@ -690,7 +702,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       ys: [2, 3],
       clips: [100, 0],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
@@ -717,7 +729,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       ys: [0, 1],
       clips: [100, 0],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
     expect(lines.linkedReadLinePositions[0]).toBe(200)
@@ -736,7 +748,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [0, 0],
       ys: [0, 1],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     expect(result.size).toBe(0)
   })
 
@@ -757,7 +769,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [1],
       ys: [0],
     })
-    const result = computeLinkedReadLinesByRegion(
+    const result = linesOf(
       new Map([
         [0, data0],
         [1, data1],
@@ -775,7 +787,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [0],
       ys: [0],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     expect(result.size).toBe(0)
   })
 
@@ -798,7 +810,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [1, 1, 1, 1],
       ys: [0, 0, 1, 1],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(2)
   })
@@ -825,7 +837,7 @@ describe('computeLinkedReadLinesByRegion', () => {
       orientations: [1, 1, 0, 0],
       ys: [0, 0, 1, 1],
     })
-    const result = computeLinkedReadLinesByRegion(new Map([[0, data]]))
+    const result = linesOf(new Map([[0, data]]))
     const lines = result.get(0)!
     // Both pairs emit lines: the LR paired reads and the FR split reads
     expect(lines.numLinkedReadLines).toBe(2)

@@ -265,21 +265,13 @@ export function isGpuLinkedReadLine({
   )
 }
 
-// Build per-region straight-line records for `isGpuLinkedReadLine` pairs.
-// Returns one map entry per region that has at least one line, in the same
-// `LinkedReadLinesUploadData` shape the GPU/Canvas2D renderers consume so the
-// chain-layout post-pass can spread it straight onto `LaidOutPileupData` with no
-// field renaming.
-//
-// `canonicalRefName` turns on the SA walk that finds hidden segments; without
-// it no pair has any, and a junction across unfetched segments would be drawn
-// here solid as well as by the overlay.
-//
-// Output positions are absolute genomic uint32 (worker contract); per-endpoint
-// Y is needed because mates can sit on different rows when sorting is on.
-export function computeLinkedReadLinesByRegion(
-  laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
-  canonicalRefName?: CanonicalRefName,
+// Per-region straight-line records for the `isGpuLinkedReadLine` pairs given,
+// one map entry per region holding a line, in the shape the renderers consume
+// so it spreads straight onto the region's data. Positions are absolute genomic
+// uint32 (worker contract); each end carries its own row because mates can sit
+// on different rows when sorting is on.
+export function linkedReadLinesByRegion(
+  pairs: Iterable<LinkedPair>,
 ): Map<number, LinkedReadLinesUploadData> {
   // Collect raw records first by region, then materialize typed arrays.
   const acc = new Map<
@@ -291,19 +283,15 @@ export function computeLinkedReadLinesByRegion(
     }
   >()
 
-  for (const pair of iterLinkedPairs(laidOutPileupMap, canonicalRefName)) {
-    if (isGpuLinkedReadLine(pair)) {
-      const { e1, e2, c } = pair
-      const idx = e1.displayedRegionIndex
-      const bucket = getOrCreate(acc, idx, () => ({
-        positions: [],
-        ys: [],
-        colorTypes: [],
-      }))
-      bucket.positions.push(c.bp1, c.bp2)
-      bucket.ys.push(e1.data.readYs[e1.readIdx]!, e2.data.readYs[e2.readIdx]!)
-      bucket.colorTypes.push(c.colorType)
-    }
+  for (const { e1, e2, c } of pairs) {
+    const bucket = getOrCreate(acc, e1.displayedRegionIndex, () => ({
+      positions: [],
+      ys: [],
+      colorTypes: [],
+    }))
+    bucket.positions.push(c.bp1, c.bp2)
+    bucket.ys.push(e1.data.readYs[e1.readIdx]!, e2.data.readYs[e2.readIdx]!)
+    bucket.colorTypes.push(c.colorType)
   }
 
   const out = new Map<number, LinkedReadLinesUploadData>()

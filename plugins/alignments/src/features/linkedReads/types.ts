@@ -2,10 +2,10 @@
 // same displayedRegion. Owned by the linkedReads feature.
 //
 // MAIN-THREAD derived, not worker output: the worker emits the four fields
-// empty in every mode, and `attachLinkedReadLines` fills them from
-// `computeLinkedReadLinesByRegion` after layout — the lines embed `readYs`, so
-// they cannot exist before rows are placed. Always present, so consumers can
-// treat the fields as required.
+// empty in every mode, and `attachLinkedReadLinesByGroup` fills them after the
+// colour bake from the one walk `resolveConnectors` makes — the lines embed
+// `readYs`, so they cannot exist before rows are placed. Always present, so
+// consumers can treat the fields as required.
 //
 // Populated in PILEUP layout with curved connectors on (`showLinkedReadLines` =
 // `showBezierConnections && !isChainMode`), and empty in chain mode, which draws

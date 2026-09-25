@@ -3,6 +3,8 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
+import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
+import { emptyLinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
 import {
   ALIGNMENTS_PASSES,
@@ -145,6 +147,40 @@ describe('a band switched off leaves nothing drawable', () => {
         count: 0,
       })
     }
+    expect(hal.getBufferCount(0, READ_MARK.pass.id)).toBe(1)
+  })
+})
+
+// The straight-line records spread over the laid-out data after the colour
+// bake, so a curved-connector toggle lands inside one layout run.
+describe('a connector-only change uploads only the line pass', () => {
+  const withLine = (data: PileupDataResult) => ({
+    ...data,
+    linkedReadLinePositions: new Uint32Array([START + 10, START + 60]),
+    linkedReadLineYs: new Uint16Array([0, 0]),
+    linkedReadLineColorTypes: new Uint8Array([1]),
+    numLinkedReadLines: 1,
+  })
+
+  it('uploads the lines and nothing else when they appear', () => {
+    const data = onePileup()
+    const arcs = oneArc(START + 60)
+    const { hal, renderer } = primed(data, arcs)
+    renderer.upload('sources', sources(withLine(data), arcs, 1))
+    expect(uploadedPasses(hal)).toEqual([LINKED_READ_LINE_MARK.pass.id])
+    expect(hal.callsOf('deleteRegion')).toHaveLength(0)
+  })
+
+  it('drops the line buffer and keeps the rest when they go', () => {
+    const data = withLine(onePileup())
+    const arcs = oneArc(START + 60)
+    const { hal, renderer } = primed(data, arcs)
+    renderer.upload(
+      'sources',
+      sources({ ...data, ...emptyLinkedReadLinesUploadData() }, arcs, 1),
+    )
+    expect(uploadedPasses(hal)).toEqual([LINKED_READ_LINE_MARK.pass.id])
+    expect(hal.getBufferCount(0, LINKED_READ_LINE_MARK.pass.id)).toBe(0)
     expect(hal.getBufferCount(0, READ_MARK.pass.id)).toBe(1)
   })
 })

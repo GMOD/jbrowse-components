@@ -984,7 +984,7 @@ export function cloneWithLayout(
     // The three row-derived line/tint passes a plain row placement produces
     // none of. Their own directories own the empty form; chain layout
     // (`cloneWithChainLayout`), the collapsed layout and
-    // `attachLinkedReadLines` each spread their real records over it.
+    // `attachLinkedReadLinesByGroup` each spread their real records over it.
     ...emptyConnectingLinesUploadData(),
     ...emptyOverlapsUploadData(),
     ...emptyLinkedReadLinesUploadData(),

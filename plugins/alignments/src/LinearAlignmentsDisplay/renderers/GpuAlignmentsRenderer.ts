@@ -14,6 +14,7 @@ import {
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
+import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
 import { ARC_BAND_UNIFORMS_SIZE_BYTES } from './arcBandUniforms.ts'
 import { ARC_BAND_MARKS } from './arcMarks.ts'
@@ -64,6 +65,10 @@ interface UploadedRegion {
   // `overlayReadColorCategories`). Only the read pass carries them.
   tagColors: Uint32Array | undefined
   colorCategories: Uint8Array | undefined
+  // The straight-line pass's records, which spread over the laid-out data
+  // after the colour bake (`attachLinkedReadLinesByGroup`), so a
+  // curved-connector toggle changes them within one layout run.
+  lines: Uint32Array | undefined
   arcs: ArcsUploadData | undefined
   // The density tier's packed bins, when this key is a density region rather
   // than a pileup one. Also what tells the two apart in the memo, so a swap
@@ -263,6 +268,7 @@ export class GpuAlignmentsRenderer
       layout: data?.readYs,
       tagColors: data?.readTagColors,
       colorCategories: data?.readColorCategories,
+      lines: data?.linkedReadLinePositions,
       arcs,
       density: undefined,
       arcLineWidth,
@@ -280,6 +286,9 @@ export class GpuAlignmentsRenderer
           prev.colorCategories !== data.readColorCategories)
       ) {
         uploadPass(this.hal, idx, READ_MARK.pass, data)
+      }
+      if (data && prev.lines !== data.linkedReadLinePositions) {
+        uploadPass(this.hal, idx, LINKED_READ_LINE_MARK.pass, data)
       }
       if (prev.arcs !== arcs || prev.arcLineWidth !== arcLineWidth) {
         // A band switched off uploads the empty feed rather than skipping the
@@ -332,6 +341,7 @@ export class GpuAlignmentsRenderer
       layout: undefined,
       tagColors: undefined,
       colorCategories: undefined,
+      lines: undefined,
       arcs: undefined,
       density: coverage.coveragePackedBuffer,
       arcLineWidth: 0,

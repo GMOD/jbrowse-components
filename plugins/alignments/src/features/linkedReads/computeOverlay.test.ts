@@ -29,15 +29,27 @@ import {
   LINKED_READ_COLOR_PAIR_RR,
   LINKED_READ_COLOR_PAIR_UNKNOWN,
   LINKED_READ_COLOR_SPLIT_INV,
-  computeLinkedReadLinesByRegion,
 } from './compute.ts'
 import {
   bezierConnectionLegendItems,
   computePileupBezierArcs,
   enumerateBezierPairs,
+  resolveConnectors,
 } from './computeOverlay.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+
+// The straight-line pass's records, as the display resolves them.
+function linesOf(
+  map: Parameters<typeof resolveConnectors>[0],
+  canonicalRefName?: (refName: string) => string,
+) {
+  return resolveConnectors(map, {
+    lines: true,
+    scope: 'all',
+    canonicalRefName,
+  }).lines
+}
 
 // Minimal PileupDataResult with only the fields computePileupBezierArcs reads.
 function makeData(opts: {
@@ -849,10 +861,8 @@ describe('a same-strand junction across segments nothing fetched', () => {
 
   it('leaves the straight-line pass for the overlay', () => {
     const map = sameStrand([0, 1])
-    expect(computeLinkedReadLinesByRegion(map).get(0)?.numLinkedReadLines).toBe(
-      1,
-    )
-    expect(computeLinkedReadLinesByRegion(map, identity).size).toBe(0)
+    expect(linesOf(map).get(0)?.numLinkedReadLines).toBe(1)
+    expect(linesOf(map, identity).size).toBe(0)
   })
 
   it('draws a dashed straight line between rows, naming the loci', () => {

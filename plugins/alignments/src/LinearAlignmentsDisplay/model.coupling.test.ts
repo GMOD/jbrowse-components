@@ -691,15 +691,30 @@ describe('curved connectors', () => {
     return display
   }
 
-  test('a band resize or a recolor reuses the enumerated pairs', () => {
+  test('one walk answers both passes, and a band resize or a recolor reuses it', () => {
     const display = connectorDisplay()
     const dispose = autorun(() => display.bezierPairSections)
-    const pairs = display.bezierPairsByGroup
-    expect(pairs.get('')).toHaveLength(1)
+    const connectors = display.connectorsByGroup
+    expect(connectors.get('')?.overlayPairs).toHaveLength(1)
+    expect(connectors.get('')?.lines.get(0)?.numLinkedReadLines).toBe(1)
 
     display.setCoverageHeight(display.coverageHeight + 20)
     display.setColorBy({ type: 'strand' })
-    expect(display.bezierPairsByGroup).toBe(pairs)
+    expect(display.connectorsByGroup).toBe(connectors)
+    dispose()
+  })
+
+  test('a curved-connector toggle keeps the layout and the colours', () => {
+    const display = connectorDisplay()
+    const dispose = autorun(() => display.laidOutByGroup)
+    const layout = display.laidOutByGroupFramed
+    const colored = display.laidOutByGroupColored
+    expect(display.laidOutByGroup.get('')?.get(0)?.numLinkedReadLines).toBe(1)
+
+    display.setShowBezierConnections(false)
+    expect(display.laidOutByGroupFramed).toBe(layout)
+    expect(display.laidOutByGroupColored).toBe(colored)
+    expect(display.laidOutByGroup.get('')?.get(0)?.numLinkedReadLines).toBe(0)
     dispose()
   })
 
