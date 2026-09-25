@@ -6,7 +6,7 @@
 //
 // All four are a 6-vertex quad; the fragment shader carves the shape.
 //! targets: wgsl, glsl
-//! export-consts: DIAMOND_GLYPH_SCALE, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
+//! export-consts: DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, TRIANGLE_MITER_REACHES, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
 //! js-export: valueToYPxScaled, pointDrawsBar, pointYPx
 // `valueScale`'s twin is lifted here, once, for the bar shape too.
 
@@ -100,6 +100,14 @@ static const float INV_SQRT5 = 0.4472136;
 // colour swap. LocusZoom's lead-SNP convention, generalized.
 static const float DIAMOND_GLYPH_SCALE = 1.6;
 
+// How far past its boundary each glyph still inks where its quad binds, in ramp
+// reaches. The disc's ramp is isotropic, so one. The diamond's quad binds on
+// the four axes, where two L1 facets miter at a right angle: sqrt(2). The
+// triangle's binds at its apex, where the two slanted edges miter much more
+// sharply: sqrt(5), and padding one reach there cut the apex at alpha 0.276.
+static const float DIAMOND_MITER_REACHES = 1.4142136;
+static const float TRIANGLE_MITER_REACHES = 2.2360680;
+
 // The shape's own anchor, the top of its row band. The vertex branch, the
 // Canvas2D painter, the ink box and the hit test all read a value's y here.
 float pointYPx(float value, float domainMin, float domainMax, float h, int scaleType, float insetPx, float symlogConstant) {
@@ -160,9 +168,12 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
     o.localPos = local;
     o.shape = SHAPE_BAR;
   } else {
-    float expand = discExpand(u.radiusPx, u.devicePixelRatio);
-    float glyphScale = inst.glyph == GLYPH_DIAMOND ? DIAMOND_GLYPH_SCALE : 1.0;
-    float halfPx = u.radiusPx * expand * glyphScale;
+    bool diamond = inst.glyph == GLYPH_DIAMOND;
+    float unitPx = u.radiusPx * (diamond ? DIAMOND_GLYPH_SCALE : 1.0);
+    float reaches = inst.glyph == GLYPH_TRIANGLE ? TRIANGLE_MITER_REACHES
+                  : (diamond ? DIAMOND_MITER_REACHES : 1.0);
+    float expand = glyphExpand(unitPx, reaches, u.devicePixelRatio);
+    float halfPx = unitPx * expand;
     float dx = pxToClipLen(local.x * halfPx, u.viewportWidth);
     float dy = pxToClipLen(local.y * halfPx, u.canvasHeight);
     o.position = float4(startClipX + dx, centerClipY + dy, 0.0, 1.0);
