@@ -31,7 +31,7 @@ const failures = await smokeExamplesSite({
   slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
   // the web-worker example (a section on the plugins page) must actually spawn
   // an RPC worker — guards the Rollup circular-dependency TDZ that webpack
-  // tolerates. See MIGRATION.md.
+  // tolerates.
   workerSlug: 'plugins',
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),

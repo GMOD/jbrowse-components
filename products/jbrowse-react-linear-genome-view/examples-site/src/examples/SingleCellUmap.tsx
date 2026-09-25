@@ -194,9 +194,7 @@ const dataPromise = Promise.all([
   fetch(`${BASE}/expr.bin`)
     .then(res => res.arrayBuffer())
     .then(buf => new Uint8Array(buf)),
-  loadPlugins([{ name: 'Zarr', url: ZARR_PLUGIN }]).then(loaded =>
-    loaded.map(p => p.plugin),
-  ),
+  loadPlugins([{ name: 'Zarr', url: ZARR_PLUGIN }]),
 ])
 
 const assembly = {

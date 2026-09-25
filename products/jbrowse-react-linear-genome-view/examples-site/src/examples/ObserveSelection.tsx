@@ -1,4 +1,4 @@
-import { isFeature } from '@jbrowse/core/util'
+import { assembleLocString, isFeature } from '@jbrowse/core/util'
 import {
   JBrowseLinearGenomeView,
   useCreateViewState,
@@ -16,7 +16,11 @@ const SelectedFeature = observer(function SelectedFeature({
   return isFeature(selection) ? (
     <p>
       Selected <b>{selection.get('name') || selection.id()}</b> at{' '}
-      {selection.get('refName')}:{selection.get('start')}-{selection.get('end')}
+      {assembleLocString({
+        refName: selection.get('refName'),
+        start: selection.get('start'),
+        end: selection.get('end'),
+      })}
     </p>
   ) : (
     <p>Click a feature to select it.</p>

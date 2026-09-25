@@ -1,8 +1,9 @@
 import { ErrorBanner } from '@jbrowse/core/ui'
-import { useCreateOnce } from '@jbrowse/core/util/hooks'
+import { useCreateOnce, useFinalUnmount } from '@jbrowse/core/util/hooks'
 import {
   JBrowseLinearGenomeView,
   createViewState,
+  destroyViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
@@ -32,6 +33,11 @@ export default function WithErrorHandler() {
       }
     },
   )
+  useFinalUnmount(() => {
+    if ('viewState' in result) {
+      destroyViewState(result.viewState)
+    }
+  })
   return 'error' in result ? (
     <ErrorBanner error={result.error} />
   ) : (

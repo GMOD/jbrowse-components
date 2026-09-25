@@ -1,5 +1,5 @@
 ```bash
-jbrowse text-index --file genes.gff3.gz --fileId volvox_genes \
+jbrowse text-index --file genes.gff3.gz --fileId gff3tabix_genes \
                    --file vars.vcf.gz   --fileId volvox_vars
 ```
 

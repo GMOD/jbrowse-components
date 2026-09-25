@@ -251,8 +251,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-init-advanced',
         title: 'A view spelled out',
-        description:
-          'displaySnapshot, trackSnapshot, tracklist, nav and highlight.',
+        description: 'displaySnapshot, tracklist, nav and highlight.',
       },
       {
         slug: 'with-session-highlights',
@@ -311,8 +310,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-error-handler',
         title: 'Custom error handling',
-        description:
-          'Construction errors throw; runtime errors go on view.error.',
+        description: 'createViewState throws on a config it cannot build.',
       },
     ],
   },

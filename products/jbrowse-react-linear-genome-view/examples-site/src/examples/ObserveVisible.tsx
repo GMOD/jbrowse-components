@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
+import { assembleLocString } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   JBrowseLinearGenomeView,
@@ -79,7 +80,11 @@ const VisibleFeatures = observer(function VisibleFeatures({
           <tr key={f.id()}>
             <td>{f.get('name')}</td>
             <td>
-              {f.get('refName')}:{f.get('start')}-{f.get('end')}
+              {assembleLocString({
+                refName: f.get('refName'),
+                start: f.get('start'),
+                end: f.get('end'),
+              })}
             </td>
           </tr>
         ))}
