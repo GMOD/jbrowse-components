@@ -1238,6 +1238,13 @@ async function fetchFeatures(
       regions,
       signal,
     })
+  } catch (e) {
+    throw signal.aborted
+      ? new Error(
+          `jb.getFeatures gave up on track "${trackId}" after 120s. Narrow the region, or check that its data host is answering.`,
+          { cause: e },
+        )
+      : e
   } finally {
     clearTimeout(stopTimer)
     void releaseAdapterSession(rpcManager, sessionId)

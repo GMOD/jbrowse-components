@@ -974,6 +974,23 @@ describe('getFeatures reads through the RPC', () => {
     expect(adapterSpy).not.toHaveBeenCalled()
   })
 
+  it('names its own deadline when the read times out', async () => {
+    jest.useFakeTimers()
+    jest.spyOn(rpcManager, 'call').mockImplementationOnce(
+      (...args: unknown[]) =>
+        new Promise<never>((_resolve, reject) => {
+          const { signal } = args[2] as { signal: AbortSignal }
+          signal.addEventListener('abort', () => {
+            reject(new DOMException('aborted', 'AbortError'))
+          })
+        }),
+    )
+    const read = jb.getFeatures('genes', 'ctgA:1-100').catch((e: unknown) => e)
+    await jest.advanceTimersByTimeAsync(120_000)
+    expect(`${await read}`).toMatch(/gave up .* after 120s/)
+    jest.useRealTimers()
+  })
+
   it('refuses a region over the gate before fetching it', async () => {
     await expect(
       jb.getFeatures({
