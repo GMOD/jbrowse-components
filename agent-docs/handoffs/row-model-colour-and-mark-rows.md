@@ -109,9 +109,7 @@ at most a hint where the setting is chosen.
      hand-written config reaches it);
    - a density sidecar standing in under `rows` draws in the first row only,
      and `valueMarkIndex` picks the hidden mark (no shipped config reaches it);
-   - the MST fork's `reconcileArrayChildren`, which needs a fork release:
-     its reuse scan could skip a scalar element type, the root of the `setSlot`
-     refill, and its removal branch splices each removed node off the front of
-     the run, so one `clear()` is quadratic (1.4 s at 100,000 names, 60 ms at
-     20,000). A pass building the result array instead of splicing in place
-     makes both linear, and the refill can then go.
+   - `refillArray` in `packages/core/src/configuration/configurationSchema.ts`
+     works around the fork's quadratic array reconcile, which
+     `@jbrowse/mobx-state-tree` 6.6.1 made linear; measure a 5,000-name
+     reorder through plain assignment and drop the refill if it holds.
