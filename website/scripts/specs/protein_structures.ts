@@ -1,4 +1,4 @@
-import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { PROTEIN3D_CONFIG } from './features.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -138,6 +138,41 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
         dx: -40,
         dy: 40,
       },
+    ],
+  },
+  {
+    // 2L14, the transactivation domain on CBP, is twenty NMR models and each
+    // loads as a Mol* structure of its own. The seed lights the two helices the
+    // file annotates (18-26 and 46-54) on every model, and bands their codons
+    // across exons 2 to 4. Per-residue CA RMSF over the deposited models: the
+    // helices at most 1.4 Å, the linker 27-38 from 3.4 to 7.8 Å.
+    mode: 'url',
+    name: 'protein/tp53_nmr_ensemble',
+    url: tp53Session({
+      structures: [
+        {
+          pdbId: '2L14',
+          initialTranscriptResidues: [
+            { start: 18, end: 26 },
+            { start: 46, end: 54 },
+          ],
+        },
+      ],
+      loc: 'chr17:7,676,140-7,676,640',
+      height: 720,
+      showAlignment: false,
+    }),
+    ...READY,
+    readyTimeout: 240000,
+    viewportWidth: 2000,
+    viewportHeight: 1000,
+    // the seed frames the camera on the helices; Reset Zoom fits the whole
+    // ensemble, frayed ends included, once that focus has finished moving
+    actions: [
+      { type: 'delay', ms: 8000 },
+      { type: 'click', selector: 'button[title="Reset Zoom"]' },
+      PARK_CURSOR,
+      { type: 'delay', ms: 5000 },
     ],
   },
 ]

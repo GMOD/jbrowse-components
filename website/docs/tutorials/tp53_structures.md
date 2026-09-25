@@ -11,9 +11,10 @@ tutorial_category: Transcriptomics & proteins
 
 The p53 protein has a predicted structure covering every residue and crystal
 structures covering the parts that fold. We open three of them in one view
-beside the _TP53_ gene, superposed and each mapped to the same transcript, then
-click a cancer hotspot on the crystal and read it back to its codon. The
-protein3d plugin does the mapping; Mol\* draws the structures.
+beside the _TP53_ gene, superposed and each mapped to the same transcript, click
+a cancer hotspot on the crystal and read it back to its codon, and open an NMR
+ensemble of the transactivation domain the same way. The protein3d plugin does
+the mapping; Mol\* draws the structures.
 
 ## Prerequisites
 
@@ -34,6 +35,8 @@ each structure provide everything about the protein.
   https://files.rcsb.org/download/1TUP.cif
 - the p53 transactivation peptide bound to MDM2, PDB 1YCR:
   https://files.rcsb.org/download/1YCR.cif
+- the p53 transactivation domain bound to CBP, solved by NMR, PDB 2L14:
+  https://files.rcsb.org/download/2L14.cif
 - UniProt's feature annotation of p53, the domain and variant tracks:
   https://rest.uniprot.org/uniprotkb/P04637.gff
 - SIFTS, which maps where each crystal's residues sit in the UniProt sequence:
@@ -127,6 +130,31 @@ consistent codon. Switch back to Chain B and the peptide's alignment returns. In
 a complex of two paralogs, the plugin's automatic choice can land on the wrong
 chain, and the picker switches it.
 
+## The transactivation domain as an NMR ensemble
+
+1YCR's peptide is fifteen residues of p53's transactivation domain, the
+N-terminal region where the AlphaFold model's pLDDT falls away. PDB 2L14 holds
+more of that domain, residues 13 to 61, bound to the nuclear coactivator binding
+domain of CBP. Its authors solved it by NMR and deposited twenty models, each
+consistent with their measured restraints.
+
+[Open 2L14 with its two helices selected](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22pdbId%22%3A%222L14%22%2C%22initialTranscriptResidues%22%3A%5B%7B%22start%22%3A18%2C%22end%22%3A26%7D%2C%7B%22start%22%3A46%2C%22end%22%3A54%7D%5D%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C676%2C140-7%2C676%2C640%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%2C%22colorScheme%22%3A%22mapped-chain%22%7D%5D%7D).
+The link selects residues 18 to 26 and 46 to 54, the two helices the file
+annotates, through `initialTranscriptResidues`, which counts along the
+transcript's translation. The plugin loads each model as a structure of its own,
+so the view takes longer to open than a crystal's, and the colour scheme and the
+selection reach all twenty. The view opens framed on the helices; click **Reset
+Zoom**, the circular arrow at the top right of the canvas, to fit the whole
+ensemble.
+
+<Figure src="/img/protein/tp53_nmr_ensemble.png" caption="NCBI RefSeq over TP53's first coding exons beside every model of 2L14. The p53 chain is blue on grey CBP with its two helices in magenta; the helices overlap from model to model, the linker leaving the first one spreads, and bands on the gene mark the helices' codons." />
+
+2L14's two helices sit on CBP in the same place in every model. The linker
+leaving the first helix takes a different path in each, and so do both ends of
+the chain; the grey spray on the right is CBP's own C-terminal tail. The first
+helix lies within the stretch 1YCR's peptide covers, bound here to CBP. On the
+gene its codons straddle an intron, so its band is split across two exons.
+
 ## Checking the hotspot against the sequence
 
 Back on the genome view, zoom into the band the R248 selection drew, down to
@@ -152,3 +180,6 @@ middle one.
   suppressor-DNA complex: understanding tumorigenic mutations. _Science_ 1994.
 - Kussie PH, Gorina S, Marechal V, et al. Structure of the MDM2 oncoprotein
   bound to the p53 tumor suppressor transactivation domain. _Science_ 1996.
+- Lee CW, Martinez-Yamout MA, Dyson HJ, Wright PE. Structure of the p53
+  transactivation domain in complex with the nuclear receptor coactivator
+  binding domain of CREB binding protein. _Biochemistry_ 2010.
