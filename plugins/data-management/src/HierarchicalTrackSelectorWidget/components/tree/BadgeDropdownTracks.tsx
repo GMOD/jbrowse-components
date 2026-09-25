@@ -68,19 +68,22 @@ const BadgeDropdownTracks = observer(function BadgeDropdownTracks({
       menuItems={[
         ...tracks.map(t => ({
           type: 'checkbox' as const,
-          label: (
-            <>
-              <SanitizedHTML html={getTrackName(t, session)} />{' '}
-              <TrackSelectorTrackMenu
-                id={t.trackId}
-                model={model}
-                conf={t}
-                setOpen={open => {
-                  setMenuOpen(open)
-                }}
-                stopPropagation
-              />
-            </>
+          // the label is an element, so the row needs an `id` to key on
+          id: t.trackId,
+          label: <SanitizedHTML html={getTrackName(t, session)} />,
+          // the row's own track menu is a trailing control, not part of the
+          // name — inside the label it sat inside the text column, so it lined
+          // up with nothing and moved with the name's length
+          endAdornment: (
+            <TrackSelectorTrackMenu
+              id={t.trackId}
+              model={model}
+              conf={t}
+              setOpen={open => {
+                setMenuOpen(open)
+              }}
+              stopPropagation
+            />
           ),
           checked: model.shownTrackIds.has(t.trackId),
           onClick: () => {

@@ -19,7 +19,13 @@ export interface MenuSubHeader {
 export type MenuItemClickHandler = (...args: any[]) => void
 
 export interface BaseMenuItem {
-  /** #menuField stable identifier, for tests and for finding a row again */
+  /**
+   * #menuField stable identifier; keys the row, and finds it again from a test
+   *
+   * Required of a row whose `label` is not a string: the label is the fallback
+   * key, and an element interpolates to `[object Object]`, so a menu of them
+   * hands React one key for every row.
+   */
   id?: string
   /** #menuField the row's text */
   label: React.ReactNode

@@ -335,6 +335,33 @@ describe('CascadingMenuButton', () => {
     expect(screen.getByRole('separator')).toBeTruthy()
   })
 
+  // A label is a ReactNode, so the label-derived key is `[object Object]` for
+  // every element-labelled row — which the favorites/recently-used track
+  // dropdown hit, handing React one key for its whole list. `id` is what such a
+  // row keys on.
+  it('should key element-labelled rows on their id', async () => {
+    const errors: string[] = []
+    const spy = jest
+      .spyOn(console, 'error')
+      .mockImplementation((...args: unknown[]) => {
+        errors.push(`${args[0]}`)
+      })
+    const user = await setup([
+      { id: 't1', label: <span>track one</span>, onClick: () => {} },
+      { id: 't2', label: <span>track two</span>, onClick: () => {} },
+      {
+        id: 's1',
+        label: <span>group</span>,
+        type: 'subMenu',
+        subMenu: [{ label: 'Sub', onClick: () => {} }],
+      },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    expect(await screen.findByText('track one')).toBeTruthy()
+    spy.mockRestore()
+    expect(errors.filter(e => e.includes('same key'))).toEqual([])
+  })
+
   it('should not rule off a subHeader that opens the menu', async () => {
     const user = await setup([
       { type: 'subHeader', label: 'First' },

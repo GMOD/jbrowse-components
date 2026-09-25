@@ -252,13 +252,22 @@ function useSubmenuHover() {
   return { openSubmenu, hover }
 }
 
-// Identity of a submenu row, used both as its React key and to remember which
-// submenu is open. Deliberately not the array index: the items are re-derived on
-// every observable change (a checkbox toggle can add or drop a row above), so an
-// index-keyed "open" flag would follow the position rather than the submenu and
-// the open panel would jump to whichever row landed at that index.
-function submenuKey(label: React.ReactNode) {
-  return `subMenu-${label}`
+// Identity of a row: `id` when the item carries one, else its label. Deliberately
+// not the array index: the items are re-derived on every observable change (a
+// checkbox toggle can add or drop a row above), so an index-keyed "open" flag
+// would follow the position rather than the submenu and the open panel would jump
+// to whichever row landed at that index.
+//
+// `id` is what a menu whose labels are not strings has to key on. A label is a
+// `React.ReactNode`, so interpolating an element yields `[object Object]` for
+// every row in the menu — which the favorites/recently-used track dropdown did,
+// giving all of its rows one key.
+function rowKey(item: BaseMenuItem) {
+  return item.id ?? `${item.label}`
+}
+
+function submenuKey(item: BaseMenuItem) {
+  return `subMenu-${rowKey(item)}`
 }
 
 // Where the aim cone's tip goes for a submenu opened from the keyboard, which
@@ -616,7 +625,7 @@ function CascadingMenuList({
     <>
       {sortedItems.map((item, idx) => {
         if ('subMenu' in item) {
-          const key = submenuKey(item.label)
+          const key = submenuKey(item)
           return (
             <CascadingSubmenu
               key={key}
@@ -651,7 +660,7 @@ function CascadingMenuList({
         if (item.type === 'custom') {
           return (
             <CustomMenuRow
-              key={`custom-${item.label}`}
+              key={`custom-${rowKey(item)}`}
               item={item}
               onHover={closeOnHover}
             />
@@ -660,7 +669,7 @@ function CascadingMenuList({
 
         return (
           <CascadingMenuItem
-            key={`menuitem-${item.label}`}
+            key={`menuitem-${rowKey(item)}`}
             item={item}
             inset={hasIcon && !item.icon}
             columns={columns}
