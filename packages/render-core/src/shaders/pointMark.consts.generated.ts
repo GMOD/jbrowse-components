@@ -3,6 +3,10 @@
 
 export const DIAMOND_GLYPH_SCALE = 1.6
 
+export const DIAMOND_MITER_REACHES = 1.4142136
+
+export const TRIANGLE_MITER_REACHES = 2.236068
+
 export const GLYPH_DISC = 0
 
 export const GLYPH_TRIANGLE = 1

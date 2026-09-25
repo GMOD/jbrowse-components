@@ -8,7 +8,7 @@
 // `export-consts` emits the constant and `js-export` emits the snap, both
 // consumed by `pointMarker.ts` (adr-051).
 //! export-consts: SMALL_POINT_MAX_DIAMETER
-//! js-export: crispSquareTopLeftPx, discExpand
+//! js-export: crispSquareTopLeftPx, discExpand, glyphExpand
 module pointGlyph;
 
 import antialias;
@@ -31,16 +31,25 @@ public static const float SMALL_POINT_MAX_DIAMETER = 3.0;
 // only there so a radius of 0 cannot divide.
 static const float MIN_GLYPH_RADIUS_PX = 1e-3;
 
-// Quad scale factor that grows a glyph's bounding quad by the ramp's reach so
-// its faded edge isn't clipped. localPos is scaled by the same factor, so the
-// glyph boundary stays at distance 1 (see discAlpha) and the quad's half extent
-// comes out at `radiusPx + aaHalfPx(dpr)` px for every radius.
+// Quad scale factor that grows a glyph's bounding quad past its own half extent
+// `unitPx` so the faded edge isn't clipped. localPos is scaled by the same
+// factor, so the glyph boundary stays at distance 1 (see discAlpha) and the
+// quad's half extent comes out at `unitPx + reaches * aaHalfPx(dpr)` px.
 //
-// Clamping the DIVISOR instead under-pads every radius below the clamp, because
-// the caller scales by the unclamped radius. `pointGlyphPad.test.ts` holds the
-// pad to the reach at the sub-pixel radii a diamond or a triangle reaches.
+// `reaches` is how far past the boundary the SDF still inks where the quad
+// binds, in ramp reaches. One wherever the boundary the quad touches is a
+// single facet, more wherever two facets miter — see pointMark.slang's table.
+//
+// Clamping the DIVISOR instead under-pads every extent below the clamp, because
+// the caller scales by the unclamped one. `pointGlyphPad.test.ts` holds each
+// glyph's pad to its reach at the sub-pixel radii a diamond or a triangle
+// reaches.
+public float glyphExpand(float unitPx, float reaches, float dpr) {
+  return 1.0 + reaches * aaHalfPx(dpr) / max(unitPx, MIN_GLYPH_RADIUS_PX);
+}
+
 public float discExpand(float radiusPx, float dpr) {
-  return 1.0 + aaHalfPx(dpr) / max(radiusPx, MIN_GLYPH_RADIUS_PX);
+  return glyphExpand(radiusPx, 1.0, dpr);
 }
 
 // Pixel-grid-snapped top-left of the crisp small-point square, on one axis. The

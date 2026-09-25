@@ -20,6 +20,10 @@ function aaHalfPx(dpr: number): number {
   return (0.5 * aaPx(dpr))
 }
 
+export function glyphExpand(unitPx: number, reaches: number, dpr: number): number {
+  return (1.0 + ((reaches * aaHalfPx(dpr)) / _max(unitPx, 0.00100000004749745)))
+}
+
 export function discExpand(radiusPx: number, dpr: number): number {
-  return (1.0 + (aaHalfPx(dpr) / _max(radiusPx, 0.00100000004749745)))
+  return glyphExpand(radiusPx, 1.0, dpr)
 }

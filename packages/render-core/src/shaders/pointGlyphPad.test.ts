@@ -1,19 +1,23 @@
-// `discExpand` sizes the quad the vertex stage emits; `glyphEdgeAlpha` shades a
+// `glyphExpand` sizes the quad the vertex stage emits; `glyphEdgeAlpha` shades a
 // ramp inside it. The two are sized from one number and nothing in the build
 // holds them to each other, so this asserts the invariant directly: every point
 // the fragment stage would give non-zero alpha lies inside the quad.
 //
 // `glyphEdgeAlpha.test.ts` is the fragment half — it pins the ramp at one output
 // pixel for each SDF. This is the vertex half, and the two differ in what they
-// import: that file models the pad, this one runs `discExpand` itself, because a
-// pad test spelling its own copy of the expansion is a copy that agrees with
+// import: that file models the pad, this one runs `glyphExpand` itself, because
+// a pad test spelling its own copy of the expansion is a copy that agrees with
 // itself. Same reason the scalars in dotplotCapsulePad.test.ts are imported.
 //
 // SYNC: keep the quad model in step with pointMark.slang's vs_main and
 // wiggle.slang's scatter branch, and the pieces with the SDFs in fs_main.
 import { aaHalfPx, aaRamp } from './antialias.js.generated.ts'
-import { discExpand } from './pointGlyph.js.generated.ts'
-import { DIAMOND_GLYPH_SCALE } from './pointMark.consts.generated.ts'
+import { discExpand, glyphExpand } from './pointGlyph.js.generated.ts'
+import {
+  DIAMOND_GLYPH_SCALE,
+  DIAMOND_MITER_REACHES,
+  TRIANGLE_MITER_REACHES,
+} from './pointMark.consts.generated.ts'
 
 const INV_SQRT5 = 1 / Math.sqrt(5)
 
@@ -102,9 +106,16 @@ function inkedHalfExtentPx(shape: Shape, sdfUnitPx: number, dpr: number) {
   return extent
 }
 
-// pointMark.slang's `halfPx`, and with a scale of 1 also wiggle.slang's.
-function quadHalfExtentPx(radiusPx: number, dpr: number, glyphScale = 1) {
-  return radiusPx * discExpand(radiusPx, dpr) * glyphScale
+// pointMark.slang's `halfPx`, and with a scale and a reach of 1 also
+// wiggle.slang's.
+function quadHalfExtentPx(
+  radiusPx: number,
+  dpr: number,
+  glyphScale = 1,
+  reaches = 1,
+) {
+  const unitPx = sdfUnitPx(radiusPx, glyphScale)
+  return unitPx * glyphExpand(unitPx, reaches, dpr)
 }
 
 // One unit of `localPos` in CSS px: `halfPx / expand`, which is where the glyph
@@ -143,7 +154,7 @@ describe('the pieces model the SDFs fs_main branches to', () => {
   })
 })
 
-describe('discExpand', () => {
+describe('glyphExpand', () => {
   // The regression. Clamping the divisor made this `radiusPx + aaHalfPx` only
   // above the clamp, because the caller scales by the unclamped radius: at
   // radius 0.4 and dpr 2 the pad came out 0.12 px against a 0.25 px reach.
@@ -158,6 +169,14 @@ describe('discExpand', () => {
       }
     },
   )
+
+  // wiggle.slang's scatter branch calls `discExpand`, which is the one-reach
+  // case of the same expansion rather than a second rule.
+  test.each(DPRS)('discExpand is the one-reach case: dpr %p', dpr => {
+    for (const radiusPx of RADII_PX) {
+      expect(discExpand(radiusPx, dpr)).toBe(glyphExpand(radiusPx, 1, dpr))
+    }
+  })
 
   // The disc is what wiggle's scatter branch and pointMark's GLYPH_DISC draw,
   // both at `halfPx = radiusPx * expand`. Its ramp is isotropic, so the quad is
@@ -175,52 +194,46 @@ describe('discExpand', () => {
   )
 })
 
-describe('the scaled diamond', () => {
+// Neither of the two carved glyphs binds its quad on a single facet, so neither
+// pads by one reach. An L1 boundary's ramp runs perpendicular to a 45-degree
+// facet, so at the diamond's four corners — on the axes, which is where its
+// quad binds — two offset facets miter out sqrt(2) reaches. The triangle's apex
+// is the same construction at a much sharper angle: sqrt(5).
+describe.each([
+  ['diamond', DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, Math.SQRT2],
+  ['triangle', 1, TRIANGLE_MITER_REACHES, Math.sqrt(5)],
+] as const)('the %s', (shape, glyphScale, reaches, miter) => {
+  test('pads by the miter its corners reach', () => {
+    expect(reaches).toBeCloseTo(miter, 6)
+  })
+
   test.each(DPRS)('keeps its whole ramp inside the quad: dpr %p', dpr => {
     for (const radiusPx of RADII_PX) {
-      const inked = inkedHalfExtentPx(
-        'diamond',
-        sdfUnitPx(radiusPx, DIAMOND_GLYPH_SCALE),
-        dpr,
-      )
+      const unitPx = sdfUnitPx(radiusPx, glyphScale)
+      const inked = inkedHalfExtentPx(shape, unitPx, dpr)
+      expect(inked - unitPx).toBeCloseTo(miter * aaHalfPx(dpr), 6)
       expect(inked).toBeLessThanOrEqual(
-        quadHalfExtentPx(radiusPx, dpr, DIAMOND_GLYPH_SCALE) + 1e-9,
+        quadHalfExtentPx(radiusPx, dpr, glyphScale, reaches) + 1e-9,
       )
     }
   })
 
-  // Why `discExpand` is called on the UNSCALED radius while `halfPx` scales
-  // after it, which reads like an oversight and is not. An L1 boundary's ramp
-  // is perpendicular to a 45-degree facet, so where the quad binds — the four
-  // corners, on the axes — the ink reaches sqrt(2) ramp reaches out, not one.
-  // Scaling the radius into discExpand would pad by one reach there and cut the
-  // corners at alpha 0.146; the surviving factor of DIAMOND_GLYPH_SCALE covers
-  // sqrt(2) with room to spare, and this is what fails if that constant drops
-  // below it.
-  test.each(DPRS)(
-    'needs sqrt(2) reaches at its corners, not one: dpr %p',
-    dpr => {
-      for (const radiusPx of RADII_PX) {
-        const unitPx = sdfUnitPx(radiusPx, DIAMOND_GLYPH_SCALE)
-        const inked = inkedHalfExtentPx('diamond', unitPx, dpr)
-        expect(inked - unitPx).toBeCloseTo(Math.SQRT2 * aaHalfPx(dpr), 6)
-        expect(inked).toBeGreaterThan(unitPx + aaHalfPx(dpr))
-        expect(DIAMOND_GLYPH_SCALE).toBeGreaterThan(Math.SQRT2)
-      }
-    },
-  )
-})
-
-// A shortfall this file records rather than fixes: the triangle's quad holds
-// the ramp along all three edges and not around the corners, where two offset
-// edges miter out to sqrt(5) reaches at the apex. The cut is sub-pixel and
-// independent of the radius clamp — it survives the fix above — so closing it
-// means padding the quad per glyph, which nothing else in the shape needs.
-test.each(DPRS)('the triangle still loses its corner miters: dpr %p', dpr => {
-  for (const radiusPx of RADII_PX) {
-    const unitPx = sdfUnitPx(radiusPx)
-    const inked = inkedHalfExtentPx('triangle', unitPx, dpr)
-    expect(inked - unitPx).toBeCloseTo(Math.sqrt(5) * aaHalfPx(dpr), 6)
-    expect(inked).toBeGreaterThan(quadHalfExtentPx(radiusPx, dpr))
-  }
+  // What a one-reach pad costs: the quad cuts the corner, and the fragment the
+  // rasterizer stops at is still well inside the ramp. 0.146 for the diamond,
+  // 0.276 for the triangle, at every radius and dpr — sub-pixel, and a hard
+  // edge on the one feature of the glyph a reader picks it out by.
+  test.each(DPRS)('a one-reach pad would cut that corner: dpr %p', dpr => {
+    for (const radiusPx of RADII_PX) {
+      const unitPx = sdfUnitPx(radiusPx, glyphScale)
+      const cut = quadHalfExtentPx(radiusPx, dpr, glyphScale) - unitPx
+      const alpha = alphaAt(
+        shape,
+        0,
+        shape === 'diamond' ? unitPx + cut : -(unitPx + cut),
+        unitPx,
+        dpr,
+      )
+      expect(alpha).toBeCloseTo(shape === 'diamond' ? 0.146 : 0.276, 3)
+    }
+  })
 })

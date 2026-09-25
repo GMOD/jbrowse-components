@@ -31,6 +31,7 @@ const DPR_CONSUMERS = [
   'edgeCoverage',
   'capsuleQuadLocal',
   'discExpand',
+  'glyphExpand',
   'segmentQuadLocal',
   'buttSegmentCoverage',
   'dashCoverage',
