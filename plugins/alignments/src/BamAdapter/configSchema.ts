@@ -1,4 +1,9 @@
-import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  fillIndexType,
+  fillLocations,
+  indexSnapshot,
+} from '@jbrowse/core/configuration'
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -7,19 +12,15 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // #region preProcess
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
-    ? fillLocations(snap, {
-        bamLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-        index: {
-          indexType: snap.csi ? 'CSI' : 'BAI',
-          location: {
-            uri: `${snap.uri}.${snap.csi ? 'csi' : 'bai'}`,
+    ? {
+        ...fillLocations(snap, {
+          bamLocation: {
+            uri: snap.uri,
             baseUri: snap.baseUri,
           },
-        },
-      })
+        }),
+        index: indexSnapshot(snap, 'BAI'),
+      }
     : snap
 }
 // #endregion
@@ -62,31 +63,37 @@ const configSchema = ConfigurationSchema(
       },
     },
 
-    index: ConfigurationSchema('BamIndex', {
-      /**
-       * #slot index.indexType
-       * `BAI` is the usual `samtools index` output. `CSI` is required for a
-       * reference longer than 512 Mb, which BAI cannot address.
-       */
-      indexType: {
-        model: types.enumeration('IndexType', ['BAI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'BAI',
-      },
-      /**
-       * #slot index.location
-       * location of the index. Only needed when it is not named
-       * `<file>.bam.bai` (or `.bam.csi`), the names the `uri` shorthand
-       * assumes.
-       */
-      location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.bam.bai',
-          locationType: 'UriLocation',
+    index: ConfigurationSchema(
+      'BamIndex',
+      {
+        /**
+         * #slot index.indexType
+         * `BAI` is the usual `samtools index` output. `CSI` is required for a
+         * reference longer than 512 Mb, which BAI cannot address. Derived from
+         * the index file name where the config names a `.csi` and leaves this
+         * unset.
+         */
+        indexType: {
+          model: types.enumeration('IndexType', ['BAI', 'CSI']),
+          type: 'stringEnum',
+          defaultValue: 'BAI',
+        },
+        /**
+         * #slot index.location
+         * location of the index. Only needed when it is not named
+         * `<file>.bam.bai` (or `.bam.csi`), the names the `uri` shorthand
+         * assumes.
+         */
+        location: {
+          type: 'fileLocation',
+          defaultValue: {
+            uri: '/path/to/my.bam.bai',
+            locationType: 'UriLocation',
+          },
         },
       },
-    }),
+      { preProcessSnapshot: fillIndexType },
+    ),
     // #endregion
     /**
      * #slot

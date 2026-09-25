@@ -1,7 +1,7 @@
 import {
   ConfigurationSchema,
   expandTabixShorthand,
-  tabixIndexFields,
+  tabixIndexSchema,
 } from '@jbrowse/core/configuration'
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -44,7 +44,7 @@ const GtfTabixAdapter = ConfigurationSchema(
       },
     },
 
-    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
+    index: tabixIndexSchema(),
     /**
      * #slot
      * the GtfTabixAdapter has to "redispatch" if it fetches a region and

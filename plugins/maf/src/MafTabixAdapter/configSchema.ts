@@ -1,6 +1,6 @@
 import {
   ConfigurationSchema,
-  tabixIndexFields,
+  tabixIndexSchema,
 } from '@jbrowse/core/configuration'
 
 import { mafAdapterConfigSchemaFields } from '../util/mafAdapterConfigSchemaFields.ts'
@@ -54,7 +54,7 @@ const configSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: '',
     },
-    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
+    index: tabixIndexSchema(),
     ...mafAdapterConfigSchemaFields({
       summaryAdapter:
         "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF carries every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track simply has no zoom-out path",

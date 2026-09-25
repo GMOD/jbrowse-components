@@ -1,7 +1,7 @@
 import {
   ConfigurationSchema,
   expandTabixShorthand,
-  tabixIndexFields,
+  tabixIndexSchema,
 } from '@jbrowse/core/configuration'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
@@ -91,7 +91,7 @@ const PlinkLDTabixAdapter = ConfigurationSchema(
       },
     },
 
-    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
+    index: tabixIndexSchema(),
   },
   {
     explicitlyTyped: true,

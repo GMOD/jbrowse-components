@@ -1,7 +1,7 @@
 import {
   ConfigurationSchema,
   expandTabixShorthand,
-  tabixIndexFields,
+  tabixIndexSchema,
 } from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -41,7 +41,7 @@ const BedGraphTabixAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
+    index: tabixIndexSchema(),
     /**
      * #slot
      */

@@ -1,14 +1,10 @@
-import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  expandUriShorthand,
+} from '@jbrowse/core/configuration'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? fillLocations(snap, {
-        hicLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      })
-    : snap
+  return expandUriShorthand(snap, 'hicLocation')
 }
 
 /**

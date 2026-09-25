@@ -1,8 +1,15 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  expandUriShorthand,
+} from '@jbrowse/core/configuration'
 
 import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return expandUriShorthand(snap, 'blastTableLocation')
+}
 
 /**
  * #config BlastTabularAdapter
@@ -16,7 +23,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```js
  * {
  *   type: 'BlastTabularAdapter',
- *   blastTableLocation: { uri: 'https://example.com/hits.tsv' },
+ *   uri: 'https://example.com/hits.tsv',
  *   assemblyNames: ['grape', 'peach'],
  *   queryAssembly: 'grape',
  *   targetAssembly: 'peach',
@@ -30,7 +37,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```js
  * {
  *   type: 'BlastTabularAdapter',
- *   blastTableLocation: { uri: 'https://example.com/hits.tsv' },
+ *   uri: 'https://example.com/hits.tsv',
  *   assemblyNames: ['grape', 'peach'],
  *   columns: 'qseqid sseqid qstart qend sstart send evalue',
  * }
@@ -65,7 +72,19 @@ const BlastTabularAdapter = ConfigurationSchema(
         'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * { "type": "BlastTabularAdapter", "uri": "hits.tsv" }
+     * ```
+     */
+    preProcessSnapshot: normalizeSnapshot,
+  },
 )
 
 export type BlastTabularAdapterConfig = Instance<typeof BlastTabularAdapter>

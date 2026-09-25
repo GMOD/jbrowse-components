@@ -1,7 +1,7 @@
 import {
   ConfigurationSchema,
   expandTabixShorthand,
-  tabixIndexFields,
+  tabixIndexSchema,
 } from '@jbrowse/core/configuration'
 
 import { pafAttributeColumns } from '../pafAttributeColumns.ts'
@@ -62,7 +62,7 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
       defaultValue: 10000,
       advanced: true,
     },
-    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
+    index: tabixIndexSchema(),
   },
   {
     explicitlyTyped: true,

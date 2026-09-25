@@ -1,24 +1,11 @@
-import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
+import { expandMcscanShorthand } from '../mcscanShorthand.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri && snap.bed1 && snap.bed2
-    ? fillLocations(snap, {
-        mcscanSimpleAnchorsLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-        bed1Location: {
-          uri: snap.bed1,
-          baseUri: snap.baseUri,
-        },
-        bed2Location: {
-          uri: snap.bed2,
-          baseUri: snap.baseUri,
-        },
-      })
-    : snap
+  return expandMcscanShorthand(snap, 'mcscanSimpleAnchorsLocation')
 }
 
 /**

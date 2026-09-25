@@ -1,8 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { mafAdapterConfigSchemaFields } from '../util/mafAdapterConfigSchemaFields.ts'
+import { expandMafShorthand } from '../util/mafShorthand.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+// a bigMaf carries its alignment inside the BigBed, so there is no index or
+// sibling to derive — only the `nhUri` its three siblings also take
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return expandMafShorthand(snap, 'bigBedLocation', () => ({}))
+}
 
 /**
  * #config BigMafAdapter
@@ -18,7 +25,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```js
  * {
  *   type: 'BigMafAdapter',
- *   bigBedLocation: { uri: 'https://example.com/multiz.bb' },
+ *   uri: 'https://example.com/multiz.bb',
  *   samples: ['hg38', 'panTro6', 'rheMac10', 'mm39'],
  * }
  * ```
@@ -45,7 +52,19 @@ const configSchema = ConfigurationSchema(
         'optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable',
     }),
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+
+    /**
+     * #preProcessSnapshot
+     *
+     * preprocessor to allow minimal config:
+     * ```json
+     * { "type": "BigMafAdapter", "uri": "multiz.bb" }
+     * ```
+     */
+    preProcessSnapshot: normalizeSnapshot,
+  },
 )
 
 export type BigMafAdapterConfig = Instance<typeof configSchema>

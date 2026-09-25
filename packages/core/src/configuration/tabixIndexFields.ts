@@ -1,5 +1,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { ConfigurationSchema } from './configurationSchema.ts'
+import { fillIndexType } from './indexType.ts'
+
 /**
  * The `index` sub-schema every tabix-indexed adapter declares: which index kind,
  * and where it is.
@@ -34,7 +37,7 @@ export const tabixIndexFields = {
     type: 'stringEnum',
     defaultValue: 'TBI',
     description:
-      '`TBI` is the usual `tabix` output. `CSI` is required for a reference longer than 512 Mb, which TBI cannot address.',
+      '`TBI` is the usual `tabix` output. `CSI` is required for a reference longer than 512 Mb, which TBI cannot address. Derived from the index file name where the config names a `.csi` and leaves this unset.',
   },
   location: {
     type: 'fileLocation',
@@ -46,3 +49,22 @@ export const tabixIndexFields = {
       'location of the tabix index. Only needed when it is not named `<file>.tbi`, which is what the `uri` shorthand assumes — a `.csi` beside the file is reached with `csi: true` rather than by spelling this out.',
   },
 } as const
+
+/**
+ * The `index` sub-schema itself, which nine adapters were each assembling out of
+ * the fields above. One per adapter rather than one shared type, because each
+ * adapter's index is a node in its own config tree.
+ *
+ * The factory is also where `indexType` gets filled in from the index file's own
+ * name, and that is the reason to have one: the sub-schema sees every snapshot
+ * that reaches it — the `uri` shorthand's expansion, a hand-written long form,
+ * and what an add-track form hands over — while an adapter's `normalizeSnapshot`
+ * sees only the shorthand.
+ */
+export function tabixIndexSchema() {
+  return ConfigurationSchema(
+    'TabixIndex',
+    { ...tabixIndexFields },
+    { preProcessSnapshot: fillIndexType },
+  )
+}

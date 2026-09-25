@@ -1,4 +1,7 @@
-import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  expandUriShorthand,
+} from '@jbrowse/core/configuration'
 
 import { pafAttributeColumns } from '../pafAttributeColumns.ts'
 
@@ -95,16 +98,7 @@ const MultiGenomePAFAdapter = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      return snap.uri
-        ? fillLocations(snap, {
-            pafLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-          })
-        : snap
-    },
+    preProcessSnapshot: snap => expandUriShorthand(snap, 'pafLocation'),
   },
 )
 

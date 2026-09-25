@@ -49,11 +49,17 @@ export interface SchemaMetadata {
   }
 }
 
-// What a schema's own preProcessSnapshot does to one `stringArray` slot, asked
-// by probing it: a bare string becoming a list of one (a step's `as`), and
-// numbers carried as strings (a ramp's `domain: [0, 100]`). The JSON schema
-// admits the file spelling and the manifest records the lift, so the validator
-// lifts a file the way the app does before its rules read it.
+// What a schema's own preProcessSnapshot does to one slot, asked by probing it:
+// a bare string becoming a list of one (a step's `as`), numbers carried as
+// strings (a ramp's `domain: [0, 100]`), and a bare string becoming a file
+// location (`htsgetBase: "https://…"`). The JSON schema admits the file spelling
+// and the manifest records the lift, so the validator lifts a file the way the
+// app does before its rules read it.
+//
+// The `uri` lift is what a shorthand key cannot express: it widens a slot the
+// schema already declares rather than adding one, so `shorthandKeys` never saw
+// it and `jbrowse validate` called HtsgetBamAdapter's own documented example an
+// error.
 export function slotLifts(meta: SchemaMetadata, slot: string) {
   const lifted = (input: unknown) => {
     try {
@@ -73,6 +79,10 @@ export function slotLifts(meta: SchemaMetadata, slot: string) {
       fromString.length === 1 &&
       fromString[0] === 'probe',
     numbers: Array.isArray(fromNumbers) && fromNumbers[0] === '1',
+    uri:
+      typeof fromString === 'object' &&
+      fromString !== null &&
+      (fromString as Record<string, unknown>).uri === 'probe',
   }
 }
 
@@ -440,7 +450,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     def: SlotDefinition,
     depth: number,
     legacyValues?: unknown[],
-    lifts = { string: false, numbers: false },
+    lifts = { string: false, numbers: false, uri: false },
   ): JsonSchema {
     const frozen = def.type === 'frozen' || def.type === 'maybeFrozen'
     const description = [def.description?.trim(), frozen ? FROZEN_NOTE : '']
@@ -457,7 +467,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           },
         ]
       : []
-    const lifted = lifts.string || lifts.numbers
+    const lifted = lifts.string || lifts.numbers || lifts.uri
     const shared = lifted ? undefined : SHARED_SLOT_DEFS[def.type]
     const value = def.model
       ? def.type === 'stringEnumArray'
@@ -465,19 +475,21 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         : mstSchema(def.model, depth)
       : frozen
         ? {}
-        : lifted
-          ? {
-              anyOf: [
-                {
-                  type: 'array',
-                  items: lifts.numbers
-                    ? { anyOf: [{ type: 'string' }, { type: 'number' }] }
-                    : { type: 'string' },
-                },
-                ...(lifts.string ? [{ type: 'string' }] : []),
-              ],
-            }
-          : builtinSlot(def.type)
+        : lifts.uri
+          ? { anyOf: [builtinSlot(def.type), { type: 'string' }] }
+          : lifted
+            ? {
+                anyOf: [
+                  {
+                    type: 'array',
+                    items: lifts.numbers
+                      ? { anyOf: [{ type: 'string' }, { type: 'number' }] }
+                      : { type: 'string' },
+                  },
+                  ...(lifts.string ? [{ type: 'string' }] : []),
+                ],
+              }
+            : builtinSlot(def.type)
     const form = def.contextVariable?.length
       ? frozen
         ? {}
@@ -498,6 +510,20 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         ? {}
         : { default: def.defaultValue }
     return { ...(description ? { description } : {}), ...form, ...withDefault }
+  }
+
+  // A lift only widens the slot type it is a lift OF: a bare string means a list
+  // of one in a `stringArray` and a `{ uri }` in a file location, so reading
+  // either onto the other slot type would admit a shape the schema refuses.
+  function liftsFor(meta: SchemaMetadata, slot: string, type: string) {
+    const lifts = slotLifts(meta, slot)
+    if (type === 'stringArray') {
+      return { ...lifts, uri: false }
+    }
+    if (type === 'fileLocation' || type === 'maybeFileLocation') {
+      return { ...lifts, string: false, numbers: false }
+    }
+    return undefined
   }
 
   function isSlotDefinition(entry: unknown): entry is SlotDefinition {
@@ -521,7 +547,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           entry,
           depth + 1,
           legacyValues[slot],
-          entry.type === 'stringArray' ? slotLifts(meta, slot) : undefined,
+          liftsFor(meta, slot, entry.type),
         )
       } else if (deps.isType(entry)) {
         properties[slot] = mstSchema(entry as MstType, depth + 1)

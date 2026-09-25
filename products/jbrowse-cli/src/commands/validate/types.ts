@@ -32,6 +32,12 @@ export interface SlotEntry {
   liftsString?: true
   /** A `stringArray` slot whose schema carries a number written in it as a string. */
   liftsNumbers?: true
+  /**
+   * A file-location slot whose schema reads a bare string as `{ uri }`
+   * (`htsgetBase: "https://…"`). Not a `shorthandKeys` entry: the lift widens a
+   * slot the schema declares rather than adding one.
+   */
+  liftsUri?: true
 }
 
 export interface TypeEntry {

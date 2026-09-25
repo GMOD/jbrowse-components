@@ -1,7 +1,7 @@
 import {
   ConfigurationSchema,
   expandTabixShorthand,
-  tabixIndexFields,
+  tabixIndexSchema,
 } from '@jbrowse/core/configuration'
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
@@ -50,7 +50,7 @@ const VcfTabixAdapter = ConfigurationSchema(
       },
     },
 
-    index: ConfigurationSchema('TabixIndex', { ...tabixIndexFields }),
+    index: tabixIndexSchema(),
     ...samplesTsvAdapterConfigSchemaFields,
     /**
      * #slot

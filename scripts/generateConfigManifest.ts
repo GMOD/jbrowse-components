@@ -158,6 +158,7 @@ function slotsOf(type) {
       fieldPresets: subOptions?.fieldPresets,
       liftsString: lifts.string || undefined,
       liftsNumbers: lifts.numbers || undefined,
+      liftsUri: lifts.uri || undefined,
     }
   })
 }
@@ -628,10 +629,13 @@ console.log(JSON.stringify({ manifest, schema }))
 // example) was missing, so `jbrowse validate` called it an unknown slot.
 //
 // Scoped to adapter config schemas on two counts, because both matter:
-//   - `configSchema*.ts` only, plus what one imports by relative path — the
-//     maf adapters share their normalizer from `util/`. A `snap.x` elsewhere is
-//     some other kind of snapshot processing (the sole exception,
-//     AdapterType.ts, is the base class that calls them).
+//   - `configSchema*.ts` and `*Shorthand.ts`, plus what either imports by
+//     relative path — the maf adapters share their normalizer from `util/`, and
+//     core's tabix and BAM shorthand is the one place `csi` is read. A `snap.x`
+//     elsewhere is some other kind of snapshot processing (the sole exception,
+//     AdapterType.ts, is the base class that calls them). That a shorthand key
+//     has to be READ in one of those files is the contract the throw below
+//     enforces.
 //   - `#config <Name>Adapter` only. Track and display schemas run normalizers
 //     too, for legacy-key migrations (`color`, `labels`, `renderer`, …), and
 //     those keys are not adapter shorthands. Including them would widen the
@@ -650,7 +654,8 @@ function collectShorthandProbes() {
           walk(full)
         }
       } else if (
-        /^configSchema.*\.ts$/.test(e.name) &&
+        (/^configSchema.*\.ts$/.test(e.name) ||
+          /shorthand.*\.ts$/i.test(e.name)) &&
         !e.name.includes('.test.')
       ) {
         files.push(full)
@@ -663,7 +668,8 @@ function collectShorthandProbes() {
   const keys = new Set<string>()
   for (const file of files) {
     const text = readFileSync(file, 'utf8')
-    if (!/^\s*\*\s*#config\s+\w*Adapter\b/m.test(text)) {
+    const isShorthandHelper = /shorthand.*\.ts$/i.test(path.basename(file))
+    if (!isShorthandHelper && !/^\s*\*\s*#config\s+\w*Adapter\b/m.test(text)) {
       continue
     }
     const imported = [...text.matchAll(/from '(\.[^']+\.ts)'/g)]
@@ -679,10 +685,24 @@ function collectShorthandProbes() {
   // `type` is on every snapshot and is what the probe holds constant, so it is
   // never a shorthand; dropping it here keeps it out of the leftovers retry.
   keys.delete('type')
-  if (!keys.has('uri')) {
-    throw new Error(
-      'collectShorthandProbes found no `uri` — the scan is not reaching the adapter schemas',
-    )
+  // `index`, `indexType` and `location` are declared slots the shorthand helpers
+  // READ to see what the config already asked for, not keys they accept. Probing
+  // one reports it as a shorthand on the adapter that declares it, which is
+  // true-but-useless noise in the docs built off this.
+  for (const declared of ['index', 'indexType', 'location']) {
+    keys.delete(declared)
+  }
+  // `uri` proves the adapter schemas were reached, `csi` that the shorthand
+  // helpers were. Both went missing once: `nhUri` from a hand-listed literal
+  // this scan replaced, and `csi` when BAM's index derivation moved out of its
+  // configSchema into a shared helper, which would have made `jbrowse validate`
+  // call `csi` an unknown slot on every tabix adapter and on our own examples.
+  for (const key of ['uri', 'csi']) {
+    if (!keys.has(key)) {
+      throw new Error(
+        `collectShorthandProbes found no \`${key}\` — the scan is not reaching the adapter schemas or their shorthand helpers`,
+      )
+    }
   }
   // `uri` and its `baseUri` companion first, the rest alphabetical. Probe order
   // is the order each adapter's `shorthandKeys` comes out in, so a stable one

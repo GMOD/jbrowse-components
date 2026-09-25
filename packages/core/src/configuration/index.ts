@@ -72,8 +72,16 @@ export type {
   ConfigurationSchemaRequirement,
   RequirementProblem,
 } from './requirements.ts'
-export { expandTabixShorthand, tabixIndexSnapshot } from './tabixShorthand.ts'
-export { tabixIndexFields } from './tabixIndexFields.ts'
+export {
+  expandTabixShorthand,
+  indexSnapshot,
+  requestedIndexType,
+  tabixIndexSnapshot,
+} from './tabixShorthand.ts'
+export { expandUriShorthand } from './uriShorthand.ts'
+export { tabixIndexFields, tabixIndexSchema } from './tabixIndexFields.ts'
+export { fillIndexType, indexSuffix, isCsiLocation } from './indexType.ts'
+export type { IndexType, SiblingIndexType } from './indexType.ts'
 export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 export { toCallbackValue, toFixedValue } from './configurationSlot.ts'
 export {

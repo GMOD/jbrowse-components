@@ -1,13 +1,7 @@
-import { fillLocations } from '@jbrowse/core/configuration'
+import { expandUriShorthand } from '@jbrowse/core/configuration'
+
 // allows a minimal config of `{ uri: "..." }` by lifting `uri`/`baseUri` into
 // a proper `location` fileLocation slot. Shared by the alias adapters.
 export function normalizeUriSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? fillLocations(snap, {
-        location: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      })
-    : snap
+  return expandUriShorthand(snap, 'location')
 }

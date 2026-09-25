@@ -1,17 +1,12 @@
-import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  expandUriShorthand,
+} from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? fillLocations(snap, {
-        bedpeLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-          locationType: 'UriLocation',
-        },
-      })
-    : snap
+  return expandUriShorthand(snap, 'bedpeLocation')
 }
 
 /**

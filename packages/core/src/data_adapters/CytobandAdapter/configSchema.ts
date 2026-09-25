@@ -1,6 +1,6 @@
 import {
   ConfigurationSchema,
-  fillLocations,
+  expandUriShorthand,
 } from '../../configuration/index.ts'
 
 /**
@@ -58,17 +58,7 @@ const configSchema = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      // populate from just snap.uri
-      return snap.uri
-        ? fillLocations(snap, {
-            cytobandLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-          })
-        : snap
-    },
+    preProcessSnapshot: snap => expandUriShorthand(snap, 'cytobandLocation'),
   },
 )
 

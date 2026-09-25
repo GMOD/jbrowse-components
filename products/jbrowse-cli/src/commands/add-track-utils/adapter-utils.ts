@@ -10,6 +10,7 @@ import {
 
 import { isURL } from '../../types/common.ts'
 import { densitySidecarPath } from '../shared/density.ts'
+import { configManifest } from '../validate/configManifest.generated.ts'
 
 import type { AdapterSpec } from '@jbrowse/add-track-core'
 
@@ -92,20 +93,18 @@ export function siblingSidecar(location: string, suffix: string) {
   return candidates.find(c => fs.existsSync(c)) ?? candidates[0]!
 }
 
-// The feature adapters whose schema spreads
-// `densityAdapterConfigSchemaFields`, so a `densityAdapter` written onto one
-// resolves to a slot rather than being dropped. Change one, change the other.
-const densityAdapterTypes = new Set([
-  'BamAdapter',
-  'CramAdapter',
-  'HtsgetBamAdapter',
-  'Gff3TabixAdapter',
-  'GtfTabixAdapter',
-  'BedTabixAdapter',
-  'BigBedAdapter',
-  'VcfTabixAdapter',
-  'SplitVcfTabixAdapter',
-])
+// The adapters a `densityAdapter` resolves to a slot on rather than being
+// dropped, read off the generated manifest `jbrowse validate` uses. Hand-listing
+// them missed `GWASAdapter`, which inherits the slot through
+// `bedTabixConfigSchema` rather than spreading
+// `densityAdapterConfigSchemaFields` itself, so `--density` on a Pan-UKBB file
+// was refused with a message naming nine adapters that could take it.
+const densityAdapterTypes = new Set(
+  Object.entries(configManifest.adapters)
+    .filter(([, entry]) => entry.slots.some(s => s.name === 'densityAdapter'))
+    .map(([name]) => name)
+    .sort(),
+)
 
 /**
  * The adapter with its density sidecar attached, and the local file to load
