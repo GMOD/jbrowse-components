@@ -32,21 +32,18 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 130 unchecked in source, 174 in tests,
-# of 1214 total config accessor calls. The gate counts source only.
+# 127 unchecked in source, 177 in tests,
+# of 1234 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1196	readConfObject('adapter')
 packages/app-core/src/JBrowseModel/index.ts  (1)
-  94	readConfObject('name')
-packages/core/src/assemblyManager/assemblyConfByName.ts  (2)
-  15	readConfObject('name')
-  16	readConfObject('aliases')
+  99	readConfObject('name')
 packages/core/src/assemblyManager/assemblyManager.ts  (4)
-  298	readConfObject('name')
-  315	readConfObject('name')
-  316	readConfObject('aliases')
-  490	readConfObject('name')
+  294	readConfObject('name')
+  306	readConfObject('name')
+  307	readConfObject('aliases')
+  482	readConfObject('name')
 packages/core/src/BaseFeatureWidget/formatDetails.ts  (1)
   56	readConfObject('trackId')
 packages/core/src/configuration/configTypeNarrowing.test.ts  (5)  [test]
@@ -137,11 +134,11 @@ packages/core/src/util/tracks.ts  (13)
   776	readConfObject('name')
   781	readConfObject('trackId')
   1005	readConfObject('assemblyNames')
-  1487	readConfObject('adapter')
-  1498	readConfObject('assemblyNames')
-  1602	readConfObject('type')
-  1603	readConfObject('assemblyNames')
-  1606	readConfObject('trackId')
+  1484	readConfObject('adapter')
+  1495	readConfObject('assemblyNames')
+  1599	readConfObject('type')
+  1600	readConfObject('assemblyNames')
+  1603	readConfObject('trackId')
 packages/embedded-core/src/EmbeddedSessionThemeMixin.ts  (2)
   31	getConf('theme')
   101	getConf('theme')
@@ -185,11 +182,11 @@ packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (3)  [test]
 plugins/alignments/src/consensus/index.ts  (1)
   57	getConf('name')
 plugins/alignments/src/LinearAlignmentsDisplay/configSlotViews.ts  (2)
-  219	getConf('modifications')
-  254	getConf('filterBy')
+  217	getConf('modifications')
+  263	getConf('filterBy')
 plugins/alignments/src/LinearAlignmentsDisplay/model.ts  (2)
-  733	getConf('sortedBy')
-  2353	getConf('showOutline')
+  744	getConf('sortedBy')
+  2347	getConf('showOutline')
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (1)
   140	getConf('adapter')
 plugins/authentication/src/tokenEntryModelFactory.ts  (1)
@@ -202,9 +199,8 @@ plugins/canvas/src/LinearBasicDisplay/CollapseIntronsDialog/util.ts  (1)
   76	readConfObject('trackId')
 plugins/canvas/src/LinearBasicDisplay/searchResultHighlight.ts  (1)
   51	readConfObject('trackId')
-plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts  (2)
+plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts  (1)
   281	readConfObject('rowGroups')
-  527	readConfObject('legend')
 plugins/canvas/src/shared/CanvasFeatureGateMixin.test.ts  (1)  [test]
   20	getConf('maxFeatureScreenDensty')
 plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (2)  [test]
@@ -326,8 +322,6 @@ plugins/spreadsheet-view/src/SpreadsheetView/ImportWizard.ts  (3)
 plugins/trix/src/TrixTextSearchAdapter/TrixTextSearchAdapter.ts  (2)
   56	readConfObject('ixFilePath')
   57	readConfObject('ixxFilePath')
-  85	readConfObject('variantLayout')
-  86	readConfObject('height')
 plugins/variants/src/LinearMultiSampleVariantDisplay/showInsertionGlyphsSlot.test.ts  (1)  [test]
   31	getConf('notARealSlot')
 plugins/wiggle/src/CreateMultiWiggleExtension/ConfirmDialog.tsx  (2)
@@ -342,6 +336,12 @@ plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
   34	getConf('origin')
 products/jbrowse-react-app/src/createApp.test.ts  (1)  [test]
   352	readConfObject('adapter')
+products/jbrowse-react-app/src/rootModel/legacySessions.test.ts  (5)  [test]
+  153	getConf('showCoverage')
+  166	getConf('showCoverage')
+  176	getConf('readConnections')
+  177	getConf('showPileup')
+  178	getConf('showCoverage')
 products/jbrowse-react-app/src/sessionTrackEdits.test.ts  (1)  [test]
   103	getConf('name')
 products/jbrowse-react-circular-genome-view/src/jbrowseHub.test.ts  (1)  [test]

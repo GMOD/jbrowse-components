@@ -28,7 +28,7 @@
       "values": {
         "population": "track or assembly schema",
         "slots": "`name`, `assemblyNames`, `trackId`, `adapter`",
-        "reads": 80
+        "reads": 79
       }
     },
     {
@@ -41,8 +41,8 @@
     {
       "values": {
         "population": "everything else",
-        "slots": "29 other names",
-        "reads": 40
+        "slots": "28 other names",
+        "reads": 38
       }
     }
   ]
