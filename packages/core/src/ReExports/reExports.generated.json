@@ -4391,6 +4391,7 @@
         "SvgLegend",
         "SvgPinnedHighlight",
         "SvgYAxis",
+        "exportsTooLargeNote",
         "renderDisplaySvg"
       ],
       "worker": "stub",

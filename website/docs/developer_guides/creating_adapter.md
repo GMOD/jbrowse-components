@@ -376,6 +376,10 @@ export interface ComparativeOptions extends BaseOptions {
   // than a ribbon across a 25 kb indel. Read off the alignment string the clip
   // walks anyway; a record with none is one run.
   splitAtGapBp?: number
+  // With `clipToRegion`, each piece keeps its own stretch of the alignment as
+  // packed ops in `alignmentOps`, for a display that draws the indels between
+  // two lanes.
+  keepAlignment?: boolean
 }
 ```
 
