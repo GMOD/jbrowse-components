@@ -26,12 +26,18 @@ import {
   categorySwatchColor,
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import { BASE_QUALITY_UNAVAILABLE_COLOR } from '../features/perBaseQuality/colors.ts'
 import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
 import { FIRST_OF_PAIR_STRAND_LABELS } from './groupByLabels.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
+import {
+  BASE_QUALITY_RAMP_MAX,
+  MAPQ_RAMP_MAX,
+  qualityRampScale,
+} from './qualityRamps.ts'
 import {
   isModificationTypeVisible,
   paintsUnmodifiedState,
@@ -188,8 +194,9 @@ function scaleOf(
 }
 
 /**
- * The display's color vocabularies as its color scales: the read fills, the
- * paired-end arc / read-cloud colors, and the linked-read connection curves.
+ * The display's color vocabularies as its color scales: the colour bars, the
+ * read fills, the paired-end arc / read-cloud colors, and the linked-read
+ * connection curves.
  * `LegendMixin`'s `colorScales` lists them, so the on-screen key and the SVG
  * export derive from this one list and a heading can't appear in one and not
  * the other. Empty scales drop out of the key, and a lone survivor's title
@@ -219,7 +226,7 @@ function scaleOf(
  * earns its row.
  */
 export function getAlignmentsColorScales(model: {
-  readRamp?: RampScale
+  ramps?: readonly RampScale[]
   legendItems: () => LegendItem[]
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
@@ -251,7 +258,7 @@ export function getAlignmentsColorScales(model: {
     [...readSection.items, ...arcSection.items].flatMap(rowKeys),
   )
   return [
-    ...(model.readRamp ? [model.readRamp] : []),
+    ...(model.ramps ?? []),
     scaleOf(readSection.id, readSection.title, readSection.items),
     scaleOf(arcSection.id, arcSection.title, arcSection.items),
     scaleOf(
@@ -283,22 +290,12 @@ export function sashimiLegendItems(
   )
 }
 
-function hslRamp(
-  saturation: number,
-  steps: { hue: number; label: string }[],
-): LegendItem[] {
-  return steps.map(({ hue, label }) => ({
-    color: `hsl(${hue}, ${saturation}%, 50%)`,
-    label,
-  }))
-}
-
 // The label for each fixed-swatch category, in display order — object key order
 // is the order, the same way `GROUP_BY_DIMENSIONS`' is its menu order. The
 // swatch color is resolved from the live palette (categorySwatchColor), so
 // wording is the only thing the legend hard-codes. Categories absent from
-// `SwatchCategory` ('plain', 'mapq', 'tag') are keyed by `schemeLegend`
-// instead.
+// `SwatchCategory` are keyed by `schemeLegend` ('plain', 'tag') or by a colour
+// bar (`colorRampScales`, 'mapq') instead.
 //
 // A `Record<SwatchCategory, …>` and not an array. `colorUtils` calls this pair
 // correct BY CONSTRUCTION — "the legend can never list a color the renderer
@@ -849,6 +846,52 @@ export function bakedRampScale(
     : undefined
 }
 
+type Extent = readonly [number, number] | undefined
+
+/**
+ * The colour bars: the per-base layer's first, as its rows are, then the read
+ * fill's. Each extent is the loaded values' span, which marks an end they run
+ * past.
+ */
+export function colorRampScales({
+  colorBy,
+  baseLayer,
+  bakedScale,
+  tagValueExtent,
+  mapqExtent,
+  baseQualityExtent,
+}: {
+  colorBy: ColorBy | undefined
+  baseLayer: BaseLayer | undefined
+  bakedScale: BakedColorScale | undefined
+  tagValueExtent: Extent
+  mapqExtent: Extent
+  baseQualityExtent: Extent
+}): RampScale[] {
+  const readRamp =
+    colorBy?.type === 'mappingQuality'
+      ? qualityRampScale(
+          'reads-ramp',
+          'Mapping quality',
+          MAPQ_RAMP_MAX,
+          mapqExtent,
+        )
+      : colorBy && bakedRampScale(colorBy, bakedScale, tagValueExtent)
+  return [
+    ...(baseLayer?.type === 'perBaseQuality'
+      ? [
+          qualityRampScale(
+            'base-quality-ramp',
+            'Base quality',
+            BASE_QUALITY_RAMP_MAX,
+            baseQualityExtent,
+          ),
+        ]
+      : []),
+    ...(readRamp ? [readRamp] : []),
+  ]
+}
+
 const INTEGER_VALUE = /^-?\d+$/
 
 // "1, 2, 10" and not "1, 10, 2": HP, NM and cluster ids are numbers written as
@@ -913,24 +956,27 @@ type SchemeLegendArgs = Pick<
   | 'refNamePosition'
   | 'bakedScale'
   | 'sectionOrder'
+  | 'baseQualityUnavailable'
 > & { palette: ColorPalette }
 
-// The per-base layer's own key: the quality ramp, the base vocabulary, or the
-// modification types drawn.
+// The per-base layer's own rows: the base vocabulary, the modification types
+// drawn, or the one flat bucket beside the quality ramp's colour bar.
 function baseLayerLegend({
   baseLayer,
   palette,
   detectedModifications,
   presentModifications,
+  baseQualityUnavailable,
 }: SchemeLegendArgs): LegendItem[] {
   if (baseLayer?.type === 'perBaseQuality') {
-    return hslRamp(55, [
-      { hue: 0, label: 'BQ 0' },
-      { hue: 15, label: 'BQ 10' },
-      { hue: 30, label: 'BQ 20' },
-      { hue: 45, label: 'BQ 30' },
-      { hue: 60, label: 'BQ 40' },
-    ])
+    return baseQualityUnavailable
+      ? [
+          {
+            color: BASE_QUALITY_UNAVAILABLE_COLOR,
+            label: 'Base quality unavailable',
+          },
+        ]
+      : []
   }
   if (baseLayer?.type === 'perBaseLetter') {
     return BASE_LEGEND.map(({ key, label }) => ({
@@ -995,22 +1041,8 @@ function schemeLegend({
       sectionOrder,
     )
   }
-  if (colorType === 'mappingQuality') {
-    // Ramp stops, not buckets: hue IS the score in degrees (categoryColor /
-    // read.slang's hueRampHalfSat), so 60 is a stop on a continuous sweep and
-    // not a ceiling — a MAPQ 70 read from an aligner that emits past bwa/
-    // minimap2's cap of 60 paints its own distinct hue. The old '≥60' claimed
-    // otherwise. The 255 sentinel is not on this ramp at all; it classifies as
-    // `mapqUnavailable` and is keyed by the cross-cutting buckets, so it appears
-    // only when reads actually carry it.
-    return hslRamp(50, [
-      { hue: 0, label: 'MAPQ 0' },
-      { hue: 30, label: 'MAPQ 30' },
-      { hue: 60, label: 'MAPQ 60' },
-    ])
-  }
-  // The strand / insert-size / orientation schemes are described entirely by
-  // which fixed-swatch buckets occurred.
+  // Mapping quality is a colour bar (`colorRampScales`); it and the strand /
+  // insert-size / orientation schemes add only the buckets that occurred.
   return []
 }
 
@@ -1049,6 +1081,8 @@ interface ReadDisplayLegendArgs {
   bakedScale?: BakedColorScale
   // Where the facet reads the colour's field, the key lists in its order.
   sectionOrder?: (a: string, b: string) => number
+  // Some drawn base carries no quality score.
+  baseQualityUnavailable?: boolean
 }
 
 /**
@@ -1061,8 +1095,9 @@ interface ReadDisplayLegendArgs {
  * `detectedModifications` (type code -> painted color), narrowed by
  * `presentModifications` because that map only ever grows. Tag /
  * chromosome-painting swatches are `presentTagValues` itself, colored through
- * the same pure function the reads are painted with; mapping/per-base quality
- * are fixed hue ramps.
+ * the same pure function the reads are painted with; mapping and per-base
+ * quality are colour bars (`colorRampScales`) and key only their unavailable
+ * buckets here.
  */
 export function getReadDisplayLegendItems({
   colorBy,
@@ -1075,6 +1110,7 @@ export function getReadDisplayLegendItems({
   refNamePosition,
   bakedScale,
   sectionOrder,
+  baseQualityUnavailable,
   chainFramed = false,
   overlaps,
 }: ReadDisplayLegendArgs & {
@@ -1101,6 +1137,7 @@ export function getReadDisplayLegendItems({
     refNamePosition,
     bakedScale,
     sectionOrder,
+    baseQualityUnavailable,
   }
   return [
     ...baseLayerLegend(scheme),

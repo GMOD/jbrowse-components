@@ -89,7 +89,7 @@ import {
 } from '../shared/groupFeatures.ts'
 import {
   LEGEND_MAX_WIDTH,
-  bakedRampScale,
+  colorRampScales,
   getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
@@ -170,6 +170,11 @@ import {
   computeCrossRegionArcSections,
   computeSashimiArcSections,
 } from './overlaySections.ts'
+import {
+  NO_QUALITY_SPAN,
+  baseQualitySpanAcrossGroups,
+  mapqExtentAcrossGroups,
+} from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
@@ -216,6 +221,7 @@ import type {
 } from './constants.ts'
 import type { AlignmentLane } from './lanes.ts'
 import type { LayoutOrder } from './menus/sortGroup.ts'
+import type { QualitySpan } from './qualitySpans.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type {
@@ -1267,6 +1273,7 @@ export default function stateModelFactory(
               refNamePosition: this.paintedRefNamePosition,
               bakedScale: this.bakedColorScale,
               sectionOrder: this.keySectionOrder,
+              baseQualityUnavailable: this.baseQualitySpan.unavailable,
               chainFramed: this.framesChainStrand,
             })
           },
@@ -1700,6 +1707,29 @@ export default function stateModelFactory(
                   d => d.readTagValues,
                 )
               : undefined
+          },
+
+          /**
+           * #getter
+           * The MAPQ span of the reads the mapping-quality ramp paints, which
+           * the key marks an end the reads run past by. O(reads), so gated on
+           * showLegend like the category scan.
+           */
+          get mapqExtent(): NumericExtent | undefined {
+            return self.showLegend && self.colorBy.type === 'mappingQuality'
+              ? mapqExtentAcrossGroups(this.laidOutByGroup)
+              : undefined
+          },
+
+          /**
+           * #getter
+           * The span of the base qualities drawn, and whether a base carries
+           * none. O(bases), so gated on showLegend like the category scan.
+           */
+          get baseQualitySpan(): QualitySpan {
+            return self.showLegend && self.baseLayer?.type === 'perBaseQuality'
+              ? baseQualitySpanAcrossGroups(this.laidOutByGroup)
+              : NO_QUALITY_SPAN
           },
 
           /**
@@ -2667,11 +2697,14 @@ export default function stateModelFactory(
            */
           get colorScales(): ColorScale[] {
             return getAlignmentsColorScales({
-              readRamp: bakedRampScale(
-                self.colorBy,
-                self.bakedColorScale,
-                self.tagValueExtent,
-              ),
+              ramps: colorRampScales({
+                colorBy: self.colorBy,
+                baseLayer: self.baseLayer,
+                bakedScale: self.bakedColorScale,
+                tagValueExtent: self.tagValueExtent,
+                mapqExtent: self.mapqExtent,
+                baseQualityExtent: self.baseQualitySpan.extent,
+              }),
               legendItems: () => self.legendItems(),
               arcLegendTitle: self.arcLegendTitle,
               arcLegendItems: () => self.arcLegendItems(),

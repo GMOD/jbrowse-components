@@ -1,4 +1,5 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { colord } from '@jbrowse/core/util/colord'
 
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
@@ -7,15 +8,21 @@ import {
   buildReadColorCategories,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
+import {
+  BASE_QUALITY_UNAVAILABLE_COLOR,
+  qualityCssColors,
+} from '../features/perBaseQuality/colors.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
   bakedRampScale,
+  colorRampScales,
   getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
   sashimiLegendItems,
 } from './legendUtils.ts'
+import { MAPQ_CSS } from './qualityRamps.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 
@@ -23,9 +30,9 @@ import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { AlignmentsColorSetting } from './alignmentsColor.ts'
-import type { ColorBy, ColorSchemeType } from './types.ts'
+import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
-import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorScale, RampScale } from '@jbrowse/core/ui/colorScale'
 
 function legendFor(
   colorBy: ColorBy,
@@ -38,6 +45,8 @@ function legendFor(
     refNamePosition?: RefNamePosition
     bakedScale?: BakedColorScale
     sectionOrder?: (a: string, b: string) => number
+    baseLayer?: BaseLayer
+    baseQualityUnavailable?: boolean
   },
 ) {
   return getReadDisplayLegendItems({
@@ -195,14 +204,7 @@ describe('getReadDisplayLegendItems', () => {
   // row, so without an explicit row the grey most of the frame shows had no
   // name — the gap the modification scheme closed with modFwd/modRev.
   test('per-base schemes name the read body under their marks', () => {
-    expect(labels('perBaseQuality', ['plain'])).toEqual([
-      'BQ 0',
-      'BQ 10',
-      'BQ 20',
-      'BQ 30',
-      'BQ 40',
-      'Read',
-    ])
+    expect(labels('perBaseQuality', ['plain'])).toEqual(['Read'])
     expect(labels('perBaseLetter', ['plain'])).toEqual([
       'A',
       'C',
@@ -606,14 +608,8 @@ describe('getReadDisplayLegendItems', () => {
     expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
   })
 
-  test('mapping quality is a fixed ramp regardless of present buckets', () => {
-    // Stops on a continuous hue sweep, not buckets — 60 is not a ceiling, so the
-    // label doesn't claim to be one.
-    expect(labels('mappingQuality', [])).toEqual([
-      'MAPQ 0',
-      'MAPQ 30',
-      'MAPQ 60',
-    ])
+  test('mapping quality lists no rows of its own beside its colour bar', () => {
+    expect(labels('mappingQuality', [])).toEqual([])
   })
 
   // 255 is the spec's "unavailable" sentinel; it classifies out of the ramp
@@ -621,11 +617,23 @@ describe('getReadDisplayLegendItems', () => {
   // every other cross-cutting bucket — present-gated, and named.
   test('MAPQ unavailable is keyed only when reads carry it', () => {
     expect(labels('mappingQuality', ['mapqUnavailable'])).toEqual([
-      'MAPQ 0',
-      'MAPQ 30',
-      'MAPQ 60',
       'MAPQ unavailable (255)',
     ])
+  })
+
+  test('base quality unavailable is keyed only when a drawn base carries it', () => {
+    const rows = (baseQualityUnavailable: boolean) =>
+      legendFor({ type: 'normal' }, ['plain'], {
+        baseLayer: { type: 'perBaseQuality' },
+        baseQualityUnavailable,
+      })
+    expect(rows(false).map(i => i.label)).toEqual(['Read'])
+    const [unavailable, read] = rows(true)
+    expect(unavailable).toEqual({
+      color: BASE_QUALITY_UNAVAILABLE_COLOR,
+      label: 'Base quality unavailable',
+    })
+    expect(read?.label).toBe('Read')
   })
 
   test('modifications list visible mod types by friendly name, gating supplementary on presence', () => {
@@ -881,6 +889,71 @@ describe('getArcLegendItems', () => {
   })
 })
 
+describe('colorRampScales', () => {
+  const noExtents = {
+    bakedScale: undefined,
+    tagValueExtent: undefined,
+    mapqExtent: undefined,
+    baseQualityExtent: undefined,
+  }
+  const rgbOf = (css: string) => {
+    const { r, g, b } = colord(css).toRgb()
+    return [r, g, b]
+  }
+  const bar = (scale: RampScale) => legendSpecOf([scale]).sections[0]!.items[0]!
+
+  test('mapping quality keys a colour bar from the MAPQ table the reads paint', () => {
+    const [mapq, ...rest] = colorRampScales({
+      ...noExtents,
+      colorBy: { type: 'mappingQuality' },
+      baseLayer: undefined,
+      mapqExtent: [0, 70],
+    })
+    expect(rest).toEqual([])
+    expect(mapq).toMatchObject({ title: 'Mapping quality', domain: [0, 60] })
+    expect(rgbOf(mapq!.stops[0]!.color)).toEqual(rgbOf(MAPQ_CSS[0]!))
+    expect(rgbOf(mapq!.stops.at(-1)!.color)).toEqual(rgbOf(MAPQ_CSS[60]!))
+    expect(bar(mapq!)).toMatchObject({
+      label: 'Mapping quality',
+      gradient: { minLabel: '0', maxLabel: '≥60' },
+    })
+  })
+
+  test('base quality keys a colour bar from the table the cells paint, ahead of the read fill', () => {
+    const [baseQuality, mapq] = colorRampScales({
+      ...noExtents,
+      colorBy: { type: 'mappingQuality' },
+      baseLayer: { type: 'perBaseQuality' },
+      baseQualityExtent: [2, 38],
+    })
+    expect(baseQuality).toMatchObject({
+      title: 'Base quality',
+      domain: [0, 40],
+    })
+    expect(mapq?.title).toBe('Mapping quality')
+    expect(rgbOf(baseQuality!.stops[0]!.color)).toEqual(
+      rgbOf(qualityCssColors[0]!),
+    )
+    expect(rgbOf(baseQuality!.stops.at(-1)!.color)).toEqual(
+      rgbOf(qualityCssColors[40]!),
+    )
+    expect(bar(baseQuality!).gradient).toMatchObject({
+      minLabel: '0',
+      maxLabel: '40',
+    })
+  })
+
+  test('the plain fill and a letter layer key no colour bar', () => {
+    expect(
+      colorRampScales({
+        ...noExtents,
+        colorBy: { type: 'normal' },
+        baseLayer: { type: 'perBaseLetter' },
+      }),
+    ).toEqual([])
+  })
+})
+
 // Reads and arcs are one vocabulary or two, and the box has to say which. The
 // overlapping case is the default one: reads by orientation under
 // insert-size-and-orientation arcs share every orientation bucket.
@@ -915,7 +988,7 @@ describe('getAlignmentsColorScales', () => {
     }
     const scales = getAlignmentsColorScales({
       ...model([{ color: '#f0f', label: 'Supplementary' }], []),
-      readRamp,
+      ramps: [readRamp],
     })
     expect(scales[0]).toBe(readRamp)
     expect(entries(scales[1]).map(e => e.label)).toEqual(['Supplementary'])
