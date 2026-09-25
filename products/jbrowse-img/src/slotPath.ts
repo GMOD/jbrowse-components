@@ -12,8 +12,20 @@ function scalar(text: string): string | number | boolean {
   return text.trim() !== '' && Number.isFinite(n) ? n : text
 }
 
+const LOCATION_SO_FAR = /^[^\s,:]+:[\d,-]*\d$/
+
+// The comma at `i` groups a location's digits, as the app writes one:
+// `chr2:135,787,850-135,876,467`.
+function groupsDigits(text: string, start: number, i: number) {
+  return (
+    LOCATION_SO_FAR.test(text.slice(start, i)) &&
+    /^\d{3}(?!\d)/.test(text.slice(i + 1))
+  )
+}
+
 // A `jexl:` item runs to the first comma outside its own brackets and quotes,
-// since a jexl call separates its arguments with commas.
+// since a jexl call separates its arguments with commas, and a location keeps
+// the commas grouping its digits.
 function listItems(text: string) {
   const items: string[] = []
   let start = 0
@@ -27,7 +39,7 @@ function listItems(text: string) {
       } else if (c === quote) {
         quote = undefined
       }
-    } else if (c === ',' && depth === 0) {
+    } else if (c === ',' && depth === 0 && !groupsDigits(text, start, i)) {
       items.push(text.slice(start, i))
       start = i + 1
     } else if (text.startsWith('jexl:', start)) {

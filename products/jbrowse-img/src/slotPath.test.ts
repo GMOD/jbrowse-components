@@ -71,6 +71,17 @@ test('a jexl: item runs to the first comma outside its brackets and quotes', () 
   ])
 })
 
+test('a location keeps the commas grouping its digits', () => {
+  const region = 'chr2:135,787,850-135,876,467'
+  expect(slotValue(region)).toBe(region)
+  expect(slotValue(`${region},`)).toEqual([region])
+  expect(slotValue('chr1:1,000-2,000,chr2:5-6')).toEqual([
+    'chr1:1,000-2,000',
+    'chr2:5-6',
+  ])
+  expect(slotValue('0,100')).toEqual([0, 100])
+})
+
 test('a quote outside a jexl: item groups nothing', () => {
   expect(slotValue("5'UTR,3'UTR")).toEqual(["5'UTR", "3'UTR"])
 })
