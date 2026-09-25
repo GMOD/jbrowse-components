@@ -39,7 +39,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
   // bundled SLE.ld is keyed to), so points shade red→blue by r² to it on load
   // with no interaction. A compact gene track below anchors the peak to the
   // STAT4 gene body (reviewer: add gene track), and the points are enlarged
-  // (scatterPointSize 4 -> 7) so the r² shading reads clearly (reviewer).
+  // (`size` 4 -> 7) so the r² shading reads clearly (reviewer).
   {
     mode: 'url',
     name: 'gwas/locuszoom_ld',
@@ -52,7 +52,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
           trackId: 'sle_gwas_ld',
           type: 'LinearManhattanDisplay',
           height: 200,
-          scatterPointSize: 7,
+          size: 7,
         },
         {
           trackId: 'ncbi_gff_hg19',

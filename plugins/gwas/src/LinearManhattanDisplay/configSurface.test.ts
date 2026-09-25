@@ -26,7 +26,7 @@ describe('LinearManhattanDisplay config surface', () => {
     expect(display.maxScoreBound).toBeUndefined()
     // ScoreFieldConfigMixin's remaining members
     expect(display.scoreField).toBe('score')
-    expect(display.scatterPointSize).toBeGreaterThan(0)
+    expect(display.size).toBeGreaterThan(0)
     expect(display.showCrossHatches).toBe(false)
     expect(display.isDensityMode).toBe(false)
     // Manhattan's own

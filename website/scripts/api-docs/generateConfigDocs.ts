@@ -1189,7 +1189,7 @@ const inheritedSlotMeta = new WeakMap<Item, SlotMeta>()
  *
  * Without this the pages describe a slot by its override's source text alone, so
  * an override stating only what differs reads as though it dropped everything it
- * left out — `LinearManhattanDisplay`'s `scatterPointSize` would render as a
+ * left out — `LinearManhattanDisplay`'s `size` would render as a
  * common slot when it is really `advanced`. The flags and the advanced/common
  * split both read through `slotMetaFor`, so resolving it here fixes each of them
  * at once.

@@ -575,7 +575,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               defaultRendering: 'scatter',
               color: '#0068d1',
-              scatterPointSize: 2,
+              size: 2,
               summaryScoreMode: 'max',
               scales: { y: { domainMin: 0.1, domainMax: 0.5 } },
               height: 140,
@@ -765,7 +765,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               defaultRendering: 'scatter',
               color: '#0068d1',
-              scatterPointSize: 2,
+              size: 2,
               summaryScoreMode: 'max',
               // The lane below's floor and ceiling, so the two are one axis
               // read at two scales and the peak is the same height in both.

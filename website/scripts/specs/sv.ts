@@ -624,7 +624,7 @@ export const svSpecs: ScreenshotSpec[] = [
               resolution: 50,
               // shrink scatter points (default 2px) so the dense CNV cloud
               // reads as fine structure rather than blobs
-              scatterPointSize: 1,
+              size: 1,
             },
           ],
         },
@@ -2065,7 +2065,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // fetch that keeps the bands apart is HG008_BAF_TRACK's
               // resolutionMultiplier, not a display setting.
               defaultRendering: 'scatter',
-              scatterPointSize: 1,
+              size: 1,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
@@ -2377,7 +2377,7 @@ export const svSpecs: ScreenshotSpec[] = [
               defaultRendering: 'scatter',
               color: '#0068d1',
               summaryScoreMode: 'avg',
-              scatterPointSize: 1,
+              size: 1,
               resolution: 10,
               height: 180,
               displayCrossHatches: true,
@@ -2394,7 +2394,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // those bands apart is HG008_BAF_TRACK's resolutionMultiplier, not
               // a display setting; see the note on that const.
               defaultRendering: 'scatter',
-              scatterPointSize: 1,
+              size: 1,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
@@ -2651,7 +2651,7 @@ export const svSpecs: ScreenshotSpec[] = [
               defaultRendering: 'scatter',
               color: '#0068d1',
               summaryScoreMode: 'avg',
-              scatterPointSize: 3,
+              size: 3,
               height: 140,
               // request bigwig bins 10x finer than screen resolution so the
               // 500bp-binned log2 signal resolves at this window rather than
@@ -2665,7 +2665,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // reads here because HG008_BAF_TRACK's resolutionMultiplier keeps
               // the fetch off the bigWig zoom levels; see the note on that const.
               defaultRendering: 'scatter',
-              scatterPointSize: 2,
+              size: 2,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
@@ -2730,7 +2730,7 @@ export const svSpecs: ScreenshotSpec[] = [
               defaultRendering: 'scatter',
               color: '#0068d1',
               summaryScoreMode: 'avg',
-              scatterPointSize: 1,
+              size: 1,
               height: 140,
               // finer bigwig bins so the 500bp-binned log2 shows across chr17
               resolution: 10,
@@ -2746,7 +2746,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // HG008_BAF_TRACK's resolutionMultiplier keeps the fetch off the
               // bigWig zoom levels, whose per-bin min/avg/max paints one wash.
               defaultRendering: 'scatter',
-              scatterPointSize: 1,
+              size: 1,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
@@ -2849,7 +2849,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // HG008_BAF_TRACK's resolutionMultiplier keeps the fetch off the
               // bigWig zoom levels.
               defaultRendering: 'scatter',
-              scatterPointSize: 1,
+              size: 1,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },

@@ -58,7 +58,7 @@ import {
 } from '@jbrowse/wiggle-core'
 import {
   makePointSizeSubMenu,
-  scatterPointSizeAccess,
+  pointSizeAccess,
 } from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -362,7 +362,7 @@ export function stateModelFactory(
             domainY,
             canvasWidth,
             canvasHeight,
-            pointDiameterPx: self.scatterPointSize,
+            pointDiameterPx: self.size,
           }))
         },
         /**
@@ -379,7 +379,7 @@ export function stateModelFactory(
             return []
           }
           const plotTop = axisPlotBox(self.height).yTop
-          const r = Math.max(6, self.scatterPointSize / 2 + 4)
+          const r = Math.max(6, self.size / 2 + 4)
           return inkOfInstances(
             MANHATTAN_MARKS,
             self.renderBlocks,
@@ -624,7 +624,7 @@ export function stateModelFactory(
             ...makePointSizeSubMenu({
               label: 'Point size',
               applies: true,
-              ...scatterPointSizeAccess(self),
+              ...pointSizeAccess(self),
             }),
             ...makeShowSubMenu([
               makeCrossHatchItem(self),

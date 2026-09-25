@@ -13,23 +13,23 @@ export interface PointSizeAccess {
 }
 
 /**
- * The point size a display holding `WiggleScoreConfigMixin`'s
- * `scatterPointSize` slot shows and writes.
+ * The point size a display holding `WiggleScoreConfigMixin`'s `size` slot
+ * shows and writes.
  */
-export function scatterPointSizeAccess(self: {
-  scatterPointSize: number
-  setScatterPointSize: (n?: number) => void
+export function pointSizeAccess(self: {
+  size: number
+  setSize: (n?: number) => void
   configuration: ConfigModelForFields<{
-    scatterPointSize: { type: 'number'; defaultValue: number }
+    size: { type: 'number'; defaultValue: number }
   }>
 }): PointSizeAccess {
   return {
-    value: () => self.scatterPointSize,
+    value: () => self.size,
     defaultValue: Number(
-      getSlotDefinition(self.configuration, 'scatterPointSize').defaultValue,
+      getSlotDefinition(self.configuration, 'size').defaultValue,
     ),
     set: n => {
-      self.setScatterPointSize(n)
+      self.setSize(n)
     },
   }
 }

@@ -78,7 +78,7 @@
           "type": "LinearManhattanDisplay",
           "height": 250,
           "color": { "field": "ld" },
-          "scatterPointSize": 8
+          "size": 8
         }
       ]
     },

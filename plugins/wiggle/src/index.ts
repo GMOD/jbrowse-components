@@ -58,6 +58,9 @@ export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
 export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
 // Score-plot pieces that moved to `@jbrowse/wiggle-core`, re-exported under the
 // names this plugin published them as.
-export { WiggleScoreConfigMixin } from '@jbrowse/wiggle-core'
+export {
+  WiggleScoreConfigMixin,
+  liftScatterPointSize,
+} from '@jbrowse/wiggle-core'
 export type { ScorePlotSvgModel as WiggleFamilySvgModel } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'

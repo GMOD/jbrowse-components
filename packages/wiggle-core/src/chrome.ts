@@ -13,9 +13,6 @@ export {
 } from '@jbrowse/display-ui'
 
 export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
-export {
-  makePointSizeSubMenu,
-  scatterPointSizeAccess,
-} from './pointSizeMenu.tsx'
+export { makePointSizeSubMenu, pointSizeAccess } from './pointSizeMenu.tsx'
 export type { PointSizeAccess } from './pointSizeMenu.tsx'
 export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'

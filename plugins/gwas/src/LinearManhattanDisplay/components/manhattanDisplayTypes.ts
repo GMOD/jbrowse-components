@@ -21,7 +21,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
   renderState: ManhattanRenderState
-  scatterPointSize: number
+  size: number
   hoveredFeature: ManhattanHit | undefined
   indexSnpMissing: boolean
   skippedFeatures: SkippedFeatures

@@ -33,7 +33,7 @@ function makeModel(symlogConstant: number, scheme?: 'viridis') {
     scaleType: 'symlog',
     symlogConstant,
     renderingType: 'density',
-    scatterPointSize: 2,
+    size: 2,
     lineWidth: 1,
     origin: 0,
     wiggleColor: {

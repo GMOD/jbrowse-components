@@ -1363,7 +1363,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'The value the bars grow from, which a threshold colour with no domain of its own also cuts at. No menu row writes it.',
         }
       : undefined,
-  scatterPointSize: (value, { displayType }) => {
+  size: (value, { displayType }) => {
     const menu = displayType ? POINT_SIZE_MENUS[displayType] : undefined
     return typeof value === 'number' && menu
       ? {

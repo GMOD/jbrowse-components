@@ -5,7 +5,7 @@ import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
 import {
   makePointSizeSubMenu,
   makeResolutionSubMenuItem,
-  scatterPointSizeAccess,
+  pointSizeAccess,
 } from '@jbrowse/wiggle-core/chrome'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
@@ -93,14 +93,12 @@ export function makeRenderingTypeSubMenu(
 }
 
 export function makePointSizeMenuItems(
-  self: { renderingType: string } & Parameters<
-    typeof scatterPointSizeAccess
-  >[0],
+  self: { renderingType: string } & Parameters<typeof pointSizeAccess>[0],
 ): MenuItem[] {
   return makePointSizeSubMenu({
     label: 'Scatter point size',
     applies: isScatterMode(self.renderingType),
-    ...scatterPointSizeAccess(self),
+    ...pointSizeAccess(self),
   })
 }
 

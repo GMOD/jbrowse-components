@@ -50,10 +50,11 @@ export const wiggleConfigSchemaFields = {
     description:
       "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin",
   },
-  scatterPointSize: {
+  size: {
     type: 'number',
     defaultValue: 2,
-    description: 'Point height in px for scatterplot rendering. Defaults to 2',
+    description:
+      "Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size",
     advanced: true,
   },
   lineWidth: {

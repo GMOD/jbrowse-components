@@ -73,8 +73,8 @@ why the header is commented with `#`.
 `color: { "field": "ld" }` on the display colors points by r² to the index SNP
 and needs an `ldAdapter` sub-adapter on the `GWASAdapter`; swap in
 `PlinkLDTabixAdapter` for an indexed `.ld.gz`. A bare `color` string is a CSS
-literal or a `jexl:` expression per feature, and `scatterPointSize` sets the
-point diameter in px ([](/docs/config/linearmanhattandisplay)):
+literal or a `jexl:` expression per feature, and `size` sets the point diameter
+in px ([](/docs/config/linearmanhattandisplay)):
 
 ```json addtrack
 {

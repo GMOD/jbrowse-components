@@ -62,7 +62,7 @@ describe('the hovered point lights as a ring', () => {
     expect(display.hoverInk).toEqual([])
     display.setHoveredFeature({ ...hit, instance: 1 })
     const [ring] = display.hoverInk
-    const r = Math.max(6, display.scatterPointSize / 2 + 4)
+    const r = Math.max(6, display.size / 2 + 4)
     expect(ring).toMatchObject({ width: 2 * r, height: 2 * r })
     expect(display.highlightStyle).toBe('ring')
     display.clearHoveredFeature()

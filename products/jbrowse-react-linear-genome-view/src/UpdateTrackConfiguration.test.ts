@@ -307,26 +307,24 @@ describe('a reset of an admin-set slot survives a reload', () => {
     const base = fstTrack({
       description: 'admin description',
       displayDefaults: {
-        scatterPointSize: 9,
+        size: 9,
         scales: { y: { domainMax: 50 } },
       },
     })
     const state = createViewState({ assembly, tracks: [base] })
     const defaultSize = readConfObject(
       manhattan(hydrateTrackConfig(pluginManagerOf(state), fstTrack({}))!),
-      'scatterPointSize',
+      'size',
     )
     edit(state, conf => {
       setConf(conf, 'description', undefined)
-      setConf(manhattan(conf), 'scatterPointSize', undefined)
+      setConf(manhattan(conf), 'size', undefined)
       setConf(manhattan(conf), DOMAIN_MAX, undefined)
     })
 
     const reloaded = effective(await reload(state, base))
     expect(readConfObject(reloaded, 'description')).toBe('')
-    expect(readConfObject(manhattan(reloaded), 'scatterPointSize')).toBe(
-      defaultSize,
-    )
+    expect(readConfObject(manhattan(reloaded), 'size')).toBe(defaultSize)
     expect(readConfObject(manhattan(reloaded), DOMAIN_MAX)).toBeUndefined()
   })
 
@@ -337,9 +335,9 @@ describe('a reset of an admin-set slot survives a reload', () => {
       manhattan(
         effective(createViewState({ assembly, tracks: [fstTrack({})] })),
       ),
-      'scatterPointSize',
+      'size',
     ) as number
-    const base = fstTrack({ displayDefaults: { scatterPointSize: size } })
+    const base = fstTrack({ displayDefaults: { size } })
     const state = createViewState({ assembly, tracks: [base] })
     edit(state, conf => {
       setConf(manhattan(conf), DOMAIN_MAX, 20)
@@ -355,10 +353,10 @@ describe('a reset of an admin-set slot survives a reload', () => {
     })
 
     const adminChanged = fstTrack({
-      displayDefaults: { scatterPointSize: size + 3 },
+      displayDefaults: { size: size + 3 },
     })
     const display = manhattan(effective(await reload(state, adminChanged)))
-    expect(readConfObject(display, 'scatterPointSize')).toBe(size + 3)
+    expect(readConfObject(display, 'size')).toBe(size + 3)
     expect(readConfObject(display, DOMAIN_MAX)).toBe(20)
   })
 

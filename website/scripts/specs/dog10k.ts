@@ -1048,7 +1048,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_size_fst',
           type: 'LinearManhattanDisplay',
           height: FST_LANE_H,
-          scatterPointSize: 4,
+          size: 4,
           ...FST_AXIS_RULED,
         },
       ],
@@ -1150,7 +1150,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // a hundred windows across this view rather than the ten the 200 kb
           // lane drew, so the points come down from 9: at that size a hundred of
           // them merge into a band and the sweep stops having edges
-          scatterPointSize: 6,
+          size: 6,
           ...FST_AXIS,
         },
       ],
@@ -1754,7 +1754,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_igf1_fst',
           type: 'LinearManhattanDisplay',
           height: 150,
-          scatterPointSize: 4,
+          size: 4,
           // the same 0-0.8 axis as the genome-wide scan on the page above, so a
           // reader moving between them is reading one scale
           ...FST_AXIS,

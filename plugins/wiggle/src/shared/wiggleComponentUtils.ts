@@ -83,7 +83,7 @@ export interface WiggleRenderStateModel {
   scaleType: string
   symlogConstant: number
   renderingType: string
-  scatterPointSize: number
+  size: number
   lineWidth: number
   origin: number
   wiggleColor: ResolvedWiggleColor
@@ -118,7 +118,7 @@ export function makeWiggleRenderState(
     // regardless of instance count and would seed the row transform with
     // Infinity. Flooring here is the one place both backends read.
     numRows: Math.max(1, numRows),
-    scatterPointSize: self.scatterPointSize,
+    scatterPointSize: self.size,
     lineWidth: self.lineWidth,
     origin: self.origin,
     pivot: self.wiggleColor.pivot,

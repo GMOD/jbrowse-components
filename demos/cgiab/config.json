@@ -209,7 +209,7 @@
           "displayId": "HG008_log2ratio-LinearWiggleDisplay",
           "defaultRendering": "scatter",
           "summaryScoreMode": "avg",
-          "scatterPointSize": 1,
+          "size": 1,
           "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
           "height": 120
         }
@@ -259,7 +259,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "HG008-T_baf-LinearWiggleDisplay",
           "defaultRendering": "scatter",
-          "scatterPointSize": 1,
+          "size": 1,
           "scales": { "y": { "domainMin": 0, "domainMax": 1 } },
           "height": 120
         }

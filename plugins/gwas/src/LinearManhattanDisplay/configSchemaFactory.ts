@@ -146,10 +146,10 @@ export function configSchemaFactory() {
        * Manhattan point diameter in px (adjustable from the track menu). Larger
        * default than wiggle's since Manhattan points are the primary glyph.
        */
-      scatterPointSize: {
+      size: {
         type: 'number',
         defaultValue: DEFAULT_POINT_DIAMETER_PX,
-        description: 'Diameter in px of Manhattan points',
+        description: 'Point diameter in px',
       },
       /**
        * #slot
