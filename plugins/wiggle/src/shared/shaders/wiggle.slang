@@ -69,16 +69,6 @@ bool drawsBar() {
   return u.renderingType == RENDERING_TYPE_XYPLOT;
 }
 
-// One device pixel, in the CSS px the bar geometry is measured in. It is both
-// the ramp's full width and the geometry pad, and it has to be both: the pad
-// makes every fragment the ramp gives ink to fully covered by the quad, so the
-// rasterizer's own coverage never multiplies into the analytic one and the bar
-// looks the same at 1 sample as at 4.
-float barAaPx() {
-  return 2.0 * aaHalfPx(u.devicePixelRatio);
-}
-
-
 [shader("vertex")]
 VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startEnd.x, u);
@@ -131,8 +121,12 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
     float botPx = max(scoreY, originY) + rowTop;
     // The bar grows one device px past each horizontal cut so the fragment's
     // ramp has geometry to land on; the ramp is zero out there, so the extra
-    // area costs a discarded fragment and paints nothing.
-    float padPx = barAaPx();
+    // area costs a discarded fragment and paints nothing. A FULL pixel, not the
+    // half `aaHalfPx` pads a centred edge by: the ramp inks a fragment whose
+    // centre sits half a pixel out, and that fragment has to be FULLY inside
+    // the quad or the rasterizer's coverage multiplies into the analytic one
+    // and the bar stops looking the same at 1 sample as at 4.
+    float padPx = aaPx(u.devicePixelRatio);
     float vy = lerp(botPx + padPx, topPx - padPx, q.y);
     sy = 1.0 - vy * pxToClip;
     barInkPx = float2(vy - topPx, vy - botPx);
@@ -188,8 +182,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // stretches, against the 0.277 of MSAA quantisation this replaces
     // everywhere, so the trade is worth taking and is not worth hiding.
     // barCutCoverage.test.ts pins it.
-    float aaPx = barAaPx();
-    float alpha = aaRamp(fragIn.barInkPx.x, aaPx) - aaRamp(fragIn.barInkPx.y, aaPx);
+    float alpha = edgeCoverage(fragIn.barInkPx.x, u.devicePixelRatio)
+      - edgeCoverage(fragIn.barInkPx.y, u.devicePixelRatio);
     if (alpha <= 0.0) {
       discard;
     }
