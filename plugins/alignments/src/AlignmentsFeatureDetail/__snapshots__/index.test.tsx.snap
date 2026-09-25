@@ -156,9 +156,9 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <div>
+                      <span>
                         TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-                      </div>
+                      </span>
                     </div>
                   </div>
                   <div
@@ -175,9 +175,9 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <div>
+                      <span>
                         37
-                      </div>
+                      </span>
                     </div>
                   </div>
                   <div
@@ -221,9 +221,9 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <div>
+                      <span>
                         37
-                      </div>
+                      </span>
                     </div>
                   </div>
                   <div
@@ -240,9 +240,9 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <div>
+                      <span>
                         100M
-                      </div>
+                      </span>
                     </div>
                   </div>
                   <div
@@ -257,9 +257,9 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <div>
+                      <span>
                         100
-                      </div>
+                      </span>
                     </div>
                   </div>
                   <div
@@ -276,9 +276,9 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <div>
+                      <span>
                         0
-                      </div>
+                      </span>
                     </div>
                   </div>
                   <div
@@ -295,9 +295,9 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      <div>
+                      <span>
                         100
-                      </div>
+                      </span>
                     </div>
                   </div>
                   <div

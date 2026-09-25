@@ -16,31 +16,35 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+export function isBareUrl(text: string) {
+  return /^https?:\/\/\S+$/.test(text)
+}
+
+export function valueText(value: unknown) {
+  return isObject(value) ? JSON.stringify(value) : String(value)
+}
+
+/**
+ * A value that is nothing but a URL is a link; anything else goes through
+ * SanitizedHTML, which renders markup and links URLs inside longer text. Both
+ * open in a new tab: navigating in place discards the session, and in an
+ * embedded JBrowse it takes the host page with it.
+ */
+export function ValueText({ text }: { text: string }) {
+  return isBareUrl(text) ? (
+    <Link href={text} target="_blank" rel="noopener noreferrer">
+      {text}
+    </Link>
+  ) : (
+    <SanitizedHTML html={text} />
+  )
+}
+
 export default function BasicValue({ value }: { value: unknown }) {
   const { classes } = useStyles()
-  // a value that is nothing but a URL is a link, whether it came from the file
-  // or from a formatDetails callback -- the same courtesy `linkify` does for a
-  // URL sitting inside a longer string, one layer down in SanitizedHTML.
-  //
-  // New tab, matching `rewriteExternalAnchors` on that other path. Navigating
-  // in place discards the session, and in an embedded JBrowse it takes the host
-  // page with it.
-  const isLink = /^https?:\/\//.test(`${value}`)
   return (
     <div className={classes.fieldValue}>
-      {isValidElement(value) ? (
-        value
-      ) : isLink ? (
-        <Link
-          href={`${value}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >{`${value}`}</Link>
-      ) : (
-        <SanitizedHTML
-          html={isObject(value) ? JSON.stringify(value) : String(value)}
-        />
-      )}
+      {isValidElement(value) ? value : <ValueText text={valueText(value)} />}
     </div>
   )
 }

@@ -802,7 +802,12 @@
       "names": [
         "default"
       ],
-      "worker": "real"
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
     },
     "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField": {
       "package": "@jbrowse/core",

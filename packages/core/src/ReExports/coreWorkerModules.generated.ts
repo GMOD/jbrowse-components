@@ -6,7 +6,6 @@ import * as m0 from '../assemblyManager/index.ts'
 import * as m1 from '../assemblyManager/assembly.ts'
 import * as m2 from '../assemblyManager/assemblyConfigSchema.ts'
 import * as m3 from '../BaseFeatureWidget/index.ts'
-import * as m8 from '../BaseFeatureWidget/BaseFeatureDetail/Formatter.tsx'
 import * as m11 from '../checkPlugins.ts'
 import * as m12 from '../configuration/index.ts'
 import * as m13 from '../configuration/configurationSchema.ts'
@@ -225,7 +224,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': uiStub,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard': uiStub,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails': uiStub,
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter': m8.default,
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter': uiStub,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField': uiStub,
   '@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog': uiStub,
   '@jbrowse/core/checkPlugins': m11,
