@@ -85,13 +85,22 @@ const SashimiSubBand = observer(function SashimiSubBand({
                   overCigarItem: false,
                   featureIdUnderMouse: undefined,
                   mouseoverExtraInformation: formatSashimiTooltip(arc),
-                  highlightedChainReadIds: model.sashimiSupportingReadIds(
+                  hoveredJunction: {
                     groupKey,
-                    arc,
-                  ),
+                    refName: arc.refName,
+                    start: arc.start,
+                    end: arc.end,
+                  },
+                  highlightedChainReadIds: [],
                 })
               }}
               onMouseLeave={() => {
+                setHoveredArcKey(null)
+                model.clearHoverUnlessPinned()
+              }}
+              // A drag keeps the arc under the cursor, so without this every
+              // pan frame re-inks each supporting read.
+              onMouseDown={() => {
                 setHoveredArcKey(null)
                 model.clearHoverUnlessPinned()
               }}

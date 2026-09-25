@@ -17,6 +17,7 @@ import type {
   RegionJunctions,
 } from '../features/sashimi/junctions.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
+import type { ReadSlot } from '../shared/readSlot.ts'
 import type { SashimiArcsMode } from './constants.ts'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
@@ -243,10 +244,7 @@ export function buildRawDataByGroup(
 // Read id → which lane, which region, and which slot in that region's per-read
 // arrays, so a hit-test or detail lookup can resolve a feature back to them.
 // `findRead` (readLookup.ts) turns one of these entries into the read's data.
-export type ReadIdIndexMap = Map<
-  string,
-  { displayedRegionIndex: number; groupKey: string; idx: number }
->
+export type ReadIdIndexMap = Map<string, ReadSlot>
 
 // Hidden lanes drop here for `buildRawDataByGroup`'s reason plus one of its own:
 // `findRead` resolves an entry through `laidOutByGroup`, built from the already

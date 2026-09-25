@@ -69,7 +69,7 @@ import {
 } from '../features/linkedReads/computeOverlay.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
-import { junctionSupportingReadIds } from '../features/sashimi/supportingReads.ts'
+import { junctionSupportingReadSlots } from '../features/sashimi/supportingReads.ts'
 import {
   BASE_COLOR_FIELDS,
   colorFieldOf,
@@ -116,6 +116,7 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
   readHighlightInk,
   readsToLight,
+  slotsOfIds,
 } from './components/readHighlightInk.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { configSlotViews } from './configSlotViews.ts'
@@ -185,7 +186,9 @@ import type {
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
+import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
+import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
   BaseLayer,
@@ -450,6 +453,12 @@ export default function stateModelFactory(
            * `readIdsByChainName`, which is where they come from.
            */
           highlightedChainReadIds: [] as string[],
+          /**
+           * #volatile
+           * The sashimi junction under the cursor, whose supporting reads the
+           * hover lights.
+           */
+          hoveredJunction: undefined as LaneJunction | undefined,
 
           /**
            * #volatile
@@ -2571,30 +2580,33 @@ export default function stateModelFactory(
            * the legend.
            */
           get sashimiLegendItems(): LegendItem[] {
-            return self.showLegend
-              ? sashimiLegendItems(
-                  new Set(
-                    this.sashimiJunctionSections.flatMap(sec =>
-                      sec.junctions.map(j => j.strand),
-                    ),
-                  ),
-                  getPaletteHost(self).palette.alignmentFill,
-                )
-              : []
+            if (!self.showLegend) {
+              return []
+            }
+            const strands = new Set<number>()
+            for (const sec of this.sashimiJunctionSections) {
+              for (const j of sec.junctions) {
+                strands.add(j.strand)
+              }
+            }
+            return sashimiLegendItems(
+              strands,
+              getPaletteHost(self).palette.alignmentFill,
+            )
           },
 
           /**
            * #method
-           * The reads in one lane whose skip gap is this junction.
+           * The slots of the reads in the junction's lane whose skip gap it is.
            */
-          sashimiSupportingReadIds(
-            groupKey: string,
-            junction: { refName: string; start: number; end: number },
-          ) {
-            const sec = self.renderSections.find(s => s.groupKey === groupKey)
+          sashimiSupportingReadSlots(junction: LaneJunction) {
+            const sec = self.renderSections.find(
+              s => s.groupKey === junction.groupKey,
+            )
             return sec
-              ? junctionSupportingReadIds(
-                  [...sec.rawPileupMap].map(([i, data]) => ({
+              ? junctionSupportingReadSlots(
+                  [...sec.laidOutPileupMap].map(([i, data]) => ({
+                    displayedRegionIndex: i,
                     refName: self.loadedRegions.get(i)?.refName,
                     data,
                   })),
@@ -2745,6 +2757,13 @@ export default function stateModelFactory(
          * repaint the whole pileup each move.
          */
         get hoverInk(): HighlightRect[] {
+          const junction = self.hoveredJunction
+          if (junction) {
+            return this.slotInk(
+              self.sashimiSupportingReadSlots(junction),
+              false,
+            )
+          }
           const { ids, strong } = readsToLight({
             isChainMode: self.isChainMode,
             chainReadIds: self.highlightedChainReadIds,
@@ -2777,12 +2796,22 @@ export default function stateModelFactory(
          * selected so it stays off the initial-render path.
          */
         readInk(ids: readonly string[], strong: boolean): HighlightRect[] {
-          return self.host.initialized && ids.length > 0
+          return ids.length > 0
+            ? this.slotInk(slotsOfIds(ids, self.readIdIndexMap), strong)
+            : []
+        },
+
+        /**
+         * #method
+         * The boxes the reads in these slots painted, clipped to their
+         * sections.
+         */
+        slotInk(slots: readonly ReadSlot[], strong: boolean): HighlightRect[] {
+          return self.host.initialized && slots.length > 0
             ? readHighlightInk({
                 blocks: self.renderBlocks,
                 sections: self.renderSections,
-                readIdIndexMap: self.readIdIndexMap,
-                ids,
+                slots,
                 state: this.renderState,
                 scroll: self.scrollModel,
                 strong,
@@ -3177,6 +3206,7 @@ export default function stateModelFactory(
           self.overCigarItem = false
           self.hoverCoverageBand = undefined
           self.hoveredArcHighlight = undefined
+          self.hoveredJunction = undefined
           if (self.highlightedChainReadIds.length > 0) {
             self.highlightedChainReadIds = []
           }
@@ -3800,6 +3830,7 @@ export default function stateModelFactory(
             // with no arc to name clears the highlight by not mentioning one,
             // which is the property this single action exists to give.
             hoveredArcHighlight?: ArcHighlight
+            hoveredJunction?: LaneJunction
             highlightedChainReadIds: string[]
           }) {
             if (self.contextMenuInfo) {
@@ -3810,6 +3841,7 @@ export default function stateModelFactory(
             self.mouseoverExtraInformation = state.mouseoverExtraInformation
             self.hoverCoverageBand = state.hoverCoverageBand
             self.hoveredArcHighlight = state.hoveredArcHighlight
+            self.hoveredJunction = state.hoveredJunction
             // Write only on a real change. Assigning an equal array still
             // replaces the MST node, which invalidates `hoverInk` — an
             // O(reads) rebuild — so dragging the cursor along one chain would

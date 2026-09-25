@@ -139,7 +139,6 @@ describe('sashimi selection', () => {
       setHoverState: jest.fn(),
       clearMouseoverState: jest.fn(),
       clearHoverUnlessPinned: jest.fn(),
-      sashimiSupportingReadIds: jest.fn(() => ['r1', 'r2']),
     } as unknown as LinearAlignmentsDisplayModel
   }
 
@@ -192,14 +191,30 @@ describe('sashimi selection', () => {
     expect(strokeWidths(container)).toEqual(['6', '2'])
   })
 
-  it('lights the reads supporting the hovered junction', () => {
+  it('names the hovered junction so its supporting reads light', () => {
     const model = stubModel(undefined)
     const { container } = render(<SashimiArcsOverlay model={model} />)
     fireEvent.mouseEnter(container.querySelector('path')!)
-    expect(model.sashimiSupportingReadIds).toHaveBeenCalledWith('sampleA', ARC)
     expect(model.setHoverState).toHaveBeenCalledWith(
-      expect.objectContaining({ highlightedChainReadIds: ['r1', 'r2'] }),
+      expect.objectContaining({
+        hoveredJunction: {
+          groupKey: 'sampleA',
+          refName: 'chr1',
+          start: 1000,
+          end: 2000,
+        },
+      }),
     )
+  })
+
+  it('drops the hover when a press starts a pan over the arc', () => {
+    const model = stubModel(undefined)
+    const { container } = render(<SashimiArcsOverlay model={model} />)
+    const path = container.querySelector('path')!
+    fireEvent.mouseEnter(path)
+    fireEvent.mouseDown(path)
+    expect(model.clearHoverUnlessPinned).toHaveBeenCalled()
+    expect(strokeWidths(container)).toEqual(['2'])
   })
 
   it('strokes an unstranded junction in the export theme grey', () => {

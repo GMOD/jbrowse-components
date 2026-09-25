@@ -63,6 +63,8 @@ export const SASHIMI_LABEL_HALO_WIDTH = 2.5
 const MIN_LABEL_SPAN_PX = 22
 const LABEL_PADDING_PX = 6
 
+// The digit term: a 4-5 digit count on deep RNA-seq overflowed its arc under a
+// flat 22px threshold.
 function labelSpanPx(count: number) {
   return Math.max(
     MIN_LABEL_SPAN_PX,
@@ -79,7 +81,8 @@ const SPAN_REF_MAX_BP = 100_000
 
 // Room the count label needs past a down arc's apex. Only the down band pays
 // it, because only the down band is clipped; an up arc's label draws into the
-// histogram's scalebar margin.
+// histogram's scalebar margin. Charging the up band too took 16% off every arc
+// in the default 45px coverage band to avoid a rare overlap with the axis text.
 export const SASHIMI_APEX_CLEARANCE_PX =
   SASHIMI_LABEL_FONT_SIZE / 2 + SASHIMI_LABEL_HALO_WIDTH / 2
 
@@ -180,13 +183,16 @@ export function projectSashimiArcs(
     }
     const span = screenSpan(x1, x2)
     const strokeWidth = strokeWidthForCount(j.count)
-    // A cull, not a filter: an arc's ink runs foot to foot in x, so one whose
-    // span misses the box paints nothing. Blocks extend past the viewport, so
-    // these are common.
+    // A cull, not a filter or a cap: an arc's ink runs foot to foot in x, so
+    // one whose span misses the box paints nothing, and nothing has to decide
+    // which junctions matter. Blocks extend past the viewport, so these are
+    // common.
     const inkPad = strokeWidth / 2
     if (span.right < -inkPad || span.left > viewWidthPx + inkPad) {
       continue
     }
+    // 'up' reserves no strip, so it is the safe side for a junction the
+    // layout's merge somehow never saw
     const side = downJunctionKeys.has(j.key) ? 'down' : 'up'
     const { band, baseline, dir } = bandGeometry(side, {
       effectiveHeight,

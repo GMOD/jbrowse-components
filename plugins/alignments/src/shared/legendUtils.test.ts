@@ -1243,12 +1243,12 @@ describe('sashimiLegendItems', () => {
       sashimiLegendItems(new Set([0, 1]), { pairLR: '#d3d3d3' }).map(
         i => i.label,
       ),
-    ).toEqual(['Forward strand', 'Strand unknown'])
+    ).toEqual(['Forward transcript strand', 'Transcript strand unknown'])
   })
 
   test('takes the neutral from the theme it is given', () => {
     expect(sashimiLegendItems(new Set([0]), { pairLR: '#b0b0b0' })).toEqual([
-      { color: '#b0b0b0', label: 'Strand unknown' },
+      { color: '#b0b0b0', label: 'Transcript strand unknown' },
     ])
   })
 
@@ -1265,7 +1265,7 @@ describe('sashimiLegendItems', () => {
     expect(scales.at(-1)).toMatchObject({
       id: 'sashimi',
       title: 'Splice junctions',
-      entries: [{ label: 'Reverse strand' }],
+      entries: [{ label: 'Reverse transcript strand' }],
     })
   })
 })

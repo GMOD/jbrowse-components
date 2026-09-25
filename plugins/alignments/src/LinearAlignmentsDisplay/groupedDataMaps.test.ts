@@ -636,7 +636,7 @@ test('buildSashimiDownKeys: auto names only the lane whose junctions cross', () 
 
 test('buildSashimiDownKeys: the keys name the junctions the overlay will look up', () => {
   // The set is the whole sashimi side decision — the layout reserves off its
-  // size and `computeSashimiArcs` places each arc off its membership, so a lane
+  // size and `projectSashimiArcs` places each arc off its membership, so a lane
   // has to name WHICH junction goes down, not just that one does.
   const m = new Map([[0, grouped([{ key: '', data: junctionData(crossing) }])]])
   expect([...downKeys(m, 0, 'auto').get('')!]).toEqual(['chr1:300:700'])

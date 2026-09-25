@@ -1,4 +1,8 @@
-import { readHighlightInk, readsToLight } from './readHighlightInk.ts'
+import {
+  readHighlightInk,
+  readsToLight,
+  slotsOfIds,
+} from './readHighlightInk.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { RenderState } from '../renderers/rendererTypes.ts'
@@ -60,8 +64,7 @@ function run(
   return readHighlightInk({
     blocks,
     sections,
-    readIdIndexMap,
-    ids,
+    slots: slotsOfIds(ids, readIdIndexMap),
     state: { ...state, scrollTop },
     scroll: { isGrouped: sections.length > 1, scrollTop, canvasHeight: 1000 },
     strong,
@@ -82,8 +85,7 @@ test('a spliced read is one box over its segments and the intron between', () =>
 })
 
 // A hovered connector sends both of its ends outside chain mode, and pileup
-// layout puts them wherever they fit: the merge is per row, so two reads on
-// different rows get a box each and nothing spans the reads between them.
+// layout puts them wherever they fit.
 test('two hovered reads on different rows get a box each', () => {
   const twoRows = {
     ...rpcData,
@@ -92,14 +94,24 @@ test('two hovered reads on different rows get a box each', () => {
   const boxes = readHighlightInk({
     blocks,
     sections: [{ ...open, laidOutPileupMap: { get: () => twoRows } }],
-    readIdIndexMap,
-    ids: ['read0', 'read1'],
+    slots: slotsOfIds(['read0', 'read1'], readIdIndexMap),
     state,
     scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 1000 },
     strong: false,
   })
   expect(boxes.map(b => b.top)).toEqual([100, 184])
   expect(boxes[1]!.width).toBeCloseTo(2)
+})
+
+// A sashimi junction lights every read carrying it, and a pileup row packs
+// reads that do not: one box per read keeps the gap between them unlit.
+test('two plain reads on one row get a box each', () => {
+  const [a, b, ...rest] = run(['read0', 'read1'], open)
+  expect(rest).toEqual([])
+  expect([a!.left, a!.width, b!.left, b!.width].map(Math.round)).toEqual([
+    1, 5, 7, 2,
+  ])
+  expect([a!.top, b!.top]).toEqual([100, 100])
 })
 
 test('a chain merges its members on the row, in the strong shade', () => {
@@ -165,4 +177,22 @@ describe('readsToLight', () => {
       readsToLight({ isChainMode: false, chainReadIds: [], readId: undefined }),
     ).toEqual({ ids: [], strong: false })
   })
+})
+
+// A read reaching two displayed regions (a junction across two collapsed-intron
+// exons) has a slot in each, and each lights its own box.
+test('each region a read reaches lights its own copy', () => {
+  const secondBlock = { ...blocks[0]!, displayedRegionIndex: 1 }
+  const boxes = readHighlightInk({
+    blocks: [blocks[0]!, secondBlock],
+    sections: [open],
+    slots: [
+      { displayedRegionIndex: 0, groupKey: 'g', idx: 0 },
+      { displayedRegionIndex: 1, groupKey: 'g', idx: 0 },
+    ],
+    state,
+    scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 1000 },
+    strong: false,
+  })
+  expect(boxes).toHaveLength(2)
 })

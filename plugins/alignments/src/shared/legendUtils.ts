@@ -263,10 +263,12 @@ export function getAlignmentsColorScales(model: {
   ]
 }
 
+// Transcript strand, from the XS/TS tag or the splice motif — not the read's
+// alignment strand, which a read-colour row may key in the same hue.
 const SASHIMI_STRAND_LABELS = [
-  [1, 'Forward strand'],
-  [-1, 'Reverse strand'],
-  [0, 'Strand unknown'],
+  [1, 'Forward transcript strand'],
+  [-1, 'Reverse transcript strand'],
+  [0, 'Transcript strand unknown'],
 ] as const
 
 /**
