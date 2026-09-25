@@ -1,7 +1,7 @@
 {
   "mui": {
-    "bytes": 477392,
-    "gzipBytes": 161889
+    "bytes": 477409,
+    "gzipBytes": 161899
   },
   "plain": {
     "bytes": 158746,
@@ -11,8 +11,8 @@
     "bytes": 115895,
     "gzipBytes": 40192
   },
-  "savedBytes": 318646,
-  "savedGzipBytes": 106192,
+  "savedBytes": 318663,
+  "savedGzipBytes": 106202,
   "muiKb": 466,
   "plainKb": 155,
   "seamKb": 113,
