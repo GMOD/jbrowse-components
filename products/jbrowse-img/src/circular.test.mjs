@@ -44,6 +44,30 @@ test('a track with no chord display is skipped, not fatal', async () => {
   assert.ok(paths.length > 2, `expected variant chords, got ${paths.length}`)
 })
 
+test('a coverage ring draws its bars', async () => {
+  const { createCanvas, loadImage } = await import('@napi-rs/canvas')
+  const svg = await renderRegion({
+    mode: 'circular',
+    fasta: volvoxFasta,
+    trackList: [
+      ['bigwig', [path.join(dataDir, 'volvox-sorted.bam.coverage.bw')]],
+    ],
+  })
+  const uri = /href="(data:image\/png;base64,[^"]+)"/.exec(svg)?.[1]
+  assert.ok(uri, 'the ring should be painted into an image')
+  const image = await loadImage(uri)
+  const ctx = createCanvas(image.width, image.height).getContext('2d')
+  ctx.drawImage(image, 0, 0)
+  const { data } = ctx.getImageData(0, 0, image.width, image.height)
+  let inked = 0
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] > 0) {
+      inked++
+    }
+  }
+  assert.ok(inked > 1000, `only ${inked} ring pixels drawn`)
+})
+
 // The skip filter asks the pluginManager which displays a track type declares —
 // and `getTrackType` THROWS for a type this bundle doesn't register, which a
 // --hub/--config config can easily carry (a track type from a plugin jb2export

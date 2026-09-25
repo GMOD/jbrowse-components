@@ -28,11 +28,25 @@ export interface RingBody {
 }
 
 /**
- * Whether this environment can decode an SVG strip into pixels to warp. Node
- * has no `Image`, and jsdom's has no `decode`.
+ * Whether an SVG strip can be decoded into pixels to warp: through the
+ * export's own `decodeSvg`, or the environment's `Image`. Node has no `Image`,
+ * and jsdom's has no `decode`.
  */
-export function canRasterizeRings() {
-  return typeof Image !== 'undefined' && 'decode' in Image.prototype
+export function canRasterizeRings(opts: SvgRasterCanvasOpts) {
+  return (
+    opts.decodeSvg !== undefined ||
+    (typeof Image !== 'undefined' && 'decode' in Image.prototype)
+  )
+}
+
+async function decodeSvg(markup: string, opts: SvgRasterCanvasOpts) {
+  if (opts.decodeSvg) {
+    return opts.decodeSvg(markup)
+  }
+  const img = new Image()
+  img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`
+  await img.decode()
+  return img
 }
 
 async function rasterize(
@@ -41,9 +55,7 @@ async function rasterize(
   height: number,
   opts: SvgRasterCanvasOpts,
 ) {
-  const img = new Image()
-  img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`
-  await img.decode()
+  const img = await decodeSvg(markup, opts)
   const { canvas, ctx } = createSvgRasterCanvas(width, height, opts)
   ctx.drawImage(img, 0, 0, width, height)
   return canvas
@@ -68,7 +80,7 @@ export function renderRingBodies(
         body: await display.renderSvg!({
           ...opts,
           theme,
-          rasterizeLayers: true,
+          rasterizeLayers: opts.decodeSvg === undefined,
           plotOnly: true,
         }),
       })),

@@ -1,7 +1,8 @@
+import type { SvgRasterCanvasOpts } from '../util/createSvgRasterCanvas.ts'
 import type React from 'react'
 
 /** What every view's `exportSvg` accepts. A view with more extends it. */
-export interface ViewExportSvgOptions {
+export interface ViewExportSvgOptions extends SvgRasterCanvasOpts {
   rasterizeLayers?: boolean
   format?: 'svg' | 'png'
   filename?: string
@@ -16,11 +17,6 @@ export interface ViewExportSvgOptions {
   /** a named theme; the session's active one when absent */
   themeName?: string
   fontFamily?: string
-  /**
-   * headless canvas factory for `rasterizeLayers` (jbrowse-img passes
-   * node-canvas); without it the raster path needs a DOM canvas
-   */
-  createCanvas?: (width: number, height: number) => HTMLCanvasElement
 }
 
 /**

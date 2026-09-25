@@ -8,7 +8,17 @@
 const SVG_RASTER_DPR = 2
 
 export interface SvgRasterCanvasOpts {
+  /**
+   * headless canvas factory for `rasterizeLayers` (jbrowse-img passes one);
+   * without it the raster path needs a DOM canvas
+   */
   createCanvas?: (width: number, height: number) => HTMLCanvasElement
+  /**
+   * decodes SVG markup into an image a `createCanvas` canvas can draw, where
+   * the environment's `Image` cannot (node, jsdom). A headless decoder draws
+   * vectors only, so markup headed for it carries no rasterized layers.
+   */
+  decodeSvg?: (markup: string) => Promise<CanvasImageSource>
 }
 
 export function createSvgRasterCanvas(

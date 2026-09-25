@@ -58,7 +58,7 @@ export async function renderToSvg(
     session,
     model.tracks.filter(t => !t.displays[0]?.renderSvg),
   )
-  const ringsDrawable = canRasterizeRings()
+  const ringsDrawable = canRasterizeRings(opts)
   if (!ringsDrawable) {
     notifySkippedSvgTracks(
       session,

@@ -15,7 +15,7 @@ import {
   renderToSvg as renderLinearToSvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
-import { createCanvas } from '@napi-rs/canvas'
+import { createCanvas, loadImage } from '@napi-rs/canvas'
 import { autorun } from 'mobx'
 
 import {
@@ -173,6 +173,9 @@ type ModeRenderer = (ctx: ModeContext) => Promise<string | Rendered>
 const nodeCanvas = (w: number, h: number) =>
   createCanvas(w, h) as unknown as HTMLCanvasElement
 
+const nodeSvgImage = async (markup: string) =>
+  (await loadImage(Buffer.from(markup))) as unknown as CanvasImageSource
+
 // The renderToSvg options every mode shares. `rasterizeLayers` is single-sourced
 // here so the `--noRasterize` inversion isn't repeated per renderer, and the
 // canvas factory so no mode rasterizes through jsdom's; linear and synteny
@@ -183,6 +186,7 @@ function baseSvgOpts(opts: Opts) {
     themeName: opts.themeName,
     fontFamily: opts.fontFamily ?? DEFAULT_FONT_FAMILY,
     createCanvas: nodeCanvas,
+    decodeSvg: nodeSvgImage,
   }
 }
 
