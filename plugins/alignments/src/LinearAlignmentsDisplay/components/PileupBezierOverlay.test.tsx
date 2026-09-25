@@ -117,6 +117,23 @@ test('a click selects the endpoint nearer the cursor, chain and all', () => {
   expect(model.selectFeatureById).toHaveBeenLastCalledWith('readA')
 })
 
+// Chrome gives a nested <svg> the box of its ink, not of its viewport, so the
+// section clip's left edge sits under its leftmost curve.
+test('a click measures from the overlay, not from the section clip', () => {
+  const { model, target, container } = renderOverlay({}, [
+    { ...ARC, x1: 100, x2: 300 },
+  ])
+  const overlay = container.querySelector<SVGSVGElement>(
+    '[data-testid="pileup-bezier-overlay"]',
+  )!
+  const clip = container.querySelector<SVGSVGElement>('svg svg')!
+  overlay.getBoundingClientRect = () => new DOMRect(0, 0, 800, 200)
+  clip.getBoundingClientRect = () => new DOMRect(100, 20, 200, 100)
+
+  fireEvent.click(target, { clientX: 290 })
+  expect(model.selectFeatureById).toHaveBeenCalledWith('readB')
+})
+
 // A curve bulging below its section's last row must not paint over the next
 // section's chip and coverage band.
 test("a section's connectors clip to its own pileup band", () => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { ARC_HIT_SLOP_PX, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
@@ -60,6 +60,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   model: LinearAlignmentsDisplayModel
 }) {
   const [hoveredReadName, setHoveredReadName] = useState<string | null>(null)
+  const overlayRef = useRef<SVGSVGElement>(null)
   const { view } = model
   const { bezierArcScope, height, selectedFeatureId } = model
 
@@ -88,6 +89,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
 
   return (
     <svg
+      ref={overlayRef}
       data-testid="pileup-bezier-overlay"
       style={{
         position: 'absolute',
@@ -172,7 +174,9 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                       if (e.currentTarget.closest(PAN_MOVED)) {
                         return
                       }
-                      const svg = e.currentTarget.ownerSVGElement
+                      // The overlay's own box: the path's `ownerSVGElement` is
+                      // the section clip, whose box in Chrome is its ink's.
+                      const svg = overlayRef.current
                       void model.selectFeatureById(
                         svg
                           ? nearerEndpoint(
