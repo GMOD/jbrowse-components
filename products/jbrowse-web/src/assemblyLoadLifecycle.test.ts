@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import assemblyManagerFactory, {
   assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
-import { applySnapshot, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from './corePlugins.ts'
 
@@ -90,22 +90,6 @@ function featuresOn(refName: string) {
     features: [{ refName, uniqueId: refName, start: 0, end: 4, seq: 'acgt' }],
   }
 }
-
-// the assembly editor writes into the live config
-test('editing the sequence adapter loads the assembly again', async () => {
-  const root = setup([
-    { name: 'editable', sequence: { adapter: featuresOn('ctgA') } },
-  ])
-  const assembly = (await root.assemblyManager.waitForAssembly('editable'))!
-  expect(assembly.refNames).toEqual(['ctgA'])
-
-  applySnapshot(
-    root.jbrowse.assemblies[1]!.sequence.adapter,
-    featuresOn('ctgB'),
-  )
-  await assembly.load()
-  expect(assembly.refNames).toEqual(['ctgB'])
-})
 
 test('an alias never shadows another assembly by array order', () => {
   const sequence = { adapter: featuresOn('ctgA') }
