@@ -43,13 +43,11 @@ export function handleFetchError(
  */
 export function isAbortException(exception: unknown): boolean {
   return (
-    // DOMException
-    // message contains aborted for bubbling through RPC
-    // things we have seen that we want to catch here
-    // Error: aborted
-    // AbortError: aborted
-    // AbortError: The user aborted a request.
+    // The message test is for an abort whose name did not survive a boundary
+    // (Electron IPC, RpcServer's message-only fallback). A timeout is a failure
+    // even though Node words it "The operation was aborted due to timeout".
     exception instanceof Error &&
+    exception.name !== 'TimeoutError' &&
     (exception.name === 'AbortError' ||
       // standard-ish non-DOM abort exception
       (exception instanceof AbortError && exception.code === 'ERR_ABORTED') ||

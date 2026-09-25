@@ -28,6 +28,26 @@ describe('checkAbortSignal', () => {
   })
 })
 
+describe('isAbortException', () => {
+  it('reads a timeout as a failure, not a cancel', async () => {
+    const thrown = await new Promise<unknown>(resolve => {
+      const signal = AbortSignal.timeout(1)
+      signal.addEventListener('abort', () => {
+        resolve(signal.reason)
+      })
+    })
+    expect((thrown as Error).name).toBe('TimeoutError')
+    expect(isAbortException(thrown)).toBe(false)
+    const worded = new Error('The operation was aborted due to timeout')
+    worded.name = 'TimeoutError'
+    expect(isAbortException(worded)).toBe(false)
+  })
+
+  it('still reads an abort whose name was lost at a boundary', () => {
+    expect(isAbortException(new Error('AbortError: aborted'))).toBe(true)
+  })
+})
+
 describe('withAbortCheck', () => {
   it('refuses to start on an aborted signal', async () => {
     const controller = new AbortController()
