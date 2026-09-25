@@ -34,9 +34,9 @@ test('a missing quality paints its own flat colour, off the ramp', () => {
   const ramp = new Set(
     qualityCssColors
       .slice(0, BASE_QUALITY_RAMP_MAX + 1)
-      .map(css => rgbOf(css).join()),
+      .map(css => rgbOf(css).join(',')),
   )
-  expect(ramp.has(unavailable.join())).toBe(false)
+  expect(ramp.has(unavailable.join(','))).toBe(false)
 })
 
 test('the packed table and the CSS table are one colour per score', () => {

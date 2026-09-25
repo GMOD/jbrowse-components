@@ -88,7 +88,7 @@ test('the ramp is core cividis over 0 to 60 and flat past it', () => {
   }
   const ramp = new Set(
     Array.from({ length: MAPQ_RAMP_MAX + 1 }, (_, mapq) =>
-      canvasRgb(mapq).join(),
+      canvasRgb(mapq).join(','),
     ),
   )
   expect(ramp.size).toBe(MAPQ_RAMP_MAX + 1)
