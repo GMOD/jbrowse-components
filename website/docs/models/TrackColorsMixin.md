@@ -20,7 +20,7 @@ it lives here rather than being copied into both models.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-colorby">**colorBy**</span><br><code>colorBy: syntenyColorConfigSchema</code> | The colour every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mappingQual`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels; a colour string paints every alignment. Unset, the default scheme paints. |
+| <span id="property-colorby">**colorBy**</span><br><code>colorBy: syntenyColorConfigSchema</code> | The colour every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels; a colour string paints every alignment. Unset, the default scheme paints. |
 | <span id="property-trackcolors">**trackColors**</span><br><code>trackColors: types.map(types.string)</code> | trackId -> explicit color under `colorBy: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
 | <span id="property-hideunlabelled">**hideUnlabelled**</span><br><code>hideUnlabelled: types.stripDefault(types.boolean, false)</code> | Under a text-column mode, draw only the rows that carry a label. |
 

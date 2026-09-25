@@ -27,7 +27,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 The multi-way synteny display's `ribbonColor` setting: one colour for every
 ribbon, or a field each ribbon carries — the record's strand, a measurement
-on its preset ramp (`identity`, `mappingQual`, `dnds`), or a column the
+on its preset ramp (`identity`, `mapq`, `dnds`), or a column the
 table declares in `attributeColumns`. A string is the constant.
 
 ## Config slots
@@ -38,6 +38,6 @@ These slots go on a display entry: `"displays": [{ "type": "RibbonColor", ... }]
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(130,130,130,0.3)'</code> | The colour of every ribbon under the `none` scale, and of a pair carrying no value under a field. Writing `ribbonColor: "grey"` lands here. Every field keeps its opacity. |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it) |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mapq and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it) |
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none) | none paints value and keeps the field for a switch back; unset, a field paints |
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it |
