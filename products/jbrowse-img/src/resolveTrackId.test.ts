@@ -35,6 +35,14 @@ test('a miss throws with substring suggestions', () => {
   )
 })
 
+test('a modifier glued onto the id names the separate-argument spelling', () => {
+  expect(() =>
+    resolveTrackId(tracks, 'hg19-clinvarMain:height:60', 'hg19'),
+  ).toThrow(
+    '--track "hg19-clinvarMain:height:60" not found in the config; modifiers follow the trackId as separate arguments: --track hg19-clinvarMain height:60',
+  )
+})
+
 test('an unrelated miss throws without suggestions', () => {
   expect(() => resolveTrackId(tracks, 'nonexistent-xyz', 'hg19')).toThrow(
     /not found in the config$/,

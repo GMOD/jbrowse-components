@@ -104,17 +104,7 @@ export function configTrackCategory(
   )
 }
 
-// Resolve a user's --track token to a real trackId in the config. Hosted
-// trackIds are all prefixed with the assembly name (e.g. hg19-ncbiRefSeqCurated),
-// which is tedious to type, so this accepts: the exact id, the id with the
-// `<assembly>-` prefix dropped, or a case-insensitive match on the id or the
-// track's display name (when unambiguous). A miss throws with near-matches so the
-// user can correct the token rather than getting a downstream "failed to open".
-export function resolveTrackId(
-  tracks: Track[],
-  input: string,
-  assemblyName: string,
-): string {
+function matchTrackId(tracks: Track[], input: string, assemblyName: string) {
   const ids = new Set(tracks.map(t => t.trackId))
   const prefixed = `${assemblyName}-${input}`
   const target = input.toLowerCase()
@@ -136,22 +126,46 @@ export function resolveTrackId(
       : looseMatches.length === 1
         ? looseMatches[0]!.trackId
         : undefined
+  return { resolved, looseMatches }
+}
 
-  if (resolved === undefined) {
-    if (looseMatches.length > 1) {
-      throw new Error(
-        `--track "${input}" is ambiguous; matches: ${looseMatches.map(t => t.trackId).join(', ')}`,
-      )
-    }
-    const suggestions = tracks
-      .filter(t => trackMatches(t, target))
-      .slice(0, 8)
-      .map(t => t.trackId)
+// Resolve a user's --track token to a real trackId in the config. Hosted
+// trackIds are all prefixed with the assembly name (e.g. hg19-ncbiRefSeqCurated),
+// which is tedious to type, so this accepts: the exact id, the id with the
+// `<assembly>-` prefix dropped, or a case-insensitive match on the id or the
+// track's display name (when unambiguous). A miss throws with near-matches so the
+// user can correct the token rather than getting a downstream "failed to open".
+export function resolveTrackId(
+  tracks: Track[],
+  input: string,
+  assemblyName: string,
+): string {
+  const { resolved, looseMatches } = matchTrackId(tracks, input, assemblyName)
+  if (resolved !== undefined) {
+    return resolved
+  }
+  if (looseMatches.length > 1) {
     throw new Error(
-      `--track "${input}" not found in the config${suggestions.length ? `. Did you mean: ${suggestions.join(', ')}?` : ''}`,
+      `--track "${input}" is ambiguous; matches: ${looseMatches.map(t => t.trackId).join(', ')}`,
     )
   }
-  return resolved
+  const colon = input.indexOf(':')
+  const glued =
+    colon > 0
+      ? matchTrackId(tracks, input.slice(0, colon), assemblyName).resolved
+      : undefined
+  if (glued !== undefined) {
+    throw new Error(
+      `--track "${input}" not found in the config; modifiers follow the trackId as separate arguments: --track ${glued} ${input.slice(colon + 1)}`,
+    )
+  }
+  const suggestions = tracks
+    .filter(t => trackMatches(t, input.toLowerCase()))
+    .slice(0, 8)
+    .map(t => t.trackId)
+  throw new Error(
+    `--track "${input}" not found in the config${suggestions.length ? `. Did you mean: ${suggestions.join(', ')}?` : ''}`,
+  )
 }
 
 // Per-read height for the alignments compactness presets (spacing is derived
