@@ -275,13 +275,46 @@ describe('getVariantColorScales', () => {
     ).toEqual(['Homozygous reference'])
   })
 
-  it('lists no field row where every value painted one colour', () => {
+  it('keeps a lone field row beside the reference grey', () => {
     expect(
       labelsOf(
         { paintedDomain: ['Pathogenic'] },
         { field: 'INFO.CLNSIG', scale: 'categorical' },
       ),
+    ).toEqual(['Pathogenic', DOSAGE_NOTE, 'Homozygous reference'])
+  })
+
+  it('lists no lone field row painted in the reference grey itself', () => {
+    expect(
+      labelsOf(
+        { paintedDomain: ['Pathogenic'], shadeByDosage: false },
+        {
+          field: 'INFO.CLNSIG',
+          scale: 'categorical',
+          domain: ['Pathogenic'],
+          range: [REFERENCE_COLOR],
+        },
+      ),
     ).toEqual(['Homozygous reference'])
+  })
+
+  it('caps the field rows alone, the absent-data rows aside', () => {
+    const values = Array.from({ length: 20 }, (_, i) => `v${i}`)
+    const labels = labelsOf(
+      {
+        paintedDomain: values,
+        shadeByDosage: false,
+        hasUnphased: true,
+        hasNoCall: true,
+      },
+      {
+        field: 'INFO.T',
+        scale: 'categorical',
+        domain: values,
+        range: values.map((_, i) => `rgb(${i * 10},0,0)`),
+      },
+    )
+    expect(labels).toHaveLength(23)
   })
 
   it('names two values sharing a colour on one row, drawn at het and hom dosage', () => {

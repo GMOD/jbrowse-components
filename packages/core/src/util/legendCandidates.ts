@@ -1,4 +1,4 @@
-import { legendIsReadable } from '../ui/legendSpec.ts'
+import { MAX_LEGEND_ITEMS, legendIsReadable } from '../ui/legendSpec.ts'
 import { abgrToCssRgba, cssColorToABGR } from './colorBits.ts'
 
 import type { CategoricalEntry, CategoricalScale } from '../ui/colorScale.ts'
@@ -134,6 +134,8 @@ export function everyRowPaints(
  * the painting holds, and a `closed` field's domain besides once anything
  * painted. `title` heads it in place of the field's name, `''` heading
  * nothing, and `swatches` draws a row as something other than its color's box.
+ * `besides` are the colors of rows a display lists beside these, which the
+ * one-color test counts and the length test does not.
  */
 export function derivedColorScale<T>(
   regions: Iterable<T>,
@@ -144,12 +146,14 @@ export function derivedColorScale<T>(
     title = field.field,
     maxItems,
     swatches,
+    besides = [],
   }: {
     id: string
     field: CategoricalField
     title?: string
     maxItems?: number
     swatches?: (row: CategoricalEntry & { color: string }) => LegendSwatch[]
+    besides?: readonly string[]
   },
 ): CategoricalScale[] {
   const painted = unionLegendCandidates(regions, resolve).map(
@@ -179,7 +183,15 @@ export function derivedColorScale<T>(
   const entries = [...painted, ...unpainted].sort((a, b) =>
     field.compare(a.value, b.value),
   )
-  return legendIsReadable(entries, maxItems)
+  const beside = besides.map(color => ({
+    label: '',
+    color: abgrToCssRgba(cssColorToABGR(color)),
+  }))
+  return painted.length > 0 &&
+    legendIsReadable(
+      [...entries, ...beside],
+      (maxItems ?? MAX_LEGEND_ITEMS) + beside.length,
+    )
     ? [
         {
           kind: 'categorical',

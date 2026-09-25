@@ -207,14 +207,16 @@ function swatchEntries(
 
 // A record field's rows are the key every colour channel derives
 // (`derivedColorScale`) from the values painted, each drawn at het and hom
-// dosage where lightness carries it; the absent-data rows follow whatever
-// that key says.
+// dosage where lightness carries it. The absent-data rows follow whatever that
+// key says, and their colours count toward its one-colour test, so a lone
+// field row beside the reference grey still keys.
 function recordFieldScale(
   field: CategoricalField,
   inputs: VariantLegendInputs,
 ): CategoricalScale {
   const color = (key: string) => recordKeyColor(field, key)
   const shaded = inputs.renderingMode !== 'phased' && inputs.shadeByDosage
+  const absent = absentDataEntries(inputs)
   const rows = derivedColorScale(
     [inputs.paintedDomain],
     painted =>
@@ -230,6 +232,7 @@ function recordFieldScale(
             { color: color(value) },
           ]
         : undefined,
+      besides: absent.flatMap(e => e.color ?? []),
     },
   ).flatMap(scale => scale.entries)
   return {
@@ -239,7 +242,7 @@ function recordFieldScale(
     entries: [
       ...rows,
       ...(shaded && rows.length > 0 ? [entry(DOSAGE_NOTE)] : []),
-      ...absentDataEntries(inputs),
+      ...absent,
     ],
   }
 }
