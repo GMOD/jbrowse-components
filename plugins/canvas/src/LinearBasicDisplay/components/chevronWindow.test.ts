@@ -190,3 +190,21 @@ test('the window walks one slot more than the block spans, and no more', () => {
     )
   }
 })
+
+test('the window needs no floor and no total guard of its own', () => {
+  // `chevronFirstVisible` floors at 0 and `chevronLastVisible` clamps to
+  // count-1, so chevron.slang's `> lastVisible` implies both of the two
+  // comparisons that stood beside it.
+  for (const lineWidthPx of LINE_WIDTHS) {
+    for (const minX of OFFSETS) {
+      const { total, first, last } = windowFor(minX, lineWidthPx)
+      for (let slot = 0; slot < MAX_VISIBLE_CHEVRONS_PER_LINE; slot++) {
+        const global = Math.trunc(first) + slot
+        if (global <= Math.trunc(last)) {
+          expect(global).toBeGreaterThanOrEqual(0)
+          expect(global).toBeLessThan(Math.trunc(total))
+        }
+      }
+    }
+  }
+})

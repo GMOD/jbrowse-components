@@ -126,7 +126,6 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   }
 
   float chevronsPerLine = chevronCount(lineWidthPx);
-  int totalChevrons = int(chevronsPerLine);
   float bpSpacing = chevronOffset(lineLengthBp, chevronsPerLine, 0.0);
 
   float2 splitLine = hpSplitUint(inst.startEnd.x);
@@ -146,7 +145,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
     int(chevronLastVisible(viewportEndBp, bpSpacing, chevronsPerLine, reachBp));
 
   int globalChevronIndex = firstVisible + localChevronIndex;
-  if (globalChevronIndex < 0 || globalChevronIndex > lastVisible || globalChevronIndex >= totalChevrons) {
+  if (globalChevronIndex > lastVisible) {
     o.position = OFFSCREEN;
     return o;
   }
