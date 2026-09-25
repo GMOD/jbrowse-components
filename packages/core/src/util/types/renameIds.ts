@@ -1,4 +1,4 @@
-import { createElementId } from '@jbrowse/core/util/types/mst'
+import { createElementId } from './ElementId.ts'
 
 export function renameIds(
   obj: Record<string, unknown>,

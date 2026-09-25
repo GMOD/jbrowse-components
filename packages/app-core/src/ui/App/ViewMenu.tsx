@@ -1,5 +1,6 @@
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { renameIds } from '@jbrowse/core/util/types/mst'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -10,8 +11,6 @@ import MenuIcon from '@mui/icons-material/Menu'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
 import { observer } from 'mobx-react'
-
-import { renameIds } from './copyView.ts'
 
 import type { WorkspaceLayout } from '../../WorkspaceLayout/model.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'

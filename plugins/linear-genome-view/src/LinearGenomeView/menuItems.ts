@@ -10,25 +10,27 @@ import {
   isSessionWithAddSessionTrack,
   toLocale,
 } from '@jbrowse/core/util'
-import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
+import {
+  basePaintedAt,
+  computeMoveToLayout,
+} from '@jbrowse/core/util/Base1DUtils'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { renameIds } from '@jbrowse/core/util/types/mst'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import LaunchIcon from '@mui/icons-material/Launch'
-import LayersIcon from '@mui/icons-material/Layers'
-import LayersClearIcon from '@mui/icons-material/LayersClear'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
-import { closeUpHost } from './closeUps.ts'
 import {
-  AddCloseUpDialog,
   ExportSvgDialog,
   GetSequenceDialog,
   RegionWidthEditorDialog,
@@ -115,7 +117,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     return []
   }
   const session = getSession(self)
-  const host = closeUpHost(self)
   const menuItems: MenuItem[] = [
     {
       label: 'Open track selector',
@@ -168,17 +169,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
               ])
             },
             icon: FolderOpenIcon,
-          },
-        ]
-      : []),
-    ...(host
-      ? [
-          {
-            label: 'Remove close-up view',
-            icon: LayersClearIcon,
-            onClick: () => {
-              host.removeCloseUp(self)
-            },
           },
         ]
       : []),
@@ -308,24 +298,34 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
 }
 
 /**
+ * Open a copy of the view, tracks and their settings included, framed on the
+ * span between two offsets. The same copy as the view menu's "Copy view", and
+ * nothing links it back to the original.
+ */
+export function openSpanInNewView(
+  view: LinearGenomeViewModel,
+  start?: BpOffset,
+  end?: BpOffset,
+) {
+  if (!start || !end) {
+    return undefined
+  }
+  const { bpPerPx, offsetPx } = computeMoveToLayout(view, start, end)
+  return getSession(view).addView(view.type, {
+    ...renameIds(getSnapshot(view)),
+    windowWidthBp: bpPerPx * view.width,
+    windowStartBp: offsetPx * bpPerPx,
+  })
+}
+
+/**
  * Build rubberband selection menu items. What a selection can open collects
  * under one "Launch" submenu, which sorts last, below any row a plugin appends
- * to the menu itself: a close-up view first, then `launchItems`, the
- * plugin-supplied ones (`rubberBandLaunchMenuItems()`).
+ * to the menu itself: a new linear genome view of the span first, then
+ * `launchItems`, the plugin-supplied ones (`rubberBandLaunchMenuItems()`).
  *
- * A close-up is offered from HERE and nowhere else, because a drag is what the
- * feature was always asking for and a menu item could not: the close-up shows
- * one span of one place, and this is the gesture that names both. From the view
- * menu it could only guess — a tenth of the middle, which is a span nobody
- * picked.
- *
- * Only a view of its own offers it, which `isTopLevelView` is the whole of. A
- * row of a comparative stack is already part of somebody's figure: the synteny
- * ribbons and the breakpoint split panels are placed against each row's own
- * height, and those views' exports draw one row per view, so a close-up grown
- * there walks the ribbons off their rows and is dropped from the picture
- * without a word. A close-up, living under a view rather than under the
- * session, is not a top-level view either.
+ * The new view is a copy of this one, so only a top-level view offers it: a row
+ * of a comparative view carries that view's framing, a hidden header among it.
  */
 export function buildRubberBandMenuItems(
   self: LinearGenomeViewModel,
@@ -348,23 +348,12 @@ export function buildRubberBandMenuItems(
     ...(self.isTopLevelView
       ? [
           {
-            label: 'Close-up view',
-            icon: LayersIcon,
+            label: 'Linear genome view',
+            icon: OpenInNewIcon,
             helpText:
-              'A zoomed-in copy of this view, opened below its tracks. It stays centred on this view and pans with it.',
+              'A new view of this span, with the same tracks. It scrolls and zooms on its own.',
             onClick: () => {
-              getDialogHost(self).queueDialog(handleClose => [
-                AddCloseUpDialog,
-                {
-                  model: self,
-                  leftOffset,
-                  rightOffset,
-                  handleClose: () => {
-                    handleClose()
-                    self.setOffsets()
-                  },
-                },
-              ])
+              openSpanInNewView(self, leftOffset, rightOffset)
             },
           },
         ]

@@ -276,7 +276,7 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     // one entry, under the rubberband menu's "Launch" group: a view can have
     // several synteny datasets open and the choice between them is a field in
     // the dialog, not a submenu here. Waited on itself, since the group opens
-    // with the close-up entry before the dataset's is offered.
+    // with the new-view entry before the dataset's is offered.
     const item = await waitFor(() => {
       const launch = view
         .rubberBandMenuItems()

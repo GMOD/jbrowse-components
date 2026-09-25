@@ -15,7 +15,6 @@ import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
 import { stickyChromeTops } from '../stickyChrome.ts'
-import CloseUps from './CloseUps.tsx'
 import Header from './Header.tsx'
 import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
@@ -206,7 +205,6 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
             </TracksContainer>
           )}
         </div>
-        <CloseUps model={model} />
       </div>
     </>
   )

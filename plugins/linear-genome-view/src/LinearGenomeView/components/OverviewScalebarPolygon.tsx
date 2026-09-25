@@ -1,6 +1,5 @@
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { alpha } from '@jbrowse/core/ui/palette'
-import { getFillProps, getStrokeProps, stripAlpha } from '@jbrowse/core/util'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import {
   regionBlocksPxExtent,
   transformPxSpan,
@@ -8,7 +7,6 @@ import {
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { CLOSE_UP_FRAME_WIDTH, closeUpColor } from '../closeUps.ts'
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -37,9 +35,6 @@ function trapezoidPoints(top: PxSpan, bottom: PxSpan, height: number) {
 const FILL_OPACITY = 0.3
 const STROKE_OPACITY = 0.8
 
-const CLOSE_UP_FILL_TOP = 0.6
-const CLOSE_UP_FILL_BOTTOM = 0.2
-
 const useStyles = makeStyles()(theme => ({
   polygon: {
     fill: alpha(theme.palette.tertiary.light, FILL_OPACITY),
@@ -59,25 +54,17 @@ const useStyles = makeStyles()(theme => ({
  * @param exportSvg - serialize explicit fill/stroke attributes (the split the
  * `getFill/StrokeProps` helpers exist for) instead of the on-screen CSS class,
  * which wouldn't survive into a standalone exported SVG.
- * @param gradient - a close-up's connector: a fill fading from the narrow edge
- * to the wide one, outlined in the colour of the frame it opens into, so the
- * close-up below reads as an inset of the row above rather than a second view
- * at the same zoom.
  */
 const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   model,
   overview,
   overviewOffsetPx = 0,
-  height = HEADER_BAR_HEIGHT,
   exportSvg = false,
-  gradient = false,
 }: {
   model: LinearGenomeViewModel
   overview: ViewLayout
   overviewOffsetPx?: number
-  height?: number
   exportSvg?: boolean
-  gradient?: boolean
 }) {
   const { classes, theme } = useStyles()
   const { offsetPx, bpPerPx, dynamicBlocks } = model
@@ -96,37 +83,7 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
     overviewOffsetPx,
   )
   const bottom = transformPxSpan(extent, 1, -offsetPx)
-  const points = trapezoidPoints(top, bottom, height)
-
-  if (gradient) {
-    const id = `close-up-connector-${svgNodeId(model)}`
-    const color = stripAlpha(theme.palette.tertiary.light)
-    return (
-      <>
-        <defs>
-          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-            <stop
-              offset="0%"
-              stopColor={color}
-              stopOpacity={CLOSE_UP_FILL_TOP}
-            />
-            <stop
-              offset="100%"
-              stopColor={color}
-              stopOpacity={CLOSE_UP_FILL_BOTTOM}
-            />
-          </linearGradient>
-        </defs>
-        <polygon
-          points={points}
-          fill={`url(#${id})`}
-          stroke={closeUpColor(theme.palette)}
-          strokeWidth={CLOSE_UP_FRAME_WIDTH}
-          strokeLinejoin="round"
-        />
-      </>
-    )
-  }
+  const points = trapezoidPoints(top, bottom, HEADER_BAR_HEIGHT)
 
   return exportSvg ? (
     <polygon

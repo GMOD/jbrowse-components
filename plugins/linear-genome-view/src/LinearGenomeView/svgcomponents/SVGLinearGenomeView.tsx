@@ -1,23 +1,15 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import {
-  awaitSvgRenders,
-  awaitViewInitialized,
-} from '@jbrowse/core/svg/svgReady'
+import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 
-import { closeUpStackRows } from '../closeUps.ts'
-import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
-import SVGCloseUpFrame from './SVGCloseUpFrame.tsx'
 import SVGHeader from './SVGHeader.tsx'
-import SVGStackedRow from './SVGStackedRow.tsx'
 import SVGView from './SVGView.tsx'
 import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
-  getRowHeaderLayout,
   trackLabelLeftOffset,
 } from './util.ts'
 
@@ -59,13 +51,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   // own readiness wait — an LGV display through `renderDisplaySvg`'s
   // `awaitSvgReady`, a non-LGV one (dotplot, synteny, circular) by calling that
   // itself.
-  const closeUps = model.closeUpViews as LGV[]
-  const stack = closeUpStackRows(model, closeUps)
-  const [
-    { tracks, displayResults, tracksHeight, legendWidth, skippedTracks },
-    closeUpTracks,
-  ] = await awaitSvgRenders([
-    renderViewTracks({
+  const { tracks, displayResults, tracksHeight, legendWidth, skippedTracks } =
+    await renderViewTracks({
       view: model,
       opts,
       theme,
@@ -74,24 +61,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       // the standalone export is the one with room to give: it widens its
       // canvas below so a legend sits beside the plot rather than over it
       reserveLegendWidth: true,
-    }),
-    // a close-up is a stacked row, like a synteny row: no room for a legend
-    awaitSvgRenders(
-      closeUps.map(closeUp =>
-        renderViewTracks({
-          view: closeUp,
-          opts,
-          theme,
-          textHeight,
-          trackLabels,
-        }),
-      ),
-    ),
-  ])
-  notifySkippedSvgTracks(session, [
-    ...skippedTracks,
-    ...closeUpTracks.flatMap(r => r.skippedTracks),
-  ])
+    })
+  notifySkippedSvgTracks(session, skippedTracks)
 
   // read after the displays' waits, and handed to SVGHeader rather than read
   // again, so the reserved `tracksTop` and the drawn header are one layout
@@ -102,10 +73,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     rulerHeight,
   })
   const { tracksTop } = headerLayout
-  // one gutter for the whole export, wide enough for the widest label in any
-  // close-up, so the close-ups stay aligned with the view
   const trackLabelOffset = trackLabelLeftOffset({
-    tracks: [...tracks, ...closeUpTracks.flatMap(r => r.tracks)],
+    tracks,
     trackLabels,
     fontSize,
     fontFamily,
@@ -113,76 +82,14 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   })
   const w = width + trackLabelOffset + legendWidth
 
-  // The view under its full header, then each close-up under the trapezoid
-  // joining it to the row above, in the order `closeUpStackRows` gives — which
-  // is the order the screen draws too.
-  //
-  // A close-up's row header is a scalebar and no assembly name — the opposite
-  // of a synteny row's. Every close-up is the host's own assembly, named once
-  // in the host's own header, while the span each close-up covers is the whole
-  // point of the stack and is the one thing a ruler at figure size cannot be
-  // read for.
-  const rowTopGap = 6
-  const { bandHeight } = getRowHeaderLayout({
-    fontSize,
-    showScalebar: true,
-    reserveAssemblyName: false,
-  })
-  const closeUpRow = (
-    closeUp: LGV,
-    rendered: (typeof closeUpTracks)[number],
-  ) => {
-    const rowTop = rowTopGap + bandHeight
-    const height = rowTop + rulerHeight + rendered.tracksHeight
-    return {
-      key: closeUp.id,
-      height,
-      node: (
-        <>
-          <SVGStackedRow
-            view={closeUp}
-            rendered={rendered}
-            top={rowTop}
-            margin={exportMargin}
-            fontSize={fontSize}
-            textHeight={textHeight}
-            rulerHeight={rulerHeight}
-            trackLabels={trackLabels}
-            trackLabelOffset={trackLabelOffset}
-            showGridlines={showGridlines}
-            showAssemblyName={false}
-            showScalebar
-          />
-          <SVGCloseUpFrame
-            x={exportMargin + trackLabelOffset}
-            width={closeUp.width}
-            height={height}
-          />
-        </>
-      ),
-    }
-  }
-  const connectorRow = (closeUp: LGV, context: LGV) => ({
-    key: `connector-${closeUp.id}`,
-    // the band the reader set by dragging one of them, since how steep the
-    // connectors read is the whole of what that drag is for
-    height: model.closeUpConnectorHeight,
-    node: (
-      <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
-        <OverviewScalebarPolygon
-          model={closeUp}
-          overview={context}
-          overviewOffsetPx={-context.offsetPx}
-          height={model.closeUpConnectorHeight}
-          gradient
-        />
-      </g>
-    ),
-  })
-  const hostRow = {
-    key: model.id,
-    height: tracksTop + tracksHeight,
-    node: (
+  // the xlink namespace is used for rendering <image> tag
+  return wrapSvgExport({
+    theme,
+    width: w,
+    height: tracksTop + tracksHeight + exportMargin,
+    fontFamily,
+    Wrapper,
+    children: (
       <g transform={`translate(${exportMargin} 0)`}>
         <SVGView
           view={model}
@@ -212,33 +119,5 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
         />
       </g>
     ),
-  }
-  const rows = [
-    hostRow,
-    ...stack.flatMap(({ closeUp, context }, i) => [
-      connectorRow(closeUp, context),
-      closeUpRow(closeUp, closeUpTracks[i]!),
-    ]),
-  ]
-
-  let y = 0
-  const children = rows.map(row => {
-    const top = y
-    y += row.height
-    return (
-      <g key={row.key} transform={`translate(0 ${top})`}>
-        {row.node}
-      </g>
-    )
-  })
-
-  // the xlink namespace is used for rendering <image> tag
-  return wrapSvgExport({
-    theme,
-    width: w,
-    height: y + exportMargin,
-    fontFamily,
-    Wrapper,
-    children,
   })
 }

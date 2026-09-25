@@ -67,9 +67,6 @@ describe('OverviewScalebar tick labels', () => {
   })
 })
 
-// The trapezoid joins the chromosome to whatever is drawn directly under it,
-// which is this view whether or not it has close-ups — they go under the
-// tracks, and their own connectors carry the reader on down from there.
 describe('OverviewScalebar "you are here" trapezoid', () => {
   function overviewAt(windowWidthBp: number) {
     const model = overview(1)
@@ -87,14 +84,8 @@ describe('OverviewScalebar "you are here" trapezoid', () => {
     ).container
   }
 
-  it('describes the view when it has no close-ups', () => {
+  it('spans the visible window on the chromosome', () => {
     // 2.5Mb of the 250Mb overview, drawn 800px wide
     expect(topEdgeWidth(renderPolygon(overviewAt(2_500_000)))).toBeCloseTo(8, 0)
-  })
-
-  it('describes the view still, once there is a close-up', () => {
-    const model = overviewAt(2_500_000)
-    model.addCloseUp()
-    expect(topEdgeWidth(renderPolygon(model))).toBeCloseTo(8, 0)
   })
 })

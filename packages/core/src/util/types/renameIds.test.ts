@@ -1,4 +1,4 @@
-import { renameIds } from './copyView.ts'
+import { renameIds } from './renameIds.ts'
 
 describe('renameIds', () => {
   it('replaces id fields with new unique IDs', () => {

@@ -14,7 +14,6 @@ import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
-import { installCloseUps } from './closeUps.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { InitState } from './types.ts'
@@ -368,5 +367,4 @@ export function doAfterAttach(self: LinearGenomeViewModel) {
   setupInitAutorun(self)
   setupCoarseDynamicBlocksAutorun(self)
   setupLocalStorageAutorun(self)
-  installCloseUps(self)
 }

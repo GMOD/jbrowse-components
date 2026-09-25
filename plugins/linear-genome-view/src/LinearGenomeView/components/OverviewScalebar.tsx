@@ -289,10 +289,6 @@ const OverviewScalebar = observer(function OverviewScalebar({
       />
       <div className={classes.overview}>
         <svg height={HEADER_BAR_HEIGHT} className={classes.overviewSvg}>
-          {/* The chromosome to the row drawn directly beneath it, which is
-          always this view: a close-up goes under the tracks, and its own
-          connector says where it sits. This trapezoid is the top rung of that
-          same ladder. */}
           <OverviewScalebarPolygon
             model={model}
             overview={overview}

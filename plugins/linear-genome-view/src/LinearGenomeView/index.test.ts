@@ -2806,11 +2806,7 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
     )
   })
 
-  // A synteny row and a breakpoint panel are placed by their own heights and
-  // exported a row per view, so a close-up grown inside one walks the
-  // ribbons off their rows and is dropped from that view's picture. The
-  // rubberband menu is where the item lives, on a view that offers it at all.
-  test('only a top-level view offers to open a close-up', () => {
+  test('only a top-level view offers to open the span in a new view', () => {
     const launchLabels = (view: LGV) => {
       const launch = shown(view)
         .rubberBandMenuItems()
@@ -2819,8 +2815,8 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
         launch && 'subMenu' in launch ? resolveSubMenu(launch) : [],
       )
     }
-    expect(launchLabels(makeView(1))).toContain('Close-up view')
-    expect(launchLabels(makeView(1, true))).not.toContain('Close-up view')
+    expect(launchLabels(makeView(1))).toContain('Linear genome view')
+    expect(launchLabels(makeView(1, true))).not.toContain('Linear genome view')
   })
 })
 

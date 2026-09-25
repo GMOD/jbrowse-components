@@ -117,3 +117,4 @@ export const FileLocation = types.snapshotProcessor<
 })
 
 export { ElementId, createElementId } from './ElementId.ts'
+export { renameIds } from './renameIds.ts'

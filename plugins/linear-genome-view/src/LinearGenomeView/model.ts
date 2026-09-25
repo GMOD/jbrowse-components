@@ -14,7 +14,6 @@ import {
   isSessionModelWithWidgets,
   localStorageGetBoolean,
   localStorageGetItem,
-  scheduleDetachedDestroy,
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
@@ -53,7 +52,6 @@ import {
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
-  detach,
   getParent,
   hasParent,
   isAlive,
@@ -63,14 +61,11 @@ import { observable, when } from 'mobx'
 
 import { handleSelectedRegion, navToOption } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
-import { closeUpHost, closeUpType } from './closeUps.ts'
 import { shouldSwapTracks } from './components/util.ts'
 import {
-  CLOSE_UP_CONNECTOR_HEIGHT,
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
   MIN_BP_PER_PX,
-  MIN_CLOSE_UP_CONNECTOR_HEIGHT,
   MINIMIZED_TRACK_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
@@ -103,7 +98,6 @@ import {
   tickLabelWidth,
 } from './util.ts'
 
-import type { CloseUp } from './closeUps.ts'
 import type { FlightViewport } from './flyTo.ts'
 import type {
   BpOffset,
@@ -434,31 +428,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * Closer views of the same locus stacked under the tracks, widest
-         * first, so the page zooms in as it reads down. Each is a
-         * LinearGenomeView with tracks of its own whose regions, width and
-         * centre this view drives; its window width is the one thing it keeps.
-         * See `closeUps.ts`.
-         */
-        closeUps: types.stripDefault(
-          types.array(closeUpType(pluginManager)),
-          [],
-        ),
-
-        /**
-         * #property
-         * Height of the bands the trapezoids between this view's close-ups
-         * are drawn in, dragged by any one of them. One number for the stack:
-         * the bands are a ladder the eye reads down, and a rung of its own
-         * height reads as a difference in the data rather than in the drawing.
-         */
-        closeUpConnectorHeight: types.stripDefault(
-          types.number,
-          CLOSE_UP_CONNECTOR_HEIGHT,
-        ),
-
-        /**
-         * #property
          * suppress the "No tracks active" placeholder, for an embed that opens
          * with no tracks on purpose
          */
@@ -777,29 +746,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get ownTracks() {
         return [...self.tracks]
-      },
-      /**
-       * #getter
-       * The census entry for this view's close-ups, which are views in
-       * their own right.
-       */
-      get ownViews() {
-        return [...self.closeUps]
-      },
-      /**
-       * #getter
-       * The close-ups as what the host reads off them. The array element
-       * is a late type back onto this view, so this is where it gets a shape.
-       */
-      get closeUpViews(): CloseUp[] {
-        return self.closeUps
-      },
-      /**
-       * #getter
-       * Whether this view is itself a close-up of another
-       */
-      get isCloseUp() {
-        return !!closeUpHost(self)
       },
       /**
        * #getter
@@ -1431,59 +1377,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Add a close-up showing `trackIds`, spanning `windowWidthBp` bases or a
-       * tenth of the closest close-up there is. The stack stays widest first,
-       * so a span between two existing close-ups lands between them, and one
-       * wider than this view is pulled back in to it by the sync.
-       *
-       * Answers the close-up, which is a LinearGenomeView: its own actions
-       * navigate it, name its tracks and take it away again.
-       */
-      addCloseUp({
-        windowWidthBp,
-        trackIds = [],
-      }: { windowWidthBp?: number; trackIds?: string[] } = {}) {
-        const closest = self.closeUpViews.at(-1)
-        const width =
-          windowWidthBp ?? (closest?.windowWidthBp ?? self.windowWidthBp) / 10
-        const centerBp = self.windowStartBp + self.windowWidthBp / 2
-        const at = self.closeUpViews.filter(
-          closeUp => closeUp.windowWidthBp > width,
-        ).length
-        self.closeUps.splice(at, 0, {
-          type: 'LinearGenomeView',
-          hideHeader: true,
-          displayedRegions: self.displayedRegions,
-          windowWidthBp: width,
-          windowStartBp: centerBp - width / 2,
-        })
-        const closeUp = self.closeUpViews[at]!
-        for (const trackId of trackIds) {
-          closeUp.showTrack(trackId)
-        }
-        return closeUp
-      },
-      /**
-       * #action
-       */
-      removeCloseUp(closeUp: CloseUp) {
-        detach(closeUp)
-        scheduleDetachedDestroy(closeUp)
-      },
-      /**
-       * #action
-       * Set the height of every band between this view's close-ups.
-       * Floored at the drag surface's own height rather than at 0: the band IS
-       * the handle, so a band dragged shut could never be dragged open again.
-       */
-      setCloseUpConnectorHeight(height: number) {
-        self.closeUpConnectorHeight = Math.max(
-          MIN_CLOSE_UP_CONNECTOR_HEIGHT,
-          Math.round(height),
-        )
-      },
-      /**
-       * #action
        */
       setScalebarOnly(b: boolean) {
         self.scalebarOnly = b
@@ -1639,39 +1532,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       * Open a close-up over a rubberband selection, showing this view's
-       * tracks. The view recentres on the span first, because every close-up
-       * shares its host's centre — a close-up is a closer look at the middle of
-       * this view, and a selection off to one side would otherwise open
-       * somewhere else.
-       *
-       * The span is `computeMoveToLayout`'s, the pure half of the `moveTo` the
-       * same selection's "Zoom to region" runs, so the close-up covers exactly
-       * what zooming would have navigated to.
-       */
-      addCloseUpForSpan(
-        start?: BpOffset,
-        end?: BpOffset,
-        { trackIds }: { trackIds?: string[] } = {},
-      ) {
-        if (!start || !end) {
-          return undefined
-        }
-        const { bpPerPx, offsetPx } = computeMoveToLayout(self, start, end)
-        const windowWidthBp = bpPerPx * self.width
-        const centerBp = offsetPx * bpPerPx + windowWidthBp / 2
-        self.scrollToBp(centerBp - self.windowWidthBp / 2)
-        return self.addCloseUp({
-          windowWidthBp,
-          // the view's own tracks unless the caller named a list, so a close-up
-          // is a closer look at what is on screen by default and an empty row
-          // when someone asked for one
-          trackIds:
-            trackIds ?? self.tracks.map(track => track.configuration.trackId),
-        })
-      },
       /**
        * #action
        * showTrack for a track whose display state model may be lazily
@@ -2922,9 +2782,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * this "clears the view" and makes the view return to the import form
        */
       clearView() {
-        for (const closeUp of [...self.closeUpViews]) {
-          self.removeCloseUp(closeUp)
-        }
         self.setDisplayedRegions([])
         self.tracks.clear()
       },
