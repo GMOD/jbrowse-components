@@ -2,6 +2,7 @@ import { getDpr } from '../canvas2dUtils.ts'
 import { SCALE_TYPE_LOG } from '../scoreScale.ts'
 import { distToWideCirclePx } from '../shaders/curveDistance.js.generated.ts'
 import {
+  LINK_ELSEWHERE,
   LINK_FAR_SCREEN_WIDTHS,
   LINK_MAX_REGIONS,
   LINK_NO_REGION,
@@ -34,11 +35,12 @@ import type { InkRect, MarkFrame, MarkRamp, MarkShape } from './types.ts'
 import type { MarkValueScale } from './valueScale.ts'
 
 /**
- * The `link` shape's channels: a stroked curve from `x`, on the block's own
- * displayed region, to `x2` on the displayed region `x2Region` names,
- * {@link LINK_NO_REGION} where the far end lies on none. `y` is the apex's
- * value on the band's scale where the mark names one, and `size` the raw
- * value the stroke width reads through the size scale.
+ * The `link` shape's channels: a stroked curve from `x`, on the displayed
+ * region whose payload holds it, to `x2` on the displayed region `x2Region`
+ * names, {@link LINK_NO_REGION} where the far end lies on none and
+ * {@link LINK_ELSEWHERE} where another payload draws the curve. `y` is the
+ * apex's value on the band's scale where the mark names one, and `size` the
+ * raw value the stroke width reads through the size scale.
  */
 export interface LinkChannels extends ColorChannel, RowChannel {
   x: Uint32Array
@@ -86,6 +88,7 @@ export interface LinkParams extends RowParams, MarkValueScale {
 const KIND_ELLIPSE = 0
 const KIND_CIRCLE = 1
 const KIND_STEM = 2
+const KIND_NONE = 3
 
 // The painter's leg polyline: enough segments that the chord sagitta on any
 // leg the band can show is under a pixel.
@@ -188,6 +191,10 @@ function placeLink(c: LinkChannels, g: LinkFrame, i: number) {
   g.baseY = bandTopPx(c.row, i, g.band) + g.band
   g.xPx = regionPx(regions, g.own, c.x[i]!)
   const region = c.x2Region[i]!
+  if (region === LINK_ELSEWHERE) {
+    g.kind = KIND_NONE
+    return
+  }
   if (region >= regions.length || region >= LINK_MAX_REGIONS) {
     g.kind = KIND_STEM
     g.x2Px = g.xPx
@@ -318,7 +325,10 @@ function tracePath(
   ctx.ellipse(mid, baseY, g.rx, g.ry, 0, Math.PI, 2 * Math.PI)
 }
 
-function inkBox(g: LinkFrame): InkRect {
+function inkBox(g: LinkFrame): InkRect | undefined {
+  if (g.kind === KIND_NONE) {
+    return undefined
+  }
   const half = g.strokePx / 2
   const { baseY } = g
   if (g.kind === KIND_STEM) {
@@ -396,6 +406,7 @@ function nearestOnCurve(g: LinkFrame, px: number, py: number): CurvePoint {
 
 export const linkMark: MarkShape<LinkChannels, LinkParams> = {
   id: 'link',
+  spansView: true,
   pass: {
     ...slangPass({ id: 'link', mod: shader }),
     pack: c =>
@@ -413,12 +424,10 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       ),
   },
 
-  writeUniforms(scratch, clip, block, frame, params) {
+  writeUniforms(scratch, _clip, block, frame, params) {
     const { sizeScale } = params
     shader.writeUniforms(scratch, {
       canvasHeight: frame.canvasHeight,
-      blockPxX: clip.scissorX,
-      blockPxW: clip.scissorW,
       devicePixelRatio: getDpr(),
       rowHeight: bandHeightPx(params, frame.canvasHeight),
       insetPx: params.insetPx ?? 0,
@@ -443,6 +452,10 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
     })
   },
 
+  paintsBlock(block, _frame, params) {
+    return params.regions[block.displayedRegionIndex] !== undefined
+  },
+
   paintBlock(ctx, channels, block, frame, params) {
     const { count } = channels
     if (count === 0) {
@@ -453,6 +466,9 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
     ctx.lineCap = 'butt'
     for (let i = 0; i < count; i++) {
       placeLink(channels, g, i)
+      if (g.kind === KIND_NONE) {
+        continue
+      }
       ctx.lineWidth = g.strokePx
       ctx.strokeStyle = abgrToCssRgba(color[i]!)
       ctx.beginPath()
@@ -472,8 +488,19 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
 
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
     const g = linkFrame(block, frame, params)
+    const reach = Math.sqrt(maxDistSq)
     return nearestInk(candidates, maxDistSq, i => {
       placeLink(channels, g, i)
+      const box = inkBox(g)
+      if (
+        !box ||
+        xPx < box.left - reach ||
+        xPx > box.left + box.width + reach ||
+        yPx < box.top - reach ||
+        yPx > box.top + box.height + reach
+      ) {
+        return undefined
+      }
       const near = nearestOnCurve(g, xPx, yPx)
       const half = g.strokePx / 2
       if (near.dist <= half) {
@@ -487,4 +514,4 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
   },
 }
 
-export { LINK_NO_REGION }
+export { LINK_ELSEWHERE, LINK_NO_REGION }

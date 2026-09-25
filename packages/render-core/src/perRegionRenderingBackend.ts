@@ -7,6 +7,7 @@ import {
 } from './renderingBackendBase.ts'
 
 import type { BlockClipResult } from './blockClipUtils.ts'
+import type { CanvasScale } from './canvas2dUtils.ts'
 import type { InstancePass } from './instancePass.ts'
 import type { RenderBlock } from './renderBlock.ts'
 import type {
@@ -221,8 +222,24 @@ export abstract class GpuPerRegionRenderingBackend<
     }
     this.hal.clearScissor()
     this.hal.clearViewport()
+    if (this.drawOverBlocks(regions, state, scale)) {
+      painted = true
+      this.hal.clearViewport()
+    }
     this.hal.endFrame()
     return painted
+  }
+
+  /**
+   * Draw what spans the whole canvas after the blocks, with the scissor and
+   * viewport cleared, and answer whether anything drew.
+   */
+  protected drawOverBlocks(
+    _regions: ReadonlyMap<number, RenderData>,
+    _state: RenderState,
+    _scale: CanvasScale,
+  ): boolean {
+    return false
   }
 
   /**

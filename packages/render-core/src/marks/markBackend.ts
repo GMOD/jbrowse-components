@@ -1,3 +1,4 @@
+import { clipBlock } from '../blockClipUtils.ts'
 import { COLOR_RAMP_LUT_ENTRIES, uploadColorRampLut } from '../colorRampLut.ts'
 import { createRenderingBackend } from '../createRenderingBackend.ts'
 import { uploadPass } from '../instancePass.ts'
@@ -5,9 +6,11 @@ import {
   Canvas2DPerRegionRenderingBackend,
   GpuPerRegionRenderingBackend,
 } from '../perRegionRenderingBackend.ts'
+import { canvasWideBlock } from '../renderBlock.ts'
 import { paintMarkBlocks } from './markPaint.ts'
 
 import type { BlockClipResult } from '../blockClipUtils.ts'
+import type { CanvasScale } from '../canvas2dUtils.ts'
 import type { GpuHal } from '../hal/index.ts'
 import type { SampleCount } from '../hal/types.ts'
 import type { InstancePass } from '../instancePass.ts'
@@ -167,18 +170,49 @@ export class GpuMarkBackend<
 
   private textures: MarkTextureBinder
 
+  private blockMarks: readonly Mark<TRegion, TState>[]
+
+  private viewMarks: readonly Mark<TRegion, TState>[]
+
   constructor(
     hal: GpuHal,
-    private marks: readonly Mark<TRegion, TState>[],
+    marks: readonly Mark<TRegion, TState>[],
     private clear?: (state: TState) => ClearColor,
   ) {
     super(hal)
     this.regionPasses = ownedPasses(marks)
     this.textures = new MarkTextureBinder(hal)
+    this.blockMarks = marks.filter(m => !m.spansView)
+    this.viewMarks = marks.filter(m => m.spansView)
   }
 
   protected override clearColor(state: TState) {
     return this.clear ? this.clear(state) : super.clearColor(state)
+  }
+
+  private drawWith(
+    marks: readonly Mark<TRegion, TState>[],
+    block: RenderBlock,
+    clip: BlockClipResult,
+    region: TRegion,
+    state: TState,
+  ) {
+    for (const mark of marks) {
+      if (mark.pass.textures && !mark.texturedByParams) {
+        this.textures.bind(mark.pass.id, mark.texture?.(state, region))
+      }
+    }
+    drawMarks(
+      this.hal,
+      this.uniformData,
+      marks,
+      block,
+      clip,
+      region,
+      state,
+      block.displayedRegionIndex,
+      this.textures,
+    )
   }
 
   protected drawRegion(
@@ -187,22 +221,26 @@ export class GpuMarkBackend<
     region: TRegion,
     state: TState,
   ) {
-    for (const mark of this.marks) {
-      if (mark.pass.textures && !mark.texturedByParams) {
-        this.textures.bind(mark.pass.id, mark.texture?.(state, region))
+    this.drawWith(this.blockMarks, block, clip, region, state)
+  }
+
+  protected override drawOverBlocks(
+    regions: ReadonlyMap<number, TRegion>,
+    state: TState,
+    scale: CanvasScale,
+  ) {
+    if (this.viewMarks.length === 0 || regions.size === 0) {
+      return false
+    }
+    const { canvasWidth, canvasHeight } = state
+    for (const [key, region] of regions) {
+      const block = canvasWideBlock(key, canvasWidth)
+      const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
+      if (clip) {
+        this.drawWith(this.viewMarks, block, clip, region, state)
       }
     }
-    drawMarks(
-      this.hal,
-      this.uniformData,
-      this.marks,
-      block,
-      clip,
-      region,
-      state,
-      block.displayedRegionIndex,
-      this.textures,
-    )
+    return true
   }
 }
 

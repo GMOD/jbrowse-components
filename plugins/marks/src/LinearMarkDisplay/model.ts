@@ -101,6 +101,7 @@ import { facetLayout, facetRegion, rowsLayout } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
+import { createLinkOwners } from './linkOwners.ts'
 import {
   buildMarkList,
   markDrawsAt,
@@ -892,6 +893,7 @@ export function stateModelFactory(
           (data, regions, index) =>
             withMateRegions(data, regions, canonical, index),
         )
+        const owners = createLinkOwners()
         return {
           /**
            * #getter
@@ -910,7 +912,9 @@ export function stateModelFactory(
            * only when it or the layout moves, which is what the upload re-packs.
            */
           get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
-            return self.hasLinkMark ? mated() : drawn()
+            return self.hasLinkMark
+              ? owners(mated(), mateRegions.get(), canonical)
+              : drawn()
           },
         }
       })
@@ -1271,6 +1275,7 @@ export function stateModelFactory(
               index === hit.regionIndex
                 ? [{ mark, index: hit.instance }]
                 : undefined,
+            [hit.regionIndex],
           ).map(r => ({ ...r, top: r.top + top }))
         },
         /**

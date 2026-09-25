@@ -1,3 +1,4 @@
+import { canvasWideBlock } from '../renderBlock.ts'
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
@@ -5,7 +6,7 @@ import {
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
 import { sweepMarkAgainstHit } from './drawAgainstHit.ts'
-import { LINK_NO_REGION, linkMark } from './linkMark.ts'
+import { LINK_ELSEWHERE, LINK_NO_REGION, linkMark } from './linkMark.ts'
 import { inkHitNearest } from './markHit.ts'
 import { pointMark } from './pointMark.ts'
 import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
@@ -448,18 +449,19 @@ test('point: overlapping glyphs answer the nearest centre, not the first box', (
   ).toBe(1)
 })
 
-// Links on the sweep's 50 px block: a dome, an upstream mate (x2 < x), a
-// stem for a mate on no region, and a far pair whose mate sits on a region
-// 8000 px away, so its ellipse degenerates to legs. `sliceOne` because a
-// stroked curve records one box per flattened edge.
+// Links over the whole canvas, which a link spans: a dome, an upstream mate
+// (x2 < x), a stem for a mate on no region, a far pair whose mate sits on a
+// region 8000 px away, so its ellipse degenerates to legs, and a copy another
+// region draws. `sliceOne` because a stroked curve records one box per
+// flattened edge.
 const links: LinkChannels = {
-  x: Uint32Array.from([10, 30, 50, 70]),
-  x2: Uint32Array.from([40, 20, 95, 5]),
-  x2Region: Uint32Array.from([0, 0, LINK_NO_REGION, 1]),
-  y: Float32Array.from([0.2, 0.9, 0.5, 0.7]),
-  size: Float32Array.from([1, 4, NaN, 2]),
-  color: Uint32Array.from([RED, BLUE, RED, BLUE]),
-  count: 4,
+  x: Uint32Array.from([10, 30, 50, 70, 60]),
+  x2: Uint32Array.from([40, 20, 95, 5, 90]),
+  x2Region: Uint32Array.from([0, 0, LINK_NO_REGION, 1, LINK_ELSEWHERE]),
+  y: Float32Array.from([0.2, 0.9, 0.5, 0.7, 0.4]),
+  size: Float32Array.from([1, 4, NaN, 2, 3]),
+  color: Uint32Array.from([RED, BLUE, RED, BLUE, RED]),
+  count: 5,
 }
 
 const sliceLink = (c: LinkChannels, i: number): LinkChannels => ({
@@ -506,7 +508,7 @@ describe('link: every stroked curve answers its own hit, in both orientations', 
             params: () => params,
           }),
           links,
-          { ...block, reversed },
+          canvasWideBlock(0, frame.canvasWidth),
           frame,
           { maxDistSq: 400, sliceOne: sliceLink },
         ),

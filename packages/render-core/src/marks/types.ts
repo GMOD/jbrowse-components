@@ -135,6 +135,13 @@ export interface InkRect {
 export interface MarkShape<TChannels, TParams> {
   readonly id: string
   readonly pass: InstancePass<TChannels>
+  /**
+   * Draws over the whole canvas from every loaded region's payload, after the
+   * blocks and unclipped to any block's column, each region's instances placed
+   * through a canvas-wide block of its own: a link, whose curve crosses regions
+   * holding neither foot.
+   */
+  readonly spansView?: boolean
   writeUniforms(
     scratch: ArrayBuffer,
     clip: BlockClipResult,
@@ -236,6 +243,8 @@ export interface PlannedPass {
  */
 export interface Mark<TRegion, TState extends MarkFrame> {
   readonly pass: InstancePass<TRegion>
+  /** The shape's {@link MarkShape.spansView}. */
+  readonly spansView?: boolean
   /** The pass whose uploaded instance buffer this mark draws from. */
   readonly bufferOf?: string
   /** What the pass samples this frame; undefined binds an inert table. */
@@ -375,6 +384,7 @@ export function defineMark<
       },
     },
     bufferOf,
+    spansView: shape.spansView,
     texture,
     texturedByParams: shapeTexture !== undefined,
     enabled,

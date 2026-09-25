@@ -1,47 +1,38 @@
 ---
 name: review
-description: The link-mark round (de0a383e01..c860b6e68f, ADR-163) reviewed on 2026-09-25. Five findings are fixed, the seam between two regions and the 256-region foot among them; open is that each block draws only its own payload, so a link crossing a region that holds neither foot, or whose far end has no record, draws in pieces — a placement design question, with probes below.
+description: The link-mark round (de0a383e01..c860b6e68f, ADR-163) reviewed on 2026-09-25. The seam, the 256-region foot, and the per-block drawing that cut a link into pieces are fixed, the last by drawing the link over the whole canvas; open are a log size scale below 1, an alias-spelt breakend pair inside one region, the circular ring's link placement, and a far circle's hover box.
 ---
 
 # Link-mark review
 
 A review of `git diff de0a383e01^ c860b6e68f` probed the link mark with
-throwaway jest tests. Fixed on main since: a link's shape reads the view's
-width rather than each block's, so the halves of a link across two adjacent
-regions join at the seam; a block's own foot places through a uniform of its
-own, so a region past the 256-entry table places; a far foot on the block's own contig
-past a sub-range region now places through that region instead of drawing a
-stem, a far foot resolves to the block's own region before any other region
-holding it, and the `mate` step's pair key reads both ends' spans, so two loops
-sharing only their starts both draw.
+throwaway jest tests. Fixed since: a link's shape reads the view's width; a
+region's own foot places through a uniform of its own, so a region past the
+256-entry table places; a far foot resolves to the block's own region first;
+the `mate` step's pair key reads both ends' spans; and a link draws over the
+whole canvas once per curve (ADR-163), so it crosses regions holding neither
+foot and a record whose far end has none draws whole.
 
-## Open, confirmed by probe
+## Open
 
-1. **A link draws only in the blocks holding its feet**, each clipped to its
-   column. A view sliced into many regions (a whole-genome view, a
-   multi-locus search) shows the curve's ends as stubs, with nothing over the
-   regions between: volvox.bedpe over ctgA and ctgB cut into 500 bp slices.
-   The same cause as 5 below.
-2. **A log size scale with a zero in the domain and a maximum below 1** draws
+1. **A log size scale with a zero in the domain and a maximum below 1** draws
    every link at the range minimum: `linkStrokeWidthPx(0.4, …, [0, 0.5], log)`
    is 1.5, the floor, through `normalizeScore` (`scoreScale.slang:43`).
-3. **A VCF breakend whose ALT spells `chr1` where CHROM says `1`** is not
-   collapsed with its partner, so the pair draws twice and each gets a
-   whole-region hit box (`markEncoding.ts:451`). The `mate` step runs in the
-   worker, which has no alias table; the pair key would need names resolved
-   before the RPC.
-
-## Open, traced not probed
-
-5. **A link whose far end has no record draws only in the block that fetched
-   it.** A `<TRA>` with CHR2/END is one feature on chr1, so the chr2 block has
-   nothing to draw; a single-ended BND likewise. A `<DEL>` spanning POS..END is
-   fetched into a second region of its contig and drawn there through
-   extrapolation, from a different ellipse than region 0's half. Each block
-   drawing the instances of other payloads whose `x2Region` is its own would
-   close both.
-6. **A far-circle link's hover box is its whole bounding box** (852 px wide,
+2. **A VCF breakend pair whose ALT spells `chr1` where CHROM says `1`, both
+   records in one region**, draws twice: the `mate` step's key reads raw names
+   in the worker, and the display's owner pass (`linkOwners.ts`) keeps every
+   copy inside the owning region. Across two regions it pairs through the
+   aliases.
+3. **On a circular ring the link regions are off by the slice spacing**:
+   `linkRegions` sums bp, while the ring host lays slices out with
+   `spacingPx` between them (`circular-view/src/CircularView/slices.ts`), and
+   a link across the strip's wrap point domes around the whole ring. Traced,
+   not probed.
+4. **A far-circle link's hover box is its whole bounding box** (852 px wide,
    the full band high) while two short legs are drawn.
+5. **The GPU pass speckles a dome's stroke** at a few spots on WebGL2
+   (SwiftShader) where Canvas2D draws clean, in `sdEllipse`'s fragment
+   distance, which the view-scope draw leaves unchanged.
 
 ## Leftovers of the arc plugin
 

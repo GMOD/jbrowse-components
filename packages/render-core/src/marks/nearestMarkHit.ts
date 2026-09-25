@@ -1,4 +1,5 @@
 import { bpAtPxExact } from '../canvas2dUtils.ts'
+import { canvasWideBlock } from '../renderBlock.ts'
 import { denormalizeScore } from '../scoreScale.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
@@ -35,7 +36,9 @@ export interface NearestMarkHit<TRegion> extends MarkHit {
  * replaces the best, so a tie goes to the mark on top. `candidates` names what
  * a mark is asked about in a block: what an index finds in the reach, or
  * `backToFront` over every instance. `undefined` leaves the mark out, as a
- * closed gate does.
+ * closed gate does. A mark spanning the view is asked first, over every region
+ * in `regionKeys` (the blocks' own by default) with an unbounded bp reach,
+ * since it paints over every block.
  */
 export function nearestMarkHit<TRegion, TState extends MarkFrame>(
   marks: readonly Mark<TRegion, TState>[],
@@ -47,8 +50,10 @@ export function nearestMarkHit<TRegion, TState extends MarkFrame>(
   {
     radiusPx,
     candidates,
+    regionKeys,
   }: {
     radiusPx: number
+    regionKeys?: Iterable<number>
     candidates: (
       region: TRegion,
       mark: number,
@@ -58,6 +63,57 @@ export function nearestMarkHit<TRegion, TState extends MarkFrame>(
 ): NearestMarkHit<TRegion> | undefined {
   let best: NearestMarkHit<TRegion> | undefined
   let bestDistSq = radiusPx * radiusPx
+  const ask = (
+    m: number,
+    block: RenderBlock,
+    region: TRegion,
+    reach: Omit<HitWindow, 'block' | 'valueMin' | 'valueMax'>,
+  ) => {
+    const mark = marks[m]!
+    if (!mark.hitNearest) {
+      return
+    }
+    const values = mark.valueWindow
+      ? mark.valueWindow(region, block, state, yPx, radiusPx)
+      : EVERY_VALUE
+    const asked =
+      values &&
+      candidates(region, m, {
+        block,
+        ...reach,
+        valueMin: values[0],
+        valueMax: values[1],
+      })
+    const hit =
+      asked &&
+      mark.hitNearest(region, block, state, xPx, yPx, asked, bestDistSq)
+    if (hit) {
+      bestDistSq = hit.distSq
+      best = {
+        mark: m,
+        block,
+        region,
+        index: hit.index,
+        x: hit.x,
+        y: hit.y,
+        distSq: hit.distSq,
+      }
+    }
+  }
+  if (marks.some(m => m.spansView)) {
+    for (const key of regionKeys ?? blocks.map(b => b.displayedRegionIndex)) {
+      const region = regionOf(key)
+      if (region === undefined) {
+        continue
+      }
+      const block = canvasWideBlock(key, state.canvasWidth)
+      for (let m = marks.length - 1; m >= 0; m--) {
+        if (marks[m]!.spansView) {
+          ask(m, block, region, { bpMin: -Infinity, bpMax: Infinity })
+        }
+      }
+    }
+  }
   for (const block of blocks) {
     const region = regionOf(block.displayedRegionIndex)
     const widthPx = block.screenEndPx - block.screenStartPx
@@ -72,36 +128,8 @@ export function nearestMarkHit<TRegion, TState extends MarkFrame>(
       continue
     }
     for (let m = marks.length - 1; m >= 0; m--) {
-      const mark = marks[m]!
-      if (!mark.hitNearest) {
-        continue
-      }
-      const values = mark.valueWindow
-        ? mark.valueWindow(region, block, state, yPx, radiusPx)
-        : EVERY_VALUE
-      const asked =
-        values &&
-        candidates(region, m, {
-          block,
-          bpMin,
-          bpMax,
-          valueMin: values[0],
-          valueMax: values[1],
-        })
-      const hit =
-        asked &&
-        mark.hitNearest(region, block, state, xPx, yPx, asked, bestDistSq)
-      if (hit) {
-        bestDistSq = hit.distSq
-        best = {
-          mark: m,
-          block,
-          region,
-          index: hit.index,
-          x: hit.x,
-          y: hit.y,
-          distSq: hit.distSq,
-        }
+      if (!marks[m]!.spansView) {
+        ask(m, block, region, { bpMin, bpMax })
       }
     }
   }

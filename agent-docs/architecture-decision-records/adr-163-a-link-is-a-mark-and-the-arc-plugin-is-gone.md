@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's fifth mark is `link`, spelt as GenomeSpy spells it: a stroked curve from `x` to `x2`, where `x2` may be a locus on another sequence, `size` a channel through a linear or log scale, and a `mate` transform step reading a paired record's other end. Both feet place through a uniform table of the view's displayed regions, so a curve between two regions draws on the GPU from every block holding a foot and a pan writes one uniform. `@jbrowse/plugin-arc` and its two displays are deleted; their configs are rewritten in the mark spelling"
+summary: "The mark display's fifth mark is `link`, spelt as GenomeSpy spells it: a stroked curve from `x` to `x2`, where `x2` may be a locus on another sequence, `size` a channel through a linear or log scale, and a `mate` transform step reading a paired record's other end. Both feet place through a uniform table of the view's displayed regions and the link draws over the whole canvas rather than per block, each curve once, so it crosses regions holding neither foot and a pan writes one uniform. `@jbrowse/plugin-arc` and its two displays are deleted; their configs are rewritten in the mark spelling"
 ---
 
 # ADR-163: A link is a mark, and the arc plugin is gone
@@ -57,12 +57,20 @@ the alignments band hit and worked around with a view-space DOM overlay:
 - **Both feet place through a uniform table of the view's displayed
   regions.** Each entry is anchored at the region's bp under the view's
   left edge, so a foot's offset from it stays inside float32; `x` places
-  through the block's own entry, carried in a uniform of its own, and `x2`
-  through the table entry its instance names. A curve between two regions is drawn by every block holding a
-  foot, each clipped to its column, and a pan or zoom writes the table and
-  no buffer. A foot on no region draws a stem at the placed one. This is
-  the mechanism the band lacked, and it is what lets the band retire its
-  overlay when it adopts the mark.
+  through the entry of the region whose payload holds the instance, carried
+  in a uniform of its own, and `x2` through the table entry its instance
+  names. A pan or zoom writes the table and no buffer. A foot on no region
+  draws a stem at the placed one.
+- **A link draws over the whole canvas, not per block** (`spansView` on the
+  shape). After the blocks, each loaded region's buffer draws once with the
+  scissor cleared and a canvas-wide viewport, the Canvas2D painter and the
+  SVG export likewise, and the hit test and the highlight ask it over every
+  loaded region. The copies of one curve, a pair whose two ends both have
+  records or one record fetched into two regions, share their two feet
+  unordered and through the assembly's aliases; the display draws the copy
+  from the lowest region holding its own foot and marks the rest
+  `LINK_ELSEWHERE`. This is the mechanism the band lacked, and it is what
+  lets the band retire its overlay when it adopts the mark.
 - **`size` is a channel**, the second consumer the grammar doc said it was
   waiting for: a field through a linear or log scale into a px range,
   shipped as a raw lane with a scale table whose open domain ends the
@@ -104,10 +112,12 @@ the alignments band hit and worked around with a view-space DOM overlay:
   remains is the strip per instance, the budget the band already spends,
   and the density tier covers the counts past it.
 - The view's displayed regions cap at 256 table entries; a mate on a
-  region past that draws its stem. A block's own foot places at any index.
-- A curve crossing a region that holds neither foot is not drawn there,
-  since each block draws its own payload clipped to its column; a view
-  sliced into many regions shows a link as pieces.
+  region past that draws its stem. A region's own foot places at any index.
+- A link draws only from a loaded payload, and a display fetches the
+  visible regions: a curve with both feet off screen draws nothing, and a
+  one-sided record whose own region is off screen draws nothing either,
+  sashimi's limit too.
+- A link paints after every per-block mark, whatever its place in `marks`.
 - Dropped with the plugin: mate-direction ticks, the score-filter slider,
   the display-mode menu, the hover recolour and the one-ended stem a plain
   SNV drew by accident. A link's hover highlight is its box, and its hit
@@ -126,8 +136,9 @@ the alignments band hit and worked around with a view-space DOM overlay:
   slot names and the plugin package alive to say what one `marks` entry
   says.
 - **A view-space DOM overlay for cross-region links, as the band has.** A
-  second drawing path with its own hover and export; the region table draws
-  them on the GPU from the block holding each foot.
+  second drawing path with its own hover and export; the link's own GPU
+  pass draws at view scope instead, through the painter and hit test every
+  other mark uses.
 - **Resolve the far foot's region in the worker, from the displayed regions
   sent with the request.** Every region change would refetch every region;
   the display resolves it on the main thread once per fetch instead, and

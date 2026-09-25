@@ -1,16 +1,16 @@
 // The `link` mark shape: one instance is a stroked curve between two genomic
-// positions — `x` on the block's own displayed region and `x2` on whichever
-// displayed region the instance names, the same one, another, or none. Both
-// feet place through a uniform table of the view's displayed regions, so a
-// curve between two regions is drawn by every block holding a foot, each
-// clipped to its own column, and a pan or zoom writes the table and no
-// buffer.
+// positions — `x` on the displayed region whose payload holds the instance and
+// `x2` on whichever displayed region the instance names, the same one,
+// another, or none. The mark draws over the whole canvas rather than inside a
+// block's column, so a curve crosses regions holding neither foot. Both feet
+// place through a uniform table of the view's displayed regions, so a pan or
+// zoom writes the table and no buffer.
 //
 // The curve is the alignments arc band's (arc.slang): a half-ellipse whose
 // hull is a triangle strip inflated by the half stroke plus one antialiasing
 // ramp, and a fragment that measures the true distance to the analytic
 // curve, so the hull's facets never reach the picture. A pair wider than
-// LINK_FAR_SCREEN_WIDTHS block widths degenerates to a circle whose legs
+// LINK_FAR_SCREEN_WIDTHS view widths degenerates to a circle whose legs
 // rise from each real foot, built endpoint-relative so a radius in the
 // millions of px cancels nothing. A foot the table cannot place draws a stem
 // at the placed one, so an off-view mate still says it exists.
@@ -21,7 +21,7 @@
 //! targets: wgsl, glsl
 //! topology: triangle-strip
 //! coverage: analytic
-//! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_NO_REGION, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
+//! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
 //! js-export: linkApexPx, linkRadiiPx, linkStrokeWidthPx, linkValuePx
 //! js-skip: linkIsFar — reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it
 
@@ -42,9 +42,12 @@ public static const int LINK_SHAPE_ARC = 1;
 // An `x2Region` the table has no entry for: the mate lies on no displayed
 // region, so the instance draws its stem.
 public static const uint LINK_NO_REGION = 0xFFFFFFFFu;
+// An `x2Region` for an instance another region's payload draws: the far half
+// of a pair both of whose ends have records, or a record fetched twice.
+public static const uint LINK_ELSEWHERE = 0xFFFFFFFEu;
 public static const uint LINK_MAX_REGIONS = 256u;
 public static const float LINK_STEM_PX = 12.0;
-// How many block widths a pair may span before its ellipse becomes a true
+// How many view widths a pair may span before its ellipse becomes a true
 // circle, which the band clips down to near-vertical legs at each real foot.
 // arc.slang's ARC_FAR_SCREEN_WIDTHS, with its reasoning: not 1, because a
 // circle throws the pair's direction away, and the limit is tessellation.
@@ -72,10 +75,6 @@ struct LinkInstance {
 
 struct Uniforms {
   float  canvasHeight;
-  // The block's clip column in canvas px: the viewport the pass draws into,
-  // which a foot placed in canvas px converts to clip space against.
-  float  blockPxX;
-  float  blockPxW;
   float  devicePixelRatio;
   float  rowHeight;
   float  insetPx;
@@ -96,13 +95,12 @@ struct Uniforms {
   int    sizeScaleType;
   float  sizeRangeMin;
   float  sizeRangeMax;
-  // The view's width, which picks a link's shape so every block holding one
-  // of its feet draws the same curve.
   float  canvasWidth;
   uint   regionCount;
   float  zero;
-  // The block's own displayed region's table entry, which every instance's
-  // `x` is on; carried apart from the table so a region past its end places.
+  // The table entry of the region whose payload is drawing, which every
+  // instance's `x` is on; carried apart from the table so a region past its
+  // end places.
   float4 ownEntry;
   // One entry per displayed region: (anchorPx, anchorBpHi, anchorBpLo,
   // signedPxPerBp), the anchor a bp of the region near the view so a foot's
@@ -252,10 +250,12 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   float2 screen = origin + float2(legDir * local.x, local.y);
 
   VsOut o;
-  o.position = float4(
-    (screen.x - u.blockPxX) / u.blockPxW * 2.0 - 1.0,
-    yPxToClipY(screen.y, u.canvasHeight),
-    0.0, 1.0);
+  o.position = inst.x2Region == LINK_ELSEWHERE
+    ? float4(-2.0, -2.0, 0.0, 1.0)
+    : float4(
+      screen.x / u.canvasWidth * 2.0 - 1.0,
+      yPxToClipY(screen.y, u.canvasHeight),
+      0.0, 1.0);
   o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax);
   o.local = local;
   o.radii = radii;

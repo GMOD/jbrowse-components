@@ -60,6 +60,7 @@ export function findMarkHit(
     mouseY,
     {
       radiusPx: HIT_RADIUS_PX,
+      regionKeys: regionData.keys(),
       candidates: (data, m, { bpMin, bpMax, valueMin, valueMax }) =>
         data.layers[marks[m]!.markIndex]?.flatbush?.search(
           bpMin,
@@ -72,7 +73,7 @@ export function findMarkHit(
   if (!hit) {
     return undefined
   }
-  const { markIndex } = marks[hit.mark]!
+  const { markIndex, spansView } = marks[hit.mark]!
   const layer = hit.region.layers[markIndex]!
   const regionIndex = hit.block.displayedRegionIndex
   const start = layer.x[hit.index]!
@@ -85,7 +86,9 @@ export function findMarkHit(
     refName: displayedRegions[regionIndex]!.refName,
     start,
     end,
-    bp: clamp(bpAtPx(mouseX, hit.block), start, Math.max(start, end - 1)),
+    bp: spansView
+      ? start
+      : clamp(bpAtPx(mouseX, hit.block), start, Math.max(start, end - 1)),
     y: layer.y?.[hit.index],
     color: layer.color?.[hit.index],
     colorValue: layer.colorValue?.[hit.index],

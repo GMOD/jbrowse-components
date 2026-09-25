@@ -7,6 +7,8 @@ export const LINK_SHAPE_ARC = 1
 
 export const LINK_NO_REGION = 4294967295
 
+export const LINK_ELSEWHERE = 4294967294
+
 export const LINK_MAX_REGIONS = 256
 
 export const LINK_STEM_PX = 12
