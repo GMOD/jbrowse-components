@@ -28,3 +28,30 @@ export function multiLevelRowMenuItems(
     subMenu: views[idx]!.rubberBandMenuItems(),
   }))
 }
+
+/**
+ * The same per-row rows for a bare CLICK on the strip rather than a drag — each
+ * row's Center view here, Zoom to base level and Copy coordinate, at the base
+ * that row paints under `px`.
+ *
+ * No all-rows row above them, unlike the drag's "Zoom to region(s)". A drag
+ * names a span in pixels and every row can act on it; a click names a
+ * COORDINATE, and the rows are different assemblies, so which genome's base the
+ * pointer is over is the question the menu has to ask rather than answer.
+ *
+ * `px` rather than a resolved offset: each row maps the pixel through its own
+ * `pxToBp`, so there is no one offset to pass.
+ */
+export function multiLevelRowClickMenuItems(
+  views: LinearGenomeViewModel[],
+  px: number,
+): MenuItem[] {
+  return rowLabels(views).flatMap((label, idx) => {
+    const view = views[idx]!
+    const subMenu = view.rubberbandClickMenuItems(view.pxToBp(px))
+    // `rubberbandClickMenuItems` answers nothing for an offset naming no base,
+    // and a row is dropped rather than opening an empty submenu — the same
+    // omit-when-empty `makeShowSubMenu` makes
+    return subMenu.length ? [{ label, subMenu }] : []
+  })
+}

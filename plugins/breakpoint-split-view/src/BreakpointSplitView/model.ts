@@ -22,6 +22,7 @@ import {
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import {
   installLinkedViewSync,
+  multiLevelRowClickMenuItems,
   multiLevelRowMenuItems,
   rowLabels,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -1005,6 +1006,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           },
           ...multiLevelRowMenuItems(self.views),
         ]
+      },
+      /**
+       * #method
+       */
+      rubberbandClickMenuItems(px: number): MenuItem[] {
+        return multiLevelRowClickMenuItems(self.views, px)
       },
     }))
 

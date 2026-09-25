@@ -22,7 +22,10 @@ import {
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, cast, detach, types } from '@jbrowse/mobx-state-tree'
-import { multiLevelRowMenuItems } from '@jbrowse/plugin-linear-genome-view'
+import {
+  multiLevelRowClickMenuItems,
+  multiLevelRowMenuItems,
+} from '@jbrowse/plugin-linear-genome-view'
 import {
   DiagonalizeProgressMixin,
   ImportFormSyntenyMixin,
@@ -1383,6 +1386,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
             ...multiLevelRowMenuItems(self.views),
           ]
+        },
+        /**
+         * #method
+         */
+        rubberbandClickMenuItems(px: number): MenuItem[] {
+          return multiLevelRowClickMenuItems(self.views, px)
         },
       }
     })

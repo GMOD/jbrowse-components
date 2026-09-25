@@ -112,6 +112,7 @@ export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
 export { applyInitHighlights } from './LinearGenomeView/afterAttach.ts'
 export {
   MultiLevelRubberband,
+  multiLevelRowClickMenuItems,
   multiLevelRowMenuItems,
   rowLabels,
 } from './MultiLevelRubberband/index.ts'

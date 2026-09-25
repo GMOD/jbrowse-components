@@ -32,6 +32,7 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
   const { classes } = useStyles()
 
   const {
+    isClick,
     guideX,
     rubberbandOn,
     leftBpOffset,
@@ -85,7 +86,11 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
           onMenuItemClick={handleMenuItemClick}
           open
           onClose={handleClose}
-          menuItems={model.rubberBandMenuItems()}
+          menuItems={
+            isClick
+              ? model.rubberbandClickMenuItems(anchorPosition.offsetX)
+              : model.rubberBandMenuItems()
+          }
         />
       ) : null}
       <div

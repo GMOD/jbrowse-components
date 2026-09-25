@@ -12,6 +12,9 @@ interface AnchorPosition {
   offsetX: number
   clientX: number
   clientY: number
+  // true = a bare click (show the per-row click menu), false = a drag-selection
+  // (show the range menu). Always set at construction, so it's never optional.
+  isClick: boolean
 }
 
 export function useRangeSelect(
@@ -49,11 +52,13 @@ export function useRangeSelect(
   useWindowDrag(ref, mouseDragging ? startX : undefined, {
     onMove: setCurrentX,
     onEnd: ({ startX, endX, isClick, clientX, clientY }) => {
+      setAnchorPosition({ offsetX: endX, clientX, clientY, isClick })
       if (isClick) {
-        handleClose()
+        // the click menu names a coordinate, not a span, so nothing is
+        // committed; the guide stays at the click so the menu says where
+        setGuideX(endX)
         return
       }
-      setAnchorPosition({ offsetX: endX, clientX, clientY })
       const leftPx = Math.min(startX, endX)
       const rightPx = Math.max(startX, endX)
       transaction(() => {
@@ -82,8 +87,10 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    // Don't update guideX while the menu is open (rubberband locked) or while a
-    // drag-selection is in progress (the rubberband should show, not the guide)
+    // Don't update guideX while a menu is open — the guide is what the click
+    // menu's rows refer to, so it stays at the click rather than following the
+    // pointer to the menu — or while a drag-selection is in progress (the
+    // rubberband should show, not the guide)
     if (anchorPosition || mouseDragging) {
       return
     }
@@ -107,13 +114,15 @@ export function useRangeSelect(
     handleClose()
   }
 
-  const rubberbandOn = startX !== undefined
+  const isClick = anchorPosition?.isClick
+  const rubberbandOn = startX !== undefined && !isClick
   const right = anchorPosition?.offsetX ?? currentX
   const left = rubberbandOn ? Math.min(right, startX) : 0
   const width = rubberbandOn ? Math.abs(right - startX) : 0
   const views = rubberbandOn ? model.views : []
 
   return {
+    isClick,
     rubberbandOn,
     guideX,
     anchorPosition,

@@ -110,3 +110,31 @@ test('each row offers its own rubberband menu', async () => {
   expect(view.views[1]!.bpPerPx).toBeLessThan(before)
   expect(view.views[0]!.bpPerPx).not.toBeLessThan(before)
 })
+
+// A bare click names a coordinate, and each row reads the pixel through its own
+// pxToBp — so the rows are the menu, with no all-rows row above them.
+test('a click offers each row its own coordinate', async () => {
+  const view = await launch()
+  const items = view.rubberbandClickMenuItems(400)
+
+  expect(items.map(i => ('label' in i ? i.label : i.type))).toEqual([
+    'a1',
+    'a2',
+  ])
+
+  for (const name of ['a1', 'a2']) {
+    expect(
+      subMenu(items, name).map(i => ('label' in i ? i.label : i.type)),
+    ).toEqual([
+      'Center view here',
+      'Zoom to base level',
+      expect.stringMatching(/^Copy coordinate \(ctgA:/),
+    ])
+  }
+
+  // and the coordinate each row names is its own read of the pixel
+  const beforeBp = view.views[1]!.bpPerPx
+  clickable(subMenu(items, 'a2'), 'Zoom to base level').onClick()
+  expect(view.views[1]!.bpPerPx).toBeLessThan(beforeBp)
+  expect(view.views[0]!.bpPerPx).toBe(beforeBp)
+})
