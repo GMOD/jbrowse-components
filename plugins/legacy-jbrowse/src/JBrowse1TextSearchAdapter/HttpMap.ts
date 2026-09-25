@@ -39,13 +39,16 @@ export default class HttpMap {
    * loads meta.json file from names directory and reads number of hash_bits used
    */
   async readMeta(): Promise<Meta> {
-    if (!this.metaPromise) {
-      this.metaPromise = this.loadFile('meta.json').then(meta => ({
+    this.metaPromise ??= this.loadFile('meta.json')
+      .then(meta => ({
         hashHexCharacters: Math.ceil(meta.hash_bits / 4),
         compress: meta.compress,
         tracks: meta.track_names,
       }))
-    }
+      .catch((e: unknown) => {
+        this.metaPromise = undefined
+        throw e
+      })
     return this.metaPromise
   }
 
