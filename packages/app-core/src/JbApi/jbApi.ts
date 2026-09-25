@@ -21,7 +21,9 @@ import {
   isSessionWithAddSessionTrack,
   objectHash,
   parseLocString,
+  sum,
 } from '@jbrowse/core/util'
+import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
 import {
   openTracks,
   openViews,
@@ -701,15 +703,27 @@ function shrinkables(views: AbstractViewModel[]): Shrinkable[] {
         : [],
     )
     const displays = viewTracks(view).flatMap(track => {
+      // resizeHeight where the display has it: in grow mode it is the call
+      // that leaves grow, where setHeight writes a slot nothing reads
       const d = track.activeDisplay as
-        | (Record<string, unknown> & { setHeight?: (px: number) => void })
+        | (Record<string, unknown> & {
+            setHeight?: (px: number) => void
+            resizeHeight?: (distance: number) => void
+          })
         | undefined
-      return d && typeof d.height === 'number' && d.setHeight
+      const { setHeight, resizeHeight } = d ?? {}
+      return d && typeof d.height === 'number' && (resizeHeight || setHeight)
         ? [
             {
               what: track.configuration.trackId,
               height: d.height,
-              setHeight: d.setHeight,
+              setHeight: (px: number) => {
+                if (resizeHeight) {
+                  resizeHeight(px - (d.height as number))
+                } else {
+                  setHeight?.(px)
+                }
+              },
             },
           ]
         : []
@@ -753,20 +767,17 @@ async function fitToWindow(
       return { scroller, atFloor: false, shrunk: [] }
     }
     const items = shrinkables(views)
-    const headroom = items.map(i => Math.max(0, i.height - MIN_HEIGHT_PX))
-    const available = headroom.reduce((a, b) => a + b, 0)
-    const cut = Math.min(portExcess, available)
+    const heights = items.map(i => i.height)
+    const next = scaleBandHeights(heights, -portExcess, MIN_HEIGHT_PX)
+    const available = sum(heights) - sum(next)
     return {
       scroller,
       atFloor: available < portExcess,
       shrunk: items.flatMap((item, i) => {
-        const share = available
-          ? Math.round((cut * headroom[i]!) / available)
-          : 0
-        if (share <= 0) {
+        const to = next[i]!
+        if (to >= item.height) {
           return []
         }
-        const to = item.height - share
         item.setHeight(to)
         return [{ what: item.what, from: item.height, to }]
       }),

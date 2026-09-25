@@ -1379,6 +1379,29 @@ describe('fitToWindow', () => {
     })
   })
 
+  // A grow-mode track's height follows its content, not its height slot, so a
+  // setHeight wrote a number nothing read and the fit reported a cut that
+  // never happened. resizeHeight is the display's own way out of grow.
+  it('resizes a display through resizeHeight, which leaves grow mode', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const grown = {
+      height: 400,
+      grow: true,
+      setHeight(_px: number) {},
+      resizeHeight(distance: number) {
+        grown.grow = false
+        grown.height += distance
+      },
+    }
+    page(500, [grown])
+    expect(await jbOver([grown]).fitToWindow(5000)).toMatchObject({
+      fits: true,
+      shrunk: [{ what: 't0', from: 400, to: 268 }],
+    })
+    expect(grown.height).toBe(268)
+    expect(grown.grow).toBe(false)
+  })
+
   // A workspace scrolls each panel on its own. Measuring only the first view's
   // column read a tall second panel as fitting and shrank nothing, and read a
   // tall first panel as licence to shrink the second one too.
