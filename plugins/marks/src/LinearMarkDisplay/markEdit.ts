@@ -145,6 +145,19 @@ export function withMarkType(mark: DraftMark, type: MarkType): DraftMark {
   return { ...mark, mark: type }
 }
 
+/**
+ * The marks of a plot, as a form holds them. A plot is whatever the user
+ * typed, so this is the one place deciding what counts as a mark list, and
+ * anything else reads as none rather than as a broken form.
+ */
+export function draftMarks(plot: { marks?: unknown }): DraftMark[] {
+  return Array.isArray(plot.marks)
+    ? plot.marks.filter(
+        (mark): mark is DraftMark => typeof mark === 'object' && mark !== null,
+      )
+    : []
+}
+
 export function addMark(marks: readonly DraftMark[]): DraftMark[] {
   return [...marks, {}]
 }

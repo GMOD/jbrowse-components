@@ -58,7 +58,7 @@ const LinearMarkDisplayComponent = observer(
             <ConfigProblemsIndicator
               notices={model.notices}
               onClick={() => {
-                model.openPlotJsonDialog()
+                model.openMarkPlotDialog()
               }}
             />
             <SkippedFeaturesIndicator {...model.skippedFeatures} />

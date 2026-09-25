@@ -203,6 +203,7 @@ const PlotFieldDialog = lazy(() => import('./components/PlotFieldDialog.tsx'))
 const MarkRowArrangementDialog = lazy(
   () => import('./components/MarkRowArrangementDialog.tsx'),
 )
+const MarkPlotDialog = lazy(() => import('./components/MarkPlotDialog.tsx'))
 const PlotJsonDialog = lazy(() => import('./components/PlotJsonDialog.tsx'))
 const MarkClusterDialog = lazy(
   () => import('./components/MarkClusterDialog.tsx'),
@@ -1741,6 +1742,19 @@ export function stateModelFactory(
             { model: self, handleClose },
           ])
         },
+        /**
+         * #action
+         * Open the plot as controls: every mark, the channels its type reads,
+         * and what the rules say under each. The field scan runs behind it, as
+         * it does for the field dialog.
+         */
+        openMarkPlotDialog() {
+          void self.ensurePlotFields().catch(() => {})
+          getDialogHost(self).queueDialog(handleClose => [
+            MarkPlotDialog,
+            { model: self, handleClose },
+          ])
+        },
       }))
       .views(self => ({
         /**
@@ -1756,10 +1770,10 @@ export function stateModelFactory(
               },
             },
             {
-              label: 'Edit marks as JSON...',
+              label: 'Edit plot...',
               icon: DataObjectIcon,
               onClick: () => {
-                self.openPlotJsonDialog()
+                self.openMarkPlotDialog()
               },
             },
             makeScoreSubMenu(self, { domain: self.domain }),
