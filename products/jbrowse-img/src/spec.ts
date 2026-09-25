@@ -17,13 +17,27 @@ export interface ViewSpec {
 // Accepts the documented `{ views: [viewObject] }` wrapper (so JSON copied from
 // a `&session=spec-` URL works) or a bare view object. Reads stdin for `-`, a
 // file when `spec` is a path, else parses it as inline JSON.
+// Inline JSON opens with a brace or a bracket, so anything else that is not a
+// file on disk is a path that isn't there. Left to JSON.parse, a mistyped
+// `--spec synteny.jsno` came back as `Unexpected token 's'`, which reads as a
+// malformed spec rather than as the missing file it is.
+function specText(spec: string) {
+  if (spec === STDIN_ARG) {
+    return readStdin()
+  }
+  if (isFile(spec)) {
+    return fs.readFileSync(spec, 'utf8')
+  }
+  if (!/^\s*[[{]/.test(spec)) {
+    throw new Error(
+      `--spec "${spec}": no such file. Pass a path to a .json, the JSON itself, or "-" to read it from stdin`,
+    )
+  }
+  return spec
+}
+
 export function parseSpec(spec: string): ViewSpec {
-  const raw =
-    spec === STDIN_ARG
-      ? readStdin()
-      : isFile(spec)
-        ? fs.readFileSync(spec, 'utf8')
-        : spec
+  const raw = specText(spec)
   const obj = JSON.parse(raw) as Record<string, unknown>
   const view =
     typeof obj.type === 'string'

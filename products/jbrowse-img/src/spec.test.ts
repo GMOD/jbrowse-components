@@ -84,4 +84,14 @@ describe('parseSpec', () => {
     })
     expect(parseSpec(inline).type).toBe('DotplotView')
   })
+
+  // JSON.parse reported a mistyped path as `Unexpected token 's'`, which reads
+  // as a malformed spec rather than as the file that isn't there
+  it('names a path that is not on disk as a missing file', () => {
+    expect(() => parseSpec('synteny.jsno')).toThrow(/no such file/)
+  })
+
+  it('still reports a syntax error in JSON that was written inline', () => {
+    expect(() => parseSpec('{"type":')).toThrow(SyntaxError)
+  })
 })
