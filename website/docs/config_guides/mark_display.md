@@ -99,6 +99,9 @@ one.
 | how many features overlap each position | | GenomeSpy `{"type": "coverage"}` | `{"type": "coverage"}` |
 | overlapping features stacked into rows | | GenomeSpy `{"type": "pileup", "as": "lane"}` | `{"type": "pileup"}`, read by the mark's `row` |
 | a label at each feature | `geom_text(aes(label = name), check_overlap = TRUE)` | `"mark": "text"`, `"text": {"field": "name"}` | `"mark": "text"`, `"encoding": {"text": "name"}` |
+| a curve between two positions | `geom_curve(aes(x, xend))` | GenomeSpy `"mark": "link"`, `"x2"` | `"mark": "link"`, `x` to `x2` |
+| a stroke width per feature | `aes(linewidth = score)` | `"size": {"field": "score"}` | `"encoding": {"size": {"field": "score"}}` on a link |
+| a record's other end | | | `{"type": "mate"}`, then `"x2": {"chrom": "mate.refName", "pos": "mate.start"}` |
 | a band of the plot per category | `facet_grid(rows = vars(sample))` | `"row": {"field": "sample"}` | `"facet": "sample"`, or `"rows": "sample"` for one row each |
 | layers drawn in order | `+ geom_…()` | `"layer": […]` | `marks`, in list order |
 | a layer that draws at some zooms only | | GenomeSpy `multiscale` with `stops` | `minBpPerPx` and `maxBpPerPx` on the mark |
@@ -109,8 +112,9 @@ this display `encoding.row` is the band a feature stands in, the integer a
 `pileup` step writes, and the facet is the display's own `facet`. And a
 positional channel is a bare field where Vega-Lite's carries a scale, because
 the y scale is the display's `scales.y` and every mark reads one axis. Stacked
-bars and a `size` or `opacity` channel have no row: a bar stands on its own from
-the baseline, and a point's diameter is its mark's `size`.
+bars and an `opacity` channel have no row: a bar stands on its own from the
+baseline. A point's diameter is its mark's `size`, and a link's stroke is its
+`encoding.size`.
 
 ## The encoding
 
@@ -406,6 +410,86 @@ text mark wants a `maxBpPerPx` that stops it once the features are denser than
 the labels could be read. On the circular view the ring is the display's canvas
 wrapped round the circle, and the labels stand over the canvas on the linear
 track only.
+
+## Links
+
+A `link` mark draws a curve from `x` up and over to `x2`. Over a BED with
+start-end pairs that is the feature's own two ends, and `size` strokes each
+curve by a field through a linear or log scale into a range of pixels. Splice
+junctions from a STAR file, stroked by read support and labelled with it:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "junctions",
+  "name": "Splice junctions",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://example.com/junctions.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "junctions-LinearMarkDisplay",
+      "marks": [
+        {
+          "mark": "link",
+          "encoding": {
+            "size": { "field": "score", "scale": "log", "range": [1, 8] }
+          }
+        },
+        { "mark": "text", "encoding": { "text": "score" }, "maxBpPerPx": 50 }
+      ]
+    }
+  ]
+}
+```
+
+A paired record names its other end somewhere else: a BEDPE or STAR-Fusion
+adapter fills a `mate` field, and a VCF states each end in an `ALT`. The `mate`
+step reads either into `mate.refName`, `mate.start` and `mate.end`, one feature
+per end a record states, with `svtype` beside them, and `x2` then names those
+fields as a locus, so a mate on another chromosome draws to wherever the view
+shows it. Structural variants from a VCF, coloured by type:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "sv_calls",
+  "name": "SV calls",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://example.com/sv.vcf.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "sv_calls-LinearMarkDisplay",
+      "marks": [
+        {
+          "mark": "link",
+          "size": 2,
+          "encoding": {
+            "x2": { "chrom": "mate.refName", "pos": "mate.start" },
+            "color": { "field": "svtype" }
+          },
+          "transform": [{ "type": "mate" }]
+        }
+      ]
+    }
+  ]
+}
+```
+
+The apex of a link is its half-width, clamped to the band under
+`linkShape: "dome"` (the default) and a true semicircle under `"arc"`; a `y`
+puts it at a value on the display's axis instead, so a link plotted by its score
+rises to it. A pair wider than three screens straightens into a leg rising from
+each end, and a mate the view does not show draws a short stem at the end it
+does. A link answers a hover and a click along its stroke, and the SVG export
+carries it as a path.
 
 ## Facets
 

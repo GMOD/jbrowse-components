@@ -32,7 +32,6 @@ _See the **Config slots** section below for all available configuration fields._
 ## Related links
 
 - **Track:** [FeatureTrack](../featuretrack)
-- **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearManhattanDisplay](../linearmanhattandisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)

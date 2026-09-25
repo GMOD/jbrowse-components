@@ -17,7 +17,7 @@ come from the file's extension, and any key written beside `uri` overrides the
 inference.
 
 - [FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack.md) —
-  displays: LinearBasicDisplay, LinearMultiRowFeatureDisplay, LinearArcDisplay,
+  displays: LinearBasicDisplay, LinearMultiRowFeatureDisplay,
   LinearManhattanDisplay, LinearMarkDisplay
 - [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
   displays: LinearAlignmentsDisplay, LinearMarkDisplay
@@ -25,7 +25,7 @@ inference.
   — displays: LinearReferenceSequenceDisplay, LinearGCContentDisplay
 - [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) —
   displays: ChordVariantDisplay, LinearVariantDisplay,
-  LinearMultiSampleVariantDisplay, LinearPairedArcDisplay, LinearMarkDisplay
+  LinearMultiSampleVariantDisplay, LinearMarkDisplay
 - [LDTrack](https://jbrowse.org/jb2/docs/config/ldtrack.md) — displays:
   LDTrackDisplay
 - [QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack.md)
@@ -64,8 +64,6 @@ inference.
 - [LinearGCContentTrackDisplay](https://jbrowse.org/jb2/docs/config/lineargccontenttrackdisplay.md)
 - [LinearMafDisplay](https://jbrowse.org/jb2/docs/config/linearmafdisplay.md)
 - [LinearHicDisplay](https://jbrowse.org/jb2/docs/config/linearhicdisplay.md)
-- [LinearArcDisplay](https://jbrowse.org/jb2/docs/config/lineararcdisplay.md)
-- [LinearPairedArcDisplay](https://jbrowse.org/jb2/docs/config/linearpairedarcdisplay.md)
 - [LinearManhattanDisplay](https://jbrowse.org/jb2/docs/config/linearmanhattandisplay.md)
 - [LinearMarkDisplay](https://jbrowse.org/jb2/docs/config/linearmarkdisplay.md)
 

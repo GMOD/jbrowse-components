@@ -194,14 +194,13 @@ config whose picture two point marks cannot give.
 
 ### 7. Colours still spelt outside the colour object
 
-The alignments, feature, Manhattan, mark, wiggle, synteny, multi-way and arc
-displays resolve colour through `colorEncodingOf`; the arc displays' `color`
-is `ArcColor` and `PairedArcColor` since 2026-09-24 (ADR-153 §Status), the
-paired one's `value` still a callback over `(feature, alt)`, and the key
-reaches them because `DisplayStatusChromeBase` places the legend for every
-display composing `LegendMixin`. Hi-C's is the `HicColor` object, LD's is
-named per metric, and the variant and multi-row row colours go with the row
-scale. MAF's `colorByChromosome` is what remains, through ADR-135.
+The alignments, feature, Manhattan, mark, wiggle, synteny and multi-way
+displays resolve colour through `colorEncodingOf`. The arc displays are gone
+(ADR-163): an arc is a `link` mark on the mark display, so its colour is the
+mark colour object and its stroke the `size` channel. Hi-C's is the `HicColor`
+object, LD's is named per metric, and the variant and multi-row row colours go
+with the row scale. MAF's `colorByChromosome` is what remains, through
+ADR-135.
 
 ## Order
 

@@ -265,19 +265,31 @@ annotated flag; the same shape reads `canonical_ss` off the portcullis one:
   },
   "displays": [
     {
-      "type": "LinearArcDisplay",
-      "displayId": "star_junctions-LinearArcDisplay",
-      "color": "jexl:get(feature,'annotated')=='1'?'#377eb8':'#e41a1c'",
-      "minScore": 3
+      "type": "LinearMarkDisplay",
+      "displayId": "star_junctions-LinearMarkDisplay",
+      "transform": [
+        { "type": "filter", "expr": "jexl:get(feature,'score')>=3" }
+      ],
+      "marks": [
+        {
+          "mark": "link",
+          "encoding": {
+            "size": { "field": "score", "scale": "log", "range": [1, 8] },
+            "color": "jexl:get(feature,'annotated')=='1'?'#377eb8':'#e41a1c'"
+          }
+        },
+        { "mark": "text", "encoding": { "text": "score" }, "maxBpPerPx": 50 }
+      ]
     }
   ]
 }
 ```
 
-The arc's thickness follows the score by default, its label prints the score at
-the apex, and `minScore` is the same read-support floor the sashimi menu offers,
-applied to the file's whole-library counts. The extra columns arrive as text, so
-the callback compares against `'1'` rather than `1`.
+Each junction is a `link` from its start to its end, stroked by its score
+through a log scale, with a `text` mark printing the score over it; the `filter`
+step is the same read-support floor the sashimi menu offers, applied to the
+file's whole-library counts. The extra columns arrive as text, so the colour
+callback compares against `'1'` rather than `1`.
 
 A per-transcript result, such as a differential transcript usage test, goes into
 the gene track's GFF3 instead, and

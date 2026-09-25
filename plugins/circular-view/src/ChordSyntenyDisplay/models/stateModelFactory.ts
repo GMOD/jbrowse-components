@@ -134,6 +134,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           ? value
           : undefined
       },
+      // #region contextVariableRead
       /**
        * #getter
        * the resting fill of each ribbon under `colorBy`
@@ -143,6 +144,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         const { colorBy } = this
         const configured = (feature: Feature) =>
           readConfObject(configuration, 'color', { feature })
+        // #endregion
         if (colorBy === 'strand') {
           const { posColor, negColor } = colorSchemes.strand
           const pos = translucent(posColor)

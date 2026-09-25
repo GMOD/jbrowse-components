@@ -191,117 +191,21 @@ shown and set.
 
 ## Schema inheritance with baseConfiguration
 
-Displays inherit base display slots by passing `baseConfiguration`.
-`LinearPairedArcDisplay` declares two slots of its own and takes the rest from
-the base linear display schema:
+Displays inherit base display slots by passing `baseConfiguration` in the
+options argument. `LinearMafDisplay` declares its own slots and takes the rest
+from the base linear display schema:
 
-<!-- include: plugins/arc/src/LinearPairedArcDisplay/configSchema.ts#schema -->
-
-```ts
-export function configSchemaFactory() {
-  return ConfigurationSchema(
-    'LinearPairedArcDisplay',
-    {
-      ...trackHeightConfigSchemaFields(),
-      /**
-       * #slot color
-       * The arcs' colour: a CSS colour, a jexl callback over `feature` and
-       * `alt`, or a field bound to a categorical or threshold scale, which
-       * the key describes.
-       */
-      color: pairedArcColorSchema,
-      ...arcLegendConfigSchemaFields,
-      /**
-       * #slot
-       */
-      lineWidth: {
-        type: 'number',
-        description: 'the stroke width of the arcs, in pixels',
-        defaultValue: defaultArcLineWidth,
-      },
-      ...scoreFilterConfigSchemaFields,
-      ...regionTooLargeConfigSchemaFields,
-    },
-    {
-      explicitlyTyped: true,
-      /**
-       * #identifier
-       */
-      explicitIdentifier: 'displayId',
-    },
-  )
-}
-```
-
-(The `#slot` and `#baseConfiguration` comments are JSDoc tags that generate the
-[config reference pages](/docs/config) — they are not part of the schema API.)
-
-The base schema's slots are merged in first. When a name collides, what happens
-depends on the kind of entry:
-
-- **A slot the child redeclares merges field-by-field over the base slot**, so
-  the override states only what differs and inherits the rest: `description`,
-  `advanced`, `contextVariable`, `validate` and `model`. Keep `type` in the
-  override either way: a slot has `type`, and a nested sub-schema does not.
-- **A nested sub-schema or a constant replaces the base entry wholesale.** They
-  have no fields to fold.
-
-To turn an inherited field off, state it rather than omitting it:
-`mySlot: { type: 'number', defaultValue: 4, advanced: false }` still inherits
-the base slot's `description` and `validate`, and is not advanced here.
-
-The schema's third argument, its options, merges the same shallow way, with four
-exceptions. `actions`, `views`, `extend` and `preProcessSnapshot` **compose**
-with the base's instead of replacing them, base first. The first three chain
-through separate MST calls, so the base's members are on `self` inside your
-function and you override one by redeclaring its name; `preProcessSnapshot`
-folds to `child(base(snapshot))`, so the base normalizes before you see the
-snapshot. `createBaseTrackConfig` declares two of the four — `actions` and
-`preProcessSnapshot` — so a track config schema that declares its own composes
-on top of the base's.
-
-Pass the type `ConfigurationSchema()` returned, and nothing else. The slot table
-is kept in a registry keyed by that exact type, so a `types.late` wrapper or a
-union from `pluginManager.pluggableConfigSchemaType(…)` carries none of it: both
-type-check, and both throw at construction.
-
-:::note Changed behavior
-
-An override used to _replace_ the whole base slot definition, so every field it
-left out was dropped. If your plugin redeclares a slot from a base display
-schema and was relying on that (to shed an inherited `advanced` or `validate`,
-say), state the field explicitly, as above. Overrides that only moved a
-`defaultValue` need no change.
-
-:::
-
-## preProcessSnapshot
-
-Use `preProcessSnapshot` to normalize incoming config JSON before the MST model
-is created. `BamAdapter` passes this function to make the `uri` shorthand work:
-it expands a bare `uri` into the `bamLocation` and `index` slots the schema
-actually declares, and derives the index name from it.
-
-<!-- include: plugins/alignments/src/BamAdapter/configSchema.ts#preProcess -->
+<!-- include: plugins/maf/src/LinearMafDisplay/configSchema.ts#schemaOptions -->
 
 ```ts
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? fillLocations(snap, {
-        bamLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-        index: {
-          indexType: snap.csi ? 'CSI' : 'BAI',
-          location: {
-            uri: `${snap.uri}.${snap.csi ? 'csi' : 'bai'}`,
-            baseUri: snap.baseUri,
-          },
-        },
-      })
-    : snap
-}
+{
+  /**
+   * #baseConfiguration
+   */
+  baseConfiguration: baseLinearDisplayConfigSchema,
+  explicitlyTyped: true,
+  preProcessSnapshot: refuseRetiredConfig,
+},
 ```
 
 `fillLocations` settles precedence: the derived locations fill in the slots, and
@@ -335,29 +239,23 @@ The full signatures are in the
 [configuration API reference](/docs/api/core-configuration).
 
 Use `getConf` when you hold a **state model** that has a `.configuration` member
-(a track model, display model, etc.) — `LinearArcDisplay`'s `displayMode`
-getter:
+(a track model, display model, etc.) — `LinearMarkDisplay`'s
+`displayCrossHatches` getter is `getConf(self, 'displayCrossHatches')`, and its
+typed `conf` getter, in a block of its own, is what every later block reads a
+sub-schema through:
 
-<!-- include: plugins/arc/src/LinearArcDisplay/model.ts#chainedViews -->
+<!-- include: plugins/marks/src/LinearMarkDisplay/model.ts#chainedViews -->
 
 ```ts
-  /**
-   * #getter
-   * the config typed off the concrete schema; `ConfigurationReference`
-   * erases `self.configuration` to `any`, so reads route through this to
-   * stay typed (same move as `BaseAdapter<CONF>`)
-   */
-  get conf(): LinearArcDisplayConfig {
-    return self.configuration
-  },
-}))
 .views(self => ({
   /**
    * #getter
+   * the config typed off the concrete schema
    */
-  get displayMode(): ArcDisplayMode {
-    return getConf(self, 'displayMode')
+  get conf(): LinearMarkDisplayConfig {
+    return self.configuration
   },
+}))
 ```
 
 Use `readConfObject` when you hold the **config model itself** — an entry from
@@ -403,19 +301,15 @@ State models refer to their config via `ConfigurationReference`, alongside the
 `type` literal that discriminates them. This is one argument of the model's
 `types.compose(...)` chain, which is where the model gets its name:
 
-<!-- include: plugins/arc/src/LinearPairedArcDisplay/model.ts#configRef -->
+<!-- include: plugins/marks/src/LinearMarkDisplay/model.ts#configRef -->
 
 ```ts
 types.model({
-  /**
-   * #property
-   */
-  type: types.literal('LinearPairedArcDisplay'),
+  type: types.literal('LinearMarkDisplay'),
   /**
    * #property
    */
   configuration: ConfigurationReference(configSchema),
-}),
 ```
 
 `ConfigurationReference` is a union of a string ID reference and the full config
@@ -435,9 +329,9 @@ slot name and return its real value type — **but only when the schema is
 concrete**. Type the state model factory's `configSchema` parameter to the
 schema's own type, not to `AnyConfigurationSchemaType`, or the reads degrade to
 `any` with no compile error to say so. A `conf` getter typed off the concrete
-schema (`get conf(): LinearPairedArcDisplayConfig`) is still the tidy way to
-name it once, the same move as `BaseAdapter<CONF>`, but it no longer provides
-the checking.
+schema (`get conf(): LinearMarkDisplayConfig`) is still the tidy way to name it
+once, the same move as `BaseAdapter<CONF>`, but it no longer provides the
+checking.
 
 ## Frozen track hydration
 
@@ -458,51 +352,41 @@ it.)
 
 A slot takes a callback in place of a plain value where it declares
 `contextVariable`, the arguments the callback reads; the calling code supplies
-them as the third argument to `readConfObject`. The arc display's colour object
+them as the third argument to `readConfObject`. The mark display's colour object
 declares one on its `value`:
 
-<!-- include: plugins/arc/src/shared/arcColorConfigSchema.ts#contextVariableSlot -->
+<!-- include: plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts#contextVariableSlot -->
 
 ```ts
+/**
+ * #slot value
+ * A CSS colour, or a jexl callback over `feature` returning one, for a
+ * mark whose colour is not a scale. Writing `color: 'red'` or
+ * `color: 'jexl:…'` directly on the encoding lands here.
+ */
 value: {
   type: 'color',
-  defaultValue: '#1976d2',
+  defaultValue: DEFAULT_MARK_COLOR,
   description: 'CSS colour or jexl callback',
   contextVariable: ['feature'],
 },
 ```
 
-`LinearArcDisplay` reads its per-feature slots that way, in one getter kept out
-of the render loop; the colour goes through `arcColorPainter`, which reads
-`value` the same way where the object binds no field:
+The chord synteny display reads its `color` that way, once per feature, in a
+getter kept out of the draw loop:
 
-<!-- include: plugins/arc/src/LinearArcDisplay/model.ts#contextVariableRead -->
+<!-- include: plugins/circular-view/src/ChordSyntenyDisplay/models/stateModelFactory.ts#contextVariableRead -->
 
 ```ts
-get arcStyles() {
-  // thickness/arcHeight are `type: 'number'` slots, so getConf types (and
-  // returns) a number — a jexl default over an attribute the feature
-  // lacks still evaluates to NaN; `layOutArcs` is where it is made
-  // paintable.
-  // label/caption are string slots read through the typed self.conf.
-  const kept =
-    self.features && filterByScore(self.features, self.minScore)
-  const paint = arcColorPainter(
-    self.conf.color,
-    getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
-  )
-  return kept?.map(feature => ({
-    feature,
-    paint: paint(feature),
-    thickness: getConf(self, 'thickness', { feature }),
-    label: readConfObject(self.conf, 'label', { feature }),
-    caption: readConfObject(self.conf, 'caption', { feature }),
-    arcHeight: Math.min(
-      getConf(self, 'arcHeight', { feature }),
-      self.height,
-    ),
-  }))
-},
+/**
+ * #getter
+ * the resting fill of each ribbon under `colorBy`
+ */
+get ribbonFill(): (feature: Feature) => string {
+  const { configuration } = self
+  const { colorBy } = this
+  const configured = (feature: Feature) =>
+    readConfObject(configuration, 'color', { feature })
 ```
 
 `getConf` takes the context object in the same third position. Evaluate these

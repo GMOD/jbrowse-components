@@ -66,7 +66,6 @@ Every FeatureTrack has a unique `trackId`, a required top-level field that ident
 
 ## Related links
 
-- **Display:** [LinearArcDisplay](../lineararcdisplay) ([state model](../../models/lineararcdisplay))
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay) ([state model](../../models/linearbasicdisplay))
 - **Display:** [LinearManhattanDisplay](../linearmanhattandisplay) ([state model](../../models/linearmanhattandisplay))
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay) ([state model](../../models/linearmarkdisplay))

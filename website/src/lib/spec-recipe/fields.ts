@@ -26,7 +26,6 @@ import {
 } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
 import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/autoscale.ts'
 import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
-import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
 import {
   COLOR_MODES,
@@ -368,8 +367,7 @@ const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
 // 'Solid color...' and 'Attribute...' rows open the identical dialogs and write
 // the identical strings. It only swaps the radio list — no Strand row (variants
 // have no strand) and two one-click presets in its place, from its own
-// colorBySubMenuItems. LinearPairedArcDisplay is the odd one out and handled
-// first: same slot, no color control at all.
+// colorBySubMenuItems.
 //
 // The two preset expressions are written out rather than imported, unlike every
 // other value in this file. variantSvType.ts reaches the core util barrel
@@ -544,14 +542,6 @@ function constantColorStep(
 ): FieldStep | undefined {
   if (typeof value !== 'string') {
     return undefined
-  }
-  // Its menu adds one row to the shared base — a line-width slider — so an arc
-  // color is authored on the config however simple the expression is.
-  if (displayType === 'LinearPairedArcDisplay') {
-    return {
-      path: `${TRACK_MENU} → Settings → color`,
-      note: 'Arc color is jexl-evaluated per (feature, alt) and no menu writes it: the only control this display adds is its line-width slider.',
-    }
   }
   if (!hasChannelMenus(displayType)) {
     return undefined
@@ -934,10 +924,6 @@ const DISPLAY_MODES: Record<string, string> = Object.fromEntries(
 // The arc display's `displayMode`, a different setting under the same name:
 // what an arc is drawn as. Imported rather than copied, so a renamed radio
 // changes this table with it — see the note on the import block above.
-const ARC_DISPLAY_MODES: Record<string, string> = Object.fromEntries(
-  ARC_DISPLAY_MODE_OPTIONS,
-)
-
 const SHOW_LABELS_MODES: Record<string, string> = Object.fromEntries(
   SHOW_LABELS_OPTIONS.map(o => [o.value, o.label]),
 )
@@ -1431,13 +1417,6 @@ export const trackFields: Record<string, FieldRecipe> = {
   displayMode: (value, { displayType }) => {
     if (typeof value !== 'string') {
       return undefined
-    }
-    // The arc display's own field of the same name, which is what the
-    // connection is drawn AS rather than how tall it is
-    // (ARC_DISPLAY_MODE_OPTIONS in arc/LinearArcDisplay/displayModes.ts).
-    if (displayType === 'LinearArcDisplay') {
-      const shape = ARC_DISPLAY_MODES[value]
-      return shape ? { path: `${TRACK_MENU} → Display mode → ${shape}` } : undefined
     }
     const label = DISPLAY_MODES[value]
     return label && displayType && CANVAS_DISPLAYS.has(displayType)

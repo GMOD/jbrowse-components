@@ -271,16 +271,16 @@ tolerance ball for "did this figure move".
     fusion IS per-bin coverage. Both tracks pin `selectedNormalization: NONE`.
     `scripts/scan_hic_translocation.sh` prints all of these numbers.
   - **BEDPE gotchas that fail silently, both hit in one figure.** (1) A contact
-    domain has both mates set to the same interval, so as a
-    `LinearPairedArcDisplay` the arc runs from the domain to itself and draws
-    NOTHING — an empty 78px lane, no error. Read Arrowhead output as a
-    `FeatureTrack` and each domain is a box. (2) `parseNamesFromHeader` takes
-    the **last** header line, and juicer writes `# juicer_tools version …`
-    _after_ the defline; that line has no tabs, so column-name resolution
-    returns undefined and every column past 10 reads back as `undefined`. A jexl
-    expression on `observed` then evaluates against nothing and silently takes
-    its else-branch — which looks exactly like a threshold that is merely wrong.
-    Set the adapter's `columnNames` explicitly on any juicer BEDPE.
+    domain has both mates set to the same interval, so as a link mark the arc
+    runs from the domain to itself and draws NOTHING — an empty 78px lane, no
+    error. Read Arrowhead output as a `FeatureTrack` and each domain is a box.
+    (2) `parseNamesFromHeader` takes the **last** header line, and juicer writes
+    `# juicer_tools version …` _after_ the defline; that line has no tabs, so
+    column-name resolution returns undefined and every column past 10 reads back
+    as `undefined`. A jexl expression on `observed` then evaluates against
+    nothing and silently takes its else-branch — which looks exactly like a
+    threshold that is merely wrong. Set the adapter's `columnNames` explicitly
+    on any juicer BEDPE.
 
 - **Hi-C compartments: the checkerboard is not renderable here, and three ways
   to compare them wrongly.** From adding `hic/compartment_switch`.
@@ -366,7 +366,7 @@ tolerance ball for "did this figure move".
   context for. The mirror-image trap is `geneGlyphMode: 'all'` on a grow track,
   where it is not a lane setting but a lane SIZE (one gene with ~25 transcripts
   took `qc/smn_vs_t2t`'s hg38 lane past 400 px and pushed the band off frame).
-- **`LinearPairedArcDisplay` has no filter slot, so colour is the filter.**
+- **A link mark filters with a `filter` step**, and colour still works as one:
   `color: "jexl:get(feature,'observed')>200?'#8b1a1a':'rgba(0,0,0,0)'"` draws
   the weak calls fully transparent.
 - **A raw matrix cannot argue for compartments, so don't spend a lane on it.**

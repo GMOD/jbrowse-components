@@ -1798,7 +1798,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "arc_track",
-      "name": "FromConfig Track (defaults to LinearArcDisplay)",
+      "name": "FromConfig Track (arcs as link marks)",
       "assemblyNames": ["volvox"],
       "category": ["Miscellaneous"],
       "adapter": {
@@ -1845,15 +1845,24 @@
       },
       "displays": [
         {
-          "type": "LinearArcDisplay",
-          "displayId": "arc_track_linear"
+          "type": "LinearMarkDisplay",
+          "displayId": "arc_track_linear",
+          "marks": [
+            {
+              "mark": "link",
+              "encoding": {
+                "size": { "field": "score", "scale": "log", "range": [1, 8] }
+              }
+            },
+            { "mark": "text", "encoding": { "text": "score" } }
+          ]
         }
       ]
     },
     {
       "type": "FeatureTrack",
       "trackId": "arc_track_custom_height",
-      "name": "Arc track (custom JEXL height)",
+      "name": "Arc track (apex at a jexl value)",
       "assemblyNames": ["volvox"],
       "category": ["Miscellaneous"],
       "adapter": {
@@ -1882,9 +1891,14 @@
       },
       "displays": [
         {
-          "type": "LinearArcDisplay",
+          "type": "LinearMarkDisplay",
           "displayId": "arc_track_custom_height_linear",
-          "arcHeight": "jexl:log10(feature.end-feature.start)*20"
+          "marks": [
+            {
+              "mark": "link",
+              "encoding": { "y": "jexl:log10(feature.end-feature.start)" }
+            }
+          ]
         }
       ]
     },
@@ -2185,8 +2199,19 @@
       "assemblyNames": ["volvox"],
       "displays": [
         {
-          "type": "LinearPairedArcDisplay",
-          "displayId": "volvox_bedpe-LinearPairedArcDisplay"
+          "type": "LinearMarkDisplay",
+          "displayId": "volvox_bedpe-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "link",
+              "size": 3,
+              "encoding": {
+                "x2": { "chrom": "mate.refName", "pos": "mate.start" },
+                "color": "#a65628"
+              },
+              "transform": [{ "type": "mate" }]
+            }
+          ]
         }
       ]
     },
@@ -2205,8 +2230,19 @@
       "assemblyNames": ["volvox"],
       "displays": [
         {
-          "type": "LinearPairedArcDisplay",
-          "displayId": "volvox_star_fusion-LinearPairedArcDisplay"
+          "type": "LinearMarkDisplay",
+          "displayId": "volvox_star_fusion-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "link",
+              "size": 3,
+              "encoding": {
+                "x2": { "chrom": "mate.refName", "pos": "mate.start" },
+                "color": "#a65628"
+              },
+              "transform": [{ "type": "mate" }]
+            }
+          ]
         }
       ]
     },

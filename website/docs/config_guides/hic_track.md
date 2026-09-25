@@ -5,8 +5,8 @@ guide_category: Track types
 ---
 
 A `HicTrack` with a `HicAdapter` needs only the `.hic` file location. Loop and
-interaction calls (BEDPE) are a separate `VariantTrack` drawn with a
-`LinearPairedArcDisplay`.
+interaction calls (BEDPE) are a separate `VariantTrack` drawn as link marks on a
+`LinearMarkDisplay`.
 
 ```json addtrack
 {
@@ -62,9 +62,11 @@ shows what each does to the picture:
 
 ## Loops and interactions as arcs
 
-BEDPE loop calls load as a `VariantTrack` with a `LinearPairedArcDisplay`.
-`color` is evaluated per feature and `lineWidth` is the arc stroke in pixels.
-This draws only the high-scoring calls, in dark red, as thin arcs:
+BEDPE loop calls load as a `VariantTrack` with a
+[mark display](/docs/config_guides/mark_display) drawing one `link` per call: a
+`mate` step reads each record's other end, `x2` names the fields holding it,
+`size` is the stroke in pixels and `color` the stroke colour. A `filter` step
+keeps the high-scoring calls, drawn here in dark red as thin arcs:
 
 ```json addtrack
 {
@@ -78,13 +80,29 @@ This draws only the high-scoring calls, in dark red, as thin arcs:
   },
   "displays": [
     {
-      "type": "LinearPairedArcDisplay",
-      "color": "jexl:feature.score>=500?'#8b1a1a':'rgba(0,0,0,0)'",
-      "lineWidth": 1
+      "type": "LinearMarkDisplay",
+      "marks": [
+        {
+          "mark": "link",
+          "size": 1,
+          "encoding": {
+            "x2": { "chrom": "mate.refName", "pos": "mate.start" },
+            "color": "#8b1a1a"
+          },
+          "transform": [
+            { "type": "mate" },
+            { "type": "filter", "expr": "jexl:get(feature,'score')>=500" }
+          ]
+        }
+      ]
     }
   ]
 }
 ```
+
+A `size` bound to a field strokes each loop by its score instead, through a
+linear or log scale into a range of pixels: [](/docs/config_guides/mark_display)
+§"Links".
 
 ## Compartments and subcompartments
 
@@ -158,5 +176,5 @@ and neither failure it prevents raises an error:
 ## See also
 
 - [](/docs/user_guides/hic_track)
-- [LinearPairedArcDisplay config schema](/docs/config/linearpairedarcdisplay)
+- [LinearMarkDisplay config schema](/docs/config/linearmarkdisplay)
 - [](/docs/tutorials/hic_structural_variants)

@@ -1783,8 +1783,19 @@
       },
       "displays": [
         {
-          "type": "LinearPairedArcDisplay",
-          "displayId": "skbr3_bedpe_arcs-LinearPairedArcDisplay"
+          "type": "LinearMarkDisplay",
+          "displayId": "skbr3_bedpe_arcs-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "link",
+              "size": 2,
+              "encoding": {
+                "x2": { "chrom": "mate.refName", "pos": "mate.start" },
+                "color": "#a65628"
+              },
+              "transform": [{ "type": "mate" }]
+            }
+          ]
         }
       ]
     },
@@ -2067,9 +2078,19 @@
       },
       "displays": [
         {
-          "type": "LinearPairedArcDisplay",
-          "displayId": "hic_gm12878_loops-LinearPairedArcDisplay",
-          "lineWidth": 2
+          "type": "LinearMarkDisplay",
+          "displayId": "hic_gm12878_loops-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "link",
+              "size": 2,
+              "encoding": {
+                "x2": { "chrom": "mate.refName", "pos": "mate.start" },
+                "color": "#8b1a1a"
+              },
+              "transform": [{ "type": "mate" }]
+            }
+          ]
         }
       ]
     },
@@ -3899,8 +3920,16 @@
       },
       "displays": [
         {
-          "type": "LinearArcDisplay",
-          "displayId": "LinearBasicDisplay"
+          "type": "LinearMarkDisplay",
+          "displayId": "dbsuper-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "link",
+              "encoding": {
+                "size": { "field": "score", "scale": "log", "range": [1, 8] }
+              }
+            }
+          ]
         }
       ]
     },

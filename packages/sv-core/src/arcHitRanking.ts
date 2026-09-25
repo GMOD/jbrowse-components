@@ -1,11 +1,10 @@
 // Which arc the cursor is on when several are near it — the ranking, with no
 // geometry in it.
 //
-// Two arc stacks need this rule and neither can use the other's geometry:
-// `plugins/alignments` places conic domes and flat bars out of `ArcsUploadData`
-// against a genomic Y domain, `plugins/arc` places semicircles and cubic beziers
-// out of features with no Y domain at all. The tie-breaks below are what they
-// share.
+// The alignments band places conic domes and flat bars out of
+// `ArcsUploadData` against a genomic Y domain and ranks them here; the mark
+// display's link mark ranks through render-core's `nearestInk`, whose
+// back-to-front strict-nearer rule answers the same on-ink tie.
 
 /**
  * How far outside its own stroke an arc still answers a hover, in CSS px.

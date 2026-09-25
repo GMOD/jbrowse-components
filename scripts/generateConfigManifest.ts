@@ -318,7 +318,7 @@ function shorthandKeysOf(adapterType) {
 // it is stale and worth saying so.
 //
 // Whether a given schema honours a given key cannot be assumed: "renderer" is
-// migrated by LinearBasicDisplay, LinearArcDisplay and ChordVariantDisplay, and
+// migrated by LinearBasicDisplay and ChordVariantDisplay, and
 // silently dropped by LinearWiggleDisplay. So this is only the candidate list;
 // legacyKeysOf below asks each schema directly.
 //

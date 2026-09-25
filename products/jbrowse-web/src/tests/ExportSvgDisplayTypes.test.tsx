@@ -168,27 +168,6 @@ test('refName label stays on-canvas when zoomed into a chromosome interior', asy
   expect(svg).toMatch(sticky)
 }, 45000)
 
-test('arc display SVG export renders bezier arcs for BND variants', async () => {
-  const { view, findByTestId, findByText } = await createView(config)
-  await view.navToLocString('ctgA:1..50000')
-  fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
-
-  // switch to the paired-arc display type
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText('Structural variant arc display', ...opts))
-
-  await findDisplayPainted('arc-display', delay)
-
-  // renderArcSvg awaits model.svgReady (via awaitSvgReady) internally
-  await view.exportSvg({ rasterizeLayers: false })
-  const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/arc_sv_snapshot.svg`, svg)
-  // BND arcs are rendered as SVG bezier cubic paths
-  expect(svg).toContain(' C ')
-  expect(normalizeSvg(svg)).toMatchSnapshot()
-}, 45000)
-
 // These two assert-only tests live at the end of the file on purpose: the
 // `@jbrowse/svgcanvas` clip-id counter is a module global that increments per
 // export and isn't covered by normalizeSvg, so inserting a snapshot-affecting

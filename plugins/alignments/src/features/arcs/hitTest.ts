@@ -75,10 +75,9 @@ export interface ArcLineHitResult {
 export type ArcBandHitResult = ArcHitResult | ArcLineHitResult
 
 // The ranking — `bestArcMark`, and see it for why on-ink is settled by paint
-// order and near-ink by distance. It is `@jbrowse/sv-core`'s because
-// `plugins/arc` ranks its own semicircles and beziers by the same rule and
-// shares none of the geometry below: the arcs and the ticks here were already
-// two spellings of it, and a third in another plugin is what drifts.
+// order and near-ink by distance. It is `@jbrowse/sv-core`'s and not this
+// file's because the arcs and the ticks here were already two spellings of
+// it, and a third is what drifts.
 
 function arcHitAt(data: ArcsUploadData, i: number): ArcHitResult {
   return {

@@ -395,15 +395,15 @@ importers:
       '@gmod/bgzf-filehandle':
         specifier: ^6.7.0
         version: 6.7.0
-      '@gmod/vcf':
-        specifier: ^7.2.0
-        version: 7.2.0
       '@gmod/range-cache-filehandle':
         specifier: ^1.4.0
         version: 1.4.0
       '@gmod/shared-read-cache':
         specifier: ^1.7.2
         version: 1.7.2
+      '@gmod/vcf':
+        specifier: ^7.2.0
+        version: 7.2.0
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../add-track-core
@@ -880,55 +880,6 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
-
-  plugins/arc:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/display-kit':
-        specifier: workspace:^
-        version: link:../../packages/display-kit
-      '@jbrowse/display-ui':
-        specifier: workspace:^
-        version: link:../../packages/display-ui
-      '@jbrowse/mobx-state-tree':
-        specifier: ^6.6.0
-        version: 6.6.0(mobx@7.0.4)
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../linear-genome-view
-      '@jbrowse/render-core':
-        specifier: workspace:^
-        version: link:../../packages/render-core
-      '@jbrowse/sv-core':
-        specifier: workspace:^
-        version: link:../../packages/sv-core
-      '@mui/material':
-        specifier: ^9.4.0
-        version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      mobx:
-        specifier: ^7.0.4
-        version: 7.0.4
-      mobx-react:
-        specifier: ^10.0.2
-        version: 10.0.2(mobx@7.0.4)(react@19.3.0)
-      react:
-        specifier: '>=19.0.0'
-        version: 19.3.0
-      react-dom:
-        specifier: '>=19.0.0'
-        version: 19.3.0(react@19.3.0)
-      rxjs:
-        specifier: ^7.8.2
-        version: 7.8.2
-    devDependencies:
-      '@jbrowse/display-test-utils':
-        specifier: workspace:^
-        version: link:../../packages/display-test-utils
-      '@jbrowse/jexl':
-        specifier: ^5.0.2
-        version: 5.0.2
 
   plugins/authentication:
     dependencies:
@@ -2203,9 +2154,6 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
-      '@jbrowse/plugin-arc':
-        specifier: workspace:^
-        version: link:../../plugins/arc
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
@@ -2475,9 +2423,6 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
-      '@jbrowse/plugin-arc':
-        specifier: workspace:^
-        version: link:../../plugins/arc
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
@@ -2791,9 +2736,6 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
-      '@jbrowse/plugin-arc':
-        specifier: workspace:^
-        version: link:../../plugins/arc
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
@@ -2952,9 +2894,6 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
-      '@jbrowse/plugin-arc':
-        specifier: workspace:^
-        version: link:../../plugins/arc
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
@@ -10032,10 +9971,6 @@ packages:
     resolution: {integrity: sha512-vZ7rfeehZui7wQs438JXBckYLkIIdfHOXsaVEUMyS5fHo1483l1bMdo0EDSWYclY0yZKFOipDy4KHuKs6ssvdg==}
     engines: {node: '>=8.0.0'}
 
-  smol-toml@1.8.0:
-    resolution: {integrity: sha512-kCZr2V3ch9i00x8zXRhjUNVcjG9ijES5dDudkXvUVCT5QlJNQWElSJdZqyPemffHoLNUYwOcou0Fy+ojN0uHSQ==}
-    engines: {node: '>= 18'}
-
   smol-toml@1.9.0:
     resolution: {integrity: sha512-hpd+HLON7HdZXqYchMM/+LaTTbdK0AU3NngIJ4KVyWbY9bfQqdL9cD+4yf6dUoU2Ap4VsU0JkQi6FxAI1B2mXQ==}
     engines: {node: '>= 18'}
@@ -11092,7 +11027,7 @@ snapshots:
       picomatch: 4.0.7
       retext-smartypants: 6.2.0
       shiki: 4.4.3
-      smol-toml: 1.8.0
+      smol-toml: 1.9.0
       unified: 11.0.5
 
   '@astrojs/language-server@2.17.0(@emnapi/runtime@1.11.3)(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(prettier@3.9.8))(prettier@3.9.8)(typescript@6.0.3)':
@@ -19013,8 +18948,6 @@ snapshots:
   slash@3.0.0: {}
 
   slugify@1.6.9: {}
-
-  smol-toml@1.8.0: {}
 
   smol-toml@1.9.0: {}
 

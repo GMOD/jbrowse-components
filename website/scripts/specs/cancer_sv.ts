@@ -1858,13 +1858,35 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         GENE_TRACK,
         {
           trackId: 'K562_star_fusion',
-          type: 'LinearPairedArcDisplay',
+          type: 'LinearMarkDisplay',
           height: 50,
+          marks: [
+            {
+              mark: 'link',
+              size: 2,
+              encoding: {
+                x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                color: '#a65628',
+              },
+              transform: [{ type: 'mate' }],
+            },
+          ],
         },
         {
           trackId: 'K562_10x_sv',
-          type: 'LinearPairedArcDisplay',
+          type: 'LinearMarkDisplay',
           height: 50,
+          marks: [
+            {
+              mark: 'link',
+              size: 2,
+              encoding: {
+                x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                color: '#a65628',
+              },
+              transform: [{ type: 'mate' }],
+            },
+          ],
         },
         {
           trackId: 'K562_cn',

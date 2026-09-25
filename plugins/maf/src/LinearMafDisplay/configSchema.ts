@@ -340,6 +340,7 @@ export default function configSchemaF() {
         description: 'hatch strand-flipped (inverted) alignment blocks',
       },
     },
+    // #region schemaOptions
     {
       /**
        * #baseConfiguration
@@ -348,6 +349,7 @@ export default function configSchemaF() {
       explicitlyTyped: true,
       preProcessSnapshot: refuseRetiredConfig,
     },
+    // #endregion
   )
 }
 

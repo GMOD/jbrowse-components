@@ -88,7 +88,7 @@ Three things it found, in the order they mattered:
   stop and dropping `observer` from it saves nothing. Check that arithmetic
   before optimizing anything that renders as a wrapper.
 
-### The one per-FEATURE cost in the app was `plugins/arc`
+### The one per-FEATURE cost in the app was `plugins/arc` (gone, ADR-163)
 
 Every other per-frame cost this instrument ranks is view-global or paid once per
 TRACK. Arc was neither: it rendered **one `observer` per visible arc**, each

@@ -1,5 +1,4 @@
 import Alignments from '@jbrowse/plugin-alignments'
-import Arc from '@jbrowse/plugin-arc'
 import Authentication from '@jbrowse/plugin-authentication'
 import BED from '@jbrowse/plugin-bed'
 import Canvas from '@jbrowse/plugin-canvas'
@@ -37,7 +36,6 @@ const corePlugins = [
   Maf,
   Marks,
   Trix,
-  Arc,
 ]
 
 export default corePlugins

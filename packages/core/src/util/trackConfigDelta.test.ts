@@ -243,15 +243,15 @@ test('a null over a member the base no longer has leaves no null behind', () => 
       scales: { y: { domainMax: 20, rules: null } },
     },
     {
-      type: 'LinearArcDisplay',
-      displayId: 'fst-LinearArcDisplay',
-      color: null,
+      type: 'LinearMarkDisplay',
+      displayId: 'fst-LinearMarkDisplay',
+      minWidthPx: null,
       height: 80,
     },
   ]
   const arc = {
-    type: 'LinearArcDisplay',
-    displayId: 'fst-LinearArcDisplay',
+    type: 'LinearMarkDisplay',
+    displayId: 'fst-LinearMarkDisplay',
     height: 80,
   }
   expect(
@@ -370,7 +370,7 @@ test('flatten ignores content-free display stubs (only type/displayId)', () => {
     trackId: 't',
     displays: [
       { type: 'LinearBasicDisplay', displayId: 't-basic', height: 200 },
-      { type: 'LinearArcDisplay', displayId: 't-arc' },
+      { type: 'LinearMarkDisplay', displayId: 't-marks' },
     ],
   }
   expect(flattenTrackConfigDelta(noDisplayBase, delta)).toEqual([

@@ -24,6 +24,7 @@ jexlFiltersSetting
 layoutMode
 legend
 lineWidth
+marks
 nodeWidth
 paneHeight
 readConnections

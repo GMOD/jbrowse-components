@@ -50,7 +50,6 @@ used to load bgzip-compressed, tabix-indexed VCF files
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots

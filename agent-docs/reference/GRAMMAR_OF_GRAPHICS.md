@@ -601,8 +601,8 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 
 | | JBrowse marks | GenomeSpy v0.88 | Gosling 1.0.5 |
 | --- | --- | --- | --- |
-| Marks | bar, point, span, text | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
-| Channels | x, x2, y, row, color, shape, text | adds y2, size, opacity, stroke, angle, tooltip | adds ye, size, opacity, stroke |
+| Marks | bar, point, span, text, link | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
+| Channels | x, x2, y, row, color, shape, text, size (on a link) | adds y2, opacity, stroke, angle, tooltip | adds ye, opacity, stroke |
 | y scales | linear, log, symlog | 13 kinds, incl. symlog and sqrt | none on y |
 | Named colour ramps | 10 (`COLOR_SCHEMES`), incl. viridis and two diverging | the d3 set | — |
 | Transforms | 7 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
@@ -628,7 +628,10 @@ The gaps a user meets first, in order:
    an optional count per bin, the config editor edits transform steps but not
    marks (`db4ef2f82a`), and the track menu has no facet or colour picker.
 
-A point's `size` is the mark's own, as Vega-Lite's `mark.size` is, and a
+A link's `size` is a channel, a field through a linear or log scale into a px
+range, unioned over the loaded regions the way a ramp's domain is
+([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md));
+a point's `size` is the mark's own, as Vega-Lite's `mark.size` is, and a
 constant rather than a channel (ADR-095); `origin` is the display's rather
 than a mark's, and no mark declares its own tooltip fields. Line and area marks stay
 out ([ADR-127](../architecture-decision-records/adr-127-line-stays-wiggles.md)),

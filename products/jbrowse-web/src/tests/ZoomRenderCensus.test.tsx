@@ -282,32 +282,21 @@ test('census: spliced alignments, sashimi arcs drawn', async () => {
   })
 }, 90000)
 
-// The arc band, the one display family whose per-frame cost scaled with the
-// FEATURE count rather than the track count: each arc was its own observer
-// reading `bpToPx` and `offsetPx`, so four visible arcs booked 4 `Arc` + 4
-// `ArcGlyph` reactions and 12 SVG attribute patches every frame.
-test('census: arcs', async () => {
-  const { counts, mutationsUnder } = await census({
-    label: 'arcs',
-    trackIds: ['arc_track', 'volvox_bedpe'],
+// Arcs are link marks on the mark display: GPU instances placed through a
+// region table, so a zoom writes a uniform and touches no DOM. The retired
+// arc plugin was the one display family whose per-frame cost scaled with the
+// FEATURE count — each arc its own observer patching three SVG attributes a
+// frame — and this arm is what kept that from coming back.
+test('census: links', async () => {
+  const { mutationsUnder } = await census({
+    label: 'links',
+    trackIds: ['volvox_bedpe', 'volvox_star_fusion'],
     startBpPerPx: 1,
-    painted: 'arc-display',
+    painted: 'mark-display',
   })
-  // The arcs are ink on a canvas, so a zoom moves pixels and not the DOM. This
-  // was 240 over the same 20 frames — 160 `attr:x` on the two `<text>`s of each
-  // arc's label and 80 `attr:d` on its `<path>`, 12 a frame for FOUR arcs and
-  // growing with every one added.
-  //
   // A small bound rather than 0: what is left is the chrome's own
   // `data-display-phase` / `data-display-drawn`, which flip when a refetch
-  // round lands inside the 20 frames — a wall-clock race, and this arm has seen
-  // both 0 and 2. Anything per-arc is two orders of magnitude above it.
-  expect(mutationsUnder(['arc-display', 'arcs', 'arcs-canvas'])).toBeLessThan(
-    10,
-  )
-  // ONE render per frame per display, whatever the arc count. `Arc` and
-  // `ArcGlyph` — the per-feature observer and its wrapper — booked 4 apiece a
-  // frame here and would book 2000 on a real SV callset.
-  expect(counts.get('Arcs') ?? 0).toBeLessThanOrEqual(FRAMES * 2)
-  expect(counts.has('Arc')).toBe(false)
+  // round lands inside the 20 frames — a wall-clock race. Anything per-arc is
+  // two orders of magnitude above it.
+  expect(mutationsUnder(['mark-display'])).toBeLessThan(10)
 }, 90000)

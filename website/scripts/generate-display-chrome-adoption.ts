@@ -958,9 +958,9 @@ function delegateOf(
 /**
  * The export edge a composing module hands a mixin factory, for the shape where
  * the lazy `import()` is an argument rather than a statement in the body —
- * `ArcFetchModel(() => import('./renderSvg.tsx'))`. The two arc displays share
- * one `renderSvg` and differ only in which edge module they pair it with, so
- * the route is at the call site, not in the model that declares the action.
+ * `SomeFetchModel(() => import('./renderSvg.tsx'))`, where displays sharing
+ * one model differ only in which edge module they pair it with, so the route
+ * is at the call site, not in the model that declares the action.
  */
 function edgeFromFactoryCall(caller: string, factory: string) {
   const src = parse(caller)

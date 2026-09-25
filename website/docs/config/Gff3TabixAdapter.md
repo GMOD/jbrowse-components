@@ -41,7 +41,6 @@ used to load bgzip-compressed, tabix-indexed GFF3 files
 ## Related links
 
 - **Track:** [FeatureTrack](../featuretrack)
-- **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearManhattanDisplay](../linearmanhattandisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)

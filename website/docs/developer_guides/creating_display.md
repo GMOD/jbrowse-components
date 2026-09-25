@@ -28,8 +28,7 @@ past `LinearGenomeView`:
 | --- | --- | --- |
 | [](/docs/config/alignmentstrack) | [](/docs/config/linearalignmentsdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
-| [](/docs/config/featuretrack) | [](/docs/config/lineararcdisplay) | LinearGenomeView |
-|  | [](/docs/config/linearbasicdisplay) | LinearGenomeView |
+| [](/docs/config/featuretrack) | [](/docs/config/linearbasicdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmanhattandisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmultirowfeaturedisplay) | LinearGenomeView |
@@ -53,7 +52,6 @@ past `LinearGenomeView`:
 | [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay) | CircularView |
 |  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmultisamplevariantdisplay) | LinearGenomeView |
-|  | [](/docs/config/linearpairedarcdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearvariantdisplay) | LinearGenomeView |
 
 <!-- DISPLAY_VIEW_TYPES END -->
@@ -94,7 +92,7 @@ answers how the display _fetches_; how it _renders_ is a separate axis on top.
 | Foundation | Brings | Used by |
 | --- | --- | --- |
 | `MultiRegionDisplayMixin()` | Per-region fetch + render: the fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case. | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
-| `GlobalFetchMixin()` | One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`. | `LDTrackDisplay`, `LinearArcDisplay`, `LinearHicDisplay`, `LinearPairedArcDisplay`, `MultiWaySyntenyDisplay` |
+| `GlobalFetchMixin()` | One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`. | `LDTrackDisplay`, `LinearHicDisplay`, `MultiWaySyntenyDisplay` |
 | `ComparativeFetchMixin()` | One single-payload fetch keyed on both views' state, drawn onto a canvas the containing view owns — no render lifecycle and no byte gate here. Installs no fetch autoruns; the display adds its own via `installComparativeFetchAutorun`. | `DotplotDisplay`, `LinearSyntenyDisplay` |
 
 <!-- DISPLAY_FOUNDATIONS END -->
@@ -124,8 +122,8 @@ already do this?"
 <!-- prettier-ignore -->
 | Mixin | The display supplies | Composed by |
 | --- | --- | --- |
-| `TrackHeightMixin()` | Internal vertical scroll. `scrollContentHeight` and `scrollViewportHeight` (both default 0 = doesn't scroll). Brings the derived `scrollableHeight`, the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LDTrackDisplay`, `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay` |
-| `LegendMixin()` | The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook) and the mixin derives the key from them (`legendSpec`, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither | `LDTrackDisplay`, `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay` |
+| `TrackHeightMixin()` | Internal vertical scroll. `scrollContentHeight` and `scrollViewportHeight` (both default 0 = doesn't scroll). Brings the derived `scrollableHeight`, the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LDTrackDisplay`, `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay` |
+| `LegendMixin()` | The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook) and the mixin derives the key from them (`legendSpec`, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither | `LDTrackDisplay`, `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay` |
 | `ContextMenuMixin()` | The right-click state of a display whose menu acts on a | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
 | `StoredHoverMixin()` | A stored hover. The hit type, as the type parameter. Brings the `hoveredFeature` getter `BaseDisplay` declares as a hook, `setHoveredFeature`, and the `clearHoveredFeature` the foundations' viewport-change reaction calls | `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
 | `TreeSidebarMixin()` | Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colours the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows` and overrides the hooks its rows need | `LinearMafDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearWiggleDisplay`, `MultiSampleVariantBaseModel` |

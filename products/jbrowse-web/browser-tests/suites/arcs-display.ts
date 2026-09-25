@@ -136,8 +136,8 @@ const suite: TestSuite = {
     {
       name: 'arc track renders',
       fn: async page => {
-        // arc_track uses LinearArcDisplay (SVG renderer) with features at
-        // ctgA:180-290; navigate close enough to see arcs clearly
+        // arc_track draws link marks over features at ctgA:180-290; navigate
+        // close enough to see the arcs clearly
         await navigateWithSessionSpec(page, {
           views: [
             {
@@ -150,7 +150,7 @@ const suite: TestSuite = {
         })
 
         await findByText(page, 'ctgA')
-        await findDisplayPainted(page, 'arc-display', 60000)
+        await findDisplayPainted(page, 'mark-display', 60000)
         await waitForDataLoaded(page)
         await pageSnapshot(page, 'arcs-arc-test')
       },
@@ -254,14 +254,12 @@ const suite: TestSuite = {
       displayTestId: pileup,
     }),
     lgvSnapshotTest({
-      name: 'BEDPE arcs (LinearPairedArcDisplay)',
+      name: 'BEDPE arcs (link marks)',
       snapshot: 'arcs-bedpe',
       // volvox_bedpe has arcs from ctgA:2700→34200 and cross-contig A↔B arcs
       loc: 'ctgA:1-50000',
       tracks: ['volvox_bedpe'],
-      displayTestId: 'arc-display',
-      // the arc display's `*-done` element IS the canvas, not a parent of one
-      snapshotSelector: displayPainted('arc-display'),
+      displayTestId: 'mark-display',
     }),
     lgvSnapshotTest({
       name: 'paired-end stranded RNA-seq',

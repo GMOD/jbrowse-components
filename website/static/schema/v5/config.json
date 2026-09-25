@@ -6670,272 +6670,6 @@
       },
       "unevaluatedProperties": false
     },
-    "ArcColor": {
-      "title": "ArcColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for `{ \"value\": ... }`.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#1976d2",
-          "type": "string"
-        },
-        {
-          "title": "ArcColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "CSS colour or jexl callback.",
-              "$ref": "#/$defs/CssColorOrJexl",
-              "default": "#1976d2"
-            },
-            "field": {
-              "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            },
-            "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
-              "enum": ["none", "categorical", "threshold"]
-            },
-            "domain": {
-              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                }
-              ]
-            },
-            "range": {
-              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColor"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "LinearArcDisplaySlots": {
-      "type": "object",
-      "properties": {
-        "height": {
-          "description": "default height for the track.",
-          "type": "number",
-          "default": 100
-        },
-        "color": {
-          "$ref": "#/$defs/ArcColor"
-        },
-        "showLegend": {
-          "description": "draw the colour key where color binds a field.",
-          "type": "boolean",
-          "default": true
-        },
-        "thickness": {
-          "description": "the thickness of the arcs, in pixels; an arc given 0 or less is not drawn at all.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": "jexl:logThickness(feature,'score')"
-        },
-        "label": {
-          "description": "the label to appear at the apex of the arcs.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'score')"
-        },
-        "arcHeight": {
-          "description": "the height of the arcs.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": "jexl:log10(get(feature,'end')-get(feature,'start'))*50"
-        },
-        "caption": {
-          "description": "the caption to appear when hovering over any point on the arcs.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'name')"
-        },
-        "displayMode": {
-          "description": "render semi-circles instead of arcs.",
-          "enum": ["arcs", "semicircles"],
-          "default": "arcs"
-        },
-        "minScore": {
-          "description": "hide arcs whose feature score is below this; features with no score are always drawn.",
-          "type": "number",
-          "default": 0
-        },
-        "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
-        },
-        "forceLoad": {
-          "description": "Declarative equivalent of the \"Force load\" button on the \"too much data\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
-        },
-        "renderer": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        }
-      }
-    },
-    "LinearArcDisplay": {
-      "title": "LinearArcDisplay",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearArcDisplaySlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearArcDisplay"
-        },
-        "displayId": {
-          "type": "string"
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "PairedArcColor": {
-      "title": "PairedArcColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for `{ \"value\": ... }`.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "jexl:defaultPairedArcColor(feature,alt)",
-          "type": "string"
-        },
-        {
-          "title": "PairedArcColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "CSS colour or jexl callback over feature and alt.",
-              "$ref": "#/$defs/CssColorOrJexl",
-              "default": "jexl:defaultPairedArcColor(feature,alt)"
-            },
-            "field": {
-              "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            },
-            "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
-              "enum": ["none", "categorical", "threshold"]
-            },
-            "domain": {
-              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                }
-              ]
-            },
-            "range": {
-              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColor"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "LinearPairedArcDisplaySlots": {
-      "type": "object",
-      "properties": {
-        "height": {
-          "description": "default height for the track.",
-          "type": "number",
-          "default": 100
-        },
-        "color": {
-          "$ref": "#/$defs/PairedArcColor"
-        },
-        "showLegend": {
-          "description": "draw the colour key where color binds a field.",
-          "type": "boolean",
-          "default": true
-        },
-        "lineWidth": {
-          "description": "the stroke width of the arcs, in pixels.",
-          "type": "number",
-          "default": 3
-        },
-        "minScore": {
-          "description": "hide arcs whose feature score is below this; features with no score are always drawn.",
-          "type": "number",
-          "default": 0
-        },
-        "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
-        },
-        "forceLoad": {
-          "description": "Declarative equivalent of the \"Force load\" button on the \"too much data\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
-        }
-      }
-    },
-    "LinearPairedArcDisplay": {
-      "title": "LinearPairedArcDisplay",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearPairedArcDisplaySlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearPairedArcDisplay"
-        },
-        "displayId": {
-          "type": "string"
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
     "ManhattanColor": {
       "title": "ManhattanColor",
       "anyOf": [
@@ -8428,9 +8162,6 @@
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/fetchSizeLimit"
                 },
                 {
-                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/fetchSizeLimit"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
                 }
               ]
@@ -8444,9 +8175,6 @@
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/forceLoad"
                 },
                 {
-                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/forceLoad"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
                 }
               ]
@@ -8458,9 +8186,6 @@
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/height"
-                },
-                {
-                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/height"
                 },
                 {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/height"
@@ -8534,9 +8259,6 @@
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showLegend"
                 },
                 {
-                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/showLegend"
-                },
-                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
                 },
                 {
@@ -8562,9 +8284,6 @@
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/color"
                 },
                 {
-                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/color"
-                },
-                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/color"
                 }
               ]
@@ -8576,14 +8295,7 @@
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/featureHeight"
             },
             "displayMode": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayMode"
-                },
-                {
-                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/displayMode"
-                }
-              ]
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayMode"
             },
             "facet": {
               "anyOf": [
@@ -8648,14 +8360,7 @@
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
             },
             "renderer": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
-                },
-                {
-                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/renderer"
-                }
-              ]
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
             },
             "autoHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/autoHeight"
@@ -8758,21 +8463,6 @@
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
                 }
               ]
-            },
-            "thickness": {
-              "$ref": "#/$defs/LinearArcDisplaySlots/properties/thickness"
-            },
-            "label": {
-              "$ref": "#/$defs/LinearArcDisplaySlots/properties/label"
-            },
-            "arcHeight": {
-              "$ref": "#/$defs/LinearArcDisplaySlots/properties/arcHeight"
-            },
-            "caption": {
-              "$ref": "#/$defs/LinearArcDisplaySlots/properties/caption"
-            },
-            "minScore": {
-              "$ref": "#/$defs/LinearArcDisplaySlots/properties/minScore"
             },
             "scoreField": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scoreField"
@@ -9488,9 +9178,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/fetchSizeLimit"
                 },
                 {
-                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/fetchSizeLimit"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
                 }
               ]
@@ -9504,9 +9191,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/forceLoad"
                 },
                 {
-                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/forceLoad"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
                 }
               ]
@@ -9518,9 +9202,6 @@
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/height"
-                },
-                {
-                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/height"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
@@ -9588,9 +9269,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showLegend"
                 },
                 {
-                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/showLegend"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
                 }
               ]
@@ -9611,9 +9289,6 @@
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/color"
                 }
               ]
             },
@@ -9755,12 +9430,6 @@
             },
             "variantLaneLabels": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLaneLabels"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/lineWidth"
-            },
-            "minScore": {
-              "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/minScore"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -12941,8 +12610,6 @@
                 "LinearGCContentTrackDisplay",
                 "LinearMafDisplay",
                 "LinearHicDisplay",
-                "LinearArcDisplay",
-                "LinearPairedArcDisplay",
                 "LinearManhattanDisplay",
                 "LinearMarkDisplay"
               ]
@@ -13216,34 +12883,6 @@
           },
           "then": {
             "$ref": "#/$defs/LinearHicDisplay"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "LinearArcDisplay"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearArcDisplay"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "LinearPairedArcDisplay"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearPairedArcDisplay"
           }
         },
         {
@@ -14976,90 +14615,6 @@
       },
       "unevaluatedProperties": false
     },
-    "LinearArcDisplayState": {
-      "type": "object",
-      "properties": {
-        "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
-        }
-      }
-    },
-    "LinearArcDisplaySnapshot": {
-      "title": "LinearArcDisplaySnapshot",
-      "description": "A LinearArcDisplay node inside a saved session: the state model's own properties. A config slot does not belong here; it goes on the track's `displays` entry.",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearArcDisplayState"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearArcDisplay"
-        },
-        "id": {
-          "type": "string"
-        },
-        "configuration": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/LinearArcDisplay"
-            }
-          ]
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearPairedArcDisplayState": {
-      "type": "object",
-      "properties": {
-        "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
-        }
-      }
-    },
-    "LinearPairedArcDisplaySnapshot": {
-      "title": "LinearPairedArcDisplaySnapshot",
-      "description": "A LinearPairedArcDisplay node inside a saved session: the state model's own properties. A config slot does not belong here; it goes on the track's `displays` entry.",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearPairedArcDisplayState"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearPairedArcDisplay"
-        },
-        "id": {
-          "type": "string"
-        },
-        "configuration": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/LinearPairedArcDisplay"
-            }
-          ]
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
     "LinearManhattanDisplayState": {
       "type": "object",
       "properties": {
@@ -15671,8 +15226,6 @@
                 "LinearGCContentTrackDisplay",
                 "LinearMafDisplay",
                 "LinearHicDisplay",
-                "LinearArcDisplay",
-                "LinearPairedArcDisplay",
                 "LinearManhattanDisplay",
                 "LinearMarkDisplay"
               ]
@@ -15946,34 +15499,6 @@
           },
           "then": {
             "$ref": "#/$defs/LinearHicDisplaySnapshot"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "LinearArcDisplay"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearArcDisplaySnapshot"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "LinearPairedArcDisplay"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearPairedArcDisplaySnapshot"
           }
         },
         {
@@ -16684,74 +16209,6 @@
             },
             "type": {
               "const": "LinearHicDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearArcDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearArcDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearArcDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearArcDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearPairedArcDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearPairedArcDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearPairedArcDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearPairedArcDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {
@@ -17564,74 +17021,6 @@
             },
             "type": {
               "const": "LinearHicDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearArcDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearArcDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearArcDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearArcDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearPairedArcDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearPairedArcDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearPairedArcDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearPairedArcDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {

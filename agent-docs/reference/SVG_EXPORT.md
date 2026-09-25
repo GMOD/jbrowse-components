@@ -647,17 +647,10 @@ rasterize, drifts from on-screen output, and locks in vector output.
   is "interactive" — these already render as JSX on-screen, so the JSX path *is*
   the on-screen path.
 
-  **`plugins/arc` was on that list and is now the counter-example.** Its arcs
-  are Canvas2D on screen and `<path>`s in the export, so the JSX path is NOT the
-  on-screen path — the exception it keeps is "a figure wants vector", which
-  costs nothing because an export runs once where a gesture runs per frame. The
-  hover reason expired: hit-testing a curve is `hitTestArcs` over the same
-  `laidOutArcs` the painter strokes, off `@jbrowse/sv-core`'s shared ranking.
-  What made the split safe is that neither side PLACES an arc —
-  `plugins/arc/src/shared/arcShape.ts` is the one derivation, and its test pins
-  every point of the exported `d` as measuring zero distance from the curve the
-  hit test measures against. An overlay that cannot state that invariant should
-  stay JSX on both paths.
+  The arc plugin was on that list, kept a "figure wants vector" exception as
+  Canvas2D on screen and `<path>`s in the export, and is gone (ADR-163): an
+  arc is a `link` mark, whose Canvas2D painter is the export the way every
+  mark's is, one `<path>` per instance through `paintMarkBlocks`.
 - **Shared React-SVG overlays** the on-screen view also uses (`VariantLabels`,
   `LinesConnectingMatrixToGenomicPosition`,
   `SvgRowLabels`/`SvgTreePath` from `@jbrowse/tree-sidebar`). Same component

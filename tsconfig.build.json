@@ -23,7 +23,6 @@
     { "path": "packages/web-core/tsconfig.build.esm.json" },
     { "path": "packages/wiggle-core/tsconfig.build.esm.json" },
     { "path": "plugins/alignments/tsconfig.build.esm.json" },
-    { "path": "plugins/arc/tsconfig.build.esm.json" },
     { "path": "plugins/authentication/tsconfig.build.esm.json" },
     { "path": "plugins/bed/tsconfig.build.esm.json" },
     { "path": "plugins/blat/tsconfig.build.esm.json" },

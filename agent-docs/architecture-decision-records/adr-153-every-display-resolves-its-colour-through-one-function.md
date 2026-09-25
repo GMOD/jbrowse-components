@@ -14,7 +14,9 @@ through `colorEncodingOf` in `arcStyles` and painted per feature by
 `arcColorPainter`; both compose `LegendMixin`, and `DisplayStatusChromeBase`
 places the key, which `DisplayChromeBase` had placed for the GPU displays
 alone, so a display with no rendering backend gets its legend by composing the
-mixin. Extends
+mixin. Amended 2026-09-25: the arc displays are gone, an arc being a `link`
+mark on the mark display
+([ADR-163](adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)). Extends
 [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md)'s one
 bridge from two displays to every display holding a colour object. Narrows the
 quantitative display's `field` from

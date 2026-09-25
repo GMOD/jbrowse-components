@@ -79,6 +79,7 @@ import {
 export const markColorSchema = ConfigurationSchema(
   'MarkColor',
   {
+    // #region contextVariableSlot
     /**
      * #slot value
      * A CSS colour, or a jexl callback over `feature` returning one, for a
@@ -91,6 +92,7 @@ export const markColorSchema = ConfigurationSchema(
       description: 'CSS colour or jexl callback',
       contextVariable: ['feature'],
     },
+    // #endregion
     ...colorChannelSlots({
       scales: COLOR_SCALES,
       scaleName: 'MarkColorScale',

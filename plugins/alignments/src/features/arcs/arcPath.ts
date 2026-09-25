@@ -11,9 +11,8 @@ import type { ArcBandFrame, ArcDome, ArcMark } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
 
 // How long a breakend foot is drawn, in CSS px, where its displayed region has
-// the room (`screenFeet` shortens one that would cross a seam) — `plugins/arc`'s
-// and BreakpointSplitView's length, so the three ticks in the repo are one
-// number.
+// the room (`screenFeet` shortens one that would cross a seam) —
+// BreakpointSplitView's length too, so the ticks in the repo are one number.
 //
 // It was 10 first, on the argument that this band is ~25-60 px where those two
 // draw across a whole track, and that a longer tick would read as a second

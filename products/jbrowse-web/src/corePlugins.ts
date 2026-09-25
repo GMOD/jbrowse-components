@@ -1,5 +1,4 @@
 import Alignments from '@jbrowse/plugin-alignments'
-import Arc from '@jbrowse/plugin-arc'
 import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
@@ -59,7 +58,6 @@ const corePlugins = [
   TrixPlugin,
   GridBookmarkPlugin,
   ComparativeAdapters,
-  Arc,
   Gwas,
   Marks,
 ]

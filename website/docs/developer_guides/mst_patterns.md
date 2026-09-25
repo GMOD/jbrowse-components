@@ -212,29 +212,21 @@ across files obscures the composition order and which views depend on which.
 
 `self` inside a `.views()` block is typed with everything the model had
 **before** that block. So a later block reaches an earlier block's getters on
-`self`, and that is the reason to split. `LinearArcDisplay` puts its typed
+`self`, and that is the reason to split. `LinearMarkDisplay` puts its typed
 `conf` getter in its own block so every getter after it can read `self.conf`:
 
-<!-- include: plugins/arc/src/LinearArcDisplay/model.ts#chainedViews -->
+<!-- include: plugins/marks/src/LinearMarkDisplay/model.ts#chainedViews -->
 
 ```ts
-  /**
-   * #getter
-   * the config typed off the concrete schema; `ConfigurationReference`
-   * erases `self.configuration` to `any`, so reads route through this to
-   * stay typed (same move as `BaseAdapter<CONF>`)
-   */
-  get conf(): LinearArcDisplayConfig {
-    return self.configuration
-  },
-}))
 .views(self => ({
   /**
    * #getter
+   * the config typed off the concrete schema
    */
-  get displayMode(): ArcDisplayMode {
-    return getConf(self, 'displayMode')
+  get conf(): LinearMarkDisplayConfig {
+    return self.configuration
   },
+}))
 ```
 
 Use multiple blocks when a getter depends on another getter, making the

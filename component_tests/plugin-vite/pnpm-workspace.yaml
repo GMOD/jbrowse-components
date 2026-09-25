@@ -18,7 +18,6 @@ overrides:
   '@jbrowse/ld-core': 'file:./packed/jbrowse-ld-core.tgz'
   '@jbrowse/modifications-utils': 'file:./packed/jbrowse-modifications-utils.tgz'
   '@jbrowse/plugin-alignments': 'file:./packed/jbrowse-plugin-alignments.tgz'
-  '@jbrowse/plugin-arc': 'file:./packed/jbrowse-plugin-arc.tgz'
   '@jbrowse/plugin-authentication': 'file:./packed/jbrowse-plugin-authentication.tgz'
   '@jbrowse/plugin-bed': 'file:./packed/jbrowse-plugin-bed.tgz'
   '@jbrowse/plugin-canvas': 'file:./packed/jbrowse-plugin-canvas.tgz'

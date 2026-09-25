@@ -15,9 +15,8 @@ LinearScoreDisplay
 PreferencesConfigSchema
 RpcOptions
 
-# display/view models with no #example (13)
+# display/view models with no #example (12)
 # fix: add an #example to the type’s #stateModel JSDoc
-ArcFetchModel
 BaseChordDisplay
 BaseDisplay
 BaseViewModel

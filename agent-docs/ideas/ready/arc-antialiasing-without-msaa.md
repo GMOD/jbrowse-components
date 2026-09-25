@@ -98,16 +98,15 @@ restored, not sure if we really need it"* (`84cb2ba62d`, with `4cc4708ebb`
 "Working without msaa" immediately before it). The analytic arc landed
 **2026-08-01**. Nothing between the two revisited the question.
 
-### The bezier overlays and `plugins/arc` are not on this path at all
+### The bezier overlays are not on this path at all
 
-`plugins/arc` (`LinearArcDisplay`, `LinearPairedArcDisplay`) strokes a plain
-main-thread Canvas2D (`shared/drawArcs.ts`, off `shared/arcShape.ts`), so it is
-antialiased by the 2D rasteriser and has never touched a HAL; it emits SVG
-`<path>` only in the export. Neither has the breakpoint/linked-read connector
-overlay (`bezierConnectorPath` in `packages/core/src/util/bezierConnector.ts`,
-consumed by `AlignmentConnections.tsx` and
-`features/linkedReads/computeOverlay.ts`), which is still SVG on screen. The
-only GPU-drawn arcs in the tree are the alignments read-connection band.
+The breakpoint/linked-read connector overlay (`bezierConnectorPath` in
+`packages/core/src/util/bezierConnector.ts`, consumed by
+`AlignmentConnections.tsx` and `features/linkedReads/computeOverlay.ts`) is
+still SVG on screen. The GPU-drawn arcs in the tree are the alignments
+read-connection band and, since ADR-163, the mark display's `link` mark, which
+took the band's analytic half-ellipse and declares `//! coverage: analytic`;
+the arc plugin that stroked a main-thread Canvas2D is gone.
 
 ### Which GPU marks have their own AA, and which lean on the target
 

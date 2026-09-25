@@ -141,7 +141,7 @@ The display types, grouped by the track type they attach to:
 | Track type | Display types |
 | --- | --- |
 | [](/docs/config/alignmentstrack) | [](/docs/config/linearalignmentsdisplay)<br/>[](/docs/config/linearmarkdisplay) |
-| [](/docs/config/featuretrack) | [](/docs/config/lineararcdisplay)<br/>[](/docs/config/linearbasicdisplay)<br/>[](/docs/config/linearmanhattandisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearmultirowfeaturedisplay)<br/>[](/docs/config/linearscoredisplay) |
+| [](/docs/config/featuretrack) | [](/docs/config/linearbasicdisplay)<br/>[](/docs/config/linearmanhattandisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearmultirowfeaturedisplay)<br/>[](/docs/config/linearscoredisplay) |
 | [](/docs/config/gccontenttrack) | [](/docs/config/lineargccontenttrackdisplay) |
 | [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) |
 | [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) |
@@ -151,7 +151,7 @@ The display types, grouped by the track type they attach to:
 | [](/docs/config/quantitativetrack) | [](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearwiggledisplay) |
 | [](/docs/config/referencesequencetrack) | [](/docs/config/lineargccontentdisplay)<br/>[](/docs/config/linearreferencesequencedisplay) |
 | [](/docs/config/syntenytrack) | [](/docs/config/chordsyntenydisplay)<br/>[](/docs/config/dotplotdisplay)<br/>[](/docs/config/lgvsyntenydisplay)<br/>[](/docs/config/linearsyntenydisplay)<br/>[](/docs/config/multiwaysyntenydisplay) |
-| [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearmultisamplevariantdisplay)<br/>[](/docs/config/linearpairedarcdisplay)<br/>[](/docs/config/linearvariantdisplay) |
+| [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearmultisamplevariantdisplay)<br/>[](/docs/config/linearvariantdisplay) |
 
 <!-- DISPLAY_TYPES END -->
 

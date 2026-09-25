@@ -36,7 +36,6 @@
     "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.6.0",
     "@jbrowse/plugin-alignments": "workspace:^",
-    "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
     "@jbrowse/plugin-bed": "workspace:^",
     "@jbrowse/plugin-breakpoint-split-view": "workspace:^",

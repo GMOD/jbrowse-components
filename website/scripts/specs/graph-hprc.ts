@@ -1493,7 +1493,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // layout itself closes the bubble instead of the edge bowing to fake one.
   //
   // The step after this one, which is NOT taken: project the link index into a
-  // LinearPairedArcDisplay track and drop the graph panel. Decided against, with
+  // link-mark track and drop the graph panel. Decided against, with
   // the three reasons in agent-docs/reference/PANGENOME_GRAPHS.md under Carriage
   // ("No linearized deletion track"). Short version: the arcs are anonymous, and
   // the wave VCF already states this event with a genotype per haplotype.

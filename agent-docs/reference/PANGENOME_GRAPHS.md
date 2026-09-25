@@ -423,7 +423,7 @@ about this, and the two workarounds are:
 ### No linearized deletion track. Decided 2026-07-31, do not rebuild it
 
 The anchored layout draws the backbone at reference coordinates, which invites
-the next step: project the link index into a `LinearPairedArcDisplay` track (or a
+the next step: project the link index into a link-mark track (or a
 custom track type in the plugin) so a deletion is an arc in an ordinary LGV with
 no graph view at all. The pieces are all there — `links.bed.gz` states both
 endpoints with ranks, `deletionEdges.ts` already classifies them, `BedpeAdapter`
