@@ -24,9 +24,9 @@ function formatAttribute(value: number) {
 
 /**
  * The numeric channels one feature actually carries, keyed by channel name, in
- * the order the fetch allocated them. -1 is the worker's missing sentinel (see
+ * the order the fetch allocated them. NaN is the worker's missing sentinel (see
  * `createAttributeChannels`), so a channel this feature has no value for is
- * absent rather than negative.
+ * absent.
  */
 export function featureAttributes(
   attributes: Record<string, ArrayLike<number>>,
@@ -35,7 +35,7 @@ export function featureAttributes(
   const out: Record<string, number> = {}
   for (const [name, values] of Object.entries(attributes)) {
     const value = values[index]
-    if (value !== undefined && value >= 0) {
+    if (value !== undefined && !Number.isNaN(value)) {
       out[name] = value
     }
   }

@@ -28,7 +28,7 @@ export function fakeDotplotRpcData(
     attributes: {
       identity: new Float32Array([-1]),
       meanIdentity: new Float32Array([-1]),
-      mappingQual: new Float32Array([-1]),
+      mappingQual: new Float32Array([Number.NaN]),
       dnds: new Float32Array([-1]),
     },
     attributeRanges: {},

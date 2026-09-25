@@ -181,7 +181,7 @@ function ribbonColorer(
     })
     return (_strand: number, feature: Feature) => {
       value[0] = readChannelValue(feature, continuous.attribute)
-      return value[0] < 0 ? slotColor : withAbgrAlpha(ramp(0), alpha)
+      return Number.isNaN(value[0]) ? slotColor : withAbgrAlpha(ramp(0), alpha)
     }
   }
   const categorical = resolveCategoricalMode(field, attributeRanges)

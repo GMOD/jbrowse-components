@@ -81,10 +81,12 @@ export interface AttributeChannel {
   labelColors: Record<string, string>
 }
 
-/** Read `name` off a feature as a number, -1 for anything that is not one. */
+/** Read `name` off a feature as a number, NaN for anything that is not one. */
 export function readAttribute(feature: Feature, name: string) {
   const value = feature.get(name)
-  return typeof value === 'number' && Number.isFinite(value) ? value : -1
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : Number.NaN
 }
 
 /**
@@ -98,7 +100,7 @@ export function writeAttribute(
   value: number,
 ) {
   channel.array[index] = value
-  if (value >= 0) {
+  if (Number.isFinite(value)) {
     if (value < channel.min) {
       channel.min = value
     }
@@ -147,7 +149,7 @@ export function writeFeatureAttribute(
       // become labels of their own
       for (let i = 0; i < index; i++) {
         const earlier = channel.array[i]!
-        if (earlier >= 0) {
+        if (Number.isFinite(earlier)) {
           channel.array[i] = internLabel(channel, String(earlier), undefined)
         }
       }
@@ -163,7 +165,7 @@ export function writeFeatureAttribute(
     writeAttribute(
       channel,
       index,
-      typeof value === 'number' && Number.isFinite(value) ? value : -1,
+      typeof value === 'number' && Number.isFinite(value) ? value : Number.NaN,
     )
   }
 }
@@ -172,10 +174,9 @@ export function writeFeatureAttribute(
  * Allocate one Float32Array per channel, fill it as features are visited, and
  * report the span or the label list each one actually covered.
  *
- * -1 is the missing-value sentinel every consumer already reads, so a channel a
- * feature does not carry is not zero. The reported range therefore ignores
- * missing values: a run of -1 would otherwise drag an attribute's domain bottom
- * below anything real and wash the ramp out.
+ * NaN is the missing-value sentinel every consumer reads, so a channel a
+ * feature does not carry is not zero, and a negative value is a value. The
+ * reported range ignores missing values.
  */
 export function createAttributeChannels(
   names: readonly string[],
@@ -200,7 +201,7 @@ export function createAttributeChannels(
       for (const { name, array, min, max, labels, labelColors } of list) {
         const kept = array.subarray(0, validCount)
         attributes[name] = kept
-        const missing = kept.some(v => v < 0) ? { missing: true } : {}
+        const missing = kept.some(v => Number.isNaN(v)) ? { missing: true } : {}
         if (labels.length > 0) {
           attributeRanges[name] = { labels, colors: labelColors, ...missing }
         } else if (Number.isFinite(min)) {
@@ -215,7 +216,7 @@ export function createAttributeChannels(
 }
 
 /**
- * A channel's number off one feature, -1 for none. dN/dS is the one derived
+ * A channel's number off one feature, NaN for none. dN/dS is the one derived
  * channel: a ratio of two attributes, so nothing on the feature answers to it.
  */
 export function readChannelValue(feature: Feature, name: string) {

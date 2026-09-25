@@ -162,7 +162,7 @@ describe('createComparativeColorFunction', () => {
 
   test('a missing value paints the missing color, not the ramp bottom', () => {
     const data = inputs({
-      attributes: { identity: new Float32Array([-1, 0]) },
+      attributes: { identity: new Float32Array([Number.NaN, 0]) },
       strands: new Int8Array([1, 1]),
       refNameIds: new Uint32Array([0, 0]),
       mateRefNameIds: new Uint32Array([0, 0]),
@@ -216,7 +216,7 @@ describe('createComparativeColorFunction', () => {
 describe('a categorical attribute', () => {
   const fetchLabels = { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } }
   const data = inputs({
-    attributes: { group: new Float32Array([0, 1, -1]) },
+    attributes: { group: new Float32Array([0, 1, Number.NaN]) },
     attributeRanges: { group: fetchLabels },
   })
 

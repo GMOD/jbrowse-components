@@ -1,6 +1,7 @@
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 
@@ -9,23 +10,22 @@ import { categoricalColor } from './colorFunctions.ts'
 import { resolveCategoricalMode, resolveContinuousMode } from './colorRamps.ts'
 import { colorSchemes, legendChipColor } from './colorUtils.ts'
 
-import type { AttributeRange, CategoricalMode, Rgb } from './colorRamps.ts'
+import type { AttributeRange, CategoricalMode } from './colorRamps.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-
-const rgbCss = ([r, g, b]: Rgb) => `rgb(${r},${g},${b})`
+import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 
 export interface GradientStop {
   offset: number
   color: string
 }
 
-// Sample a ramp at 9 stops, drawn from the exact same toRgb the renderer uses
-// so the two can't disagree.
-function rampStops(toRgb: (norm: number) => Rgb): GradientStop[] {
-  return Array.from({ length: 9 }, (_, i) => ({
-    offset: i / 8,
-    color: rgbCss(toRgb(i / 8)),
-  }))
+// Sample a ramp at 9 stops, from the same stops the renderer bakes, so the two
+// can't disagree.
+function rampStops(stops: readonly ColorRampStop[]): GradientStop[] {
+  return Array.from({ length: 9 }, (_, i) => {
+    const [r, g, b] = sampleColorRamp(stops, i / 8)
+    return { offset: i / 8, color: `rgb(${r},${g},${b})` }
+  })
 }
 
 export interface ColorChip {
@@ -224,7 +224,7 @@ export function getColorBySwatch(
   if (continuous) {
     return {
       kind: 'ramp',
-      stops: rampStops(continuous.toRgb),
+      stops: rampStops(continuous.stops),
       domain: [continuous.minValue ?? 0, continuous.maxValue],
       minLabel: continuous.minLabel,
       maxLabel: continuous.maxLabel,

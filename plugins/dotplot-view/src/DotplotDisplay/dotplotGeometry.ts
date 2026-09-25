@@ -160,7 +160,7 @@ export function buildLineSegments(
   const count = p11.length
   // Only resolved when the filter is on, so an unfiltered build does not read
   // the lane at all. A track whose adapter reports no identity has the channel
-  // filled with the -1 missing sentinel, and those features are kept: the
+  // filled with the NaN missing sentinel, and those features are kept: the
   // alternative is a plot that empties as soon as the slider leaves zero, for
   // data that never claimed an identity to be below the threshold.
   const identities = minIdentity > 0 ? data.attributes.identity : undefined
