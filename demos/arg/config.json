@@ -165,7 +165,6 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "sim_introgression_painting-LinearMultiRowFeatureDisplay",
           "rows": "row",
-          "color": "jexl:get(feature,'color')",
           "height": 280,
           "rowGroups": [
             {
@@ -179,16 +178,12 @@
               "color": "#e69f00"
             }
           ],
-          "legend": [
-            {
-              "label": "relatives mostly A",
-              "color": "#0072b2"
-            },
-            {
-              "label": "relatives mostly B",
-              "color": "#e69f00"
-            }
-          ]
+          "color": {
+            "value": "jexl:get(feature,'color')",
+            "scale": "identity",
+            "domain": ["#0072b2", "#e69f00"],
+            "labels": ["relatives mostly A", "relatives mostly B"]
+          }
         }
       ]
     }

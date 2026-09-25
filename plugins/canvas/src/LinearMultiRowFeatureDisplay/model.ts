@@ -78,7 +78,7 @@ import {
   buildColorLegend,
   buildFieldColorLegend,
   entryHidden,
-  resolveConfiguredLegend,
+  resolveIdentityLegend,
 } from './rendering/colorLegend.ts'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
@@ -344,8 +344,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Whether anything is painted right now. The configured `legend` slot
-         * is gated on this.
+         * Whether anything is painted right now. An identity scale's key is
+         * gated on this.
          */
         get hasDrawnFeatures(): boolean {
           return [...self.drawnRegionData.values()].some(
@@ -521,26 +521,26 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The `legend` config slot, validated into key rows.
+       * The rows an identity `color` names, whether or not anything is drawn.
        */
-      get configuredLegend() {
-        return resolveConfiguredLegend(readConfObject(self.conf, 'legend'))
+      get identityLegend() {
+        return resolveIdentityLegend(self.identityKeyEntries)
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * Categorical color key: the explicit `legend` slot, else the one the
+       * Categorical color key: an identity scale's colours, else the one the
        * color field's scale derives from the values the worker found, else
        * the one the painted colors derive, each named by the features
        * carrying it. All are gated on there being a painting to key, since a
        * key is a claim about colors on screen.
        */
       get colorLegend() {
-        const configured = self.hasDrawnFeatures ? self.configuredLegend : []
+        const identity = self.hasDrawnFeatures ? self.identityLegend : []
         const field = self.paintedColorField
-        return configured.length
-          ? configured
+        return identity.length
+          ? identity
           : field
             ? buildFieldColorLegend(
                 self.drawnRegionData.values(),
@@ -683,7 +683,7 @@ export default function stateModelFactory(
           {
             kind: 'categorical' as const,
             id: 'features',
-            title: field ? self.colorKeyTitle : 'Feature colors',
+            title: self.colorKeyTitle ?? 'Feature colors',
             domain: field ? field.domain : self.colorSettings.domain,
             entries: self.colorLegend.map(e => ({
               value: e.values[0]!,
@@ -710,11 +710,11 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Overrides `LegendMixin`'s: a configured key merely waiting for data
+       * Overrides `LegendMixin`'s: an identity key merely waiting for data
        * must not take the way back to the "Show legend" toggle with it.
        */
       get hasLegendKey() {
-        return self.colorScales.length > 0 || self.configuredLegend.length > 0
+        return self.colorScales.length > 0 || self.identityLegend.length > 0
       },
     }))
     .views(self => ({

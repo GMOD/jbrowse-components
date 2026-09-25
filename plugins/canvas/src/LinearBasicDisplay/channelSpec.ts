@@ -3,6 +3,7 @@ import {
   isJexl,
   stringToJexlExpression,
 } from '@jbrowse/core/util/jexlStrings'
+import { isIdentityColor } from '@jbrowse/display-kit/channelSpec'
 
 import type { FeatureFacet } from './facet.ts'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -62,7 +63,11 @@ export function channelSpecProblems(spec: ChannelSpec, jexl: JexlInstance) {
           {
             channel: 'color',
             code:
-              typeof spec.color === 'string' ? spec.color : spec.color.field,
+              typeof spec.color === 'string'
+                ? spec.color
+                : isIdentityColor(spec.color)
+                  ? (spec.color.value ?? '')
+                  : spec.color.field,
           },
         ]
       : []),

@@ -144,11 +144,11 @@ first if you haven't. See the
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "sample",
-      "legend": [
-        { "label": "B (C57BL/6J)", "color": "rgb(65,105,225)" },
-        { "label": "D (DBA/2J)", "color": "rgb(220,60,50)" },
-        { "label": "H (heterozygous)", "color": "rgb(150,150,150)" }
-      ]
+      "color": {
+        "scale": "identity",
+        "domain": ["rgb(65,105,225)", "rgb(220,60,50)", "rgb(150,150,150)"],
+        "labels": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"]
+      }
     }
   ]
 }
@@ -158,10 +158,10 @@ first if you haven't. See the
 - A BED carrying `itemRgb` is painted with it automatically
   ([`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)), so every
   block gets its genotype color straight from the file.
-- [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) names the
-  two parents the colors stand for, a mapping the BED itself does not record.
-  Its entries also drive the track menu's **Categories** toggles, so hiding `H`
-  isolates the B/D contrast.
+- `scale: "identity"` on the `color` leaves those colors as they are, and its
+  `labels` name the two parents each `domain` color stands for, a mapping the
+  BED itself does not record. Its entries also drive the track menu's
+  **Categories** toggles, so hiding `H` isolates the B/D contrast.
 - `disableGeneHeuristic: true` keeps the BED adapter from reading each block as
   a gene: the `thickStart`/`thickEnd` columns trip its BED12 transcript
   detection.

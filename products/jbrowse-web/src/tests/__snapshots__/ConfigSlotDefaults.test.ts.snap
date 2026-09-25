@@ -619,7 +619,6 @@ exports[`every registered schema slot default 1`] = `
     "fetchSizeLimit": "number = 5000000",
     "forceLoad": "boolean = false",
     "height": "number = 100",
-    "legend": "frozen = []",
     "lengthField": "string = """,
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "rowGroups": "frozen = []",

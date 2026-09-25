@@ -63,3 +63,13 @@ test('a notice line names the setting and the slot', () => {
     )[0],
   ).toMatch(/^fill\.domain: a linear or log scale reads no domain/)
 })
+
+test('an identity scale names one colour per label, with or without a field', () => {
+  const identity = { scale: 'identity', domain: ['red', 'blue'] }
+  expect(rules({ ...identity, labels: ['a', 'b'] })).toEqual([])
+  expect(rules({ ...identity, field: 'x', labels: ['a', 'b'] })).toEqual([])
+  expect(rules({ ...identity, labels: ['a', 'b', 'c'] })).toEqual([
+    'labels-domain',
+  ])
+  expect(rules({ labels: ['a'] })).toEqual(['labels-domain'])
+})

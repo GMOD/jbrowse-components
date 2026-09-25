@@ -374,29 +374,18 @@
               "Village dog (Azerbaijan)"
             ]
           },
-          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
-          "legend": [
-            {
-              "label": "CN 1",
-              "color": "rgb(146,197,222)"
-            },
-            {
-              "label": "CN 2",
-              "color": "rgb(224,224,224)"
-            },
-            {
-              "label": "CN 3",
-              "color": "rgb(244,165,130)"
-            },
-            {
-              "label": "CN 4",
-              "color": "rgb(214,96,77)"
-            },
-            {
-              "label": "CN 5",
-              "color": "rgb(178,24,43)"
-            }
-          ]
+          "color": {
+            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "scale": "identity",
+            "domain": [
+              "rgb(146,197,222)",
+              "rgb(224,224,224)",
+              "rgb(244,165,130)",
+              "rgb(214,96,77)",
+              "rgb(178,24,43)"
+            ],
+            "labels": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5"]
+          }
         }
       ]
     },
@@ -428,38 +417,21 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_cyp1a2_cohort_cn-LinearMultiRowFeatureDisplay",
           "rows": "sample",
-          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
           "showLegend": false,
-          "legend": [
-            {
-              "label": "CN 0",
-              "color": "rgb(33,102,172)"
-            },
-            {
-              "label": "CN 1",
-              "color": "rgb(146,197,222)"
-            },
-            {
-              "label": "CN 2",
-              "color": "rgb(224,224,224)"
-            },
-            {
-              "label": "CN 3",
-              "color": "rgb(244,165,130)"
-            },
-            {
-              "label": "CN 4",
-              "color": "rgb(214,96,77)"
-            },
-            {
-              "label": "CN 5",
-              "color": "rgb(178,24,43)"
-            },
-            {
-              "label": "CN 6+",
-              "color": "rgb(103,0,31)"
-            }
-          ]
+          "color": {
+            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "scale": "identity",
+            "domain": [
+              "rgb(33,102,172)",
+              "rgb(146,197,222)",
+              "rgb(224,224,224)",
+              "rgb(244,165,130)",
+              "rgb(214,96,77)",
+              "rgb(178,24,43)",
+              "rgb(103,0,31)"
+            ],
+            "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          }
         }
       ]
     },
@@ -541,33 +513,19 @@
               "Boxer 5"
             ]
           },
-          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
-          "legend": [
-            {
-              "label": "CN 1",
-              "color": "rgb(146,197,222)"
-            },
-            {
-              "label": "CN 2",
-              "color": "rgb(224,224,224)"
-            },
-            {
-              "label": "CN 3",
-              "color": "rgb(244,165,130)"
-            },
-            {
-              "label": "CN 4",
-              "color": "rgb(214,96,77)"
-            },
-            {
-              "label": "CN 5",
-              "color": "rgb(178,24,43)"
-            },
-            {
-              "label": "CN 6+",
-              "color": "rgb(103,0,31)"
-            }
-          ]
+          "color": {
+            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "scale": "identity",
+            "domain": [
+              "rgb(146,197,222)",
+              "rgb(224,224,224)",
+              "rgb(244,165,130)",
+              "rgb(214,96,77)",
+              "rgb(178,24,43)",
+              "rgb(103,0,31)"
+            ],
+            "labels": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          }
         }
       ]
     },
@@ -599,34 +557,20 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_slc28a3_cohort_cn-LinearMultiRowFeatureDisplay",
           "rows": "sample",
-          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
           "showLegend": false,
-          "legend": [
-            {
-              "label": "CN 1",
-              "color": "rgb(146,197,222)"
-            },
-            {
-              "label": "CN 2",
-              "color": "rgb(224,224,224)"
-            },
-            {
-              "label": "CN 3",
-              "color": "rgb(244,165,130)"
-            },
-            {
-              "label": "CN 4",
-              "color": "rgb(214,96,77)"
-            },
-            {
-              "label": "CN 5",
-              "color": "rgb(178,24,43)"
-            },
-            {
-              "label": "CN 6+",
-              "color": "rgb(103,0,31)"
-            }
-          ]
+          "color": {
+            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "scale": "identity",
+            "domain": [
+              "rgb(146,197,222)",
+              "rgb(224,224,224)",
+              "rgb(244,165,130)",
+              "rgb(214,96,77)",
+              "rgb(178,24,43)",
+              "rgb(103,0,31)"
+            ],
+            "labels": ["CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          }
         }
       ]
     },
@@ -676,29 +620,18 @@
               "German Shepherd Dog 2"
             ]
           },
-          "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
-          "legend": [
-            {
-              "label": "CN 2",
-              "color": "rgb(224,224,224)"
-            },
-            {
-              "label": "CN 3",
-              "color": "rgb(244,165,130)"
-            },
-            {
-              "label": "CN 4",
-              "color": "rgb(214,96,77)"
-            },
-            {
-              "label": "CN 5",
-              "color": "rgb(178,24,43)"
-            },
-            {
-              "label": "CN 6+",
-              "color": "rgb(103,0,31)"
-            }
-          ]
+          "color": {
+            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "scale": "identity",
+            "domain": [
+              "rgb(224,224,224)",
+              "rgb(244,165,130)",
+              "rgb(214,96,77)",
+              "rgb(178,24,43)",
+              "rgb(103,0,31)"
+            ],
+            "labels": ["CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+          }
         }
       ]
     },

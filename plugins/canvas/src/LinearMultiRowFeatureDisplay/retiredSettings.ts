@@ -15,6 +15,8 @@ export const {
     domain: '`rows.domain`',
     sampleColorMap: '`rowColor: { domain: [...rows], range: [...colors] }`',
     colorDomain: '`color.domain`',
+    legend:
+      '`color: { scale: "identity", domain: [...colors], labels: [...names] }`',
   },
   state: ['layout', 'clusterTree', 'clusterProvenance', 'subtreeFilter'],
 })

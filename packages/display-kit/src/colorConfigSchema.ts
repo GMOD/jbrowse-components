@@ -1,6 +1,7 @@
 import {
   ConfigurationSchema,
   getConfigurationSchemaDefinition,
+  isCallbackValue,
   getSlotDefinition,
   slotChoices,
 } from '@jbrowse/core/configuration'
@@ -10,14 +11,14 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { fieldScaleOf, paintedScale } from './colorScale.ts'
+import { IDENTITY_SCALE, fieldScaleOf, paintedScale } from './colorScale.ts'
 
 import type { ColorScaleName, FieldScales } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
-export { COLOR_SCALES, paintedScale } from './colorScale.ts'
+export { COLOR_SCALES, IDENTITY_SCALE, paintedScale } from './colorScale.ts'
 export type { ColorScaleName } from './colorScale.ts'
 
 /** The scales of a colour object whose field takes a range colour per value. */
@@ -29,11 +30,12 @@ export const DISCRETE_COLOR_SCALES = [
   'threshold',
 ] as const
 
-/** The scales FeatureColor paints: a range colour per value or per bin, or a ramp. */
+/** The scales FeatureColor paints: a range colour per value or per bin, a ramp, or each feature's own colour. */
 export const FEATURE_COLOR_SCALES = [
   ...DISCRETE_COLOR_SCALES,
   'linear',
   'log',
+  IDENTITY_SCALE,
 ] as const
 
 /** The scale a FeatureColor field paints through while `scale` is unset. */
@@ -325,6 +327,7 @@ export function colorEncodingOf<V extends string | undefined>(
   const scale = paintedScale(color, fieldScale)
   switch (scale) {
     case 'none':
+    case 'identity':
       return color.value
     case 'categorical':
       return {
@@ -355,6 +358,28 @@ export function colorEncodingOf<V extends string | undefined>(
         reverse: color.reverse ?? false,
       }
   }
+}
+
+/**
+ * The rows an identity scale's key lists: each `domain` colour, named by its
+ * `labels` entry. Only while each feature paints a colour of its own — `value`
+ * unset, so a file's itemRgb, or a `jexl:` callback — since a constant paints
+ * no colour for the key to name.
+ */
+export function identityKeyEntries({
+  scale,
+  value,
+  domain,
+  labels = [],
+}: ColorSetting) {
+  return scale === IDENTITY_SCALE &&
+    (value === undefined || isCallbackValue(value))
+    ? domain.map((color, i) => ({
+        value: color,
+        label: labels[i] ?? color,
+        color,
+      }))
+    : []
 }
 
 /** What a FeatureColor paints, each field through its default scale where `scale` is unset. */
@@ -452,6 +477,9 @@ export function colorFieldOf(encoding: ColorEncoding | undefined) {
  * fall in, or whose numbers run along a colour ramp, with a key. A string is
  * the constant; the object binds the field, and `scale: "none"` beside a
  * field paints the constant while keeping the field for the way back.
+ * `scale: "identity"` leaves each feature its own colour, a file's itemRgb or
+ * what a `value` callback returns, and names the colours `domain` lists in the
+ * key.
  *
  * #example
  * ```js
@@ -480,6 +508,16 @@ export function colorFieldOf(encoding: ColorEncoding | undefined) {
  *   color: { field: 'score', scheme: 'viridis', domainMin: 0 },
  * }
  * ```
+ * ```js
+ * {
+ *   type: 'LinearMultiRowFeatureDisplay',
+ *   color: {
+ *     scale: 'identity',
+ *     domain: ['rgb(255,0,0)', 'rgb(0,128,0)'],
+ *     labels: ['Active TSS', 'Strong transcription'],
+ *   },
+ * }
+ * ```
  */
 export const colorConfigSchema = ConfigurationSchema(
   'FeatureColor',
@@ -502,11 +540,11 @@ export const colorConfigSchema = ConfigurationSchema(
       field:
         "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; linear or log a colour along a ramp from domainMin to domainMax; unset is linear for score and categorical for any other field',
+        "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; linear or log a colour along a ramp from domainMin to domainMax; identity paints each feature's own colour, as none does, and the key names the colours in domain; unset is linear for score and categorical for any other field",
     }),
     ...colorDomainSlot({
       domain:
-        'the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. Under threshold, the ascending cut points, a value on a cut taking the interval above it',
+        'the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colours the key names, in order',
     }),
     ...colorRangeSlot({
       range:

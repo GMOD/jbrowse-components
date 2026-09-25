@@ -56,8 +56,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  * Omit `rowColor` entirely and each row is auto-assigned a distinct palette
  * color — unless the features carry an `itemRgb`, which is honored as the
- * per-feature color with no configuration at all. To color per feature off
- * some other attribute, set the `color` slot to a `jexl:` expression reading it.
+ * per-feature color with no configuration at all, and which `color.scale:
+ * 'identity'` names in the key. To color per feature off some other attribute,
+ * set the `color` slot to a `jexl:` expression reading it.
  * Omit `rows.domain` and the rows sort by value.
  */
 export default function configSchemaF() {
@@ -131,7 +132,9 @@ export default function configSchemaF() {
        * callback in `value`, or a field whose values each take a colour
        * through a scale, with a key. Unset, a feature's own itemRgb paints it
        * if it has one, else each row takes a colour from a categorical
-       * palette.
+       * palette. `scale: 'identity'` keeps each feature's own colour and
+       * names the `domain` colours in the key, which is how a file's itemRgb
+       * states get their names.
        *
        * #example
        * ```js
@@ -142,6 +145,15 @@ export default function configSchemaF() {
        *     domain: ['-1', '-0.3', '0.3', '1'],
        *     range: ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
        *     labels: ['Deep loss', 'Loss', 'Balanced', 'Gain', 'Amplification'],
+       *   },
+       * }
+       * ```
+       * ```js
+       * {
+       *   color: {
+       *     scale: 'identity',
+       *     domain: ['rgb(227,26,28)', 'rgb(31,120,180)', 'rgb(170,170,170)'],
+       *     labels: ['Maternal', 'Paternal', 'Unknown'],
        *   },
        * }
        * ```
@@ -198,26 +210,6 @@ export default function configSchemaF() {
         description:
           'show the categorical color key for per-feature coloring. Defaults to on',
         defaultValue: true,
-      },
-      /**
-       * #slot
-       * Explicit color key, for a category encoded only in the block color and
-       * so unavailable to the auto-derived legend this overrides.
-       *
-       * #example
-       * ```js
-       * legend: [
-       *   { label: 'Maternal', color: 'rgb(227,26,28)' },
-       *   { label: 'Paternal', color: 'rgb(31,120,180)' },
-       *   { label: 'Unknown', color: 'rgb(170,170,170)' },
-       * ]
-       * ```
-       */
-      legend: {
-        type: 'frozen',
-        defaultValue: [],
-        description:
-          'explicit {label,color} color key for color-encoded categories; overrides the auto-derived legend',
       },
       /**
        * #slot

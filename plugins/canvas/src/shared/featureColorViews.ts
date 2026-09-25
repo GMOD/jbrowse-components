@@ -9,6 +9,7 @@ import {
   colorMembersOf,
   colorScaleChoicesOf,
   featureColorEncoding,
+  identityKeyEntries,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
@@ -144,6 +145,14 @@ export function featureColorViews(self: FeatureColorHost) {
      */
     get paintedColorField() {
       return colorFieldOf(this.colorEncoding)
+    },
+
+    /**
+     * #getter
+     * The rows an identity scale's key names, empty under any other scale.
+     */
+    get identityKeyEntries() {
+      return identityKeyEntries(this.colorSettings)
     },
 
     /**

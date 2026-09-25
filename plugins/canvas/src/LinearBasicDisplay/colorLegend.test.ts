@@ -10,6 +10,7 @@ import { autorun } from 'mobx'
 import {
   makeFeatureData,
   makeFlatbushItem,
+  packFixtureRects,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -67,6 +68,34 @@ describe('the color key', () => {
       hidden.onClick()
     }
     expect(display.showLegend).toBe(true)
+  })
+
+  it("names an identity scale's colours once anything is drawn", () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    setConf(display, 'color', {
+      scale: 'identity',
+      domain: ['rgb(255,0,0)', 'rgb(0,0,255)'],
+      labels: ['Active', 'Repressed'],
+      title: 'State',
+    })
+    expect(display.colorScales).toEqual([])
+    expect(display.colorEncoding).toBeUndefined()
+
+    display.setRpcData(
+      0,
+      makeFeatureData(packFixtureRects([{ startBp: 0, endBp: 100 }])),
+      {
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: 0,
+        end: 10_000,
+      },
+    )
+    expect(display.colorScales[0]?.title).toBe('State')
+    const [section] = display.legendSpec.sections
+    expect(section?.items.map(i => i.label)).toEqual(['Active', 'Repressed'])
+    expect(display.channelSpec.color).toMatchObject({ scale: 'identity' })
   })
 })
 

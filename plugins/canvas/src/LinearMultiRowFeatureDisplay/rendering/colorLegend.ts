@@ -5,7 +5,6 @@ import {
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
 
-import { configuredLegendEntries } from '../../shared/configuredLegend.ts'
 import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
@@ -29,16 +28,18 @@ export function entryHidden(entry: LegendEntry, hidden: ReadonlySet<string>) {
 // Deduped on both halves: a repeated label collides as the React key, and a
 // repeated color as the toggle key, so two labels sharing one color would give
 // a row whose checkbox blanks its neighbour's features.
-export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
+export function resolveIdentityLegend(
+  entries: readonly { value: string; label: string; color: string }[],
+): LegendEntry[] {
   const seenLabels = new Set<string>()
   const seenColors = new Set<number>()
   const result: LegendEntry[] = []
-  for (const e of configuredLegendEntries(entries)) {
+  for (const e of entries) {
     const color = cssColorToABGR(e.color)
     if (!seenLabels.has(e.label) && !seenColors.has(color)) {
       seenLabels.add(e.label)
       seenColors.add(color)
-      result.push({ label: e.label, values: [e.label], color })
+      result.push({ label: e.label, values: [e.value], color })
     }
   }
   return result

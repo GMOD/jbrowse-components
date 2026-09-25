@@ -3787,6 +3787,7 @@
         "channelSpecChanges",
         "colorSpecOf",
         "colorSpecProblems",
+        "isIdentityColor",
         "parseChannelSpec"
       ],
       "worker": "real"
@@ -3853,6 +3854,7 @@
         "DISCRETE_COLOR_SCALES",
         "FEATURE_COLOR_SCALES",
         "FEATURE_FIELD_SCALES",
+        "IDENTITY_SCALE",
         "categoricalColorField",
         "colorChannelOptions",
         "colorChannelSlots",
@@ -3872,6 +3874,7 @@
         "colorTitleSlot",
         "dealRowColors",
         "featureColorEncoding",
+        "identityKeyEntries",
         "normalizeChannel",
         "paintedScale",
         "pairedColorsOf"
@@ -3882,6 +3885,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "COLOR_SCALES",
+        "IDENTITY_SCALE",
         "colorNotices",
         "colorProblems",
         "fieldScaleOf",

@@ -1,5 +1,6 @@
 import {
   channelSpecChanges,
+  colorSpecOf,
   colorSpecProblems,
   parseChannelSpec,
 } from './channelSpec.ts'
@@ -167,4 +168,23 @@ test('a scale the display does not paint is a problem, and so is a member it doe
       members: [...members, 'scheme'],
     }),
   ).toEqual([])
+})
+
+test('an identity color binds no field and round-trips through the box', () => {
+  const color = {
+    scale: 'identity',
+    value: "jexl:get(feature,'color')",
+    domain: ['#0072b2', '#e69f00'],
+    labels: ['mostly A', 'mostly B'],
+  }
+  expect(parse({ color })).toEqual({ color })
+  expect(
+    colorSpecOf({
+      ...color,
+      field: '',
+      scale: 'identity',
+      range: [],
+      title: undefined,
+    }),
+  ).toEqual(color)
 })

@@ -2,7 +2,7 @@ import { collectLegendCandidates } from '../../MultiRowGetFeaturesRPC/packMultiR
 import {
   buildColorLegend,
   entryHidden,
-  resolveConfiguredLegend,
+  resolveIdentityLegend,
 } from './colorLegend.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
@@ -244,34 +244,42 @@ test('unnamed features produce no legend', () => {
   ).toEqual([])
 })
 
-test('configured legend converts CSS colors to ABGR, drops malformed', () => {
+test('identity legend converts CSS colors to ABGR', () => {
   expect(
-    resolveConfiguredLegend([
-      { label: 'Maternal', color: 'rgb(227,26,28)' },
-      { label: 'Paternal', color: 'rgb(31,120,180)' },
+    resolveIdentityLegend([
+      { value: 'rgb(227,26,28)', label: 'Maternal', color: 'rgb(227,26,28)' },
+      { value: 'rgb(31,120,180)', label: 'Paternal', color: 'rgb(31,120,180)' },
     ]),
   ).toEqual([
-    { label: 'Maternal', values: ['Maternal'], color: 0xff1c1ae3 },
-    { label: 'Paternal', values: ['Paternal'], color: 0xffb4781f },
+    { label: 'Maternal', values: ['rgb(227,26,28)'], color: 0xff1c1ae3 },
+    { label: 'Paternal', values: ['rgb(31,120,180)'], color: 0xffb4781f },
   ])
 })
 
-test('configured legend dedupes repeated labels first-seen', () => {
+test('identity legend dedupes repeated labels first-seen', () => {
   expect(
-    resolveConfiguredLegend([
-      { label: 'Maternal', color: 'rgb(227,26,28)' },
-      { label: 'Maternal', color: 'rgb(31,120,180)' },
+    resolveIdentityLegend([
+      { value: 'rgb(227,26,28)', label: 'Maternal', color: 'rgb(227,26,28)' },
+      { value: 'rgb(31,120,180)', label: 'Maternal', color: 'rgb(31,120,180)' },
     ]),
-  ).toEqual([{ label: 'Maternal', values: ['Maternal'], color: 0xff1c1ae3 }])
+  ).toEqual([
+    { label: 'Maternal', values: ['rgb(227,26,28)'], color: 0xff1c1ae3 },
+  ])
 })
 
-test('configured legend dedupes repeated colors first-seen', () => {
+test('identity legend dedupes repeated colors first-seen', () => {
   expect(
-    resolveConfiguredLegend([
-      { label: 'Maternal', color: 'rgb(227,26,28)' },
-      { label: 'Untransmitted', color: 'rgb(227,26,28)' },
+    resolveIdentityLegend([
+      { value: 'rgb(227,26,28)', label: 'Maternal', color: 'rgb(227,26,28)' },
+      {
+        value: 'rgb(227,26,28)',
+        label: 'Untransmitted',
+        color: 'rgb(227,26,28)',
+      },
     ]),
-  ).toEqual([{ label: 'Maternal', values: ['Maternal'], color: 0xff1c1ae3 }])
+  ).toEqual([
+    { label: 'Maternal', values: ['rgb(227,26,28)'], color: 0xff1c1ae3 },
+  ])
 })
 
 function statesRegion(n: number) {

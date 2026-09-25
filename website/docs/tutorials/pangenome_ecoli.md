@@ -319,10 +319,11 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
         "field": "strain",
         "domain": ["Sakai", "CFT073", "NCTC86", "IAI39"]
       },
-      "legend": [
-        { "label": "Same orientation as K12", "color": "rgb(153,153,153)" },
-        { "label": "Inverted", "color": "rgb(214,39,40)" }
-      ]
+      "color": {
+        "scale": "identity",
+        "domain": ["rgb(153,153,153)", "rgb(214,39,40)"],
+        "labels": ["Same orientation as K12", "Inverted"]
+      }
     }
   ]
 }

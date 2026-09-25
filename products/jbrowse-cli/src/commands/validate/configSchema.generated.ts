@@ -3563,17 +3563,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; linear or log a colour along a ramp from domainMin to domainMax; unset is linear for score and categorical for any other field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; linear or log a colour along a ramp from domainMin to domainMax; identity paints each feature's own colour, as none does, and the key names the colours in domain; unset is linear for score and categorical for any other field.",
               "enum": [
                 "none",
                 "categorical",
                 "threshold",
                 "linear",
-                "log"
+                "log",
+                "identity"
               ]
             },
             "domain": {
-              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
+              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints, so every region agrees on it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colours the key names, in order.",
               "anyOf": [
                 {
                   "type": "array",
@@ -4225,12 +4226,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "show the categorical color key for per-feature coloring. Defaults to on.",
           "type": "boolean",
           "default": true
-        },
-        "legend": {
-          "description": "explicit {label,color} color key for color-encoded categories; overrides the auto-derived legend. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
-          }
         },
         "rowGroups": {
           "description": "array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
@@ -9034,9 +9029,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorRowLabels": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/colorRowLabels"
-            },
-            "legend": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"

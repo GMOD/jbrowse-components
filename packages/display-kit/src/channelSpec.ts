@@ -1,7 +1,11 @@
 import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
 import { compareStructural } from 'mobx'
 
-import { normalizeChannel, paintedScale } from './colorConfigSchema.ts'
+import {
+  IDENTITY_SCALE,
+  normalizeChannel,
+  paintedScale,
+} from './colorConfigSchema.ts'
 import { facetConfigSchema } from './facetConfigSchema.ts'
 import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
@@ -26,10 +30,13 @@ export interface ChannelSpec {
  * a field to a scale — the display's own list, `categorical` where it declares
  * nothing else — with the members the config spells: `domain` spending the
  * `range` or naming the cut points, and a linear or log scale's ends, middle,
- * `scheme` and `reverse`.
+ * `scheme` and `reverse`. An identity scale binds no field: each feature keeps
+ * the colour `value` gives it, or its own, and the key names the `domain`
+ * colours.
  */
 export type ColorChannel =
   | string
+  | IdentityColorChannel
   | {
       field: string
       scale?: string
@@ -43,6 +50,21 @@ export type ColorChannel =
       labels?: string[]
       title?: string
     }
+
+export interface IdentityColorChannel {
+  scale: typeof IDENTITY_SCALE
+  value?: string
+  domain?: string[]
+  labels?: string[]
+  title?: string
+}
+
+/** Whether a spec's colour is an identity scale, which names no field. */
+export function isIdentityColor(
+  color: ColorChannel | null | undefined,
+): color is IdentityColorChannel {
+  return typeof color === 'object' && color?.scale === IDENTITY_SCALE
+}
 
 export const CHANNELS = ['facet', 'rows', 'color', 'filter'] as const
 
@@ -123,6 +145,9 @@ function parseColor(value: unknown): ChannelSpec['color'] {
   const lifted = normalizeChannel(given, 'color')
   const field = typeof lifted.field === 'string' ? lifted.field.trim() : ''
   const scale = typeof lifted.scale === 'string' ? lifted.scale : undefined
+  if (scale === IDENTITY_SCALE) {
+    return parseIdentityColor(lifted)
+  }
   if (paintedScale({ scale, field }, 'categorical') !== 'none') {
     const domain = strings(lifted.domain)
     const range = strings(lifted.range)
@@ -158,6 +183,27 @@ function parseColor(value: unknown): ChannelSpec['color'] {
     )
   }
   return lifted.value.trim()
+}
+
+function parseIdentityColor(
+  lifted: Record<string, unknown>,
+): IdentityColorChannel {
+  const { value, title } = lifted
+  if (value !== undefined && typeof value !== 'string') {
+    throw new Error('color.value is a CSS color or a jexl: expression')
+  }
+  if (title !== undefined && typeof title !== 'string') {
+    throw new Error("color.title is the key's heading")
+  }
+  const domain = strings(lifted.domain)
+  const labels = strings(lifted.labels)
+  return {
+    scale: IDENTITY_SCALE,
+    ...(value?.trim() ? { value: value.trim() } : {}),
+    ...(domain?.length ? { domain } : {}),
+    ...(labels?.length ? { labels } : {}),
+    ...(title === undefined ? {} : { title }),
+  }
 }
 
 /**
@@ -198,6 +244,16 @@ export function colorSpecProblems(
  * something, so a round trip through the box changes nothing on its own.
  */
 export function colorSpecOf(color: ColorSetting): ChannelSpec['color'] {
+  if (color.scale === IDENTITY_SCALE) {
+    const { value, domain, labels, title } = color
+    return {
+      scale: IDENTITY_SCALE,
+      ...(value === undefined ? {} : { value }),
+      ...(domain.length ? { domain: [...domain] } : {}),
+      ...(labels?.length ? { labels: [...labels] } : {}),
+      ...(title === undefined ? {} : { title }),
+    }
+  }
   if (paintedScale(color, 'categorical') === 'none') {
     return color.value ?? null
   }

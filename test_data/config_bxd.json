@@ -71,20 +71,11 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
           "rows": "sample",
-          "legend": [
-            {
-              "label": "B (C57BL/6J)",
-              "color": "rgb(65,105,225)"
-            },
-            {
-              "label": "D (DBA/2J)",
-              "color": "rgb(220,60,50)"
-            },
-            {
-              "label": "H (heterozygous)",
-              "color": "rgb(150,150,150)"
-            }
-          ],
+          "color": {
+            "scale": "identity",
+            "domain": ["rgb(65,105,225)", "rgb(220,60,50)", "rgb(150,150,150)"],
+            "labels": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"]
+          },
           "height": 700
         }
       ]

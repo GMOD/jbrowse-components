@@ -331,12 +331,14 @@ cat > wakhan_track.json <<JSON
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
       "rows": "haplotype",
-      "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
-      "legend": [
-        { "label": "Haplotype lost (0)", "color": "#2166ac" },
-        { "label": "One copy", "color": "#bdbdbd" },
-        { "label": "Two or more copies", "color": "#f4a582" }
-      ]
+      "color": {
+        "field": "copynumber_state",
+        "scale": "threshold",
+        "domain": ["0.5", "1.5"],
+        "range": ["#2166ac", "#bdbdbd", "#f4a582"],
+        "labels": ["Haplotype lost (0)", "One copy", "Two or more copies"],
+        "title": "Copy number per haplotype"
+      }
     }
   ]
 }
@@ -371,13 +373,15 @@ cat > nygc_cnv_track.json <<JSON
     "uri": "$ANALYSIS/$NYGC_RUN/GRCh38-GIABv3/HG008-T--HG008-N.cnv.annotated.v7.final.bed"
   },
   "displayDefaults": {
-    "color": "jexl:feature.type=='DEL'?'#2166ac':'#b2182b'",
     "labels": { "name": "jexl:feature.type+' '+feature.cytoband" },
     "displayMode": "compact",
-    "legend": [
-      { "label": "Loss (DEL)", "color": "#2166ac" },
-      { "label": "Gain (DUP)", "color": "#b2182b" }
-    ]
+    "color": {
+      "field": "type",
+      "domain": ["DEL", "DUP"],
+      "range": ["#2166ac", "#b2182b"],
+      "labels": ["Loss (DEL)", "Gain (DUP)"],
+      "title": "Call"
+    }
   }
 }
 JSON

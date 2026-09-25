@@ -11,6 +11,11 @@ describe('the retired settings on a multi-row display config', () => {
     ['partitionField', 'sample', /`partitionField` is `rows`/],
     ['domain', ['a'], /`domain` is `rows.domain`/],
     ['sampleColorMap', { a: 'red' }, /`sampleColorMap` is `rowColor/],
+    [
+      'legend',
+      [{ label: 'Maternal', color: 'red' }],
+      /`legend` is `color: \{ scale: "identity"/,
+    ],
   ])('%s fails the load naming its replacement', (key, value, message) => {
     expect(() => configSchema.create({ ...base, [key]: value })).toThrow(
       message,

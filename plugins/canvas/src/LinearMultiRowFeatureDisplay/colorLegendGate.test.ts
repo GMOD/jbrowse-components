@@ -17,10 +17,13 @@ function menuLabels(display: { trackMenuItems: () => MenuItem[] }): string[] {
   })
 }
 
-const LEGEND = [
-  { label: 'EUR', color: 'red' },
-  { label: 'AFR', color: 'blue' },
-]
+const IDENTITY = {
+  color: {
+    scale: 'identity',
+    domain: ['red', 'blue'],
+    labels: ['EUR', 'AFR'],
+  },
+}
 
 const DENSITY_ADAPTER = { type: 'BigWigAdapter', uri: 'segments.bw' }
 
@@ -48,13 +51,13 @@ function painted(): MultiRowRegionData {
   }
 }
 
-// The configured `legend` slot is a claim about colors on the screen, so it has
-// to answer the same "is anything painted" question the derived key answers by
+// An identity scale's key is a claim about colors on the screen, so it has to
+// answer the same "is anything painted" question the derived key answers by
 // reading the data.
 describe('the color key waits for a painting to key', () => {
   it('is empty before anything has loaded', () => {
     const { display } = createTestEnvironment({
-      displayConfig: { legend: LEGEND },
+      displayConfig: IDENTITY,
     }).createDisplay()
 
     expect(display.colorLegend).toHaveLength(0)
@@ -63,7 +66,7 @@ describe('the color key waits for a painting to key', () => {
 
   it('carries the configured entries once features are drawn', () => {
     const { display } = createTestEnvironment({
-      displayConfig: { legend: LEGEND },
+      displayConfig: IDENTITY,
     }).createDisplay()
     display.setRpcData(0, painted(), ctgA)
 
@@ -71,28 +74,69 @@ describe('the color key waits for a painting to key', () => {
     expect(display.legendSpec.sections).toHaveLength(1)
   })
 
-  // The blocks take their colour per feature, so the domain is a claim about
-  // the key's order alone.
-  it('lists the color domain labels first, the rest sorted', () => {
+  it('lists the colors in domain order, under the heading Feature colors', () => {
     const { display } = createTestEnvironment({
       displayConfig: {
-        legend: [...LEGEND, { label: 'SAS', color: 'green' }],
-        color: { domain: ['SAS'] },
+        color: {
+          scale: 'identity',
+          domain: ['green', 'red', 'blue'],
+          labels: ['SAS', 'EUR', 'AFR'],
+        },
       },
     }).createDisplay()
     display.setRpcData(0, painted(), ctgA)
 
-    expect(display.legendSpec.sections[0]!.items.map(i => i.label)).toEqual([
-      'SAS',
-      'AFR',
-      'EUR',
-    ])
+    const [section] = display.legendSpec.sections
+    expect(section!.items.map(i => i.label)).toEqual(['SAS', 'EUR', 'AFR'])
+    expect(display.colorScales[0]!.title).toBe('Feature colors')
+  })
+
+  it('names a color the labels leave out by the color itself', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: {
+        color: { scale: 'identity', domain: ['red', 'blue'], labels: ['EUR'] },
+      },
+    }).createDisplay()
+    display.setRpcData(0, painted(), ctgA)
+
+    expect(display.colorLegend.map(e => e.label)).toEqual(['EUR', 'blue'])
+  })
+
+  it('keys nothing under a constant color, which paints no color of its own', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: { color: { ...IDENTITY.color, value: 'orange' } },
+    }).createDisplay()
+    display.setRpcData(0, painted(), ctgA)
+
+    expect(display.colorLegend).toHaveLength(0)
+    expect(display.hasLegendKey).toBe(false)
+  })
+
+  it('keys the colors a jexl value paints', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: {
+        color: { ...IDENTITY.color, value: "jexl:get(feature,'color')" },
+      },
+    }).createDisplay()
+    display.setRpcData(0, painted(), ctgA)
+
+    expect(display.colorLegend.map(e => e.label)).toEqual(['EUR', 'AFR'])
+  })
+
+  it('hides the blocks painted in a key row it toggles off', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: IDENTITY,
+    }).createDisplay()
+    display.setRpcData(0, painted(), ctgA)
+    display.toggleCategory(display.colorLegend[0]!.values)
+
+    expect([...display.hiddenColors]).toEqual([cssColorToABGR('red')])
   })
 
   it('drops it again while the density band stands in for the features', () => {
     const { display, view } = createTestEnvironment({
       densityAdapter: DENSITY_ADAPTER,
-      displayConfig: { legend: LEGEND },
+      displayConfig: IDENTITY,
     }).createDisplay()
     view.zoomTo(100)
     display.setRpcData(0, painted(), ctgA)
@@ -113,7 +157,7 @@ describe('the color key waits for a painting to key', () => {
   // fetch must not lose the menu row that turns the key back on.
   it('keeps the "Show legend" toggle while nothing is painted', () => {
     const { display } = createTestEnvironment({
-      displayConfig: { legend: LEGEND },
+      displayConfig: IDENTITY,
     }).createDisplay()
 
     expect(display.legendSpec.sections).toHaveLength(0)
@@ -130,7 +174,7 @@ describe('the color key waits for a painting to key', () => {
 
   it('is empty over a contig that came back with no features', () => {
     const { display } = createTestEnvironment({
-      displayConfig: { legend: LEGEND },
+      displayConfig: IDENTITY,
     }).createDisplay()
     display.setRpcData(
       0,

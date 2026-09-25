@@ -3310,10 +3310,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "legend",
-          "type": "frozen"
-        },
-        {
           "name": "rowGroups",
           "type": "frozen"
         },

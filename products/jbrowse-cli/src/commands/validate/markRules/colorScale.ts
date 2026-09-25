@@ -13,7 +13,17 @@ export const COLOR_SCALES = [
   'log',
   'threshold',
 ] as const
-export type ColorScaleName = (typeof COLOR_SCALES)[number]
+
+/**
+ * The scale that maps no field: each feature paints the colour it carries, and
+ * the key names the colours `domain` lists. Only a display whose features
+ * carry colours of their own declares it.
+ */
+export const IDENTITY_SCALE = 'identity'
+
+export type ColorScaleName =
+  | (typeof COLOR_SCALES)[number]
+  | typeof IDENTITY_SCALE
 
 /** The scale each field paints through while `scale` is unset, `*` for any other field. */
 export type FieldScales = Readonly<Record<string, ColorScaleName>>
@@ -79,10 +89,13 @@ export function colorProblems(
   fieldScale: string,
 ): ColorProblem[] {
   const { domain = [], range = [], domainMin, domainMax } = color
-  const scale = paintedScale(
-    { scale: color.scale, field: color.field ?? '' },
-    fieldScale,
-  )
+  const scale =
+    color.scale === IDENTITY_SCALE
+      ? IDENTITY_SCALE
+      : paintedScale(
+          { scale: color.scale, field: color.field ?? '' },
+          fieldScale,
+        )
   const problems: ColorProblem[] = []
   if (scale === 'threshold') {
     if (
@@ -133,19 +146,24 @@ export function colorProblems(
   }
   const { labels = [] } = color
   const named =
-    scale === 'categorical'
+    scale === 'categorical' || scale === IDENTITY_SCALE
       ? domain.length
       : scale === 'threshold'
         ? domain.length + 1
         : undefined
   if (labels.length > 0 && (named === undefined || labels.length > named)) {
-    const what = scale === 'categorical' ? 'value' : 'interval'
+    const what =
+      scale === 'categorical'
+        ? 'value'
+        : scale === IDENTITY_SCALE
+          ? 'colour'
+          : 'interval'
     problems.push({
       rule: 'labels-domain',
       slot: 'labels',
       message:
         named === undefined
-          ? "labels names a categorical scale's values or a threshold scale's intervals, and this colour paints neither"
+          ? "labels names a categorical scale's values, a threshold scale's intervals or an identity scale's colours, and this colour paints none of them"
           : `labels names one ${what} each, and ${labels.length} ${labels.length === 1 ? 'label names' : 'labels name'} ${named} ${named === 1 ? what : `${what}s`}: a label past them names nothing`,
     })
   }

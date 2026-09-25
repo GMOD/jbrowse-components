@@ -599,8 +599,9 @@ jb add-track-json untangle_track.json --update --out "$APP"
 
 # projection 1c: the same untangle file as one lane per strain on REF's axis.
 # `rows` gives each strain its own row and the BED's own itemRgb colors
-# each block by orientation, so the track needs no color config; `legend` states
-# what the two colors mean, since the category lives only in the color.
+# each block by orientation, so the colour paints as the file says and the
+# identity scale only names the two colours, since the category lives only in the
+# color.
 cp ecoli_pggb_untangle_rows.bed.gz ecoli_pggb_untangle_rows.bed.gz.tbi "$APP/"
 cat > untangle_rows_track.json <<JSON
 {
@@ -620,10 +621,11 @@ cat > untangle_rows_track.json <<JSON
         "domain": [$(echo "$STRAINS" | tr ' ' '\n' | grep -v "^$REF$" \
           | paste -sd' ' - | sed 's/ /", "/g; s/^/"/; s/$/"/')]
       },
-      "legend": [
-        { "label": "Same orientation as $REF", "color": "rgb(153,153,153)" },
-        { "label": "Inverted", "color": "rgb(214,39,40)" }
-      ]
+      "color": {
+        "scale": "identity",
+        "domain": ["rgb(153,153,153)", "rgb(214,39,40)"],
+        "labels": ["Same orientation as $REF", "Inverted"]
+      }
     }
   ]
 }
@@ -718,7 +720,8 @@ jb add-track-json rgfa_track.json --update --out "$APP"
 # each block that strain's allele at one bubble. `lengthField` is what makes the
 # insertions legible — a block can only be as wide as the reference it covers, so
 # without it Sakai's 113 kb allele draws the same 3.4 kb box K12's reference path
-# does. The class colors are in the file (itemRgb), so the legend just names them.
+# does. The class colors are in the file (itemRgb), so an identity scale just
+# names them.
 cp ecoli_minigraph_paths.bed.gz ecoli_minigraph_paths.bed.gz.tbi "$APP/"
 cat > paths_track.json <<JSON
 {
@@ -738,13 +741,23 @@ cat > paths_track.json <<JSON
         "domain": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]
       },
       "lengthField": "delta",
-      "legend": [
-        { "label": "reference path", "color": "rgb(204,204,204)" },
-        { "label": "insertion", "color": "rgb(192,0,192)" },
-        { "label": "deletion", "color": "rgb(128,128,128)" },
-        { "label": "same length, different path", "color": "rgb(0,154,138)" },
-        { "label": "no call", "color": "rgb(191,170,64)" }
-      ]
+      "color": {
+        "scale": "identity",
+        "domain": [
+          "rgb(204,204,204)",
+          "rgb(192,0,192)",
+          "rgb(128,128,128)",
+          "rgb(0,154,138)",
+          "rgb(191,170,64)"
+        ],
+        "labels": [
+          "reference path",
+          "insertion",
+          "deletion",
+          "same length, different path",
+          "no call"
+        ]
+      }
     }
   ]
 }

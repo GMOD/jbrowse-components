@@ -165,8 +165,9 @@ labeled with the first state name seen in it. States sharing a color collapse
 into one entry; in the Broad 15-state model that pairs `4_Strong_Enhancer` with
 `5_`, `6_Weak_Enhancer` with `7_`, `9_Txn_Transition` with `10_Txn_Elongation`,
 and `13_Heterochrom/lo` with both `Repetitive/CNV` states. Turn the key off with
-**Show... → Show legend** in the track menu, or spell it out with the
-[`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) slot.
+**Show... → Show legend** in the track menu, or name the colors yourself with an
+identity [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) scale,
+which keeps the file's colors and relabels them in the key.
 
 Most of any segmentation is quiescent or heterochromatic. The track menu's
 **Categories** submenu has a checkbox per legend entry; unchecking the quiescent
@@ -187,9 +188,10 @@ The same recipe scales to the
 15-state model across 127 epigenomes: 127 input files, still one track and one
 fetch.
 
-This track fills in the `legend` slot, because the Roadmap state names are
-mnemonics (`12_EnhBiv`, `14_ReprPCWk`); fifteen `{label, color}` entries spell
-them out in order. The merged file is hosted, so the whole track is:
+This track names its colors with `scale: "identity"`, because the Roadmap state
+names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`): the file's itemRgb still
+paints each block, and `labels` spells out the fifteen `domain` colors in order.
+The merged file is hosted, so the whole track is:
 
 ```json addtrack
 {
@@ -206,23 +208,43 @@ them out in order. The merged file is hosted, so the whole track is:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "cellType",
-      "legend": [
-        { "label": "1 Active TSS", "color": "rgb(255,0,0)" },
-        { "label": "2 Flanking active TSS", "color": "rgb(255,69,0)" },
-        { "label": "3 Transcribed 5'/3' flank", "color": "rgb(50,205,50)" },
-        { "label": "4 Strong transcription", "color": "rgb(0,128,0)" },
-        { "label": "5 Weak transcription", "color": "rgb(0,100,0)" },
-        { "label": "6 Genic enhancer", "color": "rgb(194,225,5)" },
-        { "label": "7 Enhancer", "color": "rgb(255,255,0)" },
-        { "label": "8 ZNF genes / repeats", "color": "rgb(102,205,170)" },
-        { "label": "9 Heterochromatin", "color": "rgb(138,145,208)" },
-        { "label": "10 Bivalent TSS", "color": "rgb(205,92,92)" },
-        { "label": "11 Flanking bivalent", "color": "rgb(233,150,122)" },
-        { "label": "12 Bivalent enhancer", "color": "rgb(189,183,107)" },
-        { "label": "13 Repressed Polycomb", "color": "rgb(128,128,128)" },
-        { "label": "14 Weak repressed Polycomb", "color": "rgb(192,192,192)" },
-        { "label": "15 Quiescent / low", "color": "rgb(255,255,255)" }
-      ],
+      "color": {
+        "scale": "identity",
+        "domain": [
+          "rgb(255,0,0)",
+          "rgb(255,69,0)",
+          "rgb(50,205,50)",
+          "rgb(0,128,0)",
+          "rgb(0,100,0)",
+          "rgb(194,225,5)",
+          "rgb(255,255,0)",
+          "rgb(102,205,170)",
+          "rgb(138,145,208)",
+          "rgb(205,92,92)",
+          "rgb(233,150,122)",
+          "rgb(189,183,107)",
+          "rgb(128,128,128)",
+          "rgb(192,192,192)",
+          "rgb(255,255,255)"
+        ],
+        "labels": [
+          "1 Active TSS",
+          "2 Flanking active TSS",
+          "3 Transcribed 5'/3' flank",
+          "4 Strong transcription",
+          "5 Weak transcription",
+          "6 Genic enhancer",
+          "7 Enhancer",
+          "8 ZNF genes / repeats",
+          "9 Heterochromatin",
+          "10 Bivalent TSS",
+          "11 Flanking bivalent",
+          "12 Bivalent enhancer",
+          "13 Repressed Polycomb",
+          "14 Weak repressed Polycomb",
+          "15 Quiescent / low"
+        ]
+      },
       "height": 700
     }
   ]

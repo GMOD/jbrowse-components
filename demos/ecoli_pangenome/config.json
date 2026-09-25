@@ -325,16 +325,11 @@
             "field": "strain",
             "domain": ["Sakai", "CFT073", "NCTC86", "IAI39"]
           },
-          "legend": [
-            {
-              "label": "Same orientation as K12",
-              "color": "rgb(153,153,153)"
-            },
-            {
-              "label": "Inverted",
-              "color": "rgb(214,39,40)"
-            }
-          ]
+          "color": {
+            "scale": "identity",
+            "domain": ["rgb(153,153,153)", "rgb(214,39,40)"],
+            "labels": ["Same orientation as K12", "Inverted"]
+          }
         }
       ]
     },
@@ -471,28 +466,23 @@
             "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
           },
           "lengthField": "delta",
-          "legend": [
-            {
-              "label": "reference path",
-              "color": "rgb(204,204,204)"
-            },
-            {
-              "label": "insertion",
-              "color": "rgb(192,0,192)"
-            },
-            {
-              "label": "deletion",
-              "color": "rgb(128,128,128)"
-            },
-            {
-              "label": "same length, different path",
-              "color": "rgb(0,154,138)"
-            },
-            {
-              "label": "no call",
-              "color": "rgb(191,170,64)"
-            }
-          ]
+          "color": {
+            "scale": "identity",
+            "domain": [
+              "rgb(204,204,204)",
+              "rgb(192,0,192)",
+              "rgb(128,128,128)",
+              "rgb(0,154,138)",
+              "rgb(191,170,64)"
+            ],
+            "labels": [
+              "reference path",
+              "insertion",
+              "deletion",
+              "same length, different path",
+              "no call"
+            ]
+          }
         }
       ]
     },

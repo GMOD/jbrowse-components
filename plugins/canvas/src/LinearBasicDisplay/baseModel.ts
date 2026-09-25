@@ -1470,7 +1470,8 @@ export default function baseStateModelFactory(
        * #getter
        * The key the color channel's scale derives from what the worker
        * painted, less the values only a hidden section painted, in the
-       * sections' order where the facet reads the same field.
+       * sections' order where the facet reads the same field. An identity
+       * scale's key is its `domain` colours whole, once anything is drawn.
        */
       get derivedColorScales(): ColorScale[] {
         const { colorRamp, colorKeyTitle } = self
@@ -1484,6 +1485,21 @@ export default function baseStateModelFactory(
               stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
             },
           ]
+        }
+        const identity = self.identityKeyEntries
+        if (identity.length > 0) {
+          return [...self.rpcDataMap.values()].some(
+            data => data.rectPositions.length > 0,
+          )
+            ? [
+                {
+                  kind: 'categorical',
+                  id: 'color',
+                  ...(colorKeyTitle ? { title: colorKeyTitle } : {}),
+                  entries: identity,
+                },
+              ]
+            : []
         }
         const scale = self.paintedColorField
         const { facet, hiddenGroupKeys, colorField } = self
@@ -1647,7 +1663,7 @@ export default function baseStateModelFactory(
           self.setColorScale()
         } else if (typeof color === 'string') {
           self.setFeatureColor(color)
-        } else if (color !== undefined) {
+        } else if (color !== undefined && 'field' in color) {
           self.colorByField(color.field)
         }
       },
