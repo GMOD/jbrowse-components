@@ -59,6 +59,18 @@ function barBand(
 
 type YScale = ReturnType<typeof valueScaleUniforms>
 
+// Where the baseline sits inside a band, in CSS px below its top. Every
+// instance in a draw shares it, so the shader reads it as a uniform rather
+// than running the scale again per vertex.
+function originYPx(
+  params: BarParams,
+  band: number,
+  { valueScaleType: st, valueSymlogConstant: c }: YScale,
+) {
+  const [domainMin, domainMax] = params.domain
+  return valueToYPxScaled(params.origin, domainMin, domainMax, band, st, c)
+}
+
 // The rect one instance paints, in the frame's CSS px, or undefined for a bar
 // with no height — which draws nothing and so cannot be hovered.
 function barRect(
@@ -69,16 +81,16 @@ function barRect(
   bandTop: number,
   band: number,
   params: BarParams,
-  { valueScaleType: st, valueSymlogConstant: c }: YScale,
+  yScale: YScale,
 ) {
+  const { valueScaleType: st, valueSymlogConstant: c } = yScale
   const xa = bpToPx(x)
   const xb = bpToPx(x2)
   const width = Math.max(params.minWidthPx, Math.abs(xb - xa))
   const [domainMin, domainMax] = params.domain
   const valueY =
     bandTop + valueToYPxScaled(y, domainMin, domainMax, band, st, c)
-  const originY =
-    bandTop + valueToYPxScaled(params.origin, domainMin, domainMax, band, st, c)
+  const originY = bandTop + originYPx(params, band, yScale)
   const top = Math.min(valueY, originY)
   const height = Math.abs(valueY - originY)
   return height === 0
@@ -98,16 +110,18 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   },
 
   writeUniforms(scratch, clip, block, frame, params) {
+    const yScale = valueScaleUniforms(params)
+    const band = params.rowBandPx ?? bandHeightPx(params, frame.canvasHeight)
     shader.writeUniforms(scratch, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: frame.canvasHeight,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
-      ...valueScaleUniforms(params),
+      ...yScale,
       ...rampUniforms(params.ramp),
-      origin: params.origin,
+      originYPx: originYPx(params, band, yScale),
       rowHeight: bandHeightPx(params, frame.canvasHeight),
-      rowBandPx: params.rowBandPx ?? bandHeightPx(params, frame.canvasHeight),
+      rowBandPx: band,
       rowOffsetPx: params.rowOffsetPx ?? 0,
       zero: 0,
       minCellDenomPx: clip.scissorW,

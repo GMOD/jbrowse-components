@@ -56,8 +56,10 @@ struct Uniforms {
   int    rampMode;
   float  rampMin;
   float  rampMax;
-  // The baseline value bars grow from, on the same scale as `y`.
-  float  origin;
+  // Where the baseline value sits, in CSS px below the band's top: the
+  // `origin` read through the same scale `y` is, resolved on the CPU because
+  // every instance in the draw shares it.
+  float  originYPx;
   // CSS px per row band; the canvas height where every instance is on row 0.
   float  rowHeight;
   // CSS px the value scale runs over inside a row, and how far below the
@@ -102,7 +104,7 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
 
   float bandTop = u.rowOffsetPx + u.rowHeight * float(inst.row);
   float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
-  float originY = bandTop + valueToYPxScaled(u.origin, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
+  float originY = bandTop + u.originYPx;
   float topPx = min(valueY, originY);
   float botPx = max(valueY, originY);
   float padPx = barAaPx();

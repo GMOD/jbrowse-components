@@ -22,7 +22,7 @@ export const UNIFORM_OFFSET_F32 = {
   valueSymlogConstant: 7,
   rampMin: 9,
   rampMax: 10,
-  origin: 11,
+  originYPx: 11,
   rowHeight: 12,
   rowBandPx: 13,
   rowOffsetPx: 14,
@@ -49,7 +49,7 @@ export interface Uniforms {
   rampMode: number
   rampMin: number
   rampMax: number
-  origin: number
+  originYPx: number
   rowHeight: number
   rowBandPx: number
   rowOffsetPx: number
@@ -73,7 +73,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[8] = uniforms.rampMode
   f32[9] = uniforms.rampMin
   f32[10] = uniforms.rampMax
-  f32[11] = uniforms.origin
+  f32[11] = uniforms.originYPx
   f32[12] = uniforms.rowHeight
   f32[13] = uniforms.rowBandPx
   f32[14] = uniforms.rowOffsetPx

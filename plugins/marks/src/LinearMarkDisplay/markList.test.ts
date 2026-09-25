@@ -286,7 +286,7 @@ test('a span mark stacks on the row lane, the bands dividing the plot by rowCoun
   ).toBeUndefined()
 })
 
-test('a bar mark writes the origin and the domain into its uniforms', () => {
+test('a bar mark writes the resolved origin and the domain into its uniforms', () => {
   const [mark] = buildMarkList(entries('bar'))
   const hal = new MockHal([mark!.pass])
   const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)
@@ -304,7 +304,9 @@ test('a bar mark writes the origin and the domain into its uniforms', () => {
     0,
   )
   const u = hal.getLastUniformsF32()!
-  expect(u[barShader.UNIFORM_OFFSET_F32.origin]).toBe(2)
+  // The shader reads the baseline already on the scale: 2 of a [0, 10] domain
+  // sits a fifth up a 400px band, so 320px below its top.
+  expect(u[barShader.UNIFORM_OFFSET_F32.originYPx]).toBe(320)
   expect(u[barShader.UNIFORM_OFFSET_F32.domainMax]).toBe(10)
 })
 
