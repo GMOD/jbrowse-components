@@ -128,6 +128,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
       headers: {
         accept: 'application/json,application/sparql-results+json',
       },
+      signal: opts?.signal,
     })
     if (!response.ok) {
       throw new Error(

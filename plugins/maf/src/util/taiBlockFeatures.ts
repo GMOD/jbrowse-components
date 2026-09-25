@@ -69,7 +69,7 @@ export function taiBlockFeatures<SETUP extends TaiIndex>({
     resolve: SourceResolver,
   ) => Iterable<TaiBlockFeature>
 }) {
-  const { statusCallback } = opts ?? {}
+  const { statusCallback, signal } = opts ?? {}
   return ObservableCreate<Feature>(async observer => {
     const setup = await configure(opts)
     const resolver = makeSourceResolver(buildSampleFilter(opts))
@@ -83,6 +83,7 @@ export function taiBlockFeatures<SETUP extends TaiIndex>({
       end: query.end,
       location,
       statusCallback,
+      signal,
     })
     if (!slice) {
       observer.complete()
@@ -111,12 +112,11 @@ export function taiBlockFeatures<SETUP extends TaiIndex>({
     }
 
     resolver.reportUnmatched()
-    statusCallback?.('')
     observer.complete()
     // The signal, like the tabix and bigMaf adapters pass: without it a
     // cancelled fetch (any pan or zoom) kept delivering into a subscriber whose
     // result was already discarded, and the abort never reached the rxjs chain
     // at all. The body's own errors need no try/catch either — ObservableCreate
     // forwards a rejected promise to `observer.error`.
-  }, opts?.signal)
+  }, signal)
 }

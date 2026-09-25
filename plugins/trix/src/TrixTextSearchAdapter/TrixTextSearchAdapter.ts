@@ -79,7 +79,7 @@ export default class TrixTextSearchAdapter
     // any run of whitespace separates words; splitting on a single ' ' let a
     // double space or a tab produce an empty word that matches everything
     const words = query.split(/\s+/)
-    const results = await this.trixJs.search(query)
+    const results = await this.trixJs.search(query, { signal: args.signal })
     // the index read has landed but nothing below it has run yet; a broad
     // prefix returns thousands of records to JSON-parse, decode and snippet,
     // and the keystroke that asked for them is 50ms stale by now

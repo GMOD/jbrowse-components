@@ -54,6 +54,7 @@ export async function readTaiSlice({
   end,
   location,
   statusCallback,
+  signal,
 }: {
   index: IndexData
   fileSize?: number
@@ -62,6 +63,7 @@ export async function readTaiSlice({
   end: number
   location: FileLocation
   statusCallback?: StatusCallback
+  signal?: AbortSignal
 }) {
   const span = queryBlockSpan(index, refName, start, end, fileSize)
   if (!span) {
@@ -78,8 +80,11 @@ export async function readTaiSlice({
 
   const file = openLocation(location)
   const buffer = await unzip(
-    await updateStatus('Downloading alignments', statusCallback, () =>
-      file.read(readLength, startBlock),
+    await updateStatus(
+      'Downloading alignments',
+      statusCallback,
+      () => file.read(readLength, startBlock, { signal }),
+      signal,
     ),
   )
 

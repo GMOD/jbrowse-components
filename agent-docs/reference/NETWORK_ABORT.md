@@ -75,6 +75,9 @@ the socket.
 | `@gmod/bam` | BAM |
 | `@gmod/tabix` | GFF3-tabix, GTF-tabix (via `core/util/tabix.ts`), BED-tabix, bedGraph-tabix, VCF-tabix + split-VCF (via `shared/vcfAdapterUtils`), Plink LD, indexed PIF (via `comparative-adapters/util.ts`) |
 | `@gmod/bbi` | BigWig (single + multi-region), BigBed |
+| `@gmod/trix` | Trix text search |
+| generic-filehandle2 `read` | BgzipTaffy, BgzipMaf (the `.tai` slice) |
+| `fetch` | SPARQL |
 
 **Two readers can't be wired**, and neither is our code to fix:
 
@@ -147,5 +150,4 @@ hazard exists *because* of the signal, and a 6.5 MiB-per-cancel saving pays for 
 small retry path in shared I/O code.
 
 **Open:** CRAM and IndexedFasta need upstream signal support before they can join
-(above); whether to abort on *internal* `cancelFetch` (viewport change / settings
-invalidate) as well as user cancel.
+(above).

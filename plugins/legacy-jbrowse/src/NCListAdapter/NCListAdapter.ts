@@ -55,7 +55,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
         observer.next(this.wrapFeature(feature))
       }
       observer.complete()
-    })
+    }, opts.signal)
   }
 
   wrapFeature(ncFeature: NCListRawFeature): NCListFeature {
