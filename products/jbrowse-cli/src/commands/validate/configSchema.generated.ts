@@ -3871,10 +3871,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/CssColorOrJexl"
         },
         "geneGlyphMode": {
-          "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
+          "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"merged\\" draws one row per gene holding every transcript's exons at once, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
           "enum": [
             "auto",
             "all",
+            "merged",
             "longestCoding"
           ],
           "default": "auto"
