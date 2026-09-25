@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 
-import { createViewStateAsync } from './createViewState.ts'
+import createViewState, { createViewStateAsync } from './createViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -123,4 +123,24 @@ test('a v4 multi-wiggle opens through defaultSession too', async () => {
   expect(display.type).toBe('LinearWiggleDisplay')
   expect(display.isRowLayout).toBe(true)
   expect(display.renderingType).toBe('xyplot')
+})
+
+// The config model's `tracks` is frozen, and the track selector reads those
+// entries before any track hydrates.
+test('a config.json track spelling the retired type carries the current name', () => {
+  const state = createViewState({
+    assembly,
+    tracks: [
+      {
+        ...tracks[0]!,
+        displays: [
+          { type: 'MultiLinearWiggleDisplay', defaultRendering: 'multirowxy' },
+        ],
+      },
+    ],
+  })
+
+  expect(state.config.tracks[0]!.displays).toEqual([
+    { type: 'LinearWiggleDisplay', defaultRendering: 'xyplot', rows: 'source' },
+  ])
 })

@@ -4,6 +4,7 @@ import {
   FormatDetailsConfigSchemaFactory,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { migrateRetiredDisplays } from '@jbrowse/core/pluggableElementTypes/models'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { expandLooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
@@ -76,7 +77,10 @@ export function createConfigModel(
         plugins: types.frozen(),
       })
       // The first assembly is what every loose `{ trackId, uri }` track is on,
-      // so a snapshot need not repeat its name per track.
+      // so a snapshot need not repeat its name per track. `tracks` is frozen,
+      // so a retired display type stays spelt as written until the track
+      // hydrates — and the track selector reads these entries before that, so
+      // they carry the current name here as they do in app-core's JBrowseModel.
       .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
         const { tracks, aggregateTextSearchAdapters: indexes } = snap ?? {}
         const assemblyName = (
@@ -87,9 +91,16 @@ export function createConfigModel(
               ...snap,
               ...(Array.isArray(tracks)
                 ? {
-                    tracks: tracks.map(t =>
-                      expandLooseTrackConfig(t, pluginManager, assemblyName),
-                    ),
+                    tracks: tracks.map(t => {
+                      const track = expandLooseTrackConfig(
+                        t,
+                        pluginManager,
+                        assemblyName,
+                      )
+                      return track && typeof track === 'object'
+                        ? migrateRetiredDisplays(pluginManager, track)
+                        : track
+                    }),
                   }
                 : {}),
               ...(Array.isArray(indexes)
