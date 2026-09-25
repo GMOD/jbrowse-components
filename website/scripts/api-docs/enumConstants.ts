@@ -538,9 +538,18 @@ function sameParts(a: SlotPart[], b: SlotPart[]) {
 }
 
 function samePart(a: SlotPart, b: SlotPart) {
-  return 'pair' in a
-    ? 'pair' in b && a.pair[0] === b.pair[0] && a.pair[1] === b.pair[1]
-    : 'spread' in b && a.spread === b.spread
+  if ('pair' in a) {
+    return 'pair' in b && a.pair[0] === b.pair[0] && a.pair[1] === b.pair[1]
+  }
+  if ('spread' in a) {
+    return 'spread' in b && a.spread === b.spread
+  }
+  return (
+    'call' in b &&
+    a.call === b.call &&
+    a.args.size === b.args.size &&
+    [...a.args].every(([k, v]) => b.args.get(k) === v)
+  )
 }
 
 // Only a *conflicting* redefinition drops a name, matching record/recordScalar.
