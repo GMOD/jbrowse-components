@@ -648,9 +648,16 @@ The gaps a user meets first, in order:
    bar read worse than the same `minScore`/`maxScore` (ADR-123) as two point
    marks over the mean, and than wiggle's whisker band
    ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)).
-2. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
-   an optional count per bin, the config editor edits transform steps but not
-   marks (`db4ef2f82a`), and the track menu has no facet or colour picker.
+2. **In-app authoring has a text route and no form past one mark.** **Edit
+   marks as JSON...** reaches the whole grammar — `marks`, `transform`, `facet`
+   and `rows`, lifted through the config schema and checked by the rule list as
+   you type, so it refuses what a config file refuses and reports the rest
+   rather than blocking on it (ADR-133). What has no controls is everything past
+   **Plot field...**'s one mark: no second mark, no shape scale, no zoom range,
+   no facet or colour picker. `marks` is also the one list in the grammar the
+   config editor cannot add to, remove from or reorder — `transform` is a
+   `ConfigurationSchemaUnion` array and has all three (`db4ef2f82a`), while a
+   plain sub-schema array has none.
 
 A link's `size` is a channel, a field through a linear or log scale into a px
 range, unioned over the loaded regions the way a ramp's domain is

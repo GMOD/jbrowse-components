@@ -1323,6 +1323,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * The plots the JSON box lists above its text, as a starting point for
+         * someone who has not written one.
          */
         get markPlotExamples(): { plot: string; description: string }[] {
           return MARK_PLOT_EXAMPLES
@@ -1703,10 +1705,10 @@ export function stateModelFactory(
          * #action
          * Open the plot as JSON, over everything the display declares rather
          * than the one mark Plot field... can read. `seed` overlays a setting
-         * the caller has in hand but has not applied. Declared before
-         * `openPlotFieldDialog`, which hands `self` over as that dialog's
-         * model and so needs this on it already.
+         * the caller has in hand but has not applied.
          */
+        // Ahead of openPlotFieldDialog, which hands `self` over as that
+        // dialog's model and so needs this already on it.
         openPlotJsonDialog(seed?: MarkPlot) {
           getDialogHost(self).queueDialog(handleClose => [
             PlotJsonDialog,

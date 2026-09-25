@@ -850,6 +850,21 @@ declares, so editing is the same dialog. A display shown with no `marks` at all
 plots `score` as bars where most features carry a numeric one, and opens this
 dialog where they do not.
 
+**Edit marks as JSON...** writes everything that dialog cannot say: the whole
+`marks` list, the display's `transform`, its `facet` and its `rows`, as the
+config holds them. It opens on what the track declares — a slot left at its
+default is not shown, so the text is what someone wrote rather than every slot
+there is — and a setting left out of the box stays as it is, while `null` clears
+one. The rules above run on the text as you type, and each finding names its
+mark and its slot; a warning or an error is reported, not refused, because the
+display draws what it can and an editor that refused more than the loader would
+leave you nowhere to go. What Apply refuses is text a config file would also be
+refused for: a setting that is not one of the four, a key a schema does not
+declare, or a mark type that does not exist. **Plot field...** carries an **Edit
+as JSON...** button into it with whatever you have typed but not applied, so a
+track whose marks that dialog cannot read has somewhere to go besides replacing
+them.
+
 <Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the mark, the colour field and the count-per-bin box."/>
 
 The score submenu writes `scales.y` and nothing else: **Set min/max score...**
