@@ -7,7 +7,9 @@ summary: "The canvas feature display's worker ships what a colour scale reads â€
 
 ## Status
 
-Accepted (2026-09-24). Amends
+Accepted (2026-09-24), amended by
+[ADR-166](adr-166-an-identity-scale-names-the-colours-a-file-carries.md),
+which replaces the multi-row `legend` slot with an identity scale. Amends
 [ADR-156](adr-156-the-feature-colour-takes-a-threshold.md), whose last
 Rejected row refused `linear` and `log` because this display packed finished
 colours in the worker. Brings the canvas feature colour level with

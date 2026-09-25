@@ -17,4 +17,4 @@ All three branches are on local main (not pushed), and their worktrees and branc
 
 Each branch passed typecheck and its affected suites after its final rebase. Two failures come from main, not these branches: render-core's publicApi.test.ts (the link-mark exports were never snapshotted) and one fetch-autorun test.
 
-Still to do, in order: the identity colour scale once the other session's worktree-canvas-grammar lands, ADR-152's two encoder changes, and row table stage 2 for bars, points and wiggle. The memory note has these next steps; the decision page still lists your pending calls.
+Still to do, in order: ADR-152's two encoder changes, and row table stage 2 for bars, points and wiggle. The memory note has these next steps; the decision page still lists your pending calls.

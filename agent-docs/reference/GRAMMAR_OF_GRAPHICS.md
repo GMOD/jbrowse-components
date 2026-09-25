@@ -254,7 +254,12 @@ The seams, named honestly:
   or a ramp's stops, and `scheme` a named ramp from one table every baker
   reads. `threshold` is ggplot2's `scale_colour_steps`: ascending cut points in
   `domain` and one `range` colour more, so a value takes the bin it falls in
-  (`thresholdIndex`, `@jbrowse/core/util/thresholdScale`). The quantitative
+  (`thresholdIndex`, `@jbrowse/core/util/thresholdScale`). FeatureColor alone
+  adds `identity`, ggplot2's `scale_colour_identity` with a guide: each feature
+  keeps the colour it carries, `value` or its own itemRgb, and the key names
+  the `domain` colours with `labels`
+  ([ADR-166](../architecture-decision-records/adr-166-an-identity-scale-names-the-colours-a-file-carries.md)).
+  The quantitative
   display is the exception: its layers part into two sides of one value, so it
   paints the first cut and the first two `range` colours, and neither paints
   nor keys a second cut
@@ -357,7 +362,8 @@ The seams, named honestly:
   over the values its worker shipped, each with the partition row it lands
   in, and where no field is named it reads colours off `itemRgb` and a
   per-feature `jexl:` `value`, handing the derivation the feature `name` as
-  the field and `color.domain` as its order. One key stays outside it: the multiway lane glyphs' under a `jexl:`
+  the field and `color.domain` as its order, or under `identity` naming the
+  `domain` colours. One key stays outside it: the multiway lane glyphs' under a `jexl:`
   `value` (`laneColorKey`), a row per colour named by the leftmost feature
   carrying it. **A value-less feature files under the empty key `''`**, which
   the one comparator already places after every value, so the worker tables
