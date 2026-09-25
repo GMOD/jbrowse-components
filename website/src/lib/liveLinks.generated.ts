@@ -1485,7 +1485,7 @@ export const figureFrames: Record<
   },
   "qc/smn_block_and_reads": {
     "width": 1500,
-    "height": 1230
+    "height": 1250
   },
   "qc/smn_vs_t2t": {
     "width": 1200,
