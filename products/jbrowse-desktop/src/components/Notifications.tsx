@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react'
 
 import StackTraceButton from '@jbrowse/core/ui/StackTraceButton'
-import { Alert, Button, Snackbar } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import { Alert, Button, IconButton, Snackbar } from '@mui/material'
 
 import { NotifyContext } from './NotifyContext.ts'
 
@@ -15,11 +16,16 @@ interface Notification {
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notification, setNotification] = useState<Notification>()
+  // `open` rather than the presence of `notification`: MUI keeps a Snackbar's
+  // children mounted through the fade-out, so clearing the message on the click
+  // that dismisses it drew the string "undefined" on the way out
+  const [open, setOpen] = useState(false)
   const notify = useCallback((error: unknown, action?: NotifyAction) => {
     setNotification({ error, action })
+    setOpen(true)
   }, [])
   const close = () => {
-    setNotification(undefined)
+    setOpen(false)
   }
   const action = notification?.action
   return (
@@ -29,7 +35,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       launch is not something to read in six seconds: it stays until dismissed,
       with the same stack-trace dialog the in-session error surfaces offer */}
       <Snackbar
-        open={!!notification}
+        open={open}
         onClose={(_event, reason) => {
           // clicking anywhere else must not throw away an error the user is
           // still reading (or copying out of the stack dialog)
@@ -37,13 +43,17 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             close()
           }
         }}
+        slotProps={{
+          transition: {
+            onExited: () => {
+              setNotification(undefined)
+            },
+          },
+        }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           severity="error"
-          onClose={() => {
-            close()
-          }}
           action={
             <>
               {action ? (
@@ -59,6 +69,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                 </Button>
               ) : null}
               <StackTraceButton error={notification?.error} color="inherit" />
+              {/* Alert draws no close button of its own once `action` is set,
+              so dismissing was the Escape key or nothing */}
+              <IconButton color="inherit" title="Close" onClick={close}>
+                <CloseIcon />
+              </IconButton>
             </>
           }
         >
