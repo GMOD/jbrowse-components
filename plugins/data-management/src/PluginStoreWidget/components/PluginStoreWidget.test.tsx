@@ -1,5 +1,6 @@
 import { DialogQueue } from '@jbrowse/app-core'
 import Plugin from '@jbrowse/core/Plugin'
+import { forgetFetchedPlugins } from '@jbrowse/core/checkPlugins'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
@@ -30,6 +31,13 @@ const plugins = {
 
 jest.spyOn(global, 'fetch').mockImplementation(async () => {
   return new Response(JSON.stringify(plugins))
+})
+
+// `fetchPlugins` memoizes the manifest for the life of the page, so a case that
+// swaps the mocked store for its own has to start from an unfetched one — the
+// first case's listing would otherwise be what every later one renders.
+beforeEach(() => {
+  forgetFetchedPlugins()
 })
 
 function setup(sessionSnapshot?: Record<string, unknown>, adminMode?: boolean) {
@@ -92,6 +100,22 @@ test('removeSessionPlugin removes a plugin that carries a second build url', () 
   // the resolved url, and the two builds resolve to different ones, so removal
   // must match on the stored name rather than on a url
   session.removeSessionPlugin({ name: plugin.name, url: plugin.url })
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
+})
+
+// A session snapshot can carry a bare ref, which `addSessionPlugin`'s
+// name check never saw: it resolves to a build whose url the entry never held,
+// and a remove keyed on name alone filtered nothing while still asking for the
+// whole-app reload.
+test('removeSessionPlugin removes a bare store ref by the entry it resolved to', () => {
+  const { session } = setup({ sessionPlugins: [{ storePlugin: 'MsaView' }] })
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(1)
+
+  session.removeSessionPlugin({
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+    storePlugin: 'MsaView',
+  })
   expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
 })
 

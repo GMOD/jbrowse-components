@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { migrateRetiredDisplays } from '@jbrowse/core/pluggableElementTypes/models'
-import { isPluginUrl, maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { holdsPluginVersion } from '@jbrowse/core/pluginDefinitions'
 import { expandLooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import {
@@ -203,21 +203,16 @@ export function JBrowseModelF({
       },
       /**
        * #action
-       * Removes the entry that loads from the same url — the version-pinned
-       * definition, not every entry sharing a name, so the update flow's
-       * remove-then-add swaps one version for another.
-       *
-       * A definition naming no loader matches nothing (`isPluginUrl`) rather than
-       * every other url-less entry: `pluginUrl`'s miss value is the display string
-       * 'unknown url', so removing one hand-written broken entry used to filter out
-       * all of them. Such an entry has no InstalledPlugin row to remove it from
-       * either — it never loads, so it is never in `runtimePluginDefinitions` — so
-       * matching nothing costs nothing the UI could reach.
+       * Removes the entry the loaded copy came from — the version-pinned
+       * definition, or the bare store ref that resolved to it. Not every entry
+       * sharing a name or a ref, so the update flow's remove-then-add swaps one
+       * version for another; `holdsPluginVersion` argues both halves.
        */
       removePlugin(pluginDefinition: PluginDefinition) {
-        const targetUrl = maybePluginUrl(pluginDefinition)
         self.plugins = cast(
-          self.plugins.filter(plugin => !isPluginUrl(plugin, targetUrl)),
+          self.plugins.filter(
+            plugin => !holdsPluginVersion(plugin, pluginDefinition),
+          ),
         )
         getParent<JBrowseModelParent>(self).setPluginsUpdated()
       },

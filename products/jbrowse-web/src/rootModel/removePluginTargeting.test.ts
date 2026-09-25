@@ -73,3 +73,36 @@ test('removing a real entry leaves the unloadable ones beside it alone', () => {
   root.jbrowse.removePlugin(v1)
   expect(root.jbrowse.plugins).toEqual([broken])
 })
+
+// A config that names a plugin by store entry carries no url at all, and the
+// loaded copy's url is one the entry never held — so a remove keyed on that url
+// filtered nothing while still asking for the whole-app reload an uninstall
+// triggers. The admin clicked uninstall, the app rebuilt, the plugin came back.
+const ref: PluginDefinition = { storePlugin: 'GWAS' }
+const resolvedRef: PluginDefinition = {
+  name: 'GWAS',
+  umdUrl: 'https://jbrowse.org/plugins/jbrowse-plugin-gwas/2.0.0/g.umd.js',
+  storePlugin: 'GWAS',
+}
+
+test('removes a bare store ref when handed the definition it resolved to', () => {
+  const root = makeRoot([ref])
+  root.jbrowse.removePlugin(resolvedRef)
+  expect(root.jbrowse.plugins).toEqual([])
+})
+
+test('a store ref removes no entry for another plugin', () => {
+  const root = makeRoot([{ storePlugin: 'MsaView' }, ref])
+  root.jbrowse.removePlugin(resolvedRef)
+  expect(root.jbrowse.plugins).toEqual([{ storePlugin: 'MsaView' }])
+})
+
+// the version swap the url match exists for, with both entries carrying the ref
+// the store minted them under: matching the ref alone would take both
+test('a ref-carrying update still swaps one version for the other', () => {
+  const v1Ref = { ...v1, storePlugin: 'GWAS' }
+  const v2Ref = { ...v2, storePlugin: 'GWAS' }
+  const root = makeRoot([v1Ref, v2Ref])
+  root.jbrowse.removePlugin(v1Ref)
+  expect(root.jbrowse.plugins).toEqual([v2Ref])
+})

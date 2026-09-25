@@ -1,8 +1,4 @@
-import {
-  isPluginUrl,
-  maybePluginUrl,
-  storePluginName,
-} from '@jbrowse/core/pluginDefinitions'
+import { holdsPlugin, isPluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
   getEnv,
   isSessionWithPermanentPlugins,
@@ -43,24 +39,6 @@ function loadedDefinition(plugin: BasePlugin, session: AbstractSessionModel) {
 }
 
 /**
- * Whether a list entry is the one the loaded copy came from. The url, or the
- * store ref: an entry the permanent list keeps as a ref resolves to whatever
- * build the store publishes for this JBrowse, so its pinned url and the loaded
- * one drift apart on the first upgrade while the ref stays the same string.
- *
- * Not `samePlugin`, whose name clause would also match a session entry that
- * names the same plugin at another url — the copy dedupe *dropped*, which is
- * not the list the loaded one lives in.
- */
-function holdsLoaded(entry: PluginDefinition, loaded: PluginDefinition) {
-  const ref = storePluginName(entry)
-  return (
-    isPluginUrl(entry, maybePluginUrl(loaded)) ||
-    (ref !== undefined && ref === storePluginName(loaded))
-  )
-}
-
-/**
  * Where an **already-installed** plugin's definition lives, or undefined when
  * this user cannot edit the list holding it.
  *
@@ -80,9 +58,10 @@ function holdsLoaded(entry: PluginDefinition, loaded: PluginDefinition) {
  * changes nothing (the config still carries it). The permanent plugins dialog
  * still shows that entry, which is where it can be taken out.
  *
- * `isPluginUrl`, because both sides of the comparison have a miss value: a core
- * plugin recorded no install url, and a definition naming no loader reads back
- * as the display string 'unknown url'. Neither may match anything.
+ * `holdsPlugin`, which guards both sides of the url comparison — a core plugin
+ * recorded no install url, and a definition naming no loader reads back as the
+ * display string 'unknown url', so neither may match anything — and matches a
+ * store ref against what it resolved to, which no url comparison can.
  */
 export function pluginHome(
   plugin: BasePlugin,
@@ -94,18 +73,18 @@ export function pluginHome(
   }
   if (
     isSessionWithSessionPlugins(session) &&
-    session.sessionPlugins.some(p => holdsLoaded(p, loaded))
+    session.sessionPlugins.some(p => holdsPlugin(p, loaded))
   ) {
     return 'session'
   }
   if (
-    (configPlugins(session).plugins ?? []).some(p => holdsLoaded(p, loaded))
+    (configPlugins(session).plugins ?? []).some(p => holdsPlugin(p, loaded))
   ) {
     return session.adminMode ? 'config' : undefined
   }
   if (
     isSessionWithPermanentPlugins(session) &&
-    session.permanentPlugins.some(p => holdsLoaded(p, loaded))
+    session.permanentPlugins.some(p => holdsPlugin(p, loaded))
   ) {
     return 'permanent'
   }
@@ -148,7 +127,7 @@ export function unloadedPermanentPlugins(session: AbstractSessionModel) {
       .filter(p => pluginHome(p, session) === 'permanent')
       .map(p => loadedDefinition(p, session))
     return session.permanentPlugins.filter(
-      entry => !loaded.some(d => d !== undefined && holdsLoaded(entry, d)),
+      entry => !loaded.some(d => d !== undefined && holdsPlugin(entry, d)),
     )
   }
   return []

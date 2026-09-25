@@ -300,6 +300,57 @@ export function samePlugin(a: PluginDefinition, b: PluginDefinition) {
   )
 }
 
+function sameStoreRef(entry: PluginDefinition, loaded: PluginDefinition) {
+  const ref = storePluginName(entry)
+  return ref !== undefined && ref === storePluginName(loaded)
+}
+
+/**
+ * Whether a list entry is one the loaded copy could have come from — its url,
+ * or the store entry both name.
+ *
+ * `samePlugin` without the name clause, which would also match a session entry
+ * naming the same plugin at another url: that is the copy the dedupe *dropped*,
+ * not the list the loaded one lives in.
+ *
+ * The ref half is what a url comparison cannot do in either direction. An entry
+ * the permanent list keeps as a ref resolves to whatever build the store
+ * publishes for this JBrowse, so its pinned url and the loaded one drift apart
+ * on the first upgrade while the ref stays the same string.
+ */
+export function holdsPlugin(entry: PluginDefinition, loaded: PluginDefinition) {
+  return (
+    isPluginUrl(entry, maybePluginUrl(loaded)) || sameStoreRef(entry, loaded)
+  )
+}
+
+/**
+ * Whether a list entry names the exact build that loaded — the question a
+ * remove asks, where {@link holdsPlugin} asks which list to look in.
+ *
+ * A config's `plugins[]` is the one list that can legitimately hold two entries
+ * for a single plugin: the update flow writes a second entry at a newer url and
+ * then removes the first. So an entry carrying a url is judged on that url
+ * alone. Both entries may carry the store ref they were minted under, and
+ * matching on it would remove the version just installed.
+ *
+ * An entry with no url of its own — a bare `{ "storePlugin": "MsaView" }`,
+ * which is the form a config at a permanent url is meant to use — pins no
+ * build, so the ref is the only thing identifying it. Judged on the url it does
+ * not have, such an entry matched nothing: uninstall filtered the list and
+ * removed no row, while still asking for the whole-app reload an uninstall
+ * triggers, so the plugin came back.
+ */
+export function holdsPluginVersion(
+  entry: PluginDefinition,
+  loaded: PluginDefinition,
+) {
+  const url = maybePluginUrl(entry)
+  return url === undefined
+    ? sameStoreRef(entry, loaded)
+    : url === maybePluginUrl(loaded)
+}
+
 /**
  * The candidates no definition in `existing` already describes — `dedupePlugins`
  * across two lists whose first one is already settled, for a source loaded after

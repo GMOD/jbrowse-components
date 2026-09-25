@@ -4,6 +4,7 @@ import {
   WorkspaceLayoutMixin,
 } from '@jbrowse/app-core'
 import { getConf } from '@jbrowse/core/configuration'
+import { samePlugin } from '@jbrowse/core/pluginDefinitions'
 import {
   restoreFileHandles,
   restoreFileHandlesFromSnapshot,
@@ -144,12 +145,15 @@ export function BaseWebSessionModel({
        * #action
        */
       removeSessionPlugin(pluginDefinition: PluginDefinition) {
-        // session plugins are unique by name (enforced in addSessionPlugin), so
-        // identity is the name — not the resolved url, whose field priority
-        // (cjs > esm > umd) makes a full stored def and a url-only removal
-        // descriptor for the same plugin resolve to different urls
+        // `samePlugin`, matching the permanent list's remove: this list is
+        // unique by name (enforced in addSessionPlugin), so it cannot hold the
+        // two versions of one plugin that make the config list match on url
+        // alone. Name carries a removal descriptor the stored entry's url
+        // priority would miss, and the store ref carries an entry that arrived
+        // in a session snapshot as a bare `{ storePlugin }` and resolved to a
+        // url it never named.
         self.sessionPlugins = cast(
-          self.sessionPlugins.filter(p => p.name !== pluginDefinition.name),
+          self.sessionPlugins.filter(p => !samePlugin(p, pluginDefinition)),
         )
         self.root.setPluginsUpdated()
       },
