@@ -3,7 +3,7 @@ import {
   colorEncodingOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
+import { colorNotices } from '@jbrowse/display-kit/colorScale'
 
 import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
 
@@ -18,7 +18,7 @@ import type {
 } from './types.ts'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
-import type { FieldScales } from '@jbrowse/display-kit/colorScale'
+import type { FieldPresets } from '@jbrowse/display-kit/colorScale'
 
 export const ALIGNMENTS_COLOR_SCALES = [
   'none',
@@ -93,24 +93,20 @@ const INSERT_SIZE_FIELDS = new Set([
  * between short, normal and long, and any other field is categorical.
  */
 export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
-  return colorEncodingOf(
-    setting,
-    fieldScaleOf(ALIGNMENTS_FIELD_SCALES, setting.field),
-  )
+  return colorEncodingOf(setting, ALIGNMENTS_FIELD_PRESETS)
 }
 
 /** Insert size is a threshold and any other field categorical while `scale` is unset. */
-export const ALIGNMENTS_FIELD_SCALES = {
-  ...Object.fromEntries([...INSERT_SIZE_FIELDS].map(f => [f, 'threshold'])),
-  '*': 'categorical',
-} satisfies FieldScales
+export const ALIGNMENTS_FIELD_PRESETS = {
+  ...Object.fromEntries(
+    [...INSERT_SIZE_FIELDS].map(f => [f, { scale: 'threshold' as const }]),
+  ),
+  '*': { scale: 'categorical' },
+} satisfies FieldPresets
 
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function alignmentsColorNotices(setting: AlignmentsColorSetting) {
-  return colorNotices(
-    setting,
-    fieldScaleOf(ALIGNMENTS_FIELD_SCALES, setting.field),
-  )
+  return colorNotices(setting, ALIGNMENTS_FIELD_PRESETS)
 }
 
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>
@@ -159,10 +155,13 @@ export function baseLayerOf(
   { field = '', scale }: BaseColorSetting,
   modifications?: ModificationColorBy,
 ): BaseLayer | undefined {
-  const encoding = colorEncodingOf(
-    { value: undefined, field, scale, domain: [], range: [] },
-    'categorical',
-  )
+  const encoding = colorEncodingOf({
+    value: undefined,
+    field,
+    scale,
+    domain: [],
+    range: [],
+  })
   const type =
     typeof encoding === 'object'
       ? LAYER_OF_FIELD.get(encoding.field)

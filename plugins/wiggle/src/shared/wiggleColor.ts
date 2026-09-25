@@ -5,11 +5,14 @@ import {
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
+import { colorNotices } from '@jbrowse/display-kit/colorScale'
 import { MAX_WIGGLE_CUTS } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import { SOURCE_FIELD, WIGGLE_FIELD_SCALES } from './wiggleColorConfigSchema.ts'
+import {
+  SOURCE_FIELD,
+  WIGGLE_FIELD_PRESETS,
+} from './wiggleColorConfigSchema.ts'
 
 import type { SourcePalette } from '../LinearWiggleDisplay/sourcesLogic.ts'
 import type {
@@ -47,12 +50,12 @@ export interface ResolvedWiggleColor {
  * field: `source` is categorical, and `score` the bicolor cut.
  */
 export function wiggleColorEncoding(color: ColorSetting) {
-  return colorEncodingOf(color, fieldScaleOf(WIGGLE_FIELD_SCALES, color.field))
+  return colorEncodingOf(color, WIGGLE_FIELD_PRESETS)
 }
 
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function wiggleColorNotices(color: ColorSetting) {
-  return colorNotices(color, fieldScaleOf(WIGGLE_FIELD_SCALES, color.field))
+  return colorNotices(color, WIGGLE_FIELD_PRESETS)
 }
 
 /**

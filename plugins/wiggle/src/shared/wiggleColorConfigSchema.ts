@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { FieldScales } from '@jbrowse/display-kit/colorScale'
+import type { FieldPresets } from '@jbrowse/display-kit/colorScale'
 
 /** The two things a quantitative display's colour can map. */
 export const WIGGLE_COLOR_FIELDS = ['score', 'source'] as const
@@ -24,10 +24,10 @@ const WIGGLE_COLOR_SCALES = [
 ] as const
 
 /** `source` is categorical and `score` the bicolor cut while `scale` is unset. */
-export const WIGGLE_FIELD_SCALES = {
-  [SOURCE_FIELD]: 'categorical',
-  '*': 'threshold',
-} as const satisfies FieldScales
+export const WIGGLE_FIELD_PRESETS = {
+  [SOURCE_FIELD]: { scale: 'categorical' },
+  '*': { scale: 'threshold' },
+} as const satisfies FieldPresets
 
 /**
  * #config WiggleColor
@@ -105,5 +105,5 @@ export const wiggleColorSchema = ConfigurationSchema(
     }),
     ...colorRampSlots,
   },
-  colorChannelOptions('color', WIGGLE_FIELD_SCALES),
+  colorChannelOptions('color', WIGGLE_FIELD_PRESETS),
 )

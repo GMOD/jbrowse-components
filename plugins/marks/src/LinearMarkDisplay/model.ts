@@ -226,7 +226,7 @@ function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
 // would have packed it. A scale has no meaning over a bin the sidecar wrote,
 // and a jexl callback has no feature to read.
 function markConstantColor(mark: MarkConfig): number {
-  const encoding = colorEncodingOf(mark.encoding.color, 'categorical')
+  const encoding = colorEncodingOf(mark.encoding.color)
   return cssColorToABGR(
     typeof encoding === 'string' && !isJexl(encoding)
       ? encoding

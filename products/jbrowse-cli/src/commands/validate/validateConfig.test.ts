@@ -345,7 +345,7 @@ describe('validateConfig', () => {
   }
 
   // Which rules apply is the display's own default scale, read off its
-  // schema's fieldScale through the manifest.
+  // schema's fieldPresets through the manifest.
   describe('a colour object its display cannot paint as written', () => {
     const where = 'tracks[0].displays[0].color'
     const onTrack = (track: Record<string, unknown>) => {

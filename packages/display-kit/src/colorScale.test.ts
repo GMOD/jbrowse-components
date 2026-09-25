@@ -1,17 +1,55 @@
-import { colorNotices, colorProblems, fieldScaleOf } from './colorScale.ts'
+import {
+  colorNotices,
+  colorProblems,
+  fieldScaleOf,
+  withPreset,
+} from './colorScale.ts'
 
 test("a field's scale comes from the table's own keys, then its *", () => {
-  const scales = { source: 'categorical', '*': 'threshold' } as const
-  expect(fieldScaleOf(scales, 'source')).toBe('categorical')
-  expect(fieldScaleOf(scales, 'score')).toBe('threshold')
-  expect(fieldScaleOf(scales, 'toString')).toBe('threshold')
+  const presets = {
+    source: { scale: 'categorical' },
+    '*': { scale: 'threshold' },
+  } as const
+  expect(fieldScaleOf(presets, 'source')).toBe('categorical')
+  expect(fieldScaleOf(presets, 'score')).toBe('threshold')
+  expect(fieldScaleOf(presets, 'toString')).toBe('threshold')
   expect(fieldScaleOf({}, 'score')).toBe('categorical')
+})
+
+const LD = {
+  ld: { scale: 'threshold', domain: ['0.2', '0.8'], range: ['a', 'b', 'c'] },
+} as const
+
+test('a preset fills the members a config leaves unwritten, an empty list among them', () => {
+  expect(withPreset({ field: 'ld', domain: [] }, LD)).toEqual({
+    field: 'ld',
+    domain: ['0.2', '0.8'],
+    range: ['a', 'b', 'c'],
+  })
+  expect(
+    withPreset({ field: 'ld', scale: 'threshold', domain: ['0.5'] }, LD),
+  ).toMatchObject({ domain: ['0.5'], range: ['a', 'b', 'c'] })
+})
+
+test('a preset stays out of a colour painting through another scale, or none', () => {
+  const linear = { field: 'ld', scale: 'linear', domain: [] }
+  expect(withPreset(linear, LD)).toBe(linear)
+  const none = { field: 'ld', scale: 'none' }
+  expect(withPreset(none, LD)).toBe(none)
+  const other = { field: 'score' }
+  expect(withPreset(other, LD)).toBe(other)
+})
+
+test("a config's range read against a preset's cuts is held to them", () => {
+  expect(
+    colorProblems({ field: 'ld', range: ['a', 'b'] }, LD).map(p => p.rule),
+  ).toEqual(['threshold-range'])
 })
 
 const rules = (
   color: Parameters<typeof colorProblems>[0],
-  fieldScale = 'categorical',
-) => colorProblems(color, fieldScale).map(p => p.rule)
+  scale = 'categorical',
+) => colorProblems(color, { '*': { scale } }).map(p => p.rule)
 
 test('a colour with no field, or a field under none, says nothing', () => {
   expect(rules({ domain: ['b', 'a'], range: ['red'] }, 'threshold')).toEqual([])
@@ -58,7 +96,7 @@ test('a notice line names the setting and the slot', () => {
   expect(
     colorNotices(
       { field: 'x', scale: 'linear', domain: ['0'] },
-      'categorical',
+      { '*': { scale: 'categorical' } },
       'fill',
     )[0],
   ).toMatch(/^fill\.domain: a linear or log scale reads no domain/)

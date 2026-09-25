@@ -12,7 +12,7 @@
 import { configManifest } from './configManifest.generated.ts'
 import { displayDefaultsForTrackType } from './displayDefaultKeys.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
-import { colorProblems, fieldScaleOf } from './markRules/colorScale.ts'
+import { colorProblems } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
 import {
   hasDeclaredShape,
@@ -518,7 +518,7 @@ function checkMarkDisplay(
   }
 }
 
-// The display's own colour rules, with its schema's fieldScale standing in
+// The display's own colour rules, with its schema's fieldPresets standing in
 // for the plugin code the CLI does not run
 function checkColorSlots(
   display: Record<string, unknown>,
@@ -530,9 +530,9 @@ function checkColorSlots(
   if (!isRecord(lifted)) {
     return
   }
-  for (const { name, fieldScale, subSlots = [] } of slots) {
+  for (const { name, fieldPresets, subSlots = [] } of slots) {
     const written = lifted[name]
-    if (!fieldScale || !isRecord(written)) {
+    if (!fieldPresets || !isRecord(written)) {
       continue
     }
     const declared = new Set(subSlots.map(slot => slot.name))
@@ -551,7 +551,7 @@ function checkColorSlots(
         domainMax:
           typeof color.domainMax === 'number' ? color.domainMax : undefined,
       },
-      fieldScaleOf(fieldScale, field),
+      fieldPresets,
     )) {
       const at = `${where}.${name}.${problem.slot}`
       if (

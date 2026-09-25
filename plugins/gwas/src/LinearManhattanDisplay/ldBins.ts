@@ -28,11 +28,6 @@ export const LD_PALETTE = [
 
 export const LD_LEGEND_TITLE = 'r² to index'
 
-interface LdColor {
-  domain?: readonly (string | number)[]
-  range?: readonly string[]
-}
-
 /** Whether a colour object asks for r² to the index SNP. */
 export function isLdColoring(
   color: string | { field: string; scale?: string },
@@ -44,21 +39,18 @@ export function isLdColoring(
   )
 }
 
-/** The cuts and colours an LD colour object paints through, defaults filled. */
-export function ldColorDefaults(color: LdColor) {
-  return {
-    domain: color.domain?.length ? color.domain.map(String) : LD_DOMAIN,
-    range: color.range?.length ? color.range : LD_PALETTE,
-  }
-}
-
 /**
  * Legend rows, top to bottom: the index SNP, a diamond in the colour its r² of
  * 1 paints; the r² bins high to low, each colour the one the encoder's
  * threshold paints; and the grey of a point with no r².
  */
-export function ldLegend(color: LdColor): LdSwatch[] {
-  const { domain, range } = ldColorDefaults(color)
+export function ldLegend({
+  domain,
+  range,
+}: {
+  domain: readonly string[]
+  range: readonly string[]
+}): LdSwatch[] {
   const cuts = thresholdCuts(domain)
   const colors = thresholdPalette(cuts.length + 1, range)
   return [

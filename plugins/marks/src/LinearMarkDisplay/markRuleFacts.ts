@@ -6,5 +6,9 @@
  */
 export { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 export { isJexl } from '@jbrowse/core/util/jexlStrings'
-export { colorProblems, paintedScale } from '@jbrowse/display-kit/colorScale'
+export {
+  CATEGORICAL_FIELD_PRESETS,
+  colorProblems,
+  paintedScale,
+} from '@jbrowse/display-kit/colorScale'
 export type { ColorScaleName } from '@jbrowse/display-kit/colorScale'

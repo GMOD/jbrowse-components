@@ -136,7 +136,9 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(scale?.title).toBe(LD_LEGEND_TITLE)
     expect(
       scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
-    ).toEqual(ldLegend({}).map(sw => sw.label))
+    ).toEqual(
+      ldLegend({ domain: LD_DOMAIN, range: LD_PALETTE }).map(sw => sw.label),
+    )
   })
 
   // Without the note an export where nothing matched the index SNP is an

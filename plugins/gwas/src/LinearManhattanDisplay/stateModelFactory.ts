@@ -35,7 +35,11 @@ import {
   colorForField,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
+import {
+  colorNotices,
+  fieldScaleOf,
+  withPreset,
+} from '@jbrowse/display-kit/colorScale'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -60,13 +64,8 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { LD_FIELD } from '../GWASAdapter/ldFields.ts'
-import { MANHATTAN_FIELD_SCALES } from './colorConfigSchema.ts'
-import {
-  LD_LEGEND_TITLE,
-  isLdColoring,
-  ldColorDefaults,
-  ldLegend,
-} from './ldBins.ts'
+import { MANHATTAN_FIELD_PRESETS } from './colorConfigSchema.ts'
+import { LD_LEGEND_TITLE, isLdColoring, ldLegend } from './ldBins.ts'
 import { ldJoinResolver } from './ldJoinResolver.ts'
 import {
   hasLdRole,
@@ -226,24 +225,22 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The `color` object as painted, its `scale` the one that paints and
-         * LD's default cuts and colours filled in; `rpcProps` hands it to the
-         * worker as the encoder takes it.
+         * The `color` object as painted: its `scale` the one that paints, and
+         * its field's preset under what the config wrote, LD's cuts and
+         * colours among them; `rpcProps` hands it to the worker as the encoder
+         * takes it.
          */
         get color(): ColorSetting & {
           value: string
           scale: ManhattanColorScale
         } {
-          const written = self.writtenColor
-          const { field } = written
-          const scale = paintedScale(
-            written,
-            fieldScaleOf(MANHATTAN_FIELD_SCALES, field),
-          )
+          const color = withPreset(self.writtenColor, MANHATTAN_FIELD_PRESETS)
           return {
-            ...written,
-            scale,
-            ...(isLdColoring({ field, scale }) ? ldColorDefaults(written) : {}),
+            ...color,
+            scale: paintedScale(
+              color,
+              fieldScaleOf(MANHATTAN_FIELD_PRESETS, color.field),
+            ),
           }
         },
         /**
@@ -344,7 +341,7 @@ export function stateModelFactory(
             layers: [
               manhattanLayer({
                 scoreField: self.scoreField,
-                color: colorEncodingOf(self.color, 'categorical'),
+                color: colorEncodingOf(self.color, MANHATTAN_FIELD_PRESETS),
                 ldColoring: self.ldColoringActive,
               }),
             ],
@@ -425,11 +422,7 @@ export function stateModelFactory(
          * as written, for the corner notice.
          */
         get notices(): string[] {
-          const written = self.writtenColor
-          return colorNotices(
-            written,
-            fieldScaleOf(MANHATTAN_FIELD_SCALES, written.field),
-          )
+          return colorNotices(self.writtenColor, MANHATTAN_FIELD_PRESETS)
         },
       }))
       .views(self => ({

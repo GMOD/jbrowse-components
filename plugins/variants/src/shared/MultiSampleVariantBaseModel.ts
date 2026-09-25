@@ -790,7 +790,7 @@ export default function MultiSampleVariantBaseModelF(
          * or threshold scale (`shared/cellHue.ts`).
          */
         get colorEncoding() {
-          return colorEncodingOf(this.colorSetting, 'categorical')
+          return colorEncodingOf(this.colorSetting)
         },
         /**
          * #getter

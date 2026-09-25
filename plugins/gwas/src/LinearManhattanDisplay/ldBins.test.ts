@@ -2,8 +2,17 @@ import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { withPreset } from '@jbrowse/display-kit/colorScale'
 
-import { LD_PALETTE, ldColorDefaults, ldLegend } from './ldBins.ts'
+import { MANHATTAN_FIELD_PRESETS } from './colorConfigSchema.ts'
+import { LD_PALETTE, ldLegend } from './ldBins.ts'
+
+function ldColor(written: { domain?: string[]; range?: string[] }) {
+  return withPreset(
+    { field: 'ld', scale: 'threshold', domain: [], range: [], ...written },
+    MANHATTAN_FIELD_PRESETS,
+  )
+}
 
 function painted(
   color: { domain?: string[]; range?: string[] },
@@ -25,8 +34,8 @@ function painted(
       color: {
         field: 'ld',
         scale: 'threshold',
-        domain: ldColorDefaults(color).domain,
-        range: [...ldColorDefaults(color).range],
+        domain: [...ldColor(color).domain],
+        range: [...ldColor(color).range],
       },
     },
     ['color'],
@@ -37,7 +46,7 @@ function painted(
 // The key reads its colours from the same cuts and palette the encoder's
 // threshold paints the points from, so a swatch is a colour that was drawn.
 test('each key row is the colour its r² paints', () => {
-  const rows = ldLegend({})
+  const rows = ldLegend(ldColor({}))
   const byLabel = new Map(rows.map(r => [r.label, cssColorToABGR(r.color)]))
   expect(painted({}, [1, 0.9, 0.7, 0.5, 0.3, 0.1, Number.NaN])).toEqual(
     [
@@ -53,7 +62,7 @@ test('each key row is the colour its r² paints', () => {
 })
 
 test('the index diamond is the top bin at the default cuts, and the no-data grey is the no-value grey', () => {
-  const [index, ...rest] = ldLegend({})
+  const [index, ...rest] = ldLegend(ldColor({}))
   expect(index).toMatchObject({ shape: 'diamond', color: LD_PALETTE.at(-1) })
   expect(rest.at(-1)).toMatchObject({ color: NO_CATEGORY_COLOR })
 })
@@ -62,7 +71,7 @@ test('the index diamond is the top bin at the default cuts, and the no-data grey
 // cannot borrow it — the points in that bin are in the data.
 test('a cut past the palette takes a colour, not the no-data grey', () => {
   const custom = { domain: ['0.2', '0.4', '0.6', '0.8', '0.9'] }
-  const bins = ldLegend(custom).slice(1, -1)
+  const bins = ldLegend(ldColor(custom)).slice(1, -1)
   expect(bins).toHaveLength(6)
   expect(bins.map(s => s.color)).not.toContain(NO_CATEGORY_COLOR)
   const [top, next] = painted(custom, [0.95, 0.85])
@@ -74,7 +83,7 @@ test('a config moves the cuts and recolours the bins', () => {
   expect(painted(custom, [0.49, 0.5])).toEqual(
     ['#000080', '#800000'].map(c => cssColorToABGR(c)),
   )
-  expect(ldLegend(custom).map(s => s.label)).toEqual([
+  expect(ldLegend(ldColor(custom)).map(s => s.label)).toEqual([
     'Index SNP',
     '≥ 0.5',
     '< 0.5',
@@ -88,7 +97,7 @@ test('cuts written high to low are read ascending, on the points and in the key'
     range: ['#000080', '#008000', '#800000'],
   }
   expect(painted(custom, [0.5])).toEqual([cssColorToABGR('#008000')])
-  expect(ldLegend(custom).map(s => s.label)).toEqual([
+  expect(ldLegend(ldColor(custom)).map(s => s.label)).toEqual([
     'Index SNP',
     '≥ 0.8',
     '0.2 – 0.8',

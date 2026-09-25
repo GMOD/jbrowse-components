@@ -10,7 +10,7 @@ import {
 
 import {
   ALIGNMENTS_COLOR_SCALES,
-  ALIGNMENTS_FIELD_SCALES,
+  ALIGNMENTS_FIELD_PRESETS,
 } from '../shared/alignmentsColor.ts'
 
 /**
@@ -80,5 +80,5 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
     }),
     ...colorRampSlots,
   },
-  colorChannelOptions('color', ALIGNMENTS_FIELD_SCALES),
+  colorChannelOptions('color', ALIGNMENTS_FIELD_PRESETS),
 )

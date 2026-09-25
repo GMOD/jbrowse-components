@@ -11,15 +11,28 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { IDENTITY_SCALE, fieldScaleOf, paintedScale } from './colorScale.ts'
+import {
+  CATEGORICAL_FIELD_PRESETS,
+  IDENTITY_SCALE,
+  fieldScaleOf,
+  paintedScale,
+  withPreset,
+} from './colorScale.ts'
 
-import type { ColorScaleName, FieldScales } from './colorScale.ts'
+import type { ColorScaleName, FieldPresets } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
-export { COLOR_SCALES, IDENTITY_SCALE, paintedScale } from './colorScale.ts'
-export type { ColorScaleName } from './colorScale.ts'
+export {
+  CATEGORICAL_FIELD_PRESETS,
+  COLOR_SCALES,
+  IDENTITY_SCALE,
+  paintedScale,
+  presetOf,
+  withPreset,
+} from './colorScale.ts'
+export type { ColorScaleName, FieldPreset, FieldPresets } from './colorScale.ts'
 
 /** The scales of a colour object whose field takes a range colour per value. */
 export const CATEGORICAL_COLOR_SCALES = ['none', 'categorical'] as const
@@ -38,11 +51,11 @@ export const FEATURE_COLOR_SCALES = [
   IDENTITY_SCALE,
 ] as const
 
-/** The scale a FeatureColor field paints through while `scale` is unset. */
-export const FEATURE_FIELD_SCALES = {
-  score: 'linear',
-  '*': 'categorical',
-} as const satisfies FieldScales
+/** What a FeatureColor field paints through while `scale` is unset. */
+export const FEATURE_FIELD_PRESETS = {
+  score: { scale: 'linear' },
+  '*': { scale: 'categorical' },
+} as const satisfies FieldPresets
 
 /**
  * A colour object as written: the members every one declares, and the ones a
@@ -292,12 +305,12 @@ export function colorMembersOf(color: AnyConfigurationModel): string[] {
 /** A colour object's options: a bare string is its `value`, and an undeclared key is refused. */
 export function colorChannelOptions(
   name: string,
-  fieldScale: FieldScales = { '*': 'categorical' },
+  fieldPresets: FieldPresets = CATEGORICAL_FIELD_PRESETS,
 ) {
   return {
     shorthand: 'value',
     closed: true,
-    fieldScale,
+    fieldPresets,
     preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>
       normalizeChannel(snap, name),
   }
@@ -313,18 +326,20 @@ export type FieldColorEncoding = Exclude<ColorEncoding, string>
 /**
  * What any display's colour object paints: its `value` while it names no
  * field or sits under `none`, which is `undefined` on an object whose `value`
- * may be unset, else the field through the scale it paints through,
- * `fieldScale` where it writes none, with the members that scale reads under
- * the names the config spells them. Each scale answers one fixed set of keys,
- * absent members `undefined`, so a fetch key built over it compares alike
- * whichever members a config happens to write.
+ * may be unset, else the field through the scale it paints through, its
+ * preset's where it writes none, with the members that scale reads under the
+ * names the config spells them, the preset's where the config leaves one
+ * unwritten. Each scale answers one fixed set of keys, absent members
+ * `undefined`, so a fetch key built over it compares alike whichever members a
+ * config happens to write.
  */
 export function colorEncodingOf<V extends string | undefined>(
-  color: ColorSetting & { value: V },
-  fieldScale: ColorScaleName,
+  written: ColorSetting & { value: V },
+  presets: FieldPresets = CATEGORICAL_FIELD_PRESETS,
 ): V | FieldColorEncoding {
+  const color = withPreset(written, presets)
   const { field } = color
-  const scale = paintedScale(color, fieldScale)
+  const scale = paintedScale(color, fieldScaleOf(presets, field))
   switch (scale) {
     case 'none':
     case 'identity':
@@ -382,9 +397,9 @@ export function identityKeyEntries({
     : []
 }
 
-/** What a FeatureColor paints, each field through its default scale where `scale` is unset. */
+/** What a FeatureColor paints, each field through its preset where `scale` is unset. */
 export function featureColorEncoding(color: ColorSetting) {
-  return colorEncodingOf(color, fieldScaleOf(FEATURE_FIELD_SCALES, color.field))
+  return colorEncodingOf(color, FEATURE_FIELD_PRESETS)
 }
 
 interface PickableColor {
@@ -555,5 +570,5 @@ export const colorConfigSchema = ConfigurationSchema(
     ...colorDomainEndsSlots,
     ...colorTitleSlot,
   },
-  colorChannelOptions('color', FEATURE_FIELD_SCALES),
+  colorChannelOptions('color', FEATURE_FIELD_PRESETS),
 )
