@@ -284,6 +284,7 @@ export async function runCensus(
 
 const ROW_GETTERS = [
   'clusterableSources',
+  'bandedSources',
   'sources',
   'dealtRowColors',
   'rowColorScale',

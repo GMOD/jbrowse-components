@@ -194,3 +194,41 @@ test('what each row step recomputes, phased and coloured by population', async (
   expect(display.sources.every(row => row.labelColor)).toBe(true)
   expect(table).toMatchSnapshot()
 })
+
+// The bands stack the focused rows, so they restack only when those move:
+// never on a fetch that re-expands the same haplotypes.
+test('what each row step recomputes, phased and banded by population', async () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { renderingMode: 'phased', facet: 'population' },
+  }).createDisplay()
+  const table = await workCensus(display, [
+    {
+      name: 'initial load',
+      run: () => {
+        display.setSources(SOURCES)
+        landCells(display, 0)
+      },
+    },
+    {
+      name: 'second region arrival',
+      run: () => {
+        landCells(display, 1)
+      },
+    },
+    {
+      name: 'drag reorder',
+      run: () => {
+        const [a, b, ...rest] = display.editableSources
+        display.setRowOrder([b!, a!, ...rest])
+      },
+    },
+    {
+      name: 'focus',
+      run: () => {
+        display.setRowFocus(['S0', 'S2'])
+      },
+    },
+  ])
+  expect(display.rowBands.map(band => band.key)).toEqual(['AFR'])
+  expect(table).toMatchSnapshot()
+})

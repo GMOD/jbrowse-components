@@ -1,21 +1,28 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`what each row step recomputes, phased 1`] = `
-"initial load              arrange 2 (11 rows)  alias 0  clusterable 2  sources 2  dealtRowColors 0  rowColorScale 2  FetchVisibleRegions 2, GetMultiSampleVariantSources 1, SettingsInvalidate 1
-second region arrival     arrange 0  alias 0  clusterable 0  sources 0  dealtRowColors 0  rowColorScale 0  -
-pan, no arrival           arrange 0  alias 0  clusterable 0  sources 0  dealtRowColors 0  rowColorScale 0  ClearBlockingStateOnViewportChange 1
-drag reorder              arrange 1 (7 rows)  alias 0  clusterable 1  sources 1  dealtRowColors 0  rowColorScale 1  -
-focus                     arrange 1 (7 rows)  alias 34  clusterable 2  sources 2  dealtRowColors 0  rowColorScale 1  FetchVisibleRegions 2, SettingsInvalidate 1
-relabel                   arrange 1 (7 rows)  alias 27  clusterable 1  sources 1  dealtRowColors 0  rowColorScale 0  -
-recolour                  arrange 1 (7 rows)  alias 27  clusterable 1  sources 1  dealtRowColors 0  rowColorScale 0  -
-cluster run lands a tree  arrange 1 (7 rows)  alias 20  clusterable 1  sources 1  dealtRowColors 0  rowColorScale 1  -
-region arrival, arranged  arrange 1 (7 rows)  alias 20  clusterable 1  sources 1  dealtRowColors 0  rowColorScale 1  -
-reset                     arrange 2 (11 rows)  alias 0  clusterable 2  sources 2  dealtRowColors 0  rowColorScale 2  FetchVisibleRegions 2, SettingsInvalidate 1"
+"initial load              arrange 2 (11 rows)  alias 0  clusterable 2  banded 2  sources 2  dealtRowColors 0  rowColorScale 2  FetchVisibleRegions 2, GetMultiSampleVariantSources 1, SettingsInvalidate 1
+second region arrival     arrange 0  alias 0  clusterable 0  banded 0  sources 0  dealtRowColors 0  rowColorScale 0  -
+pan, no arrival           arrange 0  alias 0  clusterable 0  banded 0  sources 0  dealtRowColors 0  rowColorScale 0  ClearBlockingStateOnViewportChange 1
+drag reorder              arrange 1 (7 rows)  alias 0  clusterable 1  banded 1  sources 1  dealtRowColors 0  rowColorScale 1  -
+focus                     arrange 1 (7 rows)  alias 34  clusterable 2  banded 2  sources 2  dealtRowColors 0  rowColorScale 1  FetchVisibleRegions 2, SettingsInvalidate 1
+relabel                   arrange 1 (7 rows)  alias 27  clusterable 1  banded 1  sources 1  dealtRowColors 0  rowColorScale 0  -
+recolour                  arrange 1 (7 rows)  alias 27  clusterable 1  banded 1  sources 1  dealtRowColors 0  rowColorScale 0  -
+cluster run lands a tree  arrange 1 (7 rows)  alias 20  clusterable 1  banded 1  sources 1  dealtRowColors 0  rowColorScale 1  -
+region arrival, arranged  arrange 1 (7 rows)  alias 20  clusterable 1  banded 1  sources 1  dealtRowColors 0  rowColorScale 1  -
+reset                     arrange 2 (11 rows)  alias 0  clusterable 2  banded 2  sources 2  dealtRowColors 0  rowColorScale 2  FetchVisibleRegions 2, SettingsInvalidate 1"
+`;
+
+exports[`what each row step recomputes, phased and banded by population 1`] = `
+"initial load           arrange 2 (11 rows)  alias 0  clusterable 2  banded 2  sources 2  dealtRowColors 0  rowColorScale 2  FetchVisibleRegions 2, GetMultiSampleVariantSources 1, SettingsInvalidate 1
+second region arrival  arrange 0  alias 0  clusterable 0  banded 0  sources 0  dealtRowColors 0  rowColorScale 0  -
+drag reorder           arrange 1 (7 rows)  alias 0  clusterable 1  banded 1  sources 1  dealtRowColors 0  rowColorScale 1  -
+focus                  arrange 1 (7 rows)  alias 34  clusterable 2  banded 2  sources 2  dealtRowColors 0  rowColorScale 1  FetchVisibleRegions 2, SettingsInvalidate 1"
 `;
 
 exports[`what each row step recomputes, phased and coloured by population 1`] = `
-"initial load           arrange 2 (11 rows)  alias 0  clusterable 2  sources 2  dealtRowColors 1  rowColorScale 2  FetchVisibleRegions 2, GetMultiSampleVariantSources 1, SettingsInvalidate 1
-second region arrival  arrange 0  alias 0  clusterable 0  sources 0  dealtRowColors 0  rowColorScale 0  -
-drag reorder           arrange 1 (7 rows)  alias 0  clusterable 1  sources 1  dealtRowColors 0  rowColorScale 1  -
-focus                  arrange 1 (7 rows)  alias 34  clusterable 2  sources 2  dealtRowColors 0  rowColorScale 1  FetchVisibleRegions 2, SettingsInvalidate 1"
+"initial load           arrange 2 (11 rows)  alias 0  clusterable 2  banded 2  sources 2  dealtRowColors 1  rowColorScale 2  FetchVisibleRegions 2, GetMultiSampleVariantSources 1, SettingsInvalidate 1
+second region arrival  arrange 0  alias 0  clusterable 0  banded 0  sources 0  dealtRowColors 0  rowColorScale 0  -
+drag reorder           arrange 1 (7 rows)  alias 0  clusterable 1  banded 1  sources 1  dealtRowColors 0  rowColorScale 1  -
+focus                  arrange 1 (7 rows)  alias 34  clusterable 2  banded 2  sources 2  dealtRowColors 0  rowColorScale 1  FetchVisibleRegions 2, SettingsInvalidate 1"
 `;
