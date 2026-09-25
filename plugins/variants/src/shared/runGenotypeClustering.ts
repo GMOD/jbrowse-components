@@ -57,6 +57,7 @@ export async function runGenotypeClustering({
       signal,
       renderingMode,
       sampleInfo,
+      partition: model.clusterPartition,
       statusCallback,
     },
   )

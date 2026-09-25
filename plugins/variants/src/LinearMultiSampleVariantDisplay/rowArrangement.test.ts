@@ -1,3 +1,7 @@
+import { setConf } from '@jbrowse/core/configuration'
+import { getLeafNames } from '@jbrowse/tree-sidebar'
+
+import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // Sample metadata as samplesTsv supplies it: `population` is what "Color by…"
@@ -94,27 +98,24 @@ describe('the facet bands over the arranged order', () => {
     expect(display.rowDomain).toEqual(['S1', 'S0', 'S2'])
   })
 
-  // A dendrogram positions leaf i on row i, so a band under it would draw it
-  // against the wrong rows. The band yields instead — which is also why a
-  // clustering run never has to write the facet slot.
-  it('yields while a cluster tree describes the rows', () => {
+  // The bands win over a whole-cohort tree: a band draws only a clade of
+  // exactly its rows, and AFR (S0, S2) is none in this one.
+  it('wins over a cluster tree that holds no clade of a band', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    // clustered in adapter order, which the facet would not preserve
     display.setRowOrder([{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }], {
       tree: '((S0,S1),S2);',
     })
 
     display.setFacet('population')
 
-    expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
-    expect(display.facet?.field).toBe('population')
+    expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
     expect(display.rowTree).toBe('((S0,S1),S2);')
-    expect(display.hierarchy).toBeDefined()
+    expect(display.hierarchy).toBeUndefined()
+    expect(display.treelessBandCount).toBe(1)
   })
 
-  // ...and it comes back the moment the tree stops describing them.
-  it('bands again once the rows move off the tree', () => {
+  it('keeps the bands when a reorder drops the tree', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
     display.setRowOrder([{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }], {
@@ -156,6 +157,88 @@ describe('the facet bands over the arranged order', () => {
       'S1 HP0',
       'S1 HP1',
     ])
+  })
+})
+
+describe('a tree per band', () => {
+  const COHORT = [
+    { name: 'S0', population: 'AFR' },
+    { name: 'S1', population: 'EUR' },
+    { name: 'S2', population: 'AFR' },
+    { name: 'S3', population: 'EUR' },
+  ]
+
+  async function bandedRun() {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources(COHORT)
+    display.setFacet('population')
+    const partitions: unknown[] = []
+    await runGenotypeClustering({
+      model: display,
+      rpcManager: {
+        call: async (_sessionId, _method, args) => {
+          partitions.push(args.partition)
+          return { order: [2, 0, 3, 1], tree: '((S2,S0),(S3,S1));' }
+        },
+      },
+      sessionId: 'session',
+      regions: [{ assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 9 }],
+      signal: new AbortController().signal,
+      statusCallback: () => {},
+    })
+    return { display, partitions }
+  }
+
+  const bandTrees = (display: { hierarchy?: { children: unknown } }) =>
+    (display.hierarchy?.children as { data: { children?: unknown } }[]).map(
+      clade => getLeafNames(clade as never),
+    )
+
+  it('clusters each band apart and writes one order and one forest', async () => {
+    const { display, partitions } = await bandedRun()
+
+    expect(partitions).toEqual([
+      [
+        ['S0', 'S2'],
+        ['S1', 'S3'],
+      ],
+    ])
+    expect(display.rowDomain).toEqual(['S2', 'S0', 'S3', 'S1'])
+    expect(display.rowTree).toBe('((S2,S0),(S3,S1));')
+    expect(display.hierarchy?.forestRoot).toBe(true)
+    expect(bandTrees(display)).toEqual([
+      ['S2', 'S0'],
+      ['S3', 'S1'],
+    ])
+  })
+
+  it('a sample added to one band hides that band’s tree alone', async () => {
+    const { display } = await bandedRun()
+    display.setSources([...COHORT, { name: 'S4', population: 'EUR' }])
+
+    expect(rowNames(display)).toEqual(['S2', 'S0', 'S3', 'S1', 'S4'])
+    expect(bandTrees(display)).toEqual([['S2', 'S0']])
+    expect(display.treelessBandCount).toBe(1)
+  })
+
+  it('moving the bands keeps every tree', async () => {
+    const { display } = await bandedRun()
+    setConf(display, 'facet', { field: 'population', domain: ['EUR'] })
+
+    expect(rowNames(display)).toEqual(['S3', 'S1', 'S2', 'S0'])
+    expect(bandTrees(display)).toEqual([
+      ['S3', 'S1'],
+      ['S2', 'S0'],
+    ])
+    expect(display.treelessBandCount).toBe(0)
+  })
+
+  it('keys the row colours in the band order', async () => {
+    const { display } = await bandedRun()
+    display.setRowColorField('population')
+    setConf(display, 'facet', { field: 'population', domain: ['EUR'] })
+
+    expect(display.rowColorKeyOrder).toEqual(['EUR'])
   })
 })
 

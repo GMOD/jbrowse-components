@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
@@ -213,10 +214,10 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * An array of `{ match, group, color }` tagging rows by a regex on their
-       * name, pulling matched rows into contiguous blocks (except under a
-       * cluster tree, which already owns the row order) and tinting their
-       * sidebar swatch — never their blocks.
+       * An array of `{ match, group, color }` tagging each row with the group
+       * of the first entry whose regex its name matches, and tinting its
+       * sidebar swatch — never its blocks. `facet: 'group'` stacks the groups
+       * in bands.
        *
        * #example
        * ```js
@@ -232,6 +233,21 @@ export default function configSchemaF() {
         description:
           'array of {match,group,color} tagging rows by a regex on their name; color tints the sidebar swatch only',
       },
+      /**
+       * #slot facet
+       * Stacks the rows in labelled bands: `group` bands them by their
+       * `rowGroups` group, the groups in the order `rowGroups` declares them
+       * unless `domain` lists some first, and the rows no entry matches last.
+       * Each band keeps the rows' arranged order and, where the cluster tree
+       * holds a clade of exactly its rows, draws that clade; a clustering run
+       * clusters each band apart.
+       *
+       * #example
+       * ```js
+       * { facet: 'group' }
+       * ```
+       */
+      facet: facetConfigSchema,
       ...treeSidebarConfigSchemaFields({
         tree: 'show the cluster tree sidebar',
         rowLabels: 'draw the row name over the left of each row',

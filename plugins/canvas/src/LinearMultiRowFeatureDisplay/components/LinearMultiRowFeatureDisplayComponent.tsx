@@ -39,6 +39,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     height,
     sources,
     labelSources,
+    rowBands,
     effectiveRowHeight,
     sidebarOffset,
     showRowSeparators,
@@ -93,6 +94,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         width={canvasWidthPx}
         height={height}
         showLabels={showRowLabels}
+        bands={rowBands}
       />
       <TreeSidebar model={model} />
       <DisplayContextMenu model={model} />

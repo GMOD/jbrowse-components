@@ -31,6 +31,7 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
     showRowLabels,
     showRowSeparators,
     sources,
+    rowBands,
     effectiveRowHeight,
     scrollTop,
     canvasWidthPx,
@@ -69,6 +70,7 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
         top={top}
         scrollTop={scrollTop}
         showLabels={showRowLabels}
+        bands={rowBands}
       />
     </>
   )

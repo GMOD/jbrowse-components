@@ -5,8 +5,6 @@ import configSchemaFactory from '../LinearMultiSampleVariantDisplay/configSchema
 import {
   applyAttributeColors,
   attributeColorDeal,
-  maybeApplyFacet,
-  sortSourcesByAttribute,
 } from './MultiSampleVariantBaseModel.ts'
 
 import type { Source } from './types.ts'
@@ -252,118 +250,5 @@ describe('applyAttributeColors', () => {
       colors,
     )
     expect(row!.labelColor).toBe('green')
-  })
-})
-
-// Guards the facet wiring (setSources / setFacet -> maybeApplyFacet): rows are
-// reordered so each attribute value is contiguous, which is what makes a
-// group-restricted genotype pattern read as one band rather than scattered rows.
-describe('sortSourcesByAttribute', () => {
-  const sources = [
-    { name: 's1', pop: 'EUR' },
-    { name: 's2', pop: 'AFR' },
-    { name: 's3', pop: 'EUR' },
-    { name: 's4', pop: 'AFR' },
-    { name: 's5', pop: 'AFR' },
-  ]
-
-  it('makes each band contiguous, in sorted value order', () => {
-    expect(sortSourcesByAttribute(sources, 'pop').map(s => s.name)).toEqual([
-      's2',
-      's4',
-      's5',
-      's1',
-      's3',
-    ])
-  })
-
-  it('is stable within a band (preserves prior arrangement)', () => {
-    const result = sortSourcesByAttribute(sources, 'pop')
-    expect(result.filter(s => s.pop === 'AFR').map(s => s.name)).toEqual([
-      's2',
-      's4',
-      's5',
-    ])
-  })
-
-  it('orders by value, not by band size', () => {
-    const lopsided = [
-      { name: 'a', pop: 'ZZZ' },
-      { name: 'b', pop: 'ZZZ' },
-      { name: 'c', pop: 'AAA' },
-    ]
-    expect(sortSourcesByAttribute(lopsided, 'pop').map(s => s.name)).toEqual([
-      'c',
-      'a',
-      'b',
-    ])
-  })
-
-  it('puts a domain value first, whatever it sorts as', () => {
-    expect(
-      sortSourcesByAttribute(sources, 'pop', ['EUR']).map(s => s.name),
-    ).toEqual(['s1', 's3', 's2', 's4', 's5'])
-  })
-
-  it('leaves the values a domain does not list sorted behind it', () => {
-    const three = [
-      { name: 'a', pop: 'EUR' },
-      { name: 'b', pop: 'SAS' },
-      { name: 'c', pop: 'AFR' },
-    ]
-    expect(
-      sortSourcesByAttribute(three, 'pop', ['SAS']).map(s => s.name),
-    ).toEqual(['b', 'c', 'a'])
-  })
-
-  it('sorts sources missing the attribute last, in original order', () => {
-    const mixed = [
-      { name: 'x' },
-      { name: 'y', pop: 'EUR' },
-      { name: 'z' },
-      { name: 'w', pop: 'EUR' },
-    ]
-    expect(sortSourcesByAttribute(mixed, 'pop').map(s => s.name)).toEqual([
-      'y',
-      'w',
-      'x',
-      'z',
-    ])
-  })
-})
-
-describe('maybeApplyFacet', () => {
-  const sources = [
-    { name: 's1', pop: 'EUR' },
-    { name: 's2', pop: 'AFR' },
-    { name: 's3', pop: 'EUR' },
-  ]
-
-  it('returns undefined when the field is unset (order untouched)', () => {
-    expect(maybeApplyFacet(undefined, sources)).toBeUndefined()
-  })
-
-  it('bands by the requested attribute', () => {
-    expect(
-      maybeApplyFacet({ field: 'pop', domain: [] }, sources)!.map(s => s.name),
-    ).toEqual(['s2', 's1', 's3'])
-  })
-
-  it("stacks the domain's values first", () => {
-    expect(
-      maybeApplyFacet({ field: 'pop', domain: ['EUR'] }, sources)!.map(
-        s => s.name,
-      ),
-    ).toEqual(['s1', 's3', 's2'])
-  })
-
-  // silent for the reason `attributeColorDeal`'s absent case is
-  it('returns undefined, silently, when the attribute is absent', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(
-      maybeApplyFacet({ field: 'nonexistent', domain: [] }, sources),
-    ).toBeUndefined()
-    expect(warn).not.toHaveBeenCalled()
-    warn.mockRestore()
   })
 })

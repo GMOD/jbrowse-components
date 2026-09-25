@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { runMultiRowClustering } from './runMultiRowClustering.ts'
@@ -121,6 +122,7 @@ function derived(display: Display) {
 // order it names them, indexed into the rows the run was given.
 async function clusterRun(display: Display, tree: string) {
   const leaves = tree.match(/[\w]+/g)!
+  let partition: string[][] | undefined
   await runMultiRowClustering({
     model: display,
     regions: REGIONS,
@@ -128,18 +130,21 @@ async function clusterRun(display: Display, tree: string) {
       call: (
         _sessionId: string,
         _method: string,
-        args: { sources: string[] },
-      ) =>
-        Promise.resolve({
+        args: { sources: string[]; partition?: string[][] },
+      ) => {
+        partition = args.partition
+        return Promise.resolve({
           order: leaves.map(name => args.sources.indexOf(name)),
           tree,
           encoding: 'categorical',
-        }),
+        })
+      },
     } as never,
     sessionId: 'test',
     signal: new AbortController().signal,
     statusCallback: () => {},
   })
+  return partition
 }
 
 test('the rows sort, digits by magnitude, each dealt a palette entry', () => {
@@ -169,19 +174,35 @@ test('itemRgb turns the palette off', () => {
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('rowGroups tag and partition the rows, keyed under short rows', () => {
+test('rowGroups tag the rows and facet group bands them, keyed under short rows', () => {
   const display = loaded(
     {},
-    { rowGroups: ROW_GROUPS, rowHeight: 4 },
+    { rowGroups: ROW_GROUPS, rowHeight: 4, facet: 'group' },
     regionData([...FAMILY, UNANSWERED]),
   )
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('rowGroups yield the order to a tree that describes the rows', async () => {
+test('the bands win over a whole-cohort tree holding no clade of either', async () => {
   const display = loaded({}, { rowGroups: ROW_GROUPS, rowHeight: 4 })
   await clusterRun(display, '((dad,s2),(mom,s10));')
+  setConf(display, 'facet', 'group')
   expect(derived(display)).toMatchSnapshot()
+  expect(display.treelessBandCount).toBe(2)
+})
+
+test('a run under the bands clusters each apart', async () => {
+  const display = loaded(
+    {},
+    { rowGroups: ROW_GROUPS, rowHeight: 4, facet: 'group' },
+  )
+  const partitions = await clusterRun(display, '((s2,s10),(dad,mom));')
+  expect(partitions).toEqual([
+    ['s2', 's10'],
+    ['dad', 'mom'],
+  ])
+  expect(derived(display)).toMatchSnapshot()
+  expect(display.hierarchy?.children).toHaveLength(2)
 })
 
 test('colorRowLabels carries the painted colour, a group swatch winning', () => {

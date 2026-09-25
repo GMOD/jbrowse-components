@@ -510,6 +510,100 @@ exports[`a repartition keeps the arrangement, idle under rows it does not name 1
 }
 `;
 
+exports[`a run under the bands clusters each apart 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": "#e41a1c",
+      "name": "s2",
+    },
+    {
+      "labelColor": "#e41a1c",
+      "name": "s10",
+    },
+    {
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorStringsByIndex": [
+    "#e15759",
+    "#76b7b2",
+    "#4e79a7",
+    "#f28e2c",
+  ],
+  "rowGroupsScale": {
+    "entries": [
+      {
+        "color": "#e41a1c",
+        "label": "Kids",
+        "value": "Kids",
+      },
+      {
+        "color": "#377eb8",
+        "label": "Parents",
+        "value": "Parents",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowGroups",
+    "kind": "categorical",
+    "title": "Row groups",
+  },
+  "rowTree": "((s2,s10),(dad,mom));",
+  "sources": [
+    {
+      "group": "Kids",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "s2",
+    },
+    {
+      "group": "Kids",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "s10",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+  ],
+  "treeDrawn": true,
+}
+`;
+
 exports[`colorRowLabels carries the painted colour, a group swatch winning 1`] = `
 {
   "editableSources": [
@@ -848,7 +942,7 @@ exports[`itemRgb turns the palette off 1`] = `
 }
 `;
 
-exports[`rowGroups tag and partition the rows, keyed under short rows 1`] = `
+exports[`rowGroups tag the rows and facet group bands them, keyed under short rows 1`] = `
 {
   "editableSources": [
     {
@@ -957,100 +1051,6 @@ exports[`rowGroups tag and partition the rows, keyed under short rows 1`] = `
 }
 `;
 
-exports[`rowGroups yield the order to a tree that describes the rows 1`] = `
-{
-  "editableSources": [
-    {
-      "label": undefined,
-      "name": "dad",
-    },
-    {
-      "label": undefined,
-      "name": "s2",
-    },
-    {
-      "label": undefined,
-      "name": "mom",
-    },
-    {
-      "label": undefined,
-      "name": "s10",
-    },
-  ],
-  "labelSources": [
-    {
-      "labelColor": "#377eb8",
-      "name": "dad",
-    },
-    {
-      "labelColor": "#e41a1c",
-      "name": "s2",
-    },
-    {
-      "labelColor": "#377eb8",
-      "name": "mom",
-    },
-    {
-      "labelColor": "#e41a1c",
-      "name": "s10",
-    },
-  ],
-  "rowArrangementIsCustom": true,
-  "rowColorStringsByIndex": [
-    "#4e79a7",
-    "#e15759",
-    "#f28e2c",
-    "#76b7b2",
-  ],
-  "rowGroupsScale": {
-    "entries": [
-      {
-        "color": "#377eb8",
-        "label": "Parents",
-        "value": "Parents",
-      },
-      {
-        "color": "#e41a1c",
-        "label": "Kids",
-        "value": "Kids",
-      },
-    ],
-    "focusesRows": true,
-    "id": "rowGroups",
-    "kind": "categorical",
-    "title": "Row groups",
-  },
-  "rowTree": "((dad,s2),(mom,s10));",
-  "sources": [
-    {
-      "group": "Parents",
-      "label": undefined,
-      "labelColor": "#377eb8",
-      "name": "dad",
-    },
-    {
-      "group": "Kids",
-      "label": undefined,
-      "labelColor": "#e41a1c",
-      "name": "s2",
-    },
-    {
-      "group": "Parents",
-      "label": undefined,
-      "labelColor": "#377eb8",
-      "name": "mom",
-    },
-    {
-      "group": "Kids",
-      "label": undefined,
-      "labelColor": "#e41a1c",
-      "name": "s10",
-    },
-  ],
-  "treeDrawn": true,
-}
-`;
-
 exports[`sort at a column orders rows by the colour painted there 1`] = `
 {
   "editableSources": [
@@ -1137,6 +1137,100 @@ exports[`sort at a column orders rows by the colour painted there 1`] = `
       "label": undefined,
       "labelColor": undefined,
       "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`the bands win over a whole-cohort tree holding no clade of either 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": "#e41a1c",
+      "name": "s2",
+    },
+    {
+      "labelColor": "#e41a1c",
+      "name": "s10",
+    },
+    {
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorStringsByIndex": [
+    "#e15759",
+    "#76b7b2",
+    "#4e79a7",
+    "#f28e2c",
+  ],
+  "rowGroupsScale": {
+    "entries": [
+      {
+        "color": "#e41a1c",
+        "label": "Kids",
+        "value": "Kids",
+      },
+      {
+        "color": "#377eb8",
+        "label": "Parents",
+        "value": "Parents",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowGroups",
+    "kind": "categorical",
+    "title": "Row groups",
+  },
+  "rowTree": "((dad,s2),(mom,s10));",
+  "sources": [
+    {
+      "group": "Kids",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "s2",
+    },
+    {
+      "group": "Kids",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "s10",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "mom",
     },
   ],
   "treeDrawn": false,

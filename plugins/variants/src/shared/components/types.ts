@@ -1,5 +1,5 @@
 import type { Source } from '../types.ts'
-import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
+import type { ClusterHierarchyNode, RowBand } from '@jbrowse/tree-sidebar'
 
 // What the overlays over the rows read — the on-screen one and the SVG
 // export's: the rows, how tall they are, where the viewport sits, and the
@@ -19,6 +19,7 @@ export interface VariantRowsModel {
   // any fetch has landed. "No rows yet" is `loading` / `displayPhase`, not a
   // missing array; see the getter's own note.
   sources: Source[]
+  rowBands: readonly RowBand[]
   showTree: boolean
   showRowLabels: boolean
   showRowSeparators: boolean

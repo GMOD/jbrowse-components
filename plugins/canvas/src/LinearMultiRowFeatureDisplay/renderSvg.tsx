@@ -22,6 +22,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type {
   ClusterHierarchyNode,
   ClusterProvenance,
+  RowBand,
   RowSource,
 } from '@jbrowse/tree-sidebar'
 
@@ -43,6 +44,7 @@ export interface RenderSvgModel extends SvgExportable {
   // The sidebar's view of the rows, and the only one the tree/labels layer
   // should read.
   labelSources: RowSource[]
+  rowBands: readonly RowBand[]
   effectiveRowHeight: number
   treeAreaWidth: number
   showTree: boolean
@@ -131,6 +133,7 @@ function MultiRowSvgBody({
           rowHeight={self.effectiveRowHeight}
           treeAreaWidth={self.treeAreaWidth}
           availableHeight={height}
+          bands={self.rowBands}
         />
       ) : null}
     </>

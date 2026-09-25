@@ -14,7 +14,6 @@ import {
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
-import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
   activeJexlFilters,
@@ -46,7 +45,6 @@ import {
   keptRows,
   loadedRegionIndexAt,
   rowFieldValue,
-  treeDescribesRows,
   valuesByCount,
 } from '@jbrowse/tree-sidebar'
 
@@ -91,6 +89,7 @@ import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 import type {
   IdentityChannel,
   RowAlias,
+  RowBanding,
   RowColorDeal,
   RowColorEntries,
 } from '@jbrowse/tree-sidebar'
@@ -206,48 +205,6 @@ function getOrderedGenotypeCodes(cellData: CellDataResult) {
   }
 }
 
-// Band the sample rows by a metadata attribute (e.g. 'super_pop'), so every
-// member of a value is contiguous and a group-restricted genotype pattern reads
-// as a solid band instead of being scattered across the matrix. Bands order the
-// way every in-track facet orders — `domain` first, then sorted — and a source
-// whose value is missing or not a string files under '', which that comparator
-// puts last. Sorting is stable within a band, so a prior arrangement survives.
-export function sortSourcesByAttribute<S extends Record<string, unknown>>(
-  sources: S[],
-  attribute: string,
-  domain?: readonly string[],
-): S[] {
-  const compare = groupKeyComparator(domain)
-  const keyOf = (source: S) => {
-    const v = source[attribute]
-    return typeof v === 'string' ? v : ''
-  }
-  const ordered = [...new Set(sources.map(keyOf))].sort(compare)
-  const rank = new Map(ordered.map((key, i) => [key, i]))
-  return sources
-    .map((source, idx) => ({ source, idx, rank: rank.get(keyOf(source))! }))
-    .sort((a, b) => (a.rank === b.rank ? a.idx - b.idx : a.rank - b.rank))
-    .map(d => d.source)
-}
-
-// Reorder by the facet field when the attribute is present, else leave the
-// order alone. Mirrors `attributeColorDeal`: an unset or unknown attribute is a
-// no-op rather than an error, so a config naming a column the metadata doesn't
-// have degrades to unfaceted instead of breaking the display.
-export function maybeApplyFacet<S extends Record<string, unknown>>(
-  facet: FacetSetting | undefined,
-  sources: S[],
-): S[] | undefined {
-  if (!facet) {
-    return undefined
-  }
-  const { field, domain } = facet
-  if (sources.some(source => field in source)) {
-    return sortSourcesByAttribute(sources, field, domain)
-  }
-  return undefined
-}
-
 // Warn about both arrangement attributes at once, from the three actions that
 // can newly pair one with a source list: the load, and each setter.
 function warnUnknownArrangementAttributes(
@@ -344,7 +301,9 @@ function fetchRegionsForMode(
  *    tint them (`editableSources`, the dialog's list), each from
  *    `TreeSidebarMixin` over this display's hooks,
  * 3. the focus narrows those (`clusterableSources`, what a run clusters),
- * 4. the `rowColor` palette tints and `facet` bands the result (`sources`).
+ * 4. `facet` stacks those in bands (`bandedSources`), each band's rows in their
+ *    arranged order,
+ * 5. the `rowColor` palette tints the result (`sources`).
  *
  * **The `rowColor` palette wins over a colour the row already carried**, a
  * `samplesTsv` `color` column: a channel bound to a variable beats a per-row
@@ -352,11 +311,11 @@ function fetchRegionsForMode(
  * `rowColor` holds one field's values, so a dialog colour set under the palette
  * turns every row's colour into a `name` pair.
  *
- * **The `facet` band yields while a cluster tree describes the rows**, the
- * mechanism `LinearMultiRowFeatureDisplay` uses for its row groups: the
- * dendrogram positions leaf *i* on row *i*, so a band that moved rows under it
- * would draw it against the wrong ones. A clustering run therefore never has to
- * write the `facet` slot — a session spec setting both keeps both.
+ * **The `facet` bands win over a tree**: a band draws the clade of the tree
+ * whose leaves are exactly its rows in order, and a clustering run under bands
+ * clusters each band apart and writes one forest. A whole-cohort tree under a
+ * facet set afterwards draws where a band happens to be a clade, and the hint
+ * counts the bands without one.
  */
 export default function MultiSampleVariantBaseModelF(
   configSchema: LinearMultiSampleVariantDisplayConfigModel,
@@ -905,8 +864,8 @@ export default function MultiSampleVariantBaseModelF(
            * 'population') is contiguous, or pass '' to clear the facet. Writes
            * the `facet` object, keeping a declared band order while the field
            * is the one already banding, which is the whole of it: the banding
-           * is applied on every read of `sources`, over the arranged order,
-           * and it yields while a cluster tree describes those rows.
+           * is applied on every read of `bandedSources`, over the arranged
+           * order.
            */
           setFacet(field: string) {
             const current = self.facet
@@ -1131,6 +1090,14 @@ export default function MultiSampleVariantBaseModelF(
           return 'labelColor'
         },
         /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the `facet` bands the rows by a samplesTsv
+         * attribute; one no sample carries bands nothing.
+         */
+        get rowBanding(): RowBanding | undefined {
+          return self.facet
+        },
+        /**
          * #method
          * `TreeSidebarMixin`'s hook: phased mode draws a row per haplotype,
          * once `samplePloidy` lands or the order names them.
@@ -1161,15 +1128,8 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * The display rows: `clusterableSources` tinted by the `rowColor`
-         * palette and banded by `facet`.
-         *
-         * **The band yields while a cluster tree describes these rows**, the
-         * mechanism `LinearMultiRowFeatureDisplay` uses for its row groups: the
-         * dendrogram positions leaf *i* on row *i*, so banding under it would
-         * draw it against the wrong rows. A cross-band drag therefore snaps
-         * back while the facet is on and no tree is loaded, and a clustering run
-         * needs no facet write of its own.
+         * The display rows: `bandedSources` tinted by the `rowColor` palette.
+         * A cross-band drag snaps back while the facet is on.
          *
          * **Resolved — an array, never `undefined`**, which is the shared
          * spelling across the row displays. `adapterSamples` and `sourcesBase`
@@ -1180,21 +1140,9 @@ export default function MultiSampleVariantBaseModelF(
          * read unconditionally").
          */
         get sources(): ProcessedSource[] {
-          const rows = self.clusterableSources
+          const rows = self.bandedSources
           const colors = self.rowColorScale
-          const tinted = colors.size ? applyAttributeColors(rows, colors) : rows
-          return maybeApplyFacet(this.bandingFacet, tinted) ?? tinted
-        },
-        /**
-         * #getter
-         * The `facet` the rows are banded by: none while a cluster tree
-         * describes them, which the band yields to.
-         */
-        get bandingFacet(): FacetSetting | undefined {
-          return self.root &&
-            treeDescribesRows(self.root, self.clusterableSources)
-            ? undefined
-            : self.facet
+          return colors.size ? applyAttributeColors(rows, colors) : rows
         },
       }))
       .views(self => ({
@@ -1435,6 +1383,7 @@ export default function MultiSampleVariantBaseModelF(
             self.effectiveRowHeight * this.nrow,
             self.treeAreaWidth,
             self.showBranchLength,
+            self.rowBands,
           )
         },
       }))
@@ -1718,9 +1667,9 @@ export default function MultiSampleVariantBaseModelF(
          * rows do, else the palette's deal, which a focus never re-ranks.
          */
         get rowColorKeyOrder(): readonly string[] {
-          const { bandingFacet: facet, rowColorField } = self
-          return facet?.field === rowColorField
-            ? facet.domain
+          const { rowBanding, rowBands, rowColorField } = self
+          return rowBands.length && rowBanding?.field === rowColorField
+            ? rowBanding.domain
             : [...self.dealtRowColors.keys()].filter(value => value !== '')
         },
 

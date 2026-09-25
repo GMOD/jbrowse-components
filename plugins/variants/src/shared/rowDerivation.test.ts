@@ -192,13 +192,14 @@ describe('allele count', () => {
     expect(derived(display).groupLegend).toBeDefined()
   })
 
-  test('a cluster run lands its order and tree, and a facet yields to it', async () => {
+  test('a cluster run lands its order and tree, and a facet keeps each band clade', async () => {
     const display = loaded({ rowColor: 'population' })
     landCells(display)
     await cluster(display, [2, 0, 3, 1], '((S2,S0),(S3,S1));')
     expect(derived(display)).toMatchSnapshot()
     display.setFacet('population')
     expect(derived(display)).toMatchSnapshot()
+    expect(display.treelessBandCount).toBe(0)
   })
 
   test('a cluster run rotates towards the declared order', async () => {
@@ -307,6 +308,7 @@ describe('phased', () => {
       expect(derived(display)).toMatchSnapshot()
       display.setFacet('population')
       expect(derived(display)).toMatchSnapshot()
+      expect(display.treelessBandCount).toBe(0)
     })
 
     test('a clade focus', async () => {

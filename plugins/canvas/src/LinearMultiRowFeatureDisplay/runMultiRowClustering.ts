@@ -16,6 +16,7 @@ type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 
 export interface MultiRowClusterModel extends ClusterRunModel<RowSource> {
   clusterableSources: RowSource[]
+  clusterPartition?: string[][]
   adapterConfig: Record<string, unknown>
   // The resolved field, never the raw slot: the matrix has to bucket each
   // feature into the row the painting drew it in.
@@ -74,6 +75,7 @@ export async function runMultiRowClustering({
     adapterConfig,
     partitionField: effectivePartitionField,
     clusterField: effectiveClusterField,
+    partition: model.clusterPartition,
     signal,
     statusCallback,
   })

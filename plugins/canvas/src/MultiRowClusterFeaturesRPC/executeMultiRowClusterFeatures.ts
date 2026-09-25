@@ -19,6 +19,7 @@ export async function executeMultiRowClusterFeatures({
   return {
     ...(await clusterMatrix({
       data: rows,
+      partition: args.partition,
       statusCallback: args.statusCallback,
       signal: args.signal,
     })),

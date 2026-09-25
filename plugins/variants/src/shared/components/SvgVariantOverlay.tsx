@@ -39,6 +39,7 @@ const SvgVariantOverlay = ({
 }) => {
   const {
     sources,
+    rowBands,
     effectiveRowHeight: rowHeight,
     scrollTop,
     hierarchy,
@@ -75,6 +76,7 @@ const SvgVariantOverlay = ({
             showLabels={showRowLabels}
             scrollTop={scrollTop}
             availableHeight={availableHeight}
+            bands={rowBands}
           />
         ) : null}
       </g>

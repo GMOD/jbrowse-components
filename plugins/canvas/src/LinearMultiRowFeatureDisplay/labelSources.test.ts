@@ -79,12 +79,13 @@ it('follows the same precedence the blocks follow', () => {
 })
 
 // rowGroups spends the same label box and was asked for by name, so this
-// derived tint yields. It also pulls `mom` to the front while the palette still
-// indexes the unpartitioned order.
+// derived tint yields. Its band pulls `mom` to the front while the palette
+// still indexes the unbanded order.
 it('yields the label box to a rowGroups color', () => {
   const display = makeDisplay(rows(['mom', 'dad']), {
     colorRowLabels: true,
     rowGroups: [{ match: '^mom$', group: 'Parents', color: '#e41a1c' }],
+    facet: 'group',
   })
   expect(display.labelSources.map(s => s.name)).toEqual(['mom', 'dad'])
   expect(display.labelSources.map(s => s.labelColor)).toEqual([

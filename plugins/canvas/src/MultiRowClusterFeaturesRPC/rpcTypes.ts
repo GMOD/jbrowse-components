@@ -16,6 +16,8 @@ export interface MultiRowClusterFeaturesArgs {
   partitionField: string
   // '' clusters on presence alone: which bins each row covers
   clusterField: string
+  // the rows of each band, which cluster apart
+  partition?: string[][]
 }
 
 export interface MultiRowClusterFeaturesResult {

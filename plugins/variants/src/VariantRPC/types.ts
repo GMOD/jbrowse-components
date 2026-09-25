@@ -26,13 +26,11 @@ export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sampleInfo?: Record<string, SampleInfo>
 }
 
-// The payload is `GetGenotypeMatrixArgs` exactly — clustering adds nothing to
-// what gets fetched. It existed as its own interface only to add a REQUIRED
-// `statusCallback`, which made this the one method in the registry a caller had
-// to hand a progress callback to; that belongs to the call (RpcHandles, where it
-// is optional like everywhere else), so the helper takes it and the entry does
-// not.
-export type ClusterGenotypeMatrixArgs = GetGenotypeMatrixArgs
+// What gets fetched is `GetGenotypeMatrixArgs` exactly; `partition` names the
+// rows of each band, which cluster apart (`clusterMatrix`).
+export interface ClusterGenotypeMatrixArgs extends GetGenotypeMatrixArgs {
+  partition?: string[][]
+}
 
 export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // Which samples get rows, as a SET — never an order. The worker builds its own

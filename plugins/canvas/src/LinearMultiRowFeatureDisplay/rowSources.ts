@@ -9,46 +9,52 @@ export interface RowGroup {
   color: string
 }
 
+interface CompiledRowGroup extends RowGroup {
+  re: RegExp
+}
+
 /**
- * The group color lands in `labelColor` (the sidebar swatch) rather than
- * `color`, which this display spends on the per-feature painting. An entry
- * whose `match` is not a valid regex matches nothing, so one bad config line
- * costs its own stripe rather than the display.
+ * The entries whose `match` compiles. An entry whose `match` is not a valid
+ * regex matches nothing, so one bad config line costs its own stripe rather
+ * than the display.
  */
-export function applyRowGroups(
-  sources: RowSource[],
-  rowGroups: RowGroup[],
-  { partition }: { partition: boolean },
-): RowSource[] {
-  const compiled = rowGroups.flatMap(g => {
+export function compileRowGroups(rowGroups: RowGroup[]): CompiledRowGroup[] {
+  return rowGroups.flatMap(g => {
     try {
       return [{ ...g, re: new RegExp(g.match) }]
     } catch {
       return []
     }
   })
-  if (!compiled.length) {
-    return sources
-  }
-  const tagged = sources.map((s, idx) => {
-    const rank = compiled.findIndex(g => g.re.test(s.name))
-    const hit = rank === -1 ? undefined : compiled[rank]!
-    return {
-      source: hit
-        ? { ...s, group: hit.group, labelColor: s.labelColor ?? hit.color }
-        : s,
-      rank: rank === -1 ? compiled.length : rank,
-      idx,
-    }
-  })
-  if (!partition) {
-    return tagged.map(t => t.source)
-  }
-  // Within a block the incoming order survives, so a `sortRowsBy` still orders
-  // each block by the value it sorted on.
-  return tagged
-    .sort((a, b) => a.rank - b.rank || a.idx - b.idx)
-    .map(t => t.source)
+}
+
+/** The first entry a row name matches. */
+export function rowGroupOf(
+  compiled: readonly CompiledRowGroup[],
+  name: string,
+) {
+  return compiled.find(g => g.re.test(name))
+}
+
+/**
+ * Each row tagged with the group of the first entry its name matches, in the
+ * order the rows came in. The group color lands in `labelColor` (the sidebar
+ * swatch) rather than `color`, which this display spends on the per-feature
+ * painting; `facet: 'group'` is what stacks the groups in bands.
+ */
+export function applyRowGroups(
+  sources: RowSource[],
+  rowGroups: RowGroup[],
+): RowSource[] {
+  const compiled = compileRowGroups(rowGroups)
+  return compiled.length
+    ? sources.map(s => {
+        const hit = rowGroupOf(compiled, s.name)
+        return hit
+          ? { ...s, group: hit.group, labelColor: s.labelColor ?? hit.color }
+          : s
+      })
+    : sources
 }
 
 /**

@@ -22,6 +22,7 @@ export async function executeClusterGenotypeMatrix({
     // mark with NaN have to become numbers here. Site-mean imputation makes
     // them contribute nothing to the distance rather than dominating it.
     data: imputeMissingToSiteMean(matrix),
+    partition: args.partition,
     statusCallback: args.statusCallback,
     signal: args.signal,
   })

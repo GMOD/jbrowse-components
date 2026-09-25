@@ -150,6 +150,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     renderState,
     sources,
     labelSources: sources,
+    rowBands: [],
     effectiveRowHeight: 50,
     treeAreaWidth: 80,
     showTree: false,

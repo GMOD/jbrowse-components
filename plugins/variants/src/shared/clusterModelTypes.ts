@@ -42,5 +42,7 @@ export interface ReducedModel extends IStateTreeNode {
   // hand back a one-leaf dendrogram — which `clusterMatrix` now refuses outright
   // (MIN_CLUSTER_ROWS), so ungated it is an error dialog rather than a no-op.
   hasClusterableRows: boolean
+  // The clustered rows by band, which cluster apart; undefined unbanded.
+  clusterPartition?: string[][]
   setRowOrder: (rows: readonly { name: string }[], run?: ClusterRun) => void
 }

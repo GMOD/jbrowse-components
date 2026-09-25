@@ -20,6 +20,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -44,9 +45,9 @@ import {
   resetRowOrderMenuItems,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
+  rowFieldValue,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
-  treeDescribesRows,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -87,8 +88,10 @@ import { refuseRetiredState } from './retiredSettings.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
+  compileRowGroups,
   orderPartitionValues,
   resolveRowColorStrings,
+  rowGroupOf,
 } from './rowSources.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
@@ -110,6 +113,7 @@ import type { RowGroup } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
+import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type {
   HighlightRect,
   HighlightStyle,
@@ -118,6 +122,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { RowTable } from '@jbrowse/render-core/marks'
 import type {
+  RowBanding,
   RowColorDeal,
   RowSource,
   UnlistedRowsSort,
@@ -281,6 +286,26 @@ export default function stateModelFactory(
       get rowGroups(): RowGroup[] {
         return readConfObject(self.conf, 'rowGroups')
       },
+      /**
+       * #getter
+       * The `facet` object as written: `group` stacks the rows in bands by
+       * their `rowGroups` group; undefined draws no bands.
+       */
+      get facet(): FacetSetting | undefined {
+        return facetSettingOf({
+          field: getConf(self, ['facet', 'field']),
+          domain: getConf(self, ['facet', 'domain']),
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The `rowGroups` entries whose `match` compiles.
+       */
+      get rowGroupMatchers() {
+        return compileRowGroups(self.rowGroups)
+      },
     }))
     .views(featureColorViews)
     .views(self => {
@@ -317,6 +342,35 @@ export default function stateModelFactory(
          */
         get unlistedRowsSort(): UnlistedRowsSort {
           return 'sorted'
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the `facet`, its bands listed first and
+         * then the `rowGroups` groups in the order they are declared.
+         */
+        get rowBanding(): RowBanding | undefined {
+          const { facet } = self
+          return facet
+            ? {
+                field: facet.field,
+                domain: [
+                  ...facet.domain,
+                  ...self.rowGroups.map(({ group }) => group),
+                ],
+              }
+            : undefined
+        },
+        /**
+         * #method
+         * `TreeSidebarMixin`'s hook: under `facet: 'group'` the group of the
+         * first `rowGroups` entry a row's name matches, since the rows are
+         * tagged only after the arrangement.
+         */
+        rowBand(row: RowSource): string {
+          const field = self.facet?.field ?? ''
+          return field === 'group'
+            ? (rowGroupOf(self.rowGroupMatchers, row.name)?.group ?? '')
+            : rowFieldValue(row, field)
         },
         /**
          * #method
@@ -429,23 +483,17 @@ export default function stateModelFactory(
        * filter matches the same `name`s.
        */
       get groupedSources(): RowSource[] {
-        return applyRowGroups(self.editableSources, self.rowGroups, {
-          partition: false,
-        })
+        return applyRowGroups(self.editableSources, self.rowGroups)
       },
     }))
     .views(self => ({
       /**
        * #getter
        * The display rows, which render order, label order and `rowIndexByValue`
-       * all key off. `rowGroups` decorates them here but partitions them into
-       * blocks only when no cluster tree already names this order.
+       * all key off: `bandedSources` tagged with their `rowGroups` group.
        */
       get sources(): RowSource[] {
-        const rows = self.clusterableSources
-        return applyRowGroups(rows, self.rowGroups, {
-          partition: !(self.root && treeDescribesRows(self.root, rows)),
-        })
+        return applyRowGroups(self.bandedSources, self.rowGroups)
       },
     }))
     .views(self => ({
@@ -752,6 +800,7 @@ export default function stateModelFactory(
           self.nrow * self.effectiveRowHeight,
           self.treeAreaWidth,
           self.showBranchLength,
+          self.rowBands,
         )
       },
     }))
