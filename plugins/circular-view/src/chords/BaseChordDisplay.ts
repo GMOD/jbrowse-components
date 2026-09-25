@@ -206,16 +206,22 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * what the chord components draw: `features`, narrowed to
-       * `visibleFeatureIds`
+       * `features`, narrowed to `visibleFeatureIds`
        */
-      get drawnFeatures() {
+      get visibleFeatures() {
         const visible = self.visibleFeatureIds
           ? new Set(self.visibleFeatureIds)
           : undefined
         return visible
           ? self.features?.filter(f => visible.has(f.id()))
           : self.features
+      },
+      /**
+       * #getter
+       * what the chord components draw
+       */
+      get drawnFeatures(): Feature[] | undefined {
+        return this.visibleFeatures
       },
       /**
        * #getter

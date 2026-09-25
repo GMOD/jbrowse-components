@@ -1,5 +1,4 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { cast, types } from '@jbrowse/mobx-state-tree'
@@ -19,7 +18,6 @@ import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 
 const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
 
@@ -155,13 +153,6 @@ export function TrackColorsMixin() {
       hideUnlabelled: types.stripDefault(types.boolean, false),
     })
     .volatile(() => ({
-      /**
-       * #volatile
-       * The field whose legend the reader closed. The legend comes back with
-       * the next field that has one, so a dismissal is scoped to the field it
-       * was made in rather than being a setting to find again.
-       */
-      colorLegendDismissedFor: undefined as string | undefined,
       /**
        * #volatile
        * The widest span each numeric channel has been seen to cover, over every
@@ -362,18 +353,6 @@ export function TrackColorsMixin() {
           isColumnField(field)
         )
       },
-      /**
-       * #getter
-       * The legend-host half of `LegendMixin` a view needs: whether the key
-       * draws, which is the mode having one and the reader not having closed
-       * it in this mode. `ChromeLegend` and `SvgLegend` read it.
-       */
-      get showLegend(): boolean {
-        return (
-          this.hasLegendKey &&
-          self.colorLegendDismissedFor !== this.colorByField
-        )
-      },
     }))
     .views(self => ({
       /**
@@ -432,15 +411,6 @@ export function TrackColorsMixin() {
             ? { ...scale, domain: [...self.colorDomain] }
             : scale,
         )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The key `ChromeLegend` draws on screen and `SvgLegend` in the export.
-       */
-      get legendSpec(): LegendSpec {
-        return legendSpecOf(self.colorScales)
       },
     }))
     .actions(self => {
@@ -524,21 +494,6 @@ export function TrackColorsMixin() {
          */
         clearTrackColors() {
           self.trackColors.clear()
-        },
-        /**
-         * #action
-         * The legend host's setter: closing the key hides it for this mode
-         * only, so picking another mode brings its key up.
-         */
-        setShowLegend(show: boolean) {
-          self.colorLegendDismissedFor = show ? undefined : self.colorByField
-        },
-        /**
-         * #action
-         * One section is the whole key here.
-         */
-        dismissLegendSection() {
-          self.colorLegendDismissedFor = self.colorByField
         },
       }
     })

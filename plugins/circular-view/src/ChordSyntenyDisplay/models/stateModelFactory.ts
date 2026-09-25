@@ -1,15 +1,22 @@
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-  setConf,
-} from '@jbrowse/core/configuration'
-import { getSession, openFeatureWidget } from '@jbrowse/core/util'
-import { colord } from '@jbrowse/core/util/colord'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
+  getContainingTrack,
+  getSession,
+  openFeatureWidget,
+} from '@jbrowse/core/util'
+import {
+  abgrAlpha,
+  abgrToCssRgba,
+  cssColorToABGR,
+  withAbgrAlpha,
+} from '@jbrowse/core/util/colorBits'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  colorSchemes,
+  PRESET_ATTRIBUTES,
+  createComparativeColorFunction,
+  declaredAttributes,
+  featureAttributeRanges,
+  featureColorInputs,
   getMate,
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
@@ -19,22 +26,19 @@ import {
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
-import { CHORD_COLOR_BY } from './configSchema.ts'
 
 import type { ExportSvgOptions } from '../../CircularView/model.ts'
-import type {
-  ChordSyntenyDisplayConfigModel,
-  RibbonColorBy,
-} from './configSchema.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
+import type { AttributeRange } from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
 
-const RIBBON_ALPHA = 0.35
+// what a ribbon paints under the view's default mode, at the view's `alpha`
+const DEFAULT_RIBBON_COLOR = 'rgb(70,130,180)'
 
-function translucent(color: string) {
-  return colord(color).alpha(RIBBON_ALPHA).toRgbString()
+function atAlpha(abgr: number, alpha: number) {
+  return abgrToCssRgba(withAbgrAlpha(abgr, Math.round(abgrAlpha(abgr) * alpha)))
 }
 
 /**
@@ -88,15 +92,6 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
     .views(self => ({
       /**
        * #getter
-       * what a ribbon's hue says: the `color` config slot, the chromosome of
-       * the circle's first genome it joins (that arc's ideogram color), or the
-       * strand. The strand is also the twist in every mode
-       */
-      get colorBy(): RibbonColorBy {
-        return getConf(self, 'colorBy')
-      },
-      /**
-       * #getter
        * `loaded`, and no reorder this launch asked for still owed. Ribbons
        * drawn before it would be drawn against the arcs it is about to move;
        * a reorder that failed keeps this false and shows as `displayPhase`
@@ -124,52 +119,112 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the ribbon fill the circle's key shows, when every ribbon shares one
+       * the span or label list each colour channel covers over the held
+       * alignments, which the view's ramps and key scale to
        */
-      get legendColor(): string | undefined {
-        const value: unknown = self.configuration.color
-        return this.colorBy === 'default' &&
-          typeof value === 'string' &&
-          !isJexl(value)
-          ? value
-          : undefined
+      get attributeRanges(): Record<string, AttributeRange> {
+        return featureAttributeRanges(self.features ?? [], this.channelNames)
       },
-      // #region contextVariableRead
       /**
        * #getter
-       * the resting fill of each ribbon under `colorBy`
+       * the colour channels the view's modes can paint: the preset
+       * measurements and the columns the adapter declares
+       */
+      get channelNames() {
+        return [...PRESET_ATTRIBUTES, ...declaredAttributes(self.adapterConfig)]
+      },
+      /**
+       * #method
+       * an alignment's two refNames with the circle's first genome's end
+       * first, the order the view's `query` and `target` modes read them in
+       */
+      firstGenomeEnds(feature: Feature): readonly [string, string] {
+        const [first] = self.trackAssemblyNames
+        const mate = getMate(feature)
+        const own: string = feature.get('refName')
+        return !mate
+          ? [own, own]
+          : self.assemblyOf(
+                feature.get('assemblyName') as string | undefined,
+              ) === first
+            ? [own, mate.refName]
+            : [mate.refName, own]
+      },
+      /**
+       * #getter
+       * each alignment's resting fill under the view's `colorBy` and `alpha`,
+       * by feature id. A chromosome mode paints the ideogram colour of the
+       * chromosome it joins, so a ribbon matches the arc it leaves
+       */
+      get ribbonColors(): Map<string, string> {
+        const { view } = self
+        const features = self.features ?? []
+        const field = view.colorByField
+        const [first, second = first] = self.trackAssemblyNames
+        const genome =
+          field === 'query' ? first : field === 'target' ? second : undefined
+        const assembly =
+          genome === undefined
+            ? undefined
+            : getSession(self).assemblyManager.get(genome)
+        const color = createComparativeColorFunction({
+          field,
+          data: featureColorInputs(
+            features,
+            f => this.firstGenomeEnds(f),
+            this.channelNames,
+          ),
+          trackColor: view.trackColorFor(
+            getContainingTrack(self).configuration.trackId,
+          ),
+          defaultColor: cssColorToABGR(
+            view.colorByValue ?? DEFAULT_RIBBON_COLOR,
+          ),
+          nameColor: assembly
+            ? name =>
+                assembly.getRefNameColor(self.canonicalRefName(genome!, name))
+            : undefined,
+          attributeRanges: view.attributeRanges,
+          hideUnlabelled: view.hideUnlabelled,
+        })
+        return new Map(
+          features.map((f, i) => [f.id(), atAlpha(color(i), view.alpha)]),
+        )
+      },
+      /**
+       * #getter
+       * the resting fill of each ribbon
        */
       get ribbonFill(): (feature: Feature) => string {
-        const { configuration } = self
-        const { colorBy } = this
-        const configured = (feature: Feature) =>
-          readConfObject(configuration, 'color', { feature })
-        // #endregion
-        if (colorBy === 'strand') {
-          const { posColor, negColor } = colorSchemes.strand
-          const pos = translucent(posColor)
-          const neg = translucent(negColor)
-          return feature => (feature.get('strand') === -1 ? neg : pos)
-        }
-        const [first] = self.trackAssemblyNames
-        if (colorBy !== 'chromosome' || first === undefined) {
-          return configured
-        }
-        const assembly = getSession(self).assemblyManager.get(first)
-        return feature => {
-          const mate = getMate(feature)
-          const refName =
-            mate &&
-            self.assemblyOf(
-              feature.get('assemblyName') as string | undefined,
-            ) !== first
-              ? mate.refName
-              : feature.get('refName')
-          const color = assembly?.getRefNameColor(
-            self.canonicalRefName(first, refName),
-          )
-          return color ? translucent(color) : configured(feature)
-        }
+        const colors = this.ribbonColors
+        return feature => colors.get(feature.id()) ?? DEFAULT_RIBBON_COLOR
+      },
+      /**
+       * #getter
+       * what the ribbons draw: the visible alignments at least the view's
+       * `minAlignmentLength` long on their own side
+       */
+      get drawnFeatures(): Feature[] | undefined {
+        const min = self.view.minAlignmentLength
+        return min > 0
+          ? self.visibleFeatures?.filter(
+              f => Math.abs(f.get('end') - f.get('start')) >= min,
+            )
+          : self.visibleFeatures
+      },
+      /**
+       * #getter
+       * the ribbon fill the circle's key shows: the one colour every ribbon
+       * paints when the view's mode keys nothing of its own
+       */
+      get legendColor(): string | undefined {
+        const { view } = self
+        return view.colorByField === ''
+          ? atAlpha(
+              cssColorToABGR(view.colorByValue ?? DEFAULT_RIBBON_COLOR),
+              view.alpha,
+            )
+          : undefined
       },
       /**
        * #getter
@@ -230,12 +285,6 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         /**
          * #action
          */
-        setColorBy(colorBy: RibbonColorBy) {
-          setConf(self, 'colorBy', colorBy)
-        },
-        /**
-         * #action
-         */
         onRibbonClick(feature: Feature) {
           openFeatureWidget(self, feature.toJSON(), {
             widget: self.featureWidgetType,
@@ -257,25 +306,6 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       }
     })
     .views(self => ({
-      /**
-       * #method
-       */
-      trackMenuItems(): MenuItem[] {
-        return [
-          {
-            label: 'Color by...',
-            type: 'subMenu',
-            subMenu: CHORD_COLOR_BY.map(({ value, label }) => ({
-              label,
-              type: 'radio' as const,
-              checked: self.colorBy === value,
-              onClick: () => {
-                self.setColorBy(value)
-              },
-            })),
-          },
-        ]
-      },
       /**
        * #method
        */

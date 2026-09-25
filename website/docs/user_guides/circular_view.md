@@ -94,11 +94,11 @@ and the dotplot run, over the same alignment file, and it is offered on a
 two-genome circle carrying a synteny track and nowhere else.
 
 The ribbons are one flat translucent fill by default. **Color by...** in the
-track's menu paints each ribbon the color of the first genome's chromosome it
-joins, matching that arc of the ideogram, or by strand. `color` on the display
-is a `jexl:` expression over the feature, so a score or an identity can drive
-the default fill instead — see
-[the display's config schema](/docs/config/chordsyntenydisplay).
+view's menu offers what the linear synteny view's palette offers: either
+genome's chromosome (in that arc's ideogram color), strand, identity or another
+measurement, a column the track declares, or one color per track when several
+overlay. **Opacity** and **Min length** sit beside it, and as view settings all
+three go in a session as `colorBy`, `alpha` and `minAlignmentLength`.
 
 ## Interacting with chords
 

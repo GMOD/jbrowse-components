@@ -4,6 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import {
   clamp,
@@ -37,12 +38,18 @@ import {
 import { cast, destroy, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
+  SyntenyColorsMixin,
+  colorByMenuItems,
+  colorByMenuTargetFor,
   isSyntenyTrack,
+  minLengthMenuItem,
+  opacityMenuItem,
   ImportFormSyntenyMixin,
   withDiagonalizeProgress,
 } from '@jbrowse/synteny-core'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 
@@ -61,14 +68,22 @@ import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { AssemblyNameResolver, TrackInit } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  AttributeRange,
+  CigarOpMask,
+  ComparativeTrackModel,
+} from '@jbrowse/synteny-core'
 
 const twoPi = 2 * Math.PI
+
+const DEFAULT_RIBBON_ALPHA = 0.25
 
 // the figure never grows past this, so a zoomed-in circle stays a size the
 // browser can lay out
@@ -134,6 +149,7 @@ export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   loaded: boolean
   fetchInert: boolean
   displayError: unknown
+  attributeRanges: Record<string, AttributeRange>
   alignmentsBetween: (
     referenceAssembly: string,
     currentAssembly: string,
@@ -280,6 +296,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       BaseViewModel,
       DiagonalizeProgressMixin(),
       ImportFormSyntenyMixin(),
+      SyntenyColorsMixin({ defaultAlpha: DEFAULT_RIBBON_ALPHA }),
       types.model({
         /**
          * #property
@@ -646,6 +663,29 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyNames() {
         return [...new Set(self.displayedRegions.map(r => r.assemblyName))]
+      },
+      /**
+       * #method
+       * the tracks drawing ribbons, which the view's colour settings paint
+       */
+      syntenyTracks(): ComparativeTrackModel[] {
+        return self.tracks.filter(
+          track => track.displays[0]?.type === 'ChordSyntenyDisplay',
+        )
+      },
+      /**
+       * #method
+       * each ribbon display's attribute spans, over the alignments it holds
+       */
+      loadedAttributeRanges(): Record<string, AttributeRange>[] {
+        return this.chordSyntenyDisplays.map(d => d.attributeRanges)
+      },
+      /**
+       * #method
+       * a ribbon draws no indel blocks, so the key lists none
+       */
+      legendCigarOps(): CigarOpMask {
+        return 0
       },
       /**
        * #getter
@@ -1285,8 +1325,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * one row per track: its name beside the color or ramp it paints with
        */
-      get legendSpec() {
-        return circularLegendSpec(self)
+      get legendSpec(): LegendSpec {
+        const { sections } = circularLegendSpec(self)
+        return {
+          sections:
+            self.chordSyntenyDisplays.length > 0 && self.hasLegendKey
+              ? [...sections, ...legendSpecOf(self.colorScales).sections]
+              : sections,
+        }
       },
       /**
        * #method
@@ -1352,6 +1398,18 @@ function stateModelFactory(pluginManager: PluginManager) {
                     self.openReorderChromosomesDialog()
                   },
                 },
+              ]
+            : []),
+          ...(self.chordSyntenyDisplays.length > 0
+            ? [
+                {
+                  label: 'Color by...',
+                  icon: PaletteIcon,
+                  type: 'subMenu' as const,
+                  subMenu: colorByMenuItems(colorByMenuTargetFor(self)),
+                },
+                opacityMenuItem(self),
+                minLengthMenuItem(self),
               ]
             : []),
           {

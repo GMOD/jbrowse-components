@@ -1,44 +1,25 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { TrackColorsMixin } from './TrackColorsMixin.ts'
-import { colorableColumns } from './attributeChannels.ts'
+import { SyntenyColorsMixin } from './SyntenyColorsMixin.ts'
 import { trackHasLodTiers } from './lodTier.ts'
-import { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthHelp.ts'
 
-import type { ComparativeTrackModel, LodMode } from './lodTier.ts'
+import type { LodMode } from './lodTier.ts'
+import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 
 /**
  * #stateModel SyntenyViewMixin
  *
- * What the linear synteny and dotplot views share beyond `TrackColorsMixin`:
- * the settings that mean one thing in both, and what the view's synteny
- * tracks answer. A view supplies `syntenyTracks()` and its opacity default;
- * the palette, the declared columns and the level-of-detail gate follow.
+ * What the linear synteny and dotplot views share beyond `SyntenyColorsMixin`:
+ * the level-of-detail tier every track draws at, and a colour key the reader
+ * closes per mode.
  */
 export function SyntenyViewMixin({ defaultAlpha }: { defaultAlpha: number }) {
   return types
     .compose(
       'SyntenyViewMixin',
-      TrackColorsMixin(),
+      SyntenyColorsMixin({ defaultAlpha }),
       types.model({
-        /**
-         * #property
-         * Opacity of every alignment, 0 to 1. A uniform, so a slider drag
-         * recolours nothing. The synteny view defaults it low for dense
-         * unfiltered hairballs (with minAlignmentLength set, ~0.4 gives
-         * stronger colour); the dotplot defaults it opaque.
-         */
-        alpha: types.stripDefault(types.number, defaultAlpha),
-        /**
-         * #property
-         * Hide alignment blocks shorter than this many bp, which cuts
-         * whole-genome hairball noise.
-         */
-        minAlignmentLength: types.stripDefault(
-          types.number,
-          DEFAULT_MIN_ALIGNMENT_LENGTH,
-        ),
         /**
          * #property
          * Level-of-detail tier selection for PIF adapters. 'auto' uses the
@@ -53,23 +34,16 @@ export function SyntenyViewMixin({ defaultAlpha }: { defaultAlpha: number }) {
         ),
       }),
     )
-    .views(() => ({
+    .volatile(() => ({
       /**
-       * #method
-       * Overridable hook: every synteny track in the view, in paint order.
+       * #volatile
+       * The field whose legend the reader closed. The legend comes back with
+       * the next field that has one, so a dismissal is scoped to the field it
+       * was made in rather than being a setting to find again.
        */
-      syntenyTracks(): ComparativeTrackModel[] {
-        return []
-      },
+      colorLegendDismissedFor: undefined as string | undefined,
     }))
     .views(self => ({
-      /**
-       * #getter
-       * The `alpha` a reset returns to.
-       */
-      get defaultAlpha() {
-        return defaultAlpha
-      },
       /**
        * #getter
        * Whether any track's adapter has tiers to switch between, which gates
@@ -79,56 +53,46 @@ export function SyntenyViewMixin({ defaultAlpha }: { defaultAlpha: number }) {
         return self.syntenyTracks().some(trackHasLodTiers)
       },
       /**
-       * #method
+       * #getter
+       * The legend-host half of `LegendMixin` a view needs: whether the key
+       * draws, which is the mode having one and the reader not having closed
+       * it in this mode. `ChromeLegend` and `SvgLegend` read it.
        */
-      colorableTrackConfigs() {
-        return self.syntenyTracks().map(t => {
-          const { trackId, name } = t.configuration
-          return { trackId, name }
-        })
-      },
-      /**
-       * #method
-       * The columns the tracks declare in their adapter's `attributeColumns`
-       * (the ortholog-table adapter's slot), one colour mode each.
-       */
-      colorableAttributeNames() {
-        return colorableColumns(
-          self.syntenyTracks().flatMap(t => {
-            const declared = getConf(t, ['adapter', 'attributeColumns']) as
-              | string[]
-              | undefined
-            return declared ?? []
-          }),
+      get showLegend(): boolean {
+        return (
+          self.hasLegendKey &&
+          self.colorLegendDismissedFor !== self.colorByField
         )
       },
       /**
-       * #method
-       * The key's chips are composited by the plot's opacity, as the
-       * alignments are.
+       * #getter
+       * The key `ChromeLegend` draws on screen and `SvgLegend` in the export.
        */
-      legendAlpha() {
-        return self.alpha
+      get legendSpec(): LegendSpec {
+        return legendSpecOf(self.colorScales)
       },
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setAlpha(value: number) {
-        self.alpha = value
-      },
-      /**
-       * #action
-       */
-      setMinAlignmentLength(value: number) {
-        self.minAlignmentLength = value
-      },
-      /**
-       * #action
-       */
       setLodMode(value: LodMode) {
         self.lodMode = value
+      },
+      /**
+       * #action
+       * The legend host's setter: closing the key hides it for this mode
+       * only, so picking another mode brings its key up.
+       */
+      setShowLegend(show: boolean) {
+        self.colorLegendDismissedFor = show ? undefined : self.colorByField
+      },
+      /**
+       * #action
+       * One section is the whole key here.
+       */
+      dismissLegendSection() {
+        self.colorLegendDismissedFor = self.colorByField
       },
     }))
 }

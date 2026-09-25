@@ -152,20 +152,33 @@ test('reload() rewakes the fetch after an error', async () => {
   expect(display.features).toHaveLength(1)
 }, 20000)
 
-test('colorBy chromosome paints a ribbon the color of its first-genome arc', async () => {
-  const { session, display } = await setup(['volvox', 'volvox2'])
+// query paints the first genome's end and target the second, each in its
+// chromosome's ideogram colour, so a ribbon matches the arc it leaves; every
+// mode paints at the view's alpha
+test("the view's colorBy paints each ribbon, at the view's alpha", async () => {
+  const { session, view, display } = await setup(['volvox', 'volvox2'])
   const [feature] = display.features!
-  const ideogram = session.assemblyManager
-    .get('volvox')!
-    .getRefNameColor('ctgA')!
+  const ideogram = (assembly: string, refName: string) =>
+    session.assemblyManager.get(assembly)!.getRefNameColor(refName)!
 
-  display.setColorBy('chromosome')
-  expect(display.ribbonFill(feature)).toBe(
-    colord(ideogram).alpha(0.35).toRgbString(),
+  view.setColorBy('query')
+  expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
+    colord(ideogram('volvox', 'ctgA')).alpha(0.25).toRgbString(),
   )
+  view.setColorBy('target')
+  expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
+    colord(ideogram('volvox2', 'ctgB')).alpha(0.25).toRgbString(),
+  )
+  view.setColorBy('strand')
+  view.setAlpha(0.5)
+  expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
+    colord('#00f').alpha(0.5).toRgbString(),
+  )
+}, 20000)
 
-  display.setColorBy('strand')
-  expect(display.ribbonFill(feature)).toBe(
-    colord('#00f').alpha(0.35).toRgbString(),
-  )
+test("a ribbon shorter than the view's minimum length is not drawn", async () => {
+  const { view, display } = await setup(['volvox', 'volvox2'])
+  expect(display.drawnFeatures).toHaveLength(1)
+  view.setMinAlignmentLength(101)
+  expect(display.drawnFeatures).toHaveLength(0)
 }, 20000)

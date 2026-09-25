@@ -83,6 +83,13 @@ export function paletteColorAt(position: number) {
 export type RefNamePosition = (refName: string) => number | undefined
 
 /**
+ * A chromosome's own colour, in place of the palette: the circular view paints
+ * a ribbon in its chromosome's ideogram colour (`Assembly.getRefNameColor`), so
+ * the ribbon matches the arc it leaves. Undefined falls back to the palette.
+ */
+export type RefNameColor = (refName: string) => string | undefined
+
+/**
  * #api
  * The `RefNamePosition` a chromosome-painting field hands its palette out by:
  * `query` reads the first of the alignment's two assemblies, `target` the
@@ -125,9 +132,12 @@ export function makeNameColorFunction(
   dict: readonly string[],
   ids: Uint32Array,
   namePosition?: RefNamePosition,
+  nameColor?: RefNameColor,
 ) {
   const lut = Uint32Array.from(dict, name =>
-    cssColorToABGR(refNameColor(name, namePosition?.(name))),
+    cssColorToABGR(
+      nameColor?.(name) ?? refNameColor(name, namePosition?.(name)),
+    ),
   )
   return (index: number) => lut[ids[index]!]!
 }
@@ -267,6 +277,7 @@ export function createComparativeColorFunction({
   trackColor,
   defaultColor,
   namePosition,
+  nameColor,
   attributeRanges,
   hideUnlabelled = false,
 }: {
@@ -280,6 +291,8 @@ export function createComparativeColorFunction({
   // bucket. Only the display knows it — the assembly is a session fact, not
   // something in the feature data — so it is passed in rather than derived.
   namePosition?: RefNamePosition
+  // a chromosome's own colour, ahead of the palette `namePosition` indexes
+  nameColor?: RefNameColor
   // The domain a column's ramp scales to. A VIEW-level input, like
   // `namePosition` and for the same reason: a fetch's payload knows only the span
   // of the slice it holds, and painting from that re-maps every feature onto
@@ -309,12 +322,14 @@ export function createComparativeColorFunction({
         data.refNameDict,
         data.refNameIds,
         namePosition,
+        nameColor,
       )
     case 'target':
       return makeNameColorFunction(
         data.mateRefNameDict,
         data.mateRefNameIds,
         namePosition,
+        nameColor,
       )
   }
   // Every ramp in one arm, preset or column, so the switch above does not

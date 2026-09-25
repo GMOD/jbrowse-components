@@ -1,5 +1,4 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { fireEvent, render } from '@testing-library/react'
 
@@ -10,8 +9,8 @@ import ChordSyntenyDisplay from './ChordSyntenyDisplay.tsx'
 import type { RibbonDisplayModel } from '../../chords/types.ts'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
-// the default color slot is a jexl expression over the strand, so the config
-// needs the manager that owns the jexl instance
+// the hover and selected slots take jexl, so the config needs the manager that
+// owns the jexl instance
 const pluginManager = new PluginManager()
 const configuration = configSchemaF(pluginManager).create(
   { type: 'ChordSyntenyDisplay', displayId: 'paf-ChordSyntenyDisplay' },
@@ -69,7 +68,7 @@ function ribbonModel(
     drawnFeatures: [],
     selectedFeatureId: undefined,
     configuration,
-    ribbonFill: feature => readConfObject(configuration, 'color', { feature }),
+    ribbonFill: () => 'rgba(70,130,180,0.25)',
     radiusPx: 1000,
     bezierRadius: 100,
     sliceFor: (assemblyName, refName) =>

@@ -273,8 +273,7 @@ nothing special: open the circular view on that assembly and turn the track on.
   "displays": [
     {
       "type": "ChordSyntenyDisplay",
-      "displayId": "volvox_self-ChordSyntenyDisplay",
-      "color": "jexl:get(feature,'score')>1000?'rgba(0,0,0,0.4)':'rgba(0,0,0,0.1)'"
+      "displayId": "volvox_self-ChordSyntenyDisplay"
     }
   ]
 }
@@ -291,14 +290,17 @@ start opens that circle from the track, and as a view it is:
   "assembly": ["hg38", "mm39"],
   "displayedRegionNames": ["chr1", "chr2", "chr3"],
   "tracks": ["hg38_vs_mm39"],
-  "autoDiagonalize": true
+  "autoDiagonalize": true,
+  "colorBy": { "field": "query" }
 }
 ```
 
 A `displayedRegionNames` list is resolved against each assembly in turn, which
 keeps a few named chromosomes of both genomes on the circle instead of every
 unplaced contig of either; `{ "mm39": ["chr1", "chr2"] }` restricts one genome
-and leaves the other whole.
+and leaves the other whole. `colorBy`, `alpha` and `minAlignmentLength` are the
+linear synteny view's settings; `{ "field": "query" }` paints each ribbon in its
+first-genome chromosome's ideogram color.
 
 ## See also
 

@@ -1,3 +1,4 @@
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -152,7 +153,7 @@ describe('a categorical column', () => {
     })
     view.setColorDomain(['C1'])
     const labels = () =>
-      view.legendSpec.sections[0]!.items.map(item => item.label)
+      legendSpecOf(view.colorScales).sections[0]!.items.map(item => item.label)
     expect(labels()).toEqual(['C1', 'A1a', 'B1'])
 
     // a later fetch meeting an unlabelled row adds the grey it paints
@@ -193,11 +194,13 @@ test('strand keys its two colours on points, and nothing on ribbons', () => {
       }))
       .create({ colorBy: { field: 'strand' } })
   expect(
-    on('points').legendSpec.sections[0]!.items.map(item => item.label),
+    legendSpecOf(on('points').colorScales).sections[0]!.items.map(
+      item => item.label,
+    ),
   ).toEqual(['forward', 'reverse'])
-  expect(on('points').showLegend).toBe(true)
-  expect(on('ribbons').showLegend).toBe(false)
-  expect(on('ribbons').legendSpec.sections).toEqual([])
+  expect(on('points').hasLegendKey).toBe(true)
+  expect(on('ribbons').hasLegendKey).toBe(false)
+  expect(legendSpecOf(on('ribbons').colorScales).sections).toEqual([])
 })
 
 // A launched stack puts one track on every level, so the view lists it once per

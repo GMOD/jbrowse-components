@@ -134,6 +134,7 @@ export {
   orderAttributeLabels,
   widenAttributeRanges,
 } from './TrackColorsMixin.ts'
+export { SyntenyColorsMixin } from './SyntenyColorsMixin.ts'
 export { SyntenyViewMixin } from './SyntenyViewMixin.ts'
 export { minLengthMenuItem, opacityMenuItem } from './settingsMenuItems.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
@@ -206,7 +207,12 @@ export {
   nameColorCss,
   paletteColorAt,
 } from './colorFunctions.ts'
-export type { ColorFunctionInputs, RefNamePosition } from './colorFunctions.ts'
+export type {
+  ColorFunctionInputs,
+  RefNameColor,
+  RefNamePosition,
+} from './colorFunctions.ts'
+export { featureColorInputs } from './featureColorInputs.ts'
 export { refNamePositionFor } from './colorFunctions.ts'
 export {
   CIGAR_OP_D,
