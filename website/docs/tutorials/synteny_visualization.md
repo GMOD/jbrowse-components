@@ -156,10 +156,11 @@ above, then:
    track: 26695 against CHC155, then CHC155 against J99.
 4. Click **Launch**, and all three strains stack in one view.
 
-Open each strain's gene track, **NCBI RefSeq - RefSeq All (GFF)**, from its own
-track selector.
+A whole strain has about as many genes as its row has pixels, so zoom each row
+in once with its magnifier, then open each strain's gene track, **NCBI RefSeq -
+RefSeq All (GFF)**, from its own track selector.
 
-<Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, and each strain's gene track from the track selector for that row." />
+<Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, a zoom in on each row, and each strain's gene track from the track selector for that row." />
 
 <Figure caption="Three H. pylori strains stacked with a gene track on each genome. Ribbons connect aligned blocks between adjacent genomes, and genes such as prfB, fliR, cbf2 and efp line up across all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 

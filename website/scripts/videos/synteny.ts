@@ -55,6 +55,9 @@ const connector = (top: number) =>
 const geneTrack = (assembly: string) =>
   `[data-testid="htsTrackLabel-Tracks,${assembly}-ncbiGff"]`
 
+const rowZoomIn = (n: number) =>
+  `::-p-xpath((//button[@data-testid="zoom_in"])[${n}])`
+
 // The dotplot form's two chromosome boxes. Both carry the same placeholder and
 // the same label shape, so the testid on the input is the only handle that says
 // which axis is meant (ChromosomeFilter, whose `testId` goes on the html input).
@@ -196,6 +199,8 @@ export const syntenyVideos: VideoSpec[] = [
         hold: 600,
       },
       { type: 'waitForAppSettled', timeout: 120000 },
+      // off the zoom button, whose tooltip otherwise stands in the poster
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // the block-level state the page's first figure is of, held as the end
       // state
       { type: 'delay', ms: 3000 },
@@ -310,10 +315,10 @@ export const syntenyVideos: VideoSpec[] = [
   {
     name: 'synteny/three_strain_import',
     description:
-      "Building the three-strain H. pylori stack from the import form: Manual, one genome per row, Add row for the third, each connector resolving its own alignment, Launch, and a gene track from each row's own selector",
+      "Building the three-strain H. pylori stack from the import form: Manual, one genome per row, Add row for the third, each connector resolving its own alignment, Launch, a zoom in on each row, and a gene track from each row's own selector",
     url: emptySyntenyForm,
     // One frame serves three states and the tallest is the last: the run reports
-    // the app at 301 on the opening form, 572 with the stack standing empty, and
+    // the app at 289 on the opening form, 572 with the stack standing empty, and
     // 821 once three gene lanes have replaced the three empty-state blocks. The
     // rest is the caption chip's strip, which is fixed to the frame's bottom
     // rather than the app's.
@@ -373,6 +378,20 @@ export const syntenyVideos: VideoSpec[] = [
       // film of an empty view.
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
       { type: 'delay', ms: 1500 },
+      // ONE ZOOM IN PER ROW before the gene lanes. A whole strain is 0.95
+      // top-level genes per pixel against maxFeatureScreenDensity's 1, inside
+      // the density probe's ~7% estimate error; half of one is 0.47 at full
+      // width and 0.6 with the drawer open, so every lane draws as it is added.
+      {
+        type: 'click',
+        selector: rowZoomIn(1),
+        say: 'Zoom each row in',
+        hold: 600,
+      },
+      { type: 'click', selector: rowZoomIn(2), hold: 600 },
+      { type: 'click', selector: rowZoomIn(3), hold: 600 },
+      { type: 'waitForAppSettled', cut: true },
+      { type: 'delay', ms: 800 },
       // THE STACK ARRIVES WITH NOTHING ON IN ANY ROW, and stopping there made
       // the payoff frame three copies of that empty state. The button the empty
       // state is already showing is the route, so the tour takes it: three rows,
@@ -383,17 +402,6 @@ export const syntenyVideos: VideoSpec[] = [
       // walks down the stack without any of them needing a handle. The label is
       // upper-cased by the button's own styling, which is why the chip and the
       // string being matched differ.
-      //
-      // HELD SHORT, ALL THREE, AND CLOSED ONCE, which is the one thing about
-      // this stretch that is not free. An LGV holds its WINDOW in bp across a
-      // resize (`windowWidthBp` is the state and every later width divides into
-      // it), so the drawer's ~390px is a 25% zoom out for every row in the
-      // frame: ~1600 top-level features over ~1370px is 1.17 per pixel, past the
-      // display's default maxFeatureScreenDensity of 1, and every lane ticked
-      // here paints "Too many features" until the rows get their width back. At
-      // the frame's full width it is 0.94, which is what makes the last state
-      // three gene lanes -- a 6% margin, so a narrower frame or a wider drawer
-      // would put the payoff back on the banner.
       {
         type: 'click',
         text: 'Open track selector',
@@ -427,27 +435,23 @@ export const syntenyVideos: VideoSpec[] = [
         say: `${strains.bottom.label} genes`,
         hold: 600,
       },
-      // The rows get their width back here, which is both what the payoff frame
-      // needs and what lets the three lanes draw at all.
       {
         type: 'click',
         selector: 'button[aria-label="Close drawer"]',
         hold: 300,
       },
-      // OFF CAMERA, and gated on the banner rather than on a paint: each lane
-      // re-fetches at the width it just got back, which is a few more seconds of
-      // "Too many features" and then a progress bar. It is also the one wait
-      // that fails loudly if the margin above ever goes the other way -- a
-      // display over its density gate still reports `ready`, so a settle would
-      // carry on with the banner up and ship the payoff as three warnings.
+      // Gated on the banner rather than on a paint: a display over its density
+      // gate still reports `ready`, so a settle would carry on with the banner
+      // up and ship the payoff as three warnings. On camera, because a cut here
+      // restarts the recorder over an idle page, and the tail's caption clear
+      // then never reaches the file.
       {
         type: 'waitForText',
         text: 'Too many features',
         hidden: true,
         timeout: 120000,
-        cut: true,
       },
-      { type: 'waitForAppSettled', cut: true },
+      { type: 'waitForAppSettled' },
       { type: 'delay', ms: 1500 },
     ],
     tailMs: 4000,

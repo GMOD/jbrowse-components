@@ -183,16 +183,17 @@ refilm and none of which the run reports.
   drawer's ~390px is a 25% zoom-out for everything in the frame — and a feature
   display sitting just under `maxFeatureScreenDensity` crosses it and paints
   "Too many features" for as long as the drawer is open.
-  `synteny/three_strain_import` turns three whole-chromosome gene tracks on this
-  way, at 0.94 features per pixel at full width and 1.17 with the selector open,
-  so the middle of that clip is the banner and the end is the lanes. Nothing in
-  the run says so — a gated display still reports `ready` — and the frame that
-  shows it is one pulled with `ffmpeg -ss` from the drawer's own stretch rather
-  than the last one. What keeps it honest is
+  `synteny/three_strain_import` turned three whole-chromosome gene tracks on
+  this way at 0.95 features per pixel, and the display's density ESTIMATE runs a
+  few percent over the exact count, so a lane could stay on the banner after the
+  drawer closed; it now zooms each row in once first. Nothing in the run says so
+  — a gated display still reports `ready` — and the frame that shows it is one
+  pulled with `ffmpeg -ss` from the drawer's own stretch rather than the last
+  one. What keeps it honest is
   `{ type: 'waitForText', text: 'Too many features', hidden: true, cut: true }`
-  after the drawer closes: it takes the re-fetch off camera AND fails the run if
-  the margin ever goes the other way, where a `waitForAppSettled` carries on and
-  ships the payoff as three warnings.
+  after the drawer closes: it fails the run if the margin ever goes the other
+  way, where a `waitForAppSettled` carries on and ships the payoff as three
+  warnings.
 - **The clip's last STATE CHANGE has to be the payoff, not just its last hold.**
   `website/CLAUDE.md`'s "the last repaint of a run of them does not reach the
   file" understates it: `page.screencast` writes through ffmpeg's stdin, and

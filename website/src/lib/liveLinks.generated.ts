@@ -1038,6 +1038,7 @@ export const videoSteps: Record<string, string[]> = {
     "Row 3",
     "26695 against CHC155",
     "CHC155 against J99",
+    "Zoom each row in",
     "26695 genes",
     "CHC155 genes",
     "J99 genes"
