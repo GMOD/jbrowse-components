@@ -189,12 +189,12 @@ export interface JunctionEnd {
   keeps: number
 }
 
+// A BEDPE strand names the side of the block the junction is on: `+` its end,
+// so the block keeps the sequence to its left.
 function keepsOf(mateDirection: unknown, strand: unknown) {
   if (typeof mateDirection === 'number') {
     return mateDirection
   }
-  // a BEDPE strand names the side of the block the junction is on: `+` its
-  // end, so the block keeps the sequence to its left
   return strand === 1 ? -1 : strand === -1 ? 1 : 0
 }
 
@@ -233,8 +233,10 @@ function symbolicKeeps(feature: Feature, alt: string) {
  *
  * A VCF end is its own position. A paired adapter's end is a block, and the
  * junction is the block's edge on the side the end keeps: stated by
- * `mateDirection` where the adapter knows it, read off a BEDPE strand
- * otherwise, and with neither the two blocks face each other.
+ * `mateDirection` where the adapter knows it, read off the strands where the
+ * record states one for each end as BEDPE does, and with neither the two
+ * blocks face each other. A PAF row's strand is the query's orientation and
+ * states none for the target, so it names no side.
  */
 export function junctionEnds(
   feature: Feature,
@@ -251,10 +253,14 @@ export function junctionEnds(
       }
     | undefined
   if (mate?.refName !== undefined && mate.start !== undefined) {
+    const sided = mate.strand !== undefined
     const self = {
       start: feature.get('start'),
       end: feature.get('end'),
-      keeps: keepsOf(feature.get('mateDirection'), feature.get('strand')),
+      keeps: keepsOf(
+        feature.get('mateDirection'),
+        sided ? feature.get('strand') : undefined,
+      ),
     }
     const far = {
       start: mate.start,
