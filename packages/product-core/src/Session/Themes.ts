@@ -35,15 +35,15 @@ function resolveThemeName(themes: ThemeMap, name: string) {
 
 /**
  * The selection that follows the OS light/dark preference rather than naming a
- * theme, and what a session starts on before anyone picks something.
+ * theme. Opt-in from the Preferences picker: a session still starts on
+ * `default`, so nobody lands in dark without asking for it.
  */
 export const SYSTEM_THEME = 'system'
 
-// The two ends of the light/dark axis: what `system` resolves to in each mode,
-// and where the toolbar's theme control stops. `default` is the one theme that
-// carries the config `theme` slot, and `darkStock` is the same brand colors
-// with `mode: 'dark'`, so a site's palette survives the light half and the
-// control and the `system` selection cannot disagree about either half.
+// The two ends of the light/dark axis, for `system` and for the one click out
+// of it. `default` is the one theme that carries the config `theme` slot, and
+// `darkStock` is the same brand colors with `mode: 'dark'`, so a site's palette
+// survives the light half.
 const LIGHT_THEME = 'default'
 const DARK_THEME = 'darkStock'
 
@@ -54,7 +54,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(() => ({
-      sessionThemeName: localStorageGetItem('themeName') ?? SYSTEM_THEME,
+      sessionThemeName: localStorageGetItem('themeName') ?? LIGHT_THEME,
       systemPrefersDark: prefersDarkColorScheme(),
     }))
     .views(s => {
@@ -199,19 +199,13 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Advance the toolbar's theme control one stop: follow the system, then
-       * light, then dark, then back to following the system. A theme picked in
-       * Preferences that is neither stop — `Dark (minimal)`, an `extraThemes`
-       * entry — counts as whichever mode it draws in, so the next click is the
-       * other one.
+       * Leave `system` for the mode the OS is not asking for. The whole of the
+       * toolbar's theme control: it shows only while the session follows the
+       * system, so this is the one click out of a dark the OS handed someone
+       * who did not want it, and the control goes away with the following.
        */
-      cycleThemeMode() {
-        self.sessionThemeName =
-          self.selectedThemeName === SYSTEM_THEME
-            ? LIGHT_THEME
-            : self.themeIsDark
-              ? SYSTEM_THEME
-              : DARK_THEME
+      stopFollowingSystemTheme() {
+        self.sessionThemeName = self.themeIsDark ? LIGHT_THEME : DARK_THEME
       },
       /**
        * #action

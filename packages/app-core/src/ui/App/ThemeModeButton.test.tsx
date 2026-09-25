@@ -9,25 +9,22 @@ afterEach(cleanup)
 
 const theme = createJBrowseTheme()
 
-// The control's own contract, against the three stops rather than the session:
-// which icon it shows, and that a click advances. What each stop resolves to is
-// pinned in product-core's Themes.test.ts.
+// The control's own contract: when it is there at all, what it names, and that
+// a click leaves the following. What each theme name resolves to is pinned in
+// product-core's Themes.test.ts.
 const Session = types
   .model({ selectedThemeName: 'system', themeIsDark: false })
   .actions(self => ({
-    cycleThemeMode() {
-      self.selectedThemeName =
-        self.selectedThemeName === 'system'
-          ? 'default'
-          : self.themeIsDark
-            ? 'system'
-            : 'darkStock'
-      self.themeIsDark = self.selectedThemeName === 'darkStock'
+    stopFollowingSystemTheme() {
+      self.selectedThemeName = self.themeIsDark ? 'default' : 'darkStock'
     },
   }))
 
-function renderButton() {
-  const session = Session.create()
+function renderButton(snap: {
+  selectedThemeName?: string
+  themeIsDark?: boolean
+}) {
+  const session = Session.create(snap)
   const utils = render(
     <ThemeProvider theme={theme}>
       <ThemeModeButton session={session} />
@@ -36,22 +33,29 @@ function renderButton() {
   return { ...utils, session }
 }
 
-test('the button names its stop and advances through all three', () => {
-  const { getByTestId } = renderButton()
-  const button = getByTestId('theme-mode-button')
+// The point of the gating: a session on a named theme is never shown a route
+// into dark it did not ask for.
+test('a named theme gets no control', () => {
+  const { queryByTestId } = renderButton({ selectedThemeName: 'default' })
 
-  expect(button.getAttribute('aria-label')).toBe(
-    'Theme: following the system (light)',
+  expect(queryByTestId('theme-mode-button')).toBeNull()
+})
+
+test('following the system names the mode it landed in', () => {
+  const { getByTestId } = renderButton({ themeIsDark: true })
+
+  expect(getByTestId('theme-mode-button').getAttribute('aria-label')).toBe(
+    'Following your system theme (dark)',
   )
+})
 
-  fireEvent.click(button)
-  expect(button.getAttribute('aria-label')).toBe('Theme: light')
+test('a click leaves the following, taking the control with it', () => {
+  const { getByTestId, queryByTestId, session } = renderButton({
+    themeIsDark: true,
+  })
 
-  fireEvent.click(button)
-  expect(button.getAttribute('aria-label')).toBe('Theme: dark')
+  fireEvent.click(getByTestId('theme-mode-button'))
 
-  fireEvent.click(button)
-  expect(button.getAttribute('aria-label')).toBe(
-    'Theme: following the system (light)',
-  )
+  expect(session.selectedThemeName).toBe('default')
+  expect(queryByTestId('theme-mode-button')).toBeNull()
 })

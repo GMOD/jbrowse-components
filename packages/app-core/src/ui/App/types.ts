@@ -7,12 +7,12 @@ import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 export { type Menu } from '../../menus.ts'
 
-// What the toolbar's theme control drives. Every product mounting this toolbar
+// What the toolbar's theme control reads. Every product mounting this toolbar
 // composes ThemeManagerSessionMixin, so these are always there.
 export interface ThemeSwitchSession {
   selectedThemeName: string
   themeIsDark: boolean
-  cycleThemeMode: () => void
+  stopFollowingSystemTheme: () => void
 }
 
 // What a workspace needs of the session it drives

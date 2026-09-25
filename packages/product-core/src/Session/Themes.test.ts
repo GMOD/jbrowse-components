@@ -62,11 +62,21 @@ function makeSession(config: Record<string, unknown> = {}) {
     ).session
 }
 
-test('a fresh session follows the OS, and keeps following it', () => {
-  const media = installMatchMedia(true)
+// A dark OS is not a request for a dark genome browser, so following it is
+// opt-in and a fresh session is light whatever the OS says.
+test('a fresh session is light on a dark OS', () => {
+  installMatchMedia(true)
   const session = makeSession()
 
-  expect(session.selectedThemeName).toBe(SYSTEM_THEME)
+  expect(session.selectedThemeName).toBe('default')
+  expect(session.themeIsDark).toBe(false)
+})
+
+test('the system selection follows the OS, and keeps following it', () => {
+  const media = installMatchMedia(true)
+  const session = makeSession()
+  session.setThemeName(SYSTEM_THEME)
+
   expect(session.themeName).toBe('darkStock')
   expect(session.themeIsDark).toBe(true)
 
@@ -79,28 +89,29 @@ test('a fresh session follows the OS, and keeps following it', () => {
 // The light stop is `default` rather than `lightStock` because `default` is the
 // one theme `resolvePalette` merges the config `theme` slot into, so a site's
 // brand survives a user who follows their OS.
-test("the light stop carries the config theme's colors", () => {
+test("the light half carries the config theme's colors", () => {
   installMatchMedia(false)
   const session = makeSession({ theme: { palette: { primary: '#ff0000' } } })
+  session.setThemeName(SYSTEM_THEME)
 
   expect(session.themeName).toBe('default')
   expect(session.palette.primary.main).toBe('#ff0000')
 })
 
-test('the control walks system, light, dark and back', () => {
-  installMatchMedia(true)
+test('leaving the following lands on the mode the OS was not asking for', () => {
+  const media = installMatchMedia(true)
   const session = makeSession()
+  session.setThemeName(SYSTEM_THEME)
 
-  session.cycleThemeMode()
+  session.stopFollowingSystemTheme()
   expect(session.selectedThemeName).toBe('default')
   expect(session.themeIsDark).toBe(false)
 
-  session.cycleThemeMode()
+  // and it stays there, whatever the OS does next
+  media.setMatches(false)
+  session.setThemeName(SYSTEM_THEME)
+  session.stopFollowingSystemTheme()
   expect(session.selectedThemeName).toBe('darkStock')
-  expect(session.themeIsDark).toBe(true)
-
-  session.cycleThemeMode()
-  expect(session.selectedThemeName).toBe(SYSTEM_THEME)
 })
 
 // An explicit pick has to survive the OS flipping under it, which is the whole
@@ -115,28 +126,26 @@ test('an explicit pick stops following the OS', () => {
   expect(session.themeIsDark).toBe(false)
 })
 
-// A theme that is neither stop still has a mode, so the control moves to the
-// other one rather than stalling.
-test('the control leaves a theme that is neither stop by its mode', () => {
+// `themeIsDark` reads the resolved palette, so a theme the two halves never
+// name still answers for its own mode.
+test('an extra theme declaring dark mode reads as dark', () => {
   installMatchMedia(false)
   const session = makeSession()
   session.setThemeName('darkMinimal')
-  expect(session.themeIsDark).toBe(true)
 
-  session.cycleThemeMode()
-  expect(session.selectedThemeName).toBe(SYSTEM_THEME)
+  expect(session.themeIsDark).toBe(true)
 })
 
-test('without matchMedia the system stop is light', () => {
+test('without matchMedia the system selection is light', () => {
   const session = makeSession()
+  session.setThemeName(SYSTEM_THEME)
 
-  expect(session.selectedThemeName).toBe(SYSTEM_THEME)
   expect(session.themeName).toBe('default')
 })
 
-// Stored selections predate `system`, and a stored name whose plugin is absent
-// still has to come back rather than being coerced away.
-test('a stored selection wins over the system default', () => {
+// A stored name whose plugin is absent has to come back rather than being
+// coerced away.
+test('a stored selection survives its theme being unregistered', () => {
   localStorage.setItem('themeName', 'someThemeFromAPlugin')
   installMatchMedia(true)
 

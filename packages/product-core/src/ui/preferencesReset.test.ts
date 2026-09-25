@@ -1,4 +1,3 @@
-import { SYSTEM_THEME } from '../Session/Themes.ts'
 import {
   collectPreferenceChanges,
   resetPreferenceChange,
@@ -11,7 +10,7 @@ import type { TrackConfigChange } from '@jbrowse/core/util'
 function stubSession() {
   const scalars = new Map<string, TrackConfigChange>()
   const session: ResettablePreferencesSession = {
-    selectedThemeName: SYSTEM_THEME,
+    selectedThemeName: 'default',
     setThemeName: () => {},
     stickyViewHeaders: true,
     setStickyViewHeaders: () => {},

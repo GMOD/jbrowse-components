@@ -20,9 +20,9 @@ Set `configuration.theme` to one of these names:
 - `darkStock` - dark mode with stock palette
 - `darkMinimal` - dark mode with greyscale chrome
 
-A user selects any of these, or `system`, through the Preferences dialog and the
-toolbar's theme button. A session starts on `system`, which resolves to
-`default` or `darkStock` against `prefers-color-scheme`. Read
+A user selects any of these, or `system`, through the Preferences dialog. A
+session starts on `default`; `system` resolves to `default` or `darkStock`
+against `prefers-color-scheme`, and puts a sun/moon button in the toolbar. Read
 `session.themeName` for the theme in effect, `session.selectedThemeName` for
 what the user picked.
 

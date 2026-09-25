@@ -18,9 +18,9 @@ function renderToolbar(menus: Menu[]) {
     configuration,
     menus: () => menus,
     renameCurrentSession: () => {},
-    selectedThemeName: 'system',
+    selectedThemeName: 'default',
     themeIsDark: false,
-    cycleThemeMode: () => {},
+    stopFollowingSystemTheme: () => {},
   } as unknown as AppSession
   const utils = render(
     <ThemeProvider theme={theme}>

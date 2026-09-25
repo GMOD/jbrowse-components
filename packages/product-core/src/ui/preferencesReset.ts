@@ -1,5 +1,3 @@
-import { SYSTEM_THEME } from '../Session/Themes.ts'
-
 import type { TrackConfigChange } from '@jbrowse/core/util'
 
 export interface ResettablePreferencesSession {
@@ -30,11 +28,11 @@ const NON_MAP_PREFERENCES: NonMapPreference[] = [
   {
     head: 'theme',
     change: s =>
-      s.selectedThemeName && s.selectedThemeName !== SYSTEM_THEME
-        ? { path: ['theme'], from: SYSTEM_THEME, to: s.selectedThemeName }
+      s.selectedThemeName && s.selectedThemeName !== 'default'
+        ? { path: ['theme'], from: 'default', to: s.selectedThemeName }
         : undefined,
     reset: s => {
-      s.setThemeName(SYSTEM_THEME)
+      s.setThemeName('default')
     },
   },
   {

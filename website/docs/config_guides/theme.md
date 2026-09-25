@@ -41,13 +41,14 @@ sets the starting value of the settings users can toggle for themselves.
 
 ## Following the system
 
-A new session takes its light or dark setting from the operating system. The
-sun/moon button in the toolbar cycles between following the system, light, and
-dark. The theme picker in Preferences lists "Follow system" alongside the named
-themes, and a choice made either way is remembered per browser.
-
-Following the system draws the `default` theme in light and `Dark (stock)` in
+The theme picker in Preferences lists "Follow system (light/dark)" alongside the
+named themes. Pick it and JBrowse takes its light or dark setting from the
+operating system, drawing the `default` theme in light and `Dark (stock)` in
 dark, so the colors you set under `theme` below survive the light half.
+
+A sun or moon then appears in the toolbar, naming the mode the system put you
+in; clicking it settles on the other one. Sessions start on `default` and show
+no such button, so a reader reaches dark by asking for it.
 
 ## Extra themes and dark mode
 
