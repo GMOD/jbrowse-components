@@ -57,8 +57,8 @@ Working plugin examples:
 - [jbrowse-plugin-systeminformation](https://github.com/garrettjstevens/jbrowse-plugin-systeminformation)
   reaches node system libraries from JBrowse Desktop. A desktop-only plugin
   ships as UMD or ESM like any other and reaches Node through
-  `window.require`; the CJS bundle format it was written against is gone as of
-  v5
+  `window.require`; the CJS bundle format it was written against is gone as
+  of v5
 
 The [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) is the
 community plugin registry: browse it to find published plugins, or submit your
