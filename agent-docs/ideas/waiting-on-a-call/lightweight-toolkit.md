@@ -61,6 +61,12 @@ a sentence anywhere that could be fed back into it. The ceremony runs to roughly
 120 lines before any of their own code starts, of which about 15 are genuinely
 theirs.
 
+`@jbrowse/display-ui/embed` (`25ebc9aef7`) since closed 2 to 5: `Track` mounts
+one display in its overlay slot, `TrackStack` measures the column and binds pan
+and zoom, and `ViewStatus` draws loading, error and nothing-to-show. Every
+example uses them (`dc2af735f8`). The root-model nouns and the palette provider
+name are still open.
+
 ## Four findings
 
 ### 1. The unit of reuse is a product, not a library
@@ -238,25 +244,9 @@ coordinate-system concepts. That is the differentiator.
    becomes a preset over it. Export the view and session types — all 18 examples
    write `type BrowserView = ReturnType<typeof makeView>['view']` because there
    is no name to import.
-2. **Publish the display-mount contract.** `check-duplication.mjs`'s `COPIED`
-   entry calls `TrackRow` the reader's own to write, which conflates the box
-   (theirs, to style) with the slot/containment/Suspense contract (not theirs).
-   The repo's own "publish the block" rule has fired six times; the 14-of-15
-   evidence says this is the seventh, and it is the one case where every copy
-   agreed and every copy was wrong.
-3. **Make `queueDialog` and `notify` seams rather than calls** — finding 3.
+2. **Make `queueDialog` and `notify` seams rather than calls** — finding 3.
    Highest effort here, and it decides whether "your own UI" is true below the
    view.
-
-One small item with disproportionate effect: the
-`readSiteMode`/`watchSiteMode`/`useSiteMode` trio is **50 lines in every one of
-the 18 example files**, a fifth of the floor example, and
-`SessionPaletteProvider` now reads `prefers-color-scheme` itself when given no
-`mode`. What is left is the sweep of the 18 example files, which is deliberately not
-done yet: those copies still watch `data-theme` on `<html>` for the site's own
-toggle, which no media query can see, so each one is a judgement about what that
-page is demonstrating rather than a delete. `check-duplication.mjs` expects the
-copies until then.
 
 ## What this is not
 

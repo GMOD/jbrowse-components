@@ -159,7 +159,7 @@ render attachment is an allocation. `beginFrame` attaches the MSAA view with
 **tiler** may keep in tile memory and never commit — so on Apple Silicon the same
 descriptors may cost nothing. Nobody has profiled it, and it decides whether the
 size is a problem for a large share of our users or only for some of them:
-[../ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md)
+[../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md)
 ranks that residency check first, ahead of every mitigation.
 
 One thing bounds it: `getDpr()` caps at `MAX_DPR = 2`, so dpr² cannot exceed 4

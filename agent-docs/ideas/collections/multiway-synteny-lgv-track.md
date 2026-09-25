@@ -27,55 +27,6 @@ follow-snap-grid refetch entry in [synteny-comparative](synteny-comparative.md)
 for how that cost behaves). Treat it as a fourth backend consumer of the
 synteny GPU stack, not as a change to this display.
 
-**What a placement is, since 2026-09-06.** The display still reads no CIGAR,
-but the clip that cuts a record to the window (`clipFeatureToRegion`, under
-`clipToRegion`) now also cuts it at every insertion or deletion of
-`splitAtGapBp` or more (`splitSyntenyFeatureAtGaps` in synteny-core; the
-display asks for 10 kb, the coarse tier's default bound, so the cut is the
-same on either tier). Each gap-free run is its own feature, its `uniqueId`
-and `syntenyId` numbered by its place in the record, so on a nameless source
-each run is its own group with its own anchor and mate intervals — the shape
-`anchorSpans`, `groupRunSpansOnRow`, the ribbons and `composeLaneLinks` all
-read, so a ribbon subdivides at the gap and a composed link interpolates
-within a run rather than across it. Runs were NOT made placements of one
-group: a group carries one anchor interval and the gutter draws every anchor
-span against every mate span of a group, so two runs in one group would draw
-a cross product. At TP53 the mouse chain carries a 25 kb interior indel that
-drew as one straight ribbon before this; the tutorial's caption said so as
-conservation. The orientation vote changed with it: paired run-by-neighbour
-and weighed by the lighter run, a chain cut into heavy forward runs with
-small reversed repeat hits between them read backwards on the hits' say
-(calJac4 at the 17p figure, 0.555 backwards over 36 kb of paired weight while
-700 kb of chain ran forwards), so `orientationVote` now pairs every shared
-run with every other and weighs a pair by the product of the two groups'
-`weight` — a count of concordant gene pairs on a named table, anchor bp
-squared on an alignment. The deadband and the hold are as they were. The
-stability table below measures it against the rule it replaced and two
-others, and the 17p table beside it says what the vote does and does not
-reach on a pairwise source.
-
-**The demo corpus, and what a new one costs now.** As of 2026-08-24 the display
-has a case per kingdom, and every one of them is a table some other pipeline was
-already producing: plants (grape's seven-genome MCScan blocks, the five grasses,
-the five nightshades), animals (five vertebrates over deep time, five flies over
-shallow), humans (an HPRC CFH panel joined by CAT gene name), bacteria (the
-E. coli all-vs-all PAF). The two added that day went in as species tables in
-`build_orthofinder_synteny.sh` — a `case` branch naming Ensembl proteomes plus,
-for a genome whose GFF3 names sequences by INSDC accession, one line of
-`ALIASES` — so a sixth set is a table, an OrthoFinder run and a
-`deploy-demo.sh` loop rather than new code. A `mammals` set (human, mouse, dog,
-cow, pig) was scoped and not built: it sits between the vertebrates set's deep
-time and the flies' shallow time and would say nothing either of them does not,
-which is the bar a new set has to clear now that the display has one of each.
-
-What each new set has to bring is a reading the others cannot: the flies bring
-gene ORDER against chromosome identity (the correspondence print is 98% down to
-77% while a window's rank agreement goes to zero, and the pseudoobscura lane
-names the X because Muller D fused to it), and the nightshades bring SCALE
-(comparable gene counts over 0.38-2.9 Gb, so one window's lanes come back at
-1.5x and 3x rungs). Both are properties the lane headers state and the stacked
-view cannot.
-
 **The selection-scan pairing demo.** The storytelling shape the E. coli figure
 proves — a quantitative signal above, the lanes naming which genomes explain it
 below — has no hosted GWAS/Fst/selection wiggle sitting on the same anchor as a
@@ -302,30 +253,6 @@ gene name with `syntenyId` as the nameless fallback; the first-class
 block identity" and should be built there, not here — this display becomes its
 third consumer, after colorBy:group and cross-row hover in the synteny view.
 
-
-**What the phase covers, and the scrim race behind it.** `displayPhase` holds
-at `loading` for the two dependent fetches until they FIRST land, and not for
-any refetch after that. Holding it for every refetch put the striped scrim over
-lanes that were already drawn on any pan that moved a quantized lane window: the
-dependent fetch is debounced 500 ms and the overlay's anti-flash delay is
-250 ms, so the scrim always won that race. Before the first commit there is
-nothing on screen to flash over and a capture would shoot placement boxes, which
-is what the gate is for; after it, the lanes are an enhancement over boxes that
-are already correct, and a refetch says so through the corner progress chip that
-`ready` gates. So `displaySettled` — `[data-display-phase="ready"]`, what every
-figure spec waits on — covers a load-and-shoot and not a pan-then-shoot. Every
-`multiway_synteny/*` spec is the former; a pan-then-shoot one would need a finer
-wait and should add it then.
-
-What none of those specs does is assert anything beyond the ready phase
-(`website/scripts/generate-screenshots.ts:160-196`), so a figure that draws the
-wrong thing still ships. Both ways that has happened were caught by a human
-re-reading the pictures rather than by a check: `hprc_lane_menu` was shot
-against a PIF the next day's rebuild replaced, and
-`hg38_vertebrates_17p_break` drew a lane `[rev]` at a rung the code had stopped
-choosing — see
-[../../reference/MULTIWAY_SYNTENY_DISPLAY.md](../../reference/MULTIWAY_SYNTENY_DISPLAY.md)
-§4.10, which records both and the 2026-09-09 reshoot that fixed them.
 
 **What this shares with SyntenyFollow, and what it does not.** Both answer
 "given the pairwise alignments under a window of genome A, where in genome B

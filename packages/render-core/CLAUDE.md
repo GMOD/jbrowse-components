@@ -45,7 +45,7 @@ follows is this package's own.
   count from it — 1 when every registered pass declares it, else 4 — and
   `sampleCount` is the per-display override. A flat fill with a fractional edge
   on either axis does not qualify; the survey and captures are
-  `ideas/ready/arc-antialiasing-without-msaa.md`.
+  `ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md`.
 
 ## The reversed-block family
 

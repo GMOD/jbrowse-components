@@ -1,15 +1,17 @@
 ---
 name: destroying-an-mst-tree-that-something-still-observes
-description: A `lazy` one level below a Suspense boundary that has not committed yet makes React discard the boundary's whole child subtree, and every `observer()` rendered in that pass keeps a Reaction for the life of the tab — which is why a destroyed session still has observers. Narrowed to a 30-line repro with no JBrowse in it, and StrictMode is the cure, so a production build has it and a developer never sees it. The drawer's Suspense boundaries are already clean and the leak is app-wide, not the four the warning names; the candidate fix is preloading a child chunk, unbuilt and uncosted against the bundle graph. Do NOT file it upstream — mobx-react-lite knows.
+description: A `lazy` one level below a Suspense boundary that has not committed yet makes React discard the boundary's whole child subtree, and every `observer()` rendered in that pass keeps a Reaction for the life of the tab — which is why a destroyed session still has observers. The candidate fix, starting a child chunk's import with the model that renders it, landed 2026-09-23/24; what is owed is re-running the census to see whether the discarded pass and the leak are gone. Do NOT file it upstream — mobx-react-lite knows.
 ---
 
 # Destroying an MST tree that something still observes
 
-Moved out of [TODO.md](../../TODO.md) on 2026-08-26. The investigation is finished
-and is worth keeping in full; what it lands on is a candidate fix — start a
-child chunk's import when the model that will render it is created — that is
-neither built nor costed against the initial bundle graph. Deciding whether to
-pay that is the open question, so this is a proposal.
+Moved out of [TODO.md](../../TODO.md) on 2026-08-26. The investigation lands on
+a fix — start a child chunk's import when the model that will render it is
+created — and that fix has since landed: loading a view or display type's state
+model starts its component (`ada2693d40`), jbrowse-web requests the app frame's
+lazy parts once its session exists (`53745aedd5`), and a preloaded lazy renders
+on its first pass (`f24f8e8adb`). Nobody has re-run the census below against
+it, so whether the discarded pass and the leak are gone is the open number.
 
 The residue of the setSession fix, and the one part of this area still open.
 

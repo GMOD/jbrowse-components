@@ -153,6 +153,9 @@ MAXCOPIES="${MAXCOPIES:-4}"
 # annotation at all. A switch is also not a swap of download lines: different
 # gene models mean a different OrthoFinder run and a re-upload of every demo
 # file.
+# A mammals set (human, mouse, dog, cow, pig) was scoped and not built: it sits
+# between vertebrates' deep time and drosophila's shallow time and shows
+# nothing either does not.
 ALIASES=""
 case "$SET" in
 vertebrates)

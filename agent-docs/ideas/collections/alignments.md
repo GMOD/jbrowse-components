@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`, and why the pileup's low-frequency threshold wants a read-count floor rather than a depth ramp.
+description: Coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), read downsampling for a force-loaded dense region, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`, and why the pileup's low-frequency threshold wants a read-count floor rather than a depth ramp.
 ---
 
 # Alignments
@@ -163,36 +163,15 @@ axis/legend that changes with it; per ADR-016 it belongs in the worker (mode cha
 infrequently, per-base pass is cheap → rpcProps). Start with MAPQ/discordancy as the
 proof point. Cross-ref [bigly](https://github.com/brentp/bigly).
 
-**Large-region viewing for dense BAM/CRAM.** Today alignments can't show a whole
-chromosome for a dense BAM/CRAM. The width-driven limit is gone — the coverage
-band's GPU buffer is downsampled to a fixed bin cap — and the two that remain
-stack, so lifting one just exposes the next:
-
-- **Data-driven (the real ceiling for dense BAM).** One GPU instance per read, per
-  mismatch, per gap. A 30× whole-chromosome BAM is ~29 M reads → the read pass
-  buffer alone can exceed 1 GiB, with tens of millions more mismatch instances. No
-  `maxDepth`/density cap exists in `executeRenderAlignmentData` — it uploads
-  everything and leans on the GPU-OOM overlay as a backstop. Needs real read
-  downsampling (cap reads/column, reservoir-sample per bin) and/or a
-  **coverage-only mode** that skips the pileup + mismatch passes entirely above a
-  zoom threshold (show only the binned coverage band). The coverage-summary
-  decomposition idea above pairs naturally with this — at whole-chromosome you want
-  MAPQ/discordancy summary, not individual reads.
-- **Fetch/bandwidth (unavoidable for BAM).** Coverage is *computed* from reads —
-  there's no BigWig-style pre-binned summary source (contrast wiggle, which gets
-  screen-resolution data free from bbi zoom levels and reports no byte estimate at
-  all, so nothing gates it). So whole-chromosome coverage means downloading every read
-  in the region; the byte-estimate gate (`measureRegionBytes` inside the fetch RPC, default
-  `fetchSizeLimit` 1 MB) blocks it first and forces "Force load to see features".
-  A genuine large-region mode would need either a reworked/removed byte gate for
-  the coverage-only path, or a precomputed-coverage sidecar (emit a companion
-  BigWig at index time) so the wide-zoom band reads a summary instead of the BAM.
-
-Order of value: coverage-only mode + read downsampling (makes force-load survivable
-and useful) → byte-gate rework for that path → optional precomputed-coverage
-sidecar. Cross-ref the coverage-OOM binning work (`packCoverageBinsForGpu`,
-`downsampleDenseMax` and `downsampleStatsBins` in `packages/alignments-core`)
-and `runCoveragePipeline.ts`.
+**Read downsampling for a force-loaded dense region.** The wide-zoom half of
+large-region viewing landed as the density tier (`bf66d4cbdf`,
+[reference/REGION_TOO_LARGE.md](../../reference/REGION_TOO_LARGE.md)): a
+coverage sidecar draws where the byte gate refuses. What is left is a user who
+force-loads anyway. The pileup uploads one GPU instance per read, per mismatch
+and per gap, and `executeRenderAlignmentData` has no per-column cap — a 30×
+whole-chromosome BAM is ~29 M reads, over 1 GiB in the read pass alone, with the
+GPU-OOM overlay as the backstop. Capping reads per column (reservoir-sampled per
+bin) is what would make force-load survivable.
 
 **SBX duplex reads — `yc`-tag / duplex-confidence coloring.** Roche's
 sequencing-by-expansion (SBX, AXELIOS platform; XOOS analysis tools) emits

@@ -104,10 +104,6 @@ pruning is the same idea one level up and a bigger job.
 every line with `pointToSegmentDist` on each mousemove. Enrich the tooltip
 (position / ref / alt) and add click-through to feature detail.
 
-**Matrix ref/no-call cells are silently non-interactive.** Hover requires a decoded
-genotype (`LinearMultiSampleVariantDisplay/matrix/VariantMatrixComponent.tsx`),
-so blank grid regions give no tooltip — reads as "the UI is dead here." Small fix.
-
 **jb2export population coloring (`samplesTsv:` modifier).** The multi-sample variant
 matrix now renders real 1000 Genomes data correctly in jb2export — the old "static SSR
 renders the genotype matrix empty for real data" blocker was **stale** (verified by

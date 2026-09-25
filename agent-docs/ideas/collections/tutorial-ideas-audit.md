@@ -83,8 +83,9 @@ What this changes:
 - **Annotation loading and gene search is the top-demand topic and it is not on
   the priority list.** GFF/GTF plus text-index plus "why can't I search for my
   gene" is the single largest cluster, it is recent, and the answers live
-  scattered across `quickstart_web.md`, the FAQ, and `config_guides/`. The
-  "annotating and QC-ing a new assembly" idea below is that tutorial. Promote it.
+  scattered across `quickstart_web.md`, the FAQ, and `config_guides/`.
+  `gene_prediction_review.md` covers reviewing predictions against Gencode and
+  RefSeq; no tutorial yet ends with `jbrowse text-index` making them searchable.
 - **Variant interpretation has literally zero support demand.** That does not
   make it wrong, it makes it a capability play rather than a support fix, and
   AlphaGenome is what would make it one. Judge it on whether the figure is
@@ -187,14 +188,6 @@ Pair with a StringTie or FLAIR GTF against Gencode to show novel isoform calls,
 sashimi quantification, and where `rnaseq.md` currently stops (its "Short reads
 vs long reads" section is one paragraph).
 
-**Annotating and QC-ing a new assembly.** Highest-demand topic in the tally
-above, so treat it as priority tier despite where it sits here.
-`Tiberius gene predictions` sits in
-the demo config next to Gencode v47 and NCBI RefSeq with RNA-seq available as
-evidence. Ends with `jbrowse text-index` so the new gene names are searchable,
-which no tutorial except `cli_desktop.md` currently touches. This would open a
-genes and annotation section on the landing page.
-
 **Non-model organism with no config.** `&hubURL=` against a UCSC GenArk hub is
 the fastest path from nothing to a browser for a plant or animal lab, and today
 it is a user guide. Overlaps with
@@ -227,9 +220,6 @@ eat a session:
   section at 3, and this connects to the two pages already in it — a variant
   lands in a named domain, and `protein_structure.md`'s "How positions are
   mapped" is the next click. Control: a variant in an unannotated loop.
-- **Genes and annotation.** `tiberius_grch38`, `gencode_47` and `ncbi_08_24` are
-  all hg38, all unused, and are exactly the three tracks the "annotating and
-  QC-ing a new assembly" idea above wants. Nothing is missing for it.
 - **Variant interpretation, with the assembly trap the audit missed.** On hg38
   you get ClinVar (UCSC, NCBI, and the pathogenic / non-pathogenic SV splits),
   ClinGen haplo / triplo / gene-disease, MANE 1.4 in both RefSeq and Ensembl ID

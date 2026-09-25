@@ -180,7 +180,7 @@ cost then moves to hidden sources staying in the buffer.
   reflected table says read it (`bindGroupLayoutEntries`, `deviceGpuCache.ts`),
   so a vertex-stage lookup needs nothing of the HAL: `barMark` samples its
   ramp in the vertex stage, and the span pass samples its row table there
-  ([ADR-165](../../architecture-decision-records/ADR-165-FILE)).
+  ([ADR-165](../../architecture-decision-records/adr-165-the-row-axis-rides-a-table-the-vertex-stage-samples.md)).
 - **`Sampler2D.Load` emits invalid WGSL** with this slangc: `textureLoad` on the
   sampler variable. `SampleLevel` at the texel centre with a `nearest` binding
   compiles to `textureSampleLevel` and `textureLod`, both of which work. Found

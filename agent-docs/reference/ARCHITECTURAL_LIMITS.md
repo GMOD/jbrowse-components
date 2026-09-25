@@ -165,7 +165,7 @@ allowed to keep in tile memory and never commit — so on Apple Silicon (a large
 share of our users) these figures may be near zero, while on the immediate-mode
 AMD/Intel parts they were taken on they are real. **Profile residency at 4x
 against 1x before spending anything on the size**: it is the first item in
-[../ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md),
+[../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md),
 and if the target turns out memoryless the rest of this entry is moot on that
 hardware.
 
@@ -201,7 +201,7 @@ use.
 **Every display still asks for 4**, so none of those bytes have gone anywhere
 yet. Which displays should drop to 1 is a look-at-the-pixels decision taken one
 display at a time, and the captures to look at are in
-[../ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md).
+[../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).
 WebGL2 has no counterpart in our accounting, because `antialias: true` puts the
 multisample backbuffer inside the browser's budget.
 

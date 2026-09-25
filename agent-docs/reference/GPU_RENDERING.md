@@ -1550,7 +1550,7 @@ check, and it costs nothing next to a build.
 read the other.** This conversion and the per-display MSAA sample-count question
 are not independent: `glyphEdgeAlpha` sits behind `pointGlyph` and manhattan's
 SDFs, and the primitives
-[ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md)
+[ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md)
 records as still depending on the 4x MSAA target are wiggle/coverage bar tops,
 read arrow tips and the tiled Hi-C/LD diamonds. A ramp change and a sample-count
 change on one build produce a number neither effort can attribute, so record the
@@ -1746,7 +1746,7 @@ structural.** Every mark there shares a horizontal edge with another mark:
 hic's `drawHicBlocks.ts` and §"Tiled cells" above are the two earlier findings
 this is the third of. The shape that would let the coverage band go analytic is
 the same one §5 of
-[ideas/ready/arc-antialiasing-without-msaa.md](../ideas/ready/arc-antialiasing-without-msaa.md)
+[ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md)
 offers hi-C: draw a position's whole stack as ONE primitive, deriving the segment
 in the fragment, so the shared edges stop being primitive boundaries. Nothing has
 costed that.

@@ -130,7 +130,11 @@ saves on a graph source
 `MultiWayGroup { key, anchor, mates: Map<assembly, MatePlacement[]>, feature, weight }`.
 The key is `name`, else `syntenyId`, else `feature.id()` (`groupKeyOf`), so a
 named table (MCScan blocks, gene-symbol join) chains a gene across every lane,
-while an alignment source makes every clipped record its own group. A mate's
+while an alignment source makes every clipped record its own group. The clip
+also cuts a record at every indel of `splitAtGapBp` or more
+(`splitSyntenyFeatureAtGaps`), and each gap-free run is its own group: runs as
+placements of one group would draw a cross product, because the gutter draws
+every anchor span of a group against every mate span. A mate's
 `orientation` is the *pair's* strand (`MatePlacement`), never the mate object's
 strand. `weight` is anchor bp for a nameless record and one per gene for a named
 one (`voteEvidence`).

@@ -1,14 +1,11 @@
 ---
 name: synteny-comparative
-description: SV-type classification, `syntenyGroupId`, PIF limits, block-level chaining, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
+description: `syntenyGroupId`, PIF limits, block-level chaining, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
 ---
 
 # Synteny / comparative
 
 **Linked dotplot + linear synteny.** Selections/zoom propagate between both views.
-
-**Swap axes** (dotplot & linear synteny). Flip comparison perspective or reverse
-query/reference.
 
 **Better defaults for human vs mouse.** Tune color schemes and default display options
 for common interspecies comparisons.
@@ -62,13 +59,6 @@ genuinely brings back different bytes, and "always emit" means always parsing
 multi-megabyte CIGARs. A uniform flag is the right shape for them; a color-lane trick is
 not.
 
-**Dotplot short-segment rendering (point sprites).** Short alignments (sub-pixel
-`len < lineWidth`) render as thin slivers because the degenerate fallback expands the
-quad only vertically. A square-cap displacement along the tangent was tried and
-reverted (odd polygons on normal segments). Better: (a) emit `gl_PointSize` sprites for
-sub-threshold segments in a separate draw call; (b) round caps via SDF in the fragment
-shader (pass along-tangent distance as a varying, discard outside `lineWidth/2`).
-
 **A location-marker tick can't be read, only seen.** A tick states "this query
 coordinate maps to that target coordinate" and there is no way to get the two numbers:
 markers are excluded from the pick index by construction — both their edges are single
@@ -79,25 +69,9 @@ labels the query end, and an exact correspondence takes the
 `SyntenyResolveMatchingRegion` round trip. Worth it only if reading shear off the ticks
 turns out to be something people try to do and can't.
 
-**Connect to gene glyphs for MCScan-type results?** And add "synteny rects" to show
-e.g. non-ribbon-based synteny (non-displayed-region translocations).
-
-**Explicit SV-type classification — the biggest semantic gap.** JBrowse's synteny is
-alignment-centric (strand is the only typing); plotsr's
-`['SYN','INV','TRANS','INVTR','DUP','INVDP']` enum with fixed colors + z-ordering is
-genuinely more expressive — a user can't tell an inversion from a translocation from a
-duplication except by reading geometry. PIF already passes through arbitrary PAF tags
-and `syntenyColors.ts` recolors on the main thread with no RPC, so a `colorBy: svType`
-mode is cheap **if the upstream classification exists**. The missing piece is the data,
-not the rendering: wire `BedpeAdapter` (already in the bed plugin) / a SyRI adapter into
-the comparative view as a typed-SV source (ntSynt-viz's `convert_syri_to_ntsynt_blocks.py`
-shows the conversion is trivial). Highest-leverage, lowest-risk addition. Copy plotsr's
-explicit 6-type taxonomy, **not** ntSynt's strand-conflated model (which loses the
-trans/dup distinction). Secondary: **phylogeny-aware row ordering** (NJ tree from synteny
-distance, like ntSynt-viz) for >3-genome views — `diagonalize.ts` reorders chromosomes by
-density but not rows by relatedness. Don't chase native N-way blocks as the primitive —
-the pairwise N−1 model is the right call for a browser (independently fetchable/zoomable,
-degrades gracefully when one alignment is missing).
+**Don't chase native N-way blocks as the primitive** — the pairwise N−1 model is
+the right call for a browser (independently fetchable/zoomable, degrades gracefully
+when one alignment is missing).
 
 **`syntenyGroupId` for cross-row block identity (not N-way geometry).** Synteny features are
 strictly pairwise today: one `mate` (`{start,end,refName,assemblyName}`) per feature, and no
@@ -173,10 +147,6 @@ fetch), then offline transitive precompute, then per-file incremental index. Onl
 evaluate a purpose-built binary alignment index (or IMPG's `1ALN`/coitree
 formats) if these prove insufficient.
 
-**Cue-style read-pair + depth matrix.** [PopicLab/cue](https://github.com/PopicLab/cue)
-builds an image showing read pairs, read depth, and L/R–R/L pairs as a matrix — could
-this be shown as a triangular heatmap (like `plugins/hic`) or in dotplot?
-
 ### Synteny featureId instance ceiling (documented, deferred — see BP_PRECISION.md §"Genome-size limits")
 
 One ceiling left in the synteny GPU path, and it is not a coordinate one. It
@@ -231,20 +201,6 @@ template: "one file backs N-1 pairwise tracks, no renderer change").
   Newick for row ordering). Popular T2T/pangenome-era tool (Birol lab). This is NOT
   "native N-way blocks as the primitive" (rejected above) — it emits pairwise features
   like every other adapter.
-
-- **SyRI adapter (deliberately deferred — the fiddly one, not the simple one).** plotsr
-  consumes SyRI output as **one file per adjacent pair** (pairwise, no join — structurally
-  the *simplest* shape, thinner than the PAF adapter), so it maps cleanly onto the existing
-  N-way stacked view. Two frictions: (1) SyRI files are commonly `*syri.out`, and `.out` is
-  already claimed by `MashMapAdapter` in the guesser — so it must be `adapterHint`-only;
-  (2) its only value over "just convert to PAF" is preserving SV type (SYN/INV/TRANS/DUP),
-  and surfacing that is where cross-cutting surface lives. Cheap path if built: parse type
-  into a **feature attribute** (tooltip only) and rely on existing `colorBy: { field: 'strand' }` for
-  inversions — inversions already read via strand, which is ~80% of plotsr's visual value
-  with zero new `colorBy` arm. Only add an `svType` mode (touches ~4 exhaustive switches +
-  legend + SVG + Canvas2D + dotplot) if the trans/dup distinction proves it earns the tax.
-  Cross-ref "Explicit SV-type classification" above — same conclusion, now with the guesser
-  collision + rubric spelled out.
 
 - **nucmer `.coords` (show-coords tabular) leaf adapter.** SVbyEye/SafFire ingest nucmer via
   `show-coords`-style tabular output (`[S1][E1]|[S2][E2]|[LEN1][LEN2]|[%IDY]|tags`). JBrowse

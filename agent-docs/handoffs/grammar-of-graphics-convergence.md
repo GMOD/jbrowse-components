@@ -34,7 +34,7 @@ A display that spells one of those concepts its own way is the finding. The
 ramp and text do not follow this rule yet; the row axis does on the multi-row
 feature display, where the row table is the one object the shader, the
 painter and the hit test place a key through
-([ADR-165](../architecture-decision-records/ADR-165-FILE)).
+([ADR-165](../architecture-decision-records/adr-165-the-row-axis-rides-a-table-the-vertex-stage-samples.md)).
 
 **3. Generality resolves before the loop.** A shape composes its scale at
 `gen:shaders` (ADR-095), a field name becomes a direct read before the walk, a

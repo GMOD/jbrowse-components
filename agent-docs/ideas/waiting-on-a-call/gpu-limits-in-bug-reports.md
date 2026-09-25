@@ -29,6 +29,10 @@ capability object, and show them where the dialog already shows the renderer.
 A report then says "`maxBufferSize` 256 MiB" beside "this region is too large to
 render", which is the difference between a reproducible ceiling and a guess.
 
+The over-limit errors already carry theirs: `GpuHalBase` writes the buffer or
+texture limit into the "too much data to render on this GPU" text on both
+backends. The carrier is for every other failure, where nothing names a number.
+
 **What to settle first, because it is the reason this is parked rather than
 done:**
 

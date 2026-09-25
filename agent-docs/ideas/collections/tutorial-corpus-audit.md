@@ -282,12 +282,9 @@ What *is* duplicated is prose whose repetition is load-bearing under the
 cold-start rule: the "nothing to read along" bullet (four wordings across ~12
 pages), the `UU_Cfam_GSD_1.0` gloss (four pages), the assembly-name sentence
 (four pages, each one clause and each already a link). **The win there is
-consistency of wording, not removal.** Two exceptions worth an actual fix:
+consistency of wording, not removal.** The one that looks like an exception is
+not:
 
-- **The plugin-install subsection, byte-identical on three pangenome pages**
-  (`ecoli:751-777`, `hprc:62-91`, `cactus:421-448`), ~1.9 KB, with a
-  `<!-- GRAPH_PLUGIN_CONFIG -->` marker already sitting inside it doing half the
-  job. Widen the marker to the whole subsection.
 - **The `## Reproduce it end to end` fence**, 23 pages, whose only varying token
   is the script name. `include:` cannot own it (`sync-doc-snippets` fills fenced
   blocks from compiled TS/JS), and `check-script-commands` already pins it, so
