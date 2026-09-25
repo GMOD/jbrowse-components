@@ -558,8 +558,11 @@ describe('the dependency set is the contract', () => {
       [
         'DisplayTestSession.assemblyManager',
         // the track's config reference asks the session for a working copy
-        // before resolving by id, and a session keeping none registers the probe
+        // before resolving by id: the session guard probes the session
+        // services, and a session keeping no working copies registers its probe
+        'DisplayTestSession.configuration?',
         'DisplayTestSession.getEditableTrackConfig?',
+        'DisplayTestSession.rpcManager?',
         'FeatureTrack.configuration',
         'FeatureTrack.minimized',
         'FeatureTrackConfigurationSchema.assemblyNames',

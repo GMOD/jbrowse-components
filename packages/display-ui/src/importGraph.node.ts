@@ -12,6 +12,7 @@ import path from 'node:path'
 const packages = path.join(__dirname, '../..')
 
 const workspace: Record<string, string> = {
+  '@jbrowse/add-track-core': path.join(packages, 'add-track-core/src'),
   '@jbrowse/core': path.join(packages, 'core/src'),
   '@jbrowse/display-ui': __dirname,
   '@jbrowse/render-core': path.join(packages, 'render-core/src'),
