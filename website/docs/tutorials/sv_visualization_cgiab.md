@@ -227,7 +227,7 @@ the others draw a mark.
 Severus and DRAGEN are both indexed VCFs with a record at each breakend, so they
 load with no display settings:
 
-```json addtrack
+```json addtrack config=https://jbrowse.org/demos/cgiab/config.json loc=chr3:139,970,000-140,005,000
 {
   "type": "VariantTrack",
   "trackId": "hg008t_severus_sv",
@@ -240,7 +240,7 @@ load with no display settings:
 }
 ```
 
-```json addtrack
+```json addtrack config=https://jbrowse.org/demos/cgiab/config.json loc=chr3:139,970,000-140,005,000
 {
   "type": "VariantTrack",
   "trackId": "hg008t_dragen_sv",
@@ -263,7 +263,7 @@ record shows it.
 The ensemble callset is a plain VCF, so [`VcfAdapter`](/docs/config/vcfadapter)
 loads it whole, with no index:
 
-```json addtrack
+```json addtrack config=https://jbrowse.org/demos/cgiab/config.json loc=chr3:139,970,000-140,005,000
 {
   "type": "VariantTrack",
   "trackId": "hg008t_minda_sv",

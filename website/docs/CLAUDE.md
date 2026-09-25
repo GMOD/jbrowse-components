@@ -85,6 +85,14 @@ check by fixing the manifest, not by removing a skip.
   config, and on a session that opens no tracks. **Ask what the session _shows_,
   not whether the check accepts it.**
 
+- **An addtrack fence takes `config=` too**, plus an optional `loc=` (no
+  spaces), and its link opens that config with the fence's track added and
+  shown. Without `loc=` the view opens on the whole genome, where most tracks
+  draw nothing, so give one unless the track reads at that scale. The build
+  refuses a fence naming a file by anything but an absolute URL, and
+  `check-session-urls` fails one whose assembly the config lacks or whose
+  trackId it already has.
+
 - **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`.
 - **`user_guides/` drives the UI, `config_guides/` shows the JSON.** A config
   guide explaining a concept belongs in the user guide.

@@ -81,7 +81,7 @@ jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz 
 The segments themselves are a `FeatureTrack` whose
 `LinearMultiRowFeatureDisplay` carries the row and color settings:
 
-```json addtrack
+```json addtrack config=test_data/tcga_cnv/config.json loc=17:39,000,000-40,500,000
 {
   "type": "FeatureTrack",
   "trackId": "tcga_brca_cnv",
@@ -218,7 +218,7 @@ the mutation cohort uses. The eight columns arrive as eight signals, and a
 [`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track) draws one row
 each:
 
-```json addtrack
+```json addtrack config=test_data/tcga_cnv/config.json
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "tcga_brca_cnv_recurrence_by_subtype",
