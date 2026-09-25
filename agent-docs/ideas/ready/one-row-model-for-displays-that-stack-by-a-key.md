@@ -148,7 +148,7 @@ before it is asked.
    the palette flip after the side-by-side capture, the base arrangement on
    wiggle and the one precedence on the variant displays.
 5. ~~**A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
-   retires "a band yields to a tree"~~ (ADR-169, `3125107fde`…`f28f63a8c6`).
+   retires "a band yields to a tree"~~ (ADR-169, `3125107fde`…`3fe60ac332`).
 6. ~~**The mark display takes `rows`** for bar and point marks, whose rows are
    one band each~~ (ADR-157). `facet` with `rows` waits on step 5's bands, and
    a pileup's variable-height sections need a tree laid against section tops.
