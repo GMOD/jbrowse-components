@@ -1209,7 +1209,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // child LGVs after attach), each panel showing the somatic-SV benchmark call
   // (compact VCF lane) above the 116x tumor PacBio HiFi reads in Super-compact
   // mode (featureHeight 1 / spacing 0, reviewer). showIntraviewLinks draws the
-  // black splines between reads that map partially to each side of the junction.
+  // splines between reads that map partially to each side of the junction.
   // The PacBio BAM is HG008_T_PACBIO_BAM, a rehosted slice carrying these two
   // windows: the NCBI original is 118 GB and its ~26 MB BAI downloaded on every
   // fresh-tab capture. forceLoad lifts the fetch-size gate so the reads

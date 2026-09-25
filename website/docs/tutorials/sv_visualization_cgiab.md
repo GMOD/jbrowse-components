@@ -678,7 +678,7 @@ Click the chord joining chr3 and chr13, then open the tumor PacBio HiFi reads on
 each panel of the breakpoint split view it launches and set **Read height** →
 **Compact**.
 
-<Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, evidence of a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
+<Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Splines connect tumor PacBio HiFi reads that partially map to each chromosome, evidence of a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
 The chr3-chr13 junction is one breakend of a larger event, and interchromosomal
 translocations in HG008 are frequently complex this way
@@ -704,8 +704,8 @@ Choose `cluster_3` under **Filter by event** to leave its four records in the
 table and its two chords in the circle, and open any of them in a breakpoint
 split view to get a panel for each of the event's four loci.
 
-**The reads.** In the breakpoint split view above, the black splines join each
-tumor PacBio HiFi read's chr13 piece to its chr3 piece: chr13 forward into the
+**The reads.** In the breakpoint split view above, the splines join each tumor
+PacBio HiFi read's chr13 piece to its chr3 piece: chr13 forward into the
 junction, then down chr3 inverted. The matched normal is the control and a track
 away: the tumor reads split at this position, the normal reads read through it.
 

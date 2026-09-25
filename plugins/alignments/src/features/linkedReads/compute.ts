@@ -1,4 +1,5 @@
 import {
+  CONNECTION_LABELS,
   splitJunctionKind,
   PAIR_DIRECTION_NUM,
   connectionEndpoints,
@@ -9,10 +10,6 @@ import {
 } from '@jbrowse/alignments-core'
 
 import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
-import {
-  SPLIT_JUNCTION_LABELS,
-  readColorCategoryLabel,
-} from '../../shared/legendUtils.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
@@ -52,33 +49,14 @@ export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
 // orientation nothing measured.
 export const LINKED_READ_COLOR_INTERCHROM = LINKED_READ_COLOR_PAIR_LL + 3
 
-// Human-readable connection classification for the bezier-arc hover tooltip and
-// its legend row. DERIVED, not restated: the slot's meaning comes from
-// LINKED_READ_SLOT_CATEGORY (the table its colour also comes from) and the
-// wording from the read key, so a colour means one thing whether the reader met
-// it on a swatch, a fill or a curve.
-//
-// The four pair labels used to be copied here from CATEGORY_LEGEND, under a
-// comment saying they must match word for word. They are the same strings now
-// because they are the same strings.
-//
-// The two split slots take `SPLIT_JUNCTION_LABELS` rather than the read fills'
-// "paired-end read", which would be false for every long read on screen.
-// `LINKED_READ_COLOR_INTERCHROM` is a mate link, never a split junction
-// (`classifyPair`), so it keeps the read fill's wording and the key shows one
-// row for that colour.
-//
-// Slot 0 takes LR's swatch, but calling it LR would assert an orientation
-// nothing measured, so it keeps the neutral wording, as does anything off the
-// end of the table.
+// The bezier-arc hover tooltip's and legend row's wording, shared with the
+// breakpoint split view through CONNECTION_LABELS. Slot 0 takes LR's swatch, but
+// calling it LR would assert an orientation nothing measured.
 export function connectionLabel(colorType: number) {
   const category = LINKED_READ_SLOT_CATEGORY[colorType]
   return category === undefined || colorType === LINKED_READ_COLOR_PAIR_UNKNOWN
-    ? 'Read pair'
-    : colorType === LINKED_READ_COLOR_SPLIT_NORMAL ||
-        colorType === LINKED_READ_COLOR_SPLIT_INV
-      ? SPLIT_JUNCTION_LABELS[category]!
-      : readColorCategoryLabel(category)!
+    ? CONNECTION_LABELS.readPair
+    : CONNECTION_LABELS[category]
 }
 
 // No refName, unlike the arc path's entry: every comparison this path makes is

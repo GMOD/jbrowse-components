@@ -2,7 +2,11 @@
 // file is reached from the display's state model, which a plugin evaluates at
 // install time, and a value import of the barrel would put ~80 Material
 // components on every host's first paint (see EAGER_BUNDLE.md)
-import { PAIR_DIRECTION_LABELS } from '@jbrowse/alignments-core'
+import {
+  CONNECTION_LABELS,
+  PAIR_DIRECTION_LABELS,
+  SPLIT_JUNCTION_LABELS,
+} from '@jbrowse/alignments-core'
 import { legendSwatches } from '@jbrowse/core/ui/legendSpec'
 import {
   methylated5hmC,
@@ -307,7 +311,7 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   // is drawn for split reads of either kind, so it cannot claim pairedness.
   splitInversion: 'Split paired-end read (inverted)',
   splitDeletion: 'Split paired-end read (same strand)',
-  interchrom: 'Inter-chromosomal',
+  interchrom: CONNECTION_LABELS.interchrom,
   unmappedMate: 'Unmapped mate',
   supplementary: 'Supplementary/split',
   // the two leftover buckets, last: a read whose scheme resolved no value for
@@ -641,25 +645,6 @@ function getOverlapLegendItem(
     ],
     label: 'Overlapping reads (tint = depth)',
   }
-}
-
-// The overlay's wording for the split buckets, "split alignment" throughout
-// (reviewer, on both cancer_sv figures: "using the term split alignment might
-// help. i like it better than split junction"). It cannot use CATEGORY_LEGEND's,
-// which says "paired-end read": a connector is drawn between the segments of ANY
-// split read (`readGroupConnections` partitions split alignments from mate links
-// without consulting the pair flag), so the paired claim would be false for
-// every long read on screen. What a curve marks is the split alignment itself.
-// `connectionLabel` derives its wording from THIS table rather
-// than restating it, which is what makes "the two overlays agree word for word"
-// true by construction — it has to be, because one legend box can show both and
-// `getAlignmentsColorScales` de-dupes them on `${color} ${label}`.
-export const SPLIT_JUNCTION_LABELS: Partial<Record<SwatchCategory, string>> = {
-  splitInversion: 'Split alignment (inverted)',
-  splitDeletion: 'Split alignment (same strand)',
-  // Only while every interchromosomal mark is a split read; one standing on a
-  // mate pair keeps CATEGORY_LEGEND's "Inter-chromosomal" (`getArcLegendItems`).
-  interchrom: 'Split alignment (interchromosomal)',
 }
 
 /**

@@ -329,7 +329,13 @@ on one breakpoint locus. Splines connect the reads that span the junction across
 the panels, and the variant call is drawn as a colored line with feet indicating
 directionality. The header bar accepts location searches in either panel.
 
-<Figure caption="Breakpoint split view for an interchromosomal translocation, each panel centered on one breakpoint locus. Black splines connect supporting reads that span the junction, and the green line with feet is the variant call drawn across both panels to show directionality." src="/img/breakpoint_split_view.png" />
+A spline between chromosomes takes the inter-chromosomal color. Within one
+chromosome, an inverted split alignment is magenta and a pair with an aberrant
+orientation takes its pair color (green LL, dark blue RR, teal RL); every other
+spline is long-insert red, since each one the view draws is a pair the aligner
+did not call proper or a split read.
+
+<Figure caption="Breakpoint split view for an interchromosomal translocation, each panel centered on one breakpoint locus. Splines connect supporting reads that span the junction, and the green line with feet is the variant call drawn across both panels to show directionality." src="/img/breakpoint_split_view.png" />
 
 Hovering a spline shades the reads it joins, every segment of the read in every
 panel it visits, and every other spline of the same read thickens alongside it.

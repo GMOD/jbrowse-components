@@ -1,10 +1,10 @@
+import { pairDirection } from '@jbrowse/alignments-core'
 import { connectionEndpointBps } from '@jbrowse/cigar-utils'
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { bezierConnectorPath } from '@jbrowse/core/util'
 import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
-import { useOrientationColor } from './getOrientationColor.tsx'
+import { connectionKind, useConnectionStyle } from './connectionStyle.ts'
 import { computeOverlayX } from './overlayGeometry.ts'
 import {
   LEFT,
@@ -24,8 +24,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
   props: OverlayProps,
 ) {
   const { showIntraviewLinks } = props.model
-  const palette = usePalette()
-  const { getPairedOrientation, getLongReadOrientation } = useOrientationColor()
+  const connectionStyle = useConnectionStyle()
   return (
     <OverlayPaths
       {...props}
@@ -69,20 +68,22 @@ const AlignmentConnections = observer(function AlignmentConnections(
             }
             const s1 = f1.get('strand')!
             const s2 = f2.get('strand')!
-            const sameRef = f1ref === f2ref
-            const orientation = sameRef
-              ? hasPaired
-                ? getPairedOrientation({
-                    pair_orientation: f1.get('pair_orientation') as
-                      | string
-                      | undefined,
-                  })
-                : getLongReadOrientation(s1, s2)
-              : undefined
-            const isAbnormal = orientation?.abnormal ?? false
-            const colorReason =
-              orientation?.label ??
-              'interchromosomal connection (different reference sequences)'
+            const {
+              abnormal: isAbnormal,
+              color,
+              label: colorReason,
+            } = connectionStyle(
+              connectionKind({
+                isSplit: !hasPaired,
+                interchrom: f1ref !== f2ref,
+                pairDirection: pairDirection(
+                  f1.get('pair_orientation') as string | undefined,
+                ),
+                s1,
+                s2,
+              }),
+              !hasPaired,
+            )
             // First endpoint: this segment's read-trailing (3') edge. Second:
             // the mate's 3' edge for a pair, or the next segment's read-leading
             // (5') edge for a split junction (shared rule — see
@@ -136,7 +137,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
                 // the chunk is the read chain, so hovering any one of its
                 // junctions emphasizes all of them and boxes every segment
                 emphasisGroup: `chunk-${chunkIndex}`,
-                stroke: orientation?.color ?? palette.text.disabled,
+                stroke: color,
                 strokeDasharray: hiddenNote ? HIDDEN_SEGMENT_DASH : undefined,
                 tooltip: () =>
                   buildPairTooltip(

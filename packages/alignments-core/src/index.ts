@@ -32,6 +32,8 @@ export type { SnpBaseColors, InsertionType } from './labelConstants.ts'
 export { buildSyntheticAssembly } from './buildSyntheticAssembly.ts'
 export type { SyntheticAssembly } from './buildSyntheticAssembly.ts'
 export { buildReadVsRefNames } from './readVsRefNaming.ts'
+export { CONNECTION_LABELS, SPLIT_JUNCTION_LABELS } from './connectionLabels.ts'
+export type { ConnectionKind } from './connectionLabels.ts'
 export {
   PAIR_DIRECTION_LABELS,
   PAIR_DIRECTION_NUM,
