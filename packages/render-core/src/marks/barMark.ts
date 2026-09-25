@@ -59,9 +59,7 @@ function barBand(
 
 type YScale = ReturnType<typeof valueScaleUniforms>
 
-// Where the baseline sits inside a band, in CSS px below its top. Every
-// instance in a draw shares it, so the shader reads it as a uniform rather
-// than running the scale again per vertex.
+// Where the baseline sits inside a band, in CSS px below its top.
 function originYPx(
   params: BarParams,
   band: number,

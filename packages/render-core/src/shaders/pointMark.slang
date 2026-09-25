@@ -100,9 +100,8 @@ static const float INV_SQRT5 = 0.4472136;
 // colour swap. LocusZoom's lead-SNP convention, generalized.
 static const float DIAMOND_GLYPH_SCALE = 1.6;
 
-// The shape's own placement, anchored at the top of its row band: the vertex
-// branch, the Canvas2D painter, the ink box and the hit test all read a value's
-// y through this, and `//! js-export` is what hands them one spelling.
+// The shape's own anchor, the top of its row band. The vertex branch, the
+// Canvas2D painter, the ink box and the hit test all read a value's y here.
 float pointYPx(float value, float domainMin, float domainMax, float h, int scaleType, float insetPx, float symlogConstant) {
   return insetValueYPx(value, domainMin, domainMax, h, scaleType, insetPx, symlogConstant);
 }

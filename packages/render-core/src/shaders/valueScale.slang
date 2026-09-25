@@ -15,12 +15,11 @@ public float valueToYPx(float value, float domainMin, float domainMax, float h) 
   return valueToYPxScaled(value, domainMin, domainMax, h, 0, 1.0);
 }
 
-// The same scale over a range inset by `insetPx` at BOTH ends of the band, so
-// an edge instance's glyph stays whole. Still only the scale: the result is px
-// below the band's top, and the anchor is the caller's — `pointMark` adds its
-// row's top, `linkMark` subtracts from `h` to measure up from the baseline.
-// The clamp is what a band shorter than two insets needs: past `h * 0.5` the
-// range would go negative and the scale would run backwards.
+// The same scale over a range inset by `insetPx` at BOTH ends, so an edge
+// instance's glyph stays whole. Still range and not anchor: the result is px
+// below the band's top and each shape places it (ADR-097). Past `h * 0.5` the
+// clamp is load-bearing — without it the range goes negative and the scale
+// runs backwards.
 public float insetValueYPx(float value, float domainMin, float domainMax, float h, int scaleType, float insetPx, float symlogConstant) {
   float inset = min(insetPx, h * 0.5);
   return inset + valueToYPxScaled(value, domainMin, domainMax, h - 2.0 * inset, scaleType, symlogConstant);

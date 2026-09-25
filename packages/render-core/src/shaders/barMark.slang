@@ -56,9 +56,8 @@ struct Uniforms {
   int    rampMode;
   float  rampMin;
   float  rampMax;
-  // Where the baseline value sits, in CSS px below the band's top: the
-  // `origin` read through the same scale `y` is, resolved on the CPU because
-  // every instance in the draw shares it.
+  // The baseline, in CSS px below the band's top: `origin` through the same
+  // scale `y` reads, resolved on the CPU because the whole draw shares it.
   float  originYPx;
   // CSS px per row band; the canvas height where every instance is on row 0.
   float  rowHeight;

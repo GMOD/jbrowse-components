@@ -55,8 +55,8 @@ test('a band shorter than two insets collapses to its midline, never inverts', (
 })
 
 // The numbers above pin what the inset scale is. This pins that both shapes
-// reach it on both backends — a shared function nothing calls is how the two
-// copies drifted apart unnoticed before.
+// reach it on both backends: a numeric test of a function a shader has quietly
+// stopped calling passes whatever that shader draws.
 test.each([
   ['pointMark', pointWgsl.WGSL_SOURCE, pointGlsl.GLSL_VERTEX],
   ['linkMark', linkWgsl.WGSL_SOURCE, linkGlsl.GLSL_VERTEX],

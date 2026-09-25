@@ -209,12 +209,11 @@ public float normalizeDepthScalar(float rawDepth, float domainMin, float domainM
 // `getNiceDomain` returns verbatim for a typed `Set max score` of 0, made the
 // first factor +inf and the product NaN, reaching `clamp(NaN, 0, 1)`.
 // Split in two so the scalar half can be `//! js-export`ed — the twin emitter
-// cannot carry a uniform struct across. Hoisting the domain's two transformed
-// endpoints into uniforms, the way `makeScoreNormalizer` hoists them out of its
-// loop, was declined: it saves two `log2` per vertex on the two scale types
-// that are not the default, and pays for them with a second spelling of
-// `normalizeScore` that `normalizeDepthScalar` — the drawn path's pinned oracle
-// (ADR-097) — would no longer be on.
+// cannot carry a uniform struct across. Hoisting the domain's transformed
+// endpoints into uniforms was declined: it saves two `log2` per vertex on the
+// two scale types that are not the default, and costs a second spelling of
+// `normalizeScore` that `normalizeDepthScalar`, ADR-097's pinned oracle for
+// this path, would no longer be on.
 public float covNormalizeDepth(float relDepth, CoverageBandUniforms u) {
   float rawDepth = relDepth * u.regionMaxDepth;
   return normalizeDepthScalar(
