@@ -127,7 +127,10 @@ export function stripBlocks(
  * Where the rings sit: stacked inward from the ruler, each taking its
  * display's height as its band, with a gap between. Past
  * `MAX_RINGS_RADIUS_FRACTION` of the radius every band shrinks in proportion,
- * so a small circle keeps an interior for its chords and ribbons.
+ * so a small circle keeps an interior for its chords and ribbons. Once the
+ * gaps alone take that share — a handful of rings at the zoom floor — there is
+ * no band left to shrink, and a ring with none is left out rather than laid
+ * out as an annulus of zero width.
  */
 export function layoutRings(
   displays: readonly RingDisplay[],
@@ -135,15 +138,15 @@ export function layoutRings(
 ): Ring[] {
   const heights = displays.reduce((sum, d) => sum + d.height, 0)
   const gaps = displays.length * RING_GAP_PX
-  const scale = Math.min(
-    1,
-    Math.max(0, radiusPx * MAX_RINGS_RADIUS_FRACTION - gaps) / heights,
-  )
+  const room = Math.max(0, radiusPx * MAX_RINGS_RADIUS_FRACTION - gaps)
+  const scale = heights > 0 ? Math.min(1, room / heights) : 0
   const rings: Ring[] = []
   let outerPx = radiusPx - RING_GAP_PX
   for (const display of displays) {
     const innerPx = Math.max(0, outerPx - display.height * scale)
-    rings.push({ display, innerPx, outerPx })
+    if (outerPx > innerPx) {
+      rings.push({ display, innerPx, outerPx })
+    }
     outerPx = innerPx - RING_GAP_PX
   }
   return rings

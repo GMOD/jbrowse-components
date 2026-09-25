@@ -4,6 +4,7 @@ import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { calculateStaticSlices } from '../CircularView/slices.ts'
 import {
+  MAX_RINGS_RADIUS_FRACTION,
   RING_AXIS_LABEL_GAP_PX,
   RING_GAP_PX,
   layoutRings,
@@ -106,6 +107,38 @@ test('rings past half the radius shrink in proportion, keeping the interior', ()
   const bands = rings.map(r => r.outerPx - r.innerPx)
   expect(bands[0]! / bands[1]!).toBeCloseTo(2)
   expect(rings[1]!.innerPx).toBeCloseTo(75)
+})
+
+// four rings at the zoom floor leave the gaps more than the half-radius the
+// rings may take, so every band came out zero wide: the Canvas2D painter drew
+// nothing and the GPU pass divided by the band and sampled the strip at NaN
+test('a circle with no room left for a band lays out no ring', () => {
+  const four = ['a', 'b', 'c', 'd'].map(id => display(id, 100))
+  expect(layoutRings(four, 25)).toEqual([])
+  const bands200 = layoutRings(four, 200).map(r => r.outerPx - r.innerPx)
+  expect(bands200).toHaveLength(4)
+  for (const band of bands200) {
+    expect(band).toBeCloseTo((200 * MAX_RINGS_RADIUS_FRACTION - 16) / 4)
+  }
+  const eight = Array.from({ length: RING_PASSES }, (_, i) =>
+    display(`d${i}`, 100),
+  )
+  expect(layoutRings(eight, 64)).toEqual([])
+  for (const ring of layoutRings(eight, 500)) {
+    expect(ring.outerPx - ring.innerPx).toBeGreaterThan(0)
+  }
+})
+
+// every height zero used to divide zero by zero and put NaN radii in the
+// instance buffer, and a zero-height display among sized ones a zero band
+test('a display with no height takes no ring, and leaves the rest sized', () => {
+  expect(layoutRings([display('a', 0), display('b', 0)], 10)).toEqual([])
+  expect(
+    layoutRings([display('a', 0), display('b', 100)], 500).map(r => [
+      r.display.id,
+      r.outerPx - r.innerPx,
+    ]),
+  ).toEqual([['b', 100]])
 })
 
 // the strip is still drawn at the display's height, so a point on a shrunk

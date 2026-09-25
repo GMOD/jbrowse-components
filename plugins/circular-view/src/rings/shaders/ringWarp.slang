@@ -56,7 +56,7 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(RingInstance inst, uint vid : SV_VertexID) {
-  uint seg = (vid / 6u) % RING_SEGMENTS;
+  uint seg = vid / 6u;
   float2 q = quadLocal(vid);
   float step = TWO_PI / float(RING_SEGMENTS);
   float a = (float(seg) + q.x) * step;
@@ -69,11 +69,7 @@ VsOut vs_main(RingInstance inst, uint vid : SV_VertexID) {
   float2 css = float2(u.centerX, u.centerY) + p / dpr;
 
   VsOut o;
-  o.position = float4(
-    css.x / u.canvasWidth * 2.0 - 1.0,
-    1.0 - css.y / u.canvasHeight * 2.0,
-    0.0,
-    1.0);
+  o.position = screenToClip(css, float2(u.canvasWidth, u.canvasHeight));
   o.fromCenterPx = p;
   o.radiiPx = float2(inner, outer);
   return o;
@@ -84,10 +80,13 @@ float4 fs_main(VsOut v) : SV_Target {
   float r = length(v.fromCenterPx);
   float inner = v.radiiPx.x;
   float outer = v.radiiPx.y;
+  float band = outer - inner;
   float cov = clamp(outer - r + 0.5, 0.0, 1.0) * clamp(r - inner + 0.5, 0.0, 1.0);
-  if (cov <= 0.0) discard;
+  // a band the layout collapsed draws nothing, as the Canvas2D twin does; the
+  // rim coverage above is still non-zero over it, and the sample would be NaN
+  if (cov <= 0.0 || band <= 0.0) discard;
   float a = atan2(v.fromCenterPx.y, v.fromCenterPx.x) - u.offsetRadians;
   a -= floor(a / TWO_PI) * TWO_PI;
-  float2 uv = float2(a / TWO_PI, (outer - r) / (outer - inner));
+  float2 uv = float2(a / TWO_PI, (outer - r) / band);
   return strip.SampleLevel(uv, 0.0) * cov;
 }
