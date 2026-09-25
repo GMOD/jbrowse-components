@@ -146,8 +146,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot color
      * One CSS colour, or a field through a scale — `score` through
-     * `threshold` for the bicolor plot, through `linear` or `log` for the
-     * density ramp, `source` through `categorical` for a palette entry per
+     * `threshold` for the bicolor plot, through `linear` for the density
+     * ramp, `source` through `categorical` for a palette entry per
      * subtrack. Unset, the layout decides: several sources in one plot box
      * take a palette entry each, and anything else is the pos/neg pair about
      * the `origin`.

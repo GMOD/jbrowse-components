@@ -2,6 +2,7 @@ import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { resolveWiggleColor, wiggleColorEncoding } from './wiggleColor.ts'
+import { wiggleColorSchema } from './wiggleColorConfigSchema.ts'
 
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -158,4 +159,13 @@ test('one CSS stop is a ramp from white to that colour, whatever the origin', ()
   expect(out.rampMid).toBeUndefined()
   expect(resolved(written, -7).rampLut).toBe(out.rampLut)
   expect([out.posColor, out.negColor]).toEqual(['red', 'red'])
+})
+
+test('a ramp takes its transform from the y scale, so log is refused', () => {
+  expect(() =>
+    wiggleColorSchema.create({ field: 'score', scale: 'log' }),
+  ).toThrow()
+  expect(
+    wiggleColorSchema.create({ field: 'score', scale: 'linear' }).scale,
+  ).toBe('linear')
 })

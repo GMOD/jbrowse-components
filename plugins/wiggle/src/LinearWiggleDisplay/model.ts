@@ -375,7 +375,7 @@ export default function stateModelFactory(
        * #getter
        * Whether colour is spent on the score, so a row's identity moves to
        * its `labelColor`: density always, where the white fade counts, and
-       * bars or points under a declared `linear` or `log` colour. Lines part
+       * bars or points under a declared `linear` colour. Lines part
        * in two colours even then.
        */
       get scoreGradientPaints() {

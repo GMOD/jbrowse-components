@@ -47,7 +47,7 @@ export function sourcesFromRegionData(
  * the row-label sidebar paints beside it. Which of them carries the row's
  * identity is the whole of what varies, and it varies with one thing: whether
  * a score gradient paints — density always, and bars or points under a
- * declared `linear` or `log` colour, whose table ignores `color` outright.
+ * declared `linear` colour, whose table ignores `color` outright.
  *
  * **In density, `color` is a scale rather than an identity.** Density paints a
  * row white at the cut and saturates towards `color`, so a hue set there to

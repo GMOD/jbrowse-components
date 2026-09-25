@@ -26,7 +26,7 @@ interface LegendSource {
  *
  * **A score gradient decides which channel the color comes from.** `color` is
  * a row's identity except where a gradient paints (density, or bars and points
- * under a declared `linear`/`log` colour): there it is the score ramp and identity
+ * under a declared `linear` colour): there it is the score ramp and identity
  * sits in `labelColor` — see the channel note in sourcesLogic.ts. Reading
  * `color` in density gave a grouped-but-uncolored cohort N rows that were all
  * `fallbackColor`, naming groups that were on screen in as many different

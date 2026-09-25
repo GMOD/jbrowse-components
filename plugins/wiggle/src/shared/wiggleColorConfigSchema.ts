@@ -1,6 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
-  COLOR_SCALES,
   colorChannelOptions,
   colorChannelSlots,
   colorDomainSlot,
@@ -16,6 +15,14 @@ export const WIGGLE_COLOR_FIELDS = ['score', 'source'] as const
 
 export const SOURCE_FIELD = 'source'
 
+/** A ramp here runs across the y domain through the y scale's own type, so no colour scale is `log`. */
+const WIGGLE_COLOR_SCALES = [
+  'none',
+  'categorical',
+  'linear',
+  'threshold',
+] as const
+
 /** `source` is categorical and `score` the bicolor cut while `scale` is unset. */
 export const WIGGLE_FIELD_SCALES = {
   [SOURCE_FIELD]: 'categorical',
@@ -29,8 +36,8 @@ export const WIGGLE_FIELD_SCALES = {
  * its two fields through a scale. `score` through a `threshold` scale is the
  * bicolor plot — a colour each side of one cut, the `origin` where the domain
  * names none, and a colour per band where it names more — and through `linear`
- * or `log` a gradient, which colours each bar, point and density cell by its
- * score. A line still parts in the gradient's two end colours.
+ * a gradient across the y domain, through the y scale's own type, which colours
+ * each bar, point and density cell by its score. A line still parts in the gradient's two end colours.
  * `source` through a `categorical` scale gives each subtrack a colour of its
  * own, which is what several sources sharing one plot box need to be told
  * apart. Any other pairing paints the misconfiguration grey. A wiggle colours
@@ -70,12 +77,12 @@ export const wiggleColorSchema = ConfigurationSchema(
       description: 'CSS colour painting every bar',
     },
     ...colorChannelSlots({
-      scales: COLOR_SCALES,
+      scales: WIGGLE_COLOR_SCALES,
       scaleName: 'WiggleColorScale',
       fieldType: 'string',
       field: 'score or source',
       scale:
-        'how field becomes a colour: threshold paints each band between two of its cuts; linear and log run range, else scheme, else viridis across the y domain with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score',
+        'how field becomes a colour: threshold paints each band between two of its cuts; linear runs range, else scheme, else viridis across the y domain through scales.y.type, with domainMid at the middle stop, colouring each bar, point and density cell by its score, and a one-colour range runs from white to that colour; a line still parts in the two end colours; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score',
     }),
     /**
      * #slot field
@@ -94,7 +101,7 @@ export const wiggleColorSchema = ConfigurationSchema(
     }),
     ...colorRangeSlot({
       range:
-        "a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear or log scale's stops, evenly spaced, one colour meaning white to it",
+        "a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear scale's stops, evenly spaced, one colour meaning white to it",
     }),
     ...colorRampSlots,
   },
