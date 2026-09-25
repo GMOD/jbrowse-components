@@ -31,6 +31,7 @@
 module hpmath;
 
 public static const uint HP_LOW_MASK = 0xFFFu;
+public static const float HP_LOW_SPAN = 4096.0;
 
 public float2 hpSplitUint(uint value) {
   uint lo = value & HP_LOW_MASK;
@@ -48,6 +49,15 @@ public float2 hpSplitUint(uint value) {
 // an implementation answer with an indeterminate value instead.
 static const float HP_CLAMP_FLOOR = -3.0e38;
 
+// Add a bp offset to an already-split position, keeping the lo lane inside the
+// 0..4095 band the split exists for. Dropping the offset straight into lo makes
+// it carry genomic magnitude, and `hpToClipX` then multiplies two cancelling
+// large terms by `step` — the catastrophic subtraction the split avoids, moved
+// one line later.
+public float2 hpAddBp(float2 splitPos, float offsetBp) {
+  float hi = floor(offsetBp / HP_LOW_SPAN) * HP_LOW_SPAN;
+  return float2(splitPos.x + hi, splitPos.y + (offsetBp - hi));
+}
 public float hpToClipX(float2 splitPos, float3 bpRange, float hpZero) {
   float floorBp = HP_CLAMP_FLOOR + hpZero;
   float step = 2.0 / bpRange.z;
