@@ -11,6 +11,7 @@ import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import {
+  MAF_CONSERVATION_MARK,
   MAF_COVERAGE_MARKS,
   MAF_ROWS_MARKS,
 } from '../LinearMafRenderer/mafMarks.ts'
@@ -22,16 +23,11 @@ import { drawMafInsertions } from '../LinearMafRenderer/rendering/insertions.ts'
 import { drawInversions } from '../LinearMafRenderer/rendering/inversions.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import {
-  getCodonColors,
   getContrastBaseMap,
   getFrameColors,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
 import { SvgBandLabels } from './components/MafBandLabels.tsx'
-import {
-  drawCodonConservation,
-  drawConservation,
-} from './components/drawConservation.ts'
 import { visibleRowRange } from './components/visibleRegionGeometry.ts'
 import { cullMafRows, encodeMafRows } from './encodeMafRows.ts'
 
@@ -69,7 +65,6 @@ function MafSvgBody({
     rowsTopOffset,
     coverageBandActive,
     conservationBandActive,
-    codonConservationActive,
     conservationDisplayHeight,
     scrollTop,
   } = model
@@ -140,21 +135,17 @@ function MafSvgBody({
             height={conservationDisplayHeight}
             opts={opts}
             paint={ctx => {
-              // Same gate as the on-screen band: the codon band only replaces
-              // the per-base one where frames actually define codons.
-              if (codonConservationActive) {
-                drawCodonConservation(ctx, model.visibleCodonConservation, {
-                  conservationHeight: conservationDisplayHeight,
-                  canvasWidth: width,
-                  palette,
-                })
-              } else {
-                drawConservation(ctx, renderBlocks, model.rpcDataMap, {
-                  conservationHeight: conservationDisplayHeight,
-                  canvasWidth: width,
-                  palette,
-                })
-              }
+              paintMarkBlocks(
+                ctx,
+                [MAF_CONSERVATION_MARK],
+                svgRows,
+                renderBlocks,
+                {
+                  ...svgState,
+                  canvasHeight: conservationDisplayHeight,
+                  conservation: { top: 0, height: conservationDisplayHeight },
+                },
+              )
             }}
           />
         </g>
@@ -207,7 +198,7 @@ function MafSvgBody({
                 contrast,
                 palette.text.primary,
               )
-              drawMafCodons(ctx, model.visibleCodons, getCodonColors(palette))
+              drawMafCodons(ctx, model.visibleCodonGlyphs, palette.text.primary)
               drawInversions(ctx, model.visibleInversions, colorLongreadInv)
             }}
           />

@@ -3,8 +3,8 @@ import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 
-import MafConservationBand from './components/MafConservationBand.tsx'
-import { conservationTicks } from './components/drawConservation.ts'
+import MafBandHandles from './components/MafBandHandles.tsx'
+import { conservationTicks } from './components/conservationBand.ts'
 import { renderSvg } from './renderSvg.tsx'
 import { createMafTestEnvironment } from './testEnv.ts'
 
@@ -48,22 +48,20 @@ function drawSvg(result: React.ReactNode) {
 }
 
 describe('the conservation band paints the height it reserved', () => {
-  it('sizes its canvas to the reservation', () => {
+  it('hands its mark the reservation', () => {
     const display = overStatedBand()
-    const { container } = render(
-      <MafConservationBand model={display} onResizeActiveChange={() => {}} />,
-    )
-    const canvas = container.querySelector('canvas')
-    expect(canvas?.style.height).toBe(`${display.conservationDisplayHeight}px`)
-    expect(canvas?.style.top).toBe(`${display.topBands.top.conservation}px`)
+    expect(display.renderState.conservation).toEqual({
+      top: display.topBands.top.conservation,
+      height: display.conservationDisplayHeight,
+    })
   })
 
   it('leaves the resize handle inside the display', () => {
     const display = overStatedBand()
     const { container } = render(
-      <MafConservationBand model={display} onResizeActiveChange={() => {}} />,
+      <MafBandHandles model={display} onResizeActiveChange={() => {}} />,
     )
-    const handle = container.querySelector('div')
+    const handle = [...container.querySelectorAll('div')].at(-1)
     expect(handle?.style.top).toBe(`${display.rowsTopOffset - 4}px`)
     expect(display.rowsTopOffset - 4).toBeLessThan(display.height)
   })

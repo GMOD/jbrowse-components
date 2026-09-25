@@ -1,3 +1,4 @@
+import type { LocatedCodon } from '../LinearMafDisplay/codons.ts'
 import type {
   AlignmentContext,
   EmptyRecord,
@@ -29,6 +30,8 @@ export interface MafGPURenderState {
    * is off, or the summary tier owns the view.
    */
   coverage: CoverageBandState
+  /** The conservation band's strip; height 0 draws none. */
+  conservation: { top: number; height: number }
   rowHeight: number
   rowProportion: number
   /** rows-area scroll offset; every layer paints row i at `rowHeight*i - this` */
@@ -290,6 +293,12 @@ export interface MafRowsPayload {
   identity?: SpanChannels
   /** The identity X-Y plot's bars. */
   identityBars?: MafIdentityBars
+  /** The codon view's cells. */
+  codonCells?: SpanChannels
+  /** The codons the cells and the band were drawn from, for the hover and the letters. */
+  codons?: readonly LocatedCodon[]
+  /** The conservation band's bars, per base or per codon. */
+  conservation?: MafIdentityBars
 }
 
 /** The `bar` shape's channels, every lane filled. */

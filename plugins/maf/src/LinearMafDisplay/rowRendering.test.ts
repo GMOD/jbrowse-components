@@ -256,7 +256,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     display.setConservationMode('codon')
     zoomAndSettle(view, 100)
     expect(display.codonConservationActive).toBe(false)
-    expect(display.visibleCodonConservation).toEqual([])
+    expect(display.rowsEncodeProps().codons).toBeUndefined()
   })
 
   // Turning it off by hand still wins — the summary path is an extra reason the

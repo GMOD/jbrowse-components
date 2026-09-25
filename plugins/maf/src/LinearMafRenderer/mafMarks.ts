@@ -5,6 +5,7 @@ import {
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
 
+import { conservationBarBand } from '../LinearMafDisplay/components/conservationBand.ts'
 import { GAP_STROKE_OFFSET } from './rendering/types.ts'
 
 import type {
@@ -103,6 +104,36 @@ export const MAF_IDENTITY_BAR_MARK = defineMark({
   band: rowsBand,
 })
 
+/** The codon view: each species' codon cells, filled by its change. */
+export const MAF_CODON_MARK = defineMark({
+  shape: passOf(spanMark, 'mafCodon'),
+  channels: (d: MafRowsPayload) => d.codonCells,
+  params: blockSpanParams,
+  band: rowsBand,
+})
+
+/**
+ * The conservation band below the coverage band: a bar per window or codon,
+ * inset by the same margin as the coverage band so its axis ends meet it.
+ */
+export const MAF_CONSERVATION_MARK = defineMark({
+  shape: passOf(barMark, 'mafConservation'),
+  channels: (d: MafRowsPayload) => d.conservation,
+  params: (s: MafGPURenderState) => {
+    const inset = conservationBarBand(s.conservation.height)
+    return {
+      domain: [0, 1] as [number, number],
+      origin: 0,
+      minWidthPx: 0,
+      seamPx: GAP_STROKE_OFFSET,
+      rowHeight: inset.height,
+      rowBandPx: inset.height,
+      rowOffsetPx: s.conservation.top + inset.top,
+    }
+  },
+  band: (s: MafGPURenderState) => s.conservation,
+})
+
 /** Each row's aligned blocks, colored by source-chromosome rank. */
 export const MAF_SOURCE_CHROM_MARK = defineMark({
   shape: passOf(spanMark, 'mafSourceChrom'),
@@ -136,6 +167,7 @@ export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
   MAF_ROW_MARK,
   MAF_IDENTITY_MARK,
   MAF_IDENTITY_BAR_MARK,
+  MAF_CODON_MARK,
   MAF_SOURCE_CHROM_MARK,
   MAF_SUMMARY_MARK,
 ]
@@ -143,5 +175,6 @@ export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
 /** Everything the rows canvas draws, in paint order. */
 export const MAF_MARKS: Mark<MafUploadPayload, MafGPURenderState>[] = [
   ...MAF_COVERAGE_MARKS,
+  MAF_CONSERVATION_MARK,
   ...MAF_ROWS_MARKS,
 ]

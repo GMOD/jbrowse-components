@@ -81,12 +81,25 @@ describe('createRowsSourceJoin', () => {
         [0, summary],
         [1, summary],
       ]),
+      new Map(),
     )
-    expect(first.get(0)).toEqual({ detail, summary })
-    expect(first.get(1)).toEqual({ detail: undefined, summary })
+    expect(first.get(0)).toEqual({ detail, summary, frames: undefined })
+    expect(first.get(1)).toEqual({
+      detail: undefined,
+      summary,
+      frames: undefined,
+    })
 
-    const second = join(new Map([[0, detail]]), new Map([[1, summary]]))
-    expect(second.get(0)).toEqual({ detail, summary: undefined })
+    const second = join(
+      new Map([[0, detail]]),
+      new Map([[1, summary]]),
+      new Map(),
+    )
+    expect(second.get(0)).toEqual({
+      detail,
+      summary: undefined,
+      frames: undefined,
+    })
     expect(second.get(1)).toBe(first.get(1))
   })
 })

@@ -5,8 +5,8 @@ import { describeMafStatus } from '../../util/mafStatus.ts'
 import { insertionForwardStart } from './findRowHover.ts'
 
 import type { MafStatus, MafSummaryRecord } from '../../types.ts'
+import type { CodonChange, CodonHit } from '../codons.ts'
 import type { GenomicPosition, MafHover } from '../util.ts'
-import type { CodonChange, CodonHit } from './computeVisibleCodons.ts'
 import type { ReactNode } from 'react'
 
 function strandStr(strand?: number) {
@@ -226,9 +226,6 @@ const CHANGE_LABEL: Record<CodonChange, string> = {
   stop: 'stop gained',
 }
 
-// The codon under the cursor in codon view, as a single compact table: the
-// species + gene + the species' codon/amino acid against the reference's, so a
-// specific syn/nonsyn change reads directly rather than inferred from cell color.
 function CodonContents({
   codon,
   location,
@@ -241,11 +238,9 @@ function CodonContents({
   gene?: string
 }) {
   const aaStr =
-    codon.refAa !== undefined && codon.refAa !== codon.aa
-      ? `${codon.refAa} → ${codon.aa}`
-      : codon.aa
+    codon.refAa !== codon.aa ? `${codon.refAa} → ${codon.aa}` : codon.aa
   const codonStr =
-    codon.refCodon !== undefined && codon.refCodon !== codon.codon
+    codon.refCodon !== codon.codon
       ? `${codon.refCodon} → ${codon.codon}`
       : codon.codon
   return (

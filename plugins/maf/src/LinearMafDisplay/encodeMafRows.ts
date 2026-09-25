@@ -1,3 +1,4 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { clipBlockForCanvas } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
@@ -9,6 +10,12 @@ import {
   EMPTY_MAF_CELLS,
   buildMafChannels,
 } from '../LinearMafRenderer/mafChannels.ts'
+import {
+  encodeCodonConservation,
+  encodeCodonSpans,
+  locateRegionCodons,
+} from './codons.ts'
+import { encodeConservation } from './components/conservationBand.ts'
 import { encodeSourceChromSpans } from './components/drawSourceChrom.ts'
 import { paintedBpRange } from './components/paintedBpRange.ts'
 import { encodeSummarySpans } from './components/summarySpans.ts'
@@ -19,7 +26,8 @@ import type {
   MafRegionData,
   MafRowsPayload,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { MafSummaryRecord } from '../types.ts'
+import type { MafFrameRecord, MafSummaryRecord } from '../types.ts'
+import type { CodonFills } from './codons.ts'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -60,6 +68,16 @@ export interface MafRowsEncodeProps {
   /** The rows' source-chromosome ranks, while the rows are colored by them. */
   sourceChromRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
   rowIndexBySrc: ReadonlyMap<string, number>
+  /**
+   * The codons to locate, while the codon view or the band's codon mode
+   * draws: the anchor species whose frames define them, and the reference
+   * row the band leaves out.
+   */
+  codons:
+    | { anchor: string; cells: boolean; band: boolean; refRowIndex: number }
+    | undefined
+  /** The conservation band draws per base. */
+  conservation: boolean
 }
 
 /**
@@ -70,6 +88,19 @@ export interface MafRowsEncodeProps {
 export interface MafRowsSource {
   detail: MafRegionData | undefined
   summary: readonly MafSummaryRecord[] | undefined
+  /** the CDS frames under the region, from whichever tier carries them */
+  frames: MafFrameRecord[] | undefined
+}
+
+function codonFills(fill: Record<string, string | undefined>): CodonFills {
+  const pack = (css: string | undefined) =>
+    css === undefined ? undefined : cssColorToABGR(css)
+  return {
+    same: pack(fill.same),
+    syn: pack(fill.syn),
+    nonsyn: pack(fill.nonsyn),
+    stop: pack(fill.stop),
+  }
 }
 
 /**
@@ -78,17 +109,30 @@ export interface MafRowsSource {
  * releases the pass's GPU buffer.
  */
 export function encodeMafRows(
-  { detail, summary }: MafRowsSource,
+  { detail, summary, frames }: MafRowsSource,
   {
     basesActive,
     identity,
     gpu,
     sourceChromRanks,
     rowIndexBySrc,
+    codons: codonProps,
+    conservation,
   }: MafRowsEncodeProps,
+  displayedRegionIndex = 0,
 ): MafRowsPayload {
   const runs =
     identity && detail ? buildIdentityRuns(detail.blocks, gpu.binBp) : undefined
+  const codons =
+    codonProps && detail && frames
+      ? locateRegionCodons(
+          detail,
+          frames,
+          codonProps.anchor,
+          displayedRegionIndex,
+        )
+      : undefined
+  const bandColor = cssColorToABGR(gpu.palette.conservationColor)
   return {
     cells:
       basesActive && detail
@@ -106,6 +150,17 @@ export function encodeMafRows(
       runs && identity !== 'heatmap'
         ? identityBars(runs, identity === 'rampBars')
         : undefined,
+    codons,
+    codonCells:
+      codons && codonProps?.cells
+        ? encodeCodonSpans(codons, codonFills(gpu.palette.codonFill))
+        : undefined,
+    conservation:
+      codons && codonProps?.band
+        ? encodeCodonConservation(codons, codonProps.refRowIndex, bandColor)
+        : conservation && detail
+          ? encodeConservation(detail.coverage, gpu.binBp, bandColor)
+          : undefined,
   }
 }
 
@@ -150,10 +205,22 @@ export function cullMafRows(
     }
     return kept
   }
-  const { cells, sourceChrom, summary, identity, identityBars } = payload
+  const {
+    cells,
+    sourceChrom,
+    summary,
+    identity,
+    identityBars,
+    codonCells,
+    codons,
+    conservation,
+  } = payload
   const summaryKept = summary && shown(summary)
   const barsKept = identityBars && shown(identityBars)
   return {
+    codons,
+    codonCells: codonCells && pickSpans(codonCells, shown(codonCells)),
+    conservation,
     cells: pickSpans(cells, shown(cells)),
     sourceChrom: sourceChrom && pickSpans(sourceChrom, shown(sourceChrom)),
     identity: identity && pickSpans(identity, shown(identity)),
@@ -180,17 +247,19 @@ export function createRowsSourceJoin() {
   return (
     detail: ReadonlyMap<number, MafRegionData>,
     summary: ReadonlyMap<number, readonly MafSummaryRecord[]>,
+    frames: ReadonlyMap<number, MafFrameRecord[]>,
   ): ReadonlyMap<number, MafRowsSource> => {
     const next = new Map<number, MafRowsSource>()
     for (const key of new Set([...detail.keys(), ...summary.keys()])) {
       const d = detail.get(key)
       const s = summary.get(key)
+      const f = frames.get(key)
       const prev = last.get(key)
       next.set(
         key,
-        prev && prev.detail === d && prev.summary === s
+        prev && prev.detail === d && prev.summary === s && prev.frames === f
           ? prev
-          : { detail: d, summary: s },
+          : { detail: d, summary: s, frames: f },
       )
     }
     last = next

@@ -59,6 +59,7 @@ function state(coverage: CoverageBandState): MafGPURenderState {
     rowsTop: coverage.height,
     rowsHeight: ROWS_HEIGHT,
     coverage,
+    conservation: { top: 0, height: 0 },
     rowHeight: 10,
     rowProportion: 1,
     scrollTop: 0,
@@ -70,6 +71,13 @@ function state(coverage: CoverageBandState): MafGPURenderState {
       insertionColor: 'purple',
       bridgeLineColor: 'grey',
       missingDataColor: 'white',
+      conservationColor: 'grey',
+      codonFill: {
+        same: undefined,
+        syn: 'blue',
+        nonsyn: 'orange',
+        stop: 'red',
+      },
     },
   }
 }

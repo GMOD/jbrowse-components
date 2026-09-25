@@ -1,5 +1,6 @@
 import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
 
+import type { CodonChange } from '../LinearMafDisplay/codons.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
@@ -19,6 +20,10 @@ export interface MafColorPalette {
   bridgeLineColor: string
   /** Pale fill for `M`-status (missing-data) bridged rows, à la UCSC */
   missingDataColor: string
+  /** The conservation band's bars */
+  conservationColor: string
+  /** The codon view's cell fill per change; unset leaves a conserved codon clean */
+  codonFill: Record<CodonChange, string | undefined>
 }
 
 export function getColorBaseMap(palette: JBrowsePalette) {
@@ -41,6 +46,8 @@ export function getMafColorPalette(palette: JBrowsePalette): MafColorPalette {
     insertionColor: palette.insertion,
     bridgeLineColor: palette.text.secondary,
     missingDataColor: palette.missingData,
+    conservationColor: palette.coverage,
+    codonFill: getCodonColors(palette).fill,
   }
 }
 

@@ -60,6 +60,8 @@ const args = {
     insertionColor: '#800080',
     bridgeLineColor: '#888888',
     missingDataColor: '#ffffcc',
+    conservationColor: 'grey',
+    codonFill: { same: undefined, syn: 'blue', nonsyn: 'orange', stop: 'red' },
   },
   colorMatches: false,
 }

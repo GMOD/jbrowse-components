@@ -26,9 +26,8 @@ import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
 import InsertionsOverlay from './InsertionsOverlay.tsx'
 import InversionsOverlay from './InversionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
+import MafBandHandles from './MafBandHandles.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
-import MafConservationBand from './MafConservationBand.tsx'
-import MafCoverageBand from './MafCoverageBand.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { resolveMafPointerHit } from './mafHitTest.ts'
@@ -136,10 +135,7 @@ const MafBody = observer(function MafBody({
   // the rows container, so a wheel over the species names scrolls their rows
   const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
   useRowVirtualScroll(rowsEl, model, model.view.scrollZoom)
-  const [coverageResizeActive, setCoverageResizeActive] = useState(false)
-  const [conservationResizeActive, setConservationResizeActive] =
-    useState(false)
-  const resizeActive = coverageResizeActive || conservationResizeActive
+  const [resizeActive, setResizeActive] = useState(false)
   const view = model.view
   // the canvas box, not the viewport: must equal renderState.canvasWidth, and
   // every overlay below is positioned in the same space — see canvasWidthPx
@@ -201,14 +197,7 @@ const MafBody = observer(function MafBody({
           height: rowsTopOffset + rowsHeight,
         }}
       />
-      <MafCoverageBand
-        model={model}
-        onResizeActiveChange={setCoverageResizeActive}
-      />
-      <MafConservationBand
-        model={model}
-        onResizeActiveChange={setConservationResizeActive}
-      />
+      <MafBandHandles model={model} onResizeActiveChange={setResizeActive} />
       <MafBandLabels model={model} />
       <div
         ref={setRowsEl}
@@ -252,7 +241,7 @@ const MafBody = observer(function MafBody({
           height={rowsHeight}
         />
         <CodonTranslationOverlay
-          markers={model.visibleCodons}
+          glyphs={model.visibleCodonGlyphs}
           width={width}
           height={rowsHeight}
         />

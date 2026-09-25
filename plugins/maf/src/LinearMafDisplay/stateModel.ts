@@ -65,16 +65,11 @@ import {
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
 import { navigationFields } from '../util/navigationFields.ts'
+import { computeVisibleCodonGlyphs, findCodonAt } from './codons.ts'
 import {
   computeVisibleAnnotations,
   findFrameAt,
 } from './components/computeVisibleAnnotations.ts'
-import {
-  computeCodonConservation,
-  computeVisibleCodons,
-  findCodonAt,
-  locateVisibleCodons,
-} from './components/computeVisibleCodons.ts'
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
 import { computeVisibleInsertions } from './components/computeVisibleInsertions.ts'
@@ -83,7 +78,7 @@ import {
   consensusStrandByRowChr,
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { conservationTicks } from './components/drawConservation.ts'
+import { conservationTicks } from './components/conservationBand.ts'
 import {
   perRowChromRanks,
   sourceChromLegendItems,
@@ -124,12 +119,8 @@ import type {
   MafSummaryRecord,
   Sample,
 } from '../types.ts'
+import type { CodonGlyph } from './codons.ts'
 import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
-import type {
-  CodonConservationBar,
-  CodonMarker,
-  LocatedCodon,
-} from './components/computeVisibleCodons.ts'
 import type { StrandConsensus } from './components/computeVisibleInversions.ts'
 import type { HoverBp } from './components/findRowHover.ts'
 import type { RowSpan } from './components/findRowSpan.ts'
@@ -1084,6 +1075,21 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The reference's display row, which the band's codon mode leaves out
+         * as the per-base band's worker-side `refSampleId` does; -1 where the
+         * reference is no drawn row. Not the codon anchor, which falls back to
+         * the first row when the reference is not a listed sample.
+         */
+        get referenceRowIndex(): number {
+          const refSrc = self.referenceSampleId
+          return refSrc === undefined
+            ? -1
+            : (self.rowIndexBySrc.get(refSrc) ?? -1)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * The detail tier's store, `MultiRegionDisplayMixin`'s per-region
          * payloads narrowed once: the worker's columnar rows, named by species
          * with no screen position, beside the CDS frames that rode the same
@@ -1752,6 +1758,12 @@ export default function stateModelFactory(
             rowsTop: self.rowsTopOffset,
             rowsHeight: self.rowsHeight,
             coverage: self.coverageBandState,
+            conservation: {
+              top: self.topBands.top.conservation,
+              height: self.conservationBandActive
+                ? self.conservationDisplayHeight
+                : 0,
+            },
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,
             scrollTop: self.scrollTop,
@@ -2291,48 +2303,9 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Every reference codon the fetched blocks resolve, in the anchor species'
-         * reading frame — the shared spine of the codon cells and the codon
-         * conservation band. A memoized computed rather than a call inside each
-         * consumer: the resolution (enumerate the anchor's codons, index every
-         * block's reference columns, locate each codon) is the expensive half, and
-         * with both modes on it used to run twice per frame. Empty when neither
-         * consumer is active, so a track with codon view off pays nothing.
-         */
-        get locatedCodons(): LocatedCodon[] {
-          const src = self.defaultCodonSpecies
-          return (self.codonCellsActive || self.codonConservationActive) &&
-            src !== undefined
-            ? locateVisibleCodons({
-                view: self.host,
-                rpcDataMap: self.rpcDataMap,
-                framesDataMap: self.framesDataMap,
-                defaultSrc: src,
-              })
-            : []
-        },
-        /**
-         * #getter
-         * Each row's source chromosomes ranked by aligned bp (`perRowChromRanks`).
-         * A memoized computed for the same reason as `locatedCodons` above: the
-         * rank walk covers every block × row of every loaded region, and it has
-         * two callers, the legend and the rows encode.
-         *
-         * Ranked over the loaded regions, exactly as `inversionConsensus` is, and
-         * for both of its reasons. The colors stay put as the user scrolls within
-         * loaded data — a rank is a claim about the row, and a block ought not
-         * change color because a pan brought a different scaffold into view — and
-         * the walk re-runs on new data rather than on movement.
-         *
-         * It used to be keyed on `renderBlocks`, which is rebuilt on every pan
-         * tick (its `screenStartPx` moves), so the memo missed on every frame of
-         * a pan and re-ranked every (block, row) pair to produce the identical
-         * map: those blocks only selected *which region* to walk, and the region
-         * they selected carries the whole buffered span either way. Pinned by
-         * `sourceChromRanks.test.ts`.
-         *
-         * Empty when the mode is off, so a track that never colors by chromosome
-         * pays nothing.
+         * Each row's source chromosomes ranked by aligned bp over the loaded
+         * regions, so a pan within loaded data keeps every block's color. Empty
+         * unless the rows are colored by chromosome.
          */
         get sourceChromRanks(): ReturnType<typeof perRowChromRanks> {
           return self.activeRowRendering === 'chromosome'
@@ -2341,40 +2314,6 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        /**
-         * #getter
-         * Per-species codon cells for the codon view (the per-codon change
-         * coloring that replaces the SNP cells). Empty unless codon view is the
-         * active rendering and an anchor species is known.
-         */
-        get visibleCodons(): CodonMarker[] {
-          return self.codonCellsActive
-            ? computeVisibleCodons(self.locatedCodons, self.rowGeometry())
-            : []
-        },
-        /**
-         * #getter
-         * Per-codon amino-acid conservation bars for the conservation band's codon
-         * mode. Draws only inside the CDS (where frames define codons); everywhere
-         * else the band is blank.
-         */
-        get visibleCodonConservation(): CodonConservationBar[] {
-          const refSrc = self.referenceSampleId
-          return self.codonConservationActive
-            ? computeCodonConservation(self.locatedCodons, {
-                // Exclude the *reference's* row (matching the per-base band's
-                // worker-side `refSampleId`), not the anchor's:
-                // `defaultCodonSpecies` falls back to row 0 when the reference
-                // isn't a listed sample, which would wrongly drop a real species
-                // from the denominator. `-1` when the reference isn't a visible
-                // row.
-                refRowIndex:
-                  refSrc === undefined
-                    ? -1
-                    : (self.rowIndexBySrc.get(refSrc) ?? -1),
-              })
-            : []
-        },
         /**
          * #getter
          * Titles for the stacked bands, with the y they sit at — empty unless
@@ -2490,32 +2429,6 @@ export default function stateModelFactory(
             self.visibleFrames.length > 0
           )
         },
-        /**
-         * #method
-         * The codon under the cursor on display `rowIndex` at absolute genomic
-         * `bp`, when the codon view is the active rendering: the species' codon +
-         * amino acid, the reference codon + amino acid, and the syn/nonsyn/stop
-         * classification. Reads the memoized `locatedCodons` the colored cells are
-         * drawn from, so the tooltip and the cell can't disagree and a mousemove
-         * costs a scan rather than a fresh codon resolution pass. Undefined off
-         * codon view or where no codon covers the row there.
-         */
-        codonHoverInfo(
-          displayedRegionIndex: number,
-          bp: number,
-          rowIndex: number,
-        ) {
-          return self.activeRowRendering === 'codon'
-            ? findCodonAt({
-                codons: self.locatedCodons,
-                displayedRegionIndex,
-                // a base index from the caller (`MafPointer.baseBp`), for the
-                // same reason as `frameHoverInfo`
-                bp,
-                rowIndex,
-              })
-            : undefined
-        },
       }))
       // #region superMethod
       .views(self => {
@@ -2559,6 +2472,18 @@ export default function stateModelFactory(
                 ? self.sourceChromRanks.ranks
                 : undefined,
             rowIndexBySrc: self.rowIndexBySrc,
+            codons:
+              (self.codonCellsActive || self.codonConservationActive) &&
+              self.defaultCodonSpecies !== undefined
+                ? {
+                    anchor: self.defaultCodonSpecies,
+                    cells: self.codonCellsActive,
+                    band: self.codonConservationActive,
+                    refRowIndex: self.referenceRowIndex,
+                  }
+                : undefined,
+            conservation:
+              self.conservationBandActive && !self.codonConservationActive,
           }
         },
       }))
@@ -2571,7 +2496,11 @@ export default function stateModelFactory(
            * draw from. A pair keeps its identity while neither tier moved.
            */
           get rowsSources(): ReadonlyMap<number, MafRowsSource> {
-            return join(self.rpcDataMap, self.summaryDataMap)
+            return join(
+              self.rpcDataMap,
+              self.summaryDataMap,
+              self.framesDataMap,
+            )
           },
         }
       })
@@ -2579,8 +2508,8 @@ export default function stateModelFactory(
         const encoded = createEncodeMemo(
           () => self.rowsSources,
           () => self.rowsEncodeProps(),
-          (source, props): MafUploadPayload => ({
-            ...encodeMafRows(source, props),
+          (source, props, displayedRegionIndex): MafUploadPayload => ({
+            ...encodeMafRows(source, props, displayedRegionIndex),
             coverage: source.detail?.coverage ?? EMPTY_MAF_COVERAGE,
           }),
         )
@@ -2600,6 +2529,39 @@ export default function stateModelFactory(
         }
       })
       .views(self => ({
+        /**
+         * #method
+         * The codon under the cursor on `rowIndex` at base `bp`, while the
+         * codon view draws, from the codons its cells were encoded from.
+         */
+        codonHoverInfo(
+          displayedRegionIndex: number,
+          bp: number,
+          rowIndex: number,
+        ) {
+          return self.activeRowRendering === 'codon'
+            ? findCodonAt(
+                self.encodedUpload.get(displayedRegionIndex)?.codons,
+                bp,
+                rowIndex,
+              )
+            : undefined
+        },
+        /**
+         * #getter
+         * The amino-acid letters over the codon view's cells.
+         */
+        get visibleCodonGlyphs(): CodonGlyph[] {
+          return self.codonCellsActive
+            ? computeVisibleCodonGlyphs(
+                self.host,
+                {
+                  get: (i: number) => self.encodedUpload.get(i)?.codons,
+                },
+                self.rowGeometry(),
+              )
+            : []
+        },
         /**
          * #method
          * The summary record whose bar is drawn at canvas x `x` on display row

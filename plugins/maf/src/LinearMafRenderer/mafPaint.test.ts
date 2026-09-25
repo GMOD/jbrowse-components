@@ -84,6 +84,8 @@ const palette = {
   insertionColor: 'purple',
   bridgeLineColor: 'grey',
   missingDataColor: 'lightyellow',
+  conservationColor: 'grey',
+  codonFill: { same: undefined, syn: 'blue', nonsyn: 'orange', stop: 'red' },
 }
 
 function state(binBp: number) {
@@ -104,6 +106,7 @@ function state(binBp: number) {
       showInterbase: true,
       colors: NO_COLORS,
     },
+    conservation: { top: 0, height: 0 },
     rowHeight: 10,
     rowProportion: 1,
     scrollTop: 0,
