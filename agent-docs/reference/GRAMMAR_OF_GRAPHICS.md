@@ -241,7 +241,12 @@ The seams, named honestly:
   set-versus-map distinction (a parameter beside `aes()` creates no scale),
   and a field left without a scale takes the kind its display declares for the
   field (`paintedScale`), never one read off the data or off which other
-  member is written. One function turns every display's object into what it
+  member is written. That declaration is the field's preset, and it may name
+  members too: while the field paints through the preset's scale, the members
+  the config leaves unwritten take the preset's (`withPreset`), which is how
+  Manhattan's `ld` takes LocusZoom's cuts and colours, and what the display, its
+  corner notice and `jbrowse validate` all read. One function turns every
+  display's object into what it
   paints, `colorEncodingOf` (`@jbrowse/display-kit/colorConfigSchema`),
   answering the `ColorEncoding` the encoder takes, so a painter reads the
   scale that was resolved rather than the object's slots
