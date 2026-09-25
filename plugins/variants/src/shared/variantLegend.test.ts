@@ -1,3 +1,5 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+
 import { ALT_HUE, shadeByDosage } from './cellFill.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
@@ -17,6 +19,7 @@ import {
 import type { Source } from './types.ts'
 import type { VariantLegendInputs } from './variantLegend.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
 const IMPACT = { field: IMPACT_FIELD, scale: 'categorical' as const }
 const SV_TYPE = { field: SV_TYPE_FIELD, scale: 'categorical' as const }
@@ -213,26 +216,92 @@ describe('getVariantColorScales', () => {
       '(no value)',
       'Homozygous reference',
     ])
-    expect(entries.find(i => i.label === '(no value)')!.color).toBe(ALT_HUE)
+    expect(
+      cssColorToABGR(entries.find(i => i.label === '(no value)')!.color!),
+    ).toBe(cssColorToABGR(ALT_HUE))
   })
 
-  it('lists every bin of a threshold, painted or not', () => {
+  const AF = {
+    field: 'INFO.AF',
+    scale: 'threshold' as const,
+    domain: ['0.01', '0.05'],
+    range: ['#a00', '#0a0', '#00a'],
+  }
+
+  it('lists every bin of a threshold once one painted', () => {
     const [section] = getVariantColorScales({
       ...inputs({ paintedDomain: ['< 0.01'], shadeByDosage: false }),
+      color: AF,
+      colorBy: '',
+      sources,
+    })
+    expect(
+      entriesOf(section)!.map(i => [i.label, cssColorToABGR(i.color!)]),
+    ).toEqual(
+      [
+        ['< 0.01', '#a00'],
+        ['0.01 – 0.05', '#0a0'],
+        ['≥ 0.05', '#00a'],
+        ['Homozygous reference', REFERENCE_COLOR],
+      ].map(([label, color]) => [label, cssColorToABGR(color!)]),
+    )
+  })
+
+  const labelsOf = (over: Partial<VariantLegendInputs>, color: ColorEncoding) =>
+    entriesOf(
+      getVariantColorScales({
+        ...inputs(over),
+        color,
+        colorBy: '',
+        sources,
+      })[0],
+    )!.map(i => i.label)
+
+  it('lists no bin of a threshold while no cell painted one', () => {
+    expect(labelsOf({ hasNoCall: true }, AF)).toEqual([
+      'Homozygous reference',
+      'No call',
+    ])
+  })
+
+  // Color by → Field… over a numeric INFO field with no cut points files each
+  // value as its own category, and the key listed all sixty of them.
+  it('lists no field rows where the values painted are not a vocabulary', () => {
+    expect(
+      labelsOf(
+        { paintedDomain: Array.from({ length: 60 }, (_, i) => `${i}`) },
+        { field: 'INFO.DP', scale: 'categorical' },
+      ),
+    ).toEqual(['Homozygous reference'])
+  })
+
+  it('lists no field row where every value painted one colour', () => {
+    expect(
+      labelsOf(
+        { paintedDomain: ['Pathogenic'] },
+        { field: 'INFO.CLNSIG', scale: 'categorical' },
+      ),
+    ).toEqual(['Homozygous reference'])
+  })
+
+  it('names two values sharing a colour on one row, drawn at het and hom dosage', () => {
+    const [section] = getVariantColorScales({
+      ...inputs({ paintedDomain: ['b', 'a', 'c'], hasNoCall: true }),
       color: {
-        field: 'INFO.AF',
-        scale: 'threshold',
-        domain: ['0.01', '0.05'],
-        range: ['#a00', '#0a0', '#00a'],
+        field: 'INFO.T',
+        scale: 'categorical',
+        domain: ['a', 'b', 'c'],
+        range: ['#a00', '#a00', '#00a'],
       },
       colorBy: '',
       sources,
     })
-    expect(entriesOf(section)!.map(i => [i.label, i.color])).toEqual([
-      ['< 0.01', '#a00'],
-      ['0.01 – 0.05', '#0a0'],
-      ['≥ 0.05', '#00a'],
-      ['Homozygous reference', REFERENCE_COLOR],
+    expect(entriesOf(section)!.map(i => [i.label, i.swatches])).toEqual([
+      ['a, b', [{ color: shadeByDosage('#a00', 0.5) }, { color: '#a00' }]],
+      ['c', [{ color: shadeByDosage('#00a', 0.5) }, { color: '#00a' }]],
+      [DOSAGE_NOTE, undefined],
+      ['Homozygous reference', undefined],
+      ['No call', undefined],
     ])
   })
 

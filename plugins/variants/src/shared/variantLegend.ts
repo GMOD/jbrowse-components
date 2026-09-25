@@ -1,4 +1,9 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import {
+  derivedColorScale,
+  everyRowPaints,
+} from '@jbrowse/core/util/legendCandidates'
 
 import { ALT_HUE, shadeByDosage } from './cellFill.ts'
 import { cellHueField, recordHueField, recordKeyColor } from './cellHue.ts'
@@ -200,29 +205,40 @@ function swatchEntries(
   ]
 }
 
-// A record field's rows: the values painted, and every bin of a threshold
-// whether painted or not, since the bins are the whole scale.
+// A record field's rows are the key every colour channel derives
+// (`derivedColorScale`) from the values painted, each drawn at het and hom
+// dosage where lightness carries it; the absent-data rows follow whatever
+// that key says.
 function recordFieldScale(
   field: CategoricalField,
   inputs: VariantLegendInputs,
 ): CategoricalScale {
-  const values = [
-    ...new Set([
-      ...(field.closed ? field.domain : []),
-      ...inputs.paintedDomain,
-    ]),
-  ].sort(field.compare)
+  const color = (key: string) => recordKeyColor(field, key)
+  const shaded = inputs.renderingMode !== 'phased' && inputs.shadeByDosage
+  const rows = derivedColorScale(
+    [inputs.paintedDomain],
+    painted =>
+      everyRowPaints(
+        painted.map(value => ({ value, color: cssColorToABGR(color(value)) })),
+      ),
+    {
+      id: 'recordField',
+      field,
+      swatches: shaded
+        ? ({ value }) => [
+            { color: shadeByDosage(color(value), 0.5) },
+            { color: color(value) },
+          ]
+        : undefined,
+    },
+  ).flatMap(scale => scale.entries)
   return {
     kind: 'categorical',
     id: 'recordField',
     title: field.field,
     entries: [
-      ...swatchEntries(
-        values,
-        inputs,
-        key => recordKeyColor(field, key),
-        field.label,
-      ),
+      ...rows,
+      ...(shaded && rows.length > 0 ? [entry(DOSAGE_NOTE)] : []),
       ...absentDataEntries(inputs),
     ],
   }

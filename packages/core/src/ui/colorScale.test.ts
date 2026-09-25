@@ -176,6 +176,19 @@ test('no domain leaves the entries in the order the display built them', () => {
   ).toEqual(declared)
 })
 
+// The multi-sample variant key lists its reference and no-call rows after the
+// field's rows, its no-value row among the field's.
+test('no domain keeps rows a display lists after its no-value row there', () => {
+  const built = [
+    { value: 'Benign', label: 'Benign', color: 'blue' },
+    { value: '', label: '(no value)', color: 'navy', missing: true },
+    { value: 'Reference', label: 'Reference', color: 'grey' },
+  ]
+  expect(
+    legendSpecOf([{ ...svType, entries: built }]).sections[0]!.items,
+  ).toEqual(built)
+})
+
 test('an empty categorical scale is no key; a ramp always is', () => {
   expect(colorScaleIsEmpty({ ...svType, entries: [] })).toBe(true)
   expect(colorScaleIsEmpty(svType)).toBe(false)
