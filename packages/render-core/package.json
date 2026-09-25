@@ -96,7 +96,7 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@jbrowse/mobx-state-tree": "^6.6.0",
+    "@jbrowse/mobx-state-tree": "^6.6.1",
     "mobx": "^7.0.4"
   },
   "peerDependencies": {
