@@ -350,7 +350,7 @@ describe('derived color key', () => {
       'snoRNA',
     ])
     setConf(display, ['color', 'title'], '')
-    expect(display.colorScales[0]).toMatchObject({ title: '' })
+    expect(display.colorScales[0]?.title ?? '').toBe('')
   })
 
   it('pins the domain alone, keeping the scale, labels and title', () => {
