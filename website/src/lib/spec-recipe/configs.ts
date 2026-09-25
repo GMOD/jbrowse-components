@@ -1,14 +1,16 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { repoRoot } from '../../../scripts/paths.ts'
+import { hostedConfigs } from './hostedConfigs.generated.ts'
 
-// Most figures load a `test_data/…` config that lives in this repo, so a spec's
-// bare `"tracks": ["ncbi_gff_hg19"]` can be resolved at build time into the
-// track's real name and file type — the two things a reader needs in order to
-// do the same thing with a file of their own. Figures pointing at a hosted
-// config (jbrowse.org/demos/…) stay unresolved and fall back to generic wording
-// rather than triggering a network fetch during the site build.
+// A spec's bare `"tracks": ["ncbi_gff_hg19"]` resolves at build time into the
+// track's real name and file type — the two things a reader needs to do the
+// same with a file of their own — from the config's copy in this repo:
+// `test_data/…`, or `demos/…` for a jbrowse.org/demos config, which
+// scripts/deploy-demo.sh deploys only from that copy. Any other hosted config
+// reads the tracks figures name off `hostedConfigs.generated.ts`, which
+// `pnpm gen:hosted-configs` fetches, so the site build fetches nothing.
 
 interface RawAdapter {
   type?: string
@@ -24,12 +26,12 @@ export interface RawTrack {
   displays?: { type?: string }[]
 }
 
-interface RawAssembly {
+export interface RawAssembly {
   name: string
-  sequence?: { adapter?: RawAdapter }
+  sequence?: { trackId?: string; adapter?: RawAdapter }
 }
 
-interface RawConfig {
+export interface RawConfig {
   assemblies?: RawAssembly[]
   tracks?: RawTrack[]
 }
@@ -53,38 +55,60 @@ export interface AssemblyInfo {
   adapterType: string
 }
 
+const DEMOS_URL = 'https://jbrowse.org/demos/'
+
+export function repoConfigPath(config: string) {
+  const path = config.startsWith(DEMOS_URL)
+    ? `demos/${config.slice(DEMOS_URL.length)}`
+    : config
+  return existsSync(join(repoRoot, path)) ? path : undefined
+}
+
 const cache = new Map<string, RawConfig | undefined>()
 
 function readConfig(config: string): RawConfig | undefined {
   if (!cache.has(config)) {
+    const path = repoConfigPath(config)
     let parsed: RawConfig | undefined
-    if (config.startsWith('test_data/')) {
-      try {
-        parsed = JSON.parse(
-          readFileSync(join(repoRoot, config), 'utf8'),
-        ) as RawConfig
-      } catch {
-        parsed = undefined
-      }
+    try {
+      parsed = path
+        ? (JSON.parse(readFileSync(join(repoRoot, path), 'utf8')) as RawConfig)
+        : hostedConfigs[config]
+    } catch {
+      parsed = undefined
     }
     cache.set(config, parsed)
   }
   return cache.get(config)
 }
 
-// A track the SPEC declares inline, which is the only description of it a
-// static build gets when the figure loads a hosted config: `readConfig` reads
-// `test_data/` and nothing else, so every figure on a jbrowse.org demo config
-// used to resolve to `undefined` here — no type, no adapter, no declared
-// display. The spec's own `sessionTracks` carry all three.
+function sequenceTrack(
+  assemblies: RawAssembly[] | undefined,
+  trackId: string,
+): RawTrack | undefined {
+  const assembly = assemblies?.find(
+    a => (a.sequence?.trackId ?? `${a.name}-ReferenceSequenceTrack`) === trackId,
+  )
+  return assembly
+    ? {
+        trackId,
+        name: 'Reference sequence',
+        type: 'ReferenceSequenceTrack',
+        adapter: assembly.sequence?.adapter,
+      }
+    : undefined
+}
+
 export function lookupTrack(
   config: string,
   trackId: string,
   sessionTracks?: RawTrack[],
 ): TrackInfo | undefined {
+  const raw = readConfig(config)
   const track =
     sessionTracks?.find(t => t.trackId === trackId) ??
-    readConfig(config)?.tracks?.find(t => t.trackId === trackId)
+    raw?.tracks?.find(t => t.trackId === trackId) ??
+    sequenceTrack(raw?.assemblies, trackId)
   return track
     ? {
         trackId,

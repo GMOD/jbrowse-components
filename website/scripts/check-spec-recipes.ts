@@ -3,6 +3,10 @@ import { join } from 'node:path'
 
 import { parseSessionSpecUrl } from '../../packages/app-core/src/SessionSpec/parseSessionSpecUrl.ts'
 import { parseProtocolUrl } from '../../products/jbrowse-desktop/electron/launchTarget.ts'
+import {
+  figureLiveRefs,
+  videoLiveRefs,
+} from '../src/lib/liveLinks.generated.ts'
 import { lookupTrack } from '../src/lib/spec-recipe/configs.ts'
 import {
   decodeSpecUrl,
@@ -11,9 +15,11 @@ import {
   specTracks,
 } from '../src/lib/spec-recipe/decode.ts'
 import { GRAPH_LABELS } from '../src/lib/spec-recipe/fields.ts'
+import { hostedConfigs } from '../src/lib/spec-recipe/hostedConfigs.generated.ts'
 import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
 import { check } from './check-utils.ts'
 import { dropExemptionLines } from './dropExemptionLines.ts'
+import { hostedReferences } from './hosted-references.ts'
 import { norm, sourceLabels } from './menu-label-corpus.ts'
 import { pluginCheckout, repoRoot } from './paths.ts'
 import {
@@ -59,6 +65,9 @@ import { screenshotLiveUrls } from './screenshot-specs.ts'
 //    control that no longer exists, with no commit here to notice it. Checked
 //    against a sibling checkout when one is on disk, and reported as skipped
 //    when it is not.
+// 6. A figure on a hosted config this repo has no copy of resolves its tracks
+//    off hostedConfigs.generated.ts, so a track that file never looked up is a
+//    recipe telling the reader nothing about the file it needs.
 //
 // Lives here rather than in a *.test.ts because jest doesn't cover website/,
 // and screenshot-specs.ts pulls puppeteer in through its barrel.
@@ -162,6 +171,28 @@ if (nounless.length > 0) {
   for (const line of nounless) {
     console.error(line)
   }
+  process.exit(1)
+}
+const unsnapshotted = [
+  ...hostedReferences([
+    ...Object.values(figureLiveRefs),
+    ...Object.values(videoLiveRefs),
+  ]),
+].flatMap(([url, { trackIds }]) => {
+  const known = hostedConfigs[url]
+  const seen = new Set([
+    ...(known?.tracks ?? []).map(t => t.trackId),
+    ...(known?.absent ?? []),
+    ...(known?.assemblies ?? []).map(
+      a => a.sequence?.trackId ?? `${a.name}-ReferenceSequenceTrack`,
+    ),
+  ])
+  return [...trackIds].filter(id => !seen.has(id)).map(id => `  ${url} ${id}`)
+})
+if (unsnapshotted.length > 0) {
+  console.error(
+    `\nTracks no snapshot has looked up — run \`pnpm gen:hosted-configs\`:\n${unsnapshotted.join('\n')}`,
+  )
   process.exit(1)
 }
 for (const [field, count] of unmapped) {
