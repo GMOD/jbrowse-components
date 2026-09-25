@@ -324,7 +324,7 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
       }
       const x1 = toX(startEnd[i * 2]!)
       const x2 = toX(startEnd[i * 2 + 1]!)
-      const y = snapBoxCenterYPx(ys[i]!, height[i]!, scrollY)
+      const y = snapBoxCenterYPx(ys[i]!, scrollY)
       setStroke(color[i]!)
       ctx.lineWidth = 1
       ctx.beginPath()
@@ -385,7 +385,7 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
     const toX = makeBpMapper(block)
     const x1 = toX(startEnd[i * 2]!)
     const x2 = toX(startEnd[i * 2 + 1]!)
-    const y = snapBoxCenterYPx(ys[i]!, height[i]!, params.scrollY)
+    const y = snapBoxCenterYPx(ys[i]!, params.scrollY)
     const width = Math.abs(x2 - x1)
     const chevrons =
       !params.hideChevrons && direction[i] !== 0 && showChevrons(width)
@@ -447,7 +447,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
       if (!arrowDraws(Math.abs(toX(otherEndBp) - cx))) {
         continue
       }
-      const y = snapBoxCenterYPx(ys[i]!, height[i]!, scrollY)
+      const y = snapBoxCenterYPx(ys[i]!, scrollY)
       const dir = block.reversed ? -rawDir : rawDir
       setFill(color[i]!)
 
@@ -493,7 +493,7 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
       return undefined
     }
     const dir = block.reversed ? -rawDir : rawDir
-    const y = snapBoxCenterYPx(ys[i]!, height[i]!, params.scrollY)
+    const y = snapBoxCenterYPx(ys[i]!, params.scrollY)
     const tipX = cx + STEM_LENGTH_PX * dir
     const half = Math.max(STEM_HALF_H_PX, arrowHeadHalfHeightPx(height[i]!))
     return {
@@ -604,11 +604,7 @@ export const continuationShape: MarkShape<RectChannels, FeatureGlyphParams> = {
           ? `rgba(0,0,0,${CONT_MARK_ALPHA})`
           : `rgba(255,255,255,${CONT_MARK_ALPHA})`
         ctx.lineWidth = 1
-        const cy = snapBoxCenterYPx(
-          ys[i]! + height[i]! * 0.5,
-          height[i]!,
-          scrollY,
-        )
+        const cy = snapBoxCenterYPx(ys[i]! + height[i]! * 0.5, scrollY)
         const halfH = markerHalfHeight(height[i]!)
         const rawStrand = strands[i]!
         const strand = block.reversed ? -rawStrand : rawStrand

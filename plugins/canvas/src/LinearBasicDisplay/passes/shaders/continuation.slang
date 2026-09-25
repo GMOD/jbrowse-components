@@ -180,7 +180,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float gapClip    = pxToClipW(CONT_TRI_GAP_PX, u);
   float halfHClip  = pxToClipH(markerHalfHeight(inst.height), u);
 
-  float cy = snapBoxCenterY(inst.y + inst.height * 0.5, inst.height, u.scrollY, u.canvasHeight);
+  float cy = snapBoxCenterY(inst.y + inst.height * 0.5, u.scrollY, u.canvasHeight);
 
   float edgeSide = isRight ? 1.0 : -1.0;
   float edgeX    = edgeSide;

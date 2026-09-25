@@ -98,6 +98,11 @@ public float snapBoxHeightPx(float heightPx) {
   return even && hPx >= 2.0 && hPx <= THIN_BOX_PX ? hPx + 1.0 : hPx;
 }
 
+// A whole-pixel box centered in a whole-pixel row puts the center of an
+// odd-height box exactly on a row boundary, where float error in how each
+// caller sums its center would otherwise pick the row above or below.
+static const float SNAP_TIE_BIAS_PX = 1.0 / 64.0;
+
 // The pixel row a box's top edge lands on. Snapped about the box's CENTER, not
 // its top: `snapBoxHeightPx` rounds the height and sometimes nudges it a whole
 // pixel, and anchoring the top spends all of that off the BOTTOM edge. A box the
@@ -109,32 +114,28 @@ public float snapBoxHeightPx(float heightPx) {
 // height survives the snap unchanged, which is every full-height feature box.
 public float snapBoxTopPx(float topY, float heightPx, float scrollY) {
   float centerY = topY + heightPx * 0.5;
-  return floor(centerY - snapBoxHeightPx(heightPx) * 0.5 - scrollY + 0.5);
+  return floor(
+    centerY - snapBoxHeightPx(heightPx) * 0.5 - scrollY + 0.5 + SNAP_TIE_BIAS_PX
+  );
 }
 
-// Center a thin glyph on the *drawn* middle row of the box it annotates, given
-// the box's real center `centerY` and height `heightPx`. Reproducing the rect
-// shader's own edge snapping (`snapBoxTopPx` + `snapBoxHeightPx`) lands the
-// line/chevron exactly on the box's center row instead of the ~1px bias a plain
-// pixel-center snap (`floor(centerY - scrollY + 0.5) + 0.5`) gives. Thin boxes
-// are drawn at an odd height precisely so that center row exists; a taller even
-// box still has none, and stays consistent (just below the seam).
+// The pixel row holding the box's center, which a thin glyph (intron line,
+// chevron, strand arrow) draws on. It is the middle row of every odd-height box
+// with that center, so a center-shrunk UTR and its transcript's arrow agree
+// whatever their parities; an even-height box's center row is whichever of its
+// two middle rows the center falls in. Taking the lower middle row of an even
+// box instead put the arrow a pixel under the UTR on an isoform stack, whose
+// rows sit at fractional tops.
 //
-// Split in two on purpose. The decision — which pixel row is the center — is
-// resolution math the Canvas2D and SVG paths need in *screen px*; only the
-// clip-space conversion is GPU-specific. `//! js-export` lifts the px half into
-// TypeScript, so the two backends share the rule instead of the Canvas2D twin
-// re-deriving it (see adr-051). Keep new shared decisions in this shape: pure
-// px-in/px-out below, the `yPxToClipY` wrapper above it.
-public float snapBoxCenterYPx(float centerY, float heightPx, float scrollY) {
-  float topPx = snapBoxTopPx(centerY - heightPx * 0.5, heightPx, scrollY);
-  return topPx + floor(snapBoxHeightPx(heightPx) * 0.5) + 0.5;
+// Split from `snapBoxCenterY` because the Canvas2D and SVG paths need this
+// decision in screen px; only the clip-space conversion is GPU-specific
+// (adr-051).
+public float snapBoxCenterYPx(float centerY, float scrollY) {
+  return floor(centerY - scrollY + SNAP_TIE_BIAS_PX) + 0.5;
 }
 
-public float snapBoxCenterY(
-  float centerY, float heightPx, float scrollY, float canvasHeight
-) {
-  return yPxToClipY(snapBoxCenterYPx(centerY, heightPx, scrollY), canvasHeight);
+public float snapBoxCenterY(float centerY, float scrollY, float canvasHeight) {
+  return yPxToClipY(snapBoxCenterYPx(centerY, scrollY), canvasHeight);
 }
 
 // Extend the free edge `x2` away from the anchor `x1` so the span is at least

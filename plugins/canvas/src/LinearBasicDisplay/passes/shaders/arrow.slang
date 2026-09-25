@@ -56,7 +56,7 @@ struct ArrowInstance {
   float y         : ATTR1;
   float direction : ATTR2;
   uint  color     : ATTR3;
-  // Box height this arrow sits on, so it snaps onto the box's drawn center row.
+  // Box height this arrow sits on, which caps its head height.
   float height    : ATTR4;
   // Length of the feature this arrow marks, in bp — the width gate below is a
   // pixel decision, and bpPerPx is only known at draw time. A length, not a
@@ -85,7 +85,7 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
 
   float cx = bpToClipX(inst.x, u);
 
-  float cy = snapBoxCenterY(inst.y, inst.height, u.scrollY, u.canvasHeight);
+  float cy = snapBoxCenterY(inst.y, u.scrollY, u.canvasHeight);
 
   float stemLength = pxToClipW(STEM_LENGTH_PX, u);
   float stemHalf = pxToClipH(STEM_HALF_H_PX, u);

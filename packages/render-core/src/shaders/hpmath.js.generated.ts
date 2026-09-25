@@ -27,11 +27,11 @@ export function snapBoxHeightPx(heightPx: number): number {
 }
 
 export function snapBoxTopPx(topY: number, heightPx: number, scrollY: number): number {
-  return Math.floor(((((topY + (heightPx * 0.5)) - (snapBoxHeightPx(heightPx) * 0.5)) - scrollY) + 0.5))
+  return Math.floor((((((topY + (heightPx * 0.5)) - (snapBoxHeightPx(heightPx) * 0.5)) - scrollY) + 0.5) + 0.015625))
 }
 
-export function snapBoxCenterYPx(centerY: number, heightPx: number, scrollY: number): number {
-  return ((snapBoxTopPx((centerY - (heightPx * 0.5)), heightPx, scrollY) + Math.floor((snapBoxHeightPx(heightPx) * 0.5))) + 0.5)
+export function snapBoxCenterYPx(centerY: number, scrollY: number): number {
+  return (Math.floor(((centerY - scrollY) + 0.015625)) + 0.5)
 }
 
 export function extendToMinWidthPx(x1: number, x2: number, minWidth: number): number {

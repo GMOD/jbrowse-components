@@ -21,7 +21,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startEnd.x, u);
   float sx2 = bpToClipX(inst.startEnd.y, u);
 
-  float cy = snapBoxCenterY(inst.y, inst.height, u.scrollY, u.canvasHeight);
+  float cy = snapBoxCenterY(inst.y, u.scrollY, u.canvasHeight);
   float halfThickness = pxToClipH(0.5, u);
 
   float2 q = quadLocal(vid);

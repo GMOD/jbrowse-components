@@ -139,9 +139,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   // drawn at an odd height so the 1px glyphs riding on it (intron line,
   // chevrons, strand arrow) have a true center row to land on, and the top is
   // snapped about the box's center so that extra pixel doesn't all land on the
-  // bottom edge and slide a center-shrunk UTR off the row. The line/chevron/
-  // arrow shaders derive their y from the same helpers via snapBoxCenterY, so
-  // box and glyph agree by construction.
+  // bottom edge and slide a center-shrunk UTR off the row.
   float yTopPx = snapBoxTopPx(inst.y, inst.height, u.scrollY);
   float yBotPx = yTopPx + snapBoxHeightPx(inst.height);
   float syTop = yPxToClipY(yTopPx, u.canvasHeight);
