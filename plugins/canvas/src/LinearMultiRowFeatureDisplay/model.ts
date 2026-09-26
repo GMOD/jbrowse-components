@@ -9,9 +9,7 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
-import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
@@ -128,8 +126,6 @@ import type {
   UnlistedRowsSort,
 } from '@jbrowse/tree-sidebar'
 import type React from 'react'
-
-const RAMP_KEY_STOPS = 8
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
 
@@ -714,21 +710,10 @@ export default function stateModelFactory(
        */
       get colorScales(): ColorScale[] {
         const hidden = self.hiddenCategorySet
-        const { colorRamp, paintedColorField: field } = self
-        const ramp: ColorScale[] =
-          colorRamp && self.hasDrawnFeatures
-            ? [
-                {
-                  kind: 'ramp',
-                  id: 'features',
-                  title: self.colorKeyTitle,
-                  domain: colorRamp.domain,
-                  stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
-                  extent: self.colorValueExtent,
-                },
-                ...rampGapScales('features-gaps', self.colorValueGaps),
-              ]
-            : []
+        const { paintedColorField: field } = self
+        const ramp = self.hasDrawnFeatures
+          ? self.rampColorScales('features')
+          : []
         return [
           ...ramp,
           {

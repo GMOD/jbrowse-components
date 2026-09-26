@@ -479,6 +479,26 @@ describe('derived color key', () => {
       ).toMatchObject({ domain: [-50, 100] })
     })
 
+    // The bar is drawn from these two, and both displays composing
+    // `featureColorViews` read them off the one derivation: `extent` is what
+    // the ramp actually painted over, against the `domain` above, which a
+    // pinned end moves.
+    it('draws its bar from the loaded extent at a readable number of stops', () => {
+      const [ramp] = rampDisplay({ field: 'score', domainMin: -50 }).colorScales
+      expect(ramp).toMatchObject({ kind: 'ramp', extent: [0, 100] })
+      expect(ramp?.kind === 'ramp' && ramp.stops).toHaveLength(8)
+    })
+
+    // The id is the legend's dismissal key and its React key prefix, and the
+    // two displays composing the derivation ask for different ones — so it is
+    // the caller's word, never the derivation's.
+    it('carries the scale id its display asked for', () => {
+      expect(rampDisplay().colorScales.map(scale => scale.id)).toEqual([
+        'color',
+        'color-gaps',
+      ])
+    })
+
     it('hands the encode one palette while a commit leaves the ramp alone', () => {
       const display = rampDisplay({
         field: 'score',

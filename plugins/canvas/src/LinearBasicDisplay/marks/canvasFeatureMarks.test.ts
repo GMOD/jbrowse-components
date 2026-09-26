@@ -7,6 +7,7 @@ import {
 } from '../components/sharedRendererConstants.ts'
 import { lineShader } from '../passes/index.ts'
 import { CANVAS_FEATURE_MARKS } from './canvasFeatureMarks.ts'
+import { featureGlyphMarks, glyphMarkIndex } from './featureGlyphMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderState } from '../components/canvasFeatureRenderingBackendTypes.ts'
@@ -211,5 +212,34 @@ describe('draw passes', () => {
     expect(callsTo(hal, 'drawPass').map(c => c.args[0])).not.toContain(
       'continuation',
     )
+  })
+})
+
+// `featureHighlightInk` files a region's primitives under a mark INDEX, and
+// every mark here takes the same lens over the same buffers — so an index
+// pointing at the wrong mark inks the wrong boxes with nothing throwing.
+describe('the index a primitive family is filed under', () => {
+  const FAMILIES = ['line', 'chevron', 'rect', 'arrow', 'continuation'] as const
+
+  it('names the mark that draws it', () => {
+    for (const family of FAMILIES) {
+      expect(CANVAS_FEATURE_MARKS[glyphMarkIndex(family)]!.pass.id).toBe(family)
+    }
+  })
+
+  // The multi-way stack's lanes are one unclipped band, so they build the list
+  // without the continuation markers. One index table serves both only while
+  // the optional member is last.
+  it('survives the optional mark being left out', () => {
+    const lanes = featureGlyphMarks<RegionRenderData, RenderState>({
+      glyphs: d => d,
+      params: () => ({ scrollY: 0, outlineColor: 0 }),
+      maxChevronsPerLine: 4,
+      continuation: false,
+    })
+    expect(lanes).toHaveLength(FAMILIES.length - 1)
+    for (const family of FAMILIES.filter(f => f !== 'continuation')) {
+      expect(lanes[glyphMarkIndex(family)]!.pass.id).toBe(family)
+    }
   })
 })

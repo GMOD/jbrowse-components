@@ -14,8 +14,10 @@ import {
   createContentHeightProbe,
   createIncrementalLayout,
 } from './layout.ts'
+import { displayModeMetrics } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks, maxBottom } from './layoutQueries.ts'
 import { packedContentHeight } from './layoutTestUtils.ts'
+import { prepareRefPack } from './packRef.ts'
 
 import type {
   FeatureDataResult,
@@ -1522,6 +1524,79 @@ test('flattenRows packs a density band onto one row without dropping names', () 
   expect(
     new Set(stacked.flatbushItems.map(it => it.topPx)).size,
   ).toBeGreaterThan(1)
+})
+
+// The pack spends no rows under `flattenRows`, so a collapse plan is work with
+// nowhere to go: the two ways of asking for one row have to reach the density
+// collapse as one answer, not just reach the packer as one.
+test('a flattened band plans no density collapse', () => {
+  const features = Array.from({ length: 40 }, (_, i) => ({
+    featureId: `d${i}`,
+    startBp: 500,
+    endBp: 501,
+    height: 10,
+    densityFade: true,
+  }))
+  const regions: [number, LayoutRegionData][] = [
+    [0, makeFeatureData({ features })],
+  ]
+  const inputs = {
+    bpPerPx: 100,
+    showLabels: false,
+    showDescriptions: false,
+    reversedRegions: new Set<number>(),
+    displayMode: 'normal' as const,
+    pinnedFeatureIds: new Set<string>(),
+  }
+  const stacked = prepareRefPack(regions, inputs, displayModeMetrics(inputs))
+  expect(stacked.collapsedFeatureIds.size).toBeGreaterThan(0)
+
+  const flat = { ...inputs, flattenRows: true }
+  const flattened = prepareRefPack(regions, flat, displayModeMetrics(flat))
+  expect(flattened.collapsedFeatureIds.size).toBe(0)
+  expect(flattened.collapsedSpansPx).toEqual([])
+})
+
+// A flattened pack put every mark on row 0 because the band said so, not
+// because any of them won that row — so the pack after it must start from
+// nothing, the way the collapse's own pinned marks already do. Seeded from one,
+// every mark it held outranks every mark that arrives later, whatever the bp.
+test('a flattened pack seeds no rows into the pack after it', () => {
+  const overlapping = (ids: string[]) =>
+    new Map([
+      [
+        0,
+        makeFeatureData({
+          features: ids.map((featureId, i) => ({
+            featureId,
+            startBp: 1000 - i * 10,
+            endBp: 2000,
+            height: 10,
+          })),
+        }),
+      ],
+    ])
+  const base = {
+    bpPerPx: 1,
+    showLabels: false,
+    showDescriptions: false,
+    reversedRegions: new Set<number>(),
+    displayMode: 'normal' as const,
+    pinnedFeatureIds: new Set<string>(),
+  }
+  const rows = (m: Map<number, FeatureDataResult>) =>
+    Object.fromEntries(
+      m.get(0)!.flatbushItems.map(it => [it.featureId, it.topPx]),
+    )
+
+  const memo = createIncrementalLayout()
+  memo(overlapping(['a', 'b']), { ...base, flattenRows: true })
+  const afterFlattened = memo(overlapping(['a', 'b', 'late']), base)
+
+  const cold = createIncrementalLayout()(overlapping(['a', 'b', 'late']), base)
+  // `late` starts earliest, so a cold pack inserts it first and it takes row 0
+  expect(rows(cold).late).toBe(0)
+  expect(rows(afterFlattened)).toEqual(rows(cold))
 })
 
 test('two piles whose painted spans merely touch stay two piles', () => {

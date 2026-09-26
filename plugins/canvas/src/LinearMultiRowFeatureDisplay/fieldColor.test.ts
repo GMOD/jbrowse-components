@@ -115,3 +115,51 @@ describe('a colour field on the multi-row display', () => {
     expect(display().effectiveClusterField).toBe('segmean')
   })
 })
+
+// The ramp branch of this display's key had no test: `features` and
+// `features-gaps` are the ids the legend dismisses and re-keys by, and the
+// derivation they come from is shared with the feature display, which asks for
+// `color`.
+describe('a ramp colour on the multi-row display', () => {
+  const RAMP = {
+    field: 'segmean',
+    scale: 'linear',
+    range: ['#000000', '#ffffff'],
+    title: 'Copy number',
+  }
+
+  function display() {
+    const env = createTestEnvironment({
+      displayConfig: { rows: 'sample', color: RAMP },
+    }).createDisplay()
+    env.display.setRpcData(0, pack('segmean'), ctgA)
+    return env.display
+  }
+
+  it('keys the ramp under the scale ids this display asks for', () => {
+    const d = display()
+    const ramp = d.colorScales.find(scale => scale.kind === 'ramp')
+    expect(ramp).toMatchObject({
+      id: 'features',
+      title: 'Copy number',
+      extent: [-1.4, 1.8],
+    })
+    expect(ramp?.kind === 'ramp' && ramp.stops).toHaveLength(8)
+    expect(
+      d.colorScales.find(scale => scale.id === 'features-gaps'),
+    ).toMatchObject({
+      entries: [expect.objectContaining({ missing: true })],
+    })
+  })
+
+  // The band stands in before anything is drawn, and a key over nothing names
+  // a domain no reader can check against the picture.
+  it('keys nothing while no feature has drawn', () => {
+    const env = createTestEnvironment({
+      displayConfig: { rows: 'sample', color: RAMP },
+    }).createDisplay()
+    expect(env.display.colorScales.some(scale => scale.kind === 'ramp')).toBe(
+      false,
+    )
+  })
+})

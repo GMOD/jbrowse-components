@@ -10,7 +10,11 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment, rightClick } from './testEnv.ts'
 
-import type { RectData } from '../RenderFeatureDataRPC/packRenderArrays.ts'
+import type {
+  ArrowData,
+  LineData,
+  RectData,
+} from '../RenderFeatureDataRPC/packRenderArrays.ts'
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
@@ -274,4 +278,85 @@ test("selectionInk boxes the session's selected feature", () => {
   expect(display.selectionInk).toEqual([
     { left: 100, top: 0, width: 200, height: 38 },
   ])
+})
+
+// `featureHighlightInk` files a region's primitives under a mark INDEX, one
+// entry per family, and the chevron and continuation marks declare no `ink` —
+// so a family paired with the wrong index inks nothing and nothing throws. The
+// rest of this file builds rects only, which leaves the two families that are
+// not rects covered by the index table alone.
+describe('a family other than rect still inks', () => {
+  const stroke = { color: 0xff_20_20_20, colorClass: LITERAL, flatbushIdx: 0 }
+
+  function primitiveOnly(over: { lines?: LineData[]; arrows?: ArrowData[] }) {
+    return makeFeatureData({
+      ...packRenderArrays(
+        [],
+        over.lines ?? [],
+        over.arrows ?? [],
+        0,
+        Number.MAX_SAFE_INTEGER,
+      ),
+      flatbushItems: [
+        makeFlatbushItem({
+          featureId: 'g1',
+          startBp: 1000,
+          endBp: 2000,
+          bottomPx: 10,
+          featureHeightPx: 10,
+        }),
+      ],
+    })
+  }
+
+  function inkOf(data: ReturnType<typeof primitiveOnly>) {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setHeightMode('fixed')
+    view.zoomTo(10)
+    view.scrollTo(0)
+    display.setRpcData(0, data, ctgA)
+    view.settleCoarseBlocks()
+    display.setHover('g1', undefined, [])
+    return display.hoverInk
+  }
+
+  it('boxes a feature drawn as an intron line', () => {
+    const ink = inkOf(
+      primitiveOnly({
+        lines: [
+          {
+            ...stroke,
+            start: 1000,
+            end: 2000,
+            y: 5,
+            direction: 1,
+            labelRowsAbove: 0,
+          },
+        ],
+      }),
+    )
+    expect(ink).toHaveLength(1)
+    // 100-200 is the span; the half-stroke either side is the line's own ink
+    expect(ink[0]).toMatchObject({ left: 97.5, width: 105 })
+  })
+
+  it('boxes a feature drawn as a strand arrow', () => {
+    const ink = inkOf(
+      primitiveOnly({
+        arrows: [
+          {
+            ...stroke,
+            x: 2000,
+            y: 5,
+            height: 10,
+            widthBp: 1000,
+            direction: 1,
+            labelRowsAbove: 0,
+          },
+        ],
+      }),
+    )
+    expect(ink).toHaveLength(1)
+  })
 })

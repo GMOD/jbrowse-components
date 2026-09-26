@@ -13,6 +13,26 @@ import type { FeatureGlyphParams } from './featureGlyphShapes.ts'
 import type { Mark, MarkFrame } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
+// Paint order, stated once. `glyphMarkIndex` reads a family's position off
+// this list rather than restating it, so a reorder cannot leave a consumer
+// filing instances under the wrong mark — which is silent, since every mark
+// here takes the same channel lens and indexes the same buffers. The optional
+// member is LAST on purpose: dropping it renumbers none of the others.
+const PAINT_ORDER = [
+  'line',
+  'chevron',
+  'rect',
+  'arrow',
+  'continuation',
+] as const
+
+type GlyphFamily = (typeof PAINT_ORDER)[number]
+
+/** Where a primitive family's mark sits in the list `featureGlyphMarks` builds. */
+export function glyphMarkIndex(family: GlyphFamily) {
+  return PAINT_ORDER.indexOf(family)
+}
+
 /**
  * The feature glyph set as a mark list, in paint order: lines, their chevrons
  * off the line buffer, rects, arrows, and — for a display whose blocks meet
@@ -65,16 +85,16 @@ export function featureGlyphMarks<TRegion, TState extends MarkFrame>(spec: {
   }
   const line = defineMark({ shape: lineShape, channels: lineLens, params })
   const rect = defineMark({ shape: rectShape, channels: rectLens, params })
-  const marks = [
+  const byFamily: Record<GlyphFamily, Mark<TRegion, TState>> = {
     line,
-    defineMark({
+    chevron: defineMark({
       shape: makeChevronShape(maxChevronsPerLine),
       channels: lineLens,
       params,
       bufferOf: line,
     }),
     rect,
-    defineMark({
+    arrow: defineMark({
       shape: arrowShape,
       channels: (region: TRegion) => {
         const d = glyphs(region)
@@ -92,16 +112,14 @@ export function featureGlyphMarks<TRegion, TState extends MarkFrame>(spec: {
       },
       params,
     }),
-  ]
-  if (continuation) {
-    marks.push(
-      defineMark({
-        shape: continuationShape,
-        channels: rectLens,
-        params,
-        bufferOf: rect,
-      }),
-    )
+    continuation: defineMark({
+      shape: continuationShape,
+      channels: rectLens,
+      params,
+      bufferOf: rect,
+    }),
   }
-  return marks
+  return PAINT_ORDER.filter(
+    family => continuation || family !== 'continuation',
+  ).map(family => byFamily[family])
 }

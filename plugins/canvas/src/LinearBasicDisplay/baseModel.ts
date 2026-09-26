@@ -18,13 +18,11 @@ import {
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
-import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import {
   activeJexlFilters,
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
-import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
@@ -209,8 +207,6 @@ export type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
 // Off this subpath rather than the barrel, so a subclass composing its own
 // "Color by..." presets holds no value edge into the eager entry.
 export { defaultColorItem } from './trackMenus.ts'
-
-const RAMP_KEY_STOPS = 8
 
 const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
@@ -1475,19 +1471,10 @@ export default function baseStateModelFactory(
        * scale's key is its `domain` colours whole, once anything is drawn.
        */
       get derivedColorScales(): ColorScale[] {
-        const { colorRamp, colorKeyTitle } = self
-        if (colorRamp) {
-          return [
-            {
-              kind: 'ramp',
-              id: 'color',
-              title: colorKeyTitle,
-              domain: colorRamp.domain,
-              stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
-              extent: self.colorValueExtent,
-            },
-            ...rampGapScales('color-gaps', self.colorValueGaps),
-          ]
+        const { colorKeyTitle } = self
+        const ramp = self.rampColorScales('color')
+        if (ramp.length > 0) {
+          return ramp
         }
         const identity = self.identityKeyEntries
         if (identity.length > 0) {

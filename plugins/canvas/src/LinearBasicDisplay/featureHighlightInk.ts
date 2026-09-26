@@ -9,6 +9,7 @@ import {
   placeFeatureLabels,
 } from './components/labelPositioning.ts'
 import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
+import { glyphMarkIndex } from './marks/featureGlyphMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderState } from './components/canvasFeatureRenderingBackendTypes.ts'
@@ -16,12 +17,13 @@ import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { MarkInstance } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// Positions in CANVAS_FEATURE_MARKS. The chevron (1) and continuation (4) marks
-// declare no `ink`, so `inkOfInstances` would skip anything filed under them.
+// The three primitive families, each read back through the index the mark list
+// assigns it. The chevron and continuation marks declare no `ink`, so
+// `inkOfInstances` would skip anything filed under them.
 const INKED_MARKS = [
-  { mark: 0, kind: 'line' },
-  { mark: 2, kind: 'rect' },
-  { mark: 3, kind: 'arrow' },
+  { mark: glyphMarkIndex('line'), kind: 'line' },
+  { mark: glyphMarkIndex('rect'), kind: 'rect' },
+  { mark: glyphMarkIndex('arrow'), kind: 'arrow' },
 ] as const
 
 /**

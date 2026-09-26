@@ -465,8 +465,7 @@ export function packPreparedRef(
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   const { bpPerPx, pinnedFeatureIds } = inputs
-  const { heightMultiplier } = metrics
-  const singleRow = metrics.singleRow || !!inputs.flattenRows
+  const { heightMultiplier, singleRow } = metrics
   const { features, collapsedFeatureIds, collapsedSpansPx } = prep
   const { trimPlan } = trims
   const { packed, droppedLabelIds } = decideLabelReservations(

@@ -1,7 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
+import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 import {
   FEATURE_FIELD_PRESETS,
   categoricalColorField,
@@ -20,6 +22,7 @@ import { workerColorOf } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { ColorValues } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type {
   ColorSetting,
   colorConfigSchema,
@@ -40,6 +43,9 @@ function numericText(text: string) {
 }
 
 const NO_EXTENT: [number, number] = [Infinity, -Infinity]
+
+// Enough to read the ramp's shape without the bar becoming a table of stops.
+const RAMP_KEY_STOPS = 8
 
 function colorSettingsOf({ conf: { color } }: FeatureColorHost): ColorSetting {
   return {
@@ -235,6 +241,30 @@ export function featureColorViews(self: FeatureColorHost) {
       return paint && field !== undefined
         ? createFieldPalette(field, paint)
         : undefined
+    },
+
+    /**
+     * #method
+     * The key a ramp paints, under the caller's scale `id`: the bar over its
+     * domain, and a row apiece for the values the ramp has no colour for. Both
+     * displays composing this built it from the same three getters, so the
+     * derivation is here rather than twice over.
+     */
+    rampColorScales(id: string): ColorScale[] {
+      const ramp = this.colorRamp
+      return ramp
+        ? [
+            {
+              kind: 'ramp',
+              id,
+              title: this.colorKeyTitle,
+              domain: ramp.domain,
+              stops: stopsFromRampLut(ramp.lut, RAMP_KEY_STOPS),
+              extent: this.colorValueExtent,
+            },
+            ...rampGapScales(`${id}-gaps`, this.colorValueGaps),
+          ]
+        : []
     },
 
     /**

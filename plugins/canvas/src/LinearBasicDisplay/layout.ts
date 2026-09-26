@@ -465,8 +465,13 @@ function groupUnchanged(
 
 // Minus the marks the collapse pinned to row 0: they never competed for a
 // row, and carrying their y=0 into the sort would rank a whole pile ahead of
-// every feature below the top row.
+// every feature below the top row. A flattened pack is that case for every
+// mark it held, so it seeds nothing — the rows it reports are the band's
+// setting rather than an order anything won.
 function seedRowsFrom(prev: GroupCache) {
+  if (prev.inputs.flattenRows) {
+    return undefined
+  }
   const tops = captureFeatureTops(prev.output)
   for (const id of prev.collapsedIds) {
     tops.delete(id)
