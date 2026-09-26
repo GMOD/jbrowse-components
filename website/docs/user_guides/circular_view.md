@@ -95,22 +95,30 @@ chromosome box per genome.
 
 Both arcs of a two-genome circle run the same way round, so a genome left in its
 own contig order puts every matching pair of chromosomes at opposite ends of a
-diameter and sends every ribbon through the middle. **Re-order chromosomes** in
-the view's menu — or `autoDiagonalize: true` on the view, which runs it on open
-— orders the second genome's chromosomes to follow the first's, by how many
-aligned bases each pair shares, and lays that genome out mirrored so the ribbons
-come out as a band of parallel arcs. It is the same pass the linear synteny view
-and the dotplot run, over the same alignment file, and it is offered on a
-two-genome circle carrying a synteny track and nowhere else.
+diameter and sends every ribbon through the middle. The circle reorders as it
+opens, and **Re-order chromosomes** in the view's menu does it on demand. The
+reorder puts the second genome's chromosomes in the order of the first's, by how
+many aligned bases each pair shares, and the circle lays that genome out
+mirrored so the ribbons come out as a band of parallel arcs.
+`autoDiagonalize: false` on the view keeps each genome in its own contig order.
+It is the same pass the linear synteny view and the dotplot run, over the same
+alignment file, and it is offered on a two-genome circle carrying a synteny
+track and nowhere else.
 
-The ribbons are one flat translucent fill by default. **Color by...** in the
-view's menu offers what the linear synteny view's palette offers: either
-genome's chromosome (in that arc's ideogram color), strand, identity or another
-measurement, a column the track declares, or one color per track when several
-overlay. **Opacity** and **Min length** sit beside it, and as view settings all
-three go in a session as `color`, `alpha` and `minAlignmentLength`.
+A two-genome circle opens with each ribbon in the ideogram color of the first
+genome's chromosome it leaves. **Color by...** in the view's menu offers what
+the linear synteny view's palette offers: either genome's chromosome, strand,
+identity or another measurement, a column the track declares, or one color per
+track when several overlay. **Opacity**, **Identity fade** and **Min length**
+sit beside it, and as view settings they go in a session as `color`, `alpha`,
+`opacityByIdentity` and `minAlignmentLength`.
 
-<Figure src="/img/circular_synteny/color_by_chromosome.png" caption="Color by... → Query on the human and mouse circle: each ribbon takes the ideogram color of the human chromosome it leaves, so a human chromosome's pieces can be followed to every mouse chromosome that carries one." />
+An alignment narrower than a pixel draws at the share of the pixel it covers, as
+in the linear synteny view, so a circle of tens of thousands of short alignments
+shows where they pile up. `fadeThinAlignmentsMode: 'off'` on the view draws
+every ribbon at full opacity.
+
+<Figure src="/img/circular_synteny/color_by_strand.png" caption="Color by... → Strand on the human and mouse circle. A mouse chromosome that runs antiparallel to its human partner is one color along its whole bundle, and a ribbon of the other color inside it is an inversion." />
 
 Hovering a ribbon or a chord highlights it and names it in a tooltip; clicking
 opens its details. Ribbons and chords draw on the GPU, so a circle holding tens

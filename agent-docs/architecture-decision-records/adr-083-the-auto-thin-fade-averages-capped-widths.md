@@ -10,6 +10,9 @@ summary: "'auto' asks whether ribbons are predominantly sub-pixel and answered w
 Accepted (2026-08-21). Refines the criterion introduced by `4f1c8ebd97` and
 latched by `f48af92b65`; the fade itself is
 [ADR-033](adr-033-synteny-lod-prune-at-data-draw-crisp-at-shader.md).
+The rule, the latch and the mode live in synteny-core (`fadeThin.ts`,
+`SyntenyFadeMixin`) since 2026-09-26, where the circular view's ribbons fade by
+them too ([ADR-177](adr-177-a-chord-is-a-mark-under-the-circles-polar-stage.md)).
 
 ## Context
 

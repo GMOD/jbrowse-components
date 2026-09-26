@@ -16976,6 +16976,12 @@
         "minAlignmentLength": {
           "type": "number"
         },
+        "opacityByIdentity": {
+          "type": "boolean"
+        },
+        "fadeThinAlignmentsMode": {
+          "enum": ["auto", "on", "off"]
+        },
         "offsetRadians": {
           "type": "number"
         },
@@ -17404,6 +17410,12 @@
         "lodMode": {
           "enum": ["auto", "fine", "coarse"]
         },
+        "opacityByIdentity": {
+          "type": "boolean"
+        },
+        "fadeThinAlignmentsMode": {
+          "enum": ["auto", "on", "off"]
+        },
         "cigarMode": {
           "enum": ["off", "matches", "full"]
         },
@@ -17418,12 +17430,6 @@
         },
         "overdrawPx": {
           "type": "number"
-        },
-        "opacityByIdentity": {
-          "type": "boolean"
-        },
-        "fadeThinAlignmentsMode": {
-          "enum": ["auto", "on", "off"]
         },
         "launch": {},
         "trackSelectorType": {

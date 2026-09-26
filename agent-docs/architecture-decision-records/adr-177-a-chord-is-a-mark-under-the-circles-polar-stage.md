@@ -17,6 +17,17 @@ whose rings are a resampling of each display's strip. The first version of this
 ADR, earlier the same day, painted the shapes on a Canvas2D layer; the
 measurement below retired it before it shipped.
 
+**Amended the same day, after Colin read the figures as "solid blue, a
+hairball"**: the circle takes the linear synteny view's two fades through
+`SyntenyFadeMixin` in synteny-core. Under the thin fade a ribbon keeps its 2 px
+ends for pointing but draws at their true width over the drawn width, never
+under 0.15 (`ribbonThinFade` in `chordStage.slang`), decided by ADR-083's latch
+over the ribbons' spans; the Identity fade is the linear view's toggle. A
+launch that puts two genomes on the circle colours by the first genome's
+chromosomes unless it names a colour, and reorders unless it says
+`autoDiagonalize: false`. The launch writes both defaults, because the colour
+config cannot tell "never chosen" from "chose the one colour".
+
 ## Context
 
 Every chord and ribbon was a `<path>` with its own observer component. Measured

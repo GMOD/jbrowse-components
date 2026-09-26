@@ -34,9 +34,10 @@ const DENSITY_RING = {
   height: 40,
 }
 
-// autoDiagonalize on every one of these: the mouse chromosomes are laid out to
-// follow the human order and mirrored, which is what turns the ribbons from a
-// bundle through the middle into a band between the two arcs.
+// A two-genome circle opens with the mouse chromosomes laid out to follow the
+// human order and mirrored, which turns the ribbons from a bundle through the
+// middle into a band between the two arcs, and with each ribbon in its human
+// chromosome's colour.
 function circularSyntenyView(
   displayedRegionNames: string[],
   tracks: unknown[],
@@ -49,7 +50,6 @@ function circularSyntenyView(
         assembly: ['hg38', 'mm39'],
         displayedRegionNames,
         height: 780,
-        autoDiagonalize: true,
         minAlignmentLength: 100000,
         tracks,
         ...extra,
@@ -185,15 +185,14 @@ export const circularSpecs: ScreenshotSpec[] = [
     ...circularSyntenyReady,
   },
 
-  // The same circle with every ribbon in the colour of the human chromosome it
-  // leaves, which is the Circos convention: a human chromosome's ribbons can be
-  // followed to each mouse chromosome that carries part of it, and the X pair
-  // holds one colour.
+  // The same circle coloured by strand: a mouse chromosome antiparallel to its
+  // human partner is one colour along its whole bundle, so a ribbon of the
+  // other colour inside it is a local inversion.
   {
     mode: 'url',
-    name: 'circular_synteny/color_by_chromosome',
+    name: 'circular_synteny/color_by_strand',
     url: circularSyntenyView(CHROMOSOMES, [LIFTOVER], {
-      color: { field: 'query' },
+      color: { field: 'strand' },
     }),
     ...circularSyntenyReady,
   },

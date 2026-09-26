@@ -209,6 +209,17 @@ by the first and `target` by the second.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/featureColorInputs.ts)
 
+### identityFadeMenuItem
+
+The Identity fade toggle of a view carrying `SyntenyFadeMixin`.
+
+```js
+// type signature
+(model: { opacityByIdentity: boolean; setOpacityByIdentity: (value: boolean) => void; }) => MenuItem
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
+
 ### LEGEND_CHIP_ALPHA_FLOOR
 
 The alpha a legend chip is blended at however faint the ribbons are.

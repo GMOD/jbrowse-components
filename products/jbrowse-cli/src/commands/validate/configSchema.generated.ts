@@ -18003,6 +18003,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minAlignmentLength": {
           "type": "number"
         },
+        "opacityByIdentity": {
+          "type": "boolean"
+        },
+        "fadeThinAlignmentsMode": {
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ]
+        },
         "offsetRadians": {
           "type": "number"
         },
@@ -18447,6 +18457,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "coarse"
           ]
         },
+        "opacityByIdentity": {
+          "type": "boolean"
+        },
+        "fadeThinAlignmentsMode": {
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ]
+        },
         "cigarMode": {
           "enum": [
             "off",
@@ -18465,16 +18485,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "overdrawPx": {
           "type": "number"
-        },
-        "opacityByIdentity": {
-          "type": "boolean"
-        },
-        "fadeThinAlignmentsMode": {
-          "enum": [
-            "auto",
-            "on",
-            "off"
-          ]
         },
         "launch": {},
         "trackSelectorType": {

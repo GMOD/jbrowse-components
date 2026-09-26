@@ -4,8 +4,8 @@ sidebar_label: Synteny (circular, human and mouse)
 description:
   Put two genomes on one circular view, draw UCSC's liftOver chain between them
   as ribbons straight from the copy jbrowse.org indexes, colour the ribbons by
-  chromosome, add a gene density ring per genome, and check a ribbon and a ring
-  value against the files they came from
+  chromosome and by strand, add a gene density ring per genome, and check a
+  ribbon and a ring value against the files they came from
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
@@ -15,10 +15,10 @@ We lay the human and mouse chromosomes around one circle and draw UCSC's
 hg38-to-mm39 liftOver chain as a ribbon between the stretch each row covers in
 each genome, so where the autosomes have been shuffled and where the X has not
 is one picture. The chain comes straight from the indexed copy jbrowse.org
-keeps, `autoDiagonalize` orders the mouse arc to follow the human one, a gene
-density ring per genome sits inside the ideogram, and the page ends by reading
-one ribbon and one ring value back out of the PIF and bigWig they came from. The
-circle is a circular genome view opened on two assemblies at once.
+keeps, the circle orders the mouse arc to follow the human one as it opens, a
+gene density ring per genome sits inside the ideogram, and the page ends by
+reading one ribbon and one ring value back out of the PIF and bigWig they came
+from. The circle is a circular genome view opened on two assemblies at once.
 
 ## Prerequisites
 
@@ -102,9 +102,9 @@ The circular view's `assembly` takes a list, and each assembly lays its
 chromosomes out in turn: hg38 takes the first arc of the circle and mm39 the
 next, and a ribbon crosses between them. `displayedRegionNames` is resolved
 against each assembly separately, so one list of chromosome names keeps both
-genomes' unplaced contigs off the circle. `autoDiagonalize` makes the result
-readable; the next section explains how. The import form's Quick start opens the
-same circle from the chain track; as a session it is:
+genomes' unplaced contigs off the circle. The circle reorders the mouse arc as
+it opens, which the next section explains. The import form's Quick start opens
+the same circle from the chain track; as a session it is:
 
 ```json session config=https://jbrowse.org/demos/circular_synteny/config.json
 {
@@ -114,7 +114,6 @@ same circle from the chain track; as a session it is:
       {
         "type": "CircularView",
         "assembly": ["hg38", "mm39"],
-        "autoDiagonalize": true,
         "minAlignmentLength": 100000,
         "displayedRegionNames": [
           "chr1",
@@ -149,10 +148,15 @@ same circle from the chain track; as a session it is:
 hg38 and mm39 share their chromosome names, so the arcs are labelled identically
 around the circle: the human chromosomes run clockwise from the top and the
 mouse chromosomes follow, and the view's title bar names the two in that order.
-Every ribbon is one flat translucent fill, and a reverse alignment reads as a
-twist between its two ends rather than as a second color.
+Each ribbon takes the ideogram colour of the human chromosome it leaves, so a
+human chromosome's pieces can be followed to every mouse chromosome that carries
+one, and a reverse alignment reads as a twist between its two ends. A row
+narrower than a pixel draws at the share of the pixel it covers, as the
+[linear synteny view](/docs/user_guides/linear_synteny_view) draws it, so the
+large blocks carry the picture and the short rows the filter lets through stay
+faint.
 
-<Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver row of 100 kb and over as a ribbon between the two genomes. Each human autosome fans out to several mouse chromosomes; the two X arcs hold one bundle." />
+<Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver row of 100 kb and over as a ribbon in the colour of the human chromosome it leaves. Each human autosome fans out to several mouse chromosomes; the two X arcs hold one bundle." />
 
 ## Ordering the second genome
 
@@ -161,7 +165,7 @@ chromosome laid out in its native contig order sits opposite the human
 chromosome it does not align to, and each ribbon crosses the middle to reach its
 partner.
 
-`autoDiagonalize` is the reorder the
+The circle runs the reorder the
 [linear synteny view](/docs/user_guides/linear_synteny_view) and the
 [dotplot](/docs/user_guides/dotplot_view) run on open: each mouse chromosome
 takes the human chromosome it shares the most aligned bases with, and the mouse
@@ -173,19 +177,20 @@ round again, and the twists left on the figure are the inversions.
 
 **Re-order chromosomes** in the view's menu runs the same pass on demand, with a
 progress bar and a cancel; re-running it on a circle that is already ordered
-moves nothing.
+moves nothing. `"autoDiagonalize": false` on the view keeps each genome in its
+own contig order.
 
-## Colouring the ribbons by chromosome
+## Colouring the ribbons by strand
 
-The flat fill shows the shape of the shuffle; a colour per chromosome shows
-where each piece went. **Color by... → Query** in the view's menu paints every
-ribbon in the ideogram colour of the human chromosome it leaves, so a human
-chromosome's pieces can be followed to each mouse chromosome that carries one,
-and a mouse chromosome's arc reads as the list of human chromosomes it was
-assembled from. As a session setting it is `"color": { "field": "query" }` on
-the view.
+The chromosome colours show where each piece went; strand shows which way round
+it lies. **Color by... → Strand** in the view's menu paints the reverse
+alignments a second colour. A mouse chromosome that runs antiparallel to its
+human partner is then one colour along its whole bundle, and a ribbon of the
+other colour inside that bundle is an inversion within it. As a session setting
+it is `"color": { "field": "strand" }` on the view, and `"field": "query"` is
+the chromosome colouring the circle opens with.
 
-<Figure src="/img/circular_synteny/color_by_chromosome.png" caption="The same circle with each ribbon in its human chromosome's colour. Most mouse chromosomes take pieces of two or three human ones; the X arcs exchange one colour." />
+<Figure src="/img/circular_synteny/color_by_strand.png" caption="The same circle coloured by strand. Whole mouse chromosomes take one colour or the other by which way they run against their human partners; a ribbon of the other colour inside a bundle is an inversion." />
 
 ## The X chromosome as the control
 
@@ -267,7 +272,6 @@ before the synteny track:
       {
         "type": "CircularView",
         "assembly": ["hg38", "mm39"],
-        "autoDiagonalize": true,
         "minAlignmentLength": 100000,
         "displayedRegionNames": ["chr1", "chr2", "chrX"],
         "height": 780,

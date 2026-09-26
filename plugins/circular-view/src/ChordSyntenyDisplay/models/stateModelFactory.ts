@@ -31,11 +31,7 @@ import {
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
 import { ribbonHitTest } from '../../chords/chordHit.ts'
-import {
-  axisX,
-  ribbonAnglesAt,
-  ribbonFadeAt,
-} from '../../chords/chordStage.ts'
+import { axisX, ribbonAnglesAt, ribbonFadeAt } from '../../chords/chordStage.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
 import { shapePath } from '../../chords/shapePath.ts'
