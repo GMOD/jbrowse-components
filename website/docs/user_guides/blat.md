@@ -98,10 +98,12 @@ primer's direction does not follow the amplicon's strand. The line between them
 is the interior you never sequence.
 
 Because the primers themselves are carried as the reads' bases, a base where a
-primer disagrees with the template is drawn as a mismatch. UCSC tolerates one
-toward a primer's 5' end and still reports the product, as it would for a primer
-sitting over a SNP; it requires the last 15 bases at the 3' end to match
-exactly, and reports no product otherwise.
+primer disagrees with the template is drawn as a mismatch. UCSC requires the
+last 15 bases at each primer's 3' end to match exactly, and reports no product
+otherwise. Upstream of those 15 bases the two primers differ. The reverse
+primer's 5' tail passes with at least two matches per mismatch, so a 20-mer
+sitting over a SNP still amplifies but one with two mismatches in its first five
+bases does not. UCSC does not check the forward primer's 5' tail at all.
 
 More than one product means more than one band. The results panel counts the
 products, lists each size to compare against a gel, and states explicitly when

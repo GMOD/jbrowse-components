@@ -113,11 +113,10 @@ and the behaviour that follows is asymmetric:
   bases whatever `minGood` says, scored two matches per mismatch. For a 20-mer
   that is a five-base tail where one mismatch passes and two fail.
 
-Two things follow. Exposing `wp_good` on the dialog is what turns the forward
-window on, and it is the knob that makes the tool's mismatch tolerance real.
-And `website/docs/user_guides/blat.md` — "UCSC tolerates one toward a primer's
-5′ end" — describes the reverse primer and understates the forward one, which at
-these values tolerates any number because it never looks.
+Exposing `wp_good` on the dialog would turn the forward window on and give the
+user a real mismatch-tolerance control.
+`website/docs/user_guides/blat.md` now describes the asymmetry at the values we
+send.
 
 ## Declined, with the reason
 
