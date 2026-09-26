@@ -4,7 +4,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { SanitizedHTML, SubmitDialog } from '@jbrowse/core/ui'
 import { measureGridWidth } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { IconButton, TextField, Typography } from '@mui/material'
+import { IconButton, TextField } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -18,26 +18,18 @@ const ConfirmDialog = ({
 }) => {
   const [val, setVal] = useState('MultiWiggle')
   const [tracks, setTracks] = useState(initialTracks)
-  const allQuant = tracks.every(t => t.type === 'QuantitativeTrack')
   return (
     <SubmitDialog
       open
-      title="Create multi-wiggle track?"
+      title="Create multi-wiggle track"
       submitDisabled={tracks.length === 0 || !val.trim()}
       onCancel={() => {
         onClose()
       }}
       onSubmit={() => {
-        onClose({ name: val, tracks })
+        onClose({ name: val.trim(), tracks })
       }}
     >
-      {!allQuant ? (
-        <Typography>
-          Not every track looks like a QuantitativeTrack. This could have
-          unexpected behavior, confirm if it looks ok.
-        </Typography>
-      ) : null}
-      <Typography>Listing:</Typography>
       <DataGrid
         autoHeight
         rows={tracks}
@@ -50,11 +42,6 @@ const ConfirmDialog = ({
             renderCell: ({ row }) => (
               <SanitizedHTML html={readConfObject(row, 'name')} />
             ),
-          },
-          {
-            field: 'type',
-            headerName: 'Type',
-            width: measureGridWidth(tracks.map(t => t.type)),
           },
           {
             field: 'remove',
@@ -84,7 +71,6 @@ const ConfirmDialog = ({
         }}
         label="Track name"
       />
-      <Typography>Confirm creation of track?</Typography>
     </SubmitDialog>
   )
 }
