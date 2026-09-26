@@ -33,3 +33,8 @@ export const displayReady = (displayId: string) =>
 // section chip or twice in one cascade still names one row.
 export const cascade = (kind: 'submenu' | 'menuitem', label: string) =>
   `[data-testid="cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}"]`
+
+// A graph segments lane redrawn as the graph: the track menu's Display types
+// submenu, and the row the graph plugin's LinearGraphDisplay is listed by.
+export const DISPLAY_TYPES = cascade('submenu', 'Display types')
+export const GRAPH_DISPLAY = cascade('menuitem', 'Graph')

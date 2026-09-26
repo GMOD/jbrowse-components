@@ -122,9 +122,7 @@ refilm and none of which the run reports.
   a drawable one and waits on `displayReady(...)` carries on with the banner
   still on screen. What to wait on is the banner going away —
   `{ type: 'waitForText', text: 'Too many features', hidden: true }` — and the
-  display id after it, for the paint. `pangenome/tier_to_fine` opens on that
-  banner deliberately, which is the one case where it is the state the page
-  describes rather than a spec pointed at the wrong locus.
+  display id after it, for the paint.
 - **A highlight whose span becomes the window washes the whole frame.** The
   graph's `Highlight in <assembly>` writes a translucent band into the linear
   view, which reads well while the band is a slice of the window and edge to
@@ -140,12 +138,11 @@ refilm and none of which the run reports.
   two. Cut the tier over a few megabases instead — `hprcTierSession` takes 2 Mb,
   where the class II bubble is sixty pixels wide — and leave the
   chromosome-scale picture to a figure, which clicks nothing.
-- **A node's `Open in <assembly>` navigates the connected linear view rather
-  than adding one** (the plugin pairs with the single view carrying that
-  assembly when no launch created the pairing), so a tour built on it keeps the
-  frame it opened at. That is what makes the coarse-to-fine route cheap to
-  frame; launching a second graph pane at the end of it costs ~700px and lands
-  on the drawing another clip already ends with.
+- **A node's `Open in <assembly>` navigates the linear view its graph track is
+  in rather than adding one**, when that view carries the assembly, so a tour
+  built on it keeps the frame it opened at. That is what makes the
+  coarse-to-fine route cheap to frame: the view lands on the node's span and the
+  track re-cuts from the fine index in place.
 - **Don't end a tour by scrolling to text.** A panel of JSON or a table of
   values is the one thing a page does better than a film — the fence beside the
   clip is searchable, diffable and holds still — and the harness cannot aim at a

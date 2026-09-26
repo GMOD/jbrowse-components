@@ -12,9 +12,10 @@ import {
 } from './demoBase.ts'
 import {
   CARRIAGE_DISPLAY,
-  TOOLBAR_READY,
+  GRAPH_DRAWN,
+  cutNear,
+  graphTrack,
   local,
-  referencePositionColor,
 } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -35,8 +36,8 @@ const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 // The graph-as-a-graph figure loads the K12-only graphgenomeview fixture rather
 // than the demo config the projections above use, for the reason every other
 // graph figure does: that fixture pins the plugin bundle by content hash, so the
-// view cannot change this image without a diff in this repo. The two lanes and
-// the graph all read the hosted ecoli_cactus index, which the demo config
+// view cannot change this image without a diff in this repo. The carriage lane
+// and the graph both read the hosted ecoli_cactus index, which the demo config
 // carries as `ecoli_cactus_segments` and build_ecoli_pangenome_cactus.sh writes.
 //
 // WHAT THAT PIN DOES NOT COVER is the path a reader takes: the demo config, its
@@ -61,9 +62,8 @@ const MC_SEGMENTS_SESSION_TRACK = {
   },
 }
 
-// The same index a second time, for the carriage lane: one track per coloring,
-// because a display's color is a track-level setting and the figure wants both
-// readings of the same segments in one frame.
+// The same index a second time, for the carriage lane, because a view shows a
+// track once and the graph track is the segments one.
 const MC_CARRIAGE_TRACK = 'ecoli_cactus_carriage'
 const MC_CARRIAGE_SESSION_TRACK = {
   ...MC_SEGMENTS_SESSION_TRACK,
@@ -96,18 +96,12 @@ const K12_GENES_SESSION_TRACK = {
 // flagellar operon's downstream edge and the insertion is annotated insB5/insA5,
 // an IS1 transposase pair, which is what the gene lane names.
 //
-// Nodes in the cut: 115 backbone plus ~60 off-backbone, which is the legible end
-// of the range measured on the pggb graph (1 kb / ~150 nodes legible, 3 kb / 519
-// a braid). A Minigraph-Cactus graph caps segments at 1024 bp, so the private
-// stretch is one node rather than a chain, which is why it draws as a single
-// long tube.
+// Nodes in the window: 115 backbone plus ~60 off-backbone, which is the legible
+// end of the range measured on the pggb graph (1 kb / ~150 nodes legible, 3 kb
+// / 519 a braid). A Minigraph-Cactus graph caps segments at 1024 bp, so the
+// private stretch is one node rather than a chain, which is why it draws as a
+// single long tube.
 const IS1_WINDOW = 'chr:1,978,100-1,979,700'
-const IS1_REGION = {
-  refName: 'chr',
-  assemblyName: 'K12',
-  start: 1978100,
-  end: 1979700,
-}
 const IS1_HIGHLIGHT = {
   refName: 'chr',
   start: 1978494,
@@ -127,13 +121,9 @@ const ODGI_PATH_COLORS = [
 
 export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // The graph itself, which every projection above is a flattening of: the
-  // segments lane over a 2 kb K12 window, and under it the subgraph the track
-  // menu's Launch cuts from that same window. Both read the two tabix
-  // indexes build_pggb_tabix.sh writes over mc/ecoli.gfa.gz, so a block in the
-  // lane and a node below it are the same segment.
-  //
-  // Same reference-position ramp in both halves, over the cut's own region, so
-  // the correspondence is by hue rather than by counting along. Genes grey for
+  // segments track of a 2 kb K12 window drawn as a graph, under the genes and
+  // the carriage lane of the same window. Both tracks read the two tabix
+  // indexes build_pggb_tabix.sh writes over mc/ecoli.gfa.gz. Genes grey for
   // the reason local_subgraph gives: at the default goldenrod the gene boxes
   // read as more graph nodes.
   //
@@ -172,13 +162,6 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               // so nothing in the frame is lost with it gone.
               jexlFiltersSetting: ["jexl:feature.type=='gene'"],
             },
-            {
-              trackId: MC_SEGMENTS_TRACK,
-              type: 'LinearBasicDisplay',
-              displayMode: 'collapsed',
-              height: 40,
-              color: referencePositionColor(IS1_REGION),
-            },
             // The same segments again, colored by how many strains walk each.
             // Without it the frame shows a route past the long node and says
             // nothing about who takes it, and "the other four skip it" would be
@@ -194,24 +177,24 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               height: 90,
               ...CARRIAGE_DISPLAY,
             },
+            graphTrack(MC_SEGMENTS_TRACK, {
+              layoutMode: 'force',
+              paneHeight: 600,
+              colorScheme: 'reference-position',
+              // a SNP halo on every backbone joint, and a second deletion label
+              // over the arc's own
+              showBubbles: false,
+              // a window-width more each side would braid the drawing
+              maxRegionBp: cutNear(1600),
+            }),
           ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: MC_SEGMENTS_TRACK,
-          loadedRegion: IS1_REGION,
-          layoutMode: 'force',
-          colorScheme: 'reference-position',
-          // a SNP halo on every backbone joint, and a second deletion label
-          // over the arc's own
-          showBubbles: false,
         },
       ],
     }),
-    readySelector: TOOLBAR_READY,
+    readySelector: GRAPH_DRAWN,
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 890,
+    viewportHeight: 760,
     hideTooltip: true,
     // The dashed edge is one link with no bases; its bow is the force layout's
     // spring, so it reads as the biggest thing in the frame unless named.
@@ -221,7 +204,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         text: 'the other four strains skip this node',
         fontSize: 18,
         leader: true,
-        anchor: { view: 1, graphNode: '258914' },
+        anchor: { graphNode: '258914' },
         dx: 220,
         dy: 70,
       },

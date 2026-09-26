@@ -149,8 +149,8 @@ const REPO_LABELS = new Set(
 
 // One extra label set per external checkout that is actually on disk, unioned
 // with the repo's. A page that names a plugin item usually also names a core
-// one on the way to it (`Track menu → Launch → Graph genome view (this
-// region)`), so neither set alone can answer for a path.
+// one on the way to it (`Track menu → Display types → Graph`), so neither
+// set alone can answer for a path.
 const errorLines: string[] = []
 const skippedPages: string[] = []
 const externalLabels = new Map<string, Set<string>>()

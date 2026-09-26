@@ -10,7 +10,12 @@ import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 import { GRAPH_DRAWN } from '../specs/graph-fixtures.ts'
 import { hg002VideoFixtures } from '../specs/hg002_haplotypes.ts'
 import { syntenyVideoFixtures } from '../specs/synteny.ts'
-import { RUBBERBAND, trackMenu } from './shared.ts'
+import {
+  DISPLAY_TYPES,
+  GRAPH_DISPLAY,
+  RUBBERBAND,
+  trackMenu,
+} from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -1143,18 +1148,17 @@ export const syntenyVideos: VideoSpec[] = [
   },
 
   // THE ROUND TRIP, which pangenome_ecoli.md's "Browsing the whole graph by
-  // locus" states in one paragraph: a rubberband on K-12 offers the graph and
-  // the synteny stack from one Launch menu; the stack's K-12 row carries the
-  // segments lane, so the graph is one track menu away from inside the stack;
-  // and a drag on any other row's ruler raises the same launch anchored on that
-  // strain, whose Replace current view re-anchors the stack in place. Three
-  // launches, each from the view the last one produced.
+  // locus" states in one paragraph: a rubberband on K-12 launches the synteny
+  // stack; the stack's K-12 row carries the segments lane, so the graph is one
+  // track menu away from inside the stack; and a drag on any other row's ruler
+  // raises the same launch anchored on that strain, whose Replace current view
+  // re-anchors the stack in place.
   //
   // The graph comes BEFORE the re-anchor, and the order is forced: a launch
   // copies the launching row's tracks onto the anchor panel and nothing onto the
   // mates, so once the stack is re-anchored on Sakai the K-12 row is a bare
-  // ruler with no segments lane to launch from. Filmed the other way round the
-  // graph beat has no track to click.
+  // ruler with no segments lane to redraw. Filmed the other way round the graph
+  // beat has no track to click.
   //
   // The Sakai row's drag is a selector anchor with `dx` either side of the
   // ruler's centre rather than a locus: Sakai's coordinates for this window
@@ -1163,16 +1167,12 @@ export const syntenyVideos: VideoSpec[] = [
   {
     name: 'synteny/ecoli_roundtrip',
     description:
-      'One selection on K-12, three views: the Launch menu offering the graph beside the synteny stack, the stack anchored on K-12 with the segments lane on its top row, that lane cutting the graph below, and a drag on the Sakai row re-anchoring the stack on Sakai',
+      'One selection on K-12 and the stacks it launches: the stack anchored on K-12 with the segments lane on its top row, that lane redrawn as the graph, and a drag on the Sakai row re-anchoring the stack on Sakai',
     url: roundTripStart,
-    // Sized to the TALLEST state, which is not the last one: the run measured
-    // 1353 with the graph pane under a stack whose K-12 row still carries the
-    // segments lane, and 1254 after the re-anchor drops that lane. The slack
-    // over 1353 is the caption chip's strip. The ~970px of page background
-    // under the opening lanes is the cost of filming two launches -- a tour
-    // that grows the app fivefold has one frame for every state it passes
-    // through, and cutting the graph pane off is the worse half to spend it on.
-    viewportHeight: 1410,
+    // Sized to the TALLEST state, the K-12 row holding the graph, which is not
+    // the last one: the re-anchor drops that row's tracks. Re-measure off the
+    // run's content report.
+    viewportHeight: 1400,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 180000,
     steps: [
@@ -1197,17 +1197,11 @@ export const syntenyVideos: VideoSpec[] = [
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
       { type: 'click', selector: LAUNCH_SUBMENU, hold: 1200 },
-      { type: 'waitForText', text: 'Graph genome view (this selection)' },
       { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
-      {
-        type: 'delay',
-        ms: 2200,
-        say: 'The graph or the stack, from one selection',
-      },
       {
         type: 'click',
         selector: LAUNCH_SYNTENY_VIEW,
-        say: 'Linear synteny view',
+        say: 'Stack the strains on the selection',
       },
       { type: 'waitForText', text: 'Panels, top to bottom' },
       {
@@ -1235,20 +1229,17 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(segmentsTrackId),
-        say: 'The lane cuts a graph of its own, from here',
+        say: 'Redraw the segments lane as the graph',
         hold: 700,
       },
-      { type: 'waitForText', text: 'Launch' },
-      { type: 'click', text: 'Launch', hold: 700 },
-      { type: 'waitForText', text: 'Graph genome view (this region)' },
-      {
-        type: 'click',
-        text: 'Graph genome view (this region)',
-      },
+      { type: 'waitForSelector', selector: DISPLAY_TYPES },
+      { type: 'click', selector: DISPLAY_TYPES, hold: 700 },
+      { type: 'waitForSelector', selector: GRAPH_DISPLAY },
+      { type: 'click', selector: GRAPH_DISPLAY },
       { type: 'waitForSelector', selector: GRAPH_DRAWN, timeout: 180000 },
       { type: 'waitForAppSettled', timeout: 180000 },
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'delay', ms: 3000, say: 'The graph, cut from inside the stack' },
+      { type: 'delay', ms: 3000, say: 'The graph, drawn inside the stack' },
       // The re-anchor: a drag on the Sakai row's own ruler.
       {
         type: 'drag',
@@ -1273,7 +1264,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: LAUNCH_SYNTENY_VIEW,
-        say: 'Linear synteny view',
+        say: 'The same launch, from Sakai',
       },
       { type: 'waitForText', text: 'Sakai (your selection)' },
       {
@@ -1296,7 +1287,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'The stack re-anchored on Sakai, the graph still below',
+        say: 'The stack re-anchored on Sakai',
       },
     ],
     tailMs: 4500,

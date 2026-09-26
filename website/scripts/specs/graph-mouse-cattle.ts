@@ -19,7 +19,7 @@
 // deconstructed into a VCF that does. Each figure below is picked to show one
 // of those.
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import { TOOLBAR_READY, local } from './graph-fixtures.ts'
+import { GRAPH_DRAWN, graphTrack, local } from './graph-fixtures.ts'
 
 import type {
   ScreenshotSpec,
@@ -57,12 +57,6 @@ const CONFIG = local('test_data/graphgenomeview/pangenome_nonhuman.json')
 // ones end at 34,464,536 and begin at 34,578,334, so the bubble sits inside one
 // ~114 kb intron and touches no exon. What is being shown is where the strain
 // panel varies most, not a coding consequence.
-const DOCK2_REGION = {
-  refName: 'chr11',
-  assemblyName: 'mm39',
-  start: 34_516_044,
-  end: 34_560_497,
-}
 const DOCK2_LOC = 'chr11:34,516,044-34,560,497'
 
 // FORCE, and the only figure in this file that is. Both layouts were rendered
@@ -89,7 +83,6 @@ const dock2Spec: ScreenshotSpec = {
     views: [
       {
         type: 'LinearGenomeView',
-        id: 'mouse-dock2-lgv',
         assembly: 'mm39',
         loc: DOCK2_LOC,
         tracks: [
@@ -115,37 +108,21 @@ const dock2Spec: ScreenshotSpec = {
             type: 'LinearPileupDisplay',
             height: 110,
           },
-          // Labels off: 231 segment rows sit on the reference path here against
-          // 56 in the whole 160 kb Nnt window, so the lane's subject is density
-          // and a per-segment id is unreadable at that count anyway.
-          {
-            trackId: 'mouse_minigraph_segments',
-            type: 'LinearBasicDisplay',
-            showLabels: 'none',
-            height: 90,
-          },
+          graphTrack('mouse_minigraph_segments', {
+            layoutMode: 'force',
+            paneHeight: 600,
+            colorScheme: 'reference-position',
+          }),
         ],
-      },
-      {
-        type: 'GraphGenomeView',
-        displayName: 'Dock2 intron graph',
-        loadedTrackId: 'mouse_minigraph_segments',
-        loadedRegion: DOCK2_REGION,
-        connectedViewId: 'mouse-dock2-lgv',
-        colorScheme: 'reference-position',
-        layoutMode: 'force',
       },
     ],
   }),
-  readySelector: TOOLBAR_READY,
+  readySelector: GRAPH_DRAWN,
   readyTimeout: 300000,
   viewportWidth: 1400,
-  // The tallest figure in the file, and the run measured it rather than the
-  // spec guessing: at 1150 it reported 181 css px of the graph pane below the
-  // fold. A force layout of this cut needs the room -- the whole point of the
-  // panel is its topology, and a topology with its bottom third missing is not
-  // one. SLACK_WARN_PX reports the other direction if this ever over-shoots.
-  viewportHeight: 1260,
+  // A force layout of this cut needs the room: the panel's point is its
+  // topology, and the graph track takes up to 600 px.
+  viewportHeight: 1080,
   hideTooltip: true,
   annotations: [
     {
@@ -153,7 +130,7 @@ const dock2Spec: ScreenshotSpec = {
       text: 'C57BL/6J, the reference',
       fontSize: 18,
       leader: true,
-      anchor: { view: 1, graphNode: 's110010685+' },
+      anchor: { graphNode: 's110010685+' },
       dx: 20,
       dy: -110,
     },
@@ -162,7 +139,7 @@ const dock2Spec: ScreenshotSpec = {
       text: 'sequence C57BL/6J lacks',
       fontSize: 18,
       leader: true,
-      anchor: { view: 1, graphNode: 's110050877+' },
+      anchor: { graphNode: 's110050877+' },
       dx: -230,
       dy: 10,
     },

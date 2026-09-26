@@ -2,7 +2,7 @@
 // pangenome_chrm: one site read as a graph, then every site as a haplotype
 // matrix clustered into lineages (scripts/build_chrm_graph.sh).
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import { TOOLBAR_READY } from './graph-fixtures.ts'
+import { GRAPH_VIEW_READY } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -37,7 +37,7 @@ const deletionGraphSpec: ScreenshotSpec = {
       },
     ],
   }),
-  readySelector: TOOLBAR_READY,
+  readySelector: GRAPH_VIEW_READY,
   readyTimeout: 120000,
   viewportWidth: 1400,
   viewportHeight: 700,

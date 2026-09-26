@@ -4,10 +4,15 @@
 // Kept apart from graph-hprc.ts and graph-mouse-cattle.ts for the reason those
 // two are apart: this module's subject is one plugin device across two species,
 // not one species' loci.
-import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import {
+  PARK_CURSOR,
+  sessionSpec,
+  trackMenuIcon,
+} from '../screenshot-spec-helpers.ts'
 import { PORTAL_CONFIG } from './genomes_pangenome.ts'
 import {
-  TOOLBAR_READY,
+  GRAPH_DRAWN,
+  graphTrack,
   local,
   referencePositionColor,
 } from './graph-fixtures.ts'
@@ -18,7 +23,7 @@ const NONHUMAN_CONFIG = local(
   'test_data/graphgenomeview/pangenome_nonhuman.json',
 )
 
-const WALK_SELECT = '[data-testid="graph-walk-select"]'
+const GBZ_TRACK = 'hprc_v2_1_gbz_lanes'
 const WALK_READOUT = '[data-testid="graph-walk-readout"]'
 
 // ---------------------------------------------------------------------------
@@ -28,8 +33,8 @@ const WALK_READOUT = '[data-testid="graph-walk-readout"]'
 // The 130 kb window pangenome/hprc_lpa_kiv2 draws on pangenome_hprc. LPA's
 // own start is in frame so the gene lane labels it.
 const LPA_WINDOW = 'chr6:160,525,000-160,655,000'
-// The KIV-2 bubble's interval, which the gbz-base cut is made on, and the
-// domain both the linear lane and the graph paint their ramp over.
+// The KIV-2 bubble's interval, which the view frames, and the domain both the
+// linear lane and the graph paint their ramp over.
 const KIV2_BUBBLE_WINDOW = 'chr6:160,616,002-160,646,753'
 const KIV2_BUBBLE_REGION = {
   refName: 'chr6',
@@ -37,8 +42,8 @@ const KIV2_BUBBLE_REGION = {
   start: 160616002,
   end: 160646753,
 }
-// The lanes the HPRC page config's gbz-base track names, which a cut launched
-// from a linear view that does not show the track is made for.
+// The lanes the HPRC page config's gbz-base track names, which the graph track
+// cuts its walks for.
 const KIV2_HAPLOTYPES = [
   'HG00097.1',
   'HG00099.1',
@@ -78,11 +83,8 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
   }
 }
 
-function kiv2WalksGraphView() {
-  return {
-    type: 'GraphGenomeView',
-    loadedTrackId: 'hprc_v2_1_gbz_lanes',
-    loadedRegion: KIV2_BUBBLE_REGION,
+function kiv2WalksGraphTrack(pane: Record<string, unknown> = {}) {
+  return graphTrack(GBZ_TRACK, {
     subgraphHaplotypes: KIV2_HAPLOTYPES,
     layoutMode: 'force',
     colorScheme: 'reference-position',
@@ -95,50 +97,56 @@ function kiv2WalksGraphView() {
     // the loops covered the drawing they named.
     showBubbles: false,
     paneHeight: 400,
-  }
+    ...pane,
+  })
 }
 
-function kiv2WalksLinearView() {
-  return {
-    type: 'LinearGenomeView',
-    assembly: 'hg38',
-    loc: KIV2_BUBBLE_WINDOW,
-    tracks: [
-      hg38GeneLane(40),
-      hprcBubblesLane(50),
-      { ...hprcSegmentsLane(KIV2_BUBBLE_REGION), height: 70 },
-    ],
-  }
-}
-
-// The menu item is picked by its value rather than its text, which the
-// readout beside the legend repeats.
-const HG00133_ITEM = 'li[data-value^="HG00133"]'
+// The Walk submenu names each walk by its sample, which the readout beside the
+// legend repeats.
+const HG00133_ITEM = '[data-testid^="cascading-menuitem-hg00133"]'
 
 // The eight-haplotype cut of the bubble with one walk lifted: node width is how
 // many of the nine walks carry a node, HG00133's route keeps its ink while the
 // other haplotypes' private loops fade, and the readout states its excess over
-// GRCh38, under the linear view of the same window.
+// GRCh38, under the lanes of the same window.
 const kiv2WalksSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_kiv2_walks',
   url: sessionSpec(PORTAL_CONFIG, {
-    views: [kiv2WalksLinearView(), kiv2WalksGraphView()],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: KIV2_BUBBLE_WINDOW,
+        tracks: [
+          hg38GeneLane(40),
+          hprcBubblesLane(50),
+          { ...hprcSegmentsLane(KIV2_BUBBLE_REGION), height: 70 },
+          kiv2WalksGraphTrack(),
+        ],
+      },
+    ],
   }),
-  readySelector: TOOLBAR_READY,
+  readySelector: GRAPH_DRAWN,
   readyTimeout: 240000,
   viewportWidth: 1400,
-  viewportHeight: 1000,
+  viewportHeight: 910,
   hideTooltip: true,
   actions: [
-    { type: 'click', selector: WALK_SELECT },
+    trackMenuIcon(GBZ_TRACK),
+    { type: 'hover', selector: '[data-testid="cascading-submenu-walk"]' },
     { type: 'waitForSelector', selector: HG00133_ITEM },
     { type: 'click', selector: HG00133_ITEM },
+    // a radio row leaves both menu levels standing
+    { type: 'press', key: 'Escape' },
+    { type: 'press', key: 'Escape' },
+    { type: 'waitForSelector', selector: HG00133_ITEM, hidden: true },
+    { type: 'click', selector: 'body' },
+    PARK_CURSOR,
     { type: 'waitForSelector', selector: WALK_READOUT },
     { type: 'delay', ms: 3000 },
   ],
   annotations: [
-    { type: 'box', anchor: { selector: WALK_SELECT } },
     { type: 'box', anchor: { selector: WALK_READOUT } },
     // a kringle-copy node 60% of the way along HG00133's walk
     {
@@ -146,7 +154,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
       text: 'HG00133 walks this loop',
       fontSize: 18,
       leader: true,
-      anchor: { view: 1, graphNode: '165812967' },
+      anchor: { graphNode: '165812967' },
       dx: 120,
       dy: 0,
     },
@@ -165,24 +173,27 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
         type: 'LinearGenomeView',
         assembly: 'hg38',
         loc: LPA_WINDOW,
-        tracks: [hg38GeneLane(50), hprcBubblesLane(80)],
-      },
-      {
-        ...kiv2WalksGraphView(),
-        layoutMode: 'walkrows',
-        colorScheme: 'uniform',
-        // GRCh38's bar is the graph's own backbone nodes, the other rows are
-        // flat bars; at depth width its nodes swelled and thinned by carriage
-        nodeWidth: 'uniform',
-        contigThickness: 12,
-        paneHeight: 300,
+        tracks: [
+          hg38GeneLane(50),
+          hprcBubblesLane(80),
+          kiv2WalksGraphTrack({
+            layoutMode: 'walkrows',
+            colorScheme: 'uniform',
+            // GRCh38's bar is the graph's own backbone nodes, the other rows
+            // are flat bars; at depth width its nodes swelled and thinned by
+            // carriage
+            nodeWidth: 'uniform',
+            contigThickness: 12,
+            paneHeight: 300,
+          }),
+        ],
       },
     ],
   }),
-  readySelector: TOOLBAR_READY,
+  readySelector: GRAPH_DRAWN,
   readyTimeout: 240000,
   viewportWidth: 1400,
-  viewportHeight: 760,
+  viewportHeight: 670,
   hideTooltip: true,
   actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   annotations: [
@@ -217,50 +228,6 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
 // is a plain insertion, so it should halo as one insertion and nothing should
 // nest.
 const NNT_WINDOW = 'chr13:119,440,000-119,600,000'
-const NNT_REGION = {
-  refName: 'chr13',
-  assemblyName: 'mm39',
-  start: 119440000,
-  end: 119600000,
-}
-
-function mouseLinearView(loc: string, domain: { start: number; end: number }) {
-  return {
-    type: 'LinearGenomeView',
-    assembly: 'mm39',
-    loc,
-    tracks: [
-      {
-        trackId: 'mm39_ncbiRefSeq_ucsc',
-        type: 'LinearBasicDisplay',
-        height: 48,
-      },
-      {
-        trackId: 'mouse_minigraph_bubbles',
-        type: 'LinearBasicDisplay',
-        height: 52,
-      },
-      {
-        trackId: 'mouse_minigraph_segments',
-        type: 'LinearBasicDisplay',
-        showLabels: 'none',
-        height: 110,
-        color: referencePositionColor(domain),
-      },
-    ],
-  }
-}
-
-function mouseGraphView(region: typeof NNT_REGION, paneHeight: number) {
-  return {
-    type: 'GraphGenomeView',
-    loadedTrackId: 'mouse_minigraph_segments',
-    loadedRegion: region,
-    layoutMode: 'force',
-    colorScheme: 'reference-position',
-    paneHeight,
-  }
-}
 
 // Nnt's window haloed. C57BL/6J is the reference and carries the deletion, so
 // its one large allele halos as an insertion the other strains carry, with
@@ -270,14 +237,34 @@ const nntHalosSpec: ScreenshotSpec = {
   name: 'pangenome/graph_mouse_nnt_halos',
   url: sessionSpec(NONHUMAN_CONFIG, {
     views: [
-      mouseLinearView(NNT_WINDOW, NNT_REGION),
-      mouseGraphView(NNT_REGION, 420),
+      {
+        type: 'LinearGenomeView',
+        assembly: 'mm39',
+        loc: NNT_WINDOW,
+        tracks: [
+          {
+            trackId: 'mm39_ncbiRefSeq_ucsc',
+            type: 'LinearBasicDisplay',
+            height: 48,
+          },
+          {
+            trackId: 'mouse_minigraph_bubbles',
+            type: 'LinearBasicDisplay',
+            height: 52,
+          },
+          graphTrack('mouse_minigraph_segments', {
+            layoutMode: 'force',
+            colorScheme: 'reference-position',
+            paneHeight: 420,
+          }),
+        ],
+      },
     ],
   }),
-  readySelector: TOOLBAR_READY,
+  readySelector: GRAPH_DRAWN,
   readyTimeout: 300000,
   viewportWidth: 1400,
-  viewportHeight: 880,
+  viewportHeight: 680,
   hideTooltip: true,
   annotations: [
     {
@@ -286,7 +273,7 @@ const nntHalosSpec: ScreenshotSpec = {
       fontSize: 17,
       maxWidth: 330,
       leader: true,
-      anchor: { view: 1, graphNode: 's130043141+' },
+      anchor: { graphNode: 's130043141+' },
       dx: 160,
       dy: 40,
     },

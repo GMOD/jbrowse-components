@@ -9,7 +9,6 @@ color
 colorDomain
 colorScheme
 connectedView
-connectedViewId
 contigThickness
 diagonalizeAnchorRow
 displayMode
@@ -19,11 +18,12 @@ fadeThinAlignmentsMode
 geneTrackId
 height
 hideUnlabelled
-highlightedPath
 jexlFiltersSetting
-layoutMode
 lineWidth
+loadedRegion
+loadedTrackId
 marks
+maxRegionBp
 minAlignmentLength
 nodeWidth
 paneHeight
@@ -36,9 +36,6 @@ rows
 scales
 showAlignment
 showBranchLength
-showBubbles
-showDeletionEdges
-showGenes
 showGridlines
 showLegend
 showProteinTracks

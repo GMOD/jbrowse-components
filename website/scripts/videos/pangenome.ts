@@ -1,5 +1,6 @@
-// The graph tours, on the pangenome pages: the launch ROUTE, the layout
-// RE-LAYOUT, and the HPRC browse page's route from the HPRC page itself.
+// The graph tours, on the pangenome pages: the ROUTE that turns a segments
+// lane into the graph, the layout RE-LAYOUT, and the HPRC browse page's route
+// from the HPRC page itself.
 //
 // The two E. coli pages each have one tour that starts from a session holding
 // none of the page's data, because getting a graph into JBrowse IS the
@@ -13,10 +14,17 @@ import {
   PGGB_SEGMENTS_TRACK_JSON,
   pggbVideoFixtures,
 } from '../specs/graph-ecoli.ts'
-import { GRAPH_DRAWN, TOOLBAR_READY } from '../specs/graph-fixtures.ts'
+import { GRAPH_DRAWN, graphCutDrawn } from '../specs/graph-fixtures.ts'
 import { hprcClusterFixtures, hprcVideoFixtures } from '../specs/graph-hprc.ts'
 import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
-import { LOCATION_BOX, RUBBERBAND, displayReady, trackMenu } from './shared.ts'
+import {
+  DISPLAY_TYPES,
+  GRAPH_DISPLAY,
+  LOCATION_BOX,
+  cascade,
+  displayReady,
+  trackMenu,
+} from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -27,15 +35,15 @@ const {
   segmentsTrackId,
   locusWindow,
   tourWindow: PGGB_TOUR_WINDOW,
-  rowsLocus,
   rowsWindow,
+  rowsLocus,
   locusSession,
   pangenomeConfig: PGGB_PANGENOME_CONFIG,
   strainLaunchNode: PGGB_STRAIN_NODE,
+  strainGraph: PGGB_STRAIN_GRAPH,
   tierTrack: PGGB_TIER_TRACK_CONF,
   tierTrackId: PGGB_TIER_TRACK,
   tierWindow: PGGB_TIER_WINDOW,
-  tierLgvId: PGGB_TIER_LGV,
   tierCut: PGGB_TIER_CUT,
   tierIs5Node: PGGB_TIER_IS5_NODE,
   tierLaneColor: PGGB_TIER_LANE_COLOR,
@@ -43,18 +51,15 @@ const {
 
 // The graph alone, on the five-assembly config, which is the state a reader is
 // in when they have a subgraph open and want the donor rather than a projection
-// of it. Pinned by id so the menu clicks scope to the graph rather than to the
-// linear view the launch adds under it.
-const pggbGraphOnly = sessionSpec(PGGB_PANGENOME_CONFIG, {
+// of it: the node menu offers only assemblies the session has.
+const pggbStrainStart = sessionSpec(PGGB_PANGENOME_CONFIG, {
   sessionTracks: [segmentsTrack],
   views: [
     {
-      id: 'pggb_launch_graph',
-      type: 'GraphGenomeView',
-      loadedTrackId: segmentsTrackId,
-      loadedRegion: rowsLocus,
-      layoutMode: 'force',
-      colorScheme: 'stable-rank',
+      type: 'LinearGenomeView',
+      assembly: 'K12',
+      loc: rowsWindow,
+      tracks: [PGGB_STRAIN_GRAPH],
     },
   ],
 })
@@ -85,7 +90,7 @@ const pggbTourStart = sessionSpec(PGGB_CONFIG, {
 
 // The same shape on the Minigraph-Cactus graph, which is the whole of what
 // pangenome_cactus had no tour for: the page's graph section ended on a figure
-// of a subgraph and a sentence naming the menu path that cuts one.
+// of a subgraph and a sentence naming the menu path that draws one.
 const cactusTourStart = sessionSpec(cactusVideoFixtures.config, {
   sessionTracks: [cactusVideoFixtures.genesTrack],
   views: [
@@ -100,22 +105,21 @@ const cactusTourStart = sessionSpec(cactusVideoFixtures.config, {
   ],
 })
 
-// BOTH TIERS OVER ONE WINDOW. 100 kb is 60x what the fine index can draw, so
-// the segments lane opens on its own density gate, the tier lane draws eleven
-// bubbles, and the graph below follows the linear view on the tier the
-// segments track names under `coarse`. The tour's whole move is zooming the
-// linear view in without a coordinate being typed, and the graph re-cutting
-// from the segments as it follows.
+// BOTH TIERS OVER ONE WINDOW. At 100 kb the graph track is past its segments
+// track's `coarse` handover, so it draws the tier the track names, one node per
+// bubble, under the tier lane of the same bubbles. The tour's whole move is
+// zooming the linear view in without a coordinate being typed, and the graph
+// re-cutting from the segments once it passes the handover.
 //
-// The tier lane carries pggb_bubble_tier's own ramp over the same region, so the
-// bubble the figure arrows keeps its colour when the tour lands on it, and the
-// still and the clip are one window rather than two.
+// The tier lane carries pggb_bubble_tier's own ramp over the same region, and
+// the graph's ramp is pinned to it, so the bubble the figure arrows keeps its
+// colour when the tour lands on it, and the still and the clip are one window
+// rather than two.
 const pggbTierStart = sessionSpec(PGGB_CONFIG, {
   sessionTracks: [genesTrack, PGGB_TIER_TRACK_CONF, segmentsTrack],
   views: [
     {
       type: 'LinearGenomeView',
-      id: PGGB_TIER_LGV,
       assembly: 'K12',
       loc: PGGB_TIER_WINDOW,
       tracks: [
@@ -127,32 +131,11 @@ const pggbTierStart = sessionSpec(PGGB_CONFIG, {
           height: 50,
           color: PGGB_TIER_LANE_COLOR,
         },
-        // Tall enough for the too-large banner the lane opens with, which is a
-        // row of text and a Force load button rather than the one row of blocks
-        // it holds once the tour has landed.
-        {
-          trackId: segmentsTrackId,
-          type: 'LinearBasicDisplay',
-          showLabels: 'none',
-          height: 70,
-        },
+        PGGB_TIER_CUT,
       ],
-    },
-    {
-      type: 'GraphGenomeView',
-      ...PGGB_TIER_CUT,
-      // 'auto' IS the anchored layout, and it is the figure's: a tier is a chain
-      // of backbone and bubble, so there is no shape for a force solver to find
-      // and an anchored row puts each bubble under its own coordinate.
-      layoutMode: 'auto',
-      colorScheme: 'reference-position',
     },
   ],
 })
-
-// The layout dropdown's own row, which is the same element in every graph view.
-const LAYOUT_SELECT = '[data-testid="graph-layout-select"]'
-const FOLLOW_STATUS = '[data-testid="graph-follow-status"]'
 
 const {
   haplotype: HAPLOTYPE,
@@ -161,10 +144,7 @@ const {
   c4Window: HPRC_C4_WINDOW,
   mhcWindow: HPRC_MHC_WINDOW,
   tierSession,
-  tierGraphViewId: TIER_GRAPH_VIEW,
   mhcBubbleNode: MHC_BUBBLE,
-  segmentsTrackName: SEGMENTS_TRACK_NAME,
-  mhcSelection: MHC_SELECTION,
 } = hprcVideoFixtures
 
 // What the add-track tours drive, named here because a menu label and a testid read
@@ -175,6 +155,7 @@ const SAMPLE_INPUT = '[data-testid="graph-sample-input"]'
 const TRACK_NAME_INPUT = '[data-testid="graph-track-name-input"]'
 const HIGHLIGHT_ITEM = 'Highlight in hg38'
 const HAPLOTYPE_GENES_LABEL = 'CAT genes (NA20809 haplotype 2, HPRC release 2)'
+const WORDMARK = '[aria-label="JBrowse"]'
 
 // The form mints the trackId from the name (`makeTrackId`: the slug plus a
 // timestamp), so a tour finds the track it added by the slug alone.
@@ -252,8 +233,8 @@ function addGraphTrackSteps(json: string): VideoStep[] {
 // NARROWING BY TYPING, which every form tour does next and none of them could
 // skip. The drawer took ~400 px off the linear view while it was open and an LGV
 // keeps its bp-per-pixel across a resize, so the window standing once the widget
-// dismisses is wider than the one the session opened at -- and a launch reads
-// `dynamicBlocks`, so without this the cut is whatever the drawer left behind.
+// dismisses is wider than the one the session opened at -- and the graph cuts
+// the view's window, so without this the cut is whatever the drawer left behind.
 function navigateSteps(window: string): VideoStep[] {
   return [
     {
@@ -268,26 +249,34 @@ function navigateSteps(window: string): VideoStep[] {
   ]
 }
 
-// THE LAUNCH, off the segments lane's own menu: the cascade whose existence is
-// the point of indexing the graph this way, since the item appears for any track
-// whose adapter can cut a subgraph and needs no graph track in the view.
-function launchGraphSteps(menu: string): VideoStep[] {
+// THE GRAPH, off the segments lane's own menu: Display types lists the graph
+// beside the lane for any track whose adapter can cut a subgraph, and picking
+// it cuts the window on screen. A Display types pick closes its own cascade.
+function drawGraphSteps(menu: string): VideoStep[] {
   return [
     {
       type: 'click',
       selector: menu,
-      say: 'Cut the window on screen out as a subgraph',
+      say: 'Redraw the lane as the graph of the window',
       hold: 700,
     },
-    { type: 'waitForText', text: 'Launch' },
-    { type: 'click', text: 'Launch', hold: 700 },
-    { type: 'waitForText', text: 'Graph genome view (this region)' },
-    {
-      type: 'click',
-      text: 'Graph genome view (this region)',
-    },
+    { type: 'waitForSelector', selector: DISPLAY_TYPES },
+    { type: 'click', selector: DISPLAY_TYPES, hold: 700 },
+    { type: 'waitForSelector', selector: GRAPH_DISPLAY },
+    { type: 'click', selector: GRAPH_DISPLAY },
   ]
 }
+
+// A radio row of the graph's own menu leaves the cascade standing over the
+// drawing it changed. One click on the root menu's backdrop takes every level,
+// and the wordmark then blurs the menu icon, whose tooltip outlives the menu.
+const leaveTheMenu = (row: string): VideoStep[] => [
+  { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
+  { type: 'waitForSelector', selector: row, hidden: true },
+  { type: 'click', selector: WORDMARK, hold: 0 },
+  { type: 'waitForText', text: 'Track settings', hidden: true },
+]
+
 const GENES_READY = displayReady('hg38_ncbiRefSeq_ucsc-LinearBasicDisplay')
 const PGGB_FORM_READY = formDisplayReady(PGGB_SEGMENTS_TRACK_JSON)
 const CACTUS_FORM_READY = formDisplayReady(
@@ -298,62 +287,29 @@ const CACTUS_FORM_READY = formDisplayReady(
 // `<trackId>-<displayType>` (packages/core/src/util/tracks.ts), which is the one
 // id both a bare config and a `displayDefaults` one land on.
 const K12_GENES_READY = displayReady('K12_genes-LinearBasicDisplay')
-const PGGB_SEGMENTS_READY = displayReady(
-  `${segmentsTrackId}-LinearBasicDisplay`,
-)
-// Sample rows have arrived: the labels, not just the toolbar, since the layout
-// runs after the graph loads and the toolbar is up before there is a row to
-// label.
-const ROWS_DRAWN = `body:has([data-testid="graph-row-label"]) ${LAYOUT_SELECT}`
-// And the force drawing has replaced them. TOOLBAR_READY cannot say this on a
-// pane that was already drawn: `data-geometry-vertices` is non-empty from the
-// sample-rows layout onwards, so it is satisfied the instant the dropdown is
-// picked. The row labels going away is the re-layout itself.
-const FORCE_DRAWN = `body:has(${GRAPH_DRAWN}):not(:has([data-testid="graph-row-label"])) ${LAYOUT_SELECT}`
-// A SECOND graph pane has drawn. The tier tour opens with the tier pane
-// already drawn, so GRAPH_DRAWN is satisfied before the fine cut exists; each
-// view's container carries its id, and the tier pane's is pinned by the spec,
-// so the new pane is the drawn one that is not it.
-const FINE_GRAPH_DRAWN = `[data-testid^="view-container-"]:not([data-testid="view-container-${TIER_GRAPH_VIEW}"]) ${GRAPH_DRAWN}`
-// The rubberband's `Graph genome view (this selection)` is a submenu here, one
-// entry per track that can cut the window, because the session holds two: the
-// tier the pane above was cut from and the fine index. Both by testid, since
-// the segments track's name is also its lane's label in the view above.
-const SELECTION_SUBMENU =
-  '[data-testid="cascading-submenu-graph_genome_view_(this_selection)"]'
-const SELECTION_FINE_ENTRY = `[data-testid="cascading-menuitem-${SEGMENTS_TRACK_NAME.toLowerCase().replaceAll(/\s+/g, '_')}"]`
+// Sample rows have arrived: the labels, since the layout runs after the cut
+// lands and a row needs its label.
+const ROWS_DRAWN = `body:has([data-testid="graph-row-label"]) ${GRAPH_DRAWN}`
+// And the force drawing has replaced them: the row labels going away is the
+// re-layout itself.
+const FORCE_LAYOUT_ROW = cascade('menuitem', 'Force-directed layout')
+const FORCE_DRAWN = `body:not(:has([data-testid="graph-row-label"])) [data-testid="linear-graph-display"][data-layout="force"][data-node-count]`
 
 export const pangenomeVideos: VideoSpec[] = [
-  // THE ROUTE, FROM NOTHING. Every graph pane in pangenome_ecoli.md was cut this
+  // THE ROUTE, FROM NOTHING. Every graph in pangenome_ecoli.md is drawn this
   // way and the page can only say so in a sentence; this is the sentence
-  // happening, from a session that does not have the graph yet.
-  //
-  // It used to start with the segments lane already in the view and film the
-  // launch alone, which left the step before it — the one a reader is actually
-  // stuck on, since nothing in the file-or-URL workflow can produce this track —
-  // as a fence on the page and nothing more. The launch is still the payoff and
-  // the clip still ends on the graph, so the last thing in the frame is the
-  // thing the route is for.
+  // happening, from a session that does not have the graph yet: the track added
+  // through the graph form, the window narrowed, the lane redrawn as the graph.
   {
     name: 'pangenome/pggb_subgraph_launch',
     description:
-      "A pggb graph from a K12 session that has none of it: add the page's track through the graph form, narrow to the IS5 element, and cut the window on screen as a subgraph",
+      "A pggb graph from a K12 session that has none of it: add the page's track through the graph form, narrow to the IS5 element, and redraw the lane as the graph of the window",
     url: pggbTourStart,
-    // Sized to the state the tour ENDS in, which is the linear view plus the
-    // graph pane the launch adds: the run reports 276px of app at the first
-    // frame and 1103px at the last, and a video has one frame for both. The
-    // page background over that first number is the cost of filming a launch,
-    // and it is the cheaper half of the trade — a frame sized to the opening
-    // cuts the graph the tour exists to show.
-    //
-    // It grew by 50px when the tour started pasting the track rather than
-    // opening with it: a pasted config takes the display's default height where
-    // the old session pinned the lane at 50, and pinning it back would mean a
-    // `displays` array in the fence a reader copies.
-    viewportHeight: 1110,
-    // The gene lane, since it is the only thing in the opening session. The
-    // track menu this tour used to gate on belongs to a track that does not
-    // exist yet.
+    // Sized to the state the tour ENDS in, the linear view with the graph as
+    // its track; the opening frame is the gene lane alone. Re-measure off the
+    // run's content report.
+    viewportHeight: 720,
+    // The gene lane, since it is the only thing in the opening session.
     readySelector: K12_GENES_READY,
     readyTimeout: 120000,
     steps: [
@@ -366,7 +322,7 @@ export const pangenomeVideos: VideoSpec[] = [
       },
       // the lane the fence produced, at the width it was pasted at: a base-level
       // graph is a node every ~17 bp, so what arrives is a mat, and that is the
-      // reason the next step is a narrowing rather than a launch
+      // reason the next step is a narrowing
       { type: 'delay', ms: 2600 },
       ...navigateSteps(locusWindow),
       {
@@ -375,13 +331,14 @@ export const pangenomeVideos: VideoSpec[] = [
         timeout: 120000,
       },
       { type: 'delay', ms: 1800 },
-      ...launchGraphSteps(formTrackMenu(PGGB_SEGMENTS_TRACK_JSON)),
+      ...drawGraphSteps(formTrackMenu(PGGB_SEGMENTS_TRACK_JSON)),
       {
         type: 'waitForSelector',
-        selector: TOOLBAR_READY,
+        selector: GRAPH_DRAWN,
         timeout: 120000,
         cut: true,
       },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       { type: 'delay', ms: 2000 },
     ],
     tailMs: 2500,
@@ -389,7 +346,7 @@ export const pangenomeVideos: VideoSpec[] = [
   // THE SAME ROUTE ON THE OTHER BUILDER, and the only tour on pangenome_cactus.
   // That page walks a reader through `cactus-pangenome`, six linear projections
   // and an offline index, and then hands them a figure of a subgraph with one
-  // sentence naming the menu path that cuts one.
+  // sentence naming the menu path that draws one.
   //
   // Filmed on the IS1 element past flhD, which is the locus the page's own graph
   // figure is taken at, so the clip and the figure are one window: K12 carries
@@ -400,13 +357,11 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome_cactus/subgraph_launch',
     description:
-      "The Minigraph-Cactus graph into an empty K12 session and back out as a subgraph: add the page's track through the graph form, narrow to the IS1 element past flhD, and launch the graph view",
+      "The Minigraph-Cactus graph into an empty K12 session and out as a graph: add the page's track through the graph form, narrow to the IS1 element past flhD, and redraw the lane as the graph of the window",
     url: cactusTourStart,
-    // Same trade as the pggb tour above, and the same numbers: the run reports
-    // 276px of app at the first frame and 1103px at the last, because the two
-    // tours build the same three things at the same default heights and the
-    // graph pane fills what is left.
-    viewportHeight: 1110,
+    // Same trade as the pggb tour above: the two tours build the same things at
+    // the same default heights.
+    viewportHeight: 720,
     readySelector: K12_GENES_READY,
     readyTimeout: 120000,
     steps: [
@@ -425,13 +380,14 @@ export const pangenomeVideos: VideoSpec[] = [
         timeout: 120000,
       },
       { type: 'delay', ms: 1800 },
-      ...launchGraphSteps(formTrackMenu(cactusVideoFixtures.segmentsTrackJson)),
+      ...drawGraphSteps(formTrackMenu(cactusVideoFixtures.segmentsTrackJson)),
       {
         type: 'waitForSelector',
-        selector: TOOLBAR_READY,
+        selector: GRAPH_DRAWN,
         timeout: 120000,
         cut: true,
       },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       { type: 'delay', ms: 2000 },
     ],
     tailMs: 2500,
@@ -441,113 +397,80 @@ export const pangenomeVideos: VideoSpec[] = [
   // the fine cut, and how a reader gets from one to the other is nowhere.
   //
   // The move is the NODE'S OWN MENU. A tier node knows the K12 span it stands
-  // for, and `showInLinearView` navigates the connected linear view rather than
-  // adding one, so the whole route is a hover and two clicks, and the reader
-  // never types a coordinate. The graph follows that view in and re-cuts from
-  // the segments once the zoom passes the track's `coarse` handover. That is
-  // also why this is not a second filming of `pggb_subgraph_launch`: no paste,
-  // no location box, no launch.
-  //
-  // THE OPENING FRAME IS THE DENSITY GATE ON PURPOSE, which is the one place
-  // that message is the state the page describes rather than an accident: the
-  // section is titled "when the window is wider than the graph can draw", and
-  // 100 kb of a graph cut every ~17 bp is 60x the fine index's own width. The
-  // tour navigates IN, and the banner going away is what the last step waits on.
+  // for, and its `Open in K12` navigates the linear view the graph is a track
+  // of, so the whole route is a hover and two clicks, and the reader never types
+  // a coordinate. Once the zoom passes the segments track's `coarse` handover
+  // the graph re-cuts from the segments. That is also why this is not a second
+  // filming of `pggb_subgraph_launch`: no paste, no location box, no display
+  // switch.
   {
     name: 'pangenome/tier_to_fine',
     description:
-      "The coarse tier's IS5 bubble taken down to the segments: hover the node for the K12 span it collapses, then take its Open in K12 entry, which lands the linear view on that span while the following graph re-cuts from the segments",
+      "The coarse tier's IS5 bubble taken down to the segments: hover the node for the K12 span it collapses, then take its Open in K12 entry, which lands the linear view on that span while the graph re-cuts from the segments",
     url: pggbTierStart,
-    // Measured on the static tier pane, which sized to its two rank rows; the
-    // fine cut the tour now ends on can carry more, so re-read the run's
-    // content report before trusting this.
-    viewportHeight: 810,
-    readySelector: TOOLBAR_READY,
+    // The fine cut the tour ends on is taller than the tier's two rows; re-read
+    // the run's content report before trusting this.
+    viewportHeight: 760,
+    readySelector: graphCutDrawn('coarse'),
     readyTimeout: 120000,
-    // Long, because the opening frame has to have SETTLED INTO its banner: the
-    // segments lane measures the fetch it is refusing, and a shorter settle
-    // films an empty lane that fills with a warning a second later.
     steps: [
       // the pointer off the overview's cytoband strip, where the camera parks it
-      { type: 'hover', selector: '[aria-label="JBrowse"]' },
+      { type: 'hover', selector: WORDMARK },
       // The graph's own tooltip, which is the page's "hover a node for the
       // segments it collapsed" sentence happening -- and the hover also syncs a
-      // band into the linear view above, so the frame says where in the 100 kb
-      // the bubble is before anything has been clicked.
+      // band into the lanes above, so the frame says where in the 100 kb the
+      // bubble is before anything has been clicked.
       {
         type: 'hover',
-        anchor: { view: 1, graphNode: PGGB_TIER_IS5_NODE },
+        anchor: { graphNode: PGGB_TIER_IS5_NODE },
         say: 'Hover a node for the segments it collapses',
         hold: 3200,
       },
       {
         type: 'rightclick',
-        anchor: { view: 1, graphNode: PGGB_TIER_IS5_NODE },
+        anchor: { graphNode: PGGB_TIER_IS5_NODE },
         say: "Open the bubble's span in the linear view",
         hold: 900,
       },
       { type: 'waitForText', text: 'Open in K12' },
       { type: 'click', text: 'Open in K12' },
-      // The banner going away is the app's own answer, and the display's ready
-      // phase is not: a gated display reports ready while it is refusing to
-      // fetch, so waiting on that alone would put the camera back on the lane
-      // before it had drawn a block.
-      {
-        type: 'waitForText',
-        text: 'Too many features',
-        hidden: true,
-        timeout: 120000,
-      },
       {
         type: 'waitForSelector',
-        selector: PGGB_SEGMENTS_READY,
+        selector: graphCutDrawn('fine'),
         timeout: 120000,
       },
-      {
-        type: 'waitForSelector',
-        selector: `${FOLLOW_STATUS}::-p-text(coarse tier)`,
-        hidden: true,
-        timeout: 120000,
-      },
-      { type: 'waitForAppSettled' },
+      { type: 'waitForAppSettled', timeout: 120000, cut: true },
       // the pointer off the canvas, or the graph's hover tooltip stands over the
       // frame the poster is taken from
-      { type: 'hover', selector: '[aria-label="JBrowse"]' },
+      { type: 'hover', selector: WORDMARK },
       {
         type: 'delay',
         ms: 2500,
-        say: 'The graph follows the view down to the segments',
+        say: 'Zoomed past the handover, the graph re-cuts from the segments',
       },
     ],
     tailMs: 3000,
   },
   // THE RE-LAYOUT, on the 460 bp pangenome/pggb_locus_sample_rows draws in
   // Sample rows. The clip carries what a still cannot: that the force drawing
-  // is the same nodes, which is the whole of what the dropdown does.
+  // is the same nodes, which is the whole of what the Layout menu does.
   //
-  // IT ENDS ON THE FORCE DRAWING, and it used to switch back. The two states
-  // are 440px apart and one frame has to hold both, so whichever one the clip
-  // is left standing in is the one the tail and the poster carry: switching
-  // back put a third of every ending frame under page background. Ending on
-  // the taller state moves that slack to the OPENING, where it is four seconds
-  // rather than the tail's six and a half and is not the frame the poster comes
-  // from — the trade pggb_subgraph_launch and pggb_out_to_strain above already
-  // take on this page. Seeing the correspondence twice was not worth the poster.
+  // IT ENDS ON THE FORCE DRAWING. The two states differ in height and one frame
+  // has to hold both, so whichever one the clip is left standing in is the one
+  // the tail and the poster carry: ending on the taller state moves the slack to
+  // the OPENING, which is not the frame the poster comes from.
   {
     name: 'pangenome/pggb_layout_switch',
     description:
-      'The same 460 bp of the pggb graph in both layouts: sample rows through the Layout dropdown to force-directed',
+      "The same 460 bp of the pggb graph in both layouts: sample rows through the graph track's Layout menu to force-directed",
     url: locusSession('samplerows', {
       region: rowsLocus,
       window: rowsWindow,
       mafLane: true,
     }),
-    // Sized to the FORCE drawing, which is the state the tour ends in: the run
-    // reports 802px of app in sample rows at the first frame and 1242px at the
-    // last. The drawing is a backbone with the alternate routes hanging off it
-    // and it uses every one of those pixels, so this is not a frame to give
-    // back — a viewport sized to the opening cuts the payoff in half.
-    viewportHeight: 1250,
+    // Sized to the FORCE drawing, which is the state the tour ends in.
+    // Re-measure off the run's content report.
+    viewportHeight: 1160,
     readySelector: ROWS_DRAWN,
     readyTimeout: 120000,
     steps: [
@@ -555,18 +478,21 @@ export const pangenomeVideos: VideoSpec[] = [
       // it: the view writes the position under the pointer into its own title
       // bar, and the opening frame carried a coordinate chip for a locus 1.3 Mb
       // from anywhere this tour goes.
-      { type: 'hover', selector: '[aria-label="JBrowse"]' },
+      { type: 'hover', selector: WORDMARK },
       // the rows held still long enough to be read against the MAF lane above
       // them, which is what the paragraph before the embed is about
       { type: 'delay', ms: 2500 },
       {
         type: 'click',
-        selector: LAYOUT_SELECT,
+        selector: trackMenu(segmentsTrackId),
         say: 'Re-lay the same rows out with the force engine',
         hold: 800,
       },
-      { type: 'waitForText', text: 'Force-directed layout' },
-      { type: 'click', text: 'Force-directed layout' },
+      { type: 'waitForSelector', selector: cascade('submenu', 'Layout') },
+      { type: 'click', selector: cascade('submenu', 'Layout'), hold: 800 },
+      { type: 'waitForSelector', selector: FORCE_LAYOUT_ROW },
+      { type: 'click', selector: FORCE_LAYOUT_ROW, hold: 800 },
+      ...leaveTheMenu(FORCE_LAYOUT_ROW),
       {
         type: 'waitForSelector',
         selector: FORCE_DRAWN,
@@ -581,18 +507,19 @@ export const pangenomeVideos: VideoSpec[] = [
   },
   // THE BROWSE PAGE'S ROUTE, from the HPRC page itself. The graph launch is a
   // target="_blank" link, so the tour follows it into the new tab and films the
-  // session it opens: the graph following the linear view to C4 and out to the
-  // bubble tier over the whole chromosome, then back to MHC class II and one
-  // allele taken out to the haplotype that contributed it.
+  // session it opens: one linear view whose bottom track is the graph, re-cut as
+  // the view goes to C4 and out to the bubble tier over the whole chromosome,
+  // then back to MHC class II and one allele taken out to the haplotype that
+  // contributed it.
   {
     name: 'pangenome/hprc_browse',
     description:
-      'HPRC release 2 from its genomes.jbrowse.org page: the HLA / MHC graph launch, the graph following the linear view to C4 and out to the bubble tier across chromosome 6, and one allele highlighted in hg38 and opened on the haplotype that contributed it',
+      'HPRC release 2 from its genomes.jbrowse.org page: the HLA / MHC graph launch, the graph track re-cut as the view goes to C4 and out to the bubble tier across chromosome 6, and one allele highlighted in hg38 and opened on the haplotype that contributed it',
     url: HPRC_PAGE,
     noSession: true,
     readyText: 'Whole chromosome',
     readyTimeout: 120000,
-    viewportHeight: 1300,
+    viewportHeight: 1110,
     steps: [
       {
         type: 'hover',
@@ -603,27 +530,27 @@ export const pangenomeVideos: VideoSpec[] = [
       { type: 'click', selector: MHC_GRAPH_LINK, opensTab: true },
       {
         type: 'waitForSelector',
-        selector: TOOLBAR_READY,
+        selector: GRAPH_DRAWN,
         timeout: 240000,
         cut: true,
       },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       {
         type: 'delay',
         ms: 3000,
-        say: 'MHC class II, the graph anchored under the linear view',
+        say: 'MHC class II, the graph anchored under the lanes',
       },
       {
         type: 'type',
         selector: LOCATION_BOX,
         value: HPRC_C4_WINDOW,
         clear: true,
-        say: 'Type the C4 window, and the graph follows',
+        say: 'Type the C4 window, and the graph re-cuts',
       },
       { type: 'press', key: 'Enter' },
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'delay', ms: 3000, say: 'C4, cut again under the linear view' },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
+      { type: 'delay', ms: 3000, say: 'C4, cut again under the lanes' },
       {
         type: 'type',
         selector: LOCATION_BOX,
@@ -632,8 +559,14 @@ export const pangenomeVideos: VideoSpec[] = [
         say: 'Out to the whole chromosome',
       },
       { type: 'press', key: 'Enter' },
+      {
+        type: 'waitForSelector',
+        selector: graphCutDrawn('coarse'),
+        timeout: 240000,
+        cut: true,
+      },
       { type: 'waitForAppSettled', timeout: 240000, cut: true },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       {
         type: 'delay',
         ms: 3500,
@@ -647,12 +580,18 @@ export const pangenomeVideos: VideoSpec[] = [
         say: 'Back to MHC class II',
       },
       { type: 'press', key: 'Enter' },
+      {
+        type: 'waitForSelector',
+        selector: graphCutDrawn('fine'),
+        timeout: 180000,
+        cut: true,
+      },
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       { type: 'delay', ms: 2500, say: 'The segments again' },
       {
         type: 'rightclick',
-        anchor: { view: 1, graphNode: HAPLOTYPE_NODE },
+        anchor: { graphNode: HAPLOTYPE_NODE },
         say: 'Right-click the allele under HLA-DRB5',
         hold: 900,
       },
@@ -661,8 +600,8 @@ export const pangenomeVideos: VideoSpec[] = [
       { type: 'delay', ms: 2500 },
       {
         type: 'rightclick',
-        anchor: { view: 1, graphNode: HAPLOTYPE_NODE },
-        say: `Open in ${HAPLOTYPE}`,
+        anchor: { graphNode: HAPLOTYPE_NODE },
+        say: 'Now open it on the haplotype that contributed it',
         hold: 900,
       },
       { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
@@ -677,7 +616,7 @@ export const pangenomeVideos: VideoSpec[] = [
       },
       { type: 'hover', text: HAPLOTYPE_GENES_LABEL, hold: 0 },
       { type: 'delay', ms: 4000, cut: true },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       {
         type: 'delay',
         ms: 2500,
@@ -686,7 +625,7 @@ export const pangenomeVideos: VideoSpec[] = [
       ...launchedZoomOut(6).map((step, i) =>
         i === 0 ? { ...step, say: 'Zoom out for its neighbours' } : step,
       ),
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       { type: 'delay', ms: 3000 },
     ],
     tailMs: 3500,
@@ -704,20 +643,18 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/pggb_out_to_strain',
     description:
-      "A CFT073 allele opened on CFT073's own coordinates: right-click the node, take its Open in entry, and read the deletion from the donor's side",
-    url: pggbGraphOnly,
-    // Sized to the state the tour ENDS in: the graph pane plus the linear view
-    // the launch adds under it. The run reports 736px of app at the first frame
-    // and 994px at the last, so the opening state carries page background under
-    // it — the cost of filming a launch, the same trade pggb_subgraph_launch
-    // takes and for the same reason.
+      "A CFT073 allele opened on CFT073's own coordinates: right-click the node in the graph track, take its Open in entry, and read the deletion from the donor's side",
+    url: pggbStrainStart,
+    // Sized to the state the tour ENDS in: the graph's view plus the linear
+    // view the launch adds under it, so the opening state carries page
+    // background under it. Re-measure off the run's content report.
     viewportHeight: 1000,
-    readySelector: TOOLBAR_READY,
+    readySelector: GRAPH_DRAWN,
     readyTimeout: 120000,
     steps: [
       {
         type: 'rightclick',
-        anchor: { view: 0, graphNode: PGGB_STRAIN_NODE },
+        anchor: { graphNode: PGGB_STRAIN_NODE },
         say: 'Open this allele on the CFT073 assembly',
         hold: 900,
       },
@@ -787,90 +724,60 @@ export const pangenomeVideos: VideoSpec[] = [
     tailMs: 4000,
   },
   // THE LADDER ON THE HUMAN GRAPH: the bubble tier over a region, down to a
-  // bubble, down to the fine index. pangenome/tier_to_fine films the first rung
-  // on E. coli; here the tier is two megabases of the MHC, the bubble is the
-  // class II one, and the tour goes on to the fine cut, which is the rung the
-  // page states in one sentence and pictures at neither end. Why the tier is
-  // not the whole chromosome the figure draws is at hprcTierSession.
+  // bubble and the fine index under it. pangenome/tier_to_fine films the same
+  // move on E. coli; here the tier is two megabases of the MHC and the bubble is
+  // the class II one. Why the tier is not the whole chromosome the figure draws
+  // is at hprcTierSession.
   //
-  // What the clip shows that the prose can only assert: the fine cut arrives
-  // as a SECOND pane under the tier's, because the session opens the tier pane
-  // without the follow, which is the state Pin leaves on the HPRC page.
+  // One move does both rungs: the node's `Open in hg38` lands the linear view
+  // on the bubble's span, which is past the segments track's `coarse` handover,
+  // so the graph track re-cuts from the fine index in the same frame.
   {
     name: 'pangenome/hprc_tier_to_fine',
     description:
-      'The HPRC bubble tier over the MHC taken down to segment resolution: the class II node opened in the linear view, then a drag across that span cut again from the fine index',
+      "The HPRC bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in the linear view, and the graph track re-cut from the fine index at the bubble's span",
     url: tierSession(),
-    // Sized to the state the tour ENDS in: the linear view, the two-row tier
-    // pane, and the force pane the fine cut adds under both, which arrives at
-    // the plugin's full pane height since nothing in a launch can pin it. Off
-    // the run's own tallest-frame report at 1300.
-    viewportHeight: 1490,
-    readySelector: TOOLBAR_READY,
+    // Sized to the state the tour ENDS in, the fine cut under the lanes, which
+    // is taller than the tier's rows. Re-measure off the run's content report.
+    viewportHeight: 850,
+    readySelector: graphCutDrawn('coarse'),
     readyTimeout: 300000,
     steps: [
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       {
         type: 'delay',
         ms: 2500,
         say: 'The MHC, one node per bubble',
       },
-      // the hover also syncs a band into the linear view above, so the frame
-      // says where on the chromosome the bubble is before anything is clicked
+      // the hover also syncs a band into the lanes above, so the frame says
+      // where on the chromosome the bubble is before anything is clicked
       {
         type: 'hover',
-        anchor: { view: 1, graphNode: MHC_BUBBLE },
+        anchor: { graphNode: MHC_BUBBLE },
         say: 'Hover the MHC class II bubble',
         hold: 3200,
       },
       {
         type: 'rightclick',
-        anchor: { view: 1, graphNode: MHC_BUBBLE },
-        say: 'Open in hg38',
+        anchor: { graphNode: MHC_BUBBLE },
+        say: "Open the bubble's span in the linear view",
         hold: 900,
       },
       { type: 'waitForText', text: 'Open in hg38' },
       { type: 'click', text: 'Open in hg38' },
-      // the navigation and the refetch it starts, then the gene lane's own paint
-      { type: 'waitForAppSettled', timeout: 180000 },
-      { type: 'waitForSelector', selector: GENES_READY, timeout: 180000 },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      {
-        type: 'delay',
-        ms: 2500,
-        say: "The linear view lands on the bubble's own span",
-      },
-      {
-        type: 'drag',
-        fromAnchor: { locus: MHC_SELECTION.start, band: RUBBERBAND },
-        toAnchor: { locus: MHC_SELECTION.end, band: RUBBERBAND },
-        say: 'Drag across the scale bar',
-        hold: 900,
-      },
-      { type: 'waitForSelector', selector: SELECTION_SUBMENU },
-      {
-        type: 'click',
-        selector: SELECTION_SUBMENU,
-        say: 'Graph genome view (this selection)',
-        hold: 1200,
-      },
-      { type: 'waitForSelector', selector: SELECTION_FINE_ENTRY },
-      {
-        type: 'click',
-        selector: SELECTION_FINE_ENTRY,
-        say: 'Cut it from the fine index',
-      },
       {
         type: 'waitForSelector',
-        selector: FINE_GRAPH_DRAWN,
+        selector: graphCutDrawn('fine'),
         timeout: 180000,
-        cut: true,
       },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      // the navigation and the refetch it starts, then the gene lane's own paint
+      { type: 'waitForAppSettled', timeout: 180000, cut: true },
+      { type: 'waitForSelector', selector: GENES_READY, timeout: 180000 },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       {
         type: 'delay',
         ms: 3000,
-        say: 'The same window, one node per segment',
+        say: "At the bubble's own span, one node per segment",
       },
     ],
     tailMs: 3500,

@@ -1,11 +1,7 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
-import {
-  TOOLBAR_READY,
-  local,
-  referencePositionColor,
-} from './graph-fixtures.ts'
+import { GRAPH_DRAWN, graphTrack, local } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -184,27 +180,16 @@ const HPRC_MAF_ROWS = [
   'HG00321.2',
 ]
 
-// The C4 window maf_hprc_pangenome opens, as the two shapes the session needs:
-// a locus for the linear view and a region for the subgraph the graph pane cuts.
-// It is pangenome/hprc_graph_anatomy's window, so part 2's pane is the cut part 1
-// labels.
-// One pair of numbers, because the reference-position ramp below is a function
-// of the graph's own loadedRegion — a second copy is how a block above and a
-// node below come out different colors for the same bp.
+// The C4 window maf_hprc_pangenome opens. It is pangenome/hprc_graph_anatomy's
+// window, so part 2's graph is the cut part 1 labels.
 const HPRC_C4_LOCUS = 'chr6:31,980,000-32,050,000'
-const HPRC_C4_REGION = {
-  refName: 'chr6',
-  assemblyName: 'hg38',
-  start: 31980000,
-  end: 32050000,
-}
 
 // CYP21A1P and TNXA, the pseudogene pair of the second RCCX module. Marked
 // because it is the span the alignment rows disagree about: read off the drawn
 // figure, seven of the thirty-two haplotypes have no aligned sequence there,
 // one each of HG00099, HG00280, HG00290, HG00320 and HG00321 and both of
-// HG00146. A band there crosses the genes, the segments and the callset in one
-// column.
+// HG00146. A band there crosses the genes, the callset and the alignment in
+// one column.
 const HPRC_C4_MARKED = 'chr6:32,005,691-32,011,057'
 
 // The alignment itself, as a session track over the graph config: the fixture
@@ -773,7 +758,6 @@ export const mafSpecs: ScreenshotSpec[] = [
   // around it are the other products of the same release, on one axis:
   //
   //   genes          C4A, CYP21A1P, TNXA, C4B, CYP21A2 -- the RCCX module
-  //   rGFA segments  the graph, projected onto the reference
   //   callset        464 haplotypes clustered by genotype
   //   alignment      32 of those haplotypes as rows of sequence, clustered
   //   graph          the same window cut as a Bandage drawing
@@ -816,17 +800,6 @@ export const mafSpecs: ScreenshotSpec[] = [
               showOnlyGenes: true,
               geneGlyphMode: 'longestCoding',
               heightMode: 'grow',
-            },
-            {
-              // The graph as a lane, colored by the same reference-position ramp
-              // the pane below uses, so a block here and a node there are the
-              // same color for the same bp. Domain is the graph's loadedRegion,
-              // which is why both read HPRC_C4_REGION.
-              trackId: 'hprc_minigraph_segments',
-              type: 'LinearBasicDisplay',
-              showLabels: 'none',
-              heightMode: 'grow',
-              color: referencePositionColor(HPRC_C4_REGION),
             },
             {
               // Clustered, so the haplotypes carrying an allele gather into a
@@ -896,33 +869,23 @@ export const mafSpecs: ScreenshotSpec[] = [
               showBranchLength: false,
               rowProportion: 1,
             },
+            // FORCE, the Bandage drawing. The anchored layout was here first,
+            // on the argument that it shares the linear view's x axis. Reviewed
+            // down: "the backbone thing confuses me more often than the force
+            // directed. people like force directed, it embodies the complexity
+            // of graph better than backbone frequently."
+            graphTrack('hprc_minigraph_segments', {
+              layoutMode: 'force',
+              paneHeight: 600,
+              colorScheme: 'reference-position',
+              showBubbles: false,
+            }),
           ],
-        },
-        {
-          // FORCE, the Bandage drawing. The anchored layout was here first,
-          // on the argument that it shares the linear view's x axis and so
-          // carries the band's column into the pane. Reviewed down, and the
-          // reason is about what a reader gets out of the picture rather than
-          // about the axis: "the backbone thing confuses me more often than the
-          // force directed. people like force directed, it embodies the
-          // complexity of graph better than backbone frequently."
-          //
-          // The reference-position ramp is what carries the correspondence
-          // instead, and it is why the segments lane above is colored by the
-          // same function: a node here and a block there are the same color for
-          // the same bp, which is the one coloring both panels can compute.
-          type: 'GraphGenomeView',
-          loadedTrackId: 'hprc_minigraph_segments',
-          loadedRegion: HPRC_C4_REGION,
-          layoutMode: 'force',
-          colorScheme: 'reference-position',
-          showBubbles: false,
         },
       ],
     }),
-    viewportHeight: 2000,
-    // The graph pane, on the shared gate every graph figure uses.
-    readySelector: TOOLBAR_READY,
+    viewportHeight: 1850,
+    readySelector: GRAPH_DRAWN,
     readyTimeout: 360000,
     // THE TWO CLUSTERING RUNS, one wait each. Both were once folded into the
     // readySelector as `:has([data-testid="tree_sidebar_dendrogram"])` plus a
@@ -965,11 +928,10 @@ export const mafSpecs: ScreenshotSpec[] = [
     // each lane and the tutorial's fence a few lines above prints the URL.
     //
     // AND THE BAND HAS TO REACH THE GRAPH. The in-app `highlight` is a band on a
-    // coordinate axis, so it stops at the bottom of the linear view, and the
-    // force drawing has no axis for it to continue onto -- which left the pane
-    // as the one panel the figure's own "read down the column" claim did not
-    // cover. Same answer pangenome/hprc_graph_vs_callset reached: a ring on the
-    // node, and an arrow from the band to it.
+    // coordinate axis, and the force drawing has no axis for it to land on --
+    // the band crosses the graph track wherever its x falls. Same answer
+    // pangenome/hprc_graph_vs_callset reached: a ring on the node, and an arrow
+    // from the band to it.
     //
     // s329764+ is the node the band sits on: rank 0, 14,346 bp at
     // GRCh38#0#chr6:31,996,631-32,010,977, and the band's
@@ -1003,11 +965,11 @@ export const mafSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'circle' as const,
-        anchor: { view: 1, graphNode: 's329764+' },
+        anchor: { graphNode: 's329764+' },
         radius: 26,
         strokeWidth: 3,
         // The default red, and near-black was rendered against it before this
-        // was settled. The argument for moving off red is that the pane already
+        // was settled. The argument for moving off red is that the graph already
         // holds some: the reference-position ramp starts at hue 0, so the 52 kb
         // backbone node at the window's left edge is red too. Drawn, that turns
         // out not to matter -- the node is a tube 400 px away and the mark is a
@@ -1030,7 +992,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         },
         // stopped short of the ring by its own radius: an anchored head resolves
         // to the node's CENTRE, which would put the triangle inside the circle
-        anchor: { view: 1, graphNode: 's329764+', dx: -30, dy: -30 },
+        anchor: { graphNode: 's329764+', dx: -30, dy: -30 },
         strokeWidth: 3,
       },
     ],

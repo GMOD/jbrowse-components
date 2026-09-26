@@ -1,5 +1,5 @@
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import { TOOLBAR_READY } from './graph-fixtures.ts'
+import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -13,7 +13,6 @@ export const PORTAL_CONFIG = encodeURIComponent(
 )
 
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
-export const PORTAL_LGV_ID = 'pangenome-locus-lgv'
 
 // The HLA / MHC row's graph link, the first link in the Loci table's first row.
 export const MHC_GRAPH_LINK = 'tbody tr:first-child td:last-child a'
@@ -23,7 +22,7 @@ export function portalGraphLaunch() {
     views: [
       {
         type: 'LinearGenomeView',
-        id: PORTAL_LGV_ID,
+        displayName: 'HLA / MHC graph',
         assembly: 'hg38',
         loc: `${MHC_WINDOW.refName}:${MHC_WINDOW.start + 1}-${MHC_WINDOW.end}`,
         tracks: [
@@ -38,22 +37,11 @@ export function portalGraphLaunch() {
             type: 'LinearAlignmentsDisplay',
             height: 120,
           },
-          {
-            trackId: 'hprc_minigraph_segments',
-            type: 'LinearBasicDisplay',
-            height: 100,
-          },
+          graphTrack('hprc_minigraph_segments', {
+            layoutMode: 'auto',
+            colorScheme: 'reference-position',
+          }),
         ],
-      },
-      {
-        type: 'GraphGenomeView',
-        displayName: 'HLA / MHC graph',
-        loadedTrackId: 'hprc_minigraph_segments',
-        loadedRegion: { ...MHC_WINDOW, assemblyName: 'hg38' },
-        connectedViewId: PORTAL_LGV_ID,
-        followLinearView: true,
-        layoutMode: 'auto',
-        colorScheme: 'reference-position',
       },
     ],
   })
@@ -138,9 +126,9 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/genomes_hprc_mhc_graph',
     url: portalGraphLaunch(),
-    readySelector: TOOLBAR_READY,
+    readySelector: GRAPH_DRAWN,
     readyTimeout: 120000,
-    viewportHeight: 1230,
+    viewportHeight: 1040,
     hideTooltip: true,
   },
 ]

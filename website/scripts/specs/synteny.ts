@@ -15,7 +15,7 @@ import {
   ecoliAvaStack,
 } from './demoBase.ts'
 import { PORTAL_LOCI, portalHaplotypeLanes } from './genomes_pangenome.ts'
-import { GRAPH_DRAWN, referencePositionColor } from './graph-fixtures.ts'
+import { GRAPH_VIEW_DRAWN, referencePositionColor } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -3415,13 +3415,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // alignment is absent from the PAF — and that is the short arm beside
           // the long node here.
           //
-          // The gfatools slice rather than a launch cut off the segments index:
-          // the tabix cut expands one hop off the region and a link is indexed
-          // at its reference-side endpoint, so CFT073's and IAI39's detours —
-          // which leave at s501 and rejoin at s506 — come in as 43 bp/558 bp
-          // stubs with nothing behind them, which is the opposite of what this
-          // pane is here to show. `gfatools view -R … -r 1` walks the graph
-          // itself. Same file, settings and ramp as pangenome/rgfa_paa_bubble,
+          // The gfatools slice rather than a graph track's cut of the segments
+          // index: the tabix cut expands one hop off the region and a link is
+          // indexed at its reference-side endpoint, so CFT073's and IAI39's
+          // detours — which leave at s501 and rejoin at s506 — come in as 43
+          // bp/558 bp stubs with nothing behind them, which is the opposite of
+          // what this pane is here to show. `gfatools view -R … -r 1` walks the
+          // graph itself. Same file, settings and ramp as pangenome/rgfa_paa_bubble,
           // which draws this graph under a three-strain synteny view.
           //
           // The plugin loads from the hosted demo config's own `esmUrl`, which
@@ -3442,9 +3442,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // `body:has(A) B` is an AND — a bare list would be a CSS OR and fire on
     // whichever landed first, which here is always the lanes.
     //
-    // GRAPH_DRAWN rather than the perf readout, which is behind a display
-    // setting now and stopped existing; graph.ts states the whole trap.
-    readySelector: `body:has(${GRAPH_DRAWN}) ${displayPainted('pileup-display')}`,
+    // GRAPH_VIEW_DRAWN rather than the perf readout, which is behind a display
+    // setting now and stopped existing.
+    readySelector: `body:has(${GRAPH_VIEW_DRAWN}) ${displayPainted('pileup-display')}`,
     readyTimeout: 120000,
     // name the island, since "three lanes stop here" is only interesting once
     // the reader knows what stops. One line; the rest is in the caption.

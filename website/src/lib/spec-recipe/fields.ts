@@ -1061,9 +1061,9 @@ const numberField =
 // item, and which is the answer to "where is this in the GUI" for a reader who
 // only has the figure.
 //
-// A rename in the plugin is what the unmapped list cannot see, so
-// check-spec-recipes asserts every label below against a graphgenomeviewer
-// checkout when one is on disk.
+// The unmapped list cannot see a rename in the plugin, so check-spec-recipes
+// asserts every label below against a graphgenomeviewer checkout when one is on
+// disk.
 const GRAPH_LAYOUTS: Record<string, string> = {
   auto: 'Anchored',
   samplerows: 'Sample rows',
@@ -2084,8 +2084,7 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   // How a standalone graph view gets its data: it opens on its own import form
-  // ("Load a GFA graph"), which reads a whole file rather than cutting a window
-  // from a track the way a graph track does.
+  // ("Load a GFA graph"), which reads a whole file.
   gfaLocation: value =>
     asRecord(value)
       ? {

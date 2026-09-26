@@ -75,14 +75,23 @@ export const graphCutDrawn = (tier: 'fine' | 'coarse') =>
   `[data-testid="linear-graph-display"][data-cut-tier="${tier}"][data-node-count]`
 
 // A graph track's display entry. The pane holds the props the standalone view
-// has, and a launch that states it keeps them over the display config's, so
-// `layoutMode` has to be stated even for Anchored: an unstated one is the
-// pane's own default, force.
+// has, and what it states wins over the display config's layout, colour and
+// height. An unstated `paneHeight` is the config's 300 px; the standalone
+// view's pane took up to 600, and the figures sized around that state it.
 export const graphTrack = (trackId: string, pane: Record<string, unknown>) => ({
   trackId,
   type: 'LinearGraphDisplay',
   pane,
 })
+
+// A `maxRegionBp` that holds a graph track's cut near the view's window, for a
+// drawing sized to the window's own nodes: the track narrows the window-width
+// margins it cuts to fit under it. Never under the window's own span, which the
+// track refuses to cut at all.
+export function cutNear(window: number | { start: number; end: number }) {
+  const span = typeof window === 'number' ? window : window.end - window.start
+  return Math.ceil(span * 1.1)
+}
 
 // Open a graph track's menu and pick the row at the end of `path`, e.g.
 // ['Layout', 'Force-directed layout']. A radio or checkbox row leaves its menu

@@ -51,7 +51,7 @@ beforeAll(() => {
 })
 
 beforeEach(() => {
-  document.body.innerHTML = ''
+  document.body.replaceChildren()
 })
 
 test('a standalone GraphGenomeView is its own pane', () => {

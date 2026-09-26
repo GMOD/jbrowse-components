@@ -12,7 +12,7 @@ test('a figure under a heading with no instruction is unprompted', () => {
 test('a location string, a menu path or a click before the tag prompts it', () => {
   for (const action of [
     'Type `chr6:32,500,000-32,560,000` into the location box.',
-    'Open the track menu and pick **Launch → Graph genome view (this region)**.',
+    'Open the track menu and pick **Display types → Graph**.',
     'Right-click the ringed node.',
     'The pane opens. Click the label.',
   ]) {
