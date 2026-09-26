@@ -365,7 +365,7 @@ describe('an unplaced connection belongs to the region its foot is in', () => {
   const loaded = [region(0, 20_000, 0)]
   const displayed = [region(0, 20_000, 0), region(0, 1_000_000, 1)]
 
-  test('it stays in the per-region feed rather than the cross-region overlay', () => {
+  test('it stays in the per-region feed rather than the cross-region half', () => {
     const { arcs, crossRegion } = computeArcsFromPileupData(
       new Map([[0, loneMateAt(500_000, 500_000)]]),
       loaded,

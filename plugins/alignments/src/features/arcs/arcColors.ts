@@ -79,8 +79,7 @@ export function arcPaintRank(colorType: number) {
 // CATEGORY FIRST, then ASCENDING SUPPORT, because array order is paint order and
 // the strokes are opaque: the last arc drawn over a shared pixel is the one that
 // keeps it. THE order for both halves of the feed — the per-region arrays here
-// and the cross-region overlay's SVG document order, where it also decides which
-// arcs a cap keeps.
+// and the cross-region arcs.
 //
 // `arcPaintRank` is the coarse key — every arc that says something paints over
 // every arc that does not; see it for why a deep pileup needs that. Support

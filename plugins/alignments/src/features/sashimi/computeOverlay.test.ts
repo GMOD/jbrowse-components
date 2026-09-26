@@ -350,10 +350,9 @@ test('a coverage band too short for its scalebar margins flattens, never inverts
 describe('junctions with no pixel in the box are culled', () => {
   // A region is FETCHED by block and blocks run past the viewport, so
   // `rpcDataMap` carries junctions for sequence the reader cannot see. Each was
-  // becoming a `<path>` React reconciled on every pan frame; the arc band has
-  // both a cull (`arcTouchesRegion`) and a cap (`CROSS_REGION_ARC_CAP`) and
-  // sashimi had neither, `minSashimiScore` being a statement about evidence
-  // rather than a frame budget.
+  // becoming a `<path>` React reconciled on every pan frame; the arc band has a
+  // cull (`arcTouchesRegion`) and sashimi had none, `minSashimiScore` being a
+  // statement about evidence rather than a frame budget.
   //
   // Ink runs exactly foot to foot — `arcCubic` puts both control points on the
   // endpoints' own xs and the count label rides the midpoint — so this drops

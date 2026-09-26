@@ -570,8 +570,8 @@ export function oneReadWithMate(
 
 /**
  * The same read with its mate on ANOTHER contig — the interchromosomal
- * connection, which is the only family the cross-region overlay draws breakend
- * feet for, and which `oneReadWithMate` cannot express because it names `ctgA`.
+ * connection, which is the only family the band draws breakend feet for, and
+ * which `oneReadWithMate` cannot express because it names `ctgA`.
  *
  * `strand` and `mateReverse` are the two inputs those feet are derived from. A
  * foot points along the ARM its junction keeps, and this family's endpoints are

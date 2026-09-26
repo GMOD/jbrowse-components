@@ -8,8 +8,7 @@
 //    window: the cluster size and DIAMETER distribution, against the same
 //    connections cut into fixed window-sized cells (the diameter-capped
 //    alternative the doc declines to build unmeasured).
-// 2. How many arcs cross a seam when the window is split in two — what
-//    `CROSS_REGION_ARC_CAP` was sized from an estimate of.
+// 2. How many arcs cross a seam when the window is split in two.
 //
 // Hits the network, is in no CI run, and is a counter report rather than a
 // comparative bench. The connections are built the way `offScreenMateArcs`
@@ -286,7 +285,7 @@ async function main() {
     }
   }
   console.log(
-    `\nsplit at ${mid}: of ${pairs} pairs with both mates loaded, ${crossing} straddle the seam (${keys.size} distinct arcs after arcKey coalescing), ${crossingImproper} of them not proper pairs; CROSS_REGION_ARC_CAP is 600`,
+    `\nsplit at ${mid}: of ${pairs} pairs with both mates loaded, ${crossing} straddle the seam (${keys.size} distinct arcs after arcKey coalescing), ${crossingImproper} of them not proper pairs`,
   )
 }
 
