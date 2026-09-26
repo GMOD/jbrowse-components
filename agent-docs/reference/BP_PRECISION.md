@@ -432,8 +432,10 @@ error stays around one ULP of a genome-scale number. The bug above came from
 building a value in `[0, 1)` — whose error is then *amplified* by multiplying
 back up by the span — which is a step this chain does not have. Don't "fix" it.
 
-The painting side was checked and left alone. `makeCellLeftMapper` uses the same
-divide-then-multiply shape, but over 1.15M cursor positions the base `bpAtPx`
+The painting side was checked and left alone. `makeCellLeftMapper`, which the
+pileup's cells were painted through when this was measured (they stand on
+`makeBpMapper` now, through `cellPlacement`), uses the same divide-then-multiply
+shape, but over 1.15M cursor positions the base `bpAtPx`
 names always has a painted cell covering it, bar 64 reversed cases off by ~1e-14
 px — below rasterization and below any cursor. Round-tripping a cell's *exact*
 edge through `bpAtPx` does disagree ~17% of the time, and that measurement is

@@ -388,7 +388,7 @@ public float2 expandMinWidthX(float x1, float x2, float canvasWidth) {
 // Every layer that paints one rect per base measures from here: mismatch,
 // soft-clip bases and per-base letters through mismatch.slang; modifications and
 // per-base quality through packedColorQuad.slang. They have to agree, because
-// they paint over each other and because `makePileupCellMapper` is the one rule
+// they paint over each other and because `cellPlacement` is the one rule
 // all five of their Canvas2D twins share (`cellPainterParity.test.ts` pins that
 // side). packedColorQuad.slang widened about the midpoint instead, which put its
 // two layers up to half a pixel left of the other three — and of their own
