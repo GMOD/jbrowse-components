@@ -43,7 +43,7 @@ const chromosomes = Array.from({ length: 24 }, (_, i) =>
 
 test('the fit closes the ring on the radius the box leaves', () => {
   const fit = fitLayout(input(chromosomes))
-  expect(fit.radiusPx).toBe(400 - fit.paddingPx)
+  expect(fit.radiusPx).toBeCloseTo(400 - fit.paddingPx, 6)
   expect(drawn(fit, chromosomes).ringPx).toBeCloseTo(
     2 * Math.PI * fit.radiusPx,
     9,
@@ -79,9 +79,25 @@ test("a second genome's names and its gaps are both counted", () => {
   )
 })
 
+// Two long names draw at a first guess of the radius and elide into `[2]` at
+// the circle the box leaves once they are paid for. The circle is as large as
+// it can be with them elided: at the scale where they just are, padded for the
+// labels drawn there
+test('the padding holds the labels drawn at the fit and no more', () => {
+  const regions = [
+    ...Array.from({ length: 20 }, (_, i) => region(`chr${i + 1}`, 100_000_000)),
+    region('verylongcontigname_1', 12_000_000),
+    region('verylongcontigname_2', 12_000_000),
+  ]
+  const fit = fitLayout(input(regions, 600))
+  expect(drawn(fit, regions).elided.map(regionLabelText)).toContain('[2]')
+  expect(fit.bpPerPx).toBeCloseTo(12_000_000 / 6, -1)
+  expect(fit.paddingPx).toBe(60)
+})
+
 // a seeded sweep over region sets whose elision lands anywhere, including on a
-// gap-count jump: the ring never overflows the box, and every label drawn at
-// the fit fits in the padding unless the padding hit its cap
+// gap-count jump: the ring never overflows the box, and the padding is what the
+// labels drawn at the fit reach, between the box's share and its cap
 test('the fit never overflows the box or clips a label below the cap', () => {
   let seed = 7
   const random = () => {
@@ -106,7 +122,9 @@ test('the fit never overflows the box or clips a label below the cap', () => {
     const reach =
       maxLabelGutterPx(elided.map(regionLabelText)) +
       (assemblies.length > 1 ? assemblyBandPx : 0)
-    expect(Math.min(reach, box / 4)).toBeLessThanOrEqual(fit.paddingPx)
+    const boxShare = Math.min(80, Math.max(20, box / 10))
+    expect(fit.paddingPx).toBe(Math.max(boxShare, Math.min(reach, box / 4)))
+    expect(fit.radiusPx + fit.paddingPx).toBeLessThanOrEqual(box / 2 + 1e-9)
   }
 })
 

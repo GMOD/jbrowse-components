@@ -1,6 +1,6 @@
 import { polarToCartesian } from '@jbrowse/core/util'
 
-import { chordControlPoint, ribbonReturnControlPoint } from './chordGeometry.ts'
+import { chordControlPoint, ribbonControlPoints } from './chordGeometry.ts'
 import { chordEndsAt, ribbonAnglesAt } from './chordStage.ts'
 
 import type {
@@ -128,20 +128,7 @@ function writeRim(out: Float64Array, j: number, radius: number, a: number) {
   out[j + 1] = radius * Math.sin(a)
 }
 
-function writeControl(
-  out: Float64Array,
-  j: number,
-  startRadians: number,
-  endRadians: number,
-  radius: number,
-  bezierRadius: number,
-) {
-  const [x, y] = chordControlPoint({
-    startRadians,
-    endRadians,
-    radius,
-    bezierRadius,
-  })
+function writePoint(out: Float64Array, j: number, [x, y]: [number, number]) {
   out[j] = x
   out[j + 1] = y
 }
@@ -156,13 +143,16 @@ function writeOutline(
   bezierRadius: number,
 ) {
   const { a1, a2, m1, m2 } = angles
+  const { out: outControl, back } = ribbonControlPoints(
+    angles,
+    radius,
+    bezierRadius,
+  )
   writeRim(out, j, radius, a2)
-  writeControl(out, j + 2, a2, m1, radius, bezierRadius)
+  writePoint(out, j + 2, outControl)
   writeRim(out, j + 4, radius, m1)
   writeRim(out, j + 6, radius, m2)
-  const [cx, cy] = ribbonReturnControlPoint(angles, radius, bezierRadius)
-  out[j + 8] = cx
-  out[j + 9] = cy
+  writePoint(out, j + 8, back)
   writeRim(out, j + 10, radius, a1)
 }
 

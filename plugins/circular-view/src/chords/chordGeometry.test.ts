@@ -3,9 +3,8 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { Slice } from '../CircularView/slices.ts'
 import {
   chordControlPoint,
-  chordControlRadius,
   getEndpoint,
-  ribbonReturnControlPoint,
+  ribbonControlPoints,
 } from './chordGeometry.ts'
 
 function block(refName: string) {
@@ -78,9 +77,15 @@ test('converts a symbolic translocation (INFO END/CHR2) to 0-based', () => {
   })
 })
 
-describe('chordControlRadius', () => {
+describe('chordControlPoint', () => {
   const radius = 143
   const bezierRadius = 14.3
+  const chordControlRadius = (ends: {
+    startRadians: number
+    endRadians: number
+    radius: number
+    bezierRadius: number
+  }) => Math.hypot(...chordControlPoint(ends))
 
   test('an antipodal chord keeps the full bow', () => {
     expect(
@@ -159,7 +164,7 @@ describe('chordControlRadius', () => {
   })
 })
 
-describe('ribbonReturnControlPoint', () => {
+describe('ribbonControlPoints', () => {
   const radius = 200
   const bezierRadius = 20
   const rim = (a: number) => [radius * Math.cos(a), radius * Math.sin(a)]
@@ -173,29 +178,21 @@ describe('ribbonReturnControlPoint', () => {
   // circle and the other a little over, so their short ways run opposite
   test('an antipodal ribbon is no wider at the centre than at its ends', () => {
     const angles = { a1: 0, a2: 0.05, m1: Math.PI + 0.04, m2: Math.PI + 0.08 }
-    const out = chordControlPoint({
-      startRadians: angles.a2,
-      endRadians: angles.m1,
-      radius,
-      bezierRadius,
-    })
-    const back = ribbonReturnControlPoint(angles, radius, bezierRadius)
+    const { out, back } = ribbonControlPoints(angles, radius, bezierRadius)
     const [lx, ly] = midpoint(angles.a2, out, angles.m1)
     const [qx, qy] = midpoint(angles.m2, back, angles.a1)
     const narrowerEnd = radius * 0.04
     expect(Math.hypot(lx! - qx!, ly! - qy!)).toBeLessThan(narrowerEnd)
   })
 
-  test('a ribbon between neighbours returns the short way', () => {
+  test('a ribbon between neighbours curves each way the short way', () => {
     const angles = { a1: 0, a2: 0.1, m1: 0.5, m2: 0.6 }
-    const [x, y] = ribbonReturnControlPoint(angles, radius, bezierRadius)
-    const [ex, ey] = chordControlPoint({
-      startRadians: angles.m2,
-      endRadians: angles.a1,
-      radius,
-      bezierRadius,
+    const { out, back } = ribbonControlPoints(angles, radius, bezierRadius)
+    const short = (startRadians: number, endRadians: number) =>
+      chordControlPoint({ startRadians, endRadians, radius, bezierRadius })
+    expect(out).toEqual(short(angles.a2, angles.m1))
+    back.forEach((v, i) => {
+      expect(v).toBeCloseTo(short(angles.m2, angles.a1)[i]!)
     })
-    expect(x).toBeCloseTo(ex)
-    expect(y).toBeCloseTo(ey)
   })
 })

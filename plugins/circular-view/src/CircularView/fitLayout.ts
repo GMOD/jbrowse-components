@@ -5,7 +5,7 @@ import {
   maxLabelGutterPx,
   regionLabelText,
 } from './rulerLabels.ts'
-import { GENOME_GAP_UNITS } from './slices.ts'
+import { gapUnitsAfter } from './slices.ts'
 
 import type { SliceRegion } from './slices.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -63,33 +63,6 @@ export function elideRegions(regions: readonly Region[], mask: string) {
   )
 }
 
-// How many inter-slice gaps go round the circle at this scale: one per slice,
-// plus the extra at each genome boundary. Elision only merges regions within
-// an assembly, so the boundaries are the regions' own whatever the scale.
-function gapUnitsAt(
-  regions: readonly Region[],
-  bpPerPx: number,
-  minVisibleWidth: number,
-) {
-  let slices = 0
-  let boundaries = 0
-  let runAssembly: string | undefined
-  regions.forEach((region, i) => {
-    const next = regions[(i + 1) % regions.length]!
-    if (next.assemblyName !== region.assemblyName) {
-      boundaries++
-    }
-    if ((region.end - region.start) / bpPerPx >= minVisibleWidth) {
-      slices++
-      runAssembly = undefined
-    } else if (runAssembly !== region.assemblyName) {
-      slices++
-      runAssembly = region.assemblyName
-    }
-  })
-  return slices + (GENOME_GAP_UNITS - 1) * boundaries
-}
-
 export interface FitInput {
   regions: readonly Region[]
   width: number
@@ -108,105 +81,90 @@ export interface FitLayout {
   spacingPx: number
 }
 
-function spacingFor(spacingPx: number, radiusPx: number, units: number) {
-  return units
-    ? Math.min(spacingPx, (twoPi * radiusPx * maxSpacingFraction) / units)
-    : spacingPx
-}
-
-// The scale at which the regions and their gaps go exactly once round a circle
-// of `radiusPx`. The ring's length falls as the scale grows, since the bases
-// take fewer pixels and elision only removes gaps, so there is one crossing;
-// bisection finds it where a gap count jumps, and settles on the side whose
-// ring fits.
-function scaleFor(
-  regions: readonly Region[],
-  totalBp: number,
-  radiusPx: number,
-  spacingPx: number,
-  minVisibleWidth: number,
-) {
-  const target = twoPi * radiusPx
-  const ringPx = (bpPerPx: number) => {
-    const units = gapUnitsAt(regions, bpPerPx, minVisibleWidth)
-    return totalBp / bpPerPx + units * spacingFor(spacingPx, radiusPx, units)
-  }
-  // the gaps take at most a quarter of the ring, so the answer is between the
-  // scale with no gaps and the scale with a quarter of it gaps
-  let lo = totalBp / target
-  let hi = totalBp / (target * (1 - maxSpacingFraction))
-  for (let i = 0; i < 60 && hi - lo > lo * 1e-12; i++) {
-    const mid = Math.sqrt(lo * hi)
-    if (ringPx(mid) > target) {
-      lo = mid
-    } else {
-      hi = mid
-    }
-  }
-  // with the gap count there, the crossing solves exactly, unless it sits
-  // on the jump itself
-  const units = gapUnitsAt(regions, hi, minVisibleWidth)
-  const exact =
-    totalBp / (target - units * spacingFor(spacingPx, radiusPx, units))
-  return gapUnitsAt(regions, exact, minVisibleWidth) === units ? exact : hi
-}
-
 /**
  * The circle that fills the box: its scale, radius, and the padding and
  * spacing the view keeps at every zoom. A pure function of the regions and the
  * box, so nothing reads back a value derived from itself.
  *
- * The padding holds the labels drawn at the fitted scale, measured as if every
- * one radiated outward, and an elision's `[N]` at its longest, so a zoom out
- * that turns them radial or elides more never outgrows it. It starts at the
- * box's share; where the labels at that fit need more, the fit is redone at
- * what they need, up to half the half-box, past which a label is clipped
- * rather than the circle crushed. That smaller circle only elides more, which
- * only drops labels, so it needs no more room than the first pass found.
+ * At any one scale the rest follows: the regions elide, the ring closes on the
+ * radius its bases and gaps need, the gaps capped at a quarter of it, and the
+ * padding holds the labels drawn there, measured as if every one radiated
+ * outward, up to half the half-box, past which a label is clipped rather than
+ * the circle crushed. The radius and the labels both shrink as the scale
+ * grows, so the fit is the least scale whose circle and padding fit the box,
+ * found by bisection; at a jump in the gap count it takes the side that fits.
  */
 export function fitLayout(input: FitInput): FitLayout {
-  const { regions, width, height, spacingPx, paddingPx, minVisibleWidth } =
-    input
+  const { regions, width, height, spacingPx, minVisibleWidth } = input
   const halfBox = Math.min(width, height) / 2
   const totalBp = sum(regions.map(r => r.end - r.start))
   const genomeBand =
     new Set(regions.map(r => r.assemblyName)).size > 1 ? assemblyBandPx : 0
-  const elidedLabel = regions.length > 1 ? [`[${regions.length}]`] : []
-  const fitAt = (padding: number) => {
-    const radiusPx = Math.max(halfBox - padding, input.minimumRadiusPx)
-    const bpPerPx =
-      totalBp > 0
-        ? scaleFor(regions, totalBp, radiusPx, spacingPx, minVisibleWidth)
-        : undefined
-    const labels =
-      bpPerPx === undefined
-        ? []
-        : elideRegions(
-            regions,
-            elisionMask(regions, bpPerPx, minVisibleWidth),
-          ).map(regionLabelText)
-    return {
-      radiusPx,
-      bpPerPx,
-      needPx: maxLabelGutterPx([...labels, ...elidedLabel]) + genomeBand,
-    }
-  }
+  const elidedLabel =
+    regions.length > 1
+      ? [
+          regionLabelText({
+            elided: true,
+            widthBp: totalBp,
+            regions: [...regions],
+          }),
+        ]
+      : []
   const boxPadding = Math.min(
-    paddingPx,
+    input.paddingPx,
     Math.max(minPaddingPx, halfBox * maxPaddingFraction),
   )
-  const first = fitAt(boxPadding)
-  const paddingOut = Math.max(boxPadding, Math.min(first.needPx, halfBox / 2))
-  const { radiusPx, bpPerPx } =
-    paddingOut > boxPadding ? fitAt(paddingOut) : first
-  const units =
-    bpPerPx === undefined
-      ? regions.length
-      : gapUnitsAt(regions, bpPerPx, minVisibleWidth)
-  return {
-    bpPerPx,
-    radiusPx,
-    paddingPx: paddingOut,
-    spacingPx: spacingFor(spacingPx, radiusPx, units),
+  const layoutAt = (bpPerPx: number) => {
+    const drawn = elideRegions(
+      regions,
+      elisionMask(regions, bpPerPx, minVisibleWidth),
+    )
+    const units = sum(gapUnitsAfter(drawn))
+    const basesPx = totalBp / bpPerPx
+    const radiusPx = Math.max(
+      Math.min(
+        basesPx + units * spacingPx,
+        basesPx / (1 - maxSpacingFraction),
+      ) / twoPi,
+      input.minimumRadiusPx,
+    )
+    const needPx =
+      maxLabelGutterPx([...drawn.map(regionLabelText), ...elidedLabel]) +
+      genomeBand
+    return {
+      bpPerPx,
+      radiusPx,
+      paddingPx: Math.max(boxPadding, Math.min(needPx, halfBox / 2)),
+      spacingPx: spacingFor(spacingPx, radiusPx, units),
+    }
   }
+  if (totalBp <= 0) {
+    return { ...layoutAt(1), bpPerPx: undefined }
+  }
+  const fits = (bpPerPx: number) => {
+    const { radiusPx, paddingPx } = layoutAt(bpPerPx)
+    return radiusPx + paddingPx <= halfBox
+  }
+  // a ring of no gaps as wide as the box is too big, and one squeezed to the
+  // least radius with a quarter of it gaps is as small as the circle draws
+  let lo = totalBp / (twoPi * halfBox)
+  let hi = totalBp / (twoPi * input.minimumRadiusPx * (1 - maxSpacingFraction))
+  if (!fits(hi)) {
+    return layoutAt(hi)
+  }
+  for (let i = 0; i < 60 && hi - lo > lo * 1e-12; i++) {
+    const mid = Math.sqrt(lo * hi)
+    if (fits(mid)) {
+      hi = mid
+    } else {
+      lo = mid
+    }
+  }
+  return layoutAt(hi)
+}
+
+function spacingFor(spacingPx: number, radiusPx: number, units: number) {
+  return units
+    ? Math.min(spacingPx, (twoPi * radiusPx * maxSpacingFraction) / units)
+    : spacingPx
 }

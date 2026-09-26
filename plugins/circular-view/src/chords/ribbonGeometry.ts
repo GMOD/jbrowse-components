@@ -1,23 +1,7 @@
-import { chordControlPoint, ribbonReturnControlPoint } from './chordGeometry.ts'
+import { ribbonControlPoints } from './chordGeometry.ts'
 
 import type { RibbonAngles } from './chordStage.ts'
 import type { PathSink } from './pathSink.ts'
-
-function curveTo(
-  sink: PathSink,
-  from: number,
-  to: number,
-  radius: number,
-  bezierRadius: number,
-) {
-  const [cx, cy] = chordControlPoint({
-    startRadians: from,
-    endRadians: to,
-    radius,
-    bezierRadius,
-  })
-  sink.quadTo(cx, cy, radius, to)
-}
 
 /**
  * One alignment as a closed ribbon: its span on the anchor's arc, a curve to
@@ -32,11 +16,11 @@ export function traceRibbon(
   bezierRadius: number,
 ) {
   const { a1, a2, m1, m2 } = angles
-  const [cx, cy] = ribbonReturnControlPoint(angles, radius, bezierRadius)
+  const { out, back } = ribbonControlPoints(angles, radius, bezierRadius)
   sink.moveTo(radius, a1)
   sink.arcTo(a1, a2, radius)
-  curveTo(sink, a2, m1, radius, bezierRadius)
+  sink.quadTo(out[0], out[1], radius, m1)
   sink.arcTo(m1, m2, radius)
-  sink.quadTo(cx, cy, radius, a1)
+  sink.quadTo(back[0], back[1], radius, a1)
   sink.close()
 }
