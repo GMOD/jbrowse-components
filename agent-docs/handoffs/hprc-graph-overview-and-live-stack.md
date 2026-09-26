@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.x) and picks its coarse tier by zoom, lanes read from the graph draw the alignment the graph states between any two haplotypes with no aligner, one command builds a host's files and config, and the tutorials open on the hosted instance. Released - gbz-base 2.8.0, the plugin 3.1.0 on npm and the store, the portal, the demos, the figures. Left - the browse clip, whose node anchor misses after a re-cut, and a docs deploy.
+description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.x), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. In flight - a plugin branch composing the pane into the display to fix the track's error, phase, height, re-cut and abort bugs (plugin agent-docs/HANDOFF_track_refactor.md). Left - that branch, a release, the portal upload, a GSTT1 section, and a docs deploy.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -203,12 +203,42 @@ deployed), and every graph figure and tour draws through the track: 36
 figures and 7 clips reshot on ada and in the stores. The plugin's
 `agent-docs/GRAPH_TRACK.md` is the design record.
 
+**State at the end of 2026-09-26.**
+
+- Landed on plugin main, unreleased: every label over the graph places from
+  one occupancy above all the ink (the coarse tier's bubble names no longer
+  print over the backbone lengths, `pggb_bubble_tier`), and
+  `scripts/preview-candidate.mjs` shoots any hosted session against a local
+  `dist/`.
+- On plugin branch `graph-track-hardening` (worktree
+  `~/src/jb2plugins/ggv-track`), unlanded, last commit WIP: the pane becomes a
+  mixin the display and the standalone view compose, which fixes a blank track
+  on a failed cut, a missing display phase, the height ratchet, a red flash on
+  every re-cut and a fetch never aborted. The plugin's
+  `agent-docs/HANDOFF_track_refactor.md` is the state, the remaining steps and
+  what a release of it changes here and in jb2hubs.
+- Plugin CI has been red since 4.0.0 on six `test/launchAndHover` e2e tests
+  that click the retired launch items; the branch's handoff says how to
+  rewrite them.
+- Core `b05ac725c4`: a display type declares `adapterCapabilities` and the
+  track config fills it in only where the adapter has them. The plugin
+  declares `['getSubgraph']` once core past 5.0.0-beta.9 is on npm; then
+  "Graph" leaves the Display types menu of BED, GFF and PAF tracks.
+- jb2hubs main `d8c4f6cb028`: the four portal configs search gene names
+  (hosted trix) and hg38/mm39 draw cytobands, and the HPRC loci gain GSTT1 and
+  FLNA/EMD; both launches boot. Not uploaded (`website/pangenome-config/upload.sh`)
+  and staging not redeployed.
+- A GSTT1 tutorial section is not written. Its graph is compelling (a 39.5 kb
+  allele loop beside GSTT4, contributed by HG03654#2), but CAT projects
+  GRCh38's genes and GRCh38's chr22 has no GSTT1, so no haplotype's annotation
+  names it, and HPRC's PAF targets the no-alt set, so nothing hosted shows the
+  gene on a haplotype. Colin's call: a data product for GRCh38's alt-contig
+  genes on each haplotype, or a section that says the annotation cannot see it.
+- The `rgfa_launch_roundtrip` caption still says "segment s1277 in the
+  segments lane" over a frame that shows the Display types menu on Graph.
+
 **Next.** A docs deploy, which is Colin's (`update docs` on main deploys every
-agent's landed doc commits at once). A `GraphTrack` track type, so that
-"Graph" stops appearing under Display types on every feature and synteny
-track: the track config schema fills in every display type registered for the
-track type, and the graph display is registered for `FeatureTrack` and
-`SyntenyTrack`.
+agent's landed doc commits at once).
 
 **Still open, none blocking the above.** The segments lane in the linear view
 cannot pick a tier by zoom, because `RenderFeatureData` hands an adapter no
