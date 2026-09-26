@@ -5,7 +5,10 @@ import {
 import { LINK_NO_REGION, linkFeet } from '@jbrowse/render-core/marks'
 
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { ARC_SLOT_KEYS, buildArcColorPalette } from '../../shaders/palettes.ts'
+import {
+  ARC_SLOT_CATEGORY,
+  buildArcColorPalette,
+} from '../../shaders/palettes.ts'
 import { ARC_COLOR_INTERCHROM, COLOR_LONG_INSERT } from './arcColors.ts'
 import { arcsToRegionMap } from './arcRegions.ts'
 import { CLOUD_LINE_ALPHA, buildArcBandFeeds } from './bandFeed.ts'
@@ -17,9 +20,11 @@ import {
 
 import type { ComputedArc, CrossRegionArc, RegionInfo } from './arcTypes.ts'
 
-const colors = makeTestPalette(
-  Object.fromEntries(ARC_SLOT_KEYS.map((key, i) => [key, [i / 16, 0.5, 1]])),
-)
+const colors = makeTestPalette({
+  readCategoryColors: Object.fromEntries(
+    ARC_SLOT_CATEGORY.map((category, i) => [category, [i / 16, 0.5, 1]]),
+  ),
+})
 const slotColor = (slot: number) => {
   const [r, g, b] = buildArcColorPalette(colors)[slot]!
   return normalizedRgbToABGR(r, g, b)

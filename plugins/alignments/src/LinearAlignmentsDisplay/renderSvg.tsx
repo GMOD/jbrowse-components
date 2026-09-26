@@ -7,7 +7,6 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
-import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
@@ -69,7 +68,7 @@ function AlignmentsSvgBody({
   const state = {
     ...model.renderState,
     canvasWidth,
-    colors: buildColorPaletteFromPalette(palette),
+    colors: model.colorPaletteIn(palette),
   }
   const labels = model.visibleLabels
   const contrastMap = getMismatchContrastMap(model.showModifications, palette)

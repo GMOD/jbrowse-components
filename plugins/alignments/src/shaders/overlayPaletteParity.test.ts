@@ -63,7 +63,9 @@ describe('overlay palettes follow the theme', () => {
     // Nothing is left over from the module constants: every slot has to be one
     // of the values this palette carries.
     const carried = new Set(
-      Object.values(OVERRIDDEN).map(c => (c as number[]).join(',')),
+      Object.values(OVERRIDDEN)
+        .filter(c => Array.isArray(c))
+        .map(c => c.join(',')),
     )
     for (const slot of build(OVERRIDDEN)) {
       expect(carried).toContain(slot.join(','))

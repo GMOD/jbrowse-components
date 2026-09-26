@@ -2,11 +2,12 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 
 import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
-import { LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
+import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
-import { READ_COLOR_CATEGORY, readCategoryPaletteKeys } from '../colorUtils.ts'
+import { READ_COLOR_CATEGORY, readCategoryColor } from '../colorUtils.ts'
 import { shouldOutlineReads } from './rendererTypes.ts'
 
+import type { PaletteColorKey } from '../../shaders/colors.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ColorPalette, RGBColor, RenderState } from './rendererTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
@@ -61,27 +62,25 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorConnectingLine: 'colorConnectingLine',
   colorOverlap: 'colorOverlap',
   colorOverlapTint: 'colorOverlapTint',
-} satisfies Record<string, keyof ColorPalette>
+} satisfies Record<string, PaletteColorKey>
 
 function packRgb(rgb: RGBColor) {
   return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 }
 
-// The two tables resolved to `[uboWordIndex, paletteKey]` once at module load:
-// the palette VALUES are read per frame from the themed `ColorPalette`, only the
-// indices are constant.
-type PaletteKey = keyof ColorPalette
-
-const PALETTE_UBO_SLOTS: readonly (readonly [number, PaletteKey])[] =
+// Resolved to UBO word indices once at module load: the colour VALUES are read
+// per frame from the palette, only the indices are constant.
+const PALETTE_UBO_SLOTS: readonly (readonly [number, PaletteColorKey])[] =
   Object.entries(PALETTE_UNIFORM_FIELDS).map(
     ([uniform, key]) => [UU[uniform as keyof typeof UU], key] as const,
   )
 
-const READ_CATEGORY_UBO_SLOTS: readonly (readonly [number, PaletteKey])[] =
-  Object.entries(readCategoryPaletteKeys).map(
-    ([category, key]) =>
-      [READ_COLOR_CATEGORY[category as ReadColorCategory], key] as const,
-  )
+const READ_CATEGORY_UBO_SLOTS: readonly (readonly [
+  number,
+  ReadColorCategory,
+])[] = Object.entries(READ_COLOR_CATEGORY).map(
+  ([category, slot]) => [slot, category as ReadColorCategory] as const,
+)
 
 // Takes the shader's own generated setter, which writes every component of an
 // element — so the alpha lane cannot be left out here. The shaders read `.xyz`
@@ -99,10 +98,10 @@ function writePaletteSlots(
     v3: number,
   ) => void,
   slotCount: number,
-  keys: readonly PaletteKey[],
+  categories: readonly ReadColorCategory[],
 ) {
   for (let i = 0; i < slotCount; i++) {
-    const rgb = c[keys[i]!]
+    const rgb = readCategoryColor(c, categories[i]!)
     set(f, i, rgb[0], rgb[1], rgb[2], 1)
   }
 }
@@ -135,12 +134,10 @@ export function writePileupPalette(
     c,
     readShader.setUniformLinkedReadColor,
     USLOTS.linkedReadColor.length,
-    LINKED_READ_SLOT_KEYS,
+    LINKED_READ_SLOT_CATEGORY,
   )
-  // One color per read category, indexed by the RC_* the CPU classifier baked
-  // into each instance, from the one table the legend also reads.
-  for (const [slot, key] of READ_CATEGORY_UBO_SLOTS) {
-    const rgb = c[key]
+  for (const [slot, category] of READ_CATEGORY_UBO_SLOTS) {
+    const rgb = readCategoryColor(c, category)
     readShader.setUniformReadCategoryColor(f32, slot, rgb[0], rgb[1], rgb[2], 1)
   }
   // The five base slots again, resolved: `effectiveBaseColors` is where the

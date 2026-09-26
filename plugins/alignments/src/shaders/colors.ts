@@ -1,3 +1,5 @@
+import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+
 export { cssColorToNormalizedRgb as toRgb } from '@jbrowse/core/util/colorBits'
 
 // RGB color as [r, g, b] where each is 0-1
@@ -57,4 +59,7 @@ export interface ColorPalette {
   // theme neutral between two read fills) — a tint that composes toward the
   // ground it sits on adds nothing, whichever theme is in force.
   colorOverlapTint: RGBColor
+  readCategoryColors: Partial<Record<ReadColorCategory, RGBColor>>
 }
+
+export type PaletteColorKey = Exclude<keyof ColorPalette, 'readCategoryColors'>

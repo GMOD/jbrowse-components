@@ -1,3 +1,4 @@
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import {
   colorEncodingOf,
@@ -6,7 +7,10 @@ import {
 import { colorNotices } from '@jbrowse/display-kit/colorScale'
 
 import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
+import { MAPQ_UNAVAILABLE } from './util.ts'
 
+import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { RGBColor } from '../shaders/colors.ts'
 import type {
   BaseLayer,
   BaseLayerType,
@@ -194,6 +198,98 @@ export function isBakedScheme(colorBy: ColorBy) {
     colorBy.type === 'mateRefName' ||
     (colorBy.type === 'tag' && !!(colorBy.tag ?? colorBy.attribute))
   )
+}
+
+type ReadColorLevel = readonly [value: string, category: ReadColorCategory]
+
+const INSERT_SIZE_LEVELS: readonly ReadColorLevel[] = [
+  ['short', 'shortInsert'],
+  ['normal', 'normalInsert'],
+  ['long', 'longInsert'],
+]
+
+const STRAND_LEVELS: readonly ReadColorLevel[] = [
+  ['1', 'fwdStrand'],
+  ['-1', 'revStrand'],
+]
+
+const NO_VALUE_LEVEL: ReadColorLevel = ['', 'noTagValue']
+
+/**
+ * Each read scheme's levels, by the value a `domain` names them with, in the
+ * order a `range` beside no `domain` colours them. `''` is a read with no
+ * value for the field.
+ */
+const READ_COLOR_LEVELS: Record<
+  ReadColorSchemeType,
+  readonly ReadColorLevel[]
+> = {
+  normal: [],
+  strand: STRAND_LEVELS,
+  firstOfPairStrand: STRAND_LEVELS,
+  pairOrientation: [
+    ['LR', 'pairLR'],
+    ['RL', 'pairRL'],
+    ['RR', 'pairRR'],
+    ['LL', 'pairLL'],
+    ['', 'nonSplit'],
+  ],
+  insertSize: INSERT_SIZE_LEVELS,
+  insertSizeAndOrientation: [
+    ...INSERT_SIZE_LEVELS,
+    ['RL', 'pairRL'],
+    ['RR', 'pairRR'],
+    ['LL', 'pairLL'],
+  ],
+  mappingQuality: [[`${MAPQ_UNAVAILABLE}`, 'mapqUnavailable']],
+  mateRefName: [NO_VALUE_LEVEL],
+  tag: [NO_VALUE_LEVEL],
+}
+
+function levelOrder(
+  encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
+  levels: readonly ReadColorLevel[],
+  bakesValues: boolean,
+) {
+  if (encoding.scale === 'threshold') {
+    return INSERT_SIZE_FIELDS.has(encoding.field)
+      ? INSERT_SIZE_LEVELS.map(([value]) => value)
+      : []
+  }
+  if (encoding.scale !== 'categorical') {
+    return []
+  }
+  return (
+    encoding.domain?.map(String) ??
+    (bakesValues ? [] : levels.map(([value]) => value))
+  )
+}
+
+/**
+ * The read category colours the `color` object declares, over the palette's
+ * defaults: `range` colours the levels `domain` names, in order, or with no
+ * `domain` the field's own levels, and a threshold over an insert-size field
+ * its short, normal and long bins. A level left out keeps its default.
+ */
+export function declaredReadCategoryColors(
+  encoding: AlignmentsColorEncoding,
+): Partial<Record<ReadColorCategory, RGBColor>> {
+  if (typeof encoding !== 'object' || !encoding.range) {
+    return {}
+  }
+  const { range } = encoding
+  const colorBy = colorByOf(encoding)
+  const levels = READ_COLOR_LEVELS[colorBy.type]
+  const categoryOf = new Map(levels)
+  const colors: Partial<Record<ReadColorCategory, RGBColor>> = {}
+  levelOrder(encoding, levels, isBakedScheme(colorBy)).forEach((value, i) => {
+    const category = categoryOf.get(value)
+    const color = range[i]
+    if (category && color !== undefined && !(category in colors)) {
+      colors[category] = cssColorToNormalizedRgb(color)
+    }
+  })
+  return colors
 }
 
 /** The `color` object a scheme pick writes: `colorForField` over the scheme's field. */

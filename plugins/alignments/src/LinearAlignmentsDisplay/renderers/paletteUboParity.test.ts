@@ -2,7 +2,7 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
+import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import {
   UNIFORM_OFFSET_U32,
   UNIFORM_SLOT_ARRAYS,
@@ -15,7 +15,7 @@ import {
   PALETTE_UNIFORM_FIELDS,
 } from './GpuAlignmentsRenderer.ts'
 
-import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
+import type { PaletteColorKey, RGBColor } from '../../shaders/colors.ts'
 import type { AlignmentsSources, SectionRender } from './rendererTypes.ts'
 
 /**
@@ -42,7 +42,9 @@ import type { AlignmentsSources, SectionRender } from './rendererTypes.ts'
 // pack to a different u32.
 function distinctPalette() {
   const overrides: Record<string, RGBColor> = {}
-  const keys = Object.keys(makeTestPalette()) as (keyof ColorPalette)[]
+  const keys = Object.keys(makeTestPalette()).filter(
+    key => key !== 'readCategoryColors',
+  ) as PaletteColorKey[]
   for (let i = 0; i < keys.length; i++) {
     overrides[keys[i]!] = [(i + 1) / 255, ((i + 1) * 2) / 255, 0.5]
   }
@@ -102,7 +104,7 @@ function frameUniforms() {
 
 const { u32, f32 } = frameUniforms()
 
-const packed = (key: keyof ColorPalette) => {
+const packed = (key: PaletteColorKey) => {
   const rgb = COLORS[key]
   return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 }
@@ -135,7 +137,7 @@ function f32Slot(offset: number) {
 
 // Through a Float32Array, because the slot is one: the palette carries doubles
 // and comparing them raw fails on rounding rather than on a transposition.
-function expectedSlot(key: keyof ColorPalette) {
+function expectedSlot(key: PaletteColorKey) {
   const rgb = COLORS[key]
   return [...Float32Array.of(rgb[0], rgb[1], rgb[2], 1)]
 }
@@ -144,7 +146,9 @@ describe('the indexed palette uniforms', () => {
   test.each(UNIFORM_SLOT_ARRAYS.linkedReadColor.map((o, i) => [i, o]))(
     'linkedReadColor slot %i holds its category color',
     (i, offset) => {
-      expect(f32Slot(offset)).toEqual(expectedSlot(LINKED_READ_SLOT_KEYS[i]!))
+      expect(f32Slot(offset)).toEqual(
+        expectedSlot(readCategoryPaletteKeys[LINKED_READ_SLOT_CATEGORY[i]!]),
+      )
     },
   )
 

@@ -15,7 +15,6 @@ import {
 } from '@jbrowse/core/util/thresholdScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
-import { isBakedScheme } from '../shared/alignmentsColor.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 
 import type { AlignmentsColorEncoding } from '../shared/alignmentsColor.ts'
@@ -127,13 +126,25 @@ function thresholdScale({
   }
 }
 
+function withoutNoValue(
+  domain: readonly string[],
+  range: readonly string[] | undefined,
+) {
+  const i = domain.indexOf('')
+  return i === -1
+    ? { domain, range }
+    : { domain: domain.toSpliced(i, 1), range: range?.toSpliced(i, 1) }
+}
+
 /**
  * The scale the tag, attribute and mate-reference fields bake through, read
  * off the resolved `color`. With nothing declared a value's colour is a
  * function of the value alone (`bakedValueColor`); a `domain` or `range` hands
- * the listed values their colours in order, over the same tag palette. A
- * linear or threshold scale reads a tag or attribute, and waits unread beside
- * a mate reference, whose values are sequence names.
+ * the listed values their colours in order, over the same tag palette. `''`
+ * in `domain` names a read with no value, which the category table colours
+ * (`declaredReadCategoryColors`), so it and its `range` entry leave the list.
+ * A linear or threshold scale reads a tag or attribute, and waits unread
+ * beside a mate reference, whose values are sequence names.
  */
 export function bakedColorScale(
   colorBy: ColorBy,
@@ -155,10 +166,11 @@ export function bakedColorScale(
   if (colorBy.type === 'tag' && scaled?.scale === 'threshold') {
     return thresholdScale(scaled)
   }
-  const domain =
-    scaled?.scale === 'categorical' ? (scaled.domain?.map(String) ?? []) : []
-  const range = scaled?.scale === 'categorical' ? scaled.range : undefined
-  if (isBakedScheme(colorBy) && (domain.length > 0 || range)) {
+  const { domain, range } =
+    scaled?.scale === 'categorical'
+      ? withoutNoValue(scaled.domain?.map(String) ?? [], scaled.range)
+      : { domain: [], range: undefined }
+  if (domain.length > 0 || range?.length) {
     return {
       kind: 'categorical',
       declared: true,

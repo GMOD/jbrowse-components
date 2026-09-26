@@ -1,19 +1,11 @@
-import { swatchPaletteKeys } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import { readCategoryColor } from '../LinearAlignmentsDisplay/colorUtils.ts'
 
 import type { SwatchCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ColorPalette, RGBColor } from './colors.ts'
+import type { ColorPalette } from './colors.ts'
 
-// ONE TABLE PER OVERLAY, and it says what each slot MEANS, not what colour it
-// is. The colour follows from `swatchPaletteKeys` — the read fills' own table —
-// so an overlay slot and the read swatch of the same meaning cannot be two
-// colours. They were, twice over: first because these were baked from module
-// constants while the read fills resolved through the theme (so dark mode dimmed
-// the reads and not the arcs over them), and before that because "matches the
-// read fill" was a comment rather than a derivation.
-//
-// A parity test can only catch that after someone writes it. Deriving is what
-// makes it unrepresentable, and it is the shape `readCategoryPaletteKeys`
-// already uses for the reads themselves.
+// One table per overlay, saying what each slot MEANS. The colour follows from
+// `readCategoryColor`, the read fills' own resolution, so an overlay slot and
+// the read swatch of the same meaning cannot be two colours.
 //
 // **Indexing `readCategoryColor` from the linked-read pass instead —
 // dropping its table — has been proposed and declined.** The colour is
@@ -23,14 +15,12 @@ import type { ColorPalette, RGBColor } from './colors.ts'
 // slot count is the oversized term, not the slot size" — and slots 1-4 there
 // ARE `PAIR_DIRECTION_NUM`, which `features/linkedReads/compute.ts` exists to
 // keep true by construction.
-type PaletteKey = keyof ColorPalette
 
 // Slot → meaning for the read-connection band's colour types, which
 // `buildArcBandFeeds` bakes into each connection's colour lane.
 //
-// Slot 0 is the baseline, whose LABEL depends on the coloring mode ('Normal'
-// insert vs. 'LR' orientation) though both resolve to the same swatch — see
-// `arcColorLegendCategory`, which reads this table.
+// Slot 0 is the baseline. It paints as `normalInsert` and `arcColorLegendCategory`
+// names it per coloring mode: 'Normal' insert, or 'LR' orientation.
 export const ARC_SLOT_CATEGORY = [
   'normalInsert',
   'longInsert',
@@ -62,33 +52,14 @@ export const LINKED_READ_SLOT_CATEGORY = [
   'interchrom',
 ] as const satisfies readonly SwatchCategory[]
 
-// Slot → palette KEY, resolved through `swatchPaletteKeys` once at module load.
-// Both readers take these arrays, so the derivation still happens in exactly one
-// place — which is the whole point of the tables above:
-//
-// - `buildArcColorPalette` / `buildLinkedReadColorPalette` below, for the
-//   read-connection band's feeds and the linked-read overlays, which want the
-//   resolved colours as an array.
-// - `GpuAlignmentsRenderer`'s per-frame UBO write of the linked-read palette,
-//   which walks these keys straight into the uniform buffer.
-const ARC_SLOT_KEYS: readonly PaletteKey[] = ARC_SLOT_CATEGORY.map(
-  category => swatchPaletteKeys[category] as PaletteKey,
-)
-const LINKED_READ_SLOT_KEYS: readonly PaletteKey[] =
-  LINKED_READ_SLOT_CATEGORY.map(
-    category => swatchPaletteKeys[category] as PaletteKey,
-  )
-
-export { ARC_SLOT_KEYS, LINKED_READ_SLOT_KEYS }
-
-function resolve(keys: readonly PaletteKey[], c: ColorPalette): RGBColor[] {
-  return keys.map(key => c[key])
+function resolve(categories: readonly SwatchCategory[], c: ColorPalette) {
+  return categories.map(category => readCategoryColor(c, category))
 }
 
 export function buildArcColorPalette(c: ColorPalette) {
-  return resolve(ARC_SLOT_KEYS, c)
+  return resolve(ARC_SLOT_CATEGORY, c)
 }
 
 export function buildLinkedReadColorPalette(c: ColorPalette) {
-  return resolve(LINKED_READ_SLOT_KEYS, c)
+  return resolve(LINKED_READ_SLOT_CATEGORY, c)
 }

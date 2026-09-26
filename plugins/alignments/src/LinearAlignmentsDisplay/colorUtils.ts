@@ -38,7 +38,7 @@ import {
 } from '../shared/types.ts'
 import { MAPQ_UNAVAILABLE, firstOfPairStrand } from '../shared/util.ts'
 
-import type { ColorPalette } from '../shaders/colors.ts'
+import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ColorSchemeType, ShaderScheme } from '../shared/types.ts'
 
@@ -424,21 +424,9 @@ function schemeCategory(
   }
 }
 
-// The one place a category becomes a CSS color. The dynamic categories
-// (computed per-read or per-scheme) are handled explicitly; everything else is
-// a flat swatch resolved through the same `swatchPaletteKeys` table the legend
-// uses (categorySwatchColor), so the flat category→palette mapping has a single
-// home. The `default` narrows to SwatchCategory, so a newly added *dynamic*
-// category fails to compile until it gets a case here.
-//
-// read.slang's `categoryPaletteColor` is the GPU twin, but a flat table rather
-// than a mirrored rule set, and colorCategory.test.ts machine-compares the two
-// via `swatchPaletteKeys` — so this is checked, not a SYNC promise.
-// It takes NO color scheme, and that is the painter/classifier split stated in
-// a signature rather than in the paragraph above: everything a fill depends on
-// is either the category or the read's own datum by the time this runs. It used
-// to take one, threaded down from `RenderState.colorScheme` through two call
-// sites and read by nothing.
+// The one place a category becomes a CSS color. read.slang's
+// `categoryPaletteColor` is the GPU twin, indexing the table `readCategoryColor`
+// resolves.
 function categoryColor(
   cat: ReadColorCategory,
   i: number,
@@ -446,16 +434,16 @@ function categoryColor(
   palette: ColorPalette,
 ): string {
   switch (cat) {
-    case 'plain':
-      return rgb255(palette.colorPairLR)
     case 'mapq':
       return MAPQ_CSS[data.readMapqs[i]!]!
     case 'tag': {
       const packed = data.readTagColors[i]
-      return packed ? abgrToCssRgba(packed) : rgb255(palette.colorPairLR)
+      return packed
+        ? abgrToCssRgba(packed)
+        : rgb255(readCategoryColor(palette, cat))
     }
     default:
-      return categorySwatchColor(cat, palette)
+      return rgb255(readCategoryColor(palette, cat))
   }
 }
 
@@ -497,17 +485,15 @@ export function getReadColor(
   )
 }
 
-// Palette key backing each fixed-swatch category, so the legend swatch is the
-// exact color the renderer paints. The keys form `SwatchCategory` — the subset
-// of categories that render as a single flat color; `plain`, `mapq` and `tag`
-// are absent here.
+// The default colour of each fixed-swatch category, a palette key. Keys repeat
+// where categories share a default; the categories stay distinct, so each one
+// takes a declared colour on its own. `plain`, `mapq` and `tag` resolve per
+// read and have no swatch.
 export const swatchPaletteKeys = {
   fwdStrand: 'colorFwdStrand',
   revStrand: 'colorRevStrand',
   modFwd: 'colorModificationFwd',
   modRev: 'colorModificationRev',
-  // non-split read under the pair-orientation scheme: the neutral grey, but a
-  // distinct category so the legend can label it "Non-split read"
   nonSplit: 'colorPairLR',
   pairLR: 'colorPairLR',
   pairRL: 'colorPairRL',
@@ -519,45 +505,41 @@ export const swatchPaletteKeys = {
   interchrom: 'colorInterchrom',
   unmappedMate: 'colorUnmappedMate',
   supplementary: 'colorSupplementary',
-  // dedicated inversion hue (colorSplitReadInversion), distinct from the RR-pair
-  // blue so the legend swatch and read fill are unambiguous
   splitInversion: 'colorSplitInversion',
-  // co-linear (deletion) split reuses the supplementary orange — "ordinary split
-  // read", with magenta reserved for the special inverted case
   splitDeletion: 'colorSupplementary',
-  // read a CPU-baked scheme resolved no color for: the shader's fillColor==0
-  // fallback, which is the same neutral 'plain' paints
   noTagValue: 'colorPairLR',
-  // MAPQ 255 = "unavailable": the neutral grey, because the answer is missing,
-  // not extreme.
   mapqUnavailable: 'colorPairLR',
-} satisfies Partial<Record<ReadColorCategory, keyof ColorPalette>>
+} satisfies Partial<Record<ReadColorCategory, PaletteColorKey>>
 
 export type SwatchCategory = keyof typeof swatchPaletteKeys
 
-// Palette key backing EVERY category, including the ones with no legend swatch.
-// This is what the GPU uploads into `u.readCategoryColor`, one slot per RC_*
-// index, so the shader can index instead of branching — and so the color a
-// category is painted and the color its swatch shows come from one table rather
-// than from a shader chain checked against this one by a test.
-//
-// `mapq` and `tag` resolve per read (the MAPQ ramp's colour, a packed tag color)
-// and never reach the uploaded table; they take the neutral fill so the slot
-// holds a sane color rather than whatever the last block render left, which is
-// also what the shader's own fillColor==0 path paints.
+// Every category's default, the ones with no swatch included, which take the
+// neutral fill where no per-read colour reaches them.
 export const readCategoryPaletteKeys = {
   ...swatchPaletteKeys,
   plain: 'colorPairLR',
   mapq: 'colorPairLR',
   tag: 'colorPairLR',
-} satisfies Record<ReadColorCategory, keyof ColorPalette>
+} satisfies Record<ReadColorCategory, PaletteColorKey>
 
-// CSS color of a fixed-swatch category, straight from the live palette.
+// What a category paints: the colour the `color` object declares for it, else
+// its palette default. The GPU's `u.readCategoryColor`, the Canvas2D fill, the
+// key and the overlay palettes all read it.
+export function readCategoryColor(
+  palette: ColorPalette,
+  category: ReadColorCategory,
+) {
+  return (
+    palette.readCategoryColors[category] ??
+    palette[readCategoryPaletteKeys[category]]
+  )
+}
+
 export function categorySwatchColor(
   category: SwatchCategory,
   palette: ColorPalette,
 ) {
-  return rgb255(palette[swatchPaletteKeys[category]])
+  return rgb255(readCategoryColor(palette, category))
 }
 
 export { normalizedRgbToCssRgba as rgba255 } from '@jbrowse/core/util/colorBits'

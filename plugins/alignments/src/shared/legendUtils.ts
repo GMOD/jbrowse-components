@@ -49,7 +49,7 @@ import type {
   ReadColorCategory,
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ColorPalette } from '../shaders/colors.ts'
+import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
 import type {
@@ -480,7 +480,7 @@ export function readCategoryLabelOverrides(
 }
 
 // Per-base nucleotide swatches, colored from the live palette base colors.
-const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
+const BASE_LEGEND: { key: PaletteColorKey; label: string }[] = [
   { key: 'colorBaseA', label: 'A' },
   { key: 'colorBaseC', label: 'C' },
   { key: 'colorBaseG', label: 'G' },

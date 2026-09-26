@@ -12,6 +12,7 @@ import { toRgb } from '../../shaders/colors.ts'
 
 import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { CigarCoords } from '../../shared/hitTestTypes.ts'
+import type { ReadColorCategory } from '../colorUtils.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -52,6 +53,13 @@ const INDICATOR_DARK_LIGHTEN = 0.45
 
 export function buildColorPaletteFromPalette(
   palette: JBrowsePalette,
+  {
+    value,
+    readCategoryColors = {},
+  }: {
+    value?: string
+    readCategoryColors?: Partial<Record<ReadColorCategory, RGBColor>>
+  } = {},
 ): ColorPalette {
   // 0 in light mode leaves the indicator colors equal to the base colors
   const indicatorLighten = palette.mode === 'dark' ? INDICATOR_DARK_LIGHTEN : 0
@@ -63,7 +71,7 @@ export function buildColorPaletteFromPalette(
     colorRevStrand: toRgb(colorRevStrand),
     // pair colors flow through palette.alignmentFill so user theme overrides
     // render and dark mode dims pairLR (see darkPalette in theme.ts)
-    colorPairLR: toRgb(palette.alignmentFill.pairLR),
+    colorPairLR: toRgb(value || palette.alignmentFill.pairLR),
     colorPairRL: toRgb(palette.alignmentFill.pairRL),
     colorPairRR: toRgb(palette.alignmentFill.pairRR),
     colorPairLL: toRgb(palette.alignmentFill.pairLL),
@@ -101,6 +109,7 @@ export function buildColorPaletteFromPalette(
     // light mode and differ in dark for exactly the same kind of reason.
     colorConnectingLine: toRgb(palette.text.primary),
     colorOverlapTint: toRgb(palette.text.primary),
+    readCategoryColors,
   }
 }
 

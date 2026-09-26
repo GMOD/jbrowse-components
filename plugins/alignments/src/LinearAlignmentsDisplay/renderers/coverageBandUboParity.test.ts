@@ -13,7 +13,7 @@ import {
   GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
 
-import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
+import type { PaletteColorKey, RGBColor } from '../../shaders/colors.ts'
 import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
 
 /**
@@ -33,7 +33,9 @@ import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
 // slots cannot pass by both happening to agree.
 function distinctPalette() {
   const overrides: Record<string, RGBColor> = {}
-  const keys = Object.keys(makeTestPalette()) as (keyof ColorPalette)[]
+  const keys = Object.keys(makeTestPalette()).filter(
+    key => key !== 'readCategoryColors',
+  ) as PaletteColorKey[]
   for (let i = 0; i < keys.length; i++) {
     overrides[keys[i]!] = [(i + 1) / 255, ((i + 1) * 2) / 255, 0.5]
   }
@@ -113,7 +115,7 @@ function bandUniforms(state: RenderState, depth?: number) {
   }
 }
 
-const packed = (key: keyof ColorPalette) => {
+const packed = (key: PaletteColorKey) => {
   const rgb = COLORS[key]
   return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 }
@@ -126,7 +128,7 @@ const BAND_COLOR_SLOTS = {
   colorInsertionIndicator: 'colorInsertionIndicator',
   colorSoftclipIndicator: 'colorSoftclipIndicator',
   colorHardclipIndicator: 'colorHardclipIndicator',
-} satisfies Partial<Record<keyof typeof UNIFORM_OFFSET_U32, keyof ColorPalette>>
+} satisfies Partial<Record<keyof typeof UNIFORM_OFFSET_U32, PaletteColorKey>>
 
 describe('the coverage band UBO', () => {
   const { f32, u32, i32 } = bandUniforms(bandState())
@@ -136,7 +138,7 @@ describe('the coverage band UBO', () => {
     (uniform, key) => {
       expect(
         u32[UNIFORM_OFFSET_U32[uniform as keyof typeof UNIFORM_OFFSET_U32]],
-      ).toBe(packed(key as keyof ColorPalette))
+      ).toBe(packed(key as PaletteColorKey))
     },
   )
 

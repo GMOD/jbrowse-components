@@ -29,7 +29,6 @@ import {
   boundBandHeight,
   clampBandHeight,
 } from '@jbrowse/core/util/bandHeight'
-import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -76,6 +75,7 @@ import {
   BASE_COLOR_FIELDS,
   colorFieldOf,
   colorSnapshotFor,
+  declaredReadCategoryColors,
   isBakedScheme,
 } from '../shared/alignmentsColor.ts'
 import {
@@ -235,6 +235,7 @@ import type {
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
@@ -1166,13 +1167,22 @@ export default function stateModelFactory(
           // Derived from the session theme so it's always available — including
           // headless SVG export and RPC, where no component mounts to seed it.
           get colorPalette(): ColorPalette {
-            const palette = buildColorPaletteFromPalette(
-              getPaletteHost(self).palette,
-            )
-            const { value } = self.colorSetting
-            return value
-              ? { ...palette, colorPairLR: cssColorToNormalizedRgb(value) }
-              : palette
+            return this.colorPaletteIn(getPaletteHost(self).palette)
+          },
+
+          /**
+           * #method
+           * The read palette over `theme`: `color.value` over the neutral
+           * entry, and the category colours `color` declares. SVG export
+           * passes its own theme.
+           */
+          colorPaletteIn(theme: JBrowsePalette): ColorPalette {
+            return buildColorPaletteFromPalette(theme, {
+              value: self.colorSetting.value,
+              readCategoryColors: declaredReadCategoryColors(
+                self.colorEncoding,
+              ),
+            })
           },
 
           /**

@@ -71,6 +71,7 @@ export function makeTestPalette(
     colorConnectingLine: z,
     colorOverlap: z,
     colorOverlapTint: z,
+    readCategoryColors: {},
     ...overrides,
   }
 }
