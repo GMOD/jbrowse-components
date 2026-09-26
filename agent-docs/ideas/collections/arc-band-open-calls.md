@@ -214,4 +214,4 @@ Don't relax it casually.
 Decide the item set first — it is a product call, not an implementation one.
 The one item a reader needs first, opening the split view at the junction, is
 a left click and needs no menu:
-[an-arc-opens-the-breakpoint-split-view](../waiting-on-a-call/an-arc-opens-the-breakpoint-split-view.md).
+[breakpoint-split-view-and-arc-band](breakpoint-split-view-and-arc-band.md) §"An arc click opens the split view".
