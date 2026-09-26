@@ -25,7 +25,6 @@ export const DEFAULT_MARK_SOURCE: MarkSourceName = 'features'
 
 export const DEFAULT_FORMULA_AS = 'value'
 export const DEFAULT_BIN_FIELD = 'start'
-export const DEFAULT_BIN_STEP = 10000
 export const DEFAULT_BIN_AS = ['start', 'end'] as const
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'

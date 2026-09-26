@@ -9,13 +9,16 @@ kind: spec
 
 An LGV view exports as a self-contained `.R` that redraws it from source in
 `rtracklayer` plus base `ggplot2`. Two branches implement it and neither
-landed. This doc is what survives them, written so the next attempt reads it
-instead of the branches.
+landed; a third, `r-export`, carries the mark-display translator that landed
+on main on 2026-09-25 and moved off it on 2026-09-26 to grow on its own. This
+doc is what survives the first two, written so work on the third reads it
+instead of them.
 
 ## Where the code is
 
 | branch | head | on origin | holds |
 | --- | --- | --- | --- |
+| `r-export` | moving | no | `plugins/marks/src/rexport/`, the mark-display translator §"What is built" describes, with its `Rscript` suite and `pnpm gen:rhelpers` |
 | `r-export4-rebase` | `db6e771092` (2026-08-27) | yes | the fidelity-first exporter: 53 R helpers, `exportR.ts`, nine per-display fragments, the equivalence oracles, a 19-figure gallery |
 | `r-export-rewrite` | `ddbae50e74` (2026-08-26) | **no** | the idiomatic-first one: `FigureSpec`, `rplot.ts`, `emitR.ts`, `jb2export --out fig.R` |
 | `R_export4` | `b90ffa8d1a` (2026-07-17) | **stale ref** | superseded by `r-export4-rebase` |
@@ -258,8 +261,9 @@ generic region reader.
 
 ## What is built
 
-`plugins/marks/src/rexport/` translates the stages above for the mark display,
-over BigWig, GFF3 and VCF. `rplot.ts` is the plot model, `markToPlot.ts` the
+`plugins/marks/src/rexport/`, on the `r-export` branch, translates the stages
+above for the mark display, over BigWig, GFF3 and VCF. Nothing on main
+imports it; it left main so it can grow without each step landing dead code. `rplot.ts` is the plot model, `markToPlot.ts` the
 mark and channel stages, `transformR.ts` the transform stage, `frameFor.ts` the
 data stage and `rScript.ts` the assembler. The helper library is
 `rhelpers/*.R`, bundled by `pnpm gen:rhelpers` and gated by `pnpm autogen

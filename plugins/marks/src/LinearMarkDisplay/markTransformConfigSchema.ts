@@ -10,7 +10,6 @@ import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
   DEFAULT_BIN_FIELD,
-  DEFAULT_BIN_STEP,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FLATTEN_FIELD,
   DEFAULT_FORMULA_AS,
@@ -80,7 +79,7 @@ const bin = ConfigurationSchema(
     step: {
       type: 'number',
       model: types.union(types.number, types.literal(AUTO_BIN)),
-      defaultValue: DEFAULT_BIN_STEP,
+      defaultValue: 10000,
       description: 'bin width in bp, or "auto" to follow the zoom',
     },
     /**

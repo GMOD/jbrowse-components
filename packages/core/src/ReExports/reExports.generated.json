@@ -2914,16 +2914,6 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/core/util/getLocationUri": {
-      "package": "@jbrowse/core",
-      "names": [
-        "downloadPhase",
-        "getLocationUri",
-        "redactSource",
-        "resolveUri"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/core/util/getRelativeX": {
       "package": "@jbrowse/core",
       "names": [
