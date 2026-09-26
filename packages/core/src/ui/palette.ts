@@ -845,11 +845,11 @@ export interface JBrowsePalette
   mode: 'light' | 'dark'
   primary: ColorQuad
   /**
-   * The primary colour where it marks something on the page's own ground: a
-   * checked box, a selected row, a hover crosshair, a progress bar.
-   * `primary.main` in light mode; in dark mode, where a brand as deep as
-   * midnight vanishes against the background, the secondary text colour,
-   * which is what the Material controls take there too.
+   * The primary colour where it marks something on the page's own ground,
+   * such as a checked box or a selected row. `primary.main` in light mode. In
+   * dark mode a primary as deep as midnight vanishes against the background,
+   * so it is the secondary text colour, which the Material controls take there
+   * too.
    */
   accent: string
   secondary: ColorQuad

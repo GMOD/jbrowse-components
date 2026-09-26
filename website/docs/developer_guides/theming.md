@@ -72,7 +72,7 @@ theme; anything you don't set keeps its preset value.
 | `featureSelected` | `string` | Border accent around the click-selected feature |
 | `featureDescription` | `string` | Feature description labels, e.g. gene descriptions |
 | `featureConnector` | `string` | Intron lines, strand chevrons and strand arrows in feature tracks |
-| `accent` | `string` | The primary colour where it marks something on the page's own ground — a checked box, a selected row, a hover crosshair. `primary.main` in light mode and the secondary text colour in dark, where midnight vanishes |
+| `accent` | `string` | The primary colour where it marks something on the page's own ground, such as a checked box or a selected row. `primary.main` in light mode, and the secondary text colour in dark mode, where a midnight primary vanishes |
 | `tertiary` | `PaletteColor` | Accordion headers and some toolbar chrome |
 | `quaternary` | `PaletteColor` | Secondary floating-action-button background |
 | `highlight` | `PaletteColor` | Selection highlights |

@@ -43,9 +43,10 @@ type FramesOptions = FrameTuple<PaletteColorOptions>
 declare module '@mui/material/styles' {
   interface Palette extends StringColors {
     /**
-     * The primary colour where it marks something on the page's own ground —
-     * a checked box, a selected row, a hover crosshair. `primary.main` in light
-     * mode and the secondary text colour in dark, where midnight vanishes
+     * The primary colour where it marks something on the page's own ground,
+     * such as a checked box or a selected row. `primary.main` in light mode,
+     * and the secondary text colour in dark mode, where a midnight primary
+     * vanishes
      */
     accent: string
     /** Accordion headers and some toolbar chrome */
