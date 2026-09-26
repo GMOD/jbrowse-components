@@ -190,26 +190,25 @@ and staging serves the launcher that sets `followLinearView` and `coarseCut`.
 launch figures give the three graph lanes compact heights so the graph and its
 node menu sit in frame.
 
-**Next.** A docs deploy, which is Colin's (`update docs` on main deploys every
-agent's landed doc commits at once). `tier_to_fine`, `pggb_subgraph_launch`
-and `pangenome_cactus/subgraph_launch` are filmed and in the media store (on
-ada, `node scripts/generate-video.ts` from a `jb-shoot` worktree, which has
-the build; ada has no system ffmpeg, so a static 7.0.2 with its ffprobe sits
-in `~/.local/bin` there). `pangenome/hprc_browse` is not: it films the
-staging page's launch into `jbrowse.org/code/jb2/main`, and after its three
-re-cuts (C4, chr6, back to MHC) the `graphNode` anchor for `s348700+`
-resolves to an empty spot in the pane (x 390, y 1220 of a 1920×1300 frame,
-between the Rank 44 and Rank 57 rows) so the right-click opens no menu,
-where `hprc_haplotype_launch` right-clicks the same anchor on the same config
-without a re-cut and gets the menu. Debug frames from three runs are in that
-session's scratchpad. Two harness fixes came out of it: a hidden wait scopes
-`::-p-text()` to its selector, and a text target looks past the tour's own
-caption (`data-tour-overlay`), which had been catching a click whose caption
-carried the item's words.
+**The graph is a track (plugin 4.0.6, 2026-09-26).** `LinearGraphDisplay`
+hosts the pane inside the linear view: a layout whose x is reference bp takes
+the view's transform and a cut with a window-width margin each side; force,
+ordered and walk rows are cut to the window alone and the first two draw in
+their own coordinates inside the track. The linear view's Launch entries, the
+follow and its Pin/Follow control are gone; the standalone view keeps
+whole-file imports. The store's `latest/` serves 4.0.6, the demo configs and
+jb2hubs' four portal configs declare the graph display first, jb2hubs'
+launcher opens one linear view with the graph as its last track (staging
+deployed), and every graph figure and tour draws through the track: 36
+figures and 7 clips reshot on ada and in the stores. The plugin's
+`agent-docs/GRAPH_TRACK.md` is the design record.
 
-**The design call is taken: the graph is a track.** Plugin 4.0.x draws it as
-`LinearGraphDisplay` inside the linear view, which moves it like any other
-track, and the tutorials describe that route.
+**Next.** A docs deploy, which is Colin's (`update docs` on main deploys every
+agent's landed doc commits at once). A `GraphTrack` track type, so that
+"Graph" stops appearing under Display types on every feature and synteny
+track: the track config schema fills in every display type registered for the
+track type, and the graph display is registered for `FeatureTrack` and
+`SyntenyTrack`.
 
 **Still open, none blocking the above.** The segments lane in the linear view
 cannot pick a tier by zoom, because `RenderFeatureData` hands an adapter no
