@@ -54,9 +54,8 @@ export function laneDisplayConfig({
         ? `jexl:get(feature,'description')`
         : '',
     },
-    // plugin-canvas's own default, so hovering a mark in the lane says what
-    // hovering the same record in a LinearVariantDisplay says.
-    mouseover: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
+    // the lane's tooltip is `buildVariantLaneHit`, so none is evaluated here
+    mouseover: '',
     // Filtering already happened: the records reaching the lane are the ones
     // this display's own worker-side `activeFilters()` admitted, so a second
     // pass here would be a second, differently-spelled filter.

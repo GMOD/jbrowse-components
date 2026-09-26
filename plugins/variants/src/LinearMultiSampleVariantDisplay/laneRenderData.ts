@@ -53,7 +53,7 @@ export interface LaneRegion {
  * nothing else. `laneColor` is how the color gets in — the lane's `color` slot is
  * a jexl reading exactly that attribute (see `laneDisplayConfig`), which is the
  * ordinary per-feature-color path and keeps a mark the same color as the alt
- * cells in the column under it. `REF`/`ALT` ride along for the `mouseover` slot.
+ * cells in the column under it.
  */
 export function buildLaneRenderData({
   data,
@@ -79,8 +79,6 @@ export function buildLaneRenderData({
       description: info?.description,
       type: info?.type,
       laneColor: abgrToCssRgba(featureColors[f]!),
-      REF: info?.ref,
-      ALT: info?.alt,
     })
   })
   return {
