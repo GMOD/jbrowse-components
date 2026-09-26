@@ -199,12 +199,14 @@ cache keyed by descriptor object. The content key since then shares a shader
 across families, so a split now compiles such a shader once per sample count in
 use.
 
-**Every display still asks for 4**, so none of those bytes have gone anywhere
-yet. Which displays should drop to 1 is a look-at-the-pixels decision taken one
+**A display asks for 1 where every pass declares `//! coverage: analytic`**
+(synteny, dotplot, the circular view's rings and chords) and for 4 otherwise.
+Which of the rest should drop to 1 is a look-at-the-pixels decision taken one
 display at a time, and the captures to look at are in
 [../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).
-WebGL2 has no counterpart in our accounting, because `antialias: true` puts the
-multisample backbuffer inside the browser's budget.
+WebGL2 has no counterpart in our accounting, because its `antialias` puts the
+multisample backbuffer inside the browser's budget; a display at one sample asks
+for none.
 
 **Rebuilding it every frame is what turned out not to matter, and the number is
 worth keeping so nobody re-derives the worry.** The mechanism is real and

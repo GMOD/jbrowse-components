@@ -1109,7 +1109,9 @@ than from `deleteBuffer`. `MockHal.replacedWhileDrawn()`
 is where a renderer test says which of the two shapes it has.
 
 **Implementations:** `WebGPUHal` (4× MSAA, device-lost recovery), `WebGL2Hal`
-(`antialias: true`, VAO + UBO, context-loss recovery), `MockHal` (tests).
+(`antialias` above one sample, VAO + UBO, context-loss recovery), `MockHal`
+(tests). Both take the display's sample count, 1 where every pass declares
+`//! coverage: analytic`.
 
 **All three extend `GpuHalBase`**, which owns the half of a HAL that was only
 ever mirrored: the descriptor map, the `RegionRegistry` over `(region, pass)`,

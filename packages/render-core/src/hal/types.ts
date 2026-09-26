@@ -31,9 +31,8 @@ export interface VertexAttributeLayout {
  * this is worth stating per display — see ARCHITECTURAL_LIMITS.md §"The MSAA
  * target is the largest per-display allocation".
  *
- * WebGL2 has no counterpart: it draws to the default framebuffer with
- * `antialias: true`, so its multisampling is the browser's choice inside the
- * browser's budget.
+ * WebGL2 draws to the default framebuffer and asks for `antialias` above one
+ * sample, so there the samples are the browser's, inside the browser's budget.
  */
 export type SampleCount = 1 | 4
 

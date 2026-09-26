@@ -6,6 +6,7 @@ import type {
   BlendFactor,
   GpuHal,
   PipelineDescriptor,
+  SampleCount,
   ShaderSource,
   TextureBinding,
   TextureSource,
@@ -194,17 +195,19 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   static async create(
     canvas: HTMLCanvasElement,
     descriptors: PipelineDescriptor[],
+    sampleCount: SampleCount = 4,
   ) {
     const glsl = await Promise.all(
       descriptors.map(async d => [d.id, await d.source.glsl()] as const),
     )
-    return new WebGL2Hal(canvas, descriptors, new Map(glsl))
+    return new WebGL2Hal(canvas, descriptors, new Map(glsl), sampleCount)
   }
 
   private constructor(
     canvas: HTMLCanvasElement,
     descriptors: PipelineDescriptor[],
     glsl: ReadonlyMap<string, GlslStages>,
+    sampleCount: SampleCount,
   ) {
     super(descriptors, 'WebGL2Hal')
     this.canvas = canvas
@@ -236,7 +239,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     // straight-alpha compositor would darken at AA edges; WebGPU's alphaMode
     // matches.
     const gl = canvas.getContext('webgl2', {
-      antialias: true,
+      antialias: sampleCount > 1,
       premultipliedAlpha: true,
     })
     if (!gl) {
@@ -393,7 +396,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
   /**
    * Nothing to give back. WebGL2 multisamples in the drawing buffer the context
-   * owns (`antialias: true` below), so this HAL holds no separate target —
+   * owns (`antialias` above one sample), so this HAL holds no separate target —
    * releasing its samples means dropping the context, which costs a re-acquire
    * against a hard 16-context ceiling and a full shader recompile per display.
    * `agent-docs/reference/GPU_CONTEXT_BUDGET.md` measured that trade and

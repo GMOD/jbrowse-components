@@ -28,9 +28,9 @@ function warnSoftwareRasterizerOnce(glRenderer: string | undefined) {
 export interface GpuHalOptions {
   passes: PipelineDescriptor[]
   /**
-   * Reaches the WebGPU rung only. The WebGL2 rung draws to the default
-   * framebuffer with `antialias: true`, so its multisampling is the browser's
-   * own and there is nothing here to thread into it.
+   * WebGPU sizes its multisampled target by it; WebGL2 asks the browser for an
+   * antialiased drawing buffer only above one sample, so a display whose passes
+   * all measure their own coverage pays for no samples on either rung.
    */
   sampleCount: SampleCount
   /**
@@ -131,7 +131,7 @@ async function climbLadder(
     }
   }
   try {
-    return await WebGL2Hal.create(canvas, passes)
+    return await WebGL2Hal.create(canvas, passes, sampleCount)
   } catch (e) {
     console.warn('[GPU] WebGL2 unavailable, falling back to Canvas2D:', e)
     failures?.push(e)
