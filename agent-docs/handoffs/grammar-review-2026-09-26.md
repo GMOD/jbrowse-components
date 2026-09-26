@@ -149,3 +149,42 @@ TypeScript loader, which fails on `oomReporter.ts`).
 - **Out of scope, unverified, predates the branch:** `visibleIndexRange` in
   `wiggle-core/autoscale.ts` binary-searches starts it assumes sorted, and a
   faceted layer's `x` is in section order.
+
+### Alignments colour override (Opus build agent, 2026-09-26)
+
+Built and committed as `9f9914931a` on `worktree-agent-a4108f312c7d1b76b`
+("A declared colour range paints on every alignments read field"); stopped
+before the docs, the rebase and `pnpm verify`. Gates run in its worktree:
+`pnpm typecheck` green; `npx jest plugins/alignments` 217 suites / 2531 tests
+green, including the new
+`LinearAlignmentsDisplay/declaredCategoryColors.test.ts` (RR paints
+`#d95f02` and LR keeps its default on the uniform slots, the swatch and the
+Canvas2D fill, the key shows both; each of the five formerly collapsed levels
+recolours alone; a threshold range over insert size colours its three bins).
+
+What it did: each read field names its levels (`strand` 1/-1;
+`pairOrientation` LR/RL/RR/LL and `''` for an unsplit read; insert size
+short/normal/long; `mapq` 255; tags and `mateRefName` `''` for no value), and
+`range` colours the levels `domain` lists, or the field's own order with no
+`domain`; the palette carries a declared colour per read category and one
+lookup, `readCategoryColor(palette, category)`, serves the GPU uniforms, the
+Canvas2D fill, `categorySwatchColor` and `palettes.ts`; `isBakedScheme` only
+marks the per-read main-thread fields now; the SVG export builds its palette
+through the model (and so honours `color.value`, which it ignored before).
+`categoricalScale` was not used for the fixed-level fields, since it hashes
+unlisted values into slots and merges repeated fallback colours.
+
+Zero-image-diff claim: no tracked config declares a range on a preset field,
+the category table is empty without one, and the alignments snapshots held;
+browser goldens and jbrowse-web suites not run. The one visible change is an
+SVG export of a track setting `color.value`, which now matches the screen.
+
+Left for the lander: the `#slot domain`/`range` docstrings and an example in
+`alignmentsColorConfigSchema.ts` then `pnpm autogen`; strike ADR-148's "waits
+unread" consequence; update `ALIGNMENTS_COLOR_PARITY.md` and
+`SLANG_UNIFORM_ARRAYS.md`; delete `pending-calls.md` §1; a direct test of the
+`''` removal in the tag scale; `git rebase main` and the gates again. One
+known gap: an `LR` override recolours the reads and the key's LR row, but the
+arc band's baseline still paints `normalInsert`'s colour, so the key and the
+arcs disagree; the fix passes the field into `buildArcBandFeeds`, which the
+brief kept out of scope.
