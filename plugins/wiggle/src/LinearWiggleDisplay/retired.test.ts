@@ -1,4 +1,3 @@
-import { foldRetiredRenderingDefaults } from '../MultiQuantitativeTrack/displayDefaults.ts'
 import { foldMultiWiggleRendering } from './retired.ts'
 
 test.each([
@@ -44,17 +43,4 @@ test.each(['multirowxy', 'multixyplot', 'density'])(
 test('an entry with no rendering is left alone', () => {
   const entry = { height: 300 }
   expect(foldMultiWiggleRendering(entry)).toBe(entry)
-})
-
-test('a multi-source track’s displayDefaults folds the multi names alone', () => {
-  const seeded = (defaultRendering: string) =>
-    foldRetiredRenderingDefaults({
-      type: 'MultiQuantitativeTrack',
-      displayDefaults: { defaultRendering },
-    }).displayDefaults
-  expect(seeded('multixyplot')).toMatchObject({
-    defaultRendering: 'xyplot',
-    rows: '',
-  })
-  expect(seeded('xyplot')).toEqual({ defaultRendering: 'xyplot' })
 })

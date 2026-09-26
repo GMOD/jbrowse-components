@@ -39,23 +39,15 @@ const MULTI_RENDERINGS: Record<string, readonly [string, string]> = {
 
 /**
  * A `MultiLinearWiggleDisplay` entry's rendering as the plot it drew and
- * whether its sources took a row each. On a multi-source track's
- * `displayDefaults`, which names no display, a plain plot name is the current
- * display's, so `plainNames: false` folds the multi names alone.
+ * whether its sources took a row each.
  *
  * A `rows.field` the entry spells wins, so a folded entry folds to itself: a
  * session track's entry keeps the retired type and meets the fold again.
  */
-export function foldMultiWiggleRendering(
-  entry: DisplayEntry,
-  { plainNames = true }: { plainNames?: boolean } = {},
-): DisplayEntry {
+export function foldMultiWiggleRendering(entry: DisplayEntry): DisplayEntry {
   const rendering = entry.defaultRendering
   const hit =
-    typeof rendering === 'string' &&
-    (plainNames || rendering.startsWith('multi'))
-      ? MULTI_RENDERINGS[rendering]
-      : undefined
+    typeof rendering === 'string' ? MULTI_RENDERINGS[rendering] : undefined
   if (!hit) {
     return entry
   }
@@ -75,7 +67,7 @@ export function foldMultiWiggleRendering(
 export const retiredTypes: RetiredDisplayType[] = [
   {
     type: 'MultiLinearWiggleDisplay',
-    migrate: entry => foldMultiWiggleRendering(entry),
+    migrate: foldMultiWiggleRendering,
     values: { defaultRendering: Object.keys(MULTI_RENDERINGS) },
   },
 ]

@@ -1,21 +1,11 @@
 import { moveDisplayDefaults } from '@jbrowse/display-kit/retiredSettings'
 
-import { foldMultiWiggleRendering } from '../LinearWiggleDisplay/retired.ts'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const QUANTITATIVE_TRACK_TYPES = new Set([
   'QuantitativeTrack',
   'MultiQuantitativeTrack',
 ])
-
-export function foldRetiredRenderingDefaults(snap: Record<string, unknown>) {
-  const given = snap.displayDefaults as Record<string, unknown> | undefined
-  const written = given
-    ? foldMultiWiggleRendering(given, { plainNames: false })
-    : undefined
-  return written === given ? snap : { ...snap, displayDefaults: written }
-}
 
 /**
  * `displayDefaults.facet` and `.rows` on a quantitative track go onto its
@@ -37,10 +27,6 @@ export default function MultiQuantitativeTrackDefaultsF(
     if (!QUANTITATIVE_TRACK_TYPES.has(snap.type as string)) {
       return snap
     }
-    return wiggleEntryShorthand(
-      snap.type === 'MultiQuantitativeTrack'
-        ? foldRetiredRenderingDefaults(snap)
-        : snap,
-    )
+    return wiggleEntryShorthand(snap)
   })
 }

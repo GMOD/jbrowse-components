@@ -41,8 +41,8 @@ schemas with `LinearWiggleDisplay`'s swapped for a schema of the same name whose
 `ConfigurationReference` resolves by `displayId` with a display-type fallback,
 so the live model reads through either schema; the slot set is unchanged, so
 the shorthand router and `applyDisplaySettings` read nothing new. The seed is
-deleted. The legacy-rendering fold of `displayDefaults` stays, as
-`foldRetiredRenderingDefaults`.
+deleted, and with it the fold of a legacy rendering name in `displayDefaults`,
+which only v5 betas could have written.
 
 With the seed gone, a v4 session track's rows were lost to a second fold. The
 session migration folds lifted state onto an entry that still spells

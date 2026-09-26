@@ -264,18 +264,6 @@ describe('the schema', () => {
     expect(schemaProblems(config)).toEqual([])
   })
 
-  it('accepts a legacy rendering in a multi track’s displayDefaults', () => {
-    const config = baseConfig()
-    config.tracks[0] = {
-      ...config.tracks[0]!,
-      type: 'MultiQuantitativeTrack',
-      adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
-      displayDefaults: { defaultRendering: 'multirowxy' },
-      displays: [],
-    }
-    expect(schemaProblems(config)).toEqual([])
-  })
-
   it("accepts a legacy key a display's schema retires", () => {
     const wiggle = baseConfig()
     wiggle.tracks[0] = {
