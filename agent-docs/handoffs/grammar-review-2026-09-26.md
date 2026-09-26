@@ -13,24 +13,6 @@ done.**
 
 ## Built, green, unlanded
 
-1. **ADR-165 stage 2, the row table on the mark display.** Branch
-   `worktree-agent-a5dfc67dddd935eaf`, worktree
-   `.claude/worktrees/agent-a5dfc67dddd935eaf`, 18 commits rebased on main
-   `e296962e75`, last commit `26fc96d45b` (11:47). It is the whole of
-   [mark-display-row-table-stage-2](mark-display-row-table-stage-2.md): the
-   two-sampler HAL (bindings 4/5, a filter per sampler), `bar`, `point` and
-   `link` reading the table on the GPU and in Canvas2D, `rowTable.ts`
-   (`keyRegion`, `markRowTable`, `drawnKeysOf`, `drawnRegion`) and
-   `drawnScales.ts` on the mark display, the legend, axis and size scales over
-   `scaleDataMap`, tooltip, labels, SVG export, sort-at-column and clustering
-   through keys, bench arms, and ADR-165's stage-2 numbers. Verified in that
-   worktree: `pnpm typecheck` green; 241 suites green (`plugins/marks`,
-   `packages/render-core`, `packages/shader-tools`, `plugins/gwas`,
-   `plugins/wiggle/src/shared`, `plugins/variants/src/LDDisplay`,
-   `plugins/circular-view/src/rings`, `plugins/hic`, `packages/wiggle-core`,
-   `plugins/canvas/src/LinearMultiRowFeatureDisplay`). An Opus adversarial
-   review of its diff was in flight; its report, if it arrived, is appended
-   below.
 2. **A declared colour on a baked alignments field paints**
    ([pending-calls](pending-calls.md) §1, Colin's 2026-09-25 call). Built by
    an Opus agent on branch `worktree-agent-a4108f312c7d1b76b`, worktree
@@ -91,12 +73,6 @@ done.**
 
 ## Next, in order
 
-1. Land stage 2: `git merge --ff-only worktree-agent-a5dfc67dddd935eaf` from
-   the primary (rebase first if main moved), then in a worktree delete
-   `handoffs/mark-display-row-table-stage-2.md`, fix the
-   `GRAMMAR_OF_GRAPHICS.md` bullet above, `pnpm autogen`, land. Remove the
-   `grammar-round-2026-09-26` and `agent-a5dfc67dddd935eaf` worktrees and
-   `-d` their branches.
 2. Review and land the alignments colour branch; delete `pending-calls.md` §1
    with it (§2, landing regenerates, stays unbuilt: `.githooks/post-merge`
    already runs `autogen --check` detached, and Colin's answer was to

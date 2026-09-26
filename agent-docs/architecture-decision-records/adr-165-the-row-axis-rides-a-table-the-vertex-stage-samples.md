@@ -63,7 +63,7 @@ instances.
 What the HALs allow: a render shader binds one uniform block and up to two
 combined `Sampler2D`s, at bindings 2/3 and 4/5, each under its own filter
 (`RENDER_SHAPES`, `shader-codegen/bindings.ts`; the second arrived with stage
-2, so bar, point and link bind the ramp and the table side by side); the span,
+2, so bar, point and link bind the ramp and the table side by side); the
 variant, MAF and wiggle line and band passes bind no texture; vertex-stage
 sampling ships (`barMark` samples its ramp there) and WebGPU binding visibility
 follows the stages the reflected table names; a texture uploads only when its
