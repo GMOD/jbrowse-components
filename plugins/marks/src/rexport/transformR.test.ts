@@ -1,0 +1,171 @@
+import { frame } from './rplot.ts'
+import { applyTransforms } from './transformR.ts'
+
+import type { Step } from './transformR.ts'
+
+const base = frame({
+  name: 'df',
+  columns: ['start', 'end', 'score', 'strand', '.region'],
+  coords: ['start', 'end'],
+  packages: ['rtracklayer'],
+  statements: 'df <- read_bigwig(path, chrom, start, end)',
+})
+
+function run(steps: Step[], bpPerPx = 100, shifted = false) {
+  const notes: string[] = []
+  return {
+    out: applyTransforms({ base, steps, notes, bpPerPx, shifted }),
+    notes,
+  }
+}
+
+describe('a step becomes R, and says what it now holds', () => {
+  it('bins on a field into a start and an end', () => {
+    const { out } = run([{ type: 'bin', step: 1000, field: 'start' }])
+    expect(out.statements).toContain(
+      'df$start <- floor(df$start / 1000) * 1000',
+    )
+    expect(out.statements).toContain('df$end <- df$start + 1000')
+    expect(out.statements).not.toContain('offset')
+  })
+
+  it('aligns a bin on a shared axis to genomic multiples of its width', () => {
+    const { out } = run([{ type: 'bin', step: 1000 }], 100, true)
+    expect(out.statements).toContain(
+      'offset <- (regions$offset - regions$start)[df$.region]',
+    )
+    expect(out.statements).toContain(
+      'df$start <- floor((df$start - offset) / 1000) * 1000 + offset',
+    )
+  })
+
+  it('bins a value field as it is, on any axis', () => {
+    const { out } = run(
+      [{ type: 'bin', step: 10, field: 'score', as: ['lo', 'hi'] }],
+      100,
+      true,
+    )
+    expect(out.statements).toContain('df$lo <- floor(df$score / 10) * 10')
+    expect(out.coords).toEqual(['start', 'end'])
+  })
+
+  it('takes the bin width the display would follow the zoom with', () => {
+    // four px of 100 bp/px is 400 bp, which the 1/2/5 ladder snaps up to 500
+    const { out } = run([{ type: 'bin', step: 'auto' }], 100)
+    expect(out.statements).toContain('/ 500')
+    expect(run([{ type: 'bin', step: 'auto' }], 2500).out.statements).toContain(
+      '/ 10000',
+    )
+  })
+
+  it('aggregates into the columns its ops name', () => {
+    const { out } = run([
+      {
+        type: 'aggregate',
+        groupby: ['strand'],
+        ops: [
+          { op: 'mean', field: 'score', as: 'meanScore' },
+          { op: 'count', as: 'n' },
+        ],
+      },
+    ])
+    // addNA keeps a group whose key is missing, as the encoder keys undefined;
+    // the region is a key of its own, as the browser folds each region alone
+    expect(out.statements).toContain(
+      'split(df, lapply(df[c("strand", ".region")], addNA), drop = TRUE)',
+    )
+    // no groups is an empty frame with the columns, not NULL
+    expect(out.statements).toContain('bind_groups(')
+    expect(out.statements).toContain('meanScore = mean(g$score, na.rm = TRUE)')
+    expect(out.statements).toContain('n = nrow(g)')
+    // the folded span comes too, as featureTransforms.ts emits it, or a mark
+    // has nothing to place the result at
+    expect(out.statements).toContain('start = min(g$start), end = max(g$end)')
+    expect(out.columns).toEqual([
+      'strand',
+      'start',
+      'end',
+      'meanScore',
+      'n',
+      '.region',
+    ])
+  })
+
+  it('groups an aggregate on the bin before it where none is named', () => {
+    const { out } = run([
+      { type: 'bin', step: 500, as: ['binStart', 'binEnd'] },
+      { type: 'aggregate', ops: [{ op: 'sum', field: 'score', as: 'total' }] },
+    ])
+    expect(out.statements).toContain('df[c("binStart", "binEnd", ".region")]')
+  })
+
+  it('packs a pileup into rows counted from zero', () => {
+    const { out } = run([{ type: 'pileup' }])
+    expect(out.statements).toContain('IRanges::disjointBins(')
+    expect(out.statements).toContain('- 1L')
+    expect(out.columns).toContain('row')
+    expect(out.packages).toContain('IRanges')
+  })
+
+  it('carries a pileup padding into the packed interval', () => {
+    const { out } = run([{ type: 'pileup', padding: 2 }])
+    expect(out.statements).toContain('df$end + 2')
+  })
+
+  it('replaces the frame with depth runs for a coverage step', () => {
+    const { out } = run([{ type: 'coverage', as: 'depth' }])
+    expect(out.statements).toContain('IRanges::coverage(')
+    expect(out.columns).toEqual(['start', 'end', 'depth', '.region'])
+  })
+
+  it('runs the steps in order, each over the last one’s columns', () => {
+    const { out } = run([
+      { type: 'coverage', as: 'depth' },
+      { type: 'bin', step: 100, field: 'start', as: ['bs', 'be'] },
+    ])
+    expect(out.columns).toEqual([
+      'start',
+      'end',
+      'depth',
+      '.region',
+      'bs',
+      'be',
+    ])
+    expect(out.statements.indexOf('IRanges::coverage')).toBeLessThan(
+      out.statements.indexOf('floor(df$start / 100)'),
+    )
+  })
+})
+
+describe('a step it cannot run is reported, never approximated', () => {
+  it('skips a step reading a column no stage produces', () => {
+    const { out, notes } = run([{ type: 'pileup', fields: ['pos', 'end'] }])
+    expect(notes).toEqual([
+      'transform: pileup reads pos, which no stage produces, so it is skipped',
+    ])
+    expect(out).toBe(base)
+  })
+
+  it('says a filter left the rows in', () => {
+    const { notes } = run([{ type: 'filter', expr: 'jexl:x > 1' }])
+    expect(notes).toEqual([
+      'transform: filter carries a jexl callback, so the figure shows unfiltered rows',
+    ])
+  })
+
+  it('does not claim a formula\u2019s output column, since it emits no R', () => {
+    const { out, notes } = run([{ type: 'formula', expr: 'jexl:1', as: 'v' }])
+    expect(notes).toEqual([
+      'transform: formula writes v from a jexl callback, which has no R counterpart',
+    ])
+    expect(out.columns).not.toContain('v')
+  })
+
+  it('says flatten and mate need structure a table lacks', () => {
+    const { notes } = run([{ type: 'flatten' }, { type: 'mate' }])
+    expect(notes).toEqual([
+      'transform: flatten needs structure a table does not hold, not drawn',
+      'transform: mate needs structure a table does not hold, not drawn',
+    ])
+  })
+})

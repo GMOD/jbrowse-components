@@ -121,6 +121,13 @@ const GENERATORS: Generator[] = [
     independent: true,
   },
   {
+    // plugins/marks/src/rexport/rHelpers.generated.ts, bundled verbatim from
+    // the rhelpers/*.R sources the R export emits.
+    name: 'R helpers',
+    argv: rootScript('build-r-helpers.ts'),
+    independent: true,
+  },
+  {
     // tsconfig.build.json and each package's tsconfig.build.esm.json.
     name: 'tsconfig references',
     argv: rootScript('generate-tsconfig-references.ts'),
