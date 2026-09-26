@@ -1905,11 +1905,11 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: TOOLBAR_READY,
     readyTimeout: 180000,
     viewportWidth: 1100,
-    viewportHeight: 1350,
+    viewportHeight: 1600,
     hideTooltip: true,
     stages: [
       {
-        viewportHeight: 900,
+        viewportHeight: 1250,
         actions: [
           { type: 'delay', ms: 2000 },
           { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
@@ -1927,7 +1927,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
       {
         url: portalGraphLaunch(),
-        viewportHeight: 1350,
+        viewportHeight: 1600,
         actions: [
           { type: 'delay', ms: 2000 },
           { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },

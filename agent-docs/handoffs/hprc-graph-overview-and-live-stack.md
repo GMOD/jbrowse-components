@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph pane follows the linear view and picks its coarse tier by zoom, lanes read from the graph draw the alignment the graph states between any two haplotypes with no aligner, one command builds a host's files and config, and the tutorials open on the hosted instance. Left - publish the reader and the plugin, bump the store pin, deploy the portal, the three graph demos and the docs, then film and capture the reshot figures.
+description: The HPRC graph thread as of 2026-09-26. The graph pane follows the linear view and picks its coarse tier by zoom, lanes read from the graph draw the alignment the graph states between any two haplotypes with no aligner, one command builds a host's files and config, and the tutorials open on the hosted instance. Released - gbz-base 2.8.0, the plugin 3.1.0 on npm and the store, the portal, the demos, the figures. Left - the clips, a docs deploy, and Colin's call on the anchored graph becoming a linear-view display.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -175,29 +175,52 @@ absorbs the portal page and part 4, part 3 folds in the amylase and multi-way
 pages, the retired slugs redirect, and the host page is one command
 (`eae099f299`, `4a1695b2ea`..`294c873e86`, `5028a0a582`..`37e1186e94`).
 
-**Next, in order.** Each is outward-facing and Colin's to run.
+**Released 2026-09-26.** `@gmod/gbz-base` 2.8.0 and the plugin 3.1.0 are on
+npm; the plugin's pin on the reader moved to `^2.8.0` in the same push (the
+symlinked checkout had hidden that `bases: false` needs it, and plugin main was
+red on tsc and three adapter tests once `pnpm install` restored the npm copy).
+The store serves 3.1.0 at `latest/` (jbrowse-plugin-list `e8c8cf9`), the three
+demo configs with their `coarse` slots are deployed, the four portal configs
+are in the bucket with their upload stamps committed (jb2hubs `4db85836dc1`),
+and staging serves the launcher that sets `followLinearView` and `coarseCut`.
+`pangenome/genomes_hprc_mhc_graph`, `hprc_haplotype_launch`, `graph_kiv2_walks`,
+`graph_kiv2_walk_rows`, `hprc_gbz_cfhr_lanes`, `hprc_c4_graph_stack`,
+`hprc_amylase_lanes`, `host_your_own`, `hprc_amylase_walk_rows` and
+`pggb_bubble_tier` were shot on ada against the store's 3.1.0; the portal
+launch figures give the three graph lanes compact heights so the graph and its
+node menu sit in frame.
 
-1. Publish `@gmod/gbz-base` 2.8.0 (`pnpm version minor` in its checkout; the
-   tag publishes) and put the plugin primary's `node_modules/@gmod/gbz-base`
-   back from the checkout symlink to the npm package (`pnpm install` after
-   bumping the dependency to `^2.8.0`).
-2. Publish the plugin as 3.1.0 (`pnpm version minor`; preversion runs the host
-   probe, whose `scripts/host-compat-probe.mjs` carries an uncommitted edit),
-   bump the pin in jbrowse-plugin-list's `plugins.json` and run `pnpm dep`
-   there, which moves the store's `latest/` and every hosted graph figure.
-3. Push jb2hubs and deploy staging; `scripts/deploy-demo.sh` for `hprc`,
-   `ecoli_pangenome` and `arabidopsis_pangenome`; a docs deploy.
-4. Film `pangenome/hprc_browse` and capture the re-specced figures on ada
-   (`genomes_hprc_mhc_graph`, `hprc_haplotype_launch`, `graph_kiv2_walks`,
-   `graph_kiv2_walk_rows`, `hprc_gbz_cfhr_lanes`, `hprc_c4_graph_stack`,
-   `hprc_amylase_lanes`, `host_your_own`, `hprc_amylase_walk_rows`,
-   `pggb_bubble_tier`), re-film `tier_to_fine`, `pggb_subgraph_launch` and
-   `pangenome_cactus/subgraph_launch`, then push the stores and commit the
-   locks; `check-figure-refs` and `videoFrames.test.ts` are red until then.
+**Next.** A docs deploy, which is Colin's (`update docs` on main deploys every
+agent's landed doc commits at once). The clips `pangenome/hprc_browse`,
+`tier_to_fine`, `pggb_subgraph_launch` and `pangenome_cactus/subgraph_launch`
+film on ada with `node scripts/generate-video.ts` from a `jb-shoot` worktree,
+which has the build; ada has no system ffmpeg, so a static 7.0.2 sits in
+`~/.local/bin` there.
+
+**Open design call, Colin's (2026-09-26).** Two panes that move together read
+as disorienting. The anchored graph could be a display in the linear view,
+where scroll linkage is the platform's rather than a follow of ours, the tier
+is an ordinary zoom-level choice made with the view's bpPerPx, and the
+standalone GraphGenomeView keeps the layouts whose x is not reference bp
+(force, ordered, a popped bubble, a file import, a GBZ walk cut). The follow's
+refusal list already draws that line. What carries over unchanged: the cut and
+re-cut (`followCut`, `cutHolds`), the tier pick, the `coarse` slot, row order
+across a re-cut, selection by id, and the lane-pair route. What goes: the
+viewport owner, the two reactions, Pin/Follow and the toolbar status,
+`connectedViewId` for the anchored case. What moves: every `GraphGenomeView`
+launch in jb2hubs, the demos, ~30 figure specs and the tutorials.
 
 **Still open, none blocking the above.** The segments lane in the linear view
 cannot pick a tier by zoom, because `RenderFeatureData` hands an adapter no
-bpPerPx, so a tier track stays a lane. The follow is off on a GBZ cut. The
+bpPerPx, so a tier track stays a lane, and the browse page's chromosome step
+shows a following graph under a zoom-in message. The follow is off on a GBZ
+cut, so the browse page's KIV-2 walks still open as a second, static pane, and
+`hprc_v2_1_gbz_lanes` still names the curated eight. A lane pair cuts the
+window once per adjacent pair (N-1 cuts per stack, 0.3-1 s each warm on the
+hosted db); cutting once per stack is the speed lever. On the coarse tier the
+bubble labels overlap the backbone's length labels (`pggb_bubble_tier`). Six
+of the eleven pangenome pages still lead with a build (ecoli, cactus, chrM,
+part 5, syri, the host page). The
 portal's graph configs carry no text index and no cytobands, so the browse
 page types coordinates. `ecoli_minigraph` has no hosted tier, and the portal's
 bovine callset lacks `renderingMode: "phased"`. `build_ecoli_pangenome_graph.sh`
