@@ -74,8 +74,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/syri_synteny)
 - [](/docs/tutorials/circular_synteny)
 - [](/docs/tutorials/hg002_haplotypes)
-- [](/docs/tutorials/amylase_haplotypes)
-- [](/docs/tutorials/hprc_multiway_synteny)
 - [](/docs/tutorials/hg38_vertebrates_synteny)
 
 #### Ortholog tables

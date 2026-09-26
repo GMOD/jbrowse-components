@@ -180,12 +180,33 @@ export const hostedConfigs: Record<string, RawConfig & { absent: string[] }> = {
         }
       },
       {
+        "trackId": "hprc_bubble_score",
+        "name": "HPRC release 2 graph: variability (segments per bubble)",
+        "type": "QuantitativeTrack",
+        "adapter": {
+          "type": "MinigraphBubbleAdapter"
+        }
+      },
+      {
         "trackId": "hprc_minigraph_alleles",
         "name": "HPRC release 2 graph: allele inventory",
         "type": "AlignmentsTrack",
         "adapter": {
           "type": "BedTabixAdapter"
         }
+      },
+      {
+        "trackId": "hprc_v2_1_gbz_lanes",
+        "name": "HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)",
+        "type": "SyntenyTrack",
+        "adapter": {
+          "type": "GbzBaseSyntenyAdapter"
+        },
+        "displays": [
+          {
+            "type": "MultiWaySyntenyDisplay"
+          }
+        ]
       }
     ],
     "absent": []

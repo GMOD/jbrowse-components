@@ -1729,7 +1729,13 @@ export const GRAPH_LABELS: Record<string, string[]> = {
   'Bubble spread select': Object.values(GRAPH_BUBBLE_SPREADS),
   'Layout quality radios': Object.values(GRAPH_LAYOUT_QUALITIES),
   'Graph context select': Object.values(GRAPH_CONTEXTS),
-  'the settings dialog itself': ['Settings', 'Graph context', 'Layout quality'],
+  'the settings dialog itself': [
+    'Settings',
+    'Graph context',
+    'Layout quality',
+    'Haplotypes',
+  ],
+  'the follow toggle': ['Follow', 'Pin'],
 }
 
 const graphToolbarField = (
@@ -2081,6 +2087,20 @@ export const viewFields: Record<string, FieldRecipe> = {
       ? {
           path: `${GRAPH_SETTINGS} → Graph context → ${GRAPH_CONTEXTS[value]}`,
           note: 'How far the cut follows links out of the region. Each hop costs a query per off-reference segment already reached, so it stops at one by default.',
+        }
+      : undefined,
+  followLinearView: value =>
+    typeof value === 'boolean'
+      ? {
+          path: `Graph view toolbar → ${value ? 'Follow' : 'Pin'}`,
+          note: 'A graph launched from a linear view follows it: the location box and zoom move the graph, and it cuts again once the view leaves the window. Pin holds the graph where it is.',
+        }
+      : undefined,
+  subgraphHaplotypes: value =>
+    Array.isArray(value)
+      ? {
+          path: `${GRAPH_SETTINGS} → Haplotypes`,
+          note: 'The haplotypes a gbz-base cut is for, as lane names or PanSN prefixes. A cut launched from a linear view takes the lanes on screen.',
         }
       : undefined,
   highlight: value =>
