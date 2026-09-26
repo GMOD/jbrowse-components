@@ -149,7 +149,7 @@ function slotAt(container: Container, segment: string, { opt }: SlotWrite) {
   }
   if (i > container.length) {
     throw new Error(
-      `Invalid track option "${opt}": index ${i} comes before index ${container.length}, which nothing has written`,
+      `Invalid track option "${opt}": index ${i} is past the end of a list of ${container.length}; write index ${container.length} first`,
     )
   }
   return i

@@ -57,7 +57,11 @@ test('a digit segment indexes a list', () => {
 // leave one names the entry missing before it instead
 test('an index past the end names the entry to write first', () => {
   expect(() => write('marks.2.mark=bar')).toThrow(
-    /index 2 comes before index 0/,
+    /index 2 is past the end of a list of 0; write index 0 first/,
+  )
+  const settings = write('color.range=tan,teal')
+  expect(() => write('color.range.5=red', settings)).toThrow(
+    /index 5 is past the end of a list of 2; write index 2 first/,
   )
 })
 
