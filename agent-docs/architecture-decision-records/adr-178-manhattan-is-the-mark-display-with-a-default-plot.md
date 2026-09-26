@@ -43,13 +43,21 @@ transforms or Edit plot.
   result to the mark model's `dataNotices` and the corner notice, so the model
   infers nothing about the join from how the points are encoded.
 - **A plot that names an LD field joins LD.** `joinsLd` is an `ldAdapter` plus
-  a mark whose encoding names `ld` or `ld_role`. "Color by LD to index SNP"
-  replaces the marks with two points, each behind a `filter` on `ld_role`:
-  every SNP but the index by a threshold colour over `ld` in LocusZoom's bins,
-  then the index alone on top, a `#c951c9` diamond, so the plot says what it
-  draws and Edit plot shows it; off returns to the default plot. A first
+  a mark whose encoding names `ld` or `ld_role`. LocusZoom's plot is two
+  points, each behind a `filter` on `ld_role`: every SNP but the index by a
+  threshold colour over `ld` in LocusZoom's bins, then the index alone on top,
+  a `#c951c9` diamond, so the plot says what it draws and Edit plot shows it.
+  "Color by LD to index SNP" makes that pair of each point mark placing each
+  SNP (`withLd`): the partner keeps its size, steps, zoom gates and shape, its
+  own constant or callback colour kept beside the r² scale, and every index
+  twin draws after the last partner; every other mark stays. Off strips
+  exactly those pieces (`withoutLd`), so a round trip leaves the plot, and the
+  session delta, as they were; a plot with no such point greys the item out.
+  (Amended 2026-09-26: it replaced the whole plot, which reset the demos'
+  7 and 8 px points and every Point size to 4 px on a round trip.) A first
   version wrote the colour and shape onto every point mark, which painted the
-  index the red of r² 1 and wrote nothing on a plot of bars.
+  index the red of r² 1 and wrote nothing on a plot of bars; the index twin
+  and the greyed item are the answers to those two.
 - **No field preset for `ld`.** The previous colour object painted `{ field:
   'ld' }` as the LocusZoom threshold through a preset only the model knew,
   while the rule list and Edit plot read every field as categorical.

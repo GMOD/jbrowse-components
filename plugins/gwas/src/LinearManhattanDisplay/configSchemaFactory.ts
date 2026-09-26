@@ -40,7 +40,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * them, the key listing the bins highest first and the index as its own row.
  * The LD data is a second source on `GWASAdapter`, so it nests under
  * `adapter`, while the plot goes in `displayDefaults`. The track menu's
- * "Color by LD to index SNP" writes the same marks:
+ * "Color by LD to index SNP" makes the same pair of each point mark of a
+ * plot, and leaves the rest of the plot as it was:
  * ```js
  * {
  *   type: 'GWASTrack',

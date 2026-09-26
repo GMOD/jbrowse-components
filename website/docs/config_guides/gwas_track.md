@@ -76,7 +76,8 @@ A plot naming `ld` or `ld_role` joins each SNP's r² to the index SNP from the
 `GWASAdapter`'s `ldAdapter`; swap in `PlinkLDTabixAdapter` for an indexed
 `.ld.gz`. The first mark below colors every other point by r² in LocusZoom's
 five bins, and the second draws the index SNP alone as a pink diamond on top.
-The track menu's **LD → Color by LD to index SNP** writes the same marks, and
+The track menu's **LD → Color by LD to index SNP** makes the same pair of each
+point mark of the plot, keeping its size, steps and the other marks, and
 right-clicking a point pins it as the index
 ([](/docs/config/linearmanhattandisplay)):
 

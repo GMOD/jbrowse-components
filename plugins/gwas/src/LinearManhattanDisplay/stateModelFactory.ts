@@ -4,12 +4,18 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { toLocale } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
 import { ldJoinFor } from './ldJoinResolver.ts'
-import { LD_MARKS, readsLd } from './ldPlot.ts'
+import {
+  colorsByLd,
+  placesEachSnp,
+  readsLd,
+  withLd,
+  withoutLd,
+} from './ldPlot.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
@@ -17,6 +23,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { MarkTransformStepConfig } from '@jbrowse/plugin-marks'
 
 /**
  * #stateModel LinearManhattanDisplay
@@ -91,21 +98,34 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The marks drawing at this zoom that name an LD field and plot a SNP's
-       * own `y`, whose points the top hit reads. An `aggregate` or `coverage`
-       * step makes its points from bins, so a mark behind one has none.
+       * The steps every mark runs before its own: the display's, then the
+       * facet's.
+       */
+      get sharedSteps(): MarkTransformStepConfig[] {
+        return [...self.conf.transform, ...self.conf.facet.transform]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether "Color by LD to index SNP" has a point mark to colour.
+       */
+      get ldColorable(): boolean {
+        return self.conf.marks.some(m => colorsByLd(m, self.sharedSteps))
+      },
+      /**
+       * #getter
+       * The marks drawing at this zoom that name an LD field and plot each
+       * SNP's own `y` at its own position, whose points the top hit reads.
        */
       get ldMarkIndexes(): number[] {
         const { visible } = self.markView
         const requests = self.layerRequests
-        const shared = [...self.conf.transform, ...self.conf.facet.transform]
         return self.conf.marks.flatMap((m, i) =>
           visible[i] &&
           readsLd(m) &&
           requests[i]!.lanes.includes('y') &&
-          ![...shared, ...m.transform].some(
-            s => s.type === 'aggregate' || s.type === 'coverage',
-          )
+          placesEachSnp(m, self.sharedSteps)
             ? [i]
             : [],
         )
@@ -207,12 +227,20 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * Replace the marks with LocusZoom's plot — each point coloured by its
-       * r² to the index SNP, the index a pink diamond over them — or return
-       * to the default plot. The transform, facet, rows and scales stay.
+       * Colour each point by its r² to the index SNP, the index a pink
+       * diamond over them, or take that colouring off, leaving every other
+       * member and mark of the plot as it was (`withLd`, `withoutLd`).
        */
       setLdColoring(on: boolean) {
-        setConf(self, 'marks', on ? LD_MARKS : undefined)
+        if (on === self.conf.marks.some(readsLd)) {
+          return
+        }
+        const marks = on
+          ? withLd(self.conf.marks, self.sharedSteps)
+          : withoutLd(getSnapshot(self.conf.marks))
+        if (!on || marks) {
+          setConf(self, 'marks', marks)
+        }
       },
     }))
     .actions(self => ({
@@ -223,9 +251,7 @@ export function stateModelFactory(
        * settle once.
        */
       colorByLdToHit(hit: { refName: string; start: number }) {
-        if (!self.joinsLd) {
-          self.setLdColoring(true)
-        }
+        self.setLdColoring(true)
         self.indexSnp = `${hit.refName}:${hit.start + 1}`
         self.indexSnpPinned = true
       },
@@ -260,6 +286,9 @@ export function stateModelFactory(
                         label: 'Color by LD to index SNP',
                         type: 'checkbox' as const,
                         checked: self.joinsLd,
+                        disabled: !self.joinsLd && !self.ldColorable,
+                        disabledHelpText:
+                          'LD colouring colours a point mark that plots each SNP at its own position, and this plot has none: add one with Edit plot...',
                         onClick: () => {
                           self.setLdColoring(!self.joinsLd)
                         },
@@ -283,9 +312,14 @@ export function stateModelFactory(
          */
         contextMenuItems(): MenuItem[] {
           const hit = self.contextMenuInfo?.hit
+          const mark = hit && self.conf.marks[hit.markIndex]
           return [
             ...superContextMenuItems(),
-            ...(hit && self.hasLdData
+            ...(hit &&
+            mark &&
+            self.hasLdData &&
+            (self.joinsLd || self.ldColorable) &&
+            placesEachSnp(mark, self.sharedSteps)
               ? [
                   {
                     label: `Color by LD to ${hit.refName}:${toLocale(hit.start + 1)}`,

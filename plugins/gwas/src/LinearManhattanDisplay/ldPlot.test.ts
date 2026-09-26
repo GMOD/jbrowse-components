@@ -1,4 +1,8 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { diffTrackConfig } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { INDEX_SNP_MISSING } from '../GWASAdapter/ldJoin.ts'
@@ -6,8 +10,10 @@ import { LD_COLOR, LD_INDEX_COLOR, LD_MARKS, MANHATTAN_MARK } from './ldPlot.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
+import type { MarkSnapshot } from '@jbrowse/plugin-marks'
 
 const REGION = {
   refName: 'ctgA',
@@ -21,6 +27,38 @@ function labels(items: MenuItem[]): string[] {
     'label' in i && typeof i.label === 'string' ? i.label : '',
     ...('subMenu' in i ? labels(resolveSubMenu(i)) : []),
   ])
+}
+
+function marksOf(display: LinearManhattanDisplayModel): MarkSnapshot[] {
+  return getSnapshot(display.conf.marks)
+}
+
+function ldItem(display: LinearManhattanDisplayModel) {
+  const ld = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'LD')
+  return ld && 'subMenu' in ld
+    ? resolveSubMenu(ld).find(
+        i => 'label' in i && i.label === 'Color by LD to index SNP',
+      )
+    : undefined
+}
+
+const HIT = {
+  regionIndex: 0,
+  instance: 0,
+  featureIndex: 0,
+  refName: 'ctgA',
+  start: 499,
+  end: 500,
+  bp: 499,
+  y: undefined,
+  color: undefined,
+  colorValue: undefined,
+  glyph: undefined,
+  row: undefined,
+  screenX: 0,
+  screenY: 0,
 }
 
 test('an unwritten plot is a point per feature at its score, which a snapshot leaves out', () => {
@@ -66,14 +104,15 @@ test('the index SNP is a fetch input only while the plot joins LD', () => {
   expect(ld.rpcProps().opts).toEqual({ ld: 'ctgA:101' })
 })
 
-test('LD colouring replaces any plot with the partners by r² and the index as a pink diamond over them, and returns to the default plot', () => {
-  const { display } = createTestEnvironment({
-    marks: [{ mark: 'bar', encoding: { y: 'score' } }],
-  }).createDisplay()
+test("LD colouring makes the default plot LocusZoom's, as the add-track workflow writes it, and the transform stays", () => {
+  const { display } = createTestEnvironment().createDisplay()
   const transform = [{ type: 'filter', expr: "jexl:get(feature,'score') > 1" }]
   display.applyDisplaySettings({ transform })
   display.setLdColoring(true)
   expect(display.joinsLd).toBe(true)
+  expect(marksOf(display)).toEqual(
+    marksOf(createTestEnvironment({ marks: LD_MARKS }).createDisplay().display),
+  )
   const [partners, index] = display.encodings
   expect(partners?.color).toMatchObject({
     field: 'ld',
@@ -87,16 +126,220 @@ test('LD colouring replaces any plot with the partners by r² and the index as a
     domain: ['index'],
     range: ['diamond'],
   })
-  expect(display.layerRequests.map(r => r.transform)).toEqual([
-    [{ type: 'filter', expr: "jexl:feature.ld_role != 'index'" }],
-    [{ type: 'filter', expr: "jexl:feature.ld_role == 'index'" }],
-  ])
   expect(display.markPlot.transform).toEqual(transform)
 
   display.setLdColoring(false)
   expect(display.joinsLd).toBe(false)
   expect(getSnapshot(display.conf)).not.toHaveProperty('marks')
   expect(display.markPlot.transform).toEqual(transform)
+})
+
+const DEMO_LD_PLOT = (
+  JSON.parse(
+    fs.readFileSync(
+      path.resolve(__dirname, '../../../../test_data/config_gwas.json'),
+      'utf8',
+    ),
+  ) as {
+    tracks: {
+      trackId: string
+      displays: { marks: Record<string, unknown>[] }[]
+    }[]
+  }
+).tracks.find(t => t.trackId === 'sle_gwas_ld')!.displays[0]!.marks
+
+// Unticking and ticking again leaves the plot as it was, so the session delta
+// drops `marks` and the track follows its admin's plot again.
+test.each([
+  ['the default plot', undefined],
+  ['the SLE demo, whose points are 7 px', DEMO_LD_PLOT],
+  [
+    'labels over the top hits',
+    [
+      MANHATTAN_MARK,
+      {
+        mark: 'text',
+        transform: [{ type: 'filter', expr: 'jexl:feature.score > 8' }],
+      },
+    ],
+  ],
+  [
+    'a shape scale over svtype',
+    [
+      {
+        mark: 'point',
+        encoding: {
+          y: 'score',
+          shape: { field: 'svtype', domain: ['INS'], range: ['triangle-down'] },
+        },
+      },
+    ],
+  ],
+  [
+    'a constant colour',
+    [{ mark: 'point', encoding: { y: 'score', color: 'green' } }],
+  ],
+  [
+    'bins zoomed out and points zoomed in',
+    [
+      {
+        mark: 'bar',
+        minBpPerPx: 1000,
+        transform: [
+          { type: 'bin', step: 'auto' },
+          { type: 'aggregate', ops: [{ op: 'max', field: 'score' }] },
+        ],
+      },
+      { ...MANHATTAN_MARK, maxBpPerPx: 1000 },
+    ],
+  ],
+])('a round trip through LD colouring keeps %s', (_, marks) => {
+  const { display } = createTestEnvironment({ marks }).createDisplay()
+  const before = getSnapshot(display.conf)
+  const colored = display.joinsLd
+  display.setLdColoring(!colored)
+  expect(display.joinsLd).toBe(!colored)
+  display.setLdColoring(colored)
+  expect(display.joinsLd).toBe(colored)
+  expect(diffTrackConfig(before, getSnapshot(display.conf))).not.toHaveProperty(
+    'marks',
+  )
+})
+
+test('LD colouring leaves every other mark and member where it was', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      { mark: 'point', size: 6, encoding: { y: 'score', color: 'green' } },
+      {
+        mark: 'text',
+        transform: [{ type: 'filter', expr: 'jexl:feature.score > 8' }],
+      },
+    ],
+  }).createDisplay()
+  display.setLdColoring(true)
+  const [partners, index, labels] = marksOf(display)
+  expect(partners).toMatchObject({
+    size: 6,
+    encoding: { color: { value: 'green', field: 'ld', scale: 'threshold' } },
+  })
+  expect(index).toMatchObject({
+    size: 6,
+    encoding: { color: { value: LD_INDEX_COLOR } },
+  })
+  expect(labels).toMatchObject({ mark: 'text' })
+  expect(display.encodings[0]?.color).toMatchObject({ field: 'ld' })
+
+  display.setPointSize(9)
+  display.setLdColoring(false)
+  expect(marksOf(display)).toEqual([
+    {
+      mark: 'point',
+      size: 9,
+      encoding: { y: 'score', color: { value: 'green' } },
+    },
+    {
+      mark: 'text',
+      transform: [{ type: 'filter', expr: 'jexl:feature.score > 8' }],
+    },
+  ])
+})
+
+test('every index twin draws after the last partner, so the index is over every point', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      { ...MANHATTAN_MARK, maxBpPerPx: 1000 },
+      { ...MANHATTAN_MARK, minBpPerPx: 1000, size: 2 },
+    ],
+  }).createDisplay()
+  display.setLdColoring(true)
+  expect(
+    marksOf(display).map(m => [
+      m.transform?.find(step => step.type === 'filter')?.expr,
+      m.maxBpPerPx ?? m.minBpPerPx,
+    ]),
+  ).toEqual([
+    ["jexl:feature.ld_role != 'index'", 1000],
+    ["jexl:feature.ld_role != 'index'", 1000],
+    ["jexl:feature.ld_role == 'index'", 1000],
+    ["jexl:feature.ld_role == 'index'", 1000],
+  ])
+  display.setLdColoring(true)
+  expect(marksOf(display)).toHaveLength(4)
+})
+
+test('a plot with no point placing each SNP greys the item out and changes nothing', () => {
+  const bars = [{ mark: 'bar', encoding: { y: 'score' } }]
+  const binned = [
+    { ...MANHATTAN_MARK, transform: [{ type: 'bin', step: 1000 }] },
+  ]
+  for (const marks of [bars, binned]) {
+    const { display } = createTestEnvironment({ marks }).createDisplay()
+    expect(display.ldColorable).toBe(false)
+    const item = ldItem(display)
+    expect(item).toMatchObject({ disabled: true })
+    expect(item).toHaveProperty(
+      'disabledHelpText',
+      expect.stringMatching(/Edit plot/),
+    )
+    display.setLdColoring(true)
+    expect(marksOf(display)).toEqual(
+      marksOf(createTestEnvironment({ marks }).createDisplay().display),
+    )
+  }
+})
+
+test('unticking a hand-edited LD plot leaves no mark reading LD', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'point',
+        transform: [{ type: 'filter', expr: "jexl:feature.ld_role!='index'" }],
+        encoding: { y: 'score', color: LD_COLOR, size: { field: 'ld' } },
+      },
+      {
+        mark: 'point',
+        transform: [
+          { type: 'filter', expr: "jexl: feature.ld_role == 'index'" },
+        ],
+        encoding: { y: 'score', color: '#c951c9' },
+      },
+      { mark: 'text', encoding: { text: 'ld' } },
+    ],
+  }).createDisplay()
+  expect(display.joinsLd).toBe(true)
+  expect(ldItem(display)).toMatchObject({ disabled: false })
+  display.setLdColoring(false)
+  expect(display.joinsLd).toBe(false)
+  expect(marksOf(display)).toEqual([
+    { mark: 'point', encoding: { y: 'score' } },
+  ])
+})
+
+test('right-click offers LD to a SNP only on a mark that places each SNP', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        mark: 'bar',
+        transform: [
+          { type: 'bin', step: 1000 },
+          { type: 'aggregate', ops: [{ op: 'max', field: 'score' }] },
+        ],
+      },
+      MANHATTAN_MARK,
+    ],
+  }).createDisplay()
+  const offered = (markIndex: number) => {
+    display.openContextMenu({
+      clientX: 0,
+      clientY: 0,
+      hit: { ...HIT, markIndex },
+    })
+    return labels(display.contextMenuItems()).some(l =>
+      l.startsWith('Color by LD to ctgA'),
+    )
+  }
+  expect(offered(0)).toBe(false)
+  expect(offered(1)).toBe(true)
 })
 
 test('right-clicking a point colours by LD to it and pins it', () => {

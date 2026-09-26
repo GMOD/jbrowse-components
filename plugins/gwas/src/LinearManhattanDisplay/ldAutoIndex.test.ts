@@ -191,19 +191,36 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(display.topSnp).toBe('ctgA:501')
   })
 
-  it('reads no top hit off an LD mark whose points are aggregated bins', () => {
+  it.each([
+    [
+      'aggregated bins',
+      {
+        mark: 'bar',
+        transform: [
+          { type: 'bin', step: 1000 },
+          { type: 'aggregate', ops: [{ op: 'max', field: 'ld', as: 'ld' }] },
+        ],
+        encoding: { y: 'ld' },
+      },
+    ],
+    [
+      'SNPs snapped to their bin',
+      {
+        mark: 'point',
+        transform: [{ type: 'bin', step: 1000 }],
+        encoding: { y: 'score', color: { field: 'ld' } },
+      },
+    ],
+    [
+      'SNPs placed by another field',
+      {
+        mark: 'point',
+        encoding: { x: 'pos', y: 'score', color: { field: 'ld' } },
+      },
+    ],
+  ])('reads no top hit off an LD mark whose points are %s', (_, mark) => {
     const { display } = createTestEnvironment({
-      marks: [
-        {
-          mark: 'bar',
-          transform: [
-            { type: 'bin', step: 1000 },
-            { type: 'aggregate', ops: [{ op: 'max', field: 'ld', as: 'ld' }] },
-          ],
-          encoding: { y: 'ld' },
-        },
-        ...LD_MARKS,
-      ],
+      marks: [mark, ...LD_MARKS],
     }).createDisplay()
     const at = (pos: number, score: number) =>
       manhattanFixture({ x: [pos], y: [score], flatbush: false })

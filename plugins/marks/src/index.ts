@@ -14,7 +14,12 @@ export {
 export type {
   LinearMarkDisplayConfigModel,
   MarkConfig,
+  MarkTransformStepConfig,
 } from './LinearMarkDisplay/configSchema.ts'
+export type {
+  MarkSnapshot,
+  StepSnapshot,
+} from './LinearMarkDisplay/markProblems.ts'
 
 export default class MarksPlugin extends Plugin {
   name = 'MarksPlugin'
