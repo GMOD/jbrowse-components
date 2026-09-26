@@ -44,12 +44,9 @@ const useStyles = makeStyles()(theme => ({
     },
   },
   selected: {
-    // stronger than the hover tint (action.selected), which this would
-    // otherwise be indistinguishable from, and readable in both modes
-    background: alpha(
-      theme.palette.primary.main,
-      theme.palette.action.selectedOpacity * 4,
-    ),
+    // twice the dark hover tint (action.selected), four times the light one,
+    // and still under white text in dark mode
+    background: alpha(theme.palette.accent, 0.32),
   },
   label: {
     display: 'flex',

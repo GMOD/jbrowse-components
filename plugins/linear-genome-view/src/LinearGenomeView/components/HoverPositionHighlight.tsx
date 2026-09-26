@@ -18,9 +18,9 @@ const useStyles = makeStyles()(theme => ({
   highlight: {
     height: '100%',
     position: 'absolute',
-    background: alpha(theme.palette.primary.main, 0.4),
-    borderLeft: `2px solid ${theme.palette.primary.main}`,
-    borderRight: `2px solid ${theme.palette.primary.main}`,
+    background: alpha(theme.palette.accent, 0.4),
+    borderLeft: `2px solid ${theme.palette.accent}`,
+    borderRight: `2px solid ${theme.palette.accent}`,
     pointerEvents: 'none',
     zIndex: 10,
   },

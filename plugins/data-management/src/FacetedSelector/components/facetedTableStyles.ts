@@ -68,12 +68,12 @@ export const useFacetedTableStyles = makeStyles()(theme => {
     },
     selectedRow: {
       background: alpha(
-        theme.palette.primary.main,
+        theme.palette.accent,
         theme.palette.action.selectedOpacity,
       ),
       '&:hover': {
         background: alpha(
-          theme.palette.primary.main,
+          theme.palette.accent,
           theme.palette.action.selectedOpacity +
             theme.palette.action.hoverOpacity,
         ),

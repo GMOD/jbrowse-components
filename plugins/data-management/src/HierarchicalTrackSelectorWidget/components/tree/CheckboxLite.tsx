@@ -18,7 +18,7 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.secondary,
   },
   checked: {
-    color: theme.palette.primary.main,
+    color: theme.palette.accent,
   },
   disabled: {
     color: theme.palette.action.disabled,

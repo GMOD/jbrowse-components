@@ -844,6 +844,14 @@ export interface JBrowsePalette
   extends StringColors, NeutralTokens, SemanticColors {
   mode: 'light' | 'dark'
   primary: ColorQuad
+  /**
+   * The primary colour where it marks something on the page's own ground: a
+   * checked box, a selected row, a hover crosshair, a progress bar.
+   * `primary.main` in light mode; in dark mode, where a brand as deep as
+   * midnight vanishes against the background, the secondary text colour,
+   * which is what the Material controls take there too.
+   */
+  accent: string
   secondary: ColorQuad
   tertiary: ColorQuad
   quaternary: ColorQuad
@@ -878,6 +886,7 @@ export interface PaletteInput extends Partial<StringColors> {
   /** what changes when this palette is drawn dark; see {@link DarkPaletteInput} */
   dark?: DarkPaletteInput
   primary?: ShadeInput
+  accent?: string
   secondary?: ShadeInput
   tertiary?: ShadeInput
   quaternary?: ShadeInput
@@ -1075,16 +1084,19 @@ export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
     }
   }
 
+  const text = { ...neutrals.text, ...input.text }
+  const primary = augmentColor(input.primary ?? brandFallback.primary)
   return {
     ...strings,
     mode,
-    text: { ...neutrals.text, ...input.text },
+    text,
     background: { ...neutrals.background, ...input.background },
     divider: input.divider ?? neutrals.divider,
     common: { ...neutrals.common, ...input.common },
     grey: { ...neutrals.grey, ...input.grey },
     action: { ...neutrals.action, ...input.action },
-    primary: augmentColor(input.primary ?? brandFallback.primary),
+    primary,
+    accent: input.accent ?? (isDark ? text.secondary : primary.main),
     secondary: augmentColor(input.secondary ?? brandFallback.secondary),
     error: augmentColor(input.error ?? semantics.error),
     warning: augmentColor(input.warning ?? semantics.warning),

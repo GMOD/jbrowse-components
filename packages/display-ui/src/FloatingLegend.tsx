@@ -190,7 +190,7 @@ const useStyles = makeStyles()(theme => ({
     border: 0,
     background: 'none',
     textAlign: 'left',
-    color: theme.palette.primary.main,
+    color: theme.palette.accent,
     cursor: 'pointer',
     '&:hover': {
       textDecoration: 'underline',

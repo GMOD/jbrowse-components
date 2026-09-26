@@ -22,8 +22,8 @@ export default function DragSelectionRect({ rect }: { rect: DragRect }) {
         top: Math.min(startY, endY),
         width: Math.abs(endX - startX),
         height: Math.abs(endY - startY),
-        backgroundColor: alpha(palette.primary.main, 0.2),
-        border: `1px solid ${alpha(palette.primary.main, 0.5)}`,
+        backgroundColor: alpha(palette.accent, 0.2),
+        border: `1px solid ${alpha(palette.accent, 0.5)}`,
         pointerEvents: 'none',
       }}
     />

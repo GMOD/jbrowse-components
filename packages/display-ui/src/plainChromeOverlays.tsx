@@ -115,7 +115,7 @@ function errorText(error: unknown) {
 // `aria-valuenow` changes on a `progressbar`, so the value is reachable on
 // demand and silent otherwise — which is the behaviour a progress indicator
 // should have. `StatusProgressBar` in core does the same thing and is
-// toolkit-free, but it paints `theme.palette.primary.main`; every rule in this
+// toolkit-free, but it paints the palette's `accent`; every rule in this
 // file reads the host's own cascade instead, so the bar is drawn here rather
 // than imported.
 function ProgressBar({ fraction }: { fraction: number }) {

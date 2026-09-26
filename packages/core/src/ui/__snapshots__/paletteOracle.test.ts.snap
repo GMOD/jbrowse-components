@@ -10,6 +10,7 @@ exports[`darkMinimal builds the same chrome 1`] = `
 
 exports[`darkMinimal resolves the same colours 1`] = `
 {
+  "accent": "rgba(255, 255, 255, 0.7)",
   "action": {
     "activatedOpacity": 0.24,
     "active": "#fff",
@@ -269,6 +270,7 @@ exports[`darkStock builds the same chrome 1`] = `
 
 exports[`darkStock resolves the same colours 1`] = `
 {
+  "accent": "rgba(255, 255, 255, 0.7)",
   "action": {
     "activatedOpacity": 0.24,
     "active": "#fff",
@@ -520,6 +522,7 @@ exports[`darkStock resolves the same colours 1`] = `
 
 exports[`default + a bare mode resolves the same colours 1`] = `
 {
+  "accent": "rgba(255, 255, 255, 0.7)",
   "action": {
     "activatedOpacity": 0.24,
     "active": "#fff",
@@ -771,6 +774,7 @@ exports[`default + a bare mode resolves the same colours 1`] = `
 
 exports[`default + a config background resolves the same colours 1`] = `
 {
+  "accent": "#0D233F",
   "action": {
     "activatedOpacity": 0.12,
     "active": "rgba(0, 0, 0, 0.54)",
@@ -1022,6 +1026,7 @@ exports[`default + a config background resolves the same colours 1`] = `
 
 exports[`default + a config brand resolves the same colours 1`] = `
 {
+  "accent": "#8b0000",
   "action": {
     "activatedOpacity": 0.12,
     "active": "rgba(0, 0, 0, 0.54)",
@@ -1273,6 +1278,7 @@ exports[`default + a config brand resolves the same colours 1`] = `
 
 exports[`default + a config brand, dark resolves the same colours 1`] = `
 {
+  "accent": "rgba(255, 255, 255, 0.7)",
   "action": {
     "activatedOpacity": 0.24,
     "active": "#fff",
@@ -1532,6 +1538,7 @@ exports[`default builds the same chrome 1`] = `
 
 exports[`default resolves the same colours 1`] = `
 {
+  "accent": "#0D233F",
   "action": {
     "activatedOpacity": 0.12,
     "active": "rgba(0, 0, 0, 0.54)",
@@ -1791,6 +1798,7 @@ exports[`lightMinimal builds the same chrome 1`] = `
 
 exports[`lightMinimal resolves the same colours 1`] = `
 {
+  "accent": "#212121",
   "action": {
     "activatedOpacity": 0.12,
     "active": "rgba(0, 0, 0, 0.54)",
@@ -2050,6 +2058,7 @@ exports[`lightStock builds the same chrome 1`] = `
 
 exports[`lightStock resolves the same colours 1`] = `
 {
+  "accent": "#0D233F",
   "action": {
     "activatedOpacity": 0.12,
     "active": "rgba(0, 0, 0, 0.54)",
@@ -2309,6 +2318,7 @@ exports[`minimal builds the same chrome 1`] = `
 
 exports[`minimal resolves the same colours 1`] = `
 {
+  "accent": "#212121",
   "action": {
     "activatedOpacity": 0.12,
     "active": "rgba(0, 0, 0, 0.54)",
@@ -2568,6 +2578,7 @@ exports[`stock builds the same chrome 1`] = `
 
 exports[`stock resolves the same colours 1`] = `
 {
+  "accent": "#0D233F",
   "action": {
     "activatedOpacity": 0.12,
     "active": "rgba(0, 0, 0, 0.54)",

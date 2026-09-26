@@ -155,7 +155,7 @@ const LaneHeaders = observer(function LaneHeaders({
             height: dropLane.bandEnd - dropLane.bandStart,
             background: palette.action.hover,
             [dropIndex > dragIndex ? 'borderBottom' : 'borderTop']:
-              `2px solid ${palette.primary.main}`,
+              `2px solid ${palette.accent}`,
             boxSizing: 'border-box',
           }}
         />

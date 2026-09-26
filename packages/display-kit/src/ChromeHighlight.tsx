@@ -87,9 +87,9 @@ const ChromeHighlight = observer(function ChromeHighlight({
         rects={soloInk}
         testid="chrome-solo"
         styleOf={() => ({
-          border: `2px dashed ${palette.primary.main}`,
+          border: `2px dashed ${palette.accent}`,
           borderRadius: 3,
-          backgroundColor: alpha(palette.primary.main, 0.15),
+          backgroundColor: alpha(palette.accent, 0.15),
         })}
       />
       <Boxes

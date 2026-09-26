@@ -42,6 +42,12 @@ type FramesOptions = FrameTuple<PaletteColorOptions>
 // JSDoc line saying what it colors — the generator fails on one that doesn't.
 declare module '@mui/material/styles' {
   interface Palette extends StringColors {
+    /**
+     * The primary colour where it marks something on the page's own ground —
+     * a checked box, a selected row, a hover crosshair. `primary.main` in light
+     * mode and the secondary text colour in dark, where midnight vanishes
+     */
+    accent: string
     /** Accordion headers and some toolbar chrome */
     tertiary: PaletteColor
     /** Secondary floating-action-button background */
@@ -71,6 +77,7 @@ declare module '@mui/material/styles' {
     alignmentFill: AlignmentFill
   }
   interface PaletteOptions extends Partial<StringColors> {
+    accent?: string
     tertiary?: PaletteColorOptions
     quaternary?: PaletteColorOptions
     highlight?: PaletteColorOptions
@@ -160,27 +167,25 @@ export type ThemeSelectionName =
   | keyof typeof defaultThemes
   | keyof typeof legacyThemeNames
 
-// The default primary (midnight) has poor contrast as a text/control color in
-// dark mode, so fall back to a text-like color there. The extra selectors let
-// callers also recolor checked/focused states.
+// The default primary (midnight) has poor contrast as a control color in dark
+// mode, so a control takes `accent` there, the token JBrowse's own non-Material
+// controls read. The extra selectors recolor checked/focused states too.
 // xref https://stackoverflow.com/a/72546130/2129219
 function darkModeContrastOverride(
   extraSelectors: string[] = [],
-  textColor: 'primary' | 'secondary' = 'secondary',
+  colorOf: (palette: Theme['palette']) => string = p => p.accent,
 ) {
   return {
-    root: ({ theme }: { theme: Theme }) =>
-      theme.palette.mode === 'dark'
-        ? {
-            color: theme.palette.text[textColor],
-            ...Object.fromEntries(
-              extraSelectors.map(selector => [
-                selector,
-                { color: theme.palette.text[textColor] },
-              ]),
-            ),
-          }
-        : undefined,
+    root: ({ theme }: { theme: Theme }) => {
+      if (theme.palette.mode !== 'dark') {
+        return undefined
+      }
+      const color = colorOf(theme.palette)
+      return {
+        color,
+        ...Object.fromEntries(extraSelectors.map(s => [s, { color }])),
+      }
+    },
   }
 }
 
@@ -230,7 +235,7 @@ const baseThemeOptions: ThemeOptions = {
       // the default button, especially when not using variant=contained, uses
       // theme.palette.primary.main for text which is very bad with dark
       // mode+midnight primary
-      styleOverrides: darkModeContrastOverride([], 'primary'),
+      styleOverrides: darkModeContrastOverride([], p => p.text.primary),
     },
     MuiAccordion: {
       defaultProps: {

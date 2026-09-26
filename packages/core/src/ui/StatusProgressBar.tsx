@@ -13,7 +13,7 @@ const useStyles = makeStyles()(theme => ({
     // put this component back in the toolkit. Same idiom `plainChromeOverlays`
     // uses, and it tints against the surface rather than compositing over
     // whatever the bar happens to be drawn on.
-    background: `color-mix(in srgb, ${theme.palette.primary.main} 26%, transparent)`,
+    background: `color-mix(in srgb, ${theme.palette.accent} 26%, transparent)`,
   },
   bar: {
     position: 'absolute',
@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => ({
     bottom: 0,
     left: 0,
     width: '100%',
-    background: theme.palette.primary.main,
+    background: theme.palette.accent,
     // scaled from the left rather than sized, so a progress update is a
     // compositor transform instead of a layout
     transformOrigin: 'left center',
