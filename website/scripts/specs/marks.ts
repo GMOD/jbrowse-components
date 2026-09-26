@@ -79,17 +79,28 @@ const ALU_SIDECAR_TRACK = {
   ],
 }
 
-// The Alu track with ONE declared mark, which is what the Plot field dialog
-// reopens prefilled from: the value field and the mark type it finds are the
-// milliDiv bar below rather than an empty form.
-const ALU_PLOT_FIELD_TRACK = {
+// The Alu track as a multiscale pair, which is what Edit plot opens on: two
+// rows in the mark list, so its order is the paint order and the second mark
+// carries steps the controls leave to the JSON box.
+const ALU_EDIT_PLOT_TRACK = {
   ...ALU_MARKS_TRACK,
-  trackId: 'alu_plot_field',
+  trackId: 'alu_edit_plot',
   displays: [
     {
       type: 'LinearMarkDisplay',
-      displayId: 'alu_plot_field-LinearMarkDisplay',
-      marks: [{ mark: 'bar', encoding: { y: 'milliDiv' } }],
+      displayId: 'alu_edit_plot-LinearMarkDisplay',
+      marks: [
+        { mark: 'bar', encoding: { y: 'milliDiv' }, maxBpPerPx: 100 },
+        {
+          mark: 'bar',
+          transform: [
+            { type: 'bin', step: 'auto' },
+            { type: 'aggregate', ops: [{ op: 'count' }] },
+          ],
+          encoding: { y: 'count' },
+          minBpPerPx: 100,
+        },
+      ],
     },
   ],
 }
@@ -225,7 +236,7 @@ export const marksSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'mark_display/edit_plot',
     url: sessionSpec(CONFIG, {
-      sessionTracks: [ALU_PLOT_FIELD_TRACK],
+      sessionTracks: [ALU_EDIT_PLOT_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -233,7 +244,7 @@ export const marksSpecs: ScreenshotSpec[] = [
           loc: 'chr1:151,000,000-151,030,000',
           tracks: [
             {
-              trackId: 'alu_plot_field',
+              trackId: 'alu_edit_plot',
               type: 'LinearMarkDisplay',
               height: 160,
             },
@@ -243,11 +254,11 @@ export const marksSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
-    viewportHeight: 520,
+    viewportHeight: 640,
     hideSelectors: ['.MuiTooltip-popper'],
     hideTooltip: true,
     actions: [
-      trackMenuIcon('alu_plot_field'),
+      trackMenuIcon('alu_edit_plot'),
       { type: 'waitForText', text: 'Edit plot...' },
       { type: 'click', text: 'Edit plot...' },
       { type: 'waitForText', text: 'Edit plot' },

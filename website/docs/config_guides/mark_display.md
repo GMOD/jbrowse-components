@@ -744,7 +744,7 @@ carries the rule's id beside it.
 and on the right the selected mark's type and a field picker per channel that
 type reads.
 
-<Figure src="/img/mark_display/edit_plot.png" caption="Edit plot over an Alu track: the mark list, the selected mark's type, and a picker per channel it reads, filled from the fields the loaded features carry."/>
+<Figure src="/img/mark_display/edit_plot.png" caption="Edit plot over an Alu track declaring a multiscale pair: the two marks in paint order on the left, and on the right the selected mark's type, a picker per channel a bar reads, and the zoom range that hands over to the binned count."/>
 
 A picker takes free text as well as a scanned field, so `INFO.DP`, a `jexl:`
 expression or a constant all go through. Two things it shows rather than
