@@ -173,10 +173,9 @@ assembly's name differs from it. The contig half of a PanSN name is ordinary
 refName aliasing your assembly already does, so an hg38 spelling chr6 as `6`
 needs nothing further.
 
-The track draws either as its segments, one block each, or as the graph, and
-**Display types** in its track menu picks which. As segments, under **Display
-types → Feature display**, they tile the window and break where the graph
-branches.
+Turned on, the track opens as the graph, and **Display types → Feature display**
+in its track menu draws the same segments as a lane instead, one block each.
+They tile the window and break where the graph branches.
 
 <Figure caption="The HPRC graph's segment index drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
 
@@ -184,8 +183,8 @@ The other three tracks the script writes read the files beside the pair: the
 bubbles as a feature lane and again as a curve of segments per bubble, and the
 allele inventory as an alignments track, whose CIGAR draws a 63 kb insertion at
 its real magnitude where a feature track would draw it one pixel wide. With all
-four showing, **Display types → Graph** in the graph track's menu draws the
-window as a graph, anchored on the view's coordinates, and the graph moves with
+four showing and the graph track back on **Display types → Graph**, the window
+draws as a graph, anchored on the view's coordinates, and the graph moves with
 the view from then on.
 
 <Figure caption="The four tracks the command writes, over the C4 region on hg38: the bubbles as a lane and as a curve, the allele inventory, and the graph track at the bottom, drawn as a graph anchored on the view's coordinates." src="/img/pangenome/host_your_own.png" />

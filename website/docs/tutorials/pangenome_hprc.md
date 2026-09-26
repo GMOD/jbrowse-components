@@ -70,11 +70,10 @@ minigraph merges their near-identical copies onto one path.
 
 Press **graph** on the HLA / MHC row. JBrowse opens in a new tab on
 `chr6:32,510,001-32,600,000`, the MHC class II window. The linear view holds the
-RefSeq genes, the graph's bubbles, its allele inventory and its rGFA segments,
-one block per graph segment, and under them the graph itself, a track that draws
-the same window as a graph.
+RefSeq genes, the graph's bubbles and its allele inventory, and under them the
+graph itself: the rGFA segments track, drawing the same window as a graph.
 
-<Figure caption="The graph launch at MHC class II: RefSeq genes, bubbles, the allele inventory and the rGFA segments, and the graph track under them, anchored on the view's coordinates, colored by reference position with alleles in charcoal." src="/img/pangenome/genomes_hprc_mhc_graph.png" />
+<Figure caption="The graph launch at MHC class II: RefSeq genes, bubbles and the allele inventory over the graph track, anchored on the view's coordinates, colored by reference position with alleles in charcoal." src="/img/pangenome/genomes_hprc_mhc_graph.png" />
 
 ## Reading the cut
 
@@ -95,13 +94,11 @@ Four words describe the drawing:
 Each lower row is one **rank**, the order in which minigraph added the assembly
 that first contributed the sequence. Hover any node: the tooltip gives its
 length and its rank, and rank 0 is the backbone. The hover also bands the node's
-interval across the lanes above, and hovering a block in the segments lane
-lights its node below.
+interval across the lanes above.
 
-Color ties the graph to the lanes above it as well. The graph opens colored by
-**Reference position**, red at the start of the window to magenta at its end,
-and the segments lane above takes the same ramp. An allele sits on another
-assembly's sequence and has no GRCh38 position, so it draws in charcoal.
+The graph opens colored by **Reference position**, red at the start of the
+window to magenta at its end. An allele sits on another assembly's sequence and
+has no GRCh38 position, so it draws in charcoal.
 
 The graph draws the RefSeq genes onto the backbone too: exons as dark stretches
 along the reference nodes that carry them, with each gene's name pinned under
@@ -120,7 +117,7 @@ force layout draws the graph by its shape, with no GRCh38 axis, so it draws in
 coordinates of its own fitted to the track, and the menu gains **Zoom in**,
 **Zoom out** and **Zoom to fit** for it.
 
-<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window, both colored by reference position. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
+<Figure caption="The C4 locus cut as a force-directed graph, the bottom track under the hg38 genes for the same window, colored by reference position. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
 
 C4 holds few enough nodes to name its parts. The arc in the labelled bubble is
 an edge: a haplotype carrying one fewer copy of the C4 module takes it straight
@@ -131,8 +128,8 @@ the arc itself.
 
 Pick **Layout → Anchored** again, which puts the graph back on the view's
 coordinates. Type `chr6` into the location box. The graph track names a zoom,
-`aboveBpPerPx` in its adapter's `coarse` slot, past which it cuts its bubble
-tier instead of its segments: one node per bubble, with the invariant reference
+`aboveBpPerPx` in its adapter's `coarse` slot, past which it switches from its
+segments to its bubble tier: one node per bubble, with the invariant reference
 between bubbles as backbone, so the whole chromosome draws. The lanes above show
 a zoom-in message at this width.
 
@@ -186,7 +183,7 @@ window, `chr6:160,525,000-160,655,000`, into the location box, and pick **Layout
 → Force-directed layout** from the graph track's menu. The array draws as a knot
 of loops, and the halo around it labels it a repeat array.
 
-<Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains, the HPRC bubbles and the rGFA segments above the force-directed graph. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 Every loop in the knot is a different number of copies. Click the array's label,
 the purple one on the knot: the track lays the bubble's segments out alone, with
@@ -201,12 +198,13 @@ A **walk** is one haplotype's route through the graph. The release publishes its
 base-level graph, one walk per haplotype, as a gbz-base database that answers a
 window over HTTP, and the config the HPRC page opens reads it as a track,
 `HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)`. Type the
-array's own window, `chr6:160,616,002-160,646,753`, and turn that track on from
-the track selector. It draws one lane per haplotype, and **Display types →
-Graph** in its track menu draws the same track as a graph of their walks
-instead, cut from the database in a few seconds. The **Haplotypes** field in the
-track menu's **Settings** names the walks the cut holds beside GRCh38's; enter
-the eight lanes the track drew,
+array's own window, `chr6:160,616,002-160,646,753`, put the rGFA graph track
+back to a segments lane with **Display types → Feature display** in its track
+menu, and turn the gbz-base track on from the track selector. It draws one lane
+per haplotype, and **Display types → Graph** in its track menu draws the same
+track as a graph of their walks instead, cut from the database in a few seconds.
+The **Haplotypes** field in the track menu's **Settings** lists the haplotypes
+the cut holds beside GRCh38; enter the eight lanes the track drew,
 `HG00097.1, HG00099.1, HG00128.1, HG00133.1, HG01109.1, HG01123.1, HG01960.1, HG02055.1`,
 and pick **Layout → Force-directed layout**.
 

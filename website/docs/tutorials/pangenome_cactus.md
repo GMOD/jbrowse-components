@@ -477,12 +477,11 @@ shared prefix:
 }
 ```
 
-The track draws on K12 either as its segments, one block each, or as the graph:
-**Display types → Graph** in its track menu draws the window on screen as a
-graph on K12's coordinates, and **Display types → Feature display** puts the
-segments back.
+Turned on, the track draws the window on screen as a graph on K12's coordinates,
+and **Display types → Feature display** in its track menu draws the same
+segments as a lane instead, one block each.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and the track switched to Display types → Graph, which draws the graph on K12's coordinates." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and the track drawing the graph on K12's coordinates." />
 
 A kilobase or two is the width to draw one at. Past the flagellar operon, K12
 carries an IS1 element the other four skip. Type `chr:1,978,100-1,979,700`, and
@@ -494,12 +493,10 @@ are; the pggb page gives
 
 <Figure caption="1.6 kb of K12 past flhD, as lanes above and as the graph track below, both reading the same two tabix indexes. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
-The linear view and the graph both run the reference position ramp over the
-cut's region, so a color in the lane is that color in the graph. The other four
-strains' route is a link from the node before the IS1 element to the node after
-it. **Show deletion edges** in the track menu draws that link dashed, labelled
-with the length of the node it skips; it carries no sequence, so its drawn
-length comes from the layout.
+The other four strains' route is a link from the node before the IS1 element to
+the node after it. **Show deletion edges** in the track menu draws that link
+dashed, labelled with the length of the node it skips; it carries no sequence,
+so its drawn length comes from the layout.
 
 The
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)

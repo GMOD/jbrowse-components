@@ -158,8 +158,8 @@ details list `AT` with the rest of `INFO`.
 
 A **bubble** is a place where haplotypes diverge and rejoin. Press **graph** on
 the same HLA / MHC row of the HPRC page for the session that holds the graph's
-lanes: the RefSeq genes, the bubbles, the allele inventory and the rGFA segments
-over the same window, with the graph under them.
+lanes: the RefSeq genes, the bubbles and the allele inventory over the same
+window, with the rGFA segments track drawing the graph under them.
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds each of
 these files and writes their tracks.
 
@@ -192,7 +192,7 @@ bubble. Hover the widest node in the middle for its span, and right-click it for
 the graph track cuts the same span again from the fine index, one node per
 segment.
 
-<Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in hg38, and once the view lands on its span, the fine segments lane drawing and the graph track cutting the same span from the fine index." />
+<Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in hg38, and once the view lands on its span, the graph track cutting the same span again from the fine index." />
 
 ## The allele inventory
 
@@ -242,10 +242,9 @@ jexl:(feature.INFO.LV[0]==0 || feature.start==32517421) && alleleLength(feature)
 Cluster it as above, hide the bubbles and the allele inventory from their track
 menus, pick **Layout → Force-directed layout** from the graph track's menu, and
 right-click the charcoal allele beside _HLA-DRB5_ for **Highlight in hg38**. The
-band crosses the genes, the segments lane and the genotype matrix in one column.
-The reference-position ramp gives the backbone at that position the same hue as
-the segments above it, and the allele the column's carriers walk is the charcoal
-node beside that stretch of backbone.
+band crosses the genes and the genotype matrix in one column, and the allele the
+column's carriers walk is the charcoal node beside that stretch of the graph's
+backbone.
 
 <Figure caption="One window, both products. The band is the HLA-DRB5 deletion site from the callset, over every haplotype clustered by genotype: grey where a haplotype matches the reference, teal where it carries the alt allele, magenta for another alt. Below, the force-directed graph, where an arrow runs from the band to the same deletion as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
@@ -275,8 +274,8 @@ The `uri` shorthand resolves the sibling `.tai`, which downloads once. Release
 reads with the same shorthand: a quarter of the bytes per locus, but an earlier
 build, with more underalignment and unpatched centromeres.
 
-Type the C4 window, `chr6:31,980,000-32,050,000`, and show four lanes: the
-genes, the segments, the filtered callset and this alignment. Every alignment
+Type the C4 window, `chr6:31,980,000-32,050,000`, and show three lanes over the
+graph track: the genes, the filtered callset and this alignment. Every alignment
 row is a human haplotype, so a row that drops out belongs to a person who does
 not carry that segment. Read down a column for who carries what, across for
 where each segment starts and stops. C4 is the locus
@@ -286,10 +285,10 @@ Two clustering runs order the rows: **Clustering → Cluster rows by genotype...
 on the callset, and **Clustering → Cluster rows by identity...** on the
 alignment, which computes over the window in view, since HPRC's file ships no
 guide tree; **Reset row order** puts back whatever the file supplied. The graph
-track under all four cut C4 when the view moved there, still in the
+track under all three cut C4 when the view moved there, still in the
 force-directed layout.
 
-<Figure caption="C4 on one axis: the RefSeq genes, the rGFA segments, the callset's haplotypes clustered by genotype, a subtree of them as alignment rows clustered by identity, white where a haplotype has no aligned sequence, and the window as a force-directed graph. The band marks the pseudogene pair between C4A and C4B, and the haplotypes with no sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="C4 on one axis: the RefSeq genes, the callset's haplotypes clustered by genotype, a subtree of them as alignment rows clustered by identity, white where a haplotype has no aligned sequence, and the graph track drawing the window force-directed. The band marks the pseudogene pair between C4A and C4B, and the haplotypes with no sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
 
 The figure keeps thirty-two haplotype rows so each has the height for its name
 beside it; the track as configured above draws every haplotype. The

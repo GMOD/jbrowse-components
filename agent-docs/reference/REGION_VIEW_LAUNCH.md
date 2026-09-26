@@ -11,7 +11,7 @@ from some track.** Linear synteny does this, in
 `plugins/linear-comparative-view/src/LaunchSyntenyView/`.
 
 The graph plugin had the first such launcher, and the synteny one was written to
-match it rather than invent a second convention. Since plugin 4.0.0 the graph is
+follow its convention. Since plugin 4.0.0 the graph is
 a track of the linear view (`LinearGraphDisplay`) and launches nothing; its
 column below is the record the synteny launcher was matched against.
 

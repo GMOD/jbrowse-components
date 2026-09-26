@@ -81,8 +81,8 @@ handover its adapter names, it cuts the segments.
 
 Start at _Nnt_. Type `chr13:119,440,000-119,600,000`, and the graph track cuts
 the segments there. Pick **Layout → Force-directed layout** from its track menu.
-Turn on the bubbles and segments tracks in the track selector to read the window
-lane by lane, as the figure does.
+Turn on the bubbles track in the track selector to read the window lane by lane,
+as the figure does.
 
 C57BL/6J carries a well-known multi-exon deletion at _Nnt_ that abolishes the
 protein and makes B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the
@@ -90,7 +90,7 @@ backbone of this graph is the strain with the deletion. The graph therefore
 shows the deletion as sequence that the _other_ strains carry and the reference
 lacks, the opposite sign from every description of it.
 
-<Figure caption="The Nnt window with the RefSeq genes, the bubbles lane and the rGFA segments above the force-directed graph. The loop hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
+<Figure caption="The Nnt window with the RefSeq genes and the bubbles lane above the force-directed graph track. The loop hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
 ## Finding the loci
 
@@ -105,9 +105,9 @@ receptor and Speer families and the immunoglobulin heavy chain locus without a
 curated list, and the rows above _Dock2_'s are bubbles hundreds of kilobases to
 megabases wide. _Dock2_'s row is the densest bubble that still fits in one cut,
 inside one intron at `chr11:34,516,044-34,560,497`. Click its **graph** link.
-The window opens with the genes, the bubbles, the allele inventory and the
-segments as lanes, and the graph track under them. Pick **Layout →
-Force-directed layout** from its track menu:
+The window opens with the genes, the bubbles and the allele inventory as lanes,
+and the graph track under them. Pick **Layout → Force-directed layout** from its
+track menu:
 
 <Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane shows only intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and every charcoal stretch is sequence it lacks, so each loop is a place where other strains depart from the reference." src="/img/pangenome/mouse_dock2.png" />
 

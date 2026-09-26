@@ -60,7 +60,7 @@ links between them. One command, `build_pangenome_graph.sh`, builds them and
 writes a track config for them, as
 [Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
 describes. Then **Add track** with that config, whose adapter is
-`RgfaTabixAdapter`, and pick **Track menu → Display types → Graph**.
+`RgfaTabixAdapter`, and the track opens as the graph.
 [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the index. Skip to
 [Six layouts](#three-layouts) if you just need to know what the track menu's
 items do.
@@ -186,11 +186,12 @@ their sample prefix is already the assembly name, so the track needs no
 needs one, because that graph calls the reference `GRCh38` while the assembly is
 `hg38`.
 
-The track draws either as its segments, one block each, or as the graph, and
-**Track menu → Display types** picks which. As the graph, it cuts the window on
-screen out of the index with a window-width of margin on each side, and cuts
-again whenever the view leaves that stretch. A cut of segments spans at most 5
-Mb; past that the track keeps its last cut and says so. The track cuts on the
+The config lists the graph display first, so the track opens as the graph, and
+**Track menu → Display types → Feature display** draws the same segments as a
+lane instead, one block each. As the graph, the track cuts the window on screen
+out of the index with a window-width of margin on each side, and cuts again
+whenever the view leaves that stretch. A cut of segments spans at most 5 Mb;
+past that the track keeps its last cut and says so. The track cuts on the
 graph's reference, which is the first assembly the track names.
 
 The legible window width depends on the graph. A minigraph graph records
@@ -348,8 +349,9 @@ legend compares the walk's length with the reference walk's.
 
 A gbz-base track draws one lane per haplotype, and **Display types → Graph** in
 its track menu draws the same track as a graph of the haplotypes' walks. The
-**Haplotypes** field in **Settings** names the walks the cut holds beside the
-reference's, and an empty field cuts every haplotype the graph carries.
+**Haplotypes** field in **Settings** lists the haplotypes the cut holds beside
+the reference, and with the field empty the track cuts every haplotype the graph
+carries.
 [Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#one-haplotypes-copies)
 reads a repeat array this way.
 
