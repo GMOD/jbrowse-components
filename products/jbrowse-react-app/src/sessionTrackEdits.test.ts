@@ -108,7 +108,7 @@ test('a row display on a session track resets to the arrangement it was added wi
   const added = {
     type: 'LinearWiggleDisplay',
     displayId,
-    rows: { field: 'source', domain: ['c', 'a'], labels: { c: 'Third' } },
+    rows: { domain: ['c', 'a'], labels: { c: 'Third' } },
     rowColor: { domain: ['a'], range: ['red'] },
   }
   const session = sessionWith({
@@ -129,6 +129,7 @@ test('a row display on a session track resets to the arrangement it was added wi
       .baseTrackConfig('subtracks')!
       .displays.find(d => d.displayId === displayId),
   ).toMatchObject(added)
+  expect(getConf(display, ['rows', 'field'])).toBe('source')
   expect(display.baseRowColor).toEqual(added.rowColor)
   expect(display.rowArrangementIsCustom).toBe(false)
 

@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
@@ -21,7 +22,7 @@ interface DisplaySnapshot {
 
 const BARS = [{ mark: 'bar', encoding: { y: 'score' } }]
 
-function loadedDisplays(snap: Record<string, unknown>) {
+function loadedTrack(snap: Record<string, unknown>) {
   const pluginManager = new PluginManager([
     new LinearGenomeViewPlugin(),
     new WigglePlugin(),
@@ -29,7 +30,7 @@ function loadedDisplays(snap: Record<string, unknown>) {
   ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
-  const conf = pluginManager.pluggableConfigSchemaType('track').create(
+  return pluginManager.pluggableConfigSchemaType('track').create(
     {
       trackId: 't',
       assemblyNames: ['volvox'],
@@ -38,23 +39,32 @@ function loadedDisplays(snap: Record<string, unknown>) {
     },
     { pluginManager },
   )
-  return (getSnapshot(conf) as { displays: DisplaySnapshot[] }).displays
 }
 
-test("a MultiQuantitativeTrack's seeded rows reach its quantitative display alone", () => {
-  expect(
-    loadedDisplays({ type: 'MultiQuantitativeTrack' }).map(d => [
-      d.type,
-      d.rows,
-    ]),
-  ).toEqual([
-    ['LinearWiggleDisplay', { field: 'source' }],
-    ['LinearMarkDisplay', undefined],
+function loadedDisplays(snap: Record<string, unknown>) {
+  return (getSnapshot(loadedTrack(snap)) as { displays: DisplaySnapshot[] })
+    .displays
+}
+
+function rowsFields(snap: Record<string, unknown>) {
+  return loadedTrack(snap).displays.map((d: { type: string }) => [
+    d.type,
+    readConfObject(d, ['rows', 'field']),
   ])
+}
+
+test("a MultiQuantitativeTrack's row per source reaches its quantitative display alone", () => {
+  expect(rowsFields({ type: 'MultiQuantitativeTrack' })).toEqual([
+    ['LinearWiggleDisplay', 'source'],
+    ['LinearMarkDisplay', ''],
+  ])
+  expect(
+    loadedDisplays({ type: 'MultiQuantitativeTrack' }).map(d => d.rows),
+  ).toEqual([undefined, undefined])
 })
 
 test('a mark display faceted by strand on a MultiQuantitativeTrack carries no rows to report', () => {
-  const [mark, wiggle] = loadedDisplays({
+  const snap = {
     type: 'MultiQuantitativeTrack',
     displays: [
       {
@@ -64,12 +74,13 @@ test('a mark display faceted by strand on a MultiQuantitativeTrack carries no ro
         marks: BARS,
       },
     ],
-  })
+  }
+  const [mark] = loadedDisplays(snap)
   expect(mark!.rows).toBeUndefined()
-  expect(wiggle).toMatchObject({
-    type: 'LinearWiggleDisplay',
-    rows: { field: 'source' },
-  })
+  expect(rowsFields(snap)).toEqual([
+    ['LinearMarkDisplay', ''],
+    ['LinearWiggleDisplay', 'source'],
+  ])
   expect(markProblems(mark!.marks ?? [], mark!.facet, [], mark!.rows)).toEqual(
     [],
   )
