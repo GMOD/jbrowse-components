@@ -67,8 +67,8 @@ function zoomField(
       label={label}
       value={value ?? ''}
       onChange={event => {
-        const next = Number(event.target.value)
-        onChange(event.target.value === '' || next === 0 ? undefined : next)
+        const { value } = event.target
+        onChange(value === '' ? undefined : Number(value))
       }}
       slotProps={{ htmlInput: { 'data-testid': label } }}
     />

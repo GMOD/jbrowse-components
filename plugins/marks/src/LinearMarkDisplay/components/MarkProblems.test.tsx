@@ -73,4 +73,21 @@ describe('MarkProblemList', () => {
     expect(rows[0]!.textContent).toBe('mark 1 encoding.y: encoding.y is wrong')
     expect(rows[1]!.textContent).toBe('rows.field: rows.field is wrong')
   })
+
+  // `two-packings` fires once per earlier mark that packs, so one mark and
+  // slot can carry the rule twice, told apart only by the message.
+  it('lists one rule firing twice at one slot as two rows', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const twice = (partner: number): MarkProblem => ({
+      rule: 'two-packings',
+      level: 'warning',
+      mark: 2,
+      slot: 'transform',
+      message: `packs rows of its own, as mark ${partner} does`,
+    })
+    show(<MarkProblemList problems={[twice(0), twice(1)]} />)
+    expect(screen.getByTestId('mark-plot-problems').children).toHaveLength(2)
+    expect(spy).not.toHaveBeenCalled()
+    spy.mockRestore()
+  })
 })

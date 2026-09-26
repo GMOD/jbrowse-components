@@ -97,6 +97,32 @@ it('removes and reorders, since the list order is the paint order', () => {
   })
 })
 
+it('keeps the selected mark selected when a row above it is removed', () => {
+  setup({
+    marks: [
+      { mark: 'bar', encoding: { y: 'a' } },
+      { mark: 'point', encoding: { y: 'a' } },
+      { mark: 'span' },
+    ],
+  })
+  fireEvent.click(screen.getByTestId('mark-row-1'))
+  fireEvent.click(screen.getByLabelText('remove mark 1'))
+  expect(screen.getByTestId('mark-type')).toHaveValue('point')
+})
+
+it('takes a fractional zoom bound', () => {
+  const { apply, applyDisplaySettings } = setup(BAR)
+  fireEvent.change(screen.getByTestId('minBpPerPx'), {
+    target: { value: '0' },
+  })
+  expect(screen.getByTestId('minBpPerPx')).toHaveValue(0)
+  fireEvent.change(screen.getByTestId('minBpPerPx'), {
+    target: { value: '0.5' },
+  })
+  fireEvent.click(apply())
+  expect(applyDisplaySettings.mock.calls[0]![0].marks[0].minBpPerPx).toBe(0.5)
+})
+
 // The form never silently drops a slot: a channel the new type stopped
 // reading stays, named, with the rule that says what it costs.
 it('keeps a channel a type change stopped reading, and clears it on request', () => {

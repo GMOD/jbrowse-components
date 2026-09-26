@@ -77,7 +77,15 @@ export default function MarkList({
                 onClick={event => {
                   event.stopPropagation()
                   onChange(removeMark(marks, index))
-                  onSelect(Math.max(0, Math.min(selected, marks.length - 2)))
+                  onSelect(
+                    Math.max(
+                      0,
+                      Math.min(
+                        index < selected ? selected - 1 : selected,
+                        marks.length - 2,
+                      ),
+                    ),
+                  )
                 }}
               >
                 <DeleteIcon fontSize="small" />

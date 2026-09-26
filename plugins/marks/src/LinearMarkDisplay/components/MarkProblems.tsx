@@ -42,14 +42,17 @@ export function MarkProblemList({
   const { classes } = useStyles()
   return problems.length > 0 ? (
     <ul className={classes.list} data-testid="mark-plot-problems">
-      {problems.map(problem => (
-        <li
-          key={`${problem.rule}-${problem.mark}-${problem.slot}`}
-          className={classes[problem.level]}
-        >
-          {problemText(problem)}
-        </li>
-      ))}
+      {problems.map(problem => {
+        const text = problemText(problem)
+        return (
+          <li
+            key={`${problem.rule} ${text}`}
+            className={classes[problem.level]}
+          >
+            {text}
+          </li>
+        )
+      })}
     </ul>
   ) : null
 }
