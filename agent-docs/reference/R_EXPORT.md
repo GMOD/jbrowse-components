@@ -18,7 +18,7 @@ instead of them.
 
 | branch | head | on origin | holds |
 | --- | --- | --- | --- |
-| `r-export` | moving | no | `plugins/marks/src/rexport/`, the mark-display translator §"What is built" describes, with its `Rscript` suite and `pnpm gen:rhelpers` |
+| `r-export` | moving | no | the mark-display translator §"What is built" describes (`git show r-export:plugins/marks/src/rexport/`), with its `Rscript` suite and `pnpm gen:rhelpers` |
 | `r-export4-rebase` | `db6e771092` (2026-08-27) | yes | the fidelity-first exporter: 53 R helpers, `exportR.ts`, nine per-display fragments, the equivalence oracles, a 19-figure gallery |
 | `r-export-rewrite` | `ddbae50e74` (2026-08-26) | **no** | the idiomatic-first one: `FigureSpec`, `rplot.ts`, `emitR.ts`, `jb2export --out fig.R` |
 | `R_export4` | `b90ffa8d1a` (2026-07-17) | **stale ref** | superseded by `r-export4-rebase` |
@@ -28,8 +28,9 @@ instead of them.
 force-updated and sits behind the local branch —
 `git rev-list --count R_export4 ^origin/R_export4` was 32 on 2026-09-25 — so the
 remote name is not a backup of what the local ref holds. `r-export-rewrite` has
-no remote at all; `rplot.ts` is the part of it that matters and now lives in
-`plugins/marks/src/rexport/`, but `emitR.ts` and `figureSpec.ts` do not.
+no remote at all; `rplot.ts` is the part of it that matters and now lives on
+`r-export` (`git show r-export:plugins/marks/src/rexport/rplot.ts`), but
+`emitR.ts` and `figureSpec.ts` do not.
 
 ## The seam main cut
 
@@ -261,7 +262,8 @@ generic region reader.
 
 ## What is built
 
-`plugins/marks/src/rexport/`, on the `r-export` branch, translates the stages
+The `r-export` branch's `rexport/` directory in the marks plugin
+(`git show r-export:plugins/marks/src/rexport/`) translates the stages
 above for the mark display, over BigWig, GFF3 and VCF. Nothing on main
 imports it; it left main so it can grow without each step landing dead code. `rplot.ts` is the plot model, `markToPlot.ts` the
 mark and channel stages, `transformR.ts` the transform stage, `frameFor.ts` the

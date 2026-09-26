@@ -73,7 +73,7 @@ the lanes (f0bec307bd8), since the graph shows nothing of the chromosome 4
 inversion, and `tutorialUrl` is the SyRI tutorial, whose last section opens
 this demo. Left:
 
-- `website/pangenome-config/upload.sh`: `check-pangenome-assets` reports the
+- `~/src/jb2hubs/website/pangenome-config/upload.sh`: `check-pangenome-assets` reports the
   served `arabidopsis-tair10/config.json` differs from the tree.
 - Push jb2hubs and deploy its website.
 - Redeploy `demos/arabidopsis_pangenome/config.json` with
