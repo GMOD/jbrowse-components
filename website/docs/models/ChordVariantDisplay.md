@@ -67,7 +67,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-chordfeet">**chordFeet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ x: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ x: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;; xSlice: Uint32Array&lt;ArrayBuffer&gt;; x2Slice: Uint32Array&lt;...&gt;; placed: Uint8Array&lt;...&gt;; index: Map&lt;...&gt;; }</code></pre></dialog></span> | every held record's two ends on the circle's unrolled axis, by the record's place in `features`: its own start, and its mate's position where it names one, else its own end | ChordVariantDisplay |
 | <span id="getter-chordstrokes">**chordStrokes**</span><br><code>Map&lt;Feature, string&gt;</code> | each drawn record's colour, as its config slot answers | ChordVariantDisplay |
 | <span id="getter-chordlanes">**chordLanes**</span><br><code>ChordLanes</code> | the drawn records as the chord mark's lanes, each in its colour with the alpha the SV inspector's dimming leaves it | ChordVariantDisplay |
-| <span id="getter-drawncount">**drawnCount**</span><br><code>number</code> |  | ChordVariantDisplay |
+| <span id="getter-drawncount">**drawnCount**</span><br><code>number</code> | how many records the chord lanes hold, the ones whose ends are under a pixel apart included | ChordVariantDisplay |
 | <span id="getter-laneindexbyid">**laneIndexById**</span><br><code>Map&lt;string, number&gt;</code> | each drawn record's place in the lanes, by id | ChordVariantDisplay |
 | <span id="getter-shapes">**shapes**</span><br><code>ChordShape[]</code> | every drawn chord as the export draws it | ChordVariantDisplay |
 | <span id="getter-shapealpha">**shapeAlpha**</span><br><code>number</code> | a chord's colour carries its own alpha | ChordVariantDisplay |
@@ -106,7 +106,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="method-shapeat">**shapeAt**</span><br><code>(i: number) =&gt; ChordShape &#124; undefined</code> | lane `i` as the SVG side draws it, on the unrotated figure; undefined for a chord whose ends are under a pixel apart | ChordVariantDisplay |
-| <span id="method-shapefor">**shapeFor**</span><br><code>(featureId: string) =&gt; ChordShape &#124; undefined</code> |  | ChordVariantDisplay |
+| <span id="method-shapefor">**shapeFor**</span><br><code>(featureId: string) =&gt; ChordShape &#124; undefined</code> | the chord a drawn record's id names, as the SVG side draws it; undefined for an id the lanes do not hold, and for a chord whose ends are under a pixel apart | ChordVariantDisplay |
 | <span id="method-hitat">**hitAt**</span><br><code>(dx: number, dy: number) =&gt; Feature &#124; undefined</code> | the record whose chord passes nearest a point CSS px from the circle's centre in the screen frame, within `CHORD_HIT_PX` | ChordVariantDisplay |
 | <span id="method-shapelabel">**shapeLabel**</span><br><code>(feature: Feature) =&gt; string</code> |  | ChordVariantDisplay |
 | <span id="method-shapepathfor">**shapePathFor**</span><br><code>(feature: Feature) =&gt; string &#124; undefined</code> | a drawn feature's outline as an SVG path on the unrotated figure, for anything that has to find a chord on screen without a DOM node to find | ChordVariantDisplay |

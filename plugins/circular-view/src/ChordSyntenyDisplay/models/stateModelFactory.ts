@@ -343,6 +343,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
+       * how many alignments the canvas draws as ribbons
        */
       get drawnCount() {
         return this.ribbonLanes.count
@@ -370,6 +371,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #method
+       * the ribbon a drawn alignment's id names, as the SVG side draws it;
+       * undefined for an id the canvas draws no ribbon for
        */
       shapeFor(featureId: string) {
         const i = this.laneIndexById.get(featureId)

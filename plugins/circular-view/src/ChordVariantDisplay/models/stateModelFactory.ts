@@ -183,6 +183,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
+       * how many records the chord lanes hold, the ones whose ends are under a
+       * pixel apart included
        */
       get drawnCount() {
         return this.chordLanes.count
@@ -214,6 +216,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #method
+       * the chord a drawn record's id names, as the SVG side draws it;
+       * undefined for an id the lanes do not hold, and for a chord whose ends
+       * are under a pixel apart
        */
       shapeFor(featureId: string) {
         const i = this.laneIndexById.get(featureId)
