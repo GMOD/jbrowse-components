@@ -98,9 +98,12 @@ Settled while building, each against the picture the band drew before:
   per-instance lane, so it paints after the solid bars.
 - **Every arc is filed under one loaded region.** The links draw unclipped, so
   a copy per region its span touched would paint twice.
-- **A far foot on no displayed region draws the link's stem**, and an arc with
-  neither foot in its region draws nothing. Neither arises in a single-region
-  view.
+- **A far foot on no displayed region runs off its own block.** The arc is
+  placed along its region's own axis and drawn block by block under the
+  block's clip (`ARC_CLIPPED_MARKS`), as the per-block pass drew it, and so is
+  one with neither foot in its region. A multi-locus view makes one at every
+  window edge a pair straddles; drawn as the link's stem, the band's height,
+  each read as a translocation tick. Only a tick is a stem.
 - **The read cloud's bars keep 0.7 alpha** under their category colour, so a
   dense cloud still reads as density.
 - **The arc debug overlay is retired** with the private geometry it traced; the

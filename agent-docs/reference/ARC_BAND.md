@@ -63,9 +63,12 @@ paint once per region at a different extrapolated place.
 
 **Its far foot places through the displayed region holding it**, the region
 table's entry, so a connection crosses a seam whole. A far foot on no displayed
-region draws the link's stem instead, and an arc with neither foot in the region
-it was filed under draws nothing, since nothing could place it. In an ordinary
-LGV the displayed region is the whole chromosome, so neither case arises.
+region is placed along its own region's axis instead, and the arc drawn block by
+block under that block's clip (`ARC_CLIPPED_MARKS`), so it runs off the window's
+edge rather than onto a region that does not hold its mate; an arc with neither
+foot in the region it was filed under crosses that block the same way. In an
+ordinary LGV the displayed region is the whole chromosome, so neither case
+arises; in a multi-locus view it is every pair straddling a window edge.
 
 **Arc mode plots an arc's genomic radius** on a linear axis at the view's own px
 per bp (`arcBandYScale`), so a pair inside one region rises as high as it is

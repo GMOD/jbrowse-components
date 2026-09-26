@@ -104,6 +104,30 @@ export const ARC_LINK_MARKS: Mark<ArcBandFeed, ArcBandState>[] = [
   }),
 ]
 
+/**
+ * The connections reaching past every displayed region on their chromosome,
+ * solid then dashed. Each is placed along its own region's axis and drawn
+ * block by block under the block's clip, so the far end runs off the block's
+ * edge rather than onto a region that does not hold it.
+ */
+export const ARC_CLIPPED_MARKS: Mark<ArcBandFeed, ArcBandState>[] = [
+  defineMark({
+    shape: { ...withPassId(linkMark, 'arcLinkClipped'), spansView: false },
+    channels: (f: ArcBandFeed) => f.clippedLinks,
+    params: (s: ArcBandState) => linkParams(s, false),
+    enabled: bandOpen,
+  }),
+  defineMark({
+    shape: {
+      ...withPassId(linkMark, 'arcLinkDashedClipped'),
+      spansView: false,
+    },
+    channels: (f: ArcBandFeed) => f.clippedDashed,
+    params: (s: ArcBandState) => linkParams(s, true),
+    enabled: bandOpen,
+  }),
+]
+
 /** The read cloud's endpoint squares, over the connections, per block. */
 export const ARC_MARKER_MARK: Mark<ArcBandFeed, ArcBandState> = defineMark({
   shape: withPassId(pointMark, 'arcMarker'),
@@ -112,4 +136,8 @@ export const ARC_MARKER_MARK: Mark<ArcBandFeed, ArcBandState> = defineMark({
   enabled: bandOpen,
 })
 
-export const ARC_BAND_MARKS = [...ARC_LINK_MARKS, ARC_MARKER_MARK]
+export const ARC_BAND_MARKS = [
+  ...ARC_LINK_MARKS,
+  ...ARC_CLIPPED_MARKS,
+  ARC_MARKER_MARK,
+]

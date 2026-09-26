@@ -48,7 +48,14 @@ export interface ArcBandHover {
 }
 
 function hitsOf(feed: ArcBandFeed, mark: number) {
-  return [feed.tickHits, feed.linkHits, feed.dashedHits, feed.markerHits][mark]!
+  return [
+    feed.tickHits,
+    feed.linkHits,
+    feed.dashedHits,
+    feed.clippedLinkHits,
+    feed.clippedDashedHits,
+    feed.markerHits,
+  ][mark]!
 }
 
 function countOf(feed: ArcBandFeed, mark: number) {
@@ -90,8 +97,10 @@ function oneInstance(feed: ArcBandFeed, mark: number, i: number): ArcBandFeed {
     ticks: mark === 0 ? sliceLink(feed.ticks, i) : none,
     links: mark === 1 ? sliceLink(feed.links, i) : none,
     dashed: mark === 2 ? sliceLink(feed.dashed, i) : none,
+    clippedLinks: mark === 3 ? sliceLink(feed.clippedLinks, i) : none,
+    clippedDashed: mark === 4 ? sliceLink(feed.clippedDashed, i) : none,
     markers:
-      mark === 3 ? slicePoint(feed.markers, i) : { ...feed.markers, count: 0 },
+      mark === 5 ? slicePoint(feed.markers, i) : { ...feed.markers, count: 0 },
   }
 }
 
@@ -133,22 +142,24 @@ export function resolveArcBandHover(
   if (!found || !hit) {
     return undefined
   }
+  const mark = ARC_BAND_MARKS[found.mark]!
   const recorder = recordPath()
-  ARC_BAND_MARKS[found.mark]!.paintBlock(
+  mark.paintBlock(
     recorder.ctx,
     oneInstance(found.region, found.mark, found.index),
     found.block,
     state,
   )
+  const { screenStartPx, screenEndPx } = found.block
   return {
     hit,
     regionIndex: found.block.displayedRegionIndex,
     highlight: {
       d: recorder.d,
       clip: {
-        x: 0,
+        x: mark.spansView ? 0 : screenStartPx,
         y: band.top,
-        width: state.canvasWidth,
+        width: mark.spansView ? state.canvasWidth : screenEndPx - screenStartPx,
         height: band.height,
       },
       lineWidth: recorder.lineWidth,

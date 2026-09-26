@@ -42,17 +42,22 @@ export type ArcBandHit = ArcHit | TickHit
 /**
  * One region's read connections as the band's marks read them, in paint
  * order: the interchromosomal ticks, the arcs or bars, the read cloud's dashed
- * split-read connectors and its endpoint squares, each with the hover record
- * of every instance.
+ * split-read connectors, the same two again for connections reaching past
+ * every displayed region on their chromosome, and the endpoint squares, each
+ * with the hover record of every instance.
  */
 export interface ArcBandFeed {
   ticks: LinkChannels
   links: LinkChannels
   dashed: LinkChannels
+  clippedLinks: LinkChannels
+  clippedDashed: LinkChannels
   markers: PointChannels
   tickHits: ArcBandHit[]
   linkHits: ArcBandHit[]
   dashedHits: ArcBandHit[]
+  clippedLinkHits: ArcBandHit[]
+  clippedDashedHits: ArcBandHit[]
   markerHits: ArcBandHit[]
 }
 
@@ -133,6 +138,8 @@ class RegionLanes {
   ticks = new LinkLanes()
   links = new LinkLanes()
   dashed = new LinkLanes()
+  clippedLinks = new LinkLanes()
+  clippedDashed = new LinkLanes()
   markers = new MarkerLanes()
 
   feed(): ArcBandFeed {
@@ -140,10 +147,14 @@ class RegionLanes {
       ticks: this.ticks.channels(),
       links: this.links.channels(),
       dashed: this.dashed.channels(),
+      clippedLinks: this.clippedLinks.channels(),
+      clippedDashed: this.clippedDashed.channels(),
       markers: this.markers.channels(),
       tickHits: this.ticks.hits,
       linkHits: this.links.hits,
       dashedHits: this.dashed.hits,
+      clippedLinkHits: this.clippedLinks.hits,
+      clippedDashedHits: this.clippedDashed.hits,
       markerHits: this.markers.hits,
     }
   }
@@ -165,10 +176,11 @@ export interface ArcBandFeedInput {
 
 /**
  * Every region's band feed. An arc draws from the region holding its near
- * foot, its far foot placed through the displayed region that holds it, or
- * as a stem where none does; an arc with neither foot in the region it was
- * filed under has nowhere to be placed and draws nothing. An endpoint square
- * goes to the region its mate lies in, so each block places its own.
+ * foot, its far foot placed through the displayed region that holds it. One
+ * whose far foot no displayed region holds, or with neither foot in the region
+ * it was filed under, is placed along that region's own axis and clipped to
+ * its block, as a per-block pass draws it. An endpoint square goes to the
+ * region its mate lies in, so each block places its own.
  */
 export function buildArcBandFeeds({
   byRegion,
@@ -210,6 +222,7 @@ export function buildArcBandFeeds({
     x: number,
     x2: number,
     x2Region: number,
+    clipped: boolean,
     yBp: number,
     shapeType: number,
     colorType: number,
@@ -219,7 +232,14 @@ export function buildArcBandFeeds({
   ) => {
     const l = lanesOf(own)
     const color = colorOf(colorType, shapeType)
-    const target = shapeType === ARC_SHAPE_FLAT_SPLIT ? l.dashed : l.links
+    const split = shapeType === ARC_SHAPE_FLAT_SPLIT
+    const target = clipped
+      ? split
+        ? l.clippedDashed
+        : l.clippedLinks
+      : split
+        ? l.dashed
+        : l.links
     target.push(x, x2, x2Region, yBp, support, color, feet, hit)
     if (isFlatArcShape(shapeType)) {
       const square = palette[arcColorSlot(colorType)]!
@@ -248,17 +268,20 @@ export function buildArcBandFeeds({
     for (let i = 0; i < data.numArcs; i++) {
       const x1 = data.arcX1[i]!
       const x2 = data.arcX2[i]!
-      if (own && !contains(own, x1) && !contains(own, x2)) {
-        continue
-      }
       const swap = !contains(own, x1) && contains(own, x2)
       const near = swap ? x2 : x1
       const far = swap ? x1 : x2
+      const farRegion =
+        own && contains(own, near)
+          ? farRegionOf(index, own.refName, far)
+          : LINK_NO_REGION
+      const clipped = farRegion === LINK_NO_REGION
       pushArc(
         index,
         near,
         far,
-        own ? farRegionOf(index, own.refName, far) : index,
+        clipped ? index : farRegion,
+        clipped,
         data.arcYBp[i]!,
         data.arcShapeTypes[i]!,
         data.arcColorTypes[i]!,
@@ -283,6 +306,7 @@ export function buildArcBandFeeds({
       arc.p1.bp,
       arc.p2.bp,
       arc.p2RegionIndex,
+      false,
       arc.yBp,
       arc.shapeType,
       arc.colorType,
@@ -321,6 +345,8 @@ export function feedHasInk(feed: ArcBandFeed) {
     feed.ticks.count > 0 ||
     feed.links.count > 0 ||
     feed.dashed.count > 0 ||
+    feed.clippedLinks.count > 0 ||
+    feed.clippedDashed.count > 0 ||
     feed.markers.count > 0
   )
 }

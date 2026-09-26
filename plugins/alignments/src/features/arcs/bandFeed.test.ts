@@ -76,23 +76,42 @@ test('an arc inside one region draws once, its far foot through that region', ()
   expect(f.get(1)!.links.count).toBe(0)
 })
 
-test('an arc spanning two loaded regions is filed under the one holding a foot', () => {
-  // 500 is in region 0 and 8000 is in neither, so the span crosses region 1
-  // without a foot there
+// 500 is in region 0 and 8000 in no displayed region, so the span crosses
+// region 1 without a foot there. A multi-locus view makes one of these at every
+// window edge a pair straddles: its far end runs off the block along region 0's
+// own axis, never onto region 1, and never as a tick-like stem.
+test('an arc whose far foot no region displays is clipped to the region holding the other', () => {
   const f = feeds([arc(500, 8000)])
-  expect(f.get(0)!.links.count).toBe(1)
-  expect(f.get(1)!.links.count).toBe(0)
-  expect(f.get(0)!.links.x2Region[0]).toBe(LINK_NO_REGION)
+  const { links, clippedLinks, clippedLinkHits } = f.get(0)!
+  expect(links.count).toBe(0)
+  expect([
+    clippedLinks.x[0],
+    clippedLinks.x2[0],
+    clippedLinks.x2Region[0],
+  ]).toEqual([500, 8000, 0])
+  expect(clippedLinkHits[0]).toMatchObject({ kind: 'arc', x1: 500, x2: 8000 })
+  expect(f.get(1)!.clippedLinks.count).toBe(0)
 })
 
 test('the near foot is the one in the region, whichever end the worker put first', () => {
   const f = feeds([arc(3000, 5100)])
-  const { links } = f.get(1)!
-  expect([links.x[0], links.x2[0], links.x2Region[0]]).toEqual([
-    5100,
-    3000,
-    LINK_NO_REGION,
+  const { clippedLinks } = f.get(1)!
+  expect([
+    clippedLinks.x[0],
+    clippedLinks.x2[0],
+    clippedLinks.x2Region[0],
+  ]).toEqual([5100, 3000, 1])
+})
+
+test('a clipped read cloud bar keeps its dash and squares at both mates', () => {
+  const f = feeds([
+    arc(500, 8000, ARC_SHAPE_FLAT),
+    arc(600, 9000, ARC_SHAPE_FLAT_SPLIT),
   ])
+  const { clippedLinks, clippedDashed, markers } = f.get(0)!
+  expect([...clippedLinks.x]).toEqual([500])
+  expect([...clippedDashed.x]).toEqual([600])
+  expect([...markers.x]).toEqual([500, 8000, 600, 9000])
 })
 
 test('a read cloud bar takes its category colour at the cloud alpha, squares at each mate, a split one dashed', () => {
@@ -169,9 +188,15 @@ test('a cross-region bar puts its far square in the far region', () => {
   expect(f.get(0)!.links.feet![0]).toBe(0)
 })
 
-test('an arc with neither foot in the region it was filed under draws nothing', () => {
+test('an arc with neither foot in the region it was filed under crosses it clipped', () => {
   // filed under region 1 by the span it crosses, with a foot either side
   const f = feeds([arc(3000, 7000)])
-  expect(f.get(1)!.links.count).toBe(0)
-  expect(f.get(0)!.links.count).toBe(0)
+  const { links, clippedLinks } = f.get(1)!
+  expect(links.count).toBe(0)
+  expect([
+    clippedLinks.x[0],
+    clippedLinks.x2[0],
+    clippedLinks.x2Region[0],
+  ]).toEqual([3000, 7000, 1])
+  expect(f.get(0)!.clippedLinks.count).toBe(0)
 })

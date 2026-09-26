@@ -7,7 +7,11 @@ import { planMarks } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
-import { ARC_LINK_MARKS, ARC_MARKER_MARK } from './arcMarks.ts'
+import {
+  ARC_CLIPPED_MARKS,
+  ARC_LINK_MARKS,
+  ARC_MARKER_MARK,
+} from './arcMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   coverageRegionOf,
@@ -250,8 +254,9 @@ export function drawAlignmentBlocks(
 }
 
 // Each section's read connections after every block, in the GPU's order: each
-// connection mark over the whole canvas from every region's feed, then the
-// endpoint squares block by block, clipped to the band.
+// connection mark over the whole canvas from every region's feed, then block
+// by block the connections clipped to their block and the endpoint squares,
+// clipped to the band.
 function paintArcBands(
   ctx: Ctx2D,
   sectionFeeds: readonly ReadonlyMap<number, ArcBandFeed>[],
@@ -286,6 +291,10 @@ function paintArcBands(
       block => feeds.get(block.displayedRegionIndex),
       (feed, block, { scissorX, scissorW }) => {
         withClip(ctx, scissorX, band.top, scissorW, band.height, () => {
+          const wide = canvasWideBlock(block.displayedRegionIndex, canvasWidth)
+          for (const mark of ARC_CLIPPED_MARKS) {
+            mark.paintBlock(ctx, feed, wide, bandState)
+          }
           ARC_MARKER_MARK.paintBlock(ctx, feed, block, bandState)
         })
       },

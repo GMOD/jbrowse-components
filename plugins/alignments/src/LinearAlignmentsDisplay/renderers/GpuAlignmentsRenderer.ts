@@ -18,7 +18,12 @@ import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBa
 import { EMPTY_ARC_BAND_FEED } from '../../features/arcs/bandFeed.ts'
 import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
-import { ARC_BAND_MARKS, ARC_LINK_MARKS, ARC_MARKER_MARK } from './arcMarks.ts'
+import {
+  ARC_BAND_MARKS,
+  ARC_CLIPPED_MARKS,
+  ARC_LINK_MARKS,
+  ARC_MARKER_MARK,
+} from './arcMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   type AlignmentsCoverageRegion,
@@ -429,8 +434,9 @@ export class GpuAlignmentsRenderer
 
   // Each section's read connections, after every block: each connection mark
   // over the whole canvas from every region's feed, so one crosses a seam
-  // whole and every region's ticks lie under every region's arcs, then the
-  // endpoint squares block by block over them. Scissored to the band.
+  // whole and every region's ticks lie under every region's arcs, then block
+  // by block the connections clipped to their block, placed canvas-wide like
+  // the rest, and the endpoint squares over them. Scissored to the band.
   private drawArcBands(
     blocks: RenderBlock[],
     state: RenderState,
@@ -480,6 +486,21 @@ export class GpuAlignmentsRenderer
         const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
         if (feed && clip) {
           this.hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
+          const wide = canvasWideBlock(block.displayedRegionIndex, canvasWidth)
+          const wideClip = clipBlock(wide, canvasWidth, canvasHeight, scale)
+          if (wideClip) {
+            drawMarks(
+              this.hal,
+              this.uBand,
+              ARC_CLIPPED_MARKS,
+              wide,
+              wideClip,
+              feed,
+              bandState,
+              sectionRegionKey(s, block.displayedRegionIndex),
+              this.textures,
+            )
+          }
           drawMarks(
             this.hal,
             this.uBand,

@@ -1,6 +1,7 @@
 import { recordPath } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
+import { drawAlignmentsToCtx } from '../renderers/Canvas2DAlignmentsRenderer.ts'
 import { ARC_LINK_MARKS } from '../renderers/arcMarks.ts'
 import {
   applyView,
@@ -8,6 +9,8 @@ import {
   makeEmptyPileupData as emptyPileupData,
   oneReadWithMate,
 } from '../testUtils.ts'
+
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // An arc whose two feet are in DIFFERENT displayed regions, through the model's
 // own chain rather than through a hand-built argument.
@@ -132,4 +135,92 @@ test('a single-region view has none of this', () => {
   expect(display.arcsByGroup.get('')!.get(0)!.numArcs).toBe(1)
   expect(display.sourceSections[0]!.arcFeeds.get(0)!.links.x2Region[0]).toBe(0)
   expect(display.renderSections[0]!.arcBandHeight).toBeGreaterThan(0)
+})
+
+// Two windows with the mate between them, on no displayed region: the view a
+// multi-locus SV session is, where a pair straddles every window edge.
+function straddlingDisplay() {
+  const { view, display } = createTestAlignmentsDisplay()
+  view.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 1500, refName: 'ctgA' },
+    { assemblyName: 'volvox', start: 5000, end: 10_000, refName: 'ctgA' },
+  ])
+  applyView(view, 10, 0)
+  display.setReadConnections('arc')
+  display.setRpcData(
+    0,
+    { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },
+    { refName: 'ctgA', start: 0, end: 1500, assemblyName: 'volvox' },
+  )
+  display.setRpcData(
+    1,
+    { groups: [{ key: '', label: '', data: emptyPileupData() }] },
+    { refName: 'ctgA', start: 5000, end: 10_000, assemblyName: 'volvox' },
+  )
+  return display
+}
+
+// Each stroke's x extent and the x range the clip allowed while it was made.
+function clipRecordingCtx() {
+  let clip: [number, number] = [-Infinity, Infinity]
+  const saved: [number, number][] = []
+  let rect = clip
+  let xs: number[] = []
+  const strokes: { xs: number[]; clip: [number, number] }[] = []
+  const recorded: Record<string, unknown> = {
+    save: () => saved.push(clip),
+    restore: () => {
+      clip = saved.pop()!
+    },
+    rect: (x: number, _y: number, w: number) => {
+      rect = [x, x + w]
+    },
+    clip: () => {
+      clip = [Math.max(clip[0], rect[0]), Math.min(clip[1], rect[1])]
+    },
+    beginPath: () => {
+      xs = []
+    },
+    moveTo: (x: number) => xs.push(x),
+    lineTo: (x: number) => xs.push(x),
+    ellipse: (x: number, _y: number, rx: number) => xs.push(x - rx, x + rx),
+    stroke: () => strokes.push({ xs, clip }),
+    measureText: () => ({ width: 0 }),
+  }
+  const ctx = new Proxy(recorded, {
+    get: (t, k) => (typeof k === 'string' && k in t ? t[k] : () => {}),
+    set: () => true,
+  })
+  return { ctx: ctx as unknown as Ctx2D, strokes }
+}
+
+test('an arc whose mate no window shows runs off its own block, clipped, not as a stem', () => {
+  const display = straddlingDisplay()
+  const feed = display.sourceSections[0]!.arcFeeds.get(0)!
+  expect(feed.ticks.count).toBe(0)
+  expect(feed.links.count).toBe(0)
+  expect(feed.clippedLinks.count).toBe(1)
+  expect(feed.clippedLinks.x2Region[0]).toBe(0)
+
+  const { ctx, strokes } = clipRecordingCtx()
+  drawAlignmentsToCtx(
+    ctx,
+    {
+      sections: display.sourceSections,
+      densityRegions: display.densityCoverageRegions,
+    },
+    display.renderBlocks,
+    display.renderState,
+  )
+  // The mate at 2000 bp lies along region 0's axis past that block's right
+  // edge, where the second window begins.
+  const own = display.renderState.linkRegions[0]!
+  const blockEnd = display.renderBlocks.find(
+    b => b.displayedRegionIndex === 0,
+  )!.screenEndPx
+  const mateX = own.anchorPx + (2000 - own.anchorBp) * own.signedPxPerBp
+  expect(mateX).toBeGreaterThan(blockEnd)
+  const arcStroke = strokes.find(s => Math.max(...s.xs) > blockEnd)
+  expect(Math.max(...arcStroke!.xs)).toBeCloseTo(mateX, 0)
+  expect(arcStroke!.clip[1]).toBeLessThanOrEqual(Math.ceil(blockEnd))
 })
