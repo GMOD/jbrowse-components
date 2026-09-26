@@ -56,9 +56,9 @@ export interface SchemaMetadata {
 // and the manifest records the lift, so the validator lifts a file the way the
 // app does before its rules read it.
 //
-// The `uri` lift is what a shorthand key cannot express: it widens a slot the
-// schema already declares rather than adding one, so `shorthandKeys` never saw
-// it and `jbrowse validate` called HtsgetBamAdapter's own documented example an
+// A `shorthandKeys` entry cannot express the `uri` lift, which widens a slot the
+// schema already declares instead of adding one. So nothing saw it, and
+// `jbrowse validate` reported HtsgetBamAdapter's own documented example as an
 // error.
 export function slotLifts(meta: SchemaMetadata, slot: string) {
   const lifted = (input: unknown) => {
@@ -512,9 +512,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     return { ...(description ? { description } : {}), ...form, ...withDefault }
   }
 
-  // A lift only widens the slot type it is a lift OF: a bare string means a list
+  // A lift only widens the slot type it is a lift of. A bare string means a list
   // of one in a `stringArray` and a `{ uri }` in a file location, so reading
-  // either onto the other slot type would admit a shape the schema refuses.
+  // either onto the other slot type admits a shape the schema refuses.
   function liftsFor(meta: SchemaMetadata, slot: string, type: string) {
     const lifts = slotLifts(meta, slot)
     if (type === 'stringArray') {

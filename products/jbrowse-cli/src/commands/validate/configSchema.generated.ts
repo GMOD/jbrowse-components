@@ -519,7 +519,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "htsgetBase": {
           "description": "the base URL to fetch from.",
-          "$ref": "#/$defs/FileLocation",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FileLocation"
+            },
+            {
+              "type": "string"
+            }
+          ],
           "default": {
             "uri": "",
             "locationType": "UriLocation"
@@ -796,7 +803,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "indexType": {
-          "description": "\`TBI\` is the usual \`tabix\` output. \`CSI\` is required for a reference longer than 512 Mb, which TBI cannot address.",
+          "description": "\`TBI\` is the usual \`tabix\` output. \`CSI\` is required for a reference longer than 512 Mb, which TBI cannot address. Derived from the index file name where the config names a \`.csi\` and leaves this unset.",
           "enum": [
             "TBI",
             "CSI"
@@ -2531,6 +2538,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "not": {
             "$ref": "#/$defs/JexlString"
           }
+        },
+        "uri": {
+          "type": "string",
+          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "Shorthand: a base URL \`uri\` resolves against."
+        },
+        "nhUri": {
+          "description": "Shorthand the adapter's snapshot normalizer expands."
         }
       }
     },
@@ -3158,19 +3176,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "bed2": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "chromSizes": {
-          "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "csi": {
-          "type": "boolean",
-          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
-        },
-        "htsgetBase": {
-          "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "nhUri": {
-          "description": "Shorthand the adapter's snapshot normalizer expands."
         }
       }
     },
@@ -3303,19 +3308,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "bed2": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "chromSizes": {
-          "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "csi": {
-          "type": "boolean",
-          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
-        },
-        "htsgetBase": {
-          "description": "Shorthand the adapter's snapshot normalizer expands."
-        },
-        "nhUri": {
-          "description": "Shorthand the adapter's snapshot normalizer expands."
         }
       }
     },
@@ -3429,6 +3421,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required.",
           "$ref": "#/$defs/PlainString",
           "default": "qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+        },
+        "uri": {
+          "type": "string",
+          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "Shorthand: a base URL \`uri\` resolves against."
         }
       }
     },

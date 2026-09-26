@@ -93,12 +93,11 @@ export function siblingSidecar(location: string, suffix: string) {
   return candidates.find(c => fs.existsSync(c)) ?? candidates[0]!
 }
 
-// The adapters a `densityAdapter` resolves to a slot on rather than being
-// dropped, read off the generated manifest `jbrowse validate` uses. Hand-listing
-// them missed `GWASAdapter`, which inherits the slot through
-// `bedTabixConfigSchema` rather than spreading
-// `densityAdapterConfigSchemaFields` itself, so `--density` on a Pan-UKBB file
-// was refused with a message naming nine adapters that could take it.
+// The adapters that declare a `densityAdapter` slot, read off the generated
+// manifest `jbrowse validate` uses. The hand-written list missed `GWASAdapter`,
+// which inherits the slot through `bedTabixConfigSchema` instead of spreading
+// `densityAdapterConfigSchemaFields`, so `--density` on a Pan-UKBB file was
+// refused by a message that listed nine adapters and not the tenth.
 const densityAdapterTypes = new Set(
   Object.entries(configManifest.adapters)
     .filter(([, entry]) => entry.slots.some(s => s.name === 'densityAdapter'))

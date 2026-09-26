@@ -110,7 +110,11 @@ describe('buildAdapterConfig', () => {
     })
   })
 
-  test('MafTabixAdapter carries index type', () => {
+  // The adapter's index sub-schema reads the type off a picked index's
+  // extension, so the form leaves `indexType` unwritten instead of stamping the
+  // radio over it. Writing both produced this case: a `.tbi` file under a CSI
+  // radio.
+  test('MafTabixAdapter leaves a picked index to say what it is', () => {
     expect(
       buildAdapterConfig({
         fileTypeChoice: 'MafTabixAdapter',
@@ -126,8 +130,25 @@ describe('buildAdapterConfig', () => {
       type: 'MafTabixAdapter',
       bedGzLocation: loc,
       nhLocation: nhLoc,
-      index: { indexType: 'CSI', location: indexLoc },
+      index: { location: indexLoc },
       samples,
+    })
+  })
+
+  test('a picked .csi is not overwritten by the radio either', () => {
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice: 'MafTabixAdapter',
+        indexTypeChoice: 'TBI',
+        loc,
+        indexLoc: { uri: 'data.csi', locationType: 'UriLocation' },
+        nhLoc,
+        summaryLoc: undefined,
+        framesLoc: undefined,
+        samples,
+      }),
+    ).toMatchObject({
+      index: { location: { uri: 'data.csi' } },
     })
   })
 
@@ -200,7 +221,7 @@ describe('buildAdapterConfig', () => {
       type: 'MafTabixAdapter',
       bedGzLocation: loc,
       nhLocation: nhLoc,
-      index: { indexType: 'TBI', location: indexLoc },
+      index: { location: indexLoc },
       samples,
       summaryAdapter: {
         type: 'BedTabixAdapter',

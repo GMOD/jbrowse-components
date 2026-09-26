@@ -52,14 +52,12 @@ export const tabixIndexFields = {
 
 /**
  * The `index` sub-schema itself, which nine adapters were each assembling out of
- * the fields above. One per adapter rather than one shared type, because each
- * adapter's index is a node in its own config tree.
+ * the fields above. A fresh one per adapter, so each index is a node in its own
+ * config tree.
  *
- * The factory is also where `indexType` gets filled in from the index file's own
- * name, and that is the reason to have one: the sub-schema sees every snapshot
- * that reaches it — the `uri` shorthand's expansion, a hand-written long form,
- * and what an add-track form hands over — while an adapter's `normalizeSnapshot`
- * sees only the shorthand.
+ * It is also where `fillIndexType` hangs, which is the reason to have a factory
+ * at all: the sub-schema sees every snapshot that reaches it, while an adapter's
+ * `normalizeSnapshot` sees only the shorthand.
  */
 export function tabixIndexSchema() {
   return ConfigurationSchema(

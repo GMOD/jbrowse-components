@@ -20,19 +20,15 @@ as a real one gets:
 <!-- include: plugins/bed/src/BedGraphAdapter/configSchema.ts -->
 
 ````ts
-import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  expandUriShorthand,
+} from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? fillLocations(snap, {
-        bedGraphLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      })
-    : snap
+  return expandUriShorthand(snap, 'bedGraphLocation')
 }
 
 /**
@@ -488,31 +484,37 @@ bamLocation: {
   },
 },
 
-index: ConfigurationSchema('BamIndex', {
-  /**
-   * #slot index.indexType
-   * `BAI` is the usual `samtools index` output. `CSI` is required for a
-   * reference longer than 512 Mb, which BAI cannot address.
-   */
-  indexType: {
-    model: types.enumeration('IndexType', ['BAI', 'CSI']),
-    type: 'stringEnum',
-    defaultValue: 'BAI',
-  },
-  /**
-   * #slot index.location
-   * location of the index. Only needed when it is not named
-   * `<file>.bam.bai` (or `.bam.csi`), the names the `uri` shorthand
-   * assumes.
-   */
-  location: {
-    type: 'fileLocation',
-    defaultValue: {
-      uri: '/path/to/my.bam.bai',
-      locationType: 'UriLocation',
+index: ConfigurationSchema(
+  'BamIndex',
+  {
+    /**
+     * #slot index.indexType
+     * `BAI` is the usual `samtools index` output. `CSI` is required for a
+     * reference longer than 512 Mb, which BAI cannot address. Derived from
+     * the index file name where the config names a `.csi` and leaves this
+     * unset.
+     */
+    indexType: {
+      model: types.enumeration('IndexType', ['BAI', 'CSI']),
+      type: 'stringEnum',
+      defaultValue: 'BAI',
+    },
+    /**
+     * #slot index.location
+     * location of the index. Only needed when it is not named
+     * `<file>.bam.bai` (or `.bam.csi`), the names the `uri` shorthand
+     * assumes.
+     */
+    location: {
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/my.bam.bai',
+        locationType: 'UriLocation',
+      },
     },
   },
-}),
+  { preProcessSnapshot: fillIndexType },
+),
 ```
 
 Read a nested slot with a path array. From inside an adapter that is

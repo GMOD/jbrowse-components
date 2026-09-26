@@ -1,7 +1,7 @@
 import { normalizeSnapshot as anchors } from './MCScanAnchorsAdapter/configSchema.ts'
 import { normalizeSnapshot as simple } from './MCScanSimpleAnchorsAdapter/configSchema.ts'
 
-describe('the MCScan shorthand expands each key on its own', () => {
+describe('the MCScan shorthand expands each key independently', () => {
   test('all three, which is how the docs write it', () => {
     expect(
       anchors({
@@ -17,9 +17,9 @@ describe('the MCScan shorthand expands each key on its own', () => {
     })
   })
 
-  // all three used to be required together, so a config naming only some of them
-  // expanded NONE: the anchors slot kept its /path/to placeholder and the track
-  // drew nothing, with `jbrowse validate` calling the config fine
+  // gating all three on each other expanded NONE of them when one was missing,
+  // leaving the anchors slot at its /path/to placeholder with nothing drawn and
+  // `jbrowse validate` reporting no problem
   test('uri alone still reaches the anchors slot', () => {
     expect(
       anchors({ type: 'MCScanAnchorsAdapter', uri: 'g.anchors' }),
@@ -39,7 +39,7 @@ describe('the MCScan shorthand expands each key on its own', () => {
     })
   })
 
-  test('the simple-anchors adapter names its own slot', () => {
+  test('the simple-anchors adapter fills its own slot', () => {
     expect(
       simple({ type: 'MCScanSimpleAnchorsAdapter', uri: 'g.anchors.simple' }),
     ).toMatchObject({

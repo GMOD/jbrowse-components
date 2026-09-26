@@ -1,3 +1,4 @@
+import { indexSuffix } from '@jbrowse/core/configuration'
 import { makeIndex } from '@jbrowse/core/util/tracks'
 
 import type { SampleConfig } from '../util/getSamples.ts'
@@ -127,15 +128,16 @@ export function buildAdapterConfig(args: BuildArgs) {
         type: fileTypeChoice,
         bedGzLocation: loc,
         nhLocation: nhLoc,
-        index: {
-          indexType: indexTypeChoice,
-          // The suffix follows the Index-type radio rather than the file name:
-          // here the radio is the user's answer and there is no name to read
-          // it off.
-          location:
-            indexLoc ??
-            makeIndex(loc, indexTypeChoice === 'CSI' ? '.csi' : '.tbi'),
-        },
+        // A picked index has an extension, and the adapter's index sub-schema
+        // reads the type off it; stamping the radio's answer over that lets the
+        // two disagree. The radio answers the other case, where there is no name
+        // to read and a sibling has to be derived.
+        index: indexLoc
+          ? { location: indexLoc }
+          : {
+              indexType: indexTypeChoice,
+              location: makeIndex(loc, indexSuffix(indexTypeChoice)),
+            },
         samples,
         ...bedTabixSummary(summaryLoc),
         ...framesAnnotation(framesLoc),

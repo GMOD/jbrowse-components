@@ -142,7 +142,8 @@ explicit location slot, and derive the index location from it.
   shorthands: uri, baseUri, nhUri
 - [BgzipTaffyAdapter](https://jbrowse.org/jb2/docs/config/bgziptaffyadapter.md)
   — shorthands: uri, baseUri, nhUri
-- [BigMafAdapter](https://jbrowse.org/jb2/docs/config/bigmafadapter.md)
+- [BigMafAdapter](https://jbrowse.org/jb2/docs/config/bigmafadapter.md) —
+  shorthands: uri, baseUri, nhUri
 - [MafTabixAdapter](https://jbrowse.org/jb2/docs/config/maftabixadapter.md) —
   shorthands: uri, baseUri, csi, nhUri
 - [HicAdapter](https://jbrowse.org/jb2/docs/config/hicadapter.md) — shorthands:
@@ -161,14 +162,15 @@ explicit location slot, and derive the index location from it.
 - [ChainAdapter](https://jbrowse.org/jb2/docs/config/chainadapter.md) —
   shorthands: uri, baseUri
 - [MCScanAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscananchorsadapter.md)
-  — shorthands: uri, baseUri, bed1, bed2, chromSizes, csi, htsgetBase, nhUri
+  — shorthands: uri, baseUri, bed1, bed2
 - [MCScanBlocksAdapter](https://jbrowse.org/jb2/docs/config/mcscanblocksadapter.md)
   — shorthands: uri, baseUri
 - [MCScanSimpleAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscansimpleanchorsadapter.md)
-  — shorthands: uri, baseUri, bed1, bed2, chromSizes, csi, htsgetBase, nhUri
+  — shorthands: uri, baseUri, bed1, bed2
 - [MashMapAdapter](https://jbrowse.org/jb2/docs/config/mashmapadapter.md) —
   shorthands: uri, baseUri
 - [BlastTabularAdapter](https://jbrowse.org/jb2/docs/config/blasttabularadapter.md)
+  — shorthands: uri, baseUri
 - [GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter.md) —
   shorthands: uri, baseUri, csi
 

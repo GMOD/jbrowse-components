@@ -5,7 +5,7 @@ import { expandTabixShorthand, indexSnapshot } from './tabixShorthand.ts'
 const indexTypeOf = (snap: Record<string, unknown>) =>
   readConfObject(tabixIndexSchema().create(snap), 'indexType')
 
-describe('an index sub-schema reads its type off the file it names', () => {
+describe('an index sub-schema infers its type from the file it names', () => {
   test.each([
     ['x.vcf.gz.tbi', 'TBI'],
     ['x.vcf.gz.csi', 'CSI'],
@@ -28,9 +28,8 @@ describe('an index sub-schema reads its type off the file it names', () => {
     ).toBe('TBI')
   })
 
-  // the add-track form the dotplot guide sends a `jbrowse make-pif --csi` user
-  // to offers a ".tbi or .csi" file picker and writes only the location, so a
-  // picked .csi was opened with the TBI parser
+  // the synteny add-track form offers a ".tbi or .csi" picker and writes only
+  // the location, which the dotplot guide's `jbrowse make-pif --csi` reader hits
   test('a bare location is all an add-track form has to write', () => {
     expect(indexTypeOf({ location: { uri: 'aln.pif.gz.csi' } })).toBe('CSI')
   })
@@ -40,7 +39,7 @@ describe('an index sub-schema reads its type off the file it names', () => {
   })
 })
 
-describe('the shorthand reads one index type from three spellings', () => {
+describe('the shorthand reads one index type out of three spellings', () => {
   const tabix = (snap: Record<string, unknown>) =>
     (
       expandTabixShorthand(
@@ -63,8 +62,8 @@ describe('the shorthand reads one index type from three spellings', () => {
     })
   })
 
-  // the derived indexType used to be overwritten whole by any `index` the config
-  // spelled out, so this opened the .csi it names with the TBI parser
+  // any `index` the config spelled out overwrote the derived one whole, so this
+  // opened the .csi it names with the TBI parser
   test('an index named alongside csi: true keeps the CSI type', () => {
     expect(
       tabix({ csi: true, index: { location: { uri: 'else/x.vcf.gz.csi' } } }),
@@ -74,8 +73,8 @@ describe('the shorthand reads one index type from three spellings', () => {
     })
   })
 
-  // and the mirror: naming only the type used to lose the derived location, so
-  // the index fell back to the slot's /path/to placeholder
+  // the mirror case, which lost the derived location to the slot's /path/to
+  // placeholder
   test('index.indexType alone derives the matching sibling', () => {
     expect(tabix({ index: { indexType: 'CSI' } })).toMatchObject({
       indexType: 'CSI',

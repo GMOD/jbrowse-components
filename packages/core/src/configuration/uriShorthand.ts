@@ -1,14 +1,12 @@
 import { fillLocations } from './fillLocations.ts'
 
 /**
- * Expand a one-file adapter's shorthand — `{ uri: 'x.bed' }`, optionally with
- * `baseUri` — into the single location slot it declares, or pass a snapshot
- * already in full form through untouched.
+ * Expand a one-file adapter's `{ uri }` shorthand into the single location slot
+ * it declares, or pass a snapshot already in full form through untouched.
  *
  * `locationKey` is the only thing that differs between the twenty-odd adapters
  * reading one file (`bedLocation`, `bigWigLocation`, `hicLocation`,
- * `pafLocation`, …), and each was writing the same eight lines out for it. The
- * indexed families have {@link expandTabixShorthand} for the same reason.
+ * `pafLocation`, …). `expandTabixShorthand` is the indexed families' version.
  */
 export function expandUriShorthand(
   snap: Record<string, unknown>,

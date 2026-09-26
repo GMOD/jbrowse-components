@@ -1125,3 +1125,24 @@ test('--density fails on an adapter with no density slot', async () => {
     expect(error?.message).toContain('--density has no slot on BigWigAdapter')
   })
 })
+
+// The accepted set comes off the generated manifest. The hand-written list
+// missed GWASAdapter, which inherits the slot through bedTabixConfigSchema
+// instead of spreading densityAdapterConfigSchemaFields, so a Pan-UKBB file hit
+// a refusal that listed nine adapters and not the tenth.
+test('--density is accepted by every adapter the manifest gives the slot', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      'https://mywebsite.com/gwas.txt.gz',
+      '--density',
+      'https://mywebsite.com/gwas.density.bw',
+    ])
+    expect(error).toBeUndefined()
+    expect(readConf(ctx).tracks[0].adapter).toMatchObject({
+      type: 'GWASAdapter',
+      densityAdapter: { type: 'BigWigAdapter' },
+    })
+  })
+})

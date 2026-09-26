@@ -119,7 +119,8 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "htsgetBase",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)",
+          "liftsUri": true
         },
         {
           "name": "htsgetTrackId",
@@ -1159,7 +1160,11 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri",
+        "nhUri"
+      ]
     },
     "MafTabixAdapter": {
       "slots": [
@@ -1501,11 +1506,7 @@ export const configManifest: ConfigManifest = {
         "uri",
         "baseUri",
         "bed1",
-        "bed2",
-        "chromSizes",
-        "csi",
-        "htsgetBase",
-        "nhUri"
+        "bed2"
       ]
     },
     "MCScanBlocksAdapter": {
@@ -1567,11 +1568,7 @@ export const configManifest: ConfigManifest = {
         "uri",
         "baseUri",
         "bed1",
-        "bed2",
-        "chromSizes",
-        "csi",
-        "htsgetBase",
-        "nhUri"
+        "bed2"
       ]
     },
     "MashMapAdapter": {
@@ -1629,7 +1626,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         }
       ],
-      "shorthandKeys": []
+      "shorthandKeys": [
+        "uri",
+        "baseUri"
+      ]
     },
     "GWASAdapter": {
       "slots": [

@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -432,5 +433,29 @@ describe('PairwiseIndexedPAFAdapter', () => {
       const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
       expect(await adapter.getHeader()).toEqual({ hasCoarseTier: false })
     })
+  })
+})
+
+// What the synteny add-track form writes. Its picker is labelled ".tbi or .csi"
+// and the dotplot guide sends a `jbrowse make-pif --csi` reader to it, but it
+// writes only the location, so the type came from the slot default and PifFile
+// opened a CSI as a tbiFilehandle.
+describe('index type from the index file name', () => {
+  const indexTypeOf = (indexUri: string) =>
+    readConfObject(
+      MyConfigSchema.create({
+        pifGzLocation: { uri: 'aln.pif.gz', locationType: 'UriLocation' },
+        index: { location: { uri: indexUri, locationType: 'UriLocation' } },
+        assemblyNames: ['a', 'b'],
+      }),
+      ['index', 'indexType'],
+    )
+
+  it('infers CSI from a .csi the config names without saying so', () => {
+    expect(indexTypeOf('aln.pif.gz.csi')).toBe('CSI')
+  })
+
+  it('leaves a .tbi as TBI', () => {
+    expect(indexTypeOf('aln.pif.gz.tbi')).toBe('TBI')
   })
 })
