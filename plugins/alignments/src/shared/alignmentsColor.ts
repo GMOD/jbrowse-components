@@ -210,7 +210,7 @@ export function colorSnapshotFor(
  * distinct numbers.
  *
  * Insert size stays a threshold scale. A gradient from the neutral toward each
- * endpoint by severity shipped once (`insertSizeGradient`) and was retired:
+ * endpoint by severity was tried in the v5 betas (`insertSizeGradient`):
  * two half-ramped reads on opposite sides of the band both came out faintly
  * tinted grey, closest exactly where a deletion signature has to be told from
  * an insertion one.

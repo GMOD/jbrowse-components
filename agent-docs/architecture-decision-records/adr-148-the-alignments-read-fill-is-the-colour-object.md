@@ -104,7 +104,7 @@ which no array slot type says.
 
 **A v4 `colorBy` migrates**, in the session migration and on a config display
 node alike (`colorSlotsOf`, `sessionMigrations/index.ts`), which is where the
-retired `methylation`, `stranded` and `insertSizeGradient` names now resolve.
+retired `methylation` and `stranded` names now resolve.
 
 ## Consequences
 

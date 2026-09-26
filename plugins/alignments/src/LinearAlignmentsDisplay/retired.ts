@@ -47,14 +47,10 @@ export const retiredTypes: RetiredDisplayType[] = [
   },
 ]
 
-// `methylation`, `stranded` and `insertSizeGradient` were retired before the
-// colour object and land on the fields that replaced them.
 const V4_COLOR_FIELDS: Record<string, string> = {
   strand: 'strand',
   mappingQuality: 'mapq',
   insertSize: 'insertSize',
-  insertSizeGradient: 'insertSize',
-  firstOfPairStrand: 'firstOfPairStrand',
   stranded: 'firstOfPairStrand',
   pairOrientation: 'pairOrientation',
   insertSizeAndOrientation: 'insertSizeAndOrientation',
@@ -64,11 +60,9 @@ const V4_COLOR_FIELDS: Record<string, string> = {
 // the v4 schemes that drew a cell per base, the `baseColor` object's now
 const V4_BASE_COLOR_FIELDS: Record<string, string> = {
   perBaseQuality: 'baseQuality',
-  perBaseLetter: 'base',
   perBaseLettering: 'base',
   modifications: 'modifications',
   methylation: 'modifications',
-  bisulfite: 'bisulfite',
 }
 
 export function colorSlotsOf(value: unknown): DisplayEntry {

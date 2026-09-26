@@ -29,13 +29,9 @@ Most sessions and configs migrate through `preProcessSnapshot`:
 - the old `autoHeight` boolean becomes `heightMode: 'grow'` on the unified
   height slot
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
-- the alignments `insertSizeGradient` color scheme resolves to `insertSize`
 
-The gradient is gone rather than migrated because it duplicated the scheme it
-now maps to: same thresholds, same classifier, same buckets, and two endpoint
-hues close enough that a half-ramped read on either side of the band came out
-the same faint grey. The `heightOverride` shadow-prop that existed during
-development is gone, and there is no `<name>Override` shadow-property system.
+The `heightOverride` shadow-prop that existed during development is gone, and
+there is no `<name>Override` shadow-property system.
 
 Highlight visibility is session-wide in v5 rather than per view, and the v4 keys
 that expressed it are **not** migrated. A v4 session carrying a dismissed band —
