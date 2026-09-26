@@ -66,12 +66,11 @@ Each accession is aligned to Col-0, and to the accession above it in the stack:
 ```bash
 # asm5 is the preset for genomes of one species
 # --eqx writes = and X in the CIGAR, which SyRI reads the mismatches from
-minimap2 -ax asm5 --eqx Col-0.fa Ler.fa |
-  samtools sort -O BAM -o Col-0_Ler.bam -
+minimap2 -cx asm5 --eqx Col-0.fa Ler.fa >Col-0_Ler.aln.paf
 
-# -F B says the alignment is BAM
+# -F P says the alignment is PAF
 # --nc runs that many chromosomes at once
-syri -c Col-0_Ler.bam -r Col-0.fa -q Ler.fa -F B --prefix Col-0_Ler. --nc 5
+syri -c Col-0_Ler.aln.paf -r Col-0.fa -q Ler.fa -F P --prefix Col-0_Ler. --nc 5
 ```
 
 `Col-0_Ler.syri.out` holds one row per annotation. The structural regions are
@@ -85,19 +84,33 @@ alignment record.
 [`syri_to_paf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/syri_to_paf.py)
 writes each region as one, naming sequences `<genome>#1#<chrom>` so records from
 many pairs can share a file, with the inverted types on the minus strand and two
-tags: `syri`, the type, and `color`, that type's color in plotsr's palette.
-Concatenating every pair's records gives one file for every view below:
+tags: `syri`, the type, and `color`, that type's color in plotsr's palette. It
+reads each sequence's length from a `.chrom.sizes` file beside `syri.out`, the
+first two columns of the FASTA's index. Concatenating every pair's records gives
+one file for every view below:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/syri_to_paf.py
-python3 syri_to_paf.py Col-0_Ler.syri.out --prefix Col-0_Ler
+for name in Col-0 Ler; do
+  samtools faidx $name.fa
+  cut -f1,2 $name.fa.fai >$name.chrom.sizes
+done
+python3 syri_to_paf.py Col-0_Ler.syri.out --reference Col-0 --query Ler
 cat Col-0_*.paf Ler_Cvi.paf Cvi_Eri.paf Eri_Kyo.paf Kyo_Sha.paf >syri_pangenome.paf
 ```
 
-`attributeColumns` names the tags the palette button offers. `syri` becomes a
-color-by mode, and `color` is the color the file puts beside each type:
+The ribbons need no sequence, so each accession is an assembly of those
+chromosome lengths alone, a `ChromSizesAdapter` over its `.chrom.sizes`. On the
+track:
+
+- **`attributeColumns`** names the tags the palette button offers: `syri`
+  becomes a color-by mode, and `color` is the color the file puts beside each
+  type
+- **The `MultiWaySyntenyDisplay` entry** sets up the
+  [lanes view](#every-accession-in-columbias-coordinates): `domain` names the
+  lanes and `ribbonColor` colors the bands by `syri`
 
 ```json addtrack
 {
@@ -109,12 +122,20 @@ color-by mode, and `color` is the color the file puts beside each type:
     "type": "MultiGenomePAFAdapter",
     "uri": "syri_pangenome.paf",
     "attributeColumns": ["syri", "color"]
-  }
+  },
+  "displays": [
+    {
+      "type": "MultiWaySyntenyDisplay",
+      "displayId": "syri_pangenome-MultiWaySyntenyDisplay",
+      "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"],
+      "ribbonColor": {
+        "field": "syri",
+        "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+      }
+    }
+  ]
 }
 ```
-
-The ribbons need no sequence, so each accession is an assembly of its chromosome
-lengths alone, a `ChromSizesAdapter` over the first two columns of its `.fai`.
 
 ## Columbia against Landsberg on chromosome 4
 
@@ -216,7 +237,9 @@ concatenate into one track:
 ```bash
 {
   head -n1 Col-0_Ler.regions.bed
-  tail -q -n +2 Col-0_*.regions.bed | sort -k1,1 -k2,2n
+  for name in Ler Cvi Eri Kyo Sha; do
+    tail -n +2 Col-0_$name.regions.bed
+  done | sort -k1,1 -k2,2n
 } | bgzip >syri_regions.bed.gz
 tabix -p bed syri_regions.bed.gz
 ```
@@ -249,11 +272,14 @@ tabix -p bed syri_regions.bed.gz
 ```
 
 Open a linear genome view on Col-0 at `Chr4:1-6,000,000` and turn the track on.
-Turn on **SyRI regions** under it, switch it to **Display types → Multi-way
-synteny display**, and pick **syri** under **Ribbons** in its **Color by...**
-menu. Each accession becomes a lane drawn in its own coordinates, placed by its
-SyRI run against Col-0. The band between two lanes is drawn from the run between
-those two accessions, so it carries the type SyRI gave that pair:
+Turn on **SyRI regions** under it and switch it to **Display types → Multi-way
+synteny display**, which takes its lanes and colors from the track's display
+entry above:
+
+- **Each accession is a lane** drawn in its own coordinates, placed by its SyRI
+  run against Col-0
+- **The band between two lanes** comes from the run between those two
+  accessions, so it carries the type SyRI gave that pair
 
 ```json session config=test_data/syri/config.json
 {
@@ -273,11 +299,6 @@ those two accessions, so it carries the type SyRI gave that pair:
           {
             "trackId": "syri_pangenome",
             "type": "MultiWaySyntenyDisplay",
-            "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"],
-            "ribbonColor": {
-              "field": "syri",
-              "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
-            },
             "height": 640
           }
         ]
@@ -289,10 +310,45 @@ those two accessions, so it carries the type SyRI gave that pair:
 
 <Figure caption="The first 6 Mb of Col-0 chromosome 4: each accession's SyRI regions against Col-0 as a row above, and the accessions as lanes below in their own coordinates, each band colored by SyRI's type for the two genomes it joins. Every accession is inverted against Col-0 across the same stretch, and the bands between accessions run straight there." src="/img/syri/col0_lanes.png" />
 
-`ribbonColor` here and `rows` on the track above each take a column of the file
-and a domain for its values, the two keys every channel in JBrowse takes. The
-menu route writes those same two, so it and the config reach one knob.
-[](/docs/tutorials/alu_age) declares a plot off a BED with nothing else.
+## Twenty-six accessions against TAIR10
+
+Every one of the five accessions is inverted against Col-0 over the same
+stretch, which raises the question of which arrangement is the common one. The
+1001 Genomes Plus project assembled accessions from across the species' range
+([Igolkina et al. 2025](https://doi.org/10.1038/s41588-025-02293-0)), and the
+same pipeline runs on 26 of them against TAIR10. The result is hosted with each
+accession's genes, transposons and methylation from the
+[1001 Genomes](https://1001genomes.org/) data centre. Open it over the
+chromosome 4 inversion with the SyRI rows, ordered by admixture group:
+
+```json session config=https://jbrowse.org/demos/arabidopsis_pangenome/config.json
+{
+  "defaultSession": {
+    "name": "26 accessions against TAIR10, chromosome 4",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "TAIR10",
+        "loc": "Chr4:1-4,000,000",
+        "tracks": [
+          "TAIR10_genes",
+          {
+            "trackId": "syri_regions_on_TAIR10",
+            "type": "LinearMultiRowFeatureDisplay",
+            "height": 644
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="The first 4 Mb of TAIR10 chromosome 4, one row of SyRI regions per 1001 Genomes Plus accession. The top two rows, Col-0's own assembly and KBS-Mac-74, run syntenic across the inversion; every other row is inverted there." src="/img/syri/tair10_1001g.png" />
+
+The hosted demo also carries the 1135-accession Fst scan, the 1001 Genomes SNPs
+and a minigraph pangenome of the same genomes, all built by
+[`build_arabidopsis_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_arabidopsis_pangenome.sh).
 
 ## Check it against syri.out
 
@@ -310,14 +366,24 @@ crossed ribbon spans and the orange block on the Ler row.
 
 The script fetches the six assemblies, runs SyRI on each accession against Col-0
 and against the one above it, converts each table and writes the config; see
-[Prerequisites](#prerequisites). Its `ROWS` list is one `<name> <accession>`
-line per genome in stack order, the reference first. For genomes of your own,
-put a chromosome-level `<name>.fa` for each row into the output directory,
-homologous chromosomes spelled alike, and the download step skips it.
+[Prerequisites](#prerequisites).
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_syri_synteny.sh
 bash build_syri_synteny.sh
+```
+
+For genomes of your own, pass a rows file after the output directory:
+
+- **One `<name> [accession]` line per genome**, in stack order, the reference
+  first
+- **A chromosome-level `<name>.fa` in the output directory** is used as it is,
+  so a row that has one needs no accession
+- **Homologous chromosomes are spelled alike** in every FASTA, since SyRI pairs
+  them by name
+
+```bash
+bash build_syri_synteny.sh my_syri rows.txt
 ```
 
 ## See also
@@ -340,6 +406,9 @@ bash build_syri_synteny.sh
 - Jiao WB, Schneeberger K. Chromosome-level assemblies of multiple Arabidopsis
   genomes reveal hotspots of rearrangements with altered evolutionary dynamics.
   Nat Commun (2020). https://doi.org/10.1038/s41467-020-14779-y
+- Igolkina AA, et al. A comparison of 27 Arabidopsis thaliana genomes and the
+  path toward an unbiased characterization of genetic polymorphism. Nat Genet
+  (2025). https://doi.org/10.1038/s41588-025-02293-0
 - Zapata L, et al. Chromosome-level assembly of Arabidopsis thaliana Ler reveals
   the extent of translocation and inversion polymorphisms. PNAS (2016).
   https://doi.org/10.1073/pnas.1607532113
