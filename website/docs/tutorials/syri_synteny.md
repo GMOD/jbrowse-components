@@ -331,7 +331,6 @@ chromosome 4 inversion with the SyRI rows, ordered by admixture group:
         "assembly": "TAIR10",
         "loc": "Chr4:1-4,000,000",
         "tracks": [
-          "TAIR10_genes",
           {
             "trackId": "syri_regions_on_TAIR10",
             "type": "LinearMultiRowFeatureDisplay",

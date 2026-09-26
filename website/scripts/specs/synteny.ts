@@ -2131,7 +2131,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             assembly: 'TAIR10',
             loc: 'Chr4:1-4,000,000',
             tracks: [
-              'TAIR10_genes',
               {
                 trackId: 'syri_regions_on_TAIR10',
                 type: 'LinearMultiRowFeatureDisplay',
@@ -2142,9 +2141,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: displayPainted('multirow_canvas'),
+    readyText: 'Tnz-1',
+    readySelector: '[data-testid="multirow_canvas"]',
     readyTimeout: 120000,
-    viewportHeight: 1000,
+    viewportHeight: 870,
   },
 
   // The same stack where the mammals break: at hg38 chr17 near 15.75 Mb the
