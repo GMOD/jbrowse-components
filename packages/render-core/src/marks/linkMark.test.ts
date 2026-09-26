@@ -421,6 +421,21 @@ test('a foot ticks along its arm, mirrored on a reversed region and stopped at t
   expect(ink.top + ink.height).toBe(101)
 })
 
+// A hover asks within a few px, so the scan rejects an instance off its feet
+// before placing it; a foot pointing away from its pair is ink past them.
+test('a foot pointing outward answers a hover at its tip', () => {
+  const p = { ...params, footPx: 20 }
+  const c: LinkChannels = {
+    ...channels([{ x: 100, x2: 200 }]),
+    feet: Uint8Array.of(linkFeet(-1, 1)),
+  }
+  const near = (x: number) =>
+    hit(c, block, frame, p, x, 99, [0], 3 ** 2)?.distSq
+  expect(near(82)).toBe(0)
+  expect(near(218)).toBe(0)
+  expect(near(70)).toBeUndefined()
+})
+
 test('a stem carries no far foot, and a link naming no feet draws none', () => {
   const stem: LinkChannels = {
     ...channels([{ x: 500, x2: 42, region: LINK_NO_REGION }]),

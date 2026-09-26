@@ -170,6 +170,8 @@ interface LinkFrame {
   legSweep: number
   strokePx: number
   footPx: number
+  /** Half the widest stroke and half the shortest line: how far past its feet an instance inks. */
+  xPadPx: number
   /** Each foot's tick as a screen direction and length; 0 draws none. */
   foot1Dir: number
   foot1Len: number
@@ -220,6 +222,15 @@ function linkFrame(
     legSweep: 0,
     strokePx: 0,
     footPx: params.footPx ?? LINK_FOOT_PX,
+    xPadPx:
+      Math.max(
+        params.sizePx,
+        sizeScale?.range[0] ?? 0,
+        sizeScale?.range[1] ?? 0,
+        1.5 / getDpr(),
+      ) /
+        2 +
+      LINK_LINE_MIN_PX / 2,
     foot1Dir: 0,
     foot1Len: 0,
     foot2Dir: 0,
@@ -246,6 +257,32 @@ function linkShapeCode(shape: LinkShape) {
 function regionPx(regions: readonly LinkRegion[], index: number, bp: number) {
   const r = regions[index]!
   return r.anchorPx + (bp - r.anchorBp) * r.signedPxPerBp
+}
+
+// Whether instance `i`'s ink can reach [lo, hi] horizontally, off its two feet
+// alone: every shape's ink lies between them, padded by half the widest stroke,
+// a foot's length, and half a `line`'s shortest length. Two table lookups, so
+// a scan over tens of thousands of instances places only those it could hit.
+function reachesX(
+  c: LinkChannels,
+  g: LinkFrame,
+  i: number,
+  lo: number,
+  hi: number,
+) {
+  const region = c.x2Region[i]!
+  if (region === LINK_ELSEWHERE) {
+    return false
+  }
+  const x = regionPx(g.regions, g.own, c.x[i]!)
+  const x2 =
+    region < g.regions.length && region < LINK_MAX_REGIONS
+      ? regionPx(g.regions, region, c.x2[i]!)
+      : x
+  const pad = g.xPadPx + (c.feet?.[i] ? g.footPx : 0)
+  return x2 > x
+    ? x2 + pad >= lo && x - pad <= hi
+    : x + pad >= lo && x2 - pad <= hi
 }
 
 function sizeOf(c: LinkChannels, i: number) {
@@ -736,6 +773,9 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
     const dash = params.strokeDash ? [...params.strokeDash] : []
     ctx.lineCap = 'butt'
     for (let i = 0; i < count; i++) {
+      if (!reachesX(channels, g, i, 0, frame.canvasWidth)) {
+        continue
+      }
       placeLink(channels, g, i)
       if (g.kind === KIND_NONE) {
         continue
@@ -773,6 +813,9 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
     const g = linkFrame(block, frame, params)
     const reach = Math.sqrt(maxDistSq)
     return nearestInk(candidates, maxDistSq, i => {
+      if (!reachesX(channels, g, i, xPx - reach, xPx + reach)) {
+        return undefined
+      }
       placeLink(channels, g, i)
       const box = inkBox(g)
       if (
