@@ -1,6 +1,10 @@
 import { fetchSeq } from '../../../util/fetchSeq.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
-import { formatFeatWithSubfeatures, stringifyGBK } from './genbank.ts'
+import {
+  formatFeatWithSubfeatures,
+  insdcFeatureKey,
+  stringifyGBK,
+} from './genbank.ts'
 
 import type { AbstractSessionModel } from '../../../util/index.ts'
 
@@ -259,7 +263,7 @@ describe('GenBank export', () => {
     expect(result).not.toContain('join(21..180)')
   })
 
-  it('truncates a long feature type to the 15-char feature-key width', async () => {
+  it('gives a type with no feature key misc_feature, keeping the term', async () => {
     const f = createFeature({
       id: 'gene9',
       refName: 'chr1',
@@ -273,9 +277,8 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    // Type should be truncated to the 15-char GenBank feature-key width
-    expect(result).toContain('very_long_featu')
-    expect(result).not.toContain('very_long_feature_type_name')
+    expect(result).toContain('     misc_feature    1..100')
+    expect(result).toContain('/note="very_long_feature_type_name"')
   })
 
   it('handles features without explicit strand (defaults to positive)', async () => {
@@ -592,8 +595,83 @@ describe('formatFeatWithSubfeatures', () => {
     expect(result).toContain('gene            1..1000')
     expect(result).toContain('mRNA            1..1000')
     expect(result).toContain('CDS             join(101..400,601..900)')
-    expect(result).toContain('five_prime_UTR  1..100')
-    expect(result).toContain('three_prime_UTR 901..1000')
+    expect(result).toContain("5'UTR           1..100")
+    expect(result).toContain("3'UTR           901..1000")
+  })
+})
+
+// The key column holds one of a closed list, so a SO term is not a key by being
+// a type. Everything below went out under a key no reader recognizes, and the
+// snapshots could not see it because an unknown key parses fine and just draws
+// as nothing in particular.
+describe('INSDC feature keys', () => {
+  it.each([
+    ['gene', 'gene'],
+    ['mRNA', 'mRNA'],
+    ['CDS', 'CDS'],
+    ['exon', 'exon'],
+    ['five_prime_UTR', "5'UTR"],
+    ['three_prime_UTR', "3'UTR"],
+    // what SnapGene draws a primer for; in-silico PCR footprints come in as
+    // `primer` and drew as nothing
+    ['primer', 'primer_bind'],
+    ['transcript', 'mRNA'],
+    ['promoter', 'regulatory'],
+    ['guide_rna', 'misc_feature'],
+    ['PAM', 'misc_feature'],
+    ['motif', 'misc_feature'],
+    ['PCR_product', 'misc_feature'],
+    ['match', 'misc_feature'],
+    ['match_part', 'misc_feature'],
+  ])('%s is written as %s', (type, key) => {
+    expect(insdcFeatureKey(type)).toBe(key)
+  })
+
+  it('never writes a key wider than the column', () => {
+    for (const type of ['gene', 'misc_difference', 'transit_peptide', 'zzz']) {
+      expect(insdcFeatureKey(type).length).toBeLessThanOrEqual(15)
+    }
+  })
+
+  // /gene is the gene symbol. Threading it off any parent that happened to have
+  // children labelled an hgPcr product `/gene="100 bp"` and a BLAT hit
+  // `/gene="YourSeq 99.1%"`, which reads downstream as a gene of that name.
+  it('does not give a non-gene parent a /gene symbol', () => {
+    const product = createFeature({
+      id: 'p1',
+      refName: 'chr1',
+      start: 800,
+      end: 900,
+      type: 'PCR_product',
+      name: '100 bp',
+      subfeatures: [
+        {
+          id: 'fwd',
+          type: 'primer',
+          start: 800,
+          end: 820,
+          name: 'forward primer',
+        },
+      ],
+    })
+    const result = formatFeatWithSubfeatures({ feature: product, minPos: 800 })
+    expect(result).not.toContain('/gene=')
+    expect(result).toContain('primer_bind')
+    expect(result).toContain('/label="forward primer"')
+  })
+
+  it('still threads the symbol through a real gene group', () => {
+    const gene = createFeature({
+      id: 'g1',
+      refName: 'chr1',
+      start: 0,
+      end: 100,
+      type: 'gene',
+      name: 'TP53',
+      subfeatures: [{ id: 'm1', type: 'mRNA', start: 0, end: 100 }],
+    })
+    const result = formatFeatWithSubfeatures({ feature: gene, minPos: 0 })
+    expect(result.match(/\/gene="TP53"/g)).toHaveLength(2)
   })
 })
 

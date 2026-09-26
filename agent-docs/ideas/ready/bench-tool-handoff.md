@@ -47,13 +47,17 @@ sequence and features together
 reached from a track's **Save track data**). Four things stop it serving the
 workflow above.
 
-**The feature-key column takes JBrowse's type string raw.** `featureLine` writes
-whatever the feature calls itself, and INSDC feature keys are a closed list. So
-in-silico PCR's primer footprints emit `primer` where SnapGene draws a primer
-only for `primer_bind`, and `guide_rna`, `motif`, `PCR_product` and `match` are
-not keys at all. Wanted: a type-to-key map, with `misc_feature` plus `/label`
-carrying the original name as the fallback. This is the difference between a
-record that opens showing the right thing and one that opens showing blobs.
+~~**The feature-key column takes JBrowse's type string raw.**~~ Fixed:
+`insdcFeatureKey` maps the SO spellings this tree emits and sends everything
+else to `misc_feature` with the original term in `/note`. Primer footprints are
+`primer_bind` now, and `/gene` no longer gets threaded off any parent that
+happened to have children — an hgPcr product went out as `/gene="100 bp"` and a
+BLAT hit as `/gene="YourSeq 99.1%"`.
+
+**The record still carries absolute coordinates in its attributes.** A CRISPR
+guide's `cutSite` is a genomic position, dumped verbatim into a record whose own
+coordinates start at 1. The exporter has no way to know which attributes are
+coordinates, so this wants per-type knowledge it does not have.
 
 **There is no region-with-flanks control.** A construct needs flanking sequence,
 because that is where the primers go. The export takes the regions captured at

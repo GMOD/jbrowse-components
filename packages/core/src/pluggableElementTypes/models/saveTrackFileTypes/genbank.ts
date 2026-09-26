@@ -43,7 +43,123 @@ function featureLine(type: string, location: string) {
   return `     ${type.slice(0, TYPE_COLUMN_WIDTH).padEnd(TYPE_COLUMN_WIDTH)} ${location}`
 }
 
-function formatTags({ feature, gene }: { feature: Feature; gene?: string }) {
+/**
+ * The feature key column holds one of a closed list, so a SO term JBrowse names
+ * a feature with is not a key by virtue of being a type. A reader that does not
+ * recognize the key falls back to drawing nothing in particular — which is what
+ * a BLAT hit, a CRISPR guide, a restriction site and an hgPcr product all got,
+ * and what `primer` got where SnapGene draws a primer only for `primer_bind`.
+ *
+ * https://www.insdc.org/submitting-standards/feature-table/
+ */
+const INSDC_KEYS = new Set([
+  "3'UTR",
+  "5'UTR",
+  'assembly_gap',
+  'C_region',
+  'CDS',
+  'centromere',
+  'D-loop',
+  'D_segment',
+  'exon',
+  'gap',
+  'gene',
+  'iDNA',
+  'intron',
+  'J_segment',
+  'mat_peptide',
+  'misc_binding',
+  'misc_difference',
+  'misc_feature',
+  'misc_recomb',
+  'misc_RNA',
+  'misc_structure',
+  'mobile_element',
+  'modified_base',
+  'mRNA',
+  'N_region',
+  'ncRNA',
+  'old_sequence',
+  'operon',
+  'oriT',
+  'polyA_site',
+  'precursor_RNA',
+  'prim_transcript',
+  'primer_bind',
+  'propeptide',
+  'protein_bind',
+  'regulatory',
+  'rep_origin',
+  'repeat_region',
+  'rRNA',
+  'S_region',
+  'sig_peptide',
+  'source',
+  'stem_loop',
+  'STS',
+  'telomere',
+  'tmRNA',
+  'transit_peptide',
+  'tRNA',
+  'unsure',
+  'V_region',
+  'V_segment',
+  'variation',
+])
+
+// SO terms this tree emits that the feature table spells differently. Anything
+// absent from both this and INSDC_KEYS is a real feature with no key of its own
+// — a guide, a PAM, a restriction site, a BLAT hit, an hgPcr product — and
+// becomes misc_feature, which is what the key exists for.
+const SO_TO_INSDC: Record<string, string> = {
+  five_prime_UTR: "5'UTR",
+  three_prime_UTR: "3'UTR",
+  primer: 'primer_bind',
+  primer_binding_site: 'primer_bind',
+  transcript: 'mRNA',
+  pseudogene: 'gene',
+  promoter: 'regulatory',
+  enhancer: 'regulatory',
+  terminator: 'regulatory',
+  polyA_site: 'polyA_site',
+  origin_of_replication: 'rep_origin',
+  repeat_unit: 'repeat_region',
+  SNV: 'variation',
+  SNP: 'variation',
+}
+
+// The keys whose group shares one /gene symbol. A feature with children is not
+// a gene by having them: threading the symbol off any parent labelled an hgPcr
+// product `/gene="100 bp"` and a BLAT hit `/gene="YourSeq 99.1%"`, which reads
+// downstream as a gene of that name.
+const GENE_GROUP_KEYS = new Set([
+  'gene',
+  'mRNA',
+  'ncRNA',
+  'rRNA',
+  'tRNA',
+  'tmRNA',
+  'misc_RNA',
+  'precursor_RNA',
+  'prim_transcript',
+  'CDS',
+  'exon',
+])
+
+export function insdcFeatureKey(type: string) {
+  const mapped = SO_TO_INSDC[type] ?? type
+  return INSDC_KEYS.has(mapped) ? mapped : 'misc_feature'
+}
+
+function formatTags({
+  feature,
+  gene,
+  key,
+}: {
+  feature: Feature
+  gene?: string
+  key?: string
+}) {
   const tags: string[] = []
   // /gene ties gene/mRNA/CDS together; /label is what SnapGene/Geneious/ApE
   // display as the feature name on the map
@@ -53,6 +169,12 @@ function formatTags({ feature, gene }: { feature: Feature; gene?: string }) {
   const label = feature.get('name') ?? feature.get('id')
   if (label) {
     tags.push(qualifier('label', label))
+  }
+  // a feature that had to become misc_feature still knows what it is, so the
+  // term it came in as rides along rather than being dropped at the key column
+  const type = `${feature.get('type')}`
+  if (key === 'misc_feature' && type && type !== 'misc_feature') {
+    tags.push(qualifier('note', type))
   }
   for (const key of Object.keys(feature.toJSON())) {
     if (!coreFields.has(key)) {
@@ -97,14 +219,17 @@ export function formatFeatWithSubfeatures({
 }): string {
   const subfeatures = feature.get('subfeatures') ?? []
   const strand = feature.get('strand') ?? 0
-  const type = `${feature.get('type')}`
+  const key = insdcFeatureKey(`${feature.get('type')}`)
   const exons = subfeatures.filter(f => f.get('type') === 'exon')
 
-  // A top-level feature with children establishes the gene-group name, which is
-  // threaded down so every part of the gene shares one /gene qualifier.
+  // A gene-group feature with children establishes the symbol, which is threaded
+  // down so every part of the gene shares one /gene qualifier.
   const ownName = feature.get('name') ?? feature.get('id')
   const gene =
-    geneName ?? (subfeatures.length > 0 && ownName ? ownName : undefined)
+    geneName ??
+    (GENE_GROUP_KEYS.has(key) && subfeatures.length > 0 && ownName
+      ? ownName
+      : undefined)
 
   // A spliced transcript is rendered as join() of its exons rather than a
   // single span, so external tools see the correct intron/exon structure.
@@ -112,8 +237,8 @@ export function formatFeatWithSubfeatures({
   const location = joinLoc(segments, strand, minPos)
 
   const primary = [
-    featureLine(type, location),
-    ...formatTags({ feature, gene }),
+    featureLine(key, location),
+    ...formatTags({ feature, gene, key }),
   ]
 
   const cds = subfeatures.filter(f => f.get('type') === 'CDS')

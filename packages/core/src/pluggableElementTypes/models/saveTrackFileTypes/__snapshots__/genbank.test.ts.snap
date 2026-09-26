@@ -91,6 +91,29 @@ ORIGIN
 //"
 `;
 
+exports[`GenBank export gives a type with no feature key misc_feature, keeping the term 1`] = `
+"LOCUS       chr1                     100 bp    DNA     linear   UNK 10-JAN-1970
+DEFINITION  chr1:1..100 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
+FEATURES             Location/Qualifiers
+     source          1..100
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
+     misc_feature    1..100
+                     /label="gene9"
+                     /note="very_long_feature_type_name"
+ORIGIN
+        1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
+       61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
+//"
+`;
+
 exports[`GenBank export handles custom attributes 1`] = `
 "LOCUS       chr1                     100 bp    DNA     linear   UNK 10-JAN-1970
 DEFINITION  chr1:701..800 from testAssembly.
@@ -235,27 +258,5 @@ ORIGIN
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       121 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
       181 aaaaaaaaaa aaaaaaaaaa
-//"
-`;
-
-exports[`GenBank export truncates a long feature type to the 15-char feature-key width 1`] = `
-"LOCUS       chr1                     100 bp    DNA     linear   UNK 10-JAN-1970
-DEFINITION  chr1:1..100 from testAssembly.
-ACCESSION   chr1
-VERSION     chr1
-KEYWORDS    .
-SOURCE      testAssembly
-  ORGANISM  testAssembly
-            .
-FEATURES             Location/Qualifiers
-     source          1..100
-                     /organism="testAssembly"
-                     /mol_type="genomic DNA"
-                     /chromosome="chr1"
-     very_long_featu 1..100
-                     /label="gene9"
-ORIGIN
-        1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
-       61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
 //"
 `;
