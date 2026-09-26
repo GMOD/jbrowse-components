@@ -2104,13 +2104,6 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'How far the cut follows links out of the region. Each hop costs a query per off-reference segment already reached, so it stops at one by default.',
         }
       : undefined,
-  followLinearView: value =>
-    typeof value === 'boolean'
-      ? {
-          path: `Graph view toolbar → ${value ? 'Follow' : 'Pin'}`,
-          note: 'A graph launched from a linear view follows it: the location box and zoom move the graph, and it cuts again once the view leaves the window. Pin holds the graph where it is.',
-        }
-      : undefined,
   subgraphHaplotypes: value =>
     Array.isArray(value)
       ? {
