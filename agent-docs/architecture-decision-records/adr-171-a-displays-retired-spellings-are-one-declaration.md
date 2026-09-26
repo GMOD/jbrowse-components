@@ -3,7 +3,7 @@ status: Accepted
 summary: "A display's retired setting names are one `retired` map on its config schema — the old name to the members its value becomes, or to a string naming what replaced a setting that is gone, which throws. `preProcessSnapshotWith` lifts it before the `closed` check, so every door through a schema takes it; `expandTrackConfigShorthand` routes `displayDefaults` by it; `migrateRetiredDisplays` and the session migration read it off the schema. This deletes `DisplayType.retiredConfig`, whose six registrations become declarations, and `refuseRetiredConfig` with the `Core-preProcessTrackConfig` registration each refusing display needed to be reachable from the shorthand at all. `scatterPointSize` is a v5-beta spelling, not a v4 one"
 ---
 
-# ADR-170: A display's retired spellings are one declaration
+# ADR-171: A display's retired spellings are one declaration
 
 ## Status
 
