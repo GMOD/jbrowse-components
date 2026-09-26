@@ -80,6 +80,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
       const colEnd = columnNumbers.end - 1
       const same = colStart === colEnd
       const names = (await this.getNames())?.slice(same ? 2 : 3) ?? []
+      const sourceColumn = names.indexOf('source')
       await downloadStatus(
         'Downloading features',
         opts.statusCallback,
@@ -114,6 +115,9 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
                 }
 
                 for (let j = 0; j < rest.length; j++) {
+                  if (j === sourceColumn) {
+                    continue
+                  }
                   const feat = makeBedGraphFeature({
                     uniqueId: `${this.id}-${fileOffset}-${j}`,
                     refName,
@@ -122,6 +126,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
                     names,
                     j,
                     value: rest[j]!,
+                    rowSource: rest[sourceColumn],
                   })
                   if (feat) {
                     observer.next(feat)

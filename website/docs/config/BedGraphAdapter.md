@@ -35,6 +35,9 @@ _See the **Config slots** section below for all available configuration fields._
 
 used to load plain-text bedGraph signal files. Loads the whole file into
 memory, so prefer the BedGraphTabixAdapter for large files.
+Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
+one value column each, named by the header, or a `source` column naming each
+row's, which is the form Save track data writes.
 
 ## Related links
 

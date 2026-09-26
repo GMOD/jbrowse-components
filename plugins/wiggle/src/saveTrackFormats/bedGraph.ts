@@ -3,7 +3,7 @@ import type { Feature } from '@jbrowse/core/util'
 
 /**
  * The "Save track data" formats for a track that draws a wiggle. Shared rather
- * than repeated per track type so the four columns, and the score-missing
+ * than repeated per track type so the columns, and the score-missing
  * fallback below, have one definition.
  */
 export const bedGraphFormatOptions: Record<string, FileTypeExporter> = {
@@ -29,37 +29,40 @@ export function scoreText(score: number) {
   return `${score}`
 }
 
-function bedGraphRow(feature: Feature) {
-  const chrom = feature.get('refName')
-  const start = feature.get('start')
-  const end = feature.get('end')
-  const score = scoreText(feature.get('score') ?? 0)
-  return `${chrom}\t${start}\t${end}\t${score}`
+function sourceOf(feature: Feature) {
+  const source = feature.get('source')
+  return source ? source.replaceAll(/[\t\r\n]/g, ' ') : ''
+}
+
+// Sorted by position within each contig, contigs in the order they arrive, so
+// the file is ready for bgzip and tabix.
+function byPosition(features: Feature[]) {
+  const contigs = new Map<string, number>()
+  for (const f of features) {
+    const refName = f.get('refName')
+    if (!contigs.has(refName)) {
+      contigs.set(refName, contigs.size)
+    }
+  }
+  return features.toSorted(
+    (a, b) =>
+      contigs.get(a.get('refName'))! - contigs.get(b.get('refName'))! ||
+      a.get('start') - b.get('start'),
+  )
 }
 
 /**
- * A multi-wiggle track's subtracks are read concurrently, so its features
- * arrive interleaved, each stamped with the `source` it came from. Four columns
- * have no field for the source, so every subtrack would collapse into one set
- * of overlapping intervals that no reader could separate again. bedGraph allows
- * a `track` line per block, and this writer puts each source in its own block.
- *
- * A single-file track stamps no source (BigWig's `source` slot defaults to
- * empty) and still writes the bare four columns.
+ * One row per interval, and for a track of several subtracks a header and a
+ * `source` column naming each row's, which BedGraphAdapter reads back as the
+ * same subtracks.
  */
 export function stringifyBedGraph({ features }: { features: Feature[] }) {
-  const bySource = new Map<string, string[]>()
-  for (const feature of features) {
-    const source = String(feature.get('source') ?? '')
-    const rows = bySource.get(source) ?? []
-    rows.push(bedGraphRow(feature))
-    bySource.set(source, rows)
-  }
-  return [...bySource]
-    .flatMap(([source, rows]) =>
-      source
-        ? [`track type=bedGraph name="${source.replaceAll('"', "'")}"`, ...rows]
-        : rows,
-    )
-    .join('\n')
+  const tidy = features.some(f => sourceOf(f))
+  const rows = byPosition(features).map(f => {
+    const row = `${f.get('refName')}\t${f.get('start')}\t${f.get('end')}\t${scoreText(f.get('score') ?? 0)}`
+    return tidy ? `${row}\t${sourceOf(f)}` : row
+  })
+  return (tidy ? ['#chrom\tstart\tend\tscore\tsource', ...rows] : rows).join(
+    '\n',
+  )
 }

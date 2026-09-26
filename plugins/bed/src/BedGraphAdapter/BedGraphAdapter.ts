@@ -30,12 +30,16 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdap
       return undefined
     }
     const names = (await this.getNames())?.slice(3) ?? []
+    const sourceColumn = names.indexOf('source')
     const intervalTree = new IntervalTree<Feature>()
     for (let i = 0, l = lines.length; i < l; i++) {
       const [refName, s, e, ...rest] = lines[i]!.split('\t')
       const start = +s!
       const end = +e!
       for (let j = 0, l2 = rest.length; j < l2; j++) {
+        if (j === sourceColumn) {
+          continue
+        }
         const feat = makeBedGraphFeature({
           uniqueId: `${this.id}-${refName}-${i}-${j}`,
           refName: refName!,
@@ -44,6 +48,7 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdap
           names,
           j,
           value: rest[j]!,
+          rowSource: rest[sourceColumn],
         })
         if (feat) {
           intervalTree.insert([start, end], feat)

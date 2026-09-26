@@ -1,0 +1,4 @@
+#chrom	start	end	score	source
+chr1	100	200	4	tumor
+chr1	100	200	7	normal
+chr1	200	300	5	tumor

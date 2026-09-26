@@ -55,38 +55,31 @@ test('an empty source is no source', () => {
 })
 
 // A multi-wiggle's subtracks are read concurrently, so its features arrive
-// interleaved. Without the track lines the export was one pile of overlapping
-// intervals with nothing saying which file each came from.
-test('groups a multi-wiggle export into one track block per source', () => {
+// interleaved by subtrack and by region.
+test('writes a multi-wiggle export as one sorted table with a source column', () => {
   const out = stringifyBedGraph({
     features: [
-      feat({ refName: 'ctgA', start: 0, end: 10, score: 1, source: 'a.bw' }),
-      feat({ refName: 'ctgA', start: 0, end: 10, score: 2, source: 'b.bw' }),
-      feat({ refName: 'ctgA', start: 10, end: 20, score: 3, source: 'a.bw' }),
+      feat({ refName: 'ctgB', start: 0, end: 10, score: 4, source: 'a' }),
+      feat({ refName: 'ctgA', start: 10, end: 20, score: 3, source: 'a' }),
+      feat({ refName: 'ctgB', start: 0, end: 10, score: 5, source: 'b' }),
+      feat({ refName: 'ctgA', start: 0, end: 10, score: 2, source: 'b' }),
     ],
   })
   expect(out.split('\n')).toEqual([
-    'track type=bedGraph name="a.bw"',
-    'ctgA\t0\t10\t1',
-    'ctgA\t10\t20\t3',
-    'track type=bedGraph name="b.bw"',
-    'ctgA\t0\t10\t2',
+    '#chrom\tstart\tend\tscore\tsource',
+    'ctgB\t0\t10\t4\ta',
+    'ctgB\t0\t10\t5\tb',
+    'ctgA\t0\t10\t2\tb',
+    'ctgA\t10\t20\t3\ta',
   ])
 })
 
-// the track line delimits its name with double quotes and defines no escape
-test('a quote in a source name cannot break out of the track line', () => {
+test('a tab in a source name cannot shift the columns', () => {
   expect(
     stringifyBedGraph({
       features: [
-        feat({
-          refName: 'ctgA',
-          start: 0,
-          end: 10,
-          score: 1,
-          source: 'a "b" c',
-        }),
+        feat({ refName: 'ctgA', start: 0, end: 10, score: 1, source: 'a\tb' }),
       ],
-    }).split('\n')[0],
-  ).toBe(`track type=bedGraph name="a 'b' c"`)
+    }).split('\n')[1],
+  ).toBe('ctgA\t0\t10\t1\ta b')
 })
