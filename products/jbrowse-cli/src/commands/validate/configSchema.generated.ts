@@ -3952,18 +3952,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": true
         },
-        "renderer": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "autoHeight": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "showDescriptions": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "color1": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -3977,6 +3965,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "outline": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "autoHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showDescriptions": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -4789,6 +4793,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw soft-clipped read portions. Defaults to off.",
           "type": "boolean",
           "default": false
+        },
+        "colorBy": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -4849,6 +4857,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "the line color of a chord that is being hovered over with the mouse.",
           "$ref": "#/$defs/CssColorOrJexl",
           "default": "#555"
+        },
+        "strokeColor": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "strokeColorSelected": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "strokeColorHover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
           "deprecated": true,
@@ -5359,6 +5379,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Hide the group matching the view's own assembly when grouping by mate assembly.",
           "type": "boolean",
           "default": false
+        },
+        "colorBy": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -5818,7 +5842,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "labels": {
           "$ref": "#/$defs/CanvasFeatureLabels"
         },
-        "renderer": {
+        "color1": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "color2": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "color3": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "outline": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -5826,15 +5862,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "maxHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "showDescriptions": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "color1": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "outline": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -6570,6 +6606,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "type": "boolean",
           "default": false
+        },
+        "scatterPointSize": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -6725,6 +6765,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "skew"
           ],
           "default": "content"
+        },
+        "scatterPointSize": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -6877,6 +6921,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "skew"
           ],
           "default": "content"
+        },
+        "scatterPointSize": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -7367,6 +7415,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw the color key while LD or field coloring is active. Defaults to on.",
           "type": "boolean",
           "default": true
+        },
+        "scatterPointSize": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -9013,15 +9065,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "hideSourceFeatures": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
             },
-            "renderer": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
-            },
-            "autoHeight": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/autoHeight"
-            },
-            "showDescriptions": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
-            },
             "color1": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color1"
             },
@@ -9033,6 +9076,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "outline": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
+            },
+            "autoHeight": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/autoHeight"
+            },
+            "maxHeight": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
+            },
+            "renderer": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
+            },
+            "showDescriptions": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
             },
             "rows": {
               "anyOf": [
@@ -9150,6 +9205,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "size": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -9480,6 +9538,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showSoftClipping": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSoftClipping"
             },
+            "colorBy": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy"
+            },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
             },
@@ -9705,6 +9766,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "gcMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {
@@ -9841,6 +9905,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorHover": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/colorHover"
+            },
+            "strokeColor": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColor"
+            },
+            "strokeColorSelected": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorSelected"
+            },
+            "strokeColorHover": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorHover"
             },
             "renderer": {
               "anyOf": [
@@ -9990,17 +10063,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "labels": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/labels"
             },
-            "autoHeight": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/autoHeight"
-            },
-            "showDescriptions": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
-            },
             "color1": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color1"
             },
+            "color2": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color2"
+            },
+            "color3": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color3"
+            },
             "outline": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"
+            },
+            "autoHeight": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/autoHeight"
+            },
+            "maxHeight": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"
+            },
+            "showDescriptions": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
             },
             "variantLayout": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLayout"
@@ -10527,6 +10609,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
+            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -10812,6 +10897,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
+            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -11021,6 +11109,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "gcMode": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/gcMode"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {
@@ -11674,6 +11765,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "hideSelfAlignments": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSelfAlignments"
             },
+            "colorBy": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
+            },
             "utrColor": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
             },
@@ -11835,6 +11929,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLegend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
+            },
+            "scatterPointSize": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {

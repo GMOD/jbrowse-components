@@ -366,6 +366,15 @@ const LEGACY_CANDIDATES = {
 // rather than by a list someone has to remember to update.
 function legacyKeysOf(configSchema, declaredSlots) {
   const declared = new Set(declaredSlots.map(slot => slot.name))
+  // A schema that DECLARES its retired spellings needs no probe for them: the
+  // map is the answer, and a probe could not find a key whose lift the
+  // candidate list never thought to try. A string-valued entry is a setting
+  // that is gone rather than renamed, so it stays a key the validator refuses.
+  const declaredRetired = Object.entries(
+    getConfigurationSchemaMetadata(configSchema)?.options.retired ?? {},
+  )
+    .filter(([key, value]) => typeof value === 'function' && !declared.has(key))
+    .map(([key]) => key)
   // Most schemas have a required explicitIdentifier (displayId / trackId /
   // ...), and two things go wrong without pinning it:
   // create({}) throws outright, and a schema that DEFAULTS its identifier
@@ -383,7 +392,7 @@ function legacyKeysOf(configSchema, declaredSlots) {
     return []
   }
   const candidates = Object.entries(LEGACY_CANDIDATES).filter(
-    ([key]) => !declared.has(key),
+    ([key]) => !declared.has(key) && !declaredRetired.includes(key),
   )
   const snapshotOf = snap => {
     try {
@@ -396,7 +405,7 @@ function legacyKeysOf(configSchema, declaredSlots) {
       return undefined
     }
   }
-  return candidates
+  const probed = candidates
     .filter(([key, value]) => {
       // Consumed on its own.
       const alone = snapshotOf({ [key]: value })
@@ -418,6 +427,7 @@ function legacyKeysOf(configSchema, declaredSlots) {
       )
     })
     .map(([key]) => key)
+  return [...declaredRetired, ...probed]
 }
 
 // Values an enum slot no longer spells but that the schema's preProcessSnapshot

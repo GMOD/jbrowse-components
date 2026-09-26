@@ -3098,13 +3098,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "renderer",
-        "autoHeight",
-        "showDescriptions",
         "color1",
         "color2",
         "color3",
-        "outline"
+        "outline",
+        "autoHeight",
+        "maxHeight",
+        "renderer",
+        "showDescriptions"
       ],
       "legacyValues": {
         "showLabels": [
@@ -3696,6 +3697,9 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         }
       ],
+      "legacyKeys": [
+        "colorBy"
+      ],
       "aliases": [
         "LinearPileupDisplay",
         "LinearSNPCoverageDisplay",
@@ -3740,6 +3744,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "strokeColor",
+        "strokeColorSelected",
+        "strokeColorHover",
         "renderer"
       ],
       "stateModelProps": [
@@ -4152,6 +4159,9 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         }
       ],
+      "legacyKeys": [
+        "colorBy"
+      ],
       "stateModelProps": [
         "id",
         "type",
@@ -4509,11 +4519,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "renderer",
-        "autoHeight",
-        "showDescriptions",
         "color1",
-        "outline"
+        "color2",
+        "color3",
+        "outline",
+        "autoHeight",
+        "maxHeight",
+        "renderer",
+        "showDescriptions"
       ],
       "legacyValues": {
         "showLabels": [
@@ -5071,6 +5084,9 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         }
       ],
+      "legacyKeys": [
+        "scatterPointSize"
+      ],
       "aliases": [
         "MultiLinearWiggleDisplay"
       ],
@@ -5342,6 +5358,9 @@ export const configManifest: ConfigManifest = {
           "type": "gcMode"
         }
       ],
+      "legacyKeys": [
+        "scatterPointSize"
+      ],
       "stateModelProps": [
         "id",
         "type",
@@ -5609,6 +5628,9 @@ export const configManifest: ConfigManifest = {
           "name": "gcMode",
           "type": "gcMode"
         }
+      ],
+      "legacyKeys": [
+        "scatterPointSize"
       ],
       "stateModelProps": [
         "id",
@@ -5999,6 +6021,9 @@ export const configManifest: ConfigManifest = {
           "name": "showLegend",
           "type": "boolean"
         }
+      ],
+      "legacyKeys": [
+        "scatterPointSize"
       ],
       "stateModelProps": [
         "id",

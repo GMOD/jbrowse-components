@@ -856,6 +856,7 @@
         "FormatAboutConfigSchemaFactory",
         "FormatDetailsConfigSchemaFactory",
         "applyConfSettings",
+        "applyRetiredSpellings",
         "arraySlotUnion",
         "bamIndexFields",
         "bamIndexSchema",
