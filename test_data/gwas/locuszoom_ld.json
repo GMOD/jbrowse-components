@@ -80,6 +80,9 @@
           "marks": [
             {
               "mark": "point",
+              "transform": [
+                { "type": "filter", "expr": "jexl:feature.ld_role != 'index'" }
+              ],
               "encoding": {
                 "y": "score",
                 "color": {
@@ -96,12 +99,22 @@
                   "title": "r² to index SNP",
                   "descending": true,
                   "missingLabel": "No LD data"
-                },
+                }
+              },
+              "size": 8
+            },
+            {
+              "mark": "point",
+              "transform": [
+                { "type": "filter", "expr": "jexl:feature.ld_role == 'index'" }
+              ],
+              "encoding": {
+                "y": "score",
+                "color": "#c951c9",
                 "shape": {
                   "field": "ld_role",
-                  "domain": ["index", "partner"],
-                  "range": ["diamond", "circle"],
-                  "breaks": ["index"],
+                  "domain": ["index"],
+                  "range": ["diamond"],
                   "labels": ["Index SNP"],
                   "title": ""
                 }

@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
@@ -11,7 +12,7 @@ import {
   SLE_REGION,
   slePluginManager,
 } from '../GWASAdapter/sle.fixture.ts'
-import { LD_MARK } from './ldPlot.ts'
+import { LD_INDEX_COLOR, LD_MARKS } from './ldPlot.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -29,7 +30,7 @@ describe('a point reads back as its whole GWAS record', () => {
   const invoke = (method: string, args: object) =>
     pluginManager.getRpcMethodType(method).invoke({ sessionId: 's', ...args })
   const { display } = createTestEnvironment({
-    marks: [LD_MARK],
+    marks: LD_MARKS,
   }).createDisplay()
   const request: Omit<CoreGetEncodedLayersArgs, 'byteLimit'> = {
     adapterConfig: SLE_ADAPTER,
@@ -38,22 +39,25 @@ describe('a point reads back as its whole GWAS record', () => {
     opts: { ld: { index: { start: SLE_INDEX_START }, refName: '2' } },
   }
 
-  async function drawnAt(start: number) {
+  async function drawnAt(mark: number, start: number) {
     const encoded = (await invoke('CoreGetEncodedLayers', request)) as {
       value: EncodedLayersResult
     }
-    const layer = encoded.value.layers[0]!
+    const layer = encoded.value.layers[mark]!
     const i = layer.x.indexOf(start)
-    const feature = (await invoke('CoreGetEncodedFeature', {
-      ...request,
-      layer: 0,
-      featureIndex: layer.featureIndex[i]!,
-    })) as SimpleFeatureSerialized
-    return { glyph: layer.glyph![i], feature }
+    const feature =
+      i === -1
+        ? undefined
+        : ((await invoke('CoreGetEncodedFeature', {
+            ...request,
+            layer: mark,
+            featureIndex: layer.featureIndex[i]!,
+          })) as SimpleFeatureSerialized)
+    return { glyph: layer.glyph![i], color: layer.color![i], feature }
   }
 
   it("carries the file's own columns and the r² to the index", async () => {
-    const { glyph, feature } = await drawnAt(191_794_579)
+    const { glyph, feature } = await drawnAt(0, 191_794_579)
     expect(glyph).toBe(GLYPH_DISC)
     expect(feature).toMatchObject({
       name: 'rs193239665',
@@ -62,12 +66,14 @@ describe('a point reads back as its whole GWAS record', () => {
       beta: '0.3293',
       ld_role: 'partner',
     })
-    expect(feature.ld).toBeCloseTo(0.037)
+    expect(feature?.ld).toBeCloseTo(0.037)
   })
 
-  it('draws the index SNP as the diamond, at r² 1', async () => {
-    const { glyph, feature } = await drawnAt(SLE_INDEX_START)
+  it('draws the index SNP alone in the second mark, a pink diamond at r² 1', async () => {
+    expect((await drawnAt(0, SLE_INDEX_START)).feature).toBeUndefined()
+    const { glyph, color, feature } = await drawnAt(1, SLE_INDEX_START)
     expect(glyph).toBe(GLYPH_DIAMOND)
+    expect(color).toBe(cssColorToABGR(LD_INDEX_COLOR))
     expect(feature).toMatchObject({ name: 'rs4274624', ld: 1 })
   })
 })
@@ -192,7 +198,7 @@ describe('the LD join a fetch asks for', () => {
   }
 
   it("names a placed index by its start and the region's contig in the LD file's spelling", async () => {
-    const { opts } = await fetchedOpts('chrA:501', [LD_MARK])
+    const { opts } = await fetchedOpts('chrA:501', LD_MARKS)
     expect(opts).toEqual([
       { ld: { index: { start: 500 }, refName: 'LD_ctgA' } },
       undefined,
@@ -200,7 +206,7 @@ describe('the LD join a fetch asks for', () => {
   })
 
   it('names an index known only by id, on every region', async () => {
-    const { opts } = await fetchedOpts('rs1', [LD_MARK])
+    const { opts } = await fetchedOpts('rs1', LD_MARKS)
     expect(opts).toEqual([
       { ld: { index: { name: 'rs1' }, refName: 'LD_ctgA' } },
       { ld: { index: { name: 'rs1' }, refName: 'LD_ctgB' } },

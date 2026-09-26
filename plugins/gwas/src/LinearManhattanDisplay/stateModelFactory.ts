@@ -4,13 +4,14 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { toLocale } from '@jbrowse/core/util'
+import { NO_VALUE_ABGR } from '@jbrowse/core/util/markEncoding'
 import { types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
-import { LD_ROLE_FIELD } from '../GWASAdapter/ldFields.ts'
+import { LD_FIELD, LD_ROLE_FIELD } from '../GWASAdapter/ldFields.ts'
 import { ldJoinFor } from './ldJoinResolver.ts'
-import { LD_COLOR, LD_SHAPE, readsLd } from './ldPlot.ts'
+import { LD_MARKS, readsLd } from './ldPlot.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
@@ -95,41 +96,55 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The first mark drawing at this zoom that names an LD field, whose
-       * points the top hit and the missing-index check read; -1 where none.
+       * The marks drawing at this zoom that name an LD field and plot a `y`,
+       * whose points the top hit and the missing-index check read.
        */
-      get ldMarkIndex(): number {
+      get ldMarkIndexes(): number[] {
         const { visible } = self.markView
-        return self.conf.marks.findIndex((m, i) => visible[i] && readsLd(m))
+        const requests = self.layerRequests
+        return self.conf.marks.flatMap((m, i) =>
+          visible[i] && readsLd(m) && requests[i]!.lanes.includes('y')
+            ? [i]
+            : [],
+        )
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The highest-scoring loaded SNP of the LD mark as a 1-based `chr:bp`,
+       * The highest-scoring loaded SNP of the LD marks as a 1-based `chr:bp`,
        * the index the join follows while none is pinned.
        *
-       * Regions are scanned in index order, not arrival order, so a tie
-       * breaks the same way every load. Ties at the top are routine —
-       * `negLog10` clamps every underflowed p of 0 to the same ~323.3 — and
-       * adopting the index refetches, so a tie broken by arrival would flip
-       * between the tied SNPs and never paint (`ldAutoIndex.test.ts`).
+       * A tie goes to the lowest region index, then the lowest position,
+       * never to arrival order or to the mark a SNP is drawn in. Ties at the
+       * top are routine — `negLog10` clamps every underflowed p of 0 to the
+       * same ~323.3 — and adopting the index refetches and moves it into the
+       * index mark, so a tie broken either way would flip between the tied
+       * SNPs and never paint (`ldAutoIndex.test.ts`).
        */
       get topSnp(): string | undefined {
-        const mark = self.ldMarkIndex
+        const marks = self.ldMarkIndexes
         let bestScore = -Infinity
         let bestPos = 0
         let bestIdx = -1
         const indexes = [...self.rpcDataMap.keys()].sort((a, b) => a - b)
         for (const idx of indexes) {
-          const layer = self.rpcDataMap.get(idx)!.layers[mark]
-          const y = layer?.y
-          if (layer && y) {
-            for (let i = 0; i < layer.count; i++) {
-              if (y[i]! > bestScore) {
-                bestScore = y[i]!
-                bestPos = layer.x[i]!
-                bestIdx = idx
+          const { layers } = self.rpcDataMap.get(idx)!
+          for (const mark of marks) {
+            const layer = layers[mark]
+            const y = layer?.y
+            if (layer && y) {
+              for (let i = 0; i < layer.count; i++) {
+                const score = y[i]!
+                const pos = layer.x[i]!
+                if (
+                  score > bestScore ||
+                  (score === bestScore && idx === bestIdx && pos < bestPos)
+                ) {
+                  bestScore = score
+                  bestPos = pos
+                  bestIdx = idx
+                }
               }
             }
           }
@@ -142,22 +157,29 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * A loaded region holds the index SNP but no loaded point is its
+       * A loaded region draws the index SNP but no loaded point is its
        * partner, so every other point is grey: the LD file lacks the index or
-       * names it otherwise. Read off the `ld_role` shape the LD mark draws; an
-       * index outside the loaded regions is not missing.
+       * names it otherwise. The index is drawn where an LD mark's `ld_role`
+       * shape met it, and a partner where an instance of a mark coloured by
+       * `ld` is not the no-value grey; an index outside the loaded regions is
+       * not missing.
        */
       get indexSnpMissing(): boolean {
-        const mark = self.ldMarkIndex
-        const roles = new Set(
-          [...self.rpcDataMap.values()].flatMap(d => {
-            const table = d.layers[mark]?.shapeScale
-            return table?.field === LD_ROLE_FIELD
-              ? table.entries.map(e => e.value)
-              : []
-          }),
+        const marks = self.ldMarkIndexes
+        const layers = [...self.rpcDataMap.values()].flatMap(d =>
+          marks.flatMap(i => d.layers[i] ?? []),
         )
-        return self.joinsLd && roles.has('index') && !roles.has('partner')
+        const indexDrawn = layers.some(
+          ({ shapeScale }) =>
+            shapeScale?.field === LD_ROLE_FIELD &&
+            shapeScale.entries.some(e => e.value === 'index'),
+        )
+        const partnerJoined = layers.some(
+          ({ scale, color, count }) =>
+            scale?.field === LD_FIELD &&
+            !!color?.subarray(0, count).some(c => c !== NO_VALUE_ABGR),
+        )
+        return self.joinsLd && indexDrawn && !partnerJoined
       },
       /**
        * #getter
@@ -215,16 +237,12 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * Colour every point mark by r² to the index SNP, the index a diamond,
-       * or return each to the constant colour and shape.
+       * Replace the marks with LocusZoom's plot — each point coloured by its
+       * r² to the index SNP, the index a pink diamond over them — or return
+       * to the default plot. The transform, facet, rows and scales stay.
        */
       setLdColoring(on: boolean) {
-        for (const mark of self.conf.marks) {
-          if (mark.mark === 'point') {
-            setConf(mark, ['encoding', 'color'], on ? LD_COLOR : undefined)
-            setConf(mark, ['encoding', 'shape'], on ? LD_SHAPE : undefined)
-          }
-        }
+        setConf(self, 'marks', on ? LD_MARKS : undefined)
       },
     }))
     .actions(self => ({

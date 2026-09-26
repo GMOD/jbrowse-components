@@ -74,9 +74,10 @@ why the header is commented with `#`.
 
 A plot naming `ld` or `ld_role` joins each SNP's r² to the index SNP from the
 `GWASAdapter`'s `ldAdapter`; swap in `PlinkLDTabixAdapter` for an indexed
-`.ld.gz`. The mark below colors each point by r² in LocusZoom's five bins and
-draws the index SNP as a diamond. The track menu's **LD → Color by LD to index
-SNP** writes the same mark, and right-clicking a point pins it as the index
+`.ld.gz`. The first mark below colors every other point by r² in LocusZoom's
+five bins, and the second draws the index SNP alone as a pink diamond on top.
+The track menu's **LD → Color by LD to index SNP** writes the same marks, and
+right-clicking a point pins it as the index
 ([](/docs/config/linearmanhattandisplay)):
 
 ```json addtrack
@@ -98,6 +99,9 @@ SNP** writes the same mark, and right-clicking a point pins it as the index
     "marks": [
       {
         "mark": "point",
+        "transform": [
+          { "type": "filter", "expr": "jexl:feature.ld_role != 'index'" }
+        ],
         "encoding": {
           "y": "score",
           "color": {
@@ -108,12 +112,21 @@ SNP** writes the same mark, and right-clicking a point pins it as the index
             "title": "r² to index SNP",
             "descending": true,
             "missingLabel": "No LD data"
-          },
+          }
+        }
+      },
+      {
+        "mark": "point",
+        "transform": [
+          { "type": "filter", "expr": "jexl:feature.ld_role == 'index'" }
+        ],
+        "encoding": {
+          "y": "score",
+          "color": "#c951c9",
           "shape": {
             "field": "ld_role",
-            "domain": ["index", "partner"],
-            "range": ["diamond", "circle"],
-            "breaks": ["index"],
+            "domain": ["index"],
+            "range": ["diamond"],
             "labels": ["Index SNP"],
             "title": ""
           }

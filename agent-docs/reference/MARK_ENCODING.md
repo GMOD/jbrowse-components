@@ -318,7 +318,7 @@ Three packers moved onto it on 2026-09-09:
 - **Manhattan** read LD colouring through a reader joining each feature
   against the PLINK adapter, until 2026-09-24. `GWASAdapter` makes that join
   now, writing `ld` and `ld_role` onto the features when a fetch's `opts.ld`
-  names the index SNP, so the display declares its one layer to
+  names the index SNP, so the display declares its layers to
   `CoreGetEncodedLayers` and keeps no worker method.
 - **score-example** is `encodeFeatures(features, { y: scoreColumn })` and
   nothing else; its `[0, 1]` normalisation per region went, and the display

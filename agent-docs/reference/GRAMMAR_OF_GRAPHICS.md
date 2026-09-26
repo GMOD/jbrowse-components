@@ -230,14 +230,15 @@ The seams, named honestly:
   one is. ADR-118 measured the layout half of it and the position held: the
   rule those displays pack by is the step's rule, and everything they pack
   *with* is the display's own.
-- **A join is a field the adapter writes.** Manhattan's LD colouring is a
-  point mark whose colour is a threshold over `ld` and whose shape is a
-  categorical scale over `ld_role`, a variable prepared before the plot:
+- **A join is a field the adapter writes.** Manhattan's LD colouring is two
+  point marks split by a `filter` on `ld_role`, a variable prepared before the
+  plot: every SNP but the index coloured by a threshold over `ld`, then the
+  index alone, a constant pink with a diamond shape over `ld_role`.
   `GWASAdapter` joins each SNP against its `ldAdapter` when the fetch's `opts`
   name the index SNP, and writes the r² as `ld` and the index as `ld_role`. The
-  join runs because the plot names one of the two, so hue carries r² alone and
-  the index is the diamond in the colour of r² 1. The index SNP itself is the
-  display's state, set by a click or following the top hit.
+  join runs because the plot names one of the two, so hue carries r² alone on
+  the partners. The index SNP itself is the display's state, set by a click or
+  following the top hit.
 - **The colour objects are one shape, and a preset is a field.** FeatureColor,
   RibbonColor, MarkColor, AlignmentsColor, VariantCellColor,
   WiggleColor and MultiWayGeneColor each take `{ value, field, scale }` and

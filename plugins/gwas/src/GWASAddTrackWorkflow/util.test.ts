@@ -1,4 +1,4 @@
-import { LD_MARK } from '../LinearManhattanDisplay/ldPlot.ts'
+import { LD_MARKS } from '../LinearManhattanDisplay/ldPlot.ts'
 import { buildGwasTrackConfig, canSubmit } from './util.ts'
 
 const uri = (s: string) => ({ uri: s, locationType: 'UriLocation' as const })
@@ -178,6 +178,6 @@ test('with LD: adds a LinearManhattanDisplay coloured by LD to the index SNP', (
     },
   })
   expect(cfg.displays).toEqual([
-    { type: 'LinearManhattanDisplay', marks: [LD_MARK] },
+    { type: 'LinearManhattanDisplay', marks: LD_MARKS },
   ])
 })

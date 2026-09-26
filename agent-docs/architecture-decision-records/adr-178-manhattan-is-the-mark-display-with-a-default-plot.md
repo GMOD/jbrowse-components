@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`LinearManhattanDisplay` is the mark display with a default plot: its schema takes `LinearMarkDisplay`'s as its base and redeclares `marks` as a list defaulting to a point per feature at its `score` (`markListSchema`, over a core change that keeps a collection slot's own default), and its model composes the mark model and adds only the LD join. A plot whose encoding names `ld` or `ld_role` joins r² to the index SNP; the join travels as the mark model's `adapterOptions` hook, a fetch input resolved per region by `resolveAdapterOptions`. LD colouring is written into the plot, a threshold colour over `ld` and a shape over `ld_role`, rather than implied by a field preset. `scoreField`, `color`, `size`, `ManhattanColor` and the hand-written point display go, with no retired spellings: the display shipped only in v5 betas. The byte gate stays off for Manhattan. The mark display gains a hover ring for points and three key members any plot may write, as ggplot2's scale arguments are: `breaks` (the values a key lists), `descending` (a threshold key highest first) and `missingLabel` (the no-value row's name), with `title` and `labels` on the shape key too; the LD mark writes all of them, so its key reads as LocusZoom's"
+summary: "`LinearManhattanDisplay` is the mark display with a default plot: its schema takes `LinearMarkDisplay`'s as its base and redeclares `marks` as a list defaulting to a point per feature at its `score` (`markListSchema`, over a core change that keeps a collection slot's own default), and its model composes the mark model and adds only the LD join. A plot whose encoding names `ld` or `ld_role` joins r² to the index SNP; the join travels as the mark model's `adapterOptions` hook, a fetch input resolved per region by `resolveAdapterOptions`. LD colouring is written into the plot as two point marks, the partners by a threshold colour over `ld` and the index alone as a pink diamond over them, rather than implied by a field preset. `scoreField`, `color`, `size`, `ManhattanColor` and the hand-written point display go, with no retired spellings: the display shipped only in v5 betas. The byte gate stays off for Manhattan. The mark display gains a hover ring for points and three key members any plot may write, as ggplot2's scale arguments are: `breaks` (the values a key lists), `descending` (a threshold key highest first) and `missingLabel` (the no-value row's name), with `title` and `labels` on the shape key too; the LD plot's key is built from them, so it reads as LocusZoom's"
 ---
 
 # ADR-178: Manhattan is the mark display with a default plot
@@ -42,9 +42,12 @@ transforms or Edit plot.
   `dataNotices`, carries the missing-index warning to the corner notice.
 - **A plot that names an LD field joins LD.** `joinsLd` is an `ldAdapter` plus
   a mark whose encoding names `ld` or `ld_role`. "Color by LD to index SNP"
-  writes a threshold colour over `ld` in LocusZoom's bins and a shape over
-  `ld_role` on every point mark, so the plot says what it draws and Edit plot
-  shows it.
+  replaces the marks with two points, each behind a `filter` on `ld_role`:
+  every SNP but the index by a threshold colour over `ld` in LocusZoom's bins,
+  then the index alone on top, a `#c951c9` diamond, so the plot says what it
+  draws and Edit plot shows it; off returns to the default plot. A first
+  version wrote the colour and shape onto every point mark, which painted the
+  index the red of r² 1 and wrote nothing on a plot of bars.
 - **No field preset for `ld`.** The previous colour object painted `{ field:
   'ld' }` as the LocusZoom threshold through a preset only the model knew,
   while the rule list and Edit plot read every field as categorical.
@@ -68,8 +71,9 @@ transforms or Edit plot.
   display; the add-track workflow writes the LD mark when it is given an LD
   file.
 - The r² key and the index SNP's row are two keys where the old legend was
-  one, the index's swatch a diamond in the text colour rather than in the
-  colour of r² 1.
+  one. The index's swatch is its pink diamond, since any shape key of a mark
+  painted one colour draws its shapes in that colour, as ggplot2 draws a
+  layer's key glyphs; a mark coloured by a scale keeps the text colour.
 - The insertion triangle is the SV-GWAS demo's own `shape` over `svtype`, no
   longer a Manhattan default applied to every file.
 - `jbrowse validate` runs the mark rules on any display whose manifest lists

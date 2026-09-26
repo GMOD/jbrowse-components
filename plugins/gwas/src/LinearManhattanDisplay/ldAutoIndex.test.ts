@@ -1,11 +1,17 @@
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
-import { LD_MARK } from './ldPlot.ts'
+import { LD_MARKS } from './ldPlot.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { Region } from '@jbrowse/core/util'
+
+interface FetchArgs {
+  region: Region
+  opts?: { ld?: LdJoin }
+}
 
 // Two regions, with the top hit deliberately in the SECOND one — the region
 // that lands last. That ordering is what the auto-index autorun has to survive:
@@ -15,13 +21,29 @@ const HITS: Record<string, { pos: number; score: number }> = {
   ctgB: { pos: 500, score: 9 },
 }
 const TOP_SNP = 'ctgB:501'
+const HIT_REGION = {
+  refName: 'ctgA',
+  start: 0,
+  end: 1000,
+  assemblyName: 'volvox',
+}
 
-function makeResult(region: Region) {
+// As the worker splits LD_MARKS: the hit the join names as the index is drawn
+// by the second mark, and every other point by the first.
+function makeResult({ region, opts }: FetchArgs) {
   const hit = HITS[region.refName]!
+  const index = opts?.ld?.index
+  const drawn = manhattanFixture({
+    x: [hit.pos],
+    y: [hit.score],
+    flatbush: false,
+  })
+  const none = manhattanFixture({ x: [], y: [], flatbush: false })
   return {
-    layers: [
-      manhattanFixture({ x: [hit.pos], y: [hit.score], flatbush: false }),
-    ],
+    layers:
+      index && 'start' in index && index.start === hit.pos
+        ? [none, drawn]
+        : [drawn, none],
   }
 }
 
@@ -53,11 +75,11 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // topSnp a fixpoint.
   it('settles on the global top hit without refetching forever', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      marks: [LD_MARK],
+      marks: LD_MARKS,
     })
     mockRpcCall.mockImplementation(
-      (_sessionId: string, _method: string, args: { region: Region }) =>
-        Promise.resolve(makeResult(args.region)),
+      (_sessionId: string, _method: string, args: FetchArgs) =>
+        Promise.resolve(makeResult(args)),
     )
     const { display } = createDisplay()
 
@@ -84,8 +106,8 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   it('adopts the index when the user turns LD colouring on', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockImplementation(
-      (_sessionId: string, _method: string, args: { region: Region }) =>
-        Promise.resolve(makeResult(args.region)),
+      (_sessionId: string, _method: string, args: FetchArgs) =>
+        Promise.resolve(makeResult(args)),
     )
     const { display } = createDisplay()
 
@@ -110,11 +132,11 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // livelock as above, reached a different way.
   it('breaks a score tie by region index, not by which region landed first', () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      marks: [LD_MARK],
+      marks: LD_MARKS,
     })
     mockRpcCall.mockImplementation(
-      (_sessionId: string, _method: string, args: { region: Region }) =>
-        Promise.resolve(makeResult(args.region)),
+      (_sessionId: string, _method: string, args: FetchArgs) =>
+        Promise.resolve(makeResult(args)),
     )
     const tiedRegion = {
       refName: 'ctgA',
@@ -137,6 +159,38 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(second.topSnp).toBe('ctgA:101')
   })
 
+  // Adopting either of two tied SNPs moves it into the index mark, so a tie
+  // broken by mark order would hand the index back and forth.
+  it('breaks a score tie in one region by position, not by the mark drawing it', () => {
+    const { display } = createTestEnvironment({
+      marks: LD_MARKS,
+    }).createDisplay()
+    const at = (pos: number) =>
+      manhattanFixture({ x: [pos], y: [9], flatbush: false })
+    display.setRpcData(0, { layers: [at(500), at(100)] }, HIT_REGION)
+    expect(display.topSnp).toBe('ctgA:101')
+    display.setRpcData(0, { layers: [at(100), at(500)] }, HIT_REGION)
+    expect(display.topSnp).toBe('ctgA:101')
+  })
+
+  it('reads no top hit off an LD mark that plots no y', () => {
+    const { display } = createTestEnvironment({
+      marks: [
+        { mark: 'span', encoding: { color: { field: 'ld' } } },
+        ...LD_MARKS,
+      ],
+    }).createDisplay()
+    const at = (pos: number, score: number) =>
+      manhattanFixture({ x: [pos], y: [score], flatbush: false })
+    display.setRpcData(
+      0,
+      { layers: [at(100, 50), at(500, 9), at(700, 3)] },
+      HIT_REGION,
+    )
+    expect(display.ldMarkIndexes).toEqual([1, 2])
+    expect(display.topSnp).toBe('ctgA:501')
+  })
+
   // Regression (empty SVG/PNG export): `awaitSvgReady` samples `svgReady` once
   // and then renders. The first load lands with no index SNP, so the export
   // gate opened over data the auto-pick was about to invalidate — by paint time
@@ -145,11 +199,11 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // shut until the index the data was colored under is the one being kept.
   it('opens the export gate only on data colored under the adopted index', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      marks: [LD_MARK],
+      marks: LD_MARKS,
     })
     mockRpcCall.mockImplementation(
-      (_sessionId: string, _method: string, args: { region: Region }) =>
-        Promise.resolve(makeResult(args.region)),
+      (_sessionId: string, _method: string, args: FetchArgs) =>
+        Promise.resolve(makeResult(args)),
     )
     const { display } = createDisplay()
 
@@ -173,12 +227,12 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // field, and no join reads an index, so none is adopted.
   it('adopts no index and fetches once with no ldAdapter configured', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      marks: [LD_MARK],
+      marks: LD_MARKS,
       ldAdapter: false,
     })
     mockRpcCall.mockImplementation(
-      (_sessionId: string, _method: string, args: { region: Region }) =>
-        Promise.resolve(makeResult(args.region)),
+      (_sessionId: string, _method: string, args: FetchArgs) =>
+        Promise.resolve(makeResult(args)),
     )
     const { display } = createDisplay()
 

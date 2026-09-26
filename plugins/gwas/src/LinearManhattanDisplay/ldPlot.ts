@@ -13,8 +13,8 @@ export const LD_PALETTE = [
 ]
 
 /**
- * A point's colour under LD: its r² to the index SNP in LocusZoom's bins, the
- * key listing them highest first as LocusZoom does.
+ * A partner's colour: its r² to the index SNP in LocusZoom's bins, the key
+ * listing them highest first as LocusZoom does.
  */
 export const LD_COLOR = {
   field: LD_FIELD,
@@ -26,24 +26,54 @@ export const LD_COLOR = {
   missingLabel: 'No LD data',
 }
 
-/** A point's shape under LD: the index SNP is the diamond, the key's one row. */
-export const LD_SHAPE = {
-  field: LD_ROLE_FIELD,
-  domain: ['index', 'partner'],
-  range: ['diamond', 'circle'],
-  breaks: ['index'],
-  labels: ['Index SNP'],
-  title: '',
-}
-
 /** A Manhattan plot's one mark: a point per feature at its `score`. */
 export const MANHATTAN_MARK = { mark: 'point', encoding: { y: 'score' } }
 
-/** The same points coloured by r² to the index SNP, the index a diamond. */
-export const LD_MARK = {
+/** The index SNP's colour, apart from every r² bin. */
+export const LD_INDEX_COLOR = '#c951c9'
+
+/**
+ * Every point but the index SNP, coloured by its r² to it. A SNP the join
+ * left out has no `ld_role`, so the filter keeps it, grey as "No LD data".
+ */
+export const LD_PARTNERS_MARK = {
   mark: 'point',
-  encoding: { y: 'score', color: LD_COLOR, shape: LD_SHAPE },
+  transform: [
+    {
+      type: 'filter',
+      expr: `jexl:feature.${LD_ROLE_FIELD} != 'index'`,
+    },
+  ],
+  encoding: { y: 'score', color: LD_COLOR },
 }
+
+/**
+ * The index SNP alone, drawn over the rest as a diamond in its own colour,
+ * with its own key row.
+ */
+export const LD_INDEX_MARK = {
+  mark: 'point',
+  transform: [
+    {
+      type: 'filter',
+      expr: `jexl:feature.${LD_ROLE_FIELD} == 'index'`,
+    },
+  ],
+  encoding: {
+    y: 'score',
+    color: { value: LD_INDEX_COLOR },
+    shape: {
+      field: LD_ROLE_FIELD,
+      domain: ['index'],
+      range: ['diamond'],
+      labels: ['Index SNP'],
+      title: '',
+    },
+  },
+}
+
+/** LocusZoom's plot, which "Color by LD to index SNP" writes. */
+export const LD_MARKS = [LD_PARTNERS_MARK, LD_INDEX_MARK]
 
 const LD_FIELDS = new Set<string>([LD_FIELD, LD_ROLE_FIELD])
 
