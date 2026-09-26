@@ -24,7 +24,7 @@
 // inherits the filter from here.
 //! texture-filter: rowTable nearest
 //! export-consts: ROW_TABLE_MAX_WIDTH
-//! js-export: rowTableWidth, rowTablePlaneHeight, rowTableTexelX, rowTableTexelY
+//! js-export: rowTableWidth, rowTablePlaneHeight, rowTableTexelX, rowTableTexelY, rowBandTopPx
 //! js-skip: byteOf — recovers a byte from a sampled texel; the TS side reads the table's bytes directly
 module rowTable;
 
@@ -52,6 +52,12 @@ public uint rowTableTexelX(uint key, uint keys) {
 // The key's row in the slot plane; the colour plane's is one plane height on.
 public uint rowTableTexelY(uint key, uint keys) {
   return key / rowTableWidth(keys);
+}
+
+// Where the band of `slot` starts, in CSS px below the canvas top: every
+// mark placing an instance through the table stacks its bands this way.
+public float rowBandTopPx(float rowOffsetPx, float rowHeight, uint slot) {
+  return rowOffsetPx + rowHeight * float(slot);
 }
 
 uint byteOf(float channel) {

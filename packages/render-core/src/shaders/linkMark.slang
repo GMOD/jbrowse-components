@@ -191,7 +191,7 @@ public float linkApexPx(float halfWidthPx, float reachPx, int linkShape, int val
 // The baseline of a row's band, in canvas px: its bottom, or its top under a
 // reversed scale.
 public float linkBaseYPx(float rowOffsetPx, float rowHeight, uint row, int reverse) {
-  return rowOffsetPx + rowHeight * float(row) + (reverse != 0 ? 0.0 : rowHeight);
+  return rowBandTopPx(rowOffsetPx, rowHeight, row) + (reverse != 0 ? 0.0 : rowHeight);
 }
 
 // The two radii of the half-ellipse a pair draws, or a true circle's once the

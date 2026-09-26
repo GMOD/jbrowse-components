@@ -89,8 +89,12 @@ export function linkStrokeWidthPx(raw: number, sizeMode: number, constantPx: num
   return _max(w, (1.5 / dpr))
 }
 
+function rowBandTopPx(rowOffsetPx: number, rowHeight: number, slot: number): number {
+  return (rowOffsetPx + (rowHeight * (slot)))
+}
+
 export function linkBaseYPx(rowOffsetPx: number, rowHeight: number, row: number, reverse: number): number {
-  let _t0 = (rowOffsetPx + (rowHeight * (row)))
+  let _t0 = rowBandTopPx(rowOffsetPx, rowHeight, row)
   let _t1: number
   if ((reverse != 0)) {
     _t1 = 0.0

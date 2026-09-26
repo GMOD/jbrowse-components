@@ -6,6 +6,7 @@ import {
   pointRowYPx,
   pointYPx,
 } from '../shaders/pointMark.js.generated.ts'
+import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
@@ -127,7 +128,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       const yPx = pointRowYPx(
-        top + band * slot,
+        rowBandTopPx(top, band, slot),
         band,
         reverse,
         pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),
@@ -159,7 +160,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const { valueScaleType: st, valueSymlogConstant: c } =
       valueScaleUniforms(params)
     const cy = pointRowYPx(
-      (params.rowOffsetPx ?? 0) + band * slot,
+      rowBandTopPx(params.rowOffsetPx ?? 0, band, slot),
       band,
       params.reverse ? 1 : 0,
       pointYPx(y[i]!, domain[0], domain[1], band, st, insetPx, c),
@@ -199,7 +200,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       const cy = pointRowYPx(
-        top + band * slot,
+        rowBandTopPx(top, band, slot),
         band,
         reverse,
         pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),

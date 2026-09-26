@@ -116,7 +116,7 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   sx2 = extendToMinWidthX(sx1, sx2, u.minWidthPx, u.minCellDenomPx);
   float2 q = quadLocal(vid);
 
-  float bandTop = u.rowOffsetPx + u.rowHeight * float(place.slot);
+  float bandTop = rowBandTopPx(u.rowOffsetPx, u.rowHeight, place.slot);
   float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
   float originY = bandTop + u.originYPx;
   float topPx = min(valueY, originY);

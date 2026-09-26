@@ -162,7 +162,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
 
   float startClipX = bpToClipX(inst.x, u);
   float endClipX = bpToClipX(inst.x2, u);
-  float yPx = pointRowYPx(u.rowOffsetPx + u.rowHeight * float(place.slot), u.rowHeight, u.reverse, pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx, u.valueSymlogConstant));
+  float yPx = pointRowYPx(rowBandTopPx(u.rowOffsetPx, u.rowHeight, place.slot), u.rowHeight, u.reverse, pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx, u.valueSymlogConstant));
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).

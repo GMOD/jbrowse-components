@@ -31,3 +31,7 @@ export function rowTableTexelY(key: number, keys: number): number {
   let _t0 = Math.trunc(key / rowTableWidth(keys))
   return _t0
 }
+
+export function rowBandTopPx(rowOffsetPx: number, rowHeight: number, slot: number): number {
+  return (rowOffsetPx + (rowHeight * (slot)))
+}

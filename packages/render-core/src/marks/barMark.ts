@@ -2,6 +2,7 @@ import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { getDpr, makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
 import * as shader from '../shaders/barMark.generated.ts'
 import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
+import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
@@ -45,7 +46,7 @@ export interface BarParams extends RowParams, MarkValueScale {
 function barBand(params: BarParams, canvasHeight: number, slot: number) {
   const pitch = bandHeightPx(params, canvasHeight)
   return {
-    top: (params.rowOffsetPx ?? 0) + pitch * slot,
+    top: rowBandTopPx(params.rowOffsetPx ?? 0, pitch, slot),
     band: params.rowBandPx ?? pitch,
   }
 }
