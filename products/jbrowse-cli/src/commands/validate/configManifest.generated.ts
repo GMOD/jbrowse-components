@@ -1264,9 +1264,6 @@ export const configManifest: ConfigManifest = {
       "shorthandKeys": [
         "uri",
         "baseUri"
-      ],
-      "aliases": [
-        "AllVsAllPAFAdapter"
       ]
     },
     "MultiGenomeIndexedPAFAdapter": {
@@ -1314,9 +1311,6 @@ export const configManifest: ConfigManifest = {
         "uri",
         "baseUri",
         "csi"
-      ],
-      "aliases": [
-        "AllVsAllIndexedPAFAdapter"
       ]
     },
     "PAFAdapter": {

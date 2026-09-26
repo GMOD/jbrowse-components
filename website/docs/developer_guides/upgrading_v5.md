@@ -446,17 +446,6 @@ its schemes are the ones every color scale names. `colorScheme` and
 `setUseLogScale` is `setColorScale('log' | 'linear')`. [](/docs/config/hiccolor)
 lists the members.
 
-## Adapter types renamed
-
-`AllVsAllPAFAdapter` is now `MultiGenomePAFAdapter` and
-`AllVsAllIndexedPAFAdapter` is now `MultiGenomeIndexedPAFAdapter`: one
-PanSN-named PAF holds any set of pairs, a complete all-vs-all or a star of many
-haplotypes against one reference, so the old names undersold the file. Both old
-names are registered as aliases on the adapter, so a config still saying them
-loads and [`jbrowse validate`](/docs/cli#jbrowse-validate) accepts them. Plugin
-code that imports the adapter classes or the `AllVsAll…Config` types needs the
-new names.
-
 ## A non-coding BED12 parses as a transcript
 
 The BED12 gene heuristic used to require a non-empty thick range, so every

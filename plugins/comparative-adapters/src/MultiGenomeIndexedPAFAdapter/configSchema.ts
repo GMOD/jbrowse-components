@@ -27,9 +27,6 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * all-vs-all or a star against one reference), one-vs-all in a plain LGV,
  * single-pair when the synteny view supplies a `targetAssemblyName`.
  *
- * Registered before 2026-09 as `AllVsAllIndexedPAFAdapter`, which a config may
- * still say.
- *
  * #example
  * ```js
  * {

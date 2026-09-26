@@ -89,7 +89,6 @@ export default class AdapterType<
       name: string
       configSchema: SCHEMA
       displayName?: string
-      aliases?: string[]
       adapterCapabilities?: string[]
       adapterMetadata?: AdapterMetadata
       normalizeSnapshot?: NormalizeSnapshot

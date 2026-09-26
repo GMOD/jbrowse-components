@@ -11,7 +11,6 @@ export default function MultiGenomeIndexedPAFAdapterF(
     () =>
       new AdapterType({
         name: 'MultiGenomeIndexedPAFAdapter',
-        aliases: ['AllVsAllIndexedPAFAdapter'],
         displayName: 'Multi-genome indexed PAF adapter',
         normalizeSnapshot,
         configSchema,

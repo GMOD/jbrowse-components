@@ -79,7 +79,7 @@ JBrowseRApp(
       name = "E. coli all-vs-all",
       assemblyNames = as.list(strains),
       adapter = list(
-        type = "AllVsAllPAFAdapter",
+        type = "MultiGenomePAFAdapter",
         assemblyNames = as.list(strains),
         pafLocation = list(uri = paste0(base, "/all_vs_all.paf.gz"))
       )

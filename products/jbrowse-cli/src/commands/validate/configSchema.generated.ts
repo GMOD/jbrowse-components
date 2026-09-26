@@ -2746,10 +2746,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "properties": {
         "type": {
-          "enum": [
-            "MultiGenomePAFAdapter",
-            "AllVsAllPAFAdapter"
-          ]
+          "const": "MultiGenomePAFAdapter"
         }
       },
       "required": [
@@ -2821,10 +2818,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "properties": {
         "type": {
-          "enum": [
-            "MultiGenomeIndexedPAFAdapter",
-            "AllVsAllIndexedPAFAdapter"
-          ]
+          "const": "MultiGenomeIndexedPAFAdapter"
         }
       },
       "required": [
@@ -13132,10 +13126,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "object",
             "properties": {
               "type": {
-                "enum": [
-                  "MultiGenomePAFAdapter",
-                  "AllVsAllPAFAdapter"
-                ]
+                "const": "MultiGenomePAFAdapter"
               }
             },
             "required": [
@@ -13151,10 +13142,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "object",
             "properties": {
               "type": {
-                "enum": [
-                  "MultiGenomeIndexedPAFAdapter",
-                  "AllVsAllIndexedPAFAdapter"
-                ]
+                "const": "MultiGenomeIndexedPAFAdapter"
               }
             },
             "required": [

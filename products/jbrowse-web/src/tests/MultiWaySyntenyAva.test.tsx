@@ -1,6 +1,5 @@
 import { waitFor } from '@testing-library/react'
 
-import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
@@ -17,8 +16,8 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(volvoxGetFile)
 
-async function openMultiWay(trackId: string, config?: Record<string, unknown>) {
-  const { rootModel } = await getPluginManager(config)
+async function openMultiWay(trackId: string) {
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('LinearGenomeView', {
@@ -71,46 +70,3 @@ test('MultiWaySyntenyDisplay on a multi-genome PAF groups per record and fetches
     'volvox_del',
   )
 }, 60000)
-
-// The two adapters were `AllVsAllPAFAdapter` and `AllVsAllIndexedPAFAdapter`
-// until 2026-09, and hosted configs still say so. The old name is an alias on
-// the AdapterType: the config loads, the adapter slot's snapshot reads the
-// registered name, and the display draws what the renamed config draws.
-function volvoxConfigSpelledTheOldWay() {
-  const config = structuredClone(volvoxConfig)
-  const oldNames = new Map([
-    ['MultiGenomePAFAdapter', 'AllVsAllPAFAdapter'],
-    ['MultiGenomeIndexedPAFAdapter', 'AllVsAllIndexedPAFAdapter'],
-  ])
-  let renamed = 0
-  for (const track of config.tracks) {
-    const oldName = oldNames.get(track.adapter.type)
-    if (oldName) {
-      track.adapter.type = oldName
-      renamed++
-    }
-  }
-  expect(renamed).toBe(2)
-  return config
-}
-
-test.each([
-  ['volvox_all_vs_all', 'MultiGenomePAFAdapter'],
-  ['volvox_all_vs_all_indexed', 'MultiGenomeIndexedPAFAdapter'],
-])(
-  'a config still spelling %s the 2026-09 way loads as %s and draws the same links',
-  async (trackId, canonical) => {
-    const current = await openMultiWay(trackId)
-    const legacy = await openMultiWay(trackId, volvoxConfigSpelledTheOldWay())
-
-    expect(legacy.track.adapterConfig.type).toBe(canonical)
-    expect(legacy.display.rowAssemblies).toEqual(current.display.rowAssemblies)
-    expect(legacy.display.groups.length).toBe(current.display.groups.length)
-    expect(
-      legacy.display.laneLinks!.get('volvox_ins|volvox_del')!.links.length,
-    ).toBe(
-      current.display.laneLinks!.get('volvox_ins|volvox_del')!.links.length,
-    )
-  },
-  120000,
-)

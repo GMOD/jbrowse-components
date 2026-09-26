@@ -634,7 +634,6 @@ export default function MultiGenomePAFAdapterF(pluginManager: PluginManager) {
     () =>
       new AdapterType({
         name: 'MultiGenomePAFAdapter',
-        aliases: ['AllVsAllPAFAdapter'],
         displayName: 'Multi-genome PAF adapter',
         configSchema,
         adapterMetadata: {

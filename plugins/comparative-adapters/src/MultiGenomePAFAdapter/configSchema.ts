@@ -27,9 +27,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * the assemblies you actually load into JBrowse and want the track to appear
  * on.
  *
- * Registered before 2026-09 as `AllVsAllPAFAdapter`, which a config may still
- * say.
- *
  * #example
  * ```js
  * {
