@@ -298,6 +298,19 @@ only on a NaN, and there the WGSL spec itself has been published with both
 phrasings (gpuweb#4527), so the twin follows the C++ and the choice is pinned by
 a test rather than defended.
 
+**Two functions it cannot referee at all, and say so.** `curveDistance.slang`'s
+hull vertices, `ellipseHullPoint` and `wideCircleHullPoint`, meet two offset
+tangent lines that turn near-parallel at a flat dome's feet and apex. The probe
+hands them non-unit direction pairs, half steps past a quarter turn and negative
+radii, and there float32 and float64 part by far more than any tolerance the
+rest of the tree could keep: 323 mismatches, none on an input the shader
+produces, where the two agree to 0.004 px. No arrangement of the miter survives
+that probe. `//! oracle-skip: <fn> — <why>` takes a function out of the sweep.
+The oracle prints every skip on the shader's `ok` line and fails on one naming a
+function it would not have swept. It is for a function some other suite
+referees against geometry, here `arcHull.test.ts`, and not for a mismatch
+nobody has explained.
+
 The retired twins kept as fixtures still matter, and are now the *narrow* check:
 they pin behavior a human decided was right (a degenerate y-domain, a
 reversed-block anchor) at inputs a random sweep would rarely hit. The oracle

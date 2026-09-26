@@ -5,6 +5,8 @@ import {
   parseExportedConsts,
   parseInstanceWriter,
   parseJsExports,
+  parseJsSkips,
+  parseOracleSkips,
   parseOutPath,
   OUT_DIRECTIVES,
   parseTargets,
@@ -285,6 +287,29 @@ describe('parseTargets', () => {
   test('throws on an unrecognized target', () => {
     expect(() => parseTargets('//! targets: wgsl, metal')).toThrow(/metal/)
     expect(() => parseTargets('//! targets: wsgl')).toThrow(/wsgl/)
+  })
+})
+
+describe('parseOracleSkips', () => {
+  test('reads each skip and its reason, apart from the js-skips', () => {
+    const source = [
+      '//! js-skip: clipOnly -- clip space',
+      '//! oracle-skip: hullPoint — a miter; arcHull.test.ts referees it',
+      '//! oracle-skip: legPoint -- cancels off the band',
+    ].join('\n')
+    expect(parseOracleSkips(source)).toEqual([
+      { name: 'hullPoint', reason: 'a miter; arcHull.test.ts referees it' },
+      { name: 'legPoint', reason: 'cancels off the band' },
+    ])
+    expect(parseJsSkips(source)).toEqual([
+      { name: 'clipOnly', reason: 'clip space' },
+    ])
+  })
+
+  test('refuses a skip with no reason', () => {
+    expect(() => parseOracleSkips('//! oracle-skip: hullPoint')).toThrow(
+      /oracle-skip must read/,
+    )
   })
 })
 

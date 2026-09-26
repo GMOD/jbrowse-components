@@ -44,6 +44,7 @@ import {
   isSupportedSignature,
   parseDeclaredFunctions,
   parseJsExports,
+  parseOracleSkips,
   parseOutPath,
   stripComments,
 } from './shader-codegen/parseDirectives.ts'
@@ -219,7 +220,7 @@ async function checkShader(cxx: string, slangPath: string, source: string) {
   const hasEntryPoints = stripComments(source).includes('[shader(')
   const fns = parseJsExports(source, hasEntryPoints ? imported : [])
   if (!fns) {
-    return { comparisons: 0, mismatches: [] as Mismatch[] }
+    return { comparisons: 0, mismatches: [] as Mismatch[], skipped: [] }
   }
   const unsupported = fns.filter(f => !(f.returnType in RETURN_WIDTH))
   if (unsupported.length > 0) {
@@ -255,7 +256,16 @@ async function checkShader(cxx: string, slangPath: string, source: string) {
       { stdio: 'pipe' },
     )
     const extras = emittableOf(readFileSync(wgslPath, 'utf8'), candidates)
-    const swept = [...fns, ...extras]
+    const skipped = parseOracleSkips(source).map(s => s.name)
+    const reachable = new Set([...fns, ...extras].map(f => f.name))
+    const stale = skipped.filter(name => !reachable.has(name))
+    if (stale.length > 0) {
+      throw new Error(
+        `${slangPath}: //! oracle-skip names ${stale.join(', ')}, which the ` +
+          `sweep does not reach`,
+      )
+    }
+    const swept = [...fns, ...extras].filter(f => !skipped.includes(f.name))
 
     const probePath = path.join(tmp, `${base}Oracle.slang`)
     writeFileSync(probePath, stripped + buildProbeEntry(swept, 'compute'))
@@ -339,7 +349,7 @@ async function checkShader(cxx: string, slangPath: string, source: string) {
         mismatches.push({ fn: name!, args, cpp: cppOut, js: [...jsOut] })
       }
     }
-    return { comparisons: rows.length, mismatches }
+    return { comparisons: rows.length, mismatches, skipped }
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }
@@ -382,7 +392,11 @@ async function main() {
       failures.push({ shader: rel, mismatches: result.mismatches })
       console.log(`  FAIL ${rel} (${result.mismatches.length} mismatches)`)
     } else {
-      console.log(`  ok   ${rel} (${result.comparisons})`)
+      const skipped =
+        result.skipped.length > 0
+          ? `, not refereed: ${result.skipped.join(', ')}`
+          : ''
+      console.log(`  ok   ${rel} (${result.comparisons}${skipped})`)
     }
   }
 

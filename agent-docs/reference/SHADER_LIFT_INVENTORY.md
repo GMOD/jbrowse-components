@@ -124,5 +124,5 @@ is no longer shared with anything.
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `wideCircleHullPoint` | tests only — `arcHull.test.ts` |
 | `wideCircleLeg` | tests only — `arcHull.test.ts`, `wideCircleLeg.test.ts` |
-| `wideCircleLegStep` | nothing |
+| `wideCircleLegStep` | tests only — `arcHull.test.ts`, `wideCircleLeg.test.ts` |
 | `yCurve` | tests only — `syntenyCull.test.ts`, `syntenyShaderParity.test.ts` |

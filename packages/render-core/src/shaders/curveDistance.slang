@@ -9,6 +9,8 @@
 // sampled from the offset curve fall short of it at a clamped dome's feet.
 //! js-export: distToWideCirclePx, wideCircleLeg, wideCircleLegStep, ellipseHullPoint, wideCircleHullPoint
 //! js-skip: nearCircleDistancePx — a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want.
+//! oracle-skip: ellipseHullPoint — a miter between near-parallel tangent lines, so float32 and float64 part on the probe's arbitrary directions and radii; over the angles the hull steps through they agree to 0.004 px, and arcHull.test.ts referees the twin against every inked point instead
+//! oracle-skip: wideCircleHullPoint — the foot-relative frame cancels at half steps and angles the band never reaches; arcHull.test.ts referees it with the legs
 
 module curveDistance;
 

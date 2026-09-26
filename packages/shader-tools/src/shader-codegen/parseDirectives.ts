@@ -438,18 +438,38 @@ export interface JsSkip {
  * text and lands in the report verbatim.
  */
 export function parseJsSkips(source: string): JsSkip[] {
+  return parseNamedReasons(source, 'js-skip')
+}
+
+/**
+ * `//! oracle-skip: <fn> — <why, and what referees it instead>`: a function
+ * `check-oracle` leaves out of its sweep, for one whose float32 build cannot
+ * agree with its float64 twin on the probe's arbitrary inputs however it is
+ * written. The oracle names every skip it honours and fails on one that names
+ * nothing it would have swept.
+ */
+export function parseOracleSkips(source: string): JsSkip[] {
+  return parseNamedReasons(source, 'oracle-skip')
+}
+
+function parseNamedReasons(source: string, directive: string): JsSkip[] {
   const out: JsSkip[] = []
   for (const m of source.matchAll(
-    /^\/\/!\s*js-skip:\s*(\w+)\s*(?:—|--)\s*(.+)$/gm,
+    new RegExp(
+      String.raw`^\/\/!\s*${directive}:\s*(\w+)\s*(?:—|--)\s*(.+)$`,
+      'gm',
+    ),
   )) {
     out.push({ name: m[1]!, reason: m[2]!.trim() })
   }
-  const malformed = [...source.matchAll(/^\/\/!\s*js-skip:\s*(.*)$/gm)].filter(
-    m => !/^\w+\s*(?:—|--)\s*\S/.test(m[1]!),
-  )
+  const malformed = [
+    ...source.matchAll(
+      new RegExp(String.raw`^\/\/!\s*${directive}:\s*(.*)$`, 'gm'),
+    ),
+  ].filter(m => !/^\w+\s*(?:—|--)\s*\S/.test(m[1]!))
   if (malformed.length > 0) {
     throw new Error(
-      `//! js-skip must read '<function> — <why not>' (em dash or --); got: ${malformed
+      `//! ${directive} must read '<function> — <why not>' (em dash or --); got: ${malformed
         .map(m => JSON.stringify(m[1]))
         .join(', ')}`,
     )
