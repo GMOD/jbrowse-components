@@ -4939,6 +4939,7 @@
         "ellipseNearest",
         "inkOfInstances",
         "keepRampValues",
+        "keySlot",
         "linkFeet",
         "linkMark",
         "makeAbgrFill",
@@ -4949,6 +4950,8 @@
         "pointMark",
         "rampValueBits",
         "recordPath",
+        "rowColor",
+        "rowSlot",
         "spanMark",
         "valueWindow",
         "withPassId"
