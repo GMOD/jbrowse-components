@@ -32,6 +32,7 @@ import {
 } from './coverageMarks.ts'
 import { PILEUP_MARKS } from './pileupMarks.ts'
 import {
+  PILEUP_UNIFORMS_SIZE_BYTES,
   pileupUniformViews,
   writePileupFrame,
   writePileupPalette,
@@ -135,10 +136,10 @@ export class GpuAlignmentsRenderer
   private textures: MarkTextureBinder
 
   constructor(hal: GpuHal) {
-    // The base owns `hal`, the reusable uniform scratch, `dispose`, and the
-    // `setErrorHandler` that routes a HAL over-limit allocation to renderError.
+    // The base owns `hal`, `dispose`, and the `setErrorHandler` that routes a
+    // HAL over-limit allocation to renderError.
     super(hal)
-    this.uData = this.uniformData
+    this.uData = new ArrayBuffer(PILEUP_UNIFORMS_SIZE_BYTES)
     this.uViews = pileupUniformViews(this.uData)
     this.uBand = new ArrayBuffer(hal.uniformByteSize)
     this.textures = new MarkTextureBinder(hal)

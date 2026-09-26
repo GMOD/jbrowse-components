@@ -26,6 +26,13 @@ export interface PileupUniformViews {
   u32: Uint32Array
 }
 
+/**
+ * The struct every pileup pass reads, and so the size of its scratch: a write
+ * uploads the whole buffer it is handed, and the HAL's widest struct is the
+ * read-connection band's link.
+ */
+export const PILEUP_UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
+
 export function pileupUniformViews(scratch: ArrayBuffer): PileupUniformViews {
   return {
     f32: new Float32Array(scratch),

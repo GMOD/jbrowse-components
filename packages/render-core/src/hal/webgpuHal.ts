@@ -35,17 +35,15 @@ class ShaderCompileError extends Error {
   }
 }
 
-// Maximum number of writeUniforms() calls per frame. Each call occupies one
-// aligned slot in the uniform ring, allocated eagerly per display as a GPU
-// buffer and a CPU staging array. A frame is measured using 2-4 slots, so the
-// count rather than any struct is the oversized term:
-// agent-docs/reference/ARCHITECTURAL_LIMITS.md §"The uniform ring is allocated
-// at 2048 slots".
+// Each writeUniforms() call in a frame occupies one aligned slot in the uniform
+// ring, a GPU buffer and a CPU staging array per display, each slot sized by
+// the largest struct a registered pass declares. A frame is measured using 2-4
+// slots, so a ring starts at INITIAL_UNIFORM_SLOTS and doubles when a frame asks
+// for more: agent-docs/reference/ARCHITECTURAL_LIMITS.md §"The uniform ring".
 //
-// Exhausting it does not throw: the write is dropped and its draws render
-// against another batch's uniforms. If we ever hit the cap, grow the buffer and
-// recreate every bind group in `passBindGroups` rather than bumping the
-// constant again.
+// Past MAX_UNIFORM_SLOTS a write is dropped and its draws render against
+// another batch's uniforms, without an error.
+const INITIAL_UNIFORM_SLOTS = 16
 const MAX_UNIFORM_SLOTS = 2048
 
 // Warn while there is still headroom, because the cap itself is not a place to
@@ -163,7 +161,11 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private alignedUniformSize: number
   private uniformRingBuffer: GPUBuffer
   private uniformStaging: Uint8Array
+  private uniformSlots = INITIAL_UNIFORM_SLOTS
   private uniformSlot = 0
+  // Rings this frame outgrew, each with the staged bytes its encoded draws
+  // read: written at submit, released after it.
+  private outgrownRings: { buffer: GPUBuffer; bytes: number }[] = []
   // Once per HAL, not once per frame: at 60fps a per-frame warning is a
   // console the developer stops reading, and the fact is about the renderer
   // rather than about this frame.
@@ -244,25 +246,52 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     this.alignedUniformSize =
       Math.ceil(this.uniformByteSize / alignment) * alignment
 
-    const ringSize = MAX_UNIFORM_SLOTS * this.alignedUniformSize
-    this.uniformRingBuffer = device.createBuffer({
-      size: ringSize,
+    const ringSize = this.uniformSlots * this.alignedUniformSize
+    this.uniformRingBuffer = this.createRing(ringSize)
+    this.uniformStaging = new Uint8Array(ringSize)
+    this.bindUntexturedPasses()
+    this.configureContext()
+  }
+
+  private createRing(size: number) {
+    return this.device.createBuffer({
+      size,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
-    this.uniformStaging = new Uint8Array(ringSize)
+  }
+
+  // Every pass's bind group names the ring buffer, so a new ring rebinds them:
+  // an untextured pass here, a textured one on its next draw (`bindTexture`).
+  private bindUntexturedPasses() {
     const byLayout = new Map<GPUBindGroupLayout, GPUBindGroup>()
-    for (const desc of descriptors) {
-      if (!desc.bindings.some(b => b.kind === 'texture')) {
-        const layout = this.bindGroupLayoutOf(desc.bindings)
-        let group = byLayout.get(layout)
-        if (!group) {
-          group = this.createBindGroup(desc.bindings, layout)
-          byLayout.set(layout, group)
-        }
-        this.passBindGroups.set(desc.id, group)
+    for (const desc of this.descriptors.values()) {
+      if (desc.bindings.some(b => b.kind === 'texture')) {
+        this.passBindGroups.delete(desc.id)
+        continue
       }
+      const layout = this.bindGroupLayoutOf(desc.bindings)
+      let group = byLayout.get(layout)
+      if (!group) {
+        group = this.createBindGroup(desc.bindings, layout)
+        byLayout.set(layout, group)
+      }
+      this.passBindGroups.set(desc.id, group)
     }
-    this.configureContext()
+  }
+
+  // Doubles the ring mid-frame. The draws already encoded bind the old buffer,
+  // so it takes the slots staged so far at submit and is released after.
+  private growRing() {
+    const bytes = this.uniformSlot * this.alignedUniformSize
+    this.outgrownRings.push({ buffer: this.uniformRingBuffer, bytes })
+    this.destroyWhenIdle(this.uniformRingBuffer)
+    this.uniformSlots = Math.min(this.uniformSlots * 2, MAX_UNIFORM_SLOTS)
+    const size = this.uniformSlots * this.alignedUniformSize
+    this.uniformRingBuffer = this.createRing(size)
+    const staging = new Uint8Array(size)
+    staging.set(this.uniformStaging.subarray(0, bytes))
+    this.uniformStaging = staging
+    this.bindUntexturedPasses()
   }
 
   private bindGroupLayoutOf(bindings: readonly ShaderBinding[]) {
@@ -534,15 +563,20 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   writeUniforms(data: ArrayBuffer) {
     if (this.currentEncoder) {
       // Inside a frame: stage data at the current slot for batched upload
-      if (this.uniformSlot >= MAX_UNIFORM_SLOTS) {
+      if (
+        this.uniformSlot >= this.uniformSlots &&
+        this.uniformSlots < MAX_UNIFORM_SLOTS
+      ) {
+        this.growRing()
+      }
+      if (this.uniformSlot >= this.uniformSlots) {
         console.error(
           `[WebGPUHal] uniform ring buffer exhausted at ${MAX_UNIFORM_SLOTS} ` +
             `writeUniforms calls in one frame — this write is dropped, so the ` +
             `paired draw renders with the previous batch's uniforms (wrong ` +
             `data, not last-frame-stale). This indicates a renderer doing far ` +
             `more per-frame uniform writes than expected; investigate the call ` +
-            `site before raising the cap (and consider switching to a ` +
-            `dynamic-growth ring buffer).`,
+            `site before raising the cap.`,
         )
         return
       }
@@ -783,6 +817,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     this.currentPass = null
     this.currentEncoder = null
     this.currentTextureView = null
+    this.outgrownRings.length = 0
     this.drainPendingDestroy()
   }
 
@@ -797,6 +832,15 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
         this.currentPass.end()
       }
 
+      for (const ring of this.outgrownRings) {
+        this.device.queue.writeBuffer(
+          ring.buffer,
+          0,
+          this.uniformStaging,
+          0,
+          ring.bytes,
+        )
+      }
       if (slotAtSubmit > 0) {
         const uploadSize = slotAtSubmit * this.alignedUniformSize
         this.device.queue.writeBuffer(
