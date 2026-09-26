@@ -210,7 +210,7 @@ the tour was filmed in.
   animation, a tooltip delay or a hover settling stays a `delay`.
 - **A chord is anchored by its label, and hit-tested through the model** —
   `anchor: { chord: 'SV_20' }`, resolved by `chordAnchor.ts`. A resting chord is
-  canvas pixels, not a DOM node (ADR-173), and a feature id is parse order, so
+  canvas pixels, not a DOM node (ADR-176), and a feature id is parse order, so
   it drifts silently (a comment in `specs/sv.ts` named the id for SV_20; that id
   is SV_14 today). The resolver finds the shape by the label the hover tooltip
   shows, takes its outline from the display's `shapePathFor`, walks the curve,
