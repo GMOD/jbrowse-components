@@ -17,14 +17,7 @@ import {
 import { GRAPH_DRAWN, graphCutDrawn } from '../specs/graph-fixtures.ts'
 import { hprcClusterFixtures, hprcVideoFixtures } from '../specs/graph-hprc.ts'
 import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
-import {
-  DISPLAY_TYPES,
-  GRAPH_DISPLAY,
-  LOCATION_BOX,
-  cascade,
-  displayReady,
-  trackMenu,
-} from './shared.ts'
+import { LOCATION_BOX, cascade, displayReady, trackMenu } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -157,19 +150,6 @@ const HIGHLIGHT_ITEM = 'Highlight in hg38'
 const HAPLOTYPE_GENES_LABEL = 'CAT genes (NA20809 haplotype 2, HPRC release 2)'
 const WORDMARK = '[aria-label="JBrowse"]'
 
-// The form mints the trackId from the name (`makeTrackId`: the slug plus a
-// timestamp), so a tour finds the track it added by the slug alone.
-function formTrackSlug(json: string) {
-  const { name } = JSON.parse(json) as { name: string }
-  return name.trim().toLowerCase().replaceAll(' ', '_')
-}
-
-const formTrackMenu = (json: string) =>
-  `[data-testid="track_menu_icon"][data-trackid^="${formTrackSlug(json)}-"]`
-
-const formDisplayReady = (json: string) =>
-  `[data-display-id^="${formTrackSlug(json)}-"][data-display-id$="-LinearBasicDisplay"][data-display-phase="ready"]`
-
 // GETTING A GRAPH INTO A SESSION, which is the opening of both E. coli graph
 // tours and one route rather than two: **File → Open track... → Add pangenome
 // graph track**, the form, **Submit**. Written once so the two pages cannot
@@ -249,24 +229,6 @@ function navigateSteps(window: string): VideoStep[] {
   ]
 }
 
-// THE GRAPH, off the segments lane's own menu: Display types lists the graph
-// beside the lane for any track whose adapter can cut a subgraph, and picking
-// it cuts the window on screen. A Display types pick closes its own cascade.
-function drawGraphSteps(menu: string): VideoStep[] {
-  return [
-    {
-      type: 'click',
-      selector: menu,
-      say: 'Redraw the lane as the graph of the window',
-      hold: 700,
-    },
-    { type: 'waitForSelector', selector: DISPLAY_TYPES },
-    { type: 'click', selector: DISPLAY_TYPES, hold: 700 },
-    { type: 'waitForSelector', selector: GRAPH_DISPLAY },
-    { type: 'click', selector: GRAPH_DISPLAY },
-  ]
-}
-
 // A radio row of the graph's own menu leaves the cascade standing over the
 // drawing it changed. One click on the root menu's backdrop takes every level,
 // and the wordmark then blurs the menu icon, whose tooltip outlives the menu.
@@ -278,10 +240,6 @@ const leaveTheMenu = (row: string): VideoStep[] => [
 ]
 
 const GENES_READY = displayReady('hg38_ncbiRefSeq_ucsc-LinearBasicDisplay')
-const PGGB_FORM_READY = formDisplayReady(PGGB_SEGMENTS_TRACK_JSON)
-const CACTUS_FORM_READY = formDisplayReady(
-  cactusVideoFixtures.segmentsTrackJson,
-)
 // The two E. coli pages open on K12's genes and nothing else, and each waits on
 // its own pasted lane afterwards. A pasted config with no `displayId` gets
 // `<trackId>-<displayType>` (packages/core/src/util/tracks.ts), which is the one
@@ -303,7 +261,7 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/pggb_subgraph_launch',
     description:
-      "A pggb graph from a K12 session that has none of it: add the page's track through the graph form, narrow to the IS5 element, and redraw the lane as the graph of the window",
+      "A pggb graph from a K12 session that has none of it: add the page's track through the graph form, which opens as the graph of the window, then narrow to the IS5 element and it cuts again",
     url: pggbTourStart,
     // The frame of the clip on the page, which was filmed through the
     // standalone graph view; re-size it off the run's content report when
@@ -316,30 +274,29 @@ export const pangenomeVideos: VideoSpec[] = [
       ...addGraphTrackSteps(PGGB_SEGMENTS_TRACK_JSON),
       {
         type: 'waitForSelector',
-        selector: PGGB_FORM_READY,
+        selector: GRAPH_DRAWN,
         timeout: 180000,
         cut: true,
       },
-      // the lane the fence produced, at the width it was pasted at: a base-level
-      // graph is a node every ~17 bp, so what arrives is a mat, and that is the
-      // reason the next step is a narrowing
-      { type: 'delay', ms: 2600 },
-      ...navigateSteps(locusWindow),
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       {
-        type: 'waitForSelector',
-        selector: PGGB_FORM_READY,
-        timeout: 120000,
+        type: 'delay',
+        ms: 2600,
+        say: 'The track opens as the graph of the window',
       },
-      { type: 'delay', ms: 1800 },
-      ...drawGraphSteps(formTrackMenu(PGGB_SEGMENTS_TRACK_JSON)),
+      ...navigateSteps(locusWindow),
+      { type: 'waitForAppSettled', timeout: 120000, cut: true },
       {
         type: 'waitForSelector',
         selector: GRAPH_DRAWN,
         timeout: 120000,
-        cut: true,
       },
       { type: 'hover', selector: WORDMARK, hold: 0 },
-      { type: 'delay', ms: 2000 },
+      {
+        type: 'delay',
+        ms: 2000,
+        say: 'Narrowed to the IS5 element, it cuts again',
+      },
     ],
     tailMs: 2500,
   },
@@ -357,7 +314,7 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome_cactus/subgraph_launch',
     description:
-      "The Minigraph-Cactus graph into an empty K12 session and out as a graph: add the page's track through the graph form, narrow to the IS1 element past flhD, and redraw the lane as the graph of the window",
+      "The Minigraph-Cactus graph into an empty K12 session and out as a graph: add the page's track through the graph form, which opens as the graph of the window, then narrow to the IS1 element past flhD and it cuts again",
     url: cactusTourStart,
     // The frame of the clip on the page, which was filmed through the
     // standalone graph view; re-size it off the run's content report when
@@ -369,27 +326,29 @@ export const pangenomeVideos: VideoSpec[] = [
       ...addGraphTrackSteps(cactusVideoFixtures.segmentsTrackJson),
       {
         type: 'waitForSelector',
-        selector: CACTUS_FORM_READY,
+        selector: GRAPH_DRAWN,
         timeout: 180000,
         cut: true,
       },
-      { type: 'delay', ms: 2600 },
-      ...navigateSteps(cactusVideoFixtures.locusWindow),
+      { type: 'hover', selector: WORDMARK, hold: 0 },
       {
-        type: 'waitForSelector',
-        selector: CACTUS_FORM_READY,
-        timeout: 120000,
+        type: 'delay',
+        ms: 2600,
+        say: 'The track opens as the graph of the window',
       },
-      { type: 'delay', ms: 1800 },
-      ...drawGraphSteps(formTrackMenu(cactusVideoFixtures.segmentsTrackJson)),
+      ...navigateSteps(cactusVideoFixtures.locusWindow),
+      { type: 'waitForAppSettled', timeout: 120000, cut: true },
       {
         type: 'waitForSelector',
         selector: GRAPH_DRAWN,
         timeout: 120000,
-        cut: true,
       },
       { type: 'hover', selector: WORDMARK, hold: 0 },
-      { type: 'delay', ms: 2000 },
+      {
+        type: 'delay',
+        ms: 2000,
+        say: 'Narrowed to the IS1 element, it cuts again',
+      },
     ],
     tailMs: 2500,
   },
