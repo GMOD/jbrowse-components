@@ -47,11 +47,10 @@ const confNode = (self: object) => self as ScoreScaleHost
  * {@link ScoreScaleModel} in `scoreMenuItems.ts` — the interface the shared
  * Score menu, the scale and autoscale submenus and `SetMinMaxDialog` consume.
  *
- * What a display's scale offers follows what it draws, so the members below
- * answer `undefined` where its factory call left them out: `autoscaleType`
- * where the scale declares no `autoscale`, and `symlogConstant` wherever
- * `symlog` is not among the scale types. `scaleTypeChoices` reads the declared
- * enum back, which is what the scale-type radio offers.
+ * What a display's scale offers follows what it draws: `symlogConstant`
+ * answers `undefined` wherever `symlog` is not among the scale types, and
+ * `scaleTypeChoices` reads the declared enum back, which is what the
+ * scale-type radio offers.
  *
  * Deliberately just the scale and the guides it owns. Colors, `resolution`
  * and the autoscale *computation* stay in `WiggleScoreConfigMixin` /
@@ -81,9 +80,8 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * `undefined` on a display whose domain consults no autoscale mode.
        */
-      get autoscaleType(): string | undefined {
+      get autoscaleType(): string {
         return getConf(confNode(self), ['scales', 'y', 'autoscale'])
       },
       /**

@@ -12,8 +12,7 @@ export interface ValueScaleAutoscale {
 export interface ValueScaleOptions {
   /** the scale types this display's renderer places, `linear` first */
   types: readonly string[]
-  /** omitted where the display's domain consults no mode */
-  autoscale?: ValueScaleAutoscale
+  autoscale: ValueScaleAutoscale
   /** `symlogConstant`'s default, where `types` holds `symlog` */
   symlogConstant?: number
   /** the display draws `rules` and widens its domain to them */
@@ -216,26 +215,20 @@ export function valueScaleSchema({
             },
           }
         : {}),
-      ...(autoscale
-        ? {
-            /**
-             * #slot scales.y.autoscale
-             * What an unpinned end scales to: `local` takes the extremes of
-             * the visible region, `localsd` the mean ± `numStdDev` standard
-             * deviations, `localpercentile` the `numQuantile`-th percentile of
-             * each sign, which is robust to a peaky distribution.
-             */
-            autoscale: {
-              type: 'stringEnum',
-              model: types.enumeration('ValueScaleAutoscale', [
-                ...autoscale.modes,
-              ]),
-              defaultValue: autoscale.default,
-              description: autoscale.modes.join(' or '),
-            },
-          }
-        : {}),
-      ...(autoscale?.modes.includes('localsd')
+      /**
+       * #slot scales.y.autoscale
+       * What an unpinned end scales to: `local` takes the extremes of
+       * the visible region, `localsd` the mean ± `numStdDev` standard
+       * deviations, `localpercentile` the `numQuantile`-th percentile of
+       * each sign, which is robust to a peaky distribution.
+       */
+      autoscale: {
+        type: 'stringEnum',
+        model: types.enumeration('ValueScaleAutoscale', [...autoscale.modes]),
+        defaultValue: autoscale.default,
+        description: autoscale.modes.join(' or '),
+      },
+      ...(autoscale.modes.includes('localsd')
         ? {
             /**
              * #slot scales.y.numStdDev
@@ -250,7 +243,7 @@ export function valueScaleSchema({
             },
           }
         : {}),
-      ...(autoscale?.modes.includes('localpercentile')
+      ...(autoscale.modes.includes('localpercentile')
         ? {
             /**
              * #slot scales.y.numQuantile

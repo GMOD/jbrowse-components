@@ -6,7 +6,7 @@ import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 import { makeScoreSubMenu } from './scoreMenuItems.ts'
 import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
 
-import type { AutoscaleModel, ScoreScaleModel } from './scoreMenuItems.ts'
+import type { ScoreScaleModel } from './scoreMenuItems.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ValueScale } from '@jbrowse/display-ui'
 
@@ -15,11 +15,11 @@ import type { ValueScale } from '@jbrowse/display-ui'
 // `hasManualScoreBounds` is derived rather than overridable so the double cannot
 // claim a manual bound the pinned pair does not hold — which is the state the
 // real mixin never produces and the state this file used to test against.
-function makeSelf(over: Partial<ScoreScaleModel & AutoscaleModel> = {}) {
+function makeSelf(over: Partial<ScoreScaleModel> = {}) {
   const self = {
     scaleType: 'linear',
     scaleTypeChoices: ['linear', 'log', 'symlog'],
-    autoscaleType: 'local' as string | undefined,
+    autoscaleType: 'local',
     manualMinScore: undefined,
     manualMaxScore: undefined,
     minScoreBound: undefined,
@@ -34,7 +34,7 @@ function makeSelf(over: Partial<ScoreScaleModel & AutoscaleModel> = {}) {
     ...self,
     hasManualScoreBounds:
       self.manualMinScore !== undefined || self.manualMaxScore !== undefined,
-  } as unknown as ScoreScaleModel & AutoscaleModel
+  } as unknown as ScoreScaleModel
 }
 
 function labels(item: MenuItem) {
@@ -63,18 +63,6 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
     ).toEqual(['Scale type', 'Autoscale type', 'Set min/max score...'])
   })
 
-  it('drops the autoscale radios where the scale declares no mode', () => {
-    // manhattan's case: its domain is plain min/max plus the manual bounds, so
-    // an Autoscale-type radio wrote a slot and changed nothing drawn
-    expect(
-      labels(
-        makeScoreSubMenu(
-          makeSelf({ scaleTypeChoices: ['linear'], autoscaleType: undefined }),
-        ),
-      ),
-    ).toEqual(['Set min/max score...'])
-  })
-
   it('still captions itself with the pinned pair', () => {
     expect(
       labels(
@@ -83,11 +71,10 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
             manualMinScore: 2,
             minScoreBound: 2,
             scaleTypeChoices: ['linear'],
-            autoscaleType: undefined,
           }),
         ),
       ),
-    ).toEqual(['Set min/max score (2 – auto)...'])
+    ).toEqual(['Autoscale type', 'Set min/max score (2 – auto)...'])
   })
 })
 
@@ -160,7 +147,13 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
 // and a scale it draws rules a band for them to cross.
 describe('the reference lines row', () => {
   const ruledSchema = ConfigurationSchema('TestRuledDisplay', {
-    scales: scalesSchema(valueScaleSchema({ types: ['linear'], rules: true })),
+    scales: scalesSchema(
+      valueScaleSchema({
+        types: ['linear'],
+        autoscale: { modes: ['local'], default: 'local' },
+        rules: true,
+      }),
+    ),
   })
   const ruled = (bandTops?: number[]) =>
     types

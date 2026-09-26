@@ -91,11 +91,7 @@ export {
   makeScoreSubMenu,
   makeSetMinMaxScoreItem,
 } from './scoreMenuItems.ts'
-export type {
-  AutoscaleModel,
-  ScoreScaleModel,
-  ScoreSubMenuOptions,
-} from './scoreMenuItems.ts'
+export type { ScoreScaleModel, ScoreSubMenuOptions } from './scoreMenuItems.ts'
 export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export type { ScoreScaleHost } from './ScoreScaleMixin.ts'

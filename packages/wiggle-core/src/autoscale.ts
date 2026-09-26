@@ -261,12 +261,11 @@ export function computeScoreStats(
 /**
  * #api
  * Converts score stats into a `[min, max]` domain, applying std-dev expansion
- * for the `localsd` autoscale type. An `undefined` mode is a display whose
- * scale declares none, and takes the plain extremes.
+ * for the `localsd` autoscale type.
  */
 export function domainFromStats(
   stats: ScoreStats,
-  autoscaleType: string | undefined,
+  autoscaleType: string,
   numStdDev: number,
 ): [number, number] {
   if (autoscaleType === 'localsd') {
@@ -388,7 +387,7 @@ export function autoscaleDomainFromSpans({
   spans,
 }: {
   stats: ScoreStats
-  autoscaleType: string | undefined
+  autoscaleType: string
   numStdDev: number
   numQuantile?: number
   spans: ScoreSpan[]
@@ -408,7 +407,7 @@ export function autoscaleDomainFromStats({
   visibleEntries,
 }: {
   stats: ScoreStats
-  autoscaleType: string | undefined
+  autoscaleType: string
   summaryScoreMode: string
   numStdDev: number
   numQuantile?: number
@@ -429,7 +428,7 @@ export function autoscaleDomainFromStats({
  * `localsd` / `localpercentile` autoscale types.
  */
 export function computeAutoscaleDomain(
-  autoscaleType: string | undefined,
+  autoscaleType: string,
   summaryScoreMode: string,
   numStdDev: number,
   visibleEntries: {

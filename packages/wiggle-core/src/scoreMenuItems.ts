@@ -31,6 +31,7 @@ const SetScoreRulesDialog = lazy(() => import('./SetScoreRulesDialog.tsx'))
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   scaleTypeChoices: string[]
+  autoscaleType: string
   manualMinScore: number | undefined
   manualMaxScore: number | undefined
   minScoreBound: number | undefined
@@ -39,13 +40,6 @@ export interface ScoreScaleModel extends IStateTreeNode {
   setScaleType: (v: string) => void
   setMinScore: (n?: number) => void
   setMaxScore: (n?: number) => void
-}
-
-// The autoscale half, apart because a display can have a value scale and no
-// autoscale mode behind it: its `scales.y` then carries no `autoscale` member
-// and this half answers `undefined`.
-export interface AutoscaleModel {
-  autoscaleType: string | undefined
   setAutoscale: (v?: string) => void
 }
 
@@ -229,10 +223,7 @@ export function makeSetScoreRulesItem(
 }
 
 export function makeScoreSubMenu(
-  self: ScoreScaleModel &
-    Partial<AutoscaleModel> &
-    Partial<ScoreRulesModel> &
-    Partial<AutoscalePeer>,
+  self: ScoreScaleModel & Partial<ScoreRulesModel> & Partial<AutoscalePeer>,
   opts: ScoreSubMenuOptions = {},
 ): MenuItem {
   const {
@@ -252,17 +243,7 @@ export function makeScoreSubMenu(
     subMenu: [
       ...leadingItems,
       ...(self.scaleTypeChoices.length > 1 ? [makeScaleTypeSubMenu(self)] : []),
-      ...(self.autoscaleType !== undefined && self.setAutoscale
-        ? [
-            makeAutoscaleTypeSubMenu(
-              {
-                autoscaleType: self.autoscaleType,
-                setAutoscale: self.setAutoscale,
-              },
-              autoscaleOptions,
-            ),
-          ]
-        : []),
+      makeAutoscaleTypeSubMenu(self, autoscaleOptions),
       makeSetMinMaxScoreItem(self, domain),
       ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
       ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),
