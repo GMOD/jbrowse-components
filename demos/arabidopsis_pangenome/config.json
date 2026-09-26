@@ -527,6 +527,9 @@
               "Taz-0",
               "Tnz-1"
             ]
+          },
+          "color": {
+            "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
           }
         }
       ]
