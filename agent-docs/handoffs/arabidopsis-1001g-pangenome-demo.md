@@ -1,9 +1,9 @@
 ---
 name: arabidopsis-1001g-pangenome-demo
-description: The 1001G+ Arabidopsis demo (26 accessions vs TAIR10) is live on jbrowse.org with SyRI lanes and the lane-order minigraph graph (2026-09-25). Left - add the dataset to jb2hubs. Read before touching demos/arabidopsis_pangenome or its build script.
+description: The 1001G+ Arabidopsis demo (26 accessions vs TAIR10) is live on jbrowse.org with SyRI lanes and the lane-order minigraph graph (2026-09-25). Left - push and deploy jb2hubs, which has the dataset. Read before touching demos/arabidopsis_pangenome or its build script.
 ---
 
-# 1001G+ Arabidopsis pangenome demo: add it to jb2hubs
+# 1001G+ Arabidopsis pangenome demo: deploy the jb2hubs dataset
 
 Live since 2026-09-25:
 `https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/arabidopsis_pangenome/config.json`.
@@ -65,16 +65,12 @@ spec-session prune fix and drops default-session tracks).
 
 ## To finish
 
-jb2hubs (`~/src/jb2hubs`, another repo; this worktree session cannot run
-   git there): `website/pangenome-config/arabidopsis-tair10.json` =
-   `deploy/config.jb2hubs.json`; a `DATASETS.arabidopsis` entry in
-   `website/generatePangenomeLoci.ts` (`genome: 'GCF_000001735.4'`,
-   `geneTrack: 'ncbiRefSeqCurated'`, and it needs a Chr→NC_ alias map because
-   the tier says `Chr4` and the UCSC API wants `NC_003075.7`); an
-   `ARABIDOPSIS_DATASET` in `website/src/components/pangenomeDataset.ts`
-   (reference `GCF_000001735.4` via `genarkConfigPath`, taxonId 3702, gene
-   track `GCF_000001735.4-ncbiRefSeqCurated`, chromosomes Chr1-5 with lengths
-   30427671 19698289 23459830 18585056 26975502, filePrefix
-   `https://jbrowse.org/demos/arabidopsis_pangenome/arabidopsis-tair10-minigraph`,
-   measured sizes, links to 1001genomes.org and the README), added to
-   `PANGENOME_DATASETS`; then `pnpm check-pangenome-assets`.
+jb2hubs has the dataset on its local main (aa125533607, c167ff24608: not
+pushed), and `https://jbrowse.org/pangenome/arabidopsis-tair10/config.json` is
+published. Left: push jb2hubs and deploy its website. The dataset's
+`reference.assembly` is `TAIR10`, not `GCF_000001735.4`: the GraphGenomeView
+refuses a launch on the GenArk name ("The graph is cut on its reference,
+TAIR10"), so the graph config and `TAIR10_genes` stand in for the GenArk one.
+The UCSC API takes `chrom=Chr4` for GCF_000001735.4 through GenArk's chromAlias,
+so the loci generator needed no Chr→NC_ map. There is no Arabidopsis tutorial;
+`tutorialUrl` became optional for it.
