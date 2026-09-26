@@ -216,12 +216,12 @@ test('an export carries the mode the session is drawn in', () => {
   const session = makeSession({ theme: { palette: { primary: '#ff0000' } } })
   session.setThemeMode('dark')
 
-  expect(session.getActiveThemeOptions().palette.mode).toBe('dark')
-  expect(session.getActiveThemeOptions().palette.primary).toBe('#ff0000')
-  expect(session.getActiveThemeOptions('minimal').palette.mode).toBe('dark')
+  expect(session.getActiveThemeOptions().palette?.mode).toBe('dark')
+  expect(session.getActiveThemeOptions().palette?.primary).toBe('#ff0000')
+  expect(session.getActiveThemeOptions('minimal').palette?.mode).toBe('dark')
 
   session.setThemeMode('light')
-  expect(session.getActiveThemeOptions().palette.mode).toBe('light')
+  expect(session.getActiveThemeOptions().palette?.mode).toBe('light')
 })
 
 // A name the export dialog stored before the axis names a mode of its own, and
@@ -231,6 +231,6 @@ test('an export named by a retired theme keeps that mode', () => {
   const session = makeSession()
 
   const opts = session.getActiveThemeOptions('darkMinimal')
-  expect(opts.palette.mode).toBe('dark')
+  expect(opts.palette?.mode).toBe('dark')
   expect(session.themeMode).toBe('light')
 })
