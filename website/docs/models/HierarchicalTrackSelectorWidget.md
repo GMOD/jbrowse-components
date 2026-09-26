@@ -21,7 +21,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-favorites">**favorites**</span><br><code>favorites: localStorageGetJSON&lt;string[]&gt;(favoritesK(), [])</code> |  |
+| <span id="volatile-favorites">**favorites**</span><br><code>favorites: localStorageGetStringArray(favoritesK())</code> |  |
 | <span id="volatile-recentlyused">**recentlyUsed**</span><br><code>recentlyUsed: [] as string[]</code> |  |
 | <span id="volatile-selectedtrackids">**selectedTrackIds**</span><br><code>selectedTrackIds: [] as string[]</code> | the shopping cart, by trackId; `selection` resolves the configs |
 | <span id="volatile-sorttracknames">**sortTrackNames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>sortTrackNames: localStorageGetJSON&lt;boolean &#124; undefined&gt;( sortT…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>sortTrackNames: localStorageGetJSON&lt;boolean &#124; undefined&gt;(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;sortTrackNamesK,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
