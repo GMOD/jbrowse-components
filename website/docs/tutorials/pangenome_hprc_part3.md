@@ -2,10 +2,11 @@
 title: Pangenome (HPRC) part 3, haplotypes against each other
 sidebar_label: Pangenome (HPRC 3, haplotypes against each other)
 description:
-  HPRC haplotypes as lanes in each haplotype's coordinates, read from the release's
-  graph in the browser, with the alignment the graph states drawn between
-  neighbouring lanes: a deletion at CFH, a C4 module two haplotypes share and
-  GRCh38 lacks, and amylase copy number checked against its published classes
+  HPRC haplotypes as lanes in each haplotype's coordinates, read from the
+  release's graph in the browser, with the alignment the graph states drawn
+  between neighbouring lanes with a deletion at CFH, a C4 module two haplotypes
+  share and GRCh38 lacks, and amylase copy number checked against its published
+  classes
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2

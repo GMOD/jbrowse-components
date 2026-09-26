@@ -262,6 +262,16 @@ describe('computeVisibleCoverageStats', () => {
     const entries = [{ visStart: 100, visEnd: 200, data: cov }]
     expect(computeVisibleCoverageDomain(entries, 1)).toEqual([30, 1600])
     expect(computeVisibleCoverageDomain(entries, 0.99)).toEqual([0, 30])
+    const sparse = perBpRegion(
+      [...new Array(995).fill(0), ...new Array(5).fill(30)],
+      100,
+    )
+    expect(
+      computeVisibleCoverageDomain(
+        [{ visStart: 100, visEnd: 1100, data: sparse }],
+        0.99,
+      ),
+    ).toEqual([0, 30])
   })
 
   test('per-bp path clips to the visible block range', () => {

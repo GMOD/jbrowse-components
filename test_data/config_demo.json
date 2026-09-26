@@ -1622,7 +1622,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "wiggle_global_autoscale-LinearWiggleDisplay",
-          "scales": { "y": { "autoscale": "local" } }
+          "scales": { "y": { "domainQuantile": 1 } }
         }
       ]
     },

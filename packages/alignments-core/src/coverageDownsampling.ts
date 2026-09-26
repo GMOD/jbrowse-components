@@ -329,8 +329,9 @@ export function computeVisibleCoverageStats(
 
 /**
  * The depth domain the visible coverage autoscales to: at a `quantile` of 1
- * the extremes, below it that quantile of the bins' peaks over 0, so one
- * pile-up no longer flattens the band.
+ * the extremes, below it that quantile of the covered bins' peaks, uncovered
+ * bases counting for nothing, so one pile-up no longer flattens the band and
+ * a sparse window does not clip to zero.
  */
 export function computeVisibleCoverageDomain(
   entries: VisibleEntry<CoverageRegion>[],
@@ -346,7 +347,9 @@ export function computeVisibleCoverageDomain(
   const peaks: number[] = []
   for (const { visStart, visEnd, data } of entries) {
     visibleDepths(data, visStart, visEnd, (_, high) => {
-      peaks.push(high)
+      if (high > 0) {
+        peaks.push(high)
+      }
     })
   }
   return [0, quantileExtent(peaks, peaks.length, quantile)[1]]

@@ -100,7 +100,7 @@ Rows are in file order until **Clustering → Cluster rows by score...** in the
 track menu brings similar samples together.
 
 The same track is in `config_demo`, so
-[the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A420%2C%22defaultRendering%22%3A%22density%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22autoscale%22%3A%22local%22%7D%7D%2C%22showTree%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot)
+[the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A420%2C%22defaultRendering%22%3A%22density%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainQuantile%22%3A1%7D%7D%2C%22showTree%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot)
 with these settings already applied.
 
 ## Read the copy-number heatmap

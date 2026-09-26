@@ -118,7 +118,6 @@ test('wiggle score modifiers all produce a valid display snapshot', async () => 
           'color:red',
           'crosshatch:true',
           'resolution:fine',
-          'autoscale:localsd',
           'height:200',
         ],
       ],

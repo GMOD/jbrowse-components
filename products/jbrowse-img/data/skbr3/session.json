@@ -10,7 +10,7 @@
             "trackId": "ngmlr_cov",
             "height": 275,
             "resolution": 25,
-            "scales": { "y": { "autoscale": "localsd", "grid": true } },
+            "scales": { "y": { "domainQuantile": 0.99, "grid": true } },
             "mark": "point"
           }
         ]

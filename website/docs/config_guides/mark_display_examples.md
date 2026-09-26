@@ -1,9 +1,8 @@
 ---
 title: Mark display examples
 description:
-  One `marks` config per idea, each over a hosted file with the picture it
-  draws and a link to open it live: bars, points, ramps, thresholds, bins,
-  pileups, facets, labels, links and rows
+  One `marks` config per idea, each over a hosted file with the picture it draws
+  and a link to open it live
 guide_category: Track types
 ---
 
