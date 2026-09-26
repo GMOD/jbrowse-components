@@ -54,7 +54,7 @@ class TestHal extends GpuHalBase<TestBuffer> {
 
 const textured = {
   id: 'ramp',
-  textures: [{ filter: 'linear' }],
+  textures: [{ name: 'colorRamp', filter: 'linear' }],
 } as unknown as PipelineDescriptor
 
 const plain = { id: 'rect' } as PipelineDescriptor
@@ -121,10 +121,20 @@ test('a texture upload reaches the leaf with the pass binding', () => {
   ])
 })
 
-test('a pass with no texture binding is answered without touching the leaf', () => {
+test('an upload to a pass with no such sampler throws before the leaf', () => {
   const { hal, errors } = makeHal()
-  hal.uploadTexture('rect', new Uint8Array(1024), 256, 1)
-  hal.uploadTexture('nonexistent', new Uint8Array(1024), 256, 1)
+  const upload = (passId: string, sampler?: string) => () => {
+    hal.uploadTexture(passId, new Uint8Array(1024), 256, 1, sampler)
+  }
+  expect(upload('rect')).toThrow(
+    "pass 'rect' samples no texture; name the sampler",
+  )
+  expect(upload('nonexistent', 'colorRamp')).toThrow(
+    "pass 'nonexistent' has no sampler 'colorRamp'",
+  )
+  expect(upload('ramp', 'colorRmap')).toThrow(
+    "pass 'ramp' has no sampler 'colorRmap'; it samples 'colorRamp'",
+  )
 
   expect(hal.textures).toEqual([])
   expect(errors).toEqual([])

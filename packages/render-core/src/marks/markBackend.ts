@@ -118,8 +118,8 @@ export function drawPlannedPasses(
 }
 
 // What a textured pass binds while its mark names no ramp: a shader declares
-// its sampler unconditionally, and a textured pass with no texture never draws
-// on the WebGPU HAL. A mark declaring no `texture` at all is the same case —
+// its sampler unconditionally, and a textured pass missing a texture draws
+// nothing on either GPU HAL. A mark declaring no `texture` at all is the same case —
 // `pointMark` carries a sampler for the shapes that ramp, and a point of a
 // constant colour draws it without one.
 const INERT_RAMP = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)

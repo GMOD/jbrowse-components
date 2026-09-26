@@ -246,7 +246,7 @@ export interface StagedUniforms {
  * Puts a texture behind one of a pass's samplers once per identity: a repeat
  * of the bound one costs nothing, and undefined leaves what is bound or binds
  * an inert table where nothing is, since a textured pass missing a texture
- * never draws on the WebGPU HAL.
+ * draws nothing on either GPU HAL.
  */
 export interface TextureBinder {
   bind(passId: string, sampler: string, texture: MarkTexture | undefined): void

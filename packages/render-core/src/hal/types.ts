@@ -176,7 +176,8 @@ export interface GpuHal {
   deleteBuffer(regionKey: number, passId: string): void
   deleteRegion(regionKey: number): void
 
-  // `sampler` names which of the pass's textures, its first where unset.
+  // `sampler` names which of the pass's textures; a pass sampling one may
+  // leave it unset. Throws where it names none of them.
   uploadTexture(
     passId: string,
     data: TextureSource,

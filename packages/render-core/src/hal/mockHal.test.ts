@@ -256,3 +256,50 @@ test('a disposed MockHal records no resize', () => {
 
   expect(hal.callsOf('resize')).toHaveLength(0)
 })
+
+describe('MockHal texture uploads', () => {
+  const sampler = (name: string, glTextureUnit: number) => ({
+    name,
+    glTextureUnit,
+    glUniformName: `u_${name}`,
+    filter: 'nearest' as const,
+  })
+  const twoSamplers = {
+    id: 'point',
+    textures: [sampler('colorRamp', 0), sampler('rowTable', 1)],
+  } as PipelineDescriptor
+  const texels = new Uint8Array(4)
+
+  it('throws on a sampler the pass does not declare', () => {
+    const hal = new MockHal([twoSamplers])
+
+    expect(() => {
+      hal.uploadTexture('point', texels, 1, 1, 'rowTabel')
+    }).toThrow(
+      "pass 'point' has no sampler 'rowTabel'; it samples 'colorRamp', 'rowTable'",
+    )
+    expect(hal.callsOf('uploadTexture')).toEqual([])
+  })
+
+  it('throws on a nameless upload to a pass with two samplers', () => {
+    const hal = new MockHal([twoSamplers])
+
+    expect(() => {
+      hal.uploadTexture('point', texels, 1, 1)
+    }).toThrow(
+      "pass 'point' samples 'colorRamp', 'rowTable'; name the sampler this texture is for",
+    )
+    expect(() => {
+      hal.getTexture('point')
+    }).toThrow("pass 'point' samples 'colorRamp', 'rowTable'")
+  })
+
+  it('keeps each named upload under its own sampler', () => {
+    const hal = new MockHal([twoSamplers])
+    const table = Uint8Array.of(1, 2, 3, 4)
+    hal.uploadTexture('point', table, 1, 1, 'rowTable')
+
+    expect(hal.getTexture('point', 'rowTable')).toEqual(table)
+    expect(hal.getTexture('point', 'colorRamp')).toBeUndefined()
+  })
+})

@@ -123,23 +123,35 @@ export abstract class GpuHalBase<Buf extends { count: number }> {
     height: number,
     sampler?: string,
   ) {
-    // Read the binding off the descriptor, so a pass with no texture is
-    // answered without touching the backend's pipeline state at all.
-    const textures = this.descriptors.get(passId)?.textures
+    const binding = this.textureBinding(passId, sampler)
+    const { maxTextureDimensionPx } = this.limits()
+    if (width > maxTextureDimensionPx || height > maxTextureDimensionPx) {
+      this.oom.report(
+        `This region is too large to render on this GPU — zoom in. (texture ${width}×${height} exceeds max texture size ${maxTextureDimensionPx})`,
+      )
+    } else {
+      this.createTexture(passId, binding, data, width, height)
+    }
+  }
+
+  protected textureBinding(passId: string, sampler?: string) {
+    const textures = this.descriptors.get(passId)?.textures ?? []
     const binding =
       sampler === undefined
-        ? textures?.[0]
-        : textures?.find(t => t.name === sampler)
-    if (binding) {
-      const { maxTextureDimensionPx } = this.limits()
-      if (width > maxTextureDimensionPx || height > maxTextureDimensionPx) {
-        this.oom.report(
-          `This region is too large to render on this GPU — zoom in. (texture ${width}×${height} exceeds max texture size ${maxTextureDimensionPx})`,
-        )
-      } else {
-        this.createTexture(passId, binding, data, width, height)
-      }
+        ? textures.length === 1
+          ? textures[0]
+          : undefined
+        : textures.find(t => t.name === sampler)
+    if (!binding) {
+      const names = textures.map(t => `'${t.name}'`).join(', ')
+      const has = names ? `samples ${names}` : 'samples no texture'
+      throw new Error(
+        sampler === undefined
+          ? `uploadTexture: pass '${passId}' ${has}; name the sampler this texture is for`
+          : `uploadTexture: pass '${passId}' has no sampler '${sampler}'; it ${has}`,
+      )
     }
+    return binding
   }
 
   dispose() {

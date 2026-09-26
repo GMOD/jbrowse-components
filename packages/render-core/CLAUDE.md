@@ -161,13 +161,13 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   `defineMark`**, keyed by the sampler that reads it, rather than uploading one
   itself: the backend binds each sampler's texture once per pass, re-uploads
   only when its identity moves, and binds an inert table for a sampler nothing
-  names — a textured pass missing a texture never draws on the WebGPU HAL. Every
-  ramp in tree reaches the GPU that way; nothing calls `uploadColorRampLut` but
-  the mark backend's binder. The same lens may name a canvas (`MarkImage`),
-  copied on the GPU when its identity moves — the circular view's ring samples a
-  display's strip that way — and a lens answering nothing for a region leaves
-  the pass's texture where it is. A shape's own `textures` answers from its
-  params (`span`'s row table), under the display's lens.
+  names — a textured pass missing any texture draws nothing on either GPU HAL.
+  Every ramp in tree reaches the GPU that way; nothing calls
+  `uploadColorRampLut` but the mark backend's binder. The same lens may name a
+  canvas (`MarkImage`), copied on the GPU when its identity moves — the circular
+  view's ring samples a display's strip that way — and a lens answering nothing
+  for a region leaves the pass's texture where it is. A shape's own `textures`
+  answers from its params (`span`'s row table), under the display's lens.
 - **A display that stacks bands on one canvas declares them as `band` on
   `defineMark`**, never as a renderer pair around the mark list: the GPU
   scissors to the strip and hands the block column back, Canvas2D clips, a

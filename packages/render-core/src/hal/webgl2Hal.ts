@@ -502,12 +502,19 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     if (!pass) {
       return
     }
+    const textures = this.texturesOf(passId, pass.descriptor)
+    if (!textures) {
+      return
+    }
 
     this.applyBlendState(pass.descriptor)
     gl.useProgram(pass.linked.program)
     gl.bindVertexArray(pass.linked.vao)
     this.bindAttributes(pass, regionBuf.vbo)
-    this.bindTexture(passId, pass.descriptor)
+    for (const [unit, texture] of textures) {
+      gl.activeTexture(gl.TEXTURE0 + unit)
+      gl.bindTexture(gl.TEXTURE_2D, texture)
+    }
     const topo = pass.descriptor.topology ?? 'triangle-list'
     const glMode =
       topo === 'triangle-strip'
@@ -612,16 +619,17 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
-  private bindTexture(passId: string, desc: PipelineDescriptor) {
-    const gl = this.gl
+  private texturesOf(passId: string, desc: PipelineDescriptor) {
     const byName = this.passTextures.get(passId)
+    const bound: [number, WebGLTexture][] = []
     for (const tb of desc.textures ?? []) {
       const texture = byName?.get(tb.name)
-      if (texture) {
-        gl.activeTexture(gl.TEXTURE0 + tb.glTextureUnit)
-        gl.bindTexture(gl.TEXTURE_2D, texture)
+      if (!texture) {
+        return undefined
       }
+      bound.push([tb.glTextureUnit, texture])
     }
+    return bound
   }
 
   private bindAttributes(pass: PassState, vbo: WebGLBuffer) {

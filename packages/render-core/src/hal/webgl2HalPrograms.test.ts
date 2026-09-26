@@ -14,7 +14,9 @@ function fakeContext() {
     programs: 0,
     deletedPrograms: 0,
     deletedTextures: 0,
+    textures: [] as object[],
     drawn: [] as unknown[],
+    units: [] as Map<number, unknown>[],
   }
   let unit = 0
   let lastSource = ''
@@ -51,7 +53,11 @@ function fakeContext() {
     getUniformLocation: () => ({}),
     createVertexArray: () => ({}),
     createBuffer: () => ({}),
-    createTexture: () => ({}),
+    createTexture: () => {
+      const texture = {}
+      log.textures.push(texture)
+      return texture
+    },
     deleteTexture: () => {
       log.deletedTextures++
     },
@@ -63,6 +69,7 @@ function fakeContext() {
     },
     drawArraysInstanced: () => {
       log.drawn.push(units.get(0))
+      log.units.push(new Map(units))
     },
   }
   const noop = () => {}
@@ -85,6 +92,13 @@ const RAMP: TextureBinding = {
   glTextureUnit: 0,
   glUniformName: 'u_colorRamp',
   filter: 'linear',
+}
+
+const ROW_TABLE: TextureBinding = {
+  name: 'rowTable',
+  glTextureUnit: 1,
+  glUniformName: 'u_rowTable',
+  filter: 'nearest',
 }
 
 const pass = (id: string, over: Partial<PipelineDescriptor> = {}) => ({
@@ -138,6 +152,31 @@ test('each pass keeps its own texture over a shared program', async () => {
   expect(second).not.toBe(first)
   hal.dispose()
   expect(log.deletedTextures).toBe(2)
+})
+
+test('a pass missing one of its textures draws nothing, even with the unit bound by another pass', async () => {
+  const { canvas, log } = fakeContext()
+  const both = { textures: [RAMP, ROW_TABLE] }
+  const hal = await WebGL2Hal.create(canvas, [
+    pass('other', both),
+    pass('point', both),
+  ])
+  const texel = new Uint8Array(4)
+  hal.uploadTexture('other', texel, 1, 1, 'colorRamp')
+  hal.uploadTexture('other', texel, 1, 1, 'rowTable')
+  const othersTable = log.textures.at(-1)
+  drawEach(hal, ['other'])
+  expect(log.units.at(-1)?.get(1)).toBe(othersTable)
+
+  hal.uploadTexture('point', texel, 1, 1, 'colorRamp')
+  drawEach(hal, ['point'])
+  expect(log.units).toHaveLength(1)
+
+  hal.uploadTexture('point', texel, 1, 1, 'rowTable')
+  const pointsTable = log.textures.at(-1)
+  drawEach(hal, ['point'])
+  expect(log.units).toHaveLength(2)
+  expect(log.units.at(-1)?.get(1)).toBe(pointsTable)
 })
 
 test('a program that fails to link is compiled once and reported for each pass', async () => {

@@ -378,12 +378,10 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     return this.regions.get(regionKey, passId)
   }
 
-  /** What the pass's `sampler` samples, its first where unset. */
+  /** What the pass's `sampler` samples, named as `uploadTexture` names it. */
   getTexture(passId: string, sampler?: string) {
-    const name = sampler ?? this.descriptors.get(passId)?.textures?.[0]?.name
-    return name === undefined
-      ? undefined
-      : this.textures.get(textureKey(passId, name))
+    const { name } = this.textureBinding(passId, sampler)
+    return this.textures.get(textureKey(passId, name))
   }
 
   callsOf(method: string) {
