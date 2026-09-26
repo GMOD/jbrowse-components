@@ -4,8 +4,9 @@ sidebar_label: Synteny (circular, human and mouse)
 description:
   Put two genomes on one circular view, draw UCSC's liftOver chain between them
   as ribbons straight from the copy jbrowse.org indexes, colour the ribbons by
-  chromosome and by strand, add a gene density ring per genome, and check a
-  ribbon and a ring value against the files they came from
+  chromosome and by strand, read the mouse karyotype in human chromosomes, add a
+  gene density ring per genome, and check a ribbon and a ring value against the
+  files they came from
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
@@ -179,6 +180,20 @@ round again, and the twists left on the figure are the inversions.
 progress bar and a cancel; re-running it on a circle that is already ordered
 moves nothing. `"autoDiagonalize": false` on the view keeps each genome in its
 own contig order.
+
+## The mouse genome in human chromosomes
+
+Each stretch of a mouse chromosome's ideogram is painted the colour of the human
+chromosome aligned to it, and grey where nothing is. A mouse chromosome carved
+from one human chromosome is one colour, and one assembled from several is
+striped with them, so the mouse arc reads as the mouse karyotype in human
+pieces.
+
+Hovering a chromosome's band dims every ribbon that misses it, and the tooltip
+lists each chromosome aligned to it with the share of it that chromosome covers,
+so on a mouse chromosome it lists the colours its band is painted in.
+
+<Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon but its own, and the tooltip lists the human chromosomes it is assembled from, largest share first." />
 
 ## Colouring the ribbons by strand
 

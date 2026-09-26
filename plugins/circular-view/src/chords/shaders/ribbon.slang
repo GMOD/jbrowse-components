@@ -55,7 +55,7 @@ struct VsOut {
   // CSS px across the band from the first curve, and the band's width there
   float  across     : TEXCOORD1;
   float  bandPx     : TEXCOORD2;
-  // the thin fade, one value per instance
+  // the thin fade and the focus, one value per instance
   float  fade       : TEXCOORD3;
 };
 
@@ -116,7 +116,8 @@ VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
   float4 feet = footAngles(inst);
   float fade = ribbonThinFade(abs(feet.y - feet.x) * u.radiusPx,
                               abs(feet.w - feet.z) * u.radiusPx,
-                              MIN_RIBBON_END_PX, u.thinFadeFloor);
+                              MIN_RIBBON_END_PX, u.thinFadeFloor) *
+               focusAlpha(float(inst.xSlice), float(inst.ySlice), u.focusSlice);
   float4 g = ribbonAngles(inst, feet);
   float a1 = g.x;
   float a2 = g.y;

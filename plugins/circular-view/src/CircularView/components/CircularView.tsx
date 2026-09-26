@@ -103,16 +103,42 @@ const Slices = observer(function Slices({
   )
 })
 
-const ChordTooltip = observer(function ChordTooltip({
+const BAND_TOOLTIP_ROWS = 6
+
+function bandLines({
+  name,
+  shares,
+}: {
+  name: string
+  shares: { partner: string; fraction: number }[]
+}) {
+  const shown = shares
+    .map(s => ({ ...s, percent: Math.round(s.fraction * 100) }))
+    .filter(s => s.percent > 0)
+    .slice(0, BAND_TOOLTIP_ROWS)
+  const rest = shares.length - shown.length
+  return [
+    name,
+    ...shown.map(s => `${s.percent}% ${s.partner}`),
+    ...(rest > 0 ? [`${rest} more`] : []),
+  ]
+}
+
+const PointerTooltip = observer(function PointerTooltip({
   model,
 }: {
   model: CircularViewModel
 }) {
-  const hover = model.chordHover
-  return hover ? (
+  const { chordHover, bandHover, bandComposition } = model
+  return chordHover ? (
     <ComparativeTooltip
-      lines={[hover.display.shapeLabel(hover.feature)]}
-      clientPoint={{ x: hover.clientX, y: hover.clientY }}
+      lines={[chordHover.display.shapeLabel(chordHover.feature)]}
+      clientPoint={{ x: chordHover.clientX, y: chordHover.clientY }}
+    />
+  ) : bandHover && bandComposition ? (
+    <ComparativeTooltip
+      lines={bandLines(bandComposition)}
+      clientPoint={{ x: bandHover.clientX, y: bandHover.clientY }}
     />
   ) : null
 })
@@ -192,7 +218,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
 
   useEffect(() => {
     return () => {
-      model.setChordHover(undefined)
+      model.clearHover()
     }
   }, [model])
 
@@ -242,9 +268,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
         const [ax, ay] = anchor
         // the figure moves under a pointer that does not, so what it hovered
         // is no longer under it
-        if (model.chordHover) {
-          model.setChordHover(undefined)
-        }
+        model.clearHover()
         if (rotateDelta) {
           model.rotate(rotateDelta * 0.003)
         }
@@ -293,14 +317,23 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     const { clientX, clientY } = event
     const onRing = ringPointer.move(clientX, clientY, dx, dy, rect, type)
     if (onRing !== undefined) {
-      if (model.chordHover) {
-        model.setChordHover(undefined)
-      }
+      model.clearHover()
       return onRing
+    }
+    const band = model.bandAt(dx, dy)
+    if (band !== undefined) {
+      model.clearHover()
+      if (type === 'mousemove') {
+        model.setBandHover({ index: band, clientX, clientY })
+      }
+      return undefined
     }
     const hit = model.chordAt(dx, dy)
     if (type === 'mousemove') {
-      model.setChordHover(hit ? { ...hit, clientX, clientY } : undefined)
+      model.clearHover()
+      if (hit) {
+        model.setChordHover({ ...hit, clientX, clientY })
+      }
     } else if (type === 'click' && hit) {
       hit.display.clickFeature(hit.feature)
     }
@@ -309,9 +342,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
 
   const leaveFigure = () => {
     ringPointer.leave()
-    if (model.chordHover) {
-      model.setChordHover(undefined)
-    }
+    model.clearHover()
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -424,7 +455,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       </div>
       <RingStrips host={model.ringHost} />
       <Controls model={model} />
-      <ChordTooltip model={model} />
+      <PointerTooltip model={model} />
       {model.showLegend ? (
         <FloatingLegend
           sections={model.legendSpec.sections}

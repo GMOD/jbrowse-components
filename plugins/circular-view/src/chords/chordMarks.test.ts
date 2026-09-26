@@ -65,6 +65,7 @@ const params: ChordStageParams = {
   alpha: 0.25,
   strokeWidthPx: 1,
   thinFadeFloor: 1,
+  focusSlice: -1,
 }
 
 const frame: ChordLayerFrame = {
@@ -77,6 +78,7 @@ const frame: ChordLayerFrame = {
   offsetRadians: 0.3,
   radiusPx: 200,
   thinFadeFloor: 1,
+  focusSlice: -1,
 }
 
 function recordingContext() {

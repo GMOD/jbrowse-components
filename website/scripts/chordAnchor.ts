@@ -110,3 +110,50 @@ export async function chordPoint(page: Page, anchor: AnnotationAnchor) {
     ? { x: point.x + (anchor.dx ?? 0), y: point.y + (anchor.dy ?? 0) }
     : undefined
 }
+
+// Where a circular view drew one chromosome's ideogram band: the view's own
+// `bandCenter`, which its `bandAt` must agree is that chromosome.
+export async function ideogramPoint(page: Page, anchor: AnnotationAnchor) {
+  const point = await page.evaluate((name: string) => {
+    interface BandView {
+      id: string
+      type: string
+      figureOriginXY: [number, number]
+      centerXY: [number, number]
+      staticSlices: {
+        region: { elided: boolean; refName?: string; assemblyName?: string }
+      }[]
+      bandCenter: (index: number) => [number, number] | undefined
+      bandAt: (dx: number, dy: number) => number | undefined
+    }
+    const [first, second] = name.split(' ')
+    const [assemblyName, refName] = second
+      ? [first, second]
+      : [undefined, first]
+    const views = (
+      window as unknown as { JBrowseSession: { views: BandView[] } }
+    ).JBrowseSession.views.filter(v => v.type === 'CircularView')
+    for (const view of views) {
+      const index = view.staticSlices.findIndex(
+        ({ region }) =>
+          !region.elided &&
+          region.refName === refName &&
+          (assemblyName === undefined || region.assemblyName === assemblyName),
+      )
+      const centre = view.bandCenter(index)
+      const box = document
+        .querySelector(`[data-testid="${CSS.escape(view.id)}"]`)
+        ?.getBoundingClientRect()
+      if (centre && box && view.bandAt(...centre) === index) {
+        return {
+          x: box.left + view.figureOriginXY[0] + view.centerXY[0] + centre[0],
+          y: box.top + view.figureOriginXY[1] + view.centerXY[1] + centre[1],
+        }
+      }
+    }
+    return undefined
+  }, anchor.ideogram ?? '')
+  return point
+    ? { x: point.x + (anchor.dx ?? 0), y: point.y + (anchor.dy ?? 0) }
+    : undefined
+}

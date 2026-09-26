@@ -9,6 +9,8 @@ import {
   sliceKey,
   widenedSpan,
 } from './chordStage.ts'
+import { DIMMED_OPACITY } from './shaders/chordStage.generated.ts'
+import { focusAlpha } from './shaders/chordStage.js.generated.ts'
 
 import type { SliceRegion } from '../CircularView/slices.ts'
 import type { ChordLanes, ChordStage, RibbonLanes } from './chordStage.ts'
@@ -281,4 +283,11 @@ describe('the thin fade', () => {
   test('fades nothing at a floor of one', () => {
     expect(ribbonFadeAt(lanes, 0, stage, 1)).toBe(1)
   })
+})
+
+test('a focus dims every mark with neither end on its slice', () => {
+  expect(focusAlpha(3, 5, -1)).toBe(1)
+  expect(focusAlpha(3, 5, 3)).toBe(1)
+  expect(focusAlpha(3, 5, 5)).toBe(1)
+  expect(focusAlpha(3, 5, 4)).toBeCloseTo(DIMMED_OPACITY)
 })

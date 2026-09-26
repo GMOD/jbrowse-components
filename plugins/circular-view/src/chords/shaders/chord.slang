@@ -57,6 +57,7 @@ VsOut vs_main(ChordInstance inst, uint vid : SV_VertexID) {
   o.position = screenToClip(float2(u.centerX, u.centerY) + p,
                             float2(u.canvasWidth, u.canvasHeight));
   o.color = unpackRGBA(inst.color);
+  o.color.a *= focusAlpha(float(inst.xSlice), float(inst.x2Slice), u.focusSlice);
   o.across = side * reach;
   return o;
 }

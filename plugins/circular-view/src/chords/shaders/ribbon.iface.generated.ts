@@ -32,6 +32,7 @@ export const UNIFORM_OFFSET_F32 = {
   strokeWidthPx: 10,
   devicePixelRatio: 11,
   thinFadeFloor: 12,
+  focusSlice: 13,
 } as const
 
 
@@ -49,6 +50,7 @@ export interface Uniforms {
   strokeWidthPx: number
   devicePixelRatio: number
   thinFadeFloor: number
+  focusSlice: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -66,6 +68,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[10] = uniforms.strokeWidthPx
   f32[11] = uniforms.devicePixelRatio
   f32[12] = uniforms.thinFadeFloor
+  f32[13] = uniforms.focusSlice
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

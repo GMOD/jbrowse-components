@@ -13,6 +13,7 @@ import { chordEndsAt, ribbonAnglesAt, ribbonFadeAt } from './chordStage.ts'
 import { canvasPathSink } from './pathSink.ts'
 import { traceRibbon } from './ribbonGeometry.ts'
 import * as chordShader from './shaders/chord.generated.ts'
+import { focusAlpha } from './shaders/chordStage.js.generated.ts'
 import * as ribbonShader from './shaders/ribbon.generated.ts'
 
 import type { ChordLanes, ChordStage, RibbonLanes } from './chordStage.ts'
@@ -33,6 +34,8 @@ export interface ChordStageParams extends ChordStage {
   strokeWidthPx: number
   /** the least alpha the thin fade leaves a ribbon; 1 is no fade */
   thinFadeFloor: number
+  /** the slice the pointer is on, as a foot's gap count names it; -1 for none */
+  focusSlice: number
 }
 
 const CHORD_STROKE_PX = 1
@@ -58,6 +61,7 @@ function writeStage(
     strokeWidthPx: p.strokeWidthPx,
     devicePixelRatio: scale,
     thinFadeFloor: p.thinFadeFloor,
+    focusSlice: p.focusSlice,
   })
 }
 
@@ -120,7 +124,8 @@ export const ribbonMark: MarkShape<RibbonLanes, ChordStageParams> = {
         )
         ctx.fillStyle = fill(
           lanes.color[i]!,
-          ribbonFadeAt(lanes, i, params, params.thinFadeFloor),
+          ribbonFadeAt(lanes, i, params, params.thinFadeFloor) *
+            focusAlpha(lanes.xSlice[i]!, lanes.ySlice[i]!, params.focusSlice),
         )
         ctx.fill()
       }
@@ -173,7 +178,10 @@ export const chordMark: MarkShape<ChordLanes, ChordStageParams> = {
         if (ends) {
           ctx.beginPath()
           traceChord(sink, ends, params.radiusPx, params.bezierRadiusPx)
-          ctx.strokeStyle = stroke(lanes.color[i]!)
+          ctx.strokeStyle = stroke(
+            lanes.color[i]!,
+            focusAlpha(lanes.xSlice[i]!, lanes.x2Slice[i]!, params.focusSlice),
+          )
           ctx.stroke()
         }
       }
@@ -224,6 +232,7 @@ export interface ChordLayerFrame extends MarkFrame {
   offsetRadians: number
   radiusPx: number
   thinFadeFloor: number
+  focusSlice: number
 }
 
 function params(frame: ChordLayerFrame, cell: ChordCell): ChordStageParams {
@@ -238,6 +247,7 @@ function params(frame: ChordLayerFrame, cell: ChordCell): ChordStageParams {
     alpha: cell.display.shapeAlpha,
     strokeWidthPx: CHORD_STROKE_PX,
     thinFadeFloor: frame.thinFadeFloor,
+    focusSlice: frame.focusSlice,
   }
 }
 

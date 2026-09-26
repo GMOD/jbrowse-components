@@ -1,3 +1,5 @@
+import { DIMMED_OPACITY } from './shaders/chordStage.generated.ts'
+
 import type { Slice } from '../CircularView/slices.ts'
 import type { ChordCell } from './chordMarks.ts'
 import type { ChordShape, ChordLayerDisplay, RibbonShape } from './shapes.ts'
@@ -26,8 +28,6 @@ export interface ChordDisplayFrameModel {
   openErrorDialog: () => void
   reload: () => void
 }
-
-export const DIMMED_OPACITY = 0.15
 
 /** `DIMMED_OPACITY` as a packed colour's alpha byte. */
 export const DIMMED_ALPHA = Math.round(DIMMED_OPACITY * 255)

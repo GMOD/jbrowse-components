@@ -47,7 +47,8 @@ import type { ExportSvgOptions } from '../../CircularView/model.ts'
 import type { Slice, SliceNonElidedRegion } from '../../CircularView/slices.ts'
 import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { RibbonLanes } from '../../chords/chordStage.ts'
-import type { PaintRun, PaintSpan } from '../../chords/ideogramPaint.ts'
+import type { PaintRun } from '../../chords/ideogramPaint.ts'
+import type { PartnerSpan } from '../../chords/partnerShares.ts'
 import type { RibbonShape } from '../../chords/shapes.ts'
 import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -390,7 +391,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           return paint
         }
         const firstAssembly = getSession(self).assemblyManager.get(first)
-        const spans = new Map<Slice, PaintSpan[]>()
+        const spans = new Map<Slice, PaintRun[]>()
         for (const feature of this.ribbonLanes.features) {
           const mate = getMate(feature)
           if (mate) {
@@ -577,6 +578,53 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           }
         }
         return out
+      },
+      /**
+       * #method
+       * each drawn alignment's stretch on slice `index`, named by the
+       * chromosome at its other end, with that chromosome's genome where the
+       * track joins two
+       */
+      partnerSpans(index: number): PartnerSpan[] {
+        const { assemblyManager } = getSession(self)
+        const twoGenomes = new Set(self.trackAssemblyNames).size > 1
+        const name = (assemblyName: string | undefined, refName: string) => {
+          const assembly = self.assemblyOf(assemblyName)
+          const displayName =
+            assembly === undefined
+              ? undefined
+              : assemblyManager.get(assembly)?.displayName
+          return twoGenomes && displayName
+            ? `${displayName} ${refName}`
+            : refName
+        }
+        const spans: PartnerSpan[] = []
+        for (const feature of this.ribbonLanes.features) {
+          const mate = getMate(feature)
+          if (mate) {
+            const assemblyName = feature.get('assemblyName') as
+              | string
+              | undefined
+            const refName: string = feature.get('refName')
+            if (self.axisSlice(assemblyName, refName)?.index === index) {
+              spans.push({
+                partner: name(mate.assemblyName, mate.refName),
+                start: feature.get('start'),
+                end: feature.get('end'),
+              })
+            }
+            if (
+              self.axisSlice(mate.assemblyName, mate.refName)?.index === index
+            ) {
+              spans.push({
+                partner: name(assemblyName, refName),
+                start: mate.start,
+                end: mate.end,
+              })
+            }
+          }
+        }
+        return spans
       },
     }))
     .views(self => {

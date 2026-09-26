@@ -2,3 +2,5 @@
 // Do not edit. Run `pnpm gen:shaders` to regenerate.
 
 export const MIN_RIBBON_END_PX = 2
+
+export const DIMMED_OPACITY = 0.15

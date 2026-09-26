@@ -46,3 +46,10 @@ export interface ChordHover extends ChordHit {
   clientX: number
   clientY: number
 }
+
+/** The ideogram band under the pointer, by its slice's place, and where the pointer was. */
+export interface BandHover {
+  index: number
+  clientX: number
+  clientY: number
+}

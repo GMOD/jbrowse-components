@@ -185,6 +185,21 @@ export const circularSpecs: ScreenshotSpec[] = [
     ...circularSyntenyReady,
   },
 
+  // Hovering mouse chr11's band dims every ribbon that misses it, leaving the
+  // human chromosomes it is painted with, and the tooltip names each one's
+  // share of it.
+  {
+    mode: 'url',
+    name: 'circular_synteny/band_hover',
+    url: circularSyntenyView(CHROMOSOMES, [LIFTOVER]),
+    ...circularSyntenyReady,
+    expectTooltip: true,
+    actions: [
+      { type: 'hover', anchor: { ideogram: 'mm39 chr11' } },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
   // The same circle coloured by strand: a mouse chromosome antiparallel to its
   // human partner is one colour along its whole bundle, so a ribbon of the
   // other colour inside it is a local inversion.

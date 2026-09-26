@@ -4,8 +4,8 @@
 // its middle — and the count of slice gaps before it. Its angle is affine in
 // the two, so a zoom writes `radiansPerBp` and `gapRadians`, a rotation writes
 // `offsetRadians`, and neither uploads a buffer.
-//! js-export: chordTurn, ribbonReturnTurn, ribbonEndPad, chordIsSpeck, ribbonThinFade
-//! export-consts: MIN_RIBBON_END_PX
+//! js-export: chordTurn, ribbonReturnTurn, ribbonEndPad, chordIsSpeck, ribbonThinFade, focusAlpha
+//! export-consts: MIN_RIBBON_END_PX, DIMMED_OPACITY
 //! js-skip: footRadians — the stage's two-term scale, which chordStage.ts applies with the same two uniforms
 module chordStage;
 
@@ -15,6 +15,10 @@ static const float PI = 3.141592653589793;
 // The narrowest a ribbon end draws, in CSS px of arc, so a 5 kb alignment on a
 // chromosome-scale circle keeps a sliver to see and to point at.
 public static const float MIN_RIBBON_END_PX = 2.0;
+
+// The opacity a mark keeps while the view points at something it does not
+// touch.
+public static const float DIMMED_OPACITY = 0.15;
 
 public struct ChordStageUniforms {
   // the circle's centre in the canvas's CSS px frame
@@ -38,6 +42,8 @@ public struct ChordStageUniforms {
   public float devicePixelRatio;
   // the least alpha the thin fade leaves a ribbon; 1 is no fade
   public float thinFadeFloor;
+  // the slice the pointer is on, as a foot's gap count names it; -1 for none
+  public float focusSlice;
 };
 
 public float footRadians(float x, float gaps, float radiansPerBp, float gapRadians) {
@@ -105,4 +111,12 @@ public float ribbonThinFade(float anchorPx, float matePx, float minEndPx, float 
 // whole-genome callset, and an antialiased speck on the rim under the ideogram.
 public bool chordIsSpeck(float a, float b, float radius) {
   return abs(chordTurn(a, b)) * radius < 1.0;
+}
+
+// A mark with an end on the focused slice keeps its alpha, and every other
+// dims, so a chromosome under the pointer shows only its own links.
+public float focusAlpha(float aSlice, float bSlice, float focusSlice) {
+  return focusSlice < 0.0 || aSlice == focusSlice || bSlice == focusSlice
+             ? 1.0
+             : DIMMED_OPACITY;
 }

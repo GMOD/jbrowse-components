@@ -139,3 +139,44 @@ test('the identity fade reaches the ribbon’s alpha', async () => {
   circle.setOpacityByIdentity(true)
   expect(display.ribbonLanes.color[0]! >>> 24).toBe(Math.round(0.5 * 255))
 }, 40000)
+
+describe('a hovered band', () => {
+  test('is found under the pointer, off it the chords are', async () => {
+    const { circle } = await launch({})
+    circle.rotate(1)
+    circle.staticSlices.forEach((_, i) => {
+      expect(circle.bandAt(...circle.bandCenter(i)!)).toBe(i)
+    })
+    expect(circle.bandAt(0, 0)).toBeUndefined()
+  }, 40000)
+
+  test('focuses the chord stage on its slice', async () => {
+    const { circle } = await launch({})
+    expect(circle.chordPass.frame.focusSlice).toBe(-1)
+    const index = circle.staticSlices.findIndex(
+      s => !s.region.elided && s.region.assemblyName === 'B',
+    )
+    circle.setBandHover({ index, clientX: 0, clientY: 0 })
+    expect(circle.chordPass.frame.focusSlice).toBe(
+      circle.chordAxis.slices[index]!.gaps,
+    )
+    circle.clearHover()
+    expect(circle.chordPass.frame.focusSlice).toBe(-1)
+  }, 40000)
+
+  // three 5 kb alignments a kb apart cover 7 kb of the 16 kb contig
+  test('names the share of it each partner covers', async () => {
+    const { circle } = await launch({})
+    const index = circle.staticSlices.findIndex(
+      s =>
+        !s.region.elided &&
+        s.region.assemblyName === 'B' &&
+        s.region.refName === 'ctgB',
+    )
+    circle.setBandHover({ index, clientX: 0, clientY: 0 })
+    expect(circle.bandComposition).toEqual({
+      name: 'B ctgB',
+      shares: [{ partner: 'A ctgA', fraction: 7000 / 16000 }],
+    })
+  }, 40000)
+})

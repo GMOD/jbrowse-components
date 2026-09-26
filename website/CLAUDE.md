@@ -218,7 +218,9 @@ the tour was filmed in.
   resolves to nothing rather than clicking its neighbour. Waiting for "chords
   drawn" reads the renderer group's `data-chord-count`.
   `node scripts/probe-chords.ts <spec> --click=<label>` lists what was drawn and
-  says what the pick answers along the named one.
+  says what the pick answers along the named one. A chromosome's ideogram band
+  is `anchor: { ideogram: 'mm39 chr11' }`, placed by the view's `bandCenter` and
+  checked by its `bandAt`.
 - **`waitForText … hidden` means "nothing a reader can see says it".**
   Puppeteer's own visibility test is "has a box and is not styled away", and an
   element clipped by an ancestor's `overflow: hidden` keeps both — so a wait can

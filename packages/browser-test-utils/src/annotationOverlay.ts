@@ -42,6 +42,11 @@ export interface AnnotationAnchor {
   // than measuring it: a chord is a Bezier, so its bounding-box centre is not on
   // it, and its midpoint is where every other chord bundles.
   chord?: string
+  // A circular view chromosome's ideogram band, by refName ('chr11'), or with
+  // its assembly when two genomes share names ('mm39 chr11'). Resolved by the
+  // caller (`website/scripts/chordAnchor.ts`) at the band's middle, checked
+  // against the view's own `bandAt`.
+  ideogram?: string
   // GFA segment id in a graph track of the `view`-th view (`track` picks one
   // when it holds several), or in that view when it is a GraphGenomeView. The
   // resolved rect is the node's drawn polyline bounds in viewport px.

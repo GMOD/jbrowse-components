@@ -1,11 +1,4 @@
-/** A stretch of a chromosome and the colour of what aligns to it. */
-export interface PaintSpan {
-  start: number
-  end: number
-  color: string
-}
-
-/** One stretch of the painted ideogram, in the region's own coordinates. */
+/** A stretch of a chromosome and the colour it is painted, in its own coordinates. */
 export interface PaintRun {
   start: number
   end: number
@@ -20,7 +13,7 @@ export interface PaintRun {
  * spans went in.
  */
 export function paintRuns(
-  spans: readonly PaintSpan[],
+  spans: readonly PaintRun[],
   region: { start: number; end: number },
   bpPerBin: number,
 ): PaintRun[] {

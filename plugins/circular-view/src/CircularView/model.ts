@@ -12,6 +12,7 @@ import {
   getDialogHost,
   getSession,
   isSessionModelWithWidgets,
+  polarToCartesian,
   resolveNamedRegions,
   sum,
 } from '@jbrowse/core/util'
@@ -71,15 +72,19 @@ import { autorun } from 'mobx'
 
 import { ChordPass } from '../chords/chordPass.ts'
 import { buildChordAxis } from '../chords/chordStage.ts'
+import { partnerShares } from '../chords/partnerShares.ts'
 import { RingHost } from '../rings/ringHost.ts'
 import { circularLegendSpec } from './circularLegend.ts'
 import { elideRegions, elisionMask, fitLayout } from './fitLayout.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
+import { ideogramGapPx, ideogramThicknessPx } from './rulerLabels.ts'
 import { calculateStaticSlices, gapUnitsAfter } from './slices.ts'
 
 import type { ChordAxis } from '../chords/chordStage.ts'
 import type { PaintRun } from '../chords/ideogramPaint.ts'
+import type { PartnerSpan } from '../chords/partnerShares.ts'
 import type {
+  BandHover,
   ChordHit,
   ChordHover,
   ChordLayerDisplay,
@@ -190,6 +195,7 @@ export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   cappedMeanSpanPx: number
   paintedAssemblyName: string | undefined
   ideogramPaint: ReadonlyMap<string, PaintRun[]>
+  partnerSpans: (index: number) => PartnerSpan[]
 }
 
 /**
@@ -468,6 +474,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * the tooltip read
        */
       chordHover: undefined as ChordHover | undefined,
+      /**
+       * #volatile
+       * the ideogram band under the pointer, which dims every chord and
+       * ribbon not touching it and names what aligns to it
+       */
+      bandHover: undefined as BandHover | undefined,
       /**
        * #volatile
        * the canvas the chords and ribbons of every chord display draw on
@@ -946,6 +958,85 @@ function stateModelFactory(pluginManager: PluginManager) {
         return undefined
       },
       /**
+       * #method
+       * the place of the chromosome whose ideogram band holds a point `dx`,`dy`
+       * CSS px from the circle's centre in the screen frame
+       */
+      bandAt(dx: number, dy: number): number | undefined {
+        const innerPx = self.radiusPx + ideogramGapPx
+        const r = Math.hypot(dx, dy)
+        if (r < innerPx || r > innerPx + ideogramThicknessPx) {
+          return undefined
+        }
+        const turn = Math.atan2(dy, dx) - self.offsetRadians
+        const radians = turn - twoPi * Math.floor(turn / twoPi)
+        const index = this.staticSlices.findIndex(
+          s => s.startRadians <= radians && radians < s.endRadians,
+        )
+        return index === -1 || this.staticSlices[index]!.region.elided
+          ? undefined
+          : index
+      },
+      /**
+       * #method
+       * the middle of slice `index`'s ideogram band, CSS px from the circle's
+       * centre in the screen frame: the point `bandAt` answers `index` for
+       */
+      bandCenter(index: number): [number, number] | undefined {
+        const slice = this.staticSlices[index]
+        return slice
+          ? polarToCartesian(
+              self.radiusPx + ideogramGapPx + ideogramThicknessPx / 2,
+              (slice.startRadians + slice.endRadians) / 2 + self.offsetRadians,
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       * the place of the chromosome under the pointer, which only changes as
+       * it crosses from one band to another
+       */
+      get hoveredBandIndex() {
+        return self.bandHover?.index
+      },
+      /**
+       * #getter
+       * that chromosome as the chord stage's focus: its slice's gap count,
+       * the name a foot gives it, or -1 for none
+       */
+      get chordFocusSlice() {
+        const index = this.hoveredBandIndex
+        return index === undefined
+          ? -1
+          : (this.chordAxis.slices[index]?.gaps ?? -1)
+      },
+      /**
+       * #getter
+       * the hovered chromosome's name and the share of it each chromosome
+       * aligned to it covers, most first
+       */
+      get bandComposition() {
+        const index = this.hoveredBandIndex
+        const region =
+          index === undefined ? undefined : this.staticSlices[index]?.region
+        if (index === undefined || !region || region.elided) {
+          return undefined
+        }
+        const { assemblyName, refName, start, end } = region
+        const displayName =
+          getSession(self).assemblyManager.get(assemblyName)?.displayName
+        return {
+          name:
+            self.assemblyNames.length > 1 && displayName
+              ? `${displayName} ${refName}`
+              : refName,
+          shares: partnerShares(
+            self.chordSyntenyDisplays.flatMap(d => d.partnerSpans(index)),
+            end - start,
+          ),
+        }
+      },
+      /**
        * #getter
        * whether the pointer is on a chord or ribbon, which only changes as it
        * crosses onto one or off it
@@ -1232,6 +1323,20 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setChordHover(hover: ChordHover | undefined) {
         self.chordHover = hover
+      },
+      /**
+       * #action
+       */
+      setBandHover(hover: BandHover | undefined) {
+        self.bandHover = hover
+      },
+      /**
+       * #action
+       * the pointer is on no chord, ribbon or band
+       */
+      clearHover() {
+        self.chordHover = undefined
+        self.bandHover = undefined
       },
 
       /**

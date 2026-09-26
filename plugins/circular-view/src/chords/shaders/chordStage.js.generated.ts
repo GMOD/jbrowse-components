@@ -36,3 +36,24 @@ export function chordIsSpeck(a: number, b: number, radius: number): boolean {
 export function ribbonThinFade(anchorPx: number, matePx: number, minEndPx: number, floor: number): number {
   return _clamp(((anchorPx + matePx) / (_max(anchorPx, minEndPx) + _max(matePx, minEndPx))), floor, 1.0)
 }
+
+export function focusAlpha(aSlice: number, bSlice: number, focusSlice: number): number {
+  let _t0: boolean
+  if ((focusSlice < 0.0)) {
+    _t0 = true
+  } else {
+    _t0 = (aSlice == focusSlice)
+  }
+  if (_t0) {
+    _t0 = true
+  } else {
+    _t0 = (bSlice == focusSlice)
+  }
+  let _t1: number
+  if (_t0) {
+    _t1 = 1.0
+  } else {
+    _t1 = 0.15000000596046448
+  }
+  return _t1
+}

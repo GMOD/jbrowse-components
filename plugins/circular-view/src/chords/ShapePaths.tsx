@@ -2,8 +2,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { DIMMED_OPACITY } from './shaders/chordStage.generated.ts'
 import { shapePath } from './shapePath.ts'
-import { DIMMED_OPACITY } from './types.ts'
 
 import type { Shape } from './shapes.ts'
 import type { ChordDisplayModel, RibbonDisplayModel } from './types.ts'
