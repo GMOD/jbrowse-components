@@ -1,6 +1,6 @@
 ---
 name: arabidopsis-1001g-pangenome-demo
-description: The 1001G+ Arabidopsis demo (26 accessions vs TAIR10) is live on jbrowse.org with SyRI lanes and the lane-order minigraph graph (2026-09-25). Left - push and deploy jb2hubs, which has the dataset. Read before touching demos/arabidopsis_pangenome or its build script.
+description: The 1001G+ Arabidopsis demo (26 accessions vs TAIR10) is live on jbrowse.org with SyRI lanes and the lane-order minigraph graph (2026-09-25). Left - upload the jb2hubs graph config, push and deploy jb2hubs. Read before touching demos/arabidopsis_pangenome or its build script.
 ---
 
 # 1001G+ Arabidopsis pangenome demo: deploy the jb2hubs dataset
@@ -65,12 +65,17 @@ spec-session prune fix and drops default-session tracks).
 
 ## To finish
 
-jb2hubs has the dataset on its local main (aa125533607, c167ff24608: not
-pushed), and `https://jbrowse.org/pangenome/arabidopsis-tair10/config.json` is
-published. Left: push jb2hubs and deploy its website. The dataset's
-`reference.assembly` is `TAIR10`, not `GCF_000001735.4`: the GraphGenomeView
-refuses a launch on the GenArk name ("The graph is cut on its reference,
-TAIR10"), so the graph config and `TAIR10_genes` stand in for the GenArk one.
-The UCSC API takes `chrom=Chr4` for GCF_000001735.4 through GenArk's chromAlias,
-so the loci generator needed no Chr→NC_ map. There is no Arabidopsis tutorial;
-`tutorialUrl` became optional for it.
+jb2hubs has the dataset on its local main, not pushed. Its reference is GenArk's
+`GCF_000001735.4`, with `assemblyNameToPanSN` mapping it onto the graph's
+TAIR10 paths (d413d73f8c8). Its graph config carries the demo's
+`syri_regions.bed.gz` as a 26-row track, which every locus launch opens under
+the lanes (f0bec307bd8), since the graph shows nothing of the chromosome 4
+inversion, and `tutorialUrl` is the SyRI tutorial, whose last section opens
+this demo. Left:
+
+- `website/pangenome-config/upload.sh`: `check-pangenome-assets` reports the
+  served `arabidopsis-tair10/config.json` differs from the tree.
+- Push jb2hubs and deploy its website.
+- Redeploy `demos/arabidopsis_pangenome/config.json` with
+  `scripts/deploy-demo.sh`: the generator now puts the regions track's key in
+  plotsr's order, which the hosted copy predates.
