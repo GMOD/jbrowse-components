@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material/styles'
 import { fireEvent, render } from '@testing-library/react'
@@ -207,4 +208,46 @@ test('a right-button drag does not rotate the figure', () => {
     buttons: 2,
   })
   expect(view.offsetRadians).toBe(before)
+})
+
+// The resting chords are canvas pixels, so the svg routes a pointer off every
+// ring to whatever the pick canvas answers: a move is the hover the highlight
+// and tooltip read, a click reaches the display, and a leave clears it
+test('a pointer off every ring reaches the chord under it', () => {
+  const { view, svg } = setup()
+  const clicked: string[] = []
+  const feature = new SimpleFeature({
+    uniqueId: 'f1',
+    refName: 'chr1',
+    start: 1,
+    end: 2,
+  })
+  const display = {
+    id: 'd',
+    shapes: [],
+    radiusPx: 1,
+    bezierRadius: 1,
+    shapeAlpha: 1,
+    clickFeature: (f: { id: () => string }) => {
+      clicked.push(f.id())
+    },
+    shapeLabel: () => 'the chord under the pointer',
+  }
+  view.setChordHitTest((dx, dy) =>
+    Math.hypot(dx, dy) < 50 ? { display, feature } : undefined,
+  )
+  const c = centerOf(view)
+  fireEvent.pointerMove(svg, { clientX: c.x + 10, clientY: c.y, buttons: 0 })
+  expect(view.chordHover?.feature.id()).toBe('f1')
+  expect(document.body.textContent).toContain('the chord under the pointer')
+
+  fireEvent.pointerMove(svg, { clientX: c.x + 200, clientY: c.y, buttons: 0 })
+  expect(view.chordHover).toBeUndefined()
+
+  fireEvent.click(svg, { clientX: c.x + 10, clientY: c.y })
+  expect(clicked).toEqual(['f1'])
+
+  fireEvent.pointerMove(svg, { clientX: c.x + 10, clientY: c.y, buttons: 0 })
+  fireEvent.pointerLeave(svg)
+  expect(view.chordHover).toBeUndefined()
 })

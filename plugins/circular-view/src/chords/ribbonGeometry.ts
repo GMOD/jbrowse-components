@@ -1,9 +1,9 @@
-import { polarToCartesian } from '@jbrowse/core/util'
-
 import { bpToRadians } from '../CircularView/slices.ts'
 import { chordControlPoint } from './chordGeometry.ts'
+import { svgPathSink } from './pathSink.ts'
 
 import type { Slice } from '../CircularView/slices.ts'
+import type { PathSink } from './pathSink.ts'
 
 /**
  * The narrowest a ribbon end is drawn, in pixels of arc.
@@ -48,6 +48,14 @@ export function ribbonEndRadians(
   return { start: a - dir * pad, end: b + dir * pad }
 }
 
+/** The four angles a ribbon's boundary visits, in the order it visits them. */
+export interface RibbonAngles {
+  a1: number
+  a2: number
+  m1: number
+  m2: number
+}
+
 /**
  * The four angles a ribbon's boundary visits, in the order it visits them:
  * along the anchor's arc, across to the mate, along the mate's arc, back.
@@ -72,7 +80,7 @@ export function ribbonAngles({
   strand: number
   radius: number
   minWidthPx?: number
-}) {
+}): RibbonAngles {
   const a = ribbonEndRadians(anchor, radius, minWidthPx)
   const m = ribbonEndRadians(mate, radius, minWidthPx)
   return strand === -1
@@ -80,18 +88,8 @@ export function ribbonAngles({
     : { a1: a.start, a2: a.end, m1: m.end, m2: m.start }
 }
 
-function point(radius: number, radians: number) {
-  const [x, y] = polarToCartesian(radius, radians)
-  return `${x} ${y}`
-}
-
-function arcTo(from: number, to: number, radius: number) {
-  const largeArc = Math.abs(to - from) > Math.PI ? 1 : 0
-  const sweep = to > from ? 1 : 0
-  return `A ${radius} ${radius} 0 ${largeArc} ${sweep} ${point(radius, to)}`
-}
-
 function curveTo(
+  sink: PathSink,
   from: number,
   to: number,
   radius: number,
@@ -103,7 +101,7 @@ function curveTo(
     radius,
     bezierRadius,
   })
-  return `Q ${cx} ${cy} ${point(radius, to)}`
+  sink.quadTo(cx, cy, radius, to)
 }
 
 /**
@@ -112,6 +110,21 @@ function curveTo(
  * by the same rule the variant chords use, so a figure carrying both draws them
  * as one family.
  */
+export function traceRibbon(
+  sink: PathSink,
+  { a1, a2, m1, m2 }: RibbonAngles,
+  radius: number,
+  bezierRadius: number,
+) {
+  sink.moveTo(radius, a1)
+  sink.arcTo(a1, a2, radius)
+  curveTo(sink, a2, m1, radius, bezierRadius)
+  sink.arcTo(m1, m2, radius)
+  curveTo(sink, m2, a1, radius, bezierRadius)
+  sink.close()
+}
+
+/** The ribbon as an SVG path, for the export and the highlight layer. */
 export function ribbonPath(opts: {
   anchor: RibbonSide
   mate: RibbonSide
@@ -121,13 +134,7 @@ export function ribbonPath(opts: {
   minWidthPx?: number
 }) {
   const { radius, bezierRadius } = opts
-  const { a1, a2, m1, m2 } = ribbonAngles(opts)
-  return [
-    `M ${point(radius, a1)}`,
-    arcTo(a1, a2, radius),
-    curveTo(a2, m1, radius, bezierRadius),
-    arcTo(m1, m2, radius),
-    curveTo(m2, a1, radius, bezierRadius),
-    'Z',
-  ].join(' ')
+  const sink = svgPathSink()
+  traceRibbon(sink, ribbonAngles(opts), radius, bezierRadius)
+  return sink.toString()
 }

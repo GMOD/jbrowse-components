@@ -38,8 +38,13 @@ test('open a circular view', async () => {
   fireEvent.click(await findByText('Launch', ...opts))
   fireEvent.click(await findByTestId('circular_track_select'))
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), {}, delay))
-  await findByTestId('structuralVariantChordRenderer', {}, delay)
-  await findByTestId('chord-test-vcf-66511')
+  await waitFor(() => {
+    expect(
+      Number(
+        queryByTestId('structuralVariantChordRenderer')?.dataset.chordCount,
+      ),
+    ).toBeGreaterThan(0)
+  }, delay)
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), {}, delay))
   await waitFor(() => {
     expect(
@@ -50,5 +55,11 @@ test('open a circular view', async () => {
   fireEvent.click(await findByTestId(hts('volvox_sv_test_renamed'), {}, delay))
 
   // make sure a chord is rendered
-  await findByTestId('chord-test-vcf-63101', {}, delay)
+  await waitFor(() => {
+    expect(
+      Number(
+        queryByTestId('structuralVariantChordRenderer')?.dataset.chordCount,
+      ),
+    ).toBeGreaterThan(0)
+  }, delay)
 }, 25000)

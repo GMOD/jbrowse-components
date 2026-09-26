@@ -1,8 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { fireEvent, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
 
 import { Slice } from '../../CircularView/slices.ts'
+import ShapePaths from '../../chords/ShapePaths.tsx'
+import { ribbonShape } from '../../chords/shapes.ts'
 import configSchemaF from '../models/configSchema.ts'
 import ChordSyntenyDisplay from './ChordSyntenyDisplay.tsx'
 
@@ -37,6 +39,9 @@ const slices = {
   'mm39 chr1': block('chr1', 'mm39', 3),
 }
 
+const sliceFor = (assemblyName: string | undefined, refName: string) =>
+  slices[`${assemblyName} ${refName}` as keyof typeof slices]
+
 function alignment(strand: number, uniqueId = 'aln1') {
   return new SimpleFeature({
     uniqueId,
@@ -54,11 +59,24 @@ function alignment(strand: number, uniqueId = 'aln1') {
   })
 }
 
+function shapesOf(...features: SimpleFeature[]) {
+  return features.flatMap(feature => {
+    const shape = ribbonShape({
+      feature,
+      sliceFor,
+      radius: 1000,
+      fill: '#4682b4',
+    })
+    return shape ? [shape] : []
+  })
+}
+
 function ribbonModel(
   phase: DisplayStatusPhase,
   overrides: Partial<RibbonDisplayModel> = {},
 ): RibbonDisplayModel {
   return {
+    id: 'paf',
     error: undefined,
     displayError: undefined,
     view: { offsetRadians: 0 },
@@ -66,31 +84,28 @@ function ribbonModel(
     displayPhase: phase,
     svgReady: phase !== 'loading',
     drawnFeatures: [],
+    shapes: [],
+    shapeAlpha: 0.25,
     selectedFeatureId: undefined,
+    hoveredFeatureId: undefined,
     configuration,
-    ribbonFill: () => '#4682b4',
-    ribbonOpacity: 0.25,
     radiusPx: 1000,
     bezierRadius: 100,
-    sliceFor: (assemblyName, refName) =>
-      slices[`${assemblyName} ${refName}` as keyof typeof slices],
-    onRibbonClick: () => {},
+    sliceFor,
+    clickFeature: () => {},
+    shapeLabel: () => 'an alignment',
     openErrorDialog: () => {},
     reload: () => {},
     ...overrides,
   }
 }
 
-function draw(model: RibbonDisplayModel) {
-  return render(
+function attrs(model: RibbonDisplayModel) {
+  const { container } = render(
     <svg>
       <ChordSyntenyDisplay display={model} />
     </svg>,
   )
-}
-
-function attrs(model: RibbonDisplayModel) {
-  const { container } = draw(model)
   const g = container.querySelector<SVGElement>('[data-display-phase]')
   return {
     testid: g?.dataset.testid,
@@ -127,47 +142,64 @@ test('the error terminal is finished rather than pending', () => {
 
 // each end resolves against its own assembly's slices, which is what a
 // two-assembly circle needs: both sides here are named chr1
-test('an alignment across two assemblies draws one ribbon', () => {
-  const { container } = draw(
-    ribbonModel('ready', { drawnFeatures: [alignment(1)] }),
-  )
-  const paths = container.querySelectorAll('path')
-  expect(paths).toHaveLength(1)
-  expect(paths[0]!.getAttribute('d')).toMatch(/^M .* Z$/)
+test('an alignment across two assemblies is one ribbon', () => {
+  expect(shapesOf(alignment(1))).toHaveLength(1)
 })
 
 test('an end whose slice is off the circle drops the ribbon', () => {
-  const { container } = draw(
-    ribbonModel('ready', {
-      drawnFeatures: [alignment(1)],
+  expect(
+    ribbonShape({
+      feature: alignment(1),
       sliceFor: assemblyName =>
         assemblyName === 'hg38' ? slices['hg38 chr1'] : undefined,
+      radius: 1000,
+      fill: '#4682b4',
     }),
-  )
-  expect(container.querySelectorAll('path')).toHaveLength(0)
+  ).toBeUndefined()
 })
 
-test('clicking a ribbon hands the feature to the display', () => {
-  const clicked: string[] = []
-  const { container } = draw(
-    ribbonModel('ready', {
-      drawnFeatures: [alignment(-1)],
-      onRibbonClick: feature => {
-        clicked.push(feature.id())
-      },
-    }),
+// the canvas holds the resting ribbons, so the screen draws only what it
+// highlights; the export draws them all, dimmed where the inspector says so
+test('on screen only the hovered and selected ribbons are paths', () => {
+  const shapes = shapesOf(
+    alignment(1, 'a'),
+    alignment(1, 'b'),
+    alignment(-1, 'c'),
   )
-  fireEvent.click(container.querySelector('path')!)
-  expect(clicked).toEqual(['aln1'])
+  const { container } = render(
+    <svg>
+      <ChordSyntenyDisplay
+        display={ribbonModel('ready', {
+          shapes,
+          hoveredFeatureId: 'a',
+          selectedFeatureId: 'c',
+        })}
+      />
+    </svg>,
+  )
+  const g = container.querySelector<SVGElement>(
+    '[data-testid="syntenyRibbonRenderer"]',
+  )!
+  expect(g.dataset.chordCount).toBe('3')
+  expect(
+    [...container.querySelectorAll('path')].map(p => p.dataset.testid),
+  ).toEqual(['ribbon-a', 'ribbon-c'])
+  expect(container.querySelector('path')!.getAttribute('d')).toMatch(/^M .* Z$/)
 })
 
-test('ribbons outside the highlighted set dim, and with no set none do', () => {
+test('the export draws every ribbon and dims those outside the highlighted set', () => {
   const opacities = (overrides: Partial<RibbonDisplayModel>) => {
-    const { container } = draw(
-      ribbonModel('ready', {
-        drawnFeatures: [alignment(1, 'a'), alignment(1, 'b')],
-        ...overrides,
-      }),
+    const { container } = render(
+      <svg>
+        <ShapePaths
+          display={ribbonModel('ready', {
+            shapes: shapesOf(alignment(1, 'a'), alignment(1, 'b')),
+            ...overrides,
+          })}
+          testid="syntenyRibbonRenderer"
+          only="all"
+        />
+      </svg>,
     )
     return [...container.querySelectorAll('path')].map(p =>
       p.getAttribute('opacity'),

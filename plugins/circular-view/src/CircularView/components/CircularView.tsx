@@ -5,9 +5,14 @@ import { createFrameCoalescer } from '@jbrowse/core/util/frameCoalescer'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import { FloatingLegend } from '@jbrowse/display-ui'
-import { DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
+import {
+  ComparativeTooltip,
+  DiagonalizeLoadingScreen,
+} from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
+import ChordCanvas from '../../chords/ChordCanvas.tsx'
+import { ChordPicker } from '../../chords/chordLayer.ts'
 import { RingAxes } from '../../rings/RingAxes.tsx'
 import { RingCanvases, RingStrips } from '../../rings/RingLayer.tsx'
 import { RingPointer } from '../../rings/ringPointer.ts'
@@ -65,6 +70,9 @@ const useStyles = makeStyles()(theme => ({
   },
   grabbing: {
     cursor: 'grabbing',
+  },
+  crosshair: {
+    cursor: 'crosshair',
   },
   resizeHandle: {
     position: 'absolute',
@@ -166,8 +174,18 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   const ringPointer = (ringPointerRef.current ??= new RingPointer(
     model.ringHost,
   ))
+  // a pointer off every ring goes to the chord under it, off the pick canvas
+  // the chord canvas keeps
+  const [picker] = useState(() => new ChordPicker())
   // whether the press that is ending became a rotation, which is not a click
   const draggedRef = useRef(false)
+
+  useEffect(() => {
+    model.setChordHitTest((dx, dy) => picker.hit(dx, dy))
+    return () => {
+      model.setChordHitTest(undefined)
+    }
+  }, [model, picker])
 
   // Non-passive wheel listener so we can call preventDefault(). The handler only
   // accumulates: one model write per animation frame, not per event. A trackpad
@@ -250,19 +268,42 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     lastAngleRef.current = angleFromCenter(event.clientX, event.clientY)
   }
 
-  const routeRingPointer = (
+  // a ring takes the pointer first; off every ring it goes to the chord under
+  // it, which the highlight paths and the tooltip then read off the model
+  const routePointer = (
     event: React.MouseEvent<SVGSVGElement>,
     type: RingPointerEvent,
   ) => {
     const rect = containerRef.current!.getBoundingClientRect()
     const [dx, dy] = offsetFromCenter(model, rect, event)
-    return ringPointer.move(event.clientX, event.clientY, dx, dy, rect, type)
+    const { clientX, clientY } = event
+    const onRing = ringPointer.move(clientX, clientY, dx, dy, rect, type)
+    if (onRing !== undefined) {
+      if (model.chordHover) {
+        model.setChordHover(undefined)
+      }
+      return onRing
+    }
+    const hit = model.chordAt(dx, dy)
+    if (type === 'mousemove') {
+      model.setChordHover(hit ? { ...hit, clientX, clientY } : undefined)
+    } else if (type === 'click' && hit) {
+      hit.display.clickFeature(hit.feature)
+    }
+    return undefined
+  }
+
+  const leaveFigure = () => {
+    ringPointer.leave()
+    if (model.chordHover) {
+      model.setChordHover(undefined)
+    }
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
     const press = pressRef.current
     if (!press) {
-      routeRingPointer(event, 'mousemove')
+      routePointer(event, 'mousemove')
       return
     }
     // A press under the drag threshold never captures the pointer (see below),
@@ -289,7 +330,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       // one. A press that doesn't move never captures, and stays a click.
       event.currentTarget.setPointerCapture(event.pointerId)
       draggedRef.current = true
-      ringPointer.leave()
+      leaveFigure()
       setIsDragging(true)
     }
     const angle = angleFromCenter(event.clientX, event.clientY)
@@ -324,6 +365,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       data-testid={id}
     >
       <RingCanvases view={model} />
+      <ChordCanvas view={model} picker={picker} />
       <div
         className={classes.panWrapper}
         style={{
@@ -333,7 +375,11 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
         <svg
           className={cx(
             classes.circularSvg,
-            isDragging ? classes.grabbing : classes.grab,
+            isDragging
+              ? classes.grabbing
+              : model.chordHover
+                ? classes.crosshair
+                : classes.grab,
           )}
           style={{
             transform: `rotate(${offsetRadians}rad)`,
@@ -345,16 +391,14 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
           onPointerMove={handlePointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          onPointerLeave={() => {
-            ringPointer.leave()
-          }}
+          onPointerLeave={leaveFigure}
           onClick={event => {
             if (!draggedRef.current) {
-              routeRingPointer(event, 'click')
+              routePointer(event, 'click')
             }
           }}
           onContextMenu={event => {
-            if (routeRingPointer(event, 'contextmenu') === false) {
+            if (routePointer(event, 'contextmenu') === false) {
               event.preventDefault()
             }
           }}
@@ -366,6 +410,17 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       </div>
       <RingStrips host={model.ringHost} />
       <Controls model={model} />
+      {model.chordHover ? (
+        <ComparativeTooltip
+          lines={[
+            model.chordHover.display.shapeLabel(model.chordHover.feature),
+          ]}
+          clientPoint={{
+            x: model.chordHover.clientX,
+            y: model.chordHover.clientY,
+          }}
+        />
+      ) : null}
       {model.showLegend ? (
         <FloatingLegend
           sections={model.legendSpec.sections}

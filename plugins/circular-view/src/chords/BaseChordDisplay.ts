@@ -241,6 +241,15 @@ export function BaseChordDisplay() {
         const { selection } = getSession(self)
         return isFeature(selection) ? selection.id() : undefined
       },
+      /**
+       * #getter
+       * the feature under the pointer, which the view resolves off its pick
+       * canvas for every chord display at once
+       */
+      get hoveredFeatureId() {
+        const hover = this.view.chordHover
+        return hover?.display.id === self.id ? hover.feature.id() : undefined
+      },
     }))
     .views(self => ({
       /**

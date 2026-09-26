@@ -1,4 +1,5 @@
 import type { Slice } from '../CircularView/slices.ts'
+import type { ChordPaintSource, ChordShape, RibbonShape } from './shapes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
@@ -23,26 +24,25 @@ export interface ChordDisplayFrameModel {
 
 export const DIMMED_OPACITY = 0.15
 
-// What the chord and ribbon components both read. A slice is looked up by the
-// assembly AND refName a feature carries, since two genomes on one circle can
-// each carry a `chr1`
-interface ChordLayerModel extends ChordDisplayFrameModel {
+// What the chord and ribbon layers both read. The resting shapes go to the
+// view's canvas through `ChordPaintSource`; the hovered and selected ones are
+// SVG paths over it, and the export draws every shape as one
+interface ChordLayerModel extends ChordDisplayFrameModel, ChordPaintSource {
   drawnFeatures: Feature[] | undefined
   selectedFeatureId: string | undefined
-  highlightedFeatureIdSet?: Set<string>
-  bezierRadius: number
+  hoveredFeatureId: string | undefined
   sliceFor: (
     assemblyName: string | undefined,
     refName: string,
   ) => Slice | undefined
+  clickFeature: (feature: Feature) => void
+  shapeLabel: (feature: Feature) => string
 }
 
 export interface ChordDisplayModel extends ChordLayerModel {
-  onChordClick: (feature: Feature) => void
+  shapes: readonly ChordShape[]
 }
 
 export interface RibbonDisplayModel extends ChordLayerModel {
-  ribbonFill: (feature: Feature) => string
-  ribbonOpacity: number
-  onRibbonClick: (feature: Feature) => void
+  shapes: readonly RibbonShape[]
 }

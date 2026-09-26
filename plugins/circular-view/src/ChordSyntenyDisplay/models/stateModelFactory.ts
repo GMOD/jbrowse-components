@@ -28,9 +28,13 @@ import {
   BaseChordDisplay,
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
+import { shapePath } from '../../chords/chordLayer.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
+import { ribbonLabel } from '../../chords/ribbonLabel.ts'
+import { ribbonShape } from '../../chords/shapes.ts'
 
 import type { ExportSvgOptions } from '../../CircularView/model.ts'
+import type { RibbonShape } from '../../chords/shapes.ts'
 import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
@@ -238,6 +242,52 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
+       * `ribbonOpacity`, as the canvas reads it
+       */
+      get shapeAlpha() {
+        return this.ribbonOpacity
+      },
+      /**
+       * #getter
+       * each drawn alignment as the four angles its ribbon visits and the
+       * fill it rests in; an end off the circle drops the ribbon
+       */
+      get shapes(): RibbonShape[] {
+        const { radiusPx } = self
+        const fill = this.ribbonFill
+        const out: RibbonShape[] = []
+        for (const feature of this.drawnFeatures ?? []) {
+          const shape = ribbonShape({
+            feature,
+            sliceFor: self.sliceFor,
+            radius: radiusPx,
+            fill: fill(feature),
+          })
+          if (shape) {
+            out.push(shape)
+          }
+        }
+        return out
+      },
+      /**
+       * #method
+       */
+      shapeLabel(feature: Feature) {
+        return ribbonLabel(feature)
+      },
+      /**
+       * #method
+       * a drawn feature's outline as an SVG path, for anything that has to
+       * find a chord on screen without a DOM node to find
+       */
+      shapePathFor(feature: Feature) {
+        const shape = this.shapes.find(s => s.feature === feature)
+        return shape
+          ? shapePath(shape, self.radiusPx, self.bezierRadius)
+          : undefined
+      },
+      /**
+       * #getter
        * the ribbon fill the circle's key shows: the one colour every ribbon
        * paints when the view's mode keys nothing of its own
        */
@@ -305,8 +355,9 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       return {
         /**
          * #action
+         * what a click on the canvas reaches: the alignment's details
          */
-        onRibbonClick(feature: Feature) {
+        clickFeature(feature: Feature) {
           openFeatureWidget(self, feature.toJSON(), {
             widget: self.featureWidgetType,
             feature,

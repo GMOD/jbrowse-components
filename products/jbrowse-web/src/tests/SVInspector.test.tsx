@@ -27,14 +27,35 @@ function panelCount(session: { views: unknown[] }) {
   return (session.views[2] as { views: unknown[] }).views.length
 }
 
+// The resting chords are painted on a canvas, so a click reaches one through
+// the display the way the view's own pointer routing does, once it has shapes
+async function clickChord(session: { views: unknown[] }, featureId: string) {
+  const inspector = session.views[0] as {
+    circularView: {
+      tracks: {
+        displays: {
+          shapes: { feature: { id: () => string } }[]
+          clickFeature: (feature: unknown) => void
+        }[]
+      }[]
+    }
+  }
+  const display = () => inspector.circularView.tracks[0]?.displays[0]
+  await waitFor(() => {
+    expect(display()?.shapes.length).toBeGreaterThan(0)
+  }, delay)
+  const shape = display()!.shapes.find(s => s.feature.id() === featureId)!
+  display()!.clickFeature(shape.feature)
+}
+
 test('opens a vcf.gz file in the sv inspector view', () => {
   return mockConsoleWarn(async () => {
-    const { session, findByTestId, findByText } = await openViewWithFileInput({
+    const { session, findByText } = await openViewWithFileInput({
       menuPath: ['File', 'Add', 'SV inspector'],
       fileUrl: 'volvox.dup.renamed.vcf.gz',
     })
 
-    fireEvent.click(await findByTestId('chord-vcf-0', {}, delay))
+    await clickChord(session, 'vcf-0')
 
     // Click on split level option in the dialog
     fireEvent.click(await findByText('Split level (top/bottom)', {}, delay))
@@ -83,7 +104,7 @@ test('opens a track with minimal adapter config via "Open from track"', () => {
 
     fireEvent.click(openButton)
 
-    fireEvent.click(await findByTestId('chord-vcf-6', {}, delay))
+    await clickChord(session, 'vcf-6')
 
     // Click on split level option in the dialog
     fireEvent.click(await findByText('Split level (top/bottom)', {}, delay))

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
 import ChordDisplayFrame from '../../chords/ChordDisplayFrame.tsx'
-import Ribbons from '../../chords/Ribbons.tsx'
+import ShapePaths from '../../chords/ShapePaths.tsx'
 
 import type { RibbonDisplayModel } from '../../chords/types.ts'
 
@@ -12,7 +12,11 @@ const ChordSyntenyDisplay = observer(function ChordSyntenyDisplay({
 }) {
   return (
     <ChordDisplayFrame display={display}>
-      <Ribbons display={display} />
+      <ShapePaths
+        display={display}
+        testid="syntenyRibbonRenderer"
+        only="highlighted"
+      />
     </ChordDisplayFrame>
   )
 })

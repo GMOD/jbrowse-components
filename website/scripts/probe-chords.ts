@@ -5,12 +5,13 @@
  *   node scripts/probe-chords.ts sv_cgiab/translocation_sv_inspector_view
  *   node scripts/probe-chords.ts <spec> --click=SV_20
  *
- * A chord is a 1px Bezier among hundreds, so "the anchor is wrong" and "the
- * chord is buried under another one" produce the same symptom: a click that
- * opens nothing, or opens the wrong record. This prints every chord's `<title>`
- * (which is what `anchor: { chord }` matches on), and for --click reports the
- * point chordAnchor resolved, what the browser says is at that point, and
- * whether the two agree.
+ * The resting chords are canvas pixels, so "the anchor is wrong" and "the chord
+ * is buried under another one" produce the same symptom: a click that opens
+ * nothing, or opens the wrong record. This lists every chord by the label the
+ * hover tooltip shows (which is what `anchor: { chord }` matches on), and for
+ * --click samples along the named one's outline and reports what the view's
+ * own pick answers at each point: the chord itself, another chord painted over
+ * it, or nothing.
  */
 import { parseArgs } from 'node:util'
 
@@ -45,111 +46,115 @@ await withHarness(
       waitUntil: 'domcontentloaded',
       timeout,
     })
-    await page.waitForSelector(
-      'path[data-testid^="chord-"], path[data-testid^="ribbon-"]',
+    await page.waitForFunction(
+      () =>
+        [...document.querySelectorAll<HTMLElement>('[data-chord-count]')].some(
+          g => Number(g.dataset.chordCount) > 0,
+        ),
       { timeout },
     )
     // The chords mount as the VCF streams in, so the first one on screen is not
     // the last one: this is a settle, not a gate.
     await new Promise(r => setTimeout(r, settle))
 
-    const titles = await page.evaluate(() =>
-      [
-        ...document.querySelectorAll<SVGPathElement>(
-          'path[data-testid^="chord-"], path[data-testid^="ribbon-"]',
-        ),
-      ].map(p => ({
-        testid: p.dataset.testid ?? '',
-        title: p.querySelector('title')?.textContent ?? '',
-      })),
-    )
-    console.error(`${titles.length} chord(s) drawn`)
-    for (const t of titles.slice(0, 40)) {
-      console.error(`  ${t.testid.padEnd(14)} ${t.title}`)
-    }
-    if (titles.length > 40) {
-      console.error(`  ... ${titles.length - 40} more`)
-    }
-
-    const want = values.click
-    if (!want) {
-      return
-    }
-    // What is actually at each sampled point, which is the difference between
-    // "the geometry is wrong" and "something is painted over the whole ring".
-    const samples = await page.evaluate((label: string) => {
-      const paths = [
-        ...document.querySelectorAll<SVGPathElement>(
-          'path[data-testid^="chord-"], path[data-testid^="ribbon-"]',
-        ),
-      ]
-      const match = paths.find(p =>
-        (p.querySelector('title')?.textContent ?? '').includes(label),
-      )
-      if (!match) {
-        return { found: false, rows: [] as string[] }
+    const report = await page.evaluate((label: string) => {
+      interface ChordView {
+        id: string
+        type: string
+        offsetRadians: number
+        figureOriginXY: [number, number]
+        centerXY: [number, number]
+        chordDisplays: {
+          id: string
+          shapes: { feature: { id: () => string } }[]
+          shapeLabel: (feature: { id: () => string }) => string
+          shapePathFor: (feature: { id: () => string }) => string
+        }[]
+        chordAt: (
+          dx: number,
+          dy: number,
+        ) => { feature: { id: () => string } } | undefined
+        circularView?: ChordView
+        views?: ChordView[]
       }
-      const ctm = match.getScreenCTM()
-      const total = match.getTotalLength()
-      if (!ctm || !total) {
-        return { found: true, rows: ['no CTM or zero length'] }
-      }
-      const rows = [0.12, 0.3, 0.5, 0.7, 0.88].map(t => {
-        const pt = match.getPointAtLength(total * t)
-        const x = pt.x * ctm.a + pt.y * ctm.c + ctm.e
-        const y = pt.x * ctm.b + pt.y * ctm.d + ctm.f
-        const el = document.elementFromPoint(x, y)
-        const id = (el as HTMLElement | null)?.dataset.testid ?? ''
-        const tt = el?.querySelector('title')?.textContent ?? ''
-        return `t=${t} (${x.toFixed(1)},${y.toFixed(1)}) -> <${el?.tagName ?? '-'}> ${id} ${tt}`.trim()
-      })
-      const r = match.getBoundingClientRect()
-      rows.push(
-        `bbox ${r.left.toFixed(0)},${r.top.toFixed(0)} ${r.width.toFixed(0)}x${r.height.toFixed(0)} strokeWidth=${getComputedStyle(match).strokeWidth} pointerEvents=${getComputedStyle(match).pointerEvents}`,
-      )
-      return { found: true, rows }
-    }, want)
-    console.error(`\nsamples for "${want}" (found=${samples.found}):`)
-    for (const row of samples.rows) {
-      console.error(`  ${row}`)
-    }
-
-    const point = await chordPoint(page, { chord: want })
-    if (!point) {
-      console.error(
-        `\nNO CLICKABLE POINT for "${want}".\n` +
-          "  Either no chord's title contains it (see the list above), or every\n" +
-          '  sampled point along it is covered by another chord.',
-      )
-      return
-    }
-    const at = await page.evaluate(
-      (x: number, y: number) => {
-        const el = document.elementFromPoint(x, y)
-        return {
-          tag: el?.tagName ?? '(nothing)',
-          testid: (el as HTMLElement | null)?.dataset.testid ?? '',
-          title: el?.querySelector('title')?.textContent ?? '',
+      const circles: ChordView[] = []
+      const walk = (v: ChordView) => {
+        if (v.type === 'CircularView') {
+          circles.push(v)
         }
-      },
-      point.x,
-      point.y,
-    )
-    console.error(
-      `\n"${want}" resolves to ${point.x.toFixed(1)},${point.y.toFixed(1)}\n` +
-        `  at that point: <${at.tag}> ${at.testid} ${at.title}`,
-    )
-    // Clicking is the only thing that proves the point is not merely on the
-    // right pixel: a chord's handler opens a dialog, so what came up names the
-    // record the click reached.
-    await page.mouse.click(point.x, point.y)
-    await new Promise(r => setTimeout(r, 2500))
-    console.error(
-      '\nafter the click:',
-      await page.evaluate(() => {
-        const dlg = document.querySelector('[role="dialog"]')
-        return dlg ? dlg.textContent.slice(0, 400) : '(no dialog opened)'
-      }),
-    )
+        if (v.circularView) {
+          walk(v.circularView)
+        }
+        v.views?.forEach(walk)
+      }
+      ;(
+        window as unknown as { JBrowseSession: { views: ChordView[] } }
+      ).JBrowseSession.views.forEach(walk)
+      const drawn: string[] = []
+      const rows: string[] = []
+      let found = false
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      const path = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path',
+      )
+      svg.append(path)
+      document.body.append(svg)
+      for (const view of circles) {
+        const cos = Math.cos(view.offsetRadians)
+        const sin = Math.sin(view.offsetRadians)
+        for (const display of view.chordDisplays) {
+          for (const { feature } of display.shapes) {
+            const text = display.shapeLabel(feature)
+            drawn.push(`${feature.id().padEnd(14)} ${text}`)
+            if (!label || !text.includes(label) || found) {
+              continue
+            }
+            found = true
+            path.setAttribute('d', display.shapePathFor(feature))
+            const total = path.getTotalLength()
+            for (const t of [0.12, 0.3, 0.5, 0.7, 0.88]) {
+              const p = path.getPointAtLength(total * t)
+              const dx = p.x * cos - p.y * sin
+              const dy = p.x * sin + p.y * cos
+              const hit = view.chordAt(dx, dy)
+              rows.push(
+                `t=${t} (${dx.toFixed(0)},${dy.toFixed(0)} from centre) -> ${
+                  hit
+                    ? hit.feature.id() === feature.id()
+                      ? 'this chord'
+                      : `another chord on top: ${hit.feature.id()}`
+                    : 'nothing'
+                }`,
+              )
+            }
+          }
+        }
+      }
+      svg.remove()
+      return { drawn, found, rows }
+    }, values.click ?? '')
+
+    console.error(`${report.drawn.length} chord(s) drawn`)
+    for (const line of report.drawn.slice(0, 40)) {
+      console.error(`  ${line}`)
+    }
+    if (report.drawn.length > 40) {
+      console.error(`  ... ${report.drawn.length - 40} more`)
+    }
+    if (values.click) {
+      if (!report.found) {
+        console.error(`no chord labelled "${values.click}"`)
+      }
+      for (const row of report.rows) {
+        console.error(`  ${row}`)
+      }
+      const point = await chordPoint(page, { chord: values.click })
+      console.error(
+        point
+          ? `\n"${values.click}" resolves to ${point.x.toFixed(1)},${point.y.toFixed(1)}`
+          : `\nNO CLICKABLE POINT for "${values.click}": every sampled point along it has another chord on top, or nothing is labelled that`,
+      )
+    }
   },
 )

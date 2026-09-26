@@ -1,6 +1,6 @@
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 
-import Chords from '../../chords/Chords.tsx'
+import ShapePaths from '../../chords/ShapePaths.tsx'
 
 import type { ChordDisplayModel } from '../../chords/types.ts'
 
@@ -11,5 +11,11 @@ import type { ChordDisplayModel } from '../../chords/types.ts'
 // to put one at all.
 export async function renderSvg(display: ChordDisplayModel) {
   await awaitSvgReady(display)
-  return display.ready ? <Chords display={display} /> : null
+  return display.ready ? (
+    <ShapePaths
+      display={display}
+      testid="structuralVariantChordRenderer"
+      only="all"
+    />
+  ) : null
 }

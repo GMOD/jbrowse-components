@@ -296,10 +296,10 @@ ideogram it belongs to whichever way round that chromosome is drawn.
 
 ## Reading a ribbon back
 
-Hovering a ribbon fills it in the hover color, and the browser's tooltip names
-the alignment: its span in each genome and which way round the two read. The
-widest ribbon on the three-chromosome circle is the X block that runs reverse
-between the two genomes, which is why it twists.
+Hovering a ribbon fills it in the hover color, and a tooltip names the
+alignment: its span in each genome and which way round the two read. The widest
+ribbon on the three-chromosome circle is the X block that runs reverse between
+the two genomes, which is why it twists.
 
 <Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle, filled grey. It crosses itself between the two X arcs, which is the reverse strand; the hover tooltip names its span in each genome." />
 

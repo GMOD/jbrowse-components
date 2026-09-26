@@ -65,6 +65,11 @@ import {
 } from './rulerLabels.ts'
 import { calculateStaticSlices } from './slices.ts'
 
+import type {
+  ChordHit,
+  ChordHover,
+  ChordLayerDisplay,
+} from '../chords/shapes.ts'
 import type { SliceRegion } from './slices.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -429,6 +434,20 @@ function stateModelFactory(pluginManager: PluginManager) {
        * rings drawn from it — see `regionHost`
        */
       ringHost: RingHost.create({}),
+      /**
+       * #volatile
+       * the chord or ribbon under the pointer, which the highlight paths and
+       * the tooltip read
+       */
+      chordHover: undefined as ChordHover | undefined,
+      /**
+       * #volatile
+       * what answers "which chord is here", registered by the canvas that
+       * paints them; takes CSS px from the centre in the figure's own frame
+       */
+      chordHitTest: undefined as
+        | ((dx: number, dy: number) => ChordHit | undefined)
+        | undefined,
     }))
     .views(self => ({
       /**
@@ -894,6 +913,31 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the displays drawing across the circle, in track order: every first
+       * display registered for this view rather than laid out as a ring
+       */
+      get chordDisplays(): ChordLayerDisplay[] {
+        return self.tracks
+          .map(t => t.displays[0])
+          .filter(
+            (d): d is ChordLayerDisplay =>
+              d !== undefined &&
+              pluginManager.getDisplayType(d.type).viewType === 'CircularView',
+          )
+      },
+      /**
+       * #method
+       * the chord or ribbon under a point `dx`,`dy` CSS px from the circle's
+       * centre in the screen frame
+       */
+      chordAt(dx: number, dy: number) {
+        const a = -self.offsetRadians
+        const cos = Math.cos(a)
+        const sin = Math.sin(a)
+        return self.chordHitTest?.(dx * cos - dy * sin, dx * sin + dy * cos)
+      },
+      /**
+       * #getter
        */
       get staticSlices() {
         // spelled out rather than handing over `self`, because the gap between
@@ -1140,6 +1184,20 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setError(error: unknown) {
         self.volatileError = error
+      },
+      /**
+       * #action
+       */
+      setChordHover(hover: ChordHover | undefined) {
+        self.chordHover = hover
+      },
+      /**
+       * #action
+       */
+      setChordHitTest(
+        hitTest: ((dx: number, dy: number) => ChordHit | undefined) | undefined,
+      ) {
+        self.chordHitTest = hitTest
       },
 
       /**

@@ -1,6 +1,6 @@
 import { awaitSvgReady, throwOnExportErrors } from '@jbrowse/core/svg/svgReady'
 
-import Ribbons from '../../chords/Ribbons.tsx'
+import ShapePaths from '../../chords/ShapePaths.tsx'
 
 import type { RibbonDisplayModel } from '../../chords/types.ts'
 
@@ -11,5 +11,7 @@ import type { RibbonDisplayModel } from '../../chords/types.ts'
 export async function renderSvg(display: RibbonDisplayModel) {
   await awaitSvgReady(display)
   throwOnExportErrors([display.displayError])
-  return display.ready ? <Ribbons display={display} /> : null
+  return display.ready ? (
+    <ShapePaths display={display} testid="syntenyRibbonRenderer" only="all" />
+  ) : null
 }

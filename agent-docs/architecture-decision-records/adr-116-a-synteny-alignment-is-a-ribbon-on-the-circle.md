@@ -7,6 +7,11 @@ summary: "A SyntenyTrack draws on the circular view as ChordSyntenyDisplay, and 
 
 ## Status
 
+**Amended 2026-09-26 by [ADR-173](adr-173-a-chord-rests-on-a-canvas-and-the-dom-holds-the-one-you-point-at.md)**:
+the resting ribbons and chords are painted on a canvas, and the SVG holds
+only the hovered and selected shape on screen; the export still draws every
+shape as a path.
+
 **Amended 2026-09-16**: the import form now opens a two-genome circle. It
 answers the rejected alternative's question the dotplot's way — two rows at
 most, the synteny track picked for the pair, and a Quick start from any track —

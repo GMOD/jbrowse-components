@@ -437,7 +437,7 @@ export const cgiabVideoFixtures = {
 // painted before the sheet has rows and says nothing at all about the circle —
 // so the capture raced the chord track and landed on its loading hatch.
 const CHORDS_DRAWN =
-  '[data-testid="structuralVariantChordRenderer"] [data-testid^="chord-"]'
+  '[data-testid="structuralVariantChordRenderer"]:not([data-chord-count="0"])'
 
 export const svSpecs: ScreenshotSpec[] = [
   // sv_visualization.md screenshots (live sessions from jbrowse.org)

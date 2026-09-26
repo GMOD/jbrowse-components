@@ -101,11 +101,13 @@ export async function checkDemoHeights(page: Page): Promise<string[]> {
  */
 export async function checkTrackIsShown(page: Page): Promise<string[]> {
   try {
-    // by the `chord-` prefix, not a whole testid: the rest of one is the
-    // adapter's generated id and the feature's position, neither of which this
-    // is about
+    // the chords are painted on a canvas, so the count their renderer group
+    // publishes is what says the track drew
     await page.waitForFunction(
-      () => document.querySelectorAll('[data-testid^="chord-"]').length > 0,
+      () =>
+        [...document.querySelectorAll<HTMLElement>('[data-chord-count]')].some(
+          g => Number(g.dataset.chordCount) > 0,
+        ),
       { timeout: 20000 },
     )
     return []

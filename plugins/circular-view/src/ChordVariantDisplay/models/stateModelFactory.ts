@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -7,8 +11,12 @@ import {
   BaseChordDisplay,
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
+import { chordLabel } from '../../chords/chordLabel.ts'
+import { shapePath } from '../../chords/chordLayer.ts'
+import { chordShape } from '../../chords/shapes.ts'
 
 import type { ExportSvgOptions } from '../../CircularView/model.ts'
+import type { ChordShape } from '../../chords/shapes.ts'
 import type { ChordVariantDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { ThemeOptions } from '@mui/material'
@@ -56,13 +64,58 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .views(() => ({
+    .views(self => ({
       /**
        * #getter
        * the panel the linear variant displays open for the same record
        */
       get featureWidgetType() {
         return { type: 'VariantFeatureWidget', id: 'variantFeature' }
+      },
+      /**
+       * #getter
+       * each drawn record's chord, with the colour its config slot answers
+       */
+      get shapes(): ChordShape[] {
+        const { radiusPx, configuration } = self
+        const sliceFor = (refName: string) => self.sliceFor(undefined, refName)
+        const out: ChordShape[] = []
+        for (const feature of self.drawnFeatures ?? []) {
+          const shape = chordShape({
+            feature,
+            sliceFor,
+            radius: radiusPx,
+            stroke: readConfObject(configuration, 'color', { feature }),
+          })
+          if (shape) {
+            out.push(shape)
+          }
+        }
+        return out
+      },
+      /**
+       * #getter
+       * a chord's colour carries its own alpha
+       */
+      get shapeAlpha() {
+        return 1
+      },
+      /**
+       * #method
+       */
+      shapeLabel(feature: Feature) {
+        return chordLabel(feature)
+      },
+      /**
+       * #method
+       * a drawn feature's outline as an SVG path, for anything that has to
+       * find a chord on screen without a DOM node to find
+       */
+      shapePathFor(feature: Feature) {
+        const shape = this.shapes.find(s => s.feature === feature)
+        return shape
+          ? shapePath(shape, self.radiusPx, self.bezierRadius)
+          : undefined
       },
     }))
     .actions(self => {
@@ -89,6 +142,15 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         },
       }
     })
+    .actions(self => ({
+      /**
+       * #action
+       * what a click on the canvas reaches
+       */
+      clickFeature(feature: Feature) {
+        self.onChordClick(feature)
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         installChordFetch(self, {

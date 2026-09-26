@@ -2,6 +2,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
+import ShapePaths from '../../chords/ShapePaths.tsx'
+import { chordShape } from '../../chords/shapes.ts'
 import configSchemaF from '../models/configSchema.ts'
 import ChordVariantDisplay from './ChordVariantDisplay.tsx'
 
@@ -18,6 +20,7 @@ function chordModel(
   overrides: Partial<ChordDisplayModel> = {},
 ): ChordDisplayModel {
   return {
+    id: 'sv',
     error: undefined,
     displayError: undefined,
     view: { offsetRadians: 0 },
@@ -25,12 +28,16 @@ function chordModel(
     displayPhase: phase,
     svgReady: phase !== 'loading',
     drawnFeatures: [],
+    shapes: [],
+    shapeAlpha: 1,
     sliceFor: () => undefined,
     selectedFeatureId: undefined,
+    hoveredFeatureId: undefined,
     configuration,
     radiusPx: 100,
     bezierRadius: 50,
-    onChordClick: () => {},
+    clickFeature: () => {},
+    shapeLabel: () => 'a chord',
     openErrorDialog: () => {},
     reload: () => {},
     ...overrides,
@@ -108,17 +115,49 @@ function bnd(uniqueId: string, start: number, mate: number) {
   })
 }
 
-test('chords outside the highlighted set dim, and with no set none do', () => {
-  const features = [bnd('a', 100, 900), bnd('b', 200, 800)]
+function shapesOf(...features: SimpleFeature[]) {
+  return features.flatMap(feature => {
+    const shape = chordShape({
+      feature,
+      sliceFor: () => slice,
+      radius: 100,
+      stroke: 'rgba(255,133,0,0.32)',
+    })
+    return shape ? [shape] : []
+  })
+}
+
+test('on screen the renderer group counts every chord and draws the hovered one', () => {
+  const { container } = render(
+    <svg>
+      <ChordVariantDisplay
+        display={chordModel('ready', {
+          shapes: shapesOf(bnd('a', 100, 900), bnd('b', 200, 800)),
+          hoveredFeatureId: 'b',
+        })}
+      />
+    </svg>,
+  )
+  const g = container.querySelector<SVGElement>(
+    '[data-testid="structuralVariantChordRenderer"]',
+  )!
+  expect(g.dataset.chordCount).toBe('2')
+  const paths = [...container.querySelectorAll('path')]
+  expect(paths.map(p => p.dataset.testid)).toEqual(['chord-b'])
+  expect(paths[0]!.getAttribute('stroke-width')).toBe('3')
+})
+
+test('the export dims chords outside the highlighted set, and with no set none', () => {
   const opacities = (overrides: Partial<ChordDisplayModel>) => {
     const { container } = render(
       <svg>
-        <ChordVariantDisplay
+        <ShapePaths
           display={chordModel('ready', {
-            drawnFeatures: features,
-            sliceFor: () => slice,
+            shapes: shapesOf(bnd('a', 100, 900), bnd('b', 200, 800)),
             ...overrides,
           })}
+          testid="structuralVariantChordRenderer"
+          only="all"
         />
       </svg>,
     )

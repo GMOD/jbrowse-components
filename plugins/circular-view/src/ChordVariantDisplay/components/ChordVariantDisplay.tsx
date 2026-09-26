@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
 import ChordDisplayFrame from '../../chords/ChordDisplayFrame.tsx'
-import Chords from '../../chords/Chords.tsx'
+import ShapePaths from '../../chords/ShapePaths.tsx'
 
 import type { ChordDisplayModel } from '../../chords/types.ts'
 
@@ -12,7 +12,11 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
 }) {
   return (
     <ChordDisplayFrame display={display}>
-      <Chords display={display} />
+      <ShapePaths
+        display={display}
+        testid="structuralVariantChordRenderer"
+        only="highlighted"
+      />
     </ChordDisplayFrame>
   )
 })

@@ -45,7 +45,7 @@ const TIMEOUT = 90_000
 const TYPO_TIMEOUT = 30_000
 
 const CHORDS =
-  '[data-testid="structuralVariantChordRenderer"] [data-testid^="chord-"]'
+  '[data-testid="structuralVariantChordRenderer"]:not([data-chord-count="0"])'
 const GRID_ROWS = '.MuiDataGrid-row'
 const IMPORT_FORM = '[data-testid="import-form"]'
 const SPREADSHEET_IMPORT = '[data-testid="open_spreadsheet"]'
