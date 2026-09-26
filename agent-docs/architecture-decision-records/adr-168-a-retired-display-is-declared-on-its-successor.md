@@ -52,7 +52,7 @@ tree could not add to.
 
 | member          | holds                                                                                   |
 | --------------- | --------------------------------------------------------------------------------------- |
-| `retiredTypes`  | `{ type, migrate? }` per display type retired into this one; `migrate` rewrites its entry |
+| `retiredTypes`  | `{ type, migrate?, values? }` per display type retired into this one; `migrate` rewrites its entry, and `values` lists the slot values only it spelt, for the JSON schema and `jbrowse validate` |
 | `retiredConfig` | rewrites any entry of this display whose slot value an older release spelt differently |
 | `retiredState`  | `{ keys, lift }`: the instance props an old session carries, and the slots they become  |
 

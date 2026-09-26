@@ -482,6 +482,25 @@ function legacyValuesOf(configSchema, declaredSlots) {
   return out
 }
 
+// The slot values a display's retired types spelt, which their \`migrate\`
+// rewrites and the schema probe above cannot reach. A value the slot still
+// accepts is a current spelling, so it is left out.
+function retiredTypeValuesOf(entry) {
+  const definition =
+    getConfigurationSchemaMetadata(entry.configSchema)?.definition ?? {}
+  const out = {}
+  for (const [slot, values] of (entry.retiredTypes ?? []).flatMap(r =>
+    Object.entries(r.values ?? {}),
+  )) {
+    const model = definition[slot]?.model
+    const legacy = values.filter(value => model && !model.is(value))
+    if (legacy.length) {
+      out[slot] = [...new Set([...(out[slot] ?? []), ...legacy])]
+    }
+  }
+  return out
+}
+
 function collect(group, getType) {
   const record = pm.getElementTypeRecord(group)
   const out = {}
@@ -500,7 +519,16 @@ function collect(group, getType) {
       continue
     }
     const legacyKeys = legacyKeysOf(entry.configSchema, slots)
-    const legacyValues = legacyValuesOf(entry.configSchema, slots)
+    const probed = legacyValuesOf(entry.configSchema, slots)
+    const retiredValues = group === 'display' ? retiredTypeValuesOf(entry) : {}
+    const legacyValues = Object.fromEntries(
+      [...new Set([...Object.keys(probed), ...Object.keys(retiredValues)])].map(
+        slot => [
+          slot,
+          [...new Set([...(probed[slot] ?? []), ...(retiredValues[slot] ?? [])])],
+        ],
+      ),
+    )
     out[name] = {
       slots,
       ...(legacyKeys.length ? { legacyKeys } : {}),

@@ -76,6 +76,7 @@ export const retiredTypes: RetiredDisplayType[] = [
   {
     type: 'MultiLinearWiggleDisplay',
     migrate: entry => foldMultiWiggleRendering(entry),
+    values: { defaultRendering: Object.keys(MULTI_RENDERINGS) },
   },
 ]
 

@@ -248,6 +248,57 @@ describe('the schema', () => {
     expect(whereOf(config)).toEqual(['tracks[0].displays[0].showLabels'])
   })
 
+  // Configs the app loads and rewrites, which the schema has to admit too: a
+  // retired type's `migrate` never runs as the schema's preprocessor, so its
+  // `values` declare what the probe cannot find.
+  it('accepts a rendering value the retired multi-wiggle fold rewrites', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'MultiQuantitativeTrack',
+      adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
+      displays: [
+        { type: 'MultiLinearWiggleDisplay', defaultRendering: 'multirowxy' },
+      ],
+    }
+    expect(schemaProblems(config)).toEqual([])
+  })
+
+  it('accepts a legacy rendering in a multi track’s displayDefaults', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'MultiQuantitativeTrack',
+      adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
+      displayDefaults: { defaultRendering: 'multirowxy' },
+      displays: [],
+    }
+    expect(schemaProblems(config)).toEqual([])
+  })
+
+  it("accepts a legacy key a display's schema retires", () => {
+    const wiggle = baseConfig()
+    wiggle.tracks[0] = {
+      ...wiggle.tracks[0]!,
+      type: 'QuantitativeTrack',
+      adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
+      displays: [
+        {
+          type: 'LinearWiggleDisplay',
+          defaultRendering: 'scatter',
+          scatterPointSize: 4,
+        },
+      ],
+    }
+    expect(schemaProblems(wiggle)).toEqual([])
+
+    const alignments = baseConfig()
+    alignments.tracks[0]!.displays = [
+      { type: 'LinearAlignmentsDisplay', colorBy: { type: 'strand' } },
+    ]
+    expect(schemaProblems(alignments)).toEqual([])
+  })
+
   it('says a sequenceAdapter on a CRAM track comes from the assembly', () => {
     const config = baseConfig()
     config.tracks[0]!.adapter = {

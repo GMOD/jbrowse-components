@@ -6501,12 +6501,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "defaultRendering": {
           "description": "Default rendering type.",
-          "enum": [
-            "xyplot",
-            "density",
-            "line",
-            "linecenter",
-            "scatter"
+          "anyOf": [
+            {
+              "enum": [
+                "xyplot",
+                "density",
+                "line",
+                "linecenter",
+                "scatter"
+              ]
+            },
+            {
+              "enum": [
+                "multirowxy",
+                "multirowdensity",
+                "multirowline",
+                "multirowlinecenter",
+                "multirowscatter",
+                "multixyplot",
+                "multiline",
+                "multilinecenter",
+                "multiscatter"
+              ],
+              "deprecated": true,
+              "description": "Legacy spellings a migration rewrites when the config loads."
+            }
           ],
           "default": "xyplot"
         },

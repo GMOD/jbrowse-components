@@ -9,11 +9,16 @@ export type DisplayEntry = Record<string, unknown>
 /**
  * A display type retired into this one. Configs and sessions naming it load
  * as this display, the entry rewritten by `migrate` first: the settings the
- * old type's picture needs, and its own spelling of any slot value.
+ * old type's picture needs, and its own spelling of any slot value, which
+ * `values` lists by slot so the published JSON schema and `jbrowse validate`
+ * admit it. A session track's entry keeps the retired type after its lifted
+ * settings are folded onto it, so `migrate` must leave an entry it already
+ * rewrote as it found it.
  */
 export interface RetiredDisplayType {
   type: string
   migrate?: (entry: DisplayEntry) => DisplayEntry
+  values?: Readonly<Record<string, readonly unknown[]>>
 }
 
 /**

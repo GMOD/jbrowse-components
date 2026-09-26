@@ -201,6 +201,44 @@ describe('validateConfig', () => {
     expect(warningsOf(config)[0]?.message).toContain('legacy value')
   })
 
+  // The same rewrites, from the validator's side: a warning naming the current
+  // spelling, never an error, because the app loads every one of these.
+  it('warns rather than errors on a retired-type rendering value', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'QuantitativeTrack',
+      adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
+      // @ts-expect-error the retired type and its nine-name rendering
+      displays: [
+        { type: 'MultiLinearWiggleDisplay', defaultRendering: 'multirowxy' },
+      ],
+    }
+    expect(errorsOf(config)).toEqual([])
+    expect(warningsOf(config)[0]?.message).toContain('legacy value')
+  })
+
+  it('warns rather than errors on a legacy key a schema retires', () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'QuantitativeTrack',
+      adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
+      // @ts-expect-error legacy key, lifted onto `size`
+      displays: [
+        {
+          type: 'LinearWiggleDisplay',
+          displayId: 'd',
+          scatterPointSize: 4,
+        },
+      ],
+    }
+    expect(errorsOf(config)).toEqual([])
+    expect(warningsOf(config)[0]?.where).toBe(
+      'tracks[0].displays[0].scatterPointSize',
+    )
+  })
+
   // test_data/volvox's config.json has a track on an assembly a
   // JB2TrackHubConnection supplies onto a *second* config file, added at
   // runtime — so no validator reading this one can resolve it, and leading with
