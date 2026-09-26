@@ -44,7 +44,7 @@ export interface MarkDisplayModel
   openMarkPlotDialog: () => void
   facetLayout: FacetLayout
   axes: YAxis[]
-  drawsRows: boolean
+  drawsKeyedRows: boolean
   sources: RowSource[]
   effectiveRowHeight: number
   rowsTopOffset: number

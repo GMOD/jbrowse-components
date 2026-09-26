@@ -18,7 +18,7 @@ const MarkRows = observer(function MarkRows({
   yTop: number
   plotHeight: number
 }) {
-  return model.drawsRows ? (
+  return model.drawsKeyedRows ? (
     <>
       <RowLabelsOverlay
         testId="mark-row-labels"

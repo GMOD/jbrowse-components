@@ -266,3 +266,25 @@ test('under rows the sidecar binds no row table, since its bins carry no key', (
   expect(display.renderState.rowTable).toBeUndefined()
   expect([...display.rpcDataMap.get(0)!.layers[1]!.y!]).toEqual([4, 17, 9])
 })
+
+// The bins count every row's features, so they span the plot as one band; keyed
+// as rows, they took the hidden key as their slot and landed ~4e9 px down.
+test.each(['source', 'strand'])(
+  'under rows by %s the sidecar draws one band inside the plot',
+  field => {
+    const { createDisplay } = createTestEnvironment(DENSITY_MARKS, SIDECAR, {
+      rows: field,
+    })
+    const { display, view } = createDisplay()
+    refuse(display, view)
+    display.setCoarseTier([{ displayedRegionIndex: 0, payload: bins() }], {
+      regions: [],
+      key: '',
+    })
+    expect(display.coarseTierStandsIn).toBe(true)
+    expect(display.rowCount).toBe(1)
+    expect(display.valueScales).toHaveLength(1)
+    const { row } = display.rpcDataMap.get(0)!.layers[1]!
+    expect(row === undefined || row.every(r => r === 0)).toBe(true)
+  },
+)

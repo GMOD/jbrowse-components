@@ -110,7 +110,7 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
           />
         </g>
       ) : null}
-      {overlays && model.drawsRows ? (
+      {overlays && model.drawsKeyedRows ? (
         <g transform={`translate(0,${yTop})`}>
           {model.showRowLabels ? (
             <SvgRowLabels

@@ -722,6 +722,17 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Whether each `row` lane holds a key the row table places: under
+         * `rows`, except while the density sidecar stands in, whose bins
+         * count every row's features and draw as one band.
+         */
+        get drawsKeyedRows(): boolean {
+          return self.drawsRows && !self.coarseTierStandsIn
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * The field the worker splits the features on: the facet's, else the
          * rows'. One split serves both, so `rows` sends it as `facet`.
          */
@@ -914,7 +925,7 @@ export function stateModelFactory(
       })
       .views(self => {
         const layout = stableIdentityComputed(() => {
-          if (self.drawsRows) {
+          if (self.drawsKeyedRows) {
             return rowsLayout(self.sources, categoricalField(self.rowsField))
           }
           const { field = '', domain = [] } = self.facet ?? {}
@@ -925,7 +936,7 @@ export function stateModelFactory(
           )
         })
         const keyed = createEncodeMemo(
-          () => (self.drawsRows ? self.featurePayloads : NO_REGIONS),
+          () => (self.drawsKeyedRows ? self.featurePayloads : NO_REGIONS),
           () => self.rowKeys,
           (region, rowKeys) => keyRegion(region, rowKeys, self.rowsField),
         )
@@ -935,7 +946,7 @@ export function stateModelFactory(
           facetRegion,
         )
         const drawn = () =>
-          self.drawsRows
+          self.drawsKeyedRows
             ? keyed()
             : self.facet
               ? faceted()
@@ -1001,12 +1012,11 @@ export function stateModelFactory(
            * Under `rows`, the table every mark places a key through: its slot
            * in the rows' order, hidden where the focus leaves it out. Rebuilt
            * on a reorder, a focus or a new value, which uploads one small
-           * texture and no instance bytes. Undefined under a facet, which
-           * offsets its rows itself, and while the density sidecar stands in,
-           * whose bins carry no key.
+           * texture and no instance bytes. Undefined wherever the lanes are
+           * not keys.
            */
           get rowTable(): RowTable | undefined {
-            return self.drawsRows && !self.coarseTierStandsIn
+            return self.drawsKeyedRows
               ? markRowTable(keyNames.get(), order.get())
               : undefined
           },
