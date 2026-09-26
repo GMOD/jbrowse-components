@@ -34,6 +34,13 @@ export interface RenderingBackendCallbacks<B> {
    * depend on.
    */
   render: (backend: B) => boolean
+  /**
+   * Hand back whatever the backend allocated for a canvas that is no longer on
+   * the page. Called on every tick the render autorun declines to draw because
+   * the display is off screen, so it has to be idempotent and must not leave
+   * the backend unable to draw the next frame.
+   */
+  releaseTargets: (backend: B) => void
 }
 
 /**
@@ -82,6 +89,7 @@ export function RenderLifecycleMixin() {
       renderTick: number
       autorunsInstalled: boolean
       renderError: unknown
+      offScreen: boolean
     }>(() => ({
       /**
        * #volatile
@@ -124,6 +132,21 @@ export function RenderLifecycleMixin() {
        * the scrim) and by `DisplayChrome` (shows the retry overlay).
        */
       renderError: undefined,
+      /**
+       * #volatile
+       * the display's canvas has scrolled out of the page, so the render
+       * autorun stops drawing into it and hands its GPU targets back. Written
+       * by `useRenderingBackend`, which watches the canvas element itself —
+       * false everywhere `IntersectionObserver` is absent, which is every unit
+       * test and every non-browser host.
+       *
+       * A whole view that scrolls away is already unmounted
+       * (`useViewVisibility`) and a minimized track never mounts, so what this
+       * covers is the track below the fold of a view that IS mounted: the
+       * display list is not windowed, and each of those tracks holds a
+       * full-height multisampled target.
+       */
+      offScreen: false,
     }))
     .views(() => ({
       /**
@@ -272,6 +295,14 @@ export function RenderLifecycleMixin() {
       },
       /**
        * #action
+       */
+      setOffScreen(offScreen: boolean) {
+        if (self.offScreen !== offScreen) {
+          self.offScreen = offScreen
+        }
+      },
+      /**
+       * #action
        * set/clear the render-backend error. Called by `useRenderingBackend`:
        * with the error when the canvas factory rejects (or context-loss
        * re-init fails), and with `undefined` on successful (re)init and on
@@ -353,9 +384,17 @@ export function RenderLifecycleMixin() {
             // Same loop caveat as the upload autorun above: the
             // unmount-and-dispose that prevents re-fire is DisplayChrome's,
             // not a shared canvas's.
+            // First paint is never skipped, whatever the canvas's position:
+            // `data-display-drawn` is what every capture and browser test
+            // waits on, and a track that loads below the fold would otherwise
+            // hold each of them to its full timeout. It paints once, and the
+            // release below takes the target straight back.
             try {
-              if (cbs.render(b)) {
+              if (!(self.offScreen && self.canvasDrawn) && cbs.render(b)) {
                 self.markCanvasDrawn()
+              }
+              if (self.offScreen) {
+                cbs.releaseTargets(b)
               }
             } catch (e) {
               self.setRenderError(e)

@@ -1,4 +1,4 @@
-import { syncCanvasSize } from '../canvas2dUtils.ts'
+import { getDpr, syncCanvasSize } from '../canvas2dUtils.ts'
 import { canvasContextError, noteCanvasContext } from '../canvasContext.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
 
@@ -383,8 +383,24 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   resize(width: number, height: number) {
+    // A render autorun can fire between `dispose` and the model dropping its
+    // backend reference, and nothing destroys what a disposed HAL allocates.
+    if (this.disposed) {
+      return { x: getDpr(), y: getDpr() }
+    }
     return syncCanvasSize(this.canvas, width, height).scale
   }
+
+  /**
+   * Nothing to give back. WebGL2 multisamples in the drawing buffer the context
+   * owns (`antialias: true` below), so this HAL holds no separate target —
+   * releasing its samples means dropping the context, which costs a re-acquire
+   * against a hard 16-context ceiling and a full shader recompile per display.
+   * `agent-docs/reference/GPU_CONTEXT_BUDGET.md` measured that trade and
+   * declined it; what makes the WebGPU side worth doing is that it pays
+   * neither.
+   */
+  releaseRenderTargets() {}
 
   protected createTexture(
     passId: string,

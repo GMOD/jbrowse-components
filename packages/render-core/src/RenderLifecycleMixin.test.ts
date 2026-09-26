@@ -30,6 +30,7 @@ test('attachRenderingBackend spawns one upload + render autorun and marks drawn'
       }
       return true
     },
+    releaseTargets: () => {},
     render: b => {
       if (data.size === 0) {
         return false
@@ -62,6 +63,7 @@ test('an upload that changed nothing does not force a redraw', () => {
 
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => tick.get() % 2 === 0,
+    releaseTargets: () => {},
     render: b => {
       b.renders += 1
       return true
@@ -86,6 +88,7 @@ test('renderNow bumps renderTick so render autorun re-fires', () => {
 
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => true,
+    releaseTargets: () => {},
     render: b => {
       b.renders += 1
       return true
@@ -111,6 +114,7 @@ test('stopRenderingBackend clears backend — autoruns idle', () => {
       }
       return true
     },
+    releaseTargets: () => {},
     render: b => {
       b.renders += 1
       return true
@@ -151,6 +155,7 @@ test('re-calling attachRenderingBackend swaps backend without re-installing auto
         }
         return true
       },
+      releaseTargets: () => {},
       render: (b: FakeRenderingBackend) => {
         b.renders += 1
         return true
@@ -188,6 +193,7 @@ test('a throw in the render callback sets renderError instead of escaping (no in
   const err = new Error('Unknown wiggle rendering type: ')
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => true,
+    releaseTargets: () => {},
     render: () => {
       throw err
     },
@@ -211,6 +217,7 @@ test('a throw in the upload callback sets renderError instead of escaping (no in
       throw err
     },
     // upload never populated GPU buffers, so there is nothing to draw
+    releaseTargets: () => {},
     render: () => false,
   }))
 
@@ -227,6 +234,7 @@ test('canvasDrawn resets to false when directly cleared (clearAllRpcData contrac
 
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => true,
+    releaseTargets: () => {},
     render: b => {
       b.renders += 1
       return true
@@ -302,6 +310,7 @@ test('painted tracks canvasDrawn for a display that does render one', () => {
 
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
     upload: () => true,
+    releaseTargets: () => {},
     render: () => true,
   }))
 
@@ -329,6 +338,7 @@ describe('the dependency set is the contract', () => {
         void data.size
         return true
       },
+      releaseTargets: () => {},
       render: () => {
         void palette.get()
         return data.size > 0
@@ -339,9 +349,13 @@ describe('the dependency set is the contract', () => {
       'TestModel.currentRenderingBackend',
       'data.keys()',
     ])
+    // `canvasDrawn` is not in the list and should not be: the off-screen gate
+    // short-circuits on `offScreen`, so an on-screen display never subscribes
+    // to the flag its own paint writes.
     expect(reactionDependencies(model, 'RenderLifecycle:render')).toEqual([
       'TestModel.canRender',
       'TestModel.currentRenderingBackend',
+      'TestModel.offScreen',
       'TestModel.renderTick',
       'data.keys()',
       'palette',
@@ -353,6 +367,7 @@ describe('the dependency set is the contract', () => {
     const data = observable.map<number, string>(undefined, { deep: false })
     model.attachRenderingBackend({}, () => ({
       upload: () => data.size > 0,
+      releaseTargets: () => {},
       render: () => data.size > 0,
     }))
     model.stopRenderingBackend()

@@ -265,6 +265,7 @@ describe('encodeInputs', () => {
         releases.push(key)
       },
       setErrorHandler() {},
+      releaseOffscreenTargets() {},
       renderBlocks: () => true,
       dispose() {},
     })

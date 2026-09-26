@@ -185,12 +185,19 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   }
 
   resize(width: number, height: number) {
+    if (this.disposed) {
+      return { x: getDpr(), y: getDpr() }
+    }
     this.record('resize', width, height)
     // The real HALs report the scale their backing store actually got, and
     // every device-px rect a renderer builds comes from this — so a mock
     // returning nothing is a renderer whose rects are all NaN. `getDpr()` is
     // the unclamped answer, which is what a mock canvas of any size would get.
     return { x: getDpr(), y: getDpr() }
+  }
+
+  releaseRenderTargets() {
+    this.record('releaseRenderTargets')
   }
 
   // The overrides below log and then defer to the base's shells, so the buffer

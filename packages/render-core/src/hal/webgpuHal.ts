@@ -1,6 +1,6 @@
 /// <reference types="@webgpu/types" />
 
-import { syncCanvasSize } from '../canvas2dUtils.ts'
+import { getDpr, syncCanvasSize } from '../canvas2dUtils.ts'
 import {
   canvasConfiguredBy,
   canvasContextError,
@@ -376,6 +376,11 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   resize(width: number, height: number) {
+    // A render autorun can fire between `dispose` and the model dropping its
+    // backend reference, and nothing destroys what a disposed HAL allocates.
+    if (this.disposed) {
+      return { x: getDpr(), y: getDpr() }
+    }
     const { changed, scale } = syncCanvasSize(this.canvas, width, height)
     // `!this.msaaTexture` covers the first frame and a rebuild that bailed. At
     // sampleCount 1 there is never a texture, so without the count in the
@@ -385,6 +390,12 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       this.recreateMsaaTexture(this.canvas.width, this.canvas.height)
     }
     return scale
+  }
+
+  releaseRenderTargets() {
+    if (!this.disposed) {
+      this.recreateMsaaTexture(0, 0)
+    }
   }
 
   private recreateMsaaTexture(width: number, height: number) {

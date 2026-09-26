@@ -16,6 +16,7 @@ export function stubFactory() {
   return Promise.resolve<StubBackend>({
     dispose() {},
     setErrorHandler() {},
+    releaseOffscreenTargets() {},
   })
 }
 
@@ -98,6 +99,7 @@ export const TestChromeModel = types
     renderNow() {},
     startRenderingBackend(_backend: StubBackend) {},
     stopRenderingBackend() {},
+    setOffScreen(_offScreen: boolean) {},
     setRenderError(error: unknown) {
       self.renderError = error
     },

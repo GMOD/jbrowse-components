@@ -38,6 +38,13 @@ export interface RenderingBackend {
    * allocates no GPU resources.
    */
   setErrorHandler(handler: (error: Error) => void): void
+  /**
+   * Give back the canvas-sized GPU targets while the display's canvas is off
+   * the page, keeping everything a redraw would otherwise have to rebuild.
+   * `RenderLifecycleMixin`'s render autorun calls it on every tick it declines
+   * to draw, so it has to be idempotent; the next frame's `resize` reallocates.
+   */
+  releaseOffscreenTargets(): void
   dispose(): void
 }
 
@@ -61,6 +68,10 @@ export abstract class GpuRenderingBackendBase {
   // renderError. Wired by useRenderingBackend once the backend is live.
   setErrorHandler(handler: (error: Error) => void): void {
     this.hal.setErrorHandler(handler)
+  }
+
+  releaseOffscreenTargets(): void {
+    this.hal.releaseRenderTargets()
   }
 
   dispose(): void {
@@ -94,6 +105,9 @@ export abstract class Canvas2DRenderingBackendBase {
   // Present for symmetry with the GPU base so useRenderingBackend can wire both
   // uniformly.
   setErrorHandler(_handler: (error: Error) => void): void {}
+
+  // Canvas2D's backing store is the only buffer here and the element owns it.
+  releaseOffscreenTargets(): void {}
 
   dispose(): void {}
 }

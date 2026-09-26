@@ -28,6 +28,17 @@ export interface CellTarget<K, Encoded> {
 }
 
 /**
+ * The other half of what this installer needs off a backend, and the half every
+ * backend gets for free by extending `GpuRenderingBackendBase` or
+ * `Canvas2DRenderingBackendBase`. Named apart from `CellTarget` because it has
+ * nothing to do with cells: the installer passes it straight through as the
+ * lifecycle's `releaseTargets` callback.
+ */
+export interface TargetRelease {
+  releaseOffscreenTargets(): void
+}
+
+/**
  * What the backend takes, read off the backend, which is the direction the
  * overloads have to check in: the payload reaching `upload` must be assignable
  * to the parameter it declares. Inferring the other way, from `encode`'s
@@ -138,7 +149,7 @@ function checkPayloads(
 export function installUpload<
   K,
   Data extends EncodedOf<B>,
-  B extends CellTarget<K, unknown>,
+  B extends CellTarget<K, unknown> & TargetRelease,
 >(
   self: LifecycleHost,
   backend: B,
@@ -149,7 +160,12 @@ export function installUpload<
     inputs?: never
   },
 ): void
-export function installUpload<K, Data, Props, B extends CellTarget<K, unknown>>(
+export function installUpload<
+  K,
+  Data,
+  Props,
+  B extends CellTarget<K, unknown> & TargetRelease,
+>(
   self: LifecycleHost,
   backend: B,
   spec: UploadSpec<K, Data, Props, EncodedOf<B>, B> & {
@@ -161,7 +177,7 @@ export function installUpload<
   Data,
   Props,
   Encoded,
-  B extends CellTarget<K, Encoded>,
+  B extends CellTarget<K, Encoded> & TargetRelease,
 >(
   self: LifecycleHost,
   backend: B,
@@ -187,6 +203,9 @@ export function installUpload<
         return sync(b, own())
       },
       render: b => render(b, own()),
+      releaseTargets: b => {
+        b.releaseOffscreenTargets()
+      },
     }
   })
 }

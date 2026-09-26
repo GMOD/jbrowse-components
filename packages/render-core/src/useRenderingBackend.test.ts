@@ -5,6 +5,7 @@ import { RECOVERY_WINDOW_MS } from './recoveryBudget.ts'
 import {
   CONTEXT_LOST_REPORT_GRACE_MS,
   isGpuContextLostError,
+  OFFSCREEN_RELEASE_BAND,
   useRenderingBackend,
 } from './useRenderingBackend.ts'
 
@@ -46,6 +47,7 @@ function createMockModel() {
     renderNow: jest.fn(),
     renderError: undefined as unknown,
     setRenderError: jest.fn(),
+    setOffScreen: jest.fn(),
   }
 }
 
@@ -61,6 +63,7 @@ function createReactiveModel() {
     setRenderError: jest.fn((e: unknown) => {
       model.renderError = e
     }),
+    setOffScreen: jest.fn(),
   }
   return model
 }
@@ -668,6 +671,115 @@ describe('useRenderingBackend', () => {
 
     // 1 initial init + the swap's re-init + both of `second`'s own attempts
     expect(factory).toHaveBeenCalledTimes(4)
+  })
+
+  // The off-screen signal. jsdom ships no IntersectionObserver, so the hook is
+  // inert everywhere else in this suite and these install a fake to drive it.
+  describe('off-screen release', () => {
+    interface FakeObserver {
+      root: Element | null
+      rootMargin: string
+      target: Element | undefined
+      fire: (isIntersecting: boolean) => void
+      disconnected: boolean
+    }
+    let observers: FakeObserver[] = []
+
+    beforeEach(() => {
+      observers = []
+      Object.defineProperty(globalThis, 'IntersectionObserver', {
+        configurable: true,
+        writable: true,
+        value: class {
+          constructor(
+            cb: (entries: { isIntersecting: boolean }[]) => void,
+            init?: { root?: Element | null; rootMargin?: string },
+          ) {
+            const o: FakeObserver = {
+              root: init?.root ?? null,
+              rootMargin: init?.rootMargin ?? '',
+              target: undefined,
+              fire: v => {
+                cb([{ isIntersecting: v }])
+              },
+              disconnected: false,
+            }
+            observers.push(o)
+            Object.assign(this, {
+              observe: (el: Element) => {
+                o.target = el
+              },
+              disconnect: () => {
+                o.disconnected = true
+              },
+              unobserve: () => {},
+            })
+          }
+        },
+      })
+    })
+
+    afterEach(() => {
+      Reflect.deleteProperty(globalThis, 'IntersectionObserver')
+    })
+
+    async function mountWatchedCanvas(canvas: HTMLCanvasElement) {
+      const model = createMockModel()
+      const { result, unmount } = renderHook(() =>
+        useRenderingBackend(createMockFactory(), model),
+      )
+      act(() => {
+        result.current.canvasRef(canvas)
+      })
+      await act(async () => {})
+      return { model, unmount, observer: observers.at(-1)! }
+    }
+
+    test('reports the canvas leaving and re-entering, with a band', async () => {
+      const canvas = document.createElement('canvas')
+      const { model, observer } = await mountWatchedCanvas(canvas)
+
+      expect(observer.target).toBe(canvas)
+      expect(observer.rootMargin).toBe(`${OFFSCREEN_RELEASE_BAND} 0px`)
+
+      act(() => {
+        observer.fire(false)
+      })
+      expect(model.setOffScreen).toHaveBeenLastCalledWith(true)
+
+      act(() => {
+        observer.fire(true)
+      })
+      expect(model.setOffScreen).toHaveBeenLastCalledWith(false)
+    })
+
+    test('roots at the scrolling ancestor, where the band is not inert', async () => {
+      const port = document.createElement('div')
+      port.style.overflowY = 'auto'
+      const inner = document.createElement('div')
+      const canvas = document.createElement('canvas')
+      inner.append(canvas)
+      port.append(inner)
+      document.body.append(port)
+
+      const { observer } = await mountWatchedCanvas(canvas)
+
+      expect(observer.root).toBe(port)
+      port.remove()
+    })
+
+    test('stops watching and clears the flag on unmount', async () => {
+      const canvas = document.createElement('canvas')
+      const { model, unmount, observer } = await mountWatchedCanvas(canvas)
+      act(() => {
+        observer.fire(false)
+      })
+
+      unmount()
+
+      expect(observer.disconnected).toBe(true)
+      expect(model.setOffScreen).toHaveBeenLastCalledWith(false)
+    })
   })
 
   test('cleans up device lost listener on unmount', () => {

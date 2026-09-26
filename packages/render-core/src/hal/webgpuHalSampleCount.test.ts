@@ -12,6 +12,7 @@ import type { SampleCount } from './types.ts'
 // the shapes are worth pinning where they can be read.
 function fakeDevice() {
   const textures: { sampleCount: number; size: unknown }[] = []
+  const destroyed: unknown[] = []
   const attachments: (GPURenderPassColorAttachment | null)[] = []
   const device = {
     limits: {
@@ -27,7 +28,12 @@ function fakeDevice() {
     createPipelineLayout: () => ({}),
     createTexture: (desc: GPUTextureDescriptor) => {
       textures.push({ sampleCount: desc.sampleCount ?? 1, size: desc.size })
-      return { createView: () => ({ view: 'msaa' }), destroy: () => {} }
+      return {
+        createView: () => ({ view: 'msaa' }),
+        destroy: () => {
+          destroyed.push(desc.size)
+        },
+      }
     },
     createCommandEncoder: () => ({
       beginRenderPass: (desc: GPURenderPassDescriptor) => {
@@ -40,7 +46,12 @@ function fakeDevice() {
     popErrorScope: () => Promise.resolve(null),
     queue: { submit: () => {}, writeBuffer: () => {} },
   }
-  return { device: device as unknown as GPUDevice, textures, attachments }
+  return {
+    device: device as unknown as GPUDevice,
+    textures,
+    destroyed,
+    attachments,
+  }
 }
 
 function fakeCanvas() {
@@ -75,6 +86,16 @@ function installGpu(device: GPUDevice) {
 
 // No descriptors, so nothing needs a shader compiler — what is under test is
 // the attachment and the texture, neither of which depends on a pass existing.
+async function buildHal(sampleCount: SampleCount) {
+  const fake = fakeDevice()
+  installGpu(fake.device)
+  const hal = await WebGPUHal.create(fakeCanvas(), [], sampleCount)
+  if (!hal) {
+    throw new Error('fake stack failed to build a HAL')
+  }
+  return { hal, fake }
+}
+
 async function drawOneFrame(sampleCount: SampleCount) {
   const fake = fakeDevice()
   installGpu(fake.device)
@@ -146,4 +167,47 @@ test('at 1 nothing is allocated and the frame draws straight into the canvas', a
       clearValue: { r: 0, g: 0, b: 0, a: 0 },
     },
   ])
+})
+
+// Freeing the multisampled target is the one GPU allocation a display can give
+// back without a context re-acquire or a shader recompile, so what these pin is
+// that it really goes and really comes back.
+
+test('releaseRenderTargets destroys the multisampled target', async () => {
+  const { hal, fake } = await buildHal(4)
+  hal.resize(100, 40)
+  expect(fake.textures).toHaveLength(1)
+
+  hal.releaseRenderTargets()
+
+  expect(fake.destroyed).toEqual([[100, 40]])
+  expect(fake.textures).toHaveLength(1)
+  resetDeviceGpuCacheForTests(fake.device)
+})
+
+test('the next resize rebuilds it at the size the canvas still has', async () => {
+  // The canvas never changed, so `syncCanvasSize` reports no change: what
+  // rebuilds the target is the missing-texture half of `resize`'s condition.
+  const { hal, fake } = await buildHal(4)
+  hal.resize(100, 40)
+  hal.releaseRenderTargets()
+
+  hal.resize(100, 40)
+
+  expect(fake.textures).toEqual([
+    { sampleCount: 4, size: [100, 40] },
+    { sampleCount: 4, size: [100, 40] },
+  ])
+  resetDeviceGpuCacheForTests(fake.device)
+})
+
+test('a disposed HAL allocates nothing, from either entry point', async () => {
+  const { hal, fake } = await buildHal(4)
+  hal.dispose()
+
+  hal.resize(100, 40)
+  hal.releaseRenderTargets()
+
+  expect(fake.textures).toEqual([])
+  resetDeviceGpuCacheForTests(fake.device)
 })

@@ -30,6 +30,7 @@ function makeModel() {
     forceLoad: jest.fn(),
     renderNow: jest.fn(),
     setRenderError: jest.fn(),
+    setOffScreen: jest.fn(),
     startRenderingBackend: jest.fn(),
     stopRenderingBackend: jest.fn(),
     setHoveredFeature: jest.fn<undefined, [Hit | undefined]>(),

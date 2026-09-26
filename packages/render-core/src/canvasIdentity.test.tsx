@@ -25,6 +25,7 @@ function mockModel(): RenderLifecycleModel<Backend> {
     renderNow: jest.fn(),
     renderError: undefined,
     setRenderError: jest.fn(),
+    setOffScreen: jest.fn(),
   }
 }
 

@@ -150,6 +150,15 @@ export interface GpuHal {
    */
   resize(width: number, height: number): CanvasScale
 
+  /**
+   * Drop the canvas-sized render targets this HAL allocated, keeping the
+   * device, the context, the compiled pipelines and every uploaded buffer. The
+   * next `resize` rebuilds them, so a display whose canvas has scrolled out of
+   * the page can give the bytes back and come back at the cost of one frame
+   * rather than a context re-acquire and a shader recompile.
+   */
+  releaseRenderTargets(): void
+
   // Replacing or deleting a buffer between `beginFrame` and `endFrame` is legal
   // on every HAL, including one the open frame has already drawn from. WebGL2
   // is immediate-mode so the old contents are already consumed; WebGPU holds

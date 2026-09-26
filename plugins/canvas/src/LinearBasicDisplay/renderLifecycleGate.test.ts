@@ -12,6 +12,7 @@ function makeBackend() {
       calls.releases++
     },
     setErrorHandler() {},
+    releaseOffscreenTargets() {},
     renderBlocks() {
       calls.renders++
       return true

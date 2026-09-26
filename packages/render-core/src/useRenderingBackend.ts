@@ -34,6 +34,42 @@ const CONTEXT_RECOVER_BASE_MS = 1000
 // aborted when the window expires, so this is not a readiness cap.
 export const CONTEXT_LOST_REPORT_GRACE_MS = 400
 
+/**
+ * How far past its scroll port a canvas keeps its GPU targets, as a fraction of
+ * the port on each edge.
+ *
+ * A band, where `useViewVisibility`'s hard window deliberately has none, and the
+ * reason that file gives does not reach here. There the band roughly doubles
+ * live WebGL2 contexts against a hard ceiling of 16, so it costs a resource the
+ * page runs out of; here it costs bytes, and bytes have no cliff. What the band
+ * buys is the frame: intersection callbacks are delivered after the frame that
+ * moved the canvas has painted, so a hard edge shows one blank frame on the way
+ * back in. Repainting a quarter of a port early puts the redraw several frames
+ * ahead of the pixels at any ordinary scroll speed.
+ */
+export const OFFSCREEN_RELEASE_BAND = '25%'
+
+/**
+ * The nearest ancestor that scrolls `el`, which is what the observer has to be
+ * rooted at. Rooting at the viewport would make {@link OFFSCREEN_RELEASE_BAND}
+ * inert: an observer clips the target against every scrolling ancestor before
+ * it intersects the root box the margin expands, and JBrowse's views scroll
+ * inside a container in all three hosts (the classic stack, a workspace panel,
+ * a bounded embed). Null where nothing above it scrolls, which is the page-
+ * scrolling embed, and there the viewport root takes the margin directly.
+ */
+function scrollPortOf(el: HTMLElement) {
+  let node = el.parentElement
+  while (node) {
+    const { overflowY } = getComputedStyle(node)
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      return node
+    }
+    node = node.parentElement
+  }
+  return null
+}
+
 export {
   createGpuContextLostError,
   createGpuDeviceLostError,
@@ -70,6 +106,7 @@ export interface RenderLifecycleModel<RenderingBackendType> {
   renderNow: () => void
   renderError: unknown
   setRenderError: (error: unknown) => void
+  setOffScreen: (offScreen: boolean) => void
 }
 
 /**
@@ -423,6 +460,36 @@ export function useRenderingBackend<
     }
     return undefined
   }, [canvas, contextVersion, factory, model])
+
+  // Watch the canvas rather than the track container: the canvas is the element
+  // whose size the released targets were allocated for, so this is the one
+  // signal for every display in every view, with no view-level plumbing. Where
+  // `IntersectionObserver` is missing (jsdom, SSR) nothing ever sets the flag
+  // and the display draws exactly as it did before.
+  useEffect(() => {
+    if (canvas && typeof IntersectionObserver !== 'undefined') {
+      const observer = new IntersectionObserver(
+        entries => {
+          const entry = entries.at(-1)
+          if (entry && nodeAlive(model)) {
+            model.setOffScreen(!entry.isIntersecting)
+          }
+        },
+        {
+          root: scrollPortOf(canvas),
+          rootMargin: `${OFFSCREEN_RELEASE_BAND} 0px`,
+        },
+      )
+      observer.observe(canvas)
+      return () => {
+        observer.disconnect()
+        if (nodeAlive(model)) {
+          model.setOffScreen(false)
+        }
+      }
+    }
+    return undefined
+  }, [canvas, model])
 
   useTabVisibilityRerender(() => {
     if (nodeAlive(model)) {

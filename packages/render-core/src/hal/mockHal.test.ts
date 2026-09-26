@@ -246,3 +246,13 @@ describe('MockHal mid-frame buffer replacement', () => {
     expect(hal.replacedWhileDrawn()).toEqual(['0:line'])
   })
 })
+
+// HAL parity: both real HALs refuse a resize past `dispose`, so a backend test
+// driving the mock sees the same refusal rather than a shape only they have.
+test('a disposed MockHal records no resize', () => {
+  const hal = new MockHal([])
+  hal.dispose()
+  hal.resize(100, 40)
+
+  expect(hal.callsOf('resize')).toHaveLength(0)
+})

@@ -83,6 +83,7 @@ describe('the map handed to installUpload', () => {
   const backend = {
     upload: () => {},
     release: () => {},
+    releaseOffscreenTargets: () => {},
   }
 
   function installOver(data: ReadonlyMap<number, object>) {

@@ -83,6 +83,7 @@ function recordUploads(display: LinearMarkDisplayModel) {
     },
     release() {},
     setErrorHandler() {},
+    releaseOffscreenTargets() {},
     renderBlocks: () => true,
     dispose() {},
   })

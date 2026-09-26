@@ -35,6 +35,7 @@ test('an arrival uploads before anything paints, whether or not render reads the
         log.push(`upload:${key}`)
       },
       release() {},
+      releaseOffscreenTargets() {},
     }
 
     installUpload(model, backend, {
@@ -75,6 +76,7 @@ test('a render callback reaching the map through a computed chain also paints af
       log.push(`upload:${key}`)
     },
     release() {},
+    releaseOffscreenTargets() {},
   }
   const lanes = computed(() => [...data.keys()].map(k => k * 2))
   const renderState = computed(() => ({ laneCount: lanes.get().length }))

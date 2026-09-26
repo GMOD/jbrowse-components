@@ -28,6 +28,7 @@ function makeBackend<T>() {
     release(key: number) {
       releases.push(key)
     },
+    releaseOffscreenTargets() {},
   }
   return { backend, uploads, releases }
 }
@@ -142,6 +143,7 @@ test('a backend swap re-uploads every cell without re-encoding', () => {
   model.attachRenderingBackend(second.backend, () => ({
     upload: () => true,
     render: () => false,
+    releaseTargets: () => {},
   }))
   expect(second.uploads.map(u => u.key).sort()).toEqual([0, 1])
   expect(encodes).toBe(2)
@@ -271,6 +273,7 @@ function aBackendTakingMoreThanTheDisplayHolds() {
   const backend = {
     upload(_key: number, _payload: Encoded) {},
     release(_key: number) {},
+    releaseOffscreenTargets() {},
   }
   const cells = new Map<number, Cell>()
   // @ts-expect-error the backend reads `marker` off payloads carrying none
@@ -285,6 +288,7 @@ function anEncodeNarrowerThanTheBackend() {
   const backend = {
     upload(_key: number, _payload: Encoded) {},
     release(_key: number) {},
+    releaseOffscreenTargets() {},
   }
   const cells = new Map<number, Cell>()
   installUpload(TestModel.create(), backend, {

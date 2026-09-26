@@ -98,6 +98,7 @@ function recordingBackend() {
       return true
     },
     setErrorHandler() {},
+    releaseOffscreenTargets() {},
     dispose() {},
   }
   return { uploaded, backend }
