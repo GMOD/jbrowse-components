@@ -4321,7 +4321,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "for a categorical scale, the values that take the range first, in order; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
+              "description": "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; mapq 255 for unavailable; '' a read with no value) or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
               "anyOf": [
                 {
                   "type": "array",
@@ -4360,7 +4360,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": 0.99
             },
             "range": {
-              "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis.",
+              "description": "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/CssColor"
@@ -5046,7 +5046,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "domain": {
-              "description": "for a categorical scale, the values that take the range first, in order; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
+              "description": "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; mapq 255 for unavailable; '' a read with no value) or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
               "anyOf": [
                 {
                   "type": "array",
@@ -5085,7 +5085,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": 0.99
             },
             "range": {
-              "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis.",
+              "description": "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/CssColor"

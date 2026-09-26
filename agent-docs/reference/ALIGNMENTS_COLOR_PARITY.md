@@ -26,14 +26,18 @@ Each overlay has **one table saying what a slot MEANS**, and the colour follows:
 
 ```
 ARC_SLOT_CATEGORY / LINKED_READ_SLOT_CATEGORY   (shaders/palettes.ts)
-  -> swatchPaletteKeys[category]                (colorUtils.ts — the read fills' own table)
-  -> the themed ColorPalette
+  -> arcSlotCategory(slot, colorField)          (the arc baseline is LR or normal insert, per mode)
+  -> readCategoryColor(palette, category)       (colorUtils.ts — the read fills' own resolution)
+  -> the colour `color` declares for the category, else its palette default
 ```
 
 An overlay slot and the read swatch of the same meaning therefore cannot be two
 colours. Not because a test says so — because there is one table and the other
 is derived from it. `readCategoryPaletteKeys` had always worked this way for the
-reads themselves; the overlays were the ones off it.
+reads themselves; the overlays were the ones off it. `readCategoryColor` is
+also where a declared `range` on a preset field lands
+(`declaredReadCategoryColors`), so an override reaches the GPU uniforms, the
+Canvas2D fill, the key and the band through the one lookup.
 
 The same shape covers the words. `connectionLabel` derives its wording from the
 slot's category through the read key, with `SPLIT_JUNCTION_LABELS` (legendUtils)

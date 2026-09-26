@@ -417,6 +417,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="method-colorpalettein">**colorPaletteIn**</span><br><code>(theme: JBrowsePalette) =&gt; ColorPalette</code> | The read palette over `theme`: `color.value` over the neutral entry, and the category colours `color` declares. SVG export passes its own theme. | LinearAlignmentsDisplay |
 | <span id="method-legenditems">**legendItems**</span><br><code>() =&gt; LegendItem[]</code> |  | LinearAlignmentsDisplay |
 | <span id="method-arclegenditems">**arcLegendItems**</span><br><code>() =&gt; LegendItem[]</code> | Key for the paired-end arc / read-cloud colors, empty when no overlay is drawn. `getAlignmentsColorScales` folds the rows the reads already key. | LinearAlignmentsDisplay |
 | <span id="method-groupchiplabel">**groupChipLabel**</span><br><code>(label: string) =&gt; string</code> | The text a group's chip shows for its section label | LinearAlignmentsDisplay |

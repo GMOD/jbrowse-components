@@ -124,10 +124,15 @@ retired `methylation` and `stranded` names now resolve.
   [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md), which
   reads the kind off `scale` alone: the plain fill writes `scale: 'none'`, so a
   linear or threshold field comes back categorical.
-- A ~~`palette`~~ `range` (ADR-151) beside a preset field with a vocabulary of
+- ~~A ~~`palette`~~ `range` (ADR-151) beside a preset field with a vocabulary of
   its own (`strand`, `pairOrientation`) waits unread: several levels share the
   palette's neutral entry and the arcs derive their colours from the same table,
-  so a per-level override is a change to that table and not to the bake.
+  so a per-level override is a change to that table and not to the bake.~~
+  Since 2026-09-26 a `range` colours a preset field's levels through the read
+  category table (`declaredReadCategoryColors`): `domain` names the levels,
+  or the field's own order takes the range, and each of the five levels that
+  share the neutral default recolours alone. The GPU uniforms, the Canvas2D
+  fill, the key and the arc band all read `readCategoryColor`.
 
 ## Rejected alternatives
 

@@ -33,6 +33,13 @@ Auto-generated config schema for the current JBrowse release — see the [config
 }
 ```
 
+```js
+{
+  type: 'LinearAlignmentsDisplay',
+  color: { field: 'pairOrientation', domain: ['RR'], range: ['#d95f02'] },
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 The alignments displays' `color` setting: one colour for every read, or a
@@ -57,12 +64,12 @@ These slots go on a display entry: `"displays": [{ "type": "AlignmentsColor", ..
 | <span id="slot-value">**value**</span><br>`maybeColor` | The fill of every read while no field paints, and of a read carrying no value under a tag or attribute. Writing `color: "steelblue"` lands here. Unset, the theme's read colour. |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute |
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, threshold) | none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a categorical scale, the values that take the range first, in order; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; mapq 255 for unavailable; '' a read with no value) or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of a linear or log scale's domain; unset follows the loaded values |
 | <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of a linear or log scale's domain; unset follows the loaded values |
 | <span id="slot-autoscale">**autoscale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (local, localpercentile) = <code>'local'</code> | what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0 |
 | <span id="slot-numquantile">**numQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.99</code> | the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%<br>_advanced_ |
-| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis |
+| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis |
 | <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange) | a named ramp for a linear or log scale; range's colours, where it lists any, win over it |
 | <span id="slot-reverse">**reverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain |
 | <span id="slot-domainmid">**domainMid**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it |

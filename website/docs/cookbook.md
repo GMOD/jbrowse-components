@@ -296,7 +296,9 @@ that pass every expression, on variant tracks too:
 ```
 
 - `color`'s field also takes `strand`, `pairOrientation`, `insertSize` and
-  `tags.XX`; a string is one colour for every read
+  `tags.XX`; a string is one colour for every read, and `domain` with `range`
+  recolours one level:
+  `{ "field": "pairOrientation", "domain": ["RR"], "range": ["#d95f02"] }`
 - `baseColor` draws a per-base layer over the reads, whatever `color` fills them
   with: `"modifications"`, `"bisulfite"`, `"baseQuality"` or `"base"`
 - `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`,

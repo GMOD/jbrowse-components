@@ -111,9 +111,10 @@ the arms against `swatchPaletteKeys` — pinning source text, breaking on
 reformatting, and unable to catch the two sides agreeing on a spelling while
 disagreeing on a color.
 
-That is now `u.readCategoryColor[cat]`, filled by the CPU from
-`readCategoryPaletteKeys` (which spreads `swatchPaletteKeys`). The legend and the
-GPU read one table, so there is nothing left to reconcile — the scraping test is
+That is now `u.readCategoryColor[cat]`, filled by the CPU through
+`readCategoryColor`, the colour `color` declares for the category over its
+`readCategoryPaletteKeys` default. The legend and the GPU read one lookup, so
+there is nothing left to reconcile — the scraping test is
 deleted and `colorCategory.test.ts` checks data instead. The duplicated color
 costs 352 bytes in a block that is written once per block render.
 
