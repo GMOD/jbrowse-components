@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph pane follows the linear view and picks its coarse tier by zoom, lanes read from the graph draw the alignment the graph states between any two haplotypes with no aligner, one command builds a host's files and config, and the tutorials open on the hosted instance. Released - gbz-base 2.8.0, the plugin 3.1.0 on npm and the store, the portal, the demos, the figures. Left - the clips, a docs deploy, and Colin's call on the anchored graph becoming a linear-view display.
+description: The HPRC graph thread as of 2026-09-26. The graph pane follows the linear view and picks its coarse tier by zoom, lanes read from the graph draw the alignment the graph states between any two haplotypes with no aligner, one command builds a host's files and config, and the tutorials open on the hosted instance. Released - gbz-base 2.8.0, the plugin 3.1.0 on npm and the store, the portal, the demos, the figures. Left - the browse clip, whose node anchor misses after a re-cut, a docs deploy, and Colin's call on the anchored graph becoming a linear-view display.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -191,11 +191,21 @@ launch figures give the three graph lanes compact heights so the graph and its
 node menu sit in frame.
 
 **Next.** A docs deploy, which is Colin's (`update docs` on main deploys every
-agent's landed doc commits at once). The clips `pangenome/hprc_browse`,
-`tier_to_fine`, `pggb_subgraph_launch` and `pangenome_cactus/subgraph_launch`
-film on ada with `node scripts/generate-video.ts` from a `jb-shoot` worktree,
-which has the build; ada has no system ffmpeg, so a static 7.0.2 sits in
-`~/.local/bin` there.
+agent's landed doc commits at once). `tier_to_fine`, `pggb_subgraph_launch`
+and `pangenome_cactus/subgraph_launch` are filmed and in the media store (on
+ada, `node scripts/generate-video.ts` from a `jb-shoot` worktree, which has
+the build; ada has no system ffmpeg, so a static 7.0.2 with its ffprobe sits
+in `~/.local/bin` there). `pangenome/hprc_browse` is not: it films the
+staging page's launch into `jbrowse.org/code/jb2/main`, and after its three
+re-cuts (C4, chr6, back to MHC) the `graphNode` anchor for `s348700+`
+resolves to an empty spot in the pane (x 390, y 1220 of a 1920×1300 frame,
+between the Rank 44 and Rank 57 rows) so the right-click opens no menu,
+where `hprc_haplotype_launch` right-clicks the same anchor on the same config
+without a re-cut and gets the menu. Debug frames from three runs are in that
+session's scratchpad. Two harness fixes came out of it: a hidden wait scopes
+`::-p-text()` to its selector, and a text target looks past the tour's own
+caption (`data-tour-overlay`), which had been catching a click whose caption
+carried the item's words.
 
 **Open design call, Colin's (2026-09-26).** Two panes that move together read
 as disorienting. The anchored graph could be a display in the linear view,
