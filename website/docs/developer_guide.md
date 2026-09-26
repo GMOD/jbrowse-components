@@ -87,6 +87,7 @@ own through a pull request.
 - [](/docs/developer_guides/svg_export)
 - [](/docs/developer_guides/creating_text_search_adapter)
 - [](/docs/developer_guides/upgrading_v5)
+- [](/docs/developer_guides/plugin_load_cost)
 
 ### Core concepts
 

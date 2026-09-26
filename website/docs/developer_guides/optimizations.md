@@ -540,6 +540,10 @@ holds if nothing else in an eagerly evaluated module names the same component,
 and a plugin `exports` object is the easiest place to name one by accident — it
 is evaluated when the class is defined.
 
+That accounting stops at the host. A config that names a third-party plugin adds
+the whole of it to the same clock, because a plugin store bundle is one file:
+[](/docs/developer_guides/plugin_load_cost) is the author's side of this page.
+
 The same reasoning is why `sharedBgzfWorkerPool` reaches `@gmod/bgzf-filehandle`
 through a dynamic import. That package inlines its worker bundle as base64, so a
 static import pins the blob into the initial bundle of every entry point that

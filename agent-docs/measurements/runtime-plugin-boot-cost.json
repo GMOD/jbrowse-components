@@ -1,0 +1,62 @@
+{
+  "id": "runtime-plugin-boot-cost",
+  "measured": "2026-09-25",
+  "published": false,
+  "source": {
+    "kind": "hand",
+    "repro": "In ~/src/jb2plugins/jbrowse-plugin-msaview at 3.10.0 against @jbrowse/core 5.0.0-beta.9, run its esbuild config four ways and gzip -9 the result: as configured; with the host floor set to the installed ReExports/list rather than scripts/host-reexports-floor.json; that plus format esm and splitting true; and that plus react-msaview held out with `external`. For the split builds the figure is the ENTRY plus its static-import closure, since that is what a host evaluates before the view is opened.",
+    "notes": "One plugin, chosen because it is the largest in the store and its source already writes lazy(). The last row holds react-msaview out entirely, so it is a bound on deferral rather than a build anyone would ship \u2014 a real split leaves it as a chunk the view still fetches when opened."
+  },
+  "columns": [
+    {
+      "key": "build",
+      "label": "build"
+    },
+    {
+      "key": "rawKB",
+      "label": "evaluated at boot",
+      "format": "KB",
+      "align": "right"
+    },
+    {
+      "key": "gzKB",
+      "label": "gzipped",
+      "format": "KB",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "build": "as configured",
+        "rawKB": 651,
+        "gzKB": 234
+      }
+    },
+    {
+      "values": {
+        "build": "host floor raised to the v5 list",
+        "rawKB": 503,
+        "gzKB": 180
+      }
+    },
+    {
+      "values": {
+        "build": "+ esm and splitting",
+        "rawKB": 455,
+        "gzKB": 164
+      }
+    },
+    {
+      "values": {
+        "build": "+ the two module-scope edges deferred",
+        "rawKB": 258,
+        "gzKB": 96
+      },
+      "emphasize": [
+        "rawKB",
+        "gzKB"
+      ]
+    }
+  ]
+}
