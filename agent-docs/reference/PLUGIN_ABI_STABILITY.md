@@ -799,6 +799,27 @@ author who lands on a behavior change can find the sentence that explains it.
   generated earlier has no `stages`, and `slangPass` throws on it the same way.
   **Opt-out: none; regenerate the shader.**
 
+- **A pass cannot override its shader's textures** (`@jbrowse/render-core/slangPass`).
+  `SlangPassOpts.textures` is gone and `slangPass` reads `mod.TEXTURES` alone.
+  The override existed for one caller, which rebuilt the generated binding with
+  `filter: 'nearest'` because the codegen wrote `linear` into every shader's
+  `TEXTURES`; a module now declares the filter its own math needs with
+  `//! texture-filter: nearest | linear`, inherited through `import`, and
+  `jbrowse-build-shaders` refuses a sampler with none in scope.
+
+  **This one is a type narrowing, and no check in this doc sees it.** Runtime is
+  unchanged — the field only ever replaced a value `slangPass` already had — so
+  the manifest still serves the same name and `publicApi.test.ts` still pins the
+  same subpath; both pin names, not the shape of an exported interface, which is
+  the hole the `CascadingMenuProps` case above names for component props. What
+  an external author meets is a rebuild: `slangPass({ …, textures })` becomes an
+  excess-property error. Nothing in the tree passed the field, and a prebuilt
+  bundle that did carries a shader generated before `BINDINGS`, which
+  `slangPass` already throws on by the entry above. **Opt-out: none; declare the
+  filter in the `.slang` module.** render-core is `@experimental` until it
+  freezes under semver (ADR-030), third-party plugins pin an exact version, and
+  v5 ships no migrations — so this is recorded rather than deprecated.
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably

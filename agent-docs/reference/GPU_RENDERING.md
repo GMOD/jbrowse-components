@@ -1396,9 +1396,14 @@ is what makes it a whole band rather than a primitive: a mark's height rule is
 shared with the buffer layout it reads and the Canvas2D painter it must land
 on. The display still owns where the band sits: MAF declares it as the mark's
 `band`, alignments scissors per section around the list.
-`slangPass()` turns a generated module into a `PipelineDescriptor`, with overrides for
-`topology`, `blendState`, `textures`, and buffer sharing. Authoring conventions
-and gotchas: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
+
+`slangPass()` turns a generated module into a `PipelineDescriptor`, and the
+overrides it takes are `topology` and `blendState`. A sampler's filter comes
+from the shader instead: `//! texture-filter: nearest | linear`, declared by
+the module whose math needs it and inherited through `import`, with no default,
+so `pnpm gen:shaders` refuses a sampler that has none in scope. Authoring
+conventions and gotchas:
+[ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
 
 ### WGSL validates what GLSL waves through
 

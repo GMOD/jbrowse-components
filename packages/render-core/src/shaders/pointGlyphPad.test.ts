@@ -207,13 +207,16 @@ describe.each([
     expect(reaches).toBeCloseTo(miter, 6)
   })
 
-  test.each(DPRS)('keeps its whole ramp inside the quad: dpr %p', dpr => {
+  // Equals, not holds: the diamond's old quad padded 1.6 units where its miter
+  // reaches 1.4142, and any upper bound loose enough to pass held that too.
+  test.each(DPRS)('gets a quad that is exactly its ink: dpr %p', dpr => {
     for (const radiusPx of RADII_PX) {
       const unitPx = sdfUnitPx(radiusPx, glyphScale)
       const inked = inkedHalfExtentPx(shape, unitPx, dpr)
       expect(inked - unitPx).toBeCloseTo(miter * aaHalfPx(dpr), 6)
-      expect(inked).toBeLessThanOrEqual(
-        quadHalfExtentPx(radiusPx, dpr, glyphScale, reaches) + 1e-9,
+      expect(quadHalfExtentPx(radiusPx, dpr, glyphScale, reaches)).toBeCloseTo(
+        inked,
+        6,
       )
     }
   })

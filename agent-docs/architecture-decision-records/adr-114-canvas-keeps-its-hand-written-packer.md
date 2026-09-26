@@ -36,12 +36,12 @@ decides the question:
 | rect | `rectYs`, `rectHeights` | layout result — `FeatureLayout.y`/`.height`, UTR-shrunk by `UTR_HEIGHT_FRACTION`, rescaled and row-offset again on the main thread |
 | rect | `rectColors` | an encoding of a feature field, resolved by `boxColor` |
 | rect | `rectColorClasses` | a **deferred** encoding: the theme class the main thread resolves, length zero when every colour was literal |
+| rect | `rectColorValues` | a **deferred** encoding: each box's one-based index into the region's distinct values of the colour field, which the main thread paints through the colour object |
 | rect | `rectStrands` | a feature field |
 | rect | `rectDensityFade` | allocated here, valued by the main-thread layout |
 | rect | `rectFeatureIndices` | the walk's own hit-index slot, not the input list's index |
 | rect | `rectLabelRows`, `rectChildOrdinals` | layout structure — rows stacked above, and the isoform's ordinal in its gene |
 | line | `linePositions` | derived geometry: the gaps between a transcript's children |
-| line | `lineHeights` | the box the line rides on, so the renderer snaps to its drawn centre |
 | line | `lineDirections` | derived: strand, gated by `displayDirectionalChevrons` |
 | line | `lineYs`, `lineColors`, `lineColorClasses`, `lineFeatureIndices`, `lineLabelRows`, `lineChildOrdinals` | as the rect's |
 | arrow | `arrowXs` | derived: `strand === 1 ? end : start` — a point, not a span |
@@ -53,11 +53,11 @@ decides the question:
 positions, `y` and colour, plus `row` standing in for the hit-index slot — and
 none for the other seventeen. Those seventeen are `Float32` heights and
 strands, `Int8` directions, `Uint8` colour classes and label rows, `Uint16`
-child ordinals and `Uint32` widths and fades: not channels of a mark grammar
-but a renderer's instance struct. Three more things do not survive the trip
-either. The window filter is not the encoder's skip rule — it is half-open for
-a real span and **closed at both ends for a degenerate one**, so a CRISPR cut
-site or motif tick sitting on a region seam is kept. An arrow has no `x2`. And
+child ordinals and `Uint32` widths, fades and colour values: not channels of a
+mark grammar but a renderer's instance struct. Three more things do not survive
+the trip either. The window filter is not the encoder's skip rule — it is
+half-open for a real span and **closed at both ends for a degenerate one**, so a
+CRISPR cut site or motif tick sitting on a region seam is kept. An arrow has no `x2`. And
 the same walk that emits the primitives emits four side outputs keyed by the
 `flatbushIdx` it assigns as it goes — `flatbushItems`, `subfeatureInfos`,
 `floatingLabelsData`, `aminoAcidOverlay` — which no transform over features
