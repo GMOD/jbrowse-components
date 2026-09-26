@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { isLDRecordSource } from '@jbrowse/ld-core'
+import { LD_NOT_COMPUTED, isLDRecordSource } from '@jbrowse/ld-core'
 
 import { bandCellCount, bandPairIndex, resolveBand } from './ldBand.ts'
 
@@ -8,19 +8,15 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { PlinkLDRecord } from '@jbrowse/ld-core'
 
-// Identity of a SNP is its (refName, position); PLINK LD records reference the
-// same SNP from many rows, so this key deduplicates and indexes them.
-function snpKey(refName: string, pos: number) {
-  return `${refName}:${pos}`
+// PLINK LD records name the same SNP from many rows, so (refName, BP)
+// deduplicates and indexes them.
+function snpKey(refName: string, bp: number) {
+  return `${refName}:${bp}`
 }
 
-// The value painted into a cell for the chosen metric. A record missing the
-// resolved metric's column reads as 0 so rendering never branches on NaN;
-// `resolveMetric` has already ruled out the case where the whole FILE is
-// missing it, which is the one that would paint a confident matrix of zeros.
 function metricValue(record: PlinkLDRecord, ldMetric: LDMetric) {
   const v = ldMetric === 'dprime' ? record.dprime : record.r2
-  return v !== undefined && Number.isFinite(v) ? v : 0
+  return v !== undefined && Number.isFinite(v) ? v : LD_NOT_COMPUTED
 }
 
 /**
@@ -51,14 +47,14 @@ function resolveMetric(
 // `parsePlinkLDLine` has always read those columns; nothing collected them.
 function collectSortedSnps(records: PlinkLDRecord[]): LDSnp[] {
   const snpMap = new Map<string, LDSnp>()
-  const add = (refName: string, pos: number, id: string, maf?: number) => {
-    const key = snpKey(refName, pos)
+  const add = (refName: string, bp: number, id: string, maf?: number) => {
+    const key = snpKey(refName, bp)
     if (!snpMap.has(key)) {
       snpMap.set(key, {
         id,
         refName,
-        start: pos,
-        end: pos + 1,
+        start: bp - 1,
+        end: bp,
         maf: maf !== undefined && Number.isFinite(maf) ? maf : undefined,
       })
     }
@@ -111,18 +107,17 @@ export async function getLDMatrixFromPlink({
   // Which columns the file actually has: a request for a metric it does not
   // carry is downgraded rather than mislabeled in the legend, and both flags
   // ride back so the display can disable the radio for the missing one.
-  const header = await dataAdapter.getHeader()
+  const header = await dataAdapter.getHeader(args)
   const hasR2 = header.r2Idx >= 0
   const hasDprime = header.dprimeIdx >= 0
   const metric = resolveMetric(ldMetric, { hasR2, hasDprime })
 
   const allRecords: PlinkLDRecord[] = []
   for (const region of regions) {
-    const records = await dataAdapter.getLDRecordsInRegion({
-      refName: region.refName,
-      start: region.start,
-      end: region.end,
-    })
+    const records = await dataAdapter.getLDRecordsInRegion(
+      { refName: region.refName, start: region.start, end: region.end },
+      args,
+    )
     for (const r of records) {
       allRecords.push(r)
     }
@@ -132,16 +127,16 @@ export async function getLDMatrixFromPlink({
   const n = snps.length
   const indexByKey = new Map<string, number>()
   for (const [idx, snp] of snps.entries()) {
-    indexByKey.set(snpKey(snp.refName, snp.start), idx)
+    indexByKey.set(snpKey(snp.refName, snp.end), idx)
   }
 
-  // Banded LD matrix. A fresh Float32Array is zero-filled, so pairs never named
-  // in the records stay 0 (no LD) with no extra bookkeeping — and a record for
-  // a pair outside the band is dropped the same way, since the band says that
-  // pair is not shown. A pre-computed file is usually already windowed (it is
-  // plink's default output), so this most often drops nothing.
+  // A pair the file does not list was never measured: plink's default
+  // `--ld-window-r2 0.2` and `--ld-window` leave most pairs out, and a D' for
+  // one of them is no more 0 than it is 1.
   const band = resolveBand(n, maxVariantSeparation)
-  const ldValues = new Float32Array(bandCellCount(n, band))
+  const ldValues = new Float32Array(bandCellCount(n, band)).fill(
+    LD_NOT_COMPUTED,
+  )
 
   for (const record of allRecords) {
     const i = indexByKey.get(snpKey(record.chrA, record.bpA))
