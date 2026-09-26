@@ -232,7 +232,7 @@ function poolArcScale(inputs: ArcScale[]): ArcScale {
 // connections over 38 distinct arcs, the busiest drawn 27 times, and a 6-read
 // junction 689 bp away drawn with exactly the same weight as the 27-read one.
 //
-// Coalescing is what lets support become a channel (`arcLineWidth`) instead of
+// Coalescing is what lets support become a channel (`arcStrokeScale`) instead of
 // being thrown away, and it removes the redundant instances rather than
 // stacking them: 57% of the arcs in that window were exact repeats.
 //
@@ -324,7 +324,7 @@ function resolveArcs(
   // harder-edged tick than a 1-read one, while the Canvas2D mirror strokes
   // opaque and drew the two the same.
   //
-  // Coalescing is what lets `support` become a channel (`arcLineWidth`, the
+  // Coalescing is what lets `support` become a channel (`arcStrokeScale`, the
   // same curve the arcs use) instead of being thrown away, and what gives the
   // hover something to report. Deduping alone would have been lossy.
   //
@@ -520,8 +520,7 @@ function resolveArcs(
     // arbitrary), so colouring by them just produces visual noise — one uniform
     // colour regardless of colorField, and regardless of whether the evidence
     // is a split read or a mate pair. As a TICK that was because the mark
-    // carries no colour of its own (ARC_COLOR_INTERCHROM lives in arcLine.slang,
-    // where the pass reads it). As an ARC the reason is stronger: "crosses
+    // carries no colour of its own. As an ARC the reason is stronger: "crosses
     // chromosomes" used to be readable from the mark itself, and it is not from
     // a curve — a same-chromosome cross-region arc crosses the same panel
     // divider — so the colour is now the ONLY channel carrying it.
@@ -576,7 +575,7 @@ function resolveArcs(
       ) {
         // THE ARC'S OWN GATE, against the same number it will draw with: an arc
         // is one junction is one cluster, so here the count the floor tests and
-        // the count `arcLineWidth` spends are the same value. The tick arm below
+        // the count `arcStrokeScale` spends are the same value. The tick arm below
         // cannot say that — its number is a sum — so its gate is applied after
         // the summing instead.
         if (clearsInterchromFloor(exempt, support, minInterchromSupport)) {
@@ -638,7 +637,7 @@ function resolveArcs(
     // No bp distance ever hides or reshapes a both-mates-visible pair: every
     // pair renders as an arc. "Long range" is purely the *visual* result of
     // zoom — a far-apart arc collapses to near-vertical lines at its real
-    // endpoints (arc.slang), and zooming out to show the whole span restores
+    // endpoints (the link mark), and zooming out to show the whole span restores
     // the rounded arc. (drawLongRange only gates connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
     const colorType = getArcColorType({
@@ -714,13 +713,10 @@ function resolveArcs(
     // feet collapse onto that end here rather than one being left at a
     // coordinate no block covers.
     //
-    // Collapsing in bp, before anything is projected, is what makes all four
-    // renderers agree without a fourth mark geometry: `arcMarkFrom` resolves a
-    // zero-length bar to `ARC_FLAT_MIN_PX` centred on the foot, the two endpoint
-    // squares land on top of each other there, and the hit test measures that
-    // same stub. `arcTouchesRegion` narrows to that one region too, so an
-    // unplaced connection stops being packed into every region on its
-    // chromosome.
+    // Collapsing in bp, before anything is projected, is what lets the marks
+    // draw it with no geometry of their own: the link widens a zero-length line
+    // to its minimum centred on the foot, the two endpoint squares land on top
+    // of each other there, and the hit test measures that same stub.
     //
     // `p1` is the placed end for every connection either mate-link producer
     // makes — both put a FETCHED read's own outer edge there (`mateLinkArc`,
@@ -742,8 +738,8 @@ function resolveArcs(
     const p2 = unplaced ? foot : { refName: p2Ref, bp: p2Bp }
     // The REGION INDICES collapse with the feet, or the routing below still
     // reads a one-footed mark as a connection between two places and files it
-    // cross-region. `CrossRegionArcsOverlay` then projects each foot through its
-    // own index — and where those two regions overlap in bp, the second lookup
+    // cross-region. The band then places each foot through its own region —
+    // and where those two regions overlap in bp, the second lookup
     // succeeds and the collapsed mark draws back out as a screen-wide bar with
     // its squares in two regions, which is the picture parking exists to
     // remove. The far mate need not be exotic to land in a second displayed
@@ -782,8 +778,8 @@ function resolveArcs(
 
   // The same ordering, for the same reason, over the ticks. They are opaque
   // full-band verticals, so two within a stroke width of each other resolve by
-  // paint order, and `hitTestArcBand` reads the feed's order as its
-  // last-drawn-wins tie-break. Tie-broken on the breakpoint's own bp, which the
+  // paint order, and the band's hit test answers an on-ink tie with the
+  // later-drawn one. Tie-broken on the breakpoint's own bp, which the
   // coalescing above makes unique WITHIN a refName — the only scope that has to
   // be ordered, since `groupArcsByRef` buckets these before anything draws them
   // and two refNames never share a region's feed.
@@ -934,9 +930,9 @@ export function computeArcsByGroup(
       for (const ct of data.arcColorTypes) {
         colorSlots.add(ct)
       }
-      // A tick carries no per-instance colour — every one of them is
-      // ARC_COLOR_INTERCHROM (arcLine.slang) — so their presence, not a scan of
-      // their colours, is what keys the swatch.
+      // A tick carries no colour type — every one of them is
+      // ARC_COLOR_INTERCHROM — so their presence, not a scan of their colours,
+      // is what keys the swatch.
       if (data.numArcLines > 0) {
         colorSlots.add(ARC_COLOR_INTERCHROM)
       }

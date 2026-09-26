@@ -1,18 +1,19 @@
 ---
 name: arc-band-open-calls
-description: Five parked calls on the read-connection arc band and the read cloud, cut from TODO.md on 2026-08-26 for missing the v5.0.0 bar. Four are marks and geometry, one is a menu. Read alongside reference/ARC_BAND.md, which is the settled half and holds the two numbers this list once said nobody had read.
+description: Four parked calls on the read-connection band and the read cloud, cut from TODO.md on 2026-08-26 for missing the v5.0.0 bar; a fifth, the clipped parked row, was settled by the band's port onto the link and point marks. Three are marks and geometry, one is a menu. Read alongside reference/ARC_BAND.md, the settled half.
 ---
 
 # The arc band's open calls
 
-Five items cut from `TODO.md` on 2026-08-26, when the backlog was reduced to
+Items cut from `TODO.md` on 2026-08-26, when the backlog was reduced to
 what v5.0.0 turns on. [reference/ARC_BAND.md](../../reference/ARC_BAND.md) is the
 settled description of this band, and everything below is what it deliberately
 does not answer. All are visual calls, which is why they are filed rather than
 fixed — a fixture test cannot settle what a reader concludes. Two measurements
 this list carried — whether single-linkage chains a cluster past its window,
-and how many arcs cross a seam at 300x — were read on 2026-09-10 and live in
-ARC_BAND.md §"Support" and beside `CROSS_REGION_ARC_CAP`.
+and how many arcs cross a seam at 300x — were read on 2026-09-10; the first
+lives in ARC_BAND.md §"Support". The band now draws on render-core's link and
+point marks (ADR-170), so the costs below are priced against those.
 
 ## Marks and geometry
 
@@ -32,7 +33,7 @@ though it alone carried 8 reads and each hovering "supported by 8".
 pairs, and `ARC_BAND.md` describes the trade as "two coordinates of one event",
 which is what it would be if the marks were 2.
 
-The ink is O(N) marks at `arcLineWidth(N)` where the evidence is one junction —
+The ink is O(N) marks at `arcStrokeScale`'s width for N where the evidence is one junction —
 the opposite of what coalescing was introduced for on the same-chromosome arm
 ("57% of the arcs in that window were exact repeats"), and it lands hardest on the
 mark that is a full-height opaque vertical.
@@ -50,9 +51,10 @@ the decision is which one:
 - **the median member.** Robust, says nothing about direction, and reads as "the
   cluster is here".
 - **an interval instead of a point**, which is the honest mark for evidence that
-  is not localized: a tick widened to the cluster's own bp extent. Needs
-  `arcLine.slang` to take a span rather than a position, so it is the expensive
-  one — but it is the only option that does not have to choose a lie.
+  is not localized: a tick widened to the cluster's own bp extent. The link's
+  stem is a line at one x, so this needs a mark that takes a span, which makes
+  it the expensive one — but it is the only option that does not have to choose
+  a lie.
 
 Whichever wins, the hover should say the localization (`±window`), and the arc arm
 takes the same treatment as the tick arm. **This changes what every published
@@ -81,12 +83,11 @@ render-tier pass over the packed feed, costs no refetch, and is strictly
 optional — one mark per cluster fixes the wrong-picture problem on its own, at
 every zoom.
 
-**The surface it crosses**, which is why this is not small: `arcMark`'s
-`ArcDome` has one x per foot, so a mark gains an extent rather than a
-coordinate; `hitTestArcBand` scans per-instance arrays, so what an index means
-and what `arcLinePositions` holds both change; `formatArcTooltip` reports two
-exact bp and would report a range; and a cluster's members can disagree on arm
-direction where today each mark carries its own read's. Take it with a real
+**The surface it crosses**, which is why this is not small: a link has one x
+per foot, so a mark gains an extent rather than a coordinate; the feed's hover
+records are per instance, so what an index means changes; `formatArcTooltip`
+reports two exact bp and would report a range; and a cluster's members can
+disagree on arm direction where today each mark carries its own read's. Take it with a real
 dataset open rather than off the fixtures — `cancer_sv/k562_bcr_abl_split` and
 the HG002 300x window at 1:2,000,000 (`reference/DEEP_COVERAGE.md`), in that
 order. Every argument here is an argument about what a reader concludes, and
@@ -99,24 +100,20 @@ one that does, and no worse than the last release's.
 
 An interchromosomal arc draws a foot at each end — a short horizontal tick lying
 over the sequence that end keeps, so outward reads as a deletion-type junction,
-inward as a duplication-type and parallel as an inversion
-(`features/arcs/mark.ts`, `arcPath.ts`, and
-[reference/ARC_BAND.md](../../reference/ARC_BAND.md):296, whose `:352` also has the
-foot's unconditional length). An interchromosomal connection whose partner is
-**off screen** draws as a pair of TICKS instead, and those have no feet.
+inward as a duplication-type and parallel as an inversion (the link mark's
+`feet` lane, and [reference/ARC_BAND.md](../../reference/ARC_BAND.md) §"Breakend
+feet"). An interchromosomal connection whose partner is **off screen** draws as
+a TICK instead, and ticks carry no feet.
 
 That is unfinished, not declined. A tick means "the partner is somewhere you
 cannot see", and the direction at the near foot is exactly as informative there
 — arguably more, since there is no second endpoint to read the orientation off.
 
-It was left out because the two draws are not the same kind of thing. The feet
-live in the SVG cross-region overlay, which re-traces `arc.mark` in TypeScript;
-`arcLine` is a GPU/Canvas2D pass. So this one needs a per-instance direction
-attribute, geometry in `arcLine.slang` plus `pnpm gen:shaders`, the Canvas2D
-mirror, the SVG export, and a decision about whether a foot is part of the
-tick's hit-test target. Roughly a day. Nothing in the landed arc work blocks it,
-and `LinearAlignmentsDisplay/components/arcBreakendFeet.test.ts` exists now,
-which is where a tick-foot direction assertion lands.
+The drawing half is now free: a tick is a link stem, and the link draws a foot
+at a stem's placed end from the same `feet` lane, in every backend, the export
+and the hit test. What is left is the direction, below, and setting the lane
+in `buildArcBandFeeds`. `LinearAlignmentsDisplay/components/arcBreakendFeet.test.ts`
+is where a tick-foot direction assertion lands.
 
 The direction itself is already computed and already correct for this case:
 `readTrailingBodyDir` is a property of the junction rather than of the read, so a
@@ -129,58 +126,6 @@ Whichever direction a tick's foot ends up taking, it is the OFF-SCREEN-partner
 case, so `pairOuterDir`'s distinction applies to it too: the mate-link producers
 answer with the read's direction negated, because their endpoint is the
 fragment's outer edge rather than the junction.
-
-### The read cloud's parked row is clipped by the band edge
-
-Both backends lose the same half, so nothing diverges, and an inset means the
-shaders learning that a shape sits somewhere other than where its `yBp` says.
-
-A read-cloud connection the view cannot place draws as one mark on the band's
-zero anchor (`ARC_SHAPE_FLAT_UNPLACED` — see
-[reference/ARC_BAND.md](../../reference/ARC_BAND.md), "The read cloud draws a bar
-only between two places on screen"). The anchor IS a band edge —
-`arcAnchorY` returns `arcsTop` in down mode and `arcsTop + arcsH` in up mode —
-and both renderers clip to the band rect, so a mark centred on it loses half of
-itself.
-
-Measured: `ARC_MARKER_PX` is 5, so 2.5 px survive. The marks read as thin
-coloured dashes lying on the band's edge rather than as squares. On HG002 300x
-at `chr1:2,010,000-2,022,000` that is three of them, in the insert-size and
-orientation colours, hard against the coverage band above.
-
-**It is not a divergence.** Canvas2D clips through `withClip` and the GPU
-through `devicePxBand`'s scissor, so both backends lose the same half. Whatever
-is decided here keeps them agreeing for free.
-
-#### The call
-
-Nothing is obviously right, which is why this is filed rather than fixed:
-
-- **Leave it flush.** A mark sitting ON the baseline is arguably what "parked at
-  y=0" should look like, and a row of coloured ticks along the band edge reads
-  as a lane rather than as clipped squares.
-- **Inset it by half a marker**, so the square is whole. This is the one that
-  costs something — see below.
-- **Give the row its own glyph** rather than the endpoint square the plotted
-  marks use, on the grounds that it is not a point on the axis at all.
-
-#### Why an inset is not a one-liner
-
-The parked mark's Y is `yBp = 0` resolved through `arcBandDestY`, which is
-`alignmentsUniforms.slang`'s and is what `arcFlat.slang` and `arcMarker.slang`
-both read. So an inset cannot be expressed as a `yBp`: `arcYFraction` is
-logarithmic and floors at 1, and any value large enough to move the mark a few
-px depends on `arcsYDomainBp`, which changes with the data.
-
-The 8 px `ARC_HEIGHT_MARGIN` is no help either — `arcAvailH` subtracts it at the
-FAR edge, so the anchor edge has no reserved room. Moving the anchor itself is
-not on: it is insert size 0, and `computeInsertSizeTicks` places the ruler
-against the same `arcAnchorY`.
-
-So an inset means the shaders learning that this shape sits somewhere other than
-where its `yBp` says — a per-instance bit or a uniform, `pnpm gen:shaders`, and
-the Canvas2D and SVG mirrors — plus `arcMark`, since the hit test and the hover
-highlight resolve through it. Half a day, and it wants the visual call first.
 
 ### Read cloud ticks every interchromosomal connection as a full-band vertical
 
@@ -195,7 +140,8 @@ an interchromosomal connection joins". The reason is sound: the cloud's Y axis i
 back to the endpoint gap — about 1.07e8 for a real chr9/chr22 junction — which
 becomes a genuine `maxFlatArcSpanBp` and rescales the whole cloud.
 
-A tick is a solid vertical spanning the band (`arcLine.slang`). Reported from
+A tick is a solid vertical spanning the band (a link stem `stemPx` the band's
+height). Reported from
 use: over a read cloud they are hard to read, because a vertical crossing every
 plotted row looks like it belongs to each of them and belongs to none.
 
@@ -206,7 +152,7 @@ about 16 in a 200 kb window at 300x ([DEEP_COVERAGE.md](../../reference/DEEP_COV
 #### What changed that makes this worth revisiting
 
 The band now HAS a home for "a connection with no place on the insert-size
-axis": the parked row on the zero anchor, which is exactly the statement an
+axis": the parked row at the scale's floor, which is exactly the statement an
 interchromosomal connection is making. Before that row existed there was nowhere
 else for these to go, and the full-band vertical was the only mark available.
 
@@ -219,8 +165,8 @@ answered before moving them:
   breakpoint reaching several). That is the whole content of a tick — its own
   position says only where the breakpoint is — and it is the one thing a tick's
   hover was worth more than an arc's.
-- **Its width is its read support**, through `arcLineWidth`, the same curve the
-  arcs spend. An endpoint square has no width channel, so a 40-read
+- **Its width is its read support**, through `arcStrokeScale`, the same curve
+  the arcs spend. An endpoint square has no width channel, so a 40-read
   translocation and a single mismapped pair would draw identically. Note the
   ceiling already caps that curve at 4x around 44 reads, so the channel is
   coarse — but it is not nothing.
@@ -248,20 +194,21 @@ nobody has made — and the invariant in its way is one a class of bugs put ther
 A right-click on an arc or a tick falls through to the browser's menu, because
 `contextMenuTargetForHit` returns `undefined` for `type: 'arc'`. The fall-through
 itself is the right rule — an empty menu is worse — so what is open is whether a
-junction really has nothing, and it does not look that way: `ArcHitResult`
+junction really has nothing, and it does not look that way: `ArcHit`
 carries `x1`/`x2` in absolute genomic bp and the `support` count behind the
-stroke width, and `ArcLineHitResult` carries `bp` plus `partnerRefNames`, which
+stroke width, and `TickHit` carries `bp` plus `partnerRefNames`, which
 is exactly the "where does this reach" a tick's own geometry cannot show. Center
 on the mate, open the far side in a new view, copy the junction — all reachable
 from what the hit already resolved.
 
 Two things are in the way, and the second is the design question. `ArcMarkHit`
-narrows the hover to `{tooltip, highlight}` and drops the `ArcBandHitResult`
+narrows the hover to `{tooltip, highlight}` and drops the `ArcBandHit`
 behind them, so the coordinates do not survive to the menu builder — cheap to
 fix. Then `ContextMenuHit` **requires** `block` and `genomicPos`, and its comment
 says why: "a menu built without one was never a real state", which the split-state
-sort bugs earned. An arc resolves an `ArcHitRegion`, not a `ResolvedBlock`, so
-either arcs get a real block or that invariant needs a considered second shape.
+sort bugs earned. An arc's hit carries its region index, not a `ResolvedBlock`,
+so either arcs get a real block or that invariant needs a considered second
+shape.
 Don't relax it casually.
 
 Decide the item set first — it is a product call, not an implementation one.

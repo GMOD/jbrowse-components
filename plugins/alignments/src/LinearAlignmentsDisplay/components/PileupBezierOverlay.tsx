@@ -135,8 +135,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                     strokeOpacity={isHovered ? 1 : BEZIER_ARC_STROKE_OPACITY}
                     strokeDasharray={arc.dash}
                     fill="none"
-                    // Inert, with the target path below answering instead — the rule
-                    // `CrossRegionArcsOverlay` follows and for its reason:
+                    // Inert, with the target path below answering instead:
                     // `pointerEvents: 'stroke'` answers on the INK, so a dashed
                     // connector would hover in its dashes and go dead in its gaps.
                     style={{ pointerEvents: 'none' }}
@@ -150,8 +149,8 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                     style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
                     onMouseEnter={() => {
                       setHoveredReadName(arc.readName)
-                      // Through `setHoverState`, as `CrossRegionArcsOverlay` is: it is
-                      // the one write the right-click menu's hover pin can refuse, so
+                      // Through `setHoverState`: it is the one write the
+                      // right-click menu's hover pin can refuse, so
                       // a curve crossed while the menu is open cannot overwrite the
                       // read the menu is acting on.
                       model.setHoverState({

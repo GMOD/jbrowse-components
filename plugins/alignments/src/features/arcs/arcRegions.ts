@@ -136,9 +136,8 @@ export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
   }
 }
 
-// Whether an arc can paint any ink inside one region's block, which is the
-// question "does this arc belong in that region's buffer" — refName equality is
-// only half of it.
+// Whether an arc's span crosses one region: the last resort `arcOwner` files
+// an arc under when neither foot lies in a loaded region.
 //
 // A mark's horizontal extent is the span between its two feet: a dome runs foot
 // to foot, a far pair's legs rise AT the feet, and a flat read-cloud bar lies
@@ -147,11 +146,6 @@ export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
 // `isBlockCovered` is what gates rendering on exactly that — so measuring
 // against the region is the conservative form of measuring against the block.
 //
-// Without this, every displayed region on a chromosome received every arc on
-// that chromosome. Harmless to look at (the far copies project off-block and the
-// scissor eats them) and not free: it multiplied the pack, the upload and the
-// per-mousemove `hitTestArcBand` walk by the number of same-ref regions. That is
-// the multi-region SV view, which is what read connections are for.
 //
 // An arc reaching NO region is one whose every endpoint is off-screen — the
 // junction between two off-screen SA segments of one read, which `drawLongRange`
@@ -210,8 +204,7 @@ export function arcsToRegionResult(
     }
   }
 
-  // One entry per connector tick — the arcLine pass self-expands each instance
-  // to the two band-edge vertices (see arcLine.slang / packInstances).
+  // One entry per connector tick, drawn as a link stem.
   const arcLinePositions = new Uint32Array(regionLines.length)
   const arcLineSupport = new Uint32Array(regionLines.length)
   const arcLinePartnerRefNames: string[][] = []

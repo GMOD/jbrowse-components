@@ -141,7 +141,7 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines[0]!.x.refName).toBe('chr1')
     expect(result.lines[1]!.x.refName).toBe('chr2')
     // A tick carries no color of its own — every one paints
-    // ARC_COLOR_INTERCHROM, which arcLine.slang names directly — so "the
+    // ARC_COLOR_INTERCHROM, which the band's feed names directly — so "the
     // interchromosomal slot under the insert-size schemes" is now structural
     // rather than a per-instance value to assert. What still needs pinning is
     // that the slot means the interchrom swatch; see the legend test below.
@@ -790,7 +790,7 @@ describe('computeArcsFromPileupData', () => {
 
   test('ticks are ordered by support, so the heaviest is painted last', () => {
     // Array order is paint order and the ticks are opaque, exactly as for the
-    // arcs — and `hitTestArcBand` reads the same order as its tie-break. Two
+    // arcs — and the band's hit test reads the same order as its tie-break. Two
     // breakpoints, the lighter one fetched first.
     //
     // TWO ACCEPTORS 45 kb apart, not one: a tick's weight is its clusters'
@@ -2943,7 +2943,7 @@ describe('identical arcs coalesce and carry their support', () => {
   // Array order is paint order and the strokes are opaque, so whichever arc is
   // last keeps the pixels the two share. Reads arrive in no particular order
   // with respect to support, so without the sort a singleton fetched after a
-  // heavy junction draws over it — and `hitTestArcBand` resolves the overlap the
+  // heavy junction draws over it — and the band's hit test resolves the overlap the
   // same way, which is how a hover on the strongest junction in the band
   // reported "1 read".
   test('the heavier junction packs last, whatever order the reads arrived in', () => {

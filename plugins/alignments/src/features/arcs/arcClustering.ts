@@ -18,7 +18,7 @@ import type { PendingArc } from './arcTypes.ts'
 // pins `yBp` to 0, so without it the key drops partner distance entirely and two
 // reads at one bp whose mates lie 5 Mb and 80 Mb away coalesce. The survivor
 // then hovers as "Partner is 5,000,000 bp away, supported by 2 reads" and
-// `arcLineWidth` thickens it as though two reads agreed on a distance only one
+// `arcStrokeScale` thickens it as though two reads agreed on a distance only one
 // of them has. It groups nothing differently on the other shapes: a cloud bar's
 // `yBp` is `spanBp` times a hash of its endpoints, and an arc's is the half-span
 // the key already carries.

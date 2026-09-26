@@ -1,11 +1,11 @@
-// How thick an arc is drawn for the number of reads that support it.
+import type { LinkSizeScale } from '@jbrowse/render-core/marks'
+
+// How thick a connection is drawn for the number of reads that support it.
 //
-// Identical connections are coalesced into one arc carrying a `support` count
-// (`resolveArcs`), so this is the one place that turns that count into ink. It
-// is a plain TS function rather than a shader export because the GPU reads the
-// width as a per-instance attribute the packer has already resolved: one curve,
-// evaluated once per arc on the CPU, consumed by Canvas2D, the SVG export and
-// the vertex stage alike.
+// Identical connections are coalesced into one carrying a `support` count
+// (`resolveArcs`), so this is the one place that turns that count into ink: the
+// link mark's size scale, which every backend, the export and the hit test
+// read.
 //
 // LOG, NOT LINEAR. Support at one junction routinely differs by an order of
 // magnitude from its neighbour's — over the HG002 chr12 fold-back a 27-read
@@ -32,10 +32,15 @@ export const ARC_WIDTH_PER_DOUBLING = 0.55
 // while (the width AT 128, 4.85x, read back as the width the cap is).
 export const ARC_WIDTH_MAX_SCALE = 4
 
-export function arcLineWidth(support: number, baseWidth: number) {
-  if (support <= 1) {
-    return baseWidth
+/**
+ * The link mark's size scale for a band stroking `baseWidth` px: log over
+ * support, so each doubling adds the same width, from `baseWidth` at one read
+ * to `ARC_WIDTH_MAX_SCALE` times it where the two constants say it stops.
+ */
+export function arcStrokeScale(baseWidth: number): LinkSizeScale {
+  return {
+    domain: [1, 2 ** ((ARC_WIDTH_MAX_SCALE - 1) / ARC_WIDTH_PER_DOUBLING)],
+    scale: 'log',
+    range: [baseWidth, ARC_WIDTH_MAX_SCALE * baseWidth],
   }
-  const scale = 1 + ARC_WIDTH_PER_DOUBLING * Math.log2(support)
-  return baseWidth * Math.min(scale, ARC_WIDTH_MAX_SCALE)
 }

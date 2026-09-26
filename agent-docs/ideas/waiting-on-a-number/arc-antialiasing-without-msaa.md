@@ -121,14 +121,14 @@ other things, none of them curves.
 
 | piece | where | what it does |
 | --- | --- | --- |
-| hull | `arc.slang` `evalArcVertex`, `ARC_CURVE_SEGMENTS = 64` | triangle strip padded by halfWidth + `aaHalfPx(dpr)` either side, through `ellipseHullPoint` / `wideCircleHullPoint` — a cover of every inked point, feet included |
-| distance | `sdEllipse` / `distToWideCirclePx` (`alignmentsUniforms.slang`) | exact closed-form distance to the half-ellipse (Inigo Quilez's quartic solve) or to the far pair's wide circle, in **CSS px** |
+| hull | `linkMark.slang` `curveVertex`, `LINK_CURVE_SEGMENTS = 64` | triangle strip padded by halfWidth + `aaHalfPx(dpr)` either side, through `ellipseHullPoint` / `wideCircleHullPoint` — a cover of every inked point, feet included |
+| distance | `sdEllipse` / `distToWideCirclePx` (render-core's `curveDistance.slang`) | exact closed-form distance to the half-ellipse (Inigo Quilez's quartic solve) or to the far pair's wide circle, in **CSS px** |
 | ramp | `edgeCoverage` → `aaRamp` (`antialias.slang`) | linear coverage over `aaPx(dpr)` = `1 / dpr` CSS px = one **device** pixel |
-| width floor | `arcStrokeHalfPx`, `arcBandUniforms.ts:89` | `max(readConnectionsLineWidth, 1.5 / dpr)` — no arc is ever thinner than 1.5 device px |
+| width floor | `linkStrokeWidthPx` (`linkMark.slang`) | `max(width, 1.5 / dpr)` — no arc is ever thinner than 1.5 device px |
 
-The same pattern covers the other three band passes: `arcFlat.slang`
-(`buttSegmentCoverage` + a ramped dash), `arcLine.slang` (`abs(dx)` +
-`edgeCoverage`), `linkedReadLine.slang` (`buttSegmentCoverage`). Those pad with
+The same pattern covers the link's straight shapes — the read cloud's `line`
+and the tick's stem, both a segment distance plus a ramped dash — and
+`linkedReadLine.slang` (`buttSegmentCoverage`), which pads with
 `segmentQuadLocal`, which is a quad rather than a chorded hull, so the
 substitution is the whole story for them and it comes out 0 on every edge the
 fragment measures — all four for the two butt-capped forms, the two long sides
@@ -179,7 +179,7 @@ wrong row below in: a shader can measure a beautiful SDF and still hand the
 rasterizer a lit edge, because what decides the row is where the geometry stops
 relative to where the ramp reaches zero.
 
-**Analytic — MSAA-invariant.** `arcFlat` and `linkedReadLine` (alignments); the
+**Analytic — MSAA-invariant.** the link mark and `linkedReadLine` (alignments); the
 dotplot capsule; `wiggleLine`'s smooth mode (`wiggleLineCenter.slang`); both
 synteny curve/straight fills and edges (via `syntenyTypes.slang`'s `fillFs` /
 `strokeFs`); the circular view's `ringWarp`. Each pads by exactly the ramp's own

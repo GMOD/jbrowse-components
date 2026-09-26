@@ -75,12 +75,13 @@ statement of when framing is live.
 ## A lane, not a group key
 
 **`buildLanes` (lanes.ts) is where a group key becomes data** — the raw map, the
-laid-out map, the two arc feeds, the sashimi sides, and the collapse/override
-state, per lane, in stacking order. A `renderSections` entry IS its lane plus
-band geometry, so a consumer walking sections has every per-lane answer in hand
-and none of them are optional. Don't reach back into a by-key collection from a
-call site that already has a lane; don't add a twelfth keyed collection when a
-lane field will do.
+laid-out map, the sashimi sides, and the collapse/override state, per lane, in
+stacking order. The read-connection feeds join in `sourceSections`, after
+layout, because they are coloured and the layout must not read the palette. A
+`renderSections` entry IS its lane plus band geometry, so a consumer walking
+sections has every per-lane answer in hand and none of them are optional. Don't
+reach back into a by-key collection from a call site that already has a lane;
+don't add a twelfth keyed collection when a lane field will do.
 
 **Ungrouped is the one-lane case** (key `''`), and no-data is the one SYNTHETIC
 lane (`drawnLanes`) — that is why `sections` has no ungrouped branch.
@@ -220,14 +221,12 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   bezier arcs stay interactive SVG overlays, each sharing one geometry source
   with the export; sashimi's is a model because the geometry depends on pan/zoom
   but **not** `scrollTop`.
-- **No GPU pass can join two displayed regions** — one buffer per region.
-  `bezierArcScope` is the one place deciding between `all`, `crossRegion` and
-  `none`; read the getter, never `showBezierConnections`.
-- A cross-region arc was never clipped away: each block projects bp through its
-  OWN range, so the far foot is extrapolated. `CrossRegionArcsOverlay` draws the
-  correct curve once in view space — geometry from `arcMarkFrom` rather than a
-  lookalike, a separate z-layer above every canvas arc, and hover through
-  `setHoverState` rather than a local key.
+- **A per-block pass cannot join two displayed regions**, since it maps bp
+  through its own block. The read-connection band's links do, drawing over the
+  whole canvas through the view's region table (ADR-170). The per-read bezier
+  connectors still cannot: `bezierArcScope` is the one place deciding between
+  `all`, `crossRegion` and `none`; read the getter, never
+  `showBezierConnections`.
 - **Which sub-band a sashimi arc draws in is decided once**, in genomic bp, by
   `sashimiDownKeysByGroup`, read by both the layout reserving the strip and the
   geometry filling it. Junction identity is `junctionKey`, refName included.
@@ -246,12 +245,12 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   and the fit-height row budget stay global, since re-deriving them from
   `sections` routes the fit volatile back through the layout it feeds.
 - Screen-x is not start/end-ordered — keep new sashimi geometry on the
-  normalized fields. In shaders use `bpToClipX`/`arcBpToLinear`, never
+  normalized fields. In shaders use `bpToClipX`, never
   `hpClipX(hpSplitUint(…))`.
 
 ## Reaching into the arc band
 
-- **`hitTestArcBand` is the single entry point.**
+- **`resolveArcBandHover` is the single entry point**, over the band's marks.
 - **Ask `hasArcBandInk`, not `numArcs`** — a lane with only off-region partners
   carries ticks and no arcs.
 - **Across lanes, ask `computeArcsByGroup`**, not a walk of `arcsByGroup`, and
@@ -277,16 +276,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   colour?" — which at any real depth every read on that outer edge answers yes
   to. They merged into one mark whose width counted them all and whose hover
   named one of their partners.
-- **`ARC_FAR_SCREEN_WIDTHS` is 3, not "both endpoints fit on screen".** A
-  circle's tangent at its foot is vertical whatever its radius, so collapsing a
-  pair to one at 1 screen width threw its direction away; the ellipse keeps
-  leaning. The limit on raising it is tessellation, not geometry — ARC_BAND.md.
 - **`minInterchromSupport` is gated against the number each mark DRAWS with** —
   a cluster's size for an arc, the coalesced total for a tick — and split
   junctions are exempt (`clearsInterchromFloor`). Gating a tick's addends made
   the hover's count follow the filter.
-- **A cross-region arc's hover target is a second, transparent path**
-  (`hitStrokeWidth`), because `pointerEvents: 'stroke'` answers on the ink alone
-  and the canvas band adds `ARC_HIT_SLOP_PX` either side. Don't hang handlers on
-  the visible path — a dashed connector would answer in its dashes and not its
-  gaps.

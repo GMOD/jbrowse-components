@@ -1,11 +1,11 @@
 ---
 name: pending-calls
-description: The three calls after the arc band geometry round, all answered by Colin on 2026-09-25 and none of them built yet. A colour range on a baked field is honoured through the domain/range scale every other display uses; the band's port onto the link mark is ADR-170; and landing regenerates. Read before starting any of the three.
+description: The calls after the arc band geometry round, answered by Colin on 2026-09-25. A colour range on a baked field is honoured through the domain/range scale every other display uses, and landing regenerates; neither is built. The third, the band's port onto the link mark, is built (ADR-170). Read before starting either.
 ---
 
-Three decisions, answered 2026-09-25. Each premise below was verified against
-the code — read the pointer rather than re-deriving it. **Delete this file once
-the three are built.**
+Decisions answered 2026-09-25. Each premise below was verified against the code
+— read the pointer rather than re-deriving it. The band's port onto the link
+mark is built (ADR-170). **Delete this file once the other two are built.**
 
 ## 1. A custom colour on strand / pair orientation is accepted and dropped
 
@@ -44,32 +44,10 @@ The layer this lands as is unchanged from the original reading: a
 `ReadColorCategory → RGBColor` resolution between the theme palette and its
 three readers — `pileupUniforms.ts:137-141` (via `READ_CATEGORY_UBO_SLOTS`,
 `:73`), `categorySwatchColor` (`colorUtils.ts:556`) and `palettes.ts`'s
-`resolve`. It reaches the arcs with their nine slots intact, so it needs no
-palette merge; the merge itself is declined at `palettes.ts` and that note
-stands.
+`resolve`. It reaches the band through `buildArcBandFeeds`, which bakes each
+connection's colour from `buildArcColorPalette`, so it needs no palette merge.
 
-## 2. The arc band onto the link mark
-
-**Answered: do it, whole band, straight replacement.**
-[ADR-170](../architecture-decision-records/adr-170-the-read-connections-band-is-a-marks-list.md)
-carries the design and Colin's two picture calls inside it — the read cloud's
-connector takes its category colour, and the breakend feet stay on
-interchromosomal arcs.
-
-The short version: `arcMarks.ts` already defines the band through `defineMark`,
-so the four shapes are private rather than absent. `arc` is `link` under
-`linkShape: 'dome'`, `arcFlat` is the `line` shape GenomeSpy carries and
-ADR-163 skipped, `arcMarker` is a `point` glyph, and `arcLine` is the link's
-own stem. Lifting the view-scope region table out of the mark display's
-`linkRegions` getter into `display-kit` is what lets every one of them cross a
-seam, and it is what retires `CrossRegionArcsOverlay`, `CrossRegionArcsSvg` and
-`crossRegionOverlay.ts` outright.
-
-Two of the geometry round's four fixes are already in shared render-core
-(`wideCircleLeg`, `curveDistance`) and the link mark draws through them. The
-other two are band-specific and retire with it.
-
-## 3. Landing regenerates
+## 2. Landing regenerates
 
 Measured 2026-09-25: **26 of the last 200 commits are standalone
 `pnpm autogen`**, all from that one day. Main sat red on stale generated

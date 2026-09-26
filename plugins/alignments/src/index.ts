@@ -117,6 +117,7 @@ export type {
 export type {
   AlignmentsRenderingBackend,
   SectionRender,
+  SectionSource,
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 export type {
   BelowCoverageBandsSettings,

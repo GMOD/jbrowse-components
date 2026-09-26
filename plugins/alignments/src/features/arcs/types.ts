@@ -17,7 +17,7 @@ export interface ArcsUploadData {
   arcSpanBp: Uint32Array
   // Reads supporting each arc: how many identical connections `resolveArcs`
   // folded into it, always >= 1. The three draw paths turn it into stroke width
-  // through `arcLineWidth` — none of them may re-derive that curve.
+  // through `arcStrokeScale` — none of them may re-derive that curve.
   arcSupport: Uint32Array
   numArcs: number
   // How many of `numArcs` are flat (read-cloud) shapes, and the largest insert
@@ -38,11 +38,11 @@ export interface ArcsUploadData {
   // domain is log2(1.08)/log2(10000) — 0.8% of a band tens of px tall.
   maxFlatArcSpanBp: number
   // One entry per connector tick (interchromosomal breakpoint marker). The tick
-  // spans the full arc band, so no Y is stored, and every tick is
-  // ARC_COLOR_INTERCHROM, so no color is stored either — see arcLine.slang.
+  // spans the full band, so no Y is stored, and every tick is
+  // ARC_COLOR_INTERCHROM, so no color is stored either.
   arcLinePositions: Uint32Array
   // Reads behind each tick, the same channel `arcSupport` is for arcs: stroke
-  // width through `arcLineWidth`, and the number the hover reports.
+  // width through `arcStrokeScale`, and the number the hover reports.
   arcLineSupport: Uint32Array
   // The far-side refName(s) of each tick, sorted and unique — the fact the
   // hover exists to give, since a tick's own position says only where the

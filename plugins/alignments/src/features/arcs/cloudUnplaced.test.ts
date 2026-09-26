@@ -281,7 +281,7 @@ describe('a connection the view can place only one end of', () => {
   // distance is the ONLY thing left telling two parked marks apart — and
   // `arcKey` used to hash neither foot's distance nor the span. Two reads at one
   // bp with mates megabases apart coalesced, and the survivor hovered as
-  // "Partner is 5,000,000 bp away … supported by 2 reads" with `arcLineWidth`
+  // "Partner is 5,000,000 bp away … supported by 2 reads" with `arcStrokeScale`
   // thickening it to match.
   test('two parked marks at one bp do not coalesce across different partners', () => {
     const data = pairData({
@@ -344,8 +344,7 @@ describe('an unplaced connection no longer sizes the axis', () => {
     // `arcsToRegionResult` are asked different questions — every flat variant is
     // drawn as a bar, only the two on the axis may size it — so the axis
     // assertion above cannot see the packing one. Swapped, the unplaced mark
-    // drops out of `packArcFlats`/`packArcMarkers` while `packArcs` keeps
-    // over-allocating for it, and the domain stays right the whole time.
+    // stops counting as a bar while the domain stays right the whole time.
     const upload = result.byGroup.get('')!.get(0)!
     expect(upload.numFlatArcs).toBe(2)
   })

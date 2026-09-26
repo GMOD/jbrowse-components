@@ -472,7 +472,7 @@ interface LanePendingArc {
 // holds one segment as a fetched entry and reaches the rest through that
 // segment's SA tag, so resolving lane by lane emitted one junction once per
 // lane its segments landed in, each copy carrying a fraction of the support
-// `arcLineWidth` then drew. On the HG02768 inverted duplication that put the
+// `arcStrokeScale` then drew. On the HG02768 inverted duplication that put the
 // same junction in the LR, RR and LL bands at three different widths.
 export function collectPendingArcsByLane(
   readsByName: Map<string, ReadEntry[]>,

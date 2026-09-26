@@ -153,9 +153,7 @@ junction merge on the visible-region set (`compareStructural`) takes the overlay
 off the per-frame path and carries 21 → 1. Handing back one shared empty array
 removes the render still owed on the frames where `renderSections` does change,
 1 → 0. Pooling an empty array is worth a render, not twenty — the rule two
-sections down is about the computed, not about this arithmetic. `crossRegionArcSections` had the identical defect, found by
-the sweep this prompted: a single-region view resolves no cross-region arc at
-all, and the empty list it returned was a fresh one each frame.
+sections down is about the computed, not about this arithmetic.
 
 **What is NOT measured is a whole-app RNA-seq frame budget**, and the table
 above is not one. No in-repo fixture carries real junction counts — volvox's
@@ -166,7 +164,8 @@ carry. So the table drives the shipping code with the real BAM's junction list
 instead, and a browser figure would want an hg38 config plus a quiet machine.
 
 **The SVG-vs-canvas question is answered for now, and the answer is stay.** The
-arc band next door (`features/arcs/`) draws on canvas with `hitTestArcBand`, and
+arc band next door (`features/arcs/`) draws on canvas through the link and point
+marks, and
 the case for sashimi adopting it would be per-feature DOM work. There is none of
 the expensive kind: over a 20-frame zoom on `spliced`, the `pileup-display`
 subtree logs **52-64 `attr:d` patches and zero structural mutations** across

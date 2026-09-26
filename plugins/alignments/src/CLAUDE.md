@@ -15,8 +15,9 @@ spells it that way, so `features/` can be read as the pass list.
 `LinearAlignmentsDisplay/renderers/pileupMarks.ts` is the list itself,
 `PILEUP_MARKS`, in paint order: every entry is a render-core `defineMark`, and
 both renderers and the hit chain walk that one list, so a mark cannot be added
-to one backend alone or gated on one alone. `arcs/` is a band of its own with
-the six-file set, drawn through `drawMarks`.
+to one backend alone or gated on one alone. `arcs/` is a band of its own: its
+compute stages and `bandFeed.ts`, which hands render-core's link and point marks
+their channels (`renderers/arcMarks.ts`).
 
 **`pileupShape` is the one shape every row-instanced pass is an instance of.**
 `features/pileupShape.ts` states the projection, the reversed-block edge

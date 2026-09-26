@@ -225,7 +225,7 @@ test('a chain selection thickens every arc of the chain', () => {
 })
 
 // The ink is 1px at rest. The target the cursor has to land on is wider by the
-// same slop the arc band and `CrossRegionArcsOverlay` give theirs.
+// same slop the read-connection band gives its marks.
 test('the hover target is wider than the ink', () => {
   const { target, inks } = renderOverlay()
   expect(strokeWidth(inks[0]!)).toBe(1)

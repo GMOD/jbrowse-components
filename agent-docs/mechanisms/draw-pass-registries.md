@@ -81,8 +81,8 @@ Fail 1 or 2 and there is no list. Fail 3 and there is nothing to drift against.
 | --- | --- | --- | --- | --- | --- |
 | alignments pileup | 13 | yes | yes | GPU, Canvas2D, hit (+SVG free) | `PILEUP_MARKS`, a mark list on `planMarks` |
 | alignments coverage | 5 | yes | yes | GPU, Canvas2D | `ALIGNMENTS_COVERAGE_MARKS`, a mark list MAF declares too |
-| alignments arcs | 4 | yes | band-level only | GPU, `drawArcs` | list + `flatPaintOrder.test.ts` |
-| alignments SVG overlays | 3 | yes | upstream geometry | overlay, `*Svg` export | order stated twice, below threshold |
+| alignments read connections | 4 | yes | yes | GPU, Canvas2D, hit, SVG | `ARC_BAND_MARKS`, link and point marks |
+| alignments SVG overlays | 2 | yes | upstream geometry | overlay, `*Svg` export | order stated twice, below threshold |
 | canvas `LinearBasicDisplay` | 5 | yes | no | GPU, Canvas2D, SVG | `CANVAS_FEATURE_MARKS`, a mark list |
 | sequence rows | 3 kinds | yes | yes | painter, hover, height | `rowLayout` |
 | wiggle | 4 | mode-exclusive | yes, by rendering family | GPU, Canvas2D, SVG | `WIGGLE_MARKS`, a mark list |

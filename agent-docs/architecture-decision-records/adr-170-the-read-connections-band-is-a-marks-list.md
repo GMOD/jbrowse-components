@@ -86,6 +86,26 @@ every other shape in the band to reach the DOM overlay to cross a seam.
   ring lays slices out with `spacingPx` between them — becomes one place to fix
   rather than two.
 
+## As built
+
+Settled while building, each against the picture the band drew before:
+
+- **Arc mode is valued**: its y is the genomic radius on a linear axis at the
+  view's px per bp, so an interchromosomal arc, whose radius is past every
+  domain, still rises to the band's top. Left unvalued, a translocation across a
+  seam drew as a dome as wide as the screen gap and read as a short event.
+- **The split-read connector is a second link mark** under `strokeDash`, not a
+  per-instance lane, so it paints after the solid bars.
+- **Every arc is filed under one loaded region.** The links draw unclipped, so
+  a copy per region its span touched would paint twice.
+- **A far foot on no displayed region draws the link's stem**, and an arc with
+  neither foot in its region draws nothing. Neither arises in a single-region
+  view.
+- **The read cloud's bars keep 0.7 alpha** under their category colour, so a
+  dense cloud still reads as density.
+- **The arc debug overlay is retired** with the private geometry it traced; the
+  link's painter, ink and hit are held to each other by render-core's sweeps.
+
 ## Rejected alternatives
 
 - **A `rule` mark for the flat connector.** Vega-Lite's rule is the right shape
@@ -100,7 +120,7 @@ every other shape in the band to reach the DOM overlay to cross a seam.
   deletion and a duplication inside one region read their type from the arc's
   colour, and the fan over a well-supported junction is already dense.
 - **`clampApex` and `arcHeightFactor` as link properties**, which is how
-  GenomeSpy spells the apex rule our `dome` and `arc` fuse. Nothing in the tree
-  asks to set either: `linkMark.slang` already carries the band's 0.75 apex
-  fraction and its clamp, so both would land with one consumer and no picture
-  that needs them.
+  GenomeSpy spells the apex rule our `dome` and `arc` fuse. The band's own
+  dome peaked at 0.75 of the height its y rule gave; the link's dome is a
+  true half-ellipse to the band's reach, and the band took it as is rather
+  than adding a factor with one consumer. Arcs are taller for it.

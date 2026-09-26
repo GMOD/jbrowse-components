@@ -5,10 +5,7 @@ import {
   withPassId,
 } from '@jbrowse/render-core/marks'
 
-import {
-  ARC_WIDTH_MAX_SCALE,
-  ARC_WIDTH_PER_DOUBLING,
-} from '../../features/arcs/arcLineWidth.ts'
+import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
 
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { ArcBand, RenderState } from './rendererTypes.ts'
@@ -25,9 +22,6 @@ export const ARC_MARKER_PX = 5
 export const ARC_BAND_INSET_PX = ARC_MARKER_PX / 2
 /** A split-read connector's dash and gap, in CSS px. */
 export const ARC_DASH: readonly [number, number] = [3, 3]
-/** The support at which a connection's stroke stops widening. */
-export const SUPPORT_AT_MAX_WIDTH =
-  2 ** ((ARC_WIDTH_MAX_SCALE - 1) / ARC_WIDTH_PER_DOUBLING)
 
 /**
  * The band's y scale. The read cloud plots |TLEN| on a log axis; arc mode
@@ -71,11 +65,7 @@ function linkParams(state: ArcBandState, dashed: boolean): LinkParams {
     linkShape: cloud ? 'line' : 'dome',
     valued: true,
     sizePx: width,
-    sizeScale: {
-      domain: [1, SUPPORT_AT_MAX_WIDTH],
-      scale: 'log',
-      range: [width, ARC_WIDTH_MAX_SCALE * width],
-    },
+    sizeScale: arcStrokeScale(width),
     stemPx: state.arcBand.height,
     strokeDash: dashed ? ARC_DASH : undefined,
   }

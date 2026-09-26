@@ -1,17 +1,26 @@
 ---
 name: arc-band
-description: The alignments arc band draws arcs and interchromosomal connector ticks into one rect, one Y scale and one palette, so paint order, hit-test priority and support floors are one subsystem. Read before adding a mark to it.
+description: The alignments read-connection band draws arcs, read-cloud bars, squares and interchromosomal ticks as link and point marks sharing one rect, y scale and palette, so paint order, hit priority and support floors are one subsystem. Read before adding a mark to it.
 audience: internal
 kind: spec
 ---
 
 # The alignments arc band
 
-Curved/flat arcs (`arc`, `arcFlat`, `arcMarker`) and interchromosomal connector
-ticks (`arcLine`) share one rect, one Y scale and one palette, and they overlap
-freely. That sharing is what makes the band a subsystem: which mark a hover
-resolves to, which one is hidden by a setting, and which one paints over the
-other are all one question asked in three places, and the answers have to agree.
+The band is a marks list (ADR-170), `ARC_BAND_MARKS` in
+`LinearAlignmentsDisplay/renderers/arcMarks.ts`: interchromosomal ticks as link
+stems, the arcs (a `dome` link) or the read cloud's bars (a `line` link), the
+cloud's split-read connectors as a second, dashed link, and the cloud's endpoint
+squares as a point mark. They share one rect, one y scale and one palette, and
+they overlap freely. That sharing is what makes the band a subsystem: which mark
+a hover resolves to, which one is hidden by a setting, and which one paints over
+the other are one question asked in three places, and the answers have to agree.
+
+`compute.ts` and its stages decide which connections exist, what supports each
+and which category it falls in; `buildArcBandFeeds` (`features/arcs/bandFeed.ts`)
+turns that into each region's channels. Everything the marks draw with is
+render-core's: the link's geometry, far-pair legs and region table are ADR-163's,
+and its y scale, stroke-width scale, dash and feet are params and lanes.
 
 The display's own rules — the five names a call site actually reaches for — stay
 in `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`.
@@ -44,31 +53,42 @@ own:
   no distance. This is also the one thing a tick's hover was worth more than an
   arc's, so an arc replacing ticks must not lose it.
 
+## Where each connection draws from
+
+**Every arc is filed under one loaded region**, the one holding its first foot,
+else its second (`arcOwner`), and draws once across the whole canvas from that
+region's feed. It used to be handed to every region its span touched, which was
+harmless while each block clipped to its own column; drawn unclipped, it would
+paint once per region at a different extrapolated place.
+
+**Its far foot places through the displayed region holding it**, the region
+table's entry, so a connection crosses a seam whole. A far foot on no displayed
+region draws the link's stem instead, and an arc with neither foot in the region
+it was filed under draws nothing, since nothing could place it. In an ordinary
+LGV the displayed region is the whole chromosome, so neither case arises.
+
+**Arc mode plots an arc's genomic radius** on a linear axis at the view's own px
+per bp (`arcBandYScale`), so a pair inside one region rises as high as it is
+wide and an interchromosomal arc, whose `INTERCHROM_ARC_YBP` is past every
+domain, rises to the band's top. The read cloud plots |TLEN| on a log axis, and
+`computeInsertSizeTicks` places the ruler through the same scale.
+
 ## A far pair keeps its direction for three screen widths
 
-**The width is the SURFACE the mark is drawn across**, never a block's — the
-GPU carries it as `viewWidthPx`, beside the block's own `canvasW`, and the
-Canvas2D painter and the hit test read the same number. ADR-163's rule for the
-link mark. Against a BLOCK the threshold moves as a region edge scrolls on
-screen, so a settled arc is repainted as a different mark partway through a
-pan, and only near a chromosome end or in a multi-region view.
+**`LINK_FAR_SCREEN_WIDTHS` is 3, not the 1 that would mean "both endpoints fit
+on screen".** Past it a pair's ellipse becomes a true circle and the band clips
+it to near-vertical legs at each real foot — which throws the pair's DIRECTION
+away, because a circle's tangent at its foot is vertical whatever its radius.
+The band only ever shows the first `availH` px of the rise, so the leg leans by
+`availH^2 / 2r`: 10 px over a 152 px band for a pair 1.6 screens wide, which
+reads as a bar. The ellipse at the same pair is `rx` wide and as tall as the
+band, so it arcs across the whole view and its lean says which way the mate
+lies. On `volvox-sv` at `ctgA:1-20,000` the 19 pairs of its 32 kb event draw as
+a bundle of verticals at 1 and as a fan of arcs at 3.
 
-Which surface depends on the pass. A per-region pass draws onto the track
-canvas, so it takes `RenderState.canvasWidth` — `trackWidthPx` on screen, and
-the export's own width when exporting. `CrossRegionArcsOverlay` draws onto a
-box `view.width` wide and takes that. The two differ by the track outline's 2
-px, which is 0.25% of the threshold and moves no arc either drew.
-
-**`ARC_FAR_SCREEN_WIDTHS` is 3, not the 1 that would mean "both endpoints fit on
-screen".** Past it a paired arc's ellipse becomes a true circle and the band clips
-it to near-vertical legs at each real endpoint — which throws the pair's DIRECTION
-away, because a circle's tangent at its foot is vertical whatever its radius. The
-band only ever shows the first `availH` px of the rise, so the leg leans by
-`availH^2 / 2r`: 10 px over a 152 px band for a pair 1.6 screens wide, which reads
-as a bar. The ellipse at the same pair is `rx` wide and `0.75 * destY` tall, so it
-arcs across the whole view and its lean says which way the mate lies. On
-`volvox-sv` at `ctgA:1-20,000` the 19 pairs of its 32 kb event draw as a bundle of
-verticals at 1 and as a fan of arcs at 3.
+**The width is the canvas the link draws across**, never a block's (ADR-163).
+Against a block the threshold moves as a region edge scrolls on screen, so a
+settled arc would repaint as a different mark partway through a pan.
 
 **The limit is TESSELLATION, not geometry, and that is what picks the number.** An
 ellipse spends its 64 segments over its whole half, so the share landing on the
@@ -82,59 +102,32 @@ point at aspects from 1x100 to 3000x8 (`arcHull.test.ts`), so the aspect ratio a
 raised threshold creates costs it nothing. `ellipseDistance`'s own note already
 puts the solver past 88:1, which a 25 px band reaches at N=1.
 
-**The two tests that pin this derive their boundary from the constant** rather
-than writing it out (`arcRadiiParity.test.ts`, `arcHitTest.test.ts`), because what
-they are for is that the branches sit either side of the threshold and that the
-split reads the BLOCK's width — not where the threshold currently is. Both broke
-on the move, which is how a fixture built out of `2 * 320 > 640` announces that it
-was pinning the number.
-
 ## Paint order is an interest ranking, not a data order
 
 Stated in two places, for the two things that overlap:
 
-- Between the families, in `ARC_PASSES`: ticks under arcs. A translocation is the
-  one claim here a single window cannot support on its own, and on deep
-  short-read data mismapped pairs put a full-height opaque vertical at a large
-  share of loci — straight through the arcs that carry insert size and
-  orientation.
+- Between the marks, in `ARC_BAND_MARKS`: ticks under everything, and both
+  renderers draw each mark over every region's feed before the next mark, so no
+  region's ticks paint over another region's arcs. A translocation is the one
+  claim here a single window cannot support on its own, and on deep short-read
+  data mismapped pairs put a full-height opaque vertical at a large share of
+  loci — straight through the arcs that carry insert size and orientation.
 - Within the arcs, in `arcPaintOrder`: `arcPaintRank` (categorized over
   uncategorized) first, `support` second, dedup key last. A deep pileup is
   overwhelmingly concordant pairs and they all paint the baseline slot, so
   support-ascending alone let grey punch through the few arcs that mean
   something.
 
-  **BOTH halves take it**, which is why it is one exported comparator rather
-  than a sort per feed. The cross-region overlay ranked on support alone, on the
-  ground that "nothing cross-region is routine" — and the opposite is true: arcs
-  reach that overlay by straddling a SEAM, so they are the ordinary fragments
-  lying across it and the 9138-of-9204 ratio arrives there too. SVG document
-  order is paint order and `pointerEvents: 'stroke'` gives the top path the
-  tooltip, so a two-read grey pair both covered and answered for the
-  interchromosomal arc under it; and `CROSS_REGION_ARC_CAP`, which keeps the
-  tail, dropped that arc first.
+  **Cross-region arcs take it too**: they are the ordinary fragments lying
+  across a seam, so the 9138-of-9204 ratio arrives there as well. They follow
+  the region's own arcs in its feed. The read cloud's dashed split connectors
+  are a mark of their own and paint after its solid bars.
 
-`hitTestArcBand` is the single entry point for the band, because which mark a
-hover resolves to is a question about that order, and the answer belongs beside
-the scan rather than at each call site. Both renderers run the line pass **first**
-(`drawArcsPass`; `drawArcs` strokes the ticks before the curves), so an arc is
-always the later ink. `bestArcMark`'s on-ink winner is simply the **last
-candidate considered**, both feeds arriving in paint order and both scans running
-ascending — it used to rank on `support`, which was the same thing only while
-support _was_ the sort key, so a fixture built out of feed order now tests a
-state production cannot reach. The ranking itself is `@jbrowse/sv-core`'s.
-The curve distances the band measures with, `sdEllipse` and
-`distToWideCircle`, are render-core's `curveDistance.slang` since the link mark
-took the same half-ellipse (ADR-163); the band's Y scale, apex clamp, palette
-and feet stay its own.
-
-The rule is two-tier — on-ink beats near-ink either way, the arc wins among
-on-ink, and a near-ink tie goes the same way — because "arc always" would make a
-tick unhoverable wherever any arc crosses it.
-
-The endpoint squares have no hit test of their own, covered by the bar's
-tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is arithmetic, not
-design, so `hitTest.test.ts` pins it.
+`resolveArcBandHover` is the single entry point for the band. It asks the
+marks' own hit tests through `nearestMarkHit`, last mark first, so a tie on the
+ink goes to the mark painted on top, and traces the found instance through its
+own painter (`recordPath`), so the highlight lies on what was painted. The
+endpoint squares are a mark with a hit test of their own.
 
 ## What may hide an arc
 
@@ -188,7 +181,7 @@ split read — which on unpaired long-read data is the only evidence there is.
 
 **WHERE the floor is applied differs per mark, because the two spend the count
 differently.** An arc is one cluster, so its gate sits beside the push and tests
-the very number `arcLineWidth` will spend. A tick is a SUM over the clusters
+the very number `arcStrokeScale` will spend. A tick is a SUM over the clusters
 reaching its coordinate, so testing each addend was testing one term of the
 number it draws: on one donor with a 3-read and a 1-read acceptor the donor
 coordinate reported 4 at `all` and 3 at the default floor of 2, over four reads
@@ -234,9 +227,9 @@ under either. `benches/interchromClusters.probe.ts` reads both again.
 ## Support, and why a tick can hide behind an arc's foot
 
 **Both families carry `support` and both spend it the same way.** An arc and a
-tick are each ONE junction that `resolveArcs` coalesced, and `arcLineWidth` is the
-one curve turning that count into ink for Canvas2D, the SVG export and both GPU
-passes (resolved CPU-side at pack time; no shader evaluates it). Coalescing
+tick are each ONE junction that `resolveArcs` coalesced, and `arcStrokeScale` is
+the one curve turning that count into ink: the link mark's size scale, which
+every backend, the export and the hit test read. Coalescing
 without keeping the count left a 40-read translocation drawing exactly like one
 mismapped pair.
 
@@ -316,18 +309,12 @@ collision. **Do not re-dash it without asking.** What is still true is the
 collision and the reason the obvious alternative does not work.
 
 **Support cannot do this job**, which is the part worth knowing before reaching
-for it: `arcLineWidth` caps at 4x the base width around 44 reads, so a 206-read
+for it: `arcStrokeScale` caps at 4x the base width around 44 reads, so a 206-read
 tick and a 37-read one are the same 8 device px. Re-framing a figure to thin the
 bar cannot work, and two people have now expected it to.
 
-Solid is stated at each of the three renderers rather than left to the context:
-`drawArcs` sets an empty dash before the tick loop (the arc loop after it sets a
-dash per split connector), `arcLine.slang`'s fragment carries no
-`dashCoverage`, and `resolveArcBandHover` leaves `ArcHighlight.dash` undefined
-for a tick. `tickSolid.test.ts` pins the pattern in force AT each stroke rather
-than that `setLineDash` was called, since a call after the stroke it governs
-would pass the weaker test. arcFlat's `[3, 3]` split-line dash is now the only
-dashed mark in this band.
+Solid is the tick mark's own declaration: it names no `strokeDash`, and the
+read cloud's `[3, 3]` split connector is the only dashed mark in this band.
 
 The hover carries the claim in words: `partnerOffView` on
 `ArcLineTooltipPayload` prints "Outside the displayed regions". Naming the mate
@@ -340,8 +327,9 @@ partner or not — so the caller reads `readConnections`, the same setting
 ## The read cloud draws a bar only between two places on screen
 
 **A flat mark whose partner is outside every LOADED region collapses onto the
-end the view can place and sits on the band's zero anchor**
-(`ARC_SHAPE_FLAT_UNPLACED`). Two things go wrong at once when it does not, and
+end the view can place and sits at the floor of the band's scale**
+(`ARC_SHAPE_FLAT_UNPLACED`), half a square inside the band edge
+(`ARC_BAND_INSET_PX`), so its squares draw whole. Two things go wrong at once when it does not, and
 the parked row is one answer to both.
 
 The bar is drawn between two feet, so a partner the view has no block for is
@@ -406,11 +394,9 @@ partner a few hundred bp outside the fetch. On the 24 kb window at 1:2,010,000
 that is 5 of the 7 parked marks.
 
 **The collapse is in bp, in `resolveArcs`, before anything is projected**, which
-is what lets all four renderers draw the mark with no geometry of their own:
-`arcMarkFrom` resolves a zero-length bar to `ARC_FLAT_MIN_PX` centred on the foot,
-the two endpoint squares land on each other there, and the hit test measures the
-same stub. It also narrows `arcTouchesRegion` to the one region, so an unplaced
-connection stops being packed into every region on its chromosome. The cost is
+is what lets the marks draw it with no geometry of their own: the link widens a
+zero-length line to `LINK_LINE_MIN_PX` centred on the foot, the two endpoint
+squares land on each other there, and the hit test measures the same stub. The cost is
 the far coordinate, which the hover reports as a distance instead
 (`unplacedPartnerBp`) — its two feet are one coordinate, so the location range and
 the distance between them would read as zero-width over a partner megabases away.
@@ -424,9 +410,7 @@ plot ON the axis rather than `isFlatArcShape`, which is the right predicate for
 
 **Ask `hasArcBandInk`, not `numArcs`.** A lane whose only interchromosomal partner
 is off-region carries ticks and no arcs, so an arc-count gate reserves the band,
-paints it, and then treats it as empty. The one deliberate exception is
-`resolveArcBandDebug`, which answers "why is this arc this shape" and so has
-nothing to say about a tick.
+paints it, and then treats it as empty.
 
 **A question asked ACROSS the lanes is answered by `computeArcsByGroup`, not by a
 walk of `arcsByGroup`.** There are three — the lanes with any ink
@@ -479,10 +463,11 @@ inversion. Three things about the scope are load-bearing:
   Same reasoning as the arcs': their colour channel is spent too, and a tick has
   no second endpoint to read an orientation off at all.
 
-- **Interchromosomal is the one family that is ALWAYS cross-region**, so drawing
-  the feet in `CrossRegionArcsOverlay` covers all of it. Feet on the
-  same-chromosome cross-region arcs would appear and disappear as a reader panned
-  the identical junction across a seam.
+- **Interchromosomal is the one family that is ALWAYS cross-region**, so
+  `buildArcBandFeeds` sets the link's `feet` lane on the cross-region
+  interchromosomal arcs and covers all of it. Feet on the same-chromosome
+  cross-region arcs would appear and disappear as a reader panned the identical
+  junction across a seam.
 - **The direction is a property of the JUNCTION, not of the read**, which is what
   makes it safe on a coalesced arc: reading the same molecule from the other end
   swaps which segment is trailing and flips both strands, and the two cancel
@@ -503,23 +488,22 @@ inversion. Three things about the scope are load-bearing:
   the parallel case is deliberately not the only multi-foot one there, since
   negating both feet of a parallel pair is a no-op.
 
-The feet live in the **mark** (`ArcFeet`), not in the overlay's path string, so
-the hover highlight — which re-traces `arc.mark` at its own origin — draws them
-too. Their sign is deliberately the opposite of `tangentSign`
+The feet live in the **link mark**, so the painter, the hit test and the hover
+highlight, which traces the mark's painter, all draw them. Their sign is
+deliberately the opposite of `tangentSign`
 (`core/util/bezierConnector.ts`), which is the direction a per-read connector
 LEAVES the same endpoint in: a foot lies over the retained arm and the curve
 departs across the junction, which together is what BreakpointSplitView's
 `buildBreakpointPath` draws as a tick into its breakend and a line out of it.
 Neither should be "fixed" to match the other.
 
-A foot is at most `ARC_FOOT_PX` from its anchor, clipped to its own region's
-screen extent, so a foot near a seam stops at the seam instead of drawing over a
-contig its junction says nothing about. Two feet closer than `ARC_FOOT_PX` still
-merge into one bar — which is the mark working, since they overlap precisely
-because both ends keep the same stretch — and a foot is deliberately never
-bounded by the OTHER foot's anchor, which would clamp that merge case instead.
-`crossRegionFeetBound.test.ts` holds the seam clip, `arcFeetPath.test.ts` the
-overrun.
+A foot is at most `LINK_FOOT_PX` from its anchor, clipped to its own region's
+screen extent (`linkFootLenPx`), so a foot near a seam stops at the seam instead
+of drawing over a contig its junction says nothing about. Two feet closer than
+that still merge into one bar — which is the mark working, since they overlap
+precisely because both ends keep the same stretch — and a foot is deliberately
+never bounded by the OTHER foot's anchor, which would clamp that merge case
+instead. `linkMark.test.ts` holds the seam clip.
 
 ## The gesture guard
 
@@ -554,7 +538,7 @@ As a variant, each gesture is right by default instead of by remembering:
   neither. That is a gap rather than a property of arcs, though — the hit carries
   `x1`/`x2`, `support` and a tick's `partnerRefNames`, so there is something a
   junction could offer. `ArcMarkHit` narrows to `{tooltip, highlight}` and drops
-  the `ArcBandHitResult` behind them, which is what actually forecloses it
+  the `ArcBandHit` behind them, which is what actually forecloses it
   downstream. See
   [An arc's right-click offers nothing](../ideas/collections/arc-band-open-calls.md).
 

@@ -94,7 +94,7 @@ export interface ComputedArc {
   // opposed to the drawn one — see `ArcsUploadData.arcSpanBp`.
   spanBp: number
   // The reads standing behind this arc. Always >= 1, and the number
-  // `arcLineWidth` turns into a stroke width and the hover reports.
+  // `arcStrokeScale` turns into a stroke width and the hover reports.
   //
   // HOW THEY ARE COUNTED DEPENDS ON THE FAMILY, because "reads that agree on
   // this junction" is not one measurement:
@@ -200,7 +200,7 @@ export interface PartnerLocus {
 export interface ComputedLine {
   x: ArcEndpoint
   // Reads through this breakpoint, drawn the same way an arc's is:
-  // `arcLineWidth` turns it into a stroke width in all three renderers. A
+  // `arcStrokeScale` turns it into a stroke width in all three renderers. A
   // translocation carrying 40 reads and one carrying a single mismapped pair are
   // not the same claim, and until the ticks were coalesced there was nowhere for
   // that count to go.

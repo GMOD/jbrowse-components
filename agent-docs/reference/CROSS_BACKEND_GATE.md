@@ -431,8 +431,8 @@ declared `topology: 'line-list'`, and a GPU line list is 1 px wide whatever you
 ask for — WebGPU has no line-width parameter at all and WebGL2 requires only
 1.0 — while `features/linkedReads/drawCanvas.ts` strokes `ctx.lineWidth = 1.5`.
 The pass is a 6-vertex quad now, extruded along the segment's own frame because a
-linked-read connector is diagonal, with the same box SDF and `STROKE_AA_PX` ramp
-`arcFlat.slang` uses; the width is `LINKED_READ_LINE_WIDTH_PX`, `export-consts`ed
+linked-read connector is diagonal, with a box SDF and the `STROKE_AA_PX` ramp;
+the width is `LINKED_READ_LINE_WIDTH_PX`, `export-consts`ed
 so both sides read one value. That was the third and last native line in the
 plugin.
 
