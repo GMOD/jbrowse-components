@@ -207,14 +207,13 @@ view.hideTrack('mytrack')
 const display = jb.trackModel('mytrack').activeDisplay
 // open the feature-details panel on a feature you read, as a click would
 display.selectFeature(feature)
-// the same track drawn by another of its display types: `compatibleDisplays`
-// is the set this view can draw, and passing an id from it is the only safe
-// argument — a type name you guessed, or an id off `configuration.displays`
-// (which spans every view type), throws or silently redraws the default.
-// launchDisplay loads the target's state model first, like launchTrack
-const track = jb.trackModel('mytrack')
-const ids = track.compatibleDisplays.map(d => d.displayId)
-await track.launchDisplay(ids[1])
+// the same track drawn by another of its display types, shown or not; a type
+// this view cannot draw is refused, naming `compatibleDisplays`, the ones it can
+await view.launchTrack(
+  'mytrack',
+  {},
+  { type: 'LinearMultiSampleVariantDisplay' },
+)
 ```
 
 A variation the display owns is a setting on it: an alignments track has one

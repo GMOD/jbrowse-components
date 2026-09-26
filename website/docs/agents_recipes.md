@@ -603,32 +603,29 @@ return jb.loadSessionSpec({
 
 ## The same data under another display
 
-`track.compatibleDisplays` is the set the containing view can draw, and
-`await track.launchDisplay(id)` swaps to one of them. Read the ids off the track
-rather than naming a type: an id the track does not carry throws, and a display
-TYPE passed to `showTrack` does not — it synthesizes a dangling id that resolves
-back to the default, so the track redraws unchanged and the call reports
-success.
+`await view.launchTrack(trackId, {}, { type })` draws a track as another of its
+display types, whether or not it is already shown, and the rest of the settings
+land on the display it switched to. A type the view cannot draw is refused with
+a notification naming the ones it can, which `track.compatibleDisplays` lists.
 
 ```js
 const track = jb.trackModel('volvox_test_vcf')
-const ids = track.compatibleDisplays.map(d => d.displayId)
-const drawn = track.activeDisplay.configuration.displayId
-const next = ids.find(id => id !== drawn)
-await track.launchDisplay(next)
-return { ids, from: drawn, to: next, ...(await jb.waitReady(30000)) }
+const types = track.compatibleDisplays.map(d => d.type)
+const drawn = track.activeDisplay.type
+const next = types.find(type => type !== drawn)
+await jb.view().launchTrack('volvox_test_vcf', {}, { type: next })
+return {
+  types,
+  from: drawn,
+  to: track.activeDisplay.type,
+  ...(await jb.waitReady(30000)),
+}
 ```
 
-`launchDisplay`, not the `replaceDisplay` beneath it: a display type's state
-model is a dynamic import until something shows it, and `replaceDisplay` is sync
-and asserts it is loaded. This is `launchTrack` against `showTrack` one level
-down.
-
 Against volvox this answers with the linear displays a `VariantTrack` carries —
-`LinearVariantDisplay` and `LinearMultiSampleVariantDisplay`, among them. Do not
-read `configuration.displays` for this: it also holds the `ChordVariantDisplay`
-a circular view would draw, and handing that id to a linear view's track is the
-one way to make `replaceDisplay` fail.
+`LinearVariantDisplay` and `LinearMultiSampleVariantDisplay`, among them.
+`configuration.displays` also holds the types other views draw, such as a
+circular view's `ChordVariantDisplay`.
 
 **Read arcs, the read cloud and coverage are settings on the alignments
 display.** An alignments track has one `LinearAlignmentsDisplay`, so arcs are

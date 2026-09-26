@@ -1,4 +1,6 @@
 import { getEnv } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { waitFor } from '@testing-library/react'
 
 import { doBeforeEach, getTestSession, mockConsole } from './util.tsx'
 
@@ -122,5 +124,65 @@ test('toggleTrack failed open (unknown id) returns false', async () => {
   await mockConsole(async () => {
     const view = await getView()
     expect(view.toggleTrack('does_not_exist')).toBe(false)
+  })
+})
+
+// A shown track handed a display type it is not drawn as switches to it, the
+// settings landing on the display they were written for.
+test('launchTrack switches a shown track to the display type it names', async () => {
+  const { session, view } = await getTestSession()
+  await view.launchTrack('gff3tabix_genes')
+  const track = await view.launchTrack(
+    'gff3tabix_genes',
+    {},
+    { type: 'LinearMarkDisplay', marks: [{ mark: 'span' }] },
+  )
+  expect(track!.activeDisplay.type).toBe('LinearMarkDisplay')
+  expect(getSnapshot(track!.activeDisplay.configuration)).toMatchObject({
+    marks: [{ mark: 'span' }],
+  })
+  expect(session.snackbarMessages).toHaveLength(0)
+})
+
+test('launchTrack leaves a track shown as the type it names as it was', async () => {
+  const { view } = await getTestSession()
+  const track = await view.launchTrack('volvox_test_vcf')
+  const display = track!.activeDisplay
+  await view.launchTrack('volvox_test_vcf', {}, { type: display.type })
+  expect(track!.activeDisplay).toBe(display)
+})
+
+test('a display type the view cannot draw is named, and the display stays', async () => {
+  await mockConsole(async () => {
+    const { session, view } = await getTestSession()
+    const track = await view.launchTrack('volvox_test_vcf')
+    const display = track!.activeDisplay
+    expect(
+      await view.launchTrack(
+        'volvox_test_vcf',
+        {},
+        { type: 'ChordVariantDisplay' },
+      ),
+    ).toBeUndefined()
+    expect(track!.activeDisplay).toBe(display)
+    expect(session.snackbarMessages[0]!.message).toContain(
+      'cannot be shown as "ChordVariantDisplay"',
+    )
+  })
+})
+
+// The sync door cannot load a display's state model, so it hands the switch
+// to launchTrack and answers undefined, as it does for a first show.
+test('showTrack hands a switch to a display not yet loaded to launchTrack', async () => {
+  const { view } = await getTestSession()
+  const track = await view.launchTrack('volvox_test_vcf')
+  const next = track!.compatibleDisplays.find(
+    (d: { type: string }) => d.type !== track!.activeDisplay.type,
+  )!
+  expect(
+    view.showTrack('volvox_test_vcf', {}, { type: next.type }),
+  ).toBeUndefined()
+  await waitFor(() => {
+    expect(track!.activeDisplay.type).toBe(next.type)
   })
 })

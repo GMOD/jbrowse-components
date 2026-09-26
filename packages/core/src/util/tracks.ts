@@ -830,30 +830,94 @@ function notifySettingsReport(
   }
 }
 
-// `type` picks a display for a new track and means nothing to a shown one.
+interface ShownTrack {
+  activeDisplay: {
+    type: string
+    configuration: { displayId: string }
+    getPortableSettings?: (displayId: string) => Record<string, unknown>
+  }
+  displays: Record<string, unknown>[]
+  compatibleDisplays: { type: string; displayId: string }[]
+  replaceDisplay: (
+    oldDisplayId: string,
+    newDisplayId: string,
+    initialSnapshot?: Record<string, unknown>,
+  ) => void
+  applyDisplaySettings?: (settings: Record<string, unknown>) => SettingsReport
+}
+
+// The display a shown track switches to for a `type` it is not drawn as.
+function displaySwitch(
+  self: GenericView,
+  trackId: string,
+  track: ShownTrack,
+  requested: string | undefined,
+) {
+  if (requested === undefined) {
+    return undefined
+  }
+  const { pluginManager } = getEnv(self)
+  const type = pluginManager.resolveDisplayTypeRecord(requested)?.name
+  if (type === track.activeDisplay.type) {
+    return undefined
+  }
+  const target = track.compatibleDisplays.find(d => d.type === type)
+  if (!target) {
+    const view = isViewModel(self) ? self : getContainingView(self)
+    throw new Error(
+      `Track "${trackId}" cannot be shown as "${requested}" in a ${view.type}. It takes: ${track.compatibleDisplays.map(d => d.type).join(', ')}`,
+    )
+  }
+  return target
+}
+
+// A switch carries the settings in the new display's snapshot, as a first show
+// does, and hands off to the async launch while that display's state model is
+// still a dynamic import.
 function restyleShown<T>(
   self: GenericView,
   trackId: string,
   found: T,
-  { type: _type, ...settings }: DisplayInitialSnapshot,
-): T {
-  const track = found as unknown as {
-    activeDisplay: { type: string }
-    applyDisplaySettings?: (settings: Record<string, unknown>) => SettingsReport
+  displayInitialSnapshot: DisplayInitialSnapshot,
+): T | undefined {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+  const track = found as unknown as ShownTrack
+  const { type, ...settings } = displayInitialSnapshot
+  try {
+    const target = displaySwitch(self, trackId, track, type)
+    if (target) {
+      const record = pluginManager.resolveDisplayTypeRecord(target.type)
+      if (record && !record.isStateModelLoaded) {
+        void launchTrackGeneric(self, trackId, {}, displayInitialSnapshot)
+        return undefined
+      }
+      track.replaceDisplay(
+        track.activeDisplay.configuration.displayId,
+        target.displayId,
+        {
+          ...track.activeDisplay.getPortableSettings?.(target.displayId),
+          ...settings,
+        },
+      )
+    }
+    if (Object.keys(settings).length && track.applyDisplaySettings) {
+      const report = track.applyDisplaySettings(settings)
+      notifySettingsReport(
+        session,
+        trackId,
+        track.activeDisplay.type,
+        target
+          ? didNotLand(report.unapplied, track.displays[0])
+          : report.unapplied,
+        report.failed,
+      )
+    }
+    return found
+  } catch (e) {
+    session.notifyError(`${e}`, e)
+    return undefined
   }
-  if (Object.keys(settings).length && track.applyDisplaySettings) {
-    const report = track.applyDisplaySettings(settings)
-    // no `didNotLand` here: this path spreads no snapshot, so every entry
-    // applyDisplaySettings reports really did write nothing
-    notifySettingsReport(
-      getSession(self),
-      trackId,
-      track.activeDisplay.type,
-      report.unapplied,
-      report.failed,
-    )
-  }
-  return found
 }
 
 interface GenericView {
@@ -1521,7 +1585,29 @@ export async function launchTrackGeneric(
   const session = getSession(self)
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
-    return restyleShown(self, trackId, found, displayInitialSnapshot)
+    let target
+    try {
+      target = displaySwitch(self, trackId, found, displayInitialSnapshot.type)
+      if (target) {
+        await pluginManager
+          .resolveDisplayTypeRecord(target.type)
+          ?.loadStateModel()
+      }
+    } catch (e) {
+      session.notifyError(`${e}`, e)
+      return undefined
+    }
+    if (!target) {
+      return restyleShown(self, trackId, found, displayInitialSnapshot)
+    }
+    return isAlive(self) && isAlive(found)
+      ? self.showTrack?.(
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
+          inlineConf,
+        )
+      : undefined
   }
   try {
     const { picked } = resolveTrackDisplayChoice(
