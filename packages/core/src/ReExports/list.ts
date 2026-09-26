@@ -467,6 +467,7 @@ export default [
   '@jbrowse/display-kit/triangleTransform',
   '@jbrowse/display-kit/types',
   '@jbrowse/display-kit/viewportEmpty',
+  '@jbrowse/display-kit/viewRegionTable',
   '@jbrowse/display-ui',
   '@jbrowse/display-ui/axisPlacement',
   '@jbrowse/display-ui/embed',

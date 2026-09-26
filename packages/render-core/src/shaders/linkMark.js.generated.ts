@@ -136,3 +136,13 @@ export function linkRadiiPx(halfWidthPx: number, apexPx: number, screenWidthPx: 
   }
   return [halfWidthPx, apexPx]
 }
+
+export function linkFootLenPx(x: number, dir: number, leftPx: number, rightPx: number, footPx: number): number {
+  let _t0: number
+  if ((dir > 0.0)) {
+    _t0 = (rightPx - x)
+  } else {
+    _t0 = (x - leftPx)
+  }
+  return _max(0.0, _min(footPx, _t0))
+}

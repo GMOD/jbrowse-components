@@ -17,6 +17,8 @@ export const LINK_MAX_REGIONS = 256
 
 export const LINK_STEM_PX = 12
 
+export const LINK_FOOT_PX = 20
+
 export const LINK_FAR_SCREEN_WIDTHS = 3
 
 export const LINK_SIZE_CONSTANT = 0

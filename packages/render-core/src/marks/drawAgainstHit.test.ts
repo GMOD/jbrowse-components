@@ -6,7 +6,12 @@ import {
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
 import { sweepMarkAgainstHit } from './drawAgainstHit.ts'
-import { LINK_ELSEWHERE, LINK_NO_REGION, linkMark } from './linkMark.ts'
+import {
+  LINK_ELSEWHERE,
+  LINK_NO_REGION,
+  linkFeet,
+  linkMark,
+} from './linkMark.ts'
 import { inkHitNearest } from './markHit.ts'
 import { pointMark } from './pointMark.ts'
 import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
@@ -463,6 +468,13 @@ const links: LinkChannels = {
   y: Float32Array.from([0.2, 0.9, 0.5, 0.7, 0.4]),
   size: Float32Array.from([1, 4, NaN, 2, 3]),
   color: Uint32Array.from([RED, BLUE, RED, BLUE, RED]),
+  feet: Uint8Array.from([
+    linkFeet(1, -1),
+    linkFeet(-1, 0),
+    linkFeet(1, 1),
+    linkFeet(-1, 1),
+    linkFeet(1, 1),
+  ]),
   count: 5,
 }
 
@@ -473,6 +485,7 @@ const sliceLink = (c: LinkChannels, i: number): LinkChannels => ({
   y: c.y?.subarray(i, i + 1),
   size: c.size?.subarray(i, i + 1),
   color: c.color?.subarray(i, i + 1),
+  feet: c.feet?.subarray(i, i + 1),
   count: 1,
 })
 
@@ -500,9 +513,13 @@ describe('link: every stroked curve answers its own hit, in both orientations', 
         valued: false,
         sizePx: 2,
         regions: [
-          reversed
-            ? { anchorPx: 60, anchorBp: 0, signedPxPerBp: -0.5 }
-            : { anchorPx: 10, anchorBp: 0, signedPxPerBp: 0.5 },
+          {
+            ...(reversed
+              ? { anchorPx: 60, anchorBp: 0, signedPxPerBp: -0.5 }
+              : { anchorPx: 10, anchorBp: 0, signedPxPerBp: 0.5 }),
+            leftPx: 10,
+            rightPx: 60,
+          },
           { anchorPx: 8000, anchorBp: 0, signedPxPerBp: 0.5 },
         ],
         ...overrides,

@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 123 functions
-are inside the emitter's subset, of which **94 are exported**.
+Scanned 45 shaders with entry points. 125 functions
+are inside the emitter's subset, of which **95 are exported**.
 
 ## Candidates
 
@@ -24,7 +24,9 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-_None._
+| Function | Signature | Shaders |
+| --- | --- | --- |
+| `footDir` | `(u32, u32) -> f32` | linkMark |
 
 ## Declined
 
@@ -79,9 +81,10 @@ noticing in a diff.
 | type 'vec2' is outside the supported scalar subset | 26 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 20 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcFlipX`, `arcStrokeHalfPx`, `arcsPointDown`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
-| type 'vec4' is outside the supported scalar subset | 13 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
+| type 'vec4' is outside the supported scalar subset | 14 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'vec3' is outside the supported scalar subset | 5 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `linkedReadColorByIndex` |
+| type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markInstanceColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | type 'VsOut' is outside the supported scalar subset | 4 | `arcDistance`, `linkDash`, `linkDashAlong`, `linkDistance` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |

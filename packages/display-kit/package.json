@@ -105,6 +105,7 @@
     "./trackHeightConfigSchemaFields": "./src/trackHeightConfigSchemaFields.ts",
     "./triangleTransform": "./src/triangleTransform.ts",
     "./types": "./src/types.ts",
+    "./viewRegionTable": "./src/viewRegionTable.ts",
     "./viewportEmpty": "./src/viewportEmpty.ts"
   },
   "scripts": {
@@ -214,6 +215,7 @@
       "./trackHeightConfigSchemaFields": "./esm/trackHeightConfigSchemaFields.js",
       "./triangleTransform": "./esm/triangleTransform.js",
       "./types": "./esm/types.js",
+      "./viewRegionTable": "./esm/viewRegionTable.js",
       "./viewportEmpty": "./esm/viewportEmpty.js"
     }
   },

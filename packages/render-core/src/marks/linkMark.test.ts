@@ -1,5 +1,6 @@
 import { clipBlock } from '../blockClipUtils.ts'
 import {
+  LINK_FOOT_PX,
   LINK_LINE_MIN_PX,
   LINK_NO_REGION,
   LINK_NO_SIZE,
@@ -8,7 +9,12 @@ import {
 } from '../shaders/linkMark.consts.generated.ts'
 import * as iface from '../shaders/linkMark.iface.generated.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
-import { linkMark } from './linkMark.ts'
+import {
+  LINK_FOOT_FORWARD,
+  LINK_FOOT_REVERSE,
+  linkFeet,
+  linkMark,
+} from './linkMark.ts'
 import { shapeHitNearest } from './markHit.ts'
 
 import type { LinkChannels, LinkParams, LinkRegion } from './linkMark.ts'
@@ -373,6 +379,62 @@ test('a stem rises as far as the mark says, and a dash strokes only straight ink
   }
   linkMark.paintBlock(ctx, c, block, frame, long)
   expect(dashes).toEqual([[3, 3], [], []])
+})
+
+test('a foot ticks along its arm, mirrored on a reversed region and stopped at the region edge', () => {
+  const bounded: LinkRegion[] = [
+    { anchorPx: 0, anchorBp: 0, signedPxPerBp: 1, leftPx: 0, rightPx: 1000 },
+    {
+      anchorPx: 2000,
+      anchorBp: 5000,
+      signedPxPerBp: -1,
+      leftPx: 1000,
+      rightPx: 2000,
+    },
+  ]
+  const p = { ...params, regions: bounded, footPx: 20 }
+  // x at px 990 pointing forward runs 10 px to the seam; x2 at bp 5100 on the
+  // reversed region is px 1900, and forward there points left
+  const c: LinkChannels = {
+    ...channels([{ x: 990, x2: 5100, region: 1 }]),
+    feet: Uint8Array.of(linkFeet(1, 1)),
+  }
+  const feet: [number, number, number, number][] = []
+  const { ctx, calls } = mockCtx()
+  const stroke = ctx.stroke.bind(ctx)
+  ctx.stroke = () => {
+    stroke()
+    feet.push(...calls.splice(0).map(r => [r.x, r.y, r.w, r.h] as never))
+  }
+  linkMark.paintBlock(ctx, c, block, frame, p)
+  const ticks = feet.filter(([, , , h]) => h === 2)
+  expect(ticks).toEqual(
+    expect.arrayContaining([
+      [989, 98, 12, 2],
+      [1879, 98, 22, 2],
+    ]),
+  )
+  expect(hitAt(c, 1885, 99, p)).toMatchObject({ distSq: 0 })
+  expect(hitAt(c, 995, 99, p)).toMatchObject({ distSq: 0 })
+  const ink = linkMark.ink!(c, block, frame, p, 0)!
+  expect(ink.left).toBe(989)
+  expect(ink.top + ink.height).toBe(101)
+})
+
+test('a stem carries no far foot, and a link naming no feet draws none', () => {
+  const stem: LinkChannels = {
+    ...channels([{ x: 500, x2: 42, region: LINK_NO_REGION }]),
+    feet: Uint8Array.of(linkFeet(-1, 1)),
+  }
+  const ink = linkMark.ink!(stem, block, frame, params, 0)!
+  expect(ink.left).toBe(500 - LINK_FOOT_PX - 1)
+  expect(ink.width).toBe(LINK_FOOT_PX + 2)
+  const bare = channels([{ x: 100, x2: 200 }])
+  expect(linkMark.ink!(bare, block, frame, params, 0)!.width).toBe(102)
+  const buf = linkMark.pass.pack(stem) as ArrayBuffer
+  expect(new Uint32Array(buf)[iface.INSTANCE_OFFSET_U32.feet]).toBe(
+    LINK_FOOT_REVERSE | (LINK_FOOT_FORWARD << 2),
+  )
 })
 
 test('the band placement, direction, stem and dash reach the uniforms', () => {

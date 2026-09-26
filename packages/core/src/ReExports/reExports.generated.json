@@ -4598,6 +4598,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/viewRegionTable": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "viewRegionTable"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-ui": {
       "package": "@jbrowse/display-ui",
       "names": [
@@ -5295,6 +5302,7 @@
       "names": [
         "linkApexPx",
         "linkBaseYPx",
+        "linkFootLenPx",
         "linkRadiiPx",
         "linkStrokeWidthPx",
         "linkValuePx"
@@ -5307,6 +5315,7 @@
         "LINK_CURVE_SEGMENTS",
         "LINK_ELSEWHERE",
         "LINK_FAR_SCREEN_WIDTHS",
+        "LINK_FOOT_PX",
         "LINK_LINE_MIN_PX",
         "LINK_MAX_REGIONS",
         "LINK_NO_REGION",

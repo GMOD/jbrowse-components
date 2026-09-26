@@ -14,7 +14,6 @@ import {
   getSession,
   pluralize,
 } from '@jbrowse/core/util'
-import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
@@ -54,6 +53,7 @@ import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
+import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import {
   addDisposer,
@@ -1163,36 +1163,12 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The view's displayed regions as a link's feet place through them:
-         * each anchored at its bp under the view's left edge, or its near end
-         * off screen, so a foot's offset from the anchor stays inside float32
-         * on the GPU. Empty where no mark is a link, reading nothing per frame.
+         * The view's displayed regions as a link's feet place through them
+         * (`viewRegionTable`). Empty where no mark is a link, reading nothing
+         * per frame.
          */
         get linkRegions(): readonly LinkRegion[] {
-          if (!self.hasLinkMark) {
-            return NO_LINK_REGIONS
-          }
-          const { displayedRegions, bpPerPx, offsetPx } = self.host
-          let bpSoFar = 0
-          return displayedRegions.map((region): LinkRegion => {
-            const leftPx = bpSoFar / bpPerPx - offsetPx
-            const spanBp = region.end - region.start
-            bpSoFar += spanBp
-            const nearPx = Math.min(
-              Math.max(leftPx, 0),
-              leftPx + spanBp / bpPerPx,
-            )
-            const anchorBp = Math.floor(
-              region.reversed
-                ? region.end - (nearPx - leftPx) * bpPerPx
-                : region.start + (nearPx - leftPx) * bpPerPx,
-            )
-            return {
-              anchorPx: leftPx + bpOffsetInRegion(region, anchorBp) / bpPerPx,
-              anchorBp,
-              signedPxPerBp: (region.reversed ? -1 : 1) / bpPerPx,
-            }
-          })
+          return self.hasLinkMark ? viewRegionTable(self.host) : NO_LINK_REGIONS
         },
         /**
          * #getter

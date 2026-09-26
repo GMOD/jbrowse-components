@@ -4,6 +4,7 @@ import { distToWideCirclePx } from '../shaders/curveDistance.js.generated.ts'
 import {
   LINK_ELSEWHERE,
   LINK_FAR_SCREEN_WIDTHS,
+  LINK_FOOT_PX,
   LINK_MAX_REGIONS,
   LINK_NO_REGION,
   LINK_NO_SIZE,
@@ -19,6 +20,7 @@ import * as shader from '../shaders/linkMark.generated.ts'
 import {
   linkApexPx,
   linkBaseYPx,
+  linkFootLenPx,
   linkRadiiPx,
   linkStrokeWidthPx,
   linkValuePx,
@@ -51,7 +53,22 @@ export interface LinkChannels extends ColorChannel, RowChannel {
   x2Region: Uint32Array
   y?: Float32Array
   size?: Float32Array
+  /**
+   * The breakend ticks each instance carries: two bits per foot, 1 pointing
+   * forward along the genome and 2 back, the `x` foot in the low pair.
+   */
+  feet?: Uint8Array
   count: number
+}
+
+export const LINK_FOOT_FORWARD = 1
+export const LINK_FOOT_REVERSE = 2
+
+/** The `feet` lane's value for a tick at each foot, by genomic direction. */
+export function linkFeet(xDir: number, x2Dir: number) {
+  const bits = (d: number) =>
+    d > 0 ? LINK_FOOT_FORWARD : d < 0 ? LINK_FOOT_REVERSE : 0
+  return bits(xDir) | (bits(x2Dir) << 2)
 }
 
 /**
@@ -64,6 +81,9 @@ export interface LinkRegion {
   anchorPx: number
   anchorBp: number
   signedPxPerBp: number
+  /** The region's screen extent, which a foot stops at; unbounded when absent. */
+  leftPx?: number
+  rightPx?: number
 }
 
 export interface LinkSizeScale {
@@ -88,6 +108,8 @@ export interface LinkParams extends RowParams, MarkValueScale {
   stemPx?: number
   /** A straight segment's `[dash, gap]` in CSS px, starting on a dash. */
   strokeDash?: readonly [number, number]
+  /** How long a breakend foot runs where its region has the room. */
+  footPx?: number
   /** Whether the mark names a `y`, which then places the apex. */
   valued: boolean
   /** The stroke width where no `size` channel is read. */
@@ -145,6 +167,12 @@ interface LinkFrame {
   /** The leg sweep in radians, the painter's and the ink's one number. */
   legSweep: number
   strokePx: number
+  footPx: number
+  /** Each foot's tick as a screen direction and length; 0 draws none. */
+  foot1Dir: number
+  foot1Len: number
+  foot2Dir: number
+  foot2Len: number
 }
 
 function linkFrame(
@@ -189,6 +217,11 @@ function linkFrame(
     legHeight: 0,
     legSweep: 0,
     strokePx: 0,
+    footPx: params.footPx ?? LINK_FOOT_PX,
+    foot1Dir: 0,
+    foot1Len: 0,
+    foot2Dir: 0,
+    foot2Len: 0,
   }
 }
 
@@ -210,7 +243,53 @@ function sizeOf(c: LinkChannels, i: number) {
   return v !== undefined && Number.isFinite(v) ? v : LINK_NO_SIZE
 }
 
+function footDir(feet: number, shift: number) {
+  const d = (feet >> shift) & 3
+  return d === LINK_FOOT_FORWARD ? 1 : d === LINK_FOOT_REVERSE ? -1 : 0
+}
+
+// A foot's tick through its own region: the genomic direction mirrored where
+// the region draws right to left, and held short of the region's edge.
+function footOn(
+  region: LinkRegion,
+  x: number,
+  genomicDir: number,
+  footPx: number,
+) {
+  const dir = genomicDir * Math.sign(region.signedPxPerBp)
+  const len = linkFootLenPx(
+    x,
+    dir,
+    region.leftPx ?? -Infinity,
+    region.rightPx ?? Infinity,
+    footPx,
+  )
+  return dir !== 0 && len > 0 ? { dir, len } : { dir: 0, len: 0 }
+}
+
+function placeFeet(c: LinkChannels, g: LinkFrame, i: number) {
+  const feet = c.feet?.[i] ?? 0
+  const placed = g.kind !== KIND_STEM && g.kind !== KIND_NONE
+  const one =
+    feet === 0 || g.kind === KIND_NONE
+      ? { dir: 0, len: 0 }
+      : footOn(g.regions[g.own]!, g.xPx, footDir(feet, 0), g.footPx)
+  const two =
+    feet === 0 || !placed
+      ? { dir: 0, len: 0 }
+      : footOn(g.regions[c.x2Region[i]!]!, g.x2Px, footDir(feet, 2), g.footPx)
+  g.foot1Dir = one.dir
+  g.foot1Len = one.len
+  g.foot2Dir = two.dir
+  g.foot2Len = two.len
+}
+
 function placeLink(c: LinkChannels, g: LinkFrame, i: number) {
+  placeCurve(c, g, i)
+  placeFeet(c, g, i)
+}
+
+function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
   const { regions } = g
   g.strokePx = linkStrokeWidthPx(
     sizeOf(c, i),
@@ -278,6 +357,7 @@ function sizeLane(c: LinkChannels) {
 }
 
 const NO_VALUES = new Float32Array(0)
+const NO_FEET = new Uint8Array(0)
 
 // The region table the uniform writer takes, mutated in place per write so a
 // frame allocates nothing per block.
@@ -304,10 +384,31 @@ function tableEntry(region: LinkRegion | undefined) {
   return region ? writeEntry(OWN, region) : OWN.fill(0)
 }
 
+// Past float32's reach, so an unbounded edge never shortens a foot.
+const UNBOUNDED_PX = 1e30
+
+const SPANS = Array.from(
+  { length: LINK_MAX_REGIONS / 2 },
+  (): [number, number, number, number] => [0, 0, 0, 0],
+) as Parameters<typeof shader.writeUniforms>[1]['regionSpan']
+
+const OWN_SPAN: [number, number, number, number] = [0, 0, 0, 0]
+
+function writeSpan(
+  entry: [number, number, number, number],
+  at: 0 | 2,
+  region: LinkRegion | undefined,
+) {
+  entry[at] = region?.leftPx ?? -UNBOUNDED_PX
+  entry[at + 1] = region?.rightPx ?? UNBOUNDED_PX
+  return entry
+}
+
 function fillTable(regions: readonly LinkRegion[]) {
   const n = Math.min(regions.length, LINK_MAX_REGIONS)
   for (let i = 0; i < n; i++) {
     writeEntry(TABLE[i]!, regions[i]!)
+    writeSpan(SPANS[i >> 1]!, (i & 1) === 0 ? 0 : 2, regions[i])
   }
   return n
 }
@@ -384,6 +485,46 @@ function tracePath(
   }
 }
 
+interface FootSegment {
+  from: number
+  to: number
+  y: number
+}
+
+// The ticks, a half stroke inside the band so one on its edge draws whole.
+function footSegments(g: LinkFrame): FootSegment[] {
+  const y = yAt(g, g.strokePx / 2)
+  const segments: FootSegment[] = []
+  if (g.foot1Len > 0) {
+    segments.push({ from: g.xPx, to: g.xPx + g.foot1Dir * g.foot1Len, y })
+  }
+  if (g.foot2Len > 0) {
+    segments.push({ from: g.x2Px, to: g.x2Px + g.foot2Dir * g.foot2Len, y })
+  }
+  return segments
+}
+
+function footBox({ from, to, y }: FootSegment, half: number): InkRect {
+  const left = Math.min(from, to)
+  return {
+    left: left - half,
+    top: y - half,
+    width: Math.abs(to - from) + 2 * half,
+    height: 2 * half,
+  }
+}
+
+function union(a: InkRect, b: InkRect): InkRect {
+  const left = Math.min(a.left, b.left)
+  const top = Math.min(a.top, b.top)
+  return {
+    left,
+    top,
+    width: Math.max(a.left + a.width, b.left + b.width) - left,
+    height: Math.max(a.top + a.height, b.top + b.height) - top,
+  }
+}
+
 function dashes(g: LinkFrame) {
   return g.kind === KIND_LINE || g.kind === KIND_STEM
 }
@@ -401,6 +542,14 @@ function riseBox(
 }
 
 function inkBox(g: LinkFrame): InkRect | undefined {
+  const curve = curveBox(g)
+  const half = g.strokePx / 2
+  return curve
+    ? footSegments(g).reduce((box, f) => union(box, footBox(f, half)), curve)
+    : undefined
+}
+
+function curveBox(g: LinkFrame): InkRect | undefined {
   if (g.kind === KIND_NONE) {
     return undefined
   }
@@ -433,8 +582,16 @@ interface CurvePoint {
 // under a reversed scale the cursor is reflected there and the answer back.
 function nearestOnCurve(g: LinkFrame, px: number, py: number): CurvePoint {
   const flip = (y: number) => (g.reverse ? 2 * g.baseY - y : y)
-  const near = nearestRising(g, px, flip(py))
-  return { ...near, y: flip(near.y) }
+  const rising = nearestRising(g, px, flip(py))
+  let near = { ...rising, y: flip(rising.y) }
+  for (const { from, to, y } of footSegments(g)) {
+    const x = Math.min(Math.max(from, to), Math.max(Math.min(from, to), px))
+    const dist = Math.hypot(px - x, py - y)
+    if (dist < near.dist) {
+      near = { x, y, dist }
+    }
+  }
+  return near
 }
 
 function nearestRising(g: LinkFrame, px: number, py: number): CurvePoint {
@@ -504,6 +661,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
           size: sizeLane(c),
           color: colorBits(c),
           row: rowLane(c.row, c.count),
+          feet: c.feet ?? (c.count === 0 ? NO_FEET : new Uint8Array(c.count)),
         },
         c.count,
       ),
@@ -520,6 +678,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       stemPx: params.stemPx ?? LINK_STEM_PX,
       dashPx: params.strokeDash?.[0] ?? 0,
       gapPx: params.strokeDash?.[1] ?? 0,
+      footPx: params.footPx ?? LINK_FOOT_PX,
       insetPx: params.insetPx ?? 0,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
@@ -538,7 +697,13 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       regionCount: fillTable(params.regions),
       zero: 0,
       ownEntry: tableEntry(params.regions[block.displayedRegionIndex]),
+      ownSpan: writeSpan(
+        OWN_SPAN,
+        0,
+        params.regions[block.displayedRegionIndex],
+      ),
       regionTable: TABLE,
+      regionSpan: SPANS,
     })
   },
 
@@ -566,6 +731,16 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       ctx.beginPath()
       tracePath(ctx, g)
       ctx.stroke()
+      const feet = footSegments(g)
+      if (feet.length > 0) {
+        ctx.setLineDash([])
+        ctx.beginPath()
+        for (const { from, to, y } of feet) {
+          ctx.moveTo(from, y)
+          ctx.lineTo(to, y)
+        }
+        ctx.stroke()
+      }
     }
     ctx.setLineDash([])
   },
