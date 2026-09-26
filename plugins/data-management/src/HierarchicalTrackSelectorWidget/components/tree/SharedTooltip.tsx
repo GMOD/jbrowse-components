@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { getSession } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -70,7 +71,7 @@ const SharedTooltip = observer(function SharedTooltip({
   return (
     <Tooltip
       open
-      title={state.text}
+      title={<SanitizedHTML html={state.text} />}
       placement={placement}
       slotProps={{
         popper: {

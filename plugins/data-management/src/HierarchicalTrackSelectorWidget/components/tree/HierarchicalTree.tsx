@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { fabClearance } from '../HierarchicalFab.tsx'
 import SharedTooltip from './SharedTooltip.tsx'
 import TreeItem from './TreeItem.tsx'
 
@@ -16,14 +17,15 @@ const HierarchicalTree = observer(function HierarchicalTree({
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
-  const { rows, treeHeight } = model
+  const { rows } = model
+  const contentHeight = model.treeHeight + fabClearance
   // when the list shrinks (filter/collapse) the browser caps the real scrollTop
   // but may not fire a scroll event, leaving our state stale-high and rendering
   // a blank viewport until the next manual scroll. Written back into state
   // during render rather than only derived: the cap is what the DOM did, so
   // keeping the stale value would scroll the rendered window back down to it
   // when the list grows again, while the container is still at the top
-  const maxScrollTop = Math.max(0, treeHeight - height)
+  const maxScrollTop = Math.max(0, contentHeight - height)
   if (scrollTop > maxScrollTop) {
     setScrollTop(maxScrollTop)
   }
@@ -45,7 +47,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
     >
       <div
         style={{
-          height: treeHeight,
+          height: contentHeight,
           width: '100%',
           position: 'relative',
         }}

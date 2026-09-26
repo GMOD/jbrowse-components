@@ -1829,6 +1829,20 @@ test('a change to one setting rewrites only its own key', () => {
   ])
 })
 
+test('a stored favorites value that is not a list of ids reads as none', () => {
+  localStorage.setItem('favoriteTracks-/}', JSON.stringify({ fooC: true }))
+  const session = addTestData(createTestSession())
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  expect(model.favoriteTracks).toEqual([])
+  model.addToFavorites('fooC')
+  expect(model.isFavorite('fooC')).toBe(true)
+})
+
 // a row virtualized away under the pointer gets no mouseout, so the next row
 // entered has to clear the tooltip
 test('entering a row without a description hides the tooltip', async () => {
@@ -1859,6 +1873,76 @@ test('entering a row without a description hides the tooltip', async () => {
   await waitFor(() => {
     expect(queryByText('a description')).toBeNull()
   })
+})
+
+test('a description written in HTML renders as HTML in the tooltip', async () => {
+  const session = addTestAssembly(createTestSession({ adminMode: true }))
+  session.publishTrackConf({
+    trackId: 'described',
+    name: 'described',
+    description: 'From <a href="https://example.com/x">the paper</a>',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { findByTestId, findByRole } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+  const label = await findByTestId('htsTrackLabel-Tracks,described')
+  expect(label.closest('label')!.getAttribute('aria-description')).toBe(
+    'From the paper',
+  )
+  fireEvent.mouseOver(label)
+  const tooltip = await findByRole('tooltip')
+  await waitFor(() => {
+    expect(tooltip.querySelector('a')?.textContent).toBe('the paper')
+  })
+  expect(tooltip.textContent).not.toContain('<a')
+})
+
+// a hub track type JBrowse can't draw arrives as a "(Unknown)" stand-in whose
+// checkbox is disabled; "Show all" must not open it either
+test('Show all on a category skips the tracks whose checkbox is disabled', async () => {
+  const session = addTestAssembly(createTestSession({ adminMode: true }))
+  for (const [trackId, name] of [
+    // listed first, so it would be open by the time the drawable one is
+    ['undrawable', 'undrawable (Unknown)'],
+    ['drawable', 'drawable'],
+  ] as const) {
+    session.publishTrackConf({
+      trackId,
+      name,
+      category: ['Cat'],
+      assemblyNames: ['volMyt1'],
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+  }
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { findByTestId, findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(await findByTestId('htsCategoryMenu-Cat'))
+  fireEvent.click(await findByText('Show all'))
+  await waitFor(() => {
+    expect(model.shownTrackIds.has('drawable')).toBe(true)
+  })
+  expect(model.shownTrackIds.has('undrawable')).toBe(false)
 })
 
 // the exemption from the filter's forced-open is for groups that are shut

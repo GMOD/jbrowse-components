@@ -1,4 +1,5 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { coarseStripHTML } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha } from '@mui/material/styles'
 import { observer } from 'mobx-react'
@@ -136,7 +137,7 @@ const TrackLabel = observer(function TrackLabel({
       <label
         className={classes.checkboxLabel}
         data-tooltip={description}
-        aria-description={description}
+        aria-description={coarseStripHTML(description)}
         onClick={event => {
           if (event.ctrlKey || event.metaKey) {
             if (model.isSelected(trackId)) {

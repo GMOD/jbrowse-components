@@ -14,7 +14,11 @@ import { CircularProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { isFilterForcedOpen } from '../../model.ts'
-import { getAllSubcategories, getAllTrackNodes } from '../../util.ts'
+import {
+  getAllSubcategories,
+  getAllTrackNodes,
+  isUnsupported,
+} from '../../util.ts'
 import MoreHorizGlyph from './MoreHorizGlyph.tsx'
 import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
 
@@ -164,9 +168,10 @@ function categoryTrackMenuItems(
       label: 'Show all',
       onClick: () => {
         // sequential, so the tracks land in the order the category lists them
-        // rather than the order their display chunks happen to resolve in
+        // rather than the order their display chunks happen to resolve in.
+        // An unsupported track's checkbox is disabled, so this skips it too
         void (async () => {
-          for (const node of trackNodes) {
+          for (const node of trackNodes.filter(n => !isUnsupported(n.name))) {
             await model.trackContainer?.launchTrack(node.trackId)
           }
         })()

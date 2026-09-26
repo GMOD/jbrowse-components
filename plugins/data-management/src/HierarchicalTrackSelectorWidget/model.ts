@@ -3,6 +3,7 @@ import {
   getSession,
   isSessionWithSessionTracks,
   localStorageGetJSON,
+  localStorageGetStringArray,
   localStorageSetJSON,
   notEmpty,
 } from '@jbrowse/core/util'
@@ -196,7 +197,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      favorites: localStorageGetJSON<string[]>(favoritesK(), []),
+      favorites: localStorageGetStringArray(favoritesK()),
       /**
        * #volatile
        */
@@ -876,7 +877,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       function loadFromLocalStorage() {
         const { assemblyNames, view } = self
         self.setRecentlyUsed(
-          localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
+          localStorageGetStringArray(recentlyUsedK(assemblyNames)),
         )
         if (view) {
           loadCategoryModes(assemblyNames, view.type)

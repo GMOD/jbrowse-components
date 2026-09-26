@@ -63,3 +63,15 @@ test('names stay ordered within a category', () => {
     ),
   ).toEqual(['sample1', 'sample2', 'sample10'])
 })
+
+test('categories sort at every depth, not just the first three', () => {
+  expect(
+    names(
+      sortSources(
+        [src('x', ['a', 'b', 'c', 'z']), src('y', ['a', 'b', 'c', 'y'])],
+        false,
+        true,
+      ),
+    ),
+  ).toEqual(['y', 'x'])
+})

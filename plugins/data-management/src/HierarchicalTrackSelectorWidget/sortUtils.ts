@@ -17,11 +17,10 @@ export function sortSources(
     sorted.sort((a, b) => collator.compare(a.sortName, b.sortName))
   }
   if (sortCategories) {
-    // sort up to three sub-category levels, harder to code it to go deeper than
-    // this and likely rarely used. Runs after the name sort and relies on
-    // Array#sort being stable, so names stay ordered within a category
+    // stable, so the name sort above survives within a category
     sorted.sort((a, b) => {
-      for (let i = 0; i < 3; i++) {
+      const depth = Math.max(a.categories.length, b.categories.length)
+      for (let i = 0; i < depth; i++) {
         const d = collator.compare(a.categories[i] ?? '', b.categories[i] ?? '')
         if (d !== 0) {
           return d

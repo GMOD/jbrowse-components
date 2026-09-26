@@ -17,13 +17,20 @@ import {
 
 import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
-const useStyles = makeStyles()(theme => ({
+const fabInset = 24
+const fabSize = 56
+
+// the tree pads its end by this much, so every row can scroll out from under
+// the button
+export const fabClearance = fabInset + fabSize + 8
+
+const useStyles = makeStyles()({
   fab: {
     position: 'absolute',
-    bottom: theme.spacing(6),
-    right: theme.spacing(6),
+    bottom: fabInset,
+    right: fabInset,
   },
-}))
+})
 
 const HierarchicalFab = observer(function HierarchicalFab({
   model,
