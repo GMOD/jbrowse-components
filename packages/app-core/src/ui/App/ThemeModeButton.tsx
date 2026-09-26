@@ -8,9 +8,9 @@ import type { ThemeSwitchSession } from './types.ts'
 
 /**
  * Which way the OS has pointed a session that follows it, and one click out.
- * Nothing at all for a session on a named theme, which is every session that
- * has not asked for this in Preferences: the toolbar says where a dark page
- * came from, and it never offers a light one a route into dark.
+ * A session on a named theme gets nothing, which is every session that has not
+ * asked for this in Preferences, leaving the toolbar to say where a dark page
+ * came from and to offer a light one no route into dark.
  */
 const ThemeModeButton = observer(function ThemeModeButton({
   session,

@@ -126,8 +126,8 @@ test('an explicit pick stops following the OS', () => {
   expect(session.themeIsDark).toBe(false)
 })
 
-// `themeIsDark` reads the resolved palette, so a theme the two halves never
-// name still answers for its own mode.
+// `themeIsDark` reads the resolved palette, which covers the themes the two
+// halves of `system` never name.
 test('an extra theme declaring dark mode reads as dark', () => {
   installMatchMedia(false)
   const session = makeSession()

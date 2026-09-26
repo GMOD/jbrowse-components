@@ -35,15 +35,15 @@ function resolveThemeName(themes: ThemeMap, name: string) {
 
 /**
  * The selection that follows the OS light/dark preference rather than naming a
- * theme. Opt-in from the Preferences picker: a session still starts on
+ * theme. A reader opts into it from the Preferences picker; a session starts on
  * `default`, so nobody lands in dark without asking for it.
  */
 export const SYSTEM_THEME = 'system'
 
 // The two ends of the light/dark axis, for `system` and for the one click out
 // of it. `default` is the one theme that carries the config `theme` slot, and
-// `darkStock` is the same brand colors with `mode: 'dark'`, so a site's palette
-// survives the light half.
+// `darkStock` is the same brand colors under `mode: 'dark'`, so a site's
+// palette survives the light half.
 const LIGHT_THEME = 'default'
 const DARK_THEME = 'darkStock'
 
@@ -69,9 +69,9 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         },
         /**
          * #getter
-         * What the user picked, as the Preferences picker shows it: a name in
-         * `allThemes()`, or `system`. A stored name whose theme is no longer
-         * registered reads as `default` without the stored value being
+         * What the user picked, as the Preferences picker shows it — a name
+         * in `allThemes()`, or `system`. A stored name whose theme is no
+         * longer registered reads as `default` without the stored value being
          * touched, so it comes back if the plugin supplying it loads again.
          */
         get selectedThemeName() {
@@ -82,7 +82,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         },
         /**
          * #getter
-         * The theme in effect: `selectedThemeName`, with `system` resolved
+         * The theme in effect — `selectedThemeName`, with `system` resolved
          * against the OS preference.
          */
         get themeName() {
@@ -199,10 +199,10 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Leave `system` for the mode the OS is not asking for. The whole of the
-       * toolbar's theme control: it shows only while the session follows the
-       * system, so this is the one click out of a dark the OS handed someone
-       * who did not want it, and the control goes away with the following.
+       * Leave `system` for the mode the OS is not asking for. The toolbar
+       * shows its theme control only while the session follows the system, so
+       * this is the one click out of a dark the OS handed someone who did not
+       * want it, and the control goes away with the following.
        */
       stopFollowingSystemTheme() {
         self.sessionThemeName = self.themeIsDark ? LIGHT_THEME : DARK_THEME
