@@ -28,9 +28,21 @@ export function portalGraphLaunch() {
         loc: `${MHC_WINDOW.refName}:${MHC_WINDOW.start + 1}-${MHC_WINDOW.end}`,
         tracks: [
           'hg38_ncbiRefSeq_ucsc',
-          'hprc_minigraph_bubbles',
-          'hprc_minigraph_alleles',
-          'hprc_minigraph_segments',
+          {
+            trackId: 'hprc_minigraph_bubbles',
+            type: 'LinearBasicDisplay',
+            height: 90,
+          },
+          {
+            trackId: 'hprc_minigraph_alleles',
+            type: 'LinearAlignmentsDisplay',
+            height: 120,
+          },
+          {
+            trackId: 'hprc_minigraph_segments',
+            type: 'LinearBasicDisplay',
+            height: 100,
+          },
         ],
       },
       {
@@ -128,7 +140,7 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
     url: portalGraphLaunch(),
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
-    viewportHeight: 1310,
+    viewportHeight: 1100,
     hideTooltip: true,
   },
 ]
