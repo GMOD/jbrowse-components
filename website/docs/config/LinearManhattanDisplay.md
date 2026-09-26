@@ -24,11 +24,12 @@ Minimal `GWASTrack` config. See the
 }
 ```
 
-LocusZoom-style colouring: each point's r² to the index SNP in five bins,
-the index itself a diamond, and a key listing the bins highest first with
-the index as its own row. The LD data is a second source on `GWASAdapter`,
-so it nests under `adapter`, while the plot goes in `displayDefaults`. The
-track menu's "Color by LD to index SNP" writes the same mark:
+LocusZoom-style colouring in two marks: every other point by its r² to
+the index SNP in five bins, then the index alone as a pink diamond over
+them, the key listing the bins highest first and the index as its own row.
+The LD data is a second source on `GWASAdapter`, so it nests under
+`adapter`, while the plot goes in `displayDefaults`. The track menu's
+"Color by LD to index SNP" writes the same marks:
 
 ```js
 {
@@ -49,6 +50,9 @@ track menu's "Color by LD to index SNP" writes the same mark:
     marks: [
       {
         mark: 'point',
+        transform: [
+          { type: 'filter', expr: "jexl:feature.ld_role != 'index'" },
+        ],
         encoding: {
           y: 'score',
           color: {
@@ -60,11 +64,20 @@ track menu's "Color by LD to index SNP" writes the same mark:
             descending: true,
             missingLabel: 'No LD data',
           },
+        },
+      },
+      {
+        mark: 'point',
+        transform: [
+          { type: 'filter', expr: "jexl:feature.ld_role == 'index'" },
+        ],
+        encoding: {
+          y: 'score',
+          color: '#c951c9',
           shape: {
             field: 'ld_role',
-            domain: ['index', 'partner'],
-            range: ['diamond', 'circle'],
-            breaks: ['index'],
+            domain: ['index'],
+            range: ['diamond'],
             labels: ['Index SNP'],
             title: '',
           },
