@@ -22,7 +22,7 @@ export const MISSING = Number.NaN
 // 2 * (calls of allele j+1) / (called alleles), and every slot is MISSING when
 // nothing was called.
 //
-// This replaced `classifyGenotypeDosage`'s *class* — 0 all-ref, 1 any mix, 2
+// This replaced a *class* — 0 all-ref, 1 any mix, 2
 // all-alt — which is a genotype category rather than a quantity. Under a
 // Euclidean metric a class is wrong three ways, and the encoding fixes them in
 // order of how badly they bite:

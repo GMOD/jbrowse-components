@@ -181,6 +181,20 @@ describe('sortSourcesAroundVariant', () => {
     expect(names(sorted)).toEqual(['homAlt', 'het', 'homRef', 'noCall'])
   })
 
+  // `0/0/1` and `0/1/1` paint two shades, and `./1` paints a full dose
+  test('ranks polyploid and partial calls by the dosage the cells paint', () => {
+    const payload = makePayload({
+      v1: { a: '0/0/1', b: '0/1/1', c: '0/0/1', d: '0/1/1', e: './1' },
+    })
+    const sorted = sortSourcesAroundVariant({
+      ...payload,
+      sources: makeSources(['a', 'b', 'c', 'd', 'e'], false),
+      anchorFeatureId: 'v1',
+      phased: false,
+    })
+    expect(names(sorted)).toEqual(['e', 'b', 'd', 'a', 'c'])
+  })
+
   test('breaks anchor ties by the flanking genotypes', () => {
     // a and b tie at the anchor; a matches c on the left, b does not
     const payload = makePayload({

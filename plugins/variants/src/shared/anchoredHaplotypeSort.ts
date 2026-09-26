@@ -1,4 +1,4 @@
-import { classifyGenotypeDosage } from './parseGenotypeDosage.ts'
+import { altDosageByte } from './getPhasedColor.ts'
 
 import type { ProcessedSource } from './types.ts'
 
@@ -186,12 +186,19 @@ function buildValueTable({
   const stride = phased ? ploidy : 1
   const table = new Int32Array(numCodes * stride).fill(MISSING_VALUE)
   if (!phased) {
-    for (let d = 0; d < genotypeDict.length; d++) {
-      // Dosage, matching what the display paints: 2 all-alt, 1 mixed, 0 all-ref
-      // and -1 (MISSING_VALUE) no-call.
-      table[d + 1] = classifyGenotypeDosage(genotypeDict[d]!)
+    // the dosage the cells paint, ranked densely, so `0/0/1` and `0/1/1` part
+    // as their two shades do
+    const dosages = genotypeDict.map(genotype =>
+      /\d/.test(genotype) ? altDosageByte(genotype) : MISSING_VALUE,
+    )
+    const ranked = [...new Set(dosages.filter(d => d > 0))].sort(
+      (a, b) => a - b,
+    )
+    for (let d = 0; d < dosages.length; d++) {
+      const dosage = dosages[d]!
+      table[d + 1] = dosage > 0 ? ranked.indexOf(dosage) + 1 : dosage
     }
-    return { table, stride, maxValue: 2 }
+    return { table, stride, maxValue: ranked.length }
   }
   // An unphased call assigns no allele to either haplotype row, so it keeps the
   // MISSING fill rather than claiming one.

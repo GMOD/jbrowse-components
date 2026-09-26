@@ -103,8 +103,8 @@ should mix ploidies.** `readAltDosages` is the fifth and is ploidy-invariant.
 A dosage class made `0/1/1` and `0/0/1` identical and couldn't say which alt was
 carried. Each site contributes `ALT.length` columns, summed into `colOffsets` in
 a pre-pass so rows stay one pre-sized Float32Array; a biallelic site is one
-column and bit-identical to the old encoding. `classifyGenotypeDosage` stays for
-the anchored haplotype sort.
+column and bit-identical to the old encoding. The anchored haplotype sort ranks
+by `altDosageByte`, the dosage the cells paint.
 
 ## Settings
 

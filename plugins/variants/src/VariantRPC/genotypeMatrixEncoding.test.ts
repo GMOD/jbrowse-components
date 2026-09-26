@@ -1,4 +1,3 @@
-import { classifyGenotypeDosage } from '../shared/parseGenotypeDosage.ts'
 import {
   imputeMissingToSiteMean,
   readAltDosages,
@@ -15,20 +14,15 @@ const dist = (a: number[], b: number[]) =>
   Math.hypot(...a.map((v, i) => v - b[i]!))
 
 describe('readAltDosages', () => {
-  // The case that must not move: on diploid biallelic and haploid calls the new
-  // encoding agrees to the bit with the 0/1/2 class it replaces, so no existing
-  // clustering result over an ordinary VCF changes.
-  test.each(['0/0', '0/1', '1/0', '1/1', '0|1', '1|1', '0', '1'])(
-    '%s matches the class encoding it replaces',
-    genotype => {
-      expect(dosages(genotype)[0]).toBe(classifyGenotypeDosage(genotype))
-    },
-  )
-
+  // diploid biallelic and haploid calls keep the 0/1/2 class they replaced, so
+  // no clustering over an ordinary VCF moves
   test.each([
     ['0/0', 0],
     ['0/1', 1],
+    ['1/0', 1],
+    ['0|1', 1],
     ['1/1', 2],
+    ['1|1', 2],
     // haploid is fully alt, not a het: the fraction is ploidy-invariant
     ['0', 0],
     ['1', 2],
