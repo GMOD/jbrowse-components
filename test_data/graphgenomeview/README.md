@@ -22,6 +22,12 @@ Four configs live here:
   of the strains that contribute to it. Derived from the hosted
   `demos/ecoli_pangenome/config.json` by keeping the assemblies, genes and
   `ecoli_pggb_ava`, and adding the plugin plus the rGFA track.
+- `pangenome_nonhuman.json` — mm39 and bosTau9 with the mouse and bovine
+  minigraph graphs, their bubble tiers, bubbles and alleles.
+
+Every `RgfaTabixAdapter` track here lists `LinearGraphDisplay` first, so turning
+it on opens the graph, and `LinearBasicDisplay` second, the segments lane the
+track menu switches to.
 
 The plugin bundle is served from jbrowse.org's plugin store and the GFA slices
 from `jbrowse.org/demos/ecoli_pangenome`, so no build output and no `ecoli_*`

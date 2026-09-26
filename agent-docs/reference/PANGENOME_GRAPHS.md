@@ -17,6 +17,11 @@ are `website/docs/user_guides/graph_genome_view.md`. The package, its bundle,
 its GitHub repo, its hosted prefix and the local checkout are all spelled
 `graphgenomeview**er**`; only `test_data/graphgenomeview/` drops the `er`.
 
+A graph opens as a track of the linear view. An `RgfaTabixAdapter` track lists
+`LinearGraphDisplay` first, so turning it on opens the graph, and its segments
+lane (`LinearBasicDisplay`) second; a gbz-base `SyntenyTrack` lists the graph
+after its lanes.
+
 **A store bump moves the figures, and `test_data/graphgenomeview/README.md` is
 the rule**: every config names the plugin list's `latest/` url on jbrowse.org —
 the figure fixtures, the `demos/` configs and the tutorials alike — and `pnpm
@@ -60,7 +65,7 @@ are two routes in:
 
 | Route                       | Built by                                                                     | What it gives                                                             |
 | --------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| indexed track (rGFA)        | `scripts/build_rgfa_tabix.sh` (`gfatools gfa2bed -m` + an awk pass over L)   | browse by locus, launch menus, hover sync, segments as a linear track      |
+| indexed track (rGFA)        | `scripts/build_rgfa_tabix.sh` (`gfatools gfa2bed -m` + an awk pass over L)   | a graph track at any locus, hover sync, the segments lane                  |
 | indexed track (plain GFA)   | `scripts/build_pggb_tabix.sh` → `scripts/pggb_gfa_to_bed.py` (the path walk) | the same, plus `SM:Z:` carriage rGFA cannot express                        |
 | coarse tier (any graph)     | `scripts/build_bubble_tier.sh` → `scripts/bubbles_to_tier_bed.py`            | the same, one node per bubble, so a whole chromosome is drawable           |
 | a GFA file                  | `odgi extract` / `vg chunk`, then **Add → Graph genome view**                | one window, no index; the view walks a chosen path in-app (`pathAnchoring.ts`) |
@@ -197,7 +202,7 @@ and 1q12 heterochromatin, not a coverage hole.
 granularity (5 Mb of the fine index is 3,034 segments; the same span is 35 tier
 nodes). `maxRegionBp` defaults to the same 5 Mb and a session pointed at a tier
 raises it; `maxGraphNodes` counts what came back and remains the real backstop.
-The launch menus keep the constant deliberately.
+A graph track's fine cut keeps the 5 Mb cap; its coarse cut has none.
 
 **The bubble file also plots as a curve with no adapter change.**
 `MinigraphBubbleAdapter` sets `score` to the segment count and extends
@@ -645,7 +650,7 @@ own loci: C4 (`GRCh38#0#chr6:31,980,000-32,050,000`, 70 kb) and MHC class II
 
 ## The hosted index is 95% dead weight (measured 2026-07-30)
 
-Every graph launch downloads both tabix indexes before it can cut anything, and
+Every graph track downloads both tabix indexes before it can cut anything, and
 that fixed cost is what the perf readout reports as `fetch 12371ms` in the
 published HPRC graph figures. It is index download, not query:
 
@@ -1044,9 +1049,9 @@ that plugin's repo, not this one.
 - ~~**Bubble collapse is the one that matters** for scale.~~ Producer done
   2026-08-02, see "Level of detail" above: a chromosome is 474 nodes. The view
   picks the tier by zoom since 2026-09-26: `RgfaTabixAdapter`'s
-  `coarse: { uri, aboveBpPerPx }` names the pair, and a graph pane following
-  its linear view cuts it past that bp per pixel. Expand-on-click across the
-  two tiers stays open; `popBubble` opens a bubble inside the current cut.
+  `coarse: { uri, aboveBpPerPx }` names the pair, and a graph track cuts it
+  past that bp per pixel. Expand-on-click across the two tiers stays open;
+  `popBubble` opens a bubble inside the current cut.
 - **HPRC needs no per-haplotype path track after all.** `--call` would need the
   464 assemblies re-mapped, but `pgbi.vcf.gz` (above) already states carriage at
   bubble granularity and is tabix-indexed.
