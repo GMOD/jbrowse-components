@@ -7,6 +7,7 @@ import type { Slice } from '../CircularView/slices.ts'
 import type { ChordEnds } from './chordGeometry.ts'
 import type { RibbonAngles } from './ribbonGeometry.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 export interface RibbonShape {
   kind: 'ribbon'
@@ -36,6 +37,8 @@ export interface ChordPaintSource {
   bezierRadius: number
   /** the alpha every resting shape paints at, over the colour's own */
   shapeAlpha: number
+  /** shapes paint only while ready; a loading or error ring covers them */
+  displayPhase: DisplayStatusPhase
   highlightedFeatureIdSet?: Set<string>
 }
 

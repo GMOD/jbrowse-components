@@ -50,17 +50,24 @@ shape and the export.**
   pure `ribbonShape` and `chordShape` in `chords/shapes.ts`, which is where
   "an end off the circle drops the shape" now lives. `shapeAlpha` is the
   group opacity the SVG used to carry.
-- **`ChordCanvas` paints every chord display of the view** into a canvas the
-  size of the view's box, translated to the circle's centre and rotated with
-  the figure, under `getPreparedCanvas2D`'s DPR handling. It repaints when the
-  shapes, colours, dimming, box or centre change. A rotation arrives per
-  frame, so the canvas turns by CSS from the rotation it painted at and
-  repaints 150 ms after the last change, which keeps a drag smooth at any
-  count and never lets the chords slip against the ruler on the SVG above.
+- **`ChordCanvas` paints every ready chord display of the view** into a
+  canvas the size of the view's box, translated to the circle's centre and
+  rotated with the figure, under `getPreparedCanvas2D`'s DPR handling. A
+  display on its loading or error ring paints nothing, as its frame draws
+  nothing under the ring. It repaints when the shapes, colours, dimming, box
+  or centre change. A rotation arrives per frame: while the whole figure lies
+  inside the box, the canvas turns by CSS from the rotation it painted at and
+  repaints once the rotation has paused for 150 ms, a debounce rather than
+  MobX's `delay`, which throttles; a zoomed or panned figure reaches past the
+  box, where a turn would swing unpainted area in, so there it repaints per
+  animation frame instead. The paint writes the canvas's transform directly
+  as well as through React state, so no frame turns a fresh bitmap twice.
 - **A pick canvas answers hover and click.** `ChordPicker` paints every shape
-  once more in an id colour, at most 2048 px across, in the figure's own
-  frame. A hit reads the 3×3 pixels under the point, takes the ids there as
-  candidates, and confirms each against the shape's own outline with
+  once more in an id colour on a canvas the size of the box, in the frame the
+  shapes were last painted in, so it never scales down on a zoomed figure. A
+  hit turns the point back by whatever rotation the paint has not caught up
+  with, reads the 3×3 pixels under it, takes the ids there as candidates,
+  later-painted first, and confirms each against the shape's own outline with
   `isPointInPath` or `isPointInStroke` under the identity transform, since
   browsers take that point in device space and node-canvas takes it in user
   space. A chord's stroke answers within 6 px where it draws 1.
@@ -70,13 +77,15 @@ shape and the export.**
   display's `hoveredFeatureId` reads, the highlight paths draw, and a
   `ComparativeTooltip` shows at the pointer with the display's `shapeLabel`.
   A click calls the display's `clickFeature`. The native `<title>` tooltip is
-  gone from the screen; it stays on the export's paths.
+  gone from the screen; it stays on the export's paths. A wheel, a leave, an
+  unmount and a hidden track each clear the hover, since the figure moves
+  under a pointer that does not.
 - **`ShapePaths` is the SVG side, in two modes.** On screen it draws only the
   hovered and the selected shape, with `pointer-events: none`, under the
   display's testid and a `data-chord-count`. For the export it draws every
-  shape, dimmed where the SV inspector's highlighted set says so, each with
-  its label as its `<title>`. The `chord-<id>` and `ribbon-<id>` testids
-  survive on those paths.
+  shape, the selection included and the hover ignored, dimmed where the SV
+  inspector's highlighted set says so, each with its label as its `<title>`.
+  The `chord-<id>` and `ribbon-<id>` testids survive on those paths.
 
 ## Alternatives rejected
 
@@ -99,10 +108,11 @@ shape and the export.**
 - A chord is no longer a DOM node while it rests. Anything that found one by
   `[data-testid^="chord-"]` reads the renderer group's `data-chord-count`
   instead (`specs/sv.ts`, `examplesChecks.ts`,
-  `probe-view-launch-surfaces.ts`, `CircularView.test.tsx`), and a figure's
-  `anchor: { chord }` resolves through the model (`chordAnchor.ts`): the
-  display's `shapePathFor` gives the outline, `chordAt` says whether that
-  chord is on top there.
+  `probe-view-launch-surfaces.ts`, `CircularView.test.tsx`, the embedded
+  circular view's cypress test), and a figure's `anchor: { chord }` resolves
+  through the model (`chordAnchor.ts`): the display's `shapePathFor` gives
+  the outline, `chordAt` says whether that chord is on top there. The
+  circular SVG export snapshot changed with the group's attributes.
 - A test that clicked a chord node calls the display's `clickFeature` with the
   feature, the same call the view's routing makes (`SVInspector.test.tsx`).
 - The tutorial's pre-cut of the liftOver chain is no longer needed: the view's

@@ -13,8 +13,18 @@ import type {
 /** The width a chord's stroke answers a pointer within, wider than it draws. */
 const CHORD_HIT_WIDTH_PX = 6
 
-/** The pick canvas never exceeds this on a side; a bigger figure is scaled. */
-const PICK_MAX_PX = 2048
+/**
+ * Where the circle sits in the view's box at the moment of a paint: the
+ * canvas is the box, the centre is where the figure's origin and pan put it,
+ * and the rotation is baked into the paint.
+ */
+export interface ChordFrame {
+  width: number
+  height: number
+  centerX: number
+  centerY: number
+  rotation: number
+}
 
 function trace(
   sink: ReturnType<typeof svgPathSink> | ReturnType<typeof canvasPathSink>,
@@ -42,14 +52,23 @@ function shapeOpacity(source: ChordPaintSource, shape: Shape) {
   return source.shapeAlpha * (dimmed ? DIMMED_OPACITY : 1)
 }
 
+/** Whether a display's shapes are drawn: its frame shows them only when ready. */
+export function paintsShapes(source: ChordPaintSource) {
+  return source.displayPhase === 'ready'
+}
+
 /**
  * Every resting shape of one display, into a context already translated to the
- * circle's centre and rotated with the figure.
+ * circle's centre and rotated with the figure. A display on its loading or
+ * error ring paints nothing, as its frame draws nothing under the ring.
  */
 export function paintShapes(
   ctx: CanvasRenderingContext2D,
   source: ChordPaintSource,
 ) {
+  if (!paintsShapes(source)) {
+    return
+  }
   const { radiusPx, bezierRadius } = source
   const sink = canvasPathSink(ctx)
   ctx.lineWidth = 1
@@ -87,39 +106,43 @@ interface PickEntry {
 /**
  * Which shape is under a point, answered from a canvas every shape is painted
  * onto in its own id colour, so a hover costs one pixel read however many
- * ribbons the circle holds. An antialiased edge blends two ids into a third,
- * so the ids around the point are candidates that the shape's own outline
- * confirms.
+ * ribbons the circle holds. The canvas is the view's box in the frame the
+ * shapes were last painted in, so it never scales down on a zoomed figure. An
+ * antialiased edge blends two ids into a third, so the ids around the point
+ * are candidates that the shape's own outline confirms, later-painted first.
  */
 export class ChordPicker {
   private canvas: HTMLCanvasElement | undefined
-  private scale = 1
+  private frame: ChordFrame | undefined
   private entries: PickEntry[] = []
 
   constructor(private createCanvas = () => document.createElement('canvas')) {}
 
-  /** Repaint the pick canvas for a figure `figureSize` px across. */
-  update(displays: readonly ChordLayerDisplay[], figureSize: number) {
+  /** Repaint the pick canvas for the displays as `frame` places them. */
+  update(displays: readonly ChordLayerDisplay[], frame: ChordFrame) {
     this.canvas ??= this.createCanvas()
     const { canvas } = this
-    const scale = Math.min(1, PICK_MAX_PX / Math.max(figureSize, 1))
-    const size = Math.max(1, Math.ceil(figureSize * scale))
-    if (canvas.width !== size || canvas.height !== size) {
-      canvas.width = size
-      canvas.height = size
+    const width = Math.max(1, Math.ceil(frame.width))
+    const height = Math.max(1, Math.ceil(frame.height))
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width
+      canvas.height = height
     }
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
     if (!ctx) {
       return
     }
-    this.scale = scale
+    this.frame = frame
     this.entries = []
     ctx.setTransform(1, 0, 0, 1, 0, 0)
-    ctx.clearRect(0, 0, size, size)
-    ctx.setTransform(scale, 0, 0, scale, size / 2, size / 2)
-    ctx.lineWidth = CHORD_HIT_WIDTH_PX / scale
+    ctx.clearRect(0, 0, width, height)
+    this.place(ctx)
+    ctx.lineWidth = CHORD_HIT_WIDTH_PX
     const sink = canvasPathSink(ctx)
     for (const display of displays) {
+      if (!paintsShapes(display)) {
+        continue
+      }
       const { radiusPx, bezierRadius } = display
       for (const shape of display.shapes) {
         const color = idColor(this.entries.length)
@@ -137,18 +160,29 @@ export class ChordPicker {
     }
   }
 
+  private place(ctx: CanvasRenderingContext2D) {
+    const { centerX, centerY, rotation } = this.frame!
+    ctx.setTransform(1, 0, 0, 1, centerX, centerY)
+    ctx.rotate(rotation)
+  }
+
   /**
    * The shape under a point `dx`,`dy` CSS px from the circle's centre in the
-   * figure's own frame, before the view's rotation.
+   * screen frame, with the figure at `rotation`. Between a rotation and the
+   * repaint that bakes it in, the painted frame lags by the difference, and
+   * the point is turned back by that much.
    */
-  hit(dx: number, dy: number): ChordHit | undefined {
-    const { canvas, scale, entries } = this
+  hit(dx: number, dy: number, rotation: number): ChordHit | undefined {
+    const { canvas, frame, entries } = this
     const ctx = canvas?.getContext('2d', { willReadFrequently: true })
-    if (!canvas || !ctx || !entries.length) {
+    if (!canvas || !ctx || !frame || !entries.length) {
       return undefined
     }
-    const px = dx * scale + canvas.width / 2
-    const py = dy * scale + canvas.height / 2
+    const delta = frame.rotation - rotation
+    const cos = Math.cos(delta)
+    const sin = Math.sin(delta)
+    const px = frame.centerX + dx * cos - dy * sin
+    const py = frame.centerY + dx * sin + dy * cos
     const x0 = Math.floor(px) - 1
     const y0 = Math.floor(py) - 1
     if (
@@ -167,24 +201,27 @@ export class ChordPicker {
       }
     }
     const sink = canvasPathSink(ctx)
-    const size = canvas.width
-    for (const index of candidates) {
+    // later-painted shapes lie on top, so they answer first
+    for (const index of [...candidates].sort((a, b) => b - a)) {
       const entry = entries[index]
       if (!entry) {
         continue
       }
       const { display, shape } = entry
-      ctx.setTransform(scale, 0, 0, scale, size / 2, size / 2)
-      ctx.lineWidth = CHORD_HIT_WIDTH_PX / scale
+      this.place(ctx)
+      ctx.lineWidth = CHORD_HIT_WIDTH_PX
       ctx.beginPath()
       trace(sink, shape, display.radiusPx, display.bezierRadius)
       // the point is queried in device space: browsers take it that way, and
-      // node-canvas takes user space, so with the identity in place both agree
+      // node-canvas takes user space, so with the identity in place both agree.
+      // node-canvas has no isPointInStroke, so a chord's id pixel stands there
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       const inside =
         shape.kind === 'ribbon'
           ? ctx.isPointInPath(px, py)
-          : ctx.isPointInStroke(px, py)
+          : 'isPointInStroke' in ctx
+            ? ctx.isPointInStroke(px, py)
+            : true
       if (inside) {
         return { display, feature: shape.feature }
       }

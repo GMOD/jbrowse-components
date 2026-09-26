@@ -228,20 +228,28 @@ test('a pointer off every ring reaches the chord under it', () => {
     radiusPx: 1,
     bezierRadius: 1,
     shapeAlpha: 1,
+    displayPhase: 'ready' as const,
     clickFeature: (f: { id: () => string }) => {
       clicked.push(f.id())
     },
     shapeLabel: () => 'the chord under the pointer',
   }
-  view.setChordHitTest((dx, dy) =>
-    Math.hypot(dx, dy) < 50 ? { display, feature } : undefined,
-  )
+  // a hit only to the right of the centre, and only with the rotation the
+  // figure is actually at, so the routing has to pass both through
+  const seen: number[] = []
+  view.setChordHitTest((dx, dy, rotation) => {
+    seen.push(rotation)
+    return dx > 0 && Math.abs(dy) < 5 && rotation === view.offsetRadians
+      ? { display, feature }
+      : undefined
+  })
   const c = centerOf(view)
   fireEvent.pointerMove(svg, { clientX: c.x + 10, clientY: c.y, buttons: 0 })
   expect(view.chordHover?.feature.id()).toBe('f1')
   expect(document.body.textContent).toContain('the chord under the pointer')
+  expect(seen.at(-1)).toBe(view.offsetRadians)
 
-  fireEvent.pointerMove(svg, { clientX: c.x + 200, clientY: c.y, buttons: 0 })
+  fireEvent.pointerMove(svg, { clientX: c.x - 10, clientY: c.y, buttons: 0 })
   expect(view.chordHover).toBeUndefined()
 
   fireEvent.click(svg, { clientX: c.x + 10, clientY: c.y })

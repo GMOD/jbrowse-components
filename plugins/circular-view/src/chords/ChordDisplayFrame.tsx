@@ -23,10 +23,10 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
       // inner group, which the loading branch does not render.
       data-testid="circular-chord-display"
       data-display-id={display.configuration.displayId}
-      // Chords are React SVG, painted in the commit that lands the data, so
-      // paint has no state of its own to publish: the terminals that never
-      // paint are finished rather than pending, as `foundationPaintInert` reads
-      // them for the canvas families.
+      // The view's chord canvas paints in the same MobX pass that lands the
+      // data, so paint has no state of its own to publish: the terminals that
+      // never paint are finished rather than pending, as `foundationPaintInert`
+      // reads them for the canvas families.
       data-display-drawn={phase !== 'loading'}
       data-display-phase={phase}
     >

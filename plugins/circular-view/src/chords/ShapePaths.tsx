@@ -63,9 +63,11 @@ const ShapePaths = observer(function ShapePaths({
     hoveredFeatureId,
     highlightedFeatureIdSet,
   } = display
+  // a hover is a screen state; the export draws the selection and nothing of
+  // the pointer
   const stateOf = (shape: Shape) => {
     const id = shape.feature.id()
-    return id === hoveredFeatureId
+    return only === 'highlighted' && id === hoveredFeatureId
       ? 'hovered'
       : id === selectedFeatureId
         ? 'selected'
@@ -83,7 +85,7 @@ const ShapePaths = observer(function ShapePaths({
       {drawn.map(shape => {
         const state = stateOf(shape)
         const dimmed =
-          state === 'resting' &&
+          state !== 'hovered' &&
           highlightedFeatureIdSet?.has(shape.feature.id()) === false
         return (
           <path

@@ -187,6 +187,29 @@ test('on screen only the hovered and selected ribbons are paths', () => {
   expect(container.querySelector('path')!.getAttribute('d')).toMatch(/^M .* Z$/)
 })
 
+// a hover is a screen state: the export draws the selection and never the
+// pointer's grey
+test('the export leaves a hovered ribbon in its resting fill', () => {
+  const { container } = render(
+    <svg>
+      <ShapePaths
+        display={ribbonModel('ready', {
+          shapes: shapesOf(alignment(1, 'a'), alignment(1, 'b')),
+          hoveredFeatureId: 'a',
+          selectedFeatureId: 'b',
+        })}
+        testid="syntenyRibbonRenderer"
+        only="all"
+      />
+    </svg>,
+  )
+  const fills = [...container.querySelectorAll('path')].map(p =>
+    p.getAttribute('fill'),
+  )
+  expect(fills[0]).toBe('#4682b4')
+  expect(fills[1]).not.toBe('#4682b4')
+})
+
 test('the export draws every ribbon and dims those outside the highlighted set', () => {
   const opacities = (overrides: Partial<RibbonDisplayModel>) => {
     const { container } = render(

@@ -35,7 +35,14 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
-import { cast, destroy, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  destroy,
+  isAlive,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
   SyntenyColorsMixin,
@@ -54,6 +61,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
+import { autorun } from 'mobx'
 
 import { RingHost } from '../rings/ringHost.ts'
 import { circularLegendSpec } from './circularLegend.ts'
@@ -449,10 +457,11 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        * what answers "which chord is here", registered by the canvas that
-       * paints them; takes CSS px from the centre in the figure's own frame
+       * paints them; takes CSS px from the centre in the screen frame and the
+       * rotation the figure is at
        */
       chordHitTest: undefined as
-        | ((dx: number, dy: number) => ChordHit | undefined)
+        | ((dx: number, dy: number, rotation: number) => ChordHit | undefined)
         | undefined,
     }))
     .views(self => ({
@@ -919,6 +928,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           .filter(
             (d): d is ChordLayerDisplay =>
               d !== undefined &&
+              'shapes' in d &&
               pluginManager.getDisplayType(d.type).viewType === 'CircularView',
           )
       },
@@ -928,10 +938,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * centre in the screen frame
        */
       chordAt(dx: number, dy: number) {
-        const a = -self.offsetRadians
-        const cos = Math.cos(a)
-        const sin = Math.sin(a)
-        return self.chordHitTest?.(dx * cos - dy * sin, dx * sin + dy * cos)
+        return self.chordHitTest?.(dx, dy, self.offsetRadians)
       },
       /**
        * #getter
@@ -1192,7 +1199,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setChordHitTest(
-        hitTest: ((dx: number, dy: number) => ChordHit | undefined) | undefined,
+        hitTest:
+          | ((dx: number, dy: number, rotation: number) => ChordHit | undefined)
+          | undefined,
       ) {
         self.chordHitTest = hitTest
       },
@@ -1425,6 +1434,22 @@ function stateModelFactory(pluginManager: PluginManager) {
         destroy(self.ringHost)
       },
       afterAttach() {
+        // a hover names a display; a track hidden under the pointer would
+        // leave it naming a dead node
+        addDisposer(
+          self,
+          autorun(() => {
+            const { chordHover } = self
+            const display = chordHover?.display
+            if (
+              display &&
+              isStateTreeNode(display) &&
+              (!isAlive(display) || !self.chordDisplays.includes(display))
+            ) {
+              self.setChordHover(undefined)
+            }
+          }),
+        )
         installInitAutorun(self, {
           name: 'CircularViewInit',
           ready: () => self.initialized,

@@ -181,9 +181,10 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   const draggedRef = useRef(false)
 
   useEffect(() => {
-    model.setChordHitTest((dx, dy) => picker.hit(dx, dy))
+    model.setChordHitTest((dx, dy, rotation) => picker.hit(dx, dy, rotation))
     return () => {
       model.setChordHitTest(undefined)
+      model.setChordHover(undefined)
     }
   }, [model, picker])
 
@@ -231,6 +232,11 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       }
       frame.schedule(() => {
         const [ax, ay] = anchor
+        // the figure moves under a pointer that does not, so what it hovered
+        // is no longer under it
+        if (model.chordHover) {
+          model.setChordHover(undefined)
+        }
         if (rotateDelta) {
           model.rotate(rotateDelta * 0.003)
         }
