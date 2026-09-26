@@ -1268,11 +1268,23 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The plot as declared, which "Edit marks as JSON..." opens on: the
-         * four settings the rule list reads together, defaults left off.
+         * The plot as declared, defaults left off: `marks`, `transform`,
+         * `facet`, `rows` and `scales`, which "Edit as JSON..." opens on. An
+         * agent edits a copy and hands it to `applyDisplaySettings`, or first
+         * to `plotProblems`.
          */
         get markPlot(): MarkPlot {
           return markPlotOf(getSnapshot(self.conf))
+        },
+        /**
+         * #method
+         * What a draft plot would report once applied, as the lines `notices`
+         * carries, without touching the display: a draft merges over the
+         * declared plot as `applyDisplaySettings` merges it, and one a config
+         * file would refuse throws the refusal.
+         */
+        plotProblems(plot: MarkPlot): string[] {
+          return markPlotProblems(this.liftMarkPlot(plot)).map(problemText)
         },
         /**
          * #method
@@ -1284,12 +1296,21 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The config problems as lines an agent's settle report carries: a
-         * display with one still draws, so nothing else reaches a caller that
-         * cannot see the corner notice.
+         * The config problems as lines an agent's settle report carries, and
+         * a mark whose every loaded feature was skipped, which a mistyped
+         * field is: a display with either still draws, so nothing else
+         * reaches a caller that cannot see the corner notice.
          */
         get notices(): string[] {
-          return this.configProblems.map(problemText)
+          const { skipped, total, fields } = this.skippedFeatures
+          return [
+            ...this.configProblems.map(problemText),
+            ...(total > 0 && skipped === total
+              ? [
+                  `every one of ${total.toLocaleString()} ${pluralize(total, 'feature')} was skipped: ${fields.join(', ') || 'start or end'} missing or not a number`,
+                ]
+              : []),
+          ]
         },
         /**
          * #getter
@@ -1637,7 +1658,7 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * Open the plot as JSON, over the same four settings the controls
+         * Open the plot as JSON, over the same five settings the controls
          * write. `seed` overlays a setting the caller has in hand but has not
          * applied.
          */

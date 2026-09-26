@@ -2919,3 +2919,48 @@ test('a scan finding a mate writes the link and its step, with nothing declared'
     pos: 'mate.start',
   })
 })
+
+test('the plot an agent reads carries its axis, and a draft reports before it lands', () => {
+  const { display } = createTestEnvironment(
+    [{ mark: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { scales: { y: { type: 'log', title: 'Score' } } },
+  ).createDisplay()
+  const plot = structuredClone(display.markPlot) as {
+    marks: { mark: string; encoding: { y?: string } }[]
+    scales: { y: { type: string } }
+  }
+  expect(plot.scales).toEqual({ y: { type: 'log', title: 'Score' } })
+  plot.marks[0]!.encoding = {}
+  expect(display.plotProblems(plot)).toEqual([
+    'mark 0 encoding.y: a bar stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing',
+  ])
+  expect(display.conf.marks[0]!.encoding.y).toBe('score')
+  plot.marks[0]!.encoding = { y: 'count' }
+  plot.scales.y.type = 'linear'
+  expect(display.plotProblems(plot)).toEqual([])
+  display.applyDisplaySettings(plot)
+  expect(display.conf.marks[0]!.encoding.y).toBe('count')
+  expect(display.conf.scales.y.type).toBe('linear')
+  expect(() => display.plotProblems({ marks: [{ mark: 'area' }] })).toThrow(
+    'marks.0.mark is "area"',
+  )
+})
+
+test('a mark every loaded feature skipped is a notice, as a mistyped field is', () => {
+  const { display } = createTestEnvironment([
+    { mark: 'bar', encoding: { y: 'scroe' } },
+  ]).createDisplay()
+  const empty = result([{ y: [] }])
+  display.setRpcData(
+    0,
+    { ...empty, layers: [{ ...empty.layers[0]!, skipped: 7 }] },
+    REGION,
+  )
+  expect(display.notices).toEqual([
+    'every one of 7 features was skipped: scroe missing or not a number',
+  ])
+  display.setRpcData(0, result([{ y: [3] }]), REGION)
+  expect(display.notices).toEqual([])
+})

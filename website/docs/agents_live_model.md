@@ -74,7 +74,8 @@ Orientation and building:
   place and returns `{ applied, unapplied, failed }` — a key it did not apply is
   not an error, so read the report.
 - `jb.describeSlots(confNode)` lists every slot the node's schema defines, with
-  type, description and default. Introspect before writing:
+  type, description and default, a list's entries under `items` and a list of
+  several kinds under `items.oneOf`. Introspect before writing:
   `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`.
 
 Reading:
@@ -232,6 +233,17 @@ alignments track takes the same `facet`, its field a read dimension
 (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The filter is the runtime
 list, `display.setJexlFilters(["jexl:feature.type == 'gene'"])`, and
 `display.channelSpec` reads all three back.
+
+A plot of a track's features, written as ggplot2 writes one, is the
+`LinearMarkDisplay` on any feature, alignments, variant or quantitative track:
+`marks` (layers, each a `mark` with an `encoding` over feature fields and its
+own `transform` steps), `transform`, `facet`, `rows` and `scales`. Its
+`markPlot` is all five as JSON, so a change is a copy edited and handed back:
+`structuredClone(display.markPlot)`, edited as any object, then
+`display.plotProblems(plot)` for what it cannot draw, without applying it, and
+`display.applyDisplaySettings(plot)`. The same object applied to another track's
+mark display draws the same plot there. The docs topic `plots` is the whole
+vocabulary, with the ggplot2 and Vega-Lite name for each idea.
 
 A feature's label is whatever `name` it carries, else its `id`, and a file
 decides which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and

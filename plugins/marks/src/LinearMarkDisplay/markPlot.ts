@@ -14,12 +14,20 @@ import type {
 } from './markProblems.ts'
 
 /**
- * The display settings "Edit as JSON..." shows: the four the rule list reads
- * together, since every cross-slot rule — `rows-beside-facet`,
- * `cross-section-packing`, `packing-under-rows`, an `unwritten-y` a display
- * step satisfies — needs more than `marks` to fire.
+ * The display settings a plot is: what "Edit as JSON..." shows and what an
+ * agent reads, edits and hands back to `applyDisplaySettings`. The rule list
+ * reads the first four together, since every cross-slot rule —
+ * `rows-beside-facet`, `cross-section-packing`, `packing-under-rows`, an
+ * `unwritten-y` a display step satisfies — needs more than `marks` to fire;
+ * `scales` is the axis they all stand on.
  */
-export const MARK_PLOT_KEYS = ['marks', 'transform', 'facet', 'rows'] as const
+export const MARK_PLOT_KEYS = [
+  'marks',
+  'transform',
+  'facet',
+  'rows',
+  'scales',
+] as const
 export type MarkPlotKey = (typeof MARK_PLOT_KEYS)[number]
 
 /** What the box lists above the text, one line each. */
@@ -54,6 +62,7 @@ export interface MarkPlot {
   transform?: unknown
   facet?: unknown
   rows?: unknown
+  scales?: unknown
 }
 
 /** A plot the schema has lifted: shorthands expanded, defaults left off. */
@@ -125,7 +134,8 @@ function merged(plot: MarkPlot, current: MarkPlot) {
  *
  * `current` is a snapshot, never a live node: MST will not re-create from one
  * that already sits in a tree. Nothing is attached, so nothing is destroyed —
- * the node is a root React never saw.
+ * the node is a root React never saw. The plot is copied first, since MST
+ * freezes what it creates from and a caller's draft stays theirs to edit.
  */
 export function liftMarkPlot(
   configSchema: LinearMarkDisplayConfigModel,
@@ -136,7 +146,7 @@ export function liftMarkPlot(
     configSchema.create({
       type: 'LinearMarkDisplay',
       displayId: SYNTHETIC_DISPLAY_ID,
-      ...merged(plot, current),
+      ...structuredClone(merged(plot, current)),
     }),
   )
   return {

@@ -6,6 +6,7 @@ import hostedData from '../../../../website/docs/agents_hosted_data.md'
 import liveModelGuide from '../../../../website/docs/agents_live_model.md'
 import recipes from '../../../../website/docs/agents_recipes.md'
 import automating from '../../../../website/docs/automating.md'
+import plots from '../../../../website/docs/config_guides/mark_display.md'
 import urlparams from '../../../../website/docs/urlparams.md'
 import { DOC_TOPICS, OMITTED_SECTIONS, SPLIT_TOPICS } from './docLimits.ts'
 import { searchDocs } from './docSearch.ts'
@@ -25,6 +26,7 @@ const TOPIC_TEXT: Record<DocTopic, string> = {
   recipes,
   'hosted-data': hostedData,
   'session-spec': urlparams,
+  plots,
   automating,
 }
 

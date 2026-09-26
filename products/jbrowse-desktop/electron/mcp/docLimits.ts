@@ -66,6 +66,11 @@ export const DOC_TOPICS = {
     summary:
       'Full session spec / URL params reference: every view type and its launch keys, track entry fields, layout, workspaces',
   },
+  plots: {
+    file: 'website/docs/config_guides/mark_display.md',
+    summary:
+      "Plotting a track's features as ggplot2 does, with LinearMarkDisplay: marks, encodings, transform steps, scales, facets and rows, each with its ggplot2 and Vega-Lite name",
+  },
   automating: {
     file: 'website/docs/automating.md',
     summary:
