@@ -128,11 +128,21 @@ How the graph was built
 
   gfatools stat (gfatools 0.5-r296):
 
-GRAPH_STATS_TBD
+    Number of segments: 192327
+    Number of links: 270208
+    Number of arcs: 540416
+    Max rank: 26
+    Total segment length: 211789247
+    Average segment length: 1101.194
+    Sum of rank-0 segment lengths: 119146348
+    Max degree: 7
+    Average degree: 1.405
 
   The knob inversion is not in the graph as a bubble: the largest bubble
-  inside Chr4:1.6-2.8 Mb spans KNOB_BUBBLE_TBD. SyRI's rows are where the knob
-  shows; the graph holds the smaller variation inside and around it.
+  inside Chr4:1.6-2.8 Mb spans 72 kb of TAIR10 (Chr4:1,778,767-1,850,855,
+  longest allele 99 kb). SyRI's rows are where the knob shows; the graph holds
+  the smaller variation inside and around it. The largest inversion bubble in
+  the graph is Chr4:4,264,923-4,794,539 (530 kb).
 
   Projections, each tabix-indexed:
 

@@ -610,6 +610,122 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "arabidopsis_minigraph_segments",
+      "name": "1001G+ minigraph pangenome (rGFA segments)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "arabidopsis-tair10-minigraph",
+        "assemblyNameToPanSN": {
+          "TAIR10": "TAIR10"
+        }
+      },
+      "displayDefaults": {
+        "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "arabidopsis_minigraph_tier",
+      "name": "1001G+ minigraph pangenome: bubble tier (one node per bubble)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "arabidopsis-tair10-minigraph.tier10000",
+        "assemblyNameToPanSN": {
+          "TAIR10": "TAIR10"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "arabidopsis_minigraph_bubbles",
+      "name": "1001G+ minigraph pangenome bubbles",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "arabidopsis-tair10-minigraph.bubbles.bed.gz",
+        "assemblyNameToPanSN": {
+          "TAIR10": "TAIR10"
+        }
+      },
+      "displayDefaults": {
+        "color": "rgb(130,130,130)"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "arabidopsis_bubble_score",
+      "name": "1001G+ minigraph pangenome: variability (segments per bubble)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "arabidopsis-tair10-minigraph.bubbles.bed.gz",
+        "assemblyNameToPanSN": {
+          "TAIR10": "TAIR10"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "arabidopsis_minigraph_alleles",
+      "name": "1001G+ minigraph pangenome: allele inventory",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "arabidopsis-tair10-minigraph.alleles.bed.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "arabidopsis_minigraph_paths",
+      "name": "1001G+ minigraph pangenome: each accession's allele at every bubble",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "arabidopsis-tair10-minigraph.paths.bed.gz",
+        "disableGeneHeuristic": true
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "arabidopsis_minigraph_paths-LinearMultiRowFeatureDisplay",
+          "rows": {
+            "field": "strain",
+            "domain": [
+              "Col-0.6909",
+              "KBS-Mac-74",
+              "Sq-1",
+              "TueWa1-2",
+              "HSm",
+              "Stiav-1",
+              "Fly2-2",
+              "T690",
+              "Nyl-7",
+              "TRA-01",
+              "Angit-1",
+              "Lerik1-4",
+              "IP-Cum-1",
+              "IP-Pva-1",
+              "IP-Gra-0",
+              "IP-Ven-0",
+              "Qar-8a",
+              "Noveg-3",
+              "35-1",
+              "85-3",
+              "Areeiro-1",
+              "ET-86.4",
+              "Elh-2",
+              "Rabacal-1",
+              "Taz-0",
+              "Tnz-1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "Col-0.6909_genes",
       "name": "Col-0.6909 (6909) genes",
       "assemblyNames": ["Col-0.6909"],
@@ -1753,7 +1869,7 @@
       {
         "type": "LinearGenomeView",
         "assembly": "TAIR10",
-        "loc": "Chr4:1,200,000-3,200,000",
+        "loc": "Chr4:1,400,000-3,000,000",
         "tracks": [
           "TAIR10_genes",
           {
@@ -1767,9 +1883,9 @@
             "height": 644
           },
           {
-            "trackId": "syri_1001g",
-            "type": "MultiWaySyntenyDisplay",
-            "height": 1120
+            "trackId": "arabidopsis_minigraph_paths",
+            "type": "LinearMultiRowFeatureDisplay",
+            "height": 452
           }
         ]
       }
