@@ -1,9 +1,17 @@
 import { chordControlPoint } from './chordGeometry.ts'
-import { chordDistanceSq, CHORD_HIT_PX, ribbonContains } from './chordHit.ts'
+import {
+  chordDistanceSq,
+  CHORD_HIT_PX,
+  hitRibbon,
+  ribbonContains,
+  ribbonHitGeometry,
+  ribbonHitTest,
+} from './chordHit.ts'
+import { ribbonAnglesAt } from './chordStage.ts'
 import { canvasPathSink } from './pathSink.ts'
 import { traceRibbon } from './ribbonGeometry.ts'
 
-import type { RibbonAngles } from './chordStage.ts'
+import type { ChordStage, RibbonAngles, RibbonLanes } from './chordStage.ts'
 
 const RADIUS = 200
 const BEZIER = 20
@@ -33,8 +41,8 @@ function canvasFill(angles: RibbonAngles) {
   return (x: number, y: number) => ctx.isPointInPath(CENTRE + x, CENTRE + y)
 }
 
-function randomRibbon(rand: () => number): RibbonAngles {
-  const span = () => 0.01 + rand() * 0.6
+function randomRibbon(rand: () => number, maxSpan: number): RibbonAngles {
+  const span = () => 0.01 + rand() * maxSpan
   const a1 = rand() * 2 * Math.PI - Math.PI
   const a2 = a1 + (rand() < 0.5 ? 1 : -1) * span()
   const m = rand() * 2 * Math.PI - Math.PI
@@ -45,35 +53,45 @@ function randomRibbon(rand: () => number): RibbonAngles {
 // Away from the outline, where a pixel's worth of rounding cannot decide it, the
 // winding test and the canvas's own fill of the painter's path agree on every
 // point: forward and reverse, arcs either side of the first angle, a span wider
-// than the other
-test('a point is inside a ribbon exactly where the canvas fills it', () => {
-  const rand = mulberry32(7)
-  let compared = 0
-  for (let r = 0; r < 60; r++) {
-    const angles = randomRibbon(rand)
-    const inFill = canvasFill(angles)
-    for (let k = 0; k < 150; k++) {
-      const x = (rand() * 2 - 1) * (RADIUS + 10)
-      const y = (rand() * 2 - 1) * (RADIUS + 10)
-      const here = inFill(x, y)
-      const settled = [
-        [0.6, 0],
-        [-0.6, 0],
-        [0, 0.6],
-        [0, -0.6],
-      ].every(([dx, dy]) => inFill(x + dx!, y + dy!) === here)
-      if (settled) {
-        compared++
-        expect([r, k, ribbonContains(x, y, angles, RADIUS, BEZIER)]).toEqual([
-          r,
-          k,
-          here,
-        ])
+// than the other, and a span past half the circle, which turns in y twice.
+// node-canvas counts half a pixel past the rim as filled, so the rim's pixel
+// either side is left out
+test.each([
+  ['spans up to 0.6 rad', 7, 0.6, 8000],
+  ['spans past half the circle', 3, 5.5, 5000],
+])(
+  'a point is inside a ribbon exactly where the canvas fills it: %s',
+  (_, seed, maxSpan, least) => {
+    const rand = mulberry32(seed)
+    let compared = 0
+    for (let r = 0; r < 60; r++) {
+      const angles = randomRibbon(rand, maxSpan)
+      const inFill = canvasFill(angles)
+      for (let k = 0; k < 150; k++) {
+        const x = (rand() * 2 - 1) * (RADIUS + 10)
+        const y = (rand() * 2 - 1) * (RADIUS + 10)
+        const here = inFill(x, y)
+        const settled =
+          Math.abs(Math.hypot(x, y) - RADIUS) > 1 &&
+          [
+            [0.6, 0],
+            [-0.6, 0],
+            [0, 0.6],
+            [0, -0.6],
+          ].every(([dx, dy]) => inFill(x + dx!, y + dy!) === here)
+        if (settled) {
+          compared++
+          expect([r, k, ribbonContains(x, y, angles, RADIUS, BEZIER)]).toEqual([
+            r,
+            k,
+            here,
+          ])
+        }
       }
     }
-  }
-  expect(compared).toBeGreaterThan(8000)
-})
+    expect(compared).toBeGreaterThan(least)
+  },
+)
 
 test('a twisted ribbon covers both of its lobes', () => {
   // a reverse alignment between two spans opposite each other
@@ -85,6 +103,116 @@ test('a twisted ribbon covers both of its lobes', () => {
   expect(inFill(...nearMate)).toBe(true)
   expect(ribbonContains(...nearAnchor, angles, RADIUS, BEZIER)).toBe(true)
   expect(ribbonContains(...nearMate, angles, RADIUS, BEZIER)).toBe(true)
+})
+
+// a thousand bp to the radian, every foot on one slice
+const STAGE: ChordStage = {
+  radiansPerBp: 1e-3,
+  gapRadians: 0,
+  offsetRadians: 0.4,
+  radiusPx: RADIUS,
+  bezierRadiusPx: BEZIER,
+}
+
+function randomLanes(rand: () => number, n: number): RibbonLanes {
+  const turnBp = (2 * Math.PI) / STAGE.radiansPerBp
+  const lanes: RibbonLanes = {
+    x1: new Float32Array(n),
+    x2: new Float32Array(n),
+    y1: new Float32Array(n),
+    y2: new Float32Array(n),
+    xSlice: new Uint32Array(n),
+    ySlice: new Uint32Array(n),
+    strand: new Float32Array(n),
+    color: new Uint32Array(n),
+    count: n,
+    features: [],
+  }
+  const spanBp = () => rand() * 0.6 * 1000
+  for (let i = 0; i < n; i++) {
+    lanes.x1[i] = rand() * turnBp
+    lanes.x2[i] = lanes.x1[i]! + spanBp()
+    lanes.y1[i] = rand() * turnBp
+    lanes.y2[i] = lanes.y1[i]! + spanBp()
+    lanes.strand[i] = rand() < 0.5 ? -1 : 1
+  }
+  return lanes
+}
+
+function topmostByScan(
+  lanes: RibbonLanes,
+  stage: ChordStage,
+  x: number,
+  y: number,
+) {
+  for (let i = lanes.count - 1; i >= 0; i--) {
+    const angles = ribbonAnglesAt(lanes, i, stage)
+    if (ribbonContains(x, y, angles, stage.radiusPx, stage.bezierRadiusPx)) {
+      return i
+    }
+  }
+  return undefined
+}
+
+// the rim's four extremes, where an arc bulges past both its ends, and a
+// scatter over the disc
+function probePoints(rand: () => number) {
+  const points: [number, number][] = []
+  for (let k = 0; k < 4; k++) {
+    for (const inset of [0.2, 1, 3]) {
+      for (const nudge of [-0.01, 0, 0.01]) {
+        const a = (k * Math.PI) / 2 + nudge
+        points.push([
+          (RADIUS - inset) * Math.cos(a),
+          (RADIUS - inset) * Math.sin(a),
+        ])
+      }
+    }
+  }
+  for (let k = 0; k < 3000; k++) {
+    const r = RADIUS * Math.sqrt(rand())
+    const a = rand() * 2 * Math.PI
+    points.push([r * Math.cos(a), r * Math.sin(a)])
+  }
+  return points
+}
+
+// Each ribbon's box only skips the winding test where it would say no, so the
+// topmost ribbon found through the boxes is the one a scan of every fill finds
+test('the boxes change no hit', () => {
+  const rand = mulberry32(11)
+  const lanes = randomLanes(rand, 120)
+  const geometry = ribbonHitGeometry(lanes, STAGE)
+  let hits = 0
+  for (const [x, y] of probePoints(rand)) {
+    const expected = topmostByScan(lanes, STAGE, x, y)
+    hits += expected === undefined ? 0 : 1
+    expect([x, y, hitRibbon(lanes, STAGE, geometry, x, y)]).toEqual([
+      x,
+      y,
+      expected,
+    ])
+  }
+  expect(hits).toBeGreaterThan(1500)
+})
+
+test('a turn or new lanes measure the boxes again', () => {
+  const rand = mulberry32(5)
+  const lanes = randomLanes(rand, 40)
+  const hitTest = ribbonHitTest()
+  const turned = { ...STAGE, offsetRadians: STAGE.offsetRadians + 1.3 }
+  const moved = randomLanes(rand, 40)
+  let differs = 0
+  for (const [x, y] of probePoints(rand).slice(0, 600)) {
+    const here = hitTest(lanes, STAGE, x, y)
+    expect(here).toBe(topmostByScan(lanes, STAGE, x, y))
+    expect(hitTest(lanes, turned, x, y)).toBe(
+      topmostByScan(lanes, turned, x, y),
+    )
+    expect(hitTest(moved, STAGE, x, y)).toBe(topmostByScan(moved, STAGE, x, y))
+    differs += here === topmostByScan(lanes, turned, x, y) ? 0 : 1
+  }
+  expect(differs).toBeGreaterThan(100)
 })
 
 describe('a chord', () => {

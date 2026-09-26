@@ -28,7 +28,7 @@ import {
   BaseChordDisplay,
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
-import { hitRibbon } from '../../chords/chordHit.ts'
+import { ribbonHitTest } from '../../chords/chordHit.ts'
 import { axisX, ribbonAnglesAt } from '../../chords/chordStage.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
@@ -384,19 +384,6 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #method
-       * the alignment whose ribbon covers a point CSS px from the circle's
-       * centre in the screen frame, the topmost where several do
-       */
-      hitAt(dx: number, dy: number) {
-        if (self.displayPhase !== 'ready') {
-          return undefined
-        }
-        const lanes = this.ribbonLanes
-        const i = hitRibbon(lanes, self.chordStage, dx, dy)
-        return i === undefined ? undefined : lanes.features[i]
-      },
-      /**
-       * #method
        */
       shapeLabel(feature: Feature) {
         return ribbonLabel(feature)
@@ -476,6 +463,24 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         return out
       },
     }))
+    .views(self => {
+      const hitRibbon = ribbonHitTest()
+      return {
+        /**
+         * #method
+         * the alignment whose ribbon covers a point CSS px from the circle's
+         * centre in the screen frame, the topmost where several do
+         */
+        hitAt(dx: number, dy: number) {
+          if (self.displayPhase !== 'ready') {
+            return undefined
+          }
+          const lanes = self.ribbonLanes
+          const i = hitRibbon(lanes, self.chordStage, dx, dy)
+          return i === undefined ? undefined : lanes.features[i]
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
