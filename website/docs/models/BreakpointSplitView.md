@@ -97,7 +97,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="method-getmatchedfeaturesinlayout">**getMatchedFeaturesInLayout**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConfigId: string, features: Feature[][]) =&gt; { feature: Fe…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConfigId: string, features: Feature[][]) =&gt; { feature: Feature; layout: LayoutRecord; level: number; }[][]</code></pre></dialog></span> |  |
 | <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-rubberbandmenuitems">**rubberBandMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
-| <span id="method-rubberbandclickmenuitems">**rubberbandClickMenuItems**</span><br><code>(px: number) =&gt; MenuItem[]</code> | What a bare click on the shared rubberband strip offers: one row per panel, each holding that panel's own click menu at the base it paints under `px`. A pixel rather than an offset, since each panel maps it through its own `pxToBp`. |
+| <span id="method-rubberbandclickmenuitemsatpx">**rubberbandClickMenuItemsAtPx**</span><br><code>(px: number) =&gt; MenuItem[]</code> | What a bare click on the shared rubberband strip offers: one row per panel, each holding that panel's own click menu at the base it paints under `px`. A pixel rather than an offset, since each panel maps it through its own `pxToBp`. |
 
 ## Actions
 

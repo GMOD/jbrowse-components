@@ -83,7 +83,7 @@ test('rows are named by assembly and each offers its own rubberband menu', async
   // a click names a coordinate, so the rows are the whole menu
   expect(
     view
-      .rubberbandClickMenuItems(400)
+      .rubberbandClickMenuItemsAtPx(400)
       .map(i => ('label' in i ? i.label : i.type)),
   ).toEqual(['volvox (row 1)', 'volvox (row 2)'])
 })

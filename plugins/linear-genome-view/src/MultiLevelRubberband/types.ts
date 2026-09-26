@@ -8,5 +8,5 @@ import type { MenuItem } from '@jbrowse/core/ui'
 export interface MultiLevelRubberbandModel {
   views: LinearGenomeViewModel[]
   rubberBandMenuItems: () => MenuItem[]
-  rubberbandClickMenuItems: (px: number) => MenuItem[]
+  rubberbandClickMenuItemsAtPx: (px: number) => MenuItem[]
 }

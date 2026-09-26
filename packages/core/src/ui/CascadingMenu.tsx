@@ -295,7 +295,13 @@ function rowKeys(items: JBMenuItem[]) {
     const base = `${kind}-${name}`
     const seenBefore = seen.get(base) ?? 0
     seen.set(base, seenBefore + 1)
-    return seenBefore ? `${base}#${seenBefore}` : base
+    // The count LEADS, and every row carries one. A trailing suffix is drawn
+    // from the same alphabet as the label it disambiguates, so `x#1` beside two
+    // rows called `x` collided all over again — the second `x` took the first
+    // one's key. Leading, the count is the digits before the first `-` and the
+    // base is everything after, and `kind` always starts with a letter, so no
+    // two (count, base) pairs can spell one key.
+    return `${seenBefore}-${base}`
   })
 }
 

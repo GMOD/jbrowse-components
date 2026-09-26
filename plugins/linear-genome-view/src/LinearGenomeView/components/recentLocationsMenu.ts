@@ -35,8 +35,12 @@ export function recentLocationsMenu({
               // display string — two features of the same name at different
               // loci, or two snippets ellipsized to the same text. `id` is what
               // keeps them separate rows to React, which otherwise keys both on
-              // that one label
-              id: loc ?? label,
+              // that one label.
+              //
+              // Prefixed, because a freehand row has no location and falls back
+              // to its label, which may itself be a locstring — unprefixed, that
+              // row and a recorded one at the same locus share an id.
+              id: loc ? `loc:${loc}` : `query:${label}`,
               label,
               onClick: () => {
                 // a row that recorded a location navigates straight to it; one

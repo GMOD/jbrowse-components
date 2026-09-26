@@ -1007,7 +1007,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * under `px`. A pixel rather than an offset, since each panel maps it
        * through its own `pxToBp`.
        */
-      rubberbandClickMenuItems(px: number): MenuItem[] {
+      rubberbandClickMenuItemsAtPx(px: number): MenuItem[] {
         return multiLevelRowClickMenuItems(self.views, px)
       },
     }))

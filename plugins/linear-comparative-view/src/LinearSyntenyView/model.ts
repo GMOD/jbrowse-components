@@ -1394,7 +1394,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * paints under `px`. A pixel rather than an offset, since each row maps
          * it through its own `pxToBp`.
          */
-        rubberbandClickMenuItems(px: number): MenuItem[] {
+        rubberbandClickMenuItemsAtPx(px: number): MenuItem[] {
           return multiLevelRowClickMenuItems(self.views, px)
         },
       }

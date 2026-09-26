@@ -48,10 +48,15 @@ export function multiLevelRowClickMenuItems(
 ): MenuItem[] {
   return rowLabels(views).flatMap((label, idx) => {
     const view = views[idx]!
-    const subMenu = view.rubberbandClickMenuItems(view.pxToBp(px))
-    // `rubberbandClickMenuItems` answers nothing for an offset naming no base,
-    // and a row is dropped rather than opening an empty submenu — the same
-    // omit-when-empty `makeShowSubMenu` makes
-    return subMenu.length ? [{ label, subMenu }] : []
+    // A row with no regions is dropped, because `pxToBp` THROWS on one rather
+    // than answering an offset that names no base — so gating on the built
+    // submenu being empty, which is what this did, was a guard that could never
+    // fire in front of a call that had already thrown. Reachable: a row's
+    // `initialized` is assembly readiness, and the stack mounts this strip once
+    // ANY row is ready.
+    if (!view.displayedRegions.length) {
+      return []
+    }
+    return [{ label, subMenu: view.rubberbandClickMenuItems(view.pxToBp(px)) }]
   })
 }

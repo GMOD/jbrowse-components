@@ -76,9 +76,21 @@ test('two loci sharing a display string stay two rows', () => {
     { label: 'trnA (matched alias)', loc: 'ctgB:100..200' },
   ])
   expect((rows(items) as unknown as { id: string }[]).map(r => r.id)).toEqual([
-    'ctgA:100..200',
-    'ctgB:100..200',
+    'loc:ctgA:100..200',
+    'loc:ctgB:100..200',
   ])
+})
+
+// a freehand query has no location and falls back to its label, which may itself
+// read as a locstring — the two namespaces stay apart
+test('a freehand query and a recorded location never share an id', () => {
+  const { items } = replay([
+    { label: 'ctgA:100..200' },
+    { label: 'somewhere else', loc: 'ctgA:100..200' },
+  ])
+  const ids = (rows(items) as unknown as { id: string }[]).map(r => r.id)
+  expect(ids).toEqual(['query:ctgA:100..200', 'loc:ctgA:100..200'])
+  expect(new Set(ids).size).toBe(2)
 })
 
 test('replaying a row records the same row, so the label does not decay', () => {

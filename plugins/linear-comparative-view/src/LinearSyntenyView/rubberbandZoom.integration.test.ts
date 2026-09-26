@@ -115,7 +115,7 @@ test('each row offers its own rubberband menu', async () => {
 // pxToBp — so the rows are the menu, with no all-rows row above them.
 test('a click offers each row its own coordinate', async () => {
   const view = await launch()
-  const items = view.rubberbandClickMenuItems(400)
+  const items = view.rubberbandClickMenuItemsAtPx(400)
 
   expect(items.map(i => ('label' in i ? i.label : i.type))).toEqual([
     'a1',

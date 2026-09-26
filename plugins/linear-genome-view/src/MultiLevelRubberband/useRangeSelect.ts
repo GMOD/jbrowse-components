@@ -39,8 +39,15 @@ export function useRangeSelect(
   }, [model])
 
   // releases the committed offsets too, since mouseOut no longer does while the
-  // menu is open — closing the menu (button, Escape, or a bare click) is the
-  // point the selection is actually finished with
+  // menu is open — dismissing the menu, by its backdrop or Escape, is the point
+  // the selection is actually finished with. A bare click on the strip no longer
+  // comes through here: it opens the click menu instead.
+  //
+  // `CascadingMenu` dismisses BEFORE it runs the clicked row's callback, so this
+  // clears the offsets out from under it. Every menu built here captures them
+  // when the rows are built, which is why that works — the plain linear genome
+  // view's host never clears, so a row written to read them live works there
+  // and silently no-ops from a stacked row.
   const handleClose = useCallback(() => {
     setAnchorPosition(undefined)
     setStartX(undefined)

@@ -379,6 +379,12 @@ describe('CascadingMenuButton', () => {
         { label: <span>same element</span>, onClick: () => {} },
         { label: 'trnA', onClick: () => {} },
         { label: 'trnA', onClick: () => {} },
+        // a label already ending the way an occurrence suffix would: a haplotype
+        // name beside two rows sharing the name it suffixes. With the count
+        // trailing, the second `HG002` took `HG002#1`'s key
+        { label: 'HG002#1', onClick: () => {} },
+        { label: 'HG002', onClick: () => {} },
+        { label: 'HG002', onClick: () => {} },
         { type: 'subHeader', label: 'Group' },
         { type: 'subHeader', label: 'Group' },
         { type: 'divider' },

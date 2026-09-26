@@ -24,10 +24,10 @@ the barrel put ~80 Material components in every host's first paint.
 - **`toggleItem`, not `checkboxItem`, for a checkbox over a setter.** It hands
   the setter the new value instead of leaving 40 rows to write `!` against the
   same expression they are `checked` by. Same shape `radioItems` already takes.
-- A menu item **describes** its trailing control (`pin: { control, label }`);
-  `menuItemAdornment.tsx` builds it at draw time. `endAdornment` takes a raw
-  element and is the last resort — a builder that sets it drags its whole
-  component graph into every caller. `icon` is still an element type;
+- A row's trailing control is `endAdornment`, a raw element, resolved at draw
+  time by `menuItemAdornment.tsx`. It is the only form there is — no descriptor
+  field exists — so **a shared builder should not set one**: the element drags
+  its whole component graph into every caller. `icon` is still an element type;
   `agent-docs/reference/EAGER_BUNDLE.md`.
 - **A row's key is `id ?? label`, deduped by occurrence within the level**
   (`rowKeys`), so no menu can hand React one key for several rows whatever its
