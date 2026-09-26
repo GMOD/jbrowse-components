@@ -240,6 +240,7 @@ function displaySignature(display: TestDisplay) {
     fitLevel: level,
     labelRoomFactors:
       level === 'decimated' ? display.fitDecimatedFactors : undefined,
+    geneNamesOnly: display.geneNamesOnly,
     maxIsoforms,
   })
 }
@@ -720,6 +721,55 @@ describe('canvas display fit escalation ladder', () => {
         display.showLabels && level !== 'bodies',
       )
     }
+  })
+
+  it("drops a pile leader's name before a lone feature's", () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const features = [
+      { featureId: 'lone', startBp: 10, endBp: 20 },
+      ...Array.from({ length: 10 }, (_, i) => ({
+        featureId: `p${i}`,
+        startBp: 500,
+        endBp: 510,
+      })),
+    ]
+    const floatingLabelsData: FloatingLabelsDataMap = new Map(
+      features.map(f => [
+        f.featureId,
+        {
+          featureId: f.featureId,
+          minX: f.startBp,
+          maxX: f.endBp,
+          topY: 0,
+          featureHeight: 10,
+          nameLabel: { text: f.featureId, relativeY: 0, textWidth: 40 },
+        },
+      ]),
+    )
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        flatbushItems: features.map(f =>
+          makeFlatbushItem({ ...f, bottomPx: 10, featureHeightPx: 10 }),
+        ),
+        floatingLabelsData,
+      }),
+      ctgA,
+    )
+    display.setHeightMode('fit')
+    const loneOnlyH = display.decimatedHeightProbe(9)
+    expect(loneOnlyH).toBeLessThan(display.decimatedHeightProbe(8))
+
+    display.setHeight(Math.ceil(loneOnlyH))
+    expect(display.fitStage.level).toBe('decimated')
+    const layout: Map<number, FeatureDataResult> = display.fitStage.layout
+    const named = [...layout.values()].flatMap(d =>
+      [...d.floatingLabelsData.values()]
+        .filter(l => l.nameLabel)
+        .map(l => l.featureId),
+    )
+    expect(named).toEqual(['lone'])
   })
 
   it('fills the decimated rung with more names as the track grows', () => {

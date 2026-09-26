@@ -164,33 +164,56 @@ function outranks(a: RoomSpan, b: RoomSpan) {
     : a.endBp - a.startBp > b.endBp - b.startBp
 }
 
+// Each edge's leader, with the size of its pile.
 function pileLeaders<F extends RoomSpan>(
   features: Map<string, F>,
   edge: (f: F) => number,
+  nameWidthPx: (id: string) => number,
 ) {
-  const leaders = new Map<number, [string, F]>()
-  for (const entry of features) {
-    const key = edge(entry[1])
-    const leader = leaders.get(key)
-    if (!leader || outranks(entry[1], leader[1])) {
-      leaders.set(key, entry)
+  const piles = new Map<number, { id: string; f: F; size: number }>()
+  for (const [id, f] of features) {
+    if (nameWidthPx(id) <= 0) {
+      continue
+    }
+    const key = edge(f)
+    const pile = piles.get(key)
+    if (!pile) {
+      piles.set(key, { id, f, size: 1 })
+    } else {
+      pile.size++
+      if (outranks(f, pile.f)) {
+        pile.id = id
+        pile.f = f
+      }
     }
   }
-  return new Set([...leaders.values()].map(([id]) => id))
+  return new Map([...piles.values()].map(p => [p.id, p.size]))
 }
 
-// Features sharing an edge form a pile, and only its leader (a gene, else the
-// longest) reads the gap past the pile; the rest read none, so the pile thins
-// to one name before that name is at risk.
+// The widest room a pile leader reads, as a multiple of its name width. Its
+// name sits on the pile, so it usually costs height, and past this factor it
+// goes before a lone feature's name, which usually costs none.
+export const PILE_LEADER_MAX_ROOM_FACTOR = 8
+
+// Features sharing an edge form a pile, and only its leader (a named gene,
+// else the longest named member) reads the gap past the pile; the rest read
+// none, so the pile thins to one name before that name is at risk.
 export function labelOverhangRoomPx<F extends RoomSpan>(
   features: Map<string, F>,
   bpPerPx: number,
+  nameWidthPx: (id: string) => number = () => 1,
 ) {
   const spans = [...features.values()]
   const starts = spans.map(f => f.startBp).sort((a, b) => a - b)
   const ends = spans.map(f => f.endBp).sort((a, b) => a - b)
-  const startLeaders = pileLeaders(features, f => f.startBp)
-  const endLeaders = pileLeaders(features, f => f.endBp)
+  const startLeaders = pileLeaders(features, f => f.startBp, nameWidthPx)
+  const endLeaders = pileLeaders(features, f => f.endBp, nameWidthPx)
+  const room = (id: string, pileSize: number | undefined, gapPx: number) =>
+    pileSize === undefined
+      ? 0
+      : pileSize > 1
+        ? Math.min(gapPx, nameWidthPx(id) * PILE_LEADER_MAX_ROOM_FACTOR)
+        : gapPx
   const rightRoom = new Map<string, number>()
   const leftRoom = new Map<string, number>()
   for (const [id, f] of features) {
@@ -198,19 +221,19 @@ export function labelOverhangRoomPx<F extends RoomSpan>(
     const prevEnd = ends[lowerBound(ends, f.endBp) - 1]
     rightRoom.set(
       id,
-      !startLeaders.has(id)
-        ? 0
-        : nextStart === undefined
-          ? Infinity
-          : (nextStart - f.startBp) / bpPerPx,
+      room(
+        id,
+        startLeaders.get(id),
+        nextStart === undefined ? Infinity : (nextStart - f.startBp) / bpPerPx,
+      ),
     )
     leftRoom.set(
       id,
-      !endLeaders.has(id)
-        ? 0
-        : prevEnd === undefined
-          ? Infinity
-          : (f.endBp - prevEnd) / bpPerPx,
+      room(
+        id,
+        endLeaders.get(id),
+        prevEnd === undefined ? Infinity : (f.endBp - prevEnd) / bpPerPx,
+      ),
     )
   }
   return { rightRoom, leftRoom }

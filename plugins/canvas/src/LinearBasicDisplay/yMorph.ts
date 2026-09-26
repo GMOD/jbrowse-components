@@ -41,9 +41,9 @@ export function morphOffset(
 // Equal signatures differ only in row assignment and can morph; a changed one
 // rescaled the rows and must snap. Reads the rendered label flags, not the
 // raw config, because a fit-stage boundary can drop descriptions without a
-// config flag changing; the stage, the label room factors, `bodyScale` and
-// `maxIsoforms` ride along because two stacks at different values rescale rows
-// with every other field equal.
+// config flag changing; the stage, the label room factors, the gene-only
+// density state, `bodyScale` and `maxIsoforms` ride along because two stacks
+// at different values rescale rows with every other field equal.
 export function rowGeometrySignature(g: {
   displayMode: string
   renderedShowLabels: boolean
@@ -52,6 +52,7 @@ export function rowGeometrySignature(g: {
   bodyScale: number
   fitLevel: string
   labelRoomFactors: LabelRoomFactors | undefined
+  geneNamesOnly: boolean
   maxIsoforms: number | undefined
 }) {
   return [
@@ -63,6 +64,7 @@ export function rowGeometrySignature(g: {
     g.fitLevel,
     g.labelRoomFactors?.labelRoomFactor,
     g.labelRoomFactors?.geneLabelRoomFactor,
+    g.geneNamesOnly,
     g.maxIsoforms,
   ].join('|')
 }

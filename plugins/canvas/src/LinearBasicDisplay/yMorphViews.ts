@@ -42,6 +42,7 @@ export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
   fitStage: FitStage
   fitScale: number
   fitDecimatedFactors: LabelRoomFactors | undefined
+  geneNamesOnly: boolean
   displayMode: DisplayMode
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
@@ -172,6 +173,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
         // for a bisection to discriminate stacks it had no hand in.
         labelRoomFactors:
           level === 'decimated' ? self.fitDecimatedFactors : undefined,
+        geneNamesOnly: self.geneNamesOnly,
         maxIsoforms,
       })
       const scaleUnchanged = geometry === prevGeometry

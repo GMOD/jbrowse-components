@@ -1,13 +1,16 @@
+import { PILE_LEADER_MAX_ROOM_FACTOR } from './labelReservation.ts'
 import { maxBottom } from './layoutQueries.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LabelRoomFactors } from './layoutInputs.ts'
 
-// Past ~8x only pinned and isolated names survive, which caps the search. A
-// name with more room than 8x its width never drops, so when those alone
-// overflow, the solve keeps no name, not even the ones that cost no height.
-// No volvox view has needed more than 6.25.
-const FIT_MAX_ROOM_FACTOR = 8
+// Past 8x only pinned and isolated names survive, so the search covers 0-8
+// linearly. When even 8 overflows, it climbs on a log scale to 2^20, dropping
+// pile leaders first and then the most isolated names in turn; only
+// infinite-room and pinned names remain past that. No volvox view has needed
+// more than 6.25.
+const FIT_MAX_ROOM_FACTOR = PILE_LEADER_MAX_ROOM_FACTOR
+const FIT_ESCALATE_LOG2 = 20
 const FIT_SOLVE_ITERS = 8
 
 // `fits` must be monotone and the caller must already have measured
@@ -82,10 +85,22 @@ export function solveLabelRoomFactor(
   if (fits(0)) {
     return 0
   }
-  if (!fits(FIT_MAX_ROOM_FACTOR)) {
+  if (fits(FIT_MAX_ROOM_FACTOR)) {
+    return bisectSmallestFitting(fits, 0, FIT_MAX_ROOM_FACTOR, FIT_SOLVE_ITERS)
+  }
+  const fitsLog2 = (x: number) => fits(2 ** x)
+  if (!fitsLog2(FIT_ESCALATE_LOG2)) {
     return undefined
   }
-  return bisectSmallestFitting(fits, 0, FIT_MAX_ROOM_FACTOR, FIT_SOLVE_ITERS)
+  return (
+    2 **
+    bisectSmallestFitting(
+      fitsLog2,
+      Math.log2(FIT_MAX_ROOM_FACTOR),
+      FIT_ESCALATE_LOG2,
+      FIT_SOLVE_ITERS,
+    )
+  )
 }
 
 // Gene names claim the height first and the rest fill what they leave: the

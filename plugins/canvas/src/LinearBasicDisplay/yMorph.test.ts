@@ -169,9 +169,26 @@ test('rowGeometrySignature separates two isoform counts', () => {
       bodyScale: 1,
       fitLevel: 'isoforms',
       labelRoomFactors: undefined,
+      geneNamesOnly: false,
       maxIsoforms,
     })
   expect(at(5)).not.toBe(at(4))
   expect(at(5)).toBe(at(5))
   expect(at(undefined)).not.toBe(at(1))
+})
+
+test('rowGeometrySignature separates gene names only from every name', () => {
+  const at = (geneNamesOnly: boolean) =>
+    rowGeometrySignature({
+      displayMode: 'normal',
+      renderedShowLabels: true,
+      renderedShowDescriptions: false,
+      fitScale: 1,
+      bodyScale: 1,
+      fitLevel: 'full',
+      labelRoomFactors: undefined,
+      geneNamesOnly,
+      maxIsoforms: undefined,
+    })
+  expect(at(true)).not.toBe(at(false))
 })

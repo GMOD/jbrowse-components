@@ -237,7 +237,10 @@ export function prepareRefPack(
     stacks,
     overhangRoom:
       labelDecimation === 'fitWidth'
-        ? labelOverhangRoomPx(features, bpPerPx)
+        ? labelOverhangRoomPx(features, bpPerPx, id => {
+            const info = labelInfoByFeatureId.get(id)
+            return info?.hasName ? info.widths.name : 0
+          })
         : undefined,
     ...planDensityCollapse(
       features,

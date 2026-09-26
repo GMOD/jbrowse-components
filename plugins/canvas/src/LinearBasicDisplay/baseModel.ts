@@ -543,13 +543,11 @@ export default function baseStateModelFactory(
        */
       get geneNamesOnly() {
         const max = getConf(self, 'maxLabelFeatureDensity')
+        if (this.showLabelsMode !== 'auto' || self.labelDensityPerPx <= max) {
+          return false
+        }
         const geneDensity = self.geneLabelDensityPerPx
-        return (
-          this.showLabelsMode === 'auto' &&
-          self.labelDensityPerPx > max &&
-          geneDensity !== undefined &&
-          geneDensity <= max
-        )
+        return geneDensity !== undefined && geneDensity <= max
       },
 
       /**

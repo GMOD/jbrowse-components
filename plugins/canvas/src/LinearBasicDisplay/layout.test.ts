@@ -1036,6 +1036,59 @@ describe('gene names claim the height first', () => {
     ).toEqual(['G1'])
   })
 
+  it('leads a pile with its longest named member when the longest has no name', () => {
+    const region = labeledFeatureData([
+      { featureId: 'region', startBp: 1050, endBp: 9000, height: 20 },
+      { featureId: 'est1', startBp: 1050, endBp: 3202, height: 20 },
+      { featureId: 'est2', startBp: 1050, endBp: 7300, height: 20 },
+      { featureId: 'lone', startBp: 20000, endBp: 21000, height: 20 },
+    ])
+    region.floatingLabelsData.delete('region')
+    expect(keptNames(new Map([[0, region]]), { labelRoomFactor: 1 })).toEqual([
+      'est2',
+      'lone',
+    ])
+  })
+
+  it('drops the most isolated other names past the factor cap rather than all of them', () => {
+    const data = new Map([
+      [
+        0,
+        labeledFeatureData([
+          {
+            featureId: 'G',
+            startBp: 1000,
+            endBp: 9000,
+            height: 20,
+            gene: true,
+          },
+          { featureId: 'est', startBp: 1000, endBp: 5000, height: 20 },
+          { featureId: 'O1', startBp: 6000, endBp: 8000, height: 20 },
+          { featureId: 'O2', startBp: 30000, endBp: 31000, height: 20 },
+        ]),
+      ],
+    ])
+    const at10 = { ...inputs, bpPerPx: 10 }
+    const heightAt = createContentHeightProbe(data, at10)
+    const trackHeight = heightAt(100, 0)
+    expect(heightAt(8, 0)).toBeGreaterThan(trackHeight)
+    const factors = solveLabelRoomFactors(
+      heightAt,
+      trackHeight,
+      namedLabelTiers(data.values()),
+    )!
+    expect(factors.labelRoomFactor).toBeLessThan(Infinity)
+    const kept = [
+      ...computeLaidOutData(data, { ...at10, ...factors })
+        .get(0)!
+        .floatingLabelsData.values(),
+    ]
+      .filter(l => l.nameLabel)
+      .map(l => l.featureId)
+      .sort()
+    expect(kept).toEqual(['G', 'O2'])
+  })
+
   it('keeps the gene name where the height holds one name and the gene is crowded', () => {
     const data = volvoxEden()
     const heightAt = createContentHeightProbe(data, inputs)
