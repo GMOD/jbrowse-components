@@ -144,10 +144,11 @@ VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
   // the first curve leaves the span's end for the mate; the second, walked
   // backwards, leaves the span's start for the mate's other end
   float2 p0 = polarPoint(r, a2);
-  float2 c0 = chordControlPoint(a2, m1, r, br);
+  float outTurn = chordTurn(a2, m1);
+  float2 c0 = turnControlPoint(a2, outTurn, r, br);
   float2 p1 = polarPoint(r, m1);
   float2 q0 = polarPoint(r, m2);
-  float2 c1 = chordControlPoint(m2, a1, r, br);
+  float2 c1 = turnControlPoint(m2, ribbonReturnTurn(outTurn, m2, a1), r, br);
   float2 q1 = polarPoint(r, a1);
   float2 l = quadBezier(p0, c0, p1, t);
   float2 q = quadBezier(q0, c1, q1, 1.0 - t);

@@ -1,9 +1,12 @@
 import { polarToCartesian } from '@jbrowse/core/util'
 import { svMateLocus } from '@jbrowse/sv-core'
 
-import { chordTurn } from './shaders/chordStage.js.generated.ts'
+import {
+  chordTurn,
+  ribbonReturnTurn,
+} from './shaders/chordStage.js.generated.ts'
 
-import type { ChordEnds } from './chordStage.ts'
+import type { ChordEnds, RibbonAngles } from './chordStage.ts'
 import type { PathSink } from './pathSink.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -37,21 +40,68 @@ export function chordControlRadius({
   radius: number
   bezierRadius: number
 }) {
-  const sweep = Math.abs(chordTurn(startRadians, endRadians))
-  return radius - (radius - bezierRadius) * Math.sin(sweep / 2)
+  return controlRadiusForTurn(
+    chordTurn(startRadians, endRadians),
+    radius,
+    bezierRadius,
+  )
+}
+
+function controlRadiusForTurn(
+  turn: number,
+  radius: number,
+  bezierRadius: number,
+) {
+  return radius - (radius - bezierRadius) * Math.sin(Math.abs(turn) / 2)
+}
+
+function turnControlPoint(
+  startRadians: number,
+  turn: number,
+  radius: number,
+  bezierRadius: number,
+) {
+  return polarToCartesian(
+    controlRadiusForTurn(turn, radius, bezierRadius),
+    startRadians + turn / 2,
+  )
 }
 
 /** A chord's Bezier control point, on the bisector of its short arc. */
-export function chordControlPoint(opts: {
+export function chordControlPoint({
+  startRadians,
+  endRadians,
+  radius,
+  bezierRadius,
+}: {
   startRadians: number
   endRadians: number
   radius: number
   bezierRadius: number
 }) {
-  const { startRadians, endRadians } = opts
-  return polarToCartesian(
-    chordControlRadius(opts),
-    startRadians + chordTurn(startRadians, endRadians) / 2,
+  return turnControlPoint(
+    startRadians,
+    chordTurn(startRadians, endRadians),
+    radius,
+    bezierRadius,
+  )
+}
+
+/**
+ * The control point of a ribbon's curve from `m2` home to `a1`, which turns
+ * the way nearest the reverse of the curve out from `a2` to `m1`, so the two
+ * bow to one side of the centre.
+ */
+export function ribbonReturnControlPoint(
+  { a1, a2, m1, m2 }: RibbonAngles,
+  radius: number,
+  bezierRadius: number,
+) {
+  return turnControlPoint(
+    m2,
+    ribbonReturnTurn(chordTurn(a2, m1), m2, a1),
+    radius,
+    bezierRadius,
   )
 }
 

@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 43 shaders with entry points. 123 functions
-are inside the emitter's subset, of which **94 are exported**.
+Scanned 43 shaders with entry points. 125 functions
+are inside the emitter's subset, of which **96 are exported**.
 
 ## Candidates
 
@@ -87,15 +87,15 @@ noticing in a diff.
 | type 'VsOut' is outside the supported scalar subset | 3 | `linkDash`, `linkDashAlong`, `linkDistance` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
+| type 'RibbonInstance' is outside the supported scalar subset | 2 | `footAngles`, `ribbonAngles` |
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'chordControlPoint' reaches polarPoint(), which is outside the supported scalar subset | 1 | `chordControlPoint` |
 | //! js-export: 'rowScoreToClipY' reaches rowScoreToYPx(), which is outside the supported scalar subset | 1 | `rowScoreToClipY` |
+| //! js-export: 'turnControlPoint' reaches polarPoint(), which is outside the supported scalar subset | 1 | `turnControlPoint` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
-| call to 'sin' at line N is neither a supported builtin nor a function in this module | 1 | `chordControlRadius` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
-| type 'RibbonInstance' is outside the supported scalar subset | 1 | `ribbonAngles` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'RowRectUniforms' is outside the supported scalar subset | 1 | `rowRectClipPos` |
 | vec2<f32> built from 1 component(s) (only the two-scalar form is supported, not a splat or a copy) is outside the supported scalar subset | 1 | `polarPoint` |

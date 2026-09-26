@@ -5,6 +5,7 @@ import {
   chordControlPoint,
   chordControlRadius,
   getEndpoint,
+  ribbonReturnControlPoint,
 } from './chordGeometry.ts'
 
 function block(refName: string) {
@@ -155,5 +156,46 @@ describe('chordControlRadius', () => {
       }),
     )
     expect(depths).toEqual([...depths].sort((a, b) => b - a))
+  })
+})
+
+describe('ribbonReturnControlPoint', () => {
+  const radius = 200
+  const bezierRadius = 20
+  const rim = (a: number) => [radius * Math.cos(a), radius * Math.sin(a)]
+  const midpoint = (from: number, c: number[], to: number) => {
+    const [x0, y0] = rim(from)
+    const [x1, y1] = rim(to)
+    return [(x0! + 2 * c[0]! + x1!) / 4, (y0! + 2 * c[1]! + y1!) / 4]
+  }
+
+  // 7D to 4C on the oat circle: one curve turns a little under half the
+  // circle and the other a little over, so their short ways run opposite
+  test('an antipodal ribbon is no wider at the centre than at its ends', () => {
+    const angles = { a1: 0, a2: 0.05, m1: Math.PI + 0.04, m2: Math.PI + 0.08 }
+    const out = chordControlPoint({
+      startRadians: angles.a2,
+      endRadians: angles.m1,
+      radius,
+      bezierRadius,
+    })
+    const back = ribbonReturnControlPoint(angles, radius, bezierRadius)
+    const [lx, ly] = midpoint(angles.a2, out, angles.m1)
+    const [qx, qy] = midpoint(angles.m2, back, angles.a1)
+    const narrowerEnd = radius * 0.04
+    expect(Math.hypot(lx! - qx!, ly! - qy!)).toBeLessThan(narrowerEnd)
+  })
+
+  test('a ribbon between neighbours returns the short way', () => {
+    const angles = { a1: 0, a2: 0.1, m1: 0.5, m2: 0.6 }
+    const [x, y] = ribbonReturnControlPoint(angles, radius, bezierRadius)
+    const [ex, ey] = chordControlPoint({
+      startRadians: angles.m2,
+      endRadians: angles.a1,
+      radius,
+      bezierRadius,
+    })
+    expect(x).toBeCloseTo(ex)
+    expect(y).toBeCloseTo(ey)
   })
 })

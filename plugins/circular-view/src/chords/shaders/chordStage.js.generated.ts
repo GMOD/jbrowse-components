@@ -21,6 +21,10 @@ export function chordTurn(from: number, to: number): number {
   return (t - (6.28318548202514648 * Math.floor(((t + 3.14159274101257324) / 6.28318548202514648))))
 }
 
+export function ribbonReturnTurn(outTurn: number, from: number, to: number): number {
+  return (chordTurn(-outTurn, (to - from)) - outTurn)
+}
+
 export function ribbonEndPad(a: number, b: number, radius: number, minWidthPx: number): number {
   return (_max(0.0, ((minWidthPx / _max(radius, 1.0)) - Math.abs((b - a)))) * 0.5)
 }

@@ -1,6 +1,6 @@
 import { polarToCartesian } from '@jbrowse/core/util'
 
-import { chordControlPoint } from './chordGeometry.ts'
+import { chordControlPoint, ribbonReturnControlPoint } from './chordGeometry.ts'
 import { chordEndsAt, ribbonAnglesAt } from './chordStage.ts'
 
 import type {
@@ -151,15 +151,18 @@ function writeControl(
 function writeOutline(
   out: Float64Array,
   j: number,
-  { a1, a2, m1, m2 }: RibbonAngles,
+  angles: RibbonAngles,
   radius: number,
   bezierRadius: number,
 ) {
+  const { a1, a2, m1, m2 } = angles
   writeRim(out, j, radius, a2)
   writeControl(out, j + 2, a2, m1, radius, bezierRadius)
   writeRim(out, j + 4, radius, m1)
   writeRim(out, j + 6, radius, m2)
-  writeControl(out, j + 8, m2, a1, radius, bezierRadius)
+  const [cx, cy] = ribbonReturnControlPoint(angles, radius, bezierRadius)
+  out[j + 8] = cx
+  out[j + 9] = cy
   writeRim(out, j + 10, radius, a1)
 }
 

@@ -4,7 +4,7 @@
 // its middle — and the count of slice gaps before it. Its angle is affine in
 // the two, so a zoom writes `radiansPerBp` and `gapRadians`, a rotation writes
 // `offsetRadians`, and neither uploads a buffer.
-//! js-export: chordTurn, ribbonEndPad, chordIsSpeck, ribbonThinFade
+//! js-export: chordTurn, ribbonReturnTurn, ribbonEndPad, chordIsSpeck, ribbonThinFade
 //! export-consts: MIN_RIBBON_END_PX
 //! js-skip: footRadians — the stage's two-term scale, which chordStage.ts applies with the same two uniforms
 module chordStage;
@@ -50,21 +50,30 @@ public float chordTurn(float from, float to) {
   return t - TWO_PI * floor((t + PI) / TWO_PI);
 }
 
-// How far from the centre a curve's control point sits. Scaled by the sine of
-// half the short turn, which is the two ends' straight-line distance over the
-// diameter: an antipodal pair bows to `bezierRadius`, and a pair a pixel apart
-// stays at the rim rather than drawing a spoke to the middle and back.
-public float chordControlRadius(float from, float to, float radius, float bezierRadius) {
-  return radius - (radius - bezierRadius) * sin(abs(chordTurn(from, to)) * 0.5);
-}
-
 public float2 polarPoint(float radius, float radians) {
   return radius * float2(cos(radians), sin(radians));
 }
 
+// A curve's control point for a signed turn from `from`, on the bisector of
+// the arc it turns through. Its depth is the sine of half the turn, the two
+// ends' straight-line distance over the diameter: an antipodal pair bows to
+// `bezierRadius`, and a pair a pixel apart stays at the rim rather than
+// drawing a spoke to the middle and back.
+public float2 turnControlPoint(float from, float turn, float radius, float bezierRadius) {
+  return polarPoint(radius - (radius - bezierRadius) * sin(abs(turn) * 0.5),
+                    from + turn * 0.5);
+}
+
 public float2 chordControlPoint(float from, float to, float radius, float bezierRadius) {
-  return polarPoint(chordControlRadius(from, to, radius, bezierRadius),
-                    from + chordTurn(from, to) * 0.5);
+  return turnControlPoint(from, chordTurn(from, to), radius, bezierRadius);
+}
+
+// The turn a ribbon's second curve takes from `from` to `to`: the way round
+// nearest the reverse of its first curve's `outTurn`. Each taken the short way,
+// an antipodal ribbon's curves turn opposite ways and bow either side of the
+// centre, so the ribbon swells in the middle.
+public float ribbonReturnTurn(float outTurn, float from, float to) {
+  return chordTurn(-outTurn, to - from) - outTurn;
 }
 
 public float2 quadBezier(float2 p0, float2 c, float2 p1, float t) {
