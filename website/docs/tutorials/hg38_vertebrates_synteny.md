@@ -254,7 +254,7 @@ bash build_hg38_liftover_multiway.sh
 
 ## See also
 
-- [](/docs/tutorials/hprc_multiway_synteny)
+- [](/docs/tutorials/pangenome_hprc_part3)
 - [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/genomes_synteny)

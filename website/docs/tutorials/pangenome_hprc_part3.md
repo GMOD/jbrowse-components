@@ -1,452 +1,354 @@
 ---
-title: Pangenome (HPRC) part 3, every haplotype in its own coordinates
-sidebar_label: Pangenome (HPRC 3, haplotypes in their own coordinates)
+title: Pangenome (HPRC) part 3, haplotypes against each other
+sidebar_label: Pangenome (HPRC 3, haplotypes against each other)
 description:
-  The multiple alignment HPRC release 2's graph and callset both come from, then
-  the same haplotypes off GRCh38's axis and on their own contigs
+  HPRC haplotypes as lanes on their own assemblies, read from the release's
+  graph in the browser, with the alignment the graph states drawn between
+  neighbouring lanes: a deletion at CFH, a C4 module two haplotypes share and
+  GRCh38 lacks, and amylase copy number checked against its published classes
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
 ---
 
-Parts [1](/docs/tutorials/pangenome_hprc) and
-[2](/docs/tutorials/pangenome_hprc_part2) draw everything on GRCh38's axis,
-which makes hundreds of haplotypes comparable in one lane and leaves each
-assembly's own coordinates out of the picture. We start from the multiple
-alignment both products were derived from, then put each haplotype back on its
-own contigs straight out of the graph, and end on the one donor that has a
-published reference of its own.
+Two people can share a stretch of sequence that the reference genome lacks, and
+a picture drawn along the reference has nowhere to put it. We draw haplotypes
+from the Human Pangenome Reference Consortium's release 2 against each other
+instead: one lane per haplotype, each on its own assembled chromosome with its
+own gene models, all read out of the release's pangenome graph in the browser.
+Between two neighbouring lanes the view draws the alignment the graph itself
+states, with no aligner run. We read a two-gene deletion at the CFH cluster, a
+module of the complement C4 locus that two haplotypes share and GRCh38 lacks,
+and the copy number of the salivary amylase gene, which we check against the
+structures Yilmaz et al. (2024) named. [Part 1](/docs/tutorials/pangenome_hprc)
+reads the graph itself.
 
-## Prerequisites
+:::caution Experimental
 
-- [part 1](/docs/tutorials/pangenome_hprc), whose session this page adds to:
-  hg38 with its genes and the rGFA segments track loaded on it, plus
-  [part 2's callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset)
-  for the first figure
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin),
-  for the track that uses `GbzBaseSyntenyAdapter` and part 1's segments track;
-  every other track here is a URL you can paste
-- `bcftools`, to genotype the panel out of the callset
-
-## Where the data comes from
-
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), whose multiple
-alignment and gbz-base database are read straight off S3, beside T2T-CHM13 from
-UCSC and the companion index we host.
-
-**The alignment and the assemblies**
-
-- the multiple alignment the graph and the callset are both derived from:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz
-- the release's all-vs-GRCh38 alignment, which the panel's build script slices:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
-- the CAT gene annotation index, one GFF3 per haplotype:
-  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
-
-**The graph as a walk database**
-
-- release 2.1's Minigraph-Cactus graph as a gbz-base database, 10 GB, read by
-  range request and never downloaded:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
-- the `.gbz` that database was built from, which also names its haplotypes:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
-- our companion haplotype index for that database, which HPRC does not publish:
-  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
-
-**T2T-CHM13**
-
-- the T2T-CHM13v2.0 reference (hs1), loaded as its own donor assembly:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
-- hs1's RefSeq genes, from
-  [genomes.jbrowse.org's hs1](https://genomes.jbrowse.org/ucsc/hs1/):
-  https://jbrowse.org/ucsc/hs1/hs1.gff.gz
-- hs1's RepeatMasker annotation, from UCSC:
-  https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb
-- UCSC's hg38-to-hs1 liftOver, rehosted as an indexed PAF:
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz
-
-## The route
-
-Three ways to see a haplotype's own sequence, in the order they leave GRCh38's
-axis:
-
-1. [Add the multiple alignment](#the-alignment-underneath-both) and put it under
-   the graph and the callset at one locus.
-2. [Read eight haplotypes' walks out of the graph](#walks-from-the-graph) as one
-   lane each, in their own contig coordinates.
-3. [Load T2T-CHM13 as an assembly](#the-one-donor-worth-loading) and open a node
-   on it, then launch a synteny view between the two.
-
-## The alignment the graph and callset came from {#the-alignment-underneath-both}
-
-The graph and the callset are both derived from the multiple alignment, and
-release 2.1 publishes that too: `hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, 464
-haplotypes, beside a `.tai` index written by
-[taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The index makes it
-addressable, so a locus is a ranged read rather than a 53 GB download:
-
-```json addtrack
-{
-  "type": "MafTrack",
-  "trackId": "hprc_v2_0_mc_grch38",
-  "name": "HPRC release 2 pangenome alignment (464 haplotypes)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BgzipMafAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz"
-  }
-}
-```
-
-The `uri` shorthand resolves the sibling `.tai`, which downloads once. This is
-the build [the graph](/docs/tutorials/pangenome_hprc#add-the-graph-track) and
-[the callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) come
-from. Release 2.0 publishes the same alignment as a 5.9 GB TAF, which
-`BgzipTaffyAdapter` reads with the same shorthand: a quarter of the bytes per
-locus, but an earlier build, with more underalignment and unpatched centromeres.
-
-Type `chr6:31,980,000-32,050,000`, the C4 window from part 1's table, and show
-four lanes: the genes, the segments, the callset with part 2's structural
-filter, and this alignment. Every alignment row is a human haplotype, so a row
-that drops out belongs to a person who does not carry that segment. Read down a
-column for who carries what, across for where each segment starts and stops. C4
-is the locus [HPRCv2](https://github.com/pangenome/HPRCv2) itself opens with.
-
-Two clustering runs order the rows. On the callset, part 2's **Clustering →
-Cluster rows by genotype...**. On the alignment, **Clustering → Cluster rows by
-identity...** in its track menu, which computes over the window in view, since
-HPRC's file ships no guide tree; **Reset row order** puts back whatever the file
-supplied. Then cut the window from the segments track with **Launch → Graph
-genome view (this region)** for the graph pane under all four.
-
-<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype (grey reference, teal alt allele, magenta other alt, tan no call, an insertion widened to the inserted length with that bp count inside), a subtree of those haplotypes as alignment rows clustered by identity, grey where a haplotype aligns to GRCh38 and white where it has no aligned sequence, and the same window as a force-directed subgraph in reference-position colors. The band marks the pseudogene pair between C4A and C4B; the haplotypes with no aligned sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
-
-:::tip 💡 See also
-
-[Part 1](/docs/tutorials/pangenome_hprc#reading-what-you-cut) labels the
-backbone, an allele and a bubble on the C4 cut.
+The graph view is a beta plugin, and the lanes read the graph as the page draws
+them. We welcome your [feedback](/contact).
 
 :::
 
-The figure keeps thirty-two haplotype rows so each has the height for its name
-beside it; the track as configured above draws every haplotype. The
-[MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
-per-row identity and codon view, all derived from the alignment with no extra
-files.
+## Prerequisites
 
-## Every haplotype's walk, straight from the graph {#walks-from-the-graph}
+- the GraphGenomeView plugin, which the HPRC page's launches load, so the route
+  installs nothing
+- for [Reproduce it end to end](#reproduce-it-end-to-end): `samtools` built with
+  libcurl, [`minimap2`](https://github.com/lh3/minimap2), Node.js for `npx`,
+  `python3`, `pigz` (or `gzip`), and the [JBrowse CLI](/docs/cli) (`jbrowse`)
+  for `make-pif`
 
-The alignment above draws each haplotype on GRCh38's axis. A
-[multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-is the other reading: one lane per haplotype, each in that assembly's own contig
-coordinates and carrying that assembly's own CAT gene models. The graph already
-holds what the lanes need. A `.gbz` holds one walk per haplotype, and release
-2.1 publishes that graph as a **gbz-base database**, the graph in SQLite with
-its tables laid out so a window is a handful of range requests. Every
-graph-derived track on this page reads release **2.1**, so a segment id in the
-rGFA tracks and a node id in this database are the same graph's.
+## Where the data comes from
 
-### Picking the panel out of the callset
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), whose graph is
+published as a database that answers a window over HTTP, beside the assemblies
+it was built from.
 
-Eight haplotypes make the panel at the CFH cluster. `build_hprc_cfhr_synteny.sh`
-genotypes the CFHR3/CFHR1 deletion over all 464 haplotypes and keeps the
-homozygous samples whose own CAT annotation agrees with the genotype:
+**Read in the browser**
 
-<!-- from: scripts/build_hprc_cfhr_synteny.sh -->
+- release 2.1's Minigraph-Cactus graph as a gbz-base database, read by range
+  request:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
+- our companion index naming that database's haplotypes:
+  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+- the config the HPRC page's launches open, which declares every haplotype as an
+  assembly with its CAT gene models:
+  https://jbrowse.org/pangenome/hprc-grch38/config.json
+
+**Read by the offline reproduction**
+
+- the base-level graph, whose walks the whole-genome route unpacks, 63 GB:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
+- the assembly index, one row per haplotype with its bgzipped, faidx-indexed
+  FASTA:
+  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
+- GRCh38, bgzipped and indexed:
+  https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+- the CAT gene annotation index, one GFF3 per haplotype:
+  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
+
+## Lanes from the graph
+
+Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and
+press **haplotypes** on the CFH / CFHR row. JBrowse opens on the complement
+factor H cluster, `chr1:196,740,001-196,850,000`, with the RefSeq genes over one
+lane per haplotype. Each lane is one haplotype's walk through the graph, read
+from its gbz-base database in the browser and drawn on that haplotype's own
+contig, with its CAT gene models over it. The page picked the haplotypes from
+the callset: haplotypes with the same genotype at every structural site in the
+window share a configuration, and each lane stands for one configuration, the
+most common first.
+
+The band between two lanes is the alignment the graph states for those two
+haplotypes. Two walks that pass through one node carry the same bases there, so
+the nodes both walks visit, in order, are matches, and the sequence between two
+shared stretches is a gap. A configuration carrying the common deletion of
+_CFHR3_ and _CFHR1_ (Hughes et al. 2006) draws a shorter lane with no gene
+models where the two genes would be, and the band beside it leaves that stretch
+of its neighbour unmatched.
+
+<Figure caption="The CFH cluster from the HPRC page's haplotypes launch: the RefSeq genes over one lane per structural configuration, each a haplotype's walk read from the graph and drawn on its own contig with its CAT genes. A lane that lacks CFHR3 and CFHR1 leaves that stretch of its neighbour unmatched in the band between them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+
+## A C4 module GRCh38 lacks
+
+The complement _C4_ locus is a tandem array of a 32.7 kb module. A haplotype
+carries one to four copies, and the _C4_ gene in each copy is long or short by a
+6.4 kb HERV-K insertion (Sekar et al. 2016). GRCh38 carries two copies.
+
+Press **haplotypes** on the C4A / C4B row. Open **Lanes → Choose lanes...** in
+the track menu, which lists every haplotype the graph names, press **Untick
+shown**, type `HG01978` into the filter box and tick `HG01978.2`, do the same
+for `HG02004.2`, and press **Draw these lanes**. Both haplotypes carry three
+copies of the module. The band from GRCh38 to HG01978.2 leaves one module
+unmatched, and the band between the two haplotypes matches all three, because
+both walks pass through the same nodes there.
+
+<Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each carrying three copies of the C4 module, under the RefSeq genes. The band from GRCh38 leaves the third module unmatched, and the band between the two haplotypes matches it off the nodes both walks share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
+
+## Amylase copy number
+
+People carry different numbers of copies of _AMY1_, the salivary amylase gene,
+in a tandem array on chr1 that GRCh38 assembles with three (Usher et al. 2015).
+Press **haplotypes** on the AMY1 row and choose five lanes the same way, one of
+each span class the graph holds across the array: `HG01361.1`, `HG00133.2`,
+`HG00133.1`, `NA18608.2` and `HG00232.1`. Drag the lanes by their headers into
+that order.
+
+At a tandem array the graph folds the copies onto shared nodes, so every copy a
+haplotype carries walks the same few nodes again. A band therefore matches the
+copies two neighbours share and draws the rest of the longer lane as a gap, and
+each lane's own length carries its copy count.
+
+<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one of each span class, under the RefSeq genes. Each lane is drawn on its own contig with its CAT genes, and its length across the array carries its copy count; each band matches the copies two neighbours share and leaves the rest as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+
+Walk rows reads that length off. Open the linear view's own menu, take **Launch
+→ Graph genome view (this region)**, and pick the gbz-base track,
+`HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)`, from the
+submenu. The view cuts the window from the database for the five lanes on screen
+and opens the cut under the linear view. Pick **Walk rows** from the graph's
+**Layout** dropdown and **Uniform** from its **Color** dropdown: each
+haplotype's walk becomes a bar on its own bp axis, longest first, and each
+readout gives the walk's length and its excess over GRCh38's.
+
+<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's own bar, blue where GRCh38 carries the same sequence and purple where it does not. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+
+## Check it against the published classes
+
+Yilmaz et al. (2024) name a structure at this locus by its gene counts: `H` and
+the _AMY1_ copies, then `A` and `B` with the _AMY2A_ and _AMY2B_ copies where
+either is not one. GRCh38 is their H3r.1, the reference arrangement. Across all
+of the graph's haplotypes, the spans against GRCh38's fall into classes one
+repeat unit apart, and counting the genes of a few haplotypes from each names
+them:
+
+| Span against GRCh38's | Haplotypes | _AMY1_ copies | Structure |
+| --------------------- | ---------- | ------------- | --------- |
+| 94 kb shorter         | 53         | 1             | H1a       |
+| 72 kb shorter         | 11         | 2, no _AMY2A_ | H2A0      |
+| the same              | 232        | 3             | H3r       |
+| 94 kb longer          | 79         | 5             | H5        |
+| 188 kb longer         | 22         | 7             | H7        |
+| 282 kb longer         | 5          | 9             | H9        |
+
+The other 59 haplotypes with both ends of the array on one contig sit between
+these classes or past them. Read each walk-rows readout against the first
+column: HG01361.1 lands on H1a, HG00133.2 on H2A0, HG00133.1 on H3r beside
+GRCh38, NA18608.2 on H5 and HG00232.1 on H7.
+
+## Reproduce it end to end
+
+The span classes come from the same database the lanes read. `gbz-base-query`
+reads a window of it over HTTP and prints one record per haplotype in that
+haplotype's own coordinates, so a window left of the array and one right of it
+give every haplotype's span across it:
 
 ```bash
-# the site as the callset states it. One record with two ALTs here, so the
-# deletion allele is the one far shorter than the REF span rather than the one
-# at a fixed index.
-bcftools view -r chr1:196753075-196753075 -Oz -o cfhr_site.vcf.gz "$WAVE"
+DB=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
+INDEX=https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+# --haplotype-index names each walk's sample, haplotype and contig
+# --context 0 reads the window alone, with nothing either side of it
+# --alignments prints one record per haplotype, with its own coordinates
+npx --yes -p @gmod/gbz-base gbz-base-query $DB --haplotype-index $INDEX \
+  --sample GRCh38 --contig chr1 --interval 103540000..103541000 \
+  --context 0 --alignments > left.json
 ```
 
-HG01109, HG01123, HG01960 and HG02055 carry the deletion; HG00097, HG00099,
-HG00128 and HG00133 do not. The script also slices each one's CAT annotation to
-the window, and those are the gene models the lanes draw.
+The gene counts come from sequence, since a lifted annotation can miss a copy
+the reference does not have. The script fetches each haplotype's copy of the
+locus by range request and aligns GRCh38's copy of each gene to it, counting
+every full-length hit:
 
-### The lanes from the database
+<!-- from: scripts/build_amylase_haplotypes.sh -->
 
-Each haplotype in the panel is an assembly in the session, and the track names
-them all. The eight assemblies are the ones
-[the panel script](#picking-the-panel-out-of-the-callset) writes, each a
-chromosome-lengths file the way
-[Synteny from a pangenome graph](/docs/tutorials/hprc_multiway_synteny#the-assemblies-and-their-gene-models)
-loads them.
-
-```json addtrack
-{
-  "type": "SyntenyTrack",
-  "trackId": "hprc_v2_1_gbz_lanes",
-  "name": "HPRC release 2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
-  "assemblyNames": [
-    "hg38",
-    "HG00097.1",
-    "HG00099.1",
-    "HG00128.1",
-    "HG00133.1",
-    "HG01109.1",
-    "HG01123.1",
-    "HG01960.1",
-    "HG02055.1"
-  ],
-  "adapter": {
-    "type": "GbzBaseSyntenyAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db",
-    "haplotypeIndexLocation": {
-      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db"
-    },
-    "assemblyNames": ["hg38"],
-    "assemblyNameToPanSN": {
-      "hg38": "GRCh38#0",
-      "HG00097.1": "HG00097#1",
-      "HG00099.1": "HG00099#1",
-      "HG00128.1": "HG00128#1",
-      "HG00133.1": "HG00133#1",
-      "HG01109.1": "HG01109#1",
-      "HG01123.1": "HG01123#1",
-      "HG01960.1": "HG01960#1",
-      "HG02055.1": "HG02055#1"
-    },
-    "context": 1000,
-    "nodeLimit": 50000
-  },
-  "displays": [
-    {
-      "type": "MultiWaySyntenyDisplay",
-      "displayId": "hprc_v2_1_gbz_lanes-MultiWaySyntenyDisplay",
-      "height": 600
-    }
-  ]
-}
+```bash
+HPRC=https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC
+# one request against the FASTA's .fai and .gzi
+samtools faidx \
+  $HPRC/HG00232/assemblies/release2/HG00232_hap1_hprc_r2_v1.0.1.fa.gz \
+  'HG00232#1#CM089991.1:103491008-103991760' > HG00232.1.fa
 ```
 
-The track opens on the assemblies its `assemblyNames` lists beside hg38, and
-`assemblyNameToPanSN` names which haplotype each one is. **Lanes → Choose
-lanes...** on the track menu lists every haplotype the graph names, grouped by
-sample. Ticking every one draws the whole cohort, and the dialog's reset goes
-back to the eight.
+<!-- from: scripts/build_amylase_haplotypes.sh -->
 
-Type `chr1:196,640,000-196,900,000` and show the track. The session below is
-that state, and its live link opens it on the hosted config with the eight
-assemblies already in:
+```bash
+# -N keeps that many secondary hits, which is what the extra copies are
+# -p 0.5 lets a copy scoring half of the best one through
+minimap2 -c --eqx -x asm20 -N 50 -p 0.5 HG00232.1.fa genes.fa |
+  # a copy is a hit over 90% of the gene at 97% identity or better
+  awk -F'\t' '($4-$3)/$2>=0.9 && $10/$11>=0.97 { c[$1]++ }
+    END { for (g in c) print g, c[g] }'
+```
 
-```json session config=https://jbrowse.org/demos/hprc/config.json
+The same script aligns each of the five haplotypes to the one under it with
+minimap2:
+
+<!-- from: scripts/build_amylase_haplotypes.sh -->
+
+```bash
+# -c writes the CIGAR the view draws insertions and deletions from
+# --eqx splits the CIGAR's matches from its mismatches
+# asm20 tolerates the divergence between paralogous amylase copies, so a chain
+#   runs through the array instead of stopping at it
+minimap2 -c --eqx -x asm20 HG00232.1.fa NA18608.2.fa |
+  # tp:A:P is the pair's primary chain; the secondary ones are amylase copies
+  # aligning to each other
+  awk -F'\t' '$11>=5000 && /tp:A:P/' > adjacent.regions.paf
+```
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh
+bash build_amylase_haplotypes.sh
+```
+
+Its config opens the five rows as a linear synteny view, each on its own contig
+with its own gene track:
+
+```json session config=test_data/amylase/config.json
 {
   "defaultSession": {
-    "name": "CFH cluster, one lane per haplotype walk",
+    "name": "Amylase haplotypes from one AMY1 copy to seven, each aligned to the next",
     "views": [
       {
-        "type": "LinearGenomeView",
-        "assembly": "hg38",
-        "loc": "chr1:196,640,000-196,900,000",
-        "tracks": [
+        "type": "LinearSyntenyView",
+        "views": [
           {
-            "trackId": "hg38_ncbiRefSeq_ucsc",
-            "type": "LinearBasicDisplay",
-            "showOnlyGenes": true,
-            "displayMode": "compact"
+            "assembly": "HG01361.1",
+            "loc": "CM089019.1:103,831,655-104,050,048",
+            "tracks": ["hprc_genes_HG01361_1"]
           },
           {
-            "trackId": "hprc_v2_1_gbz_lanes",
-            "type": "MultiWaySyntenyDisplay",
-            "domain": [
-              "HG00097.1",
-              "HG00099.1",
-              "HG00128.1",
-              "HG00133.1",
-              "HG01109.1",
-              "HG01123.1",
-              "HG01960.1",
-              "HG02055.1"
-            ],
-            "height": 460
+            "assembly": "hg38",
+            "loc": "chr1:103,520,894-103,832,637",
+            "tracks": ["hg38_ncbiRefSeq_ucsc"]
+          },
+          {
+            "assembly": "HG00133.1",
+            "loc": "CM090045.1:103,669,666-103,981,330",
+            "tracks": ["hprc_genes_HG00133_1"]
+          },
+          {
+            "assembly": "NA18608.2",
+            "loc": "CM089849.1:103,796,766-104,203,421",
+            "tracks": ["hprc_genes_NA18608_2"]
+          },
+          {
+            "assembly": "HG00232.1",
+            "loc": "CM089991.1:103,491,008-103,991,760",
+            "tracks": ["hprc_genes_HG00232_1"]
           }
-        ]
+        ],
+        "tracks": [
+          ["amylase_adjacent"],
+          ["amylase_adjacent"],
+          ["amylase_adjacent"],
+          ["amylase_adjacent"]
+        ],
+        "color": { "field": "strand" },
+        "drawCurves": true,
+        "levelHeights": [110, 110, 110, 110]
       }
     ]
   }
 }
 ```
 
-`domain` puts every non-carrier above every carrier, making the deletion
-readable. Every lane sits at a different coordinate on a different contig.
-Between the last non-carrier and the first carrier the ribbon over _CFHR3_ and
-_CFHR1_ narrows to a point, because the carriers' walks skip that stretch of
-GRCh38, and the carriers' own annotations have no model there.
+<Figure caption="One haplotype of each common amylase structure from the offline script, one AMY1 copy at the top to seven at the bottom, each with its own gene track and aligned to the row under it by minimap2, colored by strand. The two three-copy rows align straight through; one copy to three and three to five each open a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
 
-<Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's CAT genes at that haplotype's coordinates over it: a lane whose genes stop where hg38's CFHR3 and CFHR1 are is a haplotype that lacks them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+The same haplotypes can also be placed against GRCh38 whole genome, from the
+graph's own walks rather than one window at a time. `gfa_to_pairwise_paf.py`
+streams the base-level GFA once and writes each requested haplotype's walk
+against the reference walk as PAF, the nodes both traverse as matches:
 
-:::tip 💡 See also
-
-[Synteny from a pangenome graph](/docs/tutorials/hprc_multiway_synteny#the-cfh-cluster-eight-haplotypes)
-places the same eight haplotypes from the graph's own alignment, unpacked
-offline into a whole-genome index.
-
-:::
-
-`GbzBaseSyntenyAdapter` locates a window on GRCh38's own path through the graph
-and emits one record per haplotype walk, in that haplotype's contig coordinates
-and carrying the walk's CIGAR. Upstream gbz-base reports `unknown#1`,
-`unknown#2` for those walks, so the companion file at `haplotypeIndexLocation`
-names them and carries anchors a named set can be walked from. The lanes in
-force, the track's own or whatever the reader picks from **Choose lanes...**,
-reach the adapter as the set to fetch. A lane hidden from its header menu stays
-in that set, so showing it again draws it at once.
-
-`context` defaults to 1000, the nodes read on either side of the window.
-`nodeLimit` refuses a window that would not fit and names a zoom that would.
-_AMY1_ returns more records than there are haplotypes, because an extra copy of
-the repeat unit revisits the same stretch of GRCh38 and those pieces of one walk
-stay separate; those extra records are where a copy count per haplotype would be
-read off the graph.
-
-### The graph view from the GBZ, for a chosen set {#gbz-graph-cut}
-
-The `hprc_v2_1_gbz_lanes` track also feeds the graph view. Type
-`chr6:160,616,002-160,646,753`, the KIV-2 array inside _LPA_, and take **Launch
-→ Graph genome view (this region)** from the linear view's own menu. That cuts
-the window from the database for the lanes on screen, which are the track's
-configured lanes until **Choose lanes...** picks others. The cut carries one W
-line per haplotype walk, named through the companion, and **Sample rows** in the
-**Layout** dropdown gives each haplotype a row.
-
-Pick **Force-directed layout** in the same dropdown, where the walks are easiest
-to see. A node draws thicker the more of the nine walks carry it, so the
-reference is fat and each haplotype's private run of kringle copies is a thin
-loop. Now open the **Walk** dropdown and pick `HG00133`: its route stays
-colored, the rest fades, and a readout gives its length against the reference
-walk.
-
-:::tip 💡 See also
-
-[Part 4](/docs/tutorials/pangenome_graph_reading#lift-one-haplotype-out) draws
-this cut with `HG00133` lifted, and walks through it from the rGFA window.
-
-:::
-
-### Preparing a graph of your own {#preparing-a-gbz-base-database}
-
-HPRC publishes the database this track reads, so nothing above builds one. For a
-`.gbz` of your own, three commands stand between it and the same track, none of
-them JBrowse: `vg chains` for the snarl decomposition, `gbz-base construct` for
-the database, and `gbz-haplotype-index` for the companion that names the walks.
-[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database)
-shows all three. The companion that HPRC does not publish has a script of its
-own under [Reproduce it end to end](#reproduce-it-end-to-end).
-
-## T2T-CHM13 as hs1 {#the-one-donor-worth-loading}
-
-CHM13 is the contributor with a published reference behind it, T2T-CHM13v2.0,
-which UCSC serves as `hs1`; [](/docs/tutorials/hg002_haplotypes) loads HG002,
-the other donor with a reference of its own.
-
-```json addassembly
-{
-  "name": "hs1",
-  "displayName": "Human (T2T-CHM13v2.0/hs1)",
-  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit"
-}
-```
-
-A view launched on hs1 shows whatever the session annotates hs1 with, and the
-lane the figure below reads is UCSC's RepeatMasker:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "hs1_rmsk_ucsc",
-  "name": "RepeatMasker (T2T-CHM13v2.0)",
-  "assemblyNames": ["hs1"],
-  "adapter": {
-    "type": "BigBedAdapter",
-    "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb"
-  }
-}
-```
-
-The segments track draws on hs1, and a CHM13 node opens there, once `hs1` joins
-its `assemblyNames` and `"hs1": "CHM13"` its `assemblyNameToPanSN`, the two
-edits
-[part 1 makes for NA20809.2](/docs/tutorials/pangenome_hprc#loading-a-haplotype-as-an-assembly).
-
-Type `chr17:83,010,000-83,040,000`, near the end of chromosome 17, and cut it
-from the segments track. Inside the one bubble the lane draws there, the graph
-holds a charcoal node of 142 kb that GRCh38 does not carry. Right-click it and
-take **Open in hs1**. The view that opens is hs1's own chr17, where the node
-draws as one long dark bar in the segments lane and RepeatMasker tiles it with
-long L1 elements.
-
-<Figure caption="A donor node on both coordinate systems: the GRCh38 window, with the bubble it sits in and the rGFA segments in reference-position colors; the graph cut from it, where the boxed charcoal node is the sequence hg38 has no coordinate for, haloed as a bubble and labelled a repeat array; then that node on hs1's chr17, drawn as one dark bar under RepeatMasker, which is tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
-
-With two assemblies loaded the graph's own **Launch** menu offers **Linear
-synteny view** as well, one panel per contributor at the locus each contributes
-here, if the session holds a synteny track aligning them. UCSC's hg38-to-hs1
-liftOver is one, rehosted as an indexed PAF:
-
-```json addtrack
-{
-  "type": "SyntenyTrack",
-  "trackId": "hg38_hs1_synteny",
-  "name": "hg38 vs T2T-CHM13 (UCSC liftOver)",
-  "assemblyNames": ["hg38", "hs1"],
-  "adapter": {
-    "type": "PairwiseIndexedPAFAdapter",
-    "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz",
-    "csi": true,
-    "assemblyNames": ["hs1", "hg38"]
-  }
-}
-```
-
-With that track in the session, open the graph pane's **Launch** menu and pick
-**Linear synteny view (2 assemblies)**. It opens hg38 over hs1, each panel
-already at the interval the graph gives for it. Without such a track the entry
-stays, greyed out, and its tooltip names what is missing.
-
-## Reproduce it end to end
-
-The [haplotype-walk lanes](#walks-from-the-graph) need one file HPRC does not
-publish, the companion index that names the walks in its gbz-base database:
+<!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_gbz_index.sh
-bash build_hprc_gbz_index.sh out
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/gfa_to_pairwise_paf.py
+# --max-gap: a record stays on one strand and skips at most this many private
+#   bases on either side, and a longer skip starts the next record
+# --contig-lengths: a walk states where a contig's piece starts and ends but
+#   not the contig's full length, so the assemblies' .fai files supply it
+# --chrom-sizes-dir: writes each haplotype's contigs and lengths, which is all
+#   an assembly needs when its lane never reads sequence
+pigz -dc hprc-v2.1-mc-grch38.gfa.gz \
+  | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \
+      --queries HG01109#1,HG00099#1 --max-gap 10000 \
+      --contig-lengths contig_lengths.fai \
+      --chrom-sizes-dir sizes/ > hprc_multiway_gfa.paf
 ```
 
-`build_hprc_gbz_index.sh` downloads the 5.5 GB `.gbz`, builds
-`gbz-haplotype-index` from source and runs the one command
-[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database)
-shows, which takes about a quarter of an hour on 24 cores. The database it
-accompanies is read straight from HPRC's bucket and never downloaded.
+`make-pif` sorts, bgzips and indexes the PAF with a fine tier for the per-base
+CIGARs and a coarse one for whole-chromosome zooms:
 
-The [panel](#picking-the-panel-out-of-the-callset) and its CAT annotations have
-a script of their own:
+<!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_cfhr_synteny.sh
-bash build_hprc_cfhr_synteny.sh       # writes ./hprc_cfhr_synteny_build/
+jbrowse make-pif hprc_multiway_gfa.paf --csi --out hprc_multiway_gfa.pif.gz
 ```
 
-[`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)
-picks four carriers and four non-carriers of the deletion out of the callset
-(`CARRIERS` and `NONCARRIERS`), slices their alignments out of release 2's
-all-vs-GRCh38 PAF, and slices each haplotype's CAT annotation to the same
-window.
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_multiway_synteny.sh
+bash build_hprc_multiway_synteny.sh
+```
+
+The script unpacks eight haplotypes in one pass over the 63 GB graph, indexes
+the PAF, slices each haplotype's CAT annotation and writes the config we host at
+https://jbrowse.org/demos/hprc_multiway/config.json. The companion index the
+lanes read beside the database has a script of its own, on
+[hosting your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database).
 
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/hprc_multiway_synteny)
-- [](/docs/tutorials/hg002_haplotypes)
+- [](/docs/tutorials/pangenome_hprc_part5)
 - [](/docs/tutorials/pangenome_prepare_graph)
-- [](/docs/user_guides/maf_track)
+- [](/docs/tutorials/hg002_haplotypes)
+- [](/docs/tutorials/allvsall_synteny)
+- [](/docs/config_guides/grouping_and_ordering)
 
 ## References
 
-- [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the release this
-  page opens: the multiple alignment, the gbz-base database and the CAT
-  annotation of every assembly.
-- [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), which writes the
-  `.tai` index that makes the 5.9 GB alignment addressable by locus.
+- [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the release
+  whose graph, assemblies and CAT annotations this page reads.
+- Hughes AE et al.
+  [A common CFH haplotype, with deletion of CFHR1 and CFHR3, is associated with lower risk of age-related macular degeneration](https://doi.org/10.1038/ng1890).
+  Nature Genetics, 2006.
+- Sekar A, et al. Schizophrenia risk from complex variation of complement
+  component 4. Nature (2016). https://doi.org/10.1038/nature16549
+- Yilmaz F, et al. Reconstruction of the human amylase locus reveals ancient
+  duplications seeding modern-day variation. Science (2024).
+  https://doi.org/10.1126/science.adn0609
+- Bolognini D, et al. Recurrent evolution and selection shape structural
+  diversity at the amylase locus. Nature (2024).
+  https://doi.org/10.1038/s41586-024-07911-1
+- Usher CL, et al. Structural forms of the human amylase locus and their
+  relationships to SNPs, haplotypes and obesity. Nat Genet (2015).
+  https://doi.org/10.1038/ng.3340
+- Hickey G, et al. Pangenome graph construction from genome alignments with
+  Minigraph-Cactus. Nat Biotechnol (2024).
+  https://doi.org/10.1038/s41587-023-01793-w
+- Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics
+  (2018). https://doi.org/10.1093/bioinformatics/bty191
+- [gbz-base](https://github.com/jltsiren/gbz-base), which stores a GBZ as the
+  SQLite database a window is range-requested out of.

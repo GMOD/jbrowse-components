@@ -1,8 +1,7 @@
 // Candidates for the JBrowse 2 v5 paper's HPRC figure: the eight gbz-base
 // haplotype lanes and the graph of the SAME CFH window in one tiled workspace,
-// rather than the lane stack alone (pangenome/hprc_gbz_cfhr_lanes) or the
-// two-haplotype synteny/graph pair specs/graph-hprc.ts stacks vertically
-// (pangenome/hprc_cfhr_deletion).
+// rather than the lane stack alone or the two-haplotype synteny/graph pair
+// specs/graph-hprc.ts stacks vertically (pangenome/hprc_cfhr_deletion).
 //
 // The paper uses the stacked force layout (hprc_lanes_graph_stacked_force); the
 // others differ only in the split and the graph's layout.
@@ -17,8 +16,8 @@ const CONFIG = encodeURIComponent('https://jbrowse.org/demos/hprc/config.json')
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 const LANES_TRACK = 'hprc_v2_1_gbz_lanes'
 
-// The window pangenome/hprc_gbz_cfhr_lanes draws, so the lane half of the
-// figure is the committed one and the graph is cut from the same coordinates.
+// The window the eight-lane CFH figure drew before part 3 moved it to the HPRC
+// page's launch; the graph is cut from the same coordinates.
 const CFHR_WINDOW = 'chr1:196,640,000-196,900,000'
 const CFHR_REGION = {
   refName: 'chr1',

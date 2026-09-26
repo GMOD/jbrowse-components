@@ -102,8 +102,6 @@ export const TUTORIAL_ORDER = [
   'syri_synteny',
   'circular_synteny',
   'hg002_haplotypes',
-  'amylase_haplotypes',
-  'hprc_multiway_synteny',
   'hg38_vertebrates_synteny',
   'mcscan_synteny_grape_peach',
   'multiway_synteny_grape_peach_cacao',

@@ -391,13 +391,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.29, 0.86],
     position: 'left',
   },
-  hprc_multiway_synteny: {
-    // The haplotype stack at CFH, framed the same way as the liftOver card
-    // above it so the two multi-lane pages read as one shape.
-    src: 'multiway_synteny/hprc_cfh_haplotypes.png',
-    band: [0.29, 0.86],
-    position: 'left',
-  },
   syri_synteny: {
     // The ribbon band alone: the crossed inversion between grey syntenic
     // regions is the whole shape, and the two empty track panels above and
@@ -412,13 +405,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'pangenome/chrm_lineage_clusters.png',
     band: [0.24, 0.96],
     position: 'left',
-  },
-  amylase_haplotypes: {
-    // The two matching insertion wedges with the straight three-copy band
-    // between them, which is the page's claim at card size; the five-to-seven
-    // band at the bottom is left out so all three fit a 2:1 frame.
-    src: 'multiway_synteny/hprc_amylase_stack.png',
-    band: [0.2, 0.69],
   },
   ecoli_orthologs_synteny: {
     // The top of the 44-lane stack at the atp operon, where the ortholog
@@ -486,8 +472,8 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.56, 0.97],
   },
   pangenome_hprc_part3: {
-    // The eight lanes with their own contig names and coordinates in the row
-    // labels, which is the whole of what this half is about. Cropped from the
+    // The CFH lanes with their own contig names and coordinates in the row
+    // labels, which is the whole of what this page is about. Cropped from the
     // left so those labels survive the 5:3 cover-crop -- a centre crop keeps
     // ribbons and loses the names.
     src: 'pangenome/hprc_gbz_cfhr_lanes.png',

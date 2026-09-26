@@ -47,6 +47,59 @@ export function portalGraphLaunch() {
   })
 }
 
+// The haplotypes launch's window and lanes at three loci: CFH is the page's own
+// panel for the locus (public/pangenome-hprc/panels.json in jb2hubs), C4 and
+// amylase the lanes pangenome_hprc_part3 chooses there.
+export const PORTAL_LOCI = {
+  cfhr: {
+    loc: 'chr1:196740001-196850000',
+    lanes: ['HG00097#1', 'HG00253#2', 'HG00133#1', 'HG00235#2'],
+  },
+  c4: {
+    loc: 'chr6:31980001-32050000',
+    lanes: ['HG01978#2', 'HG02004#2'],
+  },
+  amylase: {
+    loc: 'chr1:103610001-103760000',
+    lanes: ['HG01361#1', 'HG00133#2', 'HG00133#1', 'NA18608#2', 'HG00232#1'],
+  },
+}
+
+// haplotypeLanesForRegion's view, in the same jb2hubs file.
+export function portalLanesView({
+  loc,
+  lanes,
+}: {
+  loc: string
+  lanes: string[]
+}) {
+  return {
+    type: 'LinearGenomeView',
+    assembly: 'hg38',
+    loc,
+    tracks: [
+      {
+        trackId: 'hg38_ncbiRefSeq_ucsc',
+        type: 'LinearBasicDisplay',
+        geneGlyphMode: 'longestCoding',
+        displayMode: 'compact',
+        height: 60,
+      },
+      {
+        trackId: 'hprc_v2_1_gbz_lanes',
+        type: 'MultiWaySyntenyDisplay',
+        laneFilter: { only: lanes },
+        domain: lanes,
+        height: 51 * (lanes.length + 1),
+      },
+    ],
+  }
+}
+
+export function portalHaplotypeLanes(locus: { loc: string; lanes: string[] }) {
+  return sessionSpec(PORTAL_CONFIG, { views: [portalLanesView(locus)] })
+}
+
 export const genomesPangenomeSpecs: ScreenshotSpec[] = [
   // Ends on the SMN1/SMN2 row, so the two rows with no graph launch are in
   // frame under the ones that have all four.

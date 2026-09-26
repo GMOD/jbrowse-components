@@ -14,6 +14,7 @@ import {
   ECOLI_DEMO_BASE,
   ecoliAvaStack,
 } from './demoBase.ts'
+import { PORTAL_LOCI, portalHaplotypeLanes } from './genomes_pangenome.ts'
 import { GRAPH_DRAWN, referencePositionColor } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -24,7 +25,6 @@ const PAA_COLOR_DOMAIN = { start: 1445000, end: 1474500 }
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
-const C4_STACK_CONFIG = 'test_data/hprc_c4_stack/config.json'
 const SYRI_CONFIG = 'test_data/syri/config.json'
 // the stack order, reference first, and SyRI's types in plotsr's order
 const SYRI_ACCESSIONS = ['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha']
@@ -254,8 +254,8 @@ const CHRY_P_PALINDROME_WINDOW = 'chrY:22,330,000-22,810,000'
 // GFF we already host is keyed on RefSeq accessions (`NC_060948.1`) while this
 // fixture's assembly is a committed `chrY.chrom.sizes`, so the track resolved
 // to nothing until the assemblies got a `refNameAliases` mapping the two --
-// which is also why the note on hprc_chm13_allele's deleted hs1 gene lane says
-// that file "has nothing in this window". It may well have.
+// which is also why a note on the retired hprc_chm13_allele's hs1 gene lane
+// said that file "has nothing in this window". It may well have.
 //
 // `showOnlyGenes` because the palindrome's members each carry a stack of
 // isoforms and what this lane is read for is where a NAME sits relative to the
@@ -1349,57 +1349,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The CFH cluster over hg38 with a lane per HPRC haplotype, read from the
-  // graph for pangenome_hprc_part3.md's walks section. hprc_v2_1_gbz_lanes is
-  // GbzBaseSyntenyAdapter over HPRC's published release 2.1 gbz-base database
-  // and our companion haplotype index, both read by range request at capture
-  // time. The track's own assemblyNames make it eight lanes and not 464: four
-  // homozygous reference at the CFHR3/CFHR1 site and four homozygous for the
-  // deletion, picked by build_hprc_cfhr_synteny.sh.
-  // `domain` puts every non-carrier above every carrier, so the ribbon over
-  // the deletion narrows to a point at the one boundary between the groups.
+  // The CFH cluster from the HPRC page's haplotypes launch, for
+  // pangenome_hprc_part3's first section: the page's own panel for the locus,
+  // one lane per structural configuration, read from HPRC's release 2.1
+  // gbz-base database and our companion index at capture time.
   {
     mode: 'url',
     name: 'pangenome/hprc_gbz_cfhr_lanes',
-    url: sessionSpec(
-      encodeURIComponent('https://jbrowse.org/demos/hprc/config.json'),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hg38',
-            loc: 'chr1:196,640,000-196,900,000',
-            tracks: [
-              {
-                trackId: 'hg38_ncbiRefSeq_ucsc',
-                type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
-                displayMode: 'compact',
-              },
-              {
-                trackId: 'hprc_v2_1_gbz_lanes',
-                type: 'MultiWaySyntenyDisplay',
-                domain: [
-                  'HG00097.1',
-                  'HG00099.1',
-                  'HG00128.1',
-                  'HG00133.1',
-                  'HG01109.1',
-                  'HG01123.1',
-                  'HG01960.1',
-                  'HG02055.1',
-                ],
-                height: 460,
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: portalHaplotypeLanes(PORTAL_LOCI.cfhr),
     readySelector: displaySettled('multiway-synteny-display'),
-    // the graph read is a chain of range requests against two hosted files
     readyTimeout: 240000,
-    viewportHeight: 860,
+    viewportHeight: 560,
   },
 
   // The E. coli all-vs-all PAF as lanes over the paa-operon island (depth 2,
@@ -1823,68 +1783,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
-  // The human pangenome as lanes: eight HPRC haplotypes under hg38 at the
-  // CFH/CFHR cluster, their whole-genome alignments unpacked from the
-  // minigraph-cactus graph's own projection onto GRCh38, each lane carrying
-  // its CAT gene models. The CFHR3/CFHR1 deletion carriers' alignment stops
-  // and resumes past CFHR1 while the non-carriers' runs straight through.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/hprc_cfh_haplotypes',
-    url: sessionSpec(
-      encodeURIComponent('https://jbrowse.org/demos/hprc_multiway/config.json'),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hg38',
-            loc: 'chr1:196,700,000-197,000,000',
-            tracks: [
-              'hg38_ncbiRefSeq_ucsc',
-              {
-                trackId: 'hprc_multiway',
-                type: 'MultiWaySyntenyDisplay',
-                height: 600,
-              },
-            ],
-          },
-        ],
-      },
-    ),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 240000,
-    viewportHeight: 1000,
-  },
-
-  // The same eight lanes over the amylase locus, where the reference has three
-  // AMY1 copies and the haplotypes carry two to five. Every record aligns a
-  // haplotype to GRCh38, so a lane's extra copies have nothing to align to.
+  // The amylase locus from the HPRC page's haplotypes launch with five lanes
+  // chosen, one of each span class, in copy-number order: each lane's length
+  // across the array carries its count.
   {
     mode: 'url',
     name: 'multiway_synteny/hprc_amylase_lanes',
-    url: sessionSpec(
-      encodeURIComponent('https://jbrowse.org/demos/hprc_multiway/config.json'),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hg38',
-            loc: AMYLASE_HG38,
-            tracks: [
-              'hg38_ncbiRefSeq_ucsc',
-              {
-                trackId: 'hprc_multiway',
-                type: 'MultiWaySyntenyDisplay',
-                height: 600,
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: portalHaplotypeLanes(PORTAL_LOCI.amylase),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 1000,
+    viewportHeight: 620,
   },
 
   // One haplotype of each common amylase structure, H1a to H7 in the naming of
@@ -1943,85 +1851,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1400,
   },
 
-  // Five haplotypes across C4, each aligned to the row under it off the HPRC
-  // graph's own walks (scripts/build_graph_haplotype_stack.sh).
+  // C4 from the HPRC page's haplotypes launch with two three-module haplotypes
+  // chosen, so the band between them draws the module GRCh38 lacks as the
+  // graph states it.
   {
     mode: 'url',
     name: 'multiway_synteny/hprc_c4_graph_stack',
-    url: sessionSpec(C4_STACK_CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          views: [
-            {
-              assembly: 'HG01978.2',
-              loc: 'CM089273.1:31,872,045-32,055,037',
-              tracks: ['hprc_genes_HG01978_2'],
-            },
-            {
-              assembly: 'HG02004.2',
-              loc: 'JBHDRU010000054.1:31,876,435-32,059,471',
-              tracks: ['hprc_genes_HG02004_2'],
-            },
-            {
-              assembly: 'hg38',
-              loc: 'chr6:31,939,722-32,090,034',
-              tracks: ['hg38_ncbiRefSeq_ucsc'],
-            },
-            {
-              assembly: 'HG02818.1',
-              loc: 'JAHEOS020000050.1:31,980,558-32,124,509',
-              tracks: ['hprc_genes_HG02818_1'],
-            },
-            {
-              assembly: 'HG00146.1',
-              loc: 'CM090015.1:31,912,959-32,024,178',
-              tracks: ['hprc_genes_HG00146_1'],
-            },
-          ],
-          tracks: [
-            ['graph_adjacent'],
-            ['graph_adjacent'],
-            ['graph_adjacent'],
-            ['graph_adjacent'],
-          ],
-          color: { field: 'strand' },
-          drawCurves: true,
-          levelHeights: [110, 110, 110, 110],
-        },
-      ],
-    }),
-    readySelector: displayPainted('synteny_canvas'),
+    url: portalHaplotypeLanes(PORTAL_LOCI.c4),
+    readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 1400,
-  },
-
-  // The same alignments at base level, in HG02004.2's own view, inside the
-  // module GRCh38 lacks.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/hprc_c4_graph_bases',
-    url: sessionSpec(C4_STACK_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'HG02004.2',
-          loc: 'JBHDRU010000054.1:31,942,330-31,942,580',
-          tracks: [
-            {
-              trackId: 'graph_adjacent',
-              type: 'LGVSyntenyDisplay',
-              facet: 'mateAssembly',
-              featureHeight: 14,
-              height: 160,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'Each haplotype against the next',
-    readyTimeout: 120000,
-    viewportHeight: 230,
+    viewportHeight: 460,
   },
 
   // SyRI's typed regions between two Arabidopsis accessions

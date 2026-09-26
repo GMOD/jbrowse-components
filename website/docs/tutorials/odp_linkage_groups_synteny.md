@@ -286,7 +286,7 @@ the tables it writes under
 
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/orthofinder_synteny)
-- [](/docs/tutorials/hprc_multiway_synteny)
+- [](/docs/tutorials/pangenome_hprc_part3)
 - [](/docs/user_guides/linear_synteny_view)
 
 ## References

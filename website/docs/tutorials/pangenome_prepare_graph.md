@@ -353,7 +353,7 @@ The companion records the graph's path count and the reader refuses one built
 for a different graph. `nodeLimit` fails a window rather than letting the
 display sit on a whole chromosome, and the failure names a zoom that would fit.
 What the track then does with the lanes is
-[part 3's](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph) subject.
+[part 3's](/docs/tutorials/pangenome_hprc_part3#lanes-from-the-graph) subject.
 
 ## Reproduce it end to end
 

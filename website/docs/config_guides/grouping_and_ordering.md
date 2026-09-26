@@ -241,7 +241,7 @@ new order in `config.json` terms, not as separate runtime-only state.
 - [](/docs/config/linearmultirowfeaturedisplay)
 - [](/docs/config/multiwaysyntenydisplay)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-- [](/docs/tutorials/hprc_multiway_synteny)
+- [](/docs/tutorials/pangenome_hprc_part3)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/population_genomics)
 - [](/docs/tutorials/ld_mosquitoes)

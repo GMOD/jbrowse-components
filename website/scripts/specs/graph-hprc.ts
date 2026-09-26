@@ -10,7 +10,9 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import {
   PORTAL_CONFIG,
   PORTAL_LGV_ID,
+  PORTAL_LOCI,
   portalGraphLaunch,
+  portalLanesView,
 } from './genomes_pangenome.ts'
 import {
   GRAPH_DRAWN,
@@ -2074,6 +2076,38 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     // 700 left 297 css px of blank under a two-lane view
     viewportHeight: 404,
+  },
+  // The five amylase lanes pangenome_hprc_part3 chooses, cut from the gbz-base
+  // track for those lanes and drawn in walk rows: each bar's length is the
+  // haplotype's span across the array, and the readout its excess over GRCh38.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_amylase_walk_rows',
+    url: sessionSpec(PORTAL_CONFIG, {
+      views: [
+        portalLanesView(PORTAL_LOCI.amylase),
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: 'hprc_v2_1_gbz_lanes',
+          loadedRegion: {
+            refName: 'chr1',
+            assemblyName: 'hg38',
+            start: 103610000,
+            end: 103760000,
+          },
+          subgraphHaplotypes: PORTAL_LOCI.amylase.lanes,
+          layoutMode: 'walkrows',
+          colorScheme: 'uniform',
+          paneHeight: 300,
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 240000,
+    viewportWidth: 1400,
+    viewportHeight: 1000,
+    hideTooltip: true,
+    actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
   // What the host page's one command writes, drawn: its four tracks over C4 and
   // the graph launched from the graph track, following the linear view.
