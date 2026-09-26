@@ -2,6 +2,7 @@ import { COLOR_RAMP_LUT_ENTRIES } from '../colorRampLut.ts'
 import { MockHal } from '../hal/mockHal.ts'
 import { GpuMarkBackend } from './markBackend.ts'
 import { pointMark } from './pointMark.ts'
+import { buildRowTable } from './rowTable.ts'
 import { spanMark } from './spanMark.ts'
 import { defineMark } from './types.ts'
 
@@ -537,6 +538,52 @@ describe('a mark with a ramp texture', () => {
     backend.renderBlocks([block], new Map([[0, REGION]]), state(20))
     backend.renderBlocks([block], new Map([[0, REGION]]), state(20))
     expect(hal.callsOf('uploadTexture')).toHaveLength(1)
+    expect(hal.draws()).toHaveLength(2)
+  })
+
+  test('a point binds the display’s ramp and its params’ row table, each to its own sampler', () => {
+    const table = buildRowTable(Uint32Array.of(0))
+    const region: Region = {
+      ...REGION,
+      point: {
+        x: Uint32Array.of(10),
+        x2: Uint32Array.of(11),
+        y: Float32Array.of(0.5),
+        color: Uint32Array.of(0xff0000ff),
+        glyph: Uint8Array.of(0),
+        count: 1,
+      },
+    }
+    const point = defineMark({
+      shape: pointMark,
+      channels: (d: Region) => d.point,
+      params: (s: State) => s.point,
+      textures: (s: State) => ({ colorRamp: s.ramp }),
+    })
+    const hal = new MockHal([point.pass])
+    const backend = new GpuMarkBackend(hal, [point])
+    backend.upload(0, region)
+    const draw = (p: PointParams) => {
+      backend.renderBlocks([block], new Map([[0, region]]), {
+        ...state(20),
+        ramp: rampA,
+        point: p,
+      })
+    }
+    const { point: params } = state(20)
+    draw(params)
+    expect(hal.getTexture('point', 'colorRamp')).toEqual(rampA)
+    expect(hal.getTexture('point', 'rowTable')).toEqual(
+      new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4),
+    )
+    draw({ ...params, rowTable: table })
+    expect(hal.getTexture('point', 'rowTable')).toEqual(table.texture.bytes)
+    expect(hal.getTexture('point', 'colorRamp')).toEqual(rampA)
+    expect(hal.callsOf('uploadTexture').map(c => c.args.at(-1))).toEqual([
+      'colorRamp',
+      'rowTable',
+      'rowTable',
+    ])
     expect(hal.draws()).toHaveLength(2)
   })
 })

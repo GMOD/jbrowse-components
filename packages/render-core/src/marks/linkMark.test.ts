@@ -8,6 +8,7 @@ import {
   LINK_STEM_PX,
 } from '../shaders/linkMark.consts.generated.ts'
 import * as iface from '../shaders/linkMark.iface.generated.ts'
+import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import {
   LINK_FOOT_FORWARD,
@@ -16,6 +17,7 @@ import {
   linkMark,
 } from './linkMark.ts'
 import { shapeHitNearest } from './markHit.ts'
+import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
 
 import type { LinkChannels, LinkParams, LinkRegion } from './linkMark.ts'
 
@@ -477,4 +479,79 @@ test('the band placement, direction, stem and dash reach the uniforms', () => {
   expect(f32[F.stemPx]).toBe(30)
   expect([f32[F.dashPx], f32[F.gapPx]]).toEqual([4, 2])
   expect(i32[I.linkShape]).toBe(LINK_SHAPE_LINE)
+})
+
+describe('a row table between the instance key and the band it draws on', () => {
+  const GREEN = 0xff00ff00
+  const table = buildRowTable(
+    Uint32Array.of(2, HIDDEN_ROW, 0, 1),
+    Uint32Array.of(NO_ROW_COLOR, NO_ROW_COLOR, GREEN, NO_ROW_COLOR),
+  )
+  const tall = { canvasWidth: 2000, canvasHeight: 150 }
+  const banded: LinkParams = { ...params, rowHeight: 50 }
+  const withTable: LinkParams = { ...banded, rowTable: table }
+  const X = [100, 300, 500, 700]
+  const keyed = (keep: number[], row: number[], color: number[]) => ({
+    ...channels(
+      keep.map((k, j) => ({ x: X[k]!, x2: X[k]! + 100, color: color[j] })),
+    ),
+    row: Uint32Array.from(row),
+  })
+  const byKey = keyed([0, 1, 2, 3], [0, 1, 2, 3], [RED, RED, RED, BLUE])
+  const slotted = keyed([0, 2, 3], [2, 0, 1], [RED, GREEN, BLUE])
+  const paint = (c: LinkChannels, p: LinkParams) => {
+    const { ctx, calls } = mockCtx()
+    linkMark.paintBlock(ctx, c, block, tall, p)
+    return calls
+  }
+  const ink = (c: LinkChannels, p: LinkParams, i: number) =>
+    linkMark.ink!(c, block, tall, p, i)
+  const hitNear = (p: LinkParams, x: number, y: number) =>
+    hit(byKey, block, tall, p, x, y, [0, 1, 2, 3], 16)
+
+  test('strokes each key on its slot in its override, and the hidden key nowhere', () => {
+    const calls = paint(byKey, withTable)
+    expect(calls).toEqual(paint(slotted, banded))
+    expect(new Set(calls.map(r => r.fillStyle))).toEqual(
+      new Set([RED, GREEN, BLUE].map(abgrToCssRgba)),
+    )
+    expect(calls.filter(r => r.x < 450 && r.x + r.w > 250)).toEqual([])
+  })
+
+  test('the ink follows the slot, and the hidden key has none', () => {
+    expect([0, 2, 3].map(i => ink(byKey, withTable, i)?.top)).toEqual([
+      99, -1, 49,
+    ])
+    expect(ink(byKey, withTable, 1)).toBeUndefined()
+  })
+
+  test('the hit test finds each key on its slot and never the hidden one', () => {
+    expect(hitNear(withTable, 150, 100)).toMatchObject({ index: 0 })
+    expect(hitNear(withTable, 550, 0)).toMatchObject({ index: 2 })
+    expect(hitNear(withTable, 750, 50)).toMatchObject({ index: 3 })
+    expect(hitNear(banded, 350, 50)).toMatchObject({ index: 1, distSq: 0 })
+    expect(hitNear(withTable, 350, 50)).toBeUndefined()
+  })
+
+  test('an identity table strokes what no table strokes', () => {
+    const identity = buildRowTable(Uint32Array.of(0, 1, 2, 3))
+    const bare = paint(byKey, banded)
+    expect(bare.length).toBeGreaterThan(0)
+    expect(paint(byKey, { ...banded, rowTable: identity })).toEqual(bare)
+  })
+
+  test('the pass samples the table and the uniforms say how many keys', () => {
+    expect(linkMark.textures!(withTable).rowTable).toBe(table.texture)
+    expect(linkMark.textures!(banded).rowTable).toBeUndefined()
+    const clip = clipBlock(block, tall.canvasWidth, tall.canvasHeight, {
+      x: 1,
+      y: 1,
+    })!
+    const scratch = new ArrayBuffer(iface.UNIFORMS_SIZE_BYTES)
+    const i32 = new Int32Array(scratch)
+    linkMark.writeUniforms(scratch, clip, block, tall, withTable)
+    expect(i32[iface.UNIFORM_OFFSET_I32.rowTableKeys]).toBe(4)
+    linkMark.writeUniforms(scratch, clip, block, tall, banded)
+    expect(i32[iface.UNIFORM_OFFSET_I32.rowTableKeys]).toBe(-1)
+  })
 })

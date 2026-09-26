@@ -7,7 +7,7 @@ import {
 import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
-import { HIDDEN_ROW } from './rowTable.ts'
+import { rowColor, rowSlot } from './rowLane.ts'
 
 import type { BpProjection } from '../canvas2dUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
@@ -88,19 +88,9 @@ function spanFrame(block: RenderBlock, params: SpanParams): SpanFrame {
 }
 
 function placeSpan(c: SpanChannels, g: SpanFrame, i: number) {
-  const key = c.row[i]!
-  let slot = key
-  let color = c.color[i]!
-  const { table } = g
-  if (table) {
-    slot = key < table.keys ? table.slot[key]! : HIDDEN_ROW
-    if (slot === HIDDEN_ROW) {
-      return false
-    }
-    const override = table.color[key]!
-    if (override >>> 24 !== 0) {
-      color = override
-    }
+  const slot = rowSlot(c.row, i, g.table)
+  if (slot === undefined) {
+    return false
   }
   const xa = projectBp(g, c.x[i]!)
   const xb = projectBp(g, c.x2[i]!)
@@ -108,7 +98,7 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number) {
   g.left = spanLeft(xa, xb, width)
   g.top = g.bandOffsetPx + g.rowHeight * slot - g.scrollTop
   g.width = width
-  g.color = color
+  g.color = rowColor(c.color[i]!, c.row, i, g.table)
   return true
 }
 

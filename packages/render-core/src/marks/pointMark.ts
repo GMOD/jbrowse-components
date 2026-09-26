@@ -12,7 +12,7 @@ import { appendGlyph, glyphBox } from './glyphPaint.ts'
 import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
-import { bandHeightPx, bandTopPx, rowLane } from './rowLane.ts'
+import { bandHeightPx, rowColor, rowLane, rowSlot } from './rowLane.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
 import type { ColorChannel } from './markRamp.ts'
@@ -79,8 +79,12 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       reverse: params.reverse ? 1 : 0,
       insetPx: params.insetPx ?? 0,
       devicePixelRatio: getDpr(),
-      rowTableKeys: -1,
+      rowTableKeys: params.rowTable ? params.rowTable.keys : -1,
     })
+  },
+
+  textures(params) {
+    return { rowTable: params.rowTable?.texture }
   },
 
   paintBlock(ctx, channels, block, frame, params) {
@@ -89,7 +93,13 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       return
     }
     const color = paintColors(channels, count, params.ramp)
-    const { diameterPx, domain, insetPx = 0, rowOffsetPx: top = 0 } = params
+    const {
+      diameterPx,
+      domain,
+      insetPx = 0,
+      rowOffsetPx: top = 0,
+      rowTable: table,
+    } = params
     const reverse = params.reverse ? 1 : 0
     const r = diameterPx / 2
     const band = bandHeightPx(params, frame.canvasHeight)
@@ -103,7 +113,11 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     ctx.fillStyle = abgrToCssRgba(current)
     const path = new CappedPath(ctx, 'fill')
     for (let i = 0; i < count; i++) {
-      const abgr = color[i]!
+      const slot = rowSlot(row, i, table)
+      if (slot === undefined) {
+        continue
+      }
+      const abgr = rowColor(color[i]!, row, i, table)
       if (abgr !== current) {
         path.flush()
         current = abgr
@@ -113,7 +127,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       const yPx = pointRowYPx(
-        top + bandTopPx(row, i, band),
+        top + band * slot,
         band,
         reverse,
         pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),
@@ -132,6 +146,10 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   // the box `appendGlyph` paints inside.
   ink(channels, block, frame, params, i) {
     const { x, x2, y, glyph, row } = channels
+    const slot = rowSlot(row, i, params.rowTable)
+    if (slot === undefined) {
+      return undefined
+    }
     const { diameterPx, domain, insetPx = 0 } = params
     const bpToPx = makeBpMapper(block)
     const xStart = bpToPx(x[i]!)
@@ -141,7 +159,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const { valueScaleType: st, valueSymlogConstant: c } =
       valueScaleUniforms(params)
     const cy = pointRowYPx(
-      (params.rowOffsetPx ?? 0) + bandTopPx(row, i, band),
+      (params.rowOffsetPx ?? 0) + band * slot,
       band,
       params.reverse ? 1 : 0,
       pointYPx(y[i]!, domain[0], domain[1], band, st, insetPx, c),
@@ -160,7 +178,13 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
     const { x, x2, y, row } = channels
     const bpToPx = makeBpMapper(block)
-    const { diameterPx, domain, insetPx = 0, rowOffsetPx: top = 0 } = params
+    const {
+      diameterPx,
+      domain,
+      insetPx = 0,
+      rowOffsetPx: top = 0,
+      rowTable: table,
+    } = params
     const reverse = params.reverse ? 1 : 0
     const domainMin = domain[0]
     const domainMax = domain[1]
@@ -168,10 +192,14 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const { valueScaleType: st, valueSymlogConstant: c } =
       valueScaleUniforms(params)
     return nearestInk(candidates, maxDistSq, i => {
+      const slot = rowSlot(row, i, table)
+      if (slot === undefined) {
+        return undefined
+      }
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       const cy = pointRowYPx(
-        top + bandTopPx(row, i, band),
+        top + band * slot,
         band,
         reverse,
         pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),

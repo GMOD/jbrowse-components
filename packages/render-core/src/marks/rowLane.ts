@@ -1,3 +1,7 @@
+import { HIDDEN_ROW, NO_ROW_COLOR } from './rowTable.ts'
+
+import type { RowTable } from './rowTable.ts'
+
 /**
  * The `row` lane a value shape may carry: which band an instance stands in,
  * `rowHeight` px each, the value scale ruling every band on its own. A caller
@@ -13,6 +17,11 @@ export interface RowParams {
   rowHeight?: number
   /** CSS px every row's band starts below the canvas top, less a scroll; 0 when absent. */
   rowOffsetPx?: number
+  /**
+   * The table `row` is read through as a key: its drawn slot, hidden, or a
+   * colour override. Absent, `row` is the slot.
+   */
+  rowTable?: RowTable
 }
 
 const NO_ROWS = new Uint32Array(0)
@@ -26,10 +35,32 @@ export function bandHeightPx(params: RowParams, canvasHeight: number) {
   return params.rowHeight ?? canvasHeight
 }
 
-export function bandTopPx(
+function rowKey(row: Uint32Array | undefined, i: number) {
+  return row === undefined ? 0 : row[i]!
+}
+
+/** The slot instance `i` is drawn on, undefined where the table hides its key. */
+export function rowSlot(
   row: Uint32Array | undefined,
   i: number,
-  band: number,
+  table: RowTable | undefined,
 ) {
-  return row === undefined ? 0 : band * row[i]!
+  const key = rowKey(row, i)
+  if (!table) {
+    return key
+  }
+  const slot = key < table.keys ? table.slot[key]! : HIDDEN_ROW
+  return slot === HIDDEN_ROW ? undefined : slot
+}
+
+/** The colour instance `i` is drawn in: its key's override, else `color`. */
+export function rowColor(
+  color: number,
+  row: Uint32Array | undefined,
+  i: number,
+  table: RowTable | undefined,
+) {
+  const key = rowKey(row, i)
+  const override = table && key < table.keys ? table.color[key]! : NO_ROW_COLOR
+  return override >>> 24 === 0 ? color : override
 }

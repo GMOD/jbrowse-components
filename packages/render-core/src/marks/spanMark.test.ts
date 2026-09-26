@@ -393,6 +393,17 @@ describe('a row table between the instance key and the band it draws on', () => 
     expect(ink(2)).toEqual({ left: 300, top: 0, width: 50, height: 20 })
   })
 
+  test('the hit test finds each key on its slot and never the hidden one', () => {
+    const hit = shapeHitNearest(spanMark)!
+    const at = (p: SpanParams, x: number, y: number) =>
+      hit(keyed, block, tall, p, x, y, [0, 1, 2, 3], 1)
+    expect(at(withTable, 125, 50)?.index).toBe(0)
+    expect(at(withTable, 325, 10)?.index).toBe(2)
+    expect(at(withTable, 425, 30)?.index).toBe(3)
+    expect(at(params, 225, 30)?.index).toBe(1)
+    expect(at(withTable, 225, 30)).toBeUndefined()
+  })
+
   test('a key the table does not hold is hidden', () => {
     const past = channels([10], [15], [table.keys], [RED])
     const { ctx, calls } = mockCtx()

@@ -32,12 +32,13 @@ import { abgrToCssRgba } from './colorFill.ts'
 import { ellipseNearest } from './ellipseDistance.ts'
 import { nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
-import { bandHeightPx, rowLane } from './rowLane.ts'
+import { bandHeightPx, rowColor, rowLane, rowSlot } from './rowLane.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
+import type { RowTable } from './rowTable.ts'
 import type { InkRect, MarkFrame, MarkRamp, MarkShape } from './types.ts'
 import type { MarkValueScale } from './valueScale.ts'
 
@@ -134,6 +135,7 @@ const LEG_SEGMENTS = 32
 interface LinkFrame {
   band: number
   rowOffsetPx: number
+  table: RowTable | undefined
   reverse: number
   /** Canvas y per frame y: the frame's y is negative away from the baseline. */
   ySign: number
@@ -190,6 +192,7 @@ function linkFrame(
   return {
     band,
     rowOffsetPx: params.rowOffsetPx ?? 0,
+    table: params.rowTable,
     reverse: params.reverse ? 1 : 0,
     ySign: params.reverse ? -1 : 1,
     stemPx: params.stemPx ?? LINK_STEM_PX,
@@ -337,6 +340,11 @@ function placeLink(c: LinkChannels, g: LinkFrame, i: number) {
 }
 
 function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
+  const slot = rowSlot(c.row, i, g.table)
+  if (slot === undefined) {
+    g.kind = KIND_NONE
+    return
+  }
   const { regions } = g
   g.strokePx = linkStrokeWidthPx(
     sizeOf(c, i),
@@ -349,7 +357,7 @@ function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
     g.sizeRangeMax,
     g.dpr,
   )
-  g.baseY = linkBaseYPx(g.rowOffsetPx, g.band, c.row?.[i] ?? 0, g.reverse)
+  g.baseY = linkBaseYPx(g.rowOffsetPx, g.band, slot, g.reverse)
   g.xPx = regionPx(regions, g.own, c.x[i]!)
   const region = c.x2Region[i]!
   if (region === LINK_ELSEWHERE) {
@@ -752,8 +760,12 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       ),
       regionTable: TABLE,
       regionSpan: SPANS,
-      rowTableKeys: -1,
+      rowTableKeys: params.rowTable ? params.rowTable.keys : -1,
     })
+  },
+
+  textures(params) {
+    return { rowTable: params.rowTable?.texture }
   },
 
   paintsBlock(block, _frame, params) {
@@ -782,7 +794,9 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
         continue
       }
       ctx.lineWidth = g.strokePx
-      ctx.strokeStyle = abgrToCssRgba(color[i]!)
+      ctx.strokeStyle = abgrToCssRgba(
+        rowColor(color[i]!, channels.row, i, g.table),
+      )
       ctx.setLineDash(dashes(g) ? dash : [])
       ctx.beginPath()
       tracePath(ctx, g)

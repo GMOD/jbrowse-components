@@ -6,7 +6,7 @@ import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
-import { bandHeightPx, bandTopPx, rowLane } from './rowLane.ts'
+import { bandHeightPx, rowColor, rowLane, rowSlot } from './rowLane.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
 import type { ColorChannel } from './markRamp.ts'
@@ -41,16 +41,11 @@ export interface BarParams extends RowParams, MarkValueScale {
   rowBandPx?: number
 }
 
-// Where row `i`'s value scale sits: its top and height, in the frame's CSS px.
-function barBand(
-  params: BarParams,
-  canvasHeight: number,
-  row: Uint32Array | undefined,
-  i: number,
-) {
+// Where a slot's value scale sits: its top and height, in the frame's CSS px.
+function barBand(params: BarParams, canvasHeight: number, slot: number) {
   const pitch = bandHeightPx(params, canvasHeight)
   return {
-    top: (params.rowOffsetPx ?? 0) + bandTopPx(row, i, pitch),
+    top: (params.rowOffsetPx ?? 0) + pitch * slot,
     band: params.rowBandPx ?? pitch,
   }
 }
@@ -123,8 +118,12 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       minCellDenomPx: clip.scissorW,
       minWidthPx: params.minWidthPx,
       devicePixelRatio: getDpr(),
-      rowTableKeys: -1,
+      rowTableKeys: params.rowTable ? params.rowTable.keys : -1,
     })
+  },
+
+  textures(params) {
+    return { rowTable: params.rowTable?.texture }
   },
 
   paintBlock(ctx, channels, block, frame, params) {
@@ -133,11 +132,16 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     const bpToPx = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
     const yScale = valueScaleUniforms(params)
+    const table = params.rowTable
     for (let i = 0; i < count; i++) {
-      const { top, band } = barBand(params, frame.canvasHeight, row, i)
+      const slot = rowSlot(row, i, table)
+      if (slot === undefined) {
+        continue
+      }
+      const { top, band } = barBand(params, frame.canvasHeight, slot)
       const r = barRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale)
       if (r) {
-        setFill(color[i]!)
+        setFill(rowColor(color[i]!, row, i, table))
         ctx.fillRect(r.left, r.top, r.width + params.seamPx, r.height)
       }
     }
@@ -145,7 +149,11 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
 
   ink(channels, block, frame, params, i) {
     const { x, x2, y, row } = channels
-    const { top, band } = barBand(params, frame.canvasHeight, row, i)
+    const slot = rowSlot(row, i, params.rowTable)
+    if (slot === undefined) {
+      return undefined
+    }
+    const { top, band } = barBand(params, frame.canvasHeight, slot)
     return barRect(
       makeBpMapper(block),
       x[i]!,
