@@ -55,13 +55,21 @@ function waitForDownload(
   })
 }
 
-async function triggerSvgExport(page: Page) {
+async function triggerSvgExport(page: Page, { vector = false } = {}) {
   const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
   await viewMenu.click()
   await delay(300)
   const exportSvg = await findByText(page, 'Export SVG', 10000)
   await exportSvg.click()
   await delay(500)
+  if (vector) {
+    const rasterize = await findByText(
+      page,
+      'Rasterize canvas based tracks',
+      10000,
+    )
+    await rasterize.click()
+  }
   const submitBtn = await findByText(page, 'Submit', 10000)
   await submitBtn.click()
 }
@@ -117,10 +125,15 @@ function stripVolatileIds(svg: string, elementIds: string[]) {
   return out
 }
 
-async function exportSvgAndSave(page: Page, downloadDir: string, name: string) {
+async function exportSvgAndSave(
+  page: Page,
+  downloadDir: string,
+  name: string,
+  opts: { vector?: boolean } = {},
+) {
   // Before the export dialog replaces the DOM, while the session is live.
   const elementIds = await collectElementIds(page)
-  await triggerSvgExport(page)
+  await triggerSvgExport(page, opts)
   const svg = await waitForDownload(downloadDir, 'jbrowse.svg')
   if (!svg.includes('<svg')) {
     throw new Error('Downloaded file is not valid SVG')
@@ -395,8 +408,7 @@ const suite: TestSuite = {
       fn: async page => {
         const downloadDir = await setupDownloadInterception(page)
         // Two contigs either side of the volvox-translocation junction: 1
-        // coalesced split-read arc plus 8 mate arcs. No spliced reads here, so
-        // every <path> in the export is one of them.
+        // coalesced split-read arc plus 8 mate arcs.
         await navigateWithSessionSpec(page, {
           views: [
             {
@@ -418,10 +430,17 @@ const suite: TestSuite = {
         await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
 
+        // Unrasterized, or the band lands inside one embedded PNG. The dialog
+        // persists the choice, so it is cleared for the tests after this one.
         const svg = await exportSvgAndSave(
           page,
           downloadDir,
           'svg-export-cross-region-arcs',
+          { vector: true },
+        ).finally(() =>
+          page.evaluate(() => {
+            localStorage.removeItem('svg-rasterize')
+          }),
         )
         // `colorInterchrom` (#af4d19), the one colour an interchromosomal
         // connection takes, so no other stroke in the export is counted.
