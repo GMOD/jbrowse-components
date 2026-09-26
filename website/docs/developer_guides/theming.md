@@ -25,8 +25,8 @@ A user picks a palette and a mode separately in the Preferences dialog. Read
 `session.themeName` for the palette, `session.themeMode` for the raw choice
 (`light`, `dark` or `system`) and `session.effectiveThemeMode` for that choice
 with `system` resolved against `prefers-color-scheme`. `session.themeIsDark`
-answers off the resolved palette, which is what a palette pinned to one mode
-needs. `setThemeMode` moves the mode without touching the palette.
+answers off the resolved palette, so a palette pinned to one mode answers for
+itself. `setThemeMode` moves the mode without touching the palette.
 
 The names from before the axis — `lightStock`, `darkStock`, `lightMinimal`,
 `darkMinimal` — still resolve to the palette and mode they meant, wherever one

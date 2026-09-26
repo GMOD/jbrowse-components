@@ -187,7 +187,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * to its own mode, or a `name` from before the axis, states the mode
          * itself and keeps it.
          */
-        getActiveThemeOptions(name?: string) {
+        getActiveThemeOptions(name?: string): ThemeOptions {
           const all = this.allThemes()
           const selection = resolveThemeSelection(
             name ?? this.themeName,
