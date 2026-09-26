@@ -1,9 +1,20 @@
 import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type { AbstractSessionModel } from '../util/types/index.ts'
 import type { MenuItem } from './MenuTypes.ts'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+// Structural: the selector's model type lives in the plugin owning the widget,
+// which a contributor already depends on.
+export interface MultiTrackSelection extends IStateTreeNode {
+  selection: AnyConfigurationModel[]
+}
 
 export interface MultiTrackMenuItemsProps {
   session: AbstractSessionModel
+  // handed over when the rows are BUILT, so a row closes over it and its
+  // onClick takes no argument like every other row
+  model: MultiTrackSelection
 }
 
 /** Return the items to add, or nothing when the selection isn't yours. */

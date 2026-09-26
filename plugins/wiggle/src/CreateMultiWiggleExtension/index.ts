@@ -62,13 +62,13 @@ function makeTrack({
 
 // #region register
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
-  addMultiTrackMenuItems(pm, ({ session }) =>
+  addMultiTrackMenuItems(pm, ({ session, model }) =>
     // contributing nothing is `undefined`, not an empty array to spread into
     // someone else's — the accumulated items are not this callback's to see
     isSessionWithAddSessionTrack(session)
       ? {
           label: 'Create multi-wiggle track...',
-          onClick: (model: TrackSelectorSelf) => {
+          onClick: () => {
             getDialogHost(model).queueDialog(handleClose => [
               ConfirmDialog,
               {

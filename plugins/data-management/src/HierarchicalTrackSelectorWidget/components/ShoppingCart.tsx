@@ -20,7 +20,7 @@ const ShoppingCart = observer(function ShoppingCart({
   const session = getSession(model)
   const { selection, sessionTrackIds } = model
   const { pluginManager } = getEnv(model)
-  const items = buildMultiTrackMenuItems(pluginManager, { session })
+  const items = buildMultiTrackMenuItems(pluginManager, { session, model })
   const canDeleteAll =
     isSessionWithDeleteTrackConf(session) &&
     selection.every(
@@ -57,16 +57,10 @@ const ShoppingCart = observer(function ShoppingCart({
             ]
           : []),
 
-        ...items.map(item => ({
-          ...item,
-          ...('onClick' in item
-            ? {
-                onClick: () => {
-                  item.onClick(model)
-                },
-              }
-            : {}),
-        })),
+        // spread as contributed: a contributor closes over the model it was
+        // built with, so there is nothing to rewrap — and rewrapping reached
+        // only the top level, passing over a contributed submenu's children
+        ...items,
       ]}
     >
       <Badge badgeContent={selection.length} color="primary">
