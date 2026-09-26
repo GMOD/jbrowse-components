@@ -1,0 +1,28 @@
+import { resolvePalette } from './palette.ts'
+import { defaultThemes } from './theme.ts'
+
+/**
+ * Every built-in theme resolved to its last colour, so a change to how a
+ * palette is *assembled* has to say which pixels it moved. Splitting light from
+ * dark, folding two presets into one with a `dark` block, adding a mode
+ * argument: none of those is supposed to repaint anything, and the diff here is
+ * the only thing that can tell you whether it did.
+ *
+ * Update with `-u` when a colour change is the point.
+ */
+test.each(Object.keys(defaultThemes))('%s resolves the same colours', name => {
+  expect(resolvePalette({ themeName: name })).toMatchSnapshot()
+})
+
+// The `default` theme is the one that merges the config `theme` slot, in both
+// modes, so it needs its own rows.
+test.each([
+  ['a config brand', { palette: { primary: { main: '#8b0000' } } }],
+  ['a config brand, dark', { palette: { primary: '#8b0000', mode: 'dark' } }],
+  ['a bare mode', { palette: { mode: 'dark' } }],
+  ['a config background', { palette: { background: { paper: '#fafafa' } } }],
+] as const)('default + %s resolves the same colours', (_name, configTheme) => {
+  expect(
+    resolvePalette({ themeName: 'default', configTheme }),
+  ).toMatchSnapshot()
+})
