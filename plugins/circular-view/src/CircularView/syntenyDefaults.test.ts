@@ -111,6 +111,18 @@ test('a circle of one genome, hand-authored, paints by chromosome', async () => 
   expect(circle.colorField).toBe('query')
 })
 
+// a capture waits on the chord canvas having painted, which a circle with no
+// chord display never does
+test('a circle with no chord display has finished its chord canvas', async () => {
+  const session = createTestSession() as any
+  const { pluginManager } = getEnv(session)
+  await pluginManager.getViewType('CircularView').loadStateModel()
+  const bare = session.addView('CircularView', {}) as CircularViewModel
+  expect(bare.chordPass.painted).toBe(true)
+  const { circle } = await launch({})
+  expect(circle.chordPass.painted).toBe(false)
+})
+
 describe('the thin fade', () => {
   test('engages on a circle of sub-pixel alignments', async () => {
     const { circle } = await launch({}, alignments(12, 10))

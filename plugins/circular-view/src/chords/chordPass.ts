@@ -86,6 +86,12 @@ export const ChordPass = types
     get canRender() {
       return self.view?.initialized ?? false
     },
+    /**
+     * a circle with no chord display draws nothing here, and has finished
+     */
+    get rendersCanvas() {
+      return (self.view?.chordDisplays.length ?? 0) > 0
+    },
     /** whether the canvas has drawn this cell */
     drew(cell: ChordCell) {
       return self.drawnCells.has(cell)
