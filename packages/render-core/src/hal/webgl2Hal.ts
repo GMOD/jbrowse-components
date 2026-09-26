@@ -502,8 +502,9 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     if (!pass) {
       return
     }
-    const textures = this.texturesOf(passId, pass.descriptor)
-    if (!textures) {
+    const textures = this.passTextures.get(passId)
+    const samplers = pass.descriptor.textures ?? []
+    if (samplers.some(tb => !textures?.has(tb.name))) {
       return
     }
 
@@ -511,9 +512,9 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.useProgram(pass.linked.program)
     gl.bindVertexArray(pass.linked.vao)
     this.bindAttributes(pass, regionBuf.vbo)
-    for (const [unit, texture] of textures) {
-      gl.activeTexture(gl.TEXTURE0 + unit)
-      gl.bindTexture(gl.TEXTURE_2D, texture)
+    for (const tb of samplers) {
+      gl.activeTexture(gl.TEXTURE0 + tb.glTextureUnit)
+      gl.bindTexture(gl.TEXTURE_2D, textures!.get(tb.name)!)
     }
     const topo = pass.descriptor.topology ?? 'triangle-list'
     const glMode =
@@ -617,19 +618,6 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       const dst = bs ? glBlendFactor(gl, bs.dstFactor) : gl.ONE_MINUS_SRC_ALPHA
       gl.blendFuncSeparate(src, dst, gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
     }
-  }
-
-  private texturesOf(passId: string, desc: PipelineDescriptor) {
-    const byName = this.passTextures.get(passId)
-    const bound: [number, WebGLTexture][] = []
-    for (const tb of desc.textures ?? []) {
-      const texture = byName?.get(tb.name)
-      if (!texture) {
-        return undefined
-      }
-      bound.push([tb.glTextureUnit, texture])
-    }
-    return bound
   }
 
   private bindAttributes(pass: PassState, vbo: WebGLBuffer) {

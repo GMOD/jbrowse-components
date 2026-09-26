@@ -89,6 +89,9 @@ test('a plan carries the enabled marks in list order, with their passes', () => 
 test('drawPlannedPasses issues the plan and nothing else, off the caller uniforms', () => {
   const hal = new MockHal(MARKS.map(m => m.pass))
   uploadMarks(hal, 0, MARKS, REGION)
+  for (const id of ['first', 'borrower']) {
+    hal.uploadTexture(id, new Uint8Array(4), 1, 1, 'rowTable')
+  }
   hal.beginFrame(0, 0, 0, 0)
   hal.writeUniforms(new ArrayBuffer(hal.uniformByteSize))
   drawPlannedPasses(hal, planMarks(MARKS, state(false)), 0)
@@ -104,6 +107,9 @@ test('drawMarks gates on enabled the way a plan does', () => {
   const s = state(false)
   const clip = clipBlock(BLOCK, s.canvasWidth, s.canvasHeight, { x: 1, y: 1 })!
   uploadMarks(hal, 0, MARKS, REGION)
+  for (const id of ['first', 'borrower']) {
+    hal.uploadTexture(id, new Uint8Array(4), 1, 1, 'rowTable')
+  }
   hal.beginFrame(0, 0, 0, 0)
   drawMarks(
     hal,

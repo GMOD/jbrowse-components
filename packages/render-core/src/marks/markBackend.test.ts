@@ -1,6 +1,6 @@
 import { clipBlock } from '../blockClipUtils.ts'
 import { MockHal } from '../hal/mockHal.ts'
-import { drawMarks, uploadMarks } from './markBackend.ts'
+import { MarkTextureBinder, drawMarks, uploadMarks } from './markBackend.ts'
 import { spanMark } from './spanMark.ts'
 import { defineMark } from './types.ts'
 
@@ -83,6 +83,7 @@ test('drawMarks sets the viewport to the clip before the first draw', () => {
     REGION,
     STATE,
     0,
+    new MarkTextureBinder(hal),
   )
   hal.endFrame()
   expect(hal.draws().map(d => d.viewport)).toEqual([
@@ -109,6 +110,7 @@ test('drawMarks leaves the scissor its caller set', () => {
     REGION,
     STATE,
     0,
+    new MarkTextureBinder(hal),
   )
   hal.endFrame()
   expect(hal.draws().map(d => d.scissor)).toEqual([

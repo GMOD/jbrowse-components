@@ -459,11 +459,6 @@ export class GpuAlignmentsRenderer
         ...sectionRenderState(state, sec),
         arcBand: band,
       }
-      for (const mark of ARC_BAND_MARKS) {
-        for (const { name } of mark.pass.textures ?? []) {
-          this.textures.bind(mark.pass.id, name, undefined)
-        }
-      }
       for (const mark of ARC_LINK_MARKS) {
         for (const [regionIdx, feed] of feeds) {
           const block = canvasWideBlock(regionIdx, canvasWidth)
