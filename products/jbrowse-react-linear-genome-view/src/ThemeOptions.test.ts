@@ -48,11 +48,10 @@ test('session.themeOptions carries the config theme slot (feeds canvas worker rp
 // also what `themeOptions` above ships to the worker, so the labels baked into
 // a rendered image change mode along with everything React draws.
 //
-// `theme` is a frozen slot, so the write has to merge — at both levels, since
-// `resolvePalette` spreads `configTheme.palette` over the preset shallowly and
-// `mode` and `primary` are therefore siblings. A bare
-// `setConf(session, 'theme', { palette: { mode } })` discards the host's
-// configured colors the first time their toggle fires, with nothing to say so.
+// The mode used to be written into the frozen `theme` slot, which meant merging
+// at two levels to avoid discarding the host's colours the first time their
+// toggle fired. Mode is its own axis now, so the slot is left exactly as the
+// host passed it and both halves still reach the worker through `themeOptions`.
 test('setThemeMode keeps the rest of the configured theme', () => {
   const state = createViewState({
     assembly,
@@ -61,15 +60,19 @@ test('setThemeMode keeps the rest of the configured theme', () => {
   })
   const session = state.session as unknown as {
     setThemeMode: (mode: 'light' | 'dark') => void
-    themeOptions: { configTheme?: { palette?: Record<string, unknown> } }
+    themeOptions: {
+      configTheme?: { palette?: Record<string, unknown> }
+      mode?: string
+    }
     palette: { mode: string; primary: { main: string } }
   }
 
   session.setThemeMode('dark')
   expect(session.themeOptions.configTheme?.palette).toEqual({
     primary: { main: '#123456' },
-    mode: 'dark',
   })
+  // what the worker reads, so the labels it bakes follow the host's toggle
+  expect(session.themeOptions.mode).toBe('dark')
   expect(session.palette.mode).toBe('dark')
   expect(session.palette.primary.main).toBe('#123456')
 
