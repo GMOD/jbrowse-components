@@ -348,8 +348,6 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: ChordSyntenyDisplay": {
     "bezierRadiusRatio": "number = 0.1",
-    "color": "color = "rgba(70,130,180,0.25)"",
-    "colorBy": "stringEnum = "default" of ["default","chromosome","strand"]",
     "colorHover": "color = "rgba(85,85,85,0.6)"",
     "colorSelected": "color = "rgba(0,0,0,0.6)"",
   },
