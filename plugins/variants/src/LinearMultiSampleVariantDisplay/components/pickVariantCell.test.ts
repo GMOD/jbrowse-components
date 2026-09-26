@@ -106,6 +106,35 @@ describe('pickVariantCell candidate narrowing', () => {
     expect(picked?.genomicStart).toBe(300)
   })
 
+  test('between two records as short, the one painted on top', () => {
+    // one site split into a record per allele: a 0/2 sample's ref cell on the
+    // first record, painted under its alt cell on the second
+    const split = build({
+      refCells: [{ feature: 0, row: 0 }],
+      altCells: [{ feature: 1, row: 0, carriesAlt: true }],
+      features: [
+        [300, 301],
+        [300, 301],
+      ],
+    })
+    for (const candidateFeatures of [
+      [0, 1],
+      [1, 0],
+    ]) {
+      const picked = pickVariantCell({
+        data: split,
+        candidateFeatures,
+        mouseX: 300,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+        ...geom,
+      })
+      expect(picked?.featureIndex).toBe(1)
+      expect(picked?.cellIndex).toBe(1)
+    }
+  })
+
   test('candidate order does not change the pick', () => {
     const reversed = pickVariantCell({
       data,

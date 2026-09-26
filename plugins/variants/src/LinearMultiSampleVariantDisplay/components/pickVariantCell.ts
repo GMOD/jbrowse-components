@@ -70,7 +70,8 @@ function withinCellTolerance(
  * tolerance of the cursor — the window is padded out to the widest insertion
  * marker, so most candidates at a dense locus are not actually under it — and
  * the shortest survivor wins, which keeps a SNP inside a large deletion
- * selectable. Where the ink is comes from the cell shape's own hit test for
+ * selectable; between two as short, the later cell, which is painted over the
+ * other — a site split into one record per allele. Where the ink is comes from the cell shape's own hit test for
  * every cell but one that paints an insertion marker, whose widened extent is
  * the overlay's (`variantCellSpanPx`).
  *
@@ -124,7 +125,10 @@ export function pickVariantCell({
         const genomicStart = data.featurePositions[featureIndex * 2]!
         const genomicEnd = data.featurePositions[featureIndex * 2 + 1]!
         const len = genomicEnd - genomicStart
-        if (len < bestLen) {
+        if (
+          len < bestLen ||
+          (len === bestLen && best !== undefined && cellIndex > best.cellIndex)
+        ) {
           const insertedBp = data.cellAltDosage[cellIndex]
             ? data.featureInsertedBp[featureIndex]!
             : 0
