@@ -741,7 +741,17 @@ our hosted copy, where a local build has the `ecoli_pggb` prefix written above:
       "aboveBpPerPx": 1
     }
   },
-  "displayDefaults": { "showLabels": "none" }
+  "displayDefaults": { "showLabels": "none" },
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_pggb_segments-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_pggb_segments-LinearBasicDisplay"
+    }
+  ]
 }
 ```
 
@@ -812,7 +822,17 @@ lane of its own, which draws at any width:
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50"
-  }
+  },
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_pggb_tier50-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_pggb_tier50-LinearBasicDisplay"
+    }
+  ]
 }
 ```
 

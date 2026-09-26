@@ -159,7 +159,17 @@ One adapter reads all four, and `<prefix>.config.json` carries the track:
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_minigraph",
     "coarse": { "uri": "ecoli_minigraph.tier10000", "aboveBpPerPx": 307 }
-  }
+  },
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_minigraph_segments-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_minigraph_segments-LinearBasicDisplay"
+    }
+  ]
 }
 ```
 
@@ -433,7 +443,17 @@ expression on the track itself. Reference position, over the 50 kb window from
   },
   "displayDefaults": {
     "color": "jexl:feature.rank>0 ? 'rgb(60,65,72)' : `hsl(${min(300, max(0, ((feature.start+feature.end)/2 - 4050000) / 50000 * 300))},70%,50%)`"
-  }
+  },
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_minigraph_segments-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_minigraph_segments-LinearBasicDisplay"
+    }
+  ]
 }
 ```
 

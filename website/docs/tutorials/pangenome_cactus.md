@@ -463,7 +463,17 @@ shared prefix:
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus"
   },
-  "displayDefaults": { "showLabels": "none" }
+  "displayDefaults": { "showLabels": "none" },
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_cactus_segments-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_cactus_segments-LinearBasicDisplay"
+    }
+  ]
 }
 ```
 

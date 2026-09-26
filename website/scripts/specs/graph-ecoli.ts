@@ -1346,7 +1346,17 @@ export const PGGB_SEGMENTS_TRACK_JSON = `{
       "aboveBpPerPx": 1
     }
   },
-  "displayDefaults": { "showLabels": "none" }
+  "displayDefaults": { "showLabels": "none" },
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_pggb_segments-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_pggb_segments-LinearBasicDisplay"
+    }
+  ]
 }`
 
 // The window the subgraph tour opens on, before it narrows to PGGB_LOCUS_WINDOW.

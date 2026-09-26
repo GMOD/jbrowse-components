@@ -153,7 +153,17 @@ a pggb graph, where a segment is 17 bp.
     "assemblyNameToPanSN": { "hg38": "GRCh38" },
     "coarse": { "uri": "hprc.tier10000", "aboveBpPerPx": 1014 }
   },
-  "displayDefaults": { "showLabels": "none" }
+  "displayDefaults": { "showLabels": "none" },
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "hprc_graph-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "hprc_graph-LinearBasicDisplay"
+    }
+  ]
 }
 ```
 
@@ -347,6 +357,10 @@ their two URLs are the `uri` and the `haplotypeIndexLocation` of the track:
       "type": "MultiWaySyntenyDisplay",
       "displayId": "my_graph_lanes-MultiWaySyntenyDisplay",
       "height": 600
+    },
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "my_graph_lanes-LinearGraphDisplay"
     }
   ]
 }
