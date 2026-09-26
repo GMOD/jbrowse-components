@@ -67,7 +67,7 @@ How the SyRI lanes were built
 
   minimap2 2.24-r1122; SyRI 1.8.2 installed from
   github.com/schneebergerlab/syri at acf72ccf47beffaaeade849fd258827ef24bedf4.
-  scripts/syri_to_blocks.py then wrote each pair's top-level regions (SYN, INV,
+  scripts/syri_to_paf.py then wrote each pair's top-level regions (SYN, INV,
   TRANS, INVTR, DUP, INVDP) as PAF records between PanSN names carrying
   syri:Z:<type> and color:Z:<plotsr's colour>, concatenated into
   syri_1001g.paf, and the same regions on TAIR10 alone with the accession in a

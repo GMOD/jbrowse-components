@@ -22,7 +22,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HELPERS=(syri_to_blocks.py arabidopsis_pangenome_config.py build_rgfa_tabix.sh
+HELPERS=(syri_to_paf.py arabidopsis_pangenome_config.py build_rgfa_tabix.sh
   build_rgfa_alleles.sh build_bubble_tier.sh bubbles_to_tier_bed.py
   build_minigraph_paths.sh)
 for h in "${HELPERS[@]}"; do
@@ -100,7 +100,7 @@ if [ ! -s $REF.fa.gz ]; then
     /^#/ { next }
     ($1 in m) { $1=m[$1]; print }' tair10.ncbi/ncbi_dataset/data/GCF_000001735.4/genomic.gff |
     sort -k1,1 -k4,4n -S 1G | bgzip >$REF.genes.gff.gz
-  tabix -p gff $REF.genes.gff.gz
+  tabix -f -p gff $REF.genes.gff.gz
   rm -rf tair10.ncbi tair10.zip
 fi
 samtools faidx $REF.fa
@@ -139,7 +139,7 @@ while read -r id name _ _; do
     run_syri -c "$pair.aln.paf" -r $REF.fa -q "$name.fa" -F P --prefix "$pair." --nc 5 >"$pair.syri.log" 2>&1
     rm -f "$pair.aln.paf"
   fi
-  python3 "$SCRIPT_DIR/syri_to_blocks.py" "$pair.syri.out" --prefix "$pair"
+  python3 "$SCRIPT_DIR/syri_to_paf.py" "$pair.syri.out" --prefix "$pair"
   rm -f "$name.fa" "$name.fa.fai"
 done <accessions.tsv
 
