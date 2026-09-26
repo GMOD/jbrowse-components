@@ -1,18 +1,20 @@
 ---
-title: Pangenome (preparing your own graph)
+title: Pangenome (hosting your own graph)
 description:
-  Turn a pangenome graph you already have into the small indexed files JBrowse
-  opens by locus, and the database that holds every haplotype's walk
+  One command turns the pangenome graph you already have into the indexed files
+  JBrowse browses by locus, and writes the config that carries them
 guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-You have a pangenome graph of your own and want to look at it a locus at a time.
-A graph file is not something a browser can seek into, so we convert one, once,
-into a handful of small indexed files: the segments and links a window is cut
-from, a list of where the graph varies, a list of what the variation is, and a
-database holding each haplotype's walk. Every step is one command over the file
-you already have, and the output is plain BED and SQLite that anything can read.
+You have a pangenome graph and want people to browse it in JBrowse: open a
+locus, zoom out to a chromosome, zoom in to the nodes, and open the haplotypes
+that carry a variant. A graph file is not something a browser can seek into, so
+one command converts it, once, into small indexed files that answer a window at
+a time, and writes the config that puts them on one track. This page runs that
+command on HPRC release 2 so every output can be checked against a published
+one, then covers the two optional layers the command does not build: who carries
+each segment, and every haplotype's own walk.
 
 :::caution Experimental
 
@@ -25,170 +27,117 @@ welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
   which supplies the adapters every track here uses
-- htslib (`bgzip`, `tabix`), for every index on this page
-- [`gfatools`](https://github.com/lh3/gfatools), for the rGFA projection and the
-  bubble file
-- `python3`, for the plain-GFA path walk and the bubble tier
-- [`minigraph`](https://github.com/lh3/minigraph), to call carriage against the
-  graph, which needs the assemblies as well
-- [`vg`](https://github.com/vgteam/vg) 1.69.0 or newer, and
-  [`gbz-base`](https://github.com/jltsiren/gbz-base), to turn a `.gbz` into a
-  range-requestable database
-- `gbz-haplotype-index`, from
-  [`@gmod/gbz-base`](https://github.com/GMOD/gbz-base-js), to name the
-  haplotypes in such a database
-
-Only the first three are needed for the graph track itself. `minigraph` wants
-every assembly the graph was built from, and the three `gbz` tools apply only to
-a graph published in vg's format.
+- htslib (`bgzip`, `tabix`), `python3`, and `sort`
+- [`gfatools`](https://github.com/lh3/gfatools) and GNU awk, for an rGFA
+- [`minigraph`](https://github.com/lh3/minigraph), for the optional carriage
+  layer, which needs the assemblies as well
+- [`vg`](https://github.com/vgteam/vg) 1.69.0 or newer,
+  [`gbz-base`](https://github.com/jltsiren/gbz-base) and `gbz-haplotype-index`
+  from [`@gmod/gbz-base`](https://github.com/GMOD/gbz-base-js), for the optional
+  haplotype-walk layer, which applies to a graph published in vg's format
 
 ## Where the data comes from
 
 The worked example is
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), whose
-Minigraph-Cactus graph is the one
-[the HPRC page](/docs/tutorials/pangenome_hprc) reads through the files built
-here, so every command below can be checked against a published result.
+Minigraph-Cactus graph is the one every HPRC page on this site reads through the
+files built here.
 
-- the SV-resolution graph, an rGFA and the input to most of this page:
+- the SV-resolution graph, an rGFA and the input to the command:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
-- the base-level graph beside it, which is a plain GFA and takes the other
-  route:
+- the base-level graph beside it, a plain GFA that takes the other route through
+  the same command:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
-- the same graph in vg's format, the input to the database at the end:
+- the same graph in vg's format, the input to the haplotype-walk layer:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
-- the finished files this page builds, hosted so a build can be compared against
-  one that worked, with the exact commands recorded beside them:
+- the finished files, hosted so a build can be compared against one that worked,
+  with the exact commands recorded beside them:
   https://jbrowse.org/demos/hprc/README.txt
 
-## What your graph can produce
+## One command {#what-your-graph-can-produce}
 
-Whether your graph states where each segment sits on a reference decides which
-of the two builders you run. Both produce the same pair of indexes.
-
-| Your file                                                     | Where positions live                 | Builder               |
-| ------------------------------------------------------------- | ------------------------------------ | --------------------- |
-| **rGFA** (minigraph, the minigraph stage of Minigraph-Cactus) | `SN`/`SO`/`SR` tags on every segment | `build_rgfa_tabix.sh` |
-| **plain GFA** (pggb, odgi, vg, base-level Minigraph-Cactus)   | inside the P/W path lines            | `build_pggb_tabix.sh` |
-| **assembly graph** (SPAdes, Flye, Velvet)                     | nowhere, there is no reference       | none, use Bandage     |
-
-An rGFA tags every segment with three fields, which is the whole of the
-[spec](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md):
-
-```text
-S  s3  TTGCAA  LN:i:6  SN:Z:GRCh38#0#chr1  SO:i:10621  SR:i:0
-```
-
-`SN` is the stable sequence the segment sits on, `SO` its offset there, and `SR`
-its rank, `0` on the reference backbone. A plain GFA encodes the same three
-things in path order instead: walking a P or W line assigns every segment it
-visits an interval on that path's own sequence.
-
-The label on the file is not the answer. Release 2 labels nothing "rGFA", yet
-`sv.gfa.gz` is one, because it is the minigraph stage of the build; the `gfa.gz`
-beside it is base-level and is not. Point the wrong builder at a file and
-`build_rgfa_tabix.sh` says so rather than writing an empty index, because
-`gfatools` projects a tagless graph to no segments at all.
-
-A third format turns up on published human graphs. A `.gbz` is vg's indexed form
-and carries a walk per haplotype rather than tags, so it answers a different
-question and gets [its own section](#every-haplotypes-walk-a-gbz-base-database)
-at the end.
-
-## The two indexes a graph track reads
-
-JBrowse reads a graph as two tabix-indexed BED projections of it,
-`<prefix>.segs.bed.gz` for the segments and `<prefix>.links.bed.gz` for the
-links between them. Both builders emit that identical pair, so the format
-question is settled once and nothing downstream distinguishes the two routes.
-
-For an rGFA the tags are already coordinates, so the build is a projection:
-
-<!-- from: scripts/build_rgfa_tabix.sh -->
+Two kinds of graph turn up. An **rGFA** (minigraph, and the minigraph stage of
+Minigraph-Cactus) tags every segment with where it sits on a reference, and a
+**plain GFA** (pggb, odgi, vg, base-level Minigraph-Cactus) states the same
+thing in its P or W path lines. The command tells them apart by the first
+segment's tags. A plain GFA also needs `--reference` to say which sample is the
+backbone, and `--snarls` for its bubbles, which come from the `vg deconstruct`
+VCF pggb already wrote. An assembly graph (SPAdes, Flye) has no reference at
+all, and Bandage is the tool for it.
 
 ```bash
-# -m keeps the segment's rGFA tags on each BED row, which is what carries rank
-# and stable name through to the index
-gfatools gfa2bed -m graph.sv.gfa.gz
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
+
+# an rGFA; --assembly is what your JBrowse config calls the reference
+bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
+
+# a plain GFA: name the backbone sample, and hand over the snarl VCF for bubbles
+bash build_pangenome_graph.sh graph.gfa graph --reference K12 --assembly K12 --snarls graph.snarls.vcf.gz
 ```
 
-For a plain GFA a python helper walks the P and W lines and stands in for those
-tags, deriving the same intervals from path order.
+The script fetches the four builders it runs. HPRC's 759,000 segments index in
+about 45 seconds, peaking near 3.7 GB, and the rGFA route wants GNU awk: the BSD
+awk macOS ships builds the same links table in hours, so `brew install gawk` and
+put its `gnubin` first on `PATH`. A pggb graph runs about 17 bp per segment, so
+its index grows with total sequence rather than with variation: five E. coli
+strains are 606,000 segments and build in about a minute, and a human chromosome
+does not finish. At human scale, index the SV-resolution rGFA.
 
-Neither the rGFA projection nor the path walk is run by hand. Each is wrapped in
-a script that sorts, compresses and indexes both files, and fetches the python
-helper it needs:
+What comes out, beside the prefix you named:
 
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
+| file                     | what it holds                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------- |
+| `.segs.bed.gz`           | one row per segment, at its reference coordinate                                    |
+| `.links.bed.gz`          | one row per link per endpoint, both ends stated in full                             |
+| `.bubbles.bed.gz`        | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele |
+| `.tier10000.segs.bed.gz` | one node per bubble, so a whole chromosome draws                                    |
+| `.alleles.bed.gz`        | one row per allele, with a CIGAR that states its size                               |
+| `.config.json`           | the tracks below, with the plugin entry                                             |
 
-# rGFA, straight from the gzipped file with nothing to unpack
-bash build_rgfa_tabix.sh hprc-v2.1-mc-grch38.sv.gfa.gz out
+Each is a tabix-indexed BED, so a window is a range request and the graph file
+itself never has to be served.
 
-# plain GFA, the same pair by the other route. The third argument names the
-# ASSEMBLY to anchor on, not a path, so every contig that assembly contributes
-# walks first at rank 0. A diploid reference wants the haplotype (HG002#1); a
-# bare sample is enough where the reference is haploid, and leaving it off lets
-# file order pick, which the script reports on stderr.
-bash build_pggb_tabix.sh graph.gfa graph K12
-```
+## The graph track {#the-two-indexes-a-graph-track-reads}
 
-A plain GFA carries no reference of its own, which is why that third argument
-exists and why an rGFA needs no equivalent: `SR` already names which segments
-are the backbone.
-
-The rGFA route wants **GNU awk**. Its links pass builds a hash table with about
-760,000 keys, which gawk does in seconds and the BSD awk macOS ships does in
-hours; `brew install gawk` and putting its `gnubin` first on `PATH` is the
-difference. HPRC's 751,000 segments then index in about 45 seconds, peaking near
-3.7 GB.
-
-Scale is worth checking before pointing the plain-GFA route at a human graph. A
-pggb graph runs about 17 bp per segment, so its index grows with total sequence
-rather than with variation: five E. coli strains are 606,000 segments and build
-in about a minute, while release 2's per-chromosome pggb graph for chrY, the
-smallest of the 25, is 4.12 million segments and does not finish. At human
-scale, index the SV-resolution rGFA instead.
-
-The pair loads as an ordinary `FeatureTrack`, pointed at the shared prefix
-rather than at either file. The adapter resolves `<uri>.segs.bed.gz`,
-`<uri>.links.bed.gz` and both `.tbi`:
+The config's first track is the graph. Its `uri` is the prefix, from which the
+adapter resolves the segment and link pair, and `coarse` names the bubble tier
+beside it, which the graph pane cuts from instead once the window is wider than
+`aboveBpPerPx` bp per pixel. The script derives that handover from the graph's
+mean backbone segment: about 1,000 for HPRC, where a segment is 11 kb, and 1 for
+a pggb graph, where a segment is 17 bp.
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "my_graph_segments",
-  "name": "My graph (rGFA segments)",
+  "trackId": "hprc_graph",
+  "name": "hprc graph",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://example.com/graphs/my_graph",
-    "assemblyNameToPanSN": { "hg38": "GRCh38" }
+    "uri": "hprc",
+    "assemblyNameToPanSN": { "hg38": "GRCh38" },
+    "coarse": { "uri": "hprc.tier10000", "aboveBpPerPx": 1094 }
   },
-  "displayDefaults": {
-    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
-  }
+  "displayDefaults": { "showLabels": "none" }
 }
 ```
 
-<Figure caption="The HPRC graph's two indexes drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
+`assemblyNameToPanSN` ties your assembly to the graph's PanSN sample. The script
+reads the sample off the index, `GRCh38` here, and writes the map only when your
+assembly's name differs from it. The contig half of a PanSN name is ordinary
+refName aliasing your assembly already does, so an hg38 spelling chr6 as `6`
+needs nothing further.
 
-The colour jexl paints rank 0 one way and everything else the other, and on a
-reference window everything comes out rank 0. An rGFA tags an off-reference
-segment with the sample contig it came from, so `GRCh38#0#chr6` returns the
-backbone and nothing else, and the other colour appears only on a sample's own
-lane or in a graph view cut from the same pair.
+With the track showing, the segments tile the window and break where the graph
+branches, and the track menu's **Launch → Graph genome view (this region)**
+opens the window as a graph under the linear view, which then follows it.
 
-`assemblyNameToPanSN` ties your assembly to the graph's PanSN prefix. A PanSN
-name has two halves and only the first needs configuring: the **sample** half is
-this map, disambiguating an `hg38` assembly against a graph that also carries
-`CHM13#0#chr1`, and the **contig** half is ordinary refName aliasing your
-assembly already does, so an hg38 spelling chr6 as `6` needs nothing further.
+<Figure caption="The HPRC graph's segment index drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
 
-`RgfaTabixAdapter` is the adapter that cuts a subgraph from this pair of
-indexes, as `GbzBaseSyntenyAdapter` does from a database. The same pair behind a
-`BedTabixAdapter` draws as a feature track whose menu offers no graph.
+The other three tracks the script writes read the files beside the pair: the
+bubbles as a feature lane and again as a curve of segments per bubble, and the
+allele inventory as an alignments track, whose CIGAR draws a 63 kb insertion at
+its real magnitude where a feature track would draw it one pixel wide.
 
 ## Checking the index against the graph
 
@@ -199,216 +148,70 @@ of the segments it returned:
 ```bash
 # the first three columns are the stable sequence and the span, the fourth the
 # segment id and the fifth its rank
-tabix out.segs.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' | head -3
+tabix hprc.segs.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' | head -3
 
 # the same segment's S-line, straight out of the graph
-gfatools view -l s12829 -r 0 graph.sv.gfa.gz
+gfatools view -l s12829 -r 0 hprc-v2.1-mc-grch38.sv.gfa.gz
 ```
 
 The `SN` and `SO` on that S-line are the BED row's first two columns, and its
-`SR` is the fifth. Where the graph is a plain GFA there is no S-line to compare
-against, and the check is that the segment's interval falls inside the path the
-walk anchored on.
+`SR` is the fifth. An **empty result** where the reference is tiled means the
+query used the wrong namespace: segments are indexed under the graph's PanSN
+names, so a bare `chr1` finds nothing where `GRCh38#0#chr1` finds everything. A
+window with **backbone rows and no alleles** is a locus where the graph
+collapsed rather than one it holds nothing for; minigraph does that to
+near-identical segmental duplications.
 
-Two answers are worth reading rather than treating as failures. An **empty
-result** where the reference is tiled means the query used the wrong namespace:
-segments are indexed under the graph's PanSN names, so a bare `chr1` finds
-nothing where `GRCh38#0#chr1` finds everything. A window that comes back with
-**backbone rows and no alleles** is a locus where the graph collapsed rather
-than one it holds nothing for; minigraph does exactly that to near-identical
-segmental duplications.
+## A whole chromosome {#a-whole-chromosome-the-bubble-tier}
 
-## Where the graph varies: the bubble file
-
-A bubble is where haplotypes diverge and rejoin. One `gfatools` call over the
-same graph writes them all, with the shortest and longest allele each holds:
-
-```bash
-gzip -dc graph.sv.gfa.gz | gfatools bubble - \
-  | sort -k1,1 -k2,2n | bgzip > graph.bubbles.bed.gz
-tabix -p bed graph.bubbles.bed.gz
-```
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "my_graph_bubbles",
-  "name": "My graph bubbles",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "MinigraphBubbleAdapter",
-    "uri": "https://example.com/graphs/my_graph.bubbles.bed.gz",
-    "assemblyNameToPanSN": { "hg38": "GRCh38" }
-  }
-}
-```
-
-Bubbles are indexed under the graph's PanSN names, which is why this config
-carries `assemblyNameToPanSN` where the allele inventory below does not.
-
-`gfatools bubble` reads rGFA tags to place a bubble on a reference, so it
-returns nothing at all on a plain GFA that encodes the same thing in its paths.
-There, run `snarls_to_bubble_bed.py` over the snarl VCF `pggb -V` or
-`vg deconstruct` already produced, which writes this same BED from that
-decomposition:
-
-```bash
-python3 snarls_to_bubble_bed.py graph_snarls.vcf.gz graph.bubbles.bed
-```
-
-Whichever route wrote the file, its path count counts routes combinatorially
-rather than haplotypes observed, and saturates at `2147483647`, which the track
-labels uncountable.
-
-[Part 2's bubble track](/docs/tutorials/pangenome_hprc_part2#the-bubble-track)
-draws this file on the HPRC graph, so a lane built from your own has something
-to check against.
-
-## A whole chromosome: the bubble tier
-
-The track above draws one node per segment, so a window past a few hundred
-kilobases is more nodes than anything can lay out. Collapsing each bubble to a
-single node, with the invariant reference between bubbles as backbone, turns the
-same graph into something that fits on a screen. The bubble file is the input,
-so this needs no second pass over the graph:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_bubble_tier.sh
-bash build_bubble_tier.sh graph.bubbles.bed.gz graph.tier10000 10000
-```
-
-The threshold is on **content**, the larger of the reference span and the
-longest allele, rather than on `end - start`. A pure insertion is an alternative
-to nothing, so a large share of bubbles are zero-length on the reference and a
-threshold on span alone would drop every one of them, the graph's largest
-insertions among them.
-
-On HPRC's 130,510 bubbles, a whole 249 Mb chr1 comes back as 18,888 nodes at a
-threshold of 0, 3,342 at 1000 and 474 at 10000, against about 751,000 segments
-for the fine index over the same span. Pick the threshold for the widest window
-you mean to draw; a pggb graph wants a much lower one, its bubbles being mostly
-small.
-
-The result reads through the same adapter as the fine index, so choosing a level
-of detail is choosing a prefix:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "my_graph_tier",
-  "name": "My graph: bubble tier (one node per bubble)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "RgfaTabixAdapter",
-    "uri": "https://example.com/graphs/my_graph.tier10000",
-    "assemblyNameToPanSN": { "hg38": "GRCh38" }
-  }
-}
-```
-
-One setting has to move with it. The view refuses a cut over 5 Mb, which is a
-proxy for node count and a fair one at segment granularity, but a tier breaks
-the proxy: 5 Mb of a fine index is a few thousand segments where the same span
-is a few dozen tier nodes. A `GraphGenomeView` pointed at a tier carries
-**`maxRegionBp`** raised to the span it is drawing. The real ceiling is
-unchanged, since `maxGraphNodes` counts what actually came back.
-
-[Part 2 draws a whole chromosome](/docs/tutorials/pangenome_hprc_part2#a-whole-chromosome-as-a-graph)
-off the HPRC tier, at the scale this threshold is chosen for.
-
-## What the variation is: the allele inventory
-
-The bubbles report where the graph varies. One row per allele, anchored on the
-reference and carrying its size, reports what the variation is. It is derived
-from the two indexes rather than from the graph, so it costs seconds off a small
-pair rather than a re-read of the whole file, and it works on somebody else's
-hosted index with no graph in hand at all:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_alleles.sh
-bash build_rgfa_alleles.sh out
-```
-
-Each row has a `CIGAR` against the reference span it replaces (`2062M63348I`),
-which makes the lane legible: an insertion consumes no reference, so its start
-and end cannot give its size, and a plain feature track would draw a 63 kb
-allele one pixel wide. An `AlignmentsTrack` walks the CIGAR instead and draws
-the insertion at its real magnitude, with the same glyph it draws for a read:
-
-```json addtrack
-{
-  "type": "AlignmentsTrack",
-  "trackId": "my_graph_alleles",
-  "name": "My graph: allele inventory",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://example.com/graphs/my_graph.alleles.bed.gz"
-  }
-}
-```
-
-The magnitude is measured and the position inside the span is not. A bubble
-encodes what sequence replaces a reference interval, never where inside that
-interval it sits, so the CIGAR puts the indel at the end of the span by
-convention.
-
-`discoveryRank` and `firstSeenIn` on each row are the lowest `SR` on the
-allele's path and the assembly that goes with it. Read them as attribution
-rather than as rarity: `SR` is construction order, so a haplotype earlier in
-that order may lack the sequence, may have had its copy merged into an existing
-path, or may simply not have aligned there. The script's closing summary prints
-how many rows are nested, which is the filter (`jexl:feature.nested==0`) to
-apply before reading lengths in bulk.
-
-[Part 2's allele inventory](/docs/tutorials/pangenome_hprc_part2#the-allele-inventory)
-is the same file over HPRC, read against the callset beside it.
+The tier the script wrote collapses each bubble to one node, with the invariant
+reference between bubbles as backbone. Its threshold is on **content**, the
+larger of the reference span and the longest allele, because a pure insertion is
+an alternative to nothing and a threshold on span would drop every one. On
+HPRC's 130,510 bubbles a whole 249 Mb chr1 comes back as 474 nodes at 10,000,
+against about 751,000 segments in the fine index. `--tier` moves it; a pggb
+graph defaults to 50, since its bubbles are mostly single bases.
 
 ## Who carries what
 
-An rGFA does not record who carries a segment. `SR` is build order, so a segment
-names the assembly that contributed it first and never the rest, and this is the
-one thing the format leaves out. There are two ways to get it back, and which
-one is open to you depends on what you have beside the graph.
+An rGFA does not record who carries a segment. Its rank is build order, so a
+segment names the assembly that contributed it first and never the rest. Two
+ways to get carriage back, depending on what sits beside the graph.
 
-If you have the **assemblies**, map each one back through the graph and ask for
-its path rather than an alignment. One call per sample is the whole of it:
+With the **assemblies**, map each one back through the graph and ask for its
+path rather than an alignment:
 
 <!-- from: scripts/build_minigraph_paths.sh -->
 
 ```bash
 # --call asks for the path each sample takes through every bubble rather than an
-# alignment. It emits one line per `gfatools bubble` line above, in the same
-# order for every sample, so line N of one sample and line N of another are the
-# same bubble and can be joined on line number alone.
-# -xasm is the assembly-to-graph preset, and -c asks for the base-level
+# alignment. It emits one line per `gfatools bubble` line, in the same order for
+# every sample, so line N of one sample and line N of another are the same
+# bubble. -xasm is the assembly-to-graph preset, and -c asks for the base-level
 # alignment the call is read off.
 minigraph -cxasm --call -t 8 graph.rgfa.gz sample.fa > sample.call.bed
 ```
 
-Run it once per assembly with the reference first: the reference's path through
-a bubble is the allele every other sample's path is compared against.
+Run it once per assembly with the reference first.
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
 runs the loop and writes one tabix-indexed row per bubble per sample, which
 draws as one lane per haplotype.
 
-If your graph is a **plain GFA**, you already have it and need no assemblies:
-the path walk that built the index recorded who visits each segment, written
-into the index as an `SM:Z:` tag. That reaches the node details panel as
-`carriedBy`, and reaches a linear track as `feature.samples` and
-`feature.carriers`, so a lane can be colored by how many haplotypes carry each
-segment:
+With a **plain GFA** you already have it: the path walk that built the index
+recorded who visits each segment as an `SM:Z:` tag, which reaches the node
+details panel as `carriedBy` and a linear track as `feature.samples` and
+`feature.carriers`, so the graph track can be colored by how many haplotypes
+carry each segment:
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "my_graph_carriage",
-  "name": "My graph: carriage per segment",
-  "assemblyNames": ["hg38"],
+  "trackId": "graph_carriage",
+  "name": "graph: carriage per segment",
+  "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://example.com/graphs/my_graph",
-    "assemblyNameToPanSN": { "hg38": "GRCh38" }
+    "uri": "graph"
   },
   "displayDefaults": {
     "color": "jexl:feature.carriers>3 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
@@ -417,69 +220,54 @@ segment:
 ```
 
 Carriage is per haplotype, written `HG002.1`, because keying it on the sample
-alone merges a diploid sample's two copies and reports a segment carried only on
-the maternal one as "HG002 carries it". `feature.carriers` is absent rather than
-`0` on an rGFA-derived index, which is the difference between the two routes
-showing up in a jexl.
-
+alone merges a diploid sample's two copies.
 [Part 2 reads carriage at the graph's own granularity](/docs/tutorials/pangenome_hprc_part2#carriage-at-the-graphs-own-granularity)
-from a file built the way this section builds one.
+from a file built this way.
 
 ## Every haplotype's walk: a gbz-base database
 
 A `.gbz` is vg's indexed form of a graph and holds one walk per haplotype, which
 is a copy count at a repeat and a carriage answer everywhere else. Reading it in
 the browser means converting it to a **gbz-base database**, the graph in SQLite
-with its tables laid out so a window is a handful of range requests rather than
-a whole-file download.
-
-Three commands stand between a `.gbz` and the track, none of them JBrowse. The
-chains come first, because a query that reaches the variation around a window
-rather than only the reference walk through it needs the snarl decomposition,
-and gbz-base stores it as links on the boundary nodes:
+laid out so a window is a handful of range requests. Three commands stand
+between a `.gbz` and the track, none of them JBrowse:
 
 ```bash
-# vg 1.69.0 or newer reads the chains out of a distance index. A top-level
-# index (vg index --no-nested-distance) is enough; the nested one is not needed
-# and is far more expensive on a human graph.
+# vg 1.69.0 or newer reads the chains out of a distance index; a top-level
+# index (vg index --no-nested-distance) is enough
 vg chains graph.gbz graph.dist > graph.chains
 
 # the database itself: one row per node and per path, plus those chains.
-# Without --chains it still builds and a window comes back as the reference
-# walk alone.
+# Without --chains a window comes back as the reference walk alone.
 gbz-base construct --chains graph.chains graph.gbz
 ```
 
 `gbz-base` is `cargo install gbz-base`, and writes `graph.gbz.db` beside the
 input. Then name the haplotypes, which the database cannot do on its own:
-upstream gbz-base reports `unknown#1`, `unknown#2` for the walks in a subgraph,
-because it stores no map from a GBWT position back to a sample.
+upstream gbz-base reports `unknown#1`, `unknown#2` for the walks in a subgraph.
 
 <!-- from: scripts/build_hprc_gbz_index.sh -->
 
 ```bash
 # --interval is how often a GBWT position is recorded along each path, in bp.
 # Denser means a bigger file and a shorter walk at query time to identify a
-# haplotype. 16384 over the 464 haplotypes of the HPRC graph, with the anchor
-# rows below, is 178.5M recorded positions and a 7.9 GB companion, written in
-# about 13 minutes on 24 cores.
-# --anchor-spacing is how often an anchor node is chosen along each reference
-# path, the node most haplotypes pass in the half spacing before each multiple;
-# every haplotype's visit through it is recorded, which is what lets a window
-# for a chosen set of lanes walk only those haplotypes. 131072 is the default.
-# --output writes a companion file instead of adding the tables to the
-# database, which is the form to use on a database you did not build.
+# haplotype. --anchor-spacing is how often an anchor node is chosen along each
+# reference path, the node most haplotypes pass in the half spacing before each
+# multiple; every haplotype's visit through it is recorded, which is what lets a
+# window for a chosen set of lanes walk only those haplotypes. --output writes
+# a companion file instead of adding tables to the database, the form to use on
+# a database you did not build.
 gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
   --output graph.haplotype-index.db graph.gbz
 ```
 
-The sort holds every recorded position in memory, so give it room. On a
-16-thread Intel Mac the walk aborts inside libmalloc's nano zone;
-`MallocNanoZone=0` or `--threads 8` gets past it, at over an hour of walking.
+Over HPRC's 464 haplotypes that is a 7.9 GB companion written in about 13
+minutes on 24 cores. The sort holds every recorded position in memory, so give
+it room; on a 16-thread Intel Mac the walk aborts inside libmalloc's nano zone,
+and `MallocNanoZone=0` or `--threads 8` gets past it.
 
-The database and the haplotype-index companion file go somewhere that serves
-range requests, and their two URLs are the `uri` and the
-`haplotypeIndexLocation` of the track:
+The database and the companion go somewhere that serves range requests, and
+their two URLs are the `uri` and the `haplotypeIndexLocation` of the track:
 
 ```json addtrack
 {
@@ -513,50 +301,35 @@ range requests, and their two URLs are the `uri` and the
 ```
 
 The companion records the graph's path count and the reader refuses one built
-for a different graph, so a mismatched pair fails rather than drawing the wrong
-walks. `nodeLimit` guards the other end. It fails a window rather than letting
-the display sit on a whole chromosome, and the failure names a zoom that would
-fit, so it has to clear the largest window you mean to open.
-
-What that track then does with the lanes, and what a window costs to read, is
-[the HPRC page's](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph)
-subject.
+for a different graph. `nodeLimit` fails a window rather than letting the
+display sit on a whole chromosome, and the failure names a zoom that would fit.
+What the track then does with the lanes is
+[part 3's](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph) subject.
 
 ## Reproduce it end to end
 
-Two scripts and one `gfatools` call build the graph track, the bubbles and the
-allele inventory for any rGFA, with the tools listed under
+The command at the top is the whole build for the graph track, the bubbles, the
+tier and the allele inventory, with the tools under
 [Prerequisites](#prerequisites):
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_alleles.sh
-bash build_rgfa_tabix.sh hprc-v2.1-mc-grch38.sv.gfa.gz out
-bash build_rgfa_alleles.sh out
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
+bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
 ```
 
-- [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-  writes the two tabix indexes `RgfaTabixAdapter` reads, straight from the
-  gzipped rGFA with nothing to unpack.
-- [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
-  reads only those two indexes and never the graph.
-- [`build_pggb_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pggb_tabix.sh)
-  is the same first step for a plain GFA, and
-  [`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
-  the coarse tier for either.
-
-`build_rgfa_tabix.sh` takes an optional third argument, the reference's PanSN
-sample, and writes a second index pair keyed only under that sample's sequences
-(`<prefix>.ref.*`). It is a fraction of the full pair's index size and returns
-byte-identical rows, and it is for a segments track drawn on the reference. **Do
-not point a graph cut at it**: **Graph context** defaults to 1 hop, a hop
-follows an allele's interior segments, and those are indexed under the donor
-contigs the small pair drops, so the graph comes back as though the setting were
-**None**.
-
-The gbz-base companion index for HPRC's own database has a script of its own,
-which downloads the 5.5 GB `.gbz`, builds `gbz-haplotype-index` from source and
-runs the one command [above](#every-haplotypes-walk-a-gbz-base-database):
+[`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
+fetches and runs
+[`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
+or
+[`build_pggb_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pggb_tabix.sh),
+then
+[`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
+and
+[`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh),
+each of which runs on its own too. The gbz-base companion for HPRC's own
+database has a script of its own, which downloads the 5.5 GB `.gbz`, builds
+`gbz-haplotype-index` from source and runs the one command
+[above](#every-haplotypes-walk-a-gbz-base-database):
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_gbz_index.sh
