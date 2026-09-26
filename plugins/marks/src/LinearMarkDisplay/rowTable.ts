@@ -9,28 +9,27 @@ import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
  * A region under `rows` with every `row` lane a key: each row of a section the
  * worker stacked holds the key of the value the section is, so the lanes stay
  * put whatever order or focus the rows take. A region fetched before the split
- * keeps its rows, read as keys until its refetch lands.
+ * names no value, so every instance of it is hidden until its refetch lands.
  */
 export function keyRegion(
   region: MarkRegionData,
   rowKeys: RowKeys,
 ): MarkRegionData {
   const { facet } = region
-  if (!facet) {
-    return region
-  }
-  const depth = facet.reduce((n, s) => Math.max(n, s.firstRow + s.rowCount), 0)
+  const depth =
+    facet?.reduce((n, s) => Math.max(n, s.firstRow + s.rowCount), 0) ?? 0
   const keyOf = new Uint32Array(depth).fill(HIDDEN_ROW)
-  for (const { key, firstRow, rowCount } of facet) {
+  for (const { key, firstRow, rowCount } of facet ?? []) {
     keyOf.fill(rowKeys.keyOf(key), firstRow, firstRow + rowCount)
   }
   return {
     ...region,
-    layers: region.layers.map(layer =>
-      layer.row
-        ? { ...layer, row: layer.row.map(r => keyOf[r] ?? HIDDEN_ROW) }
-        : layer,
-    ),
+    layers: region.layers.map(layer => ({
+      ...layer,
+      row: layer.row
+        ? layer.row.map(r => keyOf[r] ?? HIDDEN_ROW)
+        : new Uint32Array(layer.count).fill(facet ? 0 : HIDDEN_ROW),
+    })),
   }
 }
 
@@ -50,20 +49,24 @@ export function markRowTable(
 }
 
 /**
- * 1 at each key the table draws, or undefined where every key a loaded region
- * carries is drawn: a name only departed regions or an earlier `rows.field`
- * knew hides nothing.
+ * 1 at each key the table draws, or undefined where every loaded instance is
+ * drawn: a name only departed regions or an earlier `rows.field` knew hides
+ * nothing, and a region fetched before the split hides all of its own.
  */
 export function drawnKeysOf(
   { slot }: RowTable,
   regions: Iterable<MarkRegionData>,
   rowKeys: RowKeys,
 ): Uint8Array | undefined {
+  const mask = () => Uint8Array.from(slot, s => (s === HIDDEN_ROW ? 0 : 1))
   for (const { facet } of regions) {
-    for (const { key } of facet ?? []) {
+    if (!facet) {
+      return mask()
+    }
+    for (const { key } of facet) {
       const k = rowKeys.lookup(key)
       if (k !== undefined && slot[k] === HIDDEN_ROW) {
-        return Uint8Array.from(slot, s => (s === HIDDEN_ROW ? 0 : 1))
+        return mask()
       }
     }
   }

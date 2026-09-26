@@ -313,6 +313,28 @@ test('a value only a departed load knew hides nothing', () => {
   expect([...display.drawnKeys!]).toEqual([0, 1, 0, 0, 0])
 })
 
+// The refetch the split triggers replaces it; until then it names no value.
+test('a region fetched before the split draws nothing and counts for nothing', () => {
+  const display = loaded({ rows: 'source' })
+  const { facet: _, ...unsplit } = workerResult(
+    display,
+    features([
+      { source: 'aunt', tissue: 'kidney', start: 0, end: 400, score: 50 },
+      { source: 'mom', tissue: 'kidney', start: 500, end: 900, score: 60 },
+    ]),
+  )
+  display.setRpcData(1, unsplit, { ...REGION, refName: 'ctgB' })
+  const { row } = display.rpcDataMap.get(1)!.layers[0]!
+  expect([...row!].map((_, i) => rowSlot(row, i, display.rowTable))).toEqual([
+    undefined,
+    undefined,
+  ])
+  expect(display.drawnKeys).toBeDefined()
+  expect(sweepHits(display).every(hit => hit.regionIndex === 0)).toBe(true)
+  expect(legendValues(display)).toEqual(['brain', 'heart', 'liver'])
+  expect(display.autoscaleRange?.[1]).toBeLessThan(50)
+})
+
 test('rows beside a facet bind no table, and the facet offsets its rows', () => {
   const display = loaded({ facet: 'source', rows: 'source' })
   expect(display.rowTable).toBeUndefined()
