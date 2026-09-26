@@ -1,6 +1,6 @@
 ---
 name: arc-antialiasing-without-msaa
-description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arcs stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the whole arc band by at most one 8-bit level. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch — since 2026-09-05 derived from `//! coverage: analytic` on every registered pass, which flipped synteny and dotplot to 1 (cross-backend gate canvas2d vs WebGPU: 44 pairs, max 1.28%, targeted pairs ≤0.18%).
+description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arc's stroke stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the arc band by at most one 8-bit level. The dome's FEET are the exception and were missed until 2026-09-25: the 64-chord hull sags inside the offset curve where the curvature radius falls under a pixel, so the strip's own silhouette carries up to alpha 0.83 there, which is what the capture's unexplained 54-pixel strip at the band anchor was. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is those feet, the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch — since 2026-09-05 derived from `//! coverage: analytic` on every registered pass, which flipped synteny and dotplot to 1 (cross-backend gate canvas2d vs WebGPU: 44 pairs, max 1.28%, targeted pairs ≤0.18%); `linkMark.slang` carries that directive over the same hull and so declares more than it holds.
 ---
 
 # Antialiasing arcs without MSAA
@@ -18,8 +18,8 @@ canvas clamp is 316.5 MiB on its own. Nothing in the session counts any of it.
 The reason it exists, as far as anyone remembers, is that read-connection arcs
 looked pixelated.
 
-**They no longer depend on it.** This doc shows that, says what does still depend
-on it, and ranks what to do.
+**The arc's stroke no longer depends on it; the dome's two feet still do.** This
+doc shows both, says what else depends on it, and ranks what to do.
 
 ## The short answer
 
@@ -31,7 +31,8 @@ ramps its own alpha over exactly one *device* pixel:
 
 ```slang
 // arc.slang fs_main
-float alpha = strokeCoverage(arcDistance(fragIn), fragIn.halfWidthPx, u);
+float alpha =
+  edgeCoverage(fragIn.halfWidthPx - arcDistance(fragIn), u.devicePixelRatio);
 return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 ```
 
@@ -39,26 +40,67 @@ MSAA cannot reach that. A WGSL fragment shader is invoked at pixel frequency —
 nothing in the tree declares `sample_index`, and no pipeline enables
 alpha-to-coverage — so all four samples of a covered pixel receive the *same*
 shaded value and the resolve is the identity there. The only place MSAA changes
-anything is the **geometric edge of the primitive**, and the arc passes
-deliberately inflate their geometry one CSS px past the ink
-(`evalArcVertex`'s `hw = halfWidthPx + STROKE_AA_PX`, and `segmentQuadLocal`
-for the flat/tick/linked-read forms). Substituting the hull boundary
-`d = halfWidthPx + 1` into the ramp:
+anything is the **geometric edge of the primitive**, and that is the criterion
+every row below is decided by: *substitute the geometry's own boundary into the
+fragment's coverage and read off the alpha it paints there.* Zero means MSAA had
+nothing to smooth. Anything above zero is ink the rasterizer cuts, and that is
+exactly what MSAA resolves.
+
+The arc passes inflate their geometry by half a ramp past the ink
+(`evalArcVertex`'s `hw = halfWidthPx + aaHalfPx(dpr)`, and `segmentQuadLocal`
+for the flat/tick/linked-read forms), and `aaHalfPx(dpr)` is `0.5 / dpr` CSS px
+— exactly the reach of the ramp `edgeCoverage` runs. Substituting that offset
+`d = halfWidthPx + 0.5 / dpr`:
 
 ```
-strokeCoverage(d, hw) = clamp((hw - d) * dpr + 0.5, 0, 1) = clamp(0.5 - dpr, 0, 1) = 0
+edgeCoverage(halfWidthPx - d, dpr) = clamp(-0.5/dpr * dpr + 0.5, 0, 1) = 0
 ```
 
 The blend is `src-alpha / one-minus-src-alpha`, so alpha 0 is a no-op on the
-framebuffer. **Every pixel MSAA could have smoothed on an arc is a pixel the
-shader already painted with zero alpha.**
+framebuffer. Note it comes out to zero *exactly*, with no slack: the pad is the
+ramp's reach and not a pixel more, which is deliberate (`segmentQuadLocal`'s own
+note) and which leaves the claim resting entirely on the geometry landing where
+the arithmetic says.
 
-That is not an argument, it is measurable, and it measures out (§Evidence): over
-the whole arc band, MSAA 4 and MSAA 1 differ by **at most one 8-bit level**.
+**On the dome it does not, at the two feet.** The offset above is a distance
+from the *curve*; the hull is a 64-chord polyline through points on that offset,
+and a chord sags inside the curve it spans by its own sagitta. `evalArcVertex`
+steps uniformly in the ellipse's parametric angle, which is not uniform in
+anything the sagitta cares about: over the trip from apex to foot the chord
+shortens from 62 px to 2 px while the curvature radius falls from `rx²/ry` to
+`ry²/rx`, and the second falls much faster. At the band's own aspect (rx 1266,
+ry 25) the foot's radius of curvature is 0.49 px and the first chord runs
+1.96 px across it, so it cuts the corner rather than tracing it — the same
+"converging to the corner rather than to zero" `ca6637afe4` found in the OLD
+`dist` varying, surviving one level up in the geometry. Sampling the strip's
+outer polyline against a float64 distance-to-ellipse and reading the fragment's
+own ramp off it (dpr 2, the 1.5-device-px stroke floor, 64 segments):
 
-So the cheapest thing that lets us drop MSAA *for the arcs* is nothing at all;
-it is already done. The cost of dropping it globally is paid by three other
-things, none of them curves.
+| rx x ry | alpha at the foot chord (seg 0 / 63) | next three chords in | rest of the hull |
+| --- | --- | --- | --- |
+| 1266 x 25 | 0.83 | 0.21, 0.12, 0.09 | ~0.016 |
+| 1900 x 12 | 1.00 | 0.10, 0.06, 0.04 | ~0.008 |
+| 633 x 25 | 0.48 | 0.20, 0.12, 0.09 | ~0.016 |
+| 200 x 25 | 0.14 | 0.12, 0.09, 0.08 | ~0.016 |
+| 1266 x 114 | 0.78 | 0.61, 0.46, 0.36 | ~0.07 |
+
+At dpr 1 the 1266x25 foot reads 0.52. A far pair's legs are clean — the same
+sweep over `wideCircleLeg` tops out at 0.0012 at r = 2000 px and 0 above it, so
+`legSweepAngle`'s "puts a chord's sagitta below a pixel" holds as written.
+
+**Every pixel MSAA could have smoothed on an arc is one the shader already
+painted with zero alpha, except at the feet.** The feet are a few px of
+near-vertical flank at each end of every height-clamped dome, hard-cut on their
+outer side at up to full ink, and they are where MSAA is still doing work.
+§Evidence measured that without naming it:
+its 54 above-threshold pixels sit "in a four-row strip at the band anchor, where
+a mat of very short arcs meets the baseline", which is the foot. Over the rest
+of the band, MSAA 4 and MSAA 1 differ by **at most one 8-bit level**.
+
+So the cheapest thing that lets us drop MSAA *for the arc's stroke* is nothing
+at all; it is already done. The feet are a hull question — `ARC_CURVE_SEGMENTS`
+and how it is spent, not the sample count — and the cost of dropping MSAA
+globally is paid by three other things, none of them curves.
 
 ## What the tree actually does today
 
@@ -66,14 +108,18 @@ things, none of them curves.
 
 | piece | where | what it does |
 | --- | --- | --- |
-| hull | `arc.slang` `evalArcVertex`, `ARC_CURVE_SEGMENTS = 64` | triangle strip inflated ±(halfWidth + `STROKE_AA_PX`) along the curve normal — a cover, never the silhouette |
+| hull | `arc.slang` `evalArcVertex`, `ARC_CURVE_SEGMENTS = 64` | triangle strip inflated ±(halfWidth + `aaHalfPx(dpr)`) along the curve normal — a cover everywhere the chord sagitta stays under the ramp, and the silhouette at the dome's feet, where it does not |
 | distance | `sdEllipse` / `distToWideCirclePx` (`alignmentsUniforms.slang`) | exact closed-form distance to the half-ellipse (Inigo Quilez's quartic solve) or to the far pair's wide circle, in **CSS px** |
-| ramp | `strokeCoverage` → `strokeAaRamp` → `aaRamp` | linear coverage over `STROKE_AA_PX / dpr` CSS px = one **device** pixel |
-| width floor | `arcStrokeHalfPx`, `GpuAlignmentsRenderer.ts:227` | `max(readConnectionsLineWidth, 1.5 / dpr)` — no arc is ever thinner than 1.5 device px |
+| ramp | `edgeCoverage` → `aaRamp` (`antialias.slang`) | linear coverage over `aaPx(dpr)` = `1 / dpr` CSS px = one **device** pixel |
+| width floor | `arcStrokeHalfPx`, `arcBandUniforms.ts:89` | `max(readConnectionsLineWidth, 1.5 / dpr)` — no arc is ever thinner than 1.5 device px |
 
 The same pattern covers the other three band passes: `arcFlat.slang`
-(`sdSegment` + `strokeCoverage` + a ramped dash), `arcLine.slang` (`abs(dx)` +
-`strokeCoverage` + a ramped dash), `linkedReadLine.slang` (`sdSegment`).
+(`buttSegmentCoverage` + a ramped dash), `arcLine.slang` (`abs(dx)` +
+`edgeCoverage`), `linkedReadLine.slang` (`buttSegmentCoverage`). Those pad with
+`segmentQuadLocal`, which is a quad rather than a chorded hull, so the
+substitution is the whole story for them and it comes out 0 on every edge the
+fragment measures — all four for the two butt-capped forms, the two long sides
+for the tick, whose ends are the band cut instead.
 
 `ca6637afe4`'s message is worth reading in full before proposing anything here.
 The pixelation it fixed was **not** a sampling problem. The strip used to carry
@@ -112,17 +158,78 @@ the arc plugin that stroked a main-thread Canvas2D is gone.
 
 `packages/render-core/src/shaders/antialias.slang` is the shared rule, and
 [reference/GPU_RENDERING.md](../../reference/GPU_RENDERING.md) §"Antialiasing
-ramps" is the writeup. Classifying every fragment shader by whether it computes
-its own coverage:
+ramps" is the writeup. Classifying every fragment shader by **the substitution
+in §"The short answer"** — the geometry's own boundary put through the
+fragment's coverage — and not by whether it computes a coverage at all. That
+weaker test is what this list used to be sorted on, and it is what let every
+wrong row below in: a shader can measure a beautiful SDF and still hand the
+rasterizer a lit edge, because what decides the row is where the geometry stops
+relative to where the ramp reaches zero.
 
-**Analytic — MSAA-invariant.** `arc`, `arcFlat`, `arcLine`, `linkedReadLine`,
-`indicator` (alignments); the dotplot capsule; manhattan and every `pointGlyph`;
-`wiggleLine`'s smooth mode; both synteny curve/straight fills and edges (via
-`syntenyTypes.slang`'s `fillFs` / `strokeFs`); `variant.slang`.
-**`wiggle.slang`'s xyplot bar joined this list on 2026-08-22** and is why the
-list below is one entry shorter than it was.
+**Analytic — MSAA-invariant.** `arcFlat` and `linkedReadLine` (alignments); the
+dotplot capsule; `wiggleLine`'s smooth mode (`wiggleLineCenter.slang`); both
+synteny curve/straight fills and edges (via `syntenyTypes.slang`'s `fillFs` /
+`strokeFs`); the circular view's `ringWarp`. Each pads by exactly the ramp's own
+reach and no shape intervenes between the pad and the ink —
+`segmentQuadLocal`, `capsuleQuadLocal`, `straightGeometry`'s `pad`, and
+`ringWarp`'s rim polygons, which circumscribe the outer rim and inscribe the
+inner one with a device pixel to spare. Re-checked 2026-09-25 by substitution;
+these are the rows that came out 0.
 
-**The canvas glyph family was on that list and neither member belongs there**,
+**Analytic except at one named feature**, which is a real answer and not a
+hedge — the exception is a countable number of pixels and it says what a flip
+would cost:
+
+- **`arc` and `linkMark`, except at a clamped dome's two feet** — the hull table
+  in §"The short answer". Everywhere else on the dome the chord sagitta is under
+  the ramp; at the feet it is not, and the strip's outer polyline is the
+  silhouette carrying up to full ink. `linkMark.slang` is `arc.slang`'s
+  geometry, 64 segments and all, **and it declares `//! coverage: analytic`** —
+  so a mark display built only of link marks derives `sampleCount` 1 today and
+  loses those feet. That is the one wrong `analytic` in the tree.
+- **`arcLine`, except at the two band cuts.** The tick's long sides substitute
+  to 0; its ends are square-cut at the band's top and bottom and carry full ink
+  there. Normally the `devBand` scissor takes them, but `devicePxBand` *rounds*
+  the band to whole device px (`Math.round(cssStart * dpr)`) while the quad's
+  own ends stay where the band put them, so where the rounding goes outward up
+  to half a device row of full ink sits inside the scissor on fractional
+  rasterizer coverage. Where it goes inward the scissor cuts on an integer
+  boundary, which is exact at either sample count.
+- **`indicator` (`coverageIndicator.slang`), except at its top edge.** Its two
+  diagonals fade from the barycentric zero outward, so `smoothstep(0, 1, 0)` is
+  alpha 0 exactly on both — correctly classified, for the right reason. The
+  third edge is the horizontal top at `covAreaTop`, which no term measures: a
+  7px-wide unsnapped row of full ink per indicator.
+- **`wiggle.slang`'s xyplot bar and `barMark.slang`, except on their vertical
+  cuts** — which is the trade option 4's first bullet already describes, stated
+  here as the row it is. The horizontal cuts pad a full `aaPx` and substitute to
+  0; the verticals are hard because bins tile. `barMark.slang`'s header says so
+  itself and declines the directive on exactly that ground, which is the model
+  for how a row like this should be written down.
+- **`wiggleBand`, except on its vertical cuts**, for the same reason and with
+  the same tiling: only the two ends of a contiguous run are exposed. It carries
+  `//! coverage: analytic` on the strength of the sloped edges; the exposure is
+  two columns per run rather than per bin, which is why this is a footnote and
+  `barMark`'s is not.
+- **`pointMark` (manhattan and the wiggle scatter), except in extent-bar mode.**
+  The disc, diamond and triangle pad by their own miter reaches
+  (`glyphExpand`, `pointGlyphPad.test.ts`) and substitute to 0. `SHAPE_BAR` —
+  taken whenever `pointDrawsBar`, i.e. a bin wider than its glyph — is
+  `coverage = 1.0` on an unpadded, unsnapped quad.
+- **`chevron.slang`, except at its caps** — below, where the canvas glyph family
+  is worked through.
+
+**`variant.slang` does not belong on any of those lists.** Its `SHAPE_RECT`
+branch, which is every ordinary genotype cell, returns the instance colour flat;
+x is pixel-snapped (`snappedCellLeftPx`) but y is deliberately fractional, so
+both horizontal edges land mid-device-pixel. The inversion triangle is worse
+than unramped: `triSdfRight`'s `dLeft` is zero **on the quad's own right edge**,
+so the ramp reads 0.5 there and the rasterizer cuts the outer half — the
+half-alpha hard edge `capsule.slang`'s header warns about, arrived at from the
+other direction. Only its two diagonals substitute to 0.
+
+**The canvas glyph family was also on that list and neither member belongs
+there**,
 checked 2026-09-25 against this doc's own criterion — that the shader paint zero
 alpha where the primitive ends. `continuation.slang` fails it outright: its
 `edgeAlpha` is `1 - smoothstep(0.5, 1.5, minBary / fwidth(minBary))`, which is
@@ -137,10 +244,18 @@ tip. Neither carries `//! coverage: analytic`, and neither should until that is
 looked at; annotating them alone moves no bytes anyway, since
 `deriveSampleCount` needs `line` and `arrow` too.
 
-**Pixel-snapped — MSAA has nothing to smooth.** `rect.slang` snaps both x
-(`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY + 0.5)`,
-`snapBoxHeightPx`) to whole CSS px, which at dpr 2 is an even device px.
-`multiRow.slang` and the canvas glyph family ride the same helpers.
+**Pixel-snapped — MSAA has nothing to smooth, at an integer dpr.** `rect.slang`
+snaps both x (`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY +
+0.5)`, `snapBoxHeightPx`) to whole CSS px, which at dpr 2 is an even device px;
+the crisp small-point square (`crispSquareTopLeftPx`, shared by manhattan and
+wiggle's scatter) is the same rule. Two qualifications the earlier draft of this
+row did not carry. **A whole CSS px is a whole device px only when dpr is a
+whole number** — at the 1.25 / 1.5 / 1.75 a fractionally-scaled desktop hands
+`getDpr`, every snapped edge lands mid-device-pixel and MSAA resolves it, so
+`rect.slang`'s `//! coverage: analytic` is a claim about the reader's monitor.
+And the rest of the canvas glyph family rides only the **y** helper
+(`snapBoxCenterY`): `arrow`, `chevron` and `continuation` all take x straight
+off `bpToClipX` unsnapped.
 
 **Deliberately MSAA-invariant.** `variantMatrix.slang` reconstructs the pixel
 centre (`floor(position.x) + 0.5`) and multiplies by its own sub-pixel coverage
@@ -149,10 +264,12 @@ deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
 
 **Leaning on the multisampled target, and saying so in the source:**
 
-- `wiggle.slang` — density and the crisp small-point square only, since
-  2026-08-22. Density's cuts are row boundaries that tile and its datum is the
-  colour, so it is a refusal rather than a leftover; the small square is
-  pixel-snapped and has nothing to smooth.
+- `wiggleDensity.slang` — a pass of its own, not a branch of `wiggle.slang` as
+  this bullet used to say. Its cuts are row boundaries that tile and its datum
+  is the colour, so it is a refusal rather than a leftover.
+- `wiggle.slang` — the crisp small-point square only, since 2026-08-22, and it
+  is pixel-snapped so it has nothing to smooth at a whole dpr. The bar's
+  vertical cuts are the pass's real exposure and are in the list above.
 - `wiggleLine.slang` — the step-line's quads. Also now a refusal: a feature draws
   three square-capped quads that deliberately overlap at the joints, so
   per-fragment coverage would double-blend a lattice of darker joints.
@@ -163,6 +280,13 @@ deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
 - `arrow.slang` — the strand arrowhead is a 5x7 CSS px triangle, flat-filled.
 - `hic.slang`, `ldGenomic.slang`, `ldUniform.slang` — cells laid out on a
   45°-rotated grid (`diagonalGrid.slang`). **Every visible edge is a diagonal.**
+- The ones this list had never reached, all flat fills of an unpadded quad, all
+  found by the same substitution on 2026-09-25: `arcMarker`, `connectingLine`,
+  `overlap`, `clip`, `packedColorQuad` (alignments); `line` (canvas); the mark
+  family's `spanMark`, `rowRect` and `rowTable`; the score-example's `score`.
+  `barMark` is the one of them that reasons about the question in its own
+  header, and its conclusion — analytic horizontals, hard verticals, no
+  directive — is the shape the rest of them would reach.
 
 The Hi-C / LD family is the interesting one, because it is not an oversight.
 GPU_RENDERING.md's own list of AA-width cases ends with "**Tiled cells** (hi-C
@@ -217,7 +341,9 @@ Differences between the 4x and 1x captures, over the whole 2560x1800 page:
 
 - **arcs — 848 pixels differ at all (0.018%), and only 54 by more than 8/255.**
   Those 54 sit in a four-row strip (device y 394-397) at the band anchor, where
-  a mat of very short arcs meets the baseline. Restricted to the arc band proper
+  a mat of very short arcs meets the baseline — **which is the dome feet**, and
+  they went unexplained here until the hull was substituted into the ramp on
+  2026-09-25 (§"The short answer"). Restricted to the arc band proper
   (device rect 110,375 1700x90 — the full sweep of a 1266-px-wide dome, both
   steep feet and the flat apex), **576 pixels differ and the maximum channel
   delta is 1**, i.e. resolve rounding. Total ink over the band is identical to
@@ -520,7 +646,10 @@ if someone looks at a Hi-C track at 1x and says it is fine.
 **Already built**, 2026-08-01, `ca6637afe4`. Listed so the next session does not
 propose it. If the arcs ever look pixelated again, the thing to check is
 `arcStrokeHalfPx`'s 1.5-device-px floor and whether the hull still contains the
-ink (`ARC_CURVE_SEGMENTS`, `legSweepAngle`), not the sample count.
+ink (`ARC_CURVE_SEGMENTS`, `legSweepAngle`), not the sample count. **It does
+not, at a clamped dome's feet** — that check was written here as a hypothetical
+and came back positive when someone finally ran it (§"The short answer"), and
+what it costs a flip is the row in the list above.
 
 ### 4. Give the three remaining non-tiled hard-edged marks their own coverage
 
