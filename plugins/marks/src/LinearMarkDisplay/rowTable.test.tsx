@@ -279,6 +279,11 @@ test('a rows field change starts a new key space', () => {
   const display = loaded({ rows: 'source' })
   const { rowKeys } = display
   setConf(display.conf, ['rows', 'field'], 'tissue')
+  const stale = display.rpcDataMap.get(0)!.layers[0]!.row!
+  expect([...stale].map((_, i) => rowSlot(stale, i, display.rowTable))).toEqual(
+    new Array(stale.length).fill(undefined),
+  )
+  expect(display.rowKeys.names).toEqual([])
   display.setRpcData(0, workerResult(display, FAMILY), REGION)
   const { row } = display.rpcDataMap.get(0)!.layers[0]!
   expect(display.rowKeys).not.toBe(rowKeys)

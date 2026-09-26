@@ -8,14 +8,17 @@ import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
 /**
  * A region under `rows` with every `row` lane a key: each row of a section the
  * worker stacked holds the key of the value the section is, so the lanes stay
- * put whatever order or focus the rows take. A region fetched before the split
- * names no value, so every instance of it is hidden until its refetch lands.
+ * put whatever order or focus the rows take. A region fetched before the
+ * split, or split on another field, names no value: every instance of it is
+ * hidden until its refetch lands, and none of its values enters the key space.
  */
 export function keyRegion(
   region: MarkRegionData,
   rowKeys: RowKeys,
+  field: string,
 ): MarkRegionData {
-  const { facet } = region
+  const facet =
+    region.request?.facet?.field === field ? region.facet : undefined
   const depth =
     facet?.reduce((n, s) => Math.max(n, s.firstRow + s.rowCount), 0) ?? 0
   const keyOf = new Uint32Array(depth).fill(HIDDEN_ROW)

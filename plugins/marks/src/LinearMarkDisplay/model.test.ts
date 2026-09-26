@@ -1912,15 +1912,6 @@ test('a click asks the worker which feature the instance is, under the request i
   expect(asked).not.toHaveProperty('byteLimit')
 })
 
-test('a region no worker fetch produced holds no request, and a click on it asks nothing', () => {
-  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
-  const { display, mockRpcCall } = createDisplay()
-  display.setRpcData(0, result([{ y: [3, 8] }, { y: [2] }]), REGION)
-  mockRpcCall.mockClear()
-  display.selectFeature(hitOn(0, 0))
-  expect(callsOf(mockRpcCall, 'CoreGetEncodedFeature')).toHaveLength(0)
-})
-
 const AUTO_BIN_MARKS = [
   {
     mark: 'bar',

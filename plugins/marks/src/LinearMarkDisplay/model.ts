@@ -935,7 +935,7 @@ export function stateModelFactory(
         const keyed = createEncodeMemo(
           () => (self.drawsRows ? self.featurePayloads : NO_REGIONS),
           () => self.rowKeys,
-          keyRegion,
+          (region, rowKeys) => keyRegion(region, rowKeys, self.rowsField),
         )
         const faceted = createEncodeMemo(
           () => (self.facet ? self.featurePayloads : NO_REGIONS),
@@ -1723,7 +1723,11 @@ export function stateModelFactory(
          * Stage a region as fetched, with this display's payload layout.
          */
         setRpcData(idx: number, data: EncodedLayersResult, region: Region) {
-          self.setLoadedRegion(idx, region, storedRegionData(data))
+          const { byteLimit, ...request } = rpcArgs(self)
+          self.setLoadedRegion(idx, region, {
+            ...storedRegionData(data),
+            request: { ...request, region },
+          })
         },
         /**
          * #action

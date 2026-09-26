@@ -101,6 +101,12 @@ function region(): MarkRegionData {
     }
   }
   return {
+    request: {
+      adapterConfig: {},
+      region: { refName: 'chr1', start: 0, end: n, assemblyName: 'bench' },
+      layers: [],
+      facet: { field: 'sample' },
+    },
     facet: names.map((key, r) => ({ key, firstRow: r, rowCount: 1 })),
     layers: [
       {
@@ -157,7 +163,7 @@ function packBars(region: MarkRegionData) {
 
 // The keys never move once the region arrives; the table follows.
 const rowKeys = new RowKeys()
-const keyed = keyRegion(data, rowKeys)
+const keyed = keyRegion(data, rowKeys, 'sample')
 const keyNames = rowKeys.names.slice()
 
 function focusTable(order: readonly string[]) {

@@ -203,7 +203,7 @@ test('a density mark with no sidecar on the adapter keeps the banner', () => {
 
 test('past the budget a bin opens nothing, and the notice says what is drawn', () => {
   const { createDisplay } = createTestEnvironment(DENSITY_MARKS, SIDECAR)
-  const { display, session, view } = createDisplay()
+  const { display, session, view, mockRpcCall } = createDisplay()
   refuse(display, view)
   display.setCoarseTier([{ displayedRegionIndex: 0, payload: bins() }], {
     regions: [],
@@ -227,6 +227,9 @@ test('past the budget a bin opens nothing, and the notice says what is drawn', (
     screenY: 0,
   })
   expect(session.openedWidgets).toHaveLength(0)
+  expect(
+    mockRpcCall.mock.calls.filter(call => call[1] === 'CoreGetEncodedFeature'),
+  ).toHaveLength(0)
   expect(display.densityStandInNotice).toContain('density sidecar')
   expect(display.densityStandInNotice).toContain('1 other mark')
 })
