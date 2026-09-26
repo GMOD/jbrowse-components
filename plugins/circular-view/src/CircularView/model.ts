@@ -13,6 +13,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   resolveNamedRegions,
+  sum,
 } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
@@ -72,21 +73,18 @@ import { ChordPass } from '../chords/chordPass.ts'
 import { buildChordAxis } from '../chords/chordStage.ts'
 import { RingHost } from '../rings/ringHost.ts'
 import { circularLegendSpec } from './circularLegend.ts'
+import { elideRegions, elisionMask, fitLayout } from './fitLayout.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
-import {
-  assemblyBandPx,
-  maxLabelGutterPx,
-  regionLabelText,
-} from './rulerLabels.ts'
-import { calculateStaticSlices } from './slices.ts'
+import { calculateStaticSlices, gapUnitsAfter } from './slices.ts'
 
 import type { ChordAxis } from '../chords/chordStage.ts'
+import type { PaintRun } from '../chords/ideogramPaint.ts'
 import type {
   ChordHit,
   ChordHover,
   ChordLayerDisplay,
 } from '../chords/shapes.ts'
-import type { SliceRegion } from './slices.ts'
+import type { FitLayout } from './fitLayout.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
@@ -190,6 +188,8 @@ export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   ) => AlignmentData[]
   ribbonLanes: { count: number }
   cappedMeanSpanPx: number
+  paintedAssemblyName: string | undefined
+  ideogramPaint: ReadonlyMap<string, PaintRun[]>
 }
 
 /**
@@ -326,16 +326,6 @@ function stateModelFactory(pluginManager: PluginManager) {
   const defaultMinimumRadiusPx = 25
   const defaultSpacingPx = 10
   const defaultPaddingPx = 80
-  // Floors and caps for the two above, which are fixed pixel counts sized for a
-  // circle with a window to itself — see effectivePaddingPx/effectiveSpacingPx.
-  //
-  // 0.2 is not a new opinion: 80px is a fifth of the half-box at the 800px size
-  // the constant was tuned against, so holding that fraction below it leaves
-  // every roomy circle exactly where it was and keeps a small one in the same
-  // proportion instead of watching the padding eat it.
-  const minPaddingPx = 20
-  const maxPaddingFraction = 0.2
-  const maxSpacingFraction = 0.25
   const defaultMinVisibleWidth = 6
   const model = types
     .compose(
@@ -510,80 +500,62 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * `paddingPx`, capped so it cannot eat a small box.
-       *
-       * The declared value is a fixed 80px sized for a circle with a window to
-       * itself, and it comes out of the radius twice. In the SV inspector,
-       * whose circle gets about a third of the width, that left the drawn disc
-       * covering 41% of the area it was given, and in a 316px-tall one — the
-       * height the SV tutorial's figure sets — the radius fell to 78px.
-       *
-       * Capped as a fraction of the half-box rather than at a pixel count, so
-       * the circle holds one shape at every size. The fraction is the one the
-       * declared 80px already is at the size it was tuned for, so a roomy
-       * circle is untouched and a cramped one is merely not made worse. The
-       * floor is what the ruler labels need to sit outside the arc at all.
+       * the circle that fills the box: its scale and radius, and the padding
+       * and spacing the view keeps at every zoom. A pure function of the
+       * regions and the box — see `fitLayout`
+       */
+      get fitLayout(): FitLayout {
+        return fitLayout({
+          regions: self.displayedRegions,
+          width: self.width,
+          height: self.height,
+          spacingPx: self.spacingPx,
+          paddingPx: self.paddingPx,
+          minVisibleWidth: self.minVisibleWidth,
+          minimumRadiusPx: self.minimumRadiusPx,
+        })
+      },
+      /**
+       * #getter
+       * `paddingPx`, capped at a share of a small box and floored at what the
+       * labels drawn at the fit reach, so a label is never drawn at a negative
+       * x and clipped by the box
        */
       get effectivePaddingPx() {
-        const halfBox = Math.min(self.width, self.height) / 2
-        return Math.min(
-          self.paddingPx,
-          Math.max(
-            minPaddingPx,
-            halfBox * maxPaddingFraction,
-            // never below what the ruler labels reach. The centre sits at
-            // `radiusPx + padding`, so a label needing more than the padding is
-            // drawn at a negative x and the box clips it — which is what
-            // shrinking the padding at all did to `chr15`..`chr17` on the SV
-            // tutorial's figure
-            maxLabelGutterPx(this.elidedRegions.map(regionLabelText)) +
-              (this.assemblyNames.length > 1 ? assemblyBandPx : 0),
-          ),
-        )
+        return this.fitLayout.paddingPx
       },
       /**
        * #getter
-       * `spacingPx`, capped so the inter-chromosome gaps cannot take the ring.
-       *
-       * Also a fixed pixel count, and it is charged once per slice, so what it
-       * costs depends entirely on how big the circle ended up: 27% of the
-       * circumference at the SV inspector's default and 49% of it at that
-       * 316px-tall one, where the chromosomes drew as ticks with holes between
-       * them. Capping the total rather than the gap keeps a roomy circle on the
-       * declared value and only closes up where the ring is genuinely short.
-       *
-       * Measured against the radius the box would fit rather than `radiusPx`,
-       * which is derived from this.
+       * `spacingPx`, capped so the gaps take at most a quarter of the fitted
+       * ring: the SV inspector's circle otherwise drew its chromosomes as
+       * ticks with holes between them
        */
       get effectiveSpacingPx() {
-        const slices = this.elidedRegions.length
-        return slices
-          ? Math.min(
-              self.spacingPx,
-              (twoPi * this.fitRadiusPx * maxSpacingFraction) / slices,
-            )
-          : self.spacingPx
+        return this.fitLayout.spacingPx
       },
       /**
        * #getter
-       * the radius the current box has room for — what `fitToWindow` aims at,
-       * and the scale `effectiveSpacingPx` measures itself against. A pure
-       * function of the box, so neither reads back a value derived from it
+       * how many inter-slice gaps go round the circle, a genome boundary
+       * counting as several
+       */
+      get totalGapUnits() {
+        return sum(gapUnitsAfter(this.elidedRegions))
+      },
+      /**
+       * #getter
+       * the radius the current box has room for, which `fitToWindow` sizes
+       * the circle to
        */
       get fitRadiusPx() {
-        return Math.max(
-          Math.min(self.width, self.height) / 2 - this.effectivePaddingPx,
-          self.minimumRadiusPx,
-        )
+        return this.fitLayout.radiusPx
       },
       /**
        * #getter
        */
       get circumferencePx() {
-        const spacing = this.effectiveSpacingPx
-        return this.elidedRegions.reduce(
-          (sum, r) => sum + r.widthBp / self.bpPerPx + spacing,
-          0,
+        return (
+          sum(this.elidedRegions.map(r => r.widthBp / self.bpPerPx)) +
+          this.totalGapUnits * this.effectiveSpacingPx
         )
       },
       /**
@@ -677,14 +649,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        * themselves, one character each
        */
       get elisionMask() {
-        let mask = ''
-        for (const region of self.displayedRegions) {
-          mask +=
-            (region.end - region.start) / self.bpPerPx < self.minVisibleWidth
-              ? '1'
-              : '0'
-        }
-        return mask
+        return elisionMask(
+          self.displayedRegions,
+          self.bpPerPx,
+          self.minVisibleWidth,
+        )
       },
       /**
        * #getter
@@ -694,36 +663,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * `elisionMask`, so a zoom that elides nothing new rebuilds nothing
        */
       get elidedRegions() {
-        const mask = this.elisionMask
-        const visible: SliceRegion[] = []
-        self.displayedRegions.forEach((region, i) => {
-          const widthBp = region.end - region.start
-          if (mask[i] === '1') {
-            const lastVisible = visible.at(-1)
-            if (
-              lastVisible?.elided &&
-              lastVisible.regions[0]!.assemblyName === region.assemblyName
-            ) {
-              lastVisible.regions.push({ ...region })
-              lastVisible.widthBp += widthBp
-            } else {
-              visible.push({
-                elided: true,
-                widthBp,
-                regions: [{ ...region }],
-              })
-            }
-          } else {
-            visible.push({ ...region, widthBp, elided: false })
-          }
-        })
-
-        // a lone elided region draws as itself, keyed like any visible region
-        return visible.map(v =>
-          v.elided && v.regions.length === 1
-            ? { ...v.regions[0]!, widthBp: v.widthBp, elided: false as const }
-            : v,
-        )
+        return elideRegions(self.displayedRegions, this.elisionMask)
       },
       /**
        * #getter
@@ -782,6 +722,27 @@ function stateModelFactory(pluginManager: PluginManager) {
         return (
           this.chordSyntenyDisplays.length > 0 &&
           this.assemblyNames.length === 2
+        )
+      },
+      /**
+       * #getter
+       * the genome whose ideogram a ribbon track paints by what aligns to it
+       * from the first, rather than in its own chromosomes' colours
+       */
+      get paintedAssemblyName() {
+        return this.chordSyntenyDisplays.find(
+          d => d.paintedAssemblyName !== undefined,
+        )?.paintedAssemblyName
+      },
+      /**
+       * #getter
+       * that genome's paint, by slice key
+       */
+      get ideogramPaint(): ReadonlyMap<string, PaintRun[]> {
+        return (
+          this.chordSyntenyDisplays.find(
+            d => d.paintedAssemblyName === this.paintedAssemblyName,
+          )?.ideogramPaint ?? new Map()
         )
       },
       /**
@@ -1106,28 +1067,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (self.volatileWidth === undefined) {
           return
         }
-        const targetRadiusPx = self.fitRadiusPx
-        // the circumference is the regions plus one inter-slice gap each, so
-        // the gaps come out of the budget before the bp are spread over what is
-        // left. Ignoring them overshoots by sliceCount*spacingPx/PI px of
-        // figure size, which an assembly with many contigs clips off the bottom
-        // of its own box. How many slices there are itself depends on bpPerPx
-        // (narrow regions elide together), so iterate until the count settles —
-        // two passes, in practice
-        let sliceCount = -1
-        for (
-          let i = 0;
-          i < 5 && sliceCount !== self.elidedRegions.length;
-          i++
-        ) {
-          sliceCount = self.elidedRegions.length
-          this.setBpPerPx(
-            self.totalBp /
-              Math.max(
-                twoPi * targetRadiusPx - sliceCount * self.effectiveSpacingPx,
-                twoPi * self.minimumRadiusPx,
-              ),
-          )
+        const { bpPerPx } = self.fitLayout
+        if (bpPerPx !== undefined) {
+          this.setBpPerPx(bpPerPx)
         }
         self.panX = 0
         self.panY = 0

@@ -7,8 +7,13 @@ import type { Slice, SliceRegion } from './slices.ts'
 // react-refresh requires stay component-only).
 export const labelFontSizePx = 13
 
-// how far outside the ruler arc a label is anchored
-export const labelOffsetPx = 5
+// the ideogram is a band this far outside the circle's radius, where the
+// ribbons and the outermost ring stop, and this thick
+export const ideogramGapPx = 2
+export const ideogramThicknessPx = 8
+
+// how far outside the circle's radius a label is anchored: past the ideogram
+export const labelOffsetPx = ideogramGapPx + ideogramThicknessPx + 5
 
 // rough advance width of one character at `labelFontSizePx`. Only ever used to
 // compare a label against the arc it would sit on, so an estimate is enough —

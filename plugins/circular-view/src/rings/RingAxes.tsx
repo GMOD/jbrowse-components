@@ -19,8 +19,8 @@ export const RingAxes = observer(function RingAxes({
   model: CircularViewModel
 }) {
   const palette = usePalette()
-  const { ringHost, offsetRadians, radiusPx, effectiveSpacingPx } = model
-  const angle = -effectiveSpacingPx / radiusPx / 2
+  const { ringHost, offsetRadians, staticSlices } = model
+  const angle = ((staticSlices.at(-1)?.endRadians ?? 0) - 2 * Math.PI) / 2
   const [tx, ty] = [Math.sin(angle), -Math.cos(angle)]
   const labelAnchor =
     Math.cos(angle + offsetRadians - Math.PI / 2) < 0 ? 'end' : 'start'

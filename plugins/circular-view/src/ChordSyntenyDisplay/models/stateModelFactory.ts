@@ -31,15 +31,23 @@ import {
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
 import { ribbonHitTest } from '../../chords/chordHit.ts'
-import { axisX, ribbonAnglesAt, ribbonFadeAt } from '../../chords/chordStage.ts'
+import {
+  axisX,
+  ribbonAnglesAt,
+  ribbonFadeAt,
+  sliceKey,
+} from '../../chords/chordStage.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
+import { paintRuns } from '../../chords/ideogramPaint.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
 import { shapePath } from '../../chords/shapePath.ts'
 import { DIMMED_ALPHA } from '../../chords/types.ts'
 
 import type { ExportSvgOptions } from '../../CircularView/model.ts'
+import type { Slice, SliceNonElidedRegion } from '../../CircularView/slices.ts'
 import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { RibbonLanes } from '../../chords/chordStage.ts'
+import type { PaintRun, PaintSpan } from '../../chords/ideogramPaint.ts'
 import type { RibbonShape } from '../../chords/shapes.ts'
 import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -294,8 +302,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
             feet.x2[i] = axisX(own, feature.get('end'))
             feet.y1[i] = axisX(other, mate.start)
             feet.y2[i] = axisX(other, mate.end)
-            feet.xSlice[i] = own.index
-            feet.ySlice[i] = other.index
+            feet.xSlice[i] = own.gaps
+            feet.ySlice[i] = other.gaps
             feet.strand[i] = feature.get('strand') ?? 1
           }
         })
@@ -312,14 +320,19 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         const highlighted = self.highlightedFeatureIdSet
         const { opacityByIdentity } = self.view
         const picked: number[] = []
-        const features: Feature[] = []
         for (const feature of this.drawnFeatures ?? []) {
           const i = feet.index.get(feature)
           if (i !== undefined && feet.placed[i]) {
             picked.push(i)
-            features.push(feature)
           }
         }
+        // the widest first, so every narrower ribbon draws over them
+        const span = (i: number) =>
+          Math.abs(feet.x2[i]! - feet.x1[i]!) +
+          Math.abs(feet.y2[i]! - feet.y1[i]!)
+        picked.sort((a, b) => span(b) - span(a))
+        const all = self.features ?? []
+        const features = picked.map(i => all[i]!)
         const n = picked.length
         const lanes: RibbonLanes = {
           x1: new Float32Array(n),
@@ -353,6 +366,73 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           )
         })
         return lanes
+      },
+      /**
+       * #getter
+       * the genome whose ideogram this track paints: the second of the two it
+       * joins on the circle, none for a genome aligned to itself
+       */
+      get paintedAssemblyName(): string | undefined {
+        const [first, second] = self.trackAssemblyNames
+        return first === undefined ? undefined : second
+      },
+      /**
+       * #getter
+       * the painted genome's ideogram, by slice key: each stretch in the
+       * colour of the first genome's chromosome that the drawn ribbons over it
+       * mostly come from, one bin per CSS px
+       */
+      get ideogramPaint(): ReadonlyMap<string, PaintRun[]> {
+        const [first] = self.trackAssemblyNames
+        const second = this.paintedAssemblyName
+        const paint = new Map<string, PaintRun[]>()
+        if (first === undefined || second === undefined) {
+          return paint
+        }
+        const firstAssembly = getSession(self).assemblyManager.get(first)
+        const spans = new Map<Slice, PaintSpan[]>()
+        for (const feature of this.ribbonLanes.features) {
+          const mate = getMate(feature)
+          if (mate) {
+            const own = {
+              refName: feature.get('refName'),
+              start: feature.get('start'),
+              end: feature.get('end'),
+            }
+            const [from, to] =
+              self.assemblyOf(
+                feature.get('assemblyName') as string | undefined,
+              ) === first
+                ? [own, mate]
+                : [mate, own]
+            const slice =
+              self.sliceIndex[
+                sliceKey(second, self.canonicalRefName(second, to.refName))
+              ]
+            const color = firstAssembly?.getRefNameColor(
+              self.canonicalRefName(first, from.refName),
+            )
+            if (slice && !slice.region.elided && color) {
+              let list = spans.get(slice)
+              if (!list) {
+                list = []
+                spans.set(slice, list)
+              }
+              list.push({ start: to.start, end: to.end, color })
+            }
+          }
+        }
+        for (const [slice, list] of spans) {
+          paint.set(
+            slice.key,
+            paintRuns(
+              list,
+              slice.region as SliceNonElidedRegion,
+              self.view.bpPerPx,
+            ),
+          )
+        }
+        return paint
       },
       /**
        * #getter

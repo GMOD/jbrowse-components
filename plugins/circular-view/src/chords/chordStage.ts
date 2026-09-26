@@ -1,3 +1,4 @@
+import { gapUnitsAfter } from '../CircularView/slices.ts'
 import { MIN_RIBBON_END_PX } from './shaders/chordStage.generated.ts'
 import {
   chordIsSpeck,
@@ -15,6 +16,8 @@ import type { Feature } from '@jbrowse/core/util'
  */
 export interface AxisSlice {
   index: number
+  /** the inter-slice gaps before this slice, a genome boundary counting several */
+  gaps: number
   cumBp: number
   widthBp: number
   start: number
@@ -35,11 +38,14 @@ export function sliceKey(assemblyName: string, refName: string) {
 export function buildChordAxis(regions: readonly SliceRegion[]): ChordAxis {
   const slices: AxisSlice[] = []
   const byKey = new Map<string, AxisSlice>()
+  const units = gapUnitsAfter(regions)
   let cumBp = 0
+  let gaps = 0
   for (const region of regions) {
     const slice: AxisSlice = region.elided
       ? {
           index: slices.length,
+          gaps,
           cumBp,
           widthBp: region.widthBp,
           start: 0,
@@ -48,6 +54,7 @@ export function buildChordAxis(regions: readonly SliceRegion[]): ChordAxis {
         }
       : {
           index: slices.length,
+          gaps,
           cumBp,
           widthBp: region.widthBp,
           start: region.start,
@@ -59,6 +66,7 @@ export function buildChordAxis(regions: readonly SliceRegion[]): ChordAxis {
       byKey.set(sliceKey(r.assemblyName, r.refName), slice)
     }
     cumBp += region.widthBp
+    gaps += units[slice.index]!
   }
   return { slices, byKey }
 }

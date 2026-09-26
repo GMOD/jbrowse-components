@@ -84,18 +84,41 @@ export class Slice {
   }
 }
 
+// how many inter-slice gaps separate one genome's arc from the next
+export const GENOME_GAP_UNITS = 4
+
+function regionAssemblyName(region: SliceRegion) {
+  return region.elided ? region.regions[0]?.assemblyName : region.assemblyName
+}
+
+/**
+ * The gap after each region, in inter-slice gaps: one between two regions of
+ * a genome, `GENOME_GAP_UNITS` where the next region, wrapping round to the
+ * first, is another genome's.
+ */
+export function gapUnitsAfter(regions: readonly SliceRegion[]) {
+  return regions.map((region, i) =>
+    regionAssemblyName(regions[(i + 1) % regions.length]!) ===
+    regionAssemblyName(region)
+      ? 1
+      : GENOME_GAP_UNITS,
+  )
+}
+
 export function calculateStaticSlices(self: {
   elidedRegions: readonly SliceRegion[]
   bpPerRadian: number
   spacingPx: number
   radiusPx: number
 }) {
-  const slices = []
+  const slices: Slice[] = []
   let currentRadianOffset = 0
-  const { bpPerRadian, spacingPx, radiusPx } = self
-  for (const region of self.elidedRegions) {
+  const { bpPerRadian, spacingPx, radiusPx, elidedRegions } = self
+  const units = gapUnitsAfter(elidedRegions)
+  elidedRegions.forEach((region, i) => {
     slices.push(new Slice(self, region, currentRadianOffset))
-    currentRadianOffset += region.widthBp / bpPerRadian + spacingPx / radiusPx
-  }
+    currentRadianOffset +=
+      region.widthBp / bpPerRadian + (units[i]! * spacingPx) / radiusPx
+  })
   return slices
 }

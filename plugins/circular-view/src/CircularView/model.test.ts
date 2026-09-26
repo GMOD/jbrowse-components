@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import stateModelFactory from './model.ts'
+import { maxLabelGutterPx } from './rulerLabels.ts'
 
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -294,11 +295,10 @@ describe('the fixed-pixel geometry gives way in a small box', () => {
     expect(small.effectivePaddingPx).toBeLessThan(big.effectivePaddingPx)
     // beats what a flat 80px left it, which is the whole complaint
     expect(small.radiusPx).toBeGreaterThan(316 / 2 - 80)
-    // and holds the same shape the roomy one has, rather than merely a better
-    // one: the disc is the same share of its box at both sizes
-    const share = (v: { radiusPx: number; width: number; height: number }) =>
-      (2 * v.radiusPx) / Math.min(v.width, v.height)
-    expect(share(small)).toBeCloseTo(share(big), 1)
+    // and gives way all the way down to what its labels reach
+    expect(small.effectivePaddingPx).toBe(
+      maxLabelGutterPx(chromosomes.map(r => r.refName)),
+    )
   })
 
   test('the inter-chromosome gaps cannot take a quarter of the ring', () => {
@@ -319,15 +319,23 @@ describe('the fixed-pixel geometry gives way in a small box', () => {
 // The centre sits at `radiusPx + padding`, so a label reaching further than the
 // padding is drawn at a negative x and clipped by the box. Shrinking the padding
 // for a small box did exactly that to the SV tutorial's figure.
-test('the padding never shrinks below what the ruler labels reach', () => {
+test('the padding grows past the declared one to hold its labels', () => {
+  const accessions = Array.from({ length: 24 }, (_, i) =>
+    region(`NC_0000${String(i + 1).padStart(2, '0')}.11`, 130_000_000),
+  )
+  const view = createView({ regions: accessions, width: 800, height: 800 })
+  const reach = maxLabelGutterPx(accessions.map(r => r.refName))
+  expect(reach).toBeGreaterThan(view.paddingPx)
+  expect(view.effectivePaddingPx).toBe(reach)
+})
+
+// past half the half-box a label is clipped rather than the circle crushed
+test('labels never take more than half the half-box', () => {
   const long = Array.from({ length: 24 }, (_, i) =>
     region(`NC_0000${i + 1}.11_alt_scaffold`, 130_000_000),
   )
   const view = createView({ regions: long, width: 475, height: 316 })
-  // room for the longest label, which is far more than a fifth of this half-box
-  expect(view.effectivePaddingPx).toBeGreaterThan((316 / 2) * 0.2)
-  // and still never more than the view declared
-  expect(view.effectivePaddingPx).toBeLessThanOrEqual(view.paddingPx)
+  expect(view.effectivePaddingPx).toBe(316 / 4)
 })
 
 test('short labels leave the padding free to shrink', () => {

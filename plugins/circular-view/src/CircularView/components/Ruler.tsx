@@ -6,13 +6,14 @@ import {
   stripAlpha,
   toLocale,
 } from '@jbrowse/core/util'
-import { makeContrasting } from '@jbrowse/core/util/color'
 import { observer } from 'mobx-react'
 
 import {
   assemblyArcGapPx,
   assemblyArcs,
   assemblyLabelFontSizePx,
+  ideogramGapPx,
+  ideogramThicknessPx,
   labelFontSizePx,
   labelGutterPx,
   labelIsDrawn,
@@ -20,6 +21,7 @@ import {
   labelsRunAlongArcs,
   sliceLabelText,
 } from '../rulerLabels.ts'
+import { bpToRadians } from '../slices.ts'
 
 import type { CircularViewModel } from '../model.ts'
 import type { AssemblyArc } from '../rulerLabels.ts'
@@ -62,6 +64,41 @@ function sliceArcPath(
           ...arcTo(endRadians, spanRadians > Math.PI ? '1' : '0'),
         ]
   ).join(' ')
+}
+
+// the annulus between two radii over the slice's span, outer arc first
+function sliceBandPath(
+  slice: Pick<Slice, 'startRadians' | 'endRadians'>,
+  innerPx: number,
+  outerPx: number,
+): string {
+  const { startRadians, endRadians } = slice
+  if ((2 * Math.PI - (endRadians - startRadians)) * outerPx < 1) {
+    const half = startRadians + Math.PI
+    return `${sliceBandPath({ startRadians, endRadians: half }, innerPx, outerPx)} ${sliceBandPath({ startRadians: half, endRadians: startRadians + 2 * Math.PI }, innerPx, outerPx)}`
+  }
+  const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
+  return [
+    'M',
+    ...polarToCartesian(outerPx, startRadians),
+    'A',
+    outerPx,
+    outerPx,
+    '0',
+    largeArc,
+    '1',
+    ...polarToCartesian(outerPx, endRadians),
+    'L',
+    ...polarToCartesian(innerPx, endRadians),
+    'A',
+    innerPx,
+    innerPx,
+    '0',
+    largeArc,
+    '0',
+    ...polarToCartesian(innerPx, startRadians),
+    'Z',
+  ].join(' ')
 }
 
 // The view rotates the whole figure by offsetRadians, so which half of the
@@ -142,13 +179,68 @@ function regionColor(
   { assemblyName, refName }: SliceNonElidedRegion,
   palette: JBrowsePalette,
 ) {
-  const refNameColor = getSession(model)
-    .assemblyManager.get(assemblyName)
-    ?.getRefNameColor(refName)
-  return refNameColor
-    ? makeContrasting(refNameColor, palette.background.paper)
-    : palette.text.primary
+  return (
+    getSession(model)
+      .assemblyManager.get(assemblyName)
+      ?.getRefNameColor(refName) ?? palette.text.secondary
+  )
 }
+
+// A slice's stretch of the ideogram: its chromosome's colour, or on a genome
+// a ribbon track paints, a neutral band under the colours of the first
+// genome's chromosomes that align to it
+const IdeogramBand = observer(function IdeogramBand({
+  model,
+  slice,
+  region,
+  innerPx,
+  outerPx,
+}: {
+  model: CircularViewModel
+  slice: Slice
+  region: SliceNonElidedRegion
+  innerPx: number
+  outerPx: number
+}) {
+  const palette = usePalette()
+  const band = sliceBandPath(slice, innerPx, outerPx)
+  const runs =
+    region.assemblyName === model.paintedAssemblyName
+      ? (model.ideogramPaint.get(slice.key) ?? [])
+      : undefined
+  const outline = {
+    stroke: palette.text.primary,
+    strokeOpacity: 0.6,
+    strokeWidth: 0.5,
+  }
+  return runs ? (
+    <>
+      <path d={band} fill={palette.divider} />
+      {runs.map(run => {
+        const a = bpToRadians(slice, run.start)
+        const b = bpToRadians(slice, run.end)
+        return (
+          <path
+            key={run.start}
+            d={sliceBandPath(
+              { startRadians: Math.min(a, b), endRadians: Math.max(a, b) },
+              innerPx,
+              outerPx,
+            )}
+            fill={stripAlpha(run.color)}
+          />
+        )
+      })}
+      <path d={band} fill="none" {...outline} />
+    </>
+  ) : (
+    <path
+      d={band}
+      fill={stripAlpha(regionColor(model, region, palette))}
+      {...outline}
+    />
+  )
+})
 
 const Ruler = observer(function Ruler({
   model,
@@ -162,7 +254,8 @@ const Ruler = observer(function Ruler({
   const palette = usePalette()
   const { radiusPx, offsetRadians } = model
   const { region, endRadians, startRadians } = slice
-  const color = region.elided ? undefined : regionColor(model, region, palette)
+  const innerPx = radiusPx + ideogramGapPx
+  const outerPx = innerPx + ideogramThicknessPx
   return (
     <>
       <RulerLabel
@@ -177,15 +270,25 @@ const Ruler = observer(function Ruler({
         maxWidthPx={(endRadians - startRadians) * radiusPx}
         radians={(endRadians + startRadians) / 2}
         radiusPx={radiusPx}
-        color={color ?? palette.text.primary}
+        color={palette.text.primary}
       />
-      <path
-        d={sliceArcPath(slice, radiusPx + 1)}
-        stroke={stripAlpha(color ?? palette.text.secondary)}
-        strokeWidth={2}
-        strokeDasharray={region.elided ? '2,2' : undefined}
-        fill="none"
-      />
+      {region.elided ? (
+        <path
+          d={sliceArcPath(slice, (innerPx + outerPx) / 2)}
+          stroke={palette.text.secondary}
+          strokeWidth={2}
+          strokeDasharray="2,2"
+          fill="none"
+        />
+      ) : (
+        <IdeogramBand
+          model={model}
+          slice={slice}
+          region={region}
+          innerPx={innerPx}
+          outerPx={outerPx}
+        />
+      )}
     </>
   )
 })
@@ -216,8 +319,8 @@ const AssemblyArcLabel = observer(function AssemblyArcLabel({
     <>
       <path
         d={sliceArcPath(arc, radiusPx)}
-        stroke={palette.text.secondary}
-        strokeWidth={1.5}
+        stroke={palette.divider}
+        strokeWidth={1}
         fill="none"
       />
       <text

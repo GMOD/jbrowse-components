@@ -16,6 +16,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           data-testid="test_view"
           style="width: 808px; height: 400px;"
         >
+          <canvas
+            class="css-HASH"
+            data-display-drawn="false"
+            data-testid="circular-chord-canvas"
+            height="400"
+            style="width: 808px; height: 400px;"
+            width="808"
+          />
           <div
             class="css-HASH"
             style="transform: translate(204px,0px);"
@@ -31,41 +39,43 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               >
                 <text
                   dominant-baseline="middle"
-                  fill="#996600"
+                  fill="#000000"
                   font-size="13"
                   font-weight="500"
                   letter-spacing="0.0075em"
                   text-anchor="middle"
-                  transform="translate(-68.25126837055943,150.22238303864665) rotate(24.43395488460476)"
+                  transform="translate(-71.93367076666324,158.43467742269462) rotate(24.419346067798784)"
                   x="0"
                   y="0"
                 >
                   ctgA
                 </text>
                 <path
-                  d="M 161 0 A 161 161 0 1 1 -105.9053489730314 -121.26440969592207"
-                  fill="none"
-                  stroke="#996600"
-                  stroke-width="2"
+                  d="M 169 0 A 169 169 0 1 1 -111.23262284949317 -127.23326457346921 L -105.9671732471503 -121.21038814395587 A 161 161 0 1 0 161 0 Z"
+                  fill="#996600"
+                  stroke="rgba(0, 0, 0, 0.87)"
+                  stroke-opacity="0.6"
+                  stroke-width="0.5"
                 />
                 <text
                   dominant-baseline="middle"
-                  fill="#666600"
+                  fill="#000000"
                   font-size="13"
                   font-weight="500"
                   letter-spacing="0.0075em"
                   text-anchor="middle"
-                  transform="translate(68.25126837055933,-150.22238303864668) rotate(384.43395488460476)"
+                  transform="translate(71.93367076666328,-158.4346774226946) rotate(384.4193460677988)"
                   x="0"
                   y="0"
                 >
                   ctgB
                 </text>
                 <path
-                  d="M -98.12447760419309 -127.64241808624675 A 161 161 0 0 1 160.68564922271597 -10.055950172623252"
-                  fill="none"
-                  stroke="#666600"
-                  stroke-width="2"
+                  d="M -103.01588510344942 -133.9728607455738 A 169 169 0 0 1 168.66586705399317 -10.621925010312273 L 160.68168399818285 -10.119111992072638 A 161 161 0 0 0 -98.13939350091927 -127.63095017773598 Z"
+                  fill="#666600"
+                  stroke="rgba(0, 0, 0, 0.87)"
+                  stroke-opacity="0.6"
+                  stroke-width="0.5"
                 />
               </g>
             </svg>

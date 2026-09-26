@@ -176,13 +176,20 @@ test('a slice covering the whole circle still draws its ring', async () => {
 
   const svg = await renderToSvg(view, {})
   const d = /<path d="([^"]*)"/.exec(svg)![1]!
-  // M x0 y0 | A r r 0 0 1 x1 y1 | A r r 0 0 1 x2 y2
-  const n = d.match(/-?[\d.]+/g)!.map(Number)
-  expect(d.split('A')).toHaveLength(3)
+  // two half-bands, each M x0 y0 A r r 0 0 1 x1 y1 L … A … Z
+  const [first, second] = d
+    .split('M')
+    .filter(Boolean)
+    .map(part => part.match(/-?[\d.]+/g)!.map(Number))
+  expect(second).toBeDefined()
   // the halfway point is genuinely across the circle...
-  expect(Math.hypot(n[7]! - n[0]!, n[8]! - n[1]!)).toBeGreaterThan(1)
+  expect(
+    Math.hypot(first![7]! - first![0]!, first![8]! - first![1]!),
+  ).toBeGreaterThan(1)
   // ...and the second half closes back onto the start
-  expect(Math.hypot(n[14]! - n[0]!, n[15]! - n[1]!)).toBeLessThan(0.05)
+  expect(
+    Math.hypot(second![7]! - first![0]!, second![8]! - first![1]!),
+  ).toBeLessThan(0.05)
 }, 20000)
 
 // A refName too long to sit along its own arc radiates outward instead, and the
@@ -212,6 +219,6 @@ test('the export canvas grows to fit labels that overrun paddingPx', async () =>
     // them is good to a small fraction of a pixel, not exactly
     expect(outerEdge).toBeLessThanOrEqual(halfCanvas + 0.02)
   }
-  // and it did have to grow past what the on-screen figure reserves
-  expect(view.figureSize).toBeLessThan(halfCanvas * 2)
+  // and the on-screen figure reserves the same room, so it clips none either
+  expect(view.figureSize).toBeCloseTo(halfCanvas * 2, 1)
 }, 20000)

@@ -221,7 +221,7 @@ test('a point on the wiggle ring unwarps to the strip column of its base', async
   host.setStripElement(display.id, strip)
   const [cell] = host.ringCells
   expect(cell!.strip?.image).toBe(canvas)
-  expect(cell!.channels.outerPx[0]).toBe(ring!.outerPx)
+  expect(cell!.channels.outerPx[0]).toBe(Math.fround(ring!.outerPx))
 
   // ctgB's midpoint, at the ring's middle, in the screen frame
   const slice = view.staticSlices[1]!

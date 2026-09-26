@@ -111,8 +111,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             feet.placed[i] = 1
             feet.x[i] = axisX(start, feature.get('start'))
             feet.x2[i] = axisX(endBlock, endPosition)
-            feet.xSlice[i] = start.index
-            feet.x2Slice[i] = endBlock.index
+            feet.xSlice[i] = start.gaps
+            feet.x2Slice[i] = endBlock.gaps
           }
         })
         return feet

@@ -200,8 +200,10 @@ test('an alignment across two assemblies is one ribbon', async () => {
   const { view, display } = await setup(['volvox', 'volvox2'])
   const lanes = display.ribbonLanes
   expect(lanes.count).toBe(1)
-  const own = view.chordAxis.slices[lanes.xSlice[0]!]!
-  const mate = view.chordAxis.slices[lanes.ySlice[0]!]!
+  const atGaps = (gaps: number | undefined) =>
+    view.chordAxis.slices.find(slice => slice.gaps === gaps)!
+  const own = atGaps(lanes.xSlice[0])
+  const mate = atGaps(lanes.ySlice[0])
   expect(view.elidedRegions[own.index]).toMatchObject({
     assemblyName: 'volvox',
     refName: 'ctgA',
@@ -210,6 +212,33 @@ test('an alignment across two assemblies is one ribbon', async () => {
     assemblyName: 'volvox2',
     refName: 'ctgB',
   })
+}, 20000)
+
+// the ideogram of the genome the ribbons land on says where each stretch came
+// from: a ribbon from volvox ctgA paints volvox2 ctgB in ctgA's colour
+test("the second genome's ideogram is painted by the first genome's chromosomes", async () => {
+  const { session, view } = await setup(['volvox', 'volvox2'])
+  expect(view.paintedAssemblyName).toBe('volvox2')
+  const slice = view.staticSlices.find(
+    s =>
+      !s.region.elided &&
+      s.region.assemblyName === 'volvox2' &&
+      s.region.refName === 'ctgB',
+  )!
+  const runs = view.ideogramPaint.get(slice.key)!
+  expect(runs).toHaveLength(1)
+  expect(runs[0]!.color).toBe(
+    session.assemblyManager.get('volvox')!.getRefNameColor('ctgA'),
+  )
+  expect(runs[0]!.start).toBeLessThanOrEqual(1000)
+  expect(runs[0]!.end).toBeGreaterThanOrEqual(1100)
+  expect(view.ideogramPaint.size).toBe(1)
+}, 20000)
+
+test('a genome aligned to itself keeps its own colours', async () => {
+  const { view } = await setup(['volvox', 'volvox'])
+  expect(view.paintedAssemblyName).toBeUndefined()
+  expect(view.ideogramPaint.size).toBe(0)
 }, 20000)
 
 test('an end whose region is off the circle draws no ribbon', async () => {
