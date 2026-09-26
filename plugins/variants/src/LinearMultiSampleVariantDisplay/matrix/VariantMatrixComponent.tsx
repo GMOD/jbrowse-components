@@ -24,22 +24,29 @@ export interface MatrixHoveredCell {
   cellIndex: number
 }
 
-// The instance the painter drew for a screen row's genotype, or undefined where
-// the worker emitted no cell for it: a row is hoverable by its genotype (the
-// walk below) and lit by its ink, and a no-call decodes to a genotype no cell
-// was drawn for.
-function drawnCellAt(
+// The row whose cell paints on top of the pixel. Rows thinner than a pixel
+// share one, and cells paint in index order, reference bucket first, so the
+// largest index among them is the one the reader sees.
+function topDrawnCell(
   model: LinearMultiSampleVariantDisplayModel,
   featureIdx: number,
-  rowIdx: number,
-): MatrixHoveredCell | undefined {
+  lowest: number,
+  nearest: number,
+) {
   const placed = model.placedMatrixData
-  const workerRow = model.rowUnmap?.[rowIdx] ?? -1
-  if (!placed || workerRow < 0) {
-    return undefined
+  const rowUnmap = model.rowUnmap
+  let top: { rowIdx: number; cellIndex: number } | undefined
+  if (placed && rowUnmap) {
+    for (let rowIdx = lowest; rowIdx <= nearest; rowIdx++) {
+      const workerRow = rowUnmap[rowIdx] ?? -1
+      const cellIndex =
+        workerRow < 0 ? -1 : findCellIndex(placed, featureIdx, workerRow)
+      if (cellIndex > (top?.cellIndex ?? -1)) {
+        top = { rowIdx, cellIndex }
+      }
+    }
   }
-  const cellIndex = findCellIndex(placed, featureIdx, workerRow)
-  return cellIndex >= 0 ? { cellIndex } : undefined
+  return top
 }
 
 // `mouseX`/`mouseY` are relative to the matrix canvas, which sits at
@@ -72,52 +79,36 @@ function getHoveredMatrixCell(
   if (!feature) {
     return undefined
   }
-  // Read once, above the loop: this computed has no tracked reader (pointer
-  // handlers run untracked), so MobX discards its value on every read and each
-  // read rebuilds an O(samples) Map.
-  const genotypeSampleIndex = model.genotypeSampleIndex!
-  // nearest first: it is the row the cursor is in and the last one painted
-  // there, so it is what the reader sees on top
-  for (let rowIdx = nearest; rowIdx >= lowest; rowIdx--) {
-    const source = sources[rowIdx]
-    if (!source) {
-      continue
-    }
-    const sampleName = source.sampleName
-    const genotype = decodeGenotype(
-      cellData.genotypeDict,
-      genotypeSampleIndex,
-      feature.genotypeCodes,
-      sampleName,
-    )
-    // Against `undefined`, never truthy, as the sibling display's hit test is:
-    // only `undefined` means the codes have nothing filed against this row. An
-    // empty genotype string is a row that HAS one, and skipping it reports a
-    // NEIGHBOURING sample against the cell under the cursor.
-    if (genotype !== undefined) {
-      return {
+  const top = topDrawnCell(model, featureIdx, lowest, nearest)
+  const source = top && sources[top.rowIdx]
+  if (!top || !source) {
+    return undefined
+  }
+  const { sampleName } = source
+  const genotype = decodeGenotype(
+    cellData.genotypeDict,
+    model.genotypeSampleIndex!,
+    feature.genotypeCodes,
+    sampleName,
+  )
+  return genotype === undefined
+    ? undefined
+    : {
         fields: buildVariantHit({
           info: feature,
           genotype,
           sampleName,
           name: source.name,
           featureId: feature.featureId,
-          // The matrix has no per-cell alt flag on hand, so it asks the same
-          // question of the decoded genotype AND the row: in phased mode a
-          // haplotype row either carries the allele or does not, so `1|0`
-          // reports the insertion on HP0 and nothing on HP1. Matches
-          // pickVariantCell's `cellAltDosage` gate, which the regular display
-          // gets from the painter per cell.
+          // no per-cell alt flag here, so the decoded genotype and the row
+          // answer it: in phased mode `1|0` carries the insertion on HP0 only
           insertedBp: cellCarriesAlt(genotype, source.HP)
             ? feature.insertedBp
             : 0,
         }),
         featureData: feature,
-        cell: drawnCellAt(model, featureIdx, rowIdx),
+        cell: { cellIndex: top.cellIndex },
       }
-    }
-  }
-  return undefined
 }
 
 /**

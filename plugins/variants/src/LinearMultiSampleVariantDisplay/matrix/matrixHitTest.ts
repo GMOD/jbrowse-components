@@ -18,8 +18,8 @@ export interface MatrixHitGeometry {
  *
  * `nearest`/`lowest` are the rows sharing the drawn pixel — the matrix floors
  * cell height at 1px, so at the 2,504-sample fit height (0.09px a row) eleven
- * rows land under one, and the caller walks them nearest-first until one has a
- * genotype to report. Picking `nearest` alone leaves the other ten silent.
+ * rows land under one, and the caller reports the one whose cell paints on
+ * top.
  *
  * Split out of the component because it is the arithmetic that goes wrong: the
  * pixel-centre and floor-ordering fixes both landed on the sibling display

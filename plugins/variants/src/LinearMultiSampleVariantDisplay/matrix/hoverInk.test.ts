@@ -114,7 +114,9 @@ test('the hit names the drawn cell the tooltip reports, and the hover lights it'
   expect(display.hoverInk).toEqual([])
 })
 
-test('a genotype the worker drew no cell for hovers with no box', () => {
+// a haplotype past its sample's ploidy decodes the sample's genotype but
+// draws blank, and a blank cell reports nothing, as at genomic positions
+test('a genotype the worker drew no cell for does not hover', () => {
   const display = loadedDisplay()
   // a hom-ref call at S0, site 0, but the reference bucket holds only site 1
   display.setCellData({
@@ -125,7 +127,5 @@ test('a genotype the worker drew no cell for hovers with no box', () => {
     numCells: 3,
     refCellCount: 1,
   })
-  const hit = variantMatrixSurface(display).getHit(10, 25)!
-  expect(hit.fields.genotype).toBe('0/0')
-  expect(hit.cell).toBeUndefined()
+  expect(variantMatrixSurface(display).getHit(10, 25)).toBeUndefined()
 })

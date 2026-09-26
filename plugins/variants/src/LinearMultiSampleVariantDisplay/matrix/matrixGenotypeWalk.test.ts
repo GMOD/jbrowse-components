@@ -4,22 +4,31 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../../VariantRPC/executeVariantCellData.ts'
 
-// Enough samples that the fit height falls well under a pixel, which is what
-// puts several rows under the cursor and gives the walk somewhere to go wrong.
+// Enough samples that the fit height falls well under a pixel, which puts
+// several rows under the cursor.
 const NUM_SAMPLES = 1000
 const SAMPLE_NAMES = Array.from({ length: NUM_SAMPLES }, (_, i) => `S${i}`)
+const GENOTYPE_DICT = ['0/0', '0/1']
+const REF = 1
+const ALT = 2
 
-// dict[0] is the empty genotype string. Reachable at this boundary by
-// construction: the payload is what the display hit-tests against, and the
-// invariant that keeps '' out of the dictionary lives two modules away in the
-// worker, restated by hand on each of `analyzeVariants`'s two genotype paths.
-const GENOTYPE_DICT = ['', '0|1']
+interface Cells {
+  ref?: number[]
+  alt?: number[]
+}
 
-function matrixCellData(codesBySample: Record<number, number>): CellDataResult {
+// One column; `ref` and `alt` list the sample rows the worker drew a cell for,
+// emitted as it does: the reference bucket, then the alt bucket.
+function matrixCellData({ ref = [], alt = [] }: Cells): CellDataResult {
   const genotypeCodes = new Uint32Array(NUM_SAMPLES)
-  for (const [sampleIdx, code] of Object.entries(codesBySample)) {
-    genotypeCodes[Number(sampleIdx)] = code
+  for (const row of ref) {
+    genotypeCodes[row] = REF
   }
+  for (const row of alt) {
+    genotypeCodes[row] = ALT
+  }
+  const byRow = (a: number, b: number) => a - b
+  const rows = [...ref.toSorted(byRow), ...alt.toSorted(byRow)]
   return {
     mode: 'matrix',
     sampleInfo: {},
@@ -40,11 +49,11 @@ function matrixCellData(codesBySample: Record<number, number>): CellDataResult {
     ],
     genotypeDict: GENOTYPE_DICT,
     sampleNames: SAMPLE_NAMES,
-    cellFeatureIndices: new Float32Array(0),
-    cellRowIndices: new Uint32Array(0),
-    cellColors: new Uint32Array(0),
-    numCells: 0,
-    refCellCount: 0,
+    cellFeatureIndices: new Float32Array(rows.length),
+    cellRowIndices: Uint32Array.from(rows),
+    cellColors: new Uint32Array(rows.length),
+    numCells: rows.length,
+    refCellCount: ref.length,
     numFeatures: 1,
     featureData: [
       {
@@ -62,20 +71,19 @@ function matrixCellData(codesBySample: Record<number, number>): CellDataResult {
   }
 }
 
-function setup(codesBySample: Record<number, number>) {
+function setup(cells: Cells) {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SAMPLE_NAMES.map(name => ({ name, sampleName: name })))
   display.setFitToHeight()
-  display.setCellData(matrixCellData(codesBySample))
+  display.setCellData(matrixCellData(cells))
   return display
 }
 
 const MOUSE_Y = 100
 
-// The rows the walk will visit, off the display's own geometry, so the fixture
-// files its genotypes against the right sample indices.
-function rowsAt(display: ReturnType<typeof setup>) {
-  return matrixCellAt(
+function rowsUnderCursor() {
+  const display = setup({})
+  const { nearest, lowest } = matrixCellAt(
     {
       columnWidth: display.columnGeometry.columnWidth,
       effectiveRowHeight: display.effectiveRowHeight,
@@ -84,30 +92,34 @@ function rowsAt(display: ReturnType<typeof setup>) {
     0,
     MOUSE_Y,
   )
+  expect(nearest).toBeGreaterThan(lowest)
+  return Array.from({ length: nearest - lowest + 1 }, (_, i) => lowest + i)
 }
 
-test('the hovered cell reports its own row, not the next one down', () => {
-  const { nearest, lowest } = rowsAt(setup({}))
-  expect(nearest).toBeGreaterThan(lowest)
+function hitAt(cells: Cells) {
+  return variantMatrixSurface(setup(cells)).getHit(0, MOUSE_Y)
+}
 
-  // The row the cursor is in carries an empty genotype; the row below it, the
-  // next one the walk would try, carries a real one.
-  const display = setup({ [nearest]: 1, [nearest - 1]: 2 })
-  const hit = variantMatrixSurface(display).getHit(0, MOUSE_Y)
+// a rare variant's carrier pixel: its alt cell paints over the reference cells
+// of the rows sharing the pixel, so the tooltip names the carrier
+test('the pixel reports the carrier whose alt cell it shows', () => {
+  const rows = rowsUnderCursor()
+  const carrier = rows[1]!
+  const hit = hitAt({ ref: rows.filter(r => r !== carrier), alt: [carrier] })
 
-  expect(hit?.fields.sampleName).toBe(SAMPLE_NAMES[nearest])
-  expect(hit?.fields.genotype).toBe('')
+  expect(hit?.fields.sampleName).toBe(SAMPLE_NAMES[carrier])
+  expect(hit?.fields.genotype).toBe('0/1')
 })
 
-// Walking past rows with nothing filed against them is the point of the band —
-// at the 2,504-sample fit height eleven rows share a pixel and only some are
-// called — so the guard must not become "report the nearest row whatever".
-test('a row with no genotype at all is still walked past', () => {
-  const { nearest } = rowsAt(setup({}))
+test('among reference cells, the pixel reports the one painted last', () => {
+  const rows = rowsUnderCursor()
+  const hit = hitAt({ ref: rows })
 
-  const display = setup({ [nearest - 1]: 2 })
-  const hit = variantMatrixSurface(display).getHit(0, MOUSE_Y)
+  expect(hit?.fields.sampleName).toBe(SAMPLE_NAMES[rows.at(-1)!])
+})
 
-  expect(hit?.fields.sampleName).toBe(SAMPLE_NAMES[nearest - 1])
-  expect(hit?.fields.genotype).toBe('0|1')
+// a sample with no genotype at the site draws no cell, so the pixel is blank
+test('rows with no drawn cell report nothing', () => {
+  rowsUnderCursor()
+  expect(hitAt({})).toBeUndefined()
 })
