@@ -508,22 +508,25 @@ export function drawWhiskerBand({
     path.flush()
   }
 
-  const bandCount = cuts.length + 1
-  const touched = Array.from({ length: bandCount }, () => false)
+  let low = Number.POSITIVE_INFINITY
+  let high = Number.NEGATIVE_INFINITY
   for (let i = 0; i < n; i++) {
-    const lowest = cutBand(minScores[i]!, cuts)
-    const highest = cutBand(maxScores[i]!, cuts)
-    for (let k = lowest; k <= highest; k++) {
-      touched[k] = true
+    if (minScores[i]! < low) {
+      low = minScores[i]!
+    }
+    if (maxScores[i]! > high) {
+      high = maxScores[i]!
     }
   }
+  const lowest = cutBand(low, cuts)
+  const highest = cutBand(high, cuts)
   const fills = bandStyles(
     cssRgba(source.negColor ?? source.color, WHISKER_BAND_OPACITY),
     innerColors,
     cssRgba(source.color, WHISKER_BAND_OPACITY),
     rgb => cssRgba(rgb, WHISKER_BAND_OPACITY),
   )
-  const drawn = fills.filter((_, k) => touched[k])
+  const drawn = fills.slice(lowest, highest + 1)
   if (drawn.every(fill => fill === drawn[0])) {
     ctx.fillStyle = drawn[0] ?? fills[0]!
     trace()
@@ -537,7 +540,7 @@ export function drawWhiskerBand({
     for (const [k, { top, bottom }] of [
       ...bandEdges(snapped).entries(),
     ].reverse()) {
-      if (touched[k]) {
+      if (k >= lowest && k <= highest) {
         const clipTop = Math.max(top, rowTop - 1)
         const clipBottom = Math.min(bottom, rowBottom + 1)
         withClip(ctx, -1e6, clipTop, 2e6, clipBottom - clipTop, () => {

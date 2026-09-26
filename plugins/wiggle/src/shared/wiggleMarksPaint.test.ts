@@ -981,6 +981,32 @@ describe('the whiskers band', () => {
     ])
   })
 
+  test('an interpolated band fills a colour band it crosses between two bins', () => {
+    const { fillStyles } = paint(
+      [
+        bandLayer(
+          [-5, 8],
+          [-8, 5],
+          [0, 100],
+          [100, 200],
+          RENDERING_TYPE_LINE_CENTER,
+        ),
+      ],
+      RENDERING_TYPE_LINE_CENTER,
+      {
+        domainY: [-10, 10],
+        pivot: -2,
+        cuts: [-2, 2],
+        innerColors: [[0, 1, 0]],
+      },
+    )
+    expect(fillStyles).toEqual([
+      'rgba(0,0,255,0.3)',
+      'rgba(0,255,0,0.3)',
+      'rgba(255,0,0,0.3)',
+    ])
+  })
+
   test('the band stays under the mean stroke, and the stroke skips the band layer', () => {
     const band = bandLayer(
       [8, 6],
