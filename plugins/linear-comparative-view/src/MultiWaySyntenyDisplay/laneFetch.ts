@@ -58,11 +58,16 @@ export function specsCoverMate(specs: LaneFetchSpec[], anchor: string) {
   return specs.some(spec => spec.lane !== anchor)
 }
 
-/** One adjacent lane pair's fetch, read inside the upper lane's own window */
+/**
+ * One adjacent lane pair's fetch. `regions` is the window the pair is read
+ * inside: the upper lane's own, or with `onAnchor` the anchor's, for a source
+ * that holds every lane inside its anchor's window
+ */
 export interface LaneLinksFetchSpec extends LaneFetchSpec {
   upperAssembly: string
   lowerAssembly: string
   regions: LaneRegion[]
+  onAnchor: boolean
   lodTier: LodTier
 }
 

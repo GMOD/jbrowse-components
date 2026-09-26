@@ -483,12 +483,15 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchOne: async (spec, ctx) => {
       const links = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: self.adapterConfig,
-        regions: await laneRegions(
-          getSession(self),
-          spec.upperAssembly,
-          spec.regions,
-        ),
+        regions: spec.onAnchor
+          ? spec.regions
+          : await laneRegions(
+              getSession(self),
+              spec.upperAssembly,
+              spec.regions,
+            ),
         opts: {
+          ...(spec.onAnchor ? { queryAssemblyName: spec.upperAssembly } : {}),
           targetAssemblyName: spec.lowerAssembly,
           lodMode: spec.lodTier,
           clipToRegion: true,

@@ -123,7 +123,7 @@ export function createDisplayWithSession({
     },
     GbzBaseSyntenyAdapter: {
       slots: {},
-      capabilities: ['headerLanes'],
+      capabilities: ['headerLanes', 'lanePairsOnAnchor'],
     },
   }
   for (const [name, { slots, capabilities }] of Object.entries(adapterSlots)) {

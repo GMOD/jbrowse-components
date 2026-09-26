@@ -1,3 +1,4 @@
+import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
@@ -11,6 +12,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { declaredLanesOf } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
 
+import { KIND_BASE, KIND_CIGAR_D } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
@@ -1279,6 +1281,96 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     })
     display.setLaneLinks(new Map([[pair, { key: 'k', links: [direct] }]]))
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
+  })
+
+  const readOnAnchor = async (answer: SimpleFeature[]) => {
+    const calls: { name: string; args: Record<string, unknown> }[] = []
+    const opts = (call: { args: Record<string, unknown> }) =>
+      (call.args.opts ?? {}) as Record<string, unknown>
+    const { display } = createDisplayWithSession({
+      syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+      trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
+      geneTracks: [],
+      rpc: async (name, args) => {
+        calls.push({ name, args })
+        return name === 'CoreGetInfo'
+          ? { hasCoarseTier: false, anchorAssemblyName: 'volvox', lanes: [] }
+          : opts({ args }).queryAssemblyName === undefined
+            ? []
+            : answer
+      },
+    })
+    await when(
+      () => display.starAnchor !== undefined && display.features !== undefined,
+      { timeout: 5000 },
+    )
+    display.setFeatures(starRecords())
+    display.setLaneFrames(0, frames)
+    const pairCall = () =>
+      calls.find(
+        c =>
+          c.name === 'CoreGetFeatures' &&
+          opts(c).queryAssemblyName !== undefined,
+      )
+    return { display, pairCall, opts }
+  }
+
+  test('an adapter reading lane pairs on its anchor is asked for each pair in the anchor window', async () => {
+    const { display, pairCall, opts } = await readOnAnchor([])
+    const [spec] = display.laneLinksFetchSpecs
+    expect(spec).toMatchObject({
+      lane: pair,
+      onAnchor: true,
+      upperAssembly: 'volvox_random',
+      lowerAssembly: 'volvox_ins',
+      regions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+      ],
+    })
+    await until(() => pairCall() !== undefined)
+    expect(pairCall()!.args.regions).toEqual(spec!.regions)
+    expect(opts(pairCall()!)).toMatchObject({
+      queryAssemblyName: 'volvox_random',
+      targetAssemblyName: 'volvox_ins',
+      clipToRegion: true,
+      keepAlignment: true,
+    })
+  })
+
+  test('an anchor-window pair draws the ops of the records the adapter answers', async () => {
+    const direct = new SimpleFeature({
+      uniqueId: 'direct',
+      refName: 'ctgB',
+      start: 150,
+      end: 250,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_ins',
+        refName: 'ctgC',
+        start: 1150,
+        end: 1230,
+      },
+      alignmentOps: Uint32Array.from(parseCigar2('40=20D40=')),
+    })
+    const { display } = await readOnAnchor([direct])
+    expect(
+      display.pairLinks.get(pair)!.links[0]!.get('composedThrough'),
+    ).toBeDefined()
+    await until(() => display.laneLinks?.has(pair) === true)
+    expect(display.pairLinks.get(pair)!.links).toEqual([direct])
+    expect([...ribbonsBetweenMates(display).kinds]).toEqual([
+      KIND_BASE,
+      KIND_CIGAR_D,
+    ])
+  })
+
+  test('an anchor-window pair the adapter answers with nothing composes', async () => {
+    const { display } = await readOnAnchor([])
+    await until(() => display.laneLinks?.has(pair) === true)
+    expect(display.laneLinks!.get(pair)!.links).toEqual([])
+    expect(
+      display.pairLinks.get(pair)!.links.map(l => l.get('composedThrough')),
+    ).toEqual([{ refName: 'ctgA', start: 200, end: 300 }])
   })
 })
 
