@@ -307,7 +307,7 @@ describe('fitWidth label decimation', () => {
     expect(keptName(out, 'blockerL')).toBe(true) // leftmost end, open to the left
   })
 
-  it('a pile sharing one start sheds its names under decimation, a lone feature keeps its own', () => {
+  it('a pile sharing one start thins to its leader under decimation, a lone feature keeps its own', () => {
     const pile = Array.from({ length: 20 }, (_, i) => ({
       featureId: `pile${i}`,
       startBp: 1000,
@@ -339,12 +339,13 @@ describe('fitWidth label decimation', () => {
       ...inputs,
       labelRoomFactor: 8,
     }).get(0)!.floatingLabelsData
-    expect(keptName(labels, 'pile0')).toBe(false)
+    expect(keptName(labels, 'pile0')).toBe(true)
+    expect(keptName(labels, 'pile1')).toBe(false)
     expect(keptName(labels, 'pile19')).toBe(false)
     expect(keptName(labels, 'lone')).toBe(true)
   })
 
-  it('a pile sharing one end sheds its names in a reversed region', () => {
+  it('a pile sharing one end thins to its longest member in a reversed region', () => {
     const labels = computeLaidOutData(
       new Map([
         [
@@ -366,7 +367,7 @@ describe('fitWidth label decimation', () => {
         labelDecimation: 'fitWidth',
       },
     ).get(0)!.floatingLabelsData
-    expect(keptName(labels, 'a')).toBe(false)
+    expect(keptName(labels, 'a')).toBe(true)
     expect(keptName(labels, 'b')).toBe(false)
     expect(keptName(labels, 'lone')).toBe(true)
   })
@@ -995,13 +996,44 @@ describe('gene names claim the height first', () => {
 
   it('decimates each tier by its own factor, and the genes by the shared one when they have none', () => {
     const data = volvoxEden()
-    expect(keptNames(data, { labelRoomFactor: 1 })).toEqual(['f06'])
+    expect(keptNames(data, { labelRoomFactor: 8 })).toEqual(['f06'])
     expect(
-      keptNames(data, { labelRoomFactor: 1, geneLabelRoomFactor: 0 }),
+      keptNames(data, { labelRoomFactor: 8, geneLabelRoomFactor: 0 }),
     ).toEqual(['EDEN', 'f06'])
     expect(
       keptNames(data, { labelRoomFactor: Infinity, geneLabelRoomFactor: 0 }),
     ).toEqual(['EDEN'])
+  })
+
+  it('names the longer of two genes sharing a start', () => {
+    const data = new Map([
+      [
+        0,
+        labeledFeatureData([
+          {
+            featureId: 'G1',
+            startBp: 1000,
+            endBp: 9000,
+            height: 20,
+            gene: true,
+          },
+          {
+            featureId: 'G2',
+            startBp: 1000,
+            endBp: 5000,
+            height: 20,
+            gene: true,
+          },
+          { featureId: 'rem', startBp: 20000, endBp: 21000, height: 20 },
+        ]),
+      ],
+    ])
+    expect(
+      keptNames(data, {
+        labelRoomFactor: Infinity,
+        geneLabelRoomFactor: 1,
+      }),
+    ).toEqual(['G1'])
   })
 
   it('keeps the gene name where the height holds one name and the gene is crowded', () => {

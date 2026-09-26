@@ -525,6 +525,10 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.hasOverflow).toBe(false)
 
     display.setHeight(Math.round(bodiesH / 2))
+    expect(display.fitStage.level).toBe('decimated')
+    expect(display.renderedShowLabels).toBe(true)
+
+    display.setHeight(Math.round(bodiesH / 3))
     expect(display.fitStage.level).toBe('bodies')
     expect(display.renderedShowDescriptions).toBe(false)
     expect(display.renderedShowLabels).toBe(false)
@@ -558,7 +562,7 @@ describe('canvas display fit escalation ladder', () => {
     )
     expect(labelRows()).toContain('Auto — descriptions hidden to fit')
 
-    display.setHeight(Math.round(bodiesH / 2))
+    display.setHeight(Math.round(bodiesH / 3))
     expect(display.fitStage.level).toBe('bodies')
     expect(display.fitNote).toBe(
       `names + descriptions hidden, squeezed to ${Math.round(display.fitScale * 100)}% (taller track shows more)`,
@@ -646,12 +650,15 @@ describe('canvas display fit escalation ladder', () => {
     expect(thinnedH).toBeLessThan(labelsH)
     expect(thinnedH).toBeGreaterThan(bodiesH)
 
-    // Every feature overlaps every other, so a decimation keeps no name and
-    // the ladder passes straight on to `bodies`.
+    // Every feature shares one start, so a decimation keeps only the pile
+    // leader's name.
+    const decimatedH = display.decimatedHeightProbe(8)
+    expect(decimatedH).toBeLessThan(thinnedH)
     const rungs = [
       ['full', fullH],
       ['labels', labelsH],
       ['thinned', thinnedH],
+      ['decimated', decimatedH],
     ] as const
     const expectedLevel = (h: number) =>
       rungs.find(([, ch]) => ch <= h)?.[0] ?? 'bodies'
@@ -685,7 +692,9 @@ describe('canvas display fit escalation ladder', () => {
 
       expect(level).toBe(expectedLevel(h))
       expect(display.fitStage.bodyScale).toBeGreaterThanOrEqual(
-        level === 'thinned' ? display.fitLabeledBodyFloor : 1,
+        level === 'thinned' || level === 'decimated'
+          ? display.fitLabeledBodyFloor
+          : 1,
       )
 
       expect(scale).toBeGreaterThanOrEqual(minScale)
@@ -907,8 +916,9 @@ describe('canvas display fit escalation ladder', () => {
     expect(at(Math.round(fullH) + 40).sig).toBe(inFull.sig)
     expect(display.fitScale).toBe(1)
 
-    const squeezedA = at(Math.round(bodiesH) - 40)
-    const squeezedB = at(Math.round(bodiesH) - 44)
+    const decimatedH = display.decimatedHeightProbe(8)
+    const squeezedA = at(Math.floor(decimatedH) - 10)
+    const squeezedB = at(Math.floor(decimatedH) - 14)
     expect(squeezedA.level).toBe('bodies')
     expect(display.fitScale).toBeLessThan(1)
     expect(squeezedB.sig).not.toBe(squeezedA.sig)

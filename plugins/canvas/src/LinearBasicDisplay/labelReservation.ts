@@ -9,7 +9,7 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LabelDecimation } from './layoutInputs.ts'
 
-// Keyed on the room the overhang can use (box plus the gap to the neighbour),
+// Keyed on the room the overhang can use (the gap to the neighbour's edge),
 // not box width alone, so an isolated feature keeps its name however narrow.
 // `roomFactor` is not bounded below by 1: the packer always reserves the full
 // name width, so a kept-but-crowded name drops a row rather than overlapping.
@@ -152,37 +152,65 @@ function upperBound(sorted: number[], x: number) {
   return lo
 }
 
-function valueAfter(sorted: number[], x: number) {
-  return sorted[lowerBound(sorted, x) + 1]
+interface RoomSpan {
+  startBp: number
+  endBp: number
+  gene?: boolean
 }
 
-function valueBefore(sorted: number[], x: number) {
-  const idx = upperBound(sorted, x) - 2
-  return idx >= 0 ? sorted[idx] : undefined
+function outranks(a: RoomSpan, b: RoomSpan) {
+  return a.gene !== b.gene
+    ? !!a.gene
+    : a.endBp - a.startBp > b.endBp - b.startBp
 }
 
-// A feature sharing an edge with another has no room on that side, so a pile
-// on one bp thins under decimation rather than every member reading the far
-// neighbour's gap as its own.
-export function labelOverhangRoomPx(
-  features: Map<string, { startBp: number; endBp: number }>,
+function pileLeaders<F extends RoomSpan>(
+  features: Map<string, F>,
+  edge: (f: F) => number,
+) {
+  const leaders = new Map<number, [string, F]>()
+  for (const entry of features) {
+    const key = edge(entry[1])
+    const leader = leaders.get(key)
+    if (!leader || outranks(entry[1], leader[1])) {
+      leaders.set(key, entry)
+    }
+  }
+  return new Set([...leaders.values()].map(([id]) => id))
+}
+
+// Features sharing an edge form a pile, and only its leader (a gene, else the
+// longest) reads the gap past the pile; the rest read none, so the pile thins
+// to one name before that name is at risk.
+export function labelOverhangRoomPx<F extends RoomSpan>(
+  features: Map<string, F>,
   bpPerPx: number,
 ) {
   const spans = [...features.values()]
   const starts = spans.map(f => f.startBp).sort((a, b) => a - b)
   const ends = spans.map(f => f.endBp).sort((a, b) => a - b)
+  const startLeaders = pileLeaders(features, f => f.startBp)
+  const endLeaders = pileLeaders(features, f => f.endBp)
   const rightRoom = new Map<string, number>()
   const leftRoom = new Map<string, number>()
   for (const [id, f] of features) {
-    const nextStart = valueAfter(starts, f.startBp)
-    const prevEnd = valueBefore(ends, f.endBp)
+    const nextStart = starts[upperBound(starts, f.startBp)]
+    const prevEnd = ends[lowerBound(ends, f.endBp) - 1]
     rightRoom.set(
       id,
-      nextStart === undefined ? Infinity : (nextStart - f.startBp) / bpPerPx,
+      !startLeaders.has(id)
+        ? 0
+        : nextStart === undefined
+          ? Infinity
+          : (nextStart - f.startBp) / bpPerPx,
     )
     leftRoom.set(
       id,
-      prevEnd === undefined ? Infinity : (f.endBp - prevEnd) / bpPerPx,
+      !endLeaders.has(id)
+        ? 0
+        : prevEnd === undefined
+          ? Infinity
+          : (f.endBp - prevEnd) / bpPerPx,
     )
   }
   return { rightRoom, leftRoom }
