@@ -38,7 +38,12 @@ import {
 } from '../shared/types.ts'
 import { MAPQ_UNAVAILABLE, firstOfPairStrand } from '../shared/util.ts'
 
-import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
+import type {
+  ColorPalette,
+  PaletteColorKey,
+  PaletteColors,
+  RGBColor,
+} from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ColorSchemeType, ShaderScheme } from '../shared/types.ts'
 
@@ -440,10 +445,10 @@ function categoryColor(
       const packed = data.readTagColors[i]
       return packed
         ? abgrToCssRgba(packed)
-        : rgb255(readCategoryColor(palette, cat))
+        : rgb255(palette.readCategoryColors[cat])
     }
     default:
-      return rgb255(readCategoryColor(palette, cat))
+      return rgb255(palette.readCategoryColors[cat])
   }
 }
 
@@ -522,24 +527,25 @@ export const readCategoryPaletteKeys = {
   tag: 'colorPairLR',
 } satisfies Record<ReadColorCategory, PaletteColorKey>
 
-// What a category paints: the colour the `color` object declares for it, else
-// its palette default. The GPU's `u.readCategoryColor`, the Canvas2D fill, the
-// key and the overlay palettes all read it.
-export function readCategoryColor(
-  palette: ColorPalette,
-  category: ReadColorCategory,
-) {
-  return (
-    palette.readCategoryColors[category] ??
-    palette[readCategoryPaletteKeys[category]]
-  )
+// What each category paints: the colour `declared` for it, else its default
+// among `colors`.
+export function readCategoryColorsOf(
+  colors: PaletteColors,
+  declared: Partial<Record<ReadColorCategory, RGBColor>> = {},
+): Record<ReadColorCategory, RGBColor> {
+  return Object.fromEntries(
+    Object.entries(readCategoryPaletteKeys).map(([category, key]) => [
+      category,
+      declared[category as ReadColorCategory] ?? colors[key],
+    ]),
+  ) as Record<ReadColorCategory, RGBColor>
 }
 
 export function categorySwatchColor(
   category: SwatchCategory,
   palette: ColorPalette,
 ) {
-  return rgb255(readCategoryColor(palette, category))
+  return rgb255(palette.readCategoryColors[category])
 }
 
 export { normalizedRgbToCssRgba as rgba255 } from '@jbrowse/core/util/colorBits'

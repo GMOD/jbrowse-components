@@ -1179,9 +1179,7 @@ export default function stateModelFactory(
           colorPaletteIn(theme: JBrowsePalette): ColorPalette {
             return buildColorPaletteFromPalette(theme, {
               value: self.colorSetting.value,
-              readCategoryColors: declaredReadCategoryColors(
-                self.colorEncoding,
-              ),
+              declared: declaredReadCategoryColors(self.colorEncoding),
             })
           },
 

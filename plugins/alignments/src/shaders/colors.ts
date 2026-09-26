@@ -5,8 +5,8 @@ export { cssColorToNormalizedRgb as toRgb } from '@jbrowse/core/util/colorBits'
 // RGB color as [r, g, b] where each is 0-1
 export type RGBColor = [number, number, number]
 
-// Color palette for the renderer
-export interface ColorPalette {
+// The themed colours the renderer names one by one
+export interface PaletteColors {
   colorFwdStrand: RGBColor
   colorRevStrand: RGBColor
   colorPairLR: RGBColor
@@ -59,7 +59,14 @@ export interface ColorPalette {
   // theme neutral between two read fills) — a tint that composes toward the
   // ground it sits on adds nothing, whichever theme is in force.
   colorOverlapTint: RGBColor
-  readCategoryColors: Partial<Record<ReadColorCategory, RGBColor>>
 }
 
-export type PaletteColorKey = Exclude<keyof ColorPalette, 'readCategoryColors'>
+export type PaletteColorKey = keyof PaletteColors
+
+// Color palette for the renderer: the named colours, and what each read
+// category paints, resolved once from the colour `color` declares for it or
+// its named default (`readCategoryColorsOf`). The GPU's `u.readCategoryColor`,
+// the Canvas2D fill, the key and the overlay palettes all index it.
+export interface ColorPalette extends PaletteColors {
+  readCategoryColors: Record<ReadColorCategory, RGBColor>
+}

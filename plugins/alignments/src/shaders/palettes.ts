@@ -1,12 +1,10 @@
-import { readCategoryColor } from '../LinearAlignmentsDisplay/colorUtils.ts'
-
 import type { SwatchCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ArcColorField } from '../shared/types.ts'
 import type { ColorPalette } from './colors.ts'
 
 // One table per overlay, saying what each slot MEANS. The colour follows from
-// `readCategoryColor`, the read fills' own resolution, so an overlay slot and
-// the read swatch of the same meaning cannot be two colours.
+// the palette's `readCategoryColors`, the read fills' own table, so an overlay
+// slot and the read swatch of the same meaning cannot be two colours.
 //
 // **Indexing `readCategoryColor` from the linked-read pass instead —
 // dropping its table — has been proposed and declined.** The colour is
@@ -75,13 +73,13 @@ export function buildArcColorPalette(
   c: ColorPalette,
   colorField: ArcColorField,
 ) {
-  return ARC_SLOT_CATEGORY.map((_, slot) =>
-    readCategoryColor(c, arcSlotCategory(slot, colorField)),
+  return ARC_SLOT_CATEGORY.map(
+    (_, slot) => c.readCategoryColors[arcSlotCategory(slot, colorField)],
   )
 }
 
 export function buildLinkedReadColorPalette(c: ColorPalette) {
-  return LINKED_READ_SLOT_CATEGORY.map(category =>
-    readCategoryColor(c, category),
+  return LINKED_READ_SLOT_CATEGORY.map(
+    category => c.readCategoryColors[category],
   )
 }

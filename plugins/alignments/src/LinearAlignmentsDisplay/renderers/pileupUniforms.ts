@@ -4,7 +4,7 @@ import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
 import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
-import { READ_COLOR_CATEGORY, readCategoryColor } from '../colorUtils.ts'
+import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { shouldOutlineReads } from './rendererTypes.ts'
 
 import type { PaletteColorKey } from '../../shaders/colors.ts'
@@ -101,7 +101,7 @@ function writePaletteSlots(
   categories: readonly ReadColorCategory[],
 ) {
   for (let i = 0; i < slotCount; i++) {
-    const rgb = readCategoryColor(c, categories[i]!)
+    const rgb = c.readCategoryColors[categories[i]!]
     set(f, i, rgb[0], rgb[1], rgb[2], 1)
   }
 }
@@ -137,7 +137,7 @@ export function writePileupPalette(
     LINKED_READ_SLOT_CATEGORY,
   )
   for (const [slot, category] of READ_CATEGORY_UBO_SLOTS) {
-    const rgb = readCategoryColor(c, category)
+    const rgb = c.readCategoryColors[category]
     readShader.setUniformReadCategoryColor(f32, slot, rgb[0], rgb[1], rgb[2], 1)
   }
   // The five base slots again, resolved: `effectiveBaseColors` is where the

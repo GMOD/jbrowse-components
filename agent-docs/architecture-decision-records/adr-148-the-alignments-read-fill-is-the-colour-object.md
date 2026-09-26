@@ -132,7 +132,7 @@ retired `methylation` and `stranded` names now resolve.
   category table (`declaredReadCategoryColors`): `domain` names the levels,
   or the field's own order takes the range, and each of the five levels that
   share the neutral default recolours alone. The GPU uniforms, the Canvas2D
-  fill, the key and the arc band all read `readCategoryColor`.
+  fill, the key and the arc band all index the palette's `readCategoryColors`.
 
 ## Rejected alternatives
 

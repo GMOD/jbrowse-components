@@ -40,7 +40,7 @@ const UNSET: AlignmentsColorSetting = {
 
 function paletteFor(color: Partial<AlignmentsColorSetting>) {
   return buildColorPaletteFromPalette(resolvePalette({}), {
-    readCategoryColors: declaredReadCategoryColors(
+    declared: declaredReadCategoryColors(
       alignmentsColorEncoding({ ...UNSET, ...color }),
     ),
   })
@@ -164,9 +164,9 @@ describe('the five levels that share the neutral default', () => {
 
 test('nothing declared, or a range over an open field, leaves the defaults', () => {
   expect(paletteFor({ field: 'pairOrientation' }).readCategoryColors).toEqual(
-    {},
+    DEFAULT.readCategoryColors,
   )
   expect(
     paletteFor({ field: 'tags.HP', range: ['#ff0000'] }).readCategoryColors,
-  ).toEqual({})
+  ).toEqual(DEFAULT.readCategoryColors)
 })

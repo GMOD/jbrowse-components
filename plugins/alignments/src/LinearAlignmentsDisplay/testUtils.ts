@@ -16,6 +16,7 @@ import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } fro
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
+import { readCategoryColorsOf } from './colorUtils.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
@@ -23,7 +24,12 @@ import type {
   GroupedAlignmentsResult,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
+import type {
+  ColorPalette,
+  PaletteColors,
+  RGBColor,
+} from '../shaders/colors.ts'
+import type { ReadColorCategory } from './colorUtils.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { RenderState } from './renderers/rendererTypes.ts'
 import type { MenuDivider, MenuItem, MenuSubHeader } from '@jbrowse/core/ui'
@@ -34,11 +40,14 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // A full ColorPalette with every channel zeroed, for tests that only assert on
 // a few roles. Pass `overrides` to set the colors a case actually checks; the
 // explicit literal (no cast) keeps it type-safe as ColorPalette gains fields.
-export function makeTestPalette(
-  overrides: Partial<ColorPalette> = {},
-): ColorPalette {
+export function makeTestPalette({
+  readCategoryColors,
+  ...overrides
+}: Partial<PaletteColors> & {
+  readCategoryColors?: Partial<Record<ReadColorCategory, RGBColor>>
+} = {}): ColorPalette {
   const z: RGBColor = [0, 0, 0]
-  return {
+  const colors: PaletteColors = {
     colorFwdStrand: z,
     colorRevStrand: z,
     colorPairLR: z,
@@ -71,8 +80,11 @@ export function makeTestPalette(
     colorConnectingLine: z,
     colorOverlap: z,
     colorOverlapTint: z,
-    readCategoryColors: {},
     ...overrides,
+  }
+  return {
+    ...colors,
+    readCategoryColors: readCategoryColorsOf(colors, readCategoryColors),
   }
 }
 
