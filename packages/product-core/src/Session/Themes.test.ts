@@ -107,7 +107,6 @@ test('leaving the following lands on the mode the OS was not asking for', () => 
   expect(session.selectedThemeName).toBe('default')
   expect(session.themeIsDark).toBe(false)
 
-  // and it stays there, whatever the OS does next
   media.setMatches(false)
   session.setThemeName(SYSTEM_THEME)
   session.stopFollowingSystemTheme()
