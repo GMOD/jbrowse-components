@@ -477,9 +477,9 @@ tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
 # locus instead of one cut window at a time. rGFA states each segment's position
 # in tags and a plain GFA states it in path order, so this emits the two BEDs
 # RgfaTabixAdapter already reads and nothing downstream has to know the
-# difference: region query, the subgraph cut, both anchored layouts, the launch
-# menus and hover sync all work off these. Runs on the host (python3 only, no
-# docker) in about ten seconds on this graph.
+# difference: region query, the subgraph cut, both anchored layouts and hover
+# sync all work off these. Runs on the host (python3 only, no docker) in about
+# ten seconds on this graph.
 bash "$SCRIPT_DIR/build_pggb_tabix.sh" "$GFA" ecoli_pggb "$REF"
 
 # The rGFA counterpart. minigraph tags every segment with the stable sequence it
@@ -513,9 +513,9 @@ in_cactus gfatools view -R "${REF}#1#chr:1445000-1474500" -r 1 \
   /data/ecoli_minigraph.rgfa > ecoli_paa_subgraph.gfa
 
 # Index the whole rGFA so the graph is browsable by locus instead of one cut
-# window at a time: the segments become a feature track on REF, and the graph
-# view launches from whatever is on screen. The same script the HPRC tutorial
-# points at, run in the cactus image because it needs gfatools.
+# window at a time: the graph becomes a track on REF, cut from whatever is on
+# screen. The same script the HPRC tutorial points at, run in the cactus image
+# because it needs gfatools.
 cp "$SCRIPT_DIR/build_rgfa_tabix.sh" .
 in_cactus bash /data/build_rgfa_tabix.sh /data/ecoli_minigraph.rgfa /data/ecoli_minigraph
 
@@ -696,10 +696,9 @@ jb add-track-json pav_track.json --update --out "$APP"
 # RgfaTabixAdapter reads the two indexes built above; its `uri` is the shared
 # prefix, and it resolves `.segs.bed.gz`/`.links.bed.gz` and their `.tbi`. The
 # graph's stable names are PanSN (`K12#1#chr`), and the sample prefix already
-# equals the assembly name, so no assemblyNameToPanSN mapping is needed. With
-# the graph genome view plugin installed, the track menu's Launch opens the
-# subgraph for whatever window is on screen. Needs the four files beside
-# config.json, since add-track-json copies nothing.
+# equals the assembly name, so no assemblyNameToPanSN mapping is needed. The
+# track opens as the graph and its segments lane is the second display. Needs
+# the four files beside config.json, since add-track-json copies nothing.
 cp ecoli_minigraph.segs.bed.gz ecoli_minigraph.segs.bed.gz.tbi \
    ecoli_minigraph.links.bed.gz ecoli_minigraph.links.bed.gz.tbi "$APP/"
 cat > rgfa_track.json <<'JSON'
@@ -711,7 +710,17 @@ cat > rgfa_track.json <<'JSON'
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_minigraph"
-  }
+  },
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_minigraph_segments-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_minigraph_segments-LinearBasicDisplay"
+    }
+  ]
 }
 JSON
 jb add-track-json rgfa_track.json --update --out "$APP"
@@ -807,8 +816,8 @@ JSON
 jb add-track-json subgraph_nodes_track.json --update --out "$APP"
 
 # The whole pggb graph as a track, off the two BEDs built above: the same
-# adapter and the same shape as the minigraph segments track, so the graph view
-# launches from any locus rather than from a prepared window.
+# adapter and the same shape as the minigraph segments track, so the graph
+# draws at any locus rather than at a prepared window.
 cp ecoli_pggb.segs.bed.gz ecoli_pggb.segs.bed.gz.tbi \
    ecoli_pggb.links.bed.gz ecoli_pggb.links.bed.gz.tbi "$APP/"
 cat > pggb_segments_track.json <<'JSON'
@@ -821,7 +830,17 @@ cat > pggb_segments_track.json <<'JSON'
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_pggb"
   },
-  "displays": [{ "type": "LinearBasicDisplay", "showLabels": false }]
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_pggb_segments-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_pggb_segments-LinearBasicDisplay",
+      "showLabels": false
+    }
+  ]
 }
 JSON
 jb add-track-json pggb_segments_track.json --update --out "$APP"

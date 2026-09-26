@@ -25,7 +25,7 @@
 #
 # `ref-prefix` (e.g. GRCh38) additionally writes <prefix>.ref.segs.bed.gz and
 # <prefix>.ref.links.bed.gz, the same rows keyed only under stable sequences of
-# that PanSN sample. A launch downloads both .tbi files before it can cut
+# that PanSN sample. A graph track downloads both .tbi files before it can cut
 # anything, and on HPRC that fixed cost is 9.18 MB of index against 0.48 MB for
 # the small pair (19x), because 195 of that graph's 13,717 indexed sequences are
 # GRCh38 and the rest are donor contigs. Rows a reference query returns are

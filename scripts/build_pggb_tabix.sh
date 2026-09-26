@@ -9,9 +9,8 @@
 # unchanged.
 #
 # What that buys, against the `odgi extract` route the pangenome tutorial used
-# to require: no per-window extraction step, so the graph opens at any locus from
-# the track menu, the launch menus and hover sync work, and the segments draw as
-# a linear track on the reference.
+# to require: no per-window extraction step, so the graph track draws at any
+# locus, hover sync works, and the segments draw as a lane on the reference.
 #
 # Requires: python3, sort, bgzip, tabix
 # Usage:    bash scripts/build_pggb_tabix.sh <graph.gfa[.gz|.zst]> [out-prefix] [reference-sample]

@@ -162,6 +162,10 @@ tracks = [
             ),
         },
         'displayDefaults': {'showLabels': 'none'},
+        'displays': [
+            {'type': 'LinearGraphDisplay', 'displayId': f'{stem}_graph-LinearGraphDisplay'},
+            {'type': 'LinearBasicDisplay', 'displayId': f'{stem}_graph-LinearBasicDisplay'},
+        ],
     },
     {
         'type': 'AlignmentsTrack',

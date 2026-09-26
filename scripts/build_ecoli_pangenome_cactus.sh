@@ -224,8 +224,8 @@ done
 # haplotypes as W lines, which the walk reads alike; the trailing subpath tag on
 # a non-reference path (Sakai#0#chr#0) changes nothing, since PanSN still
 # resolves the sample. Emits the two BEDs RgfaTabixAdapter reads, so the region
-# query, the subgraph cut, both anchored layouts, the launch menus and hover sync
-# all work off these. Host-side (python3 only, no container).
+# query, the subgraph cut, both anchored layouts and hover sync all work off
+# these. Host-side (python3 only, no container).
 # --gfa writes mc/ecoli.gfa.gz; fall back to whatever GFA the run did write, so
 # a cactus bump that renames it fails in build_pggb_tabix.sh with the name it
 # looked for rather than here with a glob.
@@ -501,7 +501,17 @@ cat > segments_track.json <<'JSON'
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_cactus"
   },
-  "displays": [{ "type": "LinearBasicDisplay", "showLabels": false }]
+  "displays": [
+    {
+      "type": "LinearGraphDisplay",
+      "displayId": "ecoli_cactus_segments-LinearGraphDisplay"
+    },
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "ecoli_cactus_segments-LinearBasicDisplay",
+      "showLabels": false
+    }
+  ]
 }
 JSON
 jb add-track-json segments_track.json --update --out "$APP"
@@ -509,7 +519,7 @@ jb add-track-json segments_track.json --update --out "$APP"
 # The adapter and the view both come from the graph genome view plugin, which is
 # not bundled in JBrowse Web and has no CLI command, so declare it directly. It
 # is a native ES module loaded at runtime from its own url. Without this the
-# track above loads nothing and its Launch menu item is absent.
+# track above loads nothing.
 python3 - "$APP/config.json" <<'PY'
 import json, sys
 
@@ -561,6 +571,6 @@ echo "Minigraph-Cactus projections (synteny, variants, MAF, depth, per-strain"
 echo "presence), the KTa004 read pileup mapped through the graph, and the graph"
 echo "itself as a segments track. Serve it:"
 echo "  npx serve $(pwd)/$APP"
-echo "Turn on 'MC graph: segments' and use its track menu's Launch to draw"
-echo "any window as a graph; the config declares the plugin that does it."
+echo "Turn on 'MC graph: segments' to draw any window as a graph; the config"
+echo "declares the plugin that does it."
 echo "The graph overview raster is ecoli_cactus_graph.png (odgi viz, from --viz)."

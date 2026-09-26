@@ -128,6 +128,13 @@ def per_accession_tracks(row):
     return tracks
 
 
+def graph_displays(track_id):
+    return [
+        {'type': t, 'displayId': f'{track_id}-{t}'}
+        for t in ('LinearGraphDisplay', 'LinearBasicDisplay')
+    ]
+
+
 def graph_tracks(names):
     if not os.path.exists(f'{GRAPH}.segs.bed.gz'):
         return []
@@ -139,6 +146,7 @@ def graph_tracks(names):
             'assemblyNames': ['TAIR10'],
             'adapter': {'type': 'RgfaTabixAdapter', 'uri': GRAPH, **PANSN},
             'displayDefaults': {'color': "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"},
+            'displays': graph_displays('arabidopsis_minigraph_segments'),
         },
         {
             'type': 'FeatureTrack',
@@ -146,6 +154,7 @@ def graph_tracks(names):
             'name': '1001G+ minigraph pangenome: bubble tier (one node per bubble)',
             'assemblyNames': ['TAIR10'],
             'adapter': {'type': 'RgfaTabixAdapter', 'uri': f'{GRAPH}.tier10000', **PANSN},
+            'displays': graph_displays('arabidopsis_minigraph_tier'),
         },
         {
             'type': 'FeatureTrack',
