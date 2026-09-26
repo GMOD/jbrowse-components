@@ -137,6 +137,21 @@ export function linkRadiiPx(halfWidthPx: number, apexPx: number, screenWidthPx: 
   return [halfWidthPx, apexPx]
 }
 
+export function linkFootDir(feet: number, shift: number): number {
+  let d = (((feet >>> shift) & 3) >>> 0)
+  let _t0: number
+  if ((d == 1)) {
+    _t0 = 1.0
+  } else {
+    if ((d == 2)) {
+      _t0 = -1.0
+    } else {
+      _t0 = 0.0
+    }
+  }
+  return _t0
+}
+
 export function linkFootLenPx(x: number, dir: number, leftPx: number, rightPx: number, footPx: number): number {
   let _t0: number
   if ((dir > 0.0)) {

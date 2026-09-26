@@ -5,7 +5,6 @@ import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { getMismatchContrastMap } from '../shared/util.ts'
-import CrossRegionArcsSvg from './components/CrossRegionArcsSvg.tsx'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
@@ -88,9 +87,8 @@ function AlignmentsSvgBody({
           drawAlignmentsToCtx(
             ctx,
             {
-              sections: model.sourceSections,
+              sections: model.sourceSectionsIn(state.colors),
               densityRegions: model.densityCoverageRegions,
-              readConnectionsLineWidth: model.readConnectionsLineWidth,
             },
             renderBlocks,
             state,
@@ -103,11 +101,6 @@ function AlignmentsSvgBody({
       {overlays ? (
         <>
           <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
-          <CrossRegionArcsSvg
-            model={model}
-            width={canvasWidth}
-            colors={state.colors}
-          />
           <PileupBezierArcsSvg
             model={model}
             view={model.view}

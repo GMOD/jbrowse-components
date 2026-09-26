@@ -3,6 +3,7 @@ import { crispSquareTopLeftPx } from '../shaders/pointGlyph.js.generated.ts'
 import {
   DIAMOND_GLYPH_SCALE,
   GLYPH_DIAMOND,
+  GLYPH_SQUARE,
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
 
@@ -48,7 +49,7 @@ export function appendGlyph(
     ctx.lineTo(cx, y + ri)
     ctx.lineTo(cx - ri, y)
     ctx.closePath()
-  } else if (diameter <= SMALL_POINT_MAX_DIAMETER) {
+  } else if (glyph === GLYPH_SQUARE || diameter <= SMALL_POINT_MAX_DIAMETER) {
     ctx.rect(
       crispSquareTopLeftPx(cx, diameter),
       crispSquareTopLeftPx(y, diameter),
@@ -92,7 +93,10 @@ export function glyphBox(
     const ri = r * DIAMOND_GLYPH_SCALE
     return { left: cx - ri, top: y - ri, width: 2 * ri, height: 2 * ri }
   }
-  if (glyph !== GLYPH_TRIANGLE && diameter <= SMALL_POINT_MAX_DIAMETER) {
+  if (
+    glyph === GLYPH_SQUARE ||
+    (glyph !== GLYPH_TRIANGLE && diameter <= SMALL_POINT_MAX_DIAMETER)
+  ) {
     return {
       left: crispSquareTopLeftPx(cx, diameter),
       top: crispSquareTopLeftPx(y, diameter),

@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 125 functions
-are inside the emitter's subset, of which **95 are exported**.
+Scanned 41 shaders with entry points. 119 functions
+are inside the emitter's subset, of which **91 are exported**.
 
 ## Candidates
 
@@ -24,9 +24,7 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-| Function | Signature | Shaders |
-| --- | --- | --- |
-| `footDir` | `(u32, u32) -> f32` | linkMark |
+_None._
 
 ## Declined
 
@@ -36,7 +34,6 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 
 | Function | Signature | Why not |
 | --- | --- | --- |
-| `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
 | `byteOf` | `(f32) -> u32` | recovers a byte from a sampled texel; the TS side reads the table's bytes directly |
 | `chevronEdgeDistPx` | `(f32, f32, f32) -> f32` | reached as a private helper inside the generated chevronContains, so the edge geometry is already shared without being public; the shader calls it for its cap vertices, the hit test only ever wants the containment it decides |
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
@@ -78,26 +75,23 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| type 'vec2' is outside the supported scalar subset | 26 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 20 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcFlipX`, `arcStrokeHalfPx`, `arcsPointDown`, … |
+| type 'vec2' is outside the supported scalar subset | 24 | `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, `covSegQuad`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 14 | `bandCoverage`, `barAaPx`, `bpToClipX`, `cutScore`, `drawsBar`, `drawsDisc`, … |
 | type 'vec4' is outside the supported scalar subset | 14 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
-| type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
-| type 'vec3' is outside the supported scalar subset | 5 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `linkedReadColorByIndex` |
+| type 'Instance' is outside the supported scalar subset | 4 | `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markInstanceColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
-| type 'VsOut' is outside the supported scalar subset | 4 | `arcDistance`, `linkDash`, `linkDashAlong`, `linkDistance` |
+| type 'vec3' is outside the supported scalar subset | 4 | `baseColor`, `bpRange`, `categoryPaletteColor`, `linkedReadColorByIndex` |
+| type 'VsOut' is outside the supported scalar subset | 3 | `linkDash`, `linkDashAlong`, `linkDistance` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
-| 'vec3<f32>' construction is outside the supported scalar subset | 1 | `arcBpToLinear` |
-| //! js-export: 'arcYDir' reaches arcsPointDown(), which is outside the supported scalar subset | 1 | `arcYDir` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'rowScoreToClipY' reaches rowScoreToYPx(), which is outside the supported scalar subset | 1 | `rowScoreToClipY` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
-| type 'Curve' is outside the supported scalar subset | 1 | `evalArcVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'RowRectUniforms' is outside the supported scalar subset | 1 | `rowRectClipPos` |
 

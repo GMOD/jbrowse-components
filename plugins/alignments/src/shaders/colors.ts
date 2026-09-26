@@ -47,15 +47,9 @@ export interface ColorPalette {
   // reason the span is marked. `palette.readOverlap` states why it inverts
   // between themes instead of dimming.
   colorOverlap: RGBColor
-  // The read cloud's flat connector — the neutral line between a discordant
-  // pair's two coloured endpoint squares. `text.primary`, so it is the theme's
-  // foreground rather than a colour of its own: the line deliberately carries no
-  // category (the squares do), and "neutral" against a dark track background is
-  // light, not the hard black both renderers used to hard-code.
-  colorFlatConnector: RGBColor
-  // The hairline joining a chain's two mates across the pileup. Same argument as
-  // the flat connector, and it was the last mark in the plugin still spelling
-  // "neutral" as a literal black in both renderers.
+  // The hairline joining a chain's two mates across the pileup: `text.primary`,
+  // the theme's foreground, so "neutral" against a dark track background is
+  // light rather than the hard black both renderers once spelled.
   colorConnectingLine: RGBColor
   // The collapsed-group-row overlap tint, which STACKS: several unrelated reads
   // share a row on purpose there and depth is meant to read as weight. So it is

@@ -2,6 +2,7 @@ import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
+import { ARC_BAND_INSET_PX } from './renderers/arcMarks.ts'
 import {
   makeEmptyAlignmentsResult,
   makeEmptyPileupData,
@@ -228,11 +229,11 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     const { display } = twoCloudLanes()
     const bands = display.renderSections
     const scale = tlen(display)!
-    // Down mode anchors at the band top, so the baseline tick (value 1, log
-    // fraction 0) lands exactly there — the same `arcAnchorY` the arcs take —
-    // and each band's top is its lane's own.
+    // Down mode hangs the band from its top, so the baseline tick (value 1,
+    // log fraction 0) lands an inset below it — where the bars plotting it
+    // sit — and each band's top is its lane's own.
     expect(scale.ticks!.items[0]!.value).toBe(1)
-    expect(scale.ticks!.items[0]!.y).toBe(0)
+    expect(scale.ticks!.items[0]!.y).toBe(ARC_BAND_INSET_PX)
     expect(scale.bandTops).toEqual(bands.map(b => b.arcBandTop))
   })
 

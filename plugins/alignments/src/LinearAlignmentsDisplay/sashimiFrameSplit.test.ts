@@ -132,26 +132,23 @@ test('a track with no junctions hands the overlay the same empty array', () => {
   expect(display.sashimiArcSections).toHaveLength(0)
 })
 
-// The same rebuilt-`[]` defect one overlay over, found by the sweep this change
-// prompted. `crossRegionArcSections` re-projects every foot through
-// `view.bpToPx`, so it re-runs per frame by design — but a SINGLE-REGION view,
-// which is nearly every view, resolves no cross-region arc at all, and the
-// empty list it handed back was a fresh one each time.
-test('read connections on, one region: the empty arc list is the same array', () => {
+// The band's feeds are placed through the view's region table, a uniform, so
+// a pan must not rebuild them: a fresh feed is a re-upload of every band
+// buffer, once per pan frame.
+test('read connections on: a pan leaves the band feeds the same object', () => {
   const { view, display } = panningDisplay()
   display.setReadConnections('arc')
   seedJunctions(display)
 
-  const projections = identityCounter<unknown>()
+  const feeds = identityCounter<unknown>()
   const stop = autorun(() => {
-    projections.note(display.crossRegionArcSections)
+    feeds.note(display.arcFeedsByGroup)
   })
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
-    projections.note(display.crossRegionArcSections)
+    feeds.note(display.arcFeedsByGroup)
   }
   stop()
 
-  expect(projections.count).toBe(1)
-  expect(display.crossRegionArcSections).toHaveLength(0)
+  expect(feeds.count).toBe(1)
 })

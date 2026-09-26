@@ -13,8 +13,8 @@
 //
 // THE QUESTION. `GpuAlignmentsRenderer.syncRegion` memoizes per region, and the
 // memo used to have one narrow path: a recolor. An arc-only change — a
-// `minInterchromSupport` drag, `drawInter`, `arcColor`,
-// `readConnectionsLineWidth` — allocates a fresh `arcsByGroup` over the
+// `minInterchromSupport` drag, `drawInter`, `arcColor` — allocates fresh band
+// feeds over the
 // identical laid-out pileup, missed that path, and fell to the rebuild branch,
 // which wipes the region and repacks all thirteen pileup passes and five
 // coverage passes to get four arc buffers rewritten. This measures the two
@@ -48,19 +48,22 @@
 // frame. The absolute rebuild number drifts ~30% between runs at 30k (the pack
 // allocates ~10 MB a round there); the ratio and the control do not.
 
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { MockHal } from '@jbrowse/render-core/hal'
 
+import { buildColorPaletteFromPalette } from '../src/LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
 import {
   ALIGNMENTS_PASSES,
   GpuAlignmentsRenderer,
 } from '../src/LinearAlignmentsDisplay/renderers/GpuAlignmentsRenderer.ts'
 import { makePileupDataResult } from '../src/RenderAlignmentDataRPC/testPileupData.ts'
+import { buildArcBandFeeds } from '../src/features/arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../src/features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../src/features/arcs/types.ts'
 
 import type { AlignmentsSources } from '../src/LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { PileupDataResult } from '../src/RenderAlignmentDataRPC/types.ts'
-import type { ArcsUploadData } from '../src/features/arcs/types.ts'
+import type { ArcBandFeed } from '../src/features/arcs/bandFeed.ts'
 
 const arg = (name: string, dflt: string) =>
   process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? dflt
@@ -159,7 +162,9 @@ function deepPileup() {
 }
 
 // A band's worth of arcs, ~1% of the reads — the feed a slider tick rebuilds.
-function arcFeed(seed: number): ArcsUploadData {
+const COLORS = buildColorPaletteFromPalette(resolvePalette({}))
+
+function arcFeed(seed: number): ArcBandFeed {
   const r = rng(seed)
   const n = Math.max(1, Math.floor(READS / 100))
   const x1 = new Uint32Array(n)
@@ -175,7 +180,7 @@ function arcFeed(seed: number): ArcsUploadData {
     spanBp[i] = 400
     support[i] = 1 + Math.floor(r() * 8)
   }
-  return {
+  const arcs = {
     ...emptyArcsUploadData(),
     arcX1: x1,
     arcX2: x2,
@@ -186,22 +191,31 @@ function arcFeed(seed: number): ArcsUploadData {
     arcSupport: support,
     numArcs: n,
   }
+  return buildArcBandFeeds({
+    byRegion: new Map([[0, arcs]]),
+    crossRegion: [],
+    displayed: [
+      {
+        refName: 'ctgA',
+        start: START,
+        end: START + REGION_BP,
+        displayedRegionIndex: 0,
+      },
+    ],
+    colors: COLORS,
+  }).get(0)!
 }
 
-function sources(
-  data: PileupDataResult,
-  arcs: ArcsUploadData,
-): AlignmentsSources {
+function sources(data: PileupDataResult, arcs: ArcBandFeed): AlignmentsSources {
   return {
     sections: [
       {
         groupKey: '',
         laidOutPileupMap: new Map([[0, data]]),
-        arcsRpcDataMap: new Map([[0, arcs]]),
+        arcFeeds: new Map([[0, arcs]]),
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   }
 }
 

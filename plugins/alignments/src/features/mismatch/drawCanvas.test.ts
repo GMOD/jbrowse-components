@@ -71,6 +71,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     showLinkedReadLines: false,
     collapseGroupRows: false,
     readConnectionsLineWidth: 1,
+    linkRegions: [],
     pileupTopOffset: 0,
     coverageTopOffset: 0,
     sections: [],

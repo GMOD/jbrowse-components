@@ -1,13 +1,11 @@
 import { aaHalfPx, edgeCoverage } from '@jbrowse/render-core/shaders/antialias'
 
-import * as arcFlatGlsl from './slang/arcFlat.glsl.generated.ts'
-import * as arcFlatWgsl from './slang/arcFlat.wgsl.generated.ts'
 import * as linkedReadLineGlsl from './slang/linkedReadLine.glsl.generated.ts'
 import * as linkedReadLineWgsl from './slang/linkedReadLine.wgsl.generated.ts'
 
-// The read cloud's flat connector (arcFlat.slang) and the linked-read connector
-// (linkedReadLine.slang) stroke BUTT caps on Canvas2D and SVG — plain
-// moveTo/lineTo with the default lineCap. Their GPU coverage inked ROUND caps
+// The linked-read connector (linkedReadLine.slang) strokes BUTT caps on
+// Canvas2D and SVG — plain moveTo/lineTo with the default lineCap. Its GPU
+// coverage, and the read cloud's retired connector's, inked ROUND caps
 // for a while, under comments calling it butt-capped: a whole halfWidth of ink
 // overhanging each endpoint that no other backend drew. This pins the cut.
 //
@@ -108,11 +106,10 @@ test('a degenerate span still inks its own width, not a dot', () => {
   )
 })
 
-// The tests above pin what the butt form IS. This one pins that the two read
-// connectors reach it — the wiring is the part that regressed before, and a
+// The tests above pin what the butt form IS. This one pins that the read
+// connector reaches it — the wiring is the part that regressed before, and a
 // numeric test of a function nothing calls would not have seen it.
 test.each([
-  ['arcFlat', arcFlatWgsl.WGSL_SOURCE, arcFlatGlsl.GLSL_FRAGMENT],
   [
     'linkedReadLine',
     linkedReadLineWgsl.WGSL_SOURCE,

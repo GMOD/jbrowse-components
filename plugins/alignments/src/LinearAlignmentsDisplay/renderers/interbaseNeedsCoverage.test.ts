@@ -78,7 +78,7 @@ function sources(): AlignmentsSources {
     sections: [
       {
         groupKey: '',
-        arcsRpcDataMap: new Map(),
+        arcFeeds: new Map(),
         laidOutPileupMap: new Map([
           [
             0,
@@ -126,7 +126,6 @@ function sources(): AlignmentsSources {
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   }
 }
 

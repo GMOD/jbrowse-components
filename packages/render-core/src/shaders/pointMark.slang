@@ -6,7 +6,7 @@
 //
 // All four are a 6-vertex quad; the fragment shader carves the shape.
 //! targets: wgsl, glsl
-//! export-consts: DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, TRIANGLE_MITER_REACHES, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
+//! export-consts: DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, TRIANGLE_MITER_REACHES, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND, GLYPH_SQUARE
 //! js-export: valueToYPxScaled, pointDrawsBar, pointYPx, pointRowYPx
 // `valueScale`'s twin is lifted here, once, for the bar shape too.
 
@@ -130,6 +130,8 @@ public float pointRowYPx(float bandTop, float h, int reverse, float valueYPx) {
 static const uint GLYPH_DISC = 0u;
 static const uint GLYPH_TRIANGLE = 1u;
 static const uint GLYPH_DIAMOND = 2u;
+// A pixel-snapped filled square at any size, the small disc's crisp form.
+static const uint GLYPH_SQUARE = 3u;
 
 [shader("vertex")]
 VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
@@ -169,7 +171,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
     o.position = float4(x, y, 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
-  } else if (inst.glyph == GLYPH_DISC && u.radiusPx * 2.0 <= SMALL_POINT_MAX_DIAMETER) {
+  } else if (inst.glyph == GLYPH_SQUARE || (inst.glyph == GLYPH_DISC && u.radiusPx * 2.0 <= SMALL_POINT_MAX_DIAMETER)) {
     // tiny disc: pixel-snapped crisp filled square (no AA disc). The triangle
     // and the diamond keep their distinct marker even when small.
     float diamPx = u.radiusPx * 2.0;

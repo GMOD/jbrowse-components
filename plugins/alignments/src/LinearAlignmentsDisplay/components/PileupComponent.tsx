@@ -8,9 +8,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
 import { stackedBandGain } from '../sectionLayout.ts'
-import ArcDebugOverlay from './ArcDebugOverlay.tsx'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
-import CrossRegionArcsOverlay from './CrossRegionArcsOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
@@ -89,10 +87,8 @@ const PileupBody = observer(function PileupBody({
       <PileupTruncationRule model={model} />
 
       <SashimiArcsOverlay model={model} />
-      <CrossRegionArcsOverlay model={model} />
       <PileupBezierOverlay model={model} />
       <ArcHoverOverlay model={model} />
-      <ArcDebugOverlay model={model} />
 
       <VisibleLabelsHost
         model={model}

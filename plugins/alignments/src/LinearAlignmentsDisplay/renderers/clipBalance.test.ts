@@ -1,4 +1,5 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { buildArcBandFeeds } from '../../features/arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { makeTestPalette } from '../testUtils.ts'
@@ -98,7 +99,19 @@ function sources(): AlignmentsSources {
     sections: [
       {
         groupKey: '',
-        arcsRpcDataMap: new Map([[0, oneArc()]]),
+        arcFeeds: buildArcBandFeeds({
+          byRegion: new Map([[0, oneArc()]]),
+          crossRegion: [],
+          displayed: [
+            {
+              refName: 'ctgA',
+              start: REGION_START,
+              end: REGION_START + 100,
+              displayedRegionIndex: 0,
+            },
+          ],
+          colors: makeTestPalette(),
+        }),
         laidOutPileupMap: new Map([
           [
             0,
@@ -128,7 +141,6 @@ function sources(): AlignmentsSources {
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   }
 }
 
@@ -168,6 +180,7 @@ function state(): RenderState {
     showLinkedReadLines: false,
     collapseGroupRows: false,
     readConnectionsLineWidth: 1,
+    linkRegions: [{ anchorPx: 0, anchorBp: REGION_START, signedPxPerBp: 2 }],
     readConnections: 'off',
     readConnectionsDown: false,
     readConnectionsHeight: 0,

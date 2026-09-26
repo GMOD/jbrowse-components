@@ -36,6 +36,7 @@ function makeState(
   return {
     scrollTop: 0,
     readConnectionsLineWidth: 1,
+    linkRegions: [],
     showOutline: false,
     readConnectionsDown: false,
     readConnectionsHeight: 100,

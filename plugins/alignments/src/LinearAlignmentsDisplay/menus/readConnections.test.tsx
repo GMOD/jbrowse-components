@@ -32,10 +32,6 @@ function makeModel() {
     setShowBezierConnections(v: boolean) {
       this.showBezierConnections = v
     },
-    debugArcGeometry: false,
-    setDebugArcGeometry(v: boolean) {
-      this.debugArcGeometry = v
-    },
     drawProperPairArcs: true,
     setDrawProperPairArcs(v: boolean) {
       this.drawProperPairArcs = v
@@ -205,31 +201,5 @@ describe('arc line width row', () => {
     const model = makeModel()
     expect(bandOptionsSubMenu(model).disabled).toBe(true)
     expect(lineWidthRow(model)).toBeDefined()
-  })
-})
-
-// A diagnostic overlay, so the row is not offered in a shipped build. The
-// setting survives — a snapshot carrying it still draws in a dev build — only
-// the way to reach it from the track menu goes.
-describe('the debug arc-geometry row is development-only', () => {
-  const { NODE_ENV } = process.env
-
-  afterEach(() => {
-    process.env.NODE_ENV = NODE_ENV
-  })
-
-  function hasDebugRow(model: ReturnType<typeof makeModel>) {
-    return resolveSubMenu(bandOptionsSubMenu(model)).some(
-      i => 'label' in i && i.label === 'Debug: show arc geometry',
-    )
-  }
-
-  test('present outside production', () => {
-    expect(hasDebugRow(makeModel())).toBe(true)
-  })
-
-  test('absent in a production build', () => {
-    process.env.NODE_ENV = 'production'
-    expect(hasDebugRow(makeModel())).toBe(false)
   })
 })

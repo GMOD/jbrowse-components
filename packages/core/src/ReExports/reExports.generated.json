@@ -4927,6 +4927,7 @@
         "ellipseNearest",
         "inkOfInstances",
         "keepRampValues",
+        "linkFeet",
         "linkMark",
         "makeAbgrFill",
         "nearestMarkHit",
@@ -4935,8 +4936,10 @@
         "pointInsetPx",
         "pointMark",
         "rampValueBits",
+        "recordPath",
         "spanMark",
-        "valueWindow"
+        "valueWindow",
+        "withPassId"
       ],
       "worker": "real"
     },
@@ -5302,6 +5305,7 @@
       "names": [
         "linkApexPx",
         "linkBaseYPx",
+        "linkFootDir",
         "linkFootLenPx",
         "linkRadiiPx",
         "linkStrokeWidthPx",
@@ -5374,6 +5378,7 @@
         "DIAMOND_MITER_REACHES",
         "GLYPH_DIAMOND",
         "GLYPH_DISC",
+        "GLYPH_SQUARE",
         "GLYPH_TRIANGLE",
         "TRIANGLE_MITER_REACHES"
       ],

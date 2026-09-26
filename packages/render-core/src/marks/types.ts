@@ -173,7 +173,7 @@ export interface MarkShape<TChannels, TParams> {
    * laptop width, and every surplus slot is a vertex invocation that runs the
    * whole placement before culling itself.
    */
-  verticesPerInstance?(frame: MarkFrame): number
+  verticesPerInstance?(frame: MarkFrame, params: TParams): number
   /**
    * The texture the pass samples, read off the params the painter and the hit
    * test read (`span`'s row table), so the two backends cannot be handed
@@ -321,6 +321,18 @@ export interface Mark<TRegion, TState extends MarkFrame> {
 }
 
 /**
+ * The shape under another pass id. A pass id keys the instance buffer and
+ * texture, so two marks of one shape in one display need two ids; pipelines
+ * are keyed by content, so the clone compiles nothing.
+ */
+export function withPassId<C, P>(
+  shape: MarkShape<C, P>,
+  id: string,
+): MarkShape<C, P> {
+  return { ...shape, id, pass: { ...shape.pass, id } }
+}
+
+/**
  * Binds a shape to a display's payload and render state through two picks run
  * once per block per frame: `channels` names the region's arrays for the
  * shape's lanes, and answers undefined for a region the mark has nothing in,
@@ -453,7 +465,7 @@ export function defineMark<
         shape.pass.id,
         regionKey,
         bufferOf,
-        shape.verticesPerInstance?.(state),
+        shape.verticesPerInstance?.(state, p),
       )
       if (scissor) {
         hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)

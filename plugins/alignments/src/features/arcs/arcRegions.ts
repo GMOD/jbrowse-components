@@ -243,25 +243,31 @@ export function arcsToRegionResult(
   }
 }
 
-// Bucket one group's computed arcs by refName, narrow each bucket to the region
-// actually asking, then materialize that region's `ArcsUploadData`.
-//
-// TWO steps, not one, because the refName bucket is a Map lookup that skips
-// every other chromosome's arcs outright while the bp narrowing is a scan of
-// what survives it. Regions may overlap in bp and an arc spanning two of them
-// belongs to both, so the second step is a per-region filter rather than a
-// second bucketing — see `arcTouchesRegion`.
+// One group's computed arcs and ticks as each loaded region's
+// `ArcsUploadData`, every arc filed under one region (`arcOwner`).
 export function arcsToRegionMap(
   { arcs, lines }: { arcs: ComputedArc[]; lines: ComputedLine[] },
   regions: RegionInfo[],
 ): Map<number, ArcsUploadData> {
   const { arcsByRef, linesByRef } = groupArcsByRef(arcs, lines)
+  const arcsByRegion = new Map<number, ComputedArc[]>()
+  for (const [refName, refArcs] of arcsByRef) {
+    const onRef = regions.filter(r => r.refName === refName)
+    for (const arc of refArcs) {
+      const owner = arcOwner(arc, onRef)
+      if (owner) {
+        getOrCreate(arcsByRegion, owner.displayedRegionIndex, () => []).push(
+          arc,
+        )
+      }
+    }
+  }
   const out = new Map<number, ArcsUploadData>()
   for (const ri of regions) {
     out.set(
       ri.displayedRegionIndex,
       arcsToRegionResult(
-        (arcsByRef.get(ri.refName) ?? []).filter(a => arcTouchesRegion(a, ri)),
+        arcsByRegion.get(ri.displayedRegionIndex) ?? [],
         (linesByRef.get(ri.refName) ?? []).filter(l =>
           lineTouchesRegion(l, ri),
         ),
@@ -269,4 +275,16 @@ export function arcsToRegionMap(
     )
   }
   return out
+}
+
+// The one loaded region an arc draws from, since the band draws each arc
+// once across the whole view: the one holding its first foot, else its
+// second, else the first its span crosses.
+function arcOwner(arc: ComputedArc, onRef: RegionInfo[]) {
+  const holds = (bp: number) => onRef.find(r => bp >= r.start && bp <= r.end)
+  return (
+    holds(arc.p1.bp) ??
+    holds(arc.p2.bp) ??
+    onRef.find(r => arcTouchesRegion(arc, r))
+  )
 }

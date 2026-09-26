@@ -1,4 +1,4 @@
-export { defineMark } from './types.ts'
+export { defineMark, withPassId } from './types.ts'
 export { paintMarkBlocks } from './markPaint.ts'
 export { planMarks } from './markPlan.ts'
 export { inkOfInstances } from './markInk.ts'
@@ -6,9 +6,15 @@ export { backToFront, nearestMarkHit, valueWindow } from './nearestMarkHit.ts'
 export { barMark } from './barMark.ts'
 export { pointMark } from './pointMark.ts'
 export { spanMark } from './spanMark.ts'
-export { linkMark, LINK_ELSEWHERE, LINK_NO_REGION } from './linkMark.ts'
+export {
+  linkFeet,
+  linkMark,
+  LINK_ELSEWHERE,
+  LINK_NO_REGION,
+} from './linkMark.ts'
 export { ellipseDistance, ellipseNearest } from './ellipseDistance.ts'
 export { appendGlyph, pointInsetPx } from './glyphPaint.ts'
+export { recordPath } from './pathRecorder.ts'
 export { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
 export {
   RAMP_NOT_A_NUMBER_COLOR,

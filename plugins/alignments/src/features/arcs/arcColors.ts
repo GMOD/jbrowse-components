@@ -1,9 +1,6 @@
 import { splitJunctionKind } from '@jbrowse/alignments-core'
 
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
-// Generated constants, imported from the generated modules with no re-export
-// hop through palettes.ts (SHADER_JS_CODEGEN.md).
-import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.consts.generated.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -40,19 +37,14 @@ export function isConcordantFRPair(
   return abs > 0 && abs >= stats.lower && abs <= stats.upper
 }
 
-// Color-slot indices into the arc palette. Kept as named constants so the
-// classifier reads as a story rather than as magic numbers.
+// Color-slot indices into the arc palette (`ARC_SLOT_CATEGORY`).
 export const COLOR_DEFAULT = 0
 export const COLOR_LONG_INSERT = 1
-// The shader's own slot number, rather than a local `2` agreeing with it by
-// inspection. It is the slot two palettes used to disagree on — the endpoint
-// squares carried a pale fill where the curves carried a saturated stroke —
-// which is why it, alone of the nine, is a shared constant.
+export const ARC_COLOR_SHORT_INSERT = 2
 const COLOR_SHORT_INSERT = ARC_COLOR_SHORT_INSERT
-// Interchrom has no local alias: arcLine.slang names ARC_COLOR_INTERCHROM
-// directly now that a tick carries no per-instance color, and ARC_SLOT_CATEGORY
-// is what puts the legend's interchrom swatch on the color the ticks paint.
-// LL slot 4; RR slot 5; RL slot 6 (see arcColorPalette).
+// The only colour an interchromosomal arc or tick takes: insert size and
+// pair orientation mean nothing across two references.
+export const ARC_COLOR_INTERCHROM = 3
 const COLOR_PAIR_LL = 4
 const COLOR_PAIR_RR = 5
 export const COLOR_PAIR_RL = 6
@@ -245,4 +237,9 @@ export function getArcColorType(args: {
     case 'insertSizeAndOrientation':
       return insert === COLOR_SHORT_INSERT ? insert : (orient ?? insert)
   }
+}
+
+/** A colour type's palette slot, the last slot for one past the palette. */
+export function arcColorSlot(colorType: number) {
+  return Math.min(colorType, ARC_SLOT_CATEGORY.length - 1)
 }

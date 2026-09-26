@@ -3,16 +3,6 @@ import { swatchPaletteKeys } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { SwatchCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette, RGBColor } from './colors.ts'
 
-// ARC_HEIGHT_MARGIN and ARC_COLOR_SHORT_INSERT used to be re-exported from
-// here. Both are generated (arc.slang is the source of truth), and a generated
-// constant takes no re-export hop — a consumer imports the generated module, or
-// the package a `consts-out` put it in, never a third module passing it along
-// (SHADER_JS_CODEGEN.md). This file was that third module for two of them.
-// Palette indices match the Slang arc shaders (u.arcColor0..8). Canvas2D / SVG
-// arc renderers reuse these same arrays, and the interchromosomal connector
-// ticks (arcLine) index into this palette too. Adding a color here requires
-// growing the Slang Uniforms struct and the writeUniforms() palette copy.
-
 // ONE TABLE PER OVERLAY, and it says what each slot MEANS, not what colour it
 // is. The colour follows from `swatchPaletteKeys` — the read fills' own table —
 // so an overlay slot and the read swatch of the same meaning cannot be two
@@ -25,24 +15,18 @@ import type { ColorPalette, RGBColor } from './colors.ts'
 // makes it unrepresentable, and it is the shape `readCategoryPaletteKeys`
 // already uses for the reads themselves.
 //
-// **Indexing `readCategoryColor` from these passes instead — dropping both
-// tables — has been proposed twice and declined both times.** The colour is
-// already one derivation, so it retires an index space and nothing else, and
-// each table pays for the merge separately. `arcColor` is in
-// `ArcBandUniforms`, not the pileup block, so merging takes the band's struct
-// from 224 to 432 bytes to carry 12 categories the band never paints: the
-// conversion shape ADR-062 rejected for the base colours. `linkedReadColor` IS
-// in the pileup block and dropping it would reach a 512-byte ring slot, but
-// that is the saving ARCHITECTURAL_LIMITS priced and parked — "the slot count
-// is the oversized term, not the slot size" — and slots 1-4 there ARE
-// `PAIR_DIRECTION_NUM`, which `features/linkedReads/compute.ts` exists to keep
-// true by construction.
+// **Indexing `readCategoryColor` from the linked-read pass instead —
+// dropping its table — has been proposed and declined.** The colour is
+// already one derivation, so it retires an index space and nothing else:
+// `linkedReadColor` is in the pileup block and dropping it would reach a
+// 512-byte ring slot, the saving ARCHITECTURAL_LIMITS priced and parked — "the
+// slot count is the oversized term, not the slot size" — and slots 1-4 there
+// ARE `PAIR_DIRECTION_NUM`, which `features/linkedReads/compute.ts` exists to
+// keep true by construction.
 type PaletteKey = keyof ColorPalette
 
-// Slot → meaning for the Slang arc shaders (u.arcColor0..8), which the Canvas2D
-// and SVG arc renderers and the interchromosomal connector ticks (arcLine) index
-// into as well. Adding a slot here requires growing the Slang Uniforms struct
-// and the writeUniforms() palette copy.
+// Slot → meaning for the read-connection band's colour types, which
+// `buildArcBandFeeds` bakes into each connection's colour lane.
 //
 // Slot 0 is the baseline, whose LABEL depends on the coloring mode ('Normal'
 // insert vs. 'LR' orientation) though both resolve to the same swatch — see
@@ -83,11 +67,10 @@ export const LINKED_READ_SLOT_CATEGORY = [
 // place — which is the whole point of the tables above:
 //
 // - `buildArcColorPalette` / `buildLinkedReadColorPalette` below, for the
-//   Canvas2D and SVG arc renderers and the linked-read overlays, which want the
+//   read-connection band's feeds and the linked-read overlays, which want the
 //   resolved colours as an array.
-// - `GpuAlignmentsRenderer`'s per-frame UBO write, which walks these keys
-//   straight into the uniform buffer rather than building an array it discards.
-//   That writer runs once per region, per track, per frame.
+// - `GpuAlignmentsRenderer`'s per-frame UBO write of the linked-read palette,
+//   which walks these keys straight into the uniform buffer.
 const ARC_SLOT_KEYS: readonly PaletteKey[] = ARC_SLOT_CATEGORY.map(
   category => swatchPaletteKeys[category] as PaletteKey,
 )

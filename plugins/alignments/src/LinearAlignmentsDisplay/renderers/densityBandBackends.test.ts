@@ -62,7 +62,6 @@ function densitySources(): AlignmentsSources {
         ),
       ],
     ]),
-    readConnectionsLineWidth: 1,
   }
 }
 

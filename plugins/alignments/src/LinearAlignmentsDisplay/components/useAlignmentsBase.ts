@@ -28,7 +28,6 @@ import {
   formatReadTooltip,
 } from './tooltipUtils.ts'
 
-import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
@@ -158,35 +157,36 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   function resolveArcHover(
     canvasX: number,
     canvasY: number,
-    section: {
-      arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
-      arcBandTop: number
-      arcBandHeight: number
-      arcDown: boolean
-    },
+    section: LinearAlignmentsDisplayModel['renderSections'][number],
   ) {
-    // The setting first: this now runs ahead of `performHitTest` on every hover
-    // frame, so a display with the band off must not pay a region scan for it.
-    if (model.readConnections === 'off') {
+    // The setting first: this runs ahead of `performHitTest` on every hover
+    // frame, so a display with the band off must not pay for it.
+    if (model.readConnections === 'off' || !view.initialized) {
       return undefined
     }
-    const region = visibleRegionAt(canvasX)
-    if (!region) {
+    const { renderState } = model
+    // By key rather than identity: read outside a reaction, `renderSections`
+    // is a fresh array on every access.
+    const sec =
+      renderState.sections[
+        model.renderSections.findIndex(s => s.groupKey === section.groupKey)
+      ]
+    const arcBand = sec?.arcBand
+    if (!sec || !arcBand) {
       return undefined
     }
-    const arcs = section.arcsRpcDataMap.get(region.displayedRegionIndex)
-    const hover = resolveArcBandHover(canvasX, canvasY, arcs, {
-      region,
-      band: section,
-      scroll: model.scrollModel,
-      lineWidth: model.readConnectionsLineWidth,
-      arcsYDomainBp: model.arcsYDomainBp,
-      canvasWidthPx: model.canvasWidthPx,
-    })
+    const hover = resolveArcBandHover(
+      canvasX,
+      canvasY,
+      model.arcFeedsByGroup.get(section.groupKey) ?? new Map(),
+      { ...renderState, arcBand },
+      model.renderBlocks,
+    )
     if (!hover) {
       return undefined
     }
     const { hit, highlight } = hover
+    const refName = view.displayedRegions[hover.regionIndex]?.refName ?? ''
     const arc: ArcMarkHit = {
       type: 'arc',
       // A tick reports what it points AT; an arc reports its span and colour
@@ -197,7 +197,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         hit.kind === 'tick'
           ? formatArcLineTooltip(
               hit,
-              region.refName,
+              refName,
               // Arc mode and only there — see `partnerOffView`. Read off the
               // same setting `resolveArcs` branches on, so the sentence the
               // hover prints and the rule that produced the tick cannot
@@ -206,10 +206,11 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             )
           : formatArcTooltip(
               hit,
-              region.refName,
+              refName,
               readColorCategoryLabel(
                 arcColorLegendCategory(hit.colorType, model.arcColorField),
               ),
+              hit.endRefName,
             ),
       highlight,
     }

@@ -1,10 +1,7 @@
-import {
-  arcAnchorY,
-  arcAvailH,
-  arcMarkY,
-  arcYFraction,
-  arcYOffsetPx,
-} from '../features/arcs/arcYScale.ts'
+import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
+import { pointRowYPx, pointYPx } from '@jbrowse/render-core/shaders/pointMark'
+
+import { ARC_BAND_INSET_PX } from './renderers/arcMarks.ts'
 
 import type { ArcBand } from './renderers/rendererTypes.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
@@ -52,10 +49,7 @@ function logTickValues(domain: number, maxTicks: number) {
     if (
       decades.length > 2 &&
       crowded !== undefined &&
-      // `arcYFraction`, not a second spelling of log2/log2 beside it: this
-      // decides a tick's fate on where that tick would LAND, so it has to be
-      // the function that lands it.
-      arcYFraction(crowded, domain, true) > 1 - 1 / maxTicks
+      Math.log2(crowded) / Math.log2(Math.max(2, domain)) > 1 - 1 / maxTicks
     ) {
       decades.splice(-2, 1)
     }
@@ -75,13 +69,27 @@ function logTickValues(domain: number, maxTicks: number) {
   )
 }
 
-// Ruler for the read-cloud insert-size arcs. Geometry is derived from the same
-// `ArcBand` + `ARC_HEIGHT_MARGIN` + `arcYFraction` the arcs themselves use (see
-// features/arcs/drawCanvas.ts / arcYScale.ts), so a tick at insert size `v`
-// lands exactly on the apex of the arc plotting that value — the two paths
-// can't drift. Read cloud uses a base-2 log scale, so ticks are log-positioned.
-// Anchor (insert size 0): band top in down mode (ticks descend), band bottom in
-// up mode (ticks ascend).
+// Where the band's marks plot insert size `v`: the read cloud's log y scale,
+// the one `arcBandYScale` gives the bars and the endpoint squares.
+function bandY(band: ArcBand, domainMax: number, v: number) {
+  return pointRowYPx(
+    band.top,
+    band.height,
+    band.down ? 1 : 0,
+    pointYPx(
+      v,
+      1,
+      domainMax,
+      band.height,
+      SCALE_TYPE_LOG,
+      ARC_BAND_INSET_PX,
+      1,
+    ),
+  )
+}
+
+// Ruler for the read cloud's insert sizes, placed through the same scale the
+// bars are (`bandY`), so a tick at `v` lies on the bars plotting it.
 export function computeInsertSizeTicks({
   band,
   arcsYDomainBp,
@@ -89,29 +97,23 @@ export function computeInsertSizeTicks({
   band: ArcBand
   arcsYDomainBp: number
 }): YScaleTicks | undefined {
-  const availH = arcAvailH(band.height)
-  if (availH <= 0 || arcsYDomainBp <= 0) {
+  const plotH = band.height - 2 * ARC_BAND_INSET_PX
+  if (plotH <= 0 || arcsYDomainBp <= 0) {
     return undefined
   }
-  const anchor = arcAnchorY(band.top, band.height, band.down)
-
+  const domainMax = Math.max(2, arcsYDomainBp)
   // ~30px of vertical room per tick keeps the 10px labels from colliding; a
-  // short band (e.g. the read-cloud TLEN band) thus shows just min + max
-  const maxTicks = Math.max(2, Math.floor(availH / 30))
-
-  const items: YScaleTicks['items'] = []
-  for (const v of logTickValues(arcsYDomainBp, maxTicks)) {
-    const offset = arcYOffsetPx(v, arcsYDomainBp, true, availH)
-    items.push({
-      value: v,
-      y: arcMarkY(anchor, offset, band.down),
-      label: formatBp(v),
-    })
+  // short band thus shows just min + max
+  const maxTicks = Math.max(2, Math.floor(plotH / 30))
+  const items: YScaleTicks['items'] = logTickValues(
+    arcsYDomainBp,
+    maxTicks,
+  ).map(v => ({ value: v, y: bandY(band, domainMax, v), label: formatBp(v) }))
+  const yMin = bandY(band, domainMax, 1)
+  const yMax = bandY(band, domainMax, domainMax)
+  return {
+    items,
+    yTop: Math.min(yMin, yMax),
+    yBottom: Math.max(yMin, yMax),
   }
-
-  // Down mode anchors insert size 0 at the band TOP, so the pair comes back
-  // reversed: `yTop` carries the domain min there and `yBottom` the max.
-  const yTop = band.down ? anchor : anchor - availH
-  const yBottom = band.down ? anchor + availH : anchor
-  return { items, yTop, yBottom }
 }

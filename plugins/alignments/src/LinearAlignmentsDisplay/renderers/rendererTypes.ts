@@ -6,10 +6,11 @@ import { intronAlpha } from '../../shaders/slang/gap.js.generated.ts'
 import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.consts.generated.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ArcsUploadData } from '../../features/arcs/types.ts'
+import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
+import type { LinkRegion } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
@@ -82,10 +83,11 @@ export interface RenderState {
   // never re-decide. Carrying them would make two layout-tier settings
   // needlessly invalidate the canvas as well.
   readConnectionsLineWidth: number
-  // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
-  // passes availH/pxPerBp (zoom-proportional); read-cloud mode passes the
-  // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
+  // The read cloud's largest insert size, which tops its log y axis; absent
+  // in arc mode, where an arc's apex is its own half-width.
   arcsYDomainBp?: number
+  // The view's displayed regions as the band's connections place their feet.
+  linkRegions: readonly LinkRegion[]
   // Pileup row 0 top, screen px before scrollTop subtraction (GPU `covOffset`
   // uniform, Canvas2D `pileupRowY` base). For ungrouped this is the sticky
   // coverage height; the renderers override it per section while looping.
@@ -145,10 +147,8 @@ export function sectionRenderState(
 export interface SectionSource {
   groupKey: string
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
-  // This group's paired-end arc upload feed (region idx → arcs). Empty when
-  // read-connections are off. Per-section so each grouped band draws its own
-  // arcs; ungrouped is the single section's feed.
-  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
+  // This group's read connections by region index. Empty when they are off.
+  arcFeeds: ReadonlyMap<number, ArcBandFeed>
 }
 
 export interface AlignmentsSources {
@@ -160,13 +160,6 @@ export interface AlignmentsSources {
   // tier is off, and the model empties `sections` whenever it is on, so the two
   // never contend for a region key.
   densityRegions: ReadonlyMap<number, CoverageRegionFields>
-  // The configured arc stroke width — the same number `RenderState` carries,
-  // and deliberately in both places. The GPU resolves each arc's width from its
-  // read support when it PACKS the instance (`packArcs`), so for that backend
-  // this is an upload-tier input: the upload autorun has to read it here or a
-  // width change never repacks. Canvas2D has no upload tier and applies it per
-  // arc at draw time, off the render state.
-  readConnectionsLineWidth: number
 }
 
 // Whole-map synced, and the only one: one `sources` cell rebuilds every region

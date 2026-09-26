@@ -5,8 +5,6 @@ import type {
   RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
-import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { GroupId } from './groupedDataMaps.ts'
 import type { Section, SectionGroupInput } from './sectionLayout.ts'
 
@@ -30,8 +28,6 @@ export interface AlignmentLane {
   label: string
   rawPileupMap: ReadonlyMap<number, WorkerPileupData>
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
-  arcsRpcDataMap: ReadonlyMap<number, ArcsUploadData>
-  crossRegionArcs: readonly CrossRegionArc[]
   hasArcs: boolean
   sashimiDownKeys: ReadonlySet<string>
   hasSashimiDownArcs: boolean
@@ -59,8 +55,6 @@ export function laneExpandable(lane: AlignmentLane | undefined) {
 
 const EMPTY_RAW: ReadonlyMap<number, WorkerPileupData> = new Map()
 const EMPTY_LAID_OUT: ReadonlyMap<number, PileupDataResult> = new Map()
-const EMPTY_ARCS: ReadonlyMap<number, ArcsUploadData> = new Map()
-const EMPTY_ARC_LIST: readonly CrossRegionArc[] = []
 const EMPTY_KEYS: ReadonlySet<string> = new Set()
 
 // The lane `sections` is handed before any fetch lands, and on a grouped fetch
@@ -71,8 +65,6 @@ const SYNTHETIC_LANE: AlignmentLane = {
   label: '',
   rawPileupMap: EMPTY_RAW,
   laidOutPileupMap: EMPTY_LAID_OUT,
-  arcsRpcDataMap: EMPTY_ARCS,
-  crossRegionArcs: EMPTY_ARC_LIST,
   hasArcs: false,
   sashimiDownKeys: EMPTY_KEYS,
   hasSashimiDownArcs: false,
@@ -90,13 +82,7 @@ export interface BuildLanesInput {
   order: readonly GroupId[]
   rawByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>
   laidOutByGroup: ReadonlyMap<string, ReadonlyMap<number, PileupDataResult>>
-  // The two arc feeds, which are two lists for the reason `CrossRegionArc`
-  // states: no per-region buffer can join two displayed regions.
-  arcsByGroup: ReadonlyMap<string, ReadonlyMap<number, ArcsUploadData>>
-  crossRegionArcsByGroup: ReadonlyMap<string, readonly CrossRegionArc[]>
-  // The lanes with arc-band INK in EITHER feed (`inkGroupKeys`), not the keys of
-  // `arcsByGroup`: a lane whose every arc crosses a seam draws entirely in the
-  // overlay and would otherwise reserve no band to draw into.
+  // The lanes with arc-band ink (`inkGroupKeys`), cross-region arcs included.
   arcInkKeys: ReadonlySet<string>
   sashimiDownKeysByGroup: ReadonlyMap<string, ReadonlySet<string>>
   collapsedKeys: ReadonlySet<string>
@@ -111,7 +97,7 @@ export interface BuildLanesInput {
  *
  * The single place a lane's key is turned into its data. Every per-lane
  * collection used to be looked up separately by each consumer — the raw map, the
- * laid-out map, the two arc feeds, the sashimi sides, the collapse/override
+ * laid-out map, the arc feeds, the sashimi sides, the collapse/override
  * volatiles — so a lane's identity was a bare string indexed into as many keyed
  * collections as there were questions, each with its own `?? empty` for a key
  * that structurally cannot be missing.
@@ -121,8 +107,6 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
     order,
     rawByGroup,
     laidOutByGroup,
-    arcsByGroup,
-    crossRegionArcsByGroup,
     arcInkKeys,
     sashimiDownKeysByGroup,
     collapsedKeys,
@@ -145,8 +129,6 @@ export function buildLanes(input: BuildLanesInput): AlignmentLane[] {
       label,
       rawPileupMap: rawByGroup.get(key) ?? EMPTY_RAW,
       laidOutPileupMap,
-      arcsRpcDataMap: arcsByGroup.get(key) ?? EMPTY_ARCS,
-      crossRegionArcs: crossRegionArcsByGroup.get(key) ?? EMPTY_ARC_LIST,
       hasArcs: arcInkKeys.has(key),
       sashimiDownKeys,
       hasSashimiDownArcs: sashimiDownKeys.size > 0,

@@ -5,6 +5,7 @@ import {
   linkMark,
   pointMark,
   spanMark,
+  withPassId,
 } from '@jbrowse/render-core/marks'
 
 import type { MarkType } from './configSchema.ts'
@@ -23,7 +24,6 @@ import type {
   Mark,
   MarkFrame,
   MarkRamp,
-  MarkShape,
   MarkValueScaleType,
 } from '@jbrowse/render-core/marks'
 
@@ -204,12 +204,6 @@ export function zoomInRange(
 ) {
   const floored = minBpPerPx > 0 ? Math.max(bpPerPx, minBpPerPx) : bpPerPx
   return maxBpPerPx > 0 ? Math.min(floored, maxBpPerPx) : floored
-}
-
-// A pass id keys the instance buffer and texture, so two marks of one type
-// need two ids; pipelines are keyed by content, so the clone compiles nothing.
-function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
-  return { ...shape, id, pass: { ...shape.pass, id } }
 }
 
 function withMarkIndex(

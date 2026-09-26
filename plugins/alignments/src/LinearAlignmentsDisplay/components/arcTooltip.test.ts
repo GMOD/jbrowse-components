@@ -9,7 +9,7 @@ import {
   supportLabel,
 } from './tooltipUtils.ts'
 
-import type { ArcHitResult } from '../../features/arcs/hitTest.ts'
+import type { ArcHit } from '../../features/arcs/bandFeed.ts'
 
 function hit(
   support: number,
@@ -24,10 +24,9 @@ function hit(
     spanBp?: number
     shapeType?: number
   } = {},
-): ArcHitResult {
+): ArcHit {
   return {
     kind: 'arc',
-    index: 0,
     x1,
     x2,
     support,

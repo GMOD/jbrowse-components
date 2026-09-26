@@ -85,11 +85,10 @@ function bandUniforms(state: RenderState, depth?: number) {
       {
         groupKey: '',
         laidOutPileupMap: new Map([[0, data]]),
-        arcsRpcDataMap: new Map(),
+        arcFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   }
   renderer.upload('sources', sources)
   renderer.renderBlocks(

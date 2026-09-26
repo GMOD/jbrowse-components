@@ -31,10 +31,7 @@ import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type { PartnerLocus } from '../../features/arcs/arcTypes.ts'
-import type {
-  ArcHitResult,
-  ArcLineHitResult,
-} from '../../features/arcs/hitTest.ts'
+import type { ArcHit, TickHit } from '../../features/arcs/bandFeed.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
@@ -640,13 +637,7 @@ export function formatSashimiTooltip(arc: {
   }
 }
 
-// Unlike sashimi's, this comes from a hit test for MOST arcs: the ones painted
-// into the canvas by both renderers have no per-path mouse handler to hand their
-// own arc over, so `hitTestArcBand` has to find them first. The cross-region
-// overlay is the exception and calls this directly, which is why the parameter
-// is narrowed to the fields an arc's hover reports rather than the whole
-// `ArcHitResult` — a seam-crossing arc then reads identically to one inside a
-// region instead of getting a second formatter.
+// The hover of a connection the band's hit test found (`resolveArcBandHover`).
 //
 // The endpoints are ordered here rather than at the hit test, which reports them
 // as the worker resolved them (mate 1, mate 2). A location range reads
@@ -660,7 +651,7 @@ export function formatSashimiTooltip(arc: {
 // and the partner chromosome is exactly what a tick's hover was worth more than
 // an arc's before the arc could be drawn at all.
 export function formatArcTooltip(
-  hit: Pick<ArcHitResult, 'x1' | 'x2' | 'support' | 'shapeType' | 'spanBp'>,
+  hit: Pick<ArcHit, 'x1' | 'x2' | 'support' | 'shapeType' | 'spanBp'>,
   refName: string,
   category: string | undefined,
   endRefName?: string,
@@ -725,7 +716,7 @@ export function formatArcTooltip(
 // which the hit result cannot carry, since the feed is bucketed by refName and
 // each region's array holds only its own.
 export function formatArcLineTooltip(
-  hit: ArcLineHitResult,
+  hit: TickHit,
   refName: string,
   partnerOffView: boolean,
 ): ArcLineTooltipPayload {

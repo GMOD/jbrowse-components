@@ -1,11 +1,20 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
+import { LINK_LINE_MIN_PX } from '@jbrowse/render-core/shaders/linkMarkConsts'
 
+import {
+  ARC_BAND_INSET_PX,
+  ARC_LINK_MARKS,
+} from '../../LinearAlignmentsDisplay/renderers/arcMarks.ts'
+import {
+  makeTestPalette,
+  makeTestRenderState,
+} from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.consts.generated.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
+import { arcsToRegionMap } from './arcRegions.ts'
+import { buildArcBandFeeds } from './bandFeed.ts'
 import { computeArcsByGroup, computeArcsFromPileupData } from './compute.ts'
-import { arcMarkFrom } from './mark.ts'
 import {
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
@@ -363,11 +372,11 @@ describe('an unplaced connection belongs to the region its foot is in', () => {
     )
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
-    // `CrossRegionArcsOverlay` projects each foot through its OWN region index.
+    // A cross-region connection places its far foot through the far region.
     // Both feet are one coordinate now, so a second index is a second screen x
-    // for a connection with one place to be: the collapsed mark draws back out
-    // as a screen-wide bar with its two squares in two regions — the picture the
-    // parking exists to remove, rebuilt one layer down.
+    // for a connection with one place to be: the collapsed mark would draw back
+    // out as a screen-wide bar with its two squares in two regions — the
+    // picture the parking exists to remove, rebuilt one layer down.
     expect(crossRegion).toHaveLength(0)
   })
 })
@@ -376,29 +385,46 @@ describe('an unplaced connection belongs to the region its foot is in', () => {
 // fourth mark kind for a renderer to get wrong. This pins the shape that
 // follows.
 describe('an unplaced connection resolves to a minimum-width mark on the anchor', () => {
-  const frame = {
-    arcsYDomainBp: 8000,
-    arcsYLog: true,
-    arcsTop: 100,
-    arcsH: 60,
-    pairedArcsDown: false,
-    viewWidthPx: 800,
-  }
-
   test('one square`s worth of bar at the placed foot, on the zero anchor', () => {
-    const mark = arcMarkFrom(
-      { sx1: 420, sx2: 420, yBp: 0, shapeType: ARC_SHAPE_FLAT_UNPLACED },
-      frame,
+    const r = region(0, 20_000, 0)
+    const { arcs, lines } = computeArcsFromPileupData(
+      new Map([[0, loneMateAt(500_000, 500_000)]]),
+      [r],
+      CLOUD,
     )
-    expect(mark.kind).toBe('bar')
-    if (mark.kind !== 'bar') {
-      throw new Error('unplaced marks are bars')
+    expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
+    const feed = buildArcBandFeeds({
+      byRegion: arcsToRegionMap({ arcs, lines }, [r]),
+      crossRegion: [],
+      displayed: [r],
+      colors: makeTestPalette(),
+    }).get(0)!
+    const arcBand = { top: 100, height: 60, down: false }
+    const state = {
+      ...makeTestRenderState({
+        canvasWidth: 800,
+        arcsYDomainBp: 8000,
+        linkRegions: [{ anchorPx: 0, anchorBp: 0, signedPxPerBp: 0.04 }],
+      }),
+      arcBand,
     }
-    // Up mode: the anchor is the band's bottom edge.
-    expect(mark.markY).toBe(frame.arcsTop + frame.arcsH)
-    expect(mark.destY).toBe(0)
-    // Not the screen-wide extent the uncollapsed pair would have widened to.
-    expect(mark.halfPx).toBe(ARC_FLAT_MIN_PX / 2)
-    expect(mark.sx1).toBe(mark.sx2)
+    const block = { ...canvasBlock, displayedRegionIndex: 0 }
+    const ink = ARC_LINK_MARKS[1]!.ink!(feed, block, state, 0)!
+    // Not the screen-wide extent the uncollapsed pair would have drawn.
+    expect(ink.width - LINK_LINE_MIN_PX).toBeCloseTo(ink.height)
+    // Up mode: the zero anchor is the band's bottom edge, less the inset.
+    expect(ink.top + ink.height / 2).toBeCloseTo(
+      arcBand.top + arcBand.height - ARC_BAND_INSET_PX,
+    )
+    // and both squares on the one foot
+    expect(feed.markers.x[0]).toBe(feed.markers.x[1])
   })
 })
+
+const canvasBlock = {
+  start: 0,
+  end: 800,
+  screenStartPx: 0,
+  screenEndPx: 800,
+  reversed: false,
+}

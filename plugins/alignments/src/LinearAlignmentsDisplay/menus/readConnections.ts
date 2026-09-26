@@ -35,8 +35,6 @@ interface ReadConnectionsModel {
   setShowBezierConnections: (flag: boolean) => void
   readConnectionsLineWidth: number
   setReadConnectionsLineWidth: (width: number) => void
-  debugArcGeometry: boolean
-  setDebugArcGeometry: (on: boolean) => void
 }
 
 // The `readConnectionsLineWidth` slot's default, spelled again here for the
@@ -45,10 +43,6 @@ interface ReadConnectionsModel {
 // docgen renders a slot default off its AST source text, so the slot cannot name
 // a constant.
 const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
-
-// No @types/node here, and bundlers string-replace the expression, so this is
-// the minimal type displayAutoruns.ts gives it.
-declare const process: { env: { NODE_ENV?: string } }
 
 // Everything about pairing/connecting reads lives here (arcs, read cloud, linked
 // reads, bezier). Proper-pair / singleton visibility is a per-read-category
@@ -196,24 +190,6 @@ export function getReadConnectionsMenuItem(
             )
           },
         }),
-        // A diagnostic, so it is not in a shipped build's track menu. The
-        // setting itself stays — a session snapshot carrying it still draws the
-        // overlay in a dev build — it is only the row that goes.
-        ...(process.env.NODE_ENV === 'production'
-          ? []
-          : [
-              toggleItem(
-                'Debug: show arc geometry',
-                model.debugArcGeometry,
-                on => {
-                  model.setDebugArcGeometry(on)
-                },
-                {
-                  helpText:
-                    'diagnostic overlay: outlines the band, the pre-unclamp apex ceiling, and every arc traced from the same radii the renderer uses, with rx/ry/aspect printed for the widest few. An outline that does not sit on its painted arc is a real disagreement between the model and the paint.',
-                },
-              ),
-            ]),
       ],
     },
   ]

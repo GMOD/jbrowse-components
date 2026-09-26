@@ -1,12 +1,15 @@
-import { ARC_HEIGHT_MARGIN } from '../shaders/slang/arc.consts.generated.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
+import { ARC_BAND_INSET_PX as INSET } from './renderers/arcMarks.ts'
+
+// The height the log scale runs over: the band less the inset at each end.
+const plotH = (height: number) => height - 2 * INSET
 
 describe('computeInsertSizeTicks', () => {
   it('returns undefined when available height is invalid', () => {
     expect(
       computeInsertSizeTicks({
         arcsYDomainBp: 100,
-        band: { top: 0, height: ARC_HEIGHT_MARGIN, down: true },
+        band: { top: 0, height: 2 * INSET, down: true },
       }),
     ).toBeUndefined()
 
@@ -29,39 +32,36 @@ describe('computeInsertSizeTicks', () => {
     expect(result?.items.every(t => Number.isFinite(t.y))).toBe(true)
   })
 
-  // The log baseline tick (value 1) sits at the arc anchor and the full-domain
-  // tick sits at the apex (anchor ∓ availH), matching features/arcs/drawCanvas.ts
-  // + arcYScale.ts exactly.
-  it('anchors the baseline tick at the band edge the arcs anchor to', () => {
+  // The log baseline tick (value 1) sits an inset from the edge the band hangs
+  // from, and the full-domain tick an inset from the other: the scale the
+  // bars and their squares plot on (`arcBandYScale`).
+  it('anchors the baseline tick at the band edge the bars rise from', () => {
     const arcsYDomainBp = 1000
     const down = computeInsertSizeTicks({
       arcsYDomainBp,
       band: { top: 45, height: 40, down: true },
     })!
-    const availH = 40 - ARC_HEIGHT_MARGIN
-    // down mode: anchor at band top (45), apex below it. log2(1)=0 → baseline
-    // tick at the anchor; the domain-max tick at the apex.
+    // down mode: baseline at the band top (45), the domain max below it
     expect(down.items[0]!.value).toBe(1)
-    expect(down.items[0]!.y).toBe(45)
+    expect(down.items[0]!.y).toBeCloseTo(45 + INSET)
     expect(down.items.at(-1)!.value).toBe(arcsYDomainBp)
-    expect(down.items.at(-1)!.y).toBeCloseTo(45 + availH)
-    expect(down.yTop).toBe(45)
-    expect(down.yBottom).toBe(45 + availH)
+    expect(down.items.at(-1)!.y).toBeCloseTo(45 + 40 - INSET)
+    expect(down.yTop).toBeCloseTo(45 + INSET)
+    expect(down.yBottom).toBeCloseTo(45 + 40 - INSET)
 
     const up = computeInsertSizeTicks({
       arcsYDomainBp,
       band: { top: 0, height: 45, down: false },
     })!
-    const upAvailH = 45 - ARC_HEIGHT_MARGIN
-    // up mode: anchor at band bottom (top + height = 45), apex above it
-    expect(up.items[0]!.y).toBe(45)
-    expect(up.yBottom).toBe(45)
-    expect(up.yTop).toBe(45 - upAvailH)
+    // up mode: baseline at the band bottom (45), the domain max above it
+    expect(up.items[0]!.y).toBeCloseTo(45 - INSET)
+    expect(up.yBottom).toBeCloseTo(45 - INSET)
+    expect(up.yTop).toBeCloseTo(INSET)
   })
 
   it('carries the domain reversed in down mode', () => {
     const arcsYDomainBp = 1000
-    const availH = 40 - ARC_HEIGHT_MARGIN
+    const availH = plotH(40)
     const down = computeInsertSizeTicks({
       arcsYDomainBp,
       band: { top: 45, height: 40, down: true },
@@ -85,14 +85,15 @@ describe('computeInsertSizeTicks', () => {
   // 0.1 it would occupy. (Tall band so the 100 decade survives tick-thinning.)
   it('positions ticks on a log scale', () => {
     const arcsYDomainBp = 1000
-    const availH = 200 - ARC_HEIGHT_MARGIN
+    const availH = plotH(200)
     const r = computeInsertSizeTicks({
       arcsYDomainBp,
       band: { top: 0, height: 200, down: true },
     })!
     const t100 = r.items.find(t => t.value === 100)!
-    expect(t100.y / availH).toBeCloseTo(Math.log2(100) / Math.log2(1000), 5)
-    expect(t100.y / availH).toBeGreaterThan(0.6)
+    const at = (t100.y - INSET) / availH
+    expect(at).toBeCloseTo(Math.log2(100) / Math.log2(1000), 5)
+    expect(at).toBeGreaterThan(0.6)
   })
 
   // A short band (read-cloud TLEN) thins down to just the min + max ticks
@@ -116,7 +117,7 @@ describe('computeInsertSizeTicks', () => {
   // the two that collide.
   describe('the domain-max tick does not land on top of the decade below it', () => {
     const tallBand = { top: 0, height: 208, down: true as const }
-    const availH = 208 - ARC_HEIGHT_MARGIN
+    const availH = plotH(208)
 
     it('drops the crowded decade, keeping the max', () => {
       // 1000 and 1005 sat 0.1px apart, printing "1kb" over "1.0kb".

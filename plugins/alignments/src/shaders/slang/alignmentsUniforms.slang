@@ -9,7 +9,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, linkedReadColorSlot
 //! js-skip: expandMinWidthX — the clip-space half of this plugin's 1 CSS px floor; the px core it wraps is hpmath's expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports into @jbrowse/alignments-core and fillSpanRect (this pass's Canvas2D twin) places its edges with
 module alignmentsUniforms;
 
@@ -17,14 +17,11 @@ import antialias;
 import colorPack;
 import hpmath;
 
-// Sizes of the indexed color palettes — `linkedReadColor` in the block below,
-// `arcColor` in arcBandUniforms.slang's. Declared as constants rather than
-// spelled into the array bounds because the TS side has to build palettes of
-// exactly these lengths — the generated `UNIFORM_SLOT_ARRAYS` entry has one
-// word offset per slot, so a palette of the wrong size is caught there rather
-// than by writing off the end. ARC_COLOR_SLOTS stays here with `arcColorSlot`,
-// the `//! js-export`ed index rule that bounds by it.
-public static const uint ARC_COLOR_SLOTS = 9u;
+// The size of `linkedReadColor` in the block below. Declared as a constant
+// rather than spelled into the array bound because the TS side has to build a
+// palette of exactly this length — the generated `UNIFORM_SLOT_ARRAYS` entry
+// has one word offset per slot, so a palette of the wrong size is caught there
+// rather than by writing off the end.
 public static const uint LINKED_READ_COLOR_SLOTS = 8u;
 // One slot per read color category (read.slang's RC_*, which are dense from 0).
 // It lives here rather than with the RC_* block because the uniform declaring it
@@ -53,11 +50,10 @@ public struct Uniforms {
   public float featHeight;
   public float featSpacing;
 
-  // Neither the coverage band's geometry, depth axis and colours nor the arc
-  // band's are here: each is drawn off a struct of its own —
-  // `CoverageBandUniforms` (render-core's coverageBand.slang, which the MAF
-  // display writes too) and `ArcBandUniforms` (arcBandUniforms.slang). This
-  // struct carries only what the pileup and overlay passes read.
+  // The coverage band's geometry, depth axis and colours are not here: it is
+  // drawn off render-core's `CoverageBandUniforms`, which the MAF display
+  // writes too, and the read-connection band off the link and point marks'.
+  // This struct carries only what the pileup and overlay passes read.
 
   // Flags (ints / float-as-bool)
   public int colorScheme;
@@ -145,22 +141,19 @@ public struct Uniforms {
 // ramp's reach and no more. Pad less and the ramp is clipped, silently; pad
 // more and the surplus fragments shade to alpha 0 and blend anyway.
 //
-// Butt caps, because that is what the Canvas2D/SVG twins draw: both passes'
-// drawCanvas strokes moveTo/lineTo with the default lineCap. The round cap
-// belongs to `capsuleDist`, where it is load-bearing (a dotplot dot is the
-// degenerate cap; linecenter's coincident caps make its max-blend joins
-// seamless) — nothing here wants it, so the cut at the ends is the ink's own
-// edge ramp. arcLine.slang is deliberately not a third consumer: a full-band
-// tick has no caps, so it measures `abs(dx)` alone.
+// Butt caps, because that is what the Canvas2D/SVG twin draws: its painter
+// strokes moveTo/lineTo with the default lineCap. The round cap belongs to
+// `capsuleDist`, where it is load-bearing (a dotplot dot is the degenerate
+// cap; linecenter's coincident caps make its max-blend joins seamless) —
+// nothing here wants it, so the cut at the ends is the ink's own edge ramp.
 //
 // The product form is exact: box-filter coverage of an axis-aligned rectangle
 // separates per axis, so the ends are exactly as soft as the sides.
 //
 // `local` is in the SEGMENT's own frame — x along it, y across it — so a
 // diagonal segment costs nothing here. Mapping that frame to the screen is the
-// caller's, and genuinely differs: arcFlat's segment is horizontal by
-// construction and adds `local` to a centre, while a linked-read connector
-// rotates it onto capsuleFrame's tangent/normal.
+// caller's: a linked-read connector rotates it onto capsuleFrame's
+// tangent/normal.
 public float2 segmentQuadLocal(
     uint vid, float halfLenPx, float halfWidthPx, float dpr) {
   float ext = aaHalfPx(dpr);
@@ -191,8 +184,7 @@ public float hpClipX(float2 splitPos, Uniforms u) {
 
 // Type-safe bp→clip converter. Accepts a raw uint genomic position and performs
 // the hpSplitUint internally — callers can't accidentally pass a pre-split
-// float2 or a region-relative offset. The band's LINEAR twin is
-// `arcBandUniforms`' `arcBpToLinear`, over the arc band's own block range.
+// float2 or a region-relative offset.
 public float bpToClipX(uint bp, Uniforms u) {
   return hpClipX(hpSplitUint(bp), u);
 }
@@ -220,104 +212,11 @@ public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
-// Which palette slot a per-instance color type reads. Split from the two
-// wrappers below only so it can be `//! js-export`ed — they take a `Uniforms`
-// and return a color, neither of which the scalar emitter carries, and the
-// index rule is the part all four backends have to agree on.
-//
-// It is a clamp, not a wrap. The Canvas2D twin was `colorIdx % palette.length`,
-// which for an out-of-range slot resolves to a DIFFERENT REAL COLOR than the
-// GPU's clamp rather than to an obviously-wrong one — the drift this file's
-// other exports exist to prevent, and invisible in review because nothing
-// currently emits a slot past 8.
-public uint arcColorSlot(uint idx) {
-  return min(idx, ARC_COLOR_SLOTS - 1u);
-}
-
-// The same rule for the linked-read connecting lines, whose palette is a
-// different length. Separate function rather than a slots parameter: each is the
-// index rule for one named palette, and a caller that can pass the wrong bound
-// is the failure mode this replaces.
+// Which palette slot a linked-read connector's colour type reads: a clamp,
+// not a wrap, so an out-of-range slot resolves to the last colour on every
+// backend rather than to a different real one.
 public uint linkedReadColorSlot(uint idx) {
   return min(idx, LINKED_READ_COLOR_SLOTS - 1u);
-}
-
-// The short-insert slot, named because `getArcColorType` in
-// features/arcs/arcColors.ts has to assign the same number this palette resolves.
-// It is `//! export-consts`ed through arc.slang, so that side reads this
-// constant instead of spelling `2` a second time.
-public static const uint ARC_COLOR_SHORT_INSERT = 2u;
-
-// The connector-tick slot, and the ONLY color an interchromosomal tick takes.
-// Insert size, long-range distance and pair orientation are all meaningless
-// across two references — a cross-chromosome "pair orientation" is arbitrary —
-// so every translocation tick is this one color whatever `arcColor` says
-// (see resolveArcs). That is why arcLine.slang carries no per-instance
-// colorType: the attribute existed to convey a constant. `//! export-consts`ed
-// through arcLine.slang, the pass that consumes it.
-public static const uint ARC_COLOR_INTERCHROM = 3u;
-
-// Where `yBp` plots within the arcs band, as a fraction in [0, inf).
-// `useLog` picks a base-2 log scale (read cloud, so small inserts spread near
-// the baseline instead of collapsing) over linear (arc mode, where yBp is a
-// genomic radius); the linear branch guards a zero domain so it yields 0, not
-// +inf.
-//
-// This and `arcYOffsetPx` below are `//! js-export`ed under the names the JS
-// path already used: arcYScale.ts held a hand-written copy that had to stay
-// byte-identical, feeding both the Canvas2D/SVG arc draw and the insert-size
-// ruler ticks, so a tick label and the arc plotting its value came from two
-// separately-maintained spellings of one formula.
-public float arcYFraction(uint yBp, float arcsYDomainBp, bool useLog) {
-  if (useLog) {
-    return log2(max(1.0, float(yBp))) / log2(max(2.0, arcsYDomainBp));
-  }
-  return arcsYDomainBp > 0.0 ? float(yBp) / arcsYDomainBp : 0.0;
-}
-
-// Distance from the band's zero anchor to where `yBp` plots, clamped to the
-// band. This is the FLAT-MARK rule: a read-cloud connector and its endpoint
-// squares are a horizontal line AT this Y, so a line that left the band would
-// simply be invisible and clamping is what keeps it on the axis.
-public float arcYOffsetPx(uint yBp, float arcsYDomainBp, bool useLog,
-                          float availH) {
-  return min(availH, arcYFraction(yBp, arcsYDomainBp, useLog) * availH);
-}
-
-
-// Pixels of padding above the arc apex, subtracted from the band height to get
-// the `availH` the two functions above measure against.
-//
-// It lives here, with the formula that consumes it, because arc.slang and
-// arcMarker.slang must subtract the SAME margin or a read-cloud endpoint square
-// misses its flat line by the difference. Both declared their own copy and a
-// jest test pinned the two equal, on the belief that separate shader modules
-// can't share a `static const`. They can — both passes already `import
-// alignmentsUniforms`, and the codegen's constant evaluator resolves through
-// imports, so `//! export-consts: ARC_HEIGHT_MARGIN` still emits the value into
-// either pass's generated module. One declaration is what the test was
-// approximating.
-public static const float ARC_HEIGHT_MARGIN = 8.0;
-
-// Plottable height of the arcs band: the drawn height less that margin, and
-// NEVER negative.
-//
-// A band shorter than the margin is reachable from config alone —
-// `readConnectionsHeight` is a plain number slot, and the 20px floor
-// (`clampBandHeight`) constrains DRAGGING, not what a config or a session
-// snapshot may declare — so any height in 1..7 arrives here. Unfloored, such a
-// band gives `arcYOffsetPx` a negative `destY`, which is a negative `ry` on a
-// dome: `ctx.ellipse` throws IndexSizeError on a negative radius and takes the
-// rest of that block's Canvas2D paint with it, while the GPU throws nothing and
-// draws the band inside out.
-//
-// Five callers ask this — arc.slang, arcFlat.slang and arcMarker.slang, plus
-// arcYScale.ts's re-export, which is where both renderers' Y scales, `arcMark`,
-// the hit test and the insert-size ruler get it. One definition is what keeps
-// them agreeing at 0, where every arc plots at `destY` 0 and the band collapses
-// to its anchor line — what a band with no room to plot in should look like.
-public float arcAvailH(float bandH) {
-  return max(0.0, bandH - ARC_HEIGHT_MARGIN);
 }
 
 // Widen a [x1,x2] clip-space span to a minimum of 1 CSS pixel, centered, so

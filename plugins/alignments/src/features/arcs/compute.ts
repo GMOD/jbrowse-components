@@ -1,6 +1,5 @@
 import { isConcordantPairRead } from '@jbrowse/alignments-core'
 
-import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import {
   collectPendingArcs,
   collectPendingArcsByLane,
@@ -16,6 +15,7 @@ import {
   clusteredInterchromSupport,
 } from './arcClustering.ts'
 import {
+  ARC_COLOR_INTERCHROM,
   arcPaintOrder,
   arcPaintRank,
   getArcColorType,

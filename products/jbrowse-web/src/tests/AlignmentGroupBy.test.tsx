@@ -103,8 +103,8 @@ test('group draws per-section paired-end arcs', async () => {
       // every section carries its own arc feed, and arcs are actually produced.
       let totalArcs = 0
       for (const section of display.sourceSections) {
-        for (const data of section.arcsRpcDataMap.values()) {
-          totalArcs += data.numArcs
+        for (const feed of section.arcFeeds.values()) {
+          totalArcs += feed.links.count + feed.dashed.count
         }
       }
       expect(totalArcs).toBeGreaterThan(0)
@@ -138,8 +138,8 @@ test('group draws per-section read-cloud lines', async () => {
       expect(display.arcsYDomainBp).toBeGreaterThan(0)
       let totalArcs = 0
       for (const section of display.sourceSections) {
-        for (const data of section.arcsRpcDataMap.values()) {
-          totalArcs += data.numArcs
+        for (const feed of section.arcFeeds.values()) {
+          totalArcs += feed.links.count + feed.dashed.count
         }
       }
       expect(totalArcs).toBeGreaterThan(0)

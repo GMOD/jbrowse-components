@@ -46,6 +46,7 @@ import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
+import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
@@ -61,6 +62,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, compareStructural, observable } from 'mobx'
 
 import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
+import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from '../features/arcs/compute.ts'
 import { densityCoverageFields } from '../features/coverage/densityBand.ts'
 import {
@@ -166,10 +168,7 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
-import {
-  computeCrossRegionArcSections,
-  computeSashimiArcSections,
-} from './overlaySections.ts'
+import { computeSashimiArcSections } from './overlaySections.ts'
 import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
@@ -190,6 +189,7 @@ import type {
   RowCap,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
+import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
@@ -223,7 +223,10 @@ import type { AlignmentLane } from './lanes.ts'
 import type { LayoutOrder } from './menus/sortGroup.ts'
 import type { QualitySpan } from './qualitySpans.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
-import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
+import type {
+  AlignmentsRenderingBackend,
+  SectionSource,
+} from './renderers/rendererTypes.ts'
 import type {
   BelowCoverageBandsSettings,
   SectionsLayout,
@@ -237,6 +240,7 @@ import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LinkRegion } from '@jbrowse/render-core/marks'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 import type { IComputedValue } from 'mobx'
 
@@ -273,19 +277,17 @@ const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 
 // A computed that rebuilds `[]` is not free: it invalidates every observer
 // downstream on every frame of every gesture, for a list the overlay is about to
-// `return null` on. So each per-frame overlay geometry hands back ONE empty
-// array, and both of these emptinesses are the common case — `showSashimiArcs`
-// defaults on while DNA reads carry no skip gap, and a single-region view
-// (nearly every view) has no arc whose two feet are in different regions.
+// `return null` on. So the per-frame sashimi geometry hands back ONE empty
+// array, the common case since `showSashimiArcs` defaults on while DNA reads
+// carry no skip gap.
 // Frozen, like `NO_PADDING_SPANS` next door: a singleton handed out of a public
 // getter is one in-place `.sort()` away from being corrupted for the session,
 // and `projectSashimiArcs` one layer down already sorts.
 const NO_SASHIMI_ARC_SECTIONS = Object.freeze(
   [],
 ) as readonly SashimiArcSection[]
-const NO_CROSS_REGION_ARC_SECTIONS = Object.freeze([]) as readonly ReturnType<
-  typeof computeCrossRegionArcSections
->[number][]
+const NO_LINK_REGIONS: readonly LinkRegion[] = []
+const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
 
 /**
  * What a right-click on the pileup resolved: the anchor, the whole hit (block,
@@ -410,14 +412,6 @@ export default function stateModelFactory(
       .views(configSlotViews)
       .volatile(() => {
         return {
-          /**
-           * #volatile
-           * Draws the arc band's own geometry over the canvas — see
-           * `ArcDebugOverlay`. Volatile rather than a config slot: it is a
-           * diagnostic for "why is this arc this shape", not a display setting,
-           * so it should not survive into a saved session or a shared link.
-           */
-          debugArcGeometry: false,
           /**
            * #volatile
            */
@@ -1978,10 +1972,8 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The per-region GPU/Canvas2D upload feed. Every consumer that packs,
-           * draws or hit-tests a region's arcs reads this; the arcs it does NOT
-           * contain are the cross-region ones, which no per-region pass can draw
-           * (`CrossRegionArc`) and which `crossRegionArcsByGroup` carries instead.
+           * Each group's arcs and ticks by loaded region, every arc filed
+           * under the one region holding a foot.
            */
           get arcsByGroup() {
             return this.arcsResult.byGroup
@@ -1990,13 +1982,39 @@ export default function stateModelFactory(
           /**
            * #getter
            * Arcs whose two feet are in different displayed regions, per group.
-           * Drawn by an SVG overlay across the whole view, because the per-region
-           * passes map bp to x through the block's own range and would each
-           * extrapolate the far foot to a place the other block is not — see
-           * `CrossRegionArc` for the measurement. Empty in a single-region view.
+           * Empty in a single-region view.
            */
           get crossRegionArcsByGroup() {
             return this.arcsResult.crossRegionByGroup
+          },
+
+          /**
+           * #getter
+           * The band's marks' input, per group and region (`buildArcBandFeeds`).
+           */
+          get arcFeedsByGroup() {
+            return this.arcFeedsByGroupIn(this.colorPalette)
+          },
+
+          /**
+           * #method
+           * `arcFeedsByGroup` coloured from `colors`, which the SVG export
+           * passes to draw in its own theme.
+           */
+          arcFeedsByGroupIn(colors: ColorPalette) {
+            const { byGroup, crossRegionByGroup } = this.arcsResult
+            const displayed = this.displayedRegionInfos
+            return new Map(
+              [...byGroup].map(([key, byRegion]) => [
+                key,
+                buildArcBandFeeds({
+                  byRegion,
+                  crossRegion: crossRegionByGroup.get(key) ?? [],
+                  displayed,
+                  colors,
+                }),
+              ]),
+            )
           },
         }
       })
@@ -2139,8 +2157,6 @@ export default function stateModelFactory(
                 order: self.groupOrder,
                 rawByGroup: self.rawDataByGroup,
                 laidOutByGroup: self.laidOutByGroup,
-                arcsByGroup: self.arcsByGroup,
-                crossRegionArcsByGroup: self.crossRegionArcsByGroup,
                 arcInkKeys: self.arcsResult.inkGroupKeys,
                 sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
                 collapsedKeys: self.collapsedGroups,
@@ -2225,14 +2241,33 @@ export default function stateModelFactory(
          * happens on an empty grouped fetch. That mismatch was benign only because
          * the per-section region lookup missed and the draw skipped.
          */
-        get sourceSections() {
-          return this.renderSections.map(
-            ({ groupKey, laidOutPileupMap, arcsRpcDataMap }) => ({
-              groupKey,
-              laidOutPileupMap,
-              arcsRpcDataMap,
-            }),
-          )
+        get sourceSections(): SectionSource[] {
+          return this.sourceSectionsWith(self.arcFeedsByGroup)
+        },
+
+        /**
+         * #method
+         * `sourceSections` with the connections coloured from `colors`, for
+         * the SVG export's theme.
+         */
+        sourceSectionsIn(colors: ColorPalette): SectionSource[] {
+          return this.sourceSectionsWith(self.arcFeedsByGroupIn(colors))
+        },
+
+        /**
+         * #method
+         * The laid-out sections with each lane's read connections, which
+         * join here rather than on the lane: they are coloured, and the
+         * layout must not read the palette.
+         */
+        sourceSectionsWith(
+          feeds: ReadonlyMap<string, ReadonlyMap<number, ArcBandFeed>>,
+        ): SectionSource[] {
+          return this.renderSections.map(({ groupKey, laidOutPileupMap }) => ({
+            groupKey,
+            laidOutPileupMap,
+            arcFeeds: feeds.get(groupKey) ?? NO_ARC_FEEDS,
+          }))
         },
 
         /**
@@ -2732,36 +2767,6 @@ export default function stateModelFactory(
           },
         }
       })
-      .views(() => {
-        // Per display instance, and deliberately NOT volatile: the only caller
-        // is `crossRegionArcSections`, a computed getter that re-runs on every
-        // pan frame, and writing to an observable from inside a computed is a
-        // loop. A plain closure Map is invisible to MobX and dies with the
-        // display — which a module-level map keyed by display id did not,
-        // holding an entry for every display that ever hit the cap for as long
-        // as the tab lived.
-        const reportedCaps = new Map<string, number>()
-        return {
-          /**
-           * #method
-           * Warn that a lane's cross-region arcs were capped — once per NUMBER
-           * rather than once per evaluation. `crossRegionArcSections` re-projects
-           * every foot through `view.bpToPx`, so it reads `view.offsetPx` and
-           * MobX re-evaluates it on every pan frame; that is correct and
-           * necessary, but a bare `console.warn` in there fires per frame for as
-           * long as a capped lane is on screen, which is a console nobody can
-           * read anything else in.
-           */
-          reportArcCap(groupKey: string, dropped: number, kept: number) {
-            if (reportedCaps.get(groupKey) !== dropped) {
-              reportedCaps.set(groupKey, dropped)
-              console.warn(
-                `cross-region arcs: drawing the ${kept} best-supported of ${kept + dropped} in lane "${groupKey}"; turn off concordant-pair arcs to thin them`,
-              )
-            }
-          },
-        }
-      })
       .views(self => ({
         /**
          * #getter
@@ -2844,7 +2849,19 @@ export default function stateModelFactory(
             collapseGroupRows: self.collapseGroupRows,
             readConnectionsLineWidth: self.readConnectionsLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
+            linkRegions: this.linkRegions,
           }
+        },
+
+        /**
+         * #getter
+         * The view's displayed regions as the band's connections place their
+         * feet (`viewRegionTable`); empty while the band is off.
+         */
+        get linkRegions(): readonly LinkRegion[] {
+          return self.readConnections === 'off' || !self.view.initialized
+            ? NO_LINK_REGIONS
+            : viewRegionTable(self.view)
         },
 
         /**
@@ -2986,65 +3003,6 @@ export default function stateModelFactory(
             }
           }
           return scales
-        },
-
-        /**
-         * #getter
-         * Per-section geometry for the arcs no per-region pass can draw — see
-         * `computeCrossRegionArcSections`, which owns the band-local contract
-         * this shares with the sashimi and ruler walks.
-         */
-        get crossRegionArcSections() {
-          return this.crossRegionArcSectionsIn(self.colorPalette)
-        },
-
-        /**
-         * #method
-         * `crossRegionArcSections` stroked from `colors`, which the SVG export
-         * passes to draw in its own theme.
-         */
-        crossRegionArcSectionsIn(colors: ColorPalette) {
-          const view = self.view
-          if (self.readConnections === 'off' || !view.initialized) {
-            return NO_CROSS_REGION_ARC_SECTIONS
-          }
-          // Read once per resolve rather than per foot: the breakend feet need
-          // it for both of their endpoints and this getter re-runs on every pan
-          // frame, where `displayedRegions[i]` is a MobX array read. The
-          // extents are two projections per region, beside the two per arc.
-          const bpToScreenX = makeBpToScreenX(view)
-          const reversedByRegion = view.displayedRegions.map(r => !!r.reversed)
-          const extentByRegion = view.displayedRegions.map((r, i) => {
-            const a = bpToScreenX(r.refName, r.start, i)
-            const b = bpToScreenX(r.refName, r.end, i)
-            return a === undefined || b === undefined
-              ? undefined
-              : { left: Math.min(a, b), right: Math.max(a, b) }
-          })
-          const sections = computeCrossRegionArcSections({
-            sections: self.renderSections,
-            bpToScreenX,
-            arcsYDomainBp: this.arcsYDomainBp,
-            pxPerBp: view.bpPerPx > 0 ? 1 / view.bpPerPx : 0,
-            regionReversed: i => reversedByRegion[i] ?? false,
-            regionScreenExtent: i => extentByRegion[i],
-            lineWidth: self.readConnectionsLineWidth,
-            colors,
-            // The VIEW's, not `canvasWidthPx`: this overlay projects through
-            // `makeBpToScreenX(view)` and paints onto a surface `view.width`
-            // wide, where a per-region pass has the track canvas. Each measures
-            // the far test against the width it is actually drawn across — see
-            // `ArcBandFrame`.
-            viewWidthPx: view.width,
-            // Once per NUMBER, not once per evaluation, since this getter
-            // re-runs on every pan frame — see `reportArcCap`.
-            onCapped: (groupKey, dropped, kept) => {
-              self.reportArcCap(groupKey, dropped, kept)
-            },
-          })
-          // The single-region view resolves no cross-region arc at all, so this
-          // is where that view's every pan frame stops — see the constant.
-          return sections.length === 0 ? NO_CROSS_REGION_ARC_SECTIONS : sections
         },
       }))
       .views(self => ({
@@ -3698,13 +3656,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setDebugArcGeometry(on: boolean) {
-            self.debugArcGeometry = on
-          },
-
-          /**
-           * #action
-           */
           setShowPileup(show: boolean) {
             setConf(self, 'showPileup', show)
           },
@@ -4005,10 +3956,6 @@ export default function stateModelFactory(
               oneCell('sources', {
                 sections: self.sourceSections,
                 densityRegions: self.densityCoverageRegions,
-                // Read inside the upload autorun, not lifted into an action:
-                // arc instances are packed at this width (arcLineWidth ×
-                // support), so a change to it has to reach the pack.
-                readConnectionsLineWidth: self.readConnectionsLineWidth,
               }),
             // `hasRegionData` is the per-REGION store, not a group's laid-out
             // map: a grouped fetch over a region with no reads partitions to

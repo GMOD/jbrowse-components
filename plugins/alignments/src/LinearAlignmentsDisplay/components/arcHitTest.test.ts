@@ -1,239 +1,156 @@
-import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
-import { emptyArcsUploadData } from '../../features/arcs/types.ts'
+import { arcsToRegionResult } from '../../features/arcs/arcRegions.ts'
+import { buildArcBandFeeds } from '../../features/arcs/bandFeed.ts'
 import {
-  ARC_APEX_FRACTION,
-  ARC_FAR_SCREEN_WIDTHS,
-} from '../../shaders/slang/arc.consts.generated.ts'
+  ARC_SHAPE_ARC,
+  ARC_SHAPE_FLAT_SPLIT,
+} from '../../features/arcs/shapes.ts'
+import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 
-import type { ArcHitBandOptions } from './arcHitTest.ts'
+import type { ComputedArc, ComputedLine } from '../../features/arcs/arcTypes.ts'
+import type { ArcBand } from '../renderers/rendererTypes.ts'
 
-// One arc, mates at 1200 and 1600 bp, 40bp of apex.
-const ARCS = {
-  ...emptyArcsUploadData(),
-  arcX1: new Uint32Array([1200]),
-  arcX2: new Uint32Array([1600]),
-  arcYBp: new Uint32Array([40]),
-  arcSpanBp: new Uint32Array([40]),
-  arcSupport: new Uint32Array([7]),
-  arcShapeTypes: new Uint8Array([ARC_SHAPE_ARC]),
-  arcColorTypes: new Uint8Array([0]),
-  numArcs: 1,
-}
+// Two regions side by side at 1 bp per px: region 0 is bp 0..400 over px
+// 0..400, region 1 bp 1000..1400 over px 400..800.
+const displayed = [
+  { refName: 'chr1', start: 0, end: 400, displayedRegionIndex: 0 },
+  { refName: 'chr1', start: 1000, end: 1400, displayedRegionIndex: 1 },
+]
+const linkRegions = [
+  { anchorPx: 0, anchorBp: 0, signedPxPerBp: 1, leftPx: 0, rightPx: 400 },
+  {
+    anchorPx: 400,
+    anchorBp: 1000,
+    signedPxPerBp: 1,
+    leftPx: 400,
+    rightPx: 800,
+  },
+]
+const blocks = displayed.map(r => ({
+  displayedRegionIndex: r.displayedRegionIndex,
+  start: r.start,
+  end: r.end,
+  screenStartPx: r.displayedRegionIndex * 400,
+  screenEndPx: r.displayedRegionIndex * 400 + 400,
+  reversed: false,
+}))
+const upBand: ArcBand = { top: 100, height: 60, down: false }
 
-// 1000bp across 1000px, so a bp is a px and every expected coordinate below is
-// readable: the mates land at x=200 and x=600.
-const REGION = {
-  start: 1000,
-  end: 2000,
-  screenStartPx: 0,
-  screenEndPx: 1000,
-}
-
-const OPTS = {
-  region: REGION,
-  band: { arcBandTop: 0, arcBandHeight: 100, arcDown: false },
-  scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 500 },
-  lineWidth: 1,
-  arcsYDomainBp: undefined,
-  canvasWidthPx: 1000,
-} satisfies ArcHitBandOptions
-
-// The apex of that arc in the default band: availH is 100 - ARC_HEIGHT_MARGIN,
-// the linear arc-mode domain makes 40bp of yBp exactly 40px of rise, and the
-// dome peaks at ARC_APEX_FRACTION of it.
-const APEX = { x: 400, y: 100 - 0.75 * 40 }
-
-test('finds the arc at its apex, and carries the support count out', () => {
-  const hit = resolveArcBandHover(APEX.x, APEX.y, ARCS, OPTS)?.hit
-  expect(hit?.index).toBe(0)
-  expect(hit?.support).toBe(7)
-  // The band answers for ticks as well as arcs now, so the endpoints are behind
-  // the discriminant — and that this hover is an arc at all is the assertion.
-  expect(hit?.kind).toBe('arc')
-  expect(hit?.kind === 'arc' ? [hit.x1, hit.x2] : undefined).toEqual([
-    1200, 1600,
-  ])
-})
-
-test('an ungrouped band is sticky, so scrolling does not move it', () => {
-  // Only the pileup content scrolls under an ungrouped display's bands, which is
-  // the tier `bandScreenTop` encodes. The apex must stay where it was.
-  const scrolled = {
-    ...OPTS,
-    scroll: { isGrouped: false, scrollTop: 40, canvasHeight: 500 },
+function arc(p1: number, p2: number, over: Partial<ComputedArc> = {}) {
+  return {
+    p1: { refName: 'chr1', bp: p1 },
+    p2: { refName: 'chr1', bp: p2 },
+    colorType: 0,
+    shapeType: ARC_SHAPE_ARC,
+    yBp: Math.abs(p2 - p1) / 2,
+    spanBp: Math.abs(p2 - p1) / 2,
+    support: 5,
+    key: `${p1}-${p2}`,
+    ...over,
   }
-  expect(resolveArcBandHover(APEX.x, APEX.y, ARCS, scrolled)?.hit.index).toBe(0)
+}
+
+interface HoverCase {
+  arcs?: ComputedArc[]
+  lines?: ComputedLine[]
+  cloud?: boolean
+  band?: ArcBand
+}
+
+function hover(
+  x: number,
+  y: number,
+  { arcs = [], lines = [], cloud = false, band = upBand }: HoverCase = {},
+) {
+  const feeds = buildArcBandFeeds({
+    byRegion: new Map([[0, arcsToRegionResult(arcs, lines)]]),
+    crossRegion: [],
+    displayed,
+    colors: makeTestPalette(),
+  })
+  return resolveArcBandHover(
+    x,
+    y,
+    feeds,
+    {
+      ...makeTestRenderState({
+        canvasWidth: 800,
+        canvasHeight: 200,
+        linkRegions,
+        arcsYDomainBp: cloud ? 1000 : undefined,
+      }),
+      arcBand: band,
+    },
+    blocks,
+  )
+}
+
+test('finds the arc at its apex, and carries its support and region out', () => {
+  // 100..200 is a 100 px pair, its apex 50 px above the baseline at 160
+  const found = hover(150, 110, { arcs: [arc(100, 200)] })
+  expect(found?.hit).toMatchObject({ kind: 'arc', support: 5, x1: 100 })
+  expect(found?.regionIndex).toBe(0)
+  expect(found!.highlight.d).toMatch(/^M/)
+  expect(found!.highlight.dash).toBeUndefined()
+  expect(found!.highlight.clip).toEqual({
+    x: 0,
+    y: 100,
+    width: 800,
+    height: 60,
+  })
 })
 
-test('a grouped band scrolls with its section', () => {
-  const scroll = { isGrouped: true, scrollTop: 40, canvasHeight: 500 }
-  // Band top 40 minus scroll 40 puts the band back at the top of the canvas, so
-  // the apex is at the same screen y the unscrolled ungrouped case had.
-  const hover = resolveArcBandHover(APEX.x, APEX.y, ARCS, {
-    ...OPTS,
-    band: { arcBandTop: 40, arcBandHeight: 100, arcDown: false },
-    scroll,
-  })
-  expect(hover?.hit.index).toBe(0)
-  // Without the scroll subtraction the band would sit 40px lower, and the same
-  // point would be off the arc — this is the assertion that the projection is
-  // applied at all.
+test('the highlight is the width of the ink it covers', () => {
+  const found = hover(150, 110, { arcs: [arc(100, 200)] })!
+  const thin = hover(150, 110, { arcs: [arc(100, 200, { support: 1 })] })!
+  expect(found.highlight.lineWidth).toBeGreaterThan(thin.highlight.lineWidth)
+})
+
+test('a cursor off the band, or a band with no room, answers nothing', () => {
+  expect(hover(150, 90, { arcs: [arc(100, 200)] })).toBeUndefined()
   expect(
-    resolveArcBandHover(APEX.x, APEX.y, ARCS, {
-      ...OPTS,
-      band: { arcBandTop: 40, arcBandHeight: 100, arcDown: false },
-      scroll: { ...scroll, scrollTop: 0 },
+    hover(150, 110, {
+      arcs: [arc(100, 200)],
+      band: { top: 100, height: 0, down: false },
     }),
   ).toBeUndefined()
 })
 
-test('a reversed region mirrors the arc onto the other side of the block', () => {
-  const reversed = { ...OPTS, region: { ...REGION, reversed: true } }
-  // bp 1200 and 1600 now map to x=800 and x=400, so the dome centres on 600.
-  expect(resolveArcBandHover(600, APEX.y, ARCS, reversed)?.hit.index).toBe(0)
-  // …and no longer answers where the forward-strand dome peaked.
-  expect(resolveArcBandHover(400, APEX.y, ARCS, reversed)).toBeUndefined()
+test('a band hung from its top finds the arc below its baseline', () => {
+  const band = { top: 100, height: 60, down: true }
+  expect(hover(150, 150, { arcs: [arc(100, 200)], band })?.hit.kind).toBe('arc')
+  expect(hover(150, 110, { arcs: [arc(100, 200)], band })).toBeUndefined()
 })
 
-test('a lane that reserved no arc band answers nothing', () => {
-  // `arcBandHeight` 0 is the same gate the renderers use to skip the pass — a
-  // group whose reads produced no arc, or arcs switched off entirely.
-  expect(
-    resolveArcBandHover(APEX.x, APEX.y, ARCS, {
-      ...OPTS,
-      band: { arcBandTop: 0, arcBandHeight: 0, arcDown: false },
-    }),
-  ).toBeUndefined()
-  expect(resolveArcBandHover(APEX.x, APEX.y, undefined, OPTS)).toBeUndefined()
-  expect(
-    resolveArcBandHover(APEX.x, APEX.y, emptyArcsUploadData(), OPTS),
-  ).toBeUndefined()
-})
-
-// `arcIsFar` is `2 * halfWidth > viewWidthPx`, and it is the VIEW's width on
-// every consumer — ADR-163's rule for the link mark, and the band's since. Read
-// against the BLOCK, the threshold moves as a region edge scrolls on screen, so
-// a settled arc is repainted as a different mark partway through a pan.
-describe('the far/near split is taken against the view, not the block', () => {
-  // A 400px block on a 1000px canvas, still 1bp per px. The mate is off the
-  // block's right edge, which is exactly the case the projection is built to
-  // extrapolate through.
-  const BLOCK_W = 400
-  const CANVAS_W = 1000
-  // A span that is FAR against the block and NEAR against the canvas: halfway
-  // between the two thresholds, so it stays on the right side of both wherever
-  // `ARC_FAR_SCREEN_WIDTHS` sits. The claim under test is WHICH WIDTH the split
-  // reads, so writing the span out would pin the constant instead.
-  const SPAN_PX = Math.round((ARC_FAR_SCREEN_WIDTHS * (BLOCK_W + CANVAS_W)) / 2)
-  const HALF = SPAN_PX / 2
-  const NARROW = {
-    region: { start: 1000, end: 1400, screenStartPx: 0, screenEndPx: BLOCK_W },
-    band: { arcBandTop: 0, arcBandHeight: 100, arcDown: false },
-    scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 500 },
-    lineWidth: 1,
-    arcsYDomainBp: undefined,
-    canvasWidthPx: CANVAS_W,
-  } satisfies ArcHitBandOptions
-  const WIDE_PAIR = {
-    ...ARCS,
-    arcX1: new Uint32Array([1100]),
-    arcX2: new Uint32Array([1100 + SPAN_PX]),
-  }
-  // 1bp per px with the block's left edge at bp 1000, so the near foot lands at
-  // 100 and the curve's centre a half-span to its right.
-  const MID_X = 100 + HALF
-  // Both probes sit 50px inside the block, where the two readings are hundreds
-  // of px apart vertically — the whole point being that they are different
-  // marks rather than a near miss.
-  const PROBE_X = 150
-
-  test('a point on the painted dome answers', () => {
-    // The near reading: an ellipse on the pair's half-span, rising by the
-    // band's own Y rule. 40bp of yBp is 40px of rise at this zoom (`APEX`).
-    const ry = ARC_APEX_FRACTION * 40
-    const dx = (MID_X - PROBE_X) / HALF
-    const y = 100 - ry * Math.sqrt(1 - dx * dx)
-    expect(resolveArcBandHover(PROBE_X, y, WIDE_PAIR, NARROW)?.hit.index).toBe(
-      0,
-    )
-  })
-
-  test('and the semicircle leg the block-width reading would have painted does not', () => {
-    // Read as a far pair the same arc is a circle of radius `HALF` centred on
-    // the midpoint, whose leg passes through this block 20px above the anchor.
-    // The real curve is a few px off the anchor line there, so it must miss.
-    expect(
-      resolveArcBandHover(
-        MID_X - Math.sqrt(HALF * HALF - 20 * 20),
-        100 - 20,
-        WIDE_PAIR,
-        NARROW,
-      ),
-    ).toBeUndefined()
-  })
-})
-
-// A lane whose only interchromosomal partner is off-region carries ticks and no
-// arcs. That combination used to be rejected outright by a `numArcs === 0`
-// guard here, so the band reserved space, painted its ticks, and answered
-// nothing — the whole point of this hover, missed on the one feed that needs it
-// most.
 describe('a band of ticks and no arcs', () => {
-  const TICKS = {
-    ...emptyArcsUploadData(),
-    arcLinePositions: new Uint32Array([1400]),
-    arcLineSupport: new Uint32Array([9]),
-    arcLinePartnerRefNames: [['chrX']],
-    numArcLines: 1,
-  }
+  const lines: ComputedLine[] = [
+    {
+      x: { refName: 'chr1', bp: 300 },
+      support: 3,
+      partnerRefNames: ['chr9'],
+      partnerLoci: [{ refName: 'chr9', bp: 5, support: 3 }],
+    },
+  ]
 
   test('answers, and reports what the tick points at', () => {
-    expect(resolveArcBandHover(400, 50, TICKS, OPTS)?.hit).toEqual({
+    expect(hover(300, 120, { lines })?.hit).toMatchObject({
       kind: 'tick',
-      index: 0,
-      bp: 1400,
-      support: 9,
-      partnerRefNames: ['chrX'],
-      partnerLoci: [],
+      bp: 300,
+      support: 3,
+      partnerRefNames: ['chr9'],
     })
   })
 
   test('the highlight traces the full-band vertical the tick draws', () => {
-    // arcLine.slang spans the band and `drawArcs` strokes moveTo/lineTo over the
-    // same two edges, so the mark is that line and not a curve.
-    const highlight = resolveArcBandHover(400, 50, TICKS, OPTS)?.highlight
-    expect(highlight?.d).toBe('M 400 0 L 400 100')
-    expect(highlight?.clip.y).toBe(0)
-    expect(highlight?.clip.height).toBe(100)
-  })
-
-  test('the highlight is at least as wide as the ink it covers', () => {
-    // Ticks take their width from support on the same `arcLineWidth` curve the
-    // arcs do, so a heavy tick must not be marked with a hairline.
-    const highlight = resolveArcBandHover(400, 50, TICKS, OPTS)?.highlight
-    expect(highlight?.lineWidth).toBeGreaterThan(OPTS.lineWidth)
-  })
-
-  test('the highlight carries no dash', () => {
-    const highlight = resolveArcBandHover(400, 50, TICKS, OPTS)?.highlight
-    expect(highlight?.dash).toBeUndefined()
+    expect(hover(300, 120, { lines })!.highlight.d).toBe('M300 160L300 100')
   })
 })
 
-test('an arc highlight carries no dash', () => {
-  expect(
-    resolveArcBandHover(APEX.x, APEX.y, ARCS, OPTS)?.highlight.dash,
-  ).toBeUndefined()
-})
-
-test('a degenerate region does not divide by zero', () => {
-  // A region measured before layout has zero width; the projection is undefined
-  // there rather than infinite, so the hover simply misses.
-  expect(
-    resolveArcBandHover(APEX.x, APEX.y, ARCS, {
-      ...OPTS,
-      region: { ...REGION, screenEndPx: 0 },
-    }),
-  ).toBeUndefined()
+test('a split-read connector in the read cloud highlights with its dash', () => {
+  const found = hover(150, 150, {
+    cloud: true,
+    arcs: [arc(100, 200, { shapeType: ARC_SHAPE_FLAT_SPLIT, yBp: 2 })],
+  })
+  expect(found?.hit.kind).toBe('arc')
+  expect(found!.highlight.dash).toBe('3 3')
 })

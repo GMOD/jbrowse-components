@@ -12,3 +12,5 @@ export const GLYPH_DISC = 0
 export const GLYPH_TRIANGLE = 1
 
 export const GLYPH_DIAMOND = 2
+
+export const GLYPH_SQUARE = 3

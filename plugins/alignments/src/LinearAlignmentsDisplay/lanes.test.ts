@@ -23,8 +23,6 @@ function input(overrides: Partial<BuildLanesInput> = {}): BuildLanesInput {
     order: [{ key: 'a', label: 'A' }],
     rawByGroup: new Map(),
     laidOutByGroup: new Map([['a', laidOut(4)]]),
-    arcsByGroup: new Map(),
-    crossRegionArcsByGroup: new Map(),
     arcInkKeys: new Set(),
     sashimiDownKeysByGroup: new Map(),
     collapsedKeys: new Set(),
@@ -38,18 +36,15 @@ function input(overrides: Partial<BuildLanesInput> = {}): BuildLanesInput {
 test('a lane key with no entry in a collection gets the shared empty, not undefined', () => {
   const [lane] = buildLanes(input())
   expect(lane!.rawPileupMap.size).toBe(0)
-  expect(lane!.arcsRpcDataMap.size).toBe(0)
-  expect(lane!.crossRegionArcs).toEqual([])
   expect(lane!.sashimiDownKeys.size).toBe(0)
 })
 
-// The band is reserved for INK in EITHER feed. A lane whose every arc crosses a
-// seam has an empty `arcsByGroup` entry and must still reserve, which is why
-// this is asked of `inkGroupKeys` and not of the per-region map's keys.
+// The band is reserved for INK, cross-region arcs included. A lane whose every
+// arc crosses a seam has an empty `arcsByGroup` entry and must still reserve,
+// which is why this is asked of `inkGroupKeys` and not of a map's keys.
 test('hasArcs follows the ink key set, not the per-region arc feed', () => {
   const [lane] = buildLanes(input({ arcInkKeys: new Set(['a']) }))
   expect(lane!.hasArcs).toBe(true)
-  expect(lane!.arcsRpcDataMap.size).toBe(0)
 })
 
 test('maxY is zeroed by a collapse and by showPileup off, not by either alone', () => {

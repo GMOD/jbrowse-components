@@ -10,10 +10,13 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.consts.generated.ts'
-import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
-import { arcColorLegendCategory, arcPaintRank } from './arcColors.ts'
+import {
+  ARC_COLOR_INTERCHROM,
+  ARC_COLOR_SHORT_INSERT,
+  arcColorLegendCategory,
+  arcPaintRank,
+} from './arcColors.ts'
 import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
 import { computeArcsByGroup, computeArcsFromPileupData } from './compute.ts'
 import {

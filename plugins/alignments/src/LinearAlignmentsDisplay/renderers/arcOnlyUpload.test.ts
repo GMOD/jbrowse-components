@@ -1,11 +1,13 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { buildArcBandFeeds } from '../../features/arcs/bandFeed.ts'
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
 import { emptyLinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
+import { makeTestPalette } from '../testUtils.ts'
 import {
   ALIGNMENTS_PASSES,
   ARC_PASSES,
@@ -15,18 +17,17 @@ import {
 import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ArcsUploadData } from '../../features/arcs/types.ts'
+import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { AlignmentsSources } from './rendererTypes.ts'
 
 /**
  * The upload memo's narrow paths, from the arc band's side.
  *
- * `arcsByGroup` allocates a fresh feed for every arc-tier setting — the
- * `minInterchromSupport` slider is a new object per drag frame — and
- * `readConnectionsLineWidth` is a second such control. Both reach `syncRegion`
- * with the identical laid-out pileup, so anything that repacks the eighteen
- * pileup and coverage passes for them is repacking the whole region for a
- * change confined to the band.
+ * The band's feeds are rebuilt for every arc-tier setting — the
+ * `minInterchromSupport` slider is a new object per drag frame — and reach
+ * `syncRegion` with the identical laid-out pileup, so anything that repacks the
+ * eighteen pileup and coverage passes for them is repacking the whole region
+ * for a change confined to the band.
  *
  * The other half is the invariant the wide path exists for: a band switched off
  * must not leave its buffers behind. The narrow path has no whole-region wipe to
@@ -38,8 +39,8 @@ const START = 10_000
 
 const ARC_PASS_IDS = ARC_PASSES.map(pass => pass.id)
 
-function oneArc(x2: number): ArcsUploadData {
-  return {
+function oneArc(x2: number): ArcBandFeed {
+  const arcs = {
     ...emptyArcsUploadData(),
     arcX1: new Uint32Array([START + 10]),
     arcX2: new Uint32Array([x2]),
@@ -50,6 +51,19 @@ function oneArc(x2: number): ArcsUploadData {
     arcSupport: new Uint32Array([1]),
     numArcs: 1,
   }
+  return buildArcBandFeeds({
+    byRegion: new Map([[0, arcs]]),
+    crossRegion: [],
+    displayed: [
+      {
+        refName: 'ctgA',
+        start: START,
+        end: START + 100,
+        displayedRegionIndex: 0,
+      },
+    ],
+    colors: makeTestPalette(),
+  }).get(0)!
 }
 
 function onePileup() {
@@ -64,28 +78,26 @@ function onePileup() {
 
 function sources(
   data: PileupDataResult | undefined,
-  arcs: ArcsUploadData | undefined,
-  readConnectionsLineWidth: number,
+  arcs: ArcBandFeed | undefined,
 ): AlignmentsSources {
   return {
     sections: [
       {
         groupKey: '',
         laidOutPileupMap: data ? new Map([[0, data]]) : new Map(),
-        arcsRpcDataMap: arcs ? new Map([[0, arcs]]) : new Map(),
+        arcFeeds: arcs ? new Map([[0, arcs]]) : new Map(),
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth,
   }
 }
 
 // A renderer that has already uploaded the region once, plus a fresh call log —
 // every assertion below is about what the SECOND upload costs.
-function primed(data: PileupDataResult, arcs: ArcsUploadData) {
+function primed(data: PileupDataResult, arcs: ArcBandFeed) {
   const hal = new MockHal(ALIGNMENTS_PASSES)
   const renderer = new GpuAlignmentsRenderer(hal)
-  renderer.upload('sources', sources(data, arcs, 1))
+  renderer.upload('sources', sources(data, arcs))
   hal.calls = []
   return { hal, renderer }
 }
@@ -98,16 +110,7 @@ describe('an arc-only change uploads only the arc passes', () => {
   it('re-uploads the band and nothing else for a new arcs object', () => {
     const data = onePileup()
     const { hal, renderer } = primed(data, oneArc(START + 60))
-    renderer.upload('sources', sources(data, oneArc(START + 80), 1))
-    expect(uploadedPasses(hal)).toEqual(ARC_PASS_IDS)
-    expect(hal.callsOf('deleteRegion')).toHaveLength(0)
-  })
-
-  it('re-uploads the band and nothing else for a new line width', () => {
-    const data = onePileup()
-    const arcs = oneArc(START + 60)
-    const { hal, renderer } = primed(data, arcs)
-    renderer.upload('sources', sources(data, arcs, 4))
+    renderer.upload('sources', sources(data, oneArc(START + 80)))
     expect(uploadedPasses(hal)).toEqual(ARC_PASS_IDS)
     expect(hal.callsOf('deleteRegion')).toHaveLength(0)
   })
@@ -116,7 +119,7 @@ describe('an arc-only change uploads only the arc passes', () => {
     const data = onePileup()
     const arcs = oneArc(START + 60)
     const { hal, renderer } = primed(data, arcs)
-    renderer.upload('sources', sources(data, arcs, 1))
+    renderer.upload('sources', sources(data, arcs))
     expect(uploadedPasses(hal)).toEqual([])
   })
 
@@ -128,7 +131,6 @@ describe('an arc-only change uploads only the arc passes', () => {
       sources(
         { ...data, readTagColors: new Uint32Array([0xff00ff00]) },
         oneArc(START + 80),
-        1,
       ),
     )
     expect(uploadedPasses(hal)).toEqual([READ_MARK.pass.id, ...ARC_PASS_IDS])
@@ -140,7 +142,7 @@ describe('a band switched off leaves nothing drawable', () => {
   it('drops every arc buffer while the pileup keeps its own', () => {
     const data = onePileup()
     const { hal, renderer } = primed(data, oneArc(START + 60))
-    renderer.upload('sources', sources(data, undefined, 1))
+    renderer.upload('sources', sources(data, undefined))
     for (const passId of ARC_PASS_IDS) {
       expect({ passId, count: hal.getBufferCount(0, passId) }).toEqual({
         passId,
@@ -166,7 +168,7 @@ describe('a connector-only change uploads only the line pass', () => {
     const data = onePileup()
     const arcs = oneArc(START + 60)
     const { hal, renderer } = primed(data, arcs)
-    renderer.upload('sources', sources(withLine(data), arcs, 1))
+    renderer.upload('sources', sources(withLine(data), arcs))
     expect(uploadedPasses(hal)).toEqual([LINKED_READ_LINE_MARK.pass.id])
     expect(hal.callsOf('deleteRegion')).toHaveLength(0)
   })
@@ -177,7 +179,7 @@ describe('a connector-only change uploads only the line pass', () => {
     const { hal, renderer } = primed(data, arcs)
     renderer.upload(
       'sources',
-      sources({ ...data, ...emptyLinkedReadLinesUploadData() }, arcs, 1),
+      sources({ ...data, ...emptyLinkedReadLinesUploadData() }, arcs),
     )
     expect(uploadedPasses(hal)).toEqual([LINKED_READ_LINE_MARK.pass.id])
     expect(hal.getBufferCount(0, LINKED_READ_LINE_MARK.pass.id)).toBe(0)
@@ -189,7 +191,7 @@ describe('a new layout run still rebuilds the whole region', () => {
   it('wipes and re-uploads every pass', () => {
     const arcs = oneArc(START + 60)
     const { hal, renderer } = primed(onePileup(), arcs)
-    renderer.upload('sources', sources(onePileup(), arcs, 1))
+    renderer.upload('sources', sources(onePileup(), arcs))
     expect(hal.callsOf('deleteRegion')).toHaveLength(1)
     expect(new Set(uploadedPasses(hal))).toEqual(
       new Set([

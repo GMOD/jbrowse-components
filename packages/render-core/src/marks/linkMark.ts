@@ -2,6 +2,7 @@ import { getDpr } from '../canvas2dUtils.ts'
 import { SCALE_TYPE_LOG } from '../scoreScale.ts'
 import { distToWideCirclePx } from '../shaders/curveDistance.js.generated.ts'
 import {
+  LINK_CURVE_SEGMENTS,
   LINK_ELSEWHERE,
   LINK_FAR_SCREEN_WIDTHS,
   LINK_FOOT_PX,
@@ -20,6 +21,7 @@ import * as shader from '../shaders/linkMark.generated.ts'
 import {
   linkApexPx,
   linkBaseYPx,
+  linkFootDir,
   linkFootLenPx,
   linkRadiiPx,
   linkStrokeWidthPx,
@@ -225,6 +227,14 @@ function linkFrame(
   }
 }
 
+// A straight line's strip needs one segment; a curve's, the full count.
+function curveSegments(params: LinkParams) {
+  return params.linkShape === 'line' ? 1 : LINK_CURVE_SEGMENTS
+}
+
+// The curve's strip, then the two feet's six vertices each.
+const FOOT_STRIP_VERTS = 12
+
 function linkShapeCode(shape: LinkShape) {
   return shape === 'arc'
     ? LINK_SHAPE_ARC
@@ -241,11 +251,6 @@ function regionPx(regions: readonly LinkRegion[], index: number, bp: number) {
 function sizeOf(c: LinkChannels, i: number) {
   const v = c.size?.[i]
   return v !== undefined && Number.isFinite(v) ? v : LINK_NO_SIZE
-}
-
-function footDir(feet: number, shift: number) {
-  const d = (feet >> shift) & 3
-  return d === LINK_FOOT_FORWARD ? 1 : d === LINK_FOOT_REVERSE ? -1 : 0
 }
 
 // A foot's tick through its own region: the genomic direction mirrored where
@@ -273,11 +278,16 @@ function placeFeet(c: LinkChannels, g: LinkFrame, i: number) {
   const one =
     feet === 0 || g.kind === KIND_NONE
       ? { dir: 0, len: 0 }
-      : footOn(g.regions[g.own]!, g.xPx, footDir(feet, 0), g.footPx)
+      : footOn(g.regions[g.own]!, g.xPx, linkFootDir(feet, 0), g.footPx)
   const two =
     feet === 0 || !placed
       ? { dir: 0, len: 0 }
-      : footOn(g.regions[c.x2Region[i]!]!, g.x2Px, footDir(feet, 2), g.footPx)
+      : footOn(
+          g.regions[c.x2Region[i]!]!,
+          g.x2Px,
+          linkFootDir(feet, 2),
+          g.footPx,
+        )
   g.foot1Dir = one.dir
   g.foot1Len = one.len
   g.foot2Dir = two.dir
@@ -679,6 +689,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       dashPx: params.strokeDash?.[0] ?? 0,
       gapPx: params.strokeDash?.[1] ?? 0,
       footPx: params.footPx ?? LINK_FOOT_PX,
+      curveSegments: curveSegments(params),
       insetPx: params.insetPx ?? 0,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
@@ -709,6 +720,10 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
 
   paintsBlock(block, _frame, params) {
     return params.regions[block.displayedRegionIndex] !== undefined
+  },
+
+  verticesPerInstance(_frame, params) {
+    return (curveSegments(params) + 1) * 2 + FOOT_STRIP_VERTS
   },
 
   paintBlock(ctx, channels, block, frame, params) {

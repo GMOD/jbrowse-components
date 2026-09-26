@@ -120,11 +120,10 @@ function oneRegion(): AlignmentsSources {
       {
         groupKey: '',
         laidOutPileupMap: new Map([[0, fullyPopulated()]]),
-        arcsRpcDataMap: new Map(),
+        arcFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   }
 }
 

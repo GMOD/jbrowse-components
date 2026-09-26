@@ -7,17 +7,18 @@ import {
 import { uploadPass } from '@jbrowse/render-core/instancePass'
 import { planMarks } from '@jbrowse/render-core/marks'
 import {
+  MarkTextureBinder,
   drawMarks,
   drawPlannedPasses,
   uploadMarks,
 } from '@jbrowse/render-core/marks/backend'
+import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
-import { emptyArcsUploadData } from '../../features/arcs/types.ts'
+import { EMPTY_ARC_BAND_FEED } from '../../features/arcs/bandFeed.ts'
 import { LINKED_READ_LINE_MARK } from '../../features/linkedReads/mark.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
-import { ARC_BAND_UNIFORMS_SIZE_BYTES } from './arcBandUniforms.ts'
-import { ARC_BAND_MARKS } from './arcMarks.ts'
+import { ARC_BAND_MARKS, ARC_LINK_MARKS, ARC_MARKER_MARK } from './arcMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   type AlignmentsCoverageRegion,
@@ -33,18 +34,18 @@ import {
 import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
-import type { ArcsUploadData } from '../../features/arcs/types.ts'
+import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
+import type { ArcBandState } from './arcMarks.ts'
 import type { PileupUniformViews } from './pileupUniforms.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
-  ArcBand,
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
+import type { CanvasScale } from '@jbrowse/render-core/canvas2dUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 import type { MarkPlan } from '@jbrowse/render-core/marks'
@@ -69,17 +70,11 @@ interface UploadedRegion {
   // after the colour bake (`attachLinkedReadLinesByGroup`), so a
   // curved-connector toggle changes them within one layout run.
   lines: Uint32Array | undefined
-  arcs: ArcsUploadData | undefined
+  arcs: ArcBandFeed | undefined
   // The density tier's packed bins, when this key is a density region rather
   // than a pileup one. Also what tells the two apart in the memo, so a swap
   // either way rebuilds rather than trusting matching `undefined` layouts.
   density: ArrayBuffer | undefined
-  // The arc stroke width those buffers were packed at. Not a uniform any more:
-  // each arc carries its own width, resolved from its read support at pack time
-  // (packArcs), so identical arc data at a new configured width is genuinely
-  // different bytes. Without this the width setting would appear to do nothing
-  // until the next fetch.
-  arcLineWidth: number
 }
 
 // Per-region data not tracked by the HAL: the coverage band's region, so the
@@ -87,12 +82,7 @@ interface UploadedRegion {
 // references the model already holds.
 type RegionMeta = AlignmentsCoverageRegion
 
-// What `renderBlocks` reads per region: the band metadata plus the arc band's
-// own feed, which the arc marks take as their region the way the coverage marks
-// take the pileup payload.
-interface LocalRegion extends RegionMeta {
-  arcPack: ArcsPackData
-}
+type LocalRegion = RegionMeta
 
 /**
  * The pileup band's passes, in `PILEUP_MARKS` order — each mark's own, which
@@ -103,22 +93,9 @@ export const PILEUP_PASSES: InstancePass<PileupDataResult>[] = PILEUP_MARKS.map(
   m => m.pass,
 )
 
-// The arc band's four passes, in the paint order `ARC_BAND_MARKS` states — and
-// stated there rather than here because each pass's Canvas2D twin and uniform
-// write are declared beside it, the way the coverage band's are.
-export const ARC_PASSES: InstancePass<ArcsPackData>[] = ARC_BAND_MARKS.map(
+export const ARC_PASSES: InstancePass<ArcBandFeed>[] = ARC_BAND_MARKS.map(
   m => m.pass,
 )
-
-// The feed an arc pass packs zero instances from, which is how the band's
-// buffers are released without a whole-region wipe (see `syncRegion`). Shared
-// rather than rebuilt per call: the packers only read it.
-const EMPTY_ARCS = emptyArcsUploadData()
-
-// The band feed a region with no arcs draws from: every pass packs zero
-// instances off it, and `paintsBlock` never sees a band it should skip that this
-// would have drawn.
-const EMPTY_ARC_PACK: ArcsPackData = { arcs: EMPTY_ARCS, baseWidth: 0 }
 
 // Everything the HAL compiles, derived from the three mark lists, so that
 // registering a pass is not a fourth wiring point a new mark can be missed
@@ -135,12 +112,8 @@ export class GpuAlignmentsRenderer
 {
   private uData: ArrayBuffer
   private uViews: PileupUniformViews
-  // The arc band's UBO, its own `ArcBandUniforms` struct rather than a patched
-  // copy of this one. It was the copy: a memcpy of the whole pileup block with
-  // the band-sensitive slots poked on top, so a slot the poke forgot redrew with
-  // the pileup's value and nothing said so.
-  private uArc = new ArrayBuffer(ARC_BAND_UNIFORMS_SIZE_BYTES)
-  // The coverage band's UBO, likewise its own struct: its five passes are
+  private uBand: ArrayBuffer
+  // The coverage band's UBO, its own struct: its five passes are
   // render-core's, shared with the MAF display, and they read
   // `CoverageBandUniforms`. Sized from that struct, so the write covers exactly
   // it — the HAL's ring slot is aligned to the largest struct any pass here
@@ -153,6 +126,8 @@ export class GpuAlignmentsRenderer
   // rebuilt with its HAL on a context loss — so the memo drops exactly when the
   // GPU buffers do, which is the part a hand-rolled model-side memo forgets.
   private uploaded = new Map<number, UploadedRegion>()
+  private sectionFeeds: ReadonlyMap<number, ArcBandFeed>[] = []
+  private textures: MarkTextureBinder
 
   constructor(hal: GpuHal) {
     // The base owns `hal`, the reusable uniform scratch, `dispose`, and the
@@ -160,6 +135,8 @@ export class GpuAlignmentsRenderer
     super(hal)
     this.uData = this.uniformData
     this.uViews = pileupUniformViews(this.uData)
+    this.uBand = new ArrayBuffer(hal.uniformByteSize)
+    this.textures = new MarkTextureBinder(hal)
   }
 
   release() {}
@@ -175,31 +152,21 @@ export class GpuAlignmentsRenderer
     // namespaced via sectionRegionKey; section 0 keys equal the raw region
     // index, so the ungrouped path is byte-identical to pre-grouping.
     this.regions.clear()
+    this.sectionFeeds = sources.sections.map(section => section.arcFeeds)
     const seen = new Set<number>()
     sources.sections.forEach((section, s) => {
       for (const [regionIdx, data] of section.laidOutPileupMap) {
         const idx = sectionRegionKey(s, regionIdx)
         seen.add(idx)
-        this.syncRegion(
-          idx,
-          data,
-          section.arcsRpcDataMap.get(regionIdx),
-          sources.readConnectionsLineWidth,
-        )
+        this.syncRegion(idx, data, section.arcFeeds.get(regionIdx))
       }
-      // Each section draws its own arcs. A region with arcs but no pileup (mate
-      // off-screen) gets its own pass here; the loop above already handled every
-      // region that has both.
-      for (const [regionIdx, arcs] of section.arcsRpcDataMap) {
+      // A region with connections and no pileup (a far foot's region) gets its
+      // own key.
+      for (const [regionIdx, feed] of section.arcFeeds) {
         if (!section.laidOutPileupMap.has(regionIdx)) {
           const idx = sectionRegionKey(s, regionIdx)
           seen.add(idx)
-          this.syncRegion(
-            idx,
-            undefined,
-            arcs,
-            sources.readConnectionsLineWidth,
-          )
+          this.syncRegion(idx, undefined, feed)
         }
       }
     })
@@ -245,24 +212,19 @@ export class GpuAlignmentsRenderer
    * - the two per-read color arrays the color tier rebakes
    *   (`overlayReadTagColors` / `overlayReadColorCategories`) → the read pass.
    *   Same shape as `syntenyInstanceCache`'s geometry/color split.
-   * - the arc feed and its stroke width → `ARC_PASSES`. `arcsByGroup` allocates
-   *   fresh maps for every arc-tier setting (`minInterchromSupport` is a live
-   *   slider), so without this each tick repacked all eighteen pileup and
-   *   coverage passes for a change confined to the band.
+   * - the band's feed → `ARC_PASSES`. The feeds are rebuilt for every
+   *   arc-tier setting (`minInterchromSupport` is a live slider), so without
+   *   this each tick repacked all eighteen pileup and coverage passes for a
+   *   change confined to the band.
    *
    * They can land together, and then both narrow uploads run.
    */
   private syncRegion(
     idx: number,
     data: PileupDataResult | undefined,
-    arcs: ArcsUploadData | undefined,
-    arcLineWidth: number,
+    arcs: ArcBandFeed | undefined,
   ) {
-    const arcPack = arcs ? { arcs, baseWidth: arcLineWidth } : EMPTY_ARC_PACK
-    this.regions.set(idx, {
-      ...(data ? coverageRegionOf(data) : emptyCoverageRegion()),
-      arcPack,
-    })
+    this.regions.set(idx, data ? coverageRegionOf(data) : emptyCoverageRegion())
     const prev = this.uploaded.get(idx)
     this.uploaded.set(idx, {
       layout: data?.readYs,
@@ -271,7 +233,6 @@ export class GpuAlignmentsRenderer
       lines: data?.linkedReadLinePositions,
       arcs,
       density: undefined,
-      arcLineWidth,
     })
 
     const sameLayoutRun =
@@ -290,12 +251,10 @@ export class GpuAlignmentsRenderer
       if (data && prev.lines !== data.linkedReadLinePositions) {
         uploadPass(this.hal, idx, LINKED_READ_LINE_MARK.pass, data)
       }
-      if (prev.arcs !== arcs || prev.arcLineWidth !== arcLineWidth) {
-        // A band switched off uploads the empty feed rather than skipping the
-        // pass: `uploadBuffer` releases the prior buffer before it looks at the
-        // count, so a zero-instance upload IS the per-pass delete this path
-        // needs in place of the whole-region wipe.
-        this.uploadArcPasses(idx, arcs ?? EMPTY_ARCS, arcLineWidth)
+      if (prev.arcs !== arcs) {
+        // An empty feed rather than a skip: a zero-instance upload IS the
+        // per-pass delete this path needs in place of the whole-region wipe.
+        uploadMarks(this.hal, idx, ARC_BAND_MARKS, arcs ?? EMPTY_ARC_BAND_FEED)
       }
     } else {
       this.hal.deleteRegion(idx)
@@ -305,22 +264,9 @@ export class GpuAlignmentsRenderer
         uploadMarks(this.hal, idx, PILEUP_MARKS, data)
         uploadMarks(this.hal, idx, ALIGNMENTS_COVERAGE_MARKS, data)
       }
-      // The arc band packs from its own input — a separate RPC result, absent
-      // whenever the band is off, plus the configured line width. The wipe above
-      // already released its buffers, so nothing is uploaded when it is absent.
       if (arcs) {
-        this.uploadArcPasses(idx, arcs, arcLineWidth)
+        uploadMarks(this.hal, idx, ARC_BAND_MARKS, arcs)
       }
-    }
-  }
-
-  private uploadArcPasses(
-    idx: number,
-    arcs: ArcsUploadData,
-    arcLineWidth: number,
-  ) {
-    for (const mark of ARC_BAND_MARKS) {
-      uploadPass(this.hal, idx, mark.pass, { arcs, baseWidth: arcLineWidth })
     }
   }
 
@@ -331,11 +277,7 @@ export class GpuAlignmentsRenderer
    * pileup either.
    */
   private syncDensityRegion(idx: number, coverage: CoverageRegionFields) {
-    this.regions.set(idx, {
-      ...emptyCoverageRegion(),
-      ...coverage,
-      arcPack: EMPTY_ARC_PACK,
-    })
+    this.regions.set(idx, { ...emptyCoverageRegion(), ...coverage })
     const prev = this.uploaded.get(idx)
     this.uploaded.set(idx, {
       layout: undefined,
@@ -344,7 +286,6 @@ export class GpuAlignmentsRenderer
       lines: undefined,
       arcs: undefined,
       density: coverage.coveragePackedBuffer,
-      arcLineWidth: 0,
     })
     if (prev?.density !== coverage.coveragePackedBuffer) {
       this.hal.deleteRegion(idx)
@@ -400,6 +341,8 @@ export class GpuAlignmentsRenderer
         }
       }
     }
+
+    this.drawArcBands(blocks, state, scale, bufH)
 
     this.hal.clearScissor()
     this.hal.clearViewport()
@@ -481,63 +424,76 @@ export class GpuAlignmentsRenderer
       drawPlannedPasses(this.hal, pileup, regionKey)
     }
 
-    // Up- and down-mode arcs both draw here, after the pileup, in their own
-    // band: the band never overlaps the pileup, so a single pass suffices and
-    // up-mode arcs still land in front of the coverage histogram (drawn
-    // earlier). Decoupled from the pileup, so it draws even when the pileup band
-    // is empty (read-cloud, where the cloud IS the visualization). Each
-    // section carries its own (scrolled) band; undefined when arcs are off.
-    if (sec.arcBand) {
-      this.drawArcsPass(
-        block,
-        sectionState,
-        region,
-        regionKey,
-        clip,
-        sec.arcBand,
-        scaleY,
-        bufH,
-      )
-    }
-
     return true
   }
 
-  private drawArcsPass(
-    block: RenderBlock,
+  // Each section's read connections, after every block: each connection mark
+  // over the whole canvas from every region's feed, so one crosses a seam
+  // whole and every region's ticks lie under every region's arcs, then the
+  // endpoint squares block by block over them. Scissored to the band.
+  private drawArcBands(
+    blocks: RenderBlock[],
     state: RenderState,
-    region: LocalRegion,
-    regionKey: number,
-    clip: BlockClipResult,
-    band: ArcBand,
-    dpr: number,
+    scale: CanvasScale,
     bufH: number,
   ) {
-    // Arcs render in the full-canvas viewport and place Y in absolute canvas px,
-    // so a grouped section's band can scroll partly off-screen without an
-    // out-of-bounds viewport (WebGPU rejects those pre-Chrome-135); the devicePxBand
-    // scissor does the real band clip. Ungrouped bands sit on-screen, so the
-    // scissored output is byte-identical to the pre-grouping single pass.
-    const scissor = devicePxBand(band.top, band.height, dpr, bufH)
-    if (scissor.height > 0) {
-      this.hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
-      // `drawMarks` sets the full-canvas viewport (`clip.pxH` IS `bufH`) and
-      // leaves this scissor alone, which is the split it documents: the band
-      // clip is the caller's, and no arc mark declares a `band` of its own. In
-      // ARC_BAND_MARKS order, which is the paint order and says why. The first
-      // mark writes `ArcBandUniforms` into the band's own scratch and the rest
-      // draw off it, so `uData` still holds what every other pass needs.
-      drawMarks(
-        this.hal,
-        this.uArc,
-        ARC_BAND_MARKS,
-        block,
-        clip,
-        region.arcPack,
-        { ...state, arcBand: band },
-        regionKey,
-      )
-    }
+    const { canvasWidth, canvasHeight } = state
+    state.sections.forEach((sec, s) => {
+      const band = sec.arcBand
+      const feeds = this.sectionFeeds[s]
+      if (!band || !feeds || feeds.size === 0) {
+        return
+      }
+      const strip = devicePxBand(band.top, band.height, scale.y, bufH)
+      if (strip.height <= 0) {
+        return
+      }
+      const bandState: ArcBandState = {
+        ...sectionRenderState(state, sec),
+        arcBand: band,
+      }
+      for (const mark of ARC_BAND_MARKS) {
+        this.textures.bind(mark.pass.id, undefined)
+      }
+      for (const mark of ARC_LINK_MARKS) {
+        for (const [regionIdx, feed] of feeds) {
+          const block = canvasWideBlock(regionIdx, canvasWidth)
+          const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
+          if (clip) {
+            this.hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
+            drawMarks(
+              this.hal,
+              this.uBand,
+              [mark],
+              block,
+              clip,
+              feed,
+              bandState,
+              sectionRegionKey(s, regionIdx),
+              this.textures,
+            )
+          }
+        }
+      }
+      for (const block of blocks) {
+        const feed = feeds.get(block.displayedRegionIndex)
+        const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
+        if (feed && clip) {
+          this.hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
+          drawMarks(
+            this.hal,
+            this.uBand,
+            [ARC_MARKER_MARK],
+            block,
+            clip,
+            feed,
+            bandState,
+            sectionRegionKey(s, block.displayedRegionIndex),
+            this.textures,
+          )
+        }
+      }
+    })
   }
 
   override dispose() {

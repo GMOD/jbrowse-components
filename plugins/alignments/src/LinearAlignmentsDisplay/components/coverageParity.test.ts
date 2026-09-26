@@ -20,7 +20,6 @@ import {
 import { makeTestPalette } from '../testUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
@@ -177,22 +176,16 @@ function makeMinimalPileupResult(cov: CoverageUploadData) {
 }
 
 // The single-section, single-region `sync` input both backends take.
-function oneRegion(
-  data: PileupDataResult,
-  arcs?: ArcsUploadData,
-): AlignmentsSources {
+function oneRegion(data: PileupDataResult): AlignmentsSources {
   return {
     sections: [
       {
         groupKey: '',
         laidOutPileupMap: new Map([[0, data]]),
-        arcsRpcDataMap: arcs ? new Map([[0, arcs]]) : new Map(),
+        arcFeeds: new Map(),
       },
     ],
-    // Matches the render state below: the GPU packs arc instances at this
-    // width, so the two have to agree for the backends to be comparable.
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   }
 }
 
@@ -266,11 +259,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         {
           groupKey: '',
           laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
-          arcsRpcDataMap: new Map(),
+          arcFeeds: new Map(),
         },
       ],
       densityRegions: new Map(),
-      readConnectionsLineWidth: 1,
     })
 
     // The normalized depths should be identical
@@ -305,11 +297,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         {
           groupKey: '',
           laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
-          arcsRpcDataMap: new Map(),
+          arcFeeds: new Map(),
         },
       ],
       densityRegions: new Map(),
-      readConnectionsLineWidth: 1,
     })
 
     // Both should have same yOffset, height, colorType per segment
@@ -338,11 +329,10 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
         {
           groupKey: '',
           laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
-          arcsRpcDataMap: new Map(),
+          arcFeeds: new Map(),
         },
       ],
       densityRegions: new Map(),
-      readConnectionsLineWidth: 1,
     })
 
     const covH = 100
@@ -493,7 +483,6 @@ describe('GPU sync rebuild transaction', () => {
     gpu.upload('sources', {
       sections: [],
       densityRegions: new Map(),
-      readConnectionsLineWidth: 1,
     })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
   })
@@ -590,7 +579,6 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     gpu.upload('sources', {
       sections: [],
       densityRegions: new Map(),
-      readConnectionsLineWidth: 1,
     })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
 
@@ -662,6 +650,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       showLinkedReadLines: false,
       collapseGroupRows: false,
       readConnectionsLineWidth: 1,
+      linkRegions: [],
       showOutline: false,
       pileupTopOffset: sec.pileupTopOffset,
       coverageTopOffset: sec.coverageTopOffset,

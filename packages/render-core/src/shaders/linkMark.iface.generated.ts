@@ -27,38 +27,39 @@ export const UNIFORM_OFFSET_F32 = {
   dashPx: 6,
   gapPx: 7,
   footPx: 8,
-  insetPx: 9,
-  domainMin: 10,
-  domainMax: 11,
-  valueSymlogConstant: 13,
-  rampMin: 15,
-  rampMax: 16,
-  rampMidNorm: 17,
-  sizeConstantPx: 21,
-  sizeDomainMin: 22,
-  sizeDomainMax: 23,
-  sizeRangeMin: 25,
-  sizeRangeMax: 26,
-  canvasWidth: 27,
-  zero: 29,
+  insetPx: 10,
+  domainMin: 11,
+  domainMax: 12,
+  valueSymlogConstant: 14,
+  rampMin: 16,
+  rampMax: 17,
+  rampMidNorm: 18,
+  sizeConstantPx: 22,
+  sizeDomainMin: 23,
+  sizeDomainMax: 24,
+  sizeRangeMin: 26,
+  sizeRangeMax: 27,
+  canvasWidth: 28,
+  zero: 30,
   ownEntry: 32,
   ownSpan: 36,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
-  regionCount: 28,
+  curveSegments: 9,
+  regionCount: 29,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
   reverse: 4,
-  valueScaleType: 12,
-  rampMode: 14,
-  valued: 18,
-  linkShape: 19,
-  sizeMode: 20,
-  sizeScaleType: 24,
+  valueScaleType: 13,
+  rampMode: 15,
+  valued: 19,
+  linkShape: 20,
+  sizeMode: 21,
+  sizeScaleType: 25,
 } as const
 
 
@@ -114,6 +115,7 @@ export interface Uniforms {
   dashPx: number
   gapPx: number
   footPx: number
+  curveSegments: number
   insetPx: number
   domainMin: number
   domainMax: number
@@ -154,27 +156,28 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[6] = uniforms.dashPx
   f32[7] = uniforms.gapPx
   f32[8] = uniforms.footPx
-  f32[9] = uniforms.insetPx
-  f32[10] = uniforms.domainMin
-  f32[11] = uniforms.domainMax
-  i32[12] = uniforms.valueScaleType
-  f32[13] = uniforms.valueSymlogConstant
-  i32[14] = uniforms.rampMode
-  f32[15] = uniforms.rampMin
-  f32[16] = uniforms.rampMax
-  f32[17] = uniforms.rampMidNorm
-  i32[18] = uniforms.valued
-  i32[19] = uniforms.linkShape
-  i32[20] = uniforms.sizeMode
-  f32[21] = uniforms.sizeConstantPx
-  f32[22] = uniforms.sizeDomainMin
-  f32[23] = uniforms.sizeDomainMax
-  i32[24] = uniforms.sizeScaleType
-  f32[25] = uniforms.sizeRangeMin
-  f32[26] = uniforms.sizeRangeMax
-  f32[27] = uniforms.canvasWidth
-  u32[28] = uniforms.regionCount
-  f32[29] = uniforms.zero
+  u32[9] = uniforms.curveSegments
+  f32[10] = uniforms.insetPx
+  f32[11] = uniforms.domainMin
+  f32[12] = uniforms.domainMax
+  i32[13] = uniforms.valueScaleType
+  f32[14] = uniforms.valueSymlogConstant
+  i32[15] = uniforms.rampMode
+  f32[16] = uniforms.rampMin
+  f32[17] = uniforms.rampMax
+  f32[18] = uniforms.rampMidNorm
+  i32[19] = uniforms.valued
+  i32[20] = uniforms.linkShape
+  i32[21] = uniforms.sizeMode
+  f32[22] = uniforms.sizeConstantPx
+  f32[23] = uniforms.sizeDomainMin
+  f32[24] = uniforms.sizeDomainMax
+  i32[25] = uniforms.sizeScaleType
+  f32[26] = uniforms.sizeRangeMin
+  f32[27] = uniforms.sizeRangeMax
+  f32[28] = uniforms.canvasWidth
+  u32[29] = uniforms.regionCount
+  f32[30] = uniforms.zero
   f32[32] = uniforms.ownEntry[0]
   f32[33] = uniforms.ownEntry[1]
   f32[34] = uniforms.ownEntry[2]

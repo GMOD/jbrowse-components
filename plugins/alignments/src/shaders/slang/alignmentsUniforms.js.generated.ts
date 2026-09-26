@@ -47,31 +47,6 @@ export function sizeAlpha(spanPx: number): number {
   return _t0
 }
 
-export function arcYFraction(yBp: number, arcsYDomainBp: number, useLog: boolean): number {
-  if (useLog) {
-    return (Math.log2(_max(1.0, (yBp))) / Math.log2(_max(2.0, arcsYDomainBp)))
-  }
-  let _t0: number
-  if ((arcsYDomainBp > 0.0)) {
-    _t0 = ((yBp) / arcsYDomainBp)
-  } else {
-    _t0 = 0.0
-  }
-  return _t0
-}
-
-export function arcYOffsetPx(yBp: number, arcsYDomainBp: number, useLog: boolean, availH: number): number {
-  return _min(availH, (arcYFraction(yBp, arcsYDomainBp, useLog) * availH))
-}
-
-export function arcAvailH(bandH: number): number {
-  return _max(0.0, (bandH - 8.0))
-}
-
-export function arcColorSlot(idx: number): number {
-  return _min(idx, 8)
-}
-
 export function linkedReadColorSlot(idx: number): number {
   return _min(idx, 7)
 }

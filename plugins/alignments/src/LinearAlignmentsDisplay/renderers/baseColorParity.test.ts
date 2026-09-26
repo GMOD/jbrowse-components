@@ -58,11 +58,10 @@ function gpuBaseSlots(showModifications: boolean) {
       {
         groupKey: '',
         laidOutPileupMap: new Map([[0, makePileupDataResult({})]]),
-        arcsRpcDataMap: new Map(),
+        arcFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   }
   renderer.upload('sources', sources)
   renderer.renderBlocks(

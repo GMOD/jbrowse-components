@@ -297,11 +297,10 @@ function drawAt(reversed: boolean, overrides: Partial<RenderState> = {}) {
       {
         groupKey: '',
         laidOutPileupMap: new Map([[0, pileupData()]]),
-        arcsRpcDataMap: new Map(),
+        arcFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   })
   renderer.renderBlocks(
     [

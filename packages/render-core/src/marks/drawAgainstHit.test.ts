@@ -2,6 +2,7 @@ import { canvasWideBlock } from '../renderBlock.ts'
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
+  GLYPH_SQUARE,
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
@@ -240,17 +241,18 @@ test.each<[string, Partial<PointParams>]>([
 // (SMALL_POINT_MAX_DIAMETER is 3) and 6 its disc, and the square is the one that
 // SNAPS, so its box is not centred on the bp the hit test measures from.
 const glyphs: PointChannels = {
-  x: Uint32Array.from([12, 38, 64, 88]),
-  x2: Uint32Array.from([13, 39, 65, 89]),
-  y: Float32Array.from([0.15, 0.4, 0.65, 0.9]),
-  color: Uint32Array.from([RED, RED, BLUE, BLUE]),
+  x: Uint32Array.from([12, 38, 64, 88, 50]),
+  x2: Uint32Array.from([13, 39, 65, 89, 51]),
+  y: Float32Array.from([0.15, 0.4, 0.65, 0.9, 0.3]),
+  color: Uint32Array.from([RED, RED, BLUE, BLUE, RED]),
   glyph: Uint8Array.from([
     GLYPH_DISC,
     GLYPH_TRIANGLE,
     GLYPH_DIAMOND,
     GLYPH_DISC,
+    GLYPH_SQUARE,
   ]),
-  count: 4,
+  count: 5,
 }
 
 const slicePoint = (c: PointChannels, i: number): PointChannels => ({

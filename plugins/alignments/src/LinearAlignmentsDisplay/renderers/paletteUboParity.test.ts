@@ -2,11 +2,7 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { ARC_SLOT_KEYS, LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
-import {
-  UNIFORM_OFFSET_U32 as ARC_UNIFORM_OFFSET_U32,
-  UNIFORM_SLOT_ARRAYS as ARC_UNIFORM_SLOT_ARRAYS,
-} from '../../shaders/slang/arc.iface.generated.ts'
+import { LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
 import {
   UNIFORM_OFFSET_U32,
   UNIFORM_SLOT_ARRAYS,
@@ -23,11 +19,10 @@ import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { AlignmentsSources, SectionRender } from './rendererTypes.ts'
 
 /**
- * Four tables project a `ColorPalette` onto uniform slots — the named colors, the
- * arc palette, the linked-read palette, and the read categories. Three land in
- * the pileup block, whose walks are PRE-RESOLVED at module load into parallel
- * index/key arrays because they ran per frame per region per track; the arc
- * palette is `ArcBandUniforms`' and goes through the generated packer.
+ * Three tables project a `ColorPalette` onto the pileup block's uniform slots
+ * — the named colors, the linked-read palette, and the read categories — and
+ * their walks are PRE-RESOLVED at module load into parallel index/key arrays
+ * because they ran per frame per region per track.
  *
  * That trades an `Object.entries` per call for an alignment invariant: slot `i`
  * and key `i` have to still describe the same table entry. Nothing about a
@@ -56,8 +51,6 @@ function distinctPalette() {
 
 const COLORS = distinctPalette()
 
-// The band is drawn so its own UBO is written too: the arc palette and the flat
-// connector are `ArcBandUniforms`' slots, not the pileup block's.
 const SECTION: SectionRender = {
   pileupTopOffset: 0,
   coverageTopOffset: 0,
@@ -65,7 +58,6 @@ const SECTION: SectionRender = {
   covClipHeight: 0,
   pileupClipTop: 0,
   pileupClipHeight: 40,
-  arcBand: { top: 40, height: 20, down: false },
 }
 
 // The uniforms one block of one empty region leaves behind. showModifications
@@ -78,11 +70,10 @@ function frameUniforms() {
       {
         groupKey: '',
         laidOutPileupMap: new Map([[0, makePileupDataResult({})]]),
-        arcsRpcDataMap: new Map(),
+        arcFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),
-    readConnectionsLineWidth: 1,
   }
   renderer.upload('sources', sources)
   renderer.renderBlocks(
@@ -102,17 +93,14 @@ function frameUniforms() {
       sections: [SECTION],
     }),
   )
-  const arc = hal.uniformsOf(hal.draws().find(d => d.passId === 'arc')!)!
   const pileup = hal.uniformsOf(hal.draws().find(d => d.passId === 'read')!)!
   return {
     u32: new Uint32Array(pileup.buffer, pileup.byteOffset, pileup.length),
     f32: pileup,
-    arcF32: arc,
-    arcU32: new Uint32Array(arc.buffer, arc.byteOffset, arc.length),
   }
 }
 
-const { u32, f32, arcF32, arcU32 } = frameUniforms()
+const { u32, f32 } = frameUniforms()
 
 const packed = (key: keyof ColorPalette) => {
   const rgb = COLORS[key]
@@ -151,23 +139,6 @@ function expectedSlot(key: keyof ColorPalette) {
   const rgb = COLORS[key]
   return [...Float32Array.of(rgb[0], rgb[1], rgb[2], 1)]
 }
-
-describe('the arc band palette uniforms', () => {
-  test.each(ARC_UNIFORM_SLOT_ARRAYS.arcColor.map((o, i) => [i, o] as const))(
-    'arcColor slot %i holds its category color',
-    (i, offset) => {
-      expect([...arcF32.slice(offset, offset + 4)]).toEqual(
-        expectedSlot(ARC_SLOT_KEYS[i]!),
-      )
-    },
-  )
-
-  test('colorFlatConnector holds the packed foreground', () => {
-    expect(arcU32[ARC_UNIFORM_OFFSET_U32.colorFlatConnector]).toBe(
-      packed('colorFlatConnector'),
-    )
-  })
-})
 
 describe('the indexed palette uniforms', () => {
   test.each(UNIFORM_SLOT_ARRAYS.linkedReadColor.map((o, i) => [i, o]))(

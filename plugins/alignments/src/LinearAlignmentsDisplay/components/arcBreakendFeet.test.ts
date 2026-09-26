@@ -1,3 +1,7 @@
+import { recordPath } from '@jbrowse/render-core/marks'
+import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
+
+import { ARC_LINK_MARKS } from '../renderers/arcMarks.ts'
 import { pileupDataFromSamRecords } from '../samRecordFixture.ts'
 import {
   applyView,
@@ -6,15 +10,16 @@ import {
   oneReadWithInterchromMate,
   oneReadWithMate,
 } from '../testUtils.ts'
+import { resolveArcBandHover } from './arcHitTest.ts'
 
 // The breakend feet an interchromosomal arc draws: a short horizontal tick at
 // each foot, lying over the ARM that foot's junction keeps.
 //
-// Driven through the model rather than through `computeCrossRegionArcs` directly,
-// because the thing most likely to break is not the geometry — it is the chain
-// from a read's strand flags to a screen direction, which crosses the producer,
-// the coalescer, the region partition and the reversal. A unit test of the last
-// step passes with any of the earlier ones inverted.
+// Driven through the model and the band's own link mark, because the thing
+// most likely to break is not the geometry — it is the chain from a read's
+// strand flags to a screen direction, which crosses the producer, the
+// coalescer, the region partition, the feed and the reversal. A unit test of
+// the last step passes with any of the earlier ones inverted.
 //
 // TWO PRODUCERS REACH THAT CHAIN and they have to answer alike, which is what
 // `the two evidence kinds agree` below is for. A split junction's arc endpoint
@@ -24,13 +29,12 @@ import {
 // grammar's "duplication" — while a split read over the identical junction drew
 // them outward, in one colour, within a fragment length of each other.
 //
-// Every case reads the DIRECTIONS off the path rather than the coordinates: the
-// arc's own placement is `crossRegionArcs.test.ts`' subject, and re-asserting it
-// here would be a second, drifting statement of it.
+// Every case reads the DIRECTIONS off the painted feet rather than the
+// coordinates: the arc's own placement is `crossRegionArcs.test.ts`' subject.
 
 // The MATE-LINK evidence: one paired read on ctgA whose mate is on ctgB — a
-// connection that is interchromosomal by construction, and so always in the
-// cross-region overlay.
+// connection that is interchromosomal by construction, and so always
+// cross-region.
 function interchromDisplay({
   strand = 1,
   mateReverse = false,
@@ -54,10 +58,7 @@ function interchromDisplay({
 // Two contigs side by side, 10 kb each, showing whatever one fetch of ctgA
 // found.
 //
-// bpPerPx 40 puts the whole 20 kb in 500 px, which is what keeps BOTH feet
-// inside the 800 px band: the overlay's box is the view's width and its
-// `overflow: hidden` is the clip, so a foot beyond it would be dropped from the
-// picture while still appearing in `d`.
+// bpPerPx 40 puts the whole 20 kb in 500 px, so both feet are on screen.
 function twoContigDisplay(
   data: ReturnType<typeof oneReadWithInterchromMate>,
   reverseSecondRegion = false,
@@ -108,27 +109,49 @@ function twoContigDisplay(
   return display
 }
 
-// The one arc a case produced, as its path's arc command plus its feet. Each
-// foot is reported as the SIGN it points in, keyed by which end of the mark it
-// sits on, since that is the whole content of the mark.
-function feetOf(d: string) {
-  const feet = [...d.matchAll(/M (-?[\d.]+) (-?[\d.]+) L (-?[\d.]+) \2/g)].map(
-    m => ({ x: m[1]!, dir: Math.sign(Number(m[3]!) - Number(m[1]!)) }),
+// The horizontal segments in a recorded path: a foot is a moveTo and one
+// lineTo at the same y.
+function feetIn(d: string) {
+  return [...d.matchAll(/M(-?[\d.e]+) (-?[\d.e]+)L(-?[\d.e]+) \2(?=M|$)/g)].map(
+    m => ({
+      x: Number(m[1]),
+      dir: Math.sign(Number(m[3]) - Number(m[1])),
+    }),
   )
-  const arc = /^M (-?[\d.]+) -?[\d.]+ A [\d.]+ [\d.]+ 0 0 [01] (-?[\d.]+)/.exec(
-    d,
-  )
-  // Matched as STRINGS off the arc command's own two endpoints, so "which foot"
-  // is answered by the mark rather than by the test guessing which is left.
-  const at = (x: string | undefined) => feet.find(f => f.x === x)?.dir
-  return { left: at(arc?.[1]), right: at(arc?.[2]), count: feet.length }
 }
 
-function oneArcPath(display: ReturnType<typeof interchromDisplay>) {
-  const sections = display.crossRegionArcSections
-  expect(sections).toHaveLength(1)
-  expect(sections[0]!.arcs).toHaveLength(1)
-  return sections[0]!.arcs[0]!
+// The feet the one arc a case produced paints, through the band's arc mark:
+// each foot as the SIGN it points in, left and right by where it starts, since
+// that is the whole content of the mark.
+function paintedArc(display: ReturnType<typeof interchromDisplay>) {
+  const feeds = display.sourceSections[0]!.arcFeeds
+  const owners = [...feeds].filter(([, feed]) => feed.links.count > 0)
+  expect(owners).toHaveLength(1)
+  const [regionIdx, feed] = owners[0]!
+  expect(feed.links.count).toBe(1)
+  const { renderState } = display
+  const arcBand = renderState.sections[0]!.arcBand!
+  const recorder = recordPath()
+  ARC_LINK_MARKS[1]!.paintBlock(
+    recorder.ctx,
+    feed,
+    canvasWideBlock(regionIdx, renderState.canvasWidth),
+    { ...renderState, arcBand },
+  )
+  return recorder.d
+}
+
+function feetStarts(display: ReturnType<typeof interchromDisplay>) {
+  return feetIn(paintedArc(display))
+    .map(f => f.x)
+    .sort((a, b) => a - b)
+}
+
+function oneArcFeet(display: ReturnType<typeof interchromDisplay>) {
+  const feet = feetIn(paintedArc(display)).sort((a, b) => a.x - b.x)
+  return feet.length === 2
+    ? { left: feet[0]!.dir, right: feet[1]!.dir, count: 2 }
+    : { left: undefined, right: undefined, count: feet.length }
 }
 
 test('a forward read with a reverse mate draws its feet outward', () => {
@@ -142,8 +165,8 @@ test('a forward read with a reverse mate draws its feet outward', () => {
   // is placed at the fragment's outer edge here and at the junction itself for a
   // split read, so answering with the read's direction makes the two families
   // disagree about the same junction.
-  const d = oneArcPath(interchromDisplay({ mateReverse: true })).d
-  expect(feetOf(d)).toEqual({ left: -1, right: 1, count: 2 })
+  const feet = oneArcFeet(interchromDisplay({ mateReverse: true }))
+  expect(feet).toEqual({ left: -1, right: 1, count: 2 })
 })
 
 test('and two forward reads draw them parallel', () => {
@@ -156,15 +179,16 @@ test('and two forward reads draw them parallel', () => {
   // Parallel is the case that survives getting the ray backwards, since negating
   // both feet of a parallel pair is a no-op. That is exactly why it cannot be
   // the only multi-foot case here.
-  const d = oneArcPath(interchromDisplay({ mateReverse: false })).d
-  expect(feetOf(d)).toEqual({ left: -1, right: -1, count: 2 })
+  expect(oneArcFeet(interchromDisplay({ mateReverse: false }))).toEqual({
+    left: -1,
+    right: -1,
+    count: 2,
+  })
 })
 
 test('and reversing the read flips both, because the junction is the same one seen from the far end', () => {
-  const fwd = feetOf(oneArcPath(interchromDisplay({ mateReverse: true })).d)
-  const rev = feetOf(
-    oneArcPath(interchromDisplay({ strand: -1, mateReverse: true })).d,
-  )
+  const fwd = oneArcFeet(interchromDisplay({ mateReverse: true }))
+  const rev = oneArcFeet(interchromDisplay({ strand: -1, mateReverse: true }))
   // Not a mirror of `fwd`: only the ctgA read turned round, so only its foot
   // moves. The mate's is where its own flag put it.
   expect(rev).toEqual({ ...fwd, left: 1 })
@@ -183,27 +207,25 @@ test('the two evidence kinds agree about one junction', () => {
   // the pair's from `pairOuterBp` at the fragment's outer edge a read length
   // away. Asserted against each other rather than against a remembered ±1, so
   // this stays a statement about agreement even if the sign convention moves.
-  const pair = feetOf(oneArcPath(interchromDisplay({ mateReverse: true })).d)
-  const split = feetOf(
-    oneArcPath(
-      twoContigDisplay(
-        // ctgA:4001 forward, 200 aligned bases then 300 soft-clipped, with the
-        // clipped tail aligning forward at ctgB:6001. Read order is primary then
-        // supplementary (clipAtStart 0, then 200), so the junction is ctgA's
-        // right edge joined to ctgB's left edge — the same arms the FR pair
-        // above says are joined.
-        pileupDataFromSamRecords([
-          {
-            name: 'splitRead',
-            flag: 0,
-            strand: 1,
-            pos: 4001,
-            CIGAR: '200M300S',
-            SA: 'ctgB,6001,+,200S300M,60,0;',
-          },
-        ]),
-      ),
-    ).d,
+  const pair = oneArcFeet(interchromDisplay({ mateReverse: true }))
+  const split = oneArcFeet(
+    twoContigDisplay(
+      // ctgA:4001 forward, 200 aligned bases then 300 soft-clipped, with the
+      // clipped tail aligning forward at ctgB:6001. Read order is primary then
+      // supplementary (clipAtStart 0, then 200), so the junction is ctgA's
+      // right edge joined to ctgB's left edge — the same arms the FR pair
+      // above says are joined.
+      pileupDataFromSamRecords([
+        {
+          name: 'splitRead',
+          flag: 0,
+          strand: 1,
+          pos: 4001,
+          CIGAR: '200M300S',
+          SA: 'ctgB,6001,+,200S300M,60,0;',
+        },
+      ]),
+    ),
   )
   expect(split).toEqual(pair)
   // and stated once absolutely, so a change that inverted BOTH still fails
@@ -211,16 +233,14 @@ test('the two evidence kinds agree about one junction', () => {
 })
 
 test('a reversed displayed region mirrors the foot in it and only that one', () => {
-  // What `regionReversed` is for. A genomic direction is not a screen direction:
-  // a reversed region — which is also how `horizontallyFlip` is implemented —
-  // draws right to left, so a body extending toward higher coordinates points
-  // LEFT there. Getting this wrong is invisible in an unflipped view, which is
-  // every view a figure is captured in.
-  const plain = feetOf(oneArcPath(interchromDisplay({ mateReverse: true })).d)
-  const flipped = feetOf(
-    oneArcPath(
-      interchromDisplay({ mateReverse: true, reverseSecondRegion: true }),
-    ).d,
+  // A genomic direction is not a screen direction: a reversed region — which is
+  // also how `horizontallyFlip` is implemented — draws right to left, so a body
+  // extending toward higher coordinates points LEFT there. Getting this wrong
+  // is invisible in an unflipped view, which is every view a figure is captured
+  // in.
+  const plain = oneArcFeet(interchromDisplay({ mateReverse: true }))
+  const flipped = oneArcFeet(
+    interchromDisplay({ mateReverse: true, reverseSecondRegion: true }),
   )
   // ctgB is the second region, and at these coordinates it is the right-hand
   // foot whichever way it is drawn.
@@ -229,11 +249,11 @@ test('a reversed displayed region mirrors the foot in it and only that one', () 
 })
 
 test('a SAME-CHROMOSOME cross-region arc draws none', () => {
-  // The control, and the reason the family is the gate rather than the overlay.
-  // This arc is in the same overlay, drawn by the same code, and differs only in
-  // that its colour still carries its orientation. Feet here too would appear
-  // and disappear as a reader pans the identical junction across a seam;
-  // interchromosomal arcs cannot, since two refNames never share a region.
+  // The control, and the reason the family is the gate. This arc crosses the
+  // same kind of seam and differs only in that its colour still carries its
+  // orientation. Feet here too would appear and disappear as a reader pans the
+  // identical junction across a seam; interchromosomal arcs cannot, since two
+  // refNames never share a region.
   const { view, display } = createTestAlignmentsDisplay()
   view.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 1500, refName: 'ctgA' },
@@ -265,17 +285,25 @@ test('a SAME-CHROMOSOME cross-region arc draws none', () => {
       assemblyName: 'volvox',
     },
   )
-  const arcs = display.crossRegionArcSections[0]!.arcs
-  expect(arcs).toHaveLength(1)
-  expect(feetOf(arcs[0]!.d).count).toBe(0)
+  expect(oneArcFeet(display).count).toBe(0)
 })
 
 test('the hover highlight traces the feet too', () => {
-  // The half that drifts if the feet are appended to `d` by the overlay instead
-  // of living in the mark: `ArcHoverOverlay` re-traces `arc.mark` at its own
-  // origin, so a foot the mark does not carry is a highlight that stops at the
-  // curve while the ink under it has two ticks on the end.
-  const arc = oneArcPath(interchromDisplay({ mateReverse: true }))
-  expect(arc.mark.kind).toBe('dome')
-  expect(feetOf(arc.d).count).toBe(2)
+  // The hover traces the arc through the mark's own painter, so a foot the
+  // mark paints is a foot the highlight carries.
+  const display = interchromDisplay({ mateReverse: true })
+  const { renderState } = display
+  const arcBand = renderState.sections[0]!.arcBand!
+  const footY = arcBand.down
+    ? arcBand.top + 1
+    : arcBand.top + arcBand.height - 1
+  const hover = resolveArcBandHover(
+    feetStarts(display)[0]! - 8,
+    footY,
+    display.sourceSections[0]!.arcFeeds,
+    { ...renderState, arcBand },
+    display.renderBlocks,
+  )
+  expect(hover?.hit.kind).toBe('arc')
+  expect(feetIn(hover!.highlight.d)).toHaveLength(2)
 })

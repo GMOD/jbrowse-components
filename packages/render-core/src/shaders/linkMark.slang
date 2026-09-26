@@ -27,7 +27,7 @@
 //! topology: triangle-strip
 //! coverage: analytic
 //! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_SHAPE_LINE, LINK_LINE_MIN_PX, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FOOT_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
-//! js-export: linkApexPx, linkRadiiPx, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx
+//! js-export: linkApexPx, linkRadiiPx, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx, linkFootDir
 //! js-skip: linkIsFar — reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it
 
 import antialias;
@@ -102,6 +102,9 @@ struct Uniforms {
   float  dashPx;
   float  gapPx;
   float  footPx;
+  // The segments the curve's strip takes this draw: LINK_CURVE_SEGMENTS, or
+  // one for a straight `line`, so a read cloud's bars shade 16 vertices each.
+  uint   curveSegments;
   float  insetPx;
   float  domainMin;
   float  domainMax;
@@ -215,7 +218,7 @@ public float linkStrokeWidthPx(float raw, int sizeMode, float constantPx, float 
 
 // A foot's genomic direction off the `feet` lane: two bits per foot, 1 for
 // forward and 2 for reverse, the `x` foot in the low pair.
-float footDir(uint feet, uint shift) {
+public float linkFootDir(uint feet, uint shift) {
   uint d = (feet >> shift) & 3u;
   return d == 1u ? 1.0 : (d == 2u ? -1.0 : 0.0);
 }
@@ -252,7 +255,7 @@ struct LinkVertex {
 };
 
 LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
-  float t = float(seg) / float(LINK_CURVE_SEGMENTS);
+  float t = float(seg) / float(u.curveSegments);
   // Positive on the outer flank; the frame's y is negative upward.
   float pad = side * e.hw;
   float2 origin;
@@ -284,10 +287,10 @@ LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
       float legSweep = legSweepAngle(v.radii.x, e.reach + e.hw);
       // Two legs, each built from ITS OWN foot outward with the half-angle
       // identity, so a radius past 1e6 px cancels nothing.
-      float2 leg = wideCircleLeg(seg, LINK_CURVE_SEGMENTS, legSweep);
+      float2 leg = wideCircleLeg(seg, u.curveSegments, legSweep);
       float b = leg.y;
       float halfStep =
-        0.5 * wideCircleLegStep(seg, LINK_CURVE_SEGMENTS, legSweep);
+        0.5 * wideCircleLegStep(seg, u.curveSegments, legSweep);
       v.local = wideCircleHullPoint(sin(b), sin(b * 0.5), cos(halfStep),
                                     v.radii.x, pad);
       v.local.y = -v.local.y;
@@ -297,7 +300,7 @@ LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
     } else {
       v.kind = KIND_ELLIPSE;
       float a = t * PI;
-      float halfStep = PI / (2.0 * float(LINK_CURVE_SEGMENTS));
+      float halfStep = PI / (2.0 * float(u.curveSegments));
       v.local = ellipseHullPoint(cos(a), sin(a), cos(halfStep), sin(halfStep),
                                  v.radii.x, v.radii.y, pad);
       v.local.y = -v.local.y;
@@ -312,9 +315,10 @@ LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
 // foot draws nothing, reported through `present`.
 LinkVertex footCorner(LinkInstance inst, LinkEnv e, uint f, uint c, out bool present) {
   float x = f == 0u ? e.xPx : e.x2Px;
-  float4 entry = f == 0u ? u.ownEntry : u.regionTable[inst.x2Region];
-  float2 span = f == 0u ? u.ownSpan.xy : regionSpanPx(inst.x2Region);
-  float dir = footDir(inst.feet, f * 2u) * sign(entry.w);
+  uint far = min(inst.x2Region, LINK_MAX_REGIONS - 1u);
+  float4 entry = f == 0u ? u.ownEntry : u.regionTable[far];
+  float2 span = f == 0u ? u.ownSpan.xy : regionSpanPx(far);
+  float dir = linkFootDir(inst.feet, f * 2u) * sign(entry.w);
   float len = linkFootLenPx(x, dir, span.x, span.y, u.footPx);
   present = dir != 0.0 && len > 0.0 && (f == 0u || e.placed);
   float along = (c >= 2u) ? len : 0.0;
@@ -331,7 +335,7 @@ LinkVertex footCorner(LinkInstance inst, LinkEnv e, uint f, uint c, out bool pre
 // The vertex a foot's block of the strip starts from: the one before it, so
 // the join is two degenerate triangles.
 LinkVertex footBlockStart(LinkInstance inst, LinkEnv e, uint f) {
-  LinkVertex tail = curveVertex(inst, e, LINK_CURVE_SEGMENTS, 1.0);
+  LinkVertex tail = curveVertex(inst, e, u.curveSegments, 1.0);
   if (f == 0u) { return tail; }
   bool first;
   LinkVertex last = footCorner(inst, e, 0u, 3u, first);
@@ -362,11 +366,12 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   e.placed = inst.x2Region < u.regionCount;
   e.x2Px = e.placed ? entryPx(inst.x2, u.regionTable[inst.x2Region], u.zero) : e.xPx;
 
+  uint curveVerts = (u.curveSegments + 1u) * 2u;
   LinkVertex v;
-  if (vid < CURVE_VERTS) {
+  if (vid < curveVerts) {
     v = curveVertex(inst, e, vid / 2u, (vid % 2u == 0u) ? -1.0 : 1.0);
   } else {
-    uint j = vid - CURVE_VERTS;
+    uint j = vid - curveVerts;
     v = footVertex(inst, e, j / FOOT_VERTS, j % FOOT_VERTS);
   }
 
