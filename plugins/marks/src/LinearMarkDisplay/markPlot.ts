@@ -187,16 +187,24 @@ export function markPlotSettingsWritten(plot: MarkPlot, current: MarkPlot) {
   ])
 }
 
-/** The line under the box: what applying does, then what the plot still says. */
+/**
+ * The line under the box: what applying does, then what the plot still says.
+ * `lifted` is the plot as applied, so a `marks` reset the schema refills from
+ * a default plot says so.
+ */
 export function summarizeMarkPlot(
   plot: MarkPlot,
   current: MarkPlot,
   problems: readonly MarkProblem[],
+  lifted: MarkPlotSettings,
 ): string {
   const { sets, clears } = markPlotChanges(plot, current)
+  const resetsMarks = clears.includes('marks') && lifted.marks.length > 0
+  const cleared = resetsMarks ? clears.filter(key => key !== 'marks') : clears
   return [
     sets.length > 0 ? `Sets ${sets.join(', ')}` : '',
-    clears.length > 0 ? `Clears ${clears.join(', ')}` : '',
+    cleared.length > 0 ? `Clears ${cleared.join(', ')}` : '',
+    resetsMarks ? 'Resets marks to the default plot' : '',
     sets.length === 0 && clears.length === 0 ? 'No changes' : '',
     problems.length > 0
       ? `${problems.length} ${pluralize(problems.length, 'problem')}`

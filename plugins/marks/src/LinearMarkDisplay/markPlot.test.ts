@@ -1,6 +1,7 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { configSchemaFactory } from './configSchema.ts'
+import { configSchemaFactory, markListSchema } from './configSchema.ts'
 import {
   liftMarkPlot,
   markPlotChanges,
@@ -140,7 +141,9 @@ describe('markPlotChanges', () => {
 
   it('names nothing for a round trip', () => {
     expect(markPlotChanges(current, current)).toEqual({ sets: [], clears: [] })
-    expect(summarizeMarkPlot(current, current, [])).toBe('No changes')
+    expect(summarizeMarkPlot(current, current, [], lift(current))).toBe(
+      'No changes',
+    )
   })
 
   it('separates what is set from what is cleared', () => {
@@ -160,8 +163,37 @@ describe('markPlotChanges', () => {
 describe('summarizeMarkPlot', () => {
   it('counts the problems the plot still has beside what it writes', () => {
     const problems = markPlotProblems(lift({ marks: [{ mark: 'bar' }] }))
-    expect(summarizeMarkPlot({ rows: 'a' }, {}, problems)).toBe(
-      'Sets rows. 1 problem',
+    expect(
+      summarizeMarkPlot({ rows: 'a' }, {}, problems, lift({ rows: 'a' })),
+    ).toBe('Sets rows. 1 problem')
+  })
+
+  // As Manhattan's does: a null there lands on its point per feature.
+  it('says a cleared marks resets to the default plot where the schema names one', () => {
+    const withDefaultPlot = ConfigurationSchema(
+      'DefaultPlotDisplay',
+      { marks: markListSchema([{ mark: 'point', encoding: { y: 'score' } }]) },
+      {
+        baseConfiguration: schema,
+        explicitlyTyped: true,
+        explicitIdentifier: 'displayId',
+      },
     )
+    const current = declared({
+      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+      facet: 'HP',
+    })
+    const next: MarkPlot = { ...current, marks: null, facet: null }
+    expect(summarizeMarkPlot(next, current, [], lift(next, current))).toBe(
+      'Clears marks, facet',
+    )
+    expect(
+      summarizeMarkPlot(
+        next,
+        current,
+        [],
+        liftMarkPlot(withDefaultPlot, next, current),
+      ),
+    ).toBe('Clears facet. Resets marks to the default plot')
   })
 })

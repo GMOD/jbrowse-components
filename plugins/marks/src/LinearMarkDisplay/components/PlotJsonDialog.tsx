@@ -43,11 +43,12 @@ interface Draft {
 function readDraft(model: PlotJsonDialogModel, text: string): Draft {
   try {
     const plot = parseMarkPlot(text)
-    const problems = markPlotProblems(model.liftMarkPlot(plot))
+    const lifted = model.liftMarkPlot(plot)
+    const problems = markPlotProblems(lifted)
     return {
       plot,
       problems,
-      summary: summarizeMarkPlot(plot, model.markPlot, problems),
+      summary: summarizeMarkPlot(plot, model.markPlot, problems, lifted),
     }
   } catch (error) {
     return { problems: [], error }
