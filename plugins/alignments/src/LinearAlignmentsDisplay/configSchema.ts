@@ -224,7 +224,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot scales
        * The coverage band's value scale — the one thing on this display drawn
        * against an axis, the pileup having no value and the arcs their own
-       * `arcYScale`. `symlogConstant` starts at 1 rather than the wiggle
+       * `arcBandYScale`. `symlogConstant` starts at 1 rather than the wiggle
        * family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at
        * one read, the smallest depth there is.
        */

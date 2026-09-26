@@ -161,8 +161,8 @@ export interface CrossRegionArc extends ComputedArc {
   // orientation: outward feet are a deletion-type junction, inward a
   // duplication-type, parallel an inversion, and that grammar is the only thing
   // left saying it once `ARC_COLOR_INTERCHROM` has overwritten an
-  // interchromosomal arc's colour. `screenFeet` (crossRegionOverlay.ts) is the
-  // one consumer and says which arcs draw them.
+  // interchromosomal arc's colour. `buildArcBandFeeds` is the one consumer and
+  // says which arcs draw them.
   //
   // THE ARM, not "this segment's own aligned body", and the difference is what
   // the two producers have to be read against. They coincide for a split

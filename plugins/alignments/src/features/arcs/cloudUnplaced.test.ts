@@ -340,13 +340,16 @@ describe('an unplaced connection no longer sizes the axis', () => {
     // The near pair, and only it. 50000000 is what the domain was.
     expect(result.maxFlatArcSpanBp).toBe(8_000)
 
-    // And it is still PACKED. The two predicates one line apart in
-    // `arcsToRegionResult` are asked different questions — every flat variant is
-    // drawn as a bar, only the two on the axis may size it — so the axis
-    // assertion above cannot see the packing one. Swapped, the unplaced mark
-    // stops counting as a bar while the domain stays right the whole time.
-    const upload = result.byGroup.get('')!.get(0)!
-    expect(upload.numFlatArcs).toBe(2)
+    // And it still DRAWS as a bar. Every flat variant does and only the two on
+    // the axis may size it, so the axis assertion above cannot see this one.
+    const feed = buildArcBandFeeds({
+      byRegion: result.byGroup.get('')!,
+      crossRegion: [],
+      displayed: loaded,
+      colors: makeTestPalette(),
+    }).get(0)!
+    expect(feed.links.count).toBe(2)
+    expect(feed.markers.count).toBe(4)
   })
 })
 

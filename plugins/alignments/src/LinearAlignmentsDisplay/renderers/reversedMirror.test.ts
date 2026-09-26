@@ -263,9 +263,9 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     showModifications: true,
     showPerBaseQuality: true,
     showPerBaseLetter: true,
-    // The shared fixture rather than a literal inside the cast below: this one
-    // had already fallen a field behind (`colorFlatConnector`), and a layer that
-    // reads a colour the cast let through as undefined fails at MODULE scope
+    // The shared fixture rather than a literal inside the cast below: a literal
+    // falls a field behind, and a layer that reads a colour the cast let
+    // through as undefined fails at MODULE scope
     // here, since the draws run while the `describe.each` table is built. Every
     // slot is the same value in either form, so nothing in a mirror comparison
     // turns on which.

@@ -2,8 +2,8 @@
 // anchor, or the rasterizer hard-cuts ink that no sample count is left to
 // smooth — `linkMark.slang` declares `//! coverage: analytic`. Ink is sampled
 // along the curve's normals, which reach every point within the pad, and each
-// sample is tested against the strip's triangles as `arc.slang` and
-// `linkMark.slang` emit them. The vertices come from `curveDistance.slang`'s
+// sample is tested against the strip's triangles as `linkMark.slang` emits
+// them. The vertices come from `curveDistance.slang`'s
 // own emitted twins.
 import { ellipseDistance } from '../marks/ellipseDistance.ts'
 import { aaHalfPx, edgeCoverage } from './antialias.js.generated.ts'
@@ -194,7 +194,7 @@ function worstOnLegs(
 }
 
 // Flat domes fold the inner offset at their feet, tall ones at their apex:
-// `arcRadiiPx` ties ry to the band and rx to the pair, so either can win.
+// `linkRadiiPx` ties ry to the band and rx to the pair, so either can win.
 const DOMES = [
   [1266, 25],
   [1900, 12],

@@ -120,11 +120,9 @@ export function writePileupPalette(
   }
   // Driven by the SHADER's slot count, not the palette's, so a palette that
   // fell out of step leaves an undefined behind here rather than silently
-  // painting stale colors in the slots it didn't reach. arcYScale.test.ts pins
-  // the two lengths equal. Resolved against `c`, the themed palette: these used
-  // to be module constants, which is how a dark-mode pileup ended up with
-  // dimmed reads under undimmed arcs. The arc palette is the arc band's, and
-  // travels in `ArcBandUniforms`.
+  // painting stale colors in the slots it didn't reach; paletteUboParity.test.ts
+  // holds each slot to its category's colour. Resolved against `c`, the themed
+  // palette, as the read-connection band's feeds are.
   writePaletteSlots(
     f32,
     c,

@@ -161,10 +161,6 @@ rules the pad tests encode.
 
 Sharing more is not better, and each of these is a decision with a reason:
 
-- **`arc.slang`'s tangent guard** looks like `capsuleFrame` and is not: it
-  normalizes a parametric curve's derivative, not a segment delta, and keeps
-  its own `1e-3`. Normalizing a vector with a fallback is obvious math — the
-  ADR-040 bar excludes it on its own.
 - **A colour payload.** Every shape stops at geometry. Where a `float3` looked
   shareable, ADR-051's answer is to split the scalar decision out and leave the
   conversion per-backend; the whole table of candidates that failed that test

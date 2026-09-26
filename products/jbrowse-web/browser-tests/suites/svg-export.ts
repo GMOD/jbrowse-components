@@ -388,11 +388,9 @@ const suite: TestSuite = {
       },
     },
     {
-      // The cross-region arcs are the one part of the arc band that does NOT
-      // export through `drawAlignmentBlocks`: that walks blocks, and these are
-      // precisely the arcs no block can draw. So they have an export twin of
-      // their own (`CrossRegionArcsSvg`), and a twin nothing exercises is a
-      // figure that silently loses its arcs.
+      // A cross-region arc is drawn by no block: the link mark places its far
+      // foot through the view's region table, and the export draws it through
+      // the same painter the canvas does.
       name: 'exports SVG with cross-region read-connection arcs',
       fn: async page => {
         const downloadDir = await setupDownloadInterception(page)
@@ -425,16 +423,15 @@ const suite: TestSuite = {
           downloadDir,
           'svg-export-cross-region-arcs',
         )
-        const pathCount = (svg.match(/<path/g) ?? []).length
-        console.log(`    ${pathCount} path elements (cross-region arcs)`)
-        // Its own clip rect, which is what says the arcs came from
-        // `CrossRegionArcsSvg` rather than from something else that draws paths.
-        if (!svg.includes('cross-region-arcs-')) {
-          throw new Error('SVG export has no cross-region arc clip group')
-        }
-        if (pathCount < 9) {
+        // `colorInterchrom` (#af4d19), the one colour an interchromosomal
+        // connection takes, so no other stroke in the export is counted.
+        const arcCount = (
+          svg.match(/<path [^>]*stroke="rgb\(175,77,25\)"/g) ?? []
+        ).length
+        console.log(`    ${arcCount} interchromosomal arc paths`)
+        if (arcCount < 9) {
           throw new Error(
-            `SVG export has ${pathCount} <path> elements, expected at least 9`,
+            `SVG export has ${arcCount} interchromosomal arc paths, expected at least 9`,
           )
         }
       },

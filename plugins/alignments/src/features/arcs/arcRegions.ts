@@ -1,5 +1,5 @@
 import { getOrCreate } from '../../shared/util.ts'
-import { isFlatArcShape, plotsOnInsertSizeAxis } from './shapes.ts'
+import { plotsOnInsertSizeAxis } from './shapes.ts'
 
 import type {
   ComputedArc,
@@ -176,7 +176,6 @@ export function arcsToRegionResult(
   const arcSpanBp = new Uint32Array(regionArcs.length)
   const arcSupport = new Uint32Array(regionArcs.length)
 
-  let numFlatArcs = 0
   // The reported span, not the drawn `yBp`: the read cloud's Y axis autoscales
   // to this and its top tick is labelled with it, so taking it off the jittered
   // position printed a template length no read has. See `maxFlatArcSpanBp`.
@@ -190,13 +189,9 @@ export function arcsToRegionResult(
     arcYBp[i] = arc.yBp
     arcSpanBp[i] = arc.spanBp
     arcSupport[i] = arc.support
-    if (isFlatArcShape(arc.shapeType)) {
-      numFlatArcs++
-    }
-    // NOT the same predicate one line up, and the display's CLAUDE.md says why
-    // the two questions look like one. Every flat variant is packed and drawn
-    // as a bar with endpoint squares; only the two ON the axis may size it. A
-    // parked pair (`ARC_SHAPE_FLAT_UNPLACED`) is drawn at the anchor precisely
+    // NOT `isFlatArcShape`, and the display's CLAUDE.md says why the two
+    // questions look like one. Every flat variant is drawn as a bar with
+    // endpoint squares; only the two ON the axis may size it. A parked pair (`ARC_SHAPE_FLAT_UNPLACED`) is drawn at the anchor precisely
     // because its span has no place on the axis, so letting that span set the
     // domain would be the failure parking exists to fix, arriving one step later.
     if (plotsOnInsertSizeAxis(arc.shapeType) && arc.spanBp > maxFlatArcSpanBp) {
@@ -226,7 +221,6 @@ export function arcsToRegionResult(
     arcSpanBp,
     arcSupport,
     numArcs: regionArcs.length,
-    numFlatArcs,
     maxFlatArcSpanBp,
     arcLinePositions,
     arcLineSupport,

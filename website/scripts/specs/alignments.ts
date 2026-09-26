@@ -304,9 +304,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   // Read cloud display on the volvox synthetic-SV CRAM: mates are
   // laid out on the Y axis by the log distance between them, so insertion pairs
-  // (drawn pink) separate from background. Each pair renders as two colored
-  // squares at the read positions joined by a black connector line (the
-  // arcMarker pass; see arc.slang / drawCanvas.ts) — the classic read-cloud look.
+  // (drawn pink) separate from background. Each pair renders as two coloured
+  // squares at the read positions joined by a connector in the same colour —
+  // the classic read-cloud look.
   // Drawn below the coverage band (readConnectionsDown) so the cloud doesn't
   // overlap the coverage histogram. Read arcs in an SV context are shown by the
   // multi-sv-trio spec.

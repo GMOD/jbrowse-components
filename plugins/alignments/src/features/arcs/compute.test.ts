@@ -2770,14 +2770,12 @@ describe('arcsToRegionResult', () => {
       [],
     )
 
-    expect(result.numFlatArcs).toBe(2)
     expect(result.maxFlatArcSpanBp).toBe(10000)
   })
 
   test('a curved arc contributes no flat max', () => {
     // Arc mode emits no flat shape at all, so the read cloud's axis must not be
-    // sized by one — `numFlatArcs` 0 is also what lets the marker pass be
-    // skipped wholesale.
+    // sized by one.
     const result = arcsToRegionResult(
       [
         {
@@ -2794,7 +2792,6 @@ describe('arcsToRegionResult', () => {
       [],
     )
 
-    expect(result.numFlatArcs).toBe(0)
     expect(result.maxFlatArcSpanBp).toBe(0)
   })
 })

@@ -51,22 +51,11 @@ import type {
 } from './arcTypes.ts'
 import type { ArcsUploadData } from './types.ts'
 
-// NOTHING IS RE-EXPORTED FROM HERE, and that is the point of the file split
-// rather than a tidiness preference. The types live in `arcTypes.ts`, colour
+// NOTHING IS RE-EXPORTED FROM HERE. The types live in `arcTypes.ts`, colour
 // classification in `arcColors.ts`, region partitioning in `arcRegions.ts`, read
 // grouping in `arcChains.ts`; every consumer imports the module that DEFINES
-// what it wants.
-//
-// This module used to forward all four "because `compute.ts` is the import site
-// every consumer already knows", and the cost of that convenience is the one
-// `shapes.ts`' header spells out — two thousand lines of read grouping, junction
-// clustering and colour classification pulled into the render path for a
-// comparator and a lookup table, plus "a cycle waiting for the first time
-// `compute.ts` wants anything back from `mark.ts`". That edge had arrived:
-// `crossRegionOverlay.ts` imports `mark.ts` and reached `arcPaintOrder` and
-// `CrossRegionArc` through here, and two React components took
-// `arcColorLegendCategory` the same way. `drawCanvas.ts` states the identical
-// rule one layer down for the generated modules — "with no re-export hop".
+// what it wants, so the render path does not pull in two thousand lines of read
+// grouping and junction clustering for a comparator and a lookup table.
 
 // Deterministic 0..1 hash from arc endpoints — gives each pair a stable jitter
 // offset regardless of fetch/render order, so snapshot tests don't flake.

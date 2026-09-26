@@ -48,7 +48,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
 | `insetValueYPx` | `(f32, f32, f32, f32, i32, f32, f32) -> f32` | its two consumers lift it under their own anchors, pointMark.slang as pointYPx and linkMark.slang as linkValuePx, and those are the spellings the painters and hit tests read; a third twin would be one nothing calls |
-| `linkIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it |
+| `linkIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated linkRadiiPx, so the far decision is shared without a second way to ask it |
 | `log1pf` | `(f32) -> f32` | JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it |
 | `nearCircleDistancePx` | `(f32, f32, f32, f32) -> f32` | a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want. |
 | `perpCoverage` | `(f32, f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |

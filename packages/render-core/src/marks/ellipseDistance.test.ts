@@ -39,8 +39,8 @@ function bruteForce(px: number, py: number, rx: number, ry: number) {
 
 test('agrees with a brute-force minimum across the arc band’s aspect range', () => {
   // rx is half a pair's on-screen width — 0 up to canvasW/2, past which
-  // `arcRadiiPx` switches to the circle branch and this function is not the one
-  // asked. ry is 0.75x the apex offset, which the band clamps to availH. The
+  // `linkRadiiPx` switches to the circle branch and this function is not the
+  // one asked. ry is the apex, which the band clamps to its reach. The
   // extremes here are 2000:1 and 1:300, both well past the 88:1 the shader's own
   // note measures to.
   let worst = 0

@@ -20,12 +20,9 @@ export interface ArcsUploadData {
   // through `arcStrokeScale` — none of them may re-derive that curve.
   arcSupport: Uint32Array
   numArcs: number
-  // How many of `numArcs` are flat (read-cloud) shapes, and the largest insert
-  // size among them. Both precomputed in the pass that builds the arrays, so the
-  // `arcsYDomainBp` view reduces over regions rather than over every arc and
-  // `packArcMarkers` sizes its buffer exactly — in arc mode the count is 0 and
-  // the whole endpoint-marker pass is skipped.
-  numFlatArcs: number
+  // The largest insert size among the flat (read-cloud) shapes, precomputed so
+  // the `arcsYDomainBp` view reduces over regions rather than over every arc.
+  //
   // The max `arcSpanBp`, NOT the max `arcYBp` it used to be. This is what the
   // read cloud's Y axis autoscales to and therefore what its top tick is
   // LABELLED, so a domain taken off the drawn position carried the ±8% jitter
@@ -83,7 +80,6 @@ export function emptyArcsUploadData(): ArcsUploadData {
     arcSpanBp: new Uint32Array(0),
     arcSupport: new Uint32Array(0),
     numArcs: 0,
-    numFlatArcs: 0,
     maxFlatArcSpanBp: 0,
     arcLinePositions: new Uint32Array(0),
     arcLineSupport: new Uint32Array(0),

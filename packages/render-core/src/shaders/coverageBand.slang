@@ -230,7 +230,7 @@ public float covBarHeightPx(float depthFraction, float effectiveHeightPx) {
 // The two y edges of one stacked segment, in px. `yOffset` and `segHeight` are
 // fractions of THIS position's bar, measured up from the baseline.
 //
-// Two scalars rather than one `float2`, unlike `rectSpanPx` / `arcRadiiPx`: a
+// Two scalars rather than one `float2`, unlike `rectSpanPx` / `linkRadiiPx`: a
 // vec2 twin comes back as a `[number, number]` (adr-051's tuple convention) and
 // these feed loops that run per covered bp under a no-allocation bar.
 public float covSegBottomPx(float baselinePx, float yOffset,

@@ -96,9 +96,9 @@ const expectedStroke = (slot: number) =>
 // alignmentsUniforms.slang). This pass spelled it `colorType % css.length` — a
 // WRAP, which agrees with the clamp on every slot in use and so survives review,
 // and which for an out-of-range slot resolves to a different REAL color rather
-// than to the last one. The rule's own unit test (arcYScale.test.ts) could not
-// catch this, because what drifted was the call site, not the rule; the bezier
-// overlay and the arc pass had already been moved onto it and this one had not.
+// than to the last one. The rule's own unit test could not catch this, because
+// what drifted was the call site, not the rule; the bezier overlay had already
+// been moved onto it and this one had not.
 describe('linked-read connector strokes follow the generated slot rule', () => {
   it('reads the slot the color type names, for every slot in the palette', () => {
     buildLinkedReadColorPalette(STOCK).forEach((_, slot) => {

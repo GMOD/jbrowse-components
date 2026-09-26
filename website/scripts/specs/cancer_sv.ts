@@ -1741,7 +1741,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // into the right, and keeps a tick at the donor for the 37.
           //
           // THE TICK DOES NOT GET THINNER, and that is worth knowing before
-          // re-framing this again in the hope that it will: `arcLineWidth` caps
+          // re-framing this again in the hope that it will: `arcStrokeScale` caps
           // at 4x the base width around 44 reads, so 206 reads and 37 reads draw
           // the same 8 device px. What the third window changes is what the
           // marks MEAN -- the two junctions carrying this frame's evidence are

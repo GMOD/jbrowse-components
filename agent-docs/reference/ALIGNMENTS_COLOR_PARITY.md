@@ -144,9 +144,8 @@ a **call site**, not a rule.
 `linkedReadColorSlot` (a clamp, generated from `alignmentsUniforms.slang`)
 replaced a hand-spelled `colorType % palette.length` at three sites. Two moved
 onto it; `features/linkedReads/drawCanvas.ts` — the Canvas2D/SVG twin of the GPU
-straight-line pass — did not, and its own unit test
-(`arcYScale.test.ts::linkedReadColorSlot`) passed throughout, because it tests
-the rule. **Test the caller when the rule is shared**; a rule with three callers
+straight-line pass — did not, and the rule's own unit test passed throughout,
+because it tested the rule. **Test the caller when the rule is shared**; a rule with three callers
 and one test proves nothing about the other two.
 
 That one hid unusually well even for this file. Slot 7 is the unknown/fallback

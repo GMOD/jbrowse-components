@@ -6,18 +6,16 @@
 // place through a uniform table of the view's displayed regions, so a pan or
 // zoom writes the table and no buffer.
 //
-// The curve is the alignments arc band's (arc.slang): a half-ellipse whose
-// hull is a triangle strip inflated by the half stroke plus one antialiasing
-// ramp, and a fragment that measures the true distance to the analytic
-// curve, so the hull's facets never reach the picture. A pair wider than
-// LINK_FAR_SCREEN_WIDTHS view widths degenerates to a circle whose legs
-// rise from each real foot, built endpoint-relative so a radius in the
-// millions of px cancels nothing. A foot the table cannot place draws a stem
-// at the placed one, so an off-view mate still says it exists. A foot may
-// carry a breakend tick along the baseline, pointing along the arm its
-// junction keeps. Under `line`
-// the pair is a straight segment at the apex height instead, GenomeSpy's
-// fourth link shape.
+// The curve is a half-ellipse whose hull is a triangle strip inflated by the
+// half stroke plus one antialiasing ramp, and a fragment that measures the
+// true distance to the analytic curve, so the hull's facets never reach the
+// picture. A pair wider than LINK_FAR_SCREEN_WIDTHS view widths degenerates to
+// a circle whose legs rise from each real foot, built endpoint-relative so a
+// radius in the millions of px cancels nothing. A foot the table cannot place
+// draws a stem at the placed one, so an off-view mate still says it exists. A
+// foot may carry a breakend tick along the baseline, pointing along the arm
+// its junction keeps. Under `line` the pair is a straight segment at the apex
+// height instead, GenomeSpy's fourth link shape.
 //
 // The apex is a value on the display's y scale where the mark names one, else
 // the pair's own half-width, clamped to the band under `dome` and left to
@@ -28,7 +26,7 @@
 //! coverage: analytic
 //! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_SHAPE_LINE, LINK_LINE_MIN_PX, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FOOT_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
 //! js-export: linkApexPx, linkRadiiPx, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx, linkFootDir
-//! js-skip: linkIsFar — reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it
+//! js-skip: linkIsFar — reached as a private helper inside the generated linkRadiiPx, so the far decision is shared without a second way to ask it
 
 import antialias;
 import colorPack;
@@ -65,8 +63,8 @@ public static const float LINK_STEM_PX = 12.0;
 public static const float LINK_FOOT_PX = 20.0;
 // How many view widths a pair may span before its ellipse becomes a true
 // circle, which the band clips down to near-vertical legs at each real foot.
-// arc.slang's ARC_FAR_SCREEN_WIDTHS, with its reasoning: not 1, because a
-// circle throws the pair's direction away, and the limit is tessellation.
+// Not 1, because a circle throws the pair's direction away, and the limit is
+// tessellation: reference/ARC_BAND.md.
 public static const float LINK_FAR_SCREEN_WIDTHS = 3.0;
 public static const int LINK_SIZE_CONSTANT = 0;
 public static const int LINK_SIZE_SCALED = 1;
@@ -193,9 +191,8 @@ public float linkBaseYPx(float rowOffsetPx, float rowHeight, uint row, int rever
 }
 
 // The two radii of the half-ellipse a pair draws, or a true circle's once the
-// pair is far. `//! js-export`ed as a pair, arc.slang's `arcRadiiPx` case: the
-// decision IS the pair, and it is what the painter, the ink and the hit test
-// read.
+// pair is far. `//! js-export`ed as a pair because the decision IS the pair,
+// and it is what the painter, the ink and the hit test read.
 public float2 linkRadiiPx(float halfWidthPx, float apexPx, float screenWidthPx) {
   if (linkIsFar(halfWidthPx, screenWidthPx)) {
     return float2(halfWidthPx, halfWidthPx);

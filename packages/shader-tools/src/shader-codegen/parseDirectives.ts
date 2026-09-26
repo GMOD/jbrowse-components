@@ -508,7 +508,7 @@ export function parseTargets(source: string): ShaderTarget[] {
  * them off the shader instead of restating them.
  *
  * Topology is a property of `vs_main`: it decides what a `SV_VertexID` means,
- * and `arc.slang`'s strip and everything else's list are not interchangeable.
+ * and `linkMark.slang`'s strip and everything else's list are not interchangeable.
  * Blend is a property of `fs_main`: whether it returns premultiplied or straight
  * alpha, or (the AA line case) wants coverage unioned rather than accumulated.
  * Both lived at the `slangPass()` call three packages away, where nothing

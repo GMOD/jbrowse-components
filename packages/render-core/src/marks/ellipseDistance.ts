@@ -9,9 +9,8 @@
 // the solver before the transliteration is in question.
 //
 // So the two copies are NOT held together by parity with each other. What has to
-// agree is which ellipse, and that is the radii pair each consumer lifts
-// (`arcRadiiPx`, `linkRadiiPx`), which both the shader and this file's callers
-// read. Given the same two radii, this is geometry with one right answer, and
+// agree is which ellipse, and that is the radii pair `linkMark.slang` lifts
+// (`linkRadiiPx`), which both the shader and this file's callers read. Given the same two radii, this is geometry with one right answer, and
 // `ellipseDistance.test.ts` pins it against a brute-force minimum over the
 // parametric angle — a stronger check than agreeing with a float32 evaluation
 // of the same formula would have been.

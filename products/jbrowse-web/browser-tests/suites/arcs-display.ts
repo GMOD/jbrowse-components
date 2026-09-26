@@ -220,7 +220,7 @@ const suite: TestSuite = {
       ],
       displayTestId: pileup,
     }),
-    // The window `ARC_FAR_SCREEN_WIDTHS` governs, which no other case here is
+    // The window `LINK_FAR_SCREEN_WIDTHS` governs, which no other case here is
     // inside: volvox_sv's widest pairs span ~32 kb, so at 20 kb they are 1.6
     // screen widths — wider than the view, and well under the 3 at which the
     // ellipse gives its segments up and the circle branch takes over.

@@ -22,7 +22,8 @@ import type { MarkValueScaleType } from '@jbrowse/render-core/marks'
 // Nothing here re-implements the mapping — both sides are the shipped ones.
 //
 // `computeInsertSizeTicks` states the same rule for the read-cloud arcs, and
-// keeps it by deriving from `arcYScale`'s own functions; `computeCoverageTicks`
+// keeps it by placing each tick where the band's point mark would draw it;
+// `computeCoverageTicks`
 // by computing its ticks off the bottom the coverage draws use.
 
 const noBounds: [undefined, undefined] = [undefined, undefined]

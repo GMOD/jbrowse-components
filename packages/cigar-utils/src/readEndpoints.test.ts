@@ -107,7 +107,7 @@ describe('connectionEndpointBps', () => {
     // …which is the same PAIR of directions, and is not a contradiction: the
     // left foot here is `dir2` and the right one `dir1`, so on screen they point
     // inward where the deletion's point outward. Sorting the two onto the two
-    // sides of the mark is `arcMarkFrom`'s job, not this one's.
+    // sides of the mark is the link mark's job, not this one's.
     expect(dup.bp1).toBeGreaterThan(dup.bp2)
     const inv = connectionEndpointBps({
       s1: 1,

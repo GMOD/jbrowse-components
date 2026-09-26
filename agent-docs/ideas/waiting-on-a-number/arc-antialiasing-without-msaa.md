@@ -23,16 +23,17 @@ what else depends on it, and ranks what to do.
 
 ## The short answer
 
-`arc.slang` has not been antialiased by MSAA since **2026-08-01**
+The arc stroke has not been antialiased by MSAA since **2026-08-01**
 (`ca6637afe4`, "measure arcs against an analytic conic, not the strip's own
-offsets"). The triangle strip is a **hull only**; the fragment computes a true
+offsets", in the alignments `arc.slang` whose curve `linkMark.slang` now
+draws). The triangle strip is a **hull only**; the fragment computes a true
 perpendicular distance in CSS px to the analytic half-ellipse or far circle and
 ramps its own alpha over exactly one *device* pixel:
 
 ```slang
-// arc.slang fs_main
-float alpha =
-  edgeCoverage(fragIn.halfWidthPx - arcDistance(fragIn), u.devicePixelRatio);
+// linkMark.slang fs_main
+float alpha = edgeCoverage(fragIn.halfWidthPx - linkDistance(fragIn), u.devicePixelRatio)
+  * linkDash(fragIn);
 return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 ```
 
@@ -179,8 +180,8 @@ wrong row below in: a shader can measure a beautiful SDF and still hand the
 rasterizer a lit edge, because what decides the row is where the geometry stops
 relative to where the ramp reaches zero.
 
-**Analytic — MSAA-invariant.** the link mark and `linkedReadLine` (alignments); the
-dotplot capsule; `wiggleLine`'s smooth mode (`wiggleLineCenter.slang`); both
+**Analytic — MSAA-invariant.** `linkedReadLine` (alignments); the dotplot
+capsule; `wiggleLine`'s smooth mode (`wiggleLineCenter.slang`); both
 synteny curve/straight fills and edges (via `syntenyTypes.slang`'s `fillFs` /
 `strokeFs`); the circular view's `ringWarp`. Each pads by exactly the ramp's own
 reach and no shape intervenes between the pad and the ink —
@@ -193,22 +194,15 @@ these are the rows that came out 0.
 hedge — the exception is a countable number of pixels and it says what a flip
 would cost:
 
-- **`arc` and `linkMark`, except where the band or row cuts the foot.** The
-  hull covers every inked point since 2026-09-25 (§"The short answer"), so what
-  is left is the horizontal cut at the anchor, `arcLine`'s band-cut case below
-  for `arc` and a fractional `baseY * dpr` for `linkMark`: a stroke's width of
-  foot, at most half a device row. `linkMark.slang` declares
-  `//! coverage: analytic` with that caveat; `arc.slang` does not declare it,
-  and would change no sample count if it did, since it shares its display with
-  the pileup's passes.
-- **`arcLine`, except at the two band cuts.** The tick's long sides substitute
-  to 0; its ends are square-cut at the band's top and bottom and carry full ink
-  there. Normally the `devBand` scissor takes them, but `devicePxBand` *rounds*
-  the band to whole device px (`Math.round(cssStart * dpr)`) while the quad's
-  own ends stay where the band put them, so where the rounding goes outward up
-  to half a device row of full ink sits inside the scissor on fractional
-  rasterizer coverage. Where it goes inward the scissor cuts on an integer
-  boundary, which is exact at either sample count.
+- **`linkMark`, except where its hull stops square.** The hull covers every
+  inked point since 2026-09-25 (§"The short answer"), so what is left is the
+  horizontal cut at the baseline under a dome's or a stem's foot, a fractional
+  `baseY * dpr`, and a `line`'s two ends, which its painter strokes butt: a
+  stroke's width of ink each, at most half a device pixel deep.
+  `linkMark.slang` declares `//! coverage: analytic` with that caveat. The
+  alignments read-connection band draws with it and changes no sample count,
+  since it shares its display with the pileup's passes, and the read cloud's
+  endpoint squares sit over a bar's two ends.
 - **`indicator` (`coverageIndicator.slang`), except at its top edge.** Its two
   diagonals fade from the barycentric zero outward, so `smoothstep(0, 1, 0)` is
   alpha 0 exactly on both — correctly classified, for the right reason. The
@@ -485,8 +479,8 @@ a distance, and for a conic we have an exact one.
   whole family. Rougier's own conclusion calls it *"a more serious problem"*;
   Kilgard says isolating and antialiasing segments individually makes
   *"conflation artifacts likely"*. Our arc instances are one connected stroke
-  each and do not overlap themselves, and `arc.slang` already discards the one
-  spurious quad a strip topology creates (`legSide`).
+  each and do not overlap themselves, and `linkMark.slang` already discards the
+  one spurious quad a strip topology creates (`legSide`).
 - **Precision at large coordinates.** The WGSL spec assigns derivatives
   *"Infinite ULP"* accuracy — no error bound at all — and `dFdx`/`dFdy` may be
   coarse (one value per 2x2 quad). Combined with f32, a distance carried at

@@ -176,8 +176,9 @@ almost all of what those displays draw is **axis-aligned quads** — pileup read
 coverage bars, wiggle, matrix cells — which 4x multisampling does approximately
 nothing for. The curves that motivated MSAA in the first place are a
 minority of displays — and, measured 2026-08-22 at 4x against 1x, the
-read-connection arcs **do not depend on it at all** any more: `arc.slang` has
-measured an analytic conic distance in the fragment since 2026-08-01, and the two
+read-connection arcs **do not depend on it at all** any more: their fragment has
+measured an analytic conic distance since 2026-08-01 (`linkMark.slang` since
+ADR-170), and the two
 sample counts differ across the whole arc band by at most one 8-bit level. What
 still depends on it is wiggle and coverage **bar tops** (where the edge is the
 datum, so this is an encoding rather than a silhouette), read arrow tips, and the

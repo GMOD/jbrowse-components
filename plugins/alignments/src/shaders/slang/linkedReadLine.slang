@@ -17,11 +17,8 @@
 // pair moved — the signature of a real difference rather than antialiasing (see
 // agent-docs/reference/CROSS_BACKEND_GATE.md).
 //
-// arcFlat.slang and arcLine.slang had already made this move for the read-cloud
-// connectors and the interchromosomal ticks; this is the third and last native
-// line in the plugin. The difference from those two is that a linked-read
-// connector is **diagonal**, so the quad is extruded along the segment's own
-// frame rather than axis-aligned.
+// A linked-read connector is **diagonal**, so the quad is extruded along the
+// segment's own frame rather than axis-aligned.
 //! targets: wgsl, glsl
 //! coverage: analytic
 //! export-consts: LINKED_READ_LINE_ALPHA, LINKED_READ_LINE_WIDTH_PX
@@ -65,7 +62,7 @@ struct VsOut {
   // Offset from the segment's centre in CSS px, in the segment's OWN frame:
   // x along it, y perpendicular. The quad is extruded by exactly the padded
   // half-extents, so |grad| is 1 per CSS px on both axes and the AA ramp is a
-  // constant — same contract as arcFlat.slang's `local`.
+  // constant.
   float2 local    : COLOR1;
   // Half-length of the drawn segment, so the fragment can measure the butt caps.
   nointerpolation float halfLen : COLOR2;
@@ -101,7 +98,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 nrm = frame.normal;
 
   // segmentQuadLocal (alignmentsUniforms) owns the AA pad, paired with the
-  // coverage the fragment measures with — the same pair arcFlat.slang uses.
+  // coverage the fragment measures with.
   float halfLen = len * 0.5;
   o.local =
     segmentQuadLocal(vid, halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5, u.devicePixelRatio);
@@ -119,9 +116,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   // `local` is already in the segment's own frame, so the diagonal costs
-  // nothing here — this is the same measurement arcFlat.slang makes of its
-  // horizontal one, and the same BUTT caps its painter strokes. The ramp is
-  // a constant number of device pixels rather than a derivative
+  // nothing here, and the caps are BUTT, as its painter strokes them. The ramp
+  // is a constant number of device pixels rather than a derivative
   // (aaHalfPx).
   float alpha = buttSegmentCoverage(
     fragIn.local, fragIn.halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5, u.devicePixelRatio);

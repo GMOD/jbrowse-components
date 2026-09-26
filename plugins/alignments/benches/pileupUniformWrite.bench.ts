@@ -33,7 +33,7 @@
 //   control  — a separately-declared duplicate of `poke`, so `control / poke`
 //              is what this harness could resolve at all
 //   total    — a whole-struct generated `writeUniforms` per section block, the
-//              form `writeArcBandUniforms` and every other packer in tree take:
+//              form every other packer in tree takes:
 //              an object literal with its nested `float4[]` tuples, three
 //              typed-array views, 158 stores
 //   hoisted  — `total` with the two `float4[]` tables and the thirteen packs

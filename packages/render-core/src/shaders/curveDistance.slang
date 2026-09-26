@@ -54,7 +54,7 @@ float nearCircleDistancePx(float qx, float qy, float ax, float ay) {
 //
 // NOT `//! js-export`ed, and the hit tests carry a float64 copy of this formula
 // (render-core marks/ellipseDistance.ts) BECAUSE of that. The reasoning is
-// worth keeping, since "lift it like arcRadiiPx" is the obvious first move and
+// worth keeping, since "lift it like linkRadiiPx" is the obvious first move and
 // it was tried:
 //
 //   - The emitter refuses float2 params, so lifting means splitting a scalar
@@ -70,7 +70,7 @@ float nearCircleDistancePx(float qx, float qy, float ax, float ay) {
 //     `//! js-export`ed ones, and `//! js-skip` does not exempt one either. Then
 //     it fails, at the oracle's 1e-5 relative: 90 of the 400 tuples, 42 of them
 //     on inputs with both radii positive (the sweep also generates negative
-//     radii, which `arcRadiiPx` does not produce).
+//     radii, which `linkRadiiPx` does not produce).
 //   - And NOT because the twin is wrong. On every one of those 42 the float64
 //     twin matches a brute-force minimum over the parametric angle to 1.1e-6
 //     relative — inside the oracle's own tolerance — and slangc's float32 is the
@@ -82,9 +82,9 @@ float nearCircleDistancePx(float qx, float qy, float ax, float ay) {
 //     the strongest gate here, to share a NUMERICAL METHOD rather than a
 //     decision.
 //
-// What actually has to agree is WHICH ELLIPSE, and that is the radii pair each
-// consumer `//! js-export`s (`arcRadiiPx`, `linkRadiiPx`), which is what its hit
-// test reads. Given the same two radii, the distance to them is geometry with
+// What actually has to agree is WHICH ELLIPSE, and that is the radii pair
+// `linkMark.slang` `//! js-export`s (`linkRadiiPx`), which is what its hit test
+// reads. Given the same two radii, the distance to them is geometry with
 // one right answer, and the copy is pinned against a brute-force reference
 // rather than against this (see ellipseDistance.test.ts), which is the
 // stronger check of the two.
