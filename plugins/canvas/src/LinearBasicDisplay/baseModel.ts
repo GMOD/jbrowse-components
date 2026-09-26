@@ -199,6 +199,7 @@ export type { Region } from '@jbrowse/core/util'
 // Views return these, and a subclass in another package needs a path to them to
 // emit its own declarations.
 export type { LabelReservation } from './fitLadder.ts'
+export type { LabelRoomFactors } from './layoutInputs.ts'
 export type { RegionInstanceIndex } from './featureHighlightInk.ts'
 export type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 export type { GroupByCandidate } from '../RenderFeatureDataRPC/groupByCandidates.ts'
