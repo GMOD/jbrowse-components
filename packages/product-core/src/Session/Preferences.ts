@@ -14,12 +14,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 const PREFS_KEY = 'jbrowsePreferences'
 
-// v5.0.0-beta.4 shipped session-wide display-type defaults, which persisted here
-// under composite keys of this shape. They resolve to nothing now, and left in
-// place they would show up as unnamed rows in the Preferences reset diff, so a
-// beta user's stored ones are dropped on load.
-const RETIRED_DISPLAY_TYPE_DEFAULT_PREFIX = 'displayTypeDefault\0'
-
 function loadStoredPreferences(): Record<string, unknown> {
   const stored = localStorageGetItem(PREFS_KEY)
   let result: Record<string, unknown> = {}
@@ -27,11 +21,7 @@ function loadStoredPreferences(): Record<string, unknown> {
     try {
       const parsed: unknown = JSON.parse(stored)
       if (typeof parsed === 'object' && parsed !== null) {
-        result = Object.fromEntries(
-          Object.entries(parsed as Record<string, unknown>).filter(
-            ([key]) => !key.startsWith(RETIRED_DISPLAY_TYPE_DEFAULT_PREFIX),
-          ),
-        )
+        result = parsed as Record<string, unknown>
       }
     } catch {
       // malformed localStorage value; keep empty defaults
