@@ -1,4 +1,4 @@
-import { readIdAt, readNameAt } from '@jbrowse/alignments-core'
+import { readIdAt, readNameAt, spanOf } from '@jbrowse/alignments-core'
 import {
   BEZIER_CONNECTOR_MAX_REACH_PX,
   bezierConnectorPath,
@@ -301,6 +301,42 @@ interface Opts {
   colors: ColorPalette
 }
 
+// Left-to-right screen order without projecting, which answers nothing for the
+// part of an alignment past its region's edge. The stride clears any uint32 bp
+// in either direction.
+const REGION_STRIDE = 2 ** 33
+
+function screenOrder(
+  displayedRegions: Opts['displayedRegions'],
+  regionIndex: number,
+  bp: number,
+) {
+  return (
+    regionIndex * REGION_STRIDE +
+    (displayedRegions[regionIndex]?.reversed ? -bp : bp)
+  )
+}
+
+function crossesOwnAlignment(
+  { e1, e2, c, segments }: LinkedPair,
+  displayedRegions: Opts['displayedRegions'],
+) {
+  const row = e1.data.readYs[e1.readIdx]
+  const a = screenOrder(displayedRegions, e1.displayedRegionIndex, c.bp1)
+  const b = screenOrder(displayedRegions, e2.displayedRegionIndex, c.bp2)
+  const lo = Math.min(a, b)
+  const hi = Math.max(a, b)
+  return segments.some(s => {
+    if (s.data.readYs[s.readIdx] !== row) {
+      return false
+    }
+    const { start, end } = spanOf(s)
+    const p = screenOrder(displayedRegions, s.displayedRegionIndex, start)
+    const q = screenOrder(displayedRegions, s.displayedRegionIndex, end)
+    return Math.min(p, q) < hi && Math.max(p, q) > lo
+  })
+}
+
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
 // cross-region normal pairs. Within-region normal pairs are rendered by the
 // GPU + Canvas2D pipelines and are already absent from `pairs`, which
@@ -333,7 +369,8 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const result: PileupArc[] = []
 
-  for (const { e1, e2, c, hiddenSegmentsBetween } of pairs) {
+  for (const pair of pairs) {
+    const { e1, e2, c, hiddenSegmentsBetween } = pair
     const r1 = displayedRegions[e1.displayedRegionIndex]
     const r2 = displayedRegions[e2.displayedRegionIndex]
     if (!r1 || !r2) {
@@ -355,16 +392,19 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       continue
     }
 
-    // A normal pair on one chromosome is a plain line and everything else dips
-    // below the reads, matching BreakpointSplitView; a straight line across
-    // chromosomes would be the one mark calling a translocation normal. A
-    // hidden-segment line whose ends share a row, as a chain's do, would lie
-    // on the chain's connecting line, so it bows up over the row instead, as
-    // the split view bows a same-level normal link.
+    // A normal connection is a plain line and everything else dips below the
+    // reads. A same-strand split junction is normal on any pair of chromosomes,
+    // as its colour says, so in chain layout it runs along the molecule's own
+    // row. On a row it shares with alignments of the read lying between its
+    // two ends, as on a fold-back, that line would paint over them, so it dips
+    // like a discordant one. A hidden-segment line whose ends share a row would
+    // lie on the chain's connecting line, so it bows up over the row instead.
     const hidden = !!hiddenSegmentsBetween?.length
     const sameRef = r1.refName === r2.refName
-    const plain = c.isNormal && sameRef
-    const straight = plain && !(hidden && sy1 === sy2)
+    const sameRow = sy1 === sy2
+    const plain =
+      c.isNormal && !(sameRow && crossesOwnAlignment(pair, displayedRegions))
+    const straight = plain && !(hidden && sameRow)
     const d = straight
       ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
       : bezierConnectorPath({

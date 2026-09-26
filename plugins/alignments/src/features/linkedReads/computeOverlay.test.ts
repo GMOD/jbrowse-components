@@ -866,10 +866,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
     expect(enumerateBezierPairs(twoRegions, 'none')).toHaveLength(0)
   })
 
-  // The straddling pair still draws through the normal geometry: a co-linear
-  // split is a straight line, matching BreakpointSplitView's rule that a curve
-  // means something aberrant.
-  it('draws the straddling pair as a connector', () => {
+  it('draws the straddling co-linear split as a straight line', () => {
     const arcs = computePileupBezierArcs({
       colors: PALETTE,
       ...baseOpts,
@@ -880,10 +877,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
     expect(arcs[0]!.d).toMatch(/^M [\d.]+ [\d.]+ L /)
   })
 
-  // The same co-linear split between two chromosomes is a translocation, and
-  // the display's convention is that a straight line means normal. The label
-  // still names the strands; only the shape changes.
-  it('curves the same-strand split when its ends are on different refNames', () => {
+  it('draws a same-strand split between two chromosomes along its row', () => {
     const arcs = computePileupBezierArcs({
       colors: PALETTE,
       ...baseOpts,
@@ -891,8 +885,133 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       pairs: enumerateBezierPairs(twoRegions, 'crossRegion'),
     })
     expect(arcs).toHaveLength(1)
-    expect(arcs[0]!.d).toMatch(/^M [\d.]+ [\d.]+ C /)
+    expect(arcs[0]!.d).toBe('M 2500 5 L 9000 5')
     expect(arcs[0]!.label).toBe('Split alignment (same strand)')
+  })
+
+  it('dips an inverted split between two chromosomes', () => {
+    const inverted = makeData({
+      names: ['r'],
+      ids: ['r-supplementary'],
+      flags: [SAM_FLAG_SUPPLEMENTARY],
+      strands: [-1],
+      positions: [[9000, 9100]],
+      ys: [0],
+    })
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
+      pairs: enumerateBezierPairs(
+        new Map([
+          [0, inRegion0],
+          [1, inverted],
+        ]),
+        'crossRegion',
+      ),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.label).toBe('Split alignment (inverted)')
+    const { sy1, cp1y, cp2y } = controlPoints(arcs[0]!.d)
+    expect(cp1y).toBeGreaterThan(sy1)
+    expect(cp2y).toBeGreaterThan(sy1)
+  })
+
+  const dips = (d: string) => {
+    const { sy1, cp1y, cp2y } = controlPoints(d)
+    return cp1y > sy1 && cp2y > sy1
+  }
+
+  // Alignments on chr1, chr2, then chr1 again left of the first, all on the
+  // chain's one row.
+  it('dips a same-strand junction whose line would cross its own alignments', () => {
+    const chr1 = makeData({
+      names: ['f', 'f'],
+      ids: ['f-a', 'f-c'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, 1],
+      positions: [
+        [1000, 1100],
+        [500, 600],
+      ],
+      ys: [0, 0],
+      clipAtStart: [0, 200],
+    })
+    const chr2 = makeData({
+      names: ['f'],
+      ids: ['f-b'],
+      flags: [SAM_FLAG_SUPPLEMENTARY],
+      strands: [1],
+      positions: [[5000, 5100]],
+      ys: [0],
+      clipAtStart: [100],
+    })
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
+      pairs: enumerateBezierPairs(
+        new Map([
+          [0, chr1],
+          [1, chr2],
+        ]),
+        'crossRegion',
+      ),
+    })
+    expect(arcs.find(a => a.x1 === 1100)!.d).toBe('M 1100 5 L 5000 5')
+    expect(dips(arcs.find(a => a.x1 === 5100)!.d)).toBe(true)
+  })
+
+  // Reversing chr2 alone puts the supplementary's 5' edge on its right, so the
+  // line would cross it; flipping the whole view keeps the two ends facing.
+  it('reads the crossing in screen order across reversed regions', () => {
+    const primary = makeData({
+      names: ['r'],
+      ids: ['r-primary'],
+      flags: [0],
+      strands: [1],
+      positions: [[2400, 2500]],
+      ys: [0],
+      clipAtStart: [0],
+    })
+    const supplementary = makeData({
+      names: ['r'],
+      ids: ['r-supplementary'],
+      flags: [SAM_FLAG_SUPPLEMENTARY],
+      strands: [1],
+      positions: [[9000, 9100]],
+      ys: [0],
+      clipAtStart: [100],
+    })
+    const arcFor = (
+      map: Map<number, PileupDataResult>,
+      displayedRegions: { refName: string; reversed?: boolean }[],
+    ) =>
+      computePileupBezierArcs({
+        colors: PALETTE,
+        ...baseOpts,
+        displayedRegions,
+        pairs: enumerateBezierPairs(map, 'crossRegion'),
+      })[0]!
+    const chr2Reversed = arcFor(
+      new Map([
+        [0, primary],
+        [1, supplementary],
+      ]),
+      [{ refName: 'chr1' }, { refName: 'chr2', reversed: true }],
+    )
+    expect(dips(chr2Reversed.d)).toBe(true)
+    const flipped = arcFor(
+      new Map([
+        [0, supplementary],
+        [1, primary],
+      ]),
+      [
+        { refName: 'chr2', reversed: true },
+        { refName: 'chr1', reversed: true },
+      ],
+    )
+    expect(flipped.d).toBe('M 2500 5 L 9000 5')
   })
 
   it('carries the read name and both endpoint xs for the overlay', () => {

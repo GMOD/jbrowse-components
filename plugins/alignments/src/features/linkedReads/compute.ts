@@ -205,6 +205,8 @@ export interface LinkedPair {
   // pair rather than folded into `ClassifiedPair`, which answers what the
   // connection IS; this answers what the view is missing of it.
   hiddenSegmentsBetween?: string[]
+  // Every on-screen alignment of the read, the pair's own two included.
+  segments: readonly ReadEntry[]
 }
 
 // Enumerate the connections across all displayed regions: group reads by name,
@@ -242,6 +244,7 @@ export function* iterLinkedPairs(
           e2,
           c: classifyPair(e1, e2, isSplit),
           hiddenSegmentsBetween,
+          segments: entries,
         }
       }
     }
