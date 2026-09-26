@@ -305,10 +305,10 @@ export const pangenomeVideos: VideoSpec[] = [
     description:
       "A pggb graph from a K12 session that has none of it: add the page's track through the graph form, narrow to the IS5 element, and redraw the lane as the graph of the window",
     url: pggbTourStart,
-    // Sized to the state the tour ENDS in, the linear view with the graph as
-    // its track; the opening frame is the gene lane alone. Re-measure off the
-    // run's content report.
-    viewportHeight: 720,
+    // The frame of the clip on the page, which was filmed through the
+    // standalone graph view; re-size it off the run's content report when
+    // the tour is re-filmed.
+    viewportHeight: 1110,
     // The gene lane, since it is the only thing in the opening session.
     readySelector: K12_GENES_READY,
     readyTimeout: 120000,
@@ -359,9 +359,10 @@ export const pangenomeVideos: VideoSpec[] = [
     description:
       "The Minigraph-Cactus graph into an empty K12 session and out as a graph: add the page's track through the graph form, narrow to the IS1 element past flhD, and redraw the lane as the graph of the window",
     url: cactusTourStart,
-    // Same trade as the pggb tour above: the two tours build the same things at
-    // the same default heights.
-    viewportHeight: 720,
+    // The frame of the clip on the page, which was filmed through the
+    // standalone graph view; re-size it off the run's content report when
+    // the tour is re-filmed.
+    viewportHeight: 1110,
     readySelector: K12_GENES_READY,
     readyTimeout: 120000,
     steps: [
@@ -408,9 +409,10 @@ export const pangenomeVideos: VideoSpec[] = [
     description:
       "The coarse tier's IS5 bubble taken down to the segments: hover the node for the K12 span it collapses, then take its Open in K12 entry, which lands the linear view on that span while the graph re-cuts from the segments",
     url: pggbTierStart,
-    // The fine cut the tour ends on is taller than the tier's two rows; re-read
-    // the run's content report before trusting this.
-    viewportHeight: 760,
+    // The frame of the clip on the page, which was filmed through the
+    // standalone graph view; re-size it off the run's content report when
+    // the tour is re-filmed.
+    viewportHeight: 810,
     readySelector: graphCutDrawn('coarse'),
     readyTimeout: 120000,
     steps: [
@@ -468,9 +470,10 @@ export const pangenomeVideos: VideoSpec[] = [
       window: rowsWindow,
       mafLane: true,
     }),
-    // Sized to the FORCE drawing, which is the state the tour ends in.
-    // Re-measure off the run's content report.
-    viewportHeight: 1160,
+    // The frame of the clip on the page, which was filmed through the
+    // standalone graph view; re-size it off the run's content report when
+    // the tour is re-filmed.
+    viewportHeight: 1250,
     readySelector: ROWS_DRAWN,
     readyTimeout: 120000,
     steps: [
@@ -737,9 +740,10 @@ export const pangenomeVideos: VideoSpec[] = [
     description:
       "The HPRC bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in the linear view, and the graph track re-cut from the fine index at the bubble's span",
     url: tierSession(),
-    // Sized to the state the tour ENDS in, the fine cut under the lanes, which
-    // is taller than the tier's rows. Re-measure off the run's content report.
-    viewportHeight: 850,
+    // The frame of the clip on the page, which was filmed through the
+    // standalone graph view; re-size it off the run's content report when
+    // the tour is re-filmed.
+    viewportHeight: 1490,
     readySelector: graphCutDrawn('coarse'),
     readyTimeout: 300000,
     steps: [

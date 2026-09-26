@@ -2289,19 +2289,19 @@ export const videoFrames: Record<
 > = {
   "pangenome/pggb_subgraph_launch": {
     "width": 1920,
-    "height": 720
+    "height": 1110
   },
   "pangenome_cactus/subgraph_launch": {
     "width": 1920,
-    "height": 720
+    "height": 1110
   },
   "pangenome/tier_to_fine": {
     "width": 1920,
-    "height": 760
+    "height": 810
   },
   "pangenome/pggb_layout_switch": {
     "width": 1920,
-    "height": 1160
+    "height": 1250
   },
   "pangenome/hprc_browse": {
     "width": 1920,
@@ -2317,7 +2317,7 @@ export const videoFrames: Record<
   },
   "pangenome/hprc_tier_to_fine": {
     "width": 1920,
-    "height": 850
+    "height": 1490
   },
   "proteins/genomes_protein_launch": {
     "width": 1920,
@@ -2389,7 +2389,7 @@ export const videoFrames: Record<
   },
   "synteny/ecoli_roundtrip": {
     "width": 1920,
-    "height": 1400
+    "height": 1410
   },
   "synteny/maf_row_synteny": {
     "width": 1920,

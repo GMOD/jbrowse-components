@@ -1169,10 +1169,10 @@ export const syntenyVideos: VideoSpec[] = [
     description:
       'One selection on K-12 and the stacks it launches: the stack anchored on K-12 with the segments lane on its top row, that lane redrawn as the graph, and a drag on the Sakai row re-anchoring the stack on Sakai',
     url: roundTripStart,
-    // Sized to the TALLEST state, the K-12 row holding the graph, which is not
-    // the last one: the re-anchor drops that row's tracks. Re-measure off the
-    // run's content report.
-    viewportHeight: 1400,
+    // The frame of the clip on the page, which was filmed through the
+    // standalone graph view; re-size it off the run's content report when
+    // the tour is re-filmed.
+    viewportHeight: 1410,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 180000,
     steps: [
