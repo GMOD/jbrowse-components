@@ -16,6 +16,7 @@ import { rowFieldValue } from '../rowColorScale.ts'
 import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
+import PlotColorRow from './PlotColorRow.tsx'
 import RowColorPanel from './RowColorPanel.tsx'
 import SourceGrid from './SourceGrid.tsx'
 
@@ -31,6 +32,9 @@ const useStyles = makeStyles()({
     float: 'right',
     display: 'flex',
     gap: 8,
+  },
+  left: {
+    marginRight: 'auto',
   },
 })
 
@@ -69,11 +73,28 @@ export interface SetColorDialogProps<
   // Plugin-specific field names that are internal plumbing (e.g. variants'
   // `sampleName`/`HP`): hidden from the auto-derived "extras" column list.
   reservedFields?: ReadonlySet<string>
-  // Display-level color controls (not per-row), rendered above the grid. These
-  // write the model directly rather than joining `currLayout`, so they take
-  // effect immediately and Cancel does not revert them — keep them to settings
-  // whose own dialog would be overkill (multi-wiggle's score-sign palette).
-  displayControls?: React.ReactNode
+  // The display's own colour rather than a row's, on one line above the rows.
+  // Held here and written in `submit()` AFTER the row edits, so Cancel reverts
+  // it like everything else and the write cannot move the channel
+  // `applyRowEdits` compares a row's swatch on.
+  plotColor?: PlotColorControl
+  // False where the display has nothing to arrange — one row, or none arrived
+  // yet. The row color choice, the grid and the bulk editor go with it.
+  showRows?: boolean
+  // The escape for what this dialog does not offer — a ramp, several cut
+  // points, hand-written stops. A button here rather than a track-menu row of
+  // its own, so one row in the menu reaches every colour the display has.
+  onEditAsJson?: () => void
+}
+
+export interface PlotColorControl {
+  above: string
+  below: string
+  // `read` shows the pair beside `reason` and offers no edit, for a picture two
+  // colours cannot say.
+  mode: 'edit' | 'read'
+  reason?: string
+  onSubmit: (next: { above: string; below: string }) => void
 }
 
 type Entries = Readonly<Record<string, Readonly<Record<string, string>>>>
@@ -122,10 +143,18 @@ export default observer(function SetColorDialog<
   title = 'Color/arrangement editor',
   enableBulkEdit = false,
   reservedFields,
-  displayControls,
+  plotColor,
+  showRows = true,
+  onEditAsJson,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
   const getSources = () => model.dialogSources
+  // Undefined until a swatch is touched, so a reset re-reads the model rather
+  // than restoring a pair snapshotted before it.
+  const [plotPair, setPlotPair] = useState<{
+    above: string
+    below: string
+  }>()
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(getSources)
   const [choice, setChoice] = useState(model.rowColorChoice)
@@ -197,8 +226,17 @@ export default observer(function SetColorDialog<
     }
   }
 
+  // The row edits go first: a plot colour can move which channel carries a
+  // row's identity, and `applyRowEdits` reads a row's swatch off that channel.
   const submit = () => {
     model.applyRowEdits(currLayout, chosenRowColor())
+    if (
+      plotPair &&
+      (plotPair.above !== plotColor?.above ||
+        plotPair.below !== plotColor.below)
+    ) {
+      plotColor?.onSubmit(plotPair)
+    }
     handleClose()
   }
 
@@ -217,6 +255,7 @@ export default observer(function SetColorDialog<
     setChoice(model.rowColorChoice)
     setKept(model.rowColorSetting.field)
     setEntries(entriesOf(model.rowColorSetting))
+    setPlotPair(undefined)
   }
 
   return (
@@ -234,7 +273,7 @@ export default observer(function SetColorDialog<
       ) : (
         <>
           <DialogContent className={classes.content}>
-            {enableBulkEdit ? (
+            {enableBulkEdit && showRows ? (
               <div className={classes.fr}>
                 <Button
                   color="secondary"
@@ -248,76 +287,102 @@ export default observer(function SetColorDialog<
               </div>
             ) : null}
 
-            {displayControls}
-
-            <RowColorPanel
-              fields={fields}
-              choice={choice}
-              values={
-                byField && fieldColors
-                  ? valueColors(currLayout, byField, fieldColors)
-                  : []
-              }
-              onChoice={value => {
-                setChoice(value)
-                if (value !== '') {
-                  setKept(value)
-                }
-              }}
-              onValueColor={(value, color) => {
-                if (byField) {
-                  setEntries({
-                    ...entries,
-                    [byField]: { ...entries[byField], [value]: color },
-                  })
-                }
-              }}
-              onResetValues={() => {
-                if (byField) {
-                  setEntries({ ...entries, [byField]: {} })
-                }
-              }}
-              onStartFrom={field => {
-                const colors = model.rowColorsFor(settingFor(field, entries))
-                paintRows(row => colors.get(rowFieldValue(row, field)))
-              }}
-              onClearRows={() => {
-                paintRows(() => undefined)
-              }}
-            />
-
-            {choice === 'name' && colorColumns.length > 1 ? (
-              <ToggleButtonGroup
-                exclusive
-                size="small"
-                value={activeColumn?.field}
-                onChange={(_event, value) => {
-                  if (value) {
-                    setActiveField(value)
-                  }
-                }}
-              >
-                {colorColumns.map(c => (
-                  <ToggleButton key={c.field} value={c.field}>
-                    {c.headerName}
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
+            {plotColor ? (
+              <PlotColorRow
+                above={plotPair?.above ?? plotColor.above}
+                below={plotPair?.below ?? plotColor.below}
+                editable={plotColor.mode === 'edit'}
+                reason={plotColor.reason}
+                onChange={setPlotPair}
+              />
             ) : null}
 
-            <SourceGrid
-              rows={currLayout}
-              onChange={setCurrLayout}
-              colorColumn={choice === 'name' ? activeColumn : undefined}
-              swatchOf={
-                fieldColors && byField
-                  ? row => fieldColors.get(rowFieldValue(row, byField))
-                  : undefined
-              }
-              reserved={reserved}
-            />
+            {showRows ? (
+              <>
+                <RowColorPanel
+                  fields={fields}
+                  choice={choice}
+                  values={
+                    byField && fieldColors
+                      ? valueColors(currLayout, byField, fieldColors)
+                      : []
+                  }
+                  onChoice={value => {
+                    setChoice(value)
+                    if (value !== '') {
+                      setKept(value)
+                    }
+                  }}
+                  onValueColor={(value, color) => {
+                    if (byField) {
+                      setEntries({
+                        ...entries,
+                        [byField]: { ...entries[byField], [value]: color },
+                      })
+                    }
+                  }}
+                  onResetValues={() => {
+                    if (byField) {
+                      setEntries({ ...entries, [byField]: {} })
+                    }
+                  }}
+                  onStartFrom={field => {
+                    const colors = model.rowColorsFor(
+                      settingFor(field, entries),
+                    )
+                    paintRows(row => colors.get(rowFieldValue(row, field)))
+                  }}
+                  onClearRows={() => {
+                    paintRows(() => undefined)
+                  }}
+                />
+
+                {choice === 'name' && colorColumns.length > 1 ? (
+                  <ToggleButtonGroup
+                    exclusive
+                    size="small"
+                    value={activeColumn?.field}
+                    onChange={(_event, value) => {
+                      if (value) {
+                        setActiveField(value)
+                      }
+                    }}
+                  >
+                    {colorColumns.map(c => (
+                      <ToggleButton key={c.field} value={c.field}>
+                        {c.headerName}
+                      </ToggleButton>
+                    ))}
+                  </ToggleButtonGroup>
+                ) : null}
+
+                <SourceGrid
+                  rows={currLayout}
+                  onChange={setCurrLayout}
+                  colorColumn={choice === 'name' ? activeColumn : undefined}
+                  swatchOf={
+                    fieldColors && byField
+                      ? row => fieldColors.get(rowFieldValue(row, byField))
+                      : undefined
+                  }
+                  reserved={reserved}
+                />
+              </>
+            ) : null}
           </DialogContent>
           <DialogActions>
+            {onEditAsJson ? (
+              <Button
+                className={classes.left}
+                color="primary"
+                onClick={() => {
+                  onEditAsJson()
+                  handleClose()
+                }}
+              >
+                Edit as JSON...
+              </Button>
+            ) : null}
             <Button variant="contained" color="inherit" onClick={resetToModel}>
               Clear custom settings
             </Button>

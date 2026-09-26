@@ -167,18 +167,33 @@ describe('the wiggle display track menu', () => {
     expect(session.queuedDialogs[0]![1]).toMatchObject({ model: display })
   })
 
-  it('offers the arrangement only where there is more than one source', () => {
-    expect(labels(makeDisplay().display.trackMenuItems())).toContain(
-      'Edit colors/arrangement...',
-    )
+  // The one colour row, whatever the track: with subtracks the dialog is the
+  // grid, and with one it is the plot's two colours, which the menu used to
+  // reach only through a JSON box.
+  it('offers the one colour row on every track, and offers it live', () => {
+    for (const display of [
+      makeDisplay().display,
+      makeDisplay({ sources: ['a'], faceted: false }).display,
+    ]) {
+      expect(labels(display.trackMenuItems())).toContain(
+        'Edit colors/arrangement...',
+      )
+      expect(
+        itemIn(display.trackMenuItems(), 'Edit colors/arrangement...'),
+      ).toMatchObject({ disabled: false })
+    }
+  })
+
+  // A swatch waits for no row list, and this is the only colour route a plain
+  // BigWig has — gating it on the rows greyed it out until a fetch landed.
+  it('offers it before any subtrack has arrived', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    expect(display.discoveredRows).toHaveLength(0)
     expect(
-      labels(
-        makeDisplay({
-          sources: ['a'],
-          faceted: false,
-        }).display.trackMenuItems(),
-      ),
-    ).not.toContain('Edit colors/arrangement...')
+      itemIn(display.trackMenuItems(), 'Edit colors/arrangement...'),
+    ).toMatchObject({ disabled: false })
   })
 
   it('keeps the menu open on every toggle, like the rest of the app', () => {
@@ -222,13 +237,14 @@ describe('the wiggle display track menu', () => {
   })
 })
 
-// The colour route: one row opening the channel-spec box, which replaced the
-// bicolor/single radio and the pivot field the display used to carry.
-it('offers Edit color... whatever the layout', () => {
-  expect(labels(makeDisplay().display.trackMenuItems())).toContain(
-    'Edit color...',
-  )
-  expect(
-    labels(makeDisplay({ faceted: false }).display.trackMenuItems()),
-  ).toContain('Edit color...')
+// The JSON box is the dialog's Edit as JSON... button now, so no menu row of
+// its own reaches it and no two rows in the menu both say colour.
+it('names colour once in the menu', () => {
+  for (const faceted of [true, false]) {
+    const said = labels(
+      makeDisplay({ faceted }).display.trackMenuItems(),
+    ).filter(label => String(label).toLowerCase().includes('color'))
+
+    expect(said).toEqual(['Edit colors/arrangement...'])
+  }
 })

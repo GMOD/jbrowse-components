@@ -865,8 +865,9 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * The Edit color... row: the colour object, and the rows beside it,
-       * as JSON.
+       * The arrangement dialog's Edit as JSON... button: the colour object, and
+       * the rows beside it, as JSON — the escape for a ramp, several cut points
+       * or a typed row order, none of which the dialog's own controls offer.
        */
       openChannelSpecDialog(seed?: ChannelSpec) {
         getDialogHost(self).queueDialog(handleClose => [
@@ -1042,29 +1043,24 @@ export default function stateModelFactory(
           // its respective scatter / line rendering
           ...makePointSizeMenuItems(self),
           ...makeLineWidthMenuItems(self),
-          {
-            label: 'Edit color...',
-            onClick: () => {
-              self.openChannelSpecDialog()
+          // The one colour row, on every quantitative track: with subtracks it
+          // is the grid, and with one it is the plot's two colours, which the
+          // menu had no row for at all. `ready` is the grid's gate and this
+          // dialog no longer needs one — a swatch waits for no row list, and
+          // greying the only colour route out until a fetch lands is what the
+          // gate would do on a plain BigWig.
+          rowArrangementMenuItem({
+            ready: true,
+            onOpen: () => {
+              getDialogHost(self).queueDialog(handleClose => [
+                SetColorDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
-          },
-          // one source has nothing to arrange, and its color is Edit color's
-          ...(self.isRowLayout || self.discoveredRows.length > 1
-            ? [
-                rowArrangementMenuItem({
-                  ready: !!self.discoveredRows.length,
-                  onOpen: () => {
-                    getDialogHost(self).queueDialog(handleClose => [
-                      SetColorDialog,
-                      {
-                        model: self,
-                        handleClose,
-                      },
-                    ])
-                  },
-                }),
-              ]
-            : []),
+          }),
         ]
       },
 

@@ -315,3 +315,97 @@ test('no spurious warning after Clear custom settings drops the tree', () => {
   expect(screen.queryByText(/Clear cluster tree/)).toBeNull()
   expect(model.applyRowEdits).toHaveBeenCalled()
 })
+
+// The display's own colour, on one line above the rows. It is held here and
+// written in submit(), which is what the dead `displayControls` prop promised
+// not to do.
+describe('the plot color line', () => {
+  const PLOT = {
+    above: '#b2182b',
+    below: '#2166ac',
+    mode: 'edit' as const,
+  }
+
+  test('an untouched line writes no colour, and Cancel writes nothing at all', () => {
+    const model = fakeModel()
+    const onSubmit = jest.fn()
+    render(
+      <SetColorDialog
+        model={model}
+        handleClose={jest.fn()}
+        plotColor={{ ...PLOT, onSubmit }}
+      />,
+    )
+
+    expect(screen.getByTestId('plot-color-row')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Cancel'))
+    expect(model.applyRowEdits).not.toHaveBeenCalled()
+    expect(onSubmit).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByText('Submit'))
+    expect(model.applyRowEdits).toHaveBeenCalled()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  test('a picture two colours cannot say reads out beside its reason', () => {
+    render(
+      <SetColorDialog
+        model={fakeModel()}
+        handleClose={jest.fn()}
+        plotColor={{
+          ...PLOT,
+          mode: 'read',
+          reason: 'a gradient paints this plot',
+          onSubmit: jest.fn(),
+        }}
+      />,
+    )
+
+    const line = within(screen.getByTestId('plot-color-row'))
+    expect(line.getByText('a gradient paints this plot')).toBeInTheDocument()
+    expect(line.queryByTitle(/click to set a custom color/)).toBeNull()
+  })
+
+  test('Edit as JSON... hands over and closes, writing nothing', () => {
+    const model = fakeModel()
+    const handleClose = jest.fn()
+    const onEditAsJson = jest.fn()
+    render(
+      <SetColorDialog
+        model={model}
+        handleClose={handleClose}
+        onEditAsJson={onEditAsJson}
+      />,
+    )
+
+    fireEvent.click(screen.getByText('Edit as JSON...'))
+    expect(onEditAsJson).toHaveBeenCalled()
+    expect(handleClose).toHaveBeenCalled()
+    expect(model.applyRowEdits).not.toHaveBeenCalled()
+  })
+})
+
+// One row has nothing to arrange, so the dialog is the plot colour and the
+// buttons — the whole colour UI a single-source track needs.
+test('showRows false drops the row choice, the grid and the bulk editor', () => {
+  render(
+    <SetColorDialog
+      model={fakeModel({ editableSources: [{ name: 'a' }] })}
+      handleClose={jest.fn()}
+      enableBulkEdit
+      showRows={false}
+      plotColor={{
+        above: '#b2182b',
+        below: '#2166ac',
+        mode: 'edit',
+        onSubmit: jest.fn(),
+      }}
+    />,
+  )
+
+  expect(screen.getByTestId('plot-color-row')).toBeInTheDocument()
+  expect(screen.queryByText('Color rows by')).toBeNull()
+  expect(screen.queryByText('Bulk row editor')).toBeNull()
+  expect(screen.queryByRole('grid')).toBeNull()
+})
