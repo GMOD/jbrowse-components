@@ -116,7 +116,7 @@ function rowRemap(region: MarkRegionData, layout: FacetLayout) {
     const to = layout.firstRowOf.get(key)
     if (to !== undefined) {
       for (let i = 0; i < rowCount; i++) {
-        remap[firstRow + i] = layout.rows ? to : to + i
+        remap[firstRow + i] = to + i
       }
     }
   }
