@@ -413,7 +413,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     part({
       name: 'pangenome/hprc_mhc_layout_force',
       layoutMode: 'force',
-      viewportHeight: 740,
+      viewportHeight: 600,
       // Below the 600 ceiling: the force drawing here is tall and narrow, a
       // chain that turns down the pane and ends in a 9.4 kb loop, so it would
       // take the whole ceiling. Lower, the drawing fits smaller and the node

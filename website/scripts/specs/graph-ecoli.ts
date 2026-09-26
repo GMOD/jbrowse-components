@@ -2350,7 +2350,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the gene and MAF lanes over the graph track capped at 420; re-measure at
     // the reshoot
-    viewportHeight: 900,
+    viewportHeight: 920,
     // The graph's own hover tooltip stays: it names the node and gives the
     // coordinates on the assembly that contributed it, which is the other half
     // of the correspondence the band shows. spec.hideTooltip does not reach it;

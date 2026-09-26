@@ -32,7 +32,6 @@ const WALK_READOUT = '[data-testid="graph-walk-readout"]'
 
 // The 130 kb window pangenome/hprc_lpa_kiv2 draws on pangenome_hprc. LPA's
 // own start is in frame so the gene lane labels it.
-const LPA_WINDOW = 'chr6:160,525,000-160,655,000'
 // The KIV-2 bubble's interval, which the view frames, and the domain both the
 // linear lane and the graph paint their ramp over.
 const KIV2_BUBBLE_WINDOW = 'chr6:160,616,002-160,646,753'
@@ -172,7 +171,7 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
       {
         type: 'LinearGenomeView',
         assembly: 'hg38',
-        loc: LPA_WINDOW,
+        loc: KIV2_BUBBLE_WINDOW,
         tracks: [
           hg38GeneLane(50),
           hprcBubblesLane(80),
