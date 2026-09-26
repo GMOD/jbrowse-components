@@ -218,12 +218,12 @@ export const marksSpecs: ScreenshotSpec[] = [
     viewportHeight: 610,
   },
 
-  // The Plot field dialog over the Alu track, reopened on the one mark that
-  // track declares: the numeric fields the scan found, the mark type, the colour
-  // field and the count-per-bin box.
+  // Edit plot over the Alu track, opened on the one mark that track declares:
+  // the mark list on the left, and on the right its type and a control per
+  // channel that type reads, filled from the fields the scan found.
   {
     mode: 'url',
-    name: 'mark_display/plot_field',
+    name: 'mark_display/edit_plot',
     url: sessionSpec(CONFIG, {
       sessionTracks: [ALU_PLOT_FIELD_TRACK],
       views: [
@@ -248,15 +248,10 @@ export const marksSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
     actions: [
       trackMenuIcon('alu_plot_field'),
-      { type: 'waitForText', text: 'Plot field...' },
-      { type: 'click', text: 'Plot field...' },
-      { type: 'waitForText', text: 'Plot a field' },
-      {
-        type: 'waitForText',
-        text: 'Scanning features for fields',
-        hidden: true,
-      },
-      { type: 'waitForText', text: 'Count per bin zoomed out' },
+      { type: 'waitForText', text: 'Edit plot...' },
+      { type: 'click', text: 'Edit plot...' },
+      { type: 'waitForText', text: 'Edit plot' },
+      { type: 'waitForText', text: 'Marks draw in order' },
       { type: 'delay', ms: 500 },
     ],
   },

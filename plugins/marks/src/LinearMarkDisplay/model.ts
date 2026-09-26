@@ -92,7 +92,6 @@ import {
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
-import DataObjectIcon from '@mui/icons-material/DataObject'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
@@ -127,12 +126,7 @@ import {
 } from './markRequest.ts'
 import { markLanes, plotsValue, readsValue } from './markSpecs.ts'
 import { DEFAULT_LINK_STROKE_PX } from './markVocabulary.ts'
-import {
-  EMPTY_PLOT_SPEC,
-  defaultPlotMarks,
-  plotMarks,
-  specOfMarks,
-} from './plotFields.ts'
+import { defaultPlotMarks } from './plotDefault.ts'
 
 import type { ListedSource } from '../MarkRowsRPC/MarkGetRowSources.ts'
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
@@ -159,7 +153,6 @@ import type {
   RowsSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
-import type { PlotSpec } from './plotFields.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -199,7 +192,6 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 >
 
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
-const PlotFieldDialog = lazy(() => import('./components/PlotFieldDialog.tsx'))
 const MarkRowArrangementDialog = lazy(
   () => import('./components/MarkRowArrangementDialog.tsx'),
 )
@@ -435,39 +427,6 @@ export function stateModelFactory(
          */
         get prefersOffset() {
           return true
-        },
-        /**
-         * #getter
-         * The spec the dialog opens on: the declared marks read back where they
-         * are a plot the dialog could have written, else an empty one.
-         */
-        get plotSpec(): PlotSpec {
-          return this.declaredPlotSpec ?? EMPTY_PLOT_SPEC
-        },
-        /**
-         * #getter
-         * The declared marks as a spec, where writing that spec back is the
-         * marks declared.
-         */
-        get declaredPlotSpec(): PlotSpec | undefined {
-          return specOfMarks(getSnapshot(self.conf.marks), marks =>
-            getSnapshot(
-              configSchema.create({
-                type: 'LinearMarkDisplay',
-                displayId: 'plotSpec',
-                marks,
-              }).marks,
-            ),
-          )
-        },
-        /**
-         * #getter
-         * How many declared marks the dialog cannot read back — a span, a third
-         * mark, a transform on the plot itself — and would therefore replace
-         * rather than edit. 0 where a save is the round trip it looks like.
-         */
-        get plotSpecReplaces(): number {
-          return this.declaredPlotSpec ? 0 : self.conf.marks.length
         },
         /**
          * #getter
@@ -1679,22 +1638,10 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * What the dialog writes: the plot's mark, and the binned count beside
-         * it where the user asked for one.
+         * Open the plot as JSON, over the same four settings the controls
+         * write. `seed` overlays a setting the caller has in hand but has not
+         * applied.
          */
-        setPlotMarks(spec: PlotSpec) {
-          const fields = self.plotFields ?? { numeric: [], categorical: [] }
-          setConf(self.conf, 'marks', plotMarks(spec, fields))
-          self.splitByPlotRows(fields)
-        },
-        /**
-         * #action
-         * Open the plot as JSON, over everything the display declares rather
-         * than the one mark Plot field... can read. `seed` overlays a setting
-         * the caller has in hand but has not applied.
-         */
-        // Ahead of openPlotFieldDialog, which hands `self` over as that
-        // dialog's model and so needs this already on it.
         openPlotJsonDialog(seed?: MarkPlot) {
           getDialogHost(self).queueDialog(handleClose => [
             PlotJsonDialog,
@@ -1735,23 +1682,6 @@ export function stateModelFactory(
           ])
         },
       }))
-      .actions(self => ({
-        /**
-         * #action
-         * Open the dialog, prefilled from a single-mark config where the display
-         * already carries one, with the field scan running behind it.
-         */
-        // Its own block, after openMarkPlotDialog: it hands `self` over as
-        // PlotFieldDialog's model, and that interface names the editor this
-        // form sends a config it cannot read to.
-        openPlotFieldDialog() {
-          void self.ensurePlotFields().catch(() => {})
-          getDialogHost(self).queueDialog(handleClose => [
-            PlotFieldDialog,
-            { model: self, handleClose },
-          ])
-        },
-      }))
       .views(self => ({
         /**
          * #method
@@ -1759,15 +1689,8 @@ export function stateModelFactory(
         trackMenuItems(): MenuItem[] {
           return [
             {
-              label: 'Plot field...',
-              icon: ShowChartIcon,
-              onClick: () => {
-                self.openPlotFieldDialog()
-              },
-            },
-            {
               label: 'Edit plot...',
-              icon: DataObjectIcon,
+              icon: ShowChartIcon,
               onClick: () => {
                 self.openMarkPlotDialog()
               },
@@ -1990,7 +1913,7 @@ export function stateModelFactory(
                 setConf(self.conf, 'marks', marks)
                 self.splitByPlotRows(fields)
               } else {
-                self.openPlotFieldDialog()
+                self.openMarkPlotDialog()
               }
             }),
           )

@@ -33,12 +33,7 @@ import MarkFacetChips from './components/MarkFacetChips.tsx'
 import { configSchemaFactory } from './configSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import { stateModelFactory } from './model.ts'
-import {
-  BINNED_BP_PER_PX,
-  EMPTY_PLOT_SPEC,
-  defaultPlotMarks,
-  plotMarks,
-} from './plotFields.ts'
+import { defaultPlotMarks } from './plotDefault.ts'
 import { placeTextMarks } from './textMarks.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
@@ -1880,17 +1875,37 @@ test('an auto bin resolves to the 1/2/5 rung above four pixels of bp', () => {
   expect(stepAt(1000)).toBe(5000)
 })
 
+// The multiscale pair: the raw mark below the handoff and a zoom-following
+// binned count at or above it.
+const BINNED_HANDOFF = 100
+
 test('an auto bin on a mark outside its zoom range refetches nothing as the view zooms', () => {
   const { createDisplay } = createTestEnvironment(
-    plotMarks(
-      { ...EMPTY_PLOT_SPEC, field: 'score', binned: true },
-      { numeric: ['score'], categorical: [] },
-    ),
+    [
+      {
+        mark: 'bar',
+        encoding: { y: 'score' },
+        maxBpPerPx: BINNED_HANDOFF,
+      },
+      {
+        mark: 'bar',
+        encoding: { y: 'count' },
+        transform: [
+          { type: 'bin', step: 'auto' },
+          {
+            type: 'aggregate',
+            groupby: ['start', 'end'],
+            ops: [{ op: 'count' }],
+          },
+        ],
+        minBpPerPx: BINNED_HANDOFF,
+      },
+    ],
     WIDE_REGION,
   )
   const { display, view } = createDisplay()
   let fetches = 0
-  for (let bpPerPx = 0.3; bpPerPx < BINNED_BP_PER_PX; bpPerPx *= 1.125) {
+  for (let bpPerPx = 0.3; bpPerPx < BINNED_HANDOFF; bpPerPx *= 1.125) {
     view.zoomTo(bpPerPx)
     expect(display.markView.visible).toEqual([true, false])
     if (!display.isCacheValid(0)) {
@@ -2465,111 +2480,6 @@ test('nothing declared draws nothing, and the default rule is a bar of score', (
   expect(display.rpcProps().layers[0]!.encoding.y).toBe('score')
 })
 
-test('the dialog submit writes the plot and its binned count into config', () => {
-  const { createDisplay } = createTestEnvironment([])
-  const { display } = createDisplay()
-  display.setPlotFields({ numeric: ['score'], categorical: ['repClass'] })
-  display.setPlotMarks({
-    field: 'score',
-    mark: 'point',
-    colorField: 'repClass',
-    binned: true,
-  })
-  expect(display.markTypes).toEqual(['point', 'bar'])
-  expect(display.conf.marks[0]!.encoding.color.scale).toBe('categorical')
-  expect(display.conf.marks[0]!.maxBpPerPx).toBe(BINNED_BP_PER_PX)
-  expect(display.conf.marks[1]!.minBpPerPx).toBe(BINNED_BP_PER_PX)
-  expect(
-    display.conf.marks[1]!.transform.map((s: { type: string }) => s.type),
-  ).toEqual(['bin', 'aggregate'])
-  expect(display.plotSpec).toMatchObject({
-    field: 'score',
-    mark: 'point',
-    colorField: 'repClass',
-    binned: true,
-  })
-  expect(display.plotSpecReplaces).toBe(0)
-})
-
-test('a dialog submit over a display already faceted by source keeps its section order', () => {
-  const { createDisplay } = createTestEnvironment(
-    [{ mark: 'bar', encoding: { y: 'score' } }],
-    REGION,
-    'BedAdapter',
-    { facet: { field: 'source', domain: ['tumor', 'normal'] } },
-  )
-  const { display } = createDisplay()
-  display.setPlotFields({
-    numeric: ['score'],
-    categorical: [],
-    rows: 'source',
-  })
-  display.setPlotMarks({ ...display.plotSpec, mark: 'point' })
-  expect(display.markTypes).toEqual(['point'])
-  expect(display.facet).toEqual({
-    field: 'source',
-    domain: ['tumor', 'normal'],
-  })
-})
-
-test('a dialog submit over a display drawing a row per source keeps drawing rows', () => {
-  const { createDisplay } = createTestEnvironment(
-    [{ mark: 'bar', encoding: { y: 'score' } }],
-    REGION,
-    'BedAdapter',
-    { rows: 'source' },
-  )
-  const { display } = createDisplay()
-  expect(display.drawsRows).toBe(true)
-  display.setPlotFields({
-    numeric: ['score'],
-    categorical: [],
-    rows: 'source',
-  })
-  display.setPlotMarks({ ...display.plotSpec, mark: 'point' })
-  expect(display.markTypes).toEqual(['point'])
-  expect(display.facet).toBeUndefined()
-  expect(display.drawsRows).toBe(true)
-})
-
-// A config the dialog cannot read back is one a save would replace, and the
-// dialog says so before it does.
-test('a declared list the dialog cannot read counts as what a save replaces', () => {
-  const { createDisplay } = createTestEnvironment([
-    { mark: 'span', transform: [{ type: 'pileup' }], encoding: {} },
-    { mark: 'bar', encoding: { y: 'score' } },
-  ])
-  const { display } = createDisplay()
-  expect(display.plotSpecReplaces).toBe(2)
-})
-
-// The dialog writes a colour object it did not author every member of, so a
-// reopen and save has to hand the declared range and order back.
-test('a reopened plot keeps the colour domain and range it was declared with', () => {
-  const { createDisplay } = createTestEnvironment([
-    {
-      mark: 'bar',
-      encoding: {
-        y: 'score',
-        color: {
-          field: 'repClass',
-          scale: 'categorical',
-          domain: ['Alu', 'L1'],
-          range: ['red', 'blue'],
-        },
-      },
-    },
-  ])
-  const { display } = createDisplay()
-  display.setPlotFields({ numeric: ['score'], categorical: ['repClass'] })
-  display.setPlotMarks(display.plotSpec)
-  const { color } = display.conf.marks[0]!.encoding
-  expect([...color.domain]).toEqual(['Alu', 'L1'])
-  expect([...color.range]).toEqual(['red', 'blue'])
-})
-
-// Categorical whatever else is written: a range beside an unset scale used to
-// make it linear, so emptying the range in the editor flipped the scale.
 test('a color or shape naming a field and no scale reads it categorically, a range beside it or not', () => {
   const { createDisplay } = createTestEnvironment([
     {

@@ -351,30 +351,24 @@ test('rows beside a facet leave the facet drawing, and say so on another field',
   ])
 })
 
-test('the Plot field default draws a row per source, and leaves a facet or rows alone', () => {
-  const plot = {
-    field: 'score',
-    mark: 'point',
-    colorField: '',
-    binned: false,
-  } as const
+// The default plot writes `rows` behind the reader where the adapter lists
+// several sources — right for a display that declared nothing, and the reason
+// it stays on that path alone now that the marks are editable.
+test('the default plot draws a row per source, and leaves a facet or rows alone', () => {
   const fields = { numeric: ['score'], categorical: [], rows: 'source' }
   const bare = loaded({})
-  bare.setPlotFields(fields)
-  bare.setPlotMarks(plot)
+  bare.splitByPlotRows(fields)
   expect(bare.facet).toBeUndefined()
   expect(bare.drawsRows).toBe(true)
   expect(bare.rowsField).toBe('source')
 
   const faceted = loaded({ facet: 'tissue' })
-  faceted.setPlotFields(fields)
-  faceted.setPlotMarks(plot)
+  faceted.splitByPlotRows(fields)
   expect(faceted.facet?.field).toBe('tissue')
   expect(faceted.rowsField).toBe('')
 
   const rows = loaded({ rows: 'source' })
-  rows.setPlotFields(fields)
-  rows.setPlotMarks(plot)
+  rows.splitByPlotRows(fields)
   expect(rows.facet).toBeUndefined()
   expect(rows.drawsRows).toBe(true)
   expect(rows.sources.map(row => row.name)).toEqual(['dad', 'mom', 's2', 's10'])
