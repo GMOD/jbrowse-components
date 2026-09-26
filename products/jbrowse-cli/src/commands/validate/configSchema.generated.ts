@@ -391,6 +391,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "indexType": {
+          "description": "\`BAI\` is the usual \`samtools index\` output. \`CSI\` is required for a reference longer than 512 Mb, which BAI cannot address. Derived from the index file name where the config names a \`.csi\` and leaves this unset.",
           "enum": [
             "BAI",
             "CSI"
@@ -398,6 +399,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "BAI"
         },
         "location": {
+          "description": "location of the index. Only needed when it is not named \`<file>.bam.bai\` (or \`.bam.csi\`), the names the \`uri\` shorthand assumes.",
           "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bam.bai",

@@ -857,6 +857,8 @@
         "FormatDetailsConfigSchemaFactory",
         "applyConfSettings",
         "arraySlotUnion",
+        "bamIndexFields",
+        "bamIndexSchema",
         "evaluateJexl",
         "expandTabixShorthand",
         "expandUriShorthand",

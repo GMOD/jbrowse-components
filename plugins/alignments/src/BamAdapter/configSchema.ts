@@ -1,11 +1,10 @@
 import {
   ConfigurationSchema,
-  fillIndexType,
+  bamIndexSchema,
   fillLocations,
   indexSnapshot,
 } from '@jbrowse/core/configuration'
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -63,37 +62,12 @@ const configSchema = ConfigurationSchema(
       },
     },
 
-    index: ConfigurationSchema(
-      'BamIndex',
-      {
-        /**
-         * #slot index.indexType
-         * `BAI` is the usual `samtools index` output. `CSI` is required for a
-         * reference longer than 512 Mb, which BAI cannot address. Derived from
-         * the index file name where the config names a `.csi` and leaves this
-         * unset.
-         */
-        indexType: {
-          model: types.enumeration('IndexType', ['BAI', 'CSI']),
-          type: 'stringEnum',
-          defaultValue: 'BAI',
-        },
-        /**
-         * #slot index.location
-         * location of the index. Only needed when it is not named
-         * `<file>.bam.bai` (or `.bam.csi`), the names the `uri` shorthand
-         * assumes.
-         */
-        location: {
-          type: 'fileLocation',
-          defaultValue: {
-            uri: '/path/to/my.bam.bai',
-            locationType: 'UriLocation',
-          },
-        },
-      },
-      { preProcessSnapshot: fillIndexType },
-    ),
+    /**
+     * #slot
+     * where the BAM index is and which kind it is. The `uri` shorthand derives
+     * both, so a config using it states neither.
+     */
+    index: bamIndexSchema(),
     // #endregion
     /**
      * #slot

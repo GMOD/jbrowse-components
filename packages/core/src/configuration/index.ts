@@ -79,6 +79,7 @@ export {
   tabixIndexSnapshot,
 } from './tabixShorthand.ts'
 export { expandUriShorthand } from './uriShorthand.ts'
+export { bamIndexFields, bamIndexSchema } from './bamIndexFields.ts'
 export { tabixIndexFields, tabixIndexSchema } from './tabixIndexFields.ts'
 export { fillIndexType, indexSuffix, isCsiLocation } from './indexType.ts'
 export type { IndexType, SiblingIndexType } from './indexType.ts'

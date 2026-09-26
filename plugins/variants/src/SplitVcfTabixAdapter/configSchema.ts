@@ -50,10 +50,10 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
 
     /**
      * #slot
-     * index flavor for every entry of `indexLocationMap` — one setting covers
-     * them all, so the per-chromosome files have to be indexed the same way.
-     * `CSI` is required for a reference longer than 512 Mb, which TBI cannot
-     * address.
+     * index flavor for the entries this adapter derives, i.e. the ones
+     * `indexLocationMap` does not name. An index the map names says which kind
+     * it is by its `.csi`/`.tbi` extension, so one map can mix the two. `CSI` is
+     * required for a reference longer than 512 Mb, which TBI cannot address.
      */
     indexType: {
       model: types.enumeration('IndexType', ['TBI', 'CSI']),

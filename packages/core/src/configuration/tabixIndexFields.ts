@@ -29,7 +29,8 @@ import { fillIndexType } from './indexType.ts'
  *
  * **BAM is deliberately not here.** Its index is BAI/CSI rather than TBI/CSI, so
  * it is a different enumeration with a different default, and folding the two
- * would mean a slot whose vocabulary depends on its adapter.
+ * would mean a slot whose vocabulary depends on its adapter. `bamIndexFields`
+ * is the same pair over that enumeration, and the two share `fillIndexType`.
  */
 export const tabixIndexFields = {
   indexType: {

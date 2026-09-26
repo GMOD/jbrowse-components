@@ -1,5 +1,6 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
+import { indexSuffix, isCsiLocation } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
@@ -60,18 +61,21 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
       const indexLocation: FileLocation | undefined =
         this.getConf('indexLocationMap')[refName] ??
         ('uri' in vcfGzLocation
-          ? { uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}` }
+          ? { uri: `${vcfGzLocation.uri}${indexSuffix(indexType)}` }
           : undefined)
       if (!indexLocation) {
         throw new Error(
           `SplitVcfTabixAdapter needs an indexLocationMap entry for "${refName}": its vcfGzLocationMap entry is not a uri, so the index location cannot be derived from it`,
         )
       }
+      // An index the map names says which kind it is, so the slot only has to
+      // answer for the ones it derives. That also lets one map mix the two.
+      const entryIndexType = isCsiLocation(indexLocation) ? 'CSI' : indexType
       const vcf = new TabixIndexedFile({
         filehandle: openLocation(vcfGzLocation, this.pluginManager),
         ...openTabixIndexFilehandle(
           indexLocation,
-          indexType,
+          entryIndexType,
           this.pluginManager,
         ),
         chunkCacheBudget: decompressedBytesBudget,

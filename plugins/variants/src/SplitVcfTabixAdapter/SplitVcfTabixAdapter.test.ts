@@ -111,3 +111,26 @@ test('a non-uri entry with no configured index says so instead of fetching "unde
     firstValueFrom(adapter.getFeatures(region).pipe(toArray())),
   ).rejects.toThrow(/needs an indexLocationMap entry for "ctgA"/)
 })
+
+// A named index says which kind it is by its extension, so the slot only has to
+// answer for the ones this adapter derives. Reading a named `.csi` as the slot's
+// TBI opened it with the wrong parser, and one map could not mix the two at all.
+test('a named .csi is read as a CSI whatever the indexType slot says', async () => {
+  const vcfGz =
+    require.resolve('../VcfTabixAdapter/test_data/volvox.filtered.vcf.gz')
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfGzLocationMap: {
+        ctgA: { localPath: vcfGz, locationType: 'LocalPathLocation' },
+      },
+      indexLocationMap: {
+        ctgA: { localPath: `${vcfGz}.csi`, locationType: 'LocalPathLocation' },
+      },
+      indexType: 'TBI',
+    }),
+  )
+  const features = await firstValueFrom(
+    adapter.getFeatures(region).pipe(toArray()),
+  )
+  expect(features.length).toBeGreaterThan(0)
+})

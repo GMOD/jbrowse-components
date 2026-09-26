@@ -1,10 +1,13 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-
-import { normalizeUriSnapshot } from '../normalizeUriSnapshot.ts'
+import {
+  ConfigurationSchema,
+  expandUriShorthand,
+} from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-export const normalizeSnapshot = normalizeUriSnapshot
+export function normalizeSnapshot(snap: Record<string, unknown>) {
+  return expandUriShorthand(snap, 'location')
+}
 
 /**
  * #config RefNameAliasAdapter
