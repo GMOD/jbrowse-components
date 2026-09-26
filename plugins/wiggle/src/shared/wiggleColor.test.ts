@@ -130,6 +130,19 @@ test('reverse turns a ramp and its ends round', () => {
   ])
 })
 
+test("a line under a scheme parts in the scheme's own end colours", () => {
+  const out = resolved(
+    color({ field: 'score', scale: 'linear', scheme: 'viridis' }),
+    0,
+  )
+  const lut = rampLutOf({ scheme: 'viridis' })
+  const last = lut.length - 4
+  expect([out.negColor, out.posColor]).toEqual([
+    `rgb(${lut[0]},${lut[1]},${lut[2]})`,
+    `rgb(${lut[last]},${lut[last + 1]},${lut[last + 2]})`,
+  ])
+})
+
 test('a linear scale with no range or scheme paints viridis', () => {
   const out = resolved(color({ field: 'score', scale: 'linear' }), 0)
   expect(out.rampLut).toEqual(rampLutOf({ scheme: 'viridis' }))

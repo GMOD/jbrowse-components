@@ -20,6 +20,10 @@ import type {
   FieldColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
+function lutColor(lut: Uint8Array, entry: number) {
+  return `rgb(${lut[entry * 4]},${lut[entry * 4 + 1]},${lut[entry * 4 + 2]})`
+}
+
 /**
  * The colour object as the encoder and both backends take it: the pair every
  * mode already partitions by, the value they part at, and the density LUT.
@@ -146,18 +150,23 @@ export function resolveWiggleColor(
     case 'linear':
     case 'log': {
       const { range = [], scheme, reverse = false, domainMid } = encoding
-      const ends = reverse ? range.toReversed() : range
+      const rampLut = rampLutOf({
+        range: range.length === 1 ? ['white', range[0]!] : range,
+        scheme,
+        reverse,
+      })
+      const ends = range.length
+        ? reverse
+          ? range.toReversed()
+          : range
+        : [lutColor(rampLut, 0), lutColor(rampLut, rampLut.length / 4 - 1)]
       return {
-        negColor: ends[0] ?? WIGGLE_NEG_COLOR_DEFAULT,
-        posColor: ends.at(-1) ?? WIGGLE_POS_COLOR_DEFAULT,
+        negColor: ends[0]!,
+        posColor: ends.at(-1)!,
         pivot: domainMid ?? origin,
         cuts: [domainMid ?? origin],
         innerColors: [],
-        rampLut: rampLutOf({
-          range: range.length === 1 ? ['white', range[0]!] : range,
-          scheme,
-          reverse,
-        }),
+        rampLut,
         rampMid: domainMid,
         perSource: false,
       }
