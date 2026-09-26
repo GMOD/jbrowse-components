@@ -1,5 +1,6 @@
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Typography, alpha } from '@mui/material'
+import { Typography } from '@mui/material'
 
 import { LABEL_WIDTH, SpanEdgeLabels } from './coordLabels.tsx'
 

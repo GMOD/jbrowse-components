@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { alpha } from '@jbrowse/core/ui/palette'
 import { MUI_TOOLTIP_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material'
 import { createPortal } from 'react-dom'
 
 // roughly how wide a coordinate label is. the guide clamps itself half of this

@@ -1,7 +1,7 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 import { isUnsupported } from '../../util.ts'

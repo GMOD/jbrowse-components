@@ -1,7 +1,8 @@
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
-import { Button, alpha } from '@mui/material'
+import { Button } from '@mui/material'
 
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 

@@ -1,9 +1,10 @@
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
-import { Button, alpha } from '@mui/material'
+import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import CascadingMenuButton from './CascadingMenuButton.tsx'
+import { alpha } from './palette.ts'
 
 import type { MenuItem } from './Menu.tsx'
 import type { MenuItemClickHandler } from './MenuTypes.ts'

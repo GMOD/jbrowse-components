@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LabelsCanvas from './LabelsCanvas.tsx'

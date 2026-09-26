@@ -1,8 +1,9 @@
 import { Suspense, lazy, useState } from 'react'
 
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ShareIcon from '@mui/icons-material/Share'
-import { Button, alpha } from '@mui/material'
+import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { SessionWithShareURL } from '@jbrowse/core/util'

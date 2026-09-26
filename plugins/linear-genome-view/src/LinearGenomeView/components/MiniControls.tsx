@@ -1,11 +1,12 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import RemoveIcon from '@mui/icons-material/Remove'
-import { IconButton, Paper, Tooltip, alpha } from '@mui/material'
+import { IconButton, Paper, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ZoomButton from './ZoomButton.tsx'

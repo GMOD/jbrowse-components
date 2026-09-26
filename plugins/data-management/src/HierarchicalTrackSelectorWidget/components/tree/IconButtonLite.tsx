@@ -1,5 +1,5 @@
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material/styles'
 
 // A drop-in trigger for CascadingMenuButton (via its ButtonComponent prop) that
 // clones MUI's small <IconButton> visually without mounting ButtonBase +

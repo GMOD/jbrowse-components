@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react'
 
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import { Typography, alpha } from '@mui/material'
+import { Typography } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import { alpha } from './palette.ts'
 
 import type { DragEvent, KeyboardEvent, ReactNode } from 'react'
 

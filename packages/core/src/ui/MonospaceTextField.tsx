@@ -1,6 +1,7 @@
-import { InputLabel, TextField, alpha } from '@mui/material'
+import { InputLabel, TextField } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import { alpha } from './palette.ts'
 
 import type { TextFieldProps } from '@mui/material'
 

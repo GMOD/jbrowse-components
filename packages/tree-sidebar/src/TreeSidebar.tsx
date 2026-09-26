@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { Menu, MenuItem, alpha } from '@mui/material'
+import { Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { StaleTreeHint } from './StaleTreeHint.tsx'

@@ -1,6 +1,7 @@
 import { useLayoutEffect } from 'react'
 
-import { alpha, useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha } from '@jbrowse/core/ui/palette'
 
 import { searchTokens } from './searchTokens.ts'
 
@@ -64,14 +65,14 @@ export function useSearchHighlight(
   containerRef: RefObject<HTMLElement | null>,
   query: string,
 ) {
-  const theme = useTheme()
+  const color = alpha(usePalette().textHighlight.main, 0.45)
 
   // No deps: must re-run after every render so paginating to a new page
   // re-applies highlights to the new DOM content (Range objects detach on removal).
   useLayoutEffect(() => {
     // generally just jest test but maybe unsupported browser
     if (typeof CSS !== 'undefined') {
-      setHighlightStyle(alpha(theme.palette.textHighlight.main, 0.45))
+      setHighlightStyle(color)
       const container = containerRef.current
       const tokens = searchTokens(query)
       if (container && tokens.length) {

@@ -1,5 +1,5 @@
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material'
 
 import {
   GROUP_LABEL_FONT_SIZE,
