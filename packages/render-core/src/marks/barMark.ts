@@ -123,6 +123,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       minCellDenomPx: clip.scissorW,
       minWidthPx: params.minWidthPx,
       devicePixelRatio: getDpr(),
+      rowTableKeys: -1,
     })
   },
 

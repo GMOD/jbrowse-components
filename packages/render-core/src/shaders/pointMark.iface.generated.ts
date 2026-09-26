@@ -7,11 +7,13 @@ export const BINDINGS: readonly ShaderBinding[] = [
   { index: 1, kind: 'uniform', name: 'u', stages: ['vertex'] },
   { index: 2, kind: 'texture', name: 'colorRamp', stages: ['vertex'] },
   { index: 3, kind: 'sampler', name: 'colorRamp', stages: ['vertex'] },
+  { index: 4, kind: 'texture', name: 'rowTable', stages: ['vertex'] },
+  { index: 5, kind: 'sampler', name: 'rowTable', stages: ['vertex'] },
 ]
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 80
+export const UNIFORMS_SIZE_BYTES = 96
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -37,6 +39,7 @@ export const UNIFORM_OFFSET_I32 = {
   valueScaleType: 6,
   rampMode: 8,
   reverse: 17,
+  rowTableKeys: 20,
 } as const
 
 
@@ -59,6 +62,7 @@ export interface Uniforms {
   reverse: number
   insetPx: number
   devicePixelRatio: number
+  rowTableKeys: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -84,6 +88,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[17] = uniforms.reverse
   f32[18] = uniforms.insetPx
   f32[19] = uniforms.devicePixelRatio
+  i32[20] = uniforms.rowTableKeys
 }
 
 export const INSTANCE_STRIDE_BYTES = 24
@@ -198,4 +203,5 @@ export function setInstanceRow(u32: Uint32Array, i: number, v: number) {
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [
   { name: 'colorRamp', glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },
+  { name: 'rowTable', glTextureUnit: 1, glUniformName: 'u_rowTable', filter: 'nearest' },
 ]

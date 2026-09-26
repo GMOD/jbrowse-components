@@ -188,7 +188,7 @@ describe('assertRenderBindingShape', () => {
     { index: 1, kind: 'uniform' as const, name: 'u', stages: both },
   ]
 
-  test('accepts the two shapes the HALs implement', () => {
+  test('accepts the three shapes the HALs implement', () => {
     expect(() => {
       assertRenderBindingShape('t', uniformOnly)
     }).not.toThrow()
@@ -199,6 +199,25 @@ describe('assertRenderBindingShape', () => {
         { index: 3, kind: 'sampler', name: 'r', stages: both },
       ])
     }).not.toThrow()
+    expect(() => {
+      assertRenderBindingShape('t', [
+        ...uniformOnly,
+        { index: 2, kind: 'texture', name: 'r', stages: both },
+        { index: 3, kind: 'sampler', name: 'r', stages: both },
+        { index: 4, kind: 'texture', name: 't', stages: both },
+        { index: 5, kind: 'sampler', name: 't', stages: both },
+      ])
+    }).not.toThrow()
+  })
+
+  test('refuses a second sampler without the first', () => {
+    expect(() => {
+      assertRenderBindingShape('t', [
+        ...uniformOnly,
+        { index: 4, kind: 'texture', name: 't', stages: both },
+        { index: 5, kind: 'sampler', name: 't', stages: both },
+      ])
+    }).toThrow(/not one the render HALs bind/)
   })
 
   // Every draw binds the uniform ring at 1.

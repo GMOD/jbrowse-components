@@ -145,7 +145,9 @@ async function makeHal(device: GPUDevice) {
     throw new Error('fake stack failed to build a HAL')
   }
   hal.resize(100, 40)
-  hal.uploadTexture('link', new Uint8Array(256 * 4), 256, 1)
+  for (const { name } of desc.textures ?? []) {
+    hal.uploadTexture('link', new Uint8Array(256 * 4), 256, 1, name)
+  }
   hal.uploadBuffer(0, 'link', new ArrayBuffer(desc.instanceStride), 1)
   return hal
 }

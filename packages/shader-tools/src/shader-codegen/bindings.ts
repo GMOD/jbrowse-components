@@ -395,14 +395,18 @@ export function assertStageReadsMatchWgsl(
 }
 
 // The binding tables the render path can actually bind: the HALs fill the
-// uniform block from one ring and bind at most one texture, so a render shader
-// that reflects anything else compiles and then fails at pipeline creation, on
-// a machine that isn't the author's.
+// uniform block from one ring and bind at most two combined samplers, so a
+// render shader that reflects anything else compiles and then fails at
+// pipeline creation, on a machine that isn't the author's.
 //
 // This is a guard, not a second declaration: nothing here is used to bind
 // anything. `PipelineDescriptor.bindings` carries the shader's own table to the
 // HAL, which builds its WebGPU layout from it.
-const RENDER_SHAPES = ['uniform@1', 'uniform@1,texture@2,sampler@3'] as const
+const RENDER_SHAPES = [
+  'uniform@1',
+  'uniform@1,texture@2,sampler@3',
+  'uniform@1,texture@2,sampler@3,texture@4,sampler@5',
+] as const
 
 function bindingShape(bindings: readonly ShaderBinding[]) {
   return bindings.map(b => `${b.kind}@${b.index}`).join(',')
@@ -422,8 +426,9 @@ export function assertRenderBindingShape(
   if (!(RENDER_SHAPES as readonly string[]).includes(shape)) {
     throw new Error(
       `${label}: binding table '${shape}' is not one the render HALs bind. ` +
-        `They implement '${RENDER_SHAPES.join("' and '")}' — the uniform block ` +
-        `at binding 1, and optionally one combined Sampler2D at 2/3. The HALs' ` +
+        `They implement '${RENDER_SHAPES.join("', '")}' — the uniform block ` +
+        `at binding 1, then optionally a combined Sampler2D at 2/3 and a ` +
+        `second at 4/5. The HALs' ` +
         `layouts used to promise this in a comment ("Binding index 1 matches ` +
         `what the codegen emits"); this checks it. Adjust the shader's ` +
         `[[vk::binding]] attributes, or teach both HALs the new shape first.`,

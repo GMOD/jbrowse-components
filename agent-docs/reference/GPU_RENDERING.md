@@ -1300,10 +1300,11 @@ binding. The WebGPU HAL builds each pass's bind-group layout and bind group from
 it (`bindGroupLayoutEntries` in `hal/deviceGpuCache.ts`), each binding visible to
 exactly its `stages`, and so does the compute driver (`computePipeline.ts`).
 `pnpm gen:shaders` refuses a render shader whose table is not one the HALs bind:
-the uniform block at 1, and at most one combined `Sampler2D` at 2/3.
+the uniform block at 1, then optionally a combined `Sampler2D` at 2/3 and a
+second at 4/5.
 
 **A sampler's filter comes from the module whose math needs it.** `//!
-texture-filter: nearest | linear` has no default and is **inherited through
+texture-filter: [sampler] nearest | linear` has no default and is **inherited through
 `import`**, because the module that needs the filter is not the file that
 declares the binding — `colorRampLut` and `rowTable` each take a sampler as a
 parameter, and every pass reading one writes its own `Sampler2D<float4>`.
@@ -1313,7 +1314,7 @@ key count itself below 2048 and `(x + 0.5) / w` at a non-power-of-two width does
 not round-trip through the sampler's fixed point, so a linear tap decodes
 through `byteOf` to a slot belonging to neither key — a row drawn on the wrong
 lane, silently. A shader declaring a sampler with nothing in scope is refused,
-and two modules wanting different filters are refused by name; until this
+and two modules wanting different filters for one sampler are refused by name; until this
 existed the codegen emitted `linear` for every sampler and `spanMark.ts` rebuilt
 the binding in a wrapper.
 

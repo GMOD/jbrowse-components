@@ -752,6 +752,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       ),
       regionTable: TABLE,
       regionSpan: SPANS,
+      rowTableKeys: -1,
     })
   },
 

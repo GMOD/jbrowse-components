@@ -79,6 +79,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       reverse: params.reverse ? 1 : 0,
       insetPx: params.insetPx ?? 0,
       devicePixelRatio: getDpr(),
+      rowTableKeys: -1,
     })
   },
 

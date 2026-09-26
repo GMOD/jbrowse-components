@@ -4,6 +4,7 @@ import path from 'node:path'
 
 import { makeComputePipelineCache } from '../computePipeline.ts'
 import { resetGpuDeviceForTests } from '../gpuDevice.ts'
+import { pointMark } from '../marks/pointMark.ts'
 import { slangPass } from '../slangPass.ts'
 import { resetDeviceGpuCacheForTests } from './deviceGpuCache.ts'
 import { WebGPUHal } from './webgpuHal.ts'
@@ -56,13 +57,16 @@ function recordingDevice() {
   const groups = new Map<unknown, GPUBindGroupDescriptor>()
   const pipelines: { layout: unknown }[] = []
   const bound: unknown[] = []
+  let draws = 0
   const pass = {
     setPipeline: () => {},
     setBindGroup: (_index: number, group: unknown) => bound.push(group),
     setVertexBuffer: () => {},
     setScissorRect: () => {},
     setViewport: () => {},
-    draw: () => {},
+    draw: () => {
+      draws++
+    },
     end: () => {},
   }
   const built = (desc: { layout: unknown }) => {
@@ -104,6 +108,7 @@ function recordingDevice() {
     pipelineEntries: () =>
       entriesOf(pipelineLayouts.get(pipelines[0]?.layout)?.bindGroupLayouts[0]),
     boundEntries: () => entriesOf(groups.get(bound[0])?.layout),
+    draws: () => draws,
   }
 }
 
@@ -245,6 +250,35 @@ test.each(shaders)('%s', async rel => {
 
   expect(hidden(BINDINGS, fake.pipelineEntries())).toEqual([])
   expect(fake.boundEntries()).toEqual(fake.pipelineEntries())
+  hal.dispose()
+  resetDeviceGpuCacheForTests(fake.device)
+})
+
+test('a pass sampling two textures draws once both have arrived', async () => {
+  const fake = recordingDevice()
+  installGpu(fake.device)
+  const { pass } = pointMark
+  const hal = await WebGPUHal.create(fakeCanvas(), [pass], 1)
+  if (!hal) {
+    throw new Error('fake stack failed to build a HAL')
+  }
+  const frame = () => {
+    hal.beginFrame(0, 0, 0)
+    hal.writeUniforms(new ArrayBuffer(pass.uniformByteSize))
+    hal.drawPass(pass.id, 0)
+    hal.endFrame()
+  }
+  hal.resize(100, 40)
+  hal.uploadBuffer(0, pass.id, new ArrayBuffer(pass.instanceStride), 1)
+  expect(pass.textures?.map(t => t.name)).toEqual(['colorRamp', 'rowTable'])
+
+  hal.uploadTexture(pass.id, new Uint8Array(256 * 4), 256, 1, 'colorRamp')
+  frame()
+  expect(fake.draws()).toBe(0)
+
+  hal.uploadTexture(pass.id, new Uint8Array(2 * 4), 1, 2, 'rowTable')
+  frame()
+  expect(fake.draws()).toBe(1)
   hal.dispose()
   resetDeviceGpuCacheForTests(fake.device)
 })
