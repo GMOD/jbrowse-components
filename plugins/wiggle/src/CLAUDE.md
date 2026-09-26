@@ -260,8 +260,46 @@ colour; a declared gradient ignores row colours, so it is keyed regardless, and
 only density gives the ramp the axis's place.
 
 **`scoreGradientPaints` moves a row's identity to `labelColor`** — the source
-key, the row-label swatches and the arrangement dialog's one Color column all
-read it there, so no key shows a swatch the plot does not paint.
+key, the row-label swatches and the arrangement dialog's one swatch column all
+read it there, so no key shows a swatch the plot does not paint. That column is
+titled **Label color** under a gradient and **Color** otherwise, because under a
+gradient it is the tint beside the row and not the plot: the plot's per-row fade
+end is the row's own `color`, which nothing in the UI reaches.
+
+## The whole colour UI is one menu row
+
+`Edit colors/arrangement...` is the only colour row the menu has, on every
+quantitative track, and it is not gated on the subtracks — a swatch waits for no
+row list, and on a plain BigWig this is the only colour route there is. One
+source has nothing to arrange, so `showRows` drops the row choice, the grid and
+the bulk editor and the dialog is the plot's two colours and the buttons.
+
+**Those two colours are `plotColorLine` over the resolved pair**, offered on one
+line above the rows and written back through `plotColorEdit`. Read off
+`wiggleColor`, so an unset `color` shows what the layout paints; written whole,
+because a channel replaces its setting. Three rules it turns on:
+
+- **An undeclared cut stays undeclared.** Writing `domain` would pin at today's
+  `origin` every config that had been following it, and nine shipped threshold
+  figures declare a range and no domain.
+- **Two swatches only edit where they can say the whole picture.** A ramp or a
+  threshold past one cut reads out beside the reason; a colour per subtrack
+  hides the line, since the grid below is already that control.
+  `plotColorLine.test.ts` round-trips every shape a shipped config holds.
+- **`Edit as JSON...` in the dialog is the escape**, on the same
+  `{ rows, color }` spec — a ramp, several cut points, hand-written stops, a
+  typed row order. ADR-144 amended, ADR-164 amended.
+
+**"Color rows by → Each row" writes two settings here**, and only this display
+can write the second: `rowColor` names each row, and
+`color: { field: 'source' }` is what makes `sourcePalette` answer, so without it
+the control was pressed by default while a colourless multi-BigWig drew every
+row one `WIGGLE_POS_COLOR_DEFAULT`. `applyRowEdits` adds it, **not** under a
+gradient, where it deals nothing to an ungrouped subtrack and collapses the pair
+the fade runs on, and **not** over one subtrack, where `perSource` makes the
+negative side take the positive colour. `rowStylingIsCustom` counts it and
+`resetRowArrangement` returns it, or a reader who turned it on is offered no way
+back — the `rowColor` half often did not change, `name` being its default.
 
 **A reader's colour for a row is `rowColor`, and its label is `rows.labels`.**
 `TreeSidebarMixin` arranges them over `discoveredRows` and writes the dialog's

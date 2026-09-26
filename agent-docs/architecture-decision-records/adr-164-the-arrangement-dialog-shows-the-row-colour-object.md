@@ -65,6 +65,29 @@ way back on a reset.
   row between None and the attributes, and `setRowColorField` compares against
   the choice, so None from Each row now takes.
 
+**Amended 2026-09-26: on the quantitative display this dialog is the only colour
+row there is, and Each row writes two settings.** The `Edit color...` row beside
+it is gone (ADR-144, amended), so the plot's own two colours ride on one line
+above the rows — tree-sidebar's `plotColor` prop, held in the dialog and written
+in `submit()` after `applyRowEdits`, because a plot colour can move the
+`identityChannel` the row edits compare a swatch on — and `Edit as JSON...` in
+the actions is the escape for a ramp or several cut points. The dialog shows on a
+single-source track too, with `showRows` dropping the row choice, the grid and
+the bulk editor where there is nothing to arrange. `displayControls`, which this
+record's dialog declared for exactly this and which never had a consumer, is
+gone with it: a `ReactNode` cannot be held for a Submit.
+
+**Each row is two settings on that display.** A colour per subtrack needs
+`rowColor` naming each row AND `color: { field: 'source' }` making the palette
+deal one, and `applyRowEdits` can write only the first — so the control was
+pressed by default while a colourless multi-BigWig drew every row one blue. The
+display's own `applyRowEdits` writes the second, except under a gradient, where
+the switch deals nothing to an ungrouped subtrack and flattens the pair the fade
+runs on, and over one subtrack, where it takes the negative colour with it.
+`rowStylingIsCustom` counts it and `resetRowArrangement` returns it, or neither
+reset offers a way back; the mixin's own rule is `rowColorIsCustom`, exported
+rather than restated.
+
 ## Consequences
 
 - A dialog swatch under a Color by no longer recolours anything; the value's

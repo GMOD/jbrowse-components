@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The quantitative display's six colour spellings — `color`, `posColor`, `negColor`, `useBicolor`, `bicolorPivot`, `densityColorRamp` and the `colorImpliesSolid` preprocessor that inferred one from another — become one `color` object, declared through display-kit's `colorChannelSlots` + `colorPaletteSlot` + `colorRampSlot` the way `markColorSchema` is: a CSS string, or a field through `none | categorical | linear | log | threshold`. `score` through `threshold` is the bicolor plot and through `linear`/`log` the density ramp; `source` through `categorical` is a palette entry per subtrack. `bicolorPivot` becomes `origin`, the mark display's slot with the mark display's meaning, and `domainMid` is new on the shared ramp slot. The layout's default lives in a resolved getter, `effectiveColor`, not in a `defaultValue` that cannot move with a layout. `ChannelSpecDialog` replaces the display's own colour dialog, and the channel spec carries the whole object. No migration. ADR-151 spells `palette` and `ramp` as `range` and `scheme`, from `colorRangeSlot` and `colorRampSlots`"
+summary: "The quantitative display's six colour spellings — `color`, `posColor`, `negColor`, `useBicolor`, `bicolorPivot`, `densityColorRamp` and the `colorImpliesSolid` preprocessor that inferred one from another — become one `color` object, declared through display-kit's `colorChannelSlots` + `colorPaletteSlot` + `colorRampSlot` the way `markColorSchema` is: a CSS string, or a field through `none | categorical | linear | log | threshold`. `score` through `threshold` is the bicolor plot and through `linear`/`log` the density ramp; `source` through `categorical` is a palette entry per subtrack. `bicolorPivot` becomes `origin`, the mark display's slot with the mark display's meaning, and `domainMid` is new on the shared ramp slot. The layout's default lives in a resolved getter, `effectiveColor`, not in a `defaultValue` that cannot move with a layout. `ChannelSpecDialog` replaces the display's own colour dialog, and the channel spec carries the whole object. Amended 2026-09-26: that box is the arrangement dialog's `Edit as JSON...` escape rather than a menu row, and the plot's two colours are one line in that dialog No migration. ADR-151 spells `palette` and `ramp` as `range` and `scheme`, from `colorRangeSlot` and `colorRampSlots`"
 ---
 
 # ADR-144: One colour object on the quantitative display
@@ -96,15 +96,29 @@ on both sides. `WiggleGpuProps` carries that object in place of
 `posColor`/`negColor`/`bicolorPivot`, and the render state carries the resolved
 LUT bytes in place of a ramp name.
 
-**`ChannelSpecDialog` is the colour UI.** The display's own dialog described a
-radio and a pivot field that no longer exist; `Edit color...` now opens the
-shared JSON box on the same object a config file holds, so a colour a session
-spec can carry is a colour the dialog can write. `ChannelSpec` and `parseColor`
-carry `scale`, ~~`ramp`~~ `scheme` and `domainMid` alongside `field`, `domain`
-and ~~`palette`~~ `range` (ADR-151), and hold a spec to the display's own
-`scale` enum (`colorScaleChoicesOf`, off the slot) rather than to FeatureColor's
-five members. The tree-sidebar per-row dialog stays where it was: it edits
-adapter row metadata under the facet, not the channel.
+**~~`ChannelSpecDialog` is the colour UI.~~** The display's own dialog described
+a radio and a pivot field that no longer exist; `Edit color...` opened the shared
+JSON box on the same object a config file holds, so a colour a session spec can
+carry was a colour the dialog could write. `ChannelSpec` and `parseColor` carry
+`scale`, ~~`ramp`~~ `scheme` and `domainMid` alongside `field`, `domain` and
+~~`palette`~~ `range` (ADR-151), and hold a spec to the display's own `scale`
+enum (`colorScaleChoicesOf`, off the slot) rather than to FeatureColor's five
+members. ~~The tree-sidebar per-row dialog stays where it was: it edits adapter
+row metadata under the facet, not the channel.~~
+
+**Amended 2026-09-26: the box is the escape, not the colour UI, and the per-row
+dialog is where both colours are edited.** A JSON text area as the only route to
+a colour is not one, and it sat beside `Edit colors/arrangement...` as a second
+menu row starting with the same word. The `Edit color...` row is gone: the
+arrangement dialog carries the plot's two colours on one line above the rows
+(`plotColorLine`, and tree-sidebar's `plotColor` prop, committed on Submit after
+the row edits), and `Edit as JSON...` inside it opens this box for what two
+swatches cannot say — a ramp, several cut points, hand-written stops. The line
+reads a ramp or a multi-cut threshold out beside the reason and hides where a
+colour per subtrack paints. That dialog now shows on a single-source track too,
+where the menu had no colour row at all. The `scale` enum and the round trip
+through `colorSpecOf` are unchanged; what moved is which surface a reader
+reaches them from.
 
 **The key follows the scale**: the ramp for `linear`/`log` on bars, points and
 density, a row per source for `categorical`, a row per interval for a

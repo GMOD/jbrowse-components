@@ -196,6 +196,20 @@ What else the mixin owns:
   materialised. An order that moves no row is not written. The pairs are written
   with two `setConf`s, never `setSubschema`, which would drop `field` and
   `scale`.
+- **A display's own colour rides above the rows, and is written on Submit.**
+  `plotColor` is the quantitative display's two plot colours on one line
+  (`PlotColorRow`): held in the dialog's local state and written in `submit()`
+  **after** `applyRowEdits`, because a colour that changes a display's
+  `identityChannel` changes the channel the row edits compare a swatch on.
+  `showRows` drops the row choice, the grid and the bulk editor where the
+  display has nothing to arrange, and `onEditAsJson` is the channel-spec escape
+  as a button rather than a track-menu row. This replaced `displayControls`, a
+  `ReactNode` that promised live writes Cancel would not revert and had no
+  consumer; a node cannot be held for a Submit.
+- **`rowColorIsCustom` is exported** because a display whose reader reaches a
+  second colour setting from this dialog has to ask the same question about both
+  — the quantitative display's `color`, which its own `rowStylingIsCustom` ORs
+  in so a reset is offered for a colour the `rowColor` half did not record.
 - **A reorder keeps the names it did not show.** `setRowOrder` writes the rows
   it was handed ahead of every name the current order carries beyond them, so on
   the multi-row display, whose rows are discovered per region, a declared order
