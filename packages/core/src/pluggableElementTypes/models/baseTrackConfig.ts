@@ -22,7 +22,20 @@ interface TrackConfigSnapshot {
   type: string
   assemblyNames?: unknown
   textSearching?: { textSearchAdapter?: unknown }
+  adapter?: { type?: unknown }
   displays?: LegacyDisplaySnapshot[]
+}
+
+function adapterCapabilitiesOf(
+  pluginManager: PluginManager,
+  adapter: TrackConfigSnapshot['adapter'],
+) {
+  const type = adapter?.type
+  return new Set(
+    typeof type === 'string' && pluginManager.hasAdapterType(type)
+      ? pluginManager.getAdapterType(type).adapterCapabilities
+      : [],
+  )
 }
 
 /**
@@ -30,8 +43,9 @@ interface TrackConfigSnapshot {
  * ReferenceSequenceTrack). Loads retired display types as the displays they
  * retired into, runs the `Core-preProcessTrackConfig` extension point, expands
  * the `displayDefaults` shorthand, auto-fills a stub display for each of the
- * track type's registered displays, dedupes by type (first wins), and lifts
- * legacy renderer configs.
+ * track type's registered displays whose adapter capabilities the track's
+ * adapter declares, dedupes by type (first wins), and lifts legacy renderer
+ * configs.
  */
 export function preprocessTrackConfigSnapshot(
   pluginManager: PluginManager,
@@ -51,11 +65,16 @@ export function preprocessTrackConfigSnapshot(
   // `displays`.
   const displays = Array.isArray(snap.displays) ? snap.displays : []
   if (snap.trackId !== 'placeholderId') {
-    // Add any of the track type's possible displays not already on the snapshot
+    // Add any of the track type's possible displays not already on the
+    // snapshot that can draw from this track's adapter
     try {
       const configDisplayTypes = new Set(displays.map(d => d.type))
+      const capabilities = adapterCapabilitiesOf(pluginManager, snap.adapter)
       for (const d of pluginManager.getTrackType(snap.type).displayTypes) {
-        if (!configDisplayTypes.has(d.name)) {
+        if (
+          !configDisplayTypes.has(d.name) &&
+          d.adapterCapabilities.every(c => capabilities.has(c))
+        ) {
           displays.push({
             displayId: `${snap.trackId}-${d.name}`,
             type: d.name,

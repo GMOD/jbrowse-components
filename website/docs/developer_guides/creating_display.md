@@ -60,6 +60,13 @@ config schema for that category, or behavior shared across multiple displays.
 Register it with `pluginManager.addTrackType(...)`, reusing the base track
 config schema.
 
+Every track is given each display registered for its type. A display that can
+draw from only some adapters declares the adapter
+[capabilities](/docs/developer_guides/creating_adapter) it needs, as the
+pangenome graph display does with `adapterCapabilities: ['getSubgraph']`, and a
+track whose adapter lacks one is not given it, so its **Display types** menu
+does not offer it. A config that names the display keeps it.
+
 ## When to add a custom display type
 
 - Drawing chrome over the rendered content (e.g. the Y-scale axis in wiggle

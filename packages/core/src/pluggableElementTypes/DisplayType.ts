@@ -56,6 +56,14 @@ export default class DisplayType extends LazyStateModelElement {
    */
   helpText?: string
 
+  /**
+   * What the track's adapter must declare it can answer for this display to
+   * be offered on the track: a graph display draws only from an adapter that
+   * cuts a subgraph (`['getSubgraph']`), so a track whose adapter cannot is
+   * not given one.
+   */
+  adapterCapabilities: readonly string[]
+
   retiredTypes: readonly RetiredDisplayType[]
 
   retiredState?: RetiredDisplayState
@@ -69,6 +77,7 @@ export default class DisplayType extends LazyStateModelElement {
     configSchema: AnyConfigurationSchemaType
     ReactComponent: AnyReactComponentType
     helpText?: string
+    adapterCapabilities?: readonly string[]
     retiredTypes?: readonly RetiredDisplayType[]
     retiredState?: RetiredDisplayState
   }) {
@@ -81,6 +90,7 @@ export default class DisplayType extends LazyStateModelElement {
     this.trackType = stuff.trackType
     this.viewType = stuff.viewType
     this.helpText = stuff.helpText
+    this.adapterCapabilities = stuff.adapterCapabilities ?? []
     this.retiredTypes = stuff.retiredTypes ?? []
     this.retiredState = stuff.retiredState
   }
