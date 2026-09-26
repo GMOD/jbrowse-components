@@ -48,6 +48,13 @@ const tracks = [
     ],
   },
   {
+    type: 'GCContentTrack',
+    trackId: 'gc',
+    name: 'gc',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'GCContentAdapter' },
+  },
+  {
     type: 'MultiQuantitativeTrack',
     trackId: 'multi',
     name: 'multi',
@@ -531,3 +538,22 @@ test.each(['bam', 'bam_styled'])(
     expect(getConf(display, 'height')).toBe(321)
   },
 )
+
+test('a share link from before the GC displays merged keeps its window', async () => {
+  const { display } = await load({
+    ...v4Session('GCContentTrack', 'gc', {
+      type: 'LinearGCContentTrackDisplay',
+      configuration: 'gc-LinearGCContentTrackDisplay',
+    }),
+    trackConfigDeltas: {
+      gc: {
+        trackId: 'gc',
+        displays: [
+          { displayId: 'gc-LinearGCContentTrackDisplay', windowSize: 7 },
+        ],
+      },
+    },
+  })
+  expect(display.type).toBe('LinearGCContentDisplay')
+  expect(getConf(display, 'windowSize')).toBe(7)
+})

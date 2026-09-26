@@ -29,9 +29,7 @@ async function createDisplay() {
   // the display's state model is registered as a loader, so the display union
   // the view below builds its track from cannot match the snapshot until it has
   // resolved
-  await pluginManager
-    .getDisplayType('LinearGCContentTrackDisplay')
-    .loadStateModel()
+  await pluginManager.getDisplayType('LinearGCContentDisplay').loadStateModel()
 
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
   const trackConfig = pluginManager.pluggableConfigSchemaType('track').create(
@@ -82,7 +80,7 @@ async function createDisplay() {
         {
           type: 'GCContentTrack',
           configuration: 'test_track',
-          displays: [{ type: 'LinearGCContentTrackDisplay' }],
+          displays: [{ type: 'LinearGCContentDisplay' }],
         },
       ],
     }),

@@ -68,7 +68,7 @@ mixin, so the composer they extend stands for them — the same way
 `LinearCanvasBaseDisplay` stands for `LinearBasicDisplay` / `LinearVariantDisplay`
 in the row above. `LGVSyntenyDisplay` extends `LinearAlignmentsDisplay` (and is
 the one in-tree case of extending `rpcProps()` by super-capture across a plugin
-boundary, to add the resolved PIF tier); both GC-content state models extend
+boundary, to add the resolved PIF tier); the GC-content state model extends
 `LinearWiggleDisplay`. Don't "fix" their absence by tagging them — that would put
 inheritors in a composer table.
 

@@ -29,7 +29,7 @@ comes from the assembly the track is displayed against.
 ## Related links
 
 - **Track:** [GCContentTrack](../gccontenttrack)
-- **Display:** [LinearGCContentTrackDisplay](../lineargccontenttrackdisplay)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
 
 ## Config slots
 

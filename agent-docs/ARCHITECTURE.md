@@ -464,7 +464,7 @@ The table is **generated** — both columns. **Displays** comes from the
 `#displayFoundation` tags and **Composes** is read off each foundation's own
 `types.compose(...)` call. It lists **composers, not inheritors**: a display
 that extends another plugin's whole model (`LGVSyntenyDisplay` extends
-`LinearAlignmentsDisplay`; both GC-content models extend `LinearWiggleDisplay`;
+`LinearAlignmentsDisplay`; the GC-content model extends `LinearWiggleDisplay`;
 `LinearBasicDisplay` and `LinearVariantDisplay` extend `LinearCanvasBaseDisplay`)
 is covered by the model it extends.
 

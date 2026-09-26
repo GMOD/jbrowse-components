@@ -86,6 +86,8 @@ the successor's before anything merges, whether or not a view shows the track.
 - `LinearAlignmentsDisplay`: the four v4 band displays, each with its bands;
   a v4 `colorBy`; the v4.3.0 instance settings and the nested sub-nodes.
 - `LinearBasicDisplay`: `LinearFeatureDisplay`, and its legacy slot values.
+- `LinearGCContentDisplay`: `LinearGCContentTrackDisplay`, a byte-identical
+  schema registered against `GCContentTrack`, with nothing to migrate.
 - `LinearMultiSampleVariantDisplay`: `MultiLinearVariantDisplay` and the two
   matrix types in columns; the arrangement, the sidebar and `jexlFilters`. A v4
   layout's colours stay behind, since the colorBy palette wrote them.

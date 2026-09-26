@@ -6782,163 +6782,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "properties": {
         "type": {
-          "const": "LinearGCContentDisplay"
-        },
-        "displayId": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearGCContentTrackDisplaySlots": {
-      "type": "object",
-      "properties": {
-        "defaultRendering": {
-          "description": "Default rendering type.",
           "enum": [
-            "xyplot",
-            "density",
-            "line",
-            "linecenter",
-            "scatter"
-          ],
-          "default": "xyplot"
-        },
-        "rows": {
-          "$ref": "#/$defs/Rows"
-        },
-        "rowColor": {
-          "$ref": "#/$defs/RowColor"
-        },
-        "height": {
-          "description": "default height for the track.",
-          "type": "number",
-          "default": 100
-        },
-        "color": {
-          "$ref": "#/$defs/WiggleColor"
-        },
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/PlainString",
-          "default": "score"
-        },
-        "displayCrossHatches": {
-          "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "type": "boolean",
-          "default": false
-        },
-        "resolution": {
-          "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
-          "type": "number",
-          "default": 1
-        },
-        "origin": {
-          "description": "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin.",
-          "type": "number",
-          "default": 0
-        },
-        "size": {
-          "description": "Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size.",
-          "type": "number",
-          "default": 2
-        },
-        "lineWidth": {
-          "description": "Line thickness in px for line rendering. Defaults to 1.",
-          "type": "number",
-          "default": 1
-        },
-        "maxGapMultiple": {
-          "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "type": "number",
-          "default": 0
-        },
-        "scales": {
-          "$ref": "#/$defs/Scales2"
-        },
-        "showLegend": {
-          "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
-          "type": "boolean",
-          "default": true
-        },
-        "minimalTicks": {
-          "description": "Draw only the min/max Y-axis ticks.",
-          "type": "boolean",
-          "default": false
-        },
-        "summaryScoreMode": {
-          "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces the above-origin colour on every bin (buildSourceRenderData skips the two-sided split for whiskers) and hides negative GC-skew as if it were positive.",
-          "enum": [
-            "max",
-            "min",
-            "avg",
-            "whiskers"
-          ],
-          "default": "avg"
-        },
-        "showTree": {
-          "description": "Show the subtrack clustering tree in the sidebar.",
-          "type": "boolean",
-          "default": true
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
-        },
-        "showRowLabels": {
-          "description": "Name each subtrack row down the left edge.",
-          "type": "boolean",
-          "default": true
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
-        },
-        "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "type": "boolean",
-          "default": false
-        },
-        "windowSize": {
-          "type": "number",
-          "default": 100
-        },
-        "windowDelta": {
-          "type": "number",
-          "default": 100
-        },
-        "gcMode": {
-          "enum": [
-            "content",
-            "skew"
-          ],
-          "default": "content"
-        },
-        "scatterPointSize": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        }
-      }
-    },
-    "LinearGCContentTrackDisplay": {
-      "title": "LinearGCContentTrackDisplay",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearGCContentTrackDisplaySlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearGCContentTrackDisplay"
+            "LinearGCContentDisplay",
+            "LinearGCContentTrackDisplay"
+          ]
         },
         "displayId": {
           "type": "string"
@@ -11039,79 +10886,79 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "properties": {
             "defaultRendering": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/defaultRendering"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
             },
             "rows": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/rows"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rows"
             },
             "rowColor": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/rowColor"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rowColor"
             },
             "height": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/height"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/height"
             },
             "color": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/color"
             },
             "scoreField": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scoreField"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreField"
             },
             "displayCrossHatches": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/displayCrossHatches"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
             },
             "resolution": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/resolution"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/resolution"
             },
             "origin": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/origin"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/origin"
             },
             "size": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/size"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/size"
             },
             "lineWidth": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/lineWidth"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/lineWidth"
             },
             "maxGapMultiple": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/maxGapMultiple"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/maxGapMultiple"
             },
             "scales": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scales"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scales"
             },
             "showLegend": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showLegend"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showLegend"
             },
             "minimalTicks": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/minimalTicks"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
             },
             "summaryScoreMode": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/summaryScoreMode"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/summaryScoreMode"
             },
             "showTree": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showTree"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showTree"
             },
             "showBranchLength": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showBranchLength"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showBranchLength"
             },
             "showRowLabels": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showRowLabels"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showRowLabels"
             },
             "treeAreaWidth": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/treeAreaWidth"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/treeAreaWidth"
             },
             "showRowSeparators": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showRowSeparators"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showRowSeparators"
             },
             "windowSize": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/windowSize"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowSize"
             },
             "windowDelta": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/windowDelta"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowDelta"
             },
             "gcMode": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/gcMode"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
             },
             "scatterPointSize": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scatterPointSize"
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {
@@ -13576,7 +13423,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "LDTrackDisplay",
                 "LinearWiggleDisplay",
                 "LinearGCContentDisplay",
-                "LinearGCContentTrackDisplay",
                 "LinearMafDisplay",
                 "LinearHicDisplay",
                 "LinearManhattanDisplay",
@@ -13839,7 +13685,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "object",
             "properties": {
               "type": {
-                "const": "LinearGCContentDisplay"
+                "enum": [
+                  "LinearGCContentDisplay",
+                  "LinearGCContentTrackDisplay"
+                ]
               }
             },
             "required": [
@@ -13848,22 +13697,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/LinearGCContentDisplay"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "LinearGCContentTrackDisplay"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearGCContentTrackDisplay"
           }
         },
         {
@@ -15725,7 +15558,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "properties": {
         "type": {
-          "const": "LinearGCContentDisplay"
+          "enum": [
+            "LinearGCContentDisplay",
+            "LinearGCContentTrackDisplay"
+          ]
         },
         "id": {
           "type": "string"
@@ -15737,57 +15573,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             {
               "$ref": "#/$defs/LinearGCContentDisplay"
-            }
-          ]
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearGCContentTrackDisplayState": {
-      "type": "object",
-      "properties": {
-        "runClustering": {
-          "type": "boolean"
-        },
-        "clusterRegion": {
-          "type": "string"
-        },
-        "sortRowsBy": {},
-        "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        }
-      }
-    },
-    "LinearGCContentTrackDisplaySnapshot": {
-      "title": "LinearGCContentTrackDisplaySnapshot",
-      "description": "A LinearGCContentTrackDisplay node inside a saved session: the state model's own properties. A config slot does not belong here; it goes on the track's \`displays\` entry.",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearGCContentTrackDisplayState"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearGCContentTrackDisplay"
-        },
-        "id": {
-          "type": "string"
-        },
-        "configuration": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/LinearGCContentTrackDisplay"
             }
           ]
         }
@@ -16559,7 +16344,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "LDTrackDisplay",
                 "LinearWiggleDisplay",
                 "LinearGCContentDisplay",
-                "LinearGCContentTrackDisplay",
                 "LinearMafDisplay",
                 "LinearHicDisplay",
                 "LinearManhattanDisplay",
@@ -16822,7 +16606,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "object",
             "properties": {
               "type": {
-                "const": "LinearGCContentDisplay"
+                "enum": [
+                  "LinearGCContentDisplay",
+                  "LinearGCContentTrackDisplay"
+                ]
               }
             },
             "required": [
@@ -16831,22 +16618,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/LinearGCContentDisplaySnapshot"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "LinearGCContentTrackDisplay"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearGCContentTrackDisplaySnapshot"
           }
         },
         {
@@ -17538,42 +17309,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "type": {
               "const": "LinearGCContentDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": [
-            "trackId"
-          ],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearGCContentTrackDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearGCContentTrackDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearGCContentTrackDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {
@@ -18431,42 +18166,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "type": {
               "const": "LinearGCContentDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": [
-            "trackId"
-          ],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearGCContentTrackDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearGCContentTrackDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearGCContentTrackDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {

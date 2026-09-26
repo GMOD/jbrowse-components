@@ -81,27 +81,6 @@ function addViaMenu(session: Awaited<ReturnType<typeof makeSession>>) {
   addGc.onClick()
 }
 
-test('LinearGCContentDisplay carries its current params onto the new track', async () => {
-  const session = await makeSession([
-    { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
-    { id: 'display2', type: 'LinearGCContentDisplay' },
-  ])
-  const display = session.views[0].tracks[0].displays[1]
-  display.setGCContentParams({ windowSize: 50, windowDelta: 10 })
-  display.setGCMode('skew')
-  display.addGCContentTrack()
-
-  const added = findGCTrack(session)
-  expect(readConfObject(added, 'name')).toBe('GC skew')
-  const trackDisplay = added.displays[0]
-  expect(readConfObject(trackDisplay, 'type')).toBe(
-    'LinearGCContentTrackDisplay',
-  )
-  expect(readConfObject(trackDisplay, 'windowSize')).toBe(50)
-  expect(readConfObject(trackDisplay, 'windowDelta')).toBe(10)
-  expect(readConfObject(trackDisplay, 'gcMode')).toBe('skew')
-})
-
 test('hierarchical track selector menu offers "Add GC content track" on refseq', async () => {
   const session = await makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
@@ -168,7 +147,7 @@ test('standalone GCContentTrack display does not double-wrap its adapter', async
     (t: { configuration: AnyConfigurationModel }) =>
       readConfObject(t.configuration, 'type') === 'GCContentTrack',
   )!
-  // the LinearGCContentTrackDisplay's adapterConfig must apply display params
+  // the GC content display's adapterConfig must apply display params
   // to the track's existing GCContentAdapter, not wrap it in another one
   const { adapterConfig } = shown.displays[0]
   expect(adapterConfig.type).toBe('GCContentAdapter')
@@ -299,6 +278,7 @@ test('the label menu row carries the GC display parameters onto the new track', 
   }
 
   const trackDisplay = findGCTrack(session).displays[0]
+  expect(readConfObject(trackDisplay, 'type')).toBe('LinearGCContentDisplay')
   expect(readConfObject(trackDisplay, 'windowSize')).toBe(50)
   expect(readConfObject(trackDisplay, 'windowDelta')).toBe(10)
   expect(readConfObject(trackDisplay, 'gcMode')).toBe('skew')

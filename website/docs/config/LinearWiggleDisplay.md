@@ -82,7 +82,7 @@ array form — see
 - **Adapter:** [BedGraphAdapter](../bedgraphadapter)
 - **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
 - **Adapter:** [BigWigAdapter](../bigwigadapter)
-- **Extended by:** [SharedGCContentDisplay](../sharedgccontentdisplay)
+- **Extended by:** [LinearGCContentDisplay](../lineargccontentdisplay)
 - **State model:** [runtime API](../../models/linearwiggledisplay)
 
 ## Config slots

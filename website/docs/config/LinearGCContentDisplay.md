@@ -4,12 +4,11 @@ title: LinearGCContentDisplay
 sidebar_label: Display -> LinearGCContentDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/configSchemaReferenceSequence.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/configSchema.ts).
 
 ## Example usage
 
-Added to the assembly's `sequence` track, which is where a
-`ReferenceSequenceTrack` is authored. `gcMode` is `content` for GC percentage
+On the assembly's `sequence` track. `gcMode` is `content` for GC percentage
 or `skew` for (G-C)/(G+C):
 
 ```js
@@ -32,15 +31,27 @@ sequence: {
 }
 ```
 
+As its own track, in GC-skew mode with a small, overlapping sliding window
+(a `windowDelta` under `windowSize` overlaps the windows, which smooths the
+signal):
+
+```js
+{
+  type: 'GCContentTrack',
+  trackId: 'gc',
+  name: 'GC content',
+  assemblyNames: ['hg38'],
+  adapter: { type: 'GCContentAdapter' },
+  displayDefaults: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
-GC content computed from a `ReferenceSequenceTrack`'s own sequence adapter, so
-there is no second adapter to configure. Use a `GCContentTrack` with
-[](/docs/config/lineargccontenttrackdisplay) instead when GC should be its own
-track rather than a display on the sequence.
-
-Every slot comes from the shared base below; this display adds none of its
-own.
+GC content (or GC skew) of a sequence, drawn as a quantitative plot: on a
+`ReferenceSequenceTrack`, from the track's own sequence adapter, or as a
+`GCContentTrack` of its own, whose `GCContentAdapter` wraps a sequence
+adapter.
 
 ## Related links
 
@@ -52,7 +63,7 @@ own.
 - **Adapter:** [TwoBitAdapter](../twobitadapter)
 - **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)
 - **State model:** [runtime API](../../models/lineargccontentdisplay)
-- **Base config:** [SharedGCContentDisplay](../sharedgccontentdisplay)
+- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots
 
@@ -61,7 +72,6 @@ These slots go on a display entry: `"displays": [{ "type": "LinearGCContentDispl
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span class="slot-group">Inherited from [SharedGCContentDisplay](../sharedgccontentdisplay)</span> | <span class="slot-group-count">4 slots</span> |
 | <span id="slot-windowsize">**windowSize**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Number of bases per GC measurement window. |
 | <span id="slot-windowdelta">**windowDelta**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Step between successive windows; smaller than `windowSize` means overlapping windows (a smoother signal). |
 | <span id="slot-gcmode">**gcMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (content, skew) = <code>'content'</code> | `content` for GC percentage, `skew` for (G-C)/(G+C) strand skew. |

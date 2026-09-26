@@ -4,37 +4,7 @@ title: LinearGCContentDisplay
 sidebar_label: Display -> LinearGCContentDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/stateModelReferenceSequence.ts).
-
-## Example usage
-
-This display attaches to a `ReferenceSequenceTrack` — it derives GC from the
-track's own sequence adapter, so no extra adapter is needed. `gcMode` is
-`content` or `skew`:
-
-```js
-{
-  type: 'ReferenceSequenceTrack',
-  trackId: 'refseq',
-  name: 'Reference sequence',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'IndexedFastaAdapter',
-    uri: 'https://example.com/genome.fa',
-  },
-  displays: [
-    {
-      type: 'LinearGCContentDisplay',
-      displayId: 'refseq-LinearGCContentDisplay',
-      windowSize: 100,
-      windowDelta: 100,
-      gcMode: 'content',
-    },
-  ],
-}
-```
-
-base model `SharedGCContentModel`
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/stateModel.tsx).
 
 The configuration slots for this model are documented on its [config schema page](../../config/lineargccontentdisplay).
 
@@ -46,7 +16,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('LinearGCContentDisplay')</code> |  | LinearGCContentDisplay |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | [SharedGCContentModel](../sharedgccontentmodel#property-configuration) |
+| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | LinearGCContentDisplay |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 | <span id="property-runclustering">**runClustering**</span><br><code>runClustering: types.maybe(types.boolean)</code> | <span data-pagefind-ignore>Transient declarative launch spec, the same idea as `LinearGenomeView`'s `init`: a session or config sets this true and the real clustering RPC runs once automatically, with no dialog, as soon as the display reports itself ready. `setupRunClusteringAutorun` clears it afterwards, so a saved session never re-triggers.</span> | [TreeSidebarMixin](../treesidebarmixin#property-runclustering) |
 | <span id="property-clusterregion">**clusterRegion**</span><br><code>clusterRegion: types.maybe(types.string)</code> | <span data-pagefind-ignore>Where that run reads from, as a locstring (whitespace-separated for several). Clustering is region-scoped, so naming the locus lets a session cluster on the signal and then show it against its context. Cleared with `runClustering`, since it is that flag's argument.</span> | [TreeSidebarMixin](../treesidebarmixin#property-clusterregion) |
@@ -90,12 +60,11 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;{ id: IOptionalIType&lt;…&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;{ id: IOptionalIType&lt;…&gt;; displayName: IMaybe&lt;…&gt;; minimized: IOptionalIType&lt;…&gt;; }, { ...; }&gt;&gt; &amp; ... 26 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> | The containing view as the LGV it has to be: `addAndShowTrack` needs `showTrack`, which the duck-typed `host` does not carry. | LinearGCContentDisplay |
-| <span id="getter-windowsize">**windowSize**</span><br><code>number</code> |  | [SharedGCContentModel](../sharedgccontentmodel#getter-windowsize) |
-| <span id="getter-windowdelta">**windowDelta**</span><br><code>number</code> |  | [SharedGCContentModel](../sharedgccontentmodel#getter-windowdelta) |
-| <span id="getter-gcmode">**gcMode**</span><br><code>"content" &#124; "skew"</code> |  | [SharedGCContentModel](../sharedgccontentmodel#getter-gcmode) |
-| <span id="getter-adapterconfig">**adapterConfig**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{…} &#124; { windowSize: number; windowDelta: number; gcMode: string…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{…} &#124; { windowSize: number; windowDelta: number; gcMode: string; type: string; sequenceAdapter: { type: string; }; }</code></pre></dialog></span> | <span data-pagefind-ignore>The parent track's adapter with the display's GC parameters applied, wrapped in a `GCContentAdapter` where the track names a bare sequence adapter — see `gcAdapterConfig`.</span> | [SharedGCContentModel](../sharedgccontentmodel#getter-adapterconfig) |
-| <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | <span data-pagefind-ignore>Overrides ScoreScaleMixin's autoscale-both-ends default. GC content is a fraction of the bases in a window, so [0,1] is the quantity's own range and pins the axis across loci.<br><br>Skew is deliberately left autoscaling. Its range is [-1,1] and fixing it there would be just as *correct*, and useless: real skew sits within roughly ±0.3, so a [-1,1] axis squashes the sign flip at the replication origin — the entire thing the track is read for — into a flat line. Bounded and worth pinning are two different properties.</span> | [SharedGCContentModel](../sharedgccontentmodel#getter-defaultscoredomain) |
+| <span id="getter-windowsize">**windowSize**</span><br><code>number</code> |  | LinearGCContentDisplay |
+| <span id="getter-windowdelta">**windowDelta**</span><br><code>number</code> |  | LinearGCContentDisplay |
+| <span id="getter-gcmode">**gcMode**</span><br><code>"content" &#124; "skew"</code> |  | LinearGCContentDisplay |
+| <span id="getter-adapterconfig">**adapterConfig**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{…} &#124; { windowSize: number; windowDelta: number; gcMode: string…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{…} &#124; { windowSize: number; windowDelta: number; gcMode: string; type: string; sequenceAdapter: { type: string; }; }</code></pre></dialog></span> | The parent track's adapter with the display's GC parameters applied, wrapped in a `GCContentAdapter` where the track names a bare sequence adapter — see `gcAdapterConfig`. | LinearGCContentDisplay |
+| <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | Overrides ScoreScaleMixin's autoscale-both-ends default. GC content is a fraction of the bases in a window, so [0,1] is the quantity's own range and pins the axis across loci.<br><br>Skew is deliberately left autoscaling. Its range is [-1,1] and fixing it there would be just as *correct*, and useless: real skew sits within roughly ±0.3, so a [-1,1] axis squashes the sign flip at the replication origin — the entire thing the track is read for — into a flat line. Bounded and worth pinning are two different properties. | LinearGCContentDisplay |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> |  | [LinearWiggleDisplay](../linearwiggledisplay#getter-isdensitymode) |
 | <span id="getter-colorsetting">**colorSetting**</span><br><code>ColorSetting</code> | <span data-pagefind-ignore>The `color` object as written, `value` undefined while nothing names a colour and the layout decides (`effectiveColor`).</span> | [LinearWiggleDisplay](../linearwiggledisplay#getter-colorsetting) |
 | <span id="getter-colorscalechoices">**colorScaleChoices**</span><br><code>string[]</code> | <span data-pagefind-ignore>The scales this display's colour paints, for the Edit as JSON box.</span> | [LinearWiggleDisplay](../linearwiggledisplay#getter-colorscalechoices) |
@@ -276,8 +245,8 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { windowSize: number; windowDelta: number; gcMode: "conte…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { windowSize: number; windowDelta: number; gcMode: "content" &#124; "skew"; summaryScoreMode: string; resolution: number; scoreField: string; }</code></pre></dialog></span> | <span data-pagefind-ignore>The three GC parameters are fetch inputs: `adapterConfig` folds them into the `GCContentAdapter` config, so each changes what the worker computes. `adapterConfig` is a structural arg and deliberately not a cache key, so listing them here is the only thing that invalidates the loaded regions. They ride along in the payload too; the worker ignores them and reads the adapter.<br><br>They used to live outside `rpcProps()`, with each setter calling `reload()` by hand — which covered the track menu and nothing else.</span> | [SharedGCContentModel](../sharedgccontentmodel#method-rpcprops) |
-| <span id="method-trackmenuitems">**trackMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; (MenuDivider &#124; MenuSubHeader &#124; NormalMenuItem &#124; CheckboxM…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; (MenuDivider &#124; MenuSubHeader &#124; NormalMenuItem &#124; CheckboxMenuItem &#124; RadioMenuItem &#124; SubMenuItem &#124; CustomMenuItem &#124; { ...; } &#124; { ...; })[]</code></pre></dialog></span> |  | [SharedGCContentModel](../sharedgccontentmodel#method-trackmenuitems) |
+| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { windowSize: number; windowDelta: number; gcMode: "conte…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { windowSize: number; windowDelta: number; gcMode: "content" &#124; "skew"; summaryScoreMode: string; resolution: number; scoreField: string; }</code></pre></dialog></span> | The three GC parameters are fetch inputs: `adapterConfig` folds them into the `GCContentAdapter` config, so each changes what the worker computes. `adapterConfig` is a structural arg and deliberately not a cache key, so listing them here is the only thing that invalidates the loaded regions. They ride along in the payload too; the worker ignores them and reads the adapter.<br><br>They used to live outside `rpcProps()`, with each setter calling `reload()` by hand — which covered the track menu and nothing else. | LinearGCContentDisplay |
+| <span id="method-trackmenuitems">**trackMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; (MenuDivider &#124; MenuSubHeader &#124; NormalMenuItem &#124; CheckboxM…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; (MenuDivider &#124; MenuSubHeader &#124; NormalMenuItem &#124; CheckboxMenuItem &#124; RadioMenuItem &#124; SubMenuItem &#124; CustomMenuItem &#124; { ...; } &#124; { ...; })[]</code></pre></dialog></span> |  | LinearGCContentDisplay |
 | <span id="method-channelspecproblems">**channelSpecProblems**</span><br><code>(spec: ChannelSpec) =&gt; string[]</code> | <span data-pagefind-ignore>A wiggle colours per signal and keeps no runtime filter list, so a spec naming `filter` is refused rather than silently dropped.</span> | [LinearWiggleDisplay](../linearwiggledisplay#method-channelspecproblems) |
 | <span id="method-rowcolordealfor">**rowColorDealFor**</span><br><code>(setting: RowColorEntries) =&gt; RowColorDeal&lt;SourceInfo&gt;</code> | <span data-pagefind-ignore>`TreeSidebarMixin`'s hook: under `name` the group palette, and a colour per source where the colour is one, dealt over the rows as currently arranged (`sourceColorDeal`); under an attribute, its values' from the same palette.</span> | [LinearWiggleDisplay](../linearwiggledisplay#method-rowcolordealfor) |
 | <span id="method-sharedrpcprops">**sharedRpcProps**</span><br><code>() =&gt; { resolution: number; scoreField: string; }</code> | <span data-pagefind-ignore>The fetch cache keys, spread into the display's own `rpcProps()`. The colour settings are not among them: every mode partitions by sign on the main thread, so moving the pivot re-encodes and refetches nothing.<br><br>Named apart from `rpcProps` rather than overridden through it: MST *intersects* what each `.views()` layer returns, so two same-named methods resolve to the first one at the type level however the runtime member behaves.</span> | [LinearWiggleDisplay](../linearwiggledisplay#method-sharedrpcprops) |
@@ -300,9 +269,8 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-addgccontenttrack">**addGCContentTrack**</span><br><code>() =&gt; void</code> | spins up a standalone GCContentTrack session track that wraps the parent ReferenceSequenceTrack's sequence adapter, carrying the current display parameters | LinearGCContentDisplay |
-| <span id="action-setgccontentparams">**setGCContentParams**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ windowSize, windowDelta, }: { windowSize?: number &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ windowSize, windowDelta, }: { windowSize?: number &#124; undefined; windowDelta?: number &#124; undefined; }) =&gt; void</code></pre></dialog></span> | <span data-pagefind-ignore>Either parameter alone; the other keeps its current value. Both menus change one of the two, and spelling that as "write both, carrying the other across" put `windowDelta: self.windowDelta` in four call sites — which is also where the clamp below would have had to be repeated.</span> | [SharedGCContentModel](../sharedgccontentmodel#action-setgccontentparams) |
-| <span id="action-setgcmode">**setGCMode**</span><br><code>(mode: "content" &#124; "skew") =&gt; void</code> |  | [SharedGCContentModel](../sharedgccontentmodel#action-setgcmode) |
+| <span id="action-setgccontentparams">**setGCContentParams**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ windowSize, windowDelta, }: { windowSize?: number &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ windowSize, windowDelta, }: { windowSize?: number &#124; undefined; windowDelta?: number &#124; undefined; }) =&gt; void</code></pre></dialog></span> | Either parameter alone; the other keeps its current value. Both menus change one of the two, and spelling that as "write both, carrying the other across" put `windowDelta: self.windowDelta` in four call sites — which is also where the clamp below would have had to be repeated. | LinearGCContentDisplay |
+| <span id="action-setgcmode">**setGCMode**</span><br><code>(mode: "content" &#124; "skew") =&gt; void</code> |  | LinearGCContentDisplay |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: WiggleRenderingBackend) =&gt; void</code> |  | [LinearWiggleDisplay](../linearwiggledisplay#action-startrenderingbackend) |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  | [LinearWiggleDisplay](../linearwiggledisplay#action-setshowrowseparators) |
 | <span id="action-setcolor">**setColor**</span><br><code>(color?: string &#124; Partial&lt;ColorSetting&gt; &#124; undefined) =&gt; void</code> | <span data-pagefind-ignore>The whole colour object at once, since a scale and the slots it reads are one setting; `undefined` returns to the layout's own picture.</span> | [LinearWiggleDisplay](../linearwiggledisplay#action-setcolor) |

@@ -8,10 +8,10 @@ import { toLocale } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the wiggle display model would undo that display's lazy loading. This
-// module is itself only reached through the GC displays' own loaders.
+// module is itself only reached through the GC display's own loader.
 import linearWiggleDisplayModelFactory from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
-import type { LinearGCContentDisplayConfigSchema } from './index.ts'
+import type { LinearGCContentDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const WINDOW_SIZE_DEFAULT = 100
@@ -23,9 +23,8 @@ const formatBp = (n: number) => `${toLocale(n)} bp`
  * adapter when it already is one, otherwise a sequence adapter wrapped in one,
  * with the display's three GC parameters applied either way.
  *
- * Both display types build theirs here. The canonical `GCContentTrack` names a
- * `GCContentAdapter` (see `LinearGCContentTrackDisplay`), the
- * `ReferenceSequenceTrack` display always has a bare sequence adapter, and a
+ * The canonical `GCContentTrack` names a `GCContentAdapter`, a
+ * `ReferenceSequenceTrack` always has a bare sequence adapter, and a
  * `GCContentTrack` can name a bare one too: that was the only config that worked
  * before the display stopped wrapping unconditionally, and it shipped in our
  * volvox configs long enough to be out in the wild. Left unwrapped, the
@@ -47,16 +46,16 @@ export function gcAdapterConfig(
 }
 
 /**
- * #stateModel SharedGCContentModel
+ * #stateModel LinearGCContentDisplay
  * #category display
  */
-export default function SharedModelF(
+export default function stateModelF(
   pluginManager: PluginManager,
   configSchema: LinearGCContentDisplayConfigSchema,
 ) {
   return types
     .compose(
-      'SharedGCContentModel',
+      'LinearGCContentDisplay',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
       // Redeclaring `configuration` is what lets the GC slots below be read as
       // this schema's own. The wiggle base declares the same prop against the
@@ -65,6 +64,7 @@ export default function SharedModelF(
       // here is checked against the base's slot list and fails. Costs nothing
       // at runtime — same node either way.
       types.model({
+        type: types.literal('LinearGCContentDisplay'),
         configuration: ConfigurationReference(configSchema),
       }),
     )

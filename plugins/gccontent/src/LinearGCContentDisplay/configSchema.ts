@@ -5,25 +5,56 @@ import {
   summaryScoreModeConfigSchemaFields,
 } from '@jbrowse/plugin-wiggle'
 
-// Deliberately carries no `#example` — the two concrete types do. `isBaseSchema`
-// in the doc generator reads "extended by others, not itself registered as a
-// DisplayType, and carrying no example" as the definition of a base schema, and
-// only that reading stops this page's slot table from instructing
-// `"type": "SharedGCContentDisplay"`, which nothing accepts. An example here
-// would put it back.
 /**
- * #config SharedGCContentDisplay
+ * #config LinearGCContentDisplay
  * #category display
  *
- * Shared config for the two GC content displays: `LinearGCContentDisplay` (on a
- * `ReferenceSequenceTrack`, deriving GC from the track's own sequence adapter)
- * and `LinearGCContentTrackDisplay` (on a standalone `GCContentTrack`). Both
- * register the same slots against different track types, so the slots live here
- * once; a config always names one of the two concrete types.
+ * GC content (or GC skew) of a sequence, drawn as a quantitative plot: on a
+ * `ReferenceSequenceTrack`, from the track's own sequence adapter, or as a
+ * `GCContentTrack` of its own, whose `GCContentAdapter` wraps a sequence
+ * adapter.
+ *
+ * #example
+ * On the assembly's `sequence` track. `gcMode` is `content` for GC percentage
+ * or `skew` for (G-C)/(G+C):
+ * ```js
+ * sequence: {
+ *   type: 'ReferenceSequenceTrack',
+ *   trackId: 'refseq',
+ *   adapter: {
+ *     type: 'IndexedFastaAdapter',
+ *     uri: 'https://example.com/genome.fa',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearGCContentDisplay',
+ *       displayId: 'refseq-LinearGCContentDisplay',
+ *       windowSize: 100,
+ *       windowDelta: 100,
+ *       gcMode: 'content',
+ *     },
+ *   ],
+ * }
+ * ```
+ *
+ * #example
+ * As its own track, in GC-skew mode with a small, overlapping sliding window
+ * (a `windowDelta` under `windowSize` overlaps the windows, which smooths the
+ * signal):
+ * ```js
+ * {
+ *   type: 'GCContentTrack',
+ *   trackId: 'gc',
+ *   name: 'GC content',
+ *   assemblyNames: ['hg38'],
+ *   adapter: { type: 'GCContentAdapter' },
+ *   displayDefaults: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
+ * }
+ * ```
  */
-export default function sharedGCContentConfigSchema() {
+export default function linearGCContentDisplayConfigSchema() {
   return ConfigurationSchema(
-    'SharedGCContentDisplay',
+    'LinearGCContentDisplay',
     {
       /**
        * #slot
@@ -77,6 +108,6 @@ export default function sharedGCContentConfigSchema() {
   )
 }
 
-export type SharedGCContentConfigSchema = ReturnType<
-  typeof sharedGCContentConfigSchema
+export type LinearGCContentDisplayConfigSchema = ReturnType<
+  typeof linearGCContentDisplayConfigSchema
 >

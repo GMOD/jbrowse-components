@@ -33,7 +33,7 @@ inference.
 - [MultiQuantitativeTrack](https://jbrowse.org/jb2/docs/config/multiquantitativetrack.md)
   — displays: LinearWiggleDisplay, LinearMarkDisplay
 - [GCContentTrack](https://jbrowse.org/jb2/docs/config/gccontenttrack.md) —
-  displays: LinearGCContentTrackDisplay
+  displays: LinearGCContentDisplay
 - [MafTrack](https://jbrowse.org/jb2/docs/config/maftrack.md) — displays:
   LinearMafDisplay
 - [HicTrack](https://jbrowse.org/jb2/docs/config/hictrack.md) — displays:
@@ -61,7 +61,6 @@ inference.
 - [LDTrackDisplay](https://jbrowse.org/jb2/docs/config/ldtrackdisplay.md)
 - [LinearWiggleDisplay](https://jbrowse.org/jb2/docs/config/linearwiggledisplay.md)
 - [LinearGCContentDisplay](https://jbrowse.org/jb2/docs/config/lineargccontentdisplay.md)
-- [LinearGCContentTrackDisplay](https://jbrowse.org/jb2/docs/config/lineargccontenttrackdisplay.md)
 - [LinearMafDisplay](https://jbrowse.org/jb2/docs/config/linearmafdisplay.md)
 - [LinearHicDisplay](https://jbrowse.org/jb2/docs/config/linearhicdisplay.md)
 - [LinearManhattanDisplay](https://jbrowse.org/jb2/docs/config/linearmanhattandisplay.md)

@@ -1,10 +1,9 @@
 import { makeTrackId } from '@jbrowse/core/util'
 
 /**
- * Build a standalone GCContentTrack config that wraps a sequence adapter in a
- * GCContentAdapter. Shared by the "Add GC content track" menu row and the GC
- * content display's `addGCContentTrack`. Window params are optional — omit them
- * to let the display config defaults apply.
+ * A standalone GCContentTrack config that wraps a sequence adapter in a
+ * GCContentAdapter, for the "Add GC content track" menu row. Window params are
+ * optional; omitted, the display's defaults apply.
  */
 export function makeGCContentTrackConf({
   assemblyNames,
@@ -31,7 +30,7 @@ export function makeGCContentTrackConf({
     },
     displays: [
       {
-        type: 'LinearGCContentTrackDisplay',
+        type: 'LinearGCContentDisplay',
         windowSize,
         windowDelta,
         gcMode,

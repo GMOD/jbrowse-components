@@ -46,7 +46,7 @@ used for having a gc content track outside of the "reference sequence display"
 
 ## Related links
 
-- **Display:** [LinearGCContentTrackDisplay](../lineargccontenttrackdisplay) ([state model](../../models/lineargccontenttrackdisplay))
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay) ([state model](../../models/lineargccontentdisplay))
 - **Adapter:** [GCContentAdapter](../gccontentadapter)
 - **Base config:** [BaseTrack](../basetrack)
 

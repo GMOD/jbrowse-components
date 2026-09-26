@@ -25,12 +25,12 @@ BaseViewModel
 DotplotDisplay
 LDTrackDisplay
 LinearCanvasBaseDisplay
+LinearGCContentDisplay
 LinearManhattanDisplay
 LinearMarkDisplay
 LinearMultiRowFeatureDisplay
 LinearMultiSampleVariantDisplay
 MultiWaySyntenyDisplay
-SharedGCContentModel
 
 # configs that fell back to the General category (0)
 # fix: add #category to the #config JSDoc
