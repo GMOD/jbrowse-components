@@ -393,34 +393,6 @@ test('a v4 clustered multi-sample variant display loads with its order, tree and
   expect(getConf(display, ['rowColor', 'domain'])).toEqual([])
 })
 
-// `scatterPointSize` is a v5-beta spelling, not a v4 one — v4 had no
-// configurable scatter point diameter at all.
-test("a beta session track's scatterPointSize is the wiggle display's size", async () => {
-  const { display } = await load({
-    ...v4Session('QuantitativeTrack', 'bw_session', {
-      type: 'LinearWiggleDisplay',
-      configuration: 'bw_session-LinearWiggleDisplay',
-    }),
-    sessionTracks: [
-      {
-        type: 'QuantitativeTrack',
-        trackId: 'bw_session',
-        name: 'bw_session',
-        assemblyNames: ['volvox'],
-        adapter: { type: 'BigWigAdapter', uri: 'a.bw' },
-        displays: [
-          {
-            type: 'LinearWiggleDisplay',
-            displayId: 'bw_session-LinearWiggleDisplay',
-            scatterPointSize: 5,
-          },
-        ],
-      },
-    ],
-  })
-  expect(getConf(display, 'size')).toBe(5)
-})
-
 function wiggleSlots(display: Parameters<typeof getConf>[0]) {
   return {
     rows: getConf(display, ['rows', 'field']),

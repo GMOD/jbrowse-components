@@ -222,21 +222,13 @@ describe('validateConfig', () => {
     const config = baseConfig()
     config.tracks[0] = {
       ...config.tracks[0]!,
-      type: 'QuantitativeTrack',
-      adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
-      // @ts-expect-error legacy key, lifted onto `size`
+      // @ts-expect-error v4's colorBy, lifted onto `color`
       displays: [
-        {
-          type: 'LinearWiggleDisplay',
-          displayId: 'd',
-          scatterPointSize: 4,
-        },
+        { type: 'LinearAlignmentsDisplay', colorBy: { type: 'strand' } },
       ],
     }
     expect(errorsOf(config)).toEqual([])
-    expect(warningsOf(config)[0]?.where).toBe(
-      'tracks[0].displays[0].scatterPointSize',
-    )
+    expect(warningsOf(config)[0]?.where).toBe('tracks[0].displays[0].colorBy')
   })
 
   // test_data/volvox's config.json has a track on an assembly a

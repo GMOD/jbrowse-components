@@ -546,7 +546,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       // v4's `colorBy` named a scheme and held the modification settings,
       // which are the `color` or `baseColor` object's field and the
       // `modifications` slot now.
+      // #region retired
       retired: { colorBy: colorSlotsOf },
+      // #endregion
     },
   )
 }

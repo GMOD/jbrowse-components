@@ -6620,10 +6620,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "type": "boolean",
           "default": false
-        },
-        "scatterPointSize": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -6779,10 +6775,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "skew"
           ],
           "default": "content"
-        },
-        "scatterPointSize": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -7276,10 +7268,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw the color key while LD or field coloring is active. Defaults to on.",
           "type": "boolean",
           "default": true
-        },
-        "scatterPointSize": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -9067,9 +9055,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "size": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
-            },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
             },
@@ -9627,9 +9612,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "gcMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
-            },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {
@@ -10467,9 +10449,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
-            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -10755,9 +10734,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
-            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -10967,9 +10943,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "gcMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
-            },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {
@@ -11787,9 +11760,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLegend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
-            },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {

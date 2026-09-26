@@ -5080,9 +5080,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         }
       ],
-      "legacyKeys": [
-        "scatterPointSize"
-      ],
       "legacyValues": {
         "defaultRendering": [
           "multirowxy",
@@ -5366,9 +5363,6 @@ export const configManifest: ConfigManifest = {
           "name": "gcMode",
           "type": "gcMode"
         }
-      ],
-      "legacyKeys": [
-        "scatterPointSize"
       ],
       "aliases": [
         "LinearGCContentTrackDisplay"
@@ -5762,9 +5756,6 @@ export const configManifest: ConfigManifest = {
           "name": "showLegend",
           "type": "boolean"
         }
-      ],
-      "legacyKeys": [
-        "scatterPointSize"
       ],
       "stateModelProps": [
         "id",

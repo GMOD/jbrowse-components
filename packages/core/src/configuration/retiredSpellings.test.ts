@@ -13,7 +13,7 @@ const schema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     retired: {
-      scatterPointSize: (size: unknown) => ({ size }),
+      diameter: (size: unknown) => ({ size }),
       strokeColor: (color: unknown) => ({ color }),
       renderer: (value: unknown) =>
         value && typeof value === 'object'
@@ -28,15 +28,15 @@ const meta = getConfigurationSchemaMetadata(schema)!
 const lift = (snap: Record<string, unknown>) => liftRetiredSpellings(meta, snap)
 
 test('a retired name becomes the member that replaced it', () => {
-  expect(lift({ scatterPointSize: 9 })).toEqual({ size: 9 })
+  expect(lift({ diameter: 9 })).toEqual({ size: 9 })
 })
 
 test('the current spelling beside a retired one wins', () => {
-  expect(lift({ scatterPointSize: 9, size: 3 })).toEqual({ size: 3 })
+  expect(lift({ diameter: 9, size: 3 })).toEqual({ size: 3 })
 })
 
 test('the old key goes even where it carried no value', () => {
-  expect(lift({ scatterPointSize: undefined })).toEqual({})
+  expect(lift({ diameter: undefined })).toEqual({})
 })
 
 // `migrateRetiredDisplays` rebuilds a track snapshot only where an entry
@@ -63,20 +63,17 @@ test('a retired name with no replacement throws naming it', () => {
 // A `displays` union runs every member's preprocessor over every entry while
 // it works out which display an entry is.
 test('an entry naming another type is left as it was', () => {
-  const snap = { type: 'Other', scatterPointSize: 9, partitionField: 'x' }
+  const snap = { type: 'Other', diameter: 9, partitionField: 'x' }
   expect(lift(snap)).toBe(snap)
 })
 
 test('create and a settings bag both read the declaration', () => {
   expect(
-    readConfObject(
-      schema.create({ type: 'Marker', scatterPointSize: 9 }),
-      'size',
-    ),
+    readConfObject(schema.create({ type: 'Marker', diameter: 9 }), 'size'),
   ).toBe(9)
 
   const conf = schema.create({ type: 'Marker' })
-  const report = applyConfSettings(conf, { scatterPointSize: 9 })
+  const report = applyConfSettings(conf, { diameter: 9 })
   expect(report.applied).toEqual(['size'])
   expect(report.undeclared).toEqual({})
   expect(readConfObject(conf, 'size')).toBe(9)
@@ -94,7 +91,7 @@ test('a subclass adds a spelling without dropping its base’s', () => {
   )
   const conf = child.create({
     type: 'BigMarker',
-    scatterPointSize: 9,
+    diameter: 9,
     lineWidth: 4,
   })
   expect(readConfObject(conf, 'size')).toBe(9)

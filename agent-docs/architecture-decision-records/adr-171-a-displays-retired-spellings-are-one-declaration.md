@@ -97,6 +97,10 @@ Three places in the tree called it v4. Whether a beta-only name deserves a lift
 at all or a refusal naming `size` is a one-word change in the declaration now,
 which is the point of having one.
 
+**Amended 2026-09-25:** neither. Colin's call is that a spelling only a v5 beta
+wrote gets no migration and no refusal, so the `scatterPointSize` lift is
+deleted; the maps hold names a shipped release wrote.
+
 `displayDefaults` is itself a v5 addition — absent at `v4.3.0` — so a config
 mixing it with a retired name is one written against this release, not an old
 one JBrowse has to keep loading. `jbrowse validate` already refused that

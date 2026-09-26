@@ -6263,10 +6263,6 @@
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "type": "boolean",
           "default": false
-        },
-        "scatterPointSize": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -6403,10 +6399,6 @@
         "gcMode": {
           "enum": ["content", "skew"],
           "default": "content"
-        },
-        "scatterPointSize": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -6869,10 +6861,6 @@
           "description": "Draw the color key while LD or field coloring is active. Defaults to on.",
           "type": "boolean",
           "default": true
-        },
-        "scatterPointSize": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -8556,9 +8544,6 @@
             "size": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
-            },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
             },
@@ -9102,9 +9087,6 @@
             },
             "gcMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
-            },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {
@@ -9918,9 +9900,6 @@
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
-            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -10198,9 +10177,6 @@
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
-            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -10402,9 +10378,6 @@
             },
             "gcMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
-            },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {
@@ -11190,9 +11163,6 @@
             },
             "showLegend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
-            },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
             }
           },
           "patternProperties": {

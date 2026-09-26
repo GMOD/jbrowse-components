@@ -983,12 +983,10 @@ For the common case — a _display's_ config across a format change — declare 
 rather than registering a handler. A name an older release used goes in the
 config schema's `retired`:
 
-<!-- include: packages/wiggle-core/src/WiggleScoreConfigMixin.ts#retired -->
+<!-- include: plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts#retired -->
 
 ```typescript
-export const wiggleScoreRetired = {
-  scatterPointSize: (size: unknown) => ({ size }),
-}
+retired: { colorBy: colorSlotsOf },
 ```
 
 Each entry maps the old name to the members its value becomes, or to a string

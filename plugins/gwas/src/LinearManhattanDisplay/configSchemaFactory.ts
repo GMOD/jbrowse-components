@@ -5,7 +5,6 @@ import {
   scalesSchema,
   scoreFieldConfigSchemaFields,
   valueScaleSchema,
-  wiggleScoreRetired,
 } from '@jbrowse/wiggle-core'
 
 import { manhattanColorConfigSchema } from './colorConfigSchema.ts'
@@ -168,7 +167,6 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      retired: wiggleScoreRetired,
     },
   )
 }

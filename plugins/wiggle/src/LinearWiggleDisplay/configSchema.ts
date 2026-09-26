@@ -7,7 +7,6 @@ import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-import { wiggleScoreRetired } from '@jbrowse/wiggle-core'
 
 import { checkRowsField } from '../shared/checkRowsField.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
@@ -204,7 +203,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    retired: wiggleScoreRetired,
     preProcessSnapshot: checkRowsField('LinearWiggleDisplay'),
   },
 )

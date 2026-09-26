@@ -265,21 +265,6 @@ describe('the schema', () => {
   })
 
   it("accepts a legacy key a display's schema retires", () => {
-    const wiggle = baseConfig()
-    wiggle.tracks[0] = {
-      ...wiggle.tracks[0]!,
-      type: 'QuantitativeTrack',
-      adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
-      displays: [
-        {
-          type: 'LinearWiggleDisplay',
-          defaultRendering: 'scatter',
-          scatterPointSize: 4,
-        },
-      ],
-    }
-    expect(schemaProblems(wiggle)).toEqual([])
-
     const alignments = baseConfig()
     alignments.tracks[0]!.displays = [
       { type: 'LinearAlignmentsDisplay', colorBy: { type: 'strand' } },

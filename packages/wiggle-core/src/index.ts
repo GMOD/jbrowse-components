@@ -99,7 +99,6 @@ export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export type { ScoreScaleHost } from './ScoreScaleMixin.ts'
 export {
   WiggleScoreConfigMixin,
-  wiggleScoreRetired,
   wiggleScoreConfigExtraSlots,
 } from './WiggleScoreConfigMixin.ts'
 export type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
