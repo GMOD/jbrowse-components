@@ -4,7 +4,18 @@ import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core/renderingBackendTypes'
 import type { Feature } from '@jbrowse/core/util'
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
-export { WIGGLE_RENDERINGS, WIGGLE_RENDERING_TYPES } from './renderingTypes.ts'
+export {
+  LINE_INTERPOLATIONS,
+  WIGGLE_MARKS,
+  WIGGLE_RENDERINGS,
+  markOf,
+  renderingOf,
+} from './renderingTypes.ts'
+export type {
+  LineInterpolation,
+  WiggleMark,
+  WiggleRendering,
+} from './renderingTypes.ts'
 
 export {
   WIGGLE_NEG_COLOR_DEFAULT,

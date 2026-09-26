@@ -266,7 +266,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
             {
               trackId: 'cookbook_multiwig',
               height: 480,
-              defaultRendering: 'line',
+              mark: 'line',
               // Pinned, and identical for every row: copy number is an absolute
               // quantity, and per-row autoscale is what made the old figure
               // unreadable. Each row's own maximum became the top of its plot,

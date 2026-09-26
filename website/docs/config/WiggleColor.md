@@ -22,7 +22,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ```js
 {
   type: 'LinearWiggleDisplay',
-  defaultRendering: 'density',
+  mark: 'heatmap',
   color: { field: 'score', scale: 'linear', scheme: 'viridis' },
 }
 ```

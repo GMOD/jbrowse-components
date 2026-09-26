@@ -177,7 +177,7 @@ rows in the figure below:
     ]
   },
   "displayDefaults": {
-    "defaultRendering": "xyplot",
+    "mark": "bar",
     "height": 330
   }
 }
@@ -242,7 +242,7 @@ build step. The plugin is not in the plugin store yet, so this whole fragment,
         "uri": "percell.zarr"
       },
       "displayDefaults": {
-        "defaultRendering": "density",
+        "mark": "heatmap",
         "scales": { "y": { "domainMin": 0, "domainMax": 2 } },
         "height": 420
       }

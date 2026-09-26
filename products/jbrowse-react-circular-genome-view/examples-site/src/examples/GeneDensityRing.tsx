@@ -35,7 +35,7 @@ const tracks = [
       {
         type: 'LinearWiggleDisplay',
         displayId: 'hg38ToMm39_gene_density-LinearWiggleDisplay',
-        defaultRendering: 'density',
+        mark: 'heatmap',
         summaryScoreMode: 'avg',
         height: 40,
       },

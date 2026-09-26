@@ -388,7 +388,7 @@ describe('wiggle / score modifiers', () => {
       scales: {
         y: { type: 'log', domainMin: 1, domainMax: 1024, grid: true },
       },
-      defaultRendering: 'scatter',
+      mark: 'point',
       resolution: 100,
       color: 'purple',
     })
@@ -416,7 +416,7 @@ describe('wiggle / score modifiers', () => {
       'fill:false',
       'crosshatch:true',
     ])
-    expect(snap.defaultRendering).toBeUndefined()
+    expect(snap.mark).toBeUndefined()
     expect(snap.scales?.y.grid).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(2)
     warn.mockRestore()

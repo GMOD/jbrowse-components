@@ -141,7 +141,7 @@ describe('convertTrackConfig', () => {
       {
         type: 'LinearWiggleDisplay',
         displayId: `${result.trackId}-LinearWiggleDisplay`,
-        defaultRendering: 'xyplot',
+        mark: 'bar',
       },
     ])
   })
@@ -156,7 +156,7 @@ describe('convertTrackConfig', () => {
       }),
       dataRoot,
     )
-    expect(result.displays?.[0]?.defaultRendering).toBe('density')
+    expect(result.displays?.[0]?.mark).toBe('heatmap')
   })
 
   it('returns unsupported conf for VCFTribble', () => {

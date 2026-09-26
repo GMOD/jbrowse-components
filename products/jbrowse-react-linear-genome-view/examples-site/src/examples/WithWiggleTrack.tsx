@@ -18,7 +18,7 @@ export default function WithWiggleTrack() {
             uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
           },
           displayDefaults: {
-            defaultRendering: 'xyplot',
+            mark: 'bar',
             height: 150,
             color: '#a05195',
             scales: { y: { domainMin: 0, domainMax: 1000 } },

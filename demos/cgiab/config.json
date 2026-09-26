@@ -207,7 +207,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "HG008_log2ratio-LinearWiggleDisplay",
-          "defaultRendering": "scatter",
+          "mark": "point",
           "summaryScoreMode": "avg",
           "size": 1,
           "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
@@ -232,7 +232,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "HG008-T_bicseq2-LinearWiggleDisplay",
-          "defaultRendering": "line",
+          "mark": "line",
           "color": "#0068d1",
           "scales": {
             "y": { "domainMin": -2, "domainMax": 1.5, "grid": true }
@@ -259,7 +259,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "HG008-T_baf-LinearWiggleDisplay",
-          "defaultRendering": "scatter",
+          "mark": "point",
           "size": 1,
           "scales": { "y": { "domainMin": 0, "domainMax": 1 } },
           "height": 120

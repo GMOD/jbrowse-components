@@ -42,8 +42,8 @@ const MICROARRAY_BW_ADAPTER = {
 
 // One QuantitativeTrack per rendering style, all wrapping the same BigWig, so a
 // single figure shows every plot type rendered live side by side. The rendering
-// style itself is applied via the flat `defaultRendering` key on the view's
-// track reference (routes into the display's configOverrides).
+// style itself is applied via the flat `mark` key on the view's track reference
+// (routes into the display's configOverrides).
 const wigModeTrack = (rendering: string, name: string) => ({
   type: 'QuantitativeTrack',
   trackId: `wiggle_mode_${rendering}`,
@@ -76,27 +76,28 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'wiggle_mode_xyplot',
-              defaultRendering: 'xyplot',
+              mark: 'bar',
               height: 90,
             },
             {
               trackId: 'wiggle_mode_density',
-              defaultRendering: 'density',
+              mark: 'heatmap',
               height: 60,
             },
             {
               trackId: 'wiggle_mode_line',
-              defaultRendering: 'line',
+              mark: 'line',
               height: 90,
             },
             {
               trackId: 'wiggle_mode_linecenter',
-              defaultRendering: 'linecenter',
+              mark: 'line',
+              interpolate: 'linear',
               height: 90,
             },
             {
               trackId: 'wiggle_mode_scatter',
-              defaultRendering: 'scatter',
+              mark: 'point',
               height: 90,
             },
           ],
@@ -318,7 +319,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           scales: { y: { autoscale: 'localsd', numStdDev: 3 } },
           // scatter rendering reads copy-number gains/losses better than
           // the filled XY plot across the whole genome
-          defaultRendering: 'scatter',
+          mark: 'point',
           // finer binning (basesPerSpan = bpPerPx/resolution) so the
           // whole-genome scatter resolves copy-number structure
           resolution: 5,
@@ -568,9 +569,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           type: 'LinearWiggleDisplay',
           height: 420,
           // one colored density strip per individual, off the track type's own
-          // `rows: 'source'` seed; `defaultRendering` is a config slot, so
+          // `rows: 'source'` seed; `mark` is a config slot, so
           // this flat key routes into the display's configOverrides
-          defaultRendering: 'density',
+          mark: 'heatmap',
           // copy number: most cells sit at the diploid baseline (~2), so the
           // default localpercentile autoscale clamps the amplifications near
           // the 99th percentile (~2.2). `local` uses the true region max so

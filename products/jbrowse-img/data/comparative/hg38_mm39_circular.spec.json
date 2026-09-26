@@ -7,7 +7,7 @@
     {
       "trackId": "hg38ToMm39_gene_density",
       "type": "LinearWiggleDisplay",
-      "defaultRendering": "density",
+      "mark": "heatmap",
       "summaryScoreMode": "avg",
       "height": 40
     },

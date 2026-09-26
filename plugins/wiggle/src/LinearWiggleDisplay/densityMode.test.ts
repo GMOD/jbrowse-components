@@ -62,3 +62,17 @@ it('stops drawing cross hatches in density mode', () => {
   expect(display.grid).toBe(true)
   expect(display.showCrossHatches).toBe(false)
 })
+
+it("writes the plot type as the mark and the line's interpolation it draws", () => {
+  const display = makeDisplay()
+  display.setRenderingType('linecenter')
+  expect(display.configuration.mark).toBe('line')
+  expect(display.configuration.interpolate).toBe('linear')
+  expect(display.renderingType).toBe('linecenter')
+  display.setRenderingType('density')
+  expect(display.configuration.mark).toBe('heatmap')
+  expect(display.renderingType).toBe('density')
+  display.setRenderingType('line')
+  expect(display.configuration.interpolate).toBe('step')
+  expect(display.renderingType).toBe('line')
+})

@@ -12,8 +12,9 @@ density heatmap, a line, or a scatter plot, switchable from the track menu's
 ## Rendering types
 
 The track menu's **Plot type** submenu (backed by the display's
-[`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
-slot) offers these styles:
+[`mark`](/docs/config/linearwiggledisplay/#slot-mark) and
+[`interpolate`](/docs/config/linearwiggledisplay/#slot-interpolate) slots)
+offers these styles:
 
 - XY plot - filled bar chart
 - Density - a heatmap row, compact for many signals at once

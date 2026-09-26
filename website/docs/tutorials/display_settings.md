@@ -197,7 +197,7 @@ view: {
     {
       trackId: 'volvox_microarray',
       type: 'LinearWiggleDisplay',
-      defaultRendering: 'line',
+      mark: 'line',
       height: 150,
     },
   ],

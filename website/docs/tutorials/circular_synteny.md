@@ -250,7 +250,7 @@ is opened as a density strip whose colour is the average over each pixel's bins:
     {
       "type": "LinearWiggleDisplay",
       "displayId": "hg38ToMm39_gene_density-LinearWiggleDisplay",
-      "defaultRendering": "density",
+      "mark": "heatmap",
       "summaryScoreMode": "avg",
       "height": 40
     }
@@ -277,7 +277,7 @@ before the synteny track:
           {
             "trackId": "hg38ToMm39_gene_density",
             "type": "LinearWiggleDisplay",
-            "defaultRendering": "density",
+            "mark": "heatmap",
             "summaryScoreMode": "avg",
             "height": 40
           },

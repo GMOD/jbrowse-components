@@ -186,7 +186,7 @@ const suite: TestSuite = {
           trackId: 'volvox_microarray_multi_grouped',
           displaySnapshot: {
             type: 'LinearWiggleDisplay',
-            defaultRendering: 'line',
+            mark: 'line',
           },
         },
       ],
@@ -201,7 +201,7 @@ const suite: TestSuite = {
           trackId: 'volvox_microarray_multi_grouped',
           displaySnapshot: {
             type: 'LinearWiggleDisplay',
-            defaultRendering: 'density',
+            mark: 'heatmap',
           },
         },
       ],

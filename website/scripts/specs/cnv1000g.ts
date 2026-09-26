@@ -94,7 +94,7 @@ const LADDER_TRACK = {
 // which the legend's own bar shows.
 export const CN_HEATMAP_SETTINGS = {
   type: 'LinearWiggleDisplay',
-  defaultRendering: 'density',
+  mark: 'heatmap',
   origin: 2,
   scales: { y: { domainMin: 0, domainMax: 4 } },
   color: {
@@ -173,7 +173,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
               // result look like nothing. As step traces you read the level
               // and where it steps. Same finding as cookbook_multiwig, which
               // was rebuilt for it.
-              defaultRendering: 'line',
+              mark: 'line',
               height: 500,
               scales: { y: { domainMin: 0, domainMax: 10 } },
             },

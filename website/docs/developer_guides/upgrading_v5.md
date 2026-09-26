@@ -338,12 +338,12 @@ row labels, and `rows: ''` draws every source in one shared plot. A
 `summaryScoreMode: 'avg'` and `height: 200`, so a multi track that names no
 display setting still opens as a stack of rows.
 
-`defaultRendering` is the five plot names — `xyplot`, `density`, `line`,
-`linecenter` and `scatter`. A config or a session naming
-`MultiLinearWiggleDisplay` loads as `LinearWiggleDisplay`, its rendering read as
-the plot and the layout it drew: `multirowxy` is `xyplot` on rows, and `xyplot`
-is `xyplot` with `rows: ""`. A `LinearWiggleDisplay` entry takes the five names
-alone.
+`defaultRendering` is now `mark`, in the mark display's words: `xyplot` loads as
+`bar`, `scatter` as `point`, `density` as `heatmap`, `line` as `line`, and
+`linecenter` as a `line` with `interpolate: 'linear'`. A config or a session
+naming `MultiLinearWiggleDisplay` loads as `LinearWiggleDisplay`, its rendering
+read as the plot and the layout it drew: `multirowxy` is a `bar` on rows, and
+`xyplot` a `bar` with `rows: ""`.
 
 `rows` also holds a reader's arrangement of the rows, which
 `MultiLinearWiggleDisplay` kept as display props. The arrangement is therefore

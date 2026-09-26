@@ -294,7 +294,7 @@ interface DisplaySnapshot {
       grid?: boolean
     }
   }
-  defaultRendering?: string
+  mark?: string
   resolution?: number
   // multi-sample variants: equal-width columns rather than genomic spans
   variantLayout?: 'genomic' | 'columns'
@@ -310,12 +310,12 @@ interface DisplaySnapshot {
 // modifier's `on` list.
 // Valid keys = every member of the display Instance types (MST props + resolved
 // getters) plus the wiggle config slots whose snapshot name diverges from any
-// instance member: `autoscale`/`defaultRendering` resolve through
+// instance member: `autoscale`/`mark` resolve through
 // divergently-named getters (`autoscaleType`/`renderingType`), and
 // `color`/`scales` are config-slot-only with no getter —
 // `showTrackGeneric` routes all four onto the config, so `keyof` the instance
 // misses them. `height` resolves fine — it's the getter.
-type WiggleConfigSlotKey = 'defaultRendering' | 'color' | 'scales'
+type WiggleConfigSlotKey = 'mark' | 'color' | 'scales'
 // `forceLoad` is a base-linear-display config slot read through the
 // divergently-named `configForceLoad` getter, so `keyof` the instance misses it
 // the same way it misses the wiggle slots above.
@@ -917,12 +917,12 @@ const modifiers: Record<string, Modifier> = {
     },
   },
   // Legacy fill toggle. `fill:false` historically meant "no fill" on
-  // xyplot-family renderers, which maps to the `scatter` rendering type;
-  // `fill:true` is plain `xyplot`.
+  // xyplot-family renderers, which is a `point` mark; `fill:true` is a
+  // plain `bar`.
   fill: {
     on: ['wiggle'],
     apply: (r, v) => {
-      r.snap.defaultRendering = parseBool('fill', v) ? 'xyplot' : 'scatter'
+      r.snap.mark = parseBool('fill', v) ? 'bar' : 'point'
     },
   },
   resolution: {

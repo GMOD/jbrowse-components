@@ -236,7 +236,7 @@ function tracks(cells: Cells) {
           uri: `${BASE}/${type.name.replaceAll(' ', '_')}.bw`,
         })),
       },
-      displayDefaults: { defaultRendering: 'xyplot', height: 330 },
+      displayDefaults: { mark: 'bar', height: 330 },
     },
     {
       type: 'MultiQuantitativeTrack',
@@ -248,7 +248,7 @@ function tracks(cells: Cells) {
         uri: `${BASE}/percell.zarr`,
       },
       displayDefaults: {
-        defaultRendering: 'density',
+        mark: 'heatmap',
         height: 420,
         scales: { y: { domainMin: 0, domainMax: 4 } },
       },

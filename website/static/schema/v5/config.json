@@ -6149,25 +6149,15 @@
     "LinearWiggleDisplaySlots": {
       "type": "object",
       "properties": {
-        "defaultRendering": {
-          "description": "Default rendering type.",
-          "anyOf": [
-            {
-              "enum": ["xyplot", "density", "line", "linecenter", "scatter"]
-            },
-            {
-              "enum": [
-                "multirowxy",
-                "multirowdensity",
-                "multirowline",
-                "multiline",
-                "multixyplot"
-              ],
-              "deprecated": true,
-              "description": "Legacy spellings a migration rewrites when the config loads."
-            }
-          ],
-          "default": "xyplot"
+        "mark": {
+          "description": "bar, point, line or heatmap.",
+          "enum": ["bar", "point", "line", "heatmap"],
+          "default": "bar"
+        },
+        "interpolate": {
+          "description": "step or linear, for a line.",
+          "enum": ["step", "linear"],
+          "default": "step"
         },
         "rows": {
           "$ref": "#/$defs/Rows"
@@ -6258,6 +6248,10 @@
         "minimalTicks": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "defaultRendering": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -6286,10 +6280,15 @@
     "LinearGCContentDisplaySlots": {
       "type": "object",
       "properties": {
-        "defaultRendering": {
-          "description": "Default rendering type.",
-          "enum": ["xyplot", "density", "line", "linecenter", "scatter"],
-          "default": "xyplot"
+        "mark": {
+          "description": "bar, point, line or heatmap.",
+          "enum": ["bar", "point", "line", "heatmap"],
+          "default": "bar"
+        },
+        "interpolate": {
+          "description": "step or linear, for a line.",
+          "enum": ["step", "linear"],
+          "default": "step"
         },
         "rows": {
           "$ref": "#/$defs/Rows"
@@ -6390,6 +6389,10 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "defaultRendering": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -8992,8 +8995,11 @@
             "forceLoad": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/forceLoad"
             },
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
+            "mark": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/interpolate"
             },
             "rows": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rows"
@@ -9060,6 +9066,9 @@
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
             }
           },
           "patternProperties": {
@@ -9723,8 +9732,11 @@
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
           "type": "object",
           "properties": {
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            "mark": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
             },
             "rows": {
               "anyOf": [
@@ -9869,6 +9881,9 @@
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
                 }
               ]
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
@@ -10000,8 +10015,11 @@
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
           "type": "object",
           "properties": {
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            "mark": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
             },
             "rows": {
               "anyOf": [
@@ -10147,6 +10165,9 @@
                 }
               ]
             },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -10277,8 +10298,11 @@
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
           "type": "object",
           "properties": {
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
+            "mark": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/interpolate"
             },
             "rows": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rows"
@@ -10348,6 +10372,9 @@
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
             }
           },
           "patternProperties": {

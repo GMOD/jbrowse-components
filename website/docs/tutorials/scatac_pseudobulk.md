@@ -185,11 +185,10 @@ per cell type. Percent-encode the `+` in a cell-type name
 (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and the row loads
 with no data.
 
-[`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
-lists every drawing mode, and the track menu switches between them live.
-`xyplot` (the default, and the figures here) compares peak shape; `density` maps
-score to color and fits more rows. [](/docs/user_guides/quantitative_track)
-covers the rest of the menu.
+[`mark`](/docs/config/linearwiggledisplay/#slot-mark) lists every drawing mode,
+and the track menu switches between them live. `bar` (the default, and the
+figures here) compares peak shape; `heatmap` maps score to color and fits more
+rows. [](/docs/user_guides/quantitative_track) covers the rest of the menu.
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
 

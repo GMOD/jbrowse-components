@@ -565,7 +565,7 @@ the fetch on the raw per-site values at the zoom levels these figures use:
     "resolutionMultiplier": 0.001
   },
   "displayDefaults": {
-    "defaultRendering": "scatter",
+    "mark": "point",
     "size": 1,
     "scales": { "y": { "domainMin": 0, "domainMax": 1 } }
   }

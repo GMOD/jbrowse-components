@@ -11,7 +11,7 @@
             "height": 275,
             "resolution": 25,
             "scales": { "y": { "autoscale": "localsd", "grid": true } },
-            "defaultRendering": "scatter"
+            "mark": "point"
           }
         ]
       }

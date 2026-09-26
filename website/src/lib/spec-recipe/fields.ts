@@ -43,7 +43,10 @@ import {
   SUBFEATURE_LABEL_OPTIONS,
 } from '../../../../plugins/canvas/src/RenderFeatureDataRPC/displayModes.ts'
 import { getHeightModeOptions } from '../../../../packages/display-kit/src/heightMode.ts'
-import { WIGGLE_RENDERINGS } from '../../../../plugins/wiggle/src/renderingTypes.ts'
+import {
+  WIGGLE_RENDERINGS,
+  renderingOf,
+} from '../../../../plugins/wiggle/src/renderingTypes.ts'
 
 // Maps a session-spec field to the thing a reader would actually click. Every
 // menu label here is either imported from the plugin's own option registry
@@ -1000,13 +1003,20 @@ const SUMMARY_SCORE_MODES: Record<string, string> = {
 }
 
 // The 'Plot type' menu radios come straight from the exported wiggle table, so
-// the wording can't drift from the menu.
-function renderingTypeStep(value: unknown): FieldStep | undefined {
-  const rendering = WIGGLE_RENDERINGS.find(([v]) => v === value)
-  return rendering
-    ? { path: `${TRACK_MENU} → Plot type → ${rendering[1]}` }
-    : undefined
+// the wording can't drift from the menu. A `mark` names the radio alone, the
+// step line for a `line`; `interpolate: 'linear'` names the interpolated one.
+function plotTypeStep(rendering: string): FieldStep | undefined {
+  const radio = WIGGLE_RENDERINGS.find(([v]) => v === rendering)
+  return radio ? { path: `${TRACK_MENU} → Plot type → ${radio[1]}` } : undefined
 }
+
+const markStep: FieldRecipe = value =>
+  typeof value === 'string'
+    ? plotTypeStep(renderingOf(value, 'step'))
+    : undefined
+
+const interpolateStep: FieldRecipe = value =>
+  value === 'linear' ? plotTypeStep('linecenter') : undefined
 
 function resolutionLabel(n: number) {
   return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
@@ -1558,7 +1568,8 @@ export const trackFields: Record<string, FieldRecipe> = {
     path: `${TRACK_MENU} → Filter by... → Missingness → ${n.toFixed(2)}`,
     note: 'Hides variants whose fraction of no-call genotypes is above this; 1 keeps every variant.',
   })),
-  defaultRendering: renderingTypeStep,
+  mark: markStep,
+  interpolate: interpolateStep,
   summaryScoreMode: fromTable(
     'Score → Summary score mode',
     SUMMARY_SCORE_MODES,

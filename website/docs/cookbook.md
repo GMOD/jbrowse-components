@@ -313,8 +313,8 @@ that pass every expression, on variant tracks too:
 
 A string in `color` paints every bar; left alone, a wiggle cuts at its `origin`
 and paints the two sides apart.
-[`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
-picks `xyplot`, `line`, `scatter`, or `density`.
+[`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `line`,
+`point`, or `heatmap`.
 
 ```json addtrack
 {
@@ -355,7 +355,7 @@ picks `xyplot`, `line`, `scatter`, or `density`.
       }
     ]
   },
-  "displayDefaults": { "defaultRendering": "line", "rows": "" }
+  "displayDefaults": { "mark": "line", "rows": "" }
 }
 ```
 

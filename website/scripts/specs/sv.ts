@@ -375,7 +375,7 @@ const HG19_MAIN_CHROMS = [
 const HG008_BICSEQ2_LANE = {
   trackId: 'hg008_bicseq2',
   type: 'LinearWiggleDisplay',
-  defaultRendering: 'xyplot',
+  mark: 'bar',
   scales: { y: { domainMin: -2, domainMax: 2, grid: true } },
   height: 130,
 }
@@ -613,7 +613,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'colo829_cnv_coverage',
               type: 'LinearWiggleDisplay',
               scales: { y: { autoscale: 'localsd', numStdDev: 3 } },
-              defaultRendering: 'scatter',
+              mark: 'point',
               rows: '',
               // even finer binning (basesPerSpan = bpPerPx/resolution) so the
               // scatter resolves copy-number structure (even finer,
@@ -1505,7 +1505,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // axis that does not move with the view
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'xyplot',
+              mark: 'bar',
               color: '#0068d1',
               summaryScoreMode: 'avg',
               scales: { y: { domainMin: 0, domainMax: 140, grid: true } },
@@ -2039,7 +2039,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_cnv_indexcov',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
+              mark: 'point',
               rows: '',
               // Fixed 0..3, which is the manual min/max cap the walkthrough
               // tells the reader to apply, and which localsd autoscale was
@@ -2062,7 +2062,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // average the two LOH bands into 0.5 and erase the event. The raw
               // fetch that keeps the bands apart is HG008_BAF_TRACK's
               // resolutionMultiplier, not a display setting.
-              defaultRendering: 'scatter',
+              mark: 'point',
               size: 1,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
@@ -2268,7 +2268,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'xyplot',
+              mark: 'bar',
               color: '#0068d1',
               summaryScoreMode: 'avg',
               scales: { y: { domainMin: 0, domainMax: 140 } },
@@ -2372,7 +2372,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               // scatter of the per-bin average depth; autoscale (no fixed
               // min/max) since HiFiCNV depth is raw coverage, not a ±ratio
-              defaultRendering: 'scatter',
+              mark: 'point',
               color: '#0068d1',
               summaryScoreMode: 'avg',
               size: 1,
@@ -2391,7 +2391,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // meaningless 0.5 and erase the event. The raw fetch that keeps
               // those bands apart is HG008_BAF_TRACK's resolutionMultiplier, not
               // a display setting; see the note on that const.
-              defaultRendering: 'scatter',
+              mark: 'point',
               size: 1,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
@@ -2554,7 +2554,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // range set above rather than each row's own autoscale.
               trackId: 'hg008_tn_perbase',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'xyplot',
+              mark: 'bar',
               summaryScoreMode: 'avg',
               // no cross hatches: the read is one filled profile against the
               // other, and the gridlines only add texture across both
@@ -2645,7 +2645,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
+              mark: 'point',
               color: '#0068d1',
               summaryScoreMode: 'avg',
               size: 3,
@@ -2661,7 +2661,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // raw 0..1 BAF scatter. The 2+1 gain's band-split at 1/3 and 2/3
               // reads here because HG008_BAF_TRACK's resolutionMultiplier keeps
               // the fetch off the bigWig zoom levels; see the note on that const.
-              defaultRendering: 'scatter',
+              mark: 'point',
               size: 2,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
@@ -2724,7 +2724,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
+              mark: 'point',
               color: '#0068d1',
               summaryScoreMode: 'avg',
               size: 1,
@@ -2742,7 +2742,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // chr3 q-arm. At this zoom the split only survives because
               // HG008_BAF_TRACK's resolutionMultiplier keeps the fetch off the
               // bigWig zoom levels, whose per-bin min/avg/max paints one wash.
-              defaultRendering: 'scatter',
+              mark: 'point',
               size: 1,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
@@ -2827,7 +2827,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // twice and left the figure a lane taller.
               trackId: 'hg008_cnv_indexcov',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
+              mark: 'point',
               rows: '',
               // fixed 0..3 as on chr5: indexcov's centromere and repeat spikes
               // run into the hundreds, and an autoscaled axis puts every
@@ -2844,7 +2844,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // beside it. At this zoom the split only survives because
               // HG008_BAF_TRACK's resolutionMultiplier keeps the fetch off the
               // bigWig zoom levels.
-              defaultRendering: 'scatter',
+              mark: 'point',
               size: 1,
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,

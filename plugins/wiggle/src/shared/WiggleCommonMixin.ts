@@ -8,8 +8,10 @@ import {
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 
+import { markOf, renderingOf } from '../renderingTypes.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
+import type { WiggleRendering } from '../renderingTypes.ts'
 import type { WiggleHoveredFeature } from '../util.ts'
 import type { summaryScoreModeConfigSchemaFields } from './summaryScoreModeConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
@@ -20,13 +22,14 @@ import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 /**
- * The slot this mixin reads that no shared table can hold: each wiggle
- * display gives `defaultRendering` its own enum and default. A runtime value
- * so `RestatedMixinSlots.test.ts` can check the restated type;
+ * The slots this mixin reads that no shared table can hold: each wiggle
+ * display gives `mark` and `interpolate` its own enum and default. A runtime
+ * value so `RestatedMixinSlots.test.ts` can check the restated types;
  * `defaultValue` is a placeholder.
  */
 export const wiggleCommonExtraSlots = {
-  defaultRendering: { type: 'stringEnum', defaultValue: '' },
+  mark: { type: 'stringEnum', defaultValue: '' },
+  interpolate: { type: 'stringEnum', defaultValue: '' },
 } as const
 
 type WiggleCommonConfigModel = ConfigModelForFields<
@@ -127,8 +130,11 @@ export function WiggleCommonMixin() {
       /**
        * #getter
        */
-      get renderingType(): string {
-        return getConf(confNode(self), 'defaultRendering')
+      get renderingType(): WiggleRendering {
+        return renderingOf(
+          getConf(confNode(self), 'mark'),
+          getConf(confNode(self), 'interpolate'),
+        )
       },
       /**
        * #getter
@@ -267,7 +273,13 @@ export function WiggleCommonMixin() {
        * #action
        */
       setRenderingType(type: string) {
-        setConf(confNode(self), 'defaultRendering', type)
+        const written = markOf(type)
+        if (written) {
+          setConf(confNode(self), 'mark', written.mark)
+          if (written.interpolate) {
+            setConf(confNode(self), 'interpolate', written.interpolate)
+          }
+        }
       },
       /**
        * #action

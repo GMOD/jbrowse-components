@@ -69,7 +69,7 @@ color settings are declared once:
     ]
   },
   "displayDefaults": {
-    "defaultRendering": "density",
+    "mark": "heatmap",
     "origin": 2,
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "color": {
@@ -85,8 +85,8 @@ The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
 plain list of absolute URLs and names each subtrack from its filename. Four
 display settings turn that into a copy-number heatmap:
 
-- [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
-  `density` gives each sample one strip of color.
+- [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `heatmap` gives each
+  sample one strip of color.
 - [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
   the diploid baseline, and [`color`](/docs/config/wigglecolor/) cuts there,
   painting gains in the `range`'s second colour and losses in its first.
@@ -191,7 +191,7 @@ hosted (see [configuring plugins](/docs/config_guides/plugins)):
         "uri": "qm2_cn_1kb.zarr"
       },
       "displayDefaults": {
-        "defaultRendering": "density",
+        "mark": "heatmap",
         "origin": 2,
         "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
         "color": {

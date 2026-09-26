@@ -16,7 +16,7 @@ import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
-import { WIGGLE_RENDERING_TYPES } from '../util.ts'
+import { LINE_INTERPOLATIONS, WIGGLE_MARKS, markOf } from '../util.ts'
 
 /**
  * #config LinearWiggleDisplay
@@ -90,22 +90,38 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   'LinearWiggleDisplay',
   {
     /**
-     * #slot
-     * Default rendering type: `xyplot`, `density`, `line`, `linecenter`, or
-     * `scatter`.
+     * #slot mark
+     * What each score is drawn as, in the mark display's words: `bar`, a bar
+     * from the `origin` to the score; `point`, a point at it; `line`, a line
+     * through the scores; `heatmap`, a strip whose colour is the score. The
+     * track menu's Plot type writes it. v4's `defaultRendering` loads as its
+     * `mark`: `xyplot` a bar, `scatter` a point, `density` a heatmap, and
+     * `line` and `linecenter` a line.
      * #example
      * ```json
      * {
      *   "type": "LinearWiggleDisplay",
-     *   "defaultRendering": "density"
+     *   "mark": "heatmap"
      * }
      * ```
      */
-    defaultRendering: {
+    mark: {
       type: 'stringEnum',
-      model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
-      defaultValue: 'xyplot',
-      description: 'Default rendering type',
+      model: types.enumeration('WiggleMark', [...WIGGLE_MARKS]),
+      defaultValue: 'bar',
+      description: 'bar, point, line or heatmap',
+    },
+    /**
+     * #slot interpolate
+     * How a `line` joins its scores: `step` holds each across its bin, as the
+     * data says; `linear` runs from one bin's centre to the next, smoother
+     * where the bins are few. Read by a line alone.
+     */
+    interpolate: {
+      type: 'stringEnum',
+      model: types.enumeration('LineInterpolation', [...LINE_INTERPOLATIONS]),
+      defaultValue: 'step',
+      description: 'step or linear, for a line',
     },
     /**
      * #slot rows
@@ -195,7 +211,11 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    retired: retiredAxisSpellings,
+    retired: {
+      ...retiredAxisSpellings,
+      defaultRendering: rendering =>
+        markOf(String(rendering)) ?? { mark: rendering },
+    },
     preProcessSnapshot: checkRowsField('LinearWiggleDisplay'),
   },
 )

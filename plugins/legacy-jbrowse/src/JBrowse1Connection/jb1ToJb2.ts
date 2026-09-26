@@ -15,7 +15,7 @@ interface Jb2Track {
   category?: string[]
   adapter?: Jb2Adapter
   type?: string
-  displays?: { type: string; displayId: string; defaultRendering: string }[]
+  displays?: { type: string; displayId: string; mark: string }[]
 }
 
 interface Jb2Adapter {
@@ -98,21 +98,21 @@ const NO_ADAPTER: Record<string, string> = {
 }
 
 /**
- * `defaultRendering` is a slot on LinearWiggleDisplay, not on the track — a
- * track-level one is a key JBrowse does not declare, and is ignored.
+ * `mark` is a slot on LinearWiggleDisplay, not on the track — a track-level
+ * one is a key JBrowse does not declare, and is ignored.
  */
 function wiggleDisplays(jb1TrackConfig: Track, jb2TrackConfig: Jb2Track) {
-  const rendering = jb1TrackConfig.type?.endsWith('Density')
-    ? 'density'
+  const mark = jb1TrackConfig.type?.endsWith('Density')
+    ? 'heatmap'
     : jb1TrackConfig.type?.endsWith('XYPlot')
-      ? 'xyplot'
+      ? 'bar'
       : undefined
-  return rendering
+  return mark
     ? [
         {
           type: 'LinearWiggleDisplay',
           displayId: `${jb2TrackConfig.trackId}-LinearWiggleDisplay`,
-          defaultRendering: rendering,
+          mark,
         },
       ]
     : undefined

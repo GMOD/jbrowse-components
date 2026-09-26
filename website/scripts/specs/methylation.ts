@@ -175,7 +175,7 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   {
     trackId: 'arabidopsis_methyldackel',
     type: 'LinearWiggleDisplay',
-    defaultRendering: 'xyplot',
+    mark: 'bar',
     scales: { y: { domainMin: 0, domainMax: 100 } },
     height: 170,
   },
@@ -654,7 +654,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
             {
               trackId: 'HG002_snrpn_modkit_multi',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'xyplot',
+              mark: 'bar',
               // one scale for both haplotypes, which is the point of merging
               // them: a per-track autoscale would put each haplotype's own
               // maximum at the top of its own lane

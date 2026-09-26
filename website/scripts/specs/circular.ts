@@ -23,7 +23,7 @@ const BLOCKS = 'hg38ToMm39_blocks'
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   type: 'LinearWiggleDisplay',
-  defaultRendering: 'density',
+  mark: 'heatmap',
   summaryScoreMode: 'avg',
   color: {
     field: 'score',

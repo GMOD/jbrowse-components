@@ -6485,31 +6485,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearWiggleDisplaySlots": {
       "type": "object",
       "properties": {
-        "defaultRendering": {
-          "description": "Default rendering type.",
-          "anyOf": [
-            {
-              "enum": [
-                "xyplot",
-                "density",
-                "line",
-                "linecenter",
-                "scatter"
-              ]
-            },
-            {
-              "enum": [
-                "multirowxy",
-                "multirowdensity",
-                "multirowline",
-                "multiline",
-                "multixyplot"
-              ],
-              "deprecated": true,
-              "description": "Legacy spellings a migration rewrites when the config loads."
-            }
+        "mark": {
+          "description": "bar, point, line or heatmap.",
+          "enum": [
+            "bar",
+            "point",
+            "line",
+            "heatmap"
           ],
-          "default": "xyplot"
+          "default": "bar"
+        },
+        "interpolate": {
+          "description": "step or linear, for a line.",
+          "enum": [
+            "step",
+            "linear"
+          ],
+          "default": "step"
         },
         "rows": {
           "$ref": "#/$defs/Rows"
@@ -6605,6 +6597,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimalTicks": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "defaultRendering": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -6638,16 +6634,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearGCContentDisplaySlots": {
       "type": "object",
       "properties": {
-        "defaultRendering": {
-          "description": "Default rendering type.",
+        "mark": {
+          "description": "bar, point, line or heatmap.",
           "enum": [
-            "xyplot",
-            "density",
+            "bar",
+            "point",
             "line",
-            "linecenter",
-            "scatter"
+            "heatmap"
           ],
-          "default": "xyplot"
+          "default": "bar"
+        },
+        "interpolate": {
+          "description": "step or linear, for a line.",
+          "enum": [
+            "step",
+            "linear"
+          ],
+          "default": "step"
         },
         "rows": {
           "$ref": "#/$defs/Rows"
@@ -6756,6 +6759,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "defaultRendering": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -9501,8 +9508,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "forceLoad": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/forceLoad"
             },
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
+            "mark": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/interpolate"
             },
             "rows": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rows"
@@ -9569,6 +9579,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
             }
           },
           "patternProperties": {
@@ -10256,8 +10269,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            "mark": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
             },
             "rows": {
               "anyOf": [
@@ -10402,6 +10418,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
                 }
               ]
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
@@ -10541,8 +10560,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            "mark": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
             },
             "rows": {
               "anyOf": [
@@ -10688,6 +10710,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
             },
@@ -10826,8 +10851,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
+            "mark": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/interpolate"
             },
             "rows": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rows"
@@ -10897,6 +10925,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
             }
           },
           "patternProperties": {

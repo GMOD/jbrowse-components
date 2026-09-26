@@ -573,7 +573,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'kgp_lct_fst',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
+              mark: 'point',
               color: '#0068d1',
               size: 2,
               summaryScoreMode: 'max',
@@ -763,7 +763,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'kgp_lct_fst_scan',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
+              mark: 'point',
               color: '#0068d1',
               size: 2,
               summaryScoreMode: 'max',

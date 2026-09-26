@@ -535,7 +535,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               // a 0/1 signal drawn as a bar chart is the same band with ragged
               // edges. Pinning the domain to 0-1 keeps every present base fully
               // saturated instead of shaded by an autoscaled maximum.
-              defaultRendering: 'density',
+              mark: 'heatmap',
               scales: { y: { domainMin: 0, domainMax: 1 } },
               // four rows at the raster's own 40px-per-row scale
               height: 160,

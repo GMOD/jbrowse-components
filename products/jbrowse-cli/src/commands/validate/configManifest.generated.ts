@@ -4831,8 +4831,12 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "defaultRendering",
-          "type": "Rendering type"
+          "name": "mark",
+          "type": "WiggleMark"
+        },
+        {
+          "name": "interpolate",
+          "type": "LineInterpolation"
         },
         {
           "name": "rows",
@@ -5069,17 +5073,9 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "displayCrossHatches",
-        "minimalTicks"
+        "minimalTicks",
+        "defaultRendering"
       ],
-      "legacyValues": {
-        "defaultRendering": [
-          "multirowxy",
-          "multirowdensity",
-          "multirowline",
-          "multiline",
-          "multixyplot"
-        ]
-      },
       "aliases": [
         "MultiLinearWiggleDisplay"
       ],
@@ -5103,8 +5099,12 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "defaultRendering",
-          "type": "Rendering type"
+          "name": "mark",
+          "type": "WiggleMark"
+        },
+        {
+          "name": "interpolate",
+          "type": "LineInterpolation"
         },
         {
           "name": "rows",
@@ -5353,7 +5353,8 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "displayCrossHatches",
-        "minimalTicks"
+        "minimalTicks",
+        "defaultRendering"
       ],
       "aliases": [
         "LinearGCContentTrackDisplay"

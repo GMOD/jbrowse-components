@@ -196,7 +196,7 @@
         ]
       },
       "displayDefaults": {
-        "defaultRendering": "density",
+        "mark": "heatmap",
         "origin": 2,
         "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
         "color": {
@@ -3570,7 +3570,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "hg19.100way.phyloP100way_line",
-          "defaultRendering": "line"
+          "mark": "line"
         }
       ]
     },
@@ -3591,7 +3591,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "hg19.100way.phyloP100way_density",
-          "defaultRendering": "density"
+          "mark": "heatmap"
         }
       ]
     },
@@ -4189,7 +4189,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "catlas_scatac_celltypes_hg38-LinearWiggleDisplay",
-          "defaultRendering": "xyplot",
+          "mark": "bar",
           "height": 500
         }
       ]
@@ -4317,7 +4317,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "pbmc5k_scatac_pseudobulk_hg38-LinearWiggleDisplay",
-          "defaultRendering": "xyplot",
+          "mark": "bar",
           "height": 400
         }
       ]
