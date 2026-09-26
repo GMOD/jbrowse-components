@@ -192,15 +192,16 @@ disagree with the painting.
 ## continuousColorScale
 
 A continuous colour scale over `extent`, the values it met: the domain its
-declared ends and the extent make, the stops and the table they bake to,
-and the packed colour a value paints through them: an infinity the end on
-its side, as a threshold places it, and NaN, text that is no number, the
-misconfiguration grey. The encoder and every display painting a ramp itself
-read it, so a value takes one colour whoever paints it.
+declared ends and the extent make, the straight table its stops bake to and
+where its middle stop sits, and the packed colour a value paints through
+them: an infinity the end on its side, as a threshold places it, and NaN,
+text that is no number, the misconfiguration grey. The encoder and every
+display painting a ramp itself read it, so a value takes one colour whoever
+paints it.
 
 ```js
 // type signature
-(encoding: ContinuousRef, extent: readonly [number, number]) => {…}
+(encoding: ContinuousRef, extent: readonly [number, number]) => { domain: [number, number]; lut: Uint8Array<ArrayBufferLike>; midNorm: number; colorOf: (value: number) => number; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -689,21 +690,29 @@ more often than its ramp.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
+## rampMidNorm
+
+Where a ramp's middle stop sits in the normalized `domain`: `domainMid`'s
+fraction, clamped as the normalizer clamps, else the middle. Every reader of
+a ramp's straight table passes a value's fraction through `rampMidT` with it.
+
+```js
+// type signature
+(scale: "linear" | "log", domain: readonly [number, number], domainMid: number | undefined) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ## rampOverExtent
 
 A ramp table over `extent`, the union a display took across the regions it
 loaded: each open end of the domain moved to the union's, the pinned ends
-kept, and the table baked again where a `domainMid` places its middle stop
-by that domain. Each region baked its own, so keeping the first region's
-put the middle colour at a value none of them declared.
-
-One table per stop list and middle position, so a display asking again over
-an extent that has not moved gets the bytes it already uploaded: a backend
-re-uploads a ramp on identity.
+kept. The table stays straight and `domainMid` a value, so the middle stop
+follows the widened domain with no table baked again.
 
 ```js
 // type signature
-(table: {…}, extent: [number, number]) => {…}
+(table: {…}, extent: [...]) => { ...; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -892,13 +901,13 @@ region strokes the same value at the same width.
 buildColorRampLut byte table — the same 256×1 RGBA array
 `uploadColorRampLut` hands the GPU and the Canvas2D fillStyle LUTs index —
 as the stops of a `RampScale`. It holds one claim by construction: the
-swatch at bar fraction `t` is byte-identical to the ramp entry at `t` on
-both backends. Alpha rides `opacity` (the juicebox fade), never baked into
+swatch at bar fraction `t` is byte-identical to the ramp entry both backends
+read at `t`, through the ramp's middle stop at `midNorm` (`rampMidT`). Alpha rides `opacity` (the juicebox fade), never baked into
 the color string.
 
 ```js
 // type signature
-(lut: Uint8Array<ArrayBufferLike>, n: number) => RampStop[]
+(lut: Uint8Array<ArrayBufferLike>, n: number, midNorm?: number) => RampStop[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)

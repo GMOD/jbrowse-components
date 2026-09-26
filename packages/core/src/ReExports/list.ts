@@ -510,6 +510,7 @@ export default [
   '@jbrowse/render-core/shaders/barMarkIface',
   '@jbrowse/render-core/shaders/capsule',
   '@jbrowse/render-core/shaders/capsuleConsts',
+  '@jbrowse/render-core/shaders/colorRampLut',
   '@jbrowse/render-core/shaders/coverageBar',
   '@jbrowse/render-core/shaders/coverageIndicator',
   '@jbrowse/render-core/shaders/coverageInterbase',

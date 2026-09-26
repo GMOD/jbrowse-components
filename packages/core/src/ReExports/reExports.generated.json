@@ -3189,6 +3189,7 @@
         "encodeFeatures",
         "encodedChannelTransferables",
         "hitIndexOf",
+        "rampMidNorm",
         "rampOverExtent",
         "withHitIndex"
       ],
@@ -5123,6 +5124,13 @@
       "package": "@jbrowse/render-core",
       "names": [
         "CAPSULE_MIN_LEN_PX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/colorRampLut": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "rampMidT"
       ],
       "worker": "real"
     },
