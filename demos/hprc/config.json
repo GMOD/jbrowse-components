@@ -212,6 +212,10 @@
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
         "assemblyNameToPanSN": {
           "hg38": "GRCh38"
+        },
+        "coarse": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000",
+          "aboveBpPerPx": 1014
         }
       },
       "displayDefaults": {

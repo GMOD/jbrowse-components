@@ -530,7 +530,11 @@
       "assemblyNames": ["K12"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "ecoli_pggb"
+        "uri": "ecoli_pggb",
+        "coarse": {
+          "uri": "ecoli_pggb.tier50",
+          "aboveBpPerPx": 1
+        }
       },
       "displays": [
         {
@@ -564,7 +568,11 @@
       "assemblyNames": ["K12"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "ecoli_pggb"
+        "uri": "ecoli_pggb",
+        "coarse": {
+          "uri": "ecoli_pggb.tier50",
+          "aboveBpPerPx": 1
+        }
       },
       "displays": [
         {

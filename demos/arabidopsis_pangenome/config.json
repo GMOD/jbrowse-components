@@ -621,6 +621,10 @@
         "uri": "arabidopsis-tair10-minigraph",
         "assemblyNameToPanSN": {
           "TAIR10": "TAIR10"
+        },
+        "coarse": {
+          "uri": "arabidopsis-tair10-minigraph.tier10000",
+          "aboveBpPerPx": 117
         }
       },
       "displayDefaults": {
