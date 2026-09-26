@@ -1,6 +1,6 @@
 ---
 name: breakpoint-split-view-and-arc-band
-description: The alignments read-connections band and the breakpoint split view each do their half of SV evidence well and neither hands the reader to the other. Four proposals from the 2026-09-26 survey, triaged separately. An arc click opens the split view at its junction; the stacked launch flips the panel an inversion lands on; the launch dialog offers the session's evidence tracks as a remembered checklist; and a list of small split-view defects, two with a known fix and two that need driving in the app first.
+description: The alignments read-connections band and the breakpoint split view each do their half of SV evidence well and neither hands the reader to the other. Five proposals from the 2026-09-26 survey, triaged separately. An arc click opens the split view at its junction; the stacked launch flips the panel an inversion lands on; the launch dialog offers the session's evidence tracks as a remembered checklist; a junction's hover names the callset record within a few bases of it, and a record's hover names the band's support; and a list of small split-view defects, two with a known fix and two that need driving in the app first.
 ---
 
 # Breakpoint split view and arc band
@@ -103,6 +103,26 @@ copy-number or BAF track, and the session already holds them.
 
 Waits on a call on the dialog growing a list. It is already the one place every
 launch passes through, and a per-panel menu would be a second place.
+
+## A junction's hover names the record that calls it
+
+A reviewer's first question at an arc is whether the caller agrees, and at a
+record whether the reads do. When a variant track and an alignments track
+share a view, each can answer for the other with a coordinate join and no
+inference.
+
+- An arc's hover adds the VCF record whose two ends fall within a few bases of
+  the arc's, printed with the distance at each end, so a near miss reads as
+  one. `ArcHit` carries both ends in absolute bp and the variant display's
+  features are in the same view, so the lookup is over what is already loaded.
+- A breakend record's hover adds the band's support count at that junction,
+  and "no reads" when the band draws nothing there.
+- Neither hover changes what is drawn. A record with no arc and an arc with no
+  record are the two findings a reviewer wants to see, and each is a plain
+  absence in the text.
+
+The tolerance is the one number, and the hover prints it. Waits on the arc
+click above, which builds the hit plumbing this reads.
 
 ## Loose ends
 

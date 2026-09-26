@@ -129,7 +129,12 @@ and its `source` prints "walked from breakends".
 - [sv-review-portal](../ready/sv-review-portal.md) is a consumer — one card per route,
   whoever produced it, with the live link being this spec. A route with a
   sequence behind it (a contig BAM) takes that doc's read-vs-ref launch instead.
-- Desktop's MCP surface is the agent-driven version of the same verb.
+- Desktop's MCP surface is the agent-driven version of the same verb, and
+  ADR-137 names an agent driving JBrowse as a sanctioned workflow. The jb API
+  has no dedicated split-view call today, only `addView` with a panel list, so
+  when the route lands `jb.help` names it. An agent that has run LINX or read a
+  `<CPX>` record then hands the route over in one call, and a browser agent has
+  no other way to learn the route exists.
 
 ## The converters
 
