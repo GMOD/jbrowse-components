@@ -64,7 +64,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('mark-display'),
     readyTimeout: 60000,
     // Manhattan(200) + gene strip(90) + headers/ruler/overview clear the crop
-    viewportHeight: 520,
+    viewportHeight: 542,
     // settle past the index auto-pick + recolor fetch that follows first paint
   },
 ]
