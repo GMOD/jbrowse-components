@@ -1271,7 +1271,7 @@ it, and each track entry carries its own display settings inline:
           {
             "trackId": "ngmlr_cov",
             "height": 275,
-            "defaultRendering": "scatter"
+            "mark": "point"
           }
         ]
       }
