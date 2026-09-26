@@ -6129,7 +6129,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "maxMissingnessFilter": {
-          "description": "Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant.",
+          "description": "Hide variants whose fraction of uncalled alleles is above this threshold; 1 keeps every variant.",
           "type": "number",
           "default": 1
         },

@@ -146,7 +146,7 @@ jexl: svChordColor(feature) // the SV-type color the inspector's chords are draw
 
 ```js
 jexl: maf(feature) // minor allele frequency over the called alleles
-jexl: missingness(feature) // fraction of samples with no call
+jexl: missingness(feature) // fraction of alleles with no call, so ./1 counts half
 jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ
 jexl: consequence(feature) // e.g. missense_variant, from the same annotation — the MOST SEVERE one alone
 jexl: 'missense_variant' in consequences(feature) // every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant")

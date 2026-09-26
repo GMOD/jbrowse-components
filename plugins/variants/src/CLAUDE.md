@@ -120,8 +120,8 @@ by `altDosageByte`, the dosage the cells paint.
   used to be called `jexlFilters` and shadowed the slot, so a config declaring
   filters on one of these tracks did nothing and said nothing.
 - **The tier is per layout, not per setting**: `referenceDrawingMode` is a fetch
-  input at genomic positions and a render input in columns, so `rpcProps` sends
-  it only in the first.
+  input at genomic positions and inert in columns, which draw every reference
+  cell, so `rpcProps` sends it only in the first.
 - A drag-resized dimension goes on a config slot; the node outlives the display.
 
 ## The arrangement is `rows` and `rowColor`, by row name
