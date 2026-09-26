@@ -94,11 +94,7 @@ as explicitly unaligned, which needs no DP; nobody has built it.
 **The plugin is not published with this.** Its configs name an unversioned
 unpkg url, so publishing moves every hosted config at once.
 
-**Found along the way, unfixed.** The hosted `demos/hprc/config.json` still
-names the retired betabuild prefix (bundle of 2026-09-20, still served, so the
-demo works off old code); the in-repo copy moved to the unversioned unpkg url in
-`a0da38418c`, and only a redeploy carries that across. `demos/hprc/config.json`
-also has no
+**Found along the way, unfixed.** `demos/hprc/config.json` has no
 `defaultSession` and its `hprc_v2_1_gbz_lanes` names only the curated eight, so
 a reader who switches that track on meets the panel Colin rejected. gbz-base's
 `Subgraph.alignment()` writes `M` for match and mismatch alike, so the anchor
@@ -111,7 +107,11 @@ through each other (`composeAlignmentOps`): over the anchor stretch both cover,
 a base each lane places is a match between them, a base only one places is that
 lane's own insertion, and a base one calls a mismatch while the other calls it a
 match is a mismatch between the two. Where BOTH call it a mismatch the file has
-not said whether they share the alternative, so the op is `M` and no mark draws.
+not said whether they share the alternative, so the op is `M` and no mark draws,
+and an insertion both make at one anchor point is `M` for the length they share.
+The second matters wherever GRCh38 carries the minor allele: at
+chr1:103,619,894 five HPRC haplotypes on one graph path each state `I35`, which
+composed one lane at a time drew as an indel pair between identical lanes.
 Nothing is aligned here; every op comes from an op the file carries. Stepping
 them through each other also places the stretch where the alignment puts it
 instead of where the record's overall ratio does, which is finding 4.1's

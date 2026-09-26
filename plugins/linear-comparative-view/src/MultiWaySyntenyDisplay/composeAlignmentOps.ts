@@ -178,7 +178,9 @@ export interface ComposedAlignment {
  * a base one lane calls a mismatch while the other calls it a match is a
  * mismatch between the two lanes. Where BOTH call it a mismatch the file has
  * not said whether they carry the same alternative, so the composed op is `M`
- * — aligned, unstated — and no mismatch mark draws.
+ * — aligned, unstated — and no mismatch mark draws. An insertion both lanes
+ * make at the same anchor point is the same case for the length they share,
+ * and only the difference in length is an indel between them.
  *
  * Nothing here aligns anything: every op comes from an op the file already
  * carries, which is what lets a composed gutter draw the same detail a direct
@@ -214,6 +216,19 @@ export function composeAlignmentOps(
   while (at < anchorEnd && u.k < uOps.length && l.k < lOps.length) {
     const uo = opAt(u)
     const lo = opAt(l)
+    if (uo.op === CIGAR_I && lo.op === CIGAR_I) {
+      const shared = Math.min(uo.len, lo.len)
+      push(out, shared, CIGAR_M)
+      push(out, uo.len - shared, CIGAR_D)
+      push(out, lo.len - shared, CIGAR_I)
+      advanceLane(u, uo.len)
+      advanceLane(l, lo.len)
+      u.k++
+      u.left = u.k < uOps.length ? opAt(u).len : 0
+      l.k++
+      l.left = l.k < lOps.length ? opAt(l).len : 0
+      continue
+    }
     if (uo.op === CIGAR_I) {
       push(out, uo.len, CIGAR_D)
       advanceLane(u, uo.len)

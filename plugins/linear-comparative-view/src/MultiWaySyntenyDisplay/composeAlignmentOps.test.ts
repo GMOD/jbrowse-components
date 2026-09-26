@@ -148,6 +148,55 @@ test('bases the upper lane holds that the anchor lacks are a deletion against th
   expect([c.upperEnd, c.lowerEnd]).toEqual([1110, 5100])
 })
 
+// the common case in a star against a reference carrying the minor allele:
+// two lanes on one graph path make the same insertion against it
+test('an insertion both lanes make at one anchor point is left unstated between them', () => {
+  const inserts = ops([40, CIGAR_EQ], [10, CIGAR_I], [60, CIGAR_EQ])
+  const c = composeAlignmentOps(
+    rec('u', 'Pp1', 1000, 1110, inserts, { strand: -1 }),
+    rec('l', 'Tc1', 5000, 5110, inserts, { strand: -1 }),
+    100,
+    200,
+  )!
+  expect(unpack(c.ops)).toEqual([
+    [60, CIGAR_EQ],
+    [10, CIGAR_M],
+    [40, CIGAR_EQ],
+  ])
+  expect([c.upperStart, c.upperEnd, c.lowerStart, c.lowerEnd]).toEqual([
+    1000, 1110, 5000, 5110,
+  ])
+})
+
+test('the longer of two insertions at one anchor point keeps its excess', () => {
+  const short = ops([40, CIGAR_EQ], [10, CIGAR_I], [60, CIGAR_EQ])
+  const long = ops([40, CIGAR_EQ], [15, CIGAR_I], [60, CIGAR_EQ])
+  const lowerLonger = composeAlignmentOps(
+    rec('u', 'Pp1', 1000, 1110, short),
+    rec('l', 'Tc1', 5000, 5115, long),
+    100,
+    200,
+  )!
+  expect(unpack(lowerLonger.ops)).toEqual([
+    [40, CIGAR_EQ],
+    [10, CIGAR_M],
+    [5, CIGAR_I],
+    [60, CIGAR_EQ],
+  ])
+  const upperLonger = composeAlignmentOps(
+    rec('u', 'Pp1', 1000, 1115, long),
+    rec('l', 'Tc1', 5000, 5110, short),
+    100,
+    200,
+  )!
+  expect(unpack(upperLonger.ops)).toEqual([
+    [40, CIGAR_EQ],
+    [10, CIGAR_M],
+    [5, CIGAR_D],
+    [60, CIGAR_EQ],
+  ])
+})
+
 // the composed stretch opens 20 bp past a 10 bp deletion, so the exact walk
 // puts it at 1050 where interpolating the record's overall ratio puts it at
 // 1054 — the slide a composed gutter used to draw against its neighbours
