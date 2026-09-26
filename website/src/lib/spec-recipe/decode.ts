@@ -76,14 +76,21 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 // opaque leaf, so every setting inside it reads as a gap even when the field
 // already has a click-path, and the two spellings of one figure describe
 // themselves differently.
+//
+// A graph track's `pane` is flattened the same way: its keys are the graph's
+// settings, each one a control of its own.
 export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
   if (typeof entry === 'string') {
     return []
   }
   const { trackId, displaySnapshot, ...inline } = entry
-  return Object.entries({
+  const { pane, ...display } = {
     ...inline,
     ...(isPlainObject(displaySnapshot) ? displaySnapshot : {}),
+  }
+  return Object.entries({
+    ...display,
+    ...(isPlainObject(pane) ? pane : {}),
   })
 }
 

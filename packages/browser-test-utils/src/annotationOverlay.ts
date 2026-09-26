@@ -22,12 +22,13 @@
 // - `chord`: a circular view chord, named by part of its `<title>`. Hit-tested
 //   along the curve, so the point it resolves to is one a click reaches rather
 //   than one that is merely on the geometry.
-// - `graphNode`: MODEL anchoring for a GraphGenomeView. A graph is one canvas
-//   with no element per node, so a callout at a node used to be a raw viewport
-//   coordinate that only held while the layout was deterministic — changing
-//   `layoutMode` silently moved every one of them. This reads the view's own
-//   `nodePositions` through its `scale`/`translateX`/`translateY`, so a node is
-//   named by its GFA segment id and the layout can change underneath it.
+// - `graphNode`: MODEL anchoring for a graph pane, a graph track's or a
+//   GraphGenomeView's. A graph is one canvas with no element per node, so a
+//   callout at a node used to be a raw viewport coordinate that only held while
+//   the layout was deterministic — changing `layoutMode` silently moved every
+//   one of them. This reads the pane's own `nodePositions` through its
+//   `scale`/`translateX`/`translateY`, so a node is named by its GFA segment id
+//   and the layout can change underneath it.
 // - `selector`: the first matching element.
 // - `text`: the smallest-area element whose visible text matches — for menu
 //   items and buttons with no testid. Scans the whole document, so prefer
@@ -41,7 +42,8 @@ export interface AnnotationAnchor {
   // than measuring it: a chord is a Bezier, so its bounding-box centre is not on
   // it, and its midpoint is where every other chord bundles.
   chord?: string
-  // GFA segment id in the `view`-th view, which must be a GraphGenomeView. The
+  // GFA segment id in a graph track of the `view`-th view (`track` picks one
+  // when it holds several), or in that view when it is a GraphGenomeView. The
   // resolved rect is the node's drawn polyline bounds in viewport px.
   graphNode?: string
   // the two axes of a DotplotView, as `4A` (the whole chromosome) or
@@ -59,7 +61,8 @@ export interface AnnotationAnchor {
   // config `trackId` of the track supplying the y band and the x origin. Its
   // rendering container is the same element the blocks draw into, so a locus
   // resolved against it lands exactly where the feature is painted. On its own
-  // (no `locus`) it anchors to the whole track.
+  // (no `locus`) it anchors to the whole track. With `graphNode` it names the
+  // graph track the node is in.
   track?: string
   // A selector, matched INSIDE the view, whose vertical band the point lands in
   // — the third way of choosing the y after `track` and the default tracks

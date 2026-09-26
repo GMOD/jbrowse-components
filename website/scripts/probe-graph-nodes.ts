@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 /**
- * probe-graph-nodes.ts — dump the nodes a GraphGenomeView spec actually draws.
+ * probe-graph-nodes.ts — dump the nodes a graph spec actually draws.
  *
- *   node scripts/probe-graph-nodes.ts pangenome/hprc_mhc_layout_force [--view=1]
+ *   node scripts/probe-graph-nodes.ts pangenome/hprc_mhc_layout_force [--view=0] [--track=<trackId>]
  *
  * A graph is one canvas, so a spec that clicks/hovers a node has to name it
  * (`anchor: { graphNode }`). Which ids the cut contains is a property of the
  * data plus the plugin's one-hop BFS, not of anything in the repo — this prints
  * them, with the sample and length that make one worth pointing at, so a spec
- * picks a node from the graph rather than from a pixel measured off a PNG.
+ * picks a node from the graph rather than from a pixel measured off a PNG. The
+ * pane is found the way the anchor finds it: a graph track of the view, or the
+ * view itself when it is a GraphGenomeView.
  */
 import { parseArgs } from 'node:util'
 
@@ -18,7 +20,8 @@ import {
   specViewport,
   withHarness,
 } from './dev-harness.ts'
-import { graphNodePoint } from './graphAnchor.ts'
+import { graphNodePoint, locateGraphPane } from './graphAnchor.ts'
+import { GRAPH_DRAWN, GRAPH_VIEW_DRAWN } from './specs/graph-fixtures.ts'
 
 const PORT = 3346
 
@@ -26,12 +29,13 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     view: { type: 'string' },
+    track: { type: 'string' },
     hover: { type: 'string' },
     timeout: { type: 'string' },
   },
 })
 const specName = positionals[0]
-const viewIndex = Number(values.view ?? 1)
+const target = { view: Number(values.view ?? 0), track: values.track }
 const timeout = Number(values.timeout ?? 300000)
 
 const spec = resolveUrlSpec(specName, `no url-mode spec named "${specName}"`)
@@ -43,7 +47,7 @@ const dump = await withHarness(
       waitUntil: 'domcontentloaded',
       timeout,
     })
-    await page.waitForSelector('[data-testid="graph-layout-select"]', {
+    await page.waitForSelector(`${GRAPH_DRAWN}, ${GRAPH_VIEW_DRAWN}`, {
       timeout,
     })
     // the auto-fit lands after the layout does, and the transform is what turns a
@@ -51,80 +55,52 @@ const dump = await withHarness(
     await new Promise(r => setTimeout(r, 8000))
 
     // --hover=<segment id> moves the mouse to where the anchor resolver says that
-    // node is and reports what the view thinks is under the cursor, which is the
+    // node is and reports what the pane thinks is under the cursor, which is the
     // only way to tell "the anchor is wrong" from "the hover handler didn't fire"
     const hoverId = values.hover
     if (hoverId) {
       const point = await graphNodePoint(page, {
-        view: viewIndex,
+        ...target,
         graphNode: hoverId,
       })
       console.error(`hover point for ${hoverId}:`, point)
       if (point) {
         await page.mouse.move(point.x, point.y)
         await new Promise(r => setTimeout(r, 1500))
+        const located = await locateGraphPane(page, target)
         console.error(
           'hoveredNode:',
-          await page.evaluate(index => {
-            interface V {
-              views?: V[]
-              hoveredNode?: string | null
-              hoverHighlight?: unknown
+          await located.evaluate(found => {
+            const pane = found?.pane as
+              | { hoveredNode?: string | null; hoverHighlight?: unknown }
+              | undefined
+            return {
+              hoveredNode: pane?.hoveredNode,
+              highlight: pane?.hoverHighlight,
             }
-            const v = (window as unknown as { JBrowseSession?: V })
-              .JBrowseSession?.views?.[index]
-            return { hoveredNode: v?.hoveredNode, highlight: v?.hoverHighlight }
-          }, viewIndex),
+          }),
         )
+        await located.dispose()
       }
     }
 
-    return page.evaluate(index => {
-      interface Node {
-        id: string
-        length?: number
-        stable?: {
-          rank?: number
-          refName?: string
-          start?: number
-          end?: number
-        }
+    const located = await locateGraphPane(page, target)
+    const nodes = await located.evaluate(found => {
+      if (!found) {
+        return undefined
       }
-      interface GraphView {
-        id: string
-        views?: GraphView[]
-        scale?: number
-        translateX?: number
-        translateY?: number
-        graph?: { nodes: Node[] }
-        nodePositions?: Record<string, { x: number; y: number }[]>
-        // see graphAnchor.ts: an anchored layout's y is a row pitch in screen
-        // px with scaleY pinned at 1, so `scale` (the x zoom) is not it
-        scaleX?: number
-        scaleY?: number
-      }
-      const session = (window as unknown as { JBrowseSession?: GraphView })
-        .JBrowseSession
-      const view = session?.views?.[index]
-      const canvas = view
-        ? document.querySelector(
-            `[data-testid="view-container-${CSS.escape(view.id)}"] [data-testid="graph-genome-canvas"]`,
-          )
-        : undefined
-      const r = canvas?.getBoundingClientRect()
-      const scaleX = view?.scaleX ?? view?.scale ?? 1
-      const scaleY = view?.scaleY ?? view?.scale ?? 1
-      const tx = view?.translateX ?? 0
-      const ty = view?.translateY ?? 0
+      const { pane, canvas } = found
+      const r = canvas.getBoundingClientRect()
+      const scaleX = pane.scaleX ?? pane.scale ?? 1
+      const scaleY = pane.scaleY ?? pane.scale ?? 1
+      const tx = pane.translateX ?? 0
+      const ty = pane.translateY ?? 0
       return {
-        viewType: (view as unknown as { type?: string } | undefined)?.type,
-        canvas: r
-          ? { left: r.left, top: r.top, width: r.width, height: r.height }
-          : undefined,
-        nodes: (view?.graph?.nodes ?? []).map(n => {
-          const pts = view?.nodePositions?.[n.id] ?? []
-          const xs = pts.map(p => p.x * scaleX + tx + (r?.left ?? 0))
-          const ys = pts.map(p => p.y * scaleY + ty + (r?.top ?? 0))
+        canvas: { left: r.left, top: r.top, width: r.width, height: r.height },
+        nodes: (pane.graph?.nodes ?? []).map(n => {
+          const pts = pane.nodePositions?.[n.id] ?? []
+          const xs = pts.map(p => p.x * scaleX + tx + r.left)
+          const ys = pts.map(p => p.y * scaleY + ty + r.top)
           return {
             id: n.id,
             length: n.length,
@@ -141,7 +117,9 @@ const dump = await withHarness(
           }
         }),
       }
-    }, viewIndex)
+    })
+    await located.dispose()
+    return nodes
   },
 )
 

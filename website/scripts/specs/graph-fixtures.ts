@@ -1,6 +1,6 @@
 // Everything the pangenome graph figures share, whichever organism they draw:
 // the fixture configs and the switches that repoint them at a local build, the
-// two ready gates, and the reference-position colour ramp.
+// ready gates, the graph track entry, and the reference-position colour ramp.
 //
 // This was the preamble of specs/graph.ts, which held both organisms in 5,524
 // lines and is now specs/graph-ecoli.ts and specs/graph-hprc.ts. Of the 124
@@ -62,16 +62,32 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // UNFILTERED after a publish and let the gate answer, or accept that the
 // answer you get is not about the bundle.
 
-// The plugin's showLoading holds the view phase until its geometry is built.
+// A graph track (LinearGraphDisplay) holding a cut. The display publishes
+// `data-node-count` once its pane has a graph, and `data-cut-tier` says which
+// tier that cut came from.
 export const GRAPH_DRAWN =
-  '[data-view-phase="ready"] [data-testid="graph-stats"]'
+  '[data-testid="linear-graph-display"][data-node-count]'
 
-// Ready when the layout has landed AND the toolbar has painted. Waiting on the
-// stats alone raced: a slow subgraph fetch could leave the Layout/Color selects
-// unpainted in the captured frame, silently committing a figure with half a
-// toolbar. `body:has(A) B` is an AND; a bare `A, B` list would be a CSS OR and
-// fire on whichever landed first.
-export const TOOLBAR_READY = `body:has(${GRAPH_DRAWN}) [data-testid="graph-layout-select"]`
+export const graphCutDrawn = (tier: 'fine' | 'coarse') =>
+  `[data-testid="linear-graph-display"][data-cut-tier="${tier}"][data-node-count]`
+
+// A graph track's display entry. The pane holds the props the standalone view
+// has, and a launch that states it keeps them over the display config's, so
+// `layoutMode` has to be stated even for Anchored: an unstated one is the
+// pane's own default, force.
+export const graphTrack = (trackId: string, pane: Record<string, unknown>) => ({
+  trackId,
+  type: 'LinearGraphDisplay',
+  pane,
+})
+
+// The standalone GraphGenomeView, which a whole GFA file still opens in. Its
+// showLoading holds the view phase until the geometry is built, and the ready
+// gate also waits for the toolbar, since a slow fetch could otherwise leave the
+// Layout/Color selects unpainted in the frame. `body:has(A) B` is an AND.
+export const GRAPH_VIEW_DRAWN =
+  '[data-view-phase="ready"] [data-testid="graph-stats"]'
+export const GRAPH_VIEW_READY = `body:has(${GRAPH_VIEW_DRAWN}) [data-testid="graph-layout-select"]`
 
 // The tracked fixtures, whose `esmUrl` is the plugin list's `latest/` url.
 // Their `*_local.json` siblings point that url at a local
@@ -218,8 +234,9 @@ export const CARRIAGE_DISPLAY = {
 // `rank` is what RgfaTabixAdapter puts on the feature; a track carrying none
 // reads `undefined > 0` as false and stays on the ramp.
 //
-// The domain has to be the graph's loadedRegion, not the linear view's window,
-// when the two differ.
+// The graph's own ramp runs over its cut, which a graph track makes a
+// window-width wider than the view on each side, so a lane painted with this
+// passes the same domain to the graph track as `pane.colorDomain`.
 export function referencePositionColor({
   start,
   end,

@@ -1052,7 +1052,213 @@ const numberField =
   value =>
     typeof value === 'number' ? build(value) : undefined
 
+// The graph's settings, which a graph track (LinearGraphDisplay) reaches from
+// its track menu and a standalone GraphGenomeView from its toolbar. The plugin
+// is third-party, so there is no option table to import the way the alignments
+// ones are imported: every label below is read off its source. `Layout` and
+// `Color` are submenus of the track menu and selects in the view's toolbar. The
+// rest are in the `Graph settings` dialog, which both open with a `Settings`
+// item, and which is the answer to "where is this in the GUI" for a reader who
+// only has the figure.
+//
+// A rename in the plugin is what the unmapped list cannot see, so
+// check-spec-recipes asserts every label below against a graphgenomeviewer
+// checkout when one is on disk.
+const GRAPH_LAYOUTS: Record<string, string> = {
+  auto: 'Anchored',
+  samplerows: 'Sample rows',
+  walkrows: 'Walk rows',
+  ordered: 'Ordered',
+  variants: 'Variant map',
+  force: 'Force-directed layout',
+}
+
+const GRAPH_COLOR_SCHEMES: Record<string, string> = {
+  auto: 'Auto',
+  uniform: 'Uniform',
+  random: 'Random',
+  rainbow: 'Rainbow',
+  depth: 'Depth',
+  'node-length': 'Node Length',
+  'stable-rank': 'Stable rank',
+  'reference-position': 'Reference position',
+  grey: 'Grey',
+}
+
+const GRAPH_BUBBLE_SPREADS: Record<string, string> = {
+  auto: 'Proportional',
+  open: 'Open bubbles',
+  wide: 'Wide bubbles',
+  compress: 'Compress lengths',
+}
+
+// The Layout quality radio, which is FMMM's iteration budget rather than a
+// rendering knob: 0 is 3 fixed + 1 fine-tuning iteration and 4 is 120 + 60
+// (graphlayout.cpp in jbrowse-plugin-graphgenomeview), labelled by the plugin's
+// own `qualityLabels`.
+const GRAPH_LAYOUT_QUALITIES: Record<number, string> = {
+  0: 'Lowest',
+  1: 'Low',
+  2: 'Medium',
+  3: 'High',
+  4: 'Highest',
+}
+
+const GRAPH_CONTEXTS: Record<number, string> = {
+  0: 'None',
+  1: '1 hop',
+  2: '2 hops',
+}
+
+// The labels above, plus the controls that hold them, as one list for
+// check-spec-recipes to assert against the plugin's own source. Grouped by the
+// control they belong to so a failure names where to look rather than only what
+// went missing.
+export const GRAPH_LABELS: Record<string, string[]> = {
+  'Layout submenu and select': Object.values(GRAPH_LAYOUTS),
+  'Color submenu and select': Object.values(GRAPH_COLOR_SCHEMES),
+  'Bubble spread select': Object.values(GRAPH_BUBBLE_SPREADS),
+  'Layout quality radios': Object.values(GRAPH_LAYOUT_QUALITIES),
+  'Graph context select': Object.values(GRAPH_CONTEXTS),
+  'the track menu': [
+    'Layout',
+    'Color',
+    'Walk',
+    'Mark bubbles',
+    'Show deletion edges',
+    'Genes on the backbone',
+    'Settings',
+  ],
+  'the settings dialog itself': [
+    'Graph context',
+    'Layout quality',
+    'Haplotypes',
+    'Draw paths',
+    'Reference path',
+  ],
+}
+
+const isGraphTrack = ({ displayType }: FieldContext) =>
+  displayType === 'LinearGraphDisplay'
+
+// Where a setting lives: the track menu for a graph track, the toolbar or the
+// menu beside it for the standalone view.
+function graphSurface(context: FieldContext, onView: string) {
+  return isGraphTrack(context) ? TRACK_MENU : onView
+}
+
+const graphSettings = (context: FieldContext) =>
+  `${graphSurface(context, 'Graph view menu')} → Settings`
+
+const graphToolbarField =
+  (label: string, table: Record<string, string>): FieldRecipe =>
+  (value, context) => {
+    const option = typeof value === 'string' ? table[value] : undefined
+    return option
+      ? {
+          path: `${graphSurface(context, 'Graph view toolbar')} → ${label} → ${option}`,
+        }
+      : undefined
+  }
+
+const graphSettingsField =
+  (label: string, table: Record<string, string>, note?: string): FieldRecipe =>
+  (value, context) => {
+    const option = typeof value === 'string' ? table[value] : undefined
+    return option
+      ? { path: `${graphSettings(context)} → ${label} → ${option}`, note }
+      : undefined
+  }
+
+// A checkbox the track menu carries itself, which the standalone view keeps
+// under `onView`.
+const graphCheckbox =
+  (label: string, onView: (context: FieldContext) => string): FieldRecipe =>
+  (value, context) =>
+    typeof value === 'boolean'
+      ? {
+          path: `${isGraphTrack(context) ? TRACK_MENU : onView(context)} → ${label} (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined
+
+const graphFields: Record<string, FieldRecipe> = {
+  layoutMode: graphToolbarField('Layout', GRAPH_LAYOUTS),
+  colorScheme: graphToolbarField('Color', GRAPH_COLOR_SCHEMES),
+  layoutQuality: (value, context) => {
+    const option =
+      typeof value === 'number' ? GRAPH_LAYOUT_QUALITIES[value] : undefined
+    return option
+      ? {
+          path: `${graphSettings(context)} → Layout quality → ${option}`,
+          note: 'How many iterations the force layout runs. The default is enough for a small graph; raising it is what removes crossings from a drawing that has any.',
+        }
+      : undefined
+  },
+  bubbleSpread: graphSettingsField(
+    'Bubble spread',
+    GRAPH_BUBBLE_SPREADS,
+    'Sets a floor on how long a node is drawn in the force layout, so a short allele is a visible arm rather than a speck. Does nothing in the anchored layouts, which place a node from its coordinates.',
+  ),
+  // a switch rather than a select, so it states its own state instead of naming
+  // an option
+  drawPaths: (value, context) =>
+    typeof value === 'boolean'
+      ? {
+          path: `${graphSettings(context)} → Draw paths (${value ? 'on' : 'off'})`,
+          note: 'Colors every node and connector by the P/W records through it, one lane per path in legend order, so a path that skips a node leaves its lane empty. Needs a GFA that states its paths: an rGFA and an indexed cut both carry segments and links only.',
+        }
+      : undefined,
+  // the select lists the GFA's own path names, so the figure's value IS the
+  // option a reader picks
+  referencePath: (value, context) =>
+    typeof value === 'string'
+      ? {
+          path: `${graphSettings(context)} → Reference path → ${value}`,
+          note: 'Which path the anchored layouts draw x against. Only offered when the file states more than one.',
+        }
+      : undefined,
+  // the only numeric one of the graph settings, so it can't use the string
+  // tables above
+  subgraphContext: (value, context) =>
+    typeof value === 'number' && GRAPH_CONTEXTS[value]
+      ? {
+          path: `${graphSettings(context)} → Graph context → ${GRAPH_CONTEXTS[value]}`,
+          note: 'How far the cut follows links out of the region. Each hop costs a query per off-reference segment already reached, so it stops at one by default.',
+        }
+      : undefined,
+  subgraphHaplotypes: (value, context) =>
+    Array.isArray(value)
+      ? {
+          path: `${graphSettings(context)} → Haplotypes`,
+          note: 'The haplotypes a gbz-base cut is for, as lane names or PanSN prefixes; empty is every haplotype the graph holds.',
+        }
+      : undefined,
+  // the submenu lists the cut's own walks, so the figure's value names the
+  // row a reader picks
+  highlightedPath: (value, context) =>
+    typeof value === 'string' && value
+      ? {
+          path: `${graphSurface(context, 'Graph view toolbar')} → Walk → ${value}`,
+          note: 'Lifts one walk out of the drawing and fades the rest. The menu names each walk by the shortest part of its name that tells it apart.',
+        }
+      : undefined,
+  showBubbles: graphCheckbox('Mark bubbles', graphSettings),
+  showGenes: graphCheckbox('Genes on the backbone', graphSettings),
+  showDeletionEdges: graphCheckbox('Show deletion edges', () => 'Graph view menu'),
+}
+
+// A graph track entry states the pane's settings under `pane`, which
+// specTrackSettings flattens; on any other display these names mean nothing.
+const graphTrackFields: Record<string, FieldRecipe> = Object.fromEntries(
+  Object.entries(graphFields).map(([field, recipe]) => [
+    field,
+    (value, context) =>
+      isGraphTrack(context) ? recipe(value, context) : undefined,
+  ]),
+)
+
 export const trackFields: Record<string, FieldRecipe> = {
+  ...graphTrackFields,
   color: colorStep,
   baseColor: baseColorStep,
   modifications: modificationsStep,
@@ -1626,114 +1832,6 @@ const TRACK_LABELS: Record<string, string> = {
   hidden: 'Hidden',
 }
 
-// GraphGenomeView settings. The plugin is third-party, so there is no option
-// table to import the way the alignments ones are imported: every label below is
-// read off the bundle the figures actually render, which is pinned by
-// content-addressed esmUrl in test_data/graphgenomeview, so it cannot drift
-// without a diff in this repo. `Layout` and `Color` are selects in the view's own
-// toolbar. The rest are selects in the `Graph settings` dialog, which the view
-// menu opens with its `Settings` item, and which is the answer to "where is this
-// in the GUI" for a reader who only has the figure (review, on graph_context:
-// "what the gui is for selecting this, user might not intuitively understand").
-//
-// **Re-read them when that esmUrl hash moves.** The pin is what keeps the labels
-// true, not what keeps them complete: the plugin grew a fourth bubble spread and
-// the figures used it for months while this table knew three, which showed up
-// only as a name in spec-recipe-unmapped.txt. A rename is the half that list
-// cannot see, so check-spec-recipes asserts every label below against a
-// graphgenomeview checkout when one is on disk.
-const GRAPH_LAYOUTS: Record<string, string> = {
-  auto: 'Anchored',
-  samplerows: 'Sample rows',
-  force: 'Force-directed layout',
-}
-
-const GRAPH_COLOR_SCHEMES: Record<string, string> = {
-  auto: 'Auto',
-  uniform: 'Uniform',
-  random: 'Random',
-  rainbow: 'Rainbow',
-  depth: 'Depth',
-  'node-length': 'Node Length',
-  'stable-rank': 'Stable rank',
-  'reference-position': 'Reference position',
-  grey: 'Grey',
-}
-
-const GRAPH_BUBBLE_SPREADS: Record<string, string> = {
-  auto: 'Proportional',
-  open: 'Open bubbles',
-  wide: 'Wide bubbles',
-  compress: 'Compress lengths',
-}
-
-// The Layout quality radio, which is FMMM's iteration budget rather than a
-// rendering knob: 0 is 3 fixed + 1 fine-tuning iteration and 4 is 120 + 60
-// (graphlayout.cpp in jbrowse-plugin-graphgenomeview). Labels read off that
-// plugin's own `qualityLabels`; it is a separate repo, so unlike the alignments
-// tables this one cannot be imported and has to be checked against the source
-// when it changes.
-const GRAPH_LAYOUT_QUALITIES: Record<number, string> = {
-  0: 'Lowest',
-  1: 'Low',
-  2: 'Medium',
-  3: 'High',
-  4: 'Highest',
-}
-
-const GRAPH_CONTEXTS: Record<number, string> = {
-  0: 'None',
-  1: '1 hop',
-  2: '2 hops',
-}
-
-const GRAPH_SETTINGS = 'Graph view menu → Settings'
-
-// The labels above, plus the two controls that hold them, as one list for
-// check-spec-recipes to assert against the plugin's own source. Grouped by the
-// control they belong to so a failure names where to look rather than only what
-// went missing.
-export const GRAPH_LABELS: Record<string, string[]> = {
-  'Layout select': Object.values(GRAPH_LAYOUTS),
-  'Color select': Object.values(GRAPH_COLOR_SCHEMES),
-  'Bubble spread select': Object.values(GRAPH_BUBBLE_SPREADS),
-  'Layout quality radios': Object.values(GRAPH_LAYOUT_QUALITIES),
-  'Graph context select': Object.values(GRAPH_CONTEXTS),
-  'the settings dialog itself': [
-    'Settings',
-    'Graph context',
-    'Layout quality',
-    'Haplotypes',
-  ],
-  'the follow toggle': ['Follow', 'Pin'],
-  'Follow button': ['Pin', 'Follow'],
-}
-
-const graphToolbarField = (
-  label: string,
-  table: Record<string, string>,
-): FieldRecipe => {
-  return value => {
-    const option = typeof value === 'string' ? table[value] : undefined
-    return option
-      ? { path: `Graph view toolbar → ${label} → ${option}` }
-      : undefined
-  }
-}
-
-const graphSettingsField = (
-  label: string,
-  table: Record<string, string>,
-  note?: string,
-): FieldRecipe => {
-  return value => {
-    const option = typeof value === 'string' ? table[value] : undefined
-    return option
-      ? { path: `${GRAPH_SETTINGS} → ${label} → ${option}`, note }
-      : undefined
-  }
-}
-
 // Both views run the same reorder — runDiagonalize, behind the identical
 // 'Re-order chromosomes' item — but reach it from different headers: the synteny
 // view's is in headerMenuItems' "Rows" group, under the "View options" button
@@ -1985,43 +2083,9 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Row length becomes genome size, which is what makes the rows comparable.',
         }
       : undefined,
-  // How the view got there at all, which is the step a reader with only the
-  // figure is missing: a graph view is launched from a segments track rather
-  // than added empty. The item is the plugin's own
-  // 'Graph genome view (this region)' inside core's 'Launch' submenu
-  // (pushLaunchViewMenuItem).
-  loadedTrackId: value =>
-    typeof value === 'string'
-      ? {
-          path: `${TRACK_MENU} (on the graph segments track) → Launch → Graph genome view (this region)`,
-          note: 'Launching from the track is what ties the two panels together: the graph is cut from the same file the lane above it draws.',
-          opensView: true,
-        }
-      : undefined,
-  loadedRegion: value =>
-    asRecord(value)
-      ? {
-          path: 'Set the location box before launching the graph view.',
-          note: 'The cut is the window the linear view was showing, so the graph covers what you were looking at.',
-        }
-      : undefined,
-  followLinearView: value =>
-    typeof value === 'boolean'
-      ? {
-          path: `Graph view toolbar → ${value ? 'Follow' : 'Pin'}`,
-          note: 'A graph launched from a linear view follows it from the start, with the button reading Pin; Follow hands a pinned graph back.',
-        }
-      : undefined,
-  coarseCut: value =>
-    value === true
-      ? {
-          path: 'Zoom the linear view out past the handover the segments track names under coarse.',
-          note: 'Past that zoom a following graph cuts the one-node-per-bubble tier instead of the segments.',
-        }
-      : undefined,
-  // The other way a graph view gets its data, and the one a reader bringing a
-  // .gfa of their own takes: the view opens on its own import form ("Load a GFA
-  // graph"), which reads a whole file rather than cutting one from a track.
+  // How a standalone graph view gets its data: it opens on its own import form
+  // ("Load a GFA graph"), which reads a whole file rather than cutting a window
+  // from a track the way a graph track does.
   gfaLocation: value =>
     asRecord(value)
       ? {
@@ -2030,57 +2094,7 @@ export const viewFields: Record<string, FieldRecipe> = {
           opensView: true,
         }
       : undefined,
-  layoutMode: graphToolbarField('Layout', GRAPH_LAYOUTS),
-  colorScheme: graphToolbarField('Color', GRAPH_COLOR_SCHEMES),
-  layoutQuality: value => {
-    const option =
-      typeof value === 'number' ? GRAPH_LAYOUT_QUALITIES[value] : undefined
-    return option
-      ? {
-          path: `${GRAPH_SETTINGS} → Layout quality → ${option}`,
-          note: 'How many iterations the force layout runs. The default is enough for a small graph; raising it is what removes crossings from a drawing that has any.',
-        }
-      : undefined
-  },
-  bubbleSpread: graphSettingsField(
-    'Bubble spread',
-    GRAPH_BUBBLE_SPREADS,
-    'Sets a floor on how long a node is drawn in the force layout, so a short allele is a visible arm rather than a speck. Does nothing in the anchored layouts, which place a node from its coordinates.',
-  ),
-  // a switch rather than a select, so it states its own state instead of naming
-  // an option
-  drawPaths: value =>
-    typeof value === 'boolean'
-      ? {
-          path: `${GRAPH_SETTINGS} → Draw paths (${value ? 'on' : 'off'})`,
-          note: 'Colors every node and connector by the P/W records through it, one lane per path in legend order, so a path that skips a node leaves its lane empty. Needs a GFA that states its paths: an rGFA and an indexed cut both carry segments and links only.',
-        }
-      : undefined,
-  // the select lists the GFA's own path names, so the figure's value IS the
-  // option a reader picks
-  referencePath: value =>
-    typeof value === 'string'
-      ? {
-          path: `${GRAPH_SETTINGS} → Reference path → ${value}`,
-          note: 'Which path the anchored layouts draw x against. Only offered when the file states more than one.',
-        }
-      : undefined,
-  // the only numeric one of the graph settings, so it can't use the string
-  // tables above
-  subgraphContext: value =>
-    typeof value === 'number' && GRAPH_CONTEXTS[value]
-      ? {
-          path: `${GRAPH_SETTINGS} → Graph context → ${GRAPH_CONTEXTS[value]}`,
-          note: 'How far the cut follows links out of the region. Each hop costs a query per off-reference segment already reached, so it stops at one by default.',
-        }
-      : undefined,
-  subgraphHaplotypes: value =>
-    Array.isArray(value)
-      ? {
-          path: `${GRAPH_SETTINGS} → Haplotypes`,
-          note: 'The haplotypes a gbz-base cut is for, as lane names or PanSN prefixes. A cut launched from a linear view takes the lanes on screen.',
-        }
-      : undefined,
+  ...graphFields,
   highlight: value =>
     Array.isArray(value)
       ? {

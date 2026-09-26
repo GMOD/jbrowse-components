@@ -601,8 +601,7 @@ export function buildRecipe(
     : undefined
   // A figure of two panes describes both, each pane's steps under the one
   // that opens it: **Add → <view>**, unless the pane already says how it
-  // opened, which an import form and a launched-from-a-track graph view both
-  // do.
+  // opened, which an import form and a graph view on a GFA file both do.
   const steps = collected.flatMap((c, index) =>
     views.length < 2
       ? c.steps

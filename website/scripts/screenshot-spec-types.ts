@@ -89,7 +89,9 @@ export interface ScreenshotAction {
   // with no element per feature) where the app can still say where it drew
   // things. Takes precedence over `from`. Two kinds resolve:
   //
-  //   graphNode  a GFA segment in a GraphGenomeView (scripts/graphAnchor.ts)
+  //   graphNode  a GFA segment in a graph track, with `track` naming which when
+  //              the view holds several, or in a GraphGenomeView
+  //              (scripts/graphAnchor.ts)
   //   locus      a genomic coordinate in a linear view (scripts/locusAnchor.ts),
   //              with `track` naming which track to land in and `fracY` how far
   //              down its band (default the middle)
