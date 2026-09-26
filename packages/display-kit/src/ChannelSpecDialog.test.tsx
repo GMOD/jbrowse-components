@@ -47,6 +47,15 @@ test('opens on the current channels', () => {
   })
 })
 
+test('names and explains only the channels the display has', () => {
+  const { getByRole, queryByText } = setup({
+    current: { rows: { field: 'source' }, color: null },
+  })
+  expect(getByRole('dialog')).toHaveTextContent('Rows and color')
+  expect(queryByText('facet')).toBeNull()
+  expect(queryByText('filter')).toBeNull()
+})
+
 test("lists the display's examples", () => {
   const { getByText } = setup()
   expect(getByText('{ "facet": "strand" }')).toBeInTheDocument()

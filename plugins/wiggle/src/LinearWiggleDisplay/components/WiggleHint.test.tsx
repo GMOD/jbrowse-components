@@ -29,7 +29,9 @@ describe('rows packed below a pixel', () => {
         })}
       />,
     )
-    getByText(/400 subtracks in 100px leaves rows below 1px/)
+    getByText(
+      /400 subtracks in 100px leaves rows below 1px\. Pick Plot type → Overlapping/,
+    )
   })
 
   // In density the escape the message names IS the mode the user picked, and

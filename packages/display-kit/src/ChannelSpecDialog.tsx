@@ -104,6 +104,52 @@ function apply(host: ChannelSpecHost, spec: ChannelSpec) {
   }
 }
 
+const CHANNELS = ['facet', 'rows', 'color', 'filter'] as const
+
+function channelProse(
+  channel: (typeof CHANNELS)[number],
+  colorScaleChoices: string[],
+) {
+  switch (channel) {
+    case 'facet':
+      return (
+        <>
+          <code>facet</code> stacks one section per value of a field, in the
+          order its <code>domain</code> lists.{' '}
+        </>
+      )
+    case 'rows':
+      return (
+        <>
+          <code>rows</code> stacks one row per value, in the order its{' '}
+          <code>domain</code> lists.{' '}
+        </>
+      )
+    case 'color':
+      return (
+        <>
+          <code>color</code> is a constant, or <code>{'{ "field": … }'}</code>{' '}
+          read through one of the scales{' '}
+          <code>{colorScaleChoices.join(', ')}</code>.{' '}
+        </>
+      )
+    case 'filter':
+      return (
+        <>
+          <code>filter</code> is the jexl list from Filter by....{' '}
+        </>
+      )
+  }
+}
+
+function listed(words: readonly string[]) {
+  const text =
+    words.length > 1
+      ? `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`
+      : (words[0] ?? '')
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 const ChannelSpecDialog = observer(function ChannelSpecDialog({
   model,
   seed,
@@ -117,13 +163,14 @@ const ChannelSpecDialog = observer(function ChannelSpecDialog({
     JSON.stringify({ ...model.channelSpec, ...seed }, null, 2),
   )
   const { spec, summary, error } = readSpec(model, text)
+  const channels = CHANNELS.filter(c => c in model.channelSpec)
 
   return (
     <SubmitDialog
       open
       maxWidth="sm"
       fullWidth
-      title="Facet, color and filter"
+      title={listed(channels)}
       submitText="Apply"
       submitDisabled={!spec}
       onCancel={handleClose}
@@ -135,13 +182,10 @@ const ChannelSpecDialog = observer(function ChannelSpecDialog({
       }}
     >
       <DialogContentText>
-        <code>facet</code> stacks one section per value of a field, and{' '}
-        <code>rows</code> one row per value, each in the order its{' '}
-        <code>domain</code> lists; <code>color</code> is a constant, or{' '}
-        <code>{'{ "field": … }'}</code> read through one of the scales{' '}
-        <code>{model.colorScaleChoices.join(', ')}</code>; <code>filter</code>{' '}
-        is the jexl list from Filter by.... A channel left out stays as it is,
-        and <code>null</code> clears one.
+        {channels.map(c => (
+          <span key={c}>{channelProse(c, model.colorScaleChoices)}</span>
+        ))}
+        A channel left out stays as it is, and <code>null</code> clears one.
       </DialogContentText>
       <ul>
         {model.channelSpecExamples.map(({ spec, description }) => (
