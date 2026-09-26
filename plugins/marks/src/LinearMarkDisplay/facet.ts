@@ -131,13 +131,21 @@ function rowRemap(region: MarkRegionData, layout: FacetLayout) {
   return remap
 }
 
-// The key and the extents over the instances a layer draws, so a hidden
-// section leaves the legend and the axis the way it leaves the plot.
-function drawnScales(layer: StoredLayer): StoredLayer {
-  const { y, color, colorValue, glyph, scale, shapeScale, sizeScale } = layer
-  const colors = new Set(color)
+/**
+ * The key and the extents over the instances a layer draws, so a hidden
+ * section or row leaves the legend and the axis the way it leaves the plot:
+ * every instance, or with `drawnKeys` those whose `row` key it marks 1. The
+ * lanes are the layer's own.
+ */
+export function drawnScales(
+  layer: StoredLayer,
+  drawnKeys?: Uint8Array,
+): StoredLayer {
+  const { y, row, color, colorValue, glyph, scale, shapeScale, sizeScale } =
+    layer
   const bits = colorValue && rampValueBits(colorValue)
-  const glyphs = new Set(glyph)
+  const colors = new Set<number>()
+  const glyphs = new Set<number>()
   let yMin = Infinity
   let yMax = -Infinity
   let vMin = Infinity
@@ -147,6 +155,15 @@ function drawnScales(layer: StoredLayer): StoredLayer {
   let missing = false
   let notNumber = false
   for (let i = 0; i < layer.count; i++) {
+    if (drawnKeys && drawnKeys[row?.[i] ?? 0] !== 1) {
+      continue
+    }
+    if (color) {
+      colors.add(color[i]!)
+    }
+    if (glyph) {
+      glyphs.add(glyph[i]!)
+    }
     if (y) {
       yMin = Math.min(yMin, y[i]!)
       yMax = Math.max(yMax, y[i]!)

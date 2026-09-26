@@ -67,7 +67,9 @@ import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   LINK_NO_REGION,
+  RowKeys,
   inkOfInstances,
+  keySlot,
   pointInsetPx,
 } from '@jbrowse/render-core/marks'
 import {
@@ -133,6 +135,12 @@ import {
 import { markLanes, plotsValue, readsValue } from './markSpecs.ts'
 import { DEFAULT_LINK_STROKE_PX } from './markVocabulary.ts'
 import { defaultPlotMarks } from './plotDefault.ts'
+import {
+  drawnKeysOf,
+  drawnRegion,
+  keyRegion,
+  markRowTable,
+} from './rowTable.ts'
 import { stepChannels } from './stepChannels.ts'
 
 import type { ListedSource } from '../MarkRowsRPC/MarkGetRowSources.ts'
@@ -189,6 +197,7 @@ import type {
   LinkRegion,
   LinkSizeScale,
   MarkRamp,
+  RowTable,
 } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type {
@@ -367,8 +376,11 @@ export interface MarkView {
 
 // Each folded layer as a `ScoreSpan`, so the shared autoscale walks the `y`
 // lane the same way it walks a wiggle source's scores: one value per instance,
-// clipped to the block the entry carries.
-function layerSpans(entries: VisibleEntry<StoredLayer>[]): ScoreSpan[] {
+// clipped to the block the entry carries, a row the table hides left out.
+function layerSpans(
+  entries: VisibleEntry<StoredLayer>[],
+  drawnKeys: Uint8Array | undefined,
+): ScoreSpan[] {
   return entries.flatMap(({ data, visStart, visEnd }) => {
     const { y } = data
     return y
@@ -384,6 +396,8 @@ function layerSpans(entries: VisibleEntry<StoredLayer>[]): ScoreSpan[] {
             avg: y,
             visStart,
             visEnd,
+            row: data.row,
+            drawnKeys,
           },
         ]
       : []
@@ -888,6 +902,24 @@ export function stateModelFactory(
         },
       }))
       .views(self => {
+        let keySpace = { field: '', rowKeys: new RowKeys() }
+        return {
+          /**
+           * #getter
+           * The key each value of `rows.field` holds across every loaded
+           * region, assigned at the value's first arrival and never moved; a
+           * new field is a new key space.
+           */
+          get rowKeys(): RowKeys {
+            const field = self.rowsField
+            if (keySpace.field !== field) {
+              keySpace = { field, rowKeys: new RowKeys() }
+            }
+            return keySpace.rowKeys
+          },
+        }
+      })
+      .views(self => {
         const layout = stableIdentityComputed(() => {
           if (self.drawsRows) {
             return rowsLayout(self.sources, categoricalField(self.rowsField))
@@ -899,14 +931,22 @@ export function stateModelFactory(
             self.hiddenGroupKeys,
           )
         })
+        const keyed = createEncodeMemo(
+          () => (self.drawsRows ? self.featurePayloads : NO_REGIONS),
+          () => self.rowKeys,
+          keyRegion,
+        )
         const faceted = createEncodeMemo(
-          () =>
-            self.splitField === undefined ? NO_REGIONS : self.featurePayloads,
+          () => (self.facet ? self.featurePayloads : NO_REGIONS),
           () => layout.get(),
           facetRegion,
         )
         const drawn = () =>
-          self.splitField === undefined ? self.featurePayloads : faceted()
+          self.drawsRows
+            ? keyed()
+            : self.facet
+              ? faceted()
+              : self.featurePayloads
         const mateRegions = stableIdentityComputed((): MateRegion[] =>
           self.host.displayedRegions.map((r, index) => ({
             index,
@@ -939,15 +979,74 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * The layers the display draws: split, every region's rows offset
-           * onto the one layout, so a chip or a label and the band beside it
-           * agree whichever region a span came from. A region is offset again
-           * only when it or the layout moves, which is what the upload re-packs.
+           * The layers the display draws. Under a facet every region's rows
+           * are offset onto the one layout, so a chip and the band beside it
+           * agree whichever region a span came from; under `rows` every row
+           * is a key the row table places, so a reorder or a focus moves no
+           * instance. A region is offset or keyed again only when it, the
+           * facet's layout or the key space moves, which is what the upload
+           * re-packs.
            */
           get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
             return self.hasLinkMark
               ? owners(mated(), mateRegions.get(), canonical)
               : drawn()
+          },
+        }
+      })
+      .views(self => {
+        const keyNames = stableIdentityComputed(() => {
+          void self.rpcDataMap
+          return self.rowKeys.names.slice()
+        })
+        const order = stableIdentityComputed(() =>
+          self.sources.map(row => row.name),
+        )
+        return {
+          /**
+           * #getter
+           * Under `rows`, the table every mark places a key through: its slot
+           * in the rows' order, hidden where the focus leaves it out. Rebuilt
+           * on a reorder, a focus or a new value, which uploads one small
+           * texture and no instance bytes. Undefined under a facet, which
+           * offsets its rows itself, and while the density sidecar stands in,
+           * whose bins carry no key.
+           */
+          get rowTable(): RowTable | undefined {
+            return self.drawsRows && !self.coarseTierStandsIn
+              ? markRowTable(keyNames.get(), order.get())
+              : undefined
+          },
+        }
+      })
+      .views(self => {
+        const drawnKeys = stableIdentityComputed(() => {
+          const table = self.rowTable
+          return table && drawnKeysOf(table)
+        })
+        const scaled = createEncodeMemo(
+          () => self.rpcDataMap,
+          () => drawnKeys.get(),
+          (data, drawn) => (drawn ? drawnRegion(data, drawn) : data),
+        )
+        return {
+          /**
+           * #getter
+           * 1 at each key the row table draws, undefined while it draws every
+           * one: a focus moves it, a reorder does not.
+           */
+          get drawnKeys(): Uint8Array | undefined {
+            return drawnKeys.get()
+          },
+          /**
+           * #getter
+           * `rpcDataMap` with each layer's key and extents over the instances
+           * the row table draws, its lanes shared: what the legend, the axis
+           * and the size scales read, so a row the focus hides leaves them as
+           * it leaves the plot.
+           */
+          get scaleDataMap(): ReadonlyMap<number, MarkRegionData> {
+            return drawnKeys.get() ? scaled() : self.rpcDataMap
           },
         }
       })
@@ -1006,7 +1105,8 @@ export function stateModelFactory(
           const indices = self.drawingMarkIndices
           const folded = new Set(indices)
           const types = indices.map(i => self.markTypes[i]!)
-          const { origin, autoscaleType, numStdDev, numQuantile } = self
+          const { origin, autoscaleType, numStdDev, numQuantile, drawnKeys } =
+            self
           const reached = [
             ...self.scoreRules.map(rule => rule.value),
             ...(types.includes('bar') ? [origin] : []),
@@ -1016,13 +1116,14 @@ export function stateModelFactory(
               marksValue(self.conf.marks[i]!, self.markChannels[i]!),
             ),
             view: self.host,
-            payloadFor: index => self.rpcDataMap.get(index),
+            payloadFor: index => self.scaleDataMap.get(index),
             itemsFor: data =>
               data.layers.filter(
                 (l, i) =>
                   folded.has(i) && l.count > 0 && Number.isFinite(l.yMin),
               ),
-            accumulate: entries => computeSpanStats(layerSpans(entries)),
+            accumulate: entries =>
+              computeSpanStats(layerSpans(entries, drawnKeys)),
             range: (stats, entries) =>
               widenRangeToRules(
                 autoscaleDomainFromSpans({
@@ -1030,7 +1131,7 @@ export function stateModelFactory(
                   autoscaleType,
                   numStdDev,
                   numQuantile,
-                  spans: layerSpans(entries),
+                  spans: layerSpans(entries, drawnKeys),
                 }),
                 reached,
               ),
@@ -1155,12 +1256,13 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * bands a span stacks into: the highest `row` any loaded layer
-         * carries, plus one
+         * bands a span stacks into: the facet's rows, one per row drawn under
+         * `rows`, or else the highest `row` any loaded layer carries, plus one
          */
         get rowCount(): number {
-          if (self.facetLayout.rowCount > 0) {
-            return self.facetLayout.rowCount
+          const { rowCount } = self.facetLayout
+          if (rowCount > 0 || self.rowTable) {
+            return Math.max(1, rowCount)
           }
           const { visible } = self.markView
           let highest = 0
@@ -1200,7 +1302,7 @@ export function stateModelFactory(
          * section leaves the stroke widths the way it leaves the key.
          */
         get sizeScales(): (LinkSizeScale | undefined)[] {
-          const payloads = [...self.rpcDataMap.values()]
+          const payloads = [...self.scaleDataMap.values()]
           return self.conf.marks.map((_, i) => {
             let table: SizeScaleTable | undefined
             let lo = Infinity
@@ -1270,6 +1372,7 @@ export function stateModelFactory(
             linkRegions: this.linkRegions,
             valueInsetPx: this.valueInsetPx,
             rowCount: this.rowCount,
+            rowTable: self.rowTable,
           }))
         },
         /**
@@ -1473,7 +1576,7 @@ export function stateModelFactory(
           const { visible } = self.markView
           const { marks } = self.conf
           return buildMarkLegend(
-            self.rpcDataMap.values(),
+            self.scaleDataMap.values(),
             i => !!visible[i],
             (i, channel) => keySettingOf(marks[i], channel),
           )
@@ -1658,9 +1761,13 @@ export function stateModelFactory(
             pos,
             index => (mark === -1 ? undefined : self.rpcDataMap.get(index)),
             (rows, region) => {
+              const { rowKeys, rowTable } = self
               const byName = new Map<string, number>()
-              for (const [row, value] of rowValuesAt(region, mark, pos)) {
-                const name = self.sources[row]?.name
+              for (const [key, value] of rowValuesAt(region, mark, pos)) {
+                const name =
+                  rowTable && keySlot(key, rowTable) !== undefined
+                    ? rowKeys.names[key]
+                    : undefined
                 if (name !== undefined) {
                   byName.set(name, value)
                 }

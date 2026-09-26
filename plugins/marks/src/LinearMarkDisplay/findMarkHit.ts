@@ -28,7 +28,10 @@ export interface MarkHitInfo {
   colorValue: number | undefined
   /** The point painter's code for the instance's shape, if its mark reads one. */
   glyph: number | undefined
-  /** The band this instance stands in, if its mark reads a row. */
+  /**
+   * The `row` this instance carries, if its mark reads one: its band, or
+   * under `rows` its key, which the row table places.
+   */
   row: number | undefined
   screenX: number
   screenY: number

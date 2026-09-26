@@ -23,6 +23,7 @@ export {
 } from '../shaders/markColor.generated.ts'
 export { keepRampValues, rampValueBits } from './markRamp.ts'
 export { HIDDEN_ROW, NO_ROW_COLOR, RowKeys, buildRowTable } from './rowTable.ts'
+export { keySlot, rowColor, rowSlot } from './rowLane.ts'
 
 export type { MarkPlan } from './markPlan.ts'
 export type { MarkInstance } from './markInk.ts'

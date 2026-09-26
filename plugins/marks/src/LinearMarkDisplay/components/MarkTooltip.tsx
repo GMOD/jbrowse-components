@@ -4,6 +4,7 @@ import { assembleLocString } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { SHAPE_CODES, SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
+import { keySlot } from '@jbrowse/render-core/marks'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -21,6 +22,7 @@ import type { MarkLegendSection } from '../legend.ts'
 import type { MouseState } from '@jbrowse/core/ui'
 import type { LegendSwatch } from '@jbrowse/core/ui/legendSpec'
 import type { MarkEncoding } from '@jbrowse/core/util/markEncoding'
+import type { RowTable } from '@jbrowse/render-core/marks'
 
 export interface MarkTooltipModel {
   hoveredFeature: MarkHitInfo | undefined
@@ -29,6 +31,7 @@ export interface MarkTooltipModel {
   legendSections: MarkLegendSection[]
   facetLayout: FacetLayout
   sources: readonly { label?: string }[]
+  rowTable: RowTable | undefined
   coarseTierStandsIn: boolean
 }
 
@@ -116,24 +119,25 @@ function rowRow(
   encoding: MarkEncoding | undefined,
   facetLayout: FacetLayout,
   sources: readonly { label?: string }[],
+  rowTable: RowTable | undefined,
 ): ChannelRow | undefined {
-  const { row } = hit
-  if (row === undefined) {
+  const band = hit.row === undefined ? undefined : keySlot(hit.row, rowTable)
+  if (band === undefined) {
     return undefined
   }
   const section = facetLayout.sections.find(
-    s => row >= s.firstRow && row < s.firstRow + s.rowCount,
+    s => band >= s.firstRow && band < s.firstRow + s.rowCount,
   )
   if (section) {
     return {
       channel: 'row',
       value:
-        (facetLayout.rows ? sources[row]?.label : undefined) ?? section.label,
+        (facetLayout.rows ? sources[band]?.label : undefined) ?? section.label,
     }
   }
   return encoding?.row === undefined
     ? undefined
-    : { channel: 'row', field: channelName(encoding.row), value: String(row) }
+    : { channel: 'row', field: channelName(encoding.row), value: String(band) }
 }
 
 /**
@@ -149,6 +153,7 @@ function markTooltipRows(
   sections: MarkLegendSection[],
   facetLayout: FacetLayout,
   sources: readonly { label?: string }[],
+  rowTable: RowTable | undefined,
   sidecar: boolean,
 ): ChannelRow[] {
   const { y } = hit
@@ -162,7 +167,7 @@ function markTooltipRows(
       : undefined,
     colorRow(hit, encoding, sections),
     shapeRow(hit, encoding, sections),
-    rowRow(hit, encoding, facetLayout, sources),
+    rowRow(hit, encoding, facetLayout, sources, rowTable),
   ].filter(row => row !== undefined)
 }
 
@@ -185,6 +190,7 @@ const MarkTooltip = observer(function MarkTooltip({
             legendSections,
             model.facetLayout,
             model.sources,
+            model.rowTable,
             model.coarseTierStandsIn,
           ).map(({ channel, field, value, swatch }) => (
             <div key={channel}>

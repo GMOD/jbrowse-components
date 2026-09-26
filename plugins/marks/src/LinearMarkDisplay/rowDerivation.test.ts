@@ -1,3 +1,4 @@
+import { rowSlot } from '@jbrowse/render-core/marks'
 import { waitFor } from '@testing-library/react'
 
 import { runMarkClustering } from './runMarkClustering.ts'
@@ -37,22 +38,35 @@ function loaded(display: Record<string, unknown>, feats = FAMILY) {
   return model
 }
 
+// Each instance the plot draws, on the band it is drawn in: a row the table
+// hides draws nothing, and a key draws on its slot.
+function drawnLayers(display: LinearMarkDisplayModel) {
+  const { rowTable } = display.renderState
+  return [...display.rpcDataMap.values()].map(region =>
+    region.layers.map(l => {
+      const shown = Array.from(l.x.keys()).flatMap(i => {
+        const slot = rowSlot(l.row, i, rowTable)
+        return slot === undefined ? [] : [{ i, slot }]
+      })
+      return {
+        count: shown.length,
+        x: shown.map(({ i }) => l.x[i]!),
+        x2: shown.map(({ i }) => l.x2[i]!),
+        y: l.y ? shown.map(({ i }) => l.y![i]!) : [],
+        row: l.row ? shown.map(({ slot }) => slot) : [],
+        color: l.color ? shown.map(({ i }) => l.color![i]!) : [],
+      }
+    }),
+  )
+}
+
 function drawn(display: LinearMarkDisplayModel) {
   return {
     request: display.rpcProps().facet,
     rowCount: display.rowCount,
     renderRowCount: display.renderState.rowCount,
     domain: display.domain,
-    layers: [...display.rpcDataMap.values()].map(region =>
-      region.layers.map(l => ({
-        count: l.count,
-        x: [...l.x],
-        x2: [...l.x2],
-        y: [...(l.y ?? [])],
-        row: [...(l.row ?? [])],
-        color: [...(l.color ?? [])],
-      })),
-    ),
+    layers: drawnLayers(display),
     valueScales: display.valueScales.map(
       ({ domain, height, offset, bandTops }) => ({
         domain,
@@ -102,9 +116,9 @@ function sidebar(display: LinearMarkDisplayModel) {
   }
 }
 
-function rowOfEach(display: LinearMarkDisplayModel) {
-  const layer = display.rpcDataMap.get(0)!.layers[0]!
-  return [...layer.row!].map((row, i) => `${layer.y![i]}@${row}`)
+function rowOfEach(display: LinearMarkDisplayModel, region = 0) {
+  const { y, row } = drawnLayers(display)[region]![0]!
+  return row.map((slot, i) => `${y[i]}@${slot}`)
 }
 
 // What the worker's clustering hands back: its leaves in the order it names
@@ -242,11 +256,7 @@ test('a region arriving with a new value adds its row, and the arranged rows kee
   expect(
     display.editableSources.map(({ name, label }) => label ?? name),
   ).toEqual(['s10', 'Mother', 'dad', 's2', 'aunt'])
-  const layer = display.rpcDataMap.get(1)!.layers[0]!
-  expect([...layer.row!].map((row, i) => `${layer.y![i]}@${row}`)).toEqual([
-    '6@4',
-    '1@1',
-  ])
+  expect(rowOfEach(display, 1)).toEqual(['6@4', '1@1'])
 })
 
 const LISTED = [

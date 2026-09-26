@@ -2,6 +2,7 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import { rowColor, rowSlot } from '@jbrowse/render-core/marks'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { pointYPx } from '@jbrowse/render-core/shaders/pointMark'
 
@@ -115,8 +116,12 @@ export function placeTextMarks(
         if (!label || mid < block.start || mid >= block.end) {
           continue
         }
+        const slot = rowSlot(row, i, state.rowTable)
+        if (slot === undefined) {
+          continue
+        }
         const value = values?.[i]
-        const bandTop = row ? band * row[i]! : 0
+        const bandTop = band * slot
         const baseline =
           value !== undefined && Number.isFinite(value)
             ? baselineAt(
@@ -146,7 +151,9 @@ export function placeTextMarks(
           baseline,
           width,
           color:
-            entry.ownColor && color ? abgrToCssRgba(color[i]!) : defaultColor,
+            entry.ownColor && color
+              ? abgrToCssRgba(rowColor(color[i]!, row, i, state.rowTable))
+              : defaultColor,
           left: centre - width / 2,
           right: centre + width / 2,
           top: baseline - ascent,

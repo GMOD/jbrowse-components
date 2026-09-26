@@ -57,6 +57,13 @@ export interface ScoreSpan {
   avg: Float32Array
   visStart?: number
   visEnd?: number
+  /**
+   * Instance `i`'s row key, and 1 at each key that draws: an instance whose
+   * key draws nothing, or lies past the end, folds into no domain. Absent,
+   * every instance folds in.
+   */
+  row?: Uint32Array
+  drawnKeys?: Uint8Array
 }
 
 /** The wiggle packer's arrays as a span, under a summary mode. */
@@ -178,19 +185,20 @@ function visibleIndexRange(span: ScoreSpan) {
   return { from, to }
 }
 
-// Half-open overlap test against the span's own window, for the instances the
-// index range admits.
+// Half-open overlap test against the span's own window, for the drawn
+// instances the index range admits.
 function spanOverlaps(span: ScoreSpan, i: number) {
-  const { visStart, visEnd, starts, ends, stride, endOffset } = span
+  const { visStart, visEnd, starts, ends, stride, endOffset, drawnKeys } = span
   return (
-    visStart === undefined ||
-    visEnd === undefined ||
-    overlaps(
-      starts[i * stride]!,
-      ends[i * stride + endOffset]!,
-      visStart,
-      visEnd,
-    )
+    (drawnKeys === undefined || drawnKeys[span.row?.[i] ?? 0] === 1) &&
+    (visStart === undefined ||
+      visEnd === undefined ||
+      overlaps(
+        starts[i * stride]!,
+        ends[i * stride + endOffset]!,
+        visStart,
+        visEnd,
+      ))
   )
 }
 

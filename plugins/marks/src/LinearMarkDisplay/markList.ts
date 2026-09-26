@@ -25,6 +25,7 @@ import type {
   MarkFrame,
   MarkRamp,
   MarkValueScaleType,
+  RowTable,
 } from '@jbrowse/render-core/marks'
 
 export type StoredLayer = HitIndexed<EncodedChannels> & {
@@ -108,6 +109,8 @@ export interface MarkRenderState extends MarkFrame {
   valueInsetPx: number
   /** The bands the plot is split into: the facet's, or the highest `row` any loaded layer carries plus one. */
   rowCount: number
+  /** What each `row` key draws on under `rows`; absent, `row` is the band. */
+  rowTable?: RowTable
 }
 
 /**
@@ -147,8 +150,8 @@ export interface TextMarkEntry extends MarkEntry {
 }
 
 /**
- * The value mark `mark`'s instances stand at over `pos`, by the row each is
- * drawn in, the highest where two in one row cover it.
+ * The value mark `mark`'s instances stand at over `pos`, by the `row` each
+ * carries, a key under `rows`, the highest where two in one row cover it.
  */
 export function rowValuesAt(
   region: MarkRegionData,
@@ -246,6 +249,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           minWidthPx: s.minWidthPx,
           seamPx: CANVAS_SEAM_PX,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
         enabled,
@@ -264,6 +268,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           diameterPx: s.markSizes[i]!,
           insetPx: s.valueInsetPx,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
         enabled,
@@ -280,6 +285,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           minWidthPx: s.minWidthPx,
           seamPx: 0,
           scrollTop: 0,
+          rowTable: s.rowTable,
         }),
         enabled,
       })
@@ -301,6 +307,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           sizeScale: s.sizeScales[i],
           insetPx: s.valueInsetPx,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
         enabled,

@@ -39,18 +39,22 @@ function rowKey(row: Uint32Array | undefined, i: number) {
   return row === undefined ? 0 : row[i]!
 }
 
+/** The slot `key` is drawn on, undefined where the table hides it. */
+export function keySlot(key: number, table: RowTable | undefined) {
+  if (!table) {
+    return key
+  }
+  const slot = key < table.keys ? table.slot[key]! : HIDDEN_ROW
+  return slot === HIDDEN_ROW ? undefined : slot
+}
+
 /** The slot instance `i` is drawn on, undefined where the table hides its key. */
 export function rowSlot(
   row: Uint32Array | undefined,
   i: number,
   table: RowTable | undefined,
 ) {
-  const key = rowKey(row, i)
-  if (!table) {
-    return key
-  }
-  const slot = key < table.keys ? table.slot[key]! : HIDDEN_ROW
-  return slot === HIDDEN_ROW ? undefined : slot
+  return keySlot(rowKey(row, i), table)
 }
 
 /** The colour instance `i` is drawn in: its key's override, else `color`. */

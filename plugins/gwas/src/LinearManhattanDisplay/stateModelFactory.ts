@@ -124,6 +124,7 @@ export function stateModelFactory(
        */
       get topSnp(): string | undefined {
         const marks = self.ldMarkIndexes
+        const { drawnKeys } = self
         let bestScore = -Infinity
         let bestPos = 0
         let bestIdx = -1
@@ -138,8 +139,9 @@ export function stateModelFactory(
                 const score = y[i]!
                 const pos = layer.x[i]!
                 if (
-                  score > bestScore ||
-                  (score === bestScore && idx === bestIdx && pos < bestPos)
+                  (!drawnKeys || drawnKeys[layer.row?.[i] ?? 0] === 1) &&
+                  (score > bestScore ||
+                    (score === bestScore && idx === bestIdx && pos < bestPos))
                 ) {
                   bestScore = score
                   bestPos = pos
@@ -166,7 +168,8 @@ export function stateModelFactory(
        */
       get indexSnpMissing(): boolean {
         const marks = self.ldMarkIndexes
-        const layers = [...self.rpcDataMap.values()].flatMap(d =>
+        const { drawnKeys } = self
+        const layers = [...self.scaleDataMap.values()].flatMap(d =>
           marks.flatMap(i => d.layers[i] ?? []),
         )
         const indexDrawn = layers.some(
@@ -175,9 +178,13 @@ export function stateModelFactory(
             shapeScale.entries.some(e => e.value === 'index'),
         )
         const partnerJoined = layers.some(
-          ({ scale, color, count }) =>
+          ({ scale, color, row, count }) =>
             scale?.field === LD_FIELD &&
-            !!color?.subarray(0, count).some(c => c !== NO_VALUE_ABGR),
+            !!color?.subarray(0, count).some(
+              (c, i) =>
+                c !== NO_VALUE_ABGR &&
+                (!drawnKeys || drawnKeys[row?.[i] ?? 0] === 1),
+            ),
         )
         return self.joinsLd && indexDrawn && !partnerJoined
       },

@@ -1,5 +1,6 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
+import { buildRowTable } from '@jbrowse/render-core/marks'
 import { render, screen } from '@testing-library/react'
 
 import { rowsLayout } from '../facet.ts'
@@ -46,6 +47,7 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
         legendSections: [],
         facetLayout: NO_FACET,
         sources: [],
+        rowTable: undefined,
         coarseTierStandsIn: false,
         ...model,
       }}
@@ -202,4 +204,15 @@ test('under rows a row no one labelled reads as its value', async () => {
     sources,
   })
   expect(box.textContent).toContain('source: dad')
+})
+
+test('under rows the hit names its row by its key, wherever the table has moved it', async () => {
+  const sources = [{ name: 'dad' }, { name: 'mom', label: 'Mother' }]
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, row: 0 },
+    facetLayout: rowsLayout(sources, categoricalField('source')),
+    sources,
+    rowTable: buildRowTable(Uint32Array.of(1, 0)),
+  })
+  expect(box.textContent).toContain('Mother')
 })
