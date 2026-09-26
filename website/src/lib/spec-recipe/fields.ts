@@ -1736,6 +1736,7 @@ export const GRAPH_LABELS: Record<string, string[]> = {
     'Haplotypes',
   ],
   'the follow toggle': ['Follow', 'Pin'],
+  'Follow button': ['Pin', 'Follow'],
 }
 
 const graphToolbarField = (
@@ -2032,6 +2033,20 @@ export const viewFields: Record<string, FieldRecipe> = {
       ? {
           path: 'Set the location box before launching the graph view.',
           note: 'The cut is the window the linear view was showing, so the graph covers what you were looking at.',
+        }
+      : undefined,
+  followLinearView: value =>
+    typeof value === 'boolean'
+      ? {
+          path: `Graph view toolbar → ${value ? 'Follow' : 'Pin'}`,
+          note: 'A graph launched from a linear view follows it from the start, with the button reading Pin; Follow hands a pinned graph back.',
+        }
+      : undefined,
+  coarseCut: value =>
+    value === true
+      ? {
+          path: 'Zoom the linear view out past the handover the segments track names under coarse.',
+          note: 'Past that zoom a following graph cuts the one-node-per-bubble tier instead of the segments.',
         }
       : undefined,
   // The other way a graph view gets its data, and the one a reader bringing a
