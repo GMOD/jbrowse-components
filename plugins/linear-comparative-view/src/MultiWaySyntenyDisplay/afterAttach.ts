@@ -52,11 +52,11 @@ const DESCRIBE_DEADLINE_MS = 20_000
  * op, so the cut lands the same on either tier.
  *
  * A gutter that is a direct pair now draws a record's own indels, so for those
- * the cut is what stops the wedge being drawn. It still holds for every other
- * consumer of a placement, which reads it as one linear mapping: composed
- * gutters interpolate within a run, and the lane weights and orientation vote
- * both count a run's anchor bp. Lifting it belongs with moving those three onto
- * the ops.
+ * the cut is what stops the wedge being drawn. Three consumers still read a
+ * placement as one linear mapping and keep it earning its place: composed
+ * gutters interpolate within a run, `rowAssembliesOf` orders lanes by a run's
+ * anchor bp, and the orientation vote weighs the same bp where the source is an
+ * alignment. Lifting it belongs with moving those three onto the ops.
  */
 export const SPLIT_AT_GAP_BP = 10_000
 

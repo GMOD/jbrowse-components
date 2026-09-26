@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-25. The per-base gutter landed; the blocking decision is now lanePairsOnAnchor, because resyncing the plugin's drifted clipFeatureToRegion is what switches our own DP aligner on in the lower gutters. Walk rows already draws every haplotype on its own bp at ABCA7, which is the large-scale picture nobody has extended to the other loci. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
+description: The HPRC graph thread as of 2026-09-25. The per-base gutter landed; the blocking decision is now lanePairsOnAnchor, because resyncing the plugin's drifted clipFeatureToRegion is what inks our own DP aligner's indels and mismatches in every gutter. Walk rows draws every haplotype on its own bp, and naming the haplotypes returns whole walks where the cohort cut splits them. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -54,15 +54,9 @@ their width; captures at https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86).
    PIF bytes, and whether its records at the six loci below match the window
    runs). The panel's cost follows: 36 pairs for eight haplotypes plus GRCh38,
    estimated 70-200 CPU-h and ~0.5 GB hosted.
-2. **Landed** as `0d0709c746`, and `code/jb2/main` carries it. The
-   "per-base alignment lanes" paragraph of
-   `ideas/collections/multiway-synteny-lgv-track.md` is half-answered by it: its
-   frame argument is dead (the ops pack on the main thread, where the frames
-   already live), its density argument stands, and the `X` loop in
-   `multiwayGeometry.ts` still has no zoom or count bound.
-3. Build and host the panel all-vs-all for the `demos/hprc_multiway` eight and
+2. Build and host the panel all-vs-all for the `demos/hprc_multiway` eight and
    check it at the six loci.
-4. Rework the HPRC tutorials around click paths on a hosted instance, with one
+3. Rework the HPRC tutorials around click paths on a hosted instance, with one
    "host your own pangenome" page for the prep. A read-only map found only
    part 1 → part 2 is a real sequence; part 3 is three separable sections.
    Retitling by topic without renaming files breaks no link.
@@ -87,16 +81,23 @@ their width; captures at https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86).
 **The blocking decision: resyncing the plugin's clip arms our own aligner.**
 The plugin declares `lanePairsOnAnchor`, so `MultiWayLaneLinks` already fires
 and already sends `keepAlignment: true`, and `pairFeatures` already calls
-`subgraph.pairAlignments` — the k-mer chain and DP. None of it shows, for one
-accidental reason: the plugin's vendored `clipFeatureToRegion` (`src/synteny/`)
-has drifted from core's and carries no `keepAlignment`, so it strips every
-alignment field (0 hits for `keepAlignment|alignmentOps` in both shipped
-bundles). **Resyncing that file — which every other step in this thread needs —
-draws the DP's `=`/`X` in the lower gutters in colour**, which is what Colin
-ruled out. Retire the capability or replace the DP with a graph-stated mode
-first; do not resync and then decide. The drift also costs the id scheme that
-keeps a nameless record's group key stable across refetches, which is likely a
-live bug in the hosted demo.
+`subgraph.pairAlignments` — the k-mer chain and DP. Its records already draw a
+ribbon each; what does not draw is the DP's indels and mismatches, because
+`addAlignmentDetail` opens on `alignmentOps` and gets `undefined`. The reason is
+accidental: the plugin's vendored `clipFeatureToRegion` (`src/synteny/`) has
+drifted from core's and carries no `keepAlignment`, so it strips every alignment
+field (0 hits for `keepAlignment|alignmentOps` in both shipped bundles).
+**Resyncing that file — which every other step in this thread needs — inks the
+DP's `=`/`X` in every gutter**, the anchor one included, since its `direct`
+branch calls the same function off the group feature and its ops come through
+the same vendored base. That is what Colin ruled out. Retire the capability or
+replace the DP with a graph-stated mode first; do not resync and then decide.
+The same drift also costs the id scheme that keeps a nameless record's group key
+stable across refetches, which is likely a live bug in the hosted demo.
+
+A third gate sits under all of it: `pairFeatures` answers `[]` unless the
+database has haplotype anchor rows and every subgraph's `anchorWalk` is whole,
+falling back to `composeLaneLinks`, which carries no alignment at all.
 
 **Found along the way, unfixed.** The hosted `demos/hprc/config.json` still
 names the retired betabuild plugin (bundle of 2026-09-20, no

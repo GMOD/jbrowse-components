@@ -4,24 +4,114 @@
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "The amylase window cut for a named haplotype set instead of the whole cohort: `node ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/node_modules/@gmod/gbz-base/bin/query.js <hprc-v2.1-mc-grch38.gbz.db> --haplotype-index <anchored.db> --sample GRCh38 --contig chr1 --interval 103611080..103732636 --context 1000 --snarls --haplotypes all --limit 50000 --resolve --format gfa --keep HG01361 --keep HG00133 --keep NA18608 --keep HG00232`. Those four are the structures build_amylase_haplotypes.sh stacks, one of each common AMY1 arrangement from a single copy to seven, so they are the hardest haplotypes in the window rather than convenient ones. Walk span is a W line's seqEnd minus seqStart (fields 6 and 5); pieces is how many W lines carry one sample#haplotype. `--extend-snarls` in place of `--snarls` returns identical nodes and spans here.",
-    "notes": "DOES NAMING A HAPLOTYPE SET RESCUE A CUT THAT SPLITS WALKS. On the whole cohort the amylase window splits 296 of 464 haplotypes, because a walk leaves the cut through the copy-number array and comes back. Naming the set instead returns every walk in ONE piece, the four copy-number carriers included, in 16 s.\n\nThe reason is that a `keep` predicate takes the anchored route, which builds whole walks by construction rather than identifying fragments that cross the window. So this is a different extraction, not a smaller one: the node count goes UP against the cohort cut, 8,027 against 6,469.\n\nThe spans are the picture: 27,342 bp to 318,428 bp across a 121,557 bp reference window, a twelvefold spread with each haplotype at its own length and no aligner anywhere. That is the copy-number ladder a reference axis collapses.\n\nIt does not rescue everything. The 1q21.1 inversion still exceeds the 50,000 node limit with the same keep set and overlapping snarls, at 153 kb, because the limit is a property of the graph in the window and not of the walks asked for. A locus whose snarl is wider than any window a reader would open is out of reach of a window cut at any setting.\n\nSo a demo that names its haplotypes gets whole walks; one that asks for the cohort gets fragments. Choosing the set is therefore a data decision rather than a convenience, and the honest way to choose it is from a census over every haplotype — the callset's per-window structural forms — rather than by hand."
+    "repro": "The amylase window cut for a named haplotype set instead of the whole cohort: `node ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/node_modules/@gmod/gbz-base/bin/query.js <hprc-v2.1-mc-grch38.gbz.db> --haplotype-index <anchored.db> --sample GRCh38 --contig chr1 --interval 103611080..103732636 --context 1000 --snarls --haplotypes all --limit 100000 --resolve --format gfa --keep HG01361 --keep HG00133 --keep NA18608 --keep HG00232`. Those four are the structures build_amylase_haplotypes.sh stacks, one of each common AMY1 arrangement from a single copy to seven, so they are the hardest haplotypes in the window rather than convenient ones. Walk span is a W line's seqEnd minus seqStart (fields 6 and 5); pieces is how many W lines carry one sample#haplotype. The snarl flag is inert on this route \u2014 `walkHaplotypesFromAnchor` never reaches `extractSnarls` \u2014 so it is passed only to match the adapter's call and decides nothing here. Database `https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db`, index `https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db`.",
+    "notes": "DOES NAMING A HAPLOTYPE SET RESCUE A CUT THAT SPLITS WALKS. On the whole cohort the amylase window splits 296 of the 463 haplotypes it names, because a walk leaves the cut through the copy-number array and comes back. Naming the set instead returns every walk in ONE piece, the four copy-number carriers included, in 16 s.\n\nThe reason is that a `keep` predicate with an interval takes the anchored route, a different extraction rather than a filter over the same one: its node set is exactly the steps the named walks make, with a run the reference does not carry kept however long it runs, where the cohort route grows a bp-radius neighbourhood and reads walks out of it. That is why the node count goes UP, 8,027 against 6,469, and why an array that overflows the envelope on one route is admitted whole on the other.\n\nThe spans are the picture: 27,342 bp to 318,428 bp across a 121,557 bp reference window, a twelvefold spread with each haplotype at its own length and no aligner anywhere. That is the copy-number ladder a reference axis collapses.\n\nIt does not rescue everything, and 1q21.1 is the counter-case: four named samples there run at 12,065 nodes and still return 8 of 9 haplotypes in two pieces. The anchored route builds a whole walk where there is one to build, and at 1q21.1 the walk leaves the window through the segmental duplication and returns, so the pieces are what the graph has to offer. The counter-case numbers live in this note rather than in a row because they are a different window; re-take them with `--stats` before quoting them, since a walk the anchored route cannot complete falls back to the sampled one silently.\n\nSo a demo that names its haplotypes gets whole walks; one that asks for the cohort gets fragments. Choosing the set is therefore a data decision rather than a convenience, and the honest way to choose it is from a census over every haplotype \u2014 the callset's per-window structural forms \u2014 rather than by hand."
   },
   "columns": [
-    { "key": "haplotype", "label": "haplotype", "format": "text", "align": "left" },
-    { "key": "pieces", "label": "W lines", "format": "int", "align": "right" },
-    { "key": "spanBp", "label": "walk span bp", "format": "int", "align": "right" },
-    { "key": "vsReference", "label": "vs GRCh38", "derived": "spanBp - 121557", "format": "int", "align": "right" }
+    {
+      "key": "haplotype",
+      "label": "haplotype",
+      "format": "text",
+      "align": "left"
+    },
+    {
+      "key": "pieces",
+      "label": "W lines",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "spanBp",
+      "label": "walk span bp",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "refSpanBp",
+      "label": "GRCh38 span bp",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "vsReference",
+      "label": "vs GRCh38",
+      "derived": "spanBp - refSpanBp",
+      "format": "int",
+      "align": "right"
+    }
   ],
   "rows": [
-    { "values": { "haplotype": "GRCh38#0", "pieces": 1, "spanBp": 121557 } },
-    { "values": { "haplotype": "HG01361#1", "pieces": 1, "spanBp": 27342 } },
-    { "values": { "haplotype": "HG00133#2", "pieces": 1, "spanBp": 49048 } },
-    { "values": { "haplotype": "HG01361#2", "pieces": 1, "spanBp": 121470 } },
-    { "values": { "haplotype": "HG00133#1", "pieces": 1, "spanBp": 121488 } },
-    { "values": { "haplotype": "NA18608#2", "pieces": 1, "spanBp": 215595 } },
-    { "values": { "haplotype": "NA18608#1", "pieces": 1, "spanBp": 309708 } },
-    { "values": { "haplotype": "HG00232#1", "pieces": 1, "spanBp": 309719 } },
-    { "values": { "haplotype": "HG00232#2", "pieces": 1, "spanBp": 318428 } }
+    {
+      "values": {
+        "haplotype": "GRCh38#0",
+        "pieces": 1,
+        "spanBp": 121557,
+        "refSpanBp": 121557
+      }
+    },
+    {
+      "values": {
+        "haplotype": "HG01361#1",
+        "pieces": 1,
+        "spanBp": 27342,
+        "refSpanBp": 121557
+      }
+    },
+    {
+      "values": {
+        "haplotype": "HG00133#2",
+        "pieces": 1,
+        "spanBp": 49048,
+        "refSpanBp": 121557
+      }
+    },
+    {
+      "values": {
+        "haplotype": "HG01361#2",
+        "pieces": 1,
+        "spanBp": 121470,
+        "refSpanBp": 121557
+      }
+    },
+    {
+      "values": {
+        "haplotype": "HG00133#1",
+        "pieces": 1,
+        "spanBp": 121488,
+        "refSpanBp": 121557
+      }
+    },
+    {
+      "values": {
+        "haplotype": "NA18608#2",
+        "pieces": 1,
+        "spanBp": 215595,
+        "refSpanBp": 121557
+      }
+    },
+    {
+      "values": {
+        "haplotype": "NA18608#1",
+        "pieces": 1,
+        "spanBp": 309708,
+        "refSpanBp": 121557
+      }
+    },
+    {
+      "values": {
+        "haplotype": "HG00232#1",
+        "pieces": 1,
+        "spanBp": 309719,
+        "refSpanBp": 121557
+      }
+    },
+    {
+      "values": {
+        "haplotype": "HG00232#2",
+        "pieces": 1,
+        "spanBp": 318428,
+        "refSpanBp": 121557
+      }
+    }
   ]
 }

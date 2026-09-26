@@ -268,9 +268,10 @@ backend landed 2026-08-27").
 **LOD.** `lodTier` resolves on the main thread off the settled zoom and the
 track's `coarseBpPerPxThreshold` (`lodTierAt`,
 `JC/packages/synteny-core/src/lodTier.ts`) and is folded into `viewSignature`.
-The display itself reads no alignment string anywhere, so for this display the
-tier is purely a byte knob: coarse rows have the same extents with folded
-CIGARs.
+A gutter that is a direct pair reads its record's ops, but the tier changes no
+extent, so for this display it is close to a byte knob: coarse rows have the
+same extents with folded CIGARs, and the detail a gutter draws degrades with
+them rather than disappearing.
 
 ### 1.2 What an adapter must provide
 
@@ -459,7 +460,8 @@ row per lane: 0.7-0.78 MB of CIGAR text for mouse, dog and cow, parsed and
 walked in the worker for every static-block change, to produce one clipped
 extent. Until the 2026-09-11 rebuild five headerless PIFs pinned the star to
 fine ([SYNTENY_LOD.md](SYNTENY_LOD.md)`:135-143`), and the display cannot ask for
-coarse on its own behalf even though it discards the CIGAR. The tutorial's
+coarse on its own behalf even though it keeps the CIGAR only where a gutter
+draws from it. The tutorial's
 statement that the **Level of detail** entry "is offered once every child
 carries a coarse tier" (`hg38_vertebrates_synteny.md`, "The composed track") was
 not what the code did on the reading date: the menu was gated on the *threshold
@@ -617,7 +619,7 @@ differ here", which is the only question a reader has at that scale.
 - **PIF star (vertebrates, HPRC eight):** fetch bytes at the fine tier
   (0.7 MB of CIGAR per lane per window at TP53) until the five PIFs are rebuilt;
   then pixels and draw calls at a few hundred lanes.
-- **GBZ:** the fetch. 5-13 s per window for every haplotype (the Paths scan of
+- **GBZ:** the fetch. 5-56 s per window for every haplotype (the Paths scan of
   53,150 paths is once per database, `GBZ_PLAN.md:147`), `nodeLimit` refusing
   wide windows, and no coarse tier. Lane selection saves the display's per-lane
   work and nothing on the query (`GBZ_PLAN.md:297-301`).

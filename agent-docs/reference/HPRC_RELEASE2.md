@@ -490,8 +490,10 @@ not need it for.
 ## Cached test data
 
 Large artifacts go under `~/scratch`, not a session scratchpad.
-`~/scratch/jbrowse-pangenome` holds a CAT annotation for HG01433, the MHC gene
-slice for that sample, and the v2.0 `tier10000.segs` index — and nothing else.
+`~/scratch/jbrowse-pangenome` holds three files and **two of them cannot be
+used**: the `tier10000.segs` `.tbi` is a bare index whose `.bed.gz` is nowhere
+on disk, and the CAT annotation for HG01433 has no index beside it. Only the MHC
+gene slice for that sample is a working pair.
 
 **Everything this section used to list is gone**, checked 2026-09-25: the chr20
 HPRC slice, the E. coli hold-out set, the untangle PAF, a built `impg`,
