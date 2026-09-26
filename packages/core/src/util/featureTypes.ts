@@ -6,10 +6,10 @@
  * of their callers.
  */
 
-// Anchored at the end for gene and RNA so 'intergenic_region' is not a gene and
-// 'rnapol_binding_site' is not an RNA. Unanchored for transcript, which SO
-// spells both ways ('transcript', 'pseudogenic_transcript', 'transcript_region').
-const GENE_LIKE_TYPE = /gene(_segment)?$|rna$|transcript/
+// Anchored at the end so 'intergenic_region' is not a gene, 'rnapol_binding_site'
+// is not an RNA, and 'transcriptional_cis_regulatory_region' is not a
+// transcript.
+const GENE_LIKE_TYPE = /gene(_segment)?$|rna$|transcript(_region)?$/
 
 /**
  * Whether the type names a unit of transcription — a gene, a transcript, or an

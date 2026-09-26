@@ -1,73 +1,63 @@
 ---
 name: fit-label-priority
-description: Fit decimation now ranks gene names first (4a1b716c94) and thins a same-start pile to its leader (c517a1490f). Open are a reshoot of the six volvox views, gene names under the label density gate, the stage-2 fallback that drops every other name, and whether the gene rule's `transcript` match is too loose. Read before touching `labelOverhangRoomPx`, `solveLabelRoomFactors` or the auto label density gate.
+description: Fit decimation ranks gene names first (4a1b716c94) and thins a same-start pile to its leader (2cad44b0f4). Open are gene names under the auto label density gate, which hides TP53's neighbourhood on a RefSeq GFF loaded with "Show only genes" off, and whether to park the factor cap that drops every name a track cannot fit at 8. Read before touching `labelOverhangRoomPx`, `solveLabelRoomFactors` or the auto label density gate.
 ---
 
-The `decimated` rung now solves gene names' room factor first, then the
-other names' beside them (`solveLabelRoomFactors`, `fitLadder.ts`). In a pile
-of features sharing one start, only the leader (a gene, else the longest)
-reads the gap past the pile (`labelOverhangRoomPx`, `labelReservation.ts`).
+The `decimated` rung solves gene names' room factor first, then the other
+names' beside them (`solveLabelRoomFactors`, `fitLadder.ts`). In a pile of
+features sharing one start, only the leader (a gene, else the longest) reads
+the gap past the pile (`labelOverhangRoomPx`, `labelReservation.ts`).
 **Delete this file once the calls below are answered and built.**
 
-## 1. Reshoot the six volvox views
-
-Nobody has looked at the pile rule. The before/after artifact for the gene
-tier (ctgA:1-25000, ctgA:1050-9000 and a third locus, each at 100 and 200px)
-predates it, and agents on the second account can't read it. The pile rule
-changes more than the gene tier did. Any EST or read pile sharing a start now
-keeps one name, where before it dropped them all together.
-
-Recommended: reshoot those six views on main and compare with the artifact
-before building anything below.
-
-## 2. Gene names under the auto label density gate
+## 1. Gene names under the auto label density gate
 
 Above 0.2 features per px, `showLabels` hides every name on the track, and the
-count includes every feature (`baseModel.ts:395-406, 503-508`). In a gene track
-mixed with evidence, the evidence pushes the count over the threshold, so the
-gene tier never runs at the zooms where names crowd.
+count includes every feature (`baseModel.ts:395-406, 503-508`). Volvox never
+reaches it (peak 0.143), and neither does the hosted "NCBI RefSeq (Aug 2024)"
+track, whose config sets `showOnlyGenes: true`. The same GFF loaded by a user
+gets the default, false. On it at chr17, 1400px wide, 300px tall:
+
+| window | density | gene density | auto | gate bypassed |
+| --- | --- | --- | --- | --- |
+| 500 kb | 0.278 | 0.031 | 0 names | 49 names, 43 genes |
+| 1 Mb | 0.546 | 0.063 | 0 names | 55 names, 40 genes |
+
+At both windows TP53 and its neighbours lose their names while gene density sits at a sixth
+to a third of the threshold. Dropping the gate outright is worse, because the non-gene names the
+ladder then keeps are "biological region", enhancer IDs such as
+`id-GeneID:127885683-3`, and `cDNA_match` hashes.
 
 Options:
 - **(a) Recommended: gate each tier on its own density.** Non-gene names hide
   at the threshold. Gene names hide only when gene features alone pass it.
+  Sized medium, because every consumer of `showLabels` needs a third "gene names
+  only" state, which reaches layout, hit testing, the DOM overlay and SVG
+  export.
 - (b) Gate on gene density whenever any gene is on screen.
 - (c) Leave the density gate as one track-wide switch.
 
-## 3. The stage-2 fallback drops every other name
+## 2. The factor cap drops every name that can't fit at 8
 
-When the other names can't fit even at the factor cap of 8,
-`solveLabelRoomFactors` returns `labelRoomFactor: Infinity`
-(`fitLadder.ts:106-110`), which drops them all, including ones that cost no
-height. Reviewer's case: G 1000-9000 (gene), est 1000-5000, O1 6000-8000,
-O2 30000-31000, at 10 bp/px and height 70. Main shows O1 and O2; now only G
-shows, though G plus O2 packs to 65px. O1's room is 2400px, so no finite
-factor drops it, and O2 goes with it.
+The bisection stops at a factor of 8 (`FIT_MAX_ROOM_FACTOR`, `fitLadder.ts`).
+A name whose room exceeds 8 times its width can't be dropped, so when those
+names alone overflow, the solve gives up and every name goes, including ones
+that cost no height. A single-tier track has always fallen to `bodies` this
+way. In the two-tier solve the same failure drops only the other names
+(`labelRoomFactor: Infinity`), and the gene names survive.
 
-The root cause is that room measures horizontal gap, while what a name costs
-is a line of height. Options:
-- (a) Recommended: park until a real track shows it. Probes only, no capture.
-- (b) Replace the room measure with each name's height cost. Large; it
-  reopens the July and September pile trade-offs (`178f7b8ed4`,
-  `6ead7481d1`).
-
-## 4. Is the gene rule's `transcript` match too loose?
-
-`geneTypeTest` reuses `isGeneLikeType` (`featureTypes.ts:12`), whose
-unanchored `transcript` match marks `transcriptional_cis_regulatory_region`
-and `transcription_start_site` as genes. Their names would outrank real genes'.
-UCSC BED12/bigPsl rows with blocks and thick columns become
-`transcript`/`mRNA` (`generateUcscTranscript.ts:30-45`), so EST alignments
-count as genes too. "Show only genes" shares the rule, so any fix changes that
-filter as well. No test data carries either regulatory type; whether current
-RefSeq GFFs do is unverified.
-
-The match is unanchored on purpose, for `pseudogenic_transcript` and
-`transcript_region` (`featureTypes.ts:10-11`).
+Reviewer's case: G 1000-9000 (gene), est 1000-5000, O1 6000-8000, O2
+30000-31000, at 10 bp/px and height 70. O1's room is 2400px and O2's is
+infinite, so no factor under 8 drops O1, and O2 goes with it though G plus O2
+packs to 65px. No volvox reshoot came near the cap; the highest factor solved
+was 6.25.
 
 Options:
-- (a) Recommended: tighten it to `transcript(_region)?$`, which keeps both
-  and drops the `transcription*` types, after checking a RefSeq GFF for them.
-- (b) Leave it.
+- **(a) Recommended: park it** until a real track reaches the cap.
+- (b) Extend the bracket above 8 to the largest finite room/width ratio, so the
+  most isolated names survive instead of none.
+- (c) Replace the room measure with each name's height cost. Large; it
+  reopens the July and September pile trade-offs (`178f7b8ed4`,
+  `6ead7481d1`).
 
 ## Not a call
 
