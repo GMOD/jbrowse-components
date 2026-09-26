@@ -13,6 +13,7 @@ import {
   unreadChannels,
   withChannel,
   withChannelScale,
+  withListMember,
   withMarkType,
   withScaleMember,
   withoutChannel,
@@ -20,13 +21,17 @@ import {
 import { markPlotProblems, markPlotSettingsWritten } from '../markPlot.ts'
 import { markProblemIndex } from '../markProblemIndex.ts'
 import { MARK_TYPES } from '../markVocabulary.ts'
+import { stepWrittenFields, stepsOfMark, withSteps } from '../plotEdit.ts'
 import MarkFieldPicker from './MarkFieldPicker.tsx'
 import MarkList from './MarkList.tsx'
 import { MarkProblemList } from './MarkProblems.tsx'
 import MarkScaleRow from './MarkScaleRow.tsx'
+import MarkSteps from './MarkSteps.tsx'
+import PlotSettings from './PlotSettings.tsx'
 
 import type { DraftMark, EditChannel } from '../markEdit.ts'
 import type { MarkPlot, MarkPlotSettings } from '../markPlot.ts'
+import type { StepSnapshot } from '../markProblems.ts'
 import type { MarkType } from '../markVocabulary.ts'
 import type { PlotFields } from '../scanPlotFields.ts'
 
@@ -74,36 +79,73 @@ function zoomField(
   )
 }
 
+// The steps that run before every mark, as the draft holds them.
+function sharedSteps(plot: MarkPlot): StepSnapshot[] {
+  const facet = plot.facet
+  return [
+    ...stepsOfMark({ transform: plot.transform } as DraftMark),
+    ...(typeof facet === 'object' && facet !== null
+      ? stepsOfMark({
+          transform: (facet as { transform?: unknown }).transform,
+        } as DraftMark)
+      : []),
+  ]
+}
+
+/**
+ * The fields a channel can name: what the scanned features carry, and what
+ * the steps before the mark write, since a count or a coverage is a field the
+ * features never had.
+ */
+function fieldsFor(fields: PlotFields, written: readonly string[]): PlotFields {
+  const numeric = [...new Set([...fields.numeric, ...written])]
+  return { ...fields, numeric }
+}
+
 const MarkPlotDialog = observer(function MarkPlotDialog({
   model,
+  seed,
   handleClose,
 }: {
   model: MarkPlotDialogModel
+  seed?: MarkPlot
   handleClose: () => void
 }) {
-  const [marks, setMarks] = useState(() => draftMarks(model.markPlot))
+  const [plot, setPlot] = useState<MarkPlot>(() => ({
+    ...model.markPlot,
+    ...seed,
+  }))
+  const marks = draftMarks(plot)
   const [selected, setSelected] = useState(0)
   const editing = useRef<{ at: number; channel: EditChannel; base: unknown }>(
     undefined,
   )
-  const fields = model.plotFields ?? NO_FIELDS
-  const draft: MarkPlot = { marks }
+  const scanned = model.plotFields ?? NO_FIELDS
   // Once per change, not once per render: the lift builds a whole config tree,
   // and a control's every keystroke re-renders the dialog around it.
   const { problems, error } = useMemo(
-    () => readDraft(model, { marks }),
-    [model, marks],
+    () => readDraft(model, plot),
+    [model, plot],
   )
   const at = Math.min(selected, marks.length - 1)
   const mark = marks[at]
+  const setMarks = (next: DraftMark[]) => {
+    setPlot({ ...plot, marks: next })
+  }
   const write = (next: DraftMark) => {
     setMarks(marks.with(at, next))
   }
+  const shared = sharedSteps(plot)
+  const fields = fieldsFor(
+    scanned,
+    stepWrittenFields([...shared, ...(mark ? stepsOfMark(mark) : [])]),
+  )
+  const plotOptions = [...scanned.categorical, ...scanned.numeric]
 
   return (
     <SubmitDialog
       open
-      maxWidth="md"
+      maxWidth="lg"
       fullWidth
       title="Edit plot"
       submitText="Apply"
@@ -111,14 +153,14 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
       onCancel={handleClose}
       onSubmit={() => {
         model.applyDisplaySettings(
-          markPlotSettingsWritten(draft, model.markPlot),
+          markPlotSettingsWritten(plot, model.markPlot),
         )
         handleClose()
       }}
       actions={
         <Button
           onClick={() => {
-            model.openPlotJsonDialog(draft)
+            model.openPlotJsonDialog(plot)
             handleClose()
           }}
         >
@@ -129,11 +171,18 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
       <Typography color="text.secondary">
         Marks draw in order, a later one over an earlier one.
         {model.plotScanLocus
-          ? ` Fields are the ones features in ${model.plotScanLocus} carry.`
+          ? ` Fields are the ones features in ${model.plotScanLocus} carry, and the ones a mark's steps write.`
           : null}
       </Typography>
+      <PlotSettings
+        plot={plot}
+        options={plotOptions}
+        problems={problems}
+        onChange={setPlot}
+      />
+      <Divider style={{ margin: '8px 0' }} />
       <div style={{ display: 'flex', gap: 16 }}>
-        <div style={{ flex: '0 0 40%' }}>
+        <div style={{ flex: '0 0 35%' }}>
           <MarkList
             marks={marks}
             selected={at}
@@ -163,6 +212,15 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
                 </option>
               ))}
             </TextField>
+            <MarkSteps
+              key={at}
+              steps={stepsOfMark(mark)}
+              at={at}
+              problems={problems}
+              onChange={steps => {
+                write(withSteps(mark, steps))
+              }}
+            />
             {editChannels(markTypeOf(mark)).map(channel => (
               <div key={channel}>
                 <MarkFieldPicker
@@ -190,6 +248,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
                   }}
                 />
                 <MarkScaleRow
+                  key={`${at}-${channel}`}
                   mark={mark}
                   channel={channel}
                   scales={channelScales(channel)}
@@ -198,6 +257,9 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
                   }}
                   onMember={(member, value) => {
                     write(withScaleMember(mark, channel, member, value))
+                  }}
+                  onList={(member, text) => {
+                    write(withListMember(mark, channel, member, text))
                   }}
                 />
               </div>

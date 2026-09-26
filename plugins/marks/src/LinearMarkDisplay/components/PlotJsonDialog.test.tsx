@@ -128,3 +128,30 @@ it('seeds over the declared plot without losing the rest', () => {
     JSON.stringify({ ...BAR, rows: 'source' }, null, 2),
   )
 })
+
+it('leads back to the form with the draft, unapplied', () => {
+  const applyDisplaySettings = jest.fn()
+  const openMarkPlotDialog = jest.fn()
+  const handleClose = jest.fn()
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <PlotJsonDialog
+        model={{
+          markPlot: BAR,
+          liftMarkPlot: plot => liftMarkPlot(schema, plot, BAR),
+          applyDisplaySettings,
+          openMarkPlotDialog,
+        }}
+        handleClose={handleClose}
+      />
+    </ThemeProvider>,
+  )
+  const draft = { ...BAR, scales: { y: { title: 'Score' } } }
+  fireEvent.change(screen.getByTestId('mark-plot-json'), {
+    target: { value: JSON.stringify(draft) },
+  })
+  fireEvent.click(screen.getByText('Back to form'))
+  expect(openMarkPlotDialog).toHaveBeenCalledWith(draft)
+  expect(applyDisplaySettings).not.toHaveBeenCalled()
+  expect(handleClose).toHaveBeenCalled()
+})

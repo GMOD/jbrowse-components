@@ -145,15 +145,12 @@ it('holds a declaration the picker cannot round-trip read-only', () => {
   setup({
     marks: [
       {
-        mark: 'bar',
-        encoding: {
-          y: 'score',
-          color: { field: 'score', scale: 'categorical', labels: ['a'] },
-        },
+        mark: 'link',
+        encoding: { x2: { chrom: 'chrom2', pos: 'start2' } },
       },
     ],
   })
-  expect(screen.getByTestId('channel-color')).toBeDisabled()
+  expect(screen.getByTestId('channel-x2')).toBeDisabled()
   expect(screen.getByText(/edit as JSON/)).toBeTruthy()
 })
 
@@ -308,8 +305,8 @@ describe('a scale beside its field', () => {
 
   // The members the row does not show keep the picker above read-only, so the
   // form still cannot drop a palette it never displayed.
-  it('leaves a channel naming a range to the JSON box', () => {
-    setup({
+  it("edits a categorical colour's values, colours and key names in place", () => {
+    const { apply, applyDisplaySettings } = setup({
       marks: [
         {
           mark: 'bar',
@@ -320,8 +317,70 @@ describe('a scale beside its field', () => {
         },
       ],
     })
-    expect(screen.getByTestId('channel-color')).toBeDisabled()
-    expect(screen.queryByTestId('scale-color')).toBeNull()
+    expect(screen.getByTestId('channel-color')).not.toBeDisabled()
+    expect(screen.getByTestId('range-color')).toHaveValue('red')
+    fireEvent.change(screen.getByTestId('domain-color'), {
+      target: { value: 'a, b' },
+    })
+    fireEvent.change(screen.getByTestId('labels-color'), {
+      target: { value: 'first,' },
+    })
+    expect(screen.getByTestId('labels-color')).toHaveValue('first,')
+    fireEvent.click(apply())
+    expect(applyDisplaySettings).toHaveBeenCalledWith({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: {
+              field: 'x',
+              scale: 'categorical',
+              range: ['red'],
+              domain: ['a', 'b'],
+              labels: ['first'],
+            },
+          },
+        },
+      ],
+    })
+  })
+
+  it('cuts a threshold at the points typed, with a colour for each interval', () => {
+    const { apply, applyDisplaySettings } = setup({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'score', scale: 'threshold' },
+          },
+        },
+      ],
+    })
+    fireEvent.change(screen.getByTestId('domain-color'), {
+      target: { value: '0.5, 0.9' },
+    })
+    fireEvent.change(screen.getByTestId('range-color'), {
+      target: { value: 'blue, grey, red' },
+    })
+    fireEvent.click(apply())
+    expect(applyDisplaySettings).toHaveBeenCalledWith({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: {
+              field: 'score',
+              scale: 'threshold',
+              domain: ['0.5', '0.9'],
+              range: ['blue', 'grey', 'red'],
+            },
+          },
+        },
+      ],
+    })
   })
 
   it("offers a link's width its own ramps, and no colour's stops", () => {
@@ -343,5 +402,109 @@ describe('a scale beside its field', () => {
     expect(
       applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.size,
     ).toEqual({ field: 'score', scale: 'log', domainMax: 100 })
+  })
+})
+
+describe('the plot as a whole', () => {
+  it('stacks sections by a field, titles the axis and pins its top', () => {
+    const { apply, applyDisplaySettings } = setup(BAR)
+    fireEvent.change(screen.getByTestId('facet-field'), {
+      target: { value: 'strand' },
+    })
+    fireEvent.change(screen.getByTestId('axis-title'), {
+      target: { value: 'Score' },
+    })
+    fireEvent.change(screen.getByTestId('axis-domainMax'), {
+      target: { value: '10' },
+    })
+    fireEvent.click(apply())
+    expect(applyDisplaySettings).toHaveBeenCalledWith({
+      facet: { field: 'strand' },
+      scales: { y: { title: 'Score', domainMax: 10 } },
+    })
+  })
+
+  it('clears a facet when its field is emptied', () => {
+    const { apply, applyDisplaySettings } = setup({ ...BAR, facet: 'strand' })
+    fireEvent.change(screen.getByTestId('facet-field'), {
+      target: { value: '' },
+    })
+    fireEvent.click(apply())
+    expect(applyDisplaySettings).toHaveBeenCalledWith({ facet: null })
+  })
+})
+
+describe("a mark's steps", () => {
+  it('adds a coverage, which fills the y a bar names none of', () => {
+    const { apply, applyDisplaySettings } = setup({ marks: [{ mark: 'bar' }] })
+    expect(screen.getByTestId('mark-row-0-error')).toBeTruthy()
+    fireEvent.change(screen.getByTestId('add-step'), {
+      target: { value: '3' },
+    })
+    expect(screen.getByTestId('mark-step-0').textContent).toContain(
+      'coverage as coverage',
+    )
+    expect(screen.queryByTestId('mark-row-0-error')).toBeNull()
+    fireEvent.click(apply())
+    expect(applyDisplaySettings).toHaveBeenCalledWith({
+      marks: [{ mark: 'bar', transform: [{ type: 'coverage' }] }],
+    })
+  })
+
+  it("edits a bin's width and an aggregate's summary in place", () => {
+    const { apply, applyDisplaySettings } = setup({ marks: [{ mark: 'bar' }] })
+    fireEvent.change(screen.getByTestId('add-step'), {
+      target: { value: '2' },
+    })
+    fireEvent.change(screen.getByTestId('step-bin-step'), {
+      target: { value: '5000' },
+    })
+    fireEvent.change(screen.getByTestId('step-aggregate-op'), {
+      target: { value: 'mean' },
+    })
+    fireEvent.change(screen.getByTestId('step-aggregate-field'), {
+      target: { value: 'score' },
+    })
+    fireEvent.click(apply())
+    expect(applyDisplaySettings).toHaveBeenCalledWith({
+      marks: [
+        {
+          mark: 'bar',
+          transform: [
+            { type: 'bin', step: 5000 },
+            { type: 'aggregate', ops: [{ op: 'mean', field: 'score' }] },
+          ],
+        },
+      ],
+    })
+  })
+})
+
+describe('the mark list', () => {
+  it('adds a zoomed-out density, handing the raw marks the closer zooms', () => {
+    const { apply, applyDisplaySettings } = setup(BAR)
+    fireEvent.click(screen.getByText('Add zoomed-out density'))
+    fireEvent.click(apply())
+    expect(applyDisplaySettings).toHaveBeenCalledWith({
+      marks: [
+        { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
+        {
+          mark: 'bar',
+          transform: [
+            { type: 'bin', step: 'auto' },
+            { type: 'aggregate', ops: [{ op: 'count' }] },
+          ],
+          minBpPerPx: 100,
+        },
+      ],
+    })
+  })
+
+  it('duplicates a mark right after itself', () => {
+    setup(BAR)
+    fireEvent.click(screen.getByLabelText('duplicate mark 1'))
+    expect(screen.getByTestId('mark-row-1').textContent).toContain(
+      'bar · y score',
+    )
   })
 })

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { MonospaceTextField, SubmitDialog } from '@jbrowse/core/ui'
-import { DialogContentText } from '@mui/material'
+import { Button, DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -23,6 +23,8 @@ export interface PlotJsonDialogModel {
   /** Throws for a plot the config schema would refuse. */
   liftMarkPlot: (plot: MarkPlot) => MarkPlotSettings
   applyDisplaySettings: (settings: Record<string, unknown>) => unknown
+  /** The form over the same plot, opened on a draft. */
+  openMarkPlotDialog?: (seed?: MarkPlot) => void
 }
 
 interface Draft {
@@ -75,6 +77,19 @@ const PlotJsonDialog = observer(function PlotJsonDialog({
       submitText="Apply"
       submitDisabled={!plot}
       onCancel={handleClose}
+      actions={
+        model.openMarkPlotDialog ? (
+          <Button
+            disabled={!plot}
+            onClick={() => {
+              model.openMarkPlotDialog?.(plot)
+              handleClose()
+            }}
+          >
+            Back to form
+          </Button>
+        ) : undefined
+      }
       onSubmit={() => {
         if (plot) {
           model.applyDisplaySettings(
@@ -89,7 +104,8 @@ const PlotJsonDialog = observer(function PlotJsonDialog({
         and an <code>encoding</code>; <code>transform</code> runs over the
         features before any of them; <code>facet</code> stacks one section per
         value of a field and <code>rows</code> one row per value. A setting left
-        out stays as it is, and <code>null</code> clears one.
+        out stays as it is, and <code>null</code> clears one;{' '}
+        <code>scales.y</code> is the axis every mark stands on.
       </DialogContentText>
       <ul>
         {MARK_PLOT_EXAMPLES.map(({ plot, description }) => (

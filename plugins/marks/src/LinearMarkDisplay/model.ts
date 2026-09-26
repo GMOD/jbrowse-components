@@ -1681,11 +1681,11 @@ export function stateModelFactory(
          * and what the rules say under each. The field scan runs behind it, as
          * it does for the field dialog.
          */
-        openMarkPlotDialog() {
+        openMarkPlotDialog(seed?: MarkPlot) {
           void self.ensurePlotFields().catch(() => {})
           getDialogHost(self).queueDialog(handleClose => [
             MarkPlotDialog,
-            { model: self, handleClose },
+            { model: self, seed, handleClose },
           ])
         },
       }))

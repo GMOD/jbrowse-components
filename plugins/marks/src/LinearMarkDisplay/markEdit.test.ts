@@ -13,6 +13,8 @@ import {
   unreadChannels,
   withChannel,
   withoutChannel,
+  listMember,
+  withListMember,
 } from './markEdit.ts'
 
 import type { MarkSnapshot } from './markProblems.ts'
@@ -69,15 +71,15 @@ describe('channelEdit', () => {
   })
 
   // The property that makes the form safe to open on a hand-written config.
-  it('is beyond the picker where the declaration says more than a field', () => {
+  it('holds a field whose scale pins ends and lists colours', () => {
     const ramp = {
       encoding: {
         color: { field: 'score', scale: 'linear', domainMin: 0, range: ['a'] },
       },
     }
     expect(channelEdit(ramp as MarkSnapshot, 'color')).toEqual({
-      value: '',
-      beyond: true,
+      value: 'score',
+      beyond: false,
     })
   })
 
@@ -296,7 +298,7 @@ describe('markSummary', () => {
       mark: 'bar',
       encoding: { y: 'score', color: { field: 'x', range: ['red', 'blue'] } },
     }
-    expect(markSummary(ramp as MarkSnapshot)).toBe('bar · y score · color')
+    expect(markSummary(ramp as MarkSnapshot)).toBe('bar · y score · color x')
   })
 })
 
@@ -356,11 +358,33 @@ describe('the scale beside a field', () => {
     })
   })
 
-  it('is still beyond the picker for a domain or a range', () => {
+  it('edits a domain, a range and the labels beside the field', () => {
     const listed = {
       encoding: { color: { field: 'x', scale: 'categorical', range: ['red'] } },
     }
-    expect(channelEdit(listed, 'color').beyond).toBe(true)
+    expect(channelEdit(listed, 'color').beyond).toBe(false)
+    expect(listMember(listed, 'color', 'range')).toBe('red')
+    const cut = withListMember(
+      withChannelScale(listed, 'color', 'threshold'),
+      'color',
+      'domain',
+      '0.5, , 0.9',
+    )
+    expect(cut.encoding?.color).toEqual({
+      field: 'x',
+      scale: 'threshold',
+      domain: ['0.5', '0.9'],
+    })
+    expect(withListMember(cut, 'color', 'domain', ' ').encoding?.color).toEqual(
+      { field: 'x', scale: 'threshold' },
+    )
+  })
+
+  it("keeps a key's title across a change of scale", () => {
+    const titled = withScaleMember(ramp, 'color', 'title', 'Score')
+    expect(
+      withChannelScale(titled, 'color', 'categorical').encoding?.color,
+    ).toEqual({ field: 'score', scale: 'categorical', title: 'Score' })
   })
 })
 

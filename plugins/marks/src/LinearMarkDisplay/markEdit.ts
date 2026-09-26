@@ -51,18 +51,30 @@ export interface ChannelEdit {
 const UNSET: ChannelEdit = { value: '', beyond: false }
 
 /**
- * The scale members a control shows beside a channel's field: the kind it
- * reads through, and for a ramp the ends that pin it and the named stops it
- * samples. `domain`, `range`, `labels`, `title` and `domainMid` are lists and
- * captions, which the JSON box holds better than a row of boxes would.
+ * The single-valued scale members a control shows beside a channel's field:
+ * for a ramp the ends that pin it, its middle, how an open end follows the
+ * data, the named stops it samples and their direction, and for any scale the
+ * key's title.
  */
 export const SCALE_MEMBERS = [
   'scheme',
   'reverse',
   'domainMin',
   'domainMax',
+  'domainMid',
+  'autoscale',
+  'numQuantile',
+  'title',
 ] as const
 export type ScaleMember = (typeof SCALE_MEMBERS)[number]
+
+/**
+ * The list members a control holds as comma-separated text: a categorical
+ * scale's values in order or a threshold's cut points, the colours or shapes
+ * handed to them, and the key's name for each.
+ */
+export const LIST_MEMBERS = ['domain', 'range', 'labels'] as const
+export type ListMember = (typeof LIST_MEMBERS)[number]
 
 /** The ends a ramp is pinned by, which a width ramp shares with a colour one. */
 export const RAMP_ENDS = ['domainMin', 'domainMax'] as const
@@ -73,7 +85,9 @@ export function isRamp(scale: unknown) {
 
 /** The members a ramp of this channel paints: a colour's stops, and the ends. */
 function rampMembers(channel: EditChannel): readonly ScaleMember[] {
-  return channel === 'color' ? SCALE_MEMBERS : RAMP_ENDS
+  return channel === 'color'
+    ? SCALE_MEMBERS.filter(member => member !== 'title')
+    : RAMP_ENDS
 }
 
 /**
@@ -100,6 +114,7 @@ const PICKABLE_MEMBERS = new Set<string>([
   'scale',
   'value',
   ...SCALE_MEMBERS,
+  ...LIST_MEMBERS,
 ])
 
 function pickedValue(declared: Record<string, unknown>) {
@@ -212,7 +227,7 @@ export function withChannelScale(
   scale: string,
 ): DraftMark {
   const declared = channelObject(mark, channel) ?? {}
-  const kept = isRamp(scale) ? rampMembers(channel) : []
+  const kept = [...(isRamp(scale) ? rampMembers(channel) : []), 'title']
   return writeChannel(mark, channel, {
     field: channelField(mark, channel) || undefined,
     scale,
@@ -235,9 +250,45 @@ export function withScaleMember(
       ? undefined
       : member === 'reverse'
         ? value === 'true'
-        : member === 'scheme'
+        : member === 'scheme' || member === 'autoscale' || member === 'title'
           ? value
           : Number(value)
+  return writeChannel(mark, channel, {
+    ...channelObject(mark, channel),
+    [member]: held,
+  })
+}
+
+/** A list member as the comma-separated text its control holds. */
+export function listMember(
+  mark: DraftMark,
+  channel: EditChannel,
+  member: ListMember,
+): string {
+  const held = channelObject(mark, channel)?.[member]
+  return Array.isArray(held) ? held.join(', ') : ''
+}
+
+/**
+ * The mark with one list member written from comma-separated text, blanks
+ * dropped; text naming nothing clears it. A `size` range is two px numbers.
+ */
+export function withListMember(
+  mark: DraftMark,
+  channel: EditChannel,
+  member: ListMember,
+  text: string,
+): DraftMark {
+  const items = text
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+  const held =
+    items.length === 0
+      ? undefined
+      : channel === 'size' && member === 'range'
+        ? items.map(Number)
+        : items
   return writeChannel(mark, channel, {
     ...channelObject(mark, channel),
     [member]: held,

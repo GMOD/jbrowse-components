@@ -743,29 +743,40 @@ carries the rule's id beside it.
 
 ## What the track menu offers
 
-**Edit plot...** is the marks as controls: the list in paint order on the left,
-and on the right the selected mark's type and a field picker per channel that
-type reads.
+**Edit plot...** is the whole plot as controls. Above, the plot's own settings:
+the field its sections stack by (`facet`) and the field that gives each value a
+row (`rows`), each with the order its values take, and the axis every mark
+stands on, with its title, type, pinned ends and grid. Below, the marks in paint
+order on the left, and on the right the selected mark's type, its steps, and a
+field picker per channel that type reads.
 
 <Figure src="/img/mark_display/edit_plot.png" caption="Edit plot over an Alu track declaring a multiscale pair: the two marks in paint order on the left, and on the right the selected mark's type, a picker per channel a bar reads, and the zoom range that hands over to the binned count."/>
 
-A picker takes free text as well as a scanned field, so `INFO.DP`, a `jexl:`
-expression or a constant all go through. Under a field naming a scale sits the
-kind it reads through, and for a ramp the `scheme` it samples, its `reverse`,
-and the ends that pin it — an end left empty spans the loaded regions, so
-pinning both is what fixes a figure's colours. Changing the kind drops the
-members the new one does not paint.
+A picker takes free text as well as a scanned field or one the mark's steps
+write, so `INFO.DP`, `count`, a `jexl:` expression or a constant all go through.
+Under a field naming a scale sits the kind it reads through, then what that kind
+reads: a categorical scale's values in order, their colours and their names in
+the key; a threshold's cut points and a colour per interval; a ramp's `scheme`,
+its `reverse`, the ends that pin it, its middle, and whether an open end follows
+the extremes or a percentile — an end left empty spans the loaded regions, so
+pinning both is what fixes a figure's colours. A list is comma-separated.
+Changing the kind drops the members the new one does not paint.
 
-Two things the form shows rather than rewrites: a channel declaring more than
-those, such as a `domain`, a `range` or a key's `labels`, and a channel the
-mark's type stopped reading. The rules run as you type and each finding sits
-under the control that caused it. The corner notice opens the same dialog.
+A mark's steps are a list of their own, each named by what it writes, with its
+settings in place and a list of common ones to add — a count per bin, a
+coverage, a filter. A step writing a value fills a bar that names no `y`. Beside
+**Add mark**, **Add zoomed-out density** appends the count per bin that draws
+from 100 bp per px out and hands the marks above it the closer zooms.
 
-**Edit as JSON...**, inside it, is the same plot as text — and where those
-lists, the key's caption and the transform steps live. A setting left out stays
-as it is; `null` clears one. Neither editor refuses a plot the rules complain
-about, since the display draws what it can; Apply refuses only what a config
-file is refused for.
+The form shows rather than rewrites a channel the mark's type stopped reading,
+and a far end naming its own sequence field. The rules run as you type and each
+finding sits under the control that caused it. The corner notice opens the same
+dialog.
+
+**Edit as JSON...**, inside it, is the same plot as text, and **Back to form**
+there returns. A setting left out stays as it is; `null` clears one. Neither
+editor refuses a plot the rules complain about, since the display draws what it
+can; Apply refuses only what a config file is refused for.
 
 With no `marks` at all a display plots `score` as bars, links a record to the
 other end it names, or opens the dialog where the fields say neither.

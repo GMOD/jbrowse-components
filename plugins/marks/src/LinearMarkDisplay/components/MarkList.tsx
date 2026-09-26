@@ -1,10 +1,16 @@
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Button, IconButton, List, ListItemButton } from '@mui/material'
 
 import { addMark, markSummary, moveMark, removeMark } from '../markEdit.ts'
 import { worstLevel } from '../markProblemIndex.ts'
+import {
+  DENSITY_TAKES_OVER_BP_PER_PX,
+  duplicateMark,
+  withDensityMark,
+} from '../plotEdit.ts'
 
 import type { DraftMark } from '../markEdit.ts'
 import type { MarkProblemIndex } from '../markProblemIndex.ts'
@@ -14,7 +20,9 @@ import type { MarkProblemIndex } from '../markProblemIndex.ts'
  * summary of what it reads and a mark of its worst problem. Add appends a mark
  * at its defaults rather than asking for a type first: the type select is the
  * first control in the pane beside this, and the rules say at once what the
- * new mark still needs.
+ * new mark still needs. Add zoomed-out density appends a count per bin that
+ * draws from far out, and hands every mark with no zoom range of its own the
+ * closer zooms, so the two never draw together.
  */
 export default function MarkList({
   marks,
@@ -73,6 +81,16 @@ export default function MarkList({
                 <ArrowDownwardIcon fontSize="small" />
               </IconButton>
               <IconButton
+                aria-label={`duplicate mark ${index + 1}`}
+                onClick={event => {
+                  event.stopPropagation()
+                  onChange(duplicateMark(marks, index))
+                  onSelect(index + 1)
+                }}
+              >
+                <ContentCopyIcon fontSize="small" />
+              </IconButton>
+              <IconButton
                 aria-label={`remove mark ${index + 1}`}
                 onClick={event => {
                   event.stopPropagation()
@@ -101,6 +119,15 @@ export default function MarkList({
         }}
       >
         Add mark
+      </Button>
+      <Button
+        title={`A count per bin, drawn from ${DENSITY_TAKES_OVER_BP_PER_PX} bp per px out, the marks above drawn closer in`}
+        onClick={() => {
+          onChange(withDensityMark(marks))
+          onSelect(marks.length)
+        }}
+      >
+        Add zoomed-out density
       </Button>
     </div>
   )

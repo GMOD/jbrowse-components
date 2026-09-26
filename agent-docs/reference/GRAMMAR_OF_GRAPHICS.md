@@ -665,18 +665,19 @@ The gaps a user meets first, in order:
    bar read worse than the same `minScore`/`maxScore` (ADR-123) as two point
    marks over the mean, and than wiggle's whisker band
    ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)).
-2. **In-app authoring reaches the marks, and stops at a channel's scale.**
-   **Edit plot...** is the mark list with a type, a field and a scale kind per
-   channel, and a ramp's `scheme`, `reverse` and pinned ends; its **Edit as
-   JSON...** is `marks`, `transform`, `facet` and `rows` as text, lifted
-   through the config schema with the rule list run as you type, so it refuses
-   what a config file refuses and reports the rest rather than blocking on it
-   (ADR-133). The form shows no transform step at all, and has no control for
-   a `domain`, a `range`, a key's `labels`, a threshold's cuts, a `title`,
-   `facet` or `rows`; the Settings editor edits each of those, a mark's steps
-   included, but cannot add, remove or reorder the marks themselves, since
-   `marks` is a plain sub-schema array where `transform` is a
-   `ConfigurationSchemaUnion` (`db4ef2f82a`).
+2. **In-app authoring reaches the whole plot, and stops at the display's own
+   steps.** **Edit plot...** is `facet`, `rows` and the axis (`scales.y` title,
+   type, ends, grid) above the mark list, and per mark its type, its steps and
+   a field per channel with every member its scale reads — values, cuts,
+   colours, key names, a ramp's scheme, ends, middle and percentile, the key's
+   title; its **Edit as JSON...** is the same five settings as text, with
+   **Back to form**, lifted through the config schema with the rule list run
+   as you type, so it refuses what a config file refuses and reports the rest
+   rather than blocking on it (ADR-133). The display's own `transform` and the
+   facet's steps are the JSON side's. The Settings editor edits a mark's steps
+   too but cannot add, remove or reorder the marks themselves, since `marks` is
+   a plain sub-schema array where `transform` is a `ConfigurationSchemaUnion`
+   (`db4ef2f82a`).
 
 A link's `size` is a channel, a field through a linear or log scale into a px
 range, unioned over the loaded regions the way a ramp's domain is
