@@ -5,6 +5,7 @@ import { toArray } from 'rxjs/operators'
 
 import GWASAdapter from './GWASAdapter.ts'
 import GWASAdapterConfigSchema from './configSchema.ts'
+import { INDEX_SNP_MISSING } from './ldJoin.ts'
 import {
   SLE_ADAPTER,
   SLE_INDEX_START,
@@ -12,7 +13,7 @@ import {
   slePluginManager,
 } from './sle.fixture.ts'
 
-import type { GWASFetchOptions } from './ldJoin.ts'
+import type { GWASFetchOptions, LdJoin } from './ldJoin.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -94,5 +95,22 @@ describe('an LD join asked for through the fetch options', () => {
     expect(features.filter(f => f.get('ld') !== undefined)).toEqual([
       named(features, 'rs4274624'),
     ])
+  })
+
+  it('notes a region holding the index SNP that no partner joined to, and only that', async () => {
+    const noticesOf = async (ld: LdJoin) => {
+      const notices: string[] = []
+      await sle({ ld, notices })
+      return notices
+    }
+    expect(
+      await noticesOf({ index: { start: SLE_INDEX_START }, refName: 'chr2' }),
+    ).toEqual([INDEX_SNP_MISSING])
+    expect(
+      await noticesOf({ index: { start: SLE_INDEX_START }, refName: '2' }),
+    ).toEqual([])
+    expect(
+      await noticesOf({ index: { name: 'rsNOPE' }, refName: '2' }),
+    ).toEqual([])
   })
 })

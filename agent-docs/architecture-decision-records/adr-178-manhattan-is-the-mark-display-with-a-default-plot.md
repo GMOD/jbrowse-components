@@ -38,8 +38,10 @@ transforms or Edit plot.
   the top-hit follow and the LD menus. The mark model gained two hooks for it:
   `adapterOptions`, what every region's fetch hands the adapter, carried in
   `rpcProps` so a change refetches, and `resolveAdapterOptions`, which places
-  it on one region on the main thread, where the LD file's aliases are. A third,
-  `dataNotices`, carries the missing-index warning to the corner notice.
+  it on one region on the main thread, where the LD file's aliases are. The
+  missing-index warning is the adapter's: a fetch's `notices` ride the encoded
+  result to the mark model's `dataNotices` and the corner notice, so the model
+  infers nothing about the join from how the points are encoded.
 - **A plot that names an LD field joins LD.** `joinsLd` is an `ldAdapter` plus
   a mark whose encoding names `ld` or `ld_role`. "Color by LD to index SNP"
   replaces the marks with two points, each behind a `filter` on `ld_role`:

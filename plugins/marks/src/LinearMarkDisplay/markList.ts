@@ -83,6 +83,8 @@ export interface MarkRegionData {
   /** The sections a facet stacked the layers' rows into. */
   facet?: FacetSection[]
   zoomRange?: ZoomRange
+  /** What the adapter said about the region that the plot cannot show. */
+  notices?: string[]
 }
 
 export interface MarkRenderState extends MarkFrame {

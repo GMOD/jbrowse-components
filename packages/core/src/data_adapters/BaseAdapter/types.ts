@@ -15,6 +15,10 @@ export interface BaseOptions {
   // unzip, features for a scan). Adapters wrap the raw byte counts from the
   // index reader (@gmod/tabix, @gmod/bam, @gmod/cram) into this object form.
   statusCallback?: StatusCallback
+  // What the adapter wants a reader told about this answer that the features
+  // cannot show — an index SNP no LD record names, say — appended here and
+  // carried back on the fetch's result to the display's corner notice.
+  notices?: string[]
   headers?: Record<string, string>
   // Which side of a pairing to answer getRefNames for; single-assembly
   // adapters ignore it.

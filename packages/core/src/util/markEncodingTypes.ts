@@ -409,6 +409,8 @@ export interface EncodedLayersResult {
   facet?: FacetSection[]
   bytes?: number
   zoomRange?: ZoomRange
+  /** What the adapter said about this answer that the features cannot show. */
+  notices?: string[]
 }
 
 /**

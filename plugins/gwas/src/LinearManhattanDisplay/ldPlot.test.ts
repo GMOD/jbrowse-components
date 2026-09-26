@@ -1,17 +1,8 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { NO_VALUE_ABGR } from '@jbrowse/core/util/markEncoding'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import {
-  LD_COLOR,
-  LD_INDEX_COLOR,
-  LD_INDEX_MARK,
-  LD_MARKS,
-  LD_PALETTE,
-  LD_PARTNERS_MARK,
-  MANHATTAN_MARK,
-} from './ldPlot.ts'
+import { INDEX_SNP_MISSING } from '../GWASAdapter/ldJoin.ts'
+import { LD_COLOR, LD_INDEX_COLOR, LD_MARKS, MANHATTAN_MARK } from './ldPlot.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -134,55 +125,6 @@ test('the LD menu is there only for a track with an LD file', () => {
   expect(labels(without.trackMenuItems())).not.toContain('LD')
 })
 
-// A partner coloured through a ramp carries its r² in `colorValue` and no
-// `color` lane, and is joined all the same.
-test('a partner painted through a colour ramp counts as joined', () => {
-  const { display } = createTestEnvironment({
-    marks: [
-      {
-        ...LD_PARTNERS_MARK,
-        encoding: { y: 'score', color: { field: 'ld', scale: 'linear' } },
-      },
-      LD_INDEX_MARK,
-    ],
-  }).createDisplay()
-  display.setIndexSnp('ctgA:101')
-  const load = (r2: number[]): EncodedLayersResult => ({
-    layers: [
-      manhattanFixture({
-        x: r2.map((_, i) => 200 + i),
-        y: r2.map(() => 3),
-        flatbush: false,
-        colorValue: Float32Array.from(r2),
-        scale: {
-          kind: 'ramp',
-          field: 'ld',
-          scale: 'linear',
-          domain: [0, 1],
-          extent: [0, 1],
-          pinned: [true, true],
-          lut: new Uint8Array(4),
-        },
-      }),
-      manhattanFixture({
-        x: [100],
-        y: [5],
-        flatbush: false,
-        shapeScale: {
-          kind: 'shape',
-          field: 'ld_role',
-          domain: ['index'],
-          entries: [{ value: 'index', shape: 'diamond' }],
-        },
-      }),
-    ],
-  })
-  display.setRpcData(0, load([0.9, Number.NaN]), REGION)
-  expect(display.indexSnpMissing).toBe(false)
-  display.setRpcData(0, load([Number.NaN, Number.NaN]), REGION)
-  expect(display.indexSnpMissing).toBe(true)
-})
-
 // A focus uploads one table and no instance bytes, which a moved index would
 // undo with a refetch of every region.
 test('the top hit reads every loaded row, focused out or not', () => {
@@ -215,70 +157,25 @@ test('the top hit reads every loaded row, focused out or not', () => {
   expect(display.topSnp).toBe('ctgA:501')
 })
 
-function ldLoad({
-  index,
-  partners,
-}: {
-  index: boolean
-  partners: number[]
-}): EncodedLayersResult {
-  return {
-    layers: [
-      manhattanFixture({
-        x: partners.map((_, i) => 200 + i),
-        y: partners.map(() => 3),
-        color: partners,
-        flatbush: false,
-        scale: {
-          kind: 'threshold',
-          field: 'ld',
-          domain: [0.2, 0.4, 0.6, 0.8],
-          missing: true,
-        },
-      }),
-      index
-        ? manhattanFixture({
-            x: [100],
-            y: [5],
-            flatbush: false,
-            shapeScale: {
-              kind: 'shape',
-              field: 'ld_role',
-              domain: ['index'],
-              entries: [{ value: 'index', shape: 'diamond' }],
-            },
-          })
-        : manhattanFixture({ x: [], y: [], flatbush: false }),
-    ],
-  }
-}
-
 // Without the notice an export where nothing matched the index SNP is an
-// all-grey plot under a full r² key. An index no loaded region holds, as after
-// pinning one and navigating to another contig, is not missing.
-test('a missing index SNP is a notice naming why every other point is grey', () => {
-  const { display } = createTestEnvironment({
-    marks: LD_MARKS,
-  }).createDisplay()
-  display.setIndexSnp('ctgA:500')
-  const r2 = cssColorToABGR(LD_PALETTE[4]!)
-  display.setRpcData(1, ldLoad({ index: false, partners: [NO_VALUE_ABGR] }), {
+// all-grey plot under a full r² key. The adapter says so on the region it
+// found the index in, and the corner notice says it once however many do.
+test('a region whose join found no partner carries the notice to the corner', () => {
+  const { display } = createTestEnvironment({ marks: LD_MARKS }).createDisplay()
+  const load = (notices?: string[]): EncodedLayersResult => ({
+    layers: [
+      manhattanFixture({ x: [200], y: [3], flatbush: false }),
+      manhattanFixture({ x: [100], y: [5], flatbush: false }),
+    ],
+    ...(notices ? { notices } : {}),
+  })
+  display.setRpcData(0, load(), REGION)
+  expect(display.notices).toEqual([])
+  display.setRpcData(0, load([INDEX_SNP_MISSING]), REGION)
+  display.setRpcData(1, load([INDEX_SNP_MISSING]), {
     ...REGION,
     refName: 'ctgB',
   })
-  expect(display.indexSnpMissing).toBe(false)
-  display.setRpcData(
-    0,
-    ldLoad({ index: true, partners: [r2, NO_VALUE_ABGR] }),
-    REGION,
-  )
-  expect(display.indexSnpMissing).toBe(false)
-  display.setRpcData(
-    0,
-    ldLoad({ index: true, partners: [NO_VALUE_ABGR, NO_VALUE_ABGR] }),
-    REGION,
-  )
-  expect(display.indexSnpMissing).toBe(true)
   expect(display.notices).toEqual([
     expect.stringMatching(/^No point has LD data to the index SNP/),
   ])

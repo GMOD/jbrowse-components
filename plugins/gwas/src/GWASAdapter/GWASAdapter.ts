@@ -2,9 +2,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 import { BedTabixAdapter } from '@jbrowse/plugin-bed'
-import { from, map, mergeMap } from 'rxjs'
+import { from, map, mergeMap, tap } from 'rxjs'
 
-import { joinLd, ldToIndex } from './ldJoin.ts'
+import { LD_ROLE_FIELD } from './ldFields.ts'
+import { INDEX_SNP_MISSING, joinLd, ldToIndex } from './ldJoin.ts'
 import { getScoreTransform } from './scoreTransforms.ts'
 
 import type { GWASAdapterConfig } from './configSchema.ts'
@@ -59,12 +60,32 @@ export default class GWASAdapter extends BedTabixAdapter {
         )
       : features
     const { ld } = opts
-    return ld
-      ? from(this.ldToIndex(region, ld, opts)).pipe(
-          mergeMap(lookup =>
-            lookup ? scored.pipe(map(f => joinLd(f, lookup, ld))) : scored,
-          ),
-        )
-      : scored
+    if (!ld) {
+      return scored
+    }
+    let indexHeld = false
+    let partners = 0
+    return from(this.ldToIndex(region, ld, opts)).pipe(
+      mergeMap(lookup =>
+        lookup
+          ? scored.pipe(
+              map(f => {
+                const joined = joinLd(f, lookup, ld)
+                const role = joined.get(LD_ROLE_FIELD)
+                indexHeld ||= role === 'index'
+                partners += role === 'partner' ? 1 : 0
+                return joined
+              }),
+              tap({
+                complete: () => {
+                  if (indexHeld && partners === 0) {
+                    opts.notices?.push(INDEX_SNP_MISSING)
+                  }
+                },
+              }),
+            )
+          : scored,
+      ),
+    )
   }
 }

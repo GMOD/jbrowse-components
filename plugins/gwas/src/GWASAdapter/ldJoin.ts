@@ -29,6 +29,10 @@ export interface GWASFetchOptions extends BaseOptions {
  */
 export const LD_WINDOW_BP = 1_000_000
 
+/** The notice a region holding the index SNP carries when no point joined to it. */
+export const INDEX_SNP_MISSING =
+  'No point has LD data to the index SNP, so every other point is grey: check that the LD file covers the index SNP and that the assembly’s aliases cover its reference names (e.g. “chr2” vs “2”)'
+
 /** PLINK writes `.` for a variant with no id, which names nothing. */
 function isNamedSnp(name: unknown): name is string {
   return typeof name === 'string' && name !== '' && name !== '.'

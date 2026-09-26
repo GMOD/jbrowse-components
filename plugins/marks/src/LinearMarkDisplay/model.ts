@@ -230,6 +230,7 @@ function storedRegionData(result: EncodedLayersResult): MarkRegionData {
     layers: result.layers.map(layer => withHitIndex(layer)),
     facet: result.facet,
     zoomRange: result.zoomRange,
+    notices: result.notices,
   }
 }
 
@@ -1034,8 +1035,9 @@ export function stateModelFactory(
         return {
           /**
            * #getter
-           * 1 at each key the row table draws, undefined while it draws every
-           * one: a focus moves it, a reorder does not.
+           * 1 at each key the row table draws, undefined while every key a
+           * loaded region carries is drawn: a focus moves it, a reorder does
+           * not.
            */
           get drawnKeys(): Uint8Array | undefined {
             return drawnKeys.get()
@@ -1485,11 +1487,16 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Overridable hook: what a display built on this one says about its
-         * loaded data that the plot cannot show, for the corner notice.
+         * What the adapter said about the loaded regions that the plot cannot
+         * show — an index SNP no LD record names — each once, for the corner
+         * notice.
          */
         get dataNotices(): string[] {
-          return []
+          return [
+            ...new Set(
+              [...self.rpcDataMap.values()].flatMap(d => d.notices ?? []),
+            ),
+          ]
         },
         /**
          * #getter

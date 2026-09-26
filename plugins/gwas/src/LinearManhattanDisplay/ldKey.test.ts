@@ -64,5 +64,5 @@ test('LD colouring keys the r² bins and the index SNP as a pink diamond, and na
 test('the top hit is the index SNP once the join moves it into its own mark', async () => {
   const display = await ldColoredOverSle()
   expect(display.topSnp).toBe(`ctgA:${SLE_INDEX_START + 1}`)
-  expect(display.indexSnpMissing).toBe(false)
+  expect(display.notices).toEqual([])
 })

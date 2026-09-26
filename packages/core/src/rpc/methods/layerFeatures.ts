@@ -46,7 +46,8 @@ export async function layerFeatures(
     signal,
     statusCallback,
   } = args
-  const fetchOpts = { ...opts, bpPerPx, statusCallback, signal }
+  const notices: string[] = []
+  const fetchOpts = { ...opts, bpPerPx, statusCallback, signal, notices }
   const [fetched, zoomRange] = await updateStatus(
     'Downloading features',
     statusCallback,
@@ -80,5 +81,5 @@ export async function layerFeatures(
           row: rowFields[i],
         }
   })
-  return { layers, sections: faceted?.sections, zoomRange }
+  return { layers, sections: faceted?.sections, zoomRange, notices }
 }

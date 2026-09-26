@@ -4,12 +4,10 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { toLocale } from '@jbrowse/core/util'
-import { NO_VALUE_ABGR } from '@jbrowse/core/util/markEncoding'
 import { types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
-import { LD_FIELD, LD_ROLE_FIELD } from '../GWASAdapter/ldFields.ts'
 import { ldJoinFor } from './ldJoinResolver.ts'
 import { LD_MARKS, readsLd } from './ldPlot.ts'
 
@@ -19,9 +17,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-const INDEX_SNP_MISSING =
-  'No point has LD data to the index SNP, so every other point is grey: check that the LD file covers the index SNP and that the assembly’s aliases cover its reference names (e.g. “chr2” vs “2”)'
 
 /**
  * #stateModel LinearManhattanDisplay
@@ -157,35 +152,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * A loaded region holds the index SNP but no loaded point is its
-       * partner, so every other point is grey: the LD file lacks the index or
-       * names it otherwise. The index is held where an LD mark's `ld_role`
-       * shape met it, and a partner where a mark coloured by `ld` gave an
-       * instance a value, whichever scale it paints through; an index outside
-       * the loaded regions is not missing, and a row the focus hides still
-       * counts.
-       */
-      get indexSnpMissing(): boolean {
-        const marks = self.ldMarkIndexes
-        const layers = [...self.rpcDataMap.values()].flatMap(d =>
-          marks.flatMap(i => d.layers[i] ?? []),
-        )
-        const indexHeld = layers.some(
-          ({ shapeScale }) =>
-            shapeScale?.field === LD_ROLE_FIELD &&
-            shapeScale.entries.some(e => e.value === 'index'),
-        )
-        const partnerJoined = layers.some(
-          ({ scale, color, colorValue, count }) =>
-            scale?.field === LD_FIELD &&
-            (colorValue
-              ? colorValue.subarray(0, count).some(v => Number.isFinite(v))
-              : !!color?.subarray(0, count).some(c => c !== NO_VALUE_ABGR)),
-        )
-        return self.joinsLd && indexHeld && !partnerJoined
-      },
-      /**
-       * #getter
        * The index the fetch joins r² to, a fetch input, so adopting or
        * pinning one refetches. None before the first load names a top hit.
        */
@@ -223,12 +189,6 @@ export function stateModelFactory(
           self.topSnp !== undefined &&
           self.topSnp !== self.indexSnp
         )
-      },
-      /**
-       * #getter
-       */
-      get dataNotices(): string[] {
-        return self.indexSnpMissing ? [INDEX_SNP_MISSING] : []
       },
     }))
     .actions(self => ({
