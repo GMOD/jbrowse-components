@@ -40,6 +40,7 @@ function shapesOf(...features: SimpleFeature[]): RibbonShape[] {
         ? { a1: 1, a2: 3, m1: 5, m2: 8 }
         : { a1: 1, a2: 3, m1: 8, m2: 5 },
     fill: '#4682b4',
+    opacity: 1,
   }))
 }
 

@@ -2,6 +2,7 @@ import { MIN_RIBBON_END_PX } from './shaders/chordStage.generated.ts'
 import {
   chordIsSpeck,
   ribbonEndPad,
+  ribbonThinFade,
 } from './shaders/chordStage.js.generated.ts'
 
 import type { SliceRegion } from '../CircularView/slices.ts'
@@ -173,6 +174,29 @@ export function ribbonAnglesAt(
     m1: m1 + offsetRadians,
     m2: m2 + offsetRadians,
   }
+}
+
+/**
+ * The alpha ribbon `i` keeps under the thin fade at `floor`: its ends' true
+ * width over the width the 2 px floor draws them at, as `ribbon.slang` fades it.
+ */
+export function ribbonFadeAt(
+  lanes: RibbonLanes,
+  i: number,
+  stage: ChordStage,
+  floor: number,
+) {
+  const xs = lanes.xSlice[i]!
+  const ys = lanes.ySlice[i]!
+  const span = (a: number, b: number, gaps: number) =>
+    Math.abs(footRadians(b, gaps, stage) - footRadians(a, gaps, stage)) *
+    stage.radiusPx
+  return ribbonThinFade(
+    span(lanes.x1[i]!, lanes.x2[i]!, xs),
+    span(lanes.y1[i]!, lanes.y2[i]!, ys),
+    MIN_RIBBON_END_PX,
+    floor,
+  )
 }
 
 /** The two angles a chord joins, in the order the record names them. */

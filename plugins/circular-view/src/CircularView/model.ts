@@ -45,10 +45,15 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
+  FADE_AUTO_MIN_FEATURES,
   SyntenyColorsMixin,
+  SyntenyFadeMixin,
+  WIDTH_FADE_FLOOR,
   carriedSyntenySettings,
   colorByMenuItems,
   colorByMenuTargetFor,
+  identityFadeMenuItem,
+  installAutoFadeLatch,
   isSyntenyTrack,
   minLengthMenuItem,
   opacityMenuItem,
@@ -162,7 +167,12 @@ interface CircularViewInitSelf extends IStateTreeNode {
     displaySnapshot?: Record<string, unknown>,
   ) => Promise<unknown>
   beginAutoDiagonalize: (requested: boolean) => void
+  finishAutoDiagonalize: () => void
   autoDiagonalize: () => Promise<void>
+  canDiagonalize: boolean
+  colorField: string
+  colorValue: string | undefined
+  setColorField: (field: string) => void
 }
 
 // A ribbon display, as a chromosome reorder reads it. Duck-typed because the
@@ -178,6 +188,8 @@ export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
     referenceAssembly: string,
     currentAssembly: string,
   ) => AlignmentData[]
+  ribbonLanes: { count: number }
+  cappedMeanSpanPx: number
 }
 
 /**
@@ -248,17 +260,28 @@ async function applyInit(
       `${launchAssemblyNames(init).join(' and ')} has no regions to display`,
     )
   }
+  // Two genomes open as a synteny figure: coloured by the first genome's
+  // chromosomes unless the launch chose a colour, and with the second genome
+  // reordered to follow the first unless the launch said not to
+  const twoGenomes = new Set(drawn.map(r => r.assemblyName)).size === 2
+  if (twoGenomes && self.colorField === '' && self.colorValue === undefined) {
+    self.setColorField('query')
+  }
+  const reorder = init.autoDiagonalize ?? twoGenomes
   // declare the reorder gate up front, before any ribbon can paint: it outlives
   // this pass, since only the reorder itself lowers it
-  self.beginAutoDiagonalize(!!init.autoDiagonalize)
+  self.beginAutoDiagonalize(reorder)
   self.setDisplayedRegions(drawn)
   for (const t of init.tracks ?? []) {
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
     await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
   }
-  // after the tracks, whose ribbon fetch the reorder waits on and orders from
-  if (init.autoDiagonalize) {
+  // after the tracks, whose ribbon fetch the reorder waits on and orders from;
+  // a default reorder with no ribbons to order by lowers the gate instead
+  if (reorder && (init.autoDiagonalize || self.canDiagonalize)) {
     await self.autoDiagonalize()
+  } else if (reorder) {
+    self.finishAutoDiagonalize()
   }
 }
 
@@ -321,6 +344,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       DiagonalizeProgressMixin(),
       ImportFormSyntenyMixin(),
       SyntenyColorsMixin({ defaultAlpha: DEFAULT_RIBBON_ALPHA }),
+      SyntenyFadeMixin(),
       types.model({
         /**
          * #property
@@ -993,6 +1017,30 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * The width 'auto' compares against its thresholds: the narrowest capped
+       * mean span, on screen, of any ribbon display with enough alignments to
+       * judge, and nothing to judge before the circle has a size
+       */
+      get autoFadeWidthPx(): number {
+        if (!self.initialized) {
+          return Infinity
+        }
+        return Math.min(
+          ...self.chordSyntenyDisplays
+            .filter(d => d.ribbonLanes.count >= FADE_AUTO_MIN_FEATURES)
+            .map(d => d.cappedMeanSpanPx)
+            .filter(px => px > 0),
+        )
+      },
+      /**
+       * #getter
+       * the least alpha the thin fade leaves a ribbon, 1 while it is off
+       */
+      get chordThinFadeFloor() {
+        return self.fadeThinAlignments ? WIDTH_FADE_FLOOR : 1
+      },
+      /**
+       * #getter
        */
       get staticSlices() {
         // spelled out rather than handing over `self`, because the gap between
@@ -1477,6 +1525,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         destroy(self.chordPass)
       },
       afterAttach() {
+        installAutoFadeLatch(self)
         // a hover names a display; a track hidden under the pointer would
         // leave it naming a dead node
         addDisposer(
@@ -1569,6 +1618,7 @@ function stateModelFactory(pluginManager: PluginManager) {
                   subMenu: colorByMenuItems(colorByMenuTargetFor(self)),
                 },
                 opacityMenuItem(self),
+                identityFadeMenuItem(self),
                 minLengthMenuItem(self),
                 ...(self.assemblyNames.length <= 2 &&
                 pluginManager.viewTypes.has('LinearSyntenyView')

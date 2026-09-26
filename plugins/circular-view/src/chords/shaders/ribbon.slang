@@ -52,9 +52,11 @@ struct VsOut {
   float4 color      : COLOR0;
   // CSS px from the circle's centre, for the rim
   float2 fromCenter : TEXCOORD0;
-  // CSS px along the pairing from the first curve, and the band's width there
+  // CSS px across the band from the first curve, and the band's width there
   float  across     : TEXCOORD1;
   float  bandPx     : TEXCOORD2;
+  // the thin fade, one value per instance
+  float  fade       : TEXCOORD3;
 };
 
 // A span's two angles grown to the floor about where it sits, in its own
@@ -65,15 +67,20 @@ float2 widenedSpan(float a, float b) {
   return float2(a - dir * pad, b + dir * pad);
 }
 
-// The four angles the boundary visits: along the span, across to the mate,
-// along the mate's span, and back.
-float4 ribbonAngles(RibbonInstance inst) {
-  float2 a = widenedSpan(
+// Each end's two angles on the stage, before the floor widens them.
+float4 footAngles(RibbonInstance inst) {
+  return float4(
       footRadians(inst.x1, float(inst.xSlice), u.radiansPerBp, u.gapRadians),
-      footRadians(inst.x2, float(inst.xSlice), u.radiansPerBp, u.gapRadians));
-  float2 m = widenedSpan(
+      footRadians(inst.x2, float(inst.xSlice), u.radiansPerBp, u.gapRadians),
       footRadians(inst.y1, float(inst.ySlice), u.radiansPerBp, u.gapRadians),
       footRadians(inst.y2, float(inst.ySlice), u.radiansPerBp, u.gapRadians));
+}
+
+// The four angles the boundary visits: along the span, across to the mate,
+// along the mate's span, and back.
+float4 ribbonAngles(RibbonInstance inst, float4 feet) {
+  float2 a = widenedSpan(feet.x, feet.y);
+  float2 m = widenedSpan(feet.z, feet.w);
   float4 angles = inst.strand < 0.0 ? float4(a.x, a.y, m.x, m.y)
                                     : float4(a.x, a.y, m.y, m.x);
   return angles + u.offsetRadians;
@@ -92,7 +99,7 @@ float2 capVertex(float from, float to, uint i) {
   return polarPoint(reach, lerp(from, to, t));
 }
 
-VsOut place(float2 p, float across, float bandPx, uint color) {
+VsOut place(float2 p, float across, float bandPx, uint color, float fade) {
   VsOut o;
   float2 css = float2(u.centerX, u.centerY) + p;
   o.position = screenToClip(css, float2(u.canvasWidth, u.canvasHeight));
@@ -100,12 +107,17 @@ VsOut place(float2 p, float across, float bandPx, uint color) {
   o.fromCenter = p;
   o.across = across;
   o.bandPx = bandPx;
+  o.fade = fade;
   return o;
 }
 
 [shader("vertex")]
 VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
-  float4 g = ribbonAngles(inst);
+  float4 feet = footAngles(inst);
+  float fade = ribbonThinFade(abs(feet.y - feet.x) * u.radiusPx,
+                              abs(feet.w - feet.z) * u.radiusPx,
+                              MIN_RIBBON_END_PX, u.thinFadeFloor);
+  float4 g = ribbonAngles(inst, feet);
   float a1 = g.x;
   float a2 = g.y;
   float m1 = g.z;
@@ -118,11 +130,12 @@ VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
   if (i == CAP2_FIRST - 1u) { i = CAP2_FIRST; }
 
   if (i < CAP_VERTS) {
-    return place(capVertex(a1, a2, i), 0.5 * NO_BAND_PX, NO_BAND_PX, inst.color);
+    return place(capVertex(a1, a2, i), 0.5 * NO_BAND_PX, NO_BAND_PX,
+                 inst.color, fade);
   }
   if (i >= CAP2_FIRST) {
     return place(capVertex(m1, m2, i - CAP2_FIRST), 0.5 * NO_BAND_PX, NO_BAND_PX,
-                 inst.color);
+                 inst.color, fade);
   }
   uint b = i - BAND_FIRST;
   float t = float(b / 2u) / float(RIBBON_BAND_SEGMENTS);
@@ -154,9 +167,9 @@ VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
   float width = abs(signedWidth);
   float pad = aaHalfPx(u.devicePixelRatio);
   if ((b & 1u) == 0u) {
-    return place(l - dir * pad, -pad, width, inst.color);
+    return place(l - dir * pad, -pad, width, inst.color, fade);
   }
-  return place(q + dir * pad, width + pad, width, inst.color);
+  return place(q + dir * pad, width + pad, width, inst.color, fade);
 }
 
 [shader("fragment")]
@@ -164,7 +177,7 @@ float4 fs_main(VsOut v) : SV_Target {
   float dpr = u.devicePixelRatio;
   float band = edgeCoverage(v.across, dpr) - edgeCoverage(v.across - v.bandPx, dpr);
   float rim = edgeCoverage(u.radiusPx - length(v.fromCenter), dpr);
-  float a = v.color.a * u.alpha * clamp(band, 0.0, 1.0) * rim;
+  float a = v.color.a * u.alpha * v.fade * clamp(band, 0.0, 1.0) * rim;
   if (a <= 0.0) discard;
   return float4(v.color.rgb * a, a);
 }

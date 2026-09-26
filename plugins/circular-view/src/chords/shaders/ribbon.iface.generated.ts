@@ -15,7 +15,7 @@ export const BLEND_STATE: BlendState = { srcFactor: 'one', dstFactor: 'one-minus
 
 export const COVERAGE = 'analytic' as const
 
-export const UNIFORMS_SIZE_BYTES = 48
+export const UNIFORMS_SIZE_BYTES = 64
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -31,6 +31,7 @@ export const UNIFORM_OFFSET_F32 = {
   alpha: 9,
   strokeWidthPx: 10,
   devicePixelRatio: 11,
+  thinFadeFloor: 12,
 } as const
 
 
@@ -47,6 +48,7 @@ export interface Uniforms {
   alpha: number
   strokeWidthPx: number
   devicePixelRatio: number
+  thinFadeFloor: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -63,6 +65,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[9] = uniforms.alpha
   f32[10] = uniforms.strokeWidthPx
   f32[11] = uniforms.devicePixelRatio
+  f32[12] = uniforms.thinFadeFloor
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

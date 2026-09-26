@@ -5,6 +5,7 @@ import {
   chordEndsAt,
   footRadians,
   ribbonAnglesAt,
+  ribbonFadeAt,
   sliceKey,
   widenedSpan,
 } from './chordStage.ts'
@@ -251,5 +252,33 @@ describe('a chord', () => {
       startRadians: foot('chr1', 1000),
       endRadians: foot('chr3', 1000),
     })
+  })
+})
+
+// The linear synteny view's density-honest fade: an end drawn at the 2 px floor
+// but spanning a fraction of that carries only the ink its true span covers,
+// so a pile of sub-pixel alignments reads as their density, not a solid band
+describe('the thin fade', () => {
+  const lanes = ribbonLanes([
+    ['chr1', 1000, 1000.1, 'chr3', 1000, 1000.1, 1],
+    ['chr1', 1000, 1001, 'chr3', 1000, 1001, 1],
+    ['chr1', 1000, 3000, 'chr3', 1000, 2000, 1],
+  ])
+
+  test('floors a ribbon whose ends are a sliver of a pixel', () => {
+    expect(ribbonFadeAt(lanes, 0, stage, 0.15)).toBe(0.15)
+  })
+
+  test('keeps the share of the drawn width a sub-pixel ribbon covers', () => {
+    // each end spans one base, a pixel at this radius, drawn at two
+    expect(ribbonFadeAt(lanes, 1, stage, 0.15)).toBeCloseTo(0.5, 5)
+  })
+
+  test('leaves a ribbon wider than the floor alone', () => {
+    expect(ribbonFadeAt(lanes, 2, stage, 0.15)).toBe(1)
+  })
+
+  test('fades nothing at a floor of one', () => {
+    expect(ribbonFadeAt(lanes, 0, stage, 1)).toBe(1)
   })
 })

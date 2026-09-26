@@ -4,8 +4,16 @@
 // Scalar twins of chordStage.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _clamp(x: number, lo: number, hi: number) {
+  return _min(_max(x, lo), hi)
+}
+
 function _max(a: number, b: number) {
   return b > a || Number.isNaN(a) ? b : a
+}
+
+function _min(a: number, b: number) {
+  return b < a || Number.isNaN(a) ? b : a
 }
 
 export function chordTurn(from: number, to: number): number {
@@ -19,4 +27,8 @@ export function ribbonEndPad(a: number, b: number, radius: number, minWidthPx: n
 
 export function chordIsSpeck(a: number, b: number, radius: number): boolean {
   return ((Math.abs(chordTurn(a, b)) * radius) < 1.0)
+}
+
+export function ribbonThinFade(anchorPx: number, matePx: number, minEndPx: number, floor: number): number {
+  return _clamp(((anchorPx + matePx) / (_max(anchorPx, minEndPx) + _max(matePx, minEndPx))), floor, 1.0)
 }

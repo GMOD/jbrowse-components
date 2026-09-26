@@ -16,11 +16,13 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   PRESET_ATTRIBUTES,
+  cappedMeanWidthPx,
   createComparativeColorFunction,
   declaredAttributes,
   featureAttributeRanges,
   featureColorInputs,
   getMate,
+  identityAlphaByte,
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
 
@@ -29,7 +31,11 @@ import {
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
 import { ribbonHitTest } from '../../chords/chordHit.ts'
-import { axisX, ribbonAnglesAt } from '../../chords/chordStage.ts'
+import {
+  axisX,
+  ribbonAnglesAt,
+  ribbonFadeAt,
+} from '../../chords/chordStage.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
 import { shapePath } from '../../chords/shapePath.ts'
@@ -50,6 +56,11 @@ const DEFAULT_ABGR = cssColorToABGR('rgb(70,130,180)')
 
 function defaultAbgr(value: string | undefined) {
   return value === undefined ? DEFAULT_ABGR : cssColorToABGR(value)
+}
+
+function identityOf(feature: Feature) {
+  const identity: unknown = feature.get('identity')
+  return typeof identity === 'number' ? identity : undefined
 }
 
 function opaqueHex(abgr: number) {
@@ -303,6 +314,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
         const feet = this.ribbonFeet
         const colors = this.ribbonColors
         const highlighted = self.highlightedFeatureIdSet
+        const { opacityByIdentity } = self.view
         const picked: number[] = []
         const features: Feature[] = []
         for (const feature of this.drawnFeatures ?? []) {
@@ -326,7 +338,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           features,
         }
         picked.forEach((i, k) => {
-          const id = features[k]!.id()
+          const feature = features[k]!
+          const id = feature.id()
           lanes.x1[k] = feet.x1[i]!
           lanes.x2[k] = feet.x2[i]!
           lanes.y1[k] = feet.y1[i]!
@@ -336,7 +349,11 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           lanes.strand[k] = feet.strand[i]!
           lanes.color[k] = withAbgrAlpha(
             colors.get(id) ?? DEFAULT_ABGR,
-            highlighted?.has(id) === false ? DIMMED_ALPHA : 255,
+            highlighted?.has(id) === false
+              ? DIMMED_ALPHA
+              : opacityByIdentity
+                ? identityAlphaByte(identityOf(feature))
+                : 255,
           )
         })
         return lanes
@@ -347,6 +364,20 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        */
       get drawnCount() {
         return this.ribbonLanes.count
+      },
+      /**
+       * #getter
+       * the drawn alignments' mean span on screen, each counted at no more
+       * than the width the thin fade stops caring about, which the view's
+       * 'auto' fade is decided on
+       */
+      get cappedMeanSpanPx() {
+        const lanes = this.ribbonLanes
+        return cappedMeanWidthPx(
+          lanes.x1,
+          lanes.x2,
+          1 / (self.view.chordScale.radiansPerBp * self.radiusPx),
+        )
       },
       /**
        * #getter
@@ -362,11 +393,17 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       shapeAt(i: number): RibbonShape {
         const { ribbonLanes: lanes, ribbonFill } = this
         const feature = lanes.features[i]!
+        const { opacityByIdentity, chordThinFadeFloor } = self.view
         return {
           kind: 'ribbon',
           feature,
           angles: ribbonAnglesAt(lanes, i, self.figureStage),
           fill: ribbonFill(feature),
+          opacity:
+            ribbonFadeAt(lanes, i, self.figureStage, chordThinFadeFloor) *
+            (opacityByIdentity
+              ? identityAlphaByte(identityOf(feature)) / 255
+              : 1),
         }
       },
       /**

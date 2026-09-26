@@ -4,7 +4,7 @@
 // its middle — and the count of slice gaps before it. Its angle is affine in
 // the two, so a zoom writes `radiansPerBp` and `gapRadians`, a rotation writes
 // `offsetRadians`, and neither uploads a buffer.
-//! js-export: chordTurn, ribbonEndPad, chordIsSpeck
+//! js-export: chordTurn, ribbonEndPad, chordIsSpeck, ribbonThinFade
 //! export-consts: MIN_RIBBON_END_PX
 //! js-skip: footRadians — the stage's two-term scale, which chordStage.ts applies with the same two uniforms
 module chordStage;
@@ -36,6 +36,8 @@ public struct ChordStageUniforms {
   // a chord's stroke, CSS px
   public float strokeWidthPx;
   public float devicePixelRatio;
+  // the least alpha the thin fade leaves a ribbon; 1 is no fade
+  public float thinFadeFloor;
 };
 
 public float footRadians(float x, float gaps, float radiansPerBp, float gapRadians) {
@@ -79,6 +81,15 @@ public float2 quadBezierTangent(float2 p0, float2 c, float2 p1, float t) {
 // both of an end's bases at its middle, and this keeps a ribbon into it drawn.
 public float ribbonEndPad(float a, float b, float radius, float minWidthPx) {
   return max(0.0, minWidthPx / max(radius, 1.0) - abs(b - a)) * 0.5;
+}
+
+// The alpha a ribbon keeps under the thin fade: its two ends' true width over
+// the width they draw at once floored to `minEndPx`, so a thousand sub-pixel
+// alignments over one pixel add up to the ink they cover rather than to a
+// solid band, and never under `floor`, so a lone one stays findable.
+public float ribbonThinFade(float anchorPx, float matePx, float minEndPx, float floor) {
+  float drawn = max(anchorPx, minEndPx) + max(matePx, minEndPx);
+  return clamp((anchorPx + matePx) / drawn, floor, 1.0);
 }
 
 // Two chord ends under a pixel apart: every deletion and insertion of a

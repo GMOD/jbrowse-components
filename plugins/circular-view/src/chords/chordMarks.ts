@@ -9,7 +9,7 @@ import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { traceChord } from './chordGeometry.ts'
 import { chordDistanceSq, CHORD_HIT_PX, ribbonContains } from './chordHit.ts'
-import { chordEndsAt, ribbonAnglesAt } from './chordStage.ts'
+import { chordEndsAt, ribbonAnglesAt, ribbonFadeAt } from './chordStage.ts'
 import { canvasPathSink } from './pathSink.ts'
 import { traceRibbon } from './ribbonGeometry.ts'
 import * as chordShader from './shaders/chord.generated.ts'
@@ -31,6 +31,8 @@ export interface ChordStageParams extends ChordStage {
   /** the alpha every instance draws at, over its colour's own */
   alpha: number
   strokeWidthPx: number
+  /** the least alpha the thin fade leaves a ribbon; 1 is no fade */
+  thinFadeFloor: number
 }
 
 const CHORD_STROKE_PX = 1
@@ -55,18 +57,20 @@ function writeStage(
     alpha: p.alpha,
     strokeWidthPx: p.strokeWidthPx,
     devicePixelRatio: scale,
+    thinFadeFloor: p.thinFadeFloor,
   })
 }
 
-// one css colour per packed colour, per paint, at its alpha times the
-// display's as the shader multiplies them, unrounded
+// one css colour per packed colour and fade, per paint, at its alpha times the
+// display's and the fade as the shader multiplies them, unrounded
 function colorCache(alpha: number) {
-  const cache = new Map<number, string>()
-  return (abgr: number) => {
-    let css = cache.get(abgr)
+  const cache = new Map<string, string>()
+  return (abgr: number, fade = 1) => {
+    const key = `${abgr} ${fade}`
+    let css = cache.get(key)
     if (css === undefined) {
-      css = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${(abgrAlpha(abgr) / 255) * alpha})`
-      cache.set(abgr, css)
+      css = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${(abgrAlpha(abgr) / 255) * alpha * fade})`
+      cache.set(key, css)
     }
     return css
   }
@@ -114,7 +118,10 @@ export const ribbonMark: MarkShape<RibbonLanes, ChordStageParams> = {
           params.radiusPx,
           params.bezierRadiusPx,
         )
-        ctx.fillStyle = fill(lanes.color[i]!)
+        ctx.fillStyle = fill(
+          lanes.color[i]!,
+          ribbonFadeAt(lanes, i, params, params.thinFadeFloor),
+        )
         ctx.fill()
       }
     })
@@ -216,6 +223,7 @@ export interface ChordLayerFrame extends MarkFrame {
   gapRadians: number
   offsetRadians: number
   radiusPx: number
+  thinFadeFloor: number
 }
 
 function params(frame: ChordLayerFrame, cell: ChordCell): ChordStageParams {
@@ -229,6 +237,7 @@ function params(frame: ChordLayerFrame, cell: ChordCell): ChordStageParams {
     bezierRadiusPx: frame.radiusPx * cell.display.bezierRadiusRatio,
     alpha: cell.display.shapeAlpha,
     strokeWidthPx: CHORD_STROKE_PX,
+    thinFadeFloor: frame.thinFadeFloor,
   }
 }
 

@@ -100,12 +100,15 @@ const ShapePaths = observer(function ShapePaths({
         const dimmed =
           state !== 'hovered' &&
           highlightedFeatureIdSet?.has(shape.feature.id()) === false
+        const opacity =
+          (dimmed ? DIMMED_OPACITY : 1) *
+          (state === 'resting' && shape.kind === 'ribbon' ? shape.opacity : 1)
         return (
           <path
             key={shape.feature.id()}
             data-testid={testId(shape)}
             d={shapePath(shape, radiusPx, bezierRadius)}
-            opacity={dimmed ? DIMMED_OPACITY : undefined}
+            opacity={opacity === 1 ? undefined : opacity}
             {...paintProps(display, shape, state)}
           >
             <title>{display.shapeLabel(shape.feature)}</title>

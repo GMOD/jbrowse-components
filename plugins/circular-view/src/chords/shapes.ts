@@ -7,6 +7,8 @@ export interface RibbonShape {
   feature: Feature
   angles: RibbonAngles
   fill: string
+  /** the thin fade's and the identity fade's opacity at rest */
+  opacity: number
 }
 
 export interface ChordShape {
