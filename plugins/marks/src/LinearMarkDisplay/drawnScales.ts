@@ -144,8 +144,18 @@ export function drawnScales(
     const to = Math.min(from + SCAN_CHUNK, count)
     scanChunk(extents, lanes, drawnKeys, from, to)
   }
-  const { colors, glyphs, yMin, yMax, vMin, vMax, sMin, sMax } = extents
-  const { missing, notNumber } = extents
+  const {
+    colors,
+    glyphs,
+    yMin,
+    yMax,
+    vMin,
+    vMax,
+    sMin,
+    sMax,
+    missing,
+    notNumber,
+  } = extents
   const valued = Number.isFinite(layer.yMin)
   return {
     ...layer,
