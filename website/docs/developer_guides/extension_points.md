@@ -1082,17 +1082,18 @@ multi-wiggle track, is the whole registration:
 
 ```typescript
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
-  addMultiTrackMenuItems(pm, ({ session, model }) =>
+  addMultiTrackMenuItems(pm, ({ session, model }) => {
+    const tracks = model.selection.filter(t => t.type === 'QuantitativeTrack')
     // contributing nothing is `undefined`, not an empty array to spread into
     // someone else's — the accumulated items are not this callback's to see
-    isSessionWithAddSessionTrack(session)
+    return isSessionWithAddSessionTrack(session) && tracks.length > 0
       ? {
           label: 'Create multi-wiggle track...',
           onClick: () => {
             getDialogHost(model).queueDialog(handleClose => [
               ConfirmDialog,
               {
-                tracks: model.selection,
+                tracks,
                 onClose: (result?: MakeTrackArg) => {
                   if (result) {
                     makeTrack({ model, arg: result })
@@ -1103,8 +1104,8 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
             ])
           },
         }
-      : undefined,
-  )
+      : undefined
+  })
 }
 ```
 

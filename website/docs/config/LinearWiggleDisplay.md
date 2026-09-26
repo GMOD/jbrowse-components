@@ -22,8 +22,7 @@ adapter and display options:
 }
 ```
 
-Several bigWigs stacked one per row, which is what a `MultiQuantitativeTrack`
-does by default:
+Several bigWigs, which a `MultiQuantitativeTrack` stacks one per row:
 
 ```js
 {
@@ -38,7 +37,6 @@ does by default:
       'https://example.com/sample2.bw',
     ],
   },
-  displayDefaults: { rows: 'source' },
 }
 ```
 
@@ -106,7 +104,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearWiggleDisplay"
 | <span id="slot-origin">**origin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin |
 | <span id="slot-size">**size**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>2</code> | Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size<br>_advanced_ |
 | <span id="slot-linewidth">**lineWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Line thickness in px for line rendering. Defaults to 1<br>_advanced_ |
-| <span id="slot-maxgapmultiple">**maxGapMultiple**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout)<br>_advanced_ |
+| <span id="slot-maxgapmultiple">**maxGapMultiple**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 keeps one connected line<br>_advanced_ |
 | <span id="slot-summaryscoremode">**summaryScoreMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (max, min, avg, whiskers) = <code>'whiskers'</code> | choose whether to use max/min/average or whiskers which combines all three into the same rendering |
 | <span id="slot-showtree">**showTree**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Show the subtrack clustering tree in the sidebar |
 | <span id="slot-showbranchlength">**showBranchLength**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram) |

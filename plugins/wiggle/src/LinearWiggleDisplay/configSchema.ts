@@ -52,8 +52,7 @@ import { WIGGLE_RENDERING_TYPES } from '../util.ts'
  * ```
  *
  * #example
- * Several bigWigs stacked one per row, which is what a `MultiQuantitativeTrack`
- * does by default:
+ * Several bigWigs, which a `MultiQuantitativeTrack` stacks one per row:
  * ```js
  * {
  *   type: 'MultiQuantitativeTrack',
@@ -67,7 +66,6 @@ import { WIGGLE_RENDERING_TYPES } from '../util.ts'
  *       'https://example.com/sample2.bw',
  *     ],
  *   },
- *   displayDefaults: { rows: 'source' },
  * }
  * ```
  *

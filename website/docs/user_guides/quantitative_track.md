@@ -25,8 +25,9 @@ slot) offers these styles:
 
 ## Score options
 
-**Plot type** and **Resolution** are top-level track menu items; the rest of the
-settings below are grouped under **Score**.
+**Plot type** and **Resolution** are top-level track menu items. Resolution
+steps how many points per pixel a BigWig is read at, finer or coarser than one
+per pixel. The rest of the settings below are grouped under **Score**.
 
 ### Autoscale type
 
@@ -55,8 +56,8 @@ A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 
 ### Other score options
 
-- Scale type - linear or log Y axis
-- Resolution - overrides the resolution chosen from the view width
+- Scale type - linear, log or symlog Y axis; symlog admits zero and negative
+  scores
 - Set min/max score - pins the Y axis, for comparison across samples
 - Autoscale with other tracks - ticks the other tracks in the view that share
   this one's Y axis, which then autoscales over all of their data as you pan and
