@@ -1,3 +1,4 @@
+import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
 import {
   RETIRED_ROW_STATE_KEYS,
   liftRetiredRowState,
@@ -70,13 +71,16 @@ export const retiredTypes: RetiredDisplayType[] = [
   { type: 'LinearGCContentTrackDisplay' },
 ]
 
-const AUTOSCALES = new Set(['local', 'localsd', 'localpercentile'])
-
+// v4's `localpercentile` is a clip; its `local`, `localsd`, `global` and
+// `globalsd` all follow the extremes closely enough to become one.
 function scaleOf({ scale, autoscale, constraints }: DisplayEntry) {
   const y = {
     ...(typeof scale === 'string' ? { type: scale } : {}),
-    ...(typeof autoscale === 'string' && AUTOSCALES.has(autoscale)
-      ? { autoscale }
+    ...(typeof autoscale === 'string'
+      ? {
+          domainQuantile:
+            autoscale === 'localpercentile' ? DEFAULT_CLIP_QUANTILE : 1,
+        }
       : {}),
     ...(isRecord(constraints) && typeof constraints.min === 'number'
       ? { domainMin: constraints.min }

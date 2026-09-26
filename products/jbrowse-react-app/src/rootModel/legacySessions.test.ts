@@ -368,7 +368,7 @@ test('a v4 wiggle display keeps the scale and colours a reader set', async () =>
   )
   expect(display.renderingType).toBe('line')
   expect(getConf(display, ['scales', 'y', 'type'])).toBe('log')
-  expect(getConf(display, ['scales', 'y', 'autoscale'])).toBe('localsd')
+  expect(getConf(display, ['scales', 'y', 'domainQuantile'])).toBe(1)
   expect(getConf(display, ['scales', 'y', 'domainMin'])).toBe(1)
   expect(getConf(display, ['color', 'range'])).toEqual(['#e01e26', 'green'])
 })

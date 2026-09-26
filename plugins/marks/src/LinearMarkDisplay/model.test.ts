@@ -210,7 +210,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
             domainMax: 1000,
             range: ['white', 'red'],
             reverse: false,
-            autoscale: 'local',
+            domainQuantile: 1,
           },
         },
         lanes: ['row', 'color', 'index'],
@@ -432,16 +432,16 @@ test('nothing declared is the linear autoscaled form it always was', () => {
   expect(display.domain).toEqual([0, 8])
 })
 
-// The modes the display gained with the shared factory. A spiky distribution
-// is what tells them apart: `local` spends the whole axis on the one outlier,
-// `localpercentile` clips it and leaves the baseline readable.
-test('the autoscale mode scales.y names is the one the domain takes', () => {
+// A spiky distribution is what tells the quantiles apart: 1 spends the whole
+// axis on the one outlier, a quantile below it clips it and leaves the
+// baseline readable.
+test('the domain quantile scales.y names is the one the domain takes', () => {
   const spiky = [...Array.from({ length: 99 }, () => 2), 1000]
   const local = createTestEnvironment(
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { scales: { y: { autoscale: 'local' } } },
+    { scales: { y: { domainQuantile: 1 } } },
   ).createDisplay().display
   local.setRpcData(0, result([{ y: spiky }]), REGION)
   expect(local.domain![1]).toBe(1000)
@@ -450,15 +450,15 @@ test('the autoscale mode scales.y names is the one the domain takes', () => {
     [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { scales: { y: { autoscale: 'localpercentile' } } },
+    { scales: { y: { domainQuantile: 0.99 } } },
   ).createDisplay().display
   clipped.setRpcData(0, result([{ y: spiky }]), REGION)
   expect(clipped.domain![1]).toBeLessThan(10)
 })
 
-// Both radios derive from `scales.y` now: three scale types declared, and an
-// autoscale member present.
-test('the score menu offers the scale-type and autoscale radios', () => {
+// The scale-type radio derives from `scales.y`'s three declared types, and
+// Clip outliers is on every value scale.
+test('the score menu offers the scale-type radio and Clip outliers', () => {
   const { createDisplay } = createTestEnvironment([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
@@ -472,7 +472,7 @@ test('the score menu offers the scale-type and autoscale radios', () => {
       ? resolveSubMenu(score).map(i => ('label' in i ? i.label : ''))
       : []
   expect(rows).toContain('Scale type')
-  expect(rows).toContain('Autoscale type')
+  expect(rows).toContain('Clip outliers')
 })
 
 test('one end of the declared domain pins and the other autoscales', () => {
@@ -831,7 +831,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { mark: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkColor takes value, field, scale, domain, domainMin, domainMax, autoscale, numQuantile, range, labels, scheme, reverse, domainMid, title, breaks, descending and missingLabel, not colour',
+    'MarkColor takes value, field, scale, domain, domainMin, domainMax, domainQuantile, range, labels, scheme, reverse, domainMid, title, breaks, descending and missingLabel, not colour',
   )
   expect(() =>
     createTestEnvironment([
@@ -848,7 +848,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { scales: { y: { min: 0 } } },
     ).createDisplay(),
   ).toThrow(
-    'ValueScale takes type, domainMin, domainMax, autoscaleGroup, symlogConstant, autoscale, numStdDev, numQuantile, grid, minimalTicks, title and rules, not min',
+    'ValueScale takes type, domainMin, domainMax, autoscaleGroup, symlogConstant, domainQuantile, grid, minimalTicks, title and rules, not min',
   )
   expect(() =>
     createTestEnvironment(

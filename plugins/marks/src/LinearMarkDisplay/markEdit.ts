@@ -55,8 +55,8 @@ const KEY_MEMBERS = ['title', 'descending', 'missingLabel'] as const
 
 /**
  * The single-valued scale members a control shows beside a channel's field:
- * for a ramp the ends that pin it, its middle, how an open end follows the
- * data, the named stops it samples and their direction, and for any scale the
+ * for a ramp the ends that pin it, its middle, the quantile an open end
+ * follows, the named stops it samples and their direction, and for any scale the
  * key's title, row order and name for no value.
  */
 export const SCALE_MEMBERS = [
@@ -65,8 +65,7 @@ export const SCALE_MEMBERS = [
   'domainMin',
   'domainMax',
   'domainMid',
-  'autoscale',
-  'numQuantile',
+  'domainQuantile',
   ...KEY_MEMBERS,
 ] as const
 export type ScaleMember = (typeof SCALE_MEMBERS)[number]
@@ -259,10 +258,7 @@ export function withScaleMember(
       ? undefined
       : member === 'reverse' || member === 'descending'
         ? value === 'true'
-        : member === 'scheme' ||
-            member === 'autoscale' ||
-            member === 'title' ||
-            member === 'missingLabel'
+        : member === 'scheme' || member === 'title' || member === 'missingLabel'
           ? value
           : Number(value)
   return writeChannel(mark, channel, {

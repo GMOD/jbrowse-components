@@ -3,7 +3,7 @@ import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
-import { rampExtent } from '@jbrowse/core/util/rampExtent'
+import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 import {
   FEATURE_FIELD_PRESETS,
@@ -64,8 +64,7 @@ function colorSettingsOf({ conf: { color } }: FeatureColorHost): ColorSetting {
     domainMin: readConfObject(color, 'domainMin'),
     domainMax: readConfObject(color, 'domainMax'),
     domainMid: readConfObject(color, 'domainMid'),
-    autoscale: readConfObject(color, 'autoscale'),
-    numQuantile: readConfObject(color, 'numQuantile'),
+    domainQuantile: readConfObject(color, 'domainQuantile'),
     labels: readConfObject(color, 'labels'),
     title: readConfObject(color, 'title'),
   }
@@ -100,12 +99,11 @@ export function featureColorViews(self: FeatureColorHost) {
   const loaded = stableIdentityComputed(() => {
     const current = encoding.get()
     const field = typeof current === 'object' ? current.field : undefined
-    const percentile =
+    const quantile =
       typeof current === 'object' &&
-      (current.scale === 'linear' || current.scale === 'log') &&
-      current.autoscale === 'localpercentile'
-        ? current
-        : undefined
+      (current.scale === 'linear' || current.scale === 'log')
+        ? (current.domainQuantile ?? 1)
+        : 1
     let min = Infinity
     let max = -Infinity
     let missing = false
@@ -124,19 +122,15 @@ export function featureColorViews(self: FeatureColorHost) {
             notNumber = true
           }
         }
-        if (percentile) {
+        if (quantile < 1) {
           weighed.push(...paintedValues(colorValues, rectColorValues))
         }
       }
     }
-    const extent: [number, number] = percentile
-      ? rampExtent(
-          weighed,
-          weighed.length,
-          'localpercentile',
-          percentile.numQuantile,
-        )
-      : [min, max]
+    const extent: [number, number] =
+      quantile < 1
+        ? quantileExtent(weighed, weighed.length, quantile)
+        : [min, max]
     return { extent, missing, notNumber }
   })
   return {

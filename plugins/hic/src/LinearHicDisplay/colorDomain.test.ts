@@ -57,16 +57,18 @@ test('with the percentile off an unset top is the largest count', () => {
   expect(maxLabel(display)).toBe('400')
 })
 
-test('the percentile is the colour autoscale, and the retired checkbox lands on it', () => {
+test('the percentile is the colour domain quantile, and the retired checkbox lands on it', () => {
   const display = loaded()
-  expect(display.configuration.color.autoscale).toBe('localpercentile')
-  expect(display.rpcProps().numQuantile).toBe(0.95)
+  expect(display.configuration.color.domainQuantile).toBe(0.95)
+  expect(display.rpcProps().quantile).toBe(0.95)
   display.setColorFollowsPercentile(false)
-  expect(display.configuration.color.autoscale).toBe('local')
+  expect(display.configuration.color.domainQuantile).toBe(1)
+  display.setColorFollowsPercentile(true)
+  expect(display.configuration.color.domainQuantile).toBe(0.95)
   const schema = configSchemaF()
-  for (const [written, autoscale] of [
-    [true, 'localpercentile'],
-    [false, 'local'],
+  for (const [written, quantile] of [
+    [true, 0.95],
+    [false, 1],
   ] as const) {
     const conf = schema.create({
       type: 'LinearHicDisplay',
@@ -74,7 +76,7 @@ test('the percentile is the colour autoscale, and the retired checkbox lands on 
       useColorPercentile: written,
       color: { scheme: 'viridis' },
     })
-    expect(readConfObject(conf, ['color', 'autoscale'])).toBe(autoscale)
+    expect(readConfObject(conf, ['color', 'domainQuantile'])).toBe(quantile)
     expect(readConfObject(conf, ['color', 'scheme'])).toBe('viridis')
   }
 })

@@ -72,8 +72,8 @@ alongside `CoreRender` above:
 - `WiggleGetGlobalQuantitativeStats` and
   `WiggleGetMultiRegionQuantitativeStats`. There is no separate stats round trip
   any more: `RenderMultiWiggleData` returns the per-region score arrays and the
-  display derives its own domain from them, which is also what makes the new
-  local-percentile autoscale possible.
+  display derives its own domain from them, which is also what makes the
+  percentile clip (`scales.y.domainQuantile`) possible.
 - `RenderWiggleData`. `RenderMultiWiggleData` serves every quantitative adapter
   now that there is one quantitative display; an adapter handing back typed
   arrays reports one unnamed source through it.
@@ -491,8 +491,9 @@ updating.
 Every quantitative display — wiggle, Manhattan, the alignments coverage band and
 the mark display — writes its value axis as one sub-schema. `scaleType` is
 `scales.y.type`, `minScore` and `maxScore` are `scales.y.domainMin` and
-`scales.y.domainMax`, and `autoscale`, `numStdDev`, `numQuantile` and
-`symlogConstant` keep their names inside `scales.y`.
+`scales.y.domainMax`, `symlogConstant` keeps its name inside `scales.y`, and
+`autoscale`, `numStdDev` and `numQuantile` are one number, `domainQuantile`:
+`localpercentile` is `0.99` and `local` and `localsd` are `1`, the extremes.
 
 **None of them migrates.** A config or session still spelling one at the display
 level loses it in silence, since MST drops a snapshot key the model no longer

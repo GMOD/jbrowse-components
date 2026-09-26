@@ -30,16 +30,14 @@ offers these styles:
 steps how many points per pixel a BigWig is read at, finer or coarser than one
 per pixel. The rest of the settings below are grouped under **Score**.
 
-### Autoscale type
+### Clip outliers
 
-The Y-axis range (the display's
-[`scales.y.autoscale`](/docs/config/valuescale/#slot-scalesyautoscale) slot).
-All three rescale to the region in view and differ in how they treat outliers:
-
-- Local - the plain min and max, so one anomalous position flattens the rest
-- Local (99th percentile) - clips the outermost 1% of each sign
-- Local ± 3σ - three standard deviations of the local signal, a harder clip when
-  the spikes are very tall
+The Y-axis range follows the region in view, and this checkbox (the display's
+[`scales.y.domainQuantile`](/docs/config/valuescale/#slot-scalesydomainquantile)
+slot) decides whether one anomalous position may take the whole axis. Ticked,
+the default, each sign is clipped at the 99th percentile of what is in view;
+unticked, the axis runs to the plain min and max. A config takes any quantile,
+`0.95` for a harder clip.
 
 ### Summary score mode
 
@@ -98,9 +96,9 @@ Each row keeps the colour its subtrack was configured with. Sources sharing one
 plot box take a palette entry each instead, so the overlaid plots can be told
 apart.
 
-An outlier on one signal can blow out the shared Y axis. The "Local ± 3σ"
-autoscale type clips to three standard deviations of the visible data for a more
-readable view, or pin the min and max from the track menu.
+An outlier on one signal can blow out the shared Y axis. **Clip outliers** keeps
+the axis at the 99th percentile of the visible data for a more readable view, or
+pin the min and max from the track menu.
 
 <Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows and MS4A1 by the two B rows, on one shared scale." src="/img/scatac/pbmc5k_marker_swap.png" />
 
@@ -170,7 +168,8 @@ For a chromosome-scale view of copy-number changes:
 
 - Open the BigWig track
 - Show all regions in the assembly
-- Set **Autoscale type** to **Local ± 3σ** to clip outlier spikes
+- Leave **Clip outliers** ticked in the **Score** menu, so the repeat spikes
+  stay off the axis
 - Increase the **Resolution** until the profile looks smooth
 - Drag the bottom edge of the track down to make it taller
 

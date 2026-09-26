@@ -5,19 +5,17 @@ digraph wiggle_domain {
 
   vis   [label="visible feature arrays", shape=oval]
   mode  [label="effectiveSummaryScoreMode\npicks which per-feature array\neach end of the domain reads"]
-  stats [label="computeScoreStats\nmin, max, mean, standard deviation"]
+  stats [label="computeScoreStats\nmin, max"]
   vis -> mode -> stats -> auto
 
-  auto [label="autoscale"]
-  auto -> local   [label=" local"]
-  auto -> sd      [label=" localsd"]
-  auto -> pct     [label=" localpercentile"]
+  auto [label="domainQuantile"]
+  auto -> local   [label=" 1"]
+  auto -> pct     [label=" below 1"]
   local [label="the visible min and max"]
-  sd    [label="mean ± n standard deviations,\nlow end pinned to 0 for\nall-positive data"]
-  pct   [label="each sign clipped to its own\npercentile, anchored at 0"]
+  pct   [label="each sign clipped to that\nquantile, anchored at 0"]
 
   rules [label="widen to any score a\nscore rule is drawn at"]
-  local -> rules  sd -> rules  pct -> rules
+  local -> rules  pct -> rules
 
   bounds [label="nice domain, clamped by\nminScoreBound / maxScoreBound\nan unset bound autoscales that end"]
   rules -> bounds -> scale

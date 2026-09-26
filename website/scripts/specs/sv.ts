@@ -558,8 +558,8 @@ export const svSpecs: ScreenshotSpec[] = [
 
   // Whole-genome CNV: COLO829 melanoma tumor vs matched normal coverage as a
   // single multi-quantitative bigWig track, shown at chromosome scale (no `loc`
-  // → showAllRegionsInAssembly) with localsd ±3sd autoscale so copy-number
-  // gains/losses stand out. The two sources use the default multiwiggle palette
+  // → showAllRegionsInAssembly) with the default 99th-percentile clip so
+  // copy-number gains/losses stand out. The two sources use the default multiwiggle palette
   // (no explicit per-source colors). Rebuilt from the old server-side share link
   // as a self-contained sessionSpec/MultiWiggleAdapter over the two COLO829
   // coverage bigWigs in config_demo.json.
@@ -612,7 +612,6 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'colo829_cnv_coverage',
               type: 'LinearWiggleDisplay',
-              scales: { y: { autoscale: 'localsd', numStdDev: 3 } },
               mark: 'point',
               rows: '',
               // even finer binning (basesPerSpan = bpPerPx/resolution) so the
@@ -2042,7 +2041,7 @@ export const svSpecs: ScreenshotSpec[] = [
               mark: 'point',
               rows: '',
               // Fixed 0..3, which is the manual min/max cap the walkthrough
-              // tells the reader to apply, and which localsd autoscale was
+              // tells the reader to apply, and which the default clip was
               // quietly not doing: indexcov's few centromere and repeat spikes
               // run to 497, so an autoscaled axis put every plateau in the
               // bottom fifth of the lane and the three tumor levels (0.6 / 1.1

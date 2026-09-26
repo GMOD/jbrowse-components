@@ -1109,8 +1109,7 @@ export function stateModelFactory(
           const indices = self.drawingMarkIndices
           const folded = new Set(indices)
           const types = indices.map(i => self.markTypes[i]!)
-          const { origin, autoscaleType, numStdDev, numQuantile, drawnKeys } =
-            self
+          const { origin, domainQuantile, drawnKeys } = self
           const reached = [
             ...self.scoreRules.map(rule => rule.value),
             ...(types.includes('bar') ? [origin] : []),
@@ -1132,9 +1131,7 @@ export function stateModelFactory(
               widenRangeToRules(
                 autoscaleDomainFromSpans({
                   stats,
-                  autoscaleType,
-                  numStdDev,
-                  numQuantile,
+                  quantile: domainQuantile,
                   spans: layerSpans(entries, drawnKeys),
                 }),
                 reached,

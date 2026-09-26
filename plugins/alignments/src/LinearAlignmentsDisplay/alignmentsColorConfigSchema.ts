@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   colorChannelOptions,
   colorChannelSlots,
-  colorAutoscaleSlots,
+  colorDomainQuantileSlot,
   colorDomainEndsSlots,
   colorDomainSlot,
   colorRampSlots,
@@ -81,7 +81,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
         "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; mapq 255 for unavailable; '' a read with no value) or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them",
     }),
     ...colorDomainEndsSlots,
-    ...colorAutoscaleSlots,
+    ...colorDomainQuantileSlot,
     ...colorRangeSlot({
       range:
         "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis",

@@ -5,13 +5,9 @@ import configSchema from './configSchema.ts'
 
 const base = { type: 'LinearWiggleDisplay', displayId: 'test' }
 
-test('scales.y has the autoscale defaults', () => {
+test('scales.y clips at the 99th percentile by default', () => {
   const config = configSchema.create(base)
-  expect(readConfObject(config, ['scales', 'y', 'autoscale'])).toBe(
-    'localpercentile',
-  )
-  expect(readConfObject(config, ['scales', 'y', 'numStdDev'])).toBe(3)
-  expect(readConfObject(config, ['scales', 'y', 'numQuantile'])).toBe(0.99)
+  expect(readConfObject(config, ['scales', 'y', 'domainQuantile'])).toBe(0.99)
 })
 
 test('the rows shorthand reads as one row per subtrack', () => {

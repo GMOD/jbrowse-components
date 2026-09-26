@@ -44,7 +44,7 @@ async function statsFor(counts: number[]) {
       originBp: 0,
       resolution: RES,
       normalization: 'KR',
-      numQuantile: 0.95,
+      quantile: 0.95,
     },
   })
   const { maxScore, quantileScore, numContacts } = (

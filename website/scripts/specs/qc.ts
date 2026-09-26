@@ -222,12 +222,13 @@ const panel = (loc: string) => ({
       // click the banner. Same reason as the 650 kb frame below.
       forceLoad: true,
       // and the same fix that frame needed for the same reason: at 30 kb the
-      // coverage band's `local` autoscale topped out near the library's real
-      // depth, but over 100 kb it reaches a collapsed-repeat pile-up and the
-      // axis ran to 1,600, drawing a 30x library as a flat line on the floor.
-      // `localsd` is mean +/- numStdDev over what is in view, so the ceiling
-      // comes from the window rather than from a number somebody picked.
-      scales: { y: { autoscale: 'localsd' } },
+      // coverage band's extremes topped out near the library's real depth,
+      // but over 100 kb it reaches a collapsed-repeat pile-up and the axis
+      // ran to 1,600, drawing a 30x library as a flat line on the floor. A
+      // 0.99 domainQuantile clips at the 99th percentile of the bins in view,
+      // so the ceiling comes from the window rather than from a number
+      // somebody picked.
+      scales: { y: { domainQuantile: 0.99 } },
     },
   ],
 })
@@ -338,16 +339,16 @@ export const qcSpecs: ScreenshotSpec[] = [
               // 650 kb of 30x Illumina is past every byte budget in the stack,
               // and a capture has nobody to click the banner
               forceLoad: true,
-              // The coverage band's own axis, which `local` autoscale had
-              // running to 1,600 (review: "the 1600 is drowning out the
-              // signal"). A handful of collapsed-repeat pile-ups set that
-              // ceiling, so a 30x library drew as a 2%-height line and the
-              // band carried nothing. `localsd` is the display's own answer to
-              // peaky data — mean +/- numStdDev over what is in view — and it
+              // The coverage band's own axis, which its extremes had running
+              // to 1,600 (review: "the 1600 is drowning out the signal"). A
+              // handful of collapsed-repeat pile-ups set that ceiling, so a
+              // 30x library drew as a 2%-height line and the band carried
+              // nothing. A 0.99 domainQuantile is the display's own answer to
+              // peaky data, the 99th percentile of the bins in view, and it
               // is preferred here over a hand-picked ceiling because the
               // ceiling then comes from the window rather than from a number
               // somebody chose, and it survives the window being moved.
-              scales: { y: { autoscale: 'localsd' } },
+              scales: { y: { domainQuantile: 0.99 } },
               // 260, from 380 (review: "make it render even more compressed").
               // The lane is read as a colour FIELD -- red where nothing can be
               // placed uniquely, multi-coloured where the reads recover -- and
@@ -556,7 +557,7 @@ export const qcSpecs: ScreenshotSpec[] = [
               color: { field: 'mapq' },
               showLegend: true,
               forceLoad: true,
-              scales: { y: { autoscale: 'localsd' } },
+              scales: { y: { domainQuantile: 0.99 } },
               height: 260,
             },
           ],

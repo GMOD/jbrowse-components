@@ -29,9 +29,9 @@ plugins draw a wiggle-shaped axis against it.
   per-feature array each end reads comes from the resolved summary mode —
   whiskers spreads the ends across the min and max arrays, everything else takes
   both from one scalar.
-- `local` takes the visible extremes, `localsd` a standard-deviation band with
-  its low end pinned to 0 for all-positive data, `localpercentile` clips each
-  sign to its own percentile from 0 outward.
+- `domainQuantile` at 1 takes the visible extremes; below it each sign is
+  clipped to that quantile from 0 outward (`quantileExtent`, the rule a colour
+  ramp's `domainQuantile` reads too).
 - The domain is then widened to reach any score a rule is drawn at, and clamped
   by `scales.y`'s `domainMin` and `domainMax`. **A set bound wins; an unset one
   autoscales that end.**

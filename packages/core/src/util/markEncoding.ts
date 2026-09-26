@@ -16,7 +16,7 @@ import Flatbush from './flatbush/index.ts'
 import { valueText } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
-import { finiteExtremes, rampExtent } from './rampExtent.ts'
+import { finiteExtremes, quantileExtent } from './quantileExtent.ts'
 import { SHAPE_CODES, SHAPE_NAMES } from './shapeNames.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 import {
@@ -541,11 +541,10 @@ export function encodeFeatures<L extends LaneName>(
       ...(notNumberMet ? { notNumber: true } : {}),
     }
   } else if (rampEncoding && rampValues) {
-    const extent = rampExtent(
+    const extent = quantileExtent(
       rampValues,
       count,
-      rampEncoding.autoscale,
-      rampEncoding.numQuantile,
+      rampEncoding.domainQuantile,
     )
     const { domainMin, domainMax, domainMid, range, scheme, reverse } =
       rampEncoding

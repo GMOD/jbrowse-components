@@ -186,8 +186,6 @@ export interface WorkerPileupData {
   coverageStatsBinSize: number
   coverageStatsMins: Float32Array
   coverageStatsMaxs: Float32Array
-  coverageStatsSums: Float64Array
-  coverageStatsSumSqs: Float64Array
   // Pre-packed GPU buffer for the coverage-bar pass (worker-built). Its depth bars are
   // downsampled to a fixed bin cap so its record count (coverageGpuBinCount)
   // tracks screen pixels, not region width — otherwise it overflows the GPU

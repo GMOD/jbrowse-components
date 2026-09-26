@@ -6,7 +6,7 @@ sidebar_label: Mixin -> ScoreScaleMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
 
-#crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `autoscaleType` / `autoscaleChoices` / `numStdDev` / `numQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+#crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
 
 The value scale of every quantitative display: wiggle, the alignments
 coverage band and the mark display, Manhattan among them, each declare
@@ -35,10 +35,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
 | <span id="getter-scaletypechoices">**scaleTypeChoices**</span><br><code>string[]</code> | The scale types this display's own enum admits, which is what the scale-type radio offers; a display with one draws no radio. | ScoreScaleMixin |
-| <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
-| <span id="getter-autoscalechoices">**autoscaleChoices**</span><br><code>string[]</code> | The autoscale modes this display's own enum admits, which is what the Autoscale type radio offers. | ScoreScaleMixin |
-| <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  | ScoreScaleMixin |
-| <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | ScoreScaleMixin |
+| <span id="getter-domainquantile">**domainQuantile**</span><br><code>number</code> | `scales.y.domainQuantile`: what an unpinned end follows, 1 the extremes and below it that quantile of each sign. | ScoreScaleMixin |
+| <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | The quantile "Clip outliers" clips at: the scale's own default where that is below 1, else 0.99. | ScoreScaleMixin |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. | ScoreScaleMixin |
 | <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
 | <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
@@ -63,7 +61,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description |
 | --- | --- |
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  |
-| <span id="action-setautoscale">**setAutoscale**</span><br><code>(val?: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setdomainquantile">**setDomainQuantile**</span><br><code>(quantile: number) =&gt; void</code> |  |
 | <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setmaxscore">**setMaxScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setautoscalegroup">**setAutoscaleGroup**</span><br><code>(group?: string &#124; undefined) =&gt; void</code> |  |

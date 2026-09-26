@@ -8,10 +8,6 @@ import {
 import { paletteFromSpec } from '@jbrowse/core/ui/colors'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import {
-  DEFAULT_RAMP_QUANTILE,
-  RAMP_AUTOSCALES,
-} from '@jbrowse/core/util/rampExtent'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -27,7 +23,6 @@ import type { ColorScaleName, FieldPresets } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
-import type { RampAutoscale } from '@jbrowse/core/util/rampExtent'
 
 export {
   CATEGORICAL_FIELD_PRESETS,
@@ -77,8 +72,7 @@ export interface ColorSetting {
   domainMin?: number | undefined
   domainMax?: number | undefined
   domainMid?: number | undefined
-  autoscale?: RampAutoscale
-  numQuantile?: number
+  domainQuantile?: number
   labels?: readonly string[]
   title?: string | undefined
 }
@@ -294,24 +288,17 @@ export const colorDomainEndsSlots = {
 } as const
 
 /**
- * How a linear or log scale's open ends follow the loaded values, the rule
- * `scales.y.autoscale` names alike: `local` spans their extremes, and
- * `localpercentile` clips each sign's magnitudes at `numQuantile`, anchored
- * at 0, so one spike does not wash the rest of the ramp out.
+ * The quantile an open end of a linear or log colour scale follows over the
+ * loaded values, the rule `scales.y.domainQuantile` names alike: 1 spans
+ * their extremes, and below it each sign's magnitudes are clipped at that
+ * quantile, anchored at 0, so one spike no longer takes the whole ramp.
  */
-export const colorAutoscaleSlots = {
-  autoscale: {
-    type: 'stringEnum',
-    model: types.enumeration('RampAutoscale', [...RAMP_AUTOSCALES]),
-    defaultValue: 'local',
-    description:
-      "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0",
-  },
-  numQuantile: {
+export const colorDomainQuantileSlot = {
+  domainQuantile: {
     type: 'number',
-    defaultValue: DEFAULT_RAMP_QUANTILE,
+    defaultValue: 1,
     description:
-      'the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%',
+      'the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%',
     advanced: true,
   },
 } as const
@@ -401,9 +388,7 @@ export function colorEncodingOf<V extends string | undefined>(
         range: listed(color.range),
         scheme: color.scheme,
         reverse: color.reverse ?? false,
-        autoscale: color.autoscale,
-        numQuantile:
-          color.autoscale === 'localpercentile' ? color.numQuantile : undefined,
+        domainQuantile: color.domainQuantile,
       }
   }
 }
@@ -601,7 +586,7 @@ export const colorConfigSchema = ConfigurationSchema(
     ...colorLabelsSlot,
     ...colorRampSlots,
     ...colorDomainEndsSlots,
-    ...colorAutoscaleSlots,
+    ...colorDomainQuantileSlot,
     ...colorTitleSlot,
   },
   colorChannelOptions('color', FEATURE_FIELD_PRESETS),

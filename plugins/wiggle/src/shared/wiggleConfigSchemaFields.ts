@@ -1,3 +1,4 @@
+import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
 import {
   DEFAULT_GAP_BREAK_MULTIPLE,
   scalesSchema,
@@ -15,10 +16,7 @@ export function wiggleValueScale() {
   return scalesSchema(
     valueScaleSchema({
       types: ['linear', 'log', 'symlog'],
-      autoscale: {
-        modes: ['local', 'localsd', 'localpercentile'],
-        default: 'localpercentile',
-      },
+      domainQuantile: DEFAULT_CLIP_QUANTILE,
       rules: true,
       grid: true,
       minimalTicks: true,

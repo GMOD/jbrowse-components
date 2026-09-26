@@ -1,9 +1,5 @@
-/** How an open end of a colour ramp follows the values the display loaded. */
-export const RAMP_AUTOSCALES = ['local', 'localpercentile'] as const
-export type RampAutoscale = (typeof RAMP_AUTOSCALES)[number]
-
-/** The percentile `localpercentile` clips at where a colour names none. */
-export const DEFAULT_RAMP_QUANTILE = 0.99
+/** The quantile "Clip outliers" clips at on a scale whose own default is the extremes. */
+export const DEFAULT_CLIP_QUANTILE = 0.99
 
 function swap(a: Float32Array, i: number, j: number) {
   const t = a[i]!
@@ -84,31 +80,32 @@ export function finiteExtremes(
   return [min, max]
 }
 
+// The nearest-rank quantile: the smallest value at least `quantile` of the
+// population sits at or below, so a handful of values clips at their maximum.
 function magnitudeAt(magnitudes: Float32Array, n: number, quantile: number) {
   return n === 0
     ? 0
     : selectNth(
         magnitudes,
         n,
-        Math.min(n - 1, Math.max(0, Math.floor(quantile * (n - 1)))),
+        Math.min(n - 1, Math.max(0, Math.ceil(quantile * n) - 1)),
       )
 }
 
 /**
  * #api
- * What the open ends of a colour ramp follow over `values[0, count)`: their
- * finite extremes under `local`, and under `localpercentile` the `quantile`-th
- * percentile of each sign's magnitudes, anchored at 0 — the rule
- * `scales.y.autoscale` names the same way, so one spike no longer takes the
- * whole ramp. `[Infinity, -Infinity]` where nothing is finite.
+ * What the open ends of a scale follow over `values[0, count)`: at a
+ * `quantile` of 1 their finite extremes, and below it that quantile of each
+ * sign's magnitudes, anchored at 0, so one spike takes neither the axis nor
+ * the ramp. `scales.y.domainQuantile` and a colour's `domainQuantile` both
+ * name it. `[Infinity, -Infinity]` where nothing is finite.
  */
-export function rampExtent(
+export function quantileExtent(
   values: ArrayLike<number>,
   count: number,
-  autoscale: RampAutoscale = 'local',
-  quantile = DEFAULT_RAMP_QUANTILE,
+  quantile = 1,
 ): [number, number] {
-  if (autoscale !== 'localpercentile') {
+  if (quantile >= 1) {
     return finiteExtremes(values, count)
   }
   const positive = new Float32Array(count)

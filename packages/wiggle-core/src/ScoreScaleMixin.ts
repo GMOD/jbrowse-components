@@ -5,6 +5,7 @@ import {
   setConf,
   slotChoices,
 } from '@jbrowse/core/configuration'
+import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
 import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
@@ -37,7 +38,7 @@ const confNode = (self: object) => self as ScoreScaleHost
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `autoscaleType` / `autoscaleChoices` / `numStdDev` / `numQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
  * The value scale of every quantitative display: wiggle, the alignments
  * coverage band and the mark display, Manhattan among them, each declare
@@ -80,36 +81,25 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
+       * `scales.y.domainQuantile`: what an unpinned end follows, 1 the
+       * extremes and below it that quantile of each sign.
        */
-      get autoscaleType(): string {
-        return getConf(confNode(self), ['scales', 'y', 'autoscale'])
+      get domainQuantile(): number {
+        return getConf(confNode(self), ['scales', 'y', 'domainQuantile'])
       },
       /**
        * #getter
-       * The autoscale modes this display's own enum admits, which is what the
-       * Autoscale type radio offers.
+       * The quantile "Clip outliers" clips at: the scale's own default where
+       * that is below 1, else 0.99.
        */
-      get autoscaleChoices(): string[] {
-        return (
-          slotChoices(
-            getSlotDefinition(
-              confNode(self).configuration.scales.y,
-              'autoscale',
-            ),
-          ) ?? []
-        )
-      },
-      /**
-       * #getter
-       */
-      get numStdDev(): number {
-        return getConf(confNode(self), ['scales', 'y', 'numStdDev'])
-      },
-      /**
-       * #getter
-       */
-      get numQuantile(): number {
-        return getConf(confNode(self), ['scales', 'y', 'numQuantile'])
+      get clipQuantile(): number {
+        const declared = getSlotDefinition(
+          confNode(self).configuration.scales.y,
+          'domainQuantile',
+        ).defaultValue
+        return typeof declared === 'number' && declared < 1
+          ? declared
+          : DEFAULT_CLIP_QUANTILE
       },
       /**
        * #getter
@@ -207,8 +197,8 @@ export function ScoreScaleMixin() {
       /**
        * #action
        */
-      setAutoscale(val?: string) {
-        setConf(confNode(self), ['scales', 'y', 'autoscale'], val)
+      setDomainQuantile(quantile: number) {
+        setConf(confNode(self), ['scales', 'y', 'domainQuantile'], quantile)
       },
       /**
        * #action

@@ -189,6 +189,7 @@ export {
   buildCoverageTooltipBin,
   computeCoverageTicks,
   coverageDepthDomain,
+  computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
   countSnpsAtPosition,
   downsampleDenseMax,

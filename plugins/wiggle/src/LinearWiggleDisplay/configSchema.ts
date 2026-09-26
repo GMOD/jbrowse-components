@@ -179,7 +179,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot scales
      * The y scale the plot is drawn through: `type`, `domainMin`,
-     * `domainMax`, `autoscale`, `numStdDev`, `numQuantile`, `symlogConstant`
+     * `domainMax`, `domainQuantile`, `symlogConstant`
      * and `rules`, the reference lines drawn across it. The density rendering
      * draws no rule and does not widen to one: it spends colour on the score
      * and has no axis to rule.

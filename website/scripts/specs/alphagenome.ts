@@ -466,9 +466,8 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       { type: 'click', selector: '[data-testid="cascading-submenu-score"]' },
       {
         type: 'click',
-        selector: '[data-testid="cascading-submenu-autoscale_type"]',
+        selector: '[data-testid="cascading-menuitem-clip_outliers"]',
       },
-      { type: 'click', selector: '[data-testid="cascading-menuitem-local"]' },
       { type: 'click', selector: '.MuiMenu-root .MuiBackdrop-root' },
       { type: 'waitForSelector', selector: '.MuiMenu-root', hidden: true },
       { type: 'waitForAppSettled' },

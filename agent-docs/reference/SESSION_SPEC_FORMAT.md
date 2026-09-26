@@ -125,7 +125,7 @@ The concepts are shared and the census shows authors using them as shared.
 spells its value axis as `scales: { y: { type, domainMin, domainMax, ... } }`
 ([ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)).
 The row above it counted five flat keys — `minScore`, `maxScore`, `scaleType`,
-`autoscale`, `numStdDev` — until that landed.
+`autoscale` and its σ count — until that landed.
 
 A merge takes keys OFF this table as well. `defaultRendering`,
 `summaryScoreMode` and `displayCrossHatches` were each on two display types

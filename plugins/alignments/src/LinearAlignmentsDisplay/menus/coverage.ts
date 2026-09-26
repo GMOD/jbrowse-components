@@ -4,7 +4,6 @@ import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
 import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 
 interface CoverageModel extends ScoreScaleModel {
-  numStdDev: number
   showCoverage: boolean
   coverageDomain: [number, number] | undefined
   coverageSnpMinFrequency: number

@@ -3633,18 +3633,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
               "type": "number"
             },
-            "autoscale": {
-              "description": "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0.",
-              "enum": [
-                "local",
-                "localpercentile"
-              ],
-              "default": "local"
-            },
-            "numQuantile": {
-              "description": "the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%.",
+            "domainQuantile": {
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.",
               "type": "number",
-              "default": 0.99
+              "default": 1
             },
             "title": {
               "description": "key title; unset follows field, \\"\\" draws none.",
@@ -4346,18 +4338,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
               "type": "number"
             },
-            "autoscale": {
-              "description": "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0.",
-              "enum": [
-                "local",
-                "localpercentile"
-              ],
-              "default": "local"
-            },
-            "numQuantile": {
-              "description": "the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%.",
+            "domainQuantile": {
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.",
               "type": "number",
-              "default": 0.99
+              "default": 1
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis.",
@@ -4468,18 +4452,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 1
         },
-        "autoscale": {
-          "description": "local or localsd.",
-          "enum": [
-            "local",
-            "localsd"
-          ],
-          "default": "local"
-        },
-        "numStdDev": {
-          "description": "standard deviations for the localsd autoscale.",
+        "domainQuantile": {
+          "description": "the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%.",
           "type": "number",
-          "default": 3
+          "default": 1
         }
       },
       "patternProperties": {
@@ -5071,18 +5047,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
               "type": "number"
             },
-            "autoscale": {
-              "description": "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0.",
-              "enum": [
-                "local",
-                "localpercentile"
-              ],
-              "default": "local"
-            },
-            "numQuantile": {
-              "description": "the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%.",
+            "domainQuantile": {
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.",
               "type": "number",
-              "default": 0.99
+              "default": 1
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis.",
@@ -6466,22 +6434,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "autoscale": {
-          "description": "local or localsd or localpercentile.",
-          "enum": [
-            "local",
-            "localsd",
-            "localpercentile"
-          ],
-          "default": "localpercentile"
-        },
-        "numStdDev": {
-          "description": "standard deviations for the localsd autoscale.",
-          "type": "number",
-          "default": 3
-        },
-        "numQuantile": {
-          "description": "percentile the localpercentile autoscale clips at.",
+        "domainQuantile": {
+          "description": "the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%.",
           "type": "number",
           "default": 0.99
         },
@@ -6911,16 +6865,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
           "type": "number"
         },
-        "autoscale": {
-          "description": "what an unset domainMax follows: localpercentile the counts' numQuantile percentile, local their maximum.",
-          "enum": [
-            "local",
-            "localpercentile"
-          ],
-          "default": "localpercentile"
-        },
-        "numQuantile": {
-          "description": "the percentile localpercentile saturates at.",
+        "domainQuantile": {
+          "description": "the quantile of the loaded counts an unset domainMax follows; 1 is their maximum.",
           "type": "number",
           "default": 0.95
         }
@@ -7088,18 +7034,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
               "type": "number"
             },
-            "autoscale": {
-              "description": "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0.",
-              "enum": [
-                "local",
-                "localpercentile"
-              ],
-              "default": "local"
-            },
-            "numQuantile": {
-              "description": "the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%.",
+            "domainQuantile": {
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.",
               "type": "number",
-              "default": 0.99
+              "default": 1
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
@@ -7920,24 +7858,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "autoscale": {
-          "description": "local or localsd or localpercentile.",
-          "enum": [
-            "local",
-            "localsd",
-            "localpercentile"
-          ],
-          "default": "local"
-        },
-        "numStdDev": {
-          "description": "standard deviations for the localsd autoscale.",
+        "domainQuantile": {
+          "description": "the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%.",
           "type": "number",
-          "default": 3
-        },
-        "numQuantile": {
-          "description": "percentile the localpercentile autoscale clips at.",
-          "type": "number",
-          "default": 0.99
+          "default": 1
         },
         "grid": {
           "description": "rule the plot at the tick positions.",

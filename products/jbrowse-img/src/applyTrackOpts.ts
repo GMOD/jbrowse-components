@@ -290,7 +290,7 @@ interface DisplaySnapshot {
       type?: string
       domainMin?: number
       domainMax?: number
-      autoscale?: string
+      domainQuantile?: number
       grid?: boolean
     }
   }
@@ -310,8 +310,8 @@ interface DisplaySnapshot {
 // modifier's `on` list.
 // Valid keys = every member of the display Instance types (MST props + resolved
 // getters) plus the wiggle config slots whose snapshot name diverges from any
-// instance member: `autoscale`/`mark` resolve through
-// divergently-named getters (`autoscaleType`/`renderingType`), and
+// instance member: `mark` resolves through a divergently-named getter
+// (`renderingType`), and
 // `color`/`scales` are config-slot-only with no getter —
 // `showTrackGeneric` routes all four onto the config, so `keyof` the instance
 // misses them. `height` resolves fine — it's the getter.
@@ -873,22 +873,18 @@ const modifiers: Record<string, Modifier> = {
 
   // ——— wiggle / score ———
   //
-  // These three are `alignments` as well as `wiggle`, and it is the same object
+  // These two are `alignments` as well as `wiggle`, and it is the same object
   // in both cases rather than a translation: LinearAlignmentsDisplay's coverage
   // band carries the same `scales.y`. Restricting them to wiggle left an RNA-seq
   // coverage band no way to ask for a log axis from the CLI, which is exactly
   // where one is wanted: junction depth spans two orders of magnitude, so a
   // linear axis puts the whole picture in the first exon.
   //
-  // Three modifiers write one sub-schema, so each merges into what the others
+  // Two modifiers write one sub-schema, so each merges into what the other
   // put there; `applyDisplaySettings` merges the object onto the display's own
-  // defaults in turn, so a bag naming one member leaves the rest alone.
-  autoscale: {
-    on: ['wiggle', 'alignments'],
-    apply: (r, v) => {
-      valueScaleOf(r).autoscale = parseStr('autoscale', v, 'autoscale type')
-    },
-  },
+  // defaults in turn, so a bag naming one member leaves the rest alone. The
+  // quantile an open end follows is `scales.y.domainQuantile=0.99`, a slot
+  // path like any other.
   minmax: {
     on: ['wiggle', 'alignments'],
     apply: (r, min, max) => {
@@ -900,8 +896,8 @@ const modifiers: Record<string, Modifier> = {
       }
     },
   },
-  // scaletype/autoscale name a member's enum value directly. They are NOT
-  // re-listed here: the member's own stringEnum rejects a bad value, which
+  // scaletype names a member's enum value directly. It is NOT re-listed here:
+  // the member's own stringEnum rejects a bad value, which
   // reaches jb2export as a fatal render error, so a local copy of the list would
   // only add a way for the CLI to drift out of step with the display.
   scaletype: {

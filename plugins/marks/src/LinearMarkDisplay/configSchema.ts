@@ -492,10 +492,6 @@ export function configSchemaFactory() {
       scales: scalesSchema(
         valueScaleSchema({
           types: ['linear', 'log', 'symlog'],
-          autoscale: {
-            modes: ['local', 'localsd', 'localpercentile'],
-            default: 'local',
-          },
           rules: true,
           title: true,
           grid: true,

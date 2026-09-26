@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import { RAMP_AUTOSCALES } from '@jbrowse/core/util/rampExtent'
 import { TextField } from '@mui/material'
 
 import {
@@ -24,7 +23,7 @@ const MEMBER_LABELS: Partial<Record<ScaleMember, string>> = {
   domainMin: 'min',
   domainMax: 'max',
   domainMid: 'middle',
-  numQuantile: 'percentile',
+  domainQuantile: 'quantile',
   title: 'key title',
   missingLabel: 'key name for no value',
 }
@@ -145,8 +144,6 @@ export default function MarkScaleRow({
   }
   const ramp = isRamp(scale)
   const colorRamp = ramp && channel === 'color'
-  const percentile =
-    colorRamp && scaleMember(mark, channel, 'autoscale') === 'localpercentile'
   return (
     <div
       style={{
@@ -216,36 +213,13 @@ export default function MarkScaleRow({
             type="number"
             onMember={onMember}
           />
-          <TextField
-            select
-            label="open ends follow"
-            value={scaleMember(mark, channel, 'autoscale') || 'local'}
-            onChange={event => {
-              onMember(
-                'autoscale',
-                event.target.value === 'local' ? '' : event.target.value,
-              )
-            }}
-            slotProps={{
-              select: { native: true },
-              htmlInput: { 'data-testid': `autoscale-${channel}` },
-            }}
-          >
-            {RAMP_AUTOSCALES.map(name => (
-              <option key={name} value={name}>
-                {name === 'local' ? 'the extremes' : 'a percentile'}
-              </option>
-            ))}
-          </TextField>
-          {percentile ? (
-            <MemberField
-              mark={mark}
-              channel={channel}
-              member="numQuantile"
-              type="number"
-              onMember={onMember}
-            />
-          ) : null}
+          <MemberField
+            mark={mark}
+            channel={channel}
+            member="domainQuantile"
+            type="number"
+            onMember={onMember}
+          />
           <LabeledCheckbox
             checked={scaleMember(mark, channel, 'reverse') === 'true'}
             onChange={next => {

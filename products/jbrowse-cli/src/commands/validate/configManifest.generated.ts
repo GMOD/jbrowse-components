@@ -2981,11 +2981,7 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
-              "name": "autoscale",
-              "type": "RampAutoscale"
-            },
-            {
-              "name": "numQuantile",
+              "name": "domainQuantile",
               "type": "number"
             },
             {
@@ -3250,11 +3246,7 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
-              "name": "autoscale",
-              "type": "RampAutoscale"
-            },
-            {
-              "name": "numQuantile",
+              "name": "domainQuantile",
               "type": "number"
             },
             {
@@ -3463,11 +3455,7 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
-              "name": "autoscale",
-              "type": "RampAutoscale"
-            },
-            {
-              "name": "numQuantile",
+              "name": "domainQuantile",
               "type": "number"
             },
             {
@@ -3572,11 +3560,7 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 },
                 {
-                  "name": "autoscale",
-                  "type": "ValueScaleAutoscale"
-                },
-                {
-                  "name": "numStdDev",
+                  "name": "domainQuantile",
                   "type": "number"
                 }
               ]
@@ -3925,11 +3909,7 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
-              "name": "autoscale",
-              "type": "RampAutoscale"
-            },
-            {
-              "name": "numQuantile",
+              "name": "domainQuantile",
               "type": "number"
             },
             {
@@ -4034,11 +4014,7 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 },
                 {
-                  "name": "autoscale",
-                  "type": "ValueScaleAutoscale"
-                },
-                {
-                  "name": "numStdDev",
+                  "name": "domainQuantile",
                   "type": "number"
                 }
               ]
@@ -4483,11 +4459,7 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
-              "name": "autoscale",
-              "type": "RampAutoscale"
-            },
-            {
-              "name": "numQuantile",
+              "name": "domainQuantile",
               "type": "number"
             },
             {
@@ -5039,15 +5011,7 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 },
                 {
-                  "name": "autoscale",
-                  "type": "ValueScaleAutoscale"
-                },
-                {
-                  "name": "numStdDev",
-                  "type": "number"
-                },
-                {
-                  "name": "numQuantile",
+                  "name": "domainQuantile",
                   "type": "number"
                 },
                 {
@@ -5355,11 +5319,7 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
-              "name": "autoscale",
-              "type": "RampAutoscale"
-            },
-            {
-              "name": "numQuantile",
+              "name": "domainQuantile",
               "type": "number"
             }
           ]
@@ -5493,11 +5453,7 @@ export const configManifest: ConfigManifest = {
                       "type": "(number | undefined)"
                     },
                     {
-                      "name": "autoscale",
-                      "type": "RampAutoscale"
-                    },
-                    {
-                      "name": "numQuantile",
+                      "name": "domainQuantile",
                       "type": "number"
                     },
                     {
@@ -5766,15 +5722,7 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 },
                 {
-                  "name": "autoscale",
-                  "type": "ValueScaleAutoscale"
-                },
-                {
-                  "name": "numStdDev",
-                  "type": "number"
-                },
-                {
-                  "name": "numQuantile",
+                  "name": "domainQuantile",
                   "type": "number"
                 },
                 {
@@ -5952,11 +5900,7 @@ export const configManifest: ConfigManifest = {
                       "type": "(number | undefined)"
                     },
                     {
-                      "name": "autoscale",
-                      "type": "RampAutoscale"
-                    },
-                    {
-                      "name": "numQuantile",
+                      "name": "domainQuantile",
                       "type": "number"
                     },
                     {
@@ -6225,15 +6169,7 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 },
                 {
-                  "name": "autoscale",
-                  "type": "ValueScaleAutoscale"
-                },
-                {
-                  "name": "numStdDev",
-                  "type": "number"
-                },
-                {
-                  "name": "numQuantile",
+                  "name": "domainQuantile",
                   "type": "number"
                 },
                 {

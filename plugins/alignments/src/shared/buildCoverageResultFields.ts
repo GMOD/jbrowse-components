@@ -55,8 +55,6 @@ export function buildCoverageResultFields(
     coverageStatsBinSize: statsBins.binSize,
     coverageStatsMins: statsBins.mins,
     coverageStatsMaxs: statsBins.maxs,
-    coverageStatsSums: statsBins.sums,
-    coverageStatsSumSqs: statsBins.sumSqs,
 
     // The denominator the interbase stack fractions were baked against; see
     // `interbaseBarHeightPx`. Not derivable from the buffer, so it travels

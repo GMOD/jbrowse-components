@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   computeCoverageTicks,
   coverageDepthDomain,
+  computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
   densityBinSize,
 } from '@jbrowse/alignments-core'
@@ -52,7 +53,6 @@ import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import {
   ScoreScaleMixin,
-  domainFromStats,
   getNiceDomain,
   resolveSymlogConstant,
   visibleStatsRange,
@@ -105,7 +105,7 @@ import { getColorForModification } from '../util.ts'
 import {
   bakedColorScale,
   numericExtentAcrossGroups,
-  percentileExtentAcrossGroups,
+  quantileExtentAcrossGroups,
 } from './bakedColorScale.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -1014,8 +1014,8 @@ export default function stateModelFactory(
                       .filter(({ key }) => !hidden.has(key))
                       .map(({ data }) => data),
                   accumulate: entries => computeVisibleCoverageStats(entries),
-                  range: stats =>
-                    domainFromStats(stats, self.autoscaleType, self.numStdDev),
+                  range: (_, entries) =>
+                    computeVisibleCoverageDomain(entries, self.domainQuantile)!,
                 })
           },
 
@@ -1683,8 +1683,8 @@ export default function stateModelFactory(
           /**
            * #getter
            * The span of a linear colour field over the loaded reads, which a
-           * ramp's open ends stretch across: their extremes, or under
-           * `localpercentile` each sign's `numQuantile` percentile. Undefined
+           * ramp's open ends stretch across: their extremes, or below a
+           * `domainQuantile` of 1 that quantile of each sign. Undefined
            * while `domainMin` and `domainMax` both pin the ramp or another
            * scale paints, so a region arriving rebakes nothing then.
            */
@@ -1694,12 +1694,12 @@ export default function stateModelFactory(
               encoding.scale === 'linear' &&
               (encoding.domainMin === undefined ||
                 encoding.domainMax === undefined)
-              ? encoding.autoscale === 'localpercentile' &&
+              ? (encoding.domainQuantile ?? 1) < 1 &&
                 self.colorBy.type === 'tag'
-                ? percentileExtentAcrossGroups(
+                ? quantileExtentAcrossGroups(
                     this.laidOutByGroupFramed,
                     d => d.readTagValues,
-                    encoding.numQuantile,
+                    encoding.domainQuantile!,
                   )
                 : this.tagValueExtent
               : undefined

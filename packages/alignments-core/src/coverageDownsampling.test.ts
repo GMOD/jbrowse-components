@@ -7,6 +7,7 @@ import {
 import {
   buildCoverageTooltipBin,
   computeCoverageTicks,
+  computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
   countSnpsAtPosition,
   downsampleDenseMax,
@@ -220,19 +221,15 @@ describe('downsampleStatsBins', () => {
     expect(result.binSize).toBe(1)
     expect(result.mins.length).toBe(0)
     expect(result.maxs.length).toBe(0)
-    expect(result.sums.length).toBe(0)
-    expect(result.sumSqs.length).toBe(0)
   })
 
-  test('computes per-bin min/max/sum/sumSq', () => {
+  test('computes per-bin min and max', () => {
     // 10 bp → 5 bins, binSize 2
     const depths = new Float32Array([1, 9, 4, 2, 7, 7, 0, 0, 3, 8])
     const result = downsampleStatsBins(depths, 5)
     expect(result.binSize).toBe(2)
     expect([...result.mins]).toEqual([1, 2, 7, 0, 3])
     expect([...result.maxs]).toEqual([9, 4, 7, 0, 8])
-    expect([...result.sums]).toEqual([10, 6, 14, 0, 11])
-    expect([...result.sumSqs]).toEqual([82, 20, 98, 0, 73])
   })
 
   test('last (ragged) bin only aggregates the bp it covers', () => {
@@ -240,7 +237,6 @@ describe('downsampleStatsBins', () => {
     const result = downsampleStatsBins(depths, 2)
     expect(result.binSize).toBe(3)
     expect([...result.maxs]).toEqual([6, 9]) // bin1 only sees [9,1]
-    expect([...result.sums]).toEqual([12, 10])
   })
 })
 
@@ -252,14 +248,20 @@ describe('computeVisibleCoverageStats', () => {
     }
   }
 
-  test('per-bp path: min/max/mean over the visible clip', () => {
+  test('per-bp path: min and max over the visible clip', () => {
     const cov = perBpRegion([2, 8, 4, 10, 6], 100)
     const stats = computeVisibleCoverageStats([
       { visStart: 100, visEnd: 105, data: cov },
     ])
     expect(stats!.scoreMin).toBe(2)
     expect(stats!.scoreMax).toBe(10)
-    expect(stats!.scoreMean).toBeCloseTo(6)
+  })
+
+  test('a domain quantile below 1 clips the peaks and anchors at 0', () => {
+    const cov = perBpRegion([...new Array(99).fill(30), 1600], 100)
+    const entries = [{ visStart: 100, visEnd: 200, data: cov }]
+    expect(computeVisibleCoverageDomain(entries, 1)).toEqual([30, 1600])
+    expect(computeVisibleCoverageDomain(entries, 0.99)).toEqual([0, 30])
   })
 
   test('per-bp path clips to the visible block range', () => {
@@ -290,8 +292,6 @@ describe('computeVisibleCoverageStats', () => {
       coverageStatsBinSize: bins.binSize,
       coverageStatsMins: bins.mins,
       coverageStatsMaxs: bins.maxs,
-      coverageStatsSums: bins.sums,
-      coverageStatsSumSqs: bins.sumSqs,
     }
     const block = { visStart: 1000, visEnd: 2000 }
     const viaScan = computeVisibleCoverageStats([{ ...block, data: perBp }])!
@@ -300,8 +300,6 @@ describe('computeVisibleCoverageStats', () => {
     // the aggregate is exact.
     expect(viaBins.scoreMin).toBe(viaScan.scoreMin)
     expect(viaBins.scoreMax).toBe(viaScan.scoreMax)
-    expect(viaBins.scoreMean).toBeCloseTo(viaScan.scoreMean)
-    expect(viaBins.scoreStdDev).toBeCloseTo(viaScan.scoreStdDev)
   })
 
   test('combines stats across multiple blocks/groups', () => {
@@ -313,7 +311,6 @@ describe('computeVisibleCoverageStats', () => {
     ])
     expect(stats!.scoreMin).toBe(1)
     expect(stats!.scoreMax).toBe(9)
-    expect(stats!.scoreMean).toBeCloseTo((5 + 5 + 5 + 1 + 9) / 5)
   })
 })
 

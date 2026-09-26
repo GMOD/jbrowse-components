@@ -214,10 +214,8 @@ export function WiggleCommonMixin() {
             widenRangeToRules(
               autoscaleDomainFromStats({
                 stats,
-                autoscaleType: self.autoscaleType,
+                quantile: self.domainQuantile,
                 summaryScoreMode: self.effectiveSummaryScoreMode,
-                numStdDev: self.numStdDev,
-                numQuantile: self.numQuantile,
                 visibleEntries: entries,
               }),
               self.scoreRuleValues,

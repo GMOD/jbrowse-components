@@ -165,7 +165,7 @@ describe('a degenerate domain', () => {
 
   // Reachable from Track menu → Set min/max score by filling in only the min:
   // the dialog checks `max > min` solely when BOTH fields carry a number, and
-  // `autoscale: localpercentile` (the config default) can put the 99th
+  // the default `domainQuantile` of 0.99 can put the 99th
   // percentile below whatever was typed.
   test('both step at the min on a descending one', () => {
     for (const [min, max] of [

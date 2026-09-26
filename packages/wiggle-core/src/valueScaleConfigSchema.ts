@@ -3,16 +3,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-/** The autoscale modes a display offers, and the one it starts on. */
-export interface ValueScaleAutoscale {
-  modes: readonly string[]
-  default: string
-}
-
 export interface ValueScaleOptions {
   /** the scale types this display's renderer places, `linear` first */
   types: readonly string[]
-  autoscale: ValueScaleAutoscale
+  /** `domainQuantile`'s default: 1 follows the extremes, 0.99 clips the outermost 1% */
+  domainQuantile?: number
   /** `symlogConstant`'s default, where `types` holds `symlog` */
   symlogConstant?: number
   /** the display draws `rules` and widens its domain to them */
@@ -81,11 +76,11 @@ export type ValueScaleRuleConfig = Instance<
  * Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, and an end
  * left unset autoscales over the loaded regions.
  *
- * Two defaults come from the display rather than from the scale. `autoscale`
- * starts at `localpercentile` on the wiggle plot and at `local` on the
- * coverage band and the mark display. `symlogConstant` starts
- * at `0` on the wiggle family and the mark display and at `1` on the coverage
- * band.
+ * Two defaults come from the display rather than from the scale.
+ * `domainQuantile` starts at `0.99` on the wiggle plot, clipping the outermost
+ * 1% of each sign, and at `1`, the extremes, on the coverage band and the mark
+ * display. `symlogConstant` starts at `0` on the wiggle family and the mark
+ * display and at `1` on the coverage band.
  *
  * The wiggle family and the mark display also carry
  * `rules`, reference lines at chosen values, `grid`, a line at every tick,
@@ -109,7 +104,7 @@ export type ValueScaleRuleConfig = Instance<
  * ```js
  * {
  *   type: 'LinearWiggleDisplay',
- *   scales: { y: { autoscale: 'local' } },
+ *   scales: { y: { domainQuantile: 1 } },
  * }
  * ```
  *
@@ -140,7 +135,7 @@ export type ValueScaleRuleConfig = Instance<
  */
 export function valueScaleSchema({
   types: scaleTypes,
-  autoscale,
+  domainQuantile = 1,
   symlogConstant = 0,
   rules,
   title = false,
@@ -216,50 +211,21 @@ export function valueScaleSchema({
           }
         : {}),
       /**
-       * #slot scales.y.autoscale
-       * What an unpinned end scales to: `local` takes the extremes of
-       * the visible region, `localsd` the mean ± `numStdDev` standard
-       * deviations, `localpercentile` the `numQuantile`-th percentile of
-       * each sign, which is robust to a peaky distribution.
+       * #slot scales.y.domainQuantile
+       * What an unpinned end follows over the loaded values: `1` their
+       * extremes, and below it that quantile of each sign's magnitudes,
+       * anchored at 0, so `0.99` drops the outermost 1% of each sign and one
+       * spike no longer flattens the rest. The two signs are measured on
+       * their own, so a sparse minority tail stays visible and all-positive
+       * data keeps its bottom at 0. The score menu's "Clip outliers" toggles
+       * it.
        */
-      autoscale: {
-        type: 'stringEnum',
-        model: types.enumeration('ValueScaleAutoscale', [...autoscale.modes]),
-        defaultValue: autoscale.default,
-        description: autoscale.modes.join(' or '),
+      domainQuantile: {
+        type: 'number',
+        defaultValue: domainQuantile,
+        description:
+          'the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%',
       },
-      ...(autoscale.modes.includes('localsd')
-        ? {
-            /**
-             * #slot scales.y.numStdDev
-             * Standard deviations either side of the mean the `localsd`
-             * autoscale reaches.
-             */
-            numStdDev: {
-              type: 'number',
-              defaultValue: 3,
-              description: 'standard deviations for the localsd autoscale',
-              advanced: true,
-            },
-          }
-        : {}),
-      ...(autoscale.modes.includes('localpercentile')
-        ? {
-            /**
-             * #slot scales.y.numQuantile
-             * The percentile `localpercentile` clips outliers at — 0.99 drops
-             * the outermost 1% of each sign. The two signs are measured
-             * independently and anchored at 0, so a sparse minority tail
-             * stays visible and all-positive data pins its bottom at 0.
-             */
-            numQuantile: {
-              type: 'number',
-              defaultValue: 0.99,
-              description: 'percentile the localpercentile autoscale clips at',
-              advanced: true,
-            },
-          }
-        : {}),
       ...(grid
         ? {
             /**

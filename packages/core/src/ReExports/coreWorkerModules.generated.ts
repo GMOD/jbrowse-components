@@ -172,7 +172,7 @@ import * as m206 from '../util/paintLayer.tsx'
 import * as m207 from '../util/parseLineByLine.ts'
 import * as m208 from '../util/preloadComponent.ts'
 import * as m209 from '../util/progress.ts'
-import * as m210 from '../util/rampExtent.ts'
+import * as m210 from '../util/quantileExtent.ts'
 import * as m211 from '../util/range.ts'
 import * as m213 from '../util/resolveRowHeight.ts'
 import * as m214 from '../util/rowStackGeometry.ts'
@@ -429,7 +429,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/util/parseLineByLine': m207,
   '@jbrowse/core/util/preloadComponent': m208,
   '@jbrowse/core/util/progress': m209,
-  '@jbrowse/core/util/rampExtent': m210,
+  '@jbrowse/core/util/quantileExtent': m210,
   '@jbrowse/core/util/range': m211,
   '@jbrowse/core/util/renderToStaticMarkup': uiNamespace(['renderToStaticMarkup']),
   '@jbrowse/core/util/resolveRowHeight': m213,

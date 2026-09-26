@@ -11,25 +11,26 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 ### autoscaleDomainFromSpans
 
-Already-computed stats to the displayed domain, for the `local` / `localsd` /
-`localpercentile` autoscale modes. `localpercentile` re-walks the spans to build
-its histogram; the other modes read the stats alone.
+The domain the visible instances autoscale to: at a `quantile` of 1 their
+extremes, `stats`; below it `quantileExtent` over each side's own values — the
+top read off `high` and the bottom off `low`, so whiskers open to their spread —
+each sign clipped on its own and anchored at 0.
 
 ```js
 // type signature
-({…}: { stats: ScoreStats; autoscaleType: string; numStdDev: number; numQuantile?: number | undefined; spans: ScoreSpan[]; }) => [number, number]
+({ stats, quantile, spans, }: { stats: ScoreStats; quantile: number; spans: ScoreSpan[]; }) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
 ### computeAutoscaleDomain
 
-Computes a score domain from the visible feature arrays for the `local` /
-`localsd` / `localpercentile` autoscale types.
+The score domain of the visible feature arrays, following `quantile` as
+`scales.y.domainQuantile` says.
 
 ```js
 // type signature
-(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: {…}[], numQuantile?: number) => [...] | undefined
+(quantile: number, summaryScoreMode: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[]) => [number, number] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -63,18 +64,6 @@ exactly what it always got.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/gapBreak.ts)
-
-### domainFromStats
-
-Converts score stats into a `[min, max]` domain, applying std-dev expansion for
-the `localsd` autoscale type.
-
-```js
-// type signature
-(stats: ScoreStats, autoscaleType: string, numStdDev: number) => [number, number]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
 ### gapBreakLimit
 

@@ -1,10 +1,13 @@
 import { lazy } from 'react'
 
-import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
+import {
+  checkboxItem,
+  radioItems,
+  toggleItem,
+} from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
-import { AUTOSCALE_LABELS } from './autoscale.ts'
 import { autoscaleGroupMembers, autoscalePeers } from './autoscaleGroup.ts'
 
 import type { AutoscalePeer } from './autoscaleGroup.ts'
@@ -31,8 +34,8 @@ const SetScoreRulesDialog = lazy(() => import('./SetScoreRulesDialog.tsx'))
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   scaleTypeChoices: string[]
-  autoscaleType: string
-  autoscaleChoices: string[]
+  domainQuantile: number
+  clipQuantile: number
   manualMinScore: number | undefined
   manualMaxScore: number | undefined
   minScoreBound: number | undefined
@@ -41,7 +44,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   setScaleType: (v: string) => void
   setMinScore: (n?: number) => void
   setMaxScore: (n?: number) => void
-  setAutoscale: (v?: string) => void
+  setDomainQuantile: (quantile: number) => void
 }
 
 // The reference-lines half, apart for the same reason: a display draws its
@@ -80,26 +83,27 @@ export function makeScaleTypeSubMenu(self: {
   }
 }
 
-// The radio offers the modes the display's own `scales.y.autoscale` enum
-// admits, read back through `autoscaleChoices`.
-export function makeAutoscaleTypeSubMenu(self: {
-  autoscaleType: string
-  autoscaleChoices: string[]
-  setAutoscale: (v?: string) => void
+// Quoted by the docs' click paths, so one literal string.
+export const CLIP_OUTLIERS_LABEL = 'Clip outliers'
+
+// One checkbox rather than a radio over modes: what a reader decides is whether
+// a spike may take the axis, and the quantile it clips at is the config's.
+export function makeClipOutliersItem(self: {
+  domainQuantile: number
+  clipQuantile: number
+  setDomainQuantile: (quantile: number) => void
 }): MenuItem {
-  return {
-    label: 'Autoscale type',
-    subMenu: radioItems(
-      self.autoscaleChoices.map(value => ({
-        value,
-        label: AUTOSCALE_LABELS[value] ?? value,
-      })),
-      self.autoscaleType,
-      v => {
-        self.setAutoscale(v)
-      },
-    ),
-  }
+  const percent = Math.round(self.clipQuantile * 100)
+  return toggleItem(
+    CLIP_OUTLIERS_LABEL,
+    self.domainQuantile < 1,
+    on => {
+      self.setDomainQuantile(on ? self.clipQuantile : 1)
+    },
+    {
+      helpText: `An unpinned end follows the ${percent}th percentile of each sign rather than the extremes, so one spike no longer flattens the rest.`,
+    },
+  )
 }
 
 // Showing the range in the label is how the menu says a fixed bound is in force
@@ -148,9 +152,8 @@ export function makeCrossHatchItem(self: {
 // submenus, `trailingItems` appends what belongs after the range controls rather
 // than before them (the alignments band's allele-fraction floor).
 //
-// Neither radio is opted out of: both derive from the display's own
-// `scales.y`, the scale-type radio appearing where the declared enum holds
-// more than one type and the autoscale radio offering the declared modes.
+// The scale-type radio appears where the display's own `scales.y` enum holds
+// more than one type; Clip outliers is on every value scale.
 export interface ScoreSubMenuOptions {
   label?: string
   // The domain drawn right now, which the min/max dialog's "Use current range"
@@ -245,7 +248,7 @@ export function makeScoreSubMenu(
     subMenu: [
       ...leadingItems,
       ...(self.scaleTypeChoices.length > 1 ? [makeScaleTypeSubMenu(self)] : []),
-      makeAutoscaleTypeSubMenu(self),
+      makeClipOutliersItem(self),
       makeSetMinMaxScoreItem(self, domain),
       ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
       ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),

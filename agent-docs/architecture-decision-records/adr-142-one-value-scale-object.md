@@ -7,6 +7,9 @@ summary: "Every quantitative display writes its y scale as one `scales.y` object
 
 ## Status
 
+Amended by [ADR-179](adr-179-an-open-scale-end-follows-one-quantile.md):
+`autoscale`, `numStdDev` and `numQuantile` are one `domainQuantile`.
+
 Accepted (2026-09-19). Generalises
 [ADR-141](adr-141-one-y-scale-the-displays.md), whose `scales.y` was the mark
 display's alone, to wiggle, the multi-wiggle, Manhattan and the alignments

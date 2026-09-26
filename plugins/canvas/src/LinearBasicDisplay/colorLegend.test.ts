@@ -489,13 +489,12 @@ describe('derived color key', () => {
       expect(ramp?.kind === 'ramp' && ramp.stops).toHaveLength(8)
     })
 
-    it('under localpercentile weighs each painted box, so a lone spike stops short', () => {
+    it('under a domain quantile weighs each painted box, so a lone spike stops short', () => {
       const { createDisplay } = createTestEnvironment()
       const { display } = createDisplay()
       setConf(display, 'color', {
         field: 'score',
-        autoscale: 'localpercentile',
-        numQuantile: 0.9,
+        domainQuantile: 0.9,
       })
       const values = ['1', '2', '10000']
       display.setRpcData(

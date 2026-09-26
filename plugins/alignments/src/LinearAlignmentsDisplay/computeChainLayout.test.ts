@@ -106,8 +106,6 @@ function makeChainData(opts: {
     coverageStatsBinSize: 1,
     coverageStatsMins: new Float32Array(0),
     coverageStatsMaxs: new Float32Array(0),
-    coverageStatsSums: new Float64Array(0),
-    coverageStatsSumSqs: new Float64Array(0),
     coverageBinSize: 1,
     coverageGpuBinCount: 0,
     coveragePackedBuffer: new ArrayBuffer(0),

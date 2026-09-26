@@ -24,7 +24,6 @@ import {
   GROUP_BY_LABELS,
   facetTag,
 } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
-import { AUTOSCALE_LABELS } from '../../../../packages/wiggle-core/src/autoscale.ts'
 import {
   ARC_COLOR_OPTIONS,
   SAME_AS_READS_LABEL,
@@ -748,7 +747,6 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
   }
   const menu = (displayType && SCORE_MENUS[displayType]) ?? 'Score'
   const scaleType = asString(y.type)
-  const autoscale = asString(y.autoscale)
   const ends = [
     typeof y.domainMin === 'number' && `minimum ${y.domainMin}`,
     typeof y.domainMax === 'number' && `maximum ${y.domainMax}`,
@@ -765,11 +763,9 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
           note: `Pins the score axis: ${ends.join(' and ')}. An end left blank autoscales.`,
         }
       : undefined,
-    autoscale &&
-    AUTOSCALE_LABELS[autoscale] &&
-    displayType === 'LinearWiggleDisplay'
+    typeof y.domainQuantile === 'number' && displayType === 'LinearWiggleDisplay'
       ? {
-          path: `${TRACK_MENU} → Score → Autoscale type → ${AUTOSCALE_LABELS[autoscale]}`,
+          path: `${TRACK_MENU} → Score → Clip outliers (${y.domainQuantile < 1 ? 'checked' : 'unchecked'})`,
         }
       : undefined,
     typeof y.grid === 'boolean' && displayType === 'LinearWiggleDisplay'
@@ -782,12 +778,6 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
       ? {
           path: `${TRACK_MENU} → ${menu} → Reference lines...`,
           note: `${ruleValues(y.rules)}, on the same scale as the plot. Each row takes a value, a label and a colour; removing every row removes every line.`,
-        }
-      : undefined,
-    typeof y.numStdDev === 'number' && displayType && displayType in SCORE_MENUS
-      ? {
-          path: `${TRACK_MENU} → Settings → numStdDev`,
-          note: `How many standard deviations the "Local ± σ" autoscale spans. Nothing sets it from a menu — it only reads back out, as the σ in that option's own label — so it is set on the config.`,
         }
       : undefined,
   ].filter(step => step !== undefined)

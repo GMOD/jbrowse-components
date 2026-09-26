@@ -243,10 +243,10 @@ difference rows.
 
 On the three difference rows, accessibility rises sharply at the insertion
 itself, H3K27ac, the mark of an active enhancer, rises across the locus, and
-predicted transcription rises over the _TAL1_ exons. The DNase difference row is
-set to **Score → Autoscale type → Local** in its track menu: the default clips
-the outermost percent of each sign, which on a row this sparse flattens the gain
-at the insertion.
+predicted transcription rises over the _TAL1_ exons. The DNase difference row
+has **Score → Clip outliers** unticked in its track menu: the default clips the
+outermost percent of each sign, which on a row this sparse flattens the gain at
+the insertion.
 
 AlphaGenome returns the alternate prediction laid out along the alternate
 sequence, 12 bases longer than the reference here. The plugin maps it back onto

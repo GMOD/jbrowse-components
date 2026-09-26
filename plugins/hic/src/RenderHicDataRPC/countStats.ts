@@ -1,4 +1,4 @@
-import { selectNth } from '@jbrowse/core/util/rampExtent'
+import { selectNth } from '@jbrowse/core/util/quantileExtent'
 
 import { getInstanceCount } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 

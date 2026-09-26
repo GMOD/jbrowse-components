@@ -23,7 +23,7 @@ displays start on:
 ```js
 {
   type: 'LinearWiggleDisplay',
-  scales: { y: { autoscale: 'local' } },
+  scales: { y: { domainQuantile: 1 } },
 }
 ```
 
@@ -62,11 +62,11 @@ its ticks, its `grid`, its `rules` and its `title`.
 Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, and an end
 left unset autoscales over the loaded regions.
 
-Two defaults come from the display rather than from the scale. `autoscale`
-starts at `localpercentile` on the wiggle plot and at `local` on the
-coverage band and the mark display. `symlogConstant` starts
-at `0` on the wiggle family and the mark display and at `1` on the coverage
-band.
+Two defaults come from the display rather than from the scale.
+`domainQuantile` starts at `0.99` on the wiggle plot, clipping the outermost
+1% of each sign, and at `1`, the extremes, on the coverage band and the mark
+display. `symlogConstant` starts at `0` on the wiggle family and the mark
+display and at `1` on the coverage band.
 
 The wiggle family and the mark display also carry
 `rules`, reference lines at chosen values, `grid`, a line at every tick,
@@ -90,9 +90,7 @@ These slots go on a display entry: `"displays": [{ "type": "ValueScale", ... }]`
 | <span id="slot-scalesydomainmax">**scales.y.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The top of the axis. Unset autoscales that end. |
 | <span id="slot-scalesyautoscalegroup">**scales.y.autoscaleGroup**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | A name shared by the tracks whose axes autoscale together: each unpinned end spans the data of every track in the view naming the same group, so three coverage lanes stay comparable as the view moves. A pinned end stays this track's own. The score menu's "Autoscale with other tracks" writes it. |
 | <span id="slot-scalesysymlogconstant">**scales.y.symlogConstant**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | Width of symlog's linear region around zero. `0` derives it from the domain, a thousandth of its largest magnitude — right for a wiggle track, whose units are its own. The coverage band starts at `1` instead, which makes symlog exactly `log(depth+1)` and puts the knee at one read.<br>_advanced_ |
-| <span id="slot-scalesyautoscale">**scales.y.autoscale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = per display | What an unpinned end scales to: `local` takes the extremes of the visible region, `localsd` the mean ± `numStdDev` standard deviations, `localpercentile` the `numQuantile`-th percentile of each sign, which is robust to a peaky distribution. |
-| <span id="slot-scalesynumstddev">**scales.y.numStdDev**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>3</code> | Standard deviations either side of the mean the `localsd` autoscale reaches.<br>_advanced_ |
-| <span id="slot-scalesynumquantile">**scales.y.numQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.99</code> | The percentile `localpercentile` clips outliers at — 0.99 drops the outermost 1% of each sign. The two signs are measured independently and anchored at 0, so a sparse minority tail stays visible and all-positive data pins its bottom at 0.<br>_advanced_ |
+| <span id="slot-scalesydomainquantile">**scales.y.domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | What an unpinned end follows over the loaded values: `1` their extremes, and below it that quantile of each sign's magnitudes, anchored at 0, so `0.99` drops the outermost 1% of each sign and one spike no longer flattens the rest. The two signs are measured on their own, so a sparse minority tail stays visible and all-positive data keeps its bottom at 0. The score menu's "Clip outliers" toggles it. |
 | <span id="slot-scalesygrid">**scales.y.grid**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Rule the plot across at every tick, ggplot2's panel grid and Vega-Lite's `axis.grid`. The score menu's "Show cross hatches" toggles it. |
 | <span id="slot-scalesyminimalticks">**scales.y.minimalTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Label only the two ends of the axis.<br>_advanced_ |
 | <span id="slot-scalesytitle">**scales.y.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The caption beside the axis, naming what it measures, drawn once however many bands the scale rules and at every zoom. Optional, as JBrowse's other captions are: unset, `""` or `null`, the axis has none; some text is that text. |

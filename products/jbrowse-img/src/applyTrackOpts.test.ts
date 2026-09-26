@@ -397,16 +397,13 @@ describe('wiggle / score modifiers', () => {
   // The coverage band carries the same `scales.y`, so these three apply to
   // alignments too. The rest of the score group is genuinely wiggle-only and
   // still warns.
-  test('the axis trio reaches an alignments coverage band', () => {
+  test('the axis pair reaches an alignments coverage band', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
       'scaletype:log',
-      'autoscale:localsd',
       'minmax:1:4000',
     ])
     expect(snap).toMatchObject({
-      scales: {
-        y: { type: 'log', autoscale: 'localsd', domainMin: 1, domainMax: 4000 },
-      },
+      scales: { y: { type: 'log', domainMin: 1, domainMax: 4000 } },
     })
   })
 
@@ -562,7 +559,6 @@ describe('modifier values are validated the same way everywhere', () => {
     ['alignments', 'coverageHeight:x', /Invalid coverageHeight/],
     ['feature', 'heightMode:bogus', /Invalid heightMode/],
     ['variant', 'display:', /Missing display/],
-    ['wiggle', 'autoscale:', /Missing autoscale/],
     ['wiggle', 'scaletype:', /Missing scaletype/],
     ['wiggle', 'minmax:lo:100', /Invalid minmax/],
     ['wiggle', 'crosshatch:maybe', /Invalid crosshatch/],

@@ -294,8 +294,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
 
   // Whole-genome coverage profile from a single BigWig (COLO829 tumor MinION
   // coverage), each chromosome a separate region (no `loc` →
-  // showAllRegionsInAssembly), localsd ±3sd autoscale so copy-number gains/losses
-  // read as elevated/depressed signal. Rebuilt from the old server-side share
+  // showAllRegionsInAssembly), the default 99th-percentile clip keeping the
+  // repeat spikes off the axis so copy-number gains/losses read as
+  // elevated/depressed signal. Rebuilt from the old server-side share
   // link as a self-contained sessionSpec; cropped to the single short track.
   {
     mode: 'url',
@@ -310,7 +311,6 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         {
           trackId: 'colo_tumor',
           type: 'LinearWiggleDisplay',
-          scales: { y: { autoscale: 'localsd', numStdDev: 3 } },
           // scatter rendering reads copy-number gains/losses better than
           // the filled XY plot across the whole genome
           mark: 'point',
@@ -567,10 +567,10 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // this flat key routes into the display's configOverrides
           mark: 'heatmap',
           // copy number: most cells sit at the diploid baseline (~2), so the
-          // default localpercentile autoscale clamps the amplifications near
-          // the 99th percentile (~2.2). `local` uses the true region max so
-          // the gains render at full contrast and nothing is clipped.
-          scales: { y: { autoscale: 'local' } },
+          // default 99th-percentile clip clamps the amplifications near 2.2.
+          // A domainQuantile of 1 uses the true region max so the gains
+          // render at full contrast and nothing is clipped.
+          scales: { y: { domainQuantile: 1 } },
           // hide the post-clustering dendrogram — the reordered rows are
           // the point; a tree implies a phylogeny we don't mean
           showTree: false,

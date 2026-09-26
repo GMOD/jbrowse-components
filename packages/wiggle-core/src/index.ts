@@ -5,7 +5,6 @@ export {
 } from './valueScaleConfigSchema.ts'
 export type {
   ScalesConfigSchema,
-  ValueScaleAutoscale,
   ValueScaleConfigSchema,
   ValueScaleOptions,
 } from './valueScaleConfigSchema.ts'
@@ -29,7 +28,6 @@ export {
   computeScoreStats,
   computeSpanStats,
   datasetSpan,
-  domainFromStats,
   getEffectiveScores,
 } from './autoscale.ts'
 export type {
@@ -83,9 +81,8 @@ export {
   appendPointMarker,
 } from './pointMarker.ts'
 
-export { AUTOSCALE_LABELS } from './autoscale.ts'
 export {
-  makeAutoscaleTypeSubMenu,
+  makeClipOutliersItem,
   makeCrossHatchItem,
   makeScaleTypeSubMenu,
   makeScoreSubMenu,

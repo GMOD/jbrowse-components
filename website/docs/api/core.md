@@ -390,7 +390,7 @@ The least and greatest finite values of `values[0, count)`,
 (values: ArrayLike<number>, count: number) => [number, number]
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/rampExtent.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
 
 ## FlattenStep
 
@@ -654,6 +654,21 @@ encoding `row` stacks it. Under a facet it packs each section on its own.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## quantileExtent
+
+What the open ends of a scale follow over `values[0, count)`: at a
+`quantile` of 1 their finite extremes, and below it that quantile of each
+sign's magnitudes, anchored at 0, so one spike takes neither the axis nor
+the ramp. `scales.y.domainQuantile` and a colour's `domainQuantile` both
+name it. `[Infinity, -Infinity]` where nothing is finite.
+
+```js
+// type signature
+(values: ArrayLike<number>, count: number, quantile?: number) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
+
 ## RampDeclaration
 
 A continuous colour scale's ramp as a config declares it.
@@ -673,21 +688,6 @@ and an extent holding no value (`[Infinity, -Infinity]`) spans [0, 1].
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
-
-## rampExtent
-
-What the open ends of a colour ramp follow over `values[0, count)`: their
-finite extremes under `local`, and under `localpercentile` the `quantile`-th
-percentile of each sign's magnitudes, anchored at 0 — the rule
-`scales.y.autoscale` names the same way, so one spike no longer takes the
-whole ramp. `[Infinity, -Infinity]` where nothing is finite.
-
-```js
-// type signature
-(values: ArrayLike<number>, count: number, autoscale?: "local" | "localpercentile", quantile?: number) => [number, number]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/rampExtent.ts)
 
 ## rampGapScales
 
@@ -846,7 +846,7 @@ contacts arrive nearly sorted.
 (a: Float32Array<ArrayBufferLike>, n: number, k: number) => number
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/rampExtent.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
 
 ## SessionPaletteProvider
 

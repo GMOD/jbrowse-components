@@ -19,14 +19,14 @@ function makeSelf(over: Partial<ScoreScaleModel> = {}) {
   const self = {
     scaleType: 'linear',
     scaleTypeChoices: ['linear', 'log', 'symlog'],
-    autoscaleType: 'local',
-    autoscaleChoices: ['local', 'localpercentile', 'localsd'],
+    domainQuantile: 1,
+    clipQuantile: 0.99,
     manualMinScore: undefined,
     manualMaxScore: undefined,
     minScoreBound: undefined,
     maxScoreBound: undefined,
     setScaleType: () => {},
-    setAutoscale: () => {},
+    setDomainQuantile: () => {},
     setMinScore: () => {},
     setMaxScore: () => {},
     ...over,
@@ -49,19 +49,19 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
   it('offers scale type and autoscale where the scale declares both', () => {
     expect(labels(makeScoreSubMenu(makeSelf()))).toEqual([
       'Scale type',
-      'Autoscale type',
+      'Clip outliers',
       'Set min/max score...',
     ])
   })
 
   it('names exactly the scale types the display admits', () => {
     const item = makeScoreSubMenu(makeSelf({ scaleTypeChoices: ['linear'] }))
-    expect(labels(item)).toEqual(['Autoscale type', 'Set min/max score...'])
+    expect(labels(item)).toEqual(['Clip outliers', 'Set min/max score...'])
     expect(
       labels(
         makeScoreSubMenu(makeSelf({ scaleTypeChoices: ['linear', 'log'] })),
       ),
-    ).toEqual(['Scale type', 'Autoscale type', 'Set min/max score...'])
+    ).toEqual(['Scale type', 'Clip outliers', 'Set min/max score...'])
   })
 
   it('still captions itself with the pinned pair', () => {
@@ -75,7 +75,7 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
           }),
         ),
       ),
-    ).toEqual(['Autoscale type', 'Set min/max score (2 – auto)...'])
+    ).toEqual(['Clip outliers', 'Set min/max score (2 – auto)...'])
   })
 })
 
@@ -89,10 +89,7 @@ const testConfigSchema = ConfigurationSchema('TestScoreDisplay', {
   scales: scalesSchema(
     valueScaleSchema({
       types: ['linear', 'log', 'symlog'],
-      autoscale: {
-        modes: ['local', 'localsd', 'localpercentile'],
-        default: 'localpercentile',
-      },
+      domainQuantile: 0.99,
     }),
   ),
 })
@@ -118,7 +115,7 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
     expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
     expect(labels(makeScoreSubMenu(display))).toEqual([
       'Scale type',
-      'Autoscale type',
+      'Clip outliers',
       'Set min/max score...',
     ])
   })
@@ -128,7 +125,7 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
     display.setMaxScore(0.75)
     expect(labels(makeScoreSubMenu(display))).toEqual([
       'Scale type',
-      'Autoscale type',
+      'Clip outliers',
       'Set min/max score (auto – 0.75)...',
     ])
 
@@ -137,7 +134,7 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
     expect(display.maxScoreBound).toBe(1)
     expect(labels(makeScoreSubMenu(display))).toEqual([
       'Scale type',
-      'Autoscale type',
+      'Clip outliers',
       'Set min/max score...',
     ])
   })
@@ -148,13 +145,7 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
 // and a scale it draws rules a band for them to cross.
 describe('the reference lines row', () => {
   const ruledSchema = ConfigurationSchema('TestRuledDisplay', {
-    scales: scalesSchema(
-      valueScaleSchema({
-        types: ['linear'],
-        autoscale: { modes: ['local'], default: 'local' },
-        rules: true,
-      }),
-    ),
+    scales: scalesSchema(valueScaleSchema({ types: ['linear'], rules: true })),
   })
   const ruled = (bandTops?: number[]) =>
     types

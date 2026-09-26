@@ -231,7 +231,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       scales: scalesSchema(
         valueScaleSchema({
           types: ['linear', 'log', 'symlog'],
-          autoscale: { modes: ['local', 'localsd'], default: 'local' },
           symlogConstant: 1,
         }),
       ),

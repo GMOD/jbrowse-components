@@ -6,7 +6,7 @@ import {
   rampDomain,
   stopsFromRampLut,
 } from '@jbrowse/core/util/colorRamp'
-import { rampExtent } from '@jbrowse/core/util/rampExtent'
+import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import {
   thresholdCuts,
   thresholdIndex,
@@ -187,14 +187,14 @@ export function bakedColorScale(
 }
 
 /**
- * The span a ramp's open ends follow under `localpercentile`: the
- * `numQuantile` percentile of each sign over every loaded read's value, so a
- * read counts once per read rather than once per distinct value.
+ * The span a ramp's open ends follow below a `domainQuantile` of 1: that
+ * quantile of each sign over every loaded read's value, so a read counts once
+ * per read rather than once per distinct value.
  */
-export function percentileExtentAcrossGroups<D>(
+export function quantileExtentAcrossGroups<D>(
   byGroup: ReadonlyMap<string, ReadonlyMap<number, D>>,
   pick: (data: D) => readonly string[] | undefined,
-  numQuantile: number | undefined,
+  quantile: number,
 ): NumericExtent | undefined {
   const values: number[] = []
   for (const map of byGroup.values()) {
@@ -206,12 +206,7 @@ export function percentileExtentAcrossGroups<D>(
       }
     }
   }
-  const [min, max] = rampExtent(
-    values,
-    values.length,
-    'localpercentile',
-    numQuantile,
-  )
+  const [min, max] = quantileExtent(values, values.length, quantile)
   return min <= max ? [min, max] : undefined
 }
 

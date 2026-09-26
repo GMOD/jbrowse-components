@@ -76,7 +76,7 @@ const HicTrackConfigFactory = () => {
       retired: {
         // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
         useColorPercentile: follows => ({
-          color: { autoscale: follows ? 'localpercentile' : 'local' },
+          color: { domainQuantile: follows ? 0.95 : 1 },
         }),
       },
     },

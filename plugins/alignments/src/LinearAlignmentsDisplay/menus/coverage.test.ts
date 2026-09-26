@@ -9,22 +9,21 @@ import { getCoverageMenuItem } from './coverage.ts'
 // switch instead.
 function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
   return getCoverageMenuItem({
-    numStdDev: 3,
     showCoverage,
     coverageDomain: undefined,
     coverageSnpMinFrequency,
     setCoverageSnpMinFrequency: () => {},
     scaleType: 'linear',
     scaleTypeChoices: ['linear', 'log', 'symlog'],
-    autoscaleType: 'local',
-    autoscaleChoices: ['local', 'localsd'],
+    domainQuantile: 1,
+    clipQuantile: 0.99,
     manualMinScore: undefined,
     manualMaxScore: undefined,
     minScoreBound: undefined,
     maxScoreBound: undefined,
     hasManualScoreBounds: false,
     setScaleType: () => {},
-    setAutoscale: () => {},
+    setDomainQuantile: () => {},
     setMinScore: () => {},
     setMaxScore: () => {},
   })

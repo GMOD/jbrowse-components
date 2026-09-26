@@ -7,6 +7,9 @@ summary: "A linear or log colour ramp's open ends follow the loaded values by th
 
 ## Status
 
+Amended by [ADR-179](adr-179-an-open-scale-end-follows-one-quantile.md): the
+two members are one number, `domainQuantile`, on the ramps as on `scales.y`.
+
 Accepted (2026-09-26). Colin chose "ramps clip at a percentile". Reverses the
 convergence handoff's "Hi-C's percentile domain is a domain rule of its own".
 

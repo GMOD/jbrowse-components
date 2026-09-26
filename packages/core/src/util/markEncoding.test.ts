@@ -229,7 +229,7 @@ test('a pinned ceiling keeps its value and the open floor follows the region', (
   expect(r.color[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
 })
 
-test('under localpercentile an open end stops short of a spike', () => {
+test('under a domain quantile an open end stops short of a spike', () => {
   const spiky = encodeFeatures(
     [...Array.from({ length: 99 }, (_, i) => i + 1), 10000].map((score, i) =>
       feature(i, { score }),
@@ -239,8 +239,7 @@ test('under localpercentile an open end stops short of a spike', () => {
         field: 'score',
         scale: 'linear',
         range: ['black', 'white'],
-        autoscale: 'localpercentile',
-        numQuantile: 0.9,
+        domainQuantile: 0.9,
       },
     },
     ['color'],

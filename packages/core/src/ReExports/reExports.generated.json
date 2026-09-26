@@ -3319,13 +3319,12 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/core/util/rampExtent": {
+    "@jbrowse/core/util/quantileExtent": {
       "package": "@jbrowse/core",
       "names": [
-        "DEFAULT_RAMP_QUANTILE",
-        "RAMP_AUTOSCALES",
+        "DEFAULT_CLIP_QUANTILE",
         "finiteExtremes",
-        "rampExtent",
+        "quantileExtent",
         "selectNth"
       ],
       "worker": "real"
@@ -3925,11 +3924,11 @@
         "FEATURE_FIELD_PRESETS",
         "IDENTITY_SCALE",
         "categoricalColorField",
-        "colorAutoscaleSlots",
         "colorChannelOptions",
         "colorChannelSlots",
         "colorConfigSchema",
         "colorDomainEndsSlots",
+        "colorDomainQuantileSlot",
         "colorDomainSlot",
         "colorEncodingOf",
         "colorFieldOf",
