@@ -25,6 +25,7 @@ export async function injectOverlay(page: Page) {
       // pointer cannot be followed is a UI operating itself again.
       const cursor = document.createElement('div')
       cursor.id = cursorId
+      cursor.dataset.tourOverlay = ''
       cursor.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24">
         <path d="M5 3l14 7-6 1.5L9.5 19 5 3z" fill="#fff"
           stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg>`
@@ -63,6 +64,7 @@ export async function injectOverlay(page: Page) {
       // 6px.
       const caption = document.createElement('div')
       caption.id = captionId
+      caption.dataset.tourOverlay = ''
       Object.assign(caption.style, {
         position: 'fixed',
         left: '50%',
@@ -171,6 +173,7 @@ export async function clickPulse(page: Page, x: number, y: number) {
   await page.evaluate(
     (cx, cy) => {
       const ring = document.createElement('div')
+      ring.dataset.tourOverlay = ''
       Object.assign(ring.style, {
         position: 'fixed',
         left: `${cx}px`,
@@ -221,6 +224,7 @@ export async function keyPress(page: Page, key: string) {
       const y = Number(cursor?.dataset.y ?? window.innerHeight / 2)
       const cap = document.createElement('div')
       cap.textContent = label
+      cap.dataset.tourOverlay = ''
       Object.assign(cap.style, {
         position: 'fixed',
         left: `${x + 26}px`,

@@ -213,11 +213,29 @@ export async function waitForVisible(
       timeout,
     )
   }
-  const el = await page.waitForSelector(selector, { visible: true, timeout })
-  if (el) {
-    await waitForRectSettled(el)
+  // A tour's caption and cursor label carry the words of the step they
+  // narrate, so the first visible match for a menu item's text can be the
+  // caption; those are marked, and a match inside one is looked past.
+  const deadline = Date.now() + timeout
+  for (;;) {
+    const first = await page.waitForSelector(selector, {
+      visible: true,
+      timeout: Math.max(1, deadline - Date.now()),
+    })
+    for (const el of first ? [first, ...(await page.$$(selector))] : []) {
+      if (
+        (await el.evaluate(n => n.closest('[data-tour-overlay]') === null)) &&
+        (await el.isVisible())
+      ) {
+        await waitForRectSettled(el)
+        return el
+      }
+    }
+    if (Date.now() >= deadline) {
+      throw new Error(`timed out waiting for ${selector} outside the overlay`)
+    }
+    await delay(200)
   }
-  return el
 }
 
 const targetName = (action: ScreenshotAction) =>
