@@ -157,7 +157,6 @@ const FOLLOW_STATUS = '[data-testid="graph-follow-status"]'
 const {
   haplotype: HAPLOTYPE,
   haplotypeNode: HAPLOTYPE_NODE,
-  haplotypeGenesDisplay: HAPLOTYPE_GENES_DISPLAY,
   launchedZoomOut,
   c4Window: HPRC_C4_WINDOW,
   mhcWindow: HPRC_MHC_WINDOW,
@@ -175,6 +174,7 @@ const URL_INPUT = '[data-testid="urlInput"]'
 const SAMPLE_INPUT = '[data-testid="graph-sample-input"]'
 const TRACK_NAME_INPUT = '[data-testid="graph-track-name-input"]'
 const HIGHLIGHT_ITEM = 'Highlight in hg38'
+const HAPLOTYPE_GENES_LABEL = 'CAT genes (NA20809 haplotype 2, HPRC release 2)'
 
 // The form mints the trackId from the name (`makeTrackId`: the slug plus a
 // timestamp), so a tour finds the track it added by the slug alone.
@@ -667,12 +667,16 @@ export const pangenomeVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
       { type: 'click', text: `Open in ${HAPLOTYPE}` },
+      // The hosted app publishes no display phase, so the new view's own track
+      // label is the gate, and hovering it brings the view into frame.
       {
-        type: 'waitForSelector',
-        selector: displayReady(HAPLOTYPE_GENES_DISPLAY),
+        type: 'waitForText',
+        text: HAPLOTYPE_GENES_LABEL,
         timeout: 180000,
         cut: true,
       },
+      { type: 'hover', text: HAPLOTYPE_GENES_LABEL, hold: 0 },
+      { type: 'delay', ms: 4000, cut: true },
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {
         type: 'delay',

@@ -18,8 +18,6 @@ const DEFAULT_ACTION_DELAY_MS = 500
 // puppeteer text-pseudo-selector: matches an element by its visible text. Used
 // to reach HTML floating labels / menu items that carry no testid.
 export const textSelector = (text: string) => `::-p-text(${text})`
-const textOf = (selector: string) =>
-  /^::-p-text\((.*)\)$/s.exec(selector)?.[1] ?? selector
 
 // Poll, from Node, until nothing matching is left showing. Used for the
 // loading-overlay-disappears wait: puppeteer's in-page waits (waitForSelector
@@ -29,7 +27,8 @@ const textOf = (selector: string) =>
 // out even though the element was already removed. A Node-side timer is never
 // throttled by page visibility, so this observes the removal reliably.
 //
-// Takes a CSS selector or a TEXT string. The text case used to go to puppeteer's
+// Takes a CSS selector, a TEXT string, or both: the selector's matches that
+// carry the text. The text case used to go to puppeteer's
 // native `waitForSelector('::-p-text(…)', { hidden: true })`, whose notion of
 // visible is "has a box and is not styled away" — which an element clipped by an
 // ancestor keeps.
@@ -41,8 +40,8 @@ async function waitHiddenByNodePolling(
   // Exactly one, because the degenerate cases are both silent: a missing
   // selector would fall back to matching everything (a wait that never ends) or
   // nothing (a wait that ends at once and reports success).
-  if ((target.selector === undefined) === (target.text === undefined)) {
-    throw new Error('waitHiddenByNodePolling needs one of selector or text')
+  if (target.selector === undefined && target.text === undefined) {
+    throw new Error('waitHiddenByNodePolling needs a selector or a text')
   }
   const deadline = Date.now() + timeout
   let gone = false
@@ -102,16 +101,20 @@ async function waitHiddenByNodePolling(
         const matches =
           text === undefined
             ? Array.from(document.querySelectorAll(selector!))
-            : // the deepest elements carrying the string, which is how
-              // `::-p-text(…)` matches: an ancestor is not reported for text
-              // that belongs to its child
-              Array.from(document.querySelectorAll('*')).filter(
-                el =>
-                  el.textContent.includes(text) &&
-                  !Array.from(el.children).some(child =>
-                    child.textContent.includes(text),
-                  ),
-              )
+            : selector !== undefined
+              ? Array.from(document.querySelectorAll(selector)).filter(el =>
+                  el.textContent.includes(text),
+                )
+              : // the deepest elements carrying the string, which is how
+                // `::-p-text(…)` matches: an ancestor is not reported for text
+                // that belongs to its child
+                Array.from(document.querySelectorAll('*')).filter(
+                  el =>
+                    el.textContent.includes(text) &&
+                    !Array.from(el.children).some(child =>
+                      child.textContent.includes(text),
+                    ),
+                )
         return matches.every(el => isHidden(el))
       },
       target,
@@ -122,7 +125,11 @@ async function waitHiddenByNodePolling(
   }
   if (!gone) {
     const what =
-      target.text === undefined ? target.selector : `text "${target.text}"`
+      target.text === undefined
+        ? target.selector
+        : target.selector === undefined
+          ? `text "${target.text}"`
+          : `${target.selector} with text "${target.text}"`
     throw new Error(`timed out waiting for ${what} to be hidden`)
   }
 }
@@ -194,9 +201,15 @@ export async function waitForVisible(
   // and paints that keep rAF alive, and puppeteer's own visibility test is the
   // right one for "can I click this".
   if (hidden) {
+    const at = selector.indexOf('::-p-text(')
     return waitHiddenByNodePolling(
       page,
-      selector.startsWith('::-p-') ? { text: textOf(selector) } : { selector },
+      at === -1
+        ? { selector }
+        : {
+            ...(at > 0 ? { selector: selector.slice(0, at) } : {}),
+            text: selector.slice(at + '::-p-text('.length, -1),
+          },
       timeout,
     )
   }
