@@ -751,7 +751,7 @@ is off here and in the figures below.
 The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
 genome view (this region)** opens the window on screen as a graph under the
 linear view, with no `odgi` step. From then on the graph follows the linear
-view: type a locus, search a gene or drag a zoom, and the graph moves with it,
+view. Type a locus, search a gene or drag a zoom, and the graph moves with it,
 cutting the new window whenever the view leaves the last cut. Rubberbanding the
 ruler and picking **Graph genome view (this selection)** first moves the view to
 the dragged window. With the
@@ -798,10 +798,10 @@ stretch 0 and a bubble 1, so the reference-position ramp colors the stretches
 the strains agree on and paints charcoal on the sites they differ at.
 
 The graph track names the tier under `coarse`, and `aboveBpPerPx` is the
-handover. Type `chr:1,250,000-1,350,000`, 100 kb around the IS5 element: the
-linear view is past one bp per pixel there, so the following graph cuts the tier
-in place of the segments. The segments lane refuses a window that wide, and the
-tier also loads as a lane of its own, which draws at any width:
+handover. Type `chr:1,250,000-1,350,000`, 100 kb around the IS5 element. The
+linear view is past one bp per pixel there, so the following graph cuts the
+tier. The segments lane refuses a window that wide, and the tier also loads as a
+lane of its own, which draws at any width:
 
 ```json addtrack
 {
@@ -820,7 +820,7 @@ tier also loads as a lane of its own, which draws at any width:
 
 Hover a node for the segments it collapsed, how many traversals cross it, and
 its shortest and longest allele. The tier finds an event and the segments open
-it: a tier node's **Open in K12** takes the linear view to the span it stands
+it. A tier node's **Open in K12** takes the linear view to the span it stands
 for, and the graph follows the view in and cuts the segments there.
 
 <Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the segments: hovering the node marks the K12 span it stands for in the linear view above, and the node's Open in K12 entry moves the view to that span, where the segments lane draws and the graph, following the view, cuts the segments." />
@@ -829,7 +829,7 @@ Switching **Layout** to **Sample rows** gives each strain its own row. On this
 graph a row means carriage, since it names a path that walks the segment; on an
 rGFA it means build order, from minigraph's `SR`.
 
-This layout reads each segment individually, so it wants a few hundred bp: type
+This layout reads each segment individually, so it wants a few hundred bp. Type
 `chr:1,004,500-1,004,961`, and the graph follows the view down to it. A row's
 bar is drawn over the **reference it replaces**, never over its own sequence
 length, so the tooltip gives an insertion's length. That is why CFT073's row

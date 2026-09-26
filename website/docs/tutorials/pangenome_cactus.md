@@ -448,10 +448,10 @@ the allele inventory and `ecoli_cactus_sv.config.json`, whose graph track names
 the tier under `coarse`. Zoomed out past that track's handover, a following
 graph cuts the tier, so the whole K12 chromosome draws as a graph.
 
-The figures below draw the base-level graph instead, where every SNP is a
-bubble. The [build script](#reproduce-it-end-to-end) indexes it by walking its
-path lines, and our hosted copy of that index loads as one `FeatureTrack`
-pointed at the shared prefix:
+The figures below draw the base-level graph, where every SNP is a bubble. The
+[build script](#reproduce-it-end-to-end) indexes it by walking its path lines,
+and our hosted copy of that index loads as one `FeatureTrack` pointed at the
+shared prefix:
 
 ```json addtrack
 {
@@ -474,7 +474,7 @@ linear view, which the graph then follows.
 <Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session, the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) run from the segments lane's menu, which opens the graph on K12's coordinates under the lane it follows and paints the lane in the graph's colors." />
 
 A kilobase or two is the width to open one at. Past the flagellar operon, K12
-carries an IS1 element the other four skip: type `chr:1,978,100-1,979,700`, and
+carries an IS1 element the other four skip. Type `chr:1,978,100-1,979,700`, and
 the graph follows the view there. Pick **Force-directed layout** from the
 **Layout** dropdown to see the element's shape; the force drawing has no
 reference axis, so it holds the graph at this cut. A second copy of the segments

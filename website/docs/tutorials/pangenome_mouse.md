@@ -74,16 +74,16 @@ On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), the
 variable loci. Click **chr13** on the **Graph** line. JBrowse opens GRCm39's
 chromosome 13 with the genes, a curve of segments per bubble and the bubble tier
 as lanes, and under them the graph, cut from the same tier at one node per
-bubble. The graph follows the linear view: zoom in, and past the handover the
-segments track names, it cuts the segments instead of the tier.
+bubble. The graph follows the linear view, and zoomed in past the handover the
+segments track names, it cuts the segments.
 
 ## Nnt: a deletion that appears as an insertion
 
 Start at _Nnt_. Type `chr13:119,440,000-119,600,000`, and the graph follows the
 view down and cuts the segments there. Pick **Force-directed layout** from the
 **Layout** dropdown, which holds the graph at this cut, since the force drawing
-has no reference axis to follow. The figure also turns on the bubbles and
-segments tracks from the track selector, which read the window lane by lane.
+has no reference axis to follow. Turn on the bubbles and segments tracks in the
+track selector to read the window lane by lane, as the figure does.
 
 C57BL/6J carries a well-known multi-exon deletion at _Nnt_ that abolishes the
 protein and makes B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the
@@ -178,8 +178,8 @@ time the level opens, and discards them when the level closes.
 
 [Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
 turns a finished graph into the files above with one command,
-`build_pangenome_graph.sh`. What this panel needs beyond it is the graph itself,
-since nobody has published one.
+`build_pangenome_graph.sh`. The mouse panel needs its graph built first, since
+nobody has published one.
 [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
 downloads the assemblies, extracts one sequence per chromosome renamed to PanSN,
 runs `minigraph` per chromosome and joins the chromosomes with their segment ids

@@ -56,7 +56,7 @@ adapter.
 To index a graph, convert it once into tabix-indexed BED files that JBrowse can
 query by locus: `.segs.bed.gz` for the segments and `.links.bed.gz` for the
 links between them. One command, `build_pangenome_graph.sh`, builds them and
-writes the track config that reads them, as
+writes a track config for them, as
 [Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
 describes. Then **Add track** with that config, whose adapter is
 `RgfaTabixAdapter`, and pick **Track menu → Launch → Graph genome view (this
@@ -65,15 +65,15 @@ index. Skip to [Five layouts](#three-layouts) if you just need to know what the
 buttons do.
 
 The graph opens under the linear view, laid out on reference coordinates, and
-follows it: typing in the location box, a gene search, a click on the cytoband
+follows it. Typing in the location box, a gene search, a click on the cytoband
 and a drag-zoom all move the graph too. When the window moves past the stretch
 the graph was cut from, the view cuts the new window. **Pin** in the graph
 toolbar holds the graph where it is, and **Follow** hands it back.
 
 A graph track can also name a coarse tier, the same graph with one node per
 bubble. Zoomed out past the handover the track names, the following graph cuts
-the tier instead of the segments, so a whole chromosome draws as a graph, and
-zoomed back in it cuts the segments again.
+the tier, so a whole chromosome draws as a graph, and zoomed back in it cuts the
+segments again.
 
 `RgfaTabixAdapter` is the only adapter that cuts a subgraph. The same pair
 behind a `BedTabixAdapter` draws as a feature track whose menu offers no graph.
@@ -165,10 +165,10 @@ One adapter reads all four, and `<prefix>.config.json` carries the track:
 
 The `uri` is the shared prefix, from which the adapter resolves `.segs.bed.gz`,
 `.links.bed.gz` and both `.tbi` files. `coarse` names the tier by a prefix of
-its own, and `aboveBpPerPx` is the handover: the linear view's zoom, in bp per
-pixel, past which a following graph cuts the tier. The script derives it from
-the graph's mean backbone segment. These stable names are PanSN (`K12#1#chr`),
-and their sample prefix is already the assembly name, so the track needs no
+its own, and `aboveBpPerPx` is the handover, the linear view's zoom in bp per
+pixel past which a following graph cuts the tier. The script derives it from the
+graph's mean backbone segment. These stable names are PanSN (`K12#1#chr`), and
+their sample prefix is already the assembly name, so the track needs no
 `assemblyNameToPanSN` mapping.
 [HPRC's graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
 needs one, because that graph calls the reference `GRCh38` while the assembly is
@@ -209,8 +209,8 @@ A track whose adapter names `coarse` gives the graph a second tier to cut. Once
 the linear view is zoomed out past `aboveBpPerPx`, the following graph cuts the
 tier, one node per bubble, and the size limit no longer applies; zooming back in
 cuts the segments again. The segments lane in the linear view draws segments at
-every zoom, so the tier's prefix is also worth loading as a track of its own, a
-lane that draws a whole chromosome where the segments lane refuses.
+every zoom, so load the tier's prefix as a track of its own too, a lane that
+draws a whole chromosome where the segments lane refuses.
 
 Each line in the launched graph is one graph link. The view draws a link only
 when both endpoints are inside the cut, so an allele near the window's edge
@@ -286,7 +286,7 @@ is reference bp can follow that view. **Ordered** and **Force-directed layout**
 give x another meaning, so picking either holds the graph where it is, and the
 toolbar says it is not following; switching back to a reference-bp layout
 resumes the following. Force-directed is the pinned picture of a locus, for when
-the shape matters: an anchored drawing flattens both routes through a locus onto
+the shape matters. An anchored drawing flattens both routes through a locus onto
 the reference axis, and an allele then looks like a stub hanging under a line. A
 graph opened from a file starts in the force layout.
 

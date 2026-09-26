@@ -67,16 +67,16 @@ On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine), the
 variable loci, ranked off the coarse tier. Click **chr23** on the **Graph**
 line. JBrowse opens ARS-UCD1.2's chromosome 23 with the genes, the curve of
 segments per bubble and the bubble tier as lanes. The tier has one node per
-bubble, which makes a whole chromosome drawable: over a full cattle chromosome
+bubble, which makes a whole chromosome drawable. Over a full cattle chromosome
 the fine segments track refuses with "Too many features", and the tier draws.
 
 <Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
 The portal's chr23 view also holds a graph under the lanes, cut from the same
-tier: the segments track names the tier in its adapter's `coarse` slot, and past
+tier. The segments track names the tier in its adapter's `coarse` slot, and past
 that slot's handover the graph cuts one node per bubble with no limit on the
-span. The graph follows the linear view, so zooming in below the handover cuts
-the segments instead.
+span. The graph follows the linear view, and zoomed in below the handover it
+cuts the segments.
 
 :::note
 
@@ -265,7 +265,7 @@ runs:
   walks those paths back into `SN`/`SO`/`SR` tags.
 - **Deconstruct the callset**, with the `vg deconstruct` call above.
 
-It takes about half an hour after the download.
+The whole build takes about half an hour after the download.
 
 The script writes a `README.txt` beside the data recording the source, the
 modifications, the tool versions and the audits that ran. Copy the audits into
