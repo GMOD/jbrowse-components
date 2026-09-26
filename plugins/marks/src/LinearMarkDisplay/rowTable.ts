@@ -8,8 +8,8 @@ import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
 /**
  * A region under `rows` with every `row` lane a key: each row of a section the
  * worker stacked holds the key of the value the section is, so the lanes stay
- * put whatever order or focus the rows take. A region no facet split keeps
- * its rows.
+ * put whatever order or focus the rows take. A region fetched before the split
+ * keeps its rows, read as keys until its refetch lands.
  */
 export function keyRegion(
   region: MarkRegionData,
@@ -49,11 +49,25 @@ export function markRowTable(
   )
 }
 
-/** 1 at each key the table draws, or undefined where it draws them all. */
-export function drawnKeysOf({ slot }: RowTable): Uint8Array | undefined {
-  return slot.includes(HIDDEN_ROW)
-    ? Uint8Array.from(slot, s => (s === HIDDEN_ROW ? 0 : 1))
-    : undefined
+/**
+ * 1 at each key the table draws, or undefined where every key a loaded region
+ * carries is drawn: a name only departed regions or an earlier `rows.field`
+ * knew hides nothing.
+ */
+export function drawnKeysOf(
+  { slot }: RowTable,
+  regions: Iterable<MarkRegionData>,
+  rowKeys: RowKeys,
+): Uint8Array | undefined {
+  for (const { facet } of regions) {
+    for (const { key } of facet ?? []) {
+      const k = rowKeys.lookup(key)
+      if (k !== undefined && slot[k] === HIDDEN_ROW) {
+        return Uint8Array.from(slot, s => (s === HIDDEN_ROW ? 0 : 1))
+      }
+    }
+  }
+  return undefined
 }
 
 /**

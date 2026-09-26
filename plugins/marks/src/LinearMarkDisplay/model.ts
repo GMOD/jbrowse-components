@@ -1022,7 +1022,9 @@ export function stateModelFactory(
       .views(self => {
         const drawnKeys = stableIdentityComputed(() => {
           const table = self.rowTable
-          return table && drawnKeysOf(table)
+          return (
+            table && drawnKeysOf(table, self.rpcDataMap.values(), self.rowKeys)
+          )
         })
         const scaled = createEncodeMemo(
           () => self.rpcDataMap,

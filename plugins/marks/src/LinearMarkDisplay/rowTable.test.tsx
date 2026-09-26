@@ -286,6 +286,31 @@ test('a rows field change starts a new key space', () => {
   expect([...row!].map((_, i) => rowSlot(row, i, display.rowTable))).toEqual([
     0, 1, 2, 2, 2,
   ])
+  expect(display.drawnKeys).toBeUndefined()
+  expect(display.scaleDataMap).toBe(display.rpcDataMap)
+})
+
+test('a value only a departed load knew hides nothing', () => {
+  const display = loaded({ rows: 'source' })
+  void display.rpcDataMap
+  display.setRpcData(
+    0,
+    workerResult(
+      display,
+      features([
+        { source: 'aunt', tissue: 'liver', start: 0, end: 100, score: 6 },
+        { source: 'mom', tissue: 'liver', start: 0, end: 100, score: 1 },
+      ]),
+    ),
+    REGION,
+  )
+  void display.rpcDataMap
+  expect(display.rowKeys.names).toEqual(['dad', 'mom', 's2', 's10', 'aunt'])
+  expect(display.sources.map(row => row.name)).toEqual(['aunt', 'mom'])
+  expect(display.drawnKeys).toBeUndefined()
+  expect(display.scaleDataMap).toBe(display.rpcDataMap)
+  display.setRowFocus(['mom'])
+  expect([...display.drawnKeys!]).toEqual([0, 1, 0, 0, 0])
 })
 
 test('rows beside a facet bind no table, and the facet offsets its rows', () => {

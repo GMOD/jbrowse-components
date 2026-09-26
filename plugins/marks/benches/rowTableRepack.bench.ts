@@ -162,7 +162,7 @@ const keyNames = rowKeys.names.slice()
 
 function focusTable(order: readonly string[]) {
   const table = markRowTable(keyNames, order)
-  const drawn = drawnKeysOf(table)
+  const drawn = drawnKeysOf(table, [keyed], rowKeys)
   if (drawn) {
     drawnRegion(keyed, drawn)
   }

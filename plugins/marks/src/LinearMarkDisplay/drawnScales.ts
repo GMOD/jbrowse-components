@@ -42,8 +42,8 @@ class DrawnExtents {
 }
 
 // A chunk per call: V8 compiles one long loop on-stack-replaced and keeps
-// reusing that code, which deopts at the loop's exit on every call, twice the
-// time at 500k instances.
+// reusing that code, which deopts at the loop's exit on every call, half as
+// long again at 500k instances.
 const SCAN_CHUNK = 4096
 
 function scanChunk(
