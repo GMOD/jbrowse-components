@@ -801,10 +801,12 @@ jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
 
 - `true` and `false` are booleans and a number is a number
 - a comma makes a list, and a trailing comma a list of one: `color.range=tan,`
-- a digit segment indexes a list: `marks.0.mark=bar` writes the first mark and
-  `color.range.0=tan` the first colour of a range, where `color.range=tan,teal`
-  says what the whole range is. An index has to be one the list already reaches,
-  so fill `0` before `1`
+- a digit segment indexes a list, so `color.range.0=tan` changes the first
+  colour of a range and `marks.1.encoding.color=red` the second mark of a
+  declared plot, where `color.range=tan,teal` says what the whole range is. An
+  index has to be one the list already reaches, so fill `0` before `1`. A list
+  written from nothing reads better as one JSON modifier than as a path per
+  member
 - a `jexl:` item keeps the commas inside its own brackets and quotes:
   `jexlFilters=jexl:get(feature,'score')>5,` is a list of one filter
 - a location keeps the commas grouping its digits:
@@ -825,43 +827,47 @@ quality as `QUAL` and no `score` at all, so a mark over a VCF names the field it
 wants; a BigWig past its raw section answers a zoom level's mean as `score`,
 with `minScore` and `maxScore` beside it.
 
-The marks are a list, and a digit segment indexes one, so a whole figure is
-written in the same `path=value` grammar as any other setting. Score as a point
-per feature, coloured by strand:
+A whole plot is a list of objects, so state it as one JSON modifier — the same
+shape the track's config or a session spec would carry. Past its raw section a
+BigWig answers each summary bin's mean as `score`, with `minScore` and
+`maxScore` beside it, so one file draws three marks in one plot: the mean as
+bars, and the least and greatest value of each bin as points.
 
 ```bash
-jb2export --fasta ref.fa --bigbed peaks.bb display:marks height:200 \
-  marks.0.mark=point marks.0.encoding.y=score \
-  marks.0.encoding.color.field=strand marks.0.encoding.shape=diamond \
+jb2export --fasta ref.fa --bigwig conservation.bw display:marks height:300 \
+  '{"marks":[{"mark":"bar","encoding":{"y":"score","color":"#9aa89a"}},{"mark":"point","encoding":{"y":"minScore","color":"#3c7ea8"}},{"mark":"point","encoding":{"y":"maxScore","color":"#c1553b"}}]}' \
   --loc chr1:1-100000 --out out.svg
 ```
 
-A mark carries a `transform` list, run before it draws, which is itself a list
-of objects — so the binned count below is two indexed steps, and its aggregate's
-`ops` a third level down:
+A mark carries a `transform` list run before it draws, which nests the same way
+— a binned count is two steps, and the aggregate's `ops` a list inside the
+second:
 
 ```bash
 jb2export --fasta ref.fa --gffgz genes.gff.gz display:marks height:160 \
-  marks.0.mark=bar marks.0.encoding.y=count \
-  marks.0.transform.0.type=bin marks.0.transform.0.step=100000 \
-  marks.0.transform.1.type=aggregate \
-  marks.0.transform.1.groupby=start,end \
-  marks.0.transform.1.ops.0.op=count \
+  '{"marks":[{"mark":"bar","encoding":{"y":"count"},"transform":[{"type":"bin","step":100000},{"type":"aggregate","groupby":["start","end"],"ops":[{"op":"count"}]}]}]}' \
   --loc chr1:1-10,000,000 --out density.svg
 ```
 
-Writing `marks.2` before anything has written `marks.0` and `marks.1` is an
-error rather than a list with holes in it, and a mark the display cannot draw as
-declared — a bar naming no `y` — fails the export with the rule the display
-itself states.
+**A path changes one mark of a list, where the JSON states the list whole.** So
+a track whose config already declares the plot takes
+`marks.1.encoding.color=red` to repaint its second mark and leave the rest
+alone, the way `color.domain=` edits one member of a colour object — and
+`marks.2` before anything has written `marks.0` and `marks.1` is an error rather
+than a list with holes in it.
+
+A mark the display cannot draw as declared — a bar naming no `y`, or a `y` the
+data does not carry — fails the export with the rule the display itself states,
+rather than writing a picture of an empty plot.
 
 ### Raw display settings (JSON)
 
-A modifier that starts with `{` is parsed as JSON, for a value `slot.path=value`
-cannot write, such as a color with commas of its own. Each key states its
-setting whole, the way a session spec does, so a `color` object here replaces
-the one the track's config wrote. Use compact JSON (a single shell token, no
-spaces):
+A modifier that starts with `{` is parsed as JSON. Each key states its setting
+whole, the way a session spec does, so a `color` object here replaces the one
+the track's config wrote — which is what makes it the readable way to state a
+list of objects such as `marks`, and the only way to write a value a path
+cannot, such as a color with commas of its own. Use compact JSON (a single shell
+token, no spaces):
 
 ```bash
 jb2export --fasta ref.fa --bam reads.bam '{"color":{"range":["rgb(217,201,163)"]}}' \
