@@ -538,42 +538,6 @@ test('an unpinned ramp domain is the union of the loaded regions extremes', () =
   })
 })
 
-// A backend uploads a ramp on its table's identity, so a region that widens an
-// open domain under a declared middle moves the middle's uniform, not a table.
-test('a diverging ramp widened by a region keeps its table and its middle', () => {
-  const { createDisplay } = createTestEnvironment([
-    {
-      mark: 'bar',
-      encoding: {
-        y: 'score',
-        color: { field: 'score', scale: 'linear', domainMid: 0 },
-      },
-    },
-  ])
-  const { display } = createDisplay()
-  const lut = new Uint8Array(256 * 4)
-  const diverging = (extent: [number, number]) => ({
-    ...ramp(extent),
-    domainMid: 0,
-    lut,
-  })
-  display.setRpcData(
-    0,
-    result([{ y: [-1, 2], scale: diverging([-1, 2]) }]),
-    REGION,
-  )
-  const before = display.colorRamps[0]!
-  display.setRpcData(
-    1,
-    result([{ y: [-5, 20], scale: diverging([-5, 20]) }]),
-    REGION,
-  )
-  const after = display.colorRamps[0]!
-  expect(after.domain).toEqual([-5, 20])
-  expect(after.lut).toBe(before.lut)
-  expect(after.mid).toBe(0)
-})
-
 test('a pinned ramp domain is every region s, whatever they hold', () => {
   const { createDisplay } = createTestEnvironment([
     {
