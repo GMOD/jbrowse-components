@@ -5455,6 +5455,7 @@
       "package": "@jbrowse/render-core",
       "names": [
         "CONTEXT_LOST_REPORT_GRACE_MS",
+        "OFFSCREEN_RELEASE_BAND",
         "createGpuContextLostError",
         "createGpuDeviceLostError",
         "createGpuSurfaceLostError",
