@@ -28,7 +28,7 @@ import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 // and a GPU's log2/log carry an error budget JS does not. The second is not
 // reproducible here; the first is, and it is enough — see the sabotage below.
 //
-// SYNC: keep in step with wiggleCommon.slang's `rowScoreToYPx`, `rowCutToYPx`
+// SYNC: keep in step with wiggleCommon.slang's `rowScoreToYPx`, `rowColorYPx`
 // and `bandColorAt`. The out-of-domain half of the placement rule is
 // wiggleMarksPaint.test.ts §"a cut outside the domain parts nothing".
 
@@ -46,7 +46,7 @@ function rowScoreToYPx(
   return (1 - norm) * ROW_HEIGHT + ROW_TOP
 }
 
-function rowCutToYPx(
+function rowColorYPx(
   cut: number,
   min: number,
   max: number,
@@ -124,7 +124,7 @@ describe.each(DOMAINS)(
   '$name',
   ({ scaleType, min, max, symlogConstant, cuts }) => {
     const cutYs = cuts.map(cut =>
-      rowCutToYPx(cut, min, max, scaleType, symlogConstant),
+      rowColorYPx(cut, min, max, scaleType, symlogConstant),
     )
 
     it.each(cuts)('a bin scoring exactly %p is at or past that cut', score => {
@@ -146,6 +146,6 @@ test('a pre-normalized cut loses the tie', () => {
   const y = rowScoreToYPx(cut, min, max, SCALE_TYPE_LINEAR, 1)
   const hoisted = makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR, 1)
 
-  expect(bandAt(y, [rowCutToYPx(cut, min, max, SCALE_TYPE_LINEAR, 1)])).toBe(1)
+  expect(bandAt(y, [rowColorYPx(cut, min, max, SCALE_TYPE_LINEAR, 1)])).toBe(1)
   expect(bandAt(y, [(1 - hoisted(cut)) * ROW_HEIGHT + ROW_TOP])).toBe(0)
 })

@@ -35,7 +35,8 @@ struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 color    : COLOR0;
   nointerpolation float4 negColor : COLOR1;
-  // the y range the segment's centre line spans
+  // the y range the fragment's colour is read in: a rise's own span, or a
+  // level run's score placed unclamped
   nointerpolation float2 centerLine : TEXCOORD0;
   // each cut's y in the row
   nointerpolation float4 cutYsLo : TEXCOORD1;
@@ -85,7 +86,8 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
   } else if (seg == 1u) {
     sx = lerp(min(sx1, sx2) - hwx, max(sx1, sx2) + hwx, q.x);
     sy = lerp(clipScoreY - hwy, clipScoreY + hwy, q.y);
-    centerLine = float2(scoreYPx, scoreYPx);
+    float scoreColorYPx = rowColorYPx(inst.score, rowTop, rowHeight, u);
+    centerLine = float2(scoreColorYPx, scoreColorYPx);
   } else {
     sx = lerp(sx2 - hwx, sx2 + hwx, q.x);
     sy = lerp(min(clipScoreY, clipNextY) - hwy, max(clipScoreY, clipNextY) + hwy, q.y);

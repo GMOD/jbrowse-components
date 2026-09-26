@@ -1272,6 +1272,64 @@ describe('a cut outside the domain parts nothing', () => {
     ])
   })
 
+  // A peak clipped at the top of a [0, 10] plot still scores past the cut at
+  // 15: the line colours it by its score, as the bar does, and not by the row
+  // edge it is drawn on.
+  test('a score past the domain keeps its side of the cut', () => {
+    const peak = [20, 4]
+    for (const renderingType of [
+      RENDERING_TYPE_LINE,
+      RENDERING_TYPE_LINE_CENTER,
+    ]) {
+      const mock = createMockCanvas()
+      paintWiggle(
+        mock.ctx,
+        new Map([
+          [
+            0,
+            [
+              {
+                ...makeSource(peak, starts, ends, renderingType),
+                color: posColor,
+                negColor,
+              },
+            ],
+          ],
+        ]),
+        [lineBlock],
+        { ...cutState, renderingType },
+      )
+      expect(mock.strokeStyles).toEqual([above, below])
+    }
+  })
+
+  test('the step line colours its level run by the score and its rise by the row', () => {
+    const mock = createMockCanvas()
+    paintWiggle(
+      mock.ctx,
+      new Map([
+        [
+          0,
+          [
+            {
+              ...makeSource([20], [0], [100], RENDERING_TYPE_LINE),
+              color: posColor,
+              negColor,
+            },
+          ],
+        ],
+      ]),
+      [lineBlock],
+      { ...cutState, renderingType: RENDERING_TYPE_LINE },
+    )
+    // the level run at the clipped top is above the cut, and the rise and
+    // drop, every pixel of which shows a value under 10, are below it
+    expect(mock.strokeStyles).toEqual([above, below])
+    const lines = mock.ctx.lineTo.mock.calls as [number, number][]
+    expect(lines).toContainEqual([80, 0])
+    expect(lines).toContainEqual([0, 0])
+  })
+
   test('a cut inside the domain still parts both renderings', () => {
     const inside = { ...cutState, pivot: 6, cuts: [6] }
     const mock = createMockCanvas()

@@ -82,10 +82,10 @@ function makeScoreToY(
   return (score: number) => (1 - normalize(score)) * rowHeight
 }
 
-// `wiggleCommon.slang`'s `rowCutToYPx`: a cut is placed unclamped, so one the
-// domain excludes sits outside the row rather than on the edge that
-// out-of-domain scores are clamped onto, where the tie read as crossed.
-function makeCutToY(
+// `wiggleCommon.slang`'s `rowColorYPx`: a cut, and the line a line rendering
+// is coloured along, placed unclamped, so a value the domain excludes keeps its
+// side of every cut rather than taking the row edge's.
+function makeColorToY(
   rowHeight: number,
   domainY: [number, number],
   scaleType: ScaleTypeCode,
@@ -234,10 +234,12 @@ function bandSpan(y0: number, y1: number, top: number, bottom: number) {
 
 // Keeps the part of each segment inside one band, cut where it crosses the
 // band's edges, so a line stroked once per band changes colour where the
-// shader's does.
+// shader's does. A point's colour y is where the band test reads it and its y
+// where it draws, which part where the drawn y is clamped to the row.
 class BandPen {
   private x = 0
   private y = 0
+  private colorY = 0
   private drawing = false
 
   constructor(
@@ -247,14 +249,20 @@ class BandPen {
     private bottom: number,
   ) {}
 
-  moveTo(x: number, y: number) {
+  moveTo(x: number, y: number, colorY = y) {
     this.x = x
     this.y = y
+    this.colorY = colorY
     this.drawing = false
   }
 
-  lineTo(x: number, y: number) {
-    const span = bandSpan(this.y, y, this.top, this.bottom)
+  /** Reads the next segment from `colorY` without moving the pen. */
+  recolor(colorY: number) {
+    this.colorY = colorY
+  }
+
+  lineTo(x: number, y: number, colorY = y) {
+    const span = bandSpan(this.colorY, colorY, this.top, this.bottom)
     if (span) {
       const [t0, t1] = span
       if (this.path.add()) {
@@ -272,6 +280,7 @@ class BandPen {
     }
     this.x = x
     this.y = y
+    this.colorY = colorY
   }
 }
 
@@ -340,14 +349,14 @@ export function drawLine({
   }
   ctx.lineWidth = lineWidth
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
-  const cutToY = makeCutToY(rowHeight, domainY, scaleType, symlogConstant)
+  const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
   const zeroY = scoreToY(0) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   strokeByBands(
     ctx,
-    cuts.map(cut => cutToY(cut) + rowTop),
+    cuts.map(cut => colorToY(cut) + rowTop),
     bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss),
     pen => {
       let inRun = false
@@ -356,12 +365,15 @@ export function drawLine({
         const x1 = toX(positions[i * 2]!)
         const x2 = toX(endBp)
         const scoreY = scoreToY(scores[i]!) + rowTop
+        const scoreColorY = colorToY(scores[i]!) + rowTop
         if (!inRun) {
           pen.moveTo(x1, zeroY)
           inRun = true
         }
         pen.lineTo(x1, scoreY)
-        pen.lineTo(x2, scoreY)
+        pen.recolor(scoreColorY)
+        pen.lineTo(x2, scoreY, scoreColorY)
+        pen.recolor(scoreY)
         if (i === n - 1 || positions[(i + 1) * 2] !== endBp) {
           pen.lineTo(x2, zeroY)
           inRun = false
@@ -410,19 +422,20 @@ export function drawLineCenter({
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
-  const cutToY = makeCutToY(rowHeight, domainY, scaleType, symlogConstant)
+  const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
   strokeByBands(
     ctx,
-    cuts.map(cut => cutToY(cut) + rowTop),
+    cuts.map(cut => colorToY(cut) + rowTop),
     bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss),
     pen => {
       for (let i = 0; i < n; i++) {
         const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
         const cy = scoreToY(scores[i]!) + rowTop
+        const colorY = colorToY(scores[i]!) + rowTop
         if (!centerLinksToPrevious(positions, i, gapLimitBp)) {
-          pen.moveTo(cx, cy)
+          pen.moveTo(cx, cy, colorY)
         }
-        pen.lineTo(cx, cy)
+        pen.lineTo(cx, cy, colorY)
       }
     },
   )
@@ -535,7 +548,7 @@ export function drawWhiskerBand({
   } else {
     const dpr = getDpr()
     const rowBottom = rowTop + rowHeight
-    const cutToY = makeCutToY(rowHeight, domainY, scaleType, symlogConstant)
+    const cutToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
     const snapped = cuts.map(
       cut => Math.round((cutToY(cut) + rowTop) * dpr) / dpr,
     )

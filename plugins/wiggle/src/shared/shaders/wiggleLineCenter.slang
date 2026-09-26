@@ -38,8 +38,8 @@ struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 color    : COLOR0;
   nointerpolation float4 negColor : COLOR1;
-  // the segment centre's y and the tangent's y, so the fragment can place the
-  // centre line under itself
+  // the colour line's y at the segment centre and its rise per px along, so
+  // the fragment reads the value under itself
   nointerpolation float2 centerLine : TEXCOORD2;
   // each cut's y in the row
   nointerpolation float4 cutYsLo : TEXCOORD3;
@@ -98,7 +98,13 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
   o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
   o.localPos = local;
   o.segHalfLen = len * 0.5;
-  o.centerLine = float2(centerYpx, f.tangent.y);
+  float currColorYpx = rowColorYPx(inst.score, rowTop, rowHeight, u);
+  float prevColorYpx = hasPrev
+    ? rowColorYPx(inst.prevScore, rowTop, rowHeight, u)
+    : currColorYpx;
+  o.centerLine = float2(
+    (prevColorYpx + currColorYpx) * 0.5,
+    len > CAPSULE_MIN_LEN_PX ? (currColorYpx - prevColorYpx) / len : 0.0);
   o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
   o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
   return o;
