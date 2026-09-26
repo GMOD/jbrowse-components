@@ -7,7 +7,7 @@ summary: "A SyntenyTrack draws on the circular view as ChordSyntenyDisplay, and 
 
 ## Status
 
-**Amended 2026-09-26 by [ADR-176](adr-176-a-chord-rests-on-a-canvas-and-the-dom-holds-the-one-you-point-at.md)**:
+**Amended 2026-09-26 by [ADR-177](adr-177-a-chord-rests-on-a-canvas-and-the-dom-holds-the-one-you-point-at.md)**:
 the resting ribbons and chords are painted on a canvas, and the SVG holds
 only the hovered and selected shape on screen; the export still draws every
 shape as a path.

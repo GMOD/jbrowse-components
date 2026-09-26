@@ -3,7 +3,7 @@ status: Accepted
 summary: "The circular view's chords and ribbons rest on one Canvas2D layer the size of the view's box, painted once per change and turned by CSS while a rotation runs; the SVG above it holds only the hovered and the selected shape, and the export still draws every shape as a path. A pick canvas in id colours answers hover and click in one pixel read. One trace per shape feeds an SVG sink and a canvas sink, so the export, the highlight and the canvas cannot disagree about where a ribbon is. Measured before the change on a dev server: 5,264 ribbons committed as React SVG blocked the main thread for three to four seconds and a colour change re-rendered for 1.7 s; 66,994 gene-pair anchors took 227 s to recolour and minutes to mount. After: a paint is the cost of the fills."
 ---
 
-# ADR-176: A chord rests on a canvas, and the DOM holds the one you point at
+# ADR-177: A chord rests on a canvas, and the DOM holds the one you point at
 
 ## Status
 
