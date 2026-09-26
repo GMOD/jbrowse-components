@@ -586,46 +586,88 @@ export function parseCoverage(source: string) {
 }
 
 /**
- * `//! texture-filter: nearest | linear` — how a pass's combined sampler reads
- * its texture.
+ * `//! texture-filter: [sampler] nearest | linear` — how a pass's combined
+ * samplers read their textures.
  *
  * A requirement rather than a default, and unlike every other directive here it
  * is **inherited from the modules the shader imports**. A module cannot declare
- * the binding for its importer, so `colorRampLut`'s need for `linear` and
- * `rowTable`'s for `nearest` would otherwise be restated at each pass — or, as
- * it was, in a hand-written wrapper around the generated `TEXTURES`.
+ * the binding for its importer, so it names the sampler its importer declares:
+ * `colorRampLut` needs `colorRamp linear` and `rowTable` needs `rowTable
+ * nearest`, which a pass binding both takes from each. A bare filter covers
+ * every sampler of the shader that states it, for a pass with one.
  *
- * Every declaration in scope must agree, and there is no default: a shader
- * declaring a sampler and inheriting nothing is refused where `TEXTURES` is
- * emitted.
+ * Every declaration covering one sampler must agree, and there is no default:
+ * a sampler no declaration covers is refused where `TEXTURES` is emitted.
  */
 export const TEXTURE_FILTERS = ['linear', 'nearest'] as const
 export type TextureFilter = (typeof TEXTURE_FILTERS)[number]
 
-export function resolveTextureFilter(
+interface FilterDeclaration {
+  path: string
+  sampler: string | undefined
+  filter: TextureFilter
+}
+
+function filterDeclarations(path: string, source: string): FilterDeclaration[] {
+  return [...source.matchAll(/^\/\/!\s*texture-filter:\s*(.+)$/gm)].map(m => {
+    const written = m[1]!.trim()
+    const words = written.split(/\s+/)
+    const filter = words.at(-1)!
+    if (
+      words.length > 2 ||
+      !(TEXTURE_FILTERS as readonly string[]).includes(filter)
+    ) {
+      throw new Error(
+        `//! texture-filter: unknown value '${written}' (supported: ${TEXTURE_FILTERS.join(', ')}, after an optional sampler name)`,
+      )
+    }
+    return {
+      path,
+      sampler: words.length === 2 ? words[0] : undefined,
+      filter: filter as TextureFilter,
+    }
+  })
+}
+
+/**
+ * Each of `samplers`' filter, as the shader states it and as the modules it
+ * imports name it. A module's bare filter covers only its own samplers, so it
+ * is not inherited.
+ */
+export function resolveTextureFilters(
   label: string,
   source: string,
   imported: readonly { path: string; source: string }[],
-): TextureFilter | undefined {
-  const declared = [{ path: label, source }, ...imported]
-    .map(m => ({
-      path: m.path,
-      filter: parseChoice(m.source, 'texture-filter', TEXTURE_FILTERS),
-    }))
-    .filter((d): d is { path: string; filter: TextureFilter } => !!d.filter)
-  const distinct = new Set(declared.map(d => d.filter))
-  if (distinct.size > 1) {
-    throw new Error(
-      `${label}: //! texture-filter is declared as ${[...distinct].join(
-        ' and ',
-      )} in scope here (${declared
-        .map(d => `${d.path}: ${d.filter}`)
-        .join(', ')}). The shader binds one sampler and each module's math ` +
-        `needs its own filter, so no choice here is right for both — a pass ` +
-        `wanting each needs its own texture.`,
+  samplers: readonly string[],
+): Record<string, TextureFilter> {
+  const declared = [
+    ...filterDeclarations(label, source),
+    ...imported.flatMap(m =>
+      filterDeclarations(m.path, m.source).filter(d => d.sampler !== undefined),
+    ),
+  ]
+  const filters: Record<string, TextureFilter> = {}
+  for (const sampler of samplers) {
+    const covering = declared.filter(
+      d => d.sampler === sampler || d.sampler === undefined,
     )
+    const distinct = new Set(covering.map(d => d.filter))
+    if (distinct.size > 1) {
+      throw new Error(
+        `${label}: //! texture-filter for sampler '${sampler}' is declared as ${[
+          ...distinct,
+        ].join(' and ')} in scope here (${covering
+          .map(d => `${d.path}: ${d.filter}`)
+          .join(', ')}). Each module's math needs its own filter, so no ` +
+          `choice is right for both — give each its own sampler.`,
+      )
+    }
+    const filter = covering[0]?.filter
+    if (filter) {
+      filters[sampler] = filter
+    }
   }
-  return declared[0]?.filter
+  return filters
 }
 
 /**

@@ -12,7 +12,7 @@ import {
   parseTargets,
   parseTopology,
   parseVertsPerInstance,
-  resolveTextureFilter,
+  resolveTextureFilters,
 } from './parseDirectives.ts'
 
 describe('parseVertsPerInstance', () => {
@@ -517,56 +517,79 @@ describe('assertOutPathsUnique', () => {
   })
 })
 
-describe('resolveTextureFilter', () => {
+describe('resolveTextureFilters', () => {
   const rowTable = {
     path: 'rowTable.slang',
-    source: '//! texture-filter: nearest\nmodule rowTable;',
+    source: '//! texture-filter: rowTable nearest\nmodule rowTable;',
   }
   const ramp = {
     path: 'colorRampLut.slang',
-    source: '//! texture-filter: linear\nmodule colorRampLut;',
+    source: '//! texture-filter: colorRamp linear\nmodule colorRampLut;',
   }
 
   test('has no default', () => {
-    expect(resolveTextureFilter('pass.slang', '//! targets: wgsl', [])).toBe(
-      undefined,
-    )
+    expect(
+      resolveTextureFilters('pass.slang', '//! targets: wgsl', [], ['strip']),
+    ).toEqual({})
   })
 
   // The point of the directive: the module whose math needs the filter is not
   // the file that declares the binding, so an importer inherits rather than
   // restating — or, as before, correcting the generated table in a wrapper.
-  test('inherits a module’s declaration', () => {
+  test('inherits the filter a module names its sampler by', () => {
     expect(
-      resolveTextureFilter('pass.slang', 'import rowTable;', [rowTable]),
-    ).toBe('nearest')
+      resolveTextureFilters(
+        'pass.slang',
+        'import rowTable;',
+        [rowTable],
+        ['rowTable'],
+      ),
+    ).toEqual({ rowTable: 'nearest' })
   })
 
-  test('takes the shader’s own declaration', () => {
+  test('gives each of two samplers its own module’s filter', () => {
     expect(
-      resolveTextureFilter('pass.slang', '//! texture-filter: nearest', []),
-    ).toBe('nearest')
+      resolveTextureFilters(
+        'pass.slang',
+        'import rowTable;\nimport colorRampLut;',
+        [rowTable, ramp],
+        ['colorRamp', 'rowTable'],
+      ),
+    ).toEqual({ colorRamp: 'linear', rowTable: 'nearest' })
   })
 
-  test('refuses two modules that need different filters', () => {
-    expect(() =>
-      resolveTextureFilter('pass.slang', 'import rowTable;', [rowTable, ramp]),
-    ).toThrow(/declared as nearest and linear in scope here/)
+  test('takes the shader’s own bare declaration for every sampler', () => {
+    expect(
+      resolveTextureFilters(
+        'pass.slang',
+        '//! texture-filter: nearest',
+        [],
+        ['strip'],
+      ),
+    ).toEqual({ strip: 'nearest' })
   })
 
   // A shader cannot override a module's requirement into the filter that breaks
   // it, which is what makes the module's declaration a contract.
   test('refuses a shader contradicting the module it imports', () => {
     expect(() =>
-      resolveTextureFilter('pass.slang', '//! texture-filter: linear', [
-        rowTable,
-      ]),
+      resolveTextureFilters(
+        'pass.slang',
+        '//! texture-filter: linear',
+        [rowTable],
+        ['rowTable'],
+      ),
     ).toThrow(/pass\.slang: linear, rowTable\.slang: nearest/)
   })
 
   test('refuses an unknown filter', () => {
     expect(() =>
-      resolveTextureFilter('pass.slang', '//! texture-filter: bilinear', []),
-    ).toThrow(/unknown value 'bilinear' \(supported: linear, nearest\)/)
+      resolveTextureFilters(
+        'pass.slang',
+        '//! texture-filter: bilinear',
+        [],
+        ['strip'],
+      ),
+    ).toThrow(/unknown value 'bilinear' \(supported: linear, nearest/)
   })
 })

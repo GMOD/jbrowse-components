@@ -103,10 +103,11 @@ function ldParams(state: TriangleFrame, data: LDUploadData): LDCellParams {
 
 const channels = (data: LDUploadData) => data
 
-const texture = (_state: TriangleFrame, data: LDUploadData) =>
-  generateLDColorRamp(data.metric)
+const textures = (_state: TriangleFrame, data: LDUploadData) => ({
+  colorRamp: generateLDColorRamp(data.metric),
+})
 
 export const LD_MARKS = [
-  defineMark({ shape: uniformShape, channels, params: ldParams, texture }),
-  defineMark({ shape: genomicShape, channels, params: ldParams, texture }),
+  defineMark({ shape: uniformShape, channels, params: ldParams, textures }),
+  defineMark({ shape: genomicShape, channels, params: ldParams, textures }),
 ]

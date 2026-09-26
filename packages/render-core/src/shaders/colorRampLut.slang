@@ -19,7 +19,7 @@
 // default straight-alpha blend, where a premultiplied return would be wrong
 // the day a translucent ramp entry appears. The function name carries the
 // contract, so a consumer picks the form that matches its blend declaration.
-//! texture-filter: linear
+//! texture-filter: colorRamp linear
 //! export-consts: RAMP_LUT_ENTRIES
 //! js-export: rampMidT
 module colorRampLut;

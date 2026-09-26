@@ -56,7 +56,7 @@ export interface CodegenInputs {
   topology?: Topology
   blend?: BlendMode
   coverage?: Coverage
-  textureFilter?: TextureFilter
+  textureFilters?: Readonly<Record<string, TextureFilter>>
   instanceWriter?: boolean
 }
 
@@ -866,7 +866,7 @@ export function emitInterface(inputs: CodegenInputs) {
     topology,
     blend,
     coverage,
-    textureFilter,
+    textureFilters = {},
     instanceWriter,
   } = inputs
   const lines = header(baseName)
@@ -1145,30 +1145,18 @@ export function emitInterface(inputs: CodegenInputs) {
     }
   }
 
-  if (textures && textures.length > 1) {
-    // Both HALs bind `textures[0]` and ignore the rest (webgl2Hal.ts,
-    // webgpuHal.ts), so emitting the full list would leave the second sampler
-    // reading whatever was last bound to that unit — a wrong picture, on both
-    // backends, with nothing to attribute it to. Refuse here, where the message
-    // can name the samplers, rather than at whatever the shader renders.
-    throw new Error(
-      `${baseName}.slang declares ${textures.length} combined samplers ` +
-        `(${textures.map(t => t.name).join(', ')}), but the HALs bind only the ` +
-        `first — multi-texture passes are not implemented. Combine them into ` +
-        `one texture, or teach both HALs (and PipelineDescriptor.textures) to bind ` +
-        `the whole list.`,
-    )
-  }
   if (textures && textures.length > 0) {
-    if (textureFilter === undefined) {
+    const unfiltered = textures.find(t => textureFilters[t.name] === undefined)
+    if (unfiltered) {
       throw new Error(
-        `${baseName}.slang declares a combined sampler ('${textures[0]!.name}') ` +
-          `and no '//! texture-filter: nearest | linear' is in scope. The ` +
-          `filter is a correctness choice with no safe default: a colour ramp ` +
-          `is 'linear' so a sample lands between two entries, and a lookup ` +
-          `table whose texels are data is 'nearest', where a blend of two ` +
-          `texels decodes to a value neither one holds. Declare it here, or ` +
-          `in the module whose math demands it — every importer inherits that.`,
+        `${baseName}.slang declares a combined sampler ('${unfiltered.name}') ` +
+          `and no '//! texture-filter: nearest | linear' covering it is in ` +
+          `scope. The filter is a correctness choice with no safe default: a ` +
+          `colour ramp is 'linear' so a sample lands between two entries, and ` +
+          `a lookup table whose texels are data is 'nearest', where a blend of ` +
+          `two texels decodes to a value neither one holds. Declare it here, ` +
+          `or name the sampler in the module whose math demands it — every ` +
+          `importer inherits that.`,
       )
     }
     lines.push(
@@ -1182,7 +1170,7 @@ export function emitInterface(inputs: CodegenInputs) {
     for (let i = 0; i < textures.length; i++) {
       const t = textures[i]!
       lines.push(
-        `  { glTextureUnit: ${i}, glUniformName: 'u_${t.name}', filter: '${textureFilter}' },`,
+        `  { name: '${t.name}', glTextureUnit: ${i}, glUniformName: 'u_${t.name}', filter: '${textureFilters[t.name]}' },`,
       )
     }
     lines.push(']', '')

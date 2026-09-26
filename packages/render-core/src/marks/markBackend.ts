@@ -139,18 +139,31 @@ export class MarkTextureBinder implements TextureBinder {
 
   constructor(private hal: GpuHal) {}
 
-  bind(passId: string, texture: MarkTexture | undefined) {
-    const bound = this.bound.get(passId)
+  bind(passId: string, sampler: string, texture: MarkTexture | undefined) {
+    const key = `${passId}\u0000${sampler}`
+    const bound = this.bound.get(key)
     const next = texture ?? bound ?? INERT_RAMP
     if (next !== bound) {
       if (next instanceof Uint8Array) {
-        uploadColorRampLut(this.hal, next, [passId])
+        uploadColorRampLut(this.hal, next, [passId], sampler)
       } else if ('image' in next) {
-        this.hal.uploadTexture(passId, next.image, next.width, next.height)
+        this.hal.uploadTexture(
+          passId,
+          next.image,
+          next.width,
+          next.height,
+          sampler,
+        )
       } else {
-        this.hal.uploadTexture(passId, next.bytes, next.width, next.height)
+        this.hal.uploadTexture(
+          passId,
+          next.bytes,
+          next.width,
+          next.height,
+          sampler,
+        )
       }
-      this.bound.set(passId, next)
+      this.bound.set(key, next)
     }
   }
 }
@@ -197,11 +210,6 @@ export class GpuMarkBackend<
     region: TRegion,
     state: TState,
   ) {
-    for (const mark of marks) {
-      if (mark.pass.textures && !mark.texturedByParams) {
-        this.textures.bind(mark.pass.id, mark.texture?.(state, region))
-      }
-    }
     drawMarks(
       this.hal,
       this.uniformData,

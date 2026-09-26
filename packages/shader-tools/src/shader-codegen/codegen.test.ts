@@ -672,10 +672,10 @@ describe('emitInterface textures', () => {
       baseName: 'test',
       reflection,
       textures: [{ name: 'colorRamp' }],
-      textureFilter: 'linear',
+      textureFilters: { colorRamp: 'linear' },
     })
     expect(out).toContain(
-      "{ glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
+      "{ name: 'colorRamp', glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
     )
     expect(out).toContain(
       "import type { VertexAttributeLayout, ShaderBinding, TextureBinding } from '@jbrowse/render-core/hal'",
@@ -693,10 +693,10 @@ describe('emitInterface textures', () => {
         baseName: 'test',
         reflection,
         textures: [{ name: 'rowTable' }],
-        textureFilter: 'nearest',
+        textureFilters: { rowTable: 'nearest' },
       }),
     ).toContain(
-      "{ glTextureUnit: 0, glUniformName: 'u_rowTable', filter: 'nearest' },",
+      "{ name: 'rowTable', glTextureUnit: 0, glUniformName: 'u_rowTable', filter: 'nearest' },",
     )
   })
 
@@ -710,18 +710,32 @@ describe('emitInterface textures', () => {
     ).toThrow(/declares a combined sampler .* no '\/\/! texture-filter/)
   })
 
-  // Both HALs bind `textures[0]` and ignore the rest, so a second sampler would
-  // read whatever was last bound to that unit — a wrong picture on both
-  // backends with nothing to attribute it to. The emitter used to number the
-  // whole list `glTextureUnit: 0, 1, …` as though it were wired up.
-  test('refuses a second combined sampler the HALs would not bind', () => {
+  // A colour ramp and a row table in one pass: each on its own unit, each
+  // read through the filter its own module's math needs.
+  test('numbers each sampler its own unit, under its own filter', () => {
+    const out = emitInterface({
+      baseName: 'test',
+      reflection,
+      textures: [{ name: 'colorRamp' }, { name: 'rowTable' }],
+      textureFilters: { colorRamp: 'linear', rowTable: 'nearest' },
+    })
+    expect(out).toContain(
+      "{ name: 'colorRamp', glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
+    )
+    expect(out).toContain(
+      "{ name: 'rowTable', glTextureUnit: 1, glUniformName: 'u_rowTable', filter: 'nearest' },",
+    )
+  })
+
+  test('refuses a second sampler no filter covers, naming it', () => {
     expect(() =>
       emitInterface({
         baseName: 'test',
         reflection,
         textures: [{ name: 'colorRamp' }, { name: 'mask' }],
+        textureFilters: { colorRamp: 'linear' },
       }),
-    ).toThrow(/bind only the first/)
+    ).toThrow(/declares a combined sampler \('mask'\)/)
   })
 })
 

@@ -335,13 +335,13 @@ test('on the GPU each ring is its own pass, sampling its strip canvas, re-copied
   ])
   const blocks = canvasWideBlocks(cells.keys(), frame.canvasWidth)
   expect(backend.renderBlocks(blocks, cells, frame)).toBe(true)
-  // the six passes with no ring bind the inert table once; the two rings
-  // copy their strips
+  // the two rings copy their strips, and the six passes with no ring draw
+  // nothing, so bind nothing
   const copies = () =>
     hal.callsOf('uploadTexture').filter(c => c.args[1] === 'canvas')
   expect(copies().map(c => c.args)).toEqual([
-    ['ring0', 'canvas', 2000, 100],
-    ['ring1', 'canvas', 2000, 100],
+    ['ring0', 'canvas', 2000, 100, 'strip'],
+    ['ring1', 'canvas', 2000, 100, 'strip'],
   ])
   expect(hal.getTexture('ring0')).toBe(a)
   expect(hal.getTexture('ring1')).toBe(b)

@@ -259,5 +259,5 @@ export function setInstanceRowIndex(f32: Float32Array, i: number, v: number) {
 
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [
-  { glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },
+  { name: 'colorRamp', glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },
 ]

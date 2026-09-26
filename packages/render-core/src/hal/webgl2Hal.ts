@@ -161,7 +161,8 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   // JSON: every pass id over one program shares it, and a failed link keeps
   // its error.
   private programs = new Map<string, Map<string, LinkedProgram | Error>>()
-  private passTextures = new Map<string, WebGLTexture>()
+  // Each pass's textures, by the sampler that reads each.
+  private passTextures = new Map<string, Map<string, WebGLTexture>>()
   private ubo: WebGLBuffer
   // `getParameter` is a synchronous driver query; `limits()` runs per upload.
   private maxTextureDim: number
@@ -301,10 +302,10 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       throw new Error(`no GLSL was loaded for pass "${desc.id}"`)
     }
     const { GLSL_VERTEX, GLSL_FRAGMENT } = stages
-    const tb = desc.textures?.[0]
+    const textures = desc.textures ?? []
     const names = desc.vertexAttributes.map(attr => attr.name)
-    const sampler = tb && [tb.glUniformName, tb.glTextureUnit]
-    const key = JSON.stringify([GLSL_FRAGMENT, names, sampler])
+    const samplers = textures.map(t => [t.glUniformName, t.glTextureUnit])
+    const key = JSON.stringify([GLSL_FRAGMENT, names, samplers])
     let byVertex = this.programs.get(GLSL_VERTEX)
     if (!byVertex) {
       byVertex = new Map()
@@ -350,12 +351,14 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
     gl.bindVertexArray(null)
 
-    if (tb) {
+    if (textures.length > 0) {
       gl.useProgram(program)
-      gl.uniform1i(
-        gl.getUniformLocation(program, tb.glUniformName),
-        tb.glTextureUnit,
-      )
+      for (const tb of textures) {
+        gl.uniform1i(
+          gl.getUniformLocation(program, tb.glUniformName),
+          tb.glTextureUnit,
+        )
+      }
     }
 
     const linked = { program, vao, attrLocs }
@@ -413,7 +416,12 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     height: number,
   ) {
     const gl = this.gl
-    const existing = this.passTextures.get(passId)
+    let byName = this.passTextures.get(passId)
+    if (!byName) {
+      byName = new Map()
+      this.passTextures.set(passId, byName)
+    }
+    const existing = byName.get(binding.name)
     if (existing) {
       gl.deleteTexture(existing)
     }
@@ -441,7 +449,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    this.passTextures.set(passId, tex)
+    byName.set(binding.name, tex)
   }
 
   writeUniforms(data: ArrayBuffer) {
@@ -562,8 +570,10 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
           }
         }
       }
-      for (const texture of this.passTextures.values()) {
-        gl.deleteTexture(texture)
+      for (const byName of this.passTextures.values()) {
+        for (const texture of byName.values()) {
+          gl.deleteTexture(texture)
+        }
       }
       gl.deleteBuffer(this.ubo)
     }
@@ -604,11 +614,13 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
   private bindTexture(passId: string, desc: PipelineDescriptor) {
     const gl = this.gl
-    const tb = desc.textures?.[0]
-    const texture = tb && this.passTextures.get(passId)
-    if (tb && texture) {
-      gl.activeTexture(gl.TEXTURE0 + tb.glTextureUnit)
-      gl.bindTexture(gl.TEXTURE_2D, texture)
+    const byName = this.passTextures.get(passId)
+    for (const tb of desc.textures ?? []) {
+      const texture = byName?.get(tb.name)
+      if (texture) {
+        gl.activeTexture(gl.TEXTURE0 + tb.glTextureUnit)
+        gl.bindTexture(gl.TEXTURE_2D, texture)
+      }
     }
   }
 

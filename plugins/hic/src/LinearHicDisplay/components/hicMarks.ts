@@ -48,6 +48,6 @@ export const HIC_MARKS = [
       ...state,
       binWidth: data.binWidth,
     }),
-    texture: (state: HicRenderState) => state.colorRamp,
+    textures: (state: HicRenderState) => ({ colorRamp: state.colorRamp }),
   }),
 ]

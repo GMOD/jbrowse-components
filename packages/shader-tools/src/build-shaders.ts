@@ -92,7 +92,7 @@ import {
   parseTargets,
   parseTopology,
   parseVertsPerInstance,
-  resolveTextureFilter,
+  resolveTextureFilters,
   stripComments,
 } from './shader-codegen/parseDirectives.ts'
 import { readImports } from './shader-codegen/readImports.ts'
@@ -858,25 +858,27 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       })
     }
 
+    const textures = findCombinedSamplers(reflection)
     const codegenInputs = {
       baseName: base,
       reflection,
       wgsl,
       glslVertex,
       glslFragment,
-      textures: findCombinedSamplers(reflection),
+      textures,
       vertsPerInstance: parseVertsPerInstance(source, imported),
       exportedConsts: parseExportedConsts(source, imported),
       topology: parseTopology(source),
       blend: parseBlend(source),
       coverage: parseCoverage(source),
-      textureFilter: resolveTextureFilter(
+      textureFilters: resolveTextureFilters(
         path.relative(PROJECT_ROOT, slangPath),
         source,
         importedFiles.map(m => ({
           path: path.relative(PROJECT_ROOT, m.path),
           source: m.source,
         })),
+        textures.map(t => t.name),
       ),
       instanceWriter: parseInstanceWriter(source),
     }

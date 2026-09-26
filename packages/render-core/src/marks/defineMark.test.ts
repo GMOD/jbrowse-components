@@ -465,6 +465,7 @@ describe('marks sharing a uniform writer and a params lens', () => {
 // arbitrary here, since what MockHal answers from is only that the pass
 // declares one.
 const RAMP_BINDING: TextureBinding = {
+  name: 'colorRamp',
   glTextureUnit: 0,
   glUniformName: 'u_colorRamp',
   filter: 'linear',
@@ -480,7 +481,7 @@ describe('a mark with a ramp texture', () => {
     },
     channels: (d: Region) => d.span,
     params: (s: State) => s.span,
-    texture: (s: State) => s.ramp,
+    textures: (s: State) => ({ colorRamp: s.ramp }),
   })
 
   function frames(...ramps: (Uint8Array | undefined)[]) {
@@ -520,7 +521,7 @@ describe('a mark with a ramp texture', () => {
   })
 
   // `pointMark` and `barMark` carry a sampler for the displays that ramp, and
-  // Manhattan declares no `texture` on the same shape.
+  // a mark of a constant colour names no texture on the same shape.
   test('a textured pass whose mark names no texture still binds the inert table', () => {
     const untextured = defineMark({
       shape: {

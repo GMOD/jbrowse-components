@@ -91,6 +91,13 @@ export interface MarkTexels {
 /** What a mark's pass binds: a 256-entry RGBA ramp, a canvas, or texels. */
 export type MarkTexture = Uint8Array | MarkImage | MarkTexels
 
+/**
+ * A pass's textures by the sampler that reads each: `colorRamp`, `rowTable`,
+ * a ring's `strip`. A sampler left out, or answered undefined, keeps what it
+ * holds.
+ */
+export type MarkTextures = Readonly<Record<string, MarkTexture | undefined>>
+
 export type MarkFrame = FrameDimensions
 
 export type MarkValueScaleType = 'linear' | 'log' | 'symlog'
@@ -176,12 +183,12 @@ export interface MarkShape<TChannels, TParams> {
    */
   verticesPerInstance?(frame: MarkFrame, params: TParams): number
   /**
-   * The texture the pass samples, read off the params the painter and the hit
-   * test read (`span`'s row table), so the two backends cannot be handed
-   * different tables. A display's own `texture` lens wins where it declares
-   * one.
+   * The textures the pass samples that the params the painter and the hit
+   * test read decide (`span`'s row table), so the two backends cannot be
+   * handed different tables. A display's own `textures` lens wins for a
+   * sampler it answers.
    */
-  texture?(params: TParams): MarkTexture | undefined
+  textures?(params: TParams): MarkTextures
   /**
    * The rect `paintBlock` fills for instance `i`, undefined where it paints
    * nothing. `defineMark` derives `hitNearest` from it where none is declared,
@@ -236,13 +243,13 @@ export interface StagedUniforms {
 }
 
 /**
- * Puts a texture behind a pass's sampler once per identity: a repeat of the
- * bound one costs nothing, and undefined leaves what is bound or binds an
- * inert table where nothing is, since a textured pass with no texture never
- * draws on the WebGPU HAL.
+ * Puts a texture behind one of a pass's samplers once per identity: a repeat
+ * of the bound one costs nothing, and undefined leaves what is bound or binds
+ * an inert table where nothing is, since a textured pass missing a texture
+ * never draws on the WebGPU HAL.
  */
 export interface TextureBinder {
-  bind(passId: string, texture: MarkTexture | undefined): void
+  bind(passId: string, sampler: string, texture: MarkTexture | undefined): void
 }
 
 /** What `hal.drawPass` takes for one mark of a frame plan. */
@@ -261,13 +268,11 @@ export interface Mark<TRegion, TState extends MarkFrame> {
   readonly spansView?: boolean
   /** The pass whose uploaded instance buffer this mark draws from. */
   readonly bufferOf?: string
-  /** What the pass samples this frame; undefined binds an inert table. */
-  readonly texture?: (state: TState, region: TRegion) => MarkTexture | undefined
-  /**
-   * Whether the shape binds the pass's texture off its params as it draws,
-   * so the backend binds nothing for it ahead of the block.
-   */
-  readonly texturedByParams?: boolean
+  /** What the pass's samplers read this frame; undefined binds an inert table. */
+  readonly textures?: (
+    state: TState,
+    region: TRegion,
+  ) => MarkTextures | undefined
   /**
    * Whether the mark draws at all under `state`. `planMarks` asks once per
    * frame and every other consumer per block, before any lens.
@@ -341,8 +346,9 @@ export function withPassId<C, P>(
  * uniforms.
  *
  * `bufferOf` draws off another mark's uploaded buffer of the same instance
- * struct. `texture` binds per pass per frame and re-uploads when its identity
- * moves, so ramps that differ by region re-upload per region. `band` clips the
+ * struct. `textures` binds per pass per frame, each sampler re-uploading when
+ * its texture's identity moves, so ramps that differ by region re-upload per
+ * region. `band` clips the
  * mark to a strip without offsetting it. `enabled` turns the mark off for a
  * whole frame, for every consumer.
  */
@@ -357,14 +363,15 @@ export function defineMark<
   params: (state: TState, region: TRegion, block: RenderBlock) => TParams
   bufferOf?: Mark<TRegion, TState>
   band?: (state: TState) => MarkBand
-  texture?: (state: TState, region: TRegion) => MarkTexture | undefined
+  textures?: (state: TState, region: TRegion) => MarkTextures | undefined
   enabled?: (state: TState) => boolean
 }): Mark<TRegion, TState> {
-  const { shape, channels, params, band, texture, enabled } = spec
+  const { shape, channels, params, band, textures: ownTextures, enabled } = spec
   const hitNearest = shapeHitNearest(shape)
   const shapeInk = shape.ink?.bind(shape)
   const shapeValueWindow = shape.valueWindow?.bind(shape)
-  const shapeTexture = texture ? undefined : shape.texture?.bind(shape)
+  const shapeTextures = shape.textures?.bind(shape)
+  const samplers = shape.pass.textures?.map(t => t.name) ?? []
   const lender = spec.bufferOf?.pass
   if (
     lender &&
@@ -411,8 +418,7 @@ export function defineMark<
     },
     bufferOf,
     spansView: shape.spansView,
-    texture,
-    texturedByParams: shapeTexture !== undefined,
+    textures: ownTextures,
     enabled,
     planned,
     // `resolve`'s gates inline: its picks leaving as a record or through
@@ -443,8 +449,16 @@ export function defineMark<
       if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
         return
       }
-      if (shapeTexture && textures) {
-        textures.bind(shape.pass.id, shapeTexture(p))
+      if (textures && samplers.length > 0) {
+        const own = ownTextures?.(state, region)
+        const fromParams = shapeTextures?.(p)
+        for (const sampler of samplers) {
+          textures.bind(
+            shape.pass.id,
+            sampler,
+            own?.[sampler] ?? fromParams?.[sampler],
+          )
+        }
       }
       const scissor =
         strip && devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)

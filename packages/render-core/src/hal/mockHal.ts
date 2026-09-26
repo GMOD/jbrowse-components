@@ -65,6 +65,10 @@ export interface MockDraw {
   uniformWrite: number
 }
 
+function textureKey(passId: string, sampler: string) {
+  return `${passId}\u0000${sampler}`
+}
+
 export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   calls: MockCall[] = []
 
@@ -151,19 +155,23 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
 
   protected createTexture(
     passId: string,
-    _binding: TextureBinding,
+    binding: TextureBinding,
     data: TextureSource,
     width: number,
     height: number,
   ) {
     const bytes = data instanceof Uint8Array
-    this.textures.set(passId, bytes ? data.slice() : data)
+    this.textures.set(
+      textureKey(passId, binding.name),
+      bytes ? data.slice() : data,
+    )
     this.record(
       'uploadTexture',
       passId,
       bytes ? data.byteLength : 'canvas',
       width,
       height,
+      binding.name,
     )
   }
 
@@ -370,8 +378,12 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     return this.regions.get(regionKey, passId)
   }
 
-  getTexture(passId: string) {
-    return this.textures.get(passId)
+  /** What the pass's `sampler` samples, its first where unset. */
+  getTexture(passId: string, sampler?: string) {
+    const name = sampler ?? this.descriptors.get(passId)?.textures?.[0]?.name
+    return name === undefined
+      ? undefined
+      : this.textures.get(textureKey(passId, name))
   }
 
   callsOf(method: string) {

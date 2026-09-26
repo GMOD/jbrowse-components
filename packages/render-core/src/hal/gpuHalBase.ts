@@ -121,10 +121,15 @@ export abstract class GpuHalBase<Buf extends { count: number }> {
     data: TextureSource,
     width: number,
     height: number,
+    sampler?: string,
   ) {
     // Read the binding off the descriptor, so a pass with no texture is
     // answered without touching the backend's pipeline state at all.
-    const binding = this.descriptors.get(passId)?.textures?.[0]
+    const textures = this.descriptors.get(passId)?.textures
+    const binding =
+      sampler === undefined
+        ? textures?.[0]
+        : textures?.find(t => t.name === sampler)
     if (binding) {
       const { maxTextureDimensionPx } = this.limits()
       if (width > maxTextureDimensionPx || height > maxTextureDimensionPx) {

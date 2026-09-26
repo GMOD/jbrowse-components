@@ -129,6 +129,7 @@ describe('slangPass', () => {
     // build.
     const textures: [TextureBinding] = [
       {
+        name: 'colorRamp',
         glTextureUnit: 0,
         glUniformName: 'u_colorRamp',
         filter: 'linear',

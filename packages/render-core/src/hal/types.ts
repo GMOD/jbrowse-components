@@ -77,8 +77,10 @@ export interface ShaderBinding {
 export type TextureSource = Uint8Array | HTMLCanvasElement | OffscreenCanvas
 
 // A pass's texture as WebGL2 binds it, and the filter both HALs sample it
-// with. Its WebGPU binding indices are the pass's `bindings`.
+// with. Its WebGPU binding indices are the pass's `bindings` of its `name`.
 export interface TextureBinding {
+  // The shader's sampler, which `uploadTexture` names the texture it fills by
+  name: string
   // WebGL texture unit index (e.g. 0 for TEXTURE0)
   glTextureUnit: number
   // GLSL sampler uniform name (e.g. 'u_colorRamp')
@@ -174,11 +176,13 @@ export interface GpuHal {
   deleteBuffer(regionKey: number, passId: string): void
   deleteRegion(regionKey: number): void
 
+  // `sampler` names which of the pass's textures, its first where unset.
   uploadTexture(
     passId: string,
     data: TextureSource,
     width: number,
     height: number,
+    sampler?: string,
   ): void
 
   writeUniforms(data: ArrayBuffer): void

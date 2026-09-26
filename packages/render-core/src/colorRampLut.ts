@@ -22,6 +22,7 @@ export function uploadColorRampLut(
   hal: GpuHal,
   ramp: Uint8Array,
   passIds: readonly string[],
+  sampler?: string,
 ) {
   if (ramp.length !== COLOR_RAMP_LUT_ENTRIES * 4) {
     throw new Error(
@@ -30,6 +31,6 @@ export function uploadColorRampLut(
     )
   }
   for (const passId of passIds) {
-    hal.uploadTexture(passId, ramp, COLOR_RAMP_LUT_ENTRIES, 1)
+    hal.uploadTexture(passId, ramp, COLOR_RAMP_LUT_ENTRIES, 1, sampler)
   }
 }

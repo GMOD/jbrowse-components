@@ -11,7 +11,7 @@ import path from 'node:path'
 
 import {
   parseTargets,
-  resolveTextureFilter,
+  resolveTextureFilters,
   stripComments,
 } from './shader-codegen/parseDirectives.ts'
 import { readImports } from './shader-codegen/readImports.ts'
@@ -19,6 +19,7 @@ import { readImports } from './shader-codegen/readImports.ts'
 // Structural, because shader-tools must not depend on render-core — the same
 // arrangement `bindings.ts` already names for `ShaderBinding`.
 interface Sampler {
+  name: string
   filter: string
 }
 
@@ -56,13 +57,14 @@ test.each(shaders)('%s samples with the filter it declares', async file => {
   const mod: { TEXTURES?: readonly Sampler[] } = await import(
     path.join(root, file.replace(/\.slang$/, '.iface.generated.ts'))
   )
-  const declared = resolveTextureFilter(
+  const declared = resolveTextureFilters(
     file,
     source,
     readImports(slangPath, source, sharedInclude),
+    mod.TEXTURES?.map(t => t.name) ?? [],
   )
   expect(mod.TEXTURES?.map(t => t.filter)).toEqual(
-    mod.TEXTURES?.map(() => declared),
+    mod.TEXTURES?.map(t => declared[t.name]),
   )
 })
 

@@ -247,7 +247,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           seamPx: CANVAS_SEAM_PX,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
         }),
-        texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
+        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
         enabled,
       })
     }
@@ -265,7 +265,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           insetPx: s.valueInsetPx,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
         }),
-        texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
+        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
         enabled,
       })
     }
@@ -302,7 +302,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           insetPx: s.valueInsetPx,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
         }),
-        texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
+        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
         enabled,
       })
     }

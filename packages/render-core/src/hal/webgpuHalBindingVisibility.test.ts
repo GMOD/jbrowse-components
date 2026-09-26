@@ -234,8 +234,8 @@ test.each(shaders)('%s', async rel => {
     throw new Error('fake stack failed to build a HAL')
   }
   hal.resize(100, 40)
-  if (desc.textures) {
-    hal.uploadTexture(rel, new Uint8Array(256 * 4), 256, 1)
+  for (const { name } of desc.textures ?? []) {
+    hal.uploadTexture(rel, new Uint8Array(256 * 4), 256, 1, name)
   }
   hal.uploadBuffer(0, rel, new ArrayBuffer(desc.instanceStride), 1)
   hal.beginFrame(0, 0, 0)

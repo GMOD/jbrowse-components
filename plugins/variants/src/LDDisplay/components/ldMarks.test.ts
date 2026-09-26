@@ -164,9 +164,11 @@ describe('the LD mark list', () => {
     expect(u32[UU.band]).toBe(7)
   })
 
-  // The ramp is the marks' `texture`, not a second upload cell: both passes
-  // sample it, and the backend re-uploads only when the metric's table moves.
-  it('binds the metric ramp to both passes, once per identity', () => {
+  // The ramp is the marks' `textures`, not a second upload cell: the pass
+  // that draws the cell samples it, and the backend re-uploads only when the
+  // metric's table moves. The genomic pass draws nothing here, so binds
+  // nothing.
+  it('binds the metric ramp to the pass that draws, once per identity', () => {
     const hal = new MockHal(PASSES)
     const backend = new GpuMarkBackend(hal, LD_MARKS)
     const data = makeOneCell()
@@ -178,14 +180,14 @@ describe('the LD mark list', () => {
     backend.renderBlocks(blocks, regions, makeRenderState())
 
     const texCalls = hal.callsOf('uploadTexture')
-    expect(texCalls.map(c => c.args[0])).toEqual(['main', 'genomic'])
+    expect(texCalls.map(c => c.args[0])).toEqual(['main'])
     expect(texCalls[0]!.args[2]).toBe(256)
     expect(texCalls[0]!.args[3]).toBe(1)
     expect(hal.getTexture('main')).toEqual(generateLDColorRamp('r2'))
 
     const dprime = new Map([[0, makeOneCell({ metric: 'dprime' })]])
     backend.renderBlocks(blocks, dprime, makeRenderState())
-    expect(hal.callsOf('uploadTexture').length).toBe(4)
+    expect(hal.callsOf('uploadTexture').length).toBe(2)
     expect(hal.getTexture('main')).toEqual(generateLDColorRamp('dprime'))
   })
 })

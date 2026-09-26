@@ -14,6 +14,7 @@ const texturedPass = (id: string): PipelineDescriptor => ({
   bindings: [],
   textures: [
     {
+      name: 'colorRamp',
       glTextureUnit: 0,
       glUniformName: 'u_colorRamp',
       filter: 'linear',
@@ -26,8 +27,8 @@ test('uploads the LUT as a 256×1 texture to every named pass', () => {
   const ramp = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
   uploadColorRampLut(hal, ramp, ['a', 'b'])
   expect(hal.callsOf('uploadTexture').map(c => c.args)).toEqual([
-    ['a', 1024, 256, 1],
-    ['b', 1024, 256, 1],
+    ['a', 1024, 256, 1, 'colorRamp'],
+    ['b', 1024, 256, 1, 'colorRamp'],
   ])
 })
 

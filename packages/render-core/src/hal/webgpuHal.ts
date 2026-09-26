@@ -146,7 +146,8 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext
   private pipelines: ReadonlyMap<string, GPURenderPipeline>
-  private passTextures = new Map<string, PassTextureState>()
+  // Each pass's textures, by the sampler that reads each.
+  private passTextures = new Map<string, Map<string, PassTextureState>>()
   // Every pass's bind group, by the pass drawn. A pass that binds no texture
   // has one from construction, shared with each pass over the same layout; a
   // textured pass gets its own when its texture arrives, dropped when
@@ -304,13 +305,13 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private createBindGroup(
     bindings: readonly ShaderBinding[],
     layout: GPUBindGroupLayout,
-    texture?: PassTextureState,
+    textures?: ReadonlyMap<string, PassTextureState>,
   ) {
     return this.device.createBindGroup({
       layout,
       entries: bindings.map(b => ({
         binding: b.index,
-        resource: this.bindingResource(b, texture),
+        resource: this.bindingResource(b, textures?.get(b.name)),
       })),
     })
   }
@@ -468,16 +469,21 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     return this.passBindGroups.get(passId) ?? this.bindTexture(passId)
   }
 
+  // Built once every texture the pass samples has arrived.
   private bindTexture(passId: string) {
-    const texture = this.passTextures.get(passId)
+    const textures = this.passTextures.get(passId)
     const desc = this.descriptors.get(passId)
-    if (!texture || !desc) {
+    if (
+      !textures ||
+      !desc ||
+      desc.bindings.some(b => b.kind === 'texture' && !textures.has(b.name))
+    ) {
       return undefined
     }
     const group = this.createBindGroup(
       desc.bindings,
       this.bindGroupLayoutOf(desc.bindings),
-      texture,
+      textures,
     )
     this.passBindGroups.set(passId, group)
     return group
@@ -513,7 +519,12 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     width: number,
     height: number,
   ) {
-    const existing = this.passTextures.get(passId)
+    let byName = this.passTextures.get(passId)
+    if (!byName) {
+      byName = new Map()
+      this.passTextures.set(passId, byName)
+    }
+    const existing = byName.get(binding.name)
     if (existing) {
       // Same hazard as a buffer, and no longer a hypothetical one: every
       // `uploadTexture` in tree is a colour ramp, and since the ramp became a
@@ -552,7 +563,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       addressModeU: 'clamp-to-edge',
       addressModeV: 'clamp-to-edge',
     })
-    this.passTextures.set(passId, { texture, sampler })
+    byName.set(binding.name, { texture, sampler })
 
     // Drop the cached bind group so the next draw rebuilds it against the new
     // texture (and so a pass drawn before its first texture arrived stops
@@ -954,8 +965,10 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
     this.regions.deleteAll()
     this.uniformRingBuffer.destroy()
-    for (const ts of this.passTextures.values()) {
-      ts.texture.destroy()
+    for (const byName of this.passTextures.values()) {
+      for (const ts of byName.values()) {
+        ts.texture.destroy()
+      }
     }
     this.passTextures.clear()
     this.passBindGroups.clear()

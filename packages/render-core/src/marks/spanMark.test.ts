@@ -415,8 +415,8 @@ describe('a row table between the instance key and the band it draws on', () => 
   })
 
   test('the pass samples the table as its texture, nearest, and the uniforms say how many keys', () => {
-    expect(spanMark.texture!(withTable)).toBe(table.texture)
-    expect(spanMark.texture!(params)).toBeUndefined()
+    expect(spanMark.textures!(withTable).rowTable).toBe(table.texture)
+    expect(spanMark.textures!(params).rowTable).toBeUndefined()
     expect(spanMark.pass.textures?.[0].filter).toBe('nearest')
     const clip = clipBlock(block, tall.canvasWidth, tall.canvasHeight, {
       x: 1,

@@ -20,9 +20,9 @@
 // not round-trip through the sampler's fixed point, so a linear tap would blend
 // two keys' slot bytes into a slot belonging to neither. A module can take a
 // sampler as a parameter but not declare the binding for its importer, so each
-// pass reading a table declares its own `[[vk::binding(2, 0)]]
-// Sampler2D<float4>` and inherits the filter from here.
-//! texture-filter: nearest
+// pass reading a table declares its own `Sampler2D<float4> rowTable` and
+// inherits the filter from here.
+//! texture-filter: rowTable nearest
 //! export-consts: ROW_TABLE_MAX_WIDTH
 //! js-export: rowTableWidth, rowTablePlaneHeight, rowTableTexelX, rowTableTexelY
 //! js-skip: byteOf — recovers a byte from a sampled texel; the TS side reads the table's bytes directly

@@ -334,13 +334,15 @@ const channels = (sources: SourceRenderData[]) => sources
 
 // Off the render state, per pass: a gradient is one 256×1 texture and a
 // uniform flag, and no gradient binds the inert table the backend keeps.
-const rampTexture = (state: WiggleGPURenderState) => state.rampLut
+const rampTextures = (state: WiggleGPURenderState) => ({
+  colorRamp: state.rampLut,
+})
 
 const fill = defineMark({
   shape: fillShape,
   channels,
   params: wiggleParams,
-  texture: rampTexture,
+  textures: rampTextures,
 })
 
 /**
@@ -362,7 +364,7 @@ export const WIGGLE_MARKS = [
     channels,
     params: wiggleParams,
     bufferOf: fill,
-    texture: rampTexture,
+    textures: rampTextures,
   }),
   defineMark({
     shape: lineShape,

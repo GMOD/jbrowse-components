@@ -436,7 +436,7 @@ describe('the wiggle mark list', () => {
       expect(texUploads(hal, pass)).toBe(1)
       expect(
         hal.callsOf('uploadTexture').find(c => c.args[0] === pass)!.args,
-      ).toEqual([pass, 256 * 4, 256, 1])
+      ).toEqual([pass, 256 * 4, 256, 1, 'colorRamp'])
       expect(hal.getLastUniformsI32()![UI.rampLut]).toBe(1)
       expect(hal.getTexture(pass)).toEqual(rampLutOf({ scheme: 'viridis' }))
       const textureCalls = hal.callsOf('uploadTexture').length

@@ -78,10 +78,10 @@ test('a reorder, a focus and a recolour each upload the table once and no instan
   ).toEqual({
     buffers: 1,
     textures: [
-      [24, 3, 2],
-      [24, 3, 2],
-      [24, 3, 2],
-      [24, 3, 2],
+      [24, 3, 2, 'rowTable'],
+      [24, 3, 2, 'rowTable'],
+      [24, 3, 2, 'rowTable'],
+      [24, 3, 2, 'rowTable'],
     ],
     draws: 6,
   })
@@ -90,7 +90,7 @@ test('a reorder, a focus and a recolour each upload the table once and no instan
 test('a pass drawn with no table binds the inert table once and keeps drawing', () => {
   expect(frames(undefined, undefined)).toEqual({
     buffers: 1,
-    textures: [[1024, 256, 1]],
+    textures: [[1024, 256, 1, 'rowTable']],
     draws: 2,
   })
 })

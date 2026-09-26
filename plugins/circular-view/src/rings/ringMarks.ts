@@ -38,7 +38,7 @@ export const ringMarks = Array.from({ length: RING_PASSES }, (_, i) => {
     shape: ringShape(`ring${i}`),
     channels: cell => (own(cell) ? cell.channels : undefined),
     params,
-    texture: (_state, cell) => (own(cell) ? cell.strip : undefined),
+    textures: (_state, cell) => ({ strip: own(cell) ? cell.strip : undefined }),
   })
 })
 

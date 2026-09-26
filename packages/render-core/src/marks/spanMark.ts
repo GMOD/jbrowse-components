@@ -133,8 +133,8 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
     })
   },
 
-  texture(params) {
-    return params.rowTable?.texture
+  textures(params) {
+    return { rowTable: params.rowTable?.texture }
   },
 
   paintBlock(ctx, channels, block, _frame, params) {
