@@ -177,7 +177,17 @@
       },
       "displayDefaults": {
         "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "hprc_minigraph_segments-LinearGraphDisplay"
+        },
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "hprc_minigraph_segments-LinearBasicDisplay"
+        }
+      ]
     },
     {
       "type": "SyntenyTrack",

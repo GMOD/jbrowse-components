@@ -319,6 +319,10 @@
           "type": "MultiWaySyntenyDisplay",
           "displayId": "hprc_v2_1_gbz-MultiWaySyntenyDisplay",
           "height": 600
+        },
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "hprc_v2_1_gbz-LinearGraphDisplay"
         }
       ]
     }

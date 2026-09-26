@@ -77,7 +77,17 @@
       },
       "displayDefaults": {
         "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "mouse_minigraph_segments-LinearGraphDisplay"
+        },
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "mouse_minigraph_segments-LinearBasicDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -90,7 +100,17 @@
         "assemblyNameToPanSN": {
           "mm39": "mm39"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "mouse_minigraph_tier-LinearGraphDisplay"
+        },
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "mouse_minigraph_tier-LinearBasicDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -175,7 +195,17 @@
       },
       "displayDefaults": {
         "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "bovine_minigraph_segments-LinearGraphDisplay"
+        },
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "bovine_minigraph_segments-LinearBasicDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -188,7 +218,17 @@
         "assemblyNameToPanSN": {
           "bosTau9": "bosTau9"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "bovine_minigraph_tier-LinearGraphDisplay"
+        },
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "bovine_minigraph_tier-LinearBasicDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
