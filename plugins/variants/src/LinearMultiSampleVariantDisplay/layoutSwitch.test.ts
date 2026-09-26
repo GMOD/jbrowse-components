@@ -20,14 +20,22 @@ test('the layout is a fetch input, and columns spend no band on the lane', () =>
   expect(display.drawsInsertionMarkers).toBe(false)
 })
 
-test('the track menu offers both layouts under one radio', () => {
+test('Show as genotype matrix switches the layout both ways', () => {
   const { display } = createTestEnvironment().createDisplay()
-  const layout = display
-    .trackMenuItems()
-    .find(item => 'label' in item && item.label === 'Variant layout')
-  const labels =
-    layout && 'subMenu' in layout && Array.isArray(layout.subMenu)
-      ? layout.subMenu.map(item => ('label' in item ? item.label : ''))
-      : []
-  expect(labels).toEqual(['At genomic positions', 'Equal-width columns'])
+  const matrixItem = () => {
+    const item = display
+      .showSubmenuItems()
+      .find(i => 'label' in i && i.label === 'Show as genotype matrix')
+    if (!item || !('checked' in item) || !('onClick' in item)) {
+      throw new Error('no "Show as genotype matrix" checkbox')
+    }
+    return item
+  }
+
+  expect(matrixItem().checked).toBe(false)
+  matrixItem().onClick()
+  expect(display.variantLayout).toBe('columns')
+  expect(matrixItem().checked).toBe(true)
+  matrixItem().onClick()
+  expect(display.variantLayout).toBe('genomic')
 })

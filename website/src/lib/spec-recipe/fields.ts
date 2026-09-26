@@ -1119,7 +1119,11 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'genomic' || value === 'columns') && displayType
       ? MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
         ? {
-            path: `${TRACK_MENU} → Variant layout → ${value === 'columns' ? 'Equal-width columns' : 'At genomic positions'}`,
+            path: `${TRACK_MENU} → Show... → Show as genotype matrix`,
+            note:
+              value === 'columns'
+                ? 'Checked: one equal-width column per variant.'
+                : 'Unchecked: each variant across the bases it covers.',
           }
         : displayType === 'LDTrackDisplay'
           ? {

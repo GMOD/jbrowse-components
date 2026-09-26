@@ -96,21 +96,6 @@ const LANE_DISPLAY_MODE = 'compact' as const
 /** No pins in a band: the feature there is the display's, not the lane's. */
 const NO_PINNED_FEATURES: ReadonlySet<string> = new Set()
 
-const VARIANT_LAYOUT_OPTIONS = [
-  {
-    value: 'genomic' as const,
-    label: 'At genomic positions',
-    helpText:
-      'Draw each variant across the bases it covers, so a deletion reads as long as it is and variants a few bases apart share pixels when zoomed out',
-  },
-  {
-    value: 'columns' as const,
-    label: 'Equal-width columns',
-    helpText:
-      'Draw one equal-width column per variant in view, with a line tying each column to its position. Keeps the genotype pattern across dense variants readable at any zoom, at the cost of their lengths',
-  },
-]
-
 type PlacedMatrixData = Placed<
   VariantMatrixUploadData & { refCellCount: number }
 >
@@ -293,8 +278,7 @@ export function stateModelFactory(
         },
       }))
       .views(self => {
-        const { trackMenuItems: superTrackMenuItems, rpcProps: superRpcProps } =
-          self
+        const { rpcProps: superRpcProps } = self
         return {
           // Resolved geometry, never undefined. "The view isn't measured yet" is
           // the mixin-wide `canRender` gate, and "no payload" falls out of an
@@ -320,45 +304,43 @@ export function stateModelFactory(
                 : undefined,
             }
           },
-          trackMenuItems(): MenuItem[] {
-            return [
-              ...superTrackMenuItems(),
-              {
-                label: 'Variant layout',
-                subMenu: radioItems(
-                  VARIANT_LAYOUT_OPTIONS,
-                  self.variantLayout,
-                  layout => {
-                    self.setVariantLayout(layout)
-                  },
-                ),
-              },
-            ]
-          },
         }
       })
       .views(self => {
         const { showSubmenuItems: superShowSubmenuItems } = self
         return {
-          showSubmenuItems() {
-            if (!self.atGenomicPositions) {
-              return superShowSubmenuItems()
-            }
+          showSubmenuItems(): MenuItem[] {
             return [
               ...superShowSubmenuItems(),
               {
-                label: 'Show variant lane',
+                label: 'Show as genotype matrix',
                 helpText:
-                  'Draw the variants themselves in a lane above the genotype rows, at their genomic positions and in whatever "Color by → Cells" is set to — the relationship the coverage band has to a pileup. The lane takes its height from the rows rather than growing the track',
+                  'Draw one equal-width column per variant in view, tied to its position by a line, so the genotype pattern across variants a few bases apart stays readable at any zoom. Off, each variant is drawn across the bases it covers, so a deletion reads as long as it is',
                 type: 'checkbox',
-                checked: self.showVariantLane,
+                checked: !self.atGenomicPositions,
                 onClick: () => {
-                  self.setShowVariantLane(!self.showVariantLane)
+                  self.setVariantLayout(
+                    self.atGenomicPositions ? 'columns' : 'genomic',
+                  )
                 },
               },
+              ...(self.atGenomicPositions
+                ? [
+                    {
+                      label: 'Show variant lane',
+                      helpText:
+                        'Draw the variants themselves in a lane above the genotype rows, at their genomic positions and in whatever "Color by → Cells" is set to — the relationship the coverage band has to a pileup. The lane takes its height from the rows rather than growing the track',
+                      type: 'checkbox' as const,
+                      checked: self.showVariantLane,
+                      onClick: () => {
+                        self.setShowVariantLane(!self.showVariantLane)
+                      },
+                    },
+                  ]
+                : []),
               // plugin-canvas's own five choices under its own names, so a
               // reader who has set this on a variant track finds the same menu
-              // here. Only offered while the lane is on.
+              // here
               ...(self.showVariantLane
                 ? [
                     {

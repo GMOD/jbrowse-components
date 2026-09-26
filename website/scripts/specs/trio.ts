@@ -249,8 +249,8 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
   },
 
-  // The multi-sample variant display in equal-width columns, with the track
-  // menu open on the "Variant layout" submenu that chooses them.
+  // The multi-sample variant display as a genotype matrix, with the track menu
+  // open on the Show... checkbox that chooses it.
   {
     mode: 'url',
     name: 'trio-matrix',
@@ -270,12 +270,12 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Variant layout', 'Equal-width columns']),
+      ...menuCascade(['Show...', 'Show as genotype matrix']),
     ],
     annotations: [
       {
         type: 'box',
-        anchor: { text: 'Equal-width columns' },
+        anchor: { text: 'Show as genotype matrix' },
       },
     ],
   },

@@ -5,12 +5,13 @@ guide_category: Track types
 ---
 
 A VCF can carry genotypes for many samples. The multi-sample variant display
-draws one row per sample, and the track menu's **Variant layout** chooses how
-the variants run across it:
+draws one row per sample, and **Show... → Show as genotype matrix** in the track
+menu chooses how the variants run across it:
 
 - **At genomic positions**, the default: each variant drawn across the bases it
   covers
-- **Equal-width columns**: one column per variant in view, like a heatmap
+- **Equal-width columns** with it checked, one column per variant in view, like
+  a heatmap
 
 ## At genomic positions: structural variants at their real span {#regular-best-for-full-sv-detail}
 

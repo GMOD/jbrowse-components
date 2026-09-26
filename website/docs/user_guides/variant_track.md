@@ -19,12 +19,17 @@ In a linear genome view, the track menu's **Display types** switches between:
 
 - **Variant display**, the default, covered on this page
 - **Multi-sample variant display** draws one row per sample, each variant at its
-  genomic position, or, from its **Variant layout** menu, in equal-width columns
-  so shared haplotypes and runs of homozygosity show whatever the spacing. See
-  the [multi-sample variant guide](/docs/user_guides/multivariant_track)
-- **LD heatmap display** computes pairwise r² from phased genotypes live. See
-  the [linkage disequilibrium tutorial](/docs/tutorials/ld_human)
-- **Paired arc display** joins the two ends of each breakend record with an arc
+  genomic position, or, with **Show... → Show as genotype matrix**, in
+  equal-width columns so shared haplotypes and runs of homozygosity show
+  whatever the spacing. See the
+  [multi-sample variant guide](/docs/user_guides/multivariant_track)
+- **Marks** draws the variants as the marks you configure, and over an SV VCF
+  joins each breakend to its mate with nothing configured. See
+  [links](/docs/config_guides/mark_display#links)
+
+For an LD heatmap, run PLINK over the genotypes and load its pairwise r² output
+as a separate track, as in the
+[linkage disequilibrium tutorial](/docs/tutorials/ld_human).
 
 In a [circular view](/docs/user_guides/circular_view) the same track gives a
 chord display, drawing breakends as chords across the ring.

@@ -59,10 +59,10 @@ export const variantVideos: VideoSpec[] = [
       { type: 'click', text: 'Multi-sample variant display' },
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
       { type: 'click', selector: trackMenu(vcfTrackId), hold: 1200 },
-      { type: 'waitForText', text: 'Variant layout' },
-      { type: 'click', text: 'Variant layout', hold: 1200 },
-      { type: 'waitForText', text: 'Equal-width columns' },
-      { type: 'click', text: 'Equal-width columns' },
+      { type: 'waitForText', text: 'Show...' },
+      { type: 'click', text: 'Show...', hold: 1200 },
+      { type: 'waitForText', text: 'Show as genotype matrix' },
+      { type: 'click', text: 'Show as genotype matrix' },
       // The matrix asks for every genotype in the window rather than re-laying
       // out what the lane had, so this is a fetch. Off camera, and the click
       // ahead of it stays on.
