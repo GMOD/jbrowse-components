@@ -37,10 +37,8 @@ describe('parseItems', () => {
 })
 
 describe('itemToName', () => {
-  it('uses the string itself for URL items', () => {
-    expect(itemToName('https://example.com/x.bw')).toBe(
-      'https://example.com/x.bw',
-    )
+  it('names a URL item by the basename the track will label it with', () => {
+    expect(itemToName('https://example.com/x.bw')).toBe('x')
   })
 
   it('prefers source over name', () => {
@@ -151,7 +149,7 @@ describe('buildAdapterPayload', () => {
 
 describe('applyName', () => {
   it('keeps an unchanged URL string bare to preserve the bigWigs form', () => {
-    expect(applyName('https://a.bw', 'https://a.bw')).toBe('https://a.bw')
+    expect(applyName('https://host/a.bw', 'a')).toBe('https://host/a.bw')
   })
 
   it('promotes a renamed URL string into a BigWigAdapter with the new source', () => {
@@ -181,7 +179,7 @@ describe('applyName', () => {
   it('renamed items flow through buildAdapterPayload as subadapters', () => {
     const items = [
       applyName('https://a.bw', 'Sample A'),
-      applyName('https://b.bw', 'https://b.bw'),
+      applyName('https://b.bw', 'b'),
     ]
     expect(buildAdapterPayload(items)).toEqual({
       subadapters: [

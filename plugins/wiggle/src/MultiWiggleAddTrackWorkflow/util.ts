@@ -51,10 +51,9 @@ function locationName(item: Record<string, unknown>) {
 }
 
 export function itemToName(item: TrackItem) {
-  if (typeof item === 'string') {
-    return item
-  }
-  return `${item.source ?? item.name ?? locationName(item) ?? 'unnamed'}`
+  return typeof item === 'string'
+    ? getFilename(item)
+    : `${item.source ?? item.name ?? locationName(item) ?? 'unnamed'}`
 }
 
 // A bare URL with no explicit source is left source-less so the adapter derives
@@ -68,19 +67,15 @@ export function urlToSubadapter(uri: string, source?: string) {
   }
 }
 
-/**
- * Pin a (possibly user-edited) display name as the subtrack `source`. A renamed
- * URL string is promoted to a BigWigAdapter object so the new name survives;
- * an unchanged URL stays a bare string to preserve the compact `bigWigs` form.
- */
+// Pins an edited name as the subtrack `source`; an unedited item is left as it
+// came, so a URL keeps the compact `bigWigs` form and the adapter derives the
+// same name itself.
 export function applyName(item: TrackItem, name: string): TrackItem {
-  if (typeof item === 'string') {
-    return name === item ? item : urlToSubadapter(item, name)
-  }
-  // Only pin `source` when the name was actually edited; otherwise leave the
-  // object untouched so an unnamed subadapter still derives its basename in the
-  // adapter instead of getting the display fallback baked in.
-  return name === itemToName(item) ? item : { ...item, source: name }
+  return name === itemToName(item)
+    ? item
+    : typeof item === 'string'
+      ? urlToSubadapter(item, name)
+      : { ...item, source: name }
 }
 
 // Strip the extension so a dropped file names its subtrack the same way a

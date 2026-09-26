@@ -16,7 +16,6 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Typography,
 } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
@@ -45,7 +44,6 @@ const useStyles = makeStyles()(theme => ({
   },
   submit: {
     marginTop: 25,
-    marginBottom: 100,
     display: 'block',
   },
 }))
@@ -59,6 +57,9 @@ interface TrackRow {
 function itemToRow(item: TrackItem): TrackRow {
   return { id: nanoid(), name: itemToName(item), item }
 }
+
+const PASTE_HELP =
+  'One URL per line, or a JSON array of subadapter configs to set a subtrack\'s color or name, e.g. [{"type":"BigWigAdapter","bigWigLocation":{"uri":"https://host/file.bw"},"color":"green","source":"sample 1"}]'
 
 function doSubmit({
   trackName,
@@ -112,6 +113,7 @@ const MultiWiggleAddTrackWorkflow = observer(
       selection,
       tracks.map(t => t.id),
     )
+    const pending = inputVal.trim() ? parseItems(inputVal).map(itemToRow) : []
 
     return (
       <Paper
@@ -144,7 +146,8 @@ const MultiWiggleAddTrackWorkflow = observer(
               fullWidth
               rows={5}
               value={inputVal}
-              placeholder="Paste a list of URLs (one per line) or a JSON array of subadapter configs, then click 'Add tracks'"
+              placeholder="https://host/sample1.bw"
+              helperText={PASTE_HELP}
               variant="outlined"
               onChange={event => {
                 setInputVal(event.target.value)
@@ -214,7 +217,7 @@ const MultiWiggleAddTrackWorkflow = observer(
         ) : null}
         <TextField
           value={trackName}
-          helperText="Track name"
+          label="Track name"
           onChange={event => {
             setTrackName(event.target.value)
           }}
@@ -231,10 +234,16 @@ const MultiWiggleAddTrackWorkflow = observer(
         <Button
           variant="contained"
           className={classes.submit}
-          disabled={!canSubmit({ tracks, trackName, assembly: model.assembly })}
+          disabled={
+            !canSubmit({
+              tracks: [...tracks, ...pending],
+              trackName,
+              assembly: model.assembly,
+            })
+          }
           onClick={() => {
             try {
-              doSubmit({ trackName, tracks, model })
+              doSubmit({ trackName, tracks: [...tracks, ...pending], model })
             } catch (e) {
               getNotificationSink(model).notifyError(`${e}`, e)
             }
@@ -242,12 +251,6 @@ const MultiWiggleAddTrackWorkflow = observer(
         >
           Submit
         </Button>
-        <Typography variant="body2" color="textSecondary">
-          The text box accepts a list of URLs (one per line), or a JSON array of
-          subadapter configs like{' '}
-          <code>{`[{"type":"BigWigAdapter","bigWigLocation":{"uri":"http://host/file.bw"}, "color":"green","source":"name for subtrack"}]`}</code>{' '}
-          to set per-subtrack options such as color or source name.
-        </Typography>
       </Paper>
     )
   },
