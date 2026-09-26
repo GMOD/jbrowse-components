@@ -596,3 +596,51 @@ describe('formatFeatWithSubfeatures', () => {
     expect(result).toContain('three_prime_UTR 901..1000')
   })
 })
+
+// The LOCUS line is read positionally, so a field that moves one column makes a
+// record no parser accepts — and the snapshots above cannot see it, because
+// they pin the bytes we emit rather than the format they have to be in.
+// Biopython refused all nine of them over a topology field written from 55
+// instead of 56. These are the fixed slots the GenBank flat-file spec states,
+// 1-based and inclusive, as every real NCBI record spells them.
+const locusColumns = [
+  [1, 5, 'LOCUS'],
+  [6, 12, '       '],
+  [29, 29, ' '],
+  [41, 44, ' bp '],
+  [45, 47, '   '],
+  [55, 55, ' '],
+  [64, 64, ' '],
+  [68, 68, ' '],
+] as const
+
+describe('GenBank LOCUS line', () => {
+  it('puts every fixed field in the column the spec names', async () => {
+    const locus = (
+      await stringifyGBK({
+        features: [
+          createFeature({
+            id: 'gene1',
+            refName: 'chr1',
+            start: 100,
+            end: 200,
+            type: 'gene',
+          }),
+        ],
+        assemblyName: 'testAssembly',
+        session: mockSession,
+      })
+    ).split('\n')[0]!
+
+    expect(locus).toHaveLength(79)
+    // paired with the column so a failure names which slot moved
+    for (const [from, to, expected] of locusColumns) {
+      expect([from, locus.slice(from - 1, to)]).toEqual([from, expected])
+    }
+    expect(locus.slice(12, 28).trimEnd()).toBe('chr1')
+    expect(locus.slice(29, 40).trim()).toBe('100')
+    expect(locus.slice(47, 54).trimEnd()).toBe('DNA')
+    expect(locus.slice(55, 63).trimEnd()).toBe('linear')
+    expect(locus.slice(68, 79)).toMatch(/^\d{2}-[A-Z]{3}-\d{4}$/)
+  })
+})

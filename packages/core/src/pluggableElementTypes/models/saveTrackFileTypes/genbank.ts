@@ -143,15 +143,24 @@ function formatOrigin(sequence: string): string[] {
   return lines
 }
 
-// LOCUS line column layout per the GenBank flat-file spec: name at col 13,
-// length right-justified ending at col 40, molecule/topology/division/date in
-// their fixed slots.
+// LOCUS line column layout per the GenBank flat-file spec. A positional parser
+// reads each field out of a fixed slot, so the widths below ARE the format:
+//
+//   1-5 LOCUS · 6-12 spaces · 13-28 name · 29 space · 30-40 length ·
+//   41-44 " bp " · 45-47 strandedness · 48-54 molecule · 55 space ·
+//   56-63 topology · 64 space · 65-67 division · 68 space · 69-79 date
+//
+// Molecule runs to 54 and topology starts at 56, which is one column right of
+// where it reads: every real NCBI record spells `DNA` then five spaces then
+// `circular`. Writing topology from 55 put a letter in the space at 55 and
+// Biopython refused all nine snapshot records, while the snapshot tests stayed
+// green because they pin the bytes rather than the format. `locusColumns` in
+// the test file is the check that names which slot moved.
 //
 // The name is the 16-column locus field, so it is the refName rather than the
 // region: `chr17:7,668,402..7,687,550` sanitizes to 22 characters and pushed
-// every field after it 6 columns right, which is a length a positional parser
-// then reads out of the wrong slot. The coordinates are on DEFINITION, where
-// the line is free text.
+// every field after it 6 columns right. The coordinates are on DEFINITION,
+// where the line is free text.
 const LOCUS_NAME_WIDTH = 16
 
 function formatLocus(refName: string, length: number) {
@@ -163,9 +172,9 @@ function formatLocus(refName: string, length: number) {
     String(length).padStart(11),
     ' bp ',
     '   ',
-    'DNA'.padEnd(6),
+    'DNA'.padEnd(7),
     ' ',
-    'linear'.padEnd(9),
+    'linear'.padEnd(8),
     ' ',
     'UNK'.padEnd(3),
     ' ',
