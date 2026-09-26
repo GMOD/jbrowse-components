@@ -62,7 +62,6 @@ a BigWig file and drawn as an XY plot or density
 - **Adapter:** [BedGraphAdapter](../bedgraphadapter)
 - **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
 - **Adapter:** [BigWigAdapter](../bigwigadapter)
-- **Adapter:** [GCContentAdapter](../gccontentadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots

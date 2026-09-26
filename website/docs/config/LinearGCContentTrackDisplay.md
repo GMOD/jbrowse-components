@@ -34,6 +34,7 @@ own.
 
 ## Related links
 
+- **Adapter:** [GCContentAdapter](../gccontentadapter)
 - **State model:** [runtime API](../../models/lineargccontenttrackdisplay)
 - **Base config:** [SharedGCContentDisplay](../sharedgccontentdisplay)
 

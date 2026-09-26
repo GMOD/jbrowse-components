@@ -10,7 +10,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 ```js
 {
-  type: 'QuantitativeTrack',
+  type: 'GCContentTrack',
   trackId: 'my_track',
   name: 'My track',
   assemblyNames: ['hg38'],
@@ -28,9 +28,8 @@ comes from the assembly the track is displayed against.
 
 ## Related links
 
-- **Track:** [QuantitativeTrack](../quantitativetrack)
-- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
-- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
+- **Track:** [GCContentTrack](../gccontenttrack)
+- **Display:** [LinearGCContentTrackDisplay](../lineargccontenttrackdisplay)
 
 ## Config slots
 

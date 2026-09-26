@@ -167,7 +167,7 @@ Coverage and other numeric signals are a `QuantitativeTrack`, or a
 | BedGraph (plain) | [](/docs/config/bedgraphadapter) | [](/docs/config/quantitativetrack) | Loaded entirely into memory; for small files |
 | BedGraph (tabix) | [](/docs/config/bedgraphtabixadapter) | [](/docs/config/quantitativetrack) |  |
 | BigWig | [](/docs/config/bigwigadapter) | [](/docs/config/quantitativetrack) |  |
-| GC content | [](/docs/config/gccontentadapter) | [](/docs/config/quantitativetrack) | Computed from the assembly sequence, no data file |
+| GC content | [](/docs/config/gccontentadapter) | [](/docs/config/gccontenttrack) | Computed from the assembly sequence, no data file |
 | Multiple BigWigs | [](/docs/config/multiwiggleadapter) | [](/docs/config/multiquantitativetrack) |  |
 
 <!-- FILE_TYPES quantitative END -->
