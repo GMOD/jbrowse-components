@@ -186,6 +186,10 @@ below.
   (`drawAgainstHit.test.ts`). The sweep is Canvas2D against the hit test; GPU
   parity is the browser cross-backend gate, whose gated multi-row fixture
   (`misc-multirow-arranged`) now keeps a focus so a hidden row is in scope.
+  Bar, point and link stack their bands through one `rowBandTopPx`, a
+  `//! js-export` of `rowTable.slang` their Canvas2D twins call, and the
+  `mark-rows-arranged-{bars,points,links}` scenes frame one mark each: a
+  points-only break read 0.03% in a scene the bars shared, 10.5% on its own.
 - The multi-row encode keys nothing on the order or the colours any more:
   `encodeInputs` replaces `featurePaintInputs` as the memo's inputs, and
   `MultiRowRenderState` carries `rowTable`. The overlay and the sort still

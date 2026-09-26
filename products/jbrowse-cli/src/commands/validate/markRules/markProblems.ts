@@ -132,6 +132,7 @@ export type StepSnapshot =
   | { type: 'mate' }
 
 interface ColorSnapshot {
+  value?: string
   field?: string
   scale?: ColorScaleName
   domain?: string[]
