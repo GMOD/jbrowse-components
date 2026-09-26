@@ -125,6 +125,28 @@ describe('extractModifications', () => {
     expect([...simplex].sort()).toEqual(['a', 'm'])
   })
 
+  test('an MN tag disagreeing with the read length ignores MM entirely', () => {
+    const detected = new Set<string>()
+    const out: ModificationEntry[] = []
+    const clipped = new SimpleFeature({
+      ...makeFeature().toJSON(),
+      tags: { MM: 'C+m,0;A+a,0;', ML: [230, 50], MN: 10 },
+    })
+    extractModifications(
+      clipped,
+      0,
+      100,
+      1,
+      { start: 0, end: Number.MAX_SAFE_INTEGER },
+      { type: 'modifications', modifications: { threshold: 10 } },
+      detected,
+      new Map<string, ModificationType>(),
+      out,
+    )
+    expect(detected.size).toBe(0)
+    expect(out).toEqual([])
+  })
+
   test('methylation mode picks one state per CpG; never paints unmethylated 5hmC', () => {
     // Forward read, 4 CpGs (C at read pos 0,2,4,6). ONT 5mCG_5hmCG models emit
     // a 5hmC probability at every CpG, so the read carries both C+m and C+h.

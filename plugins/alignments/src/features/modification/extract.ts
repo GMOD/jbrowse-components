@@ -20,8 +20,8 @@ import {
   getModPositions,
   getModProbabilities,
   getModProbabilityBytes,
+  getModTag,
   getModTypes,
-  getTagAlt,
   isMethylationFillType,
   matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
@@ -86,7 +86,7 @@ export function extractModifications(
   seenModTypes: Map<string, ModificationType>,
   modificationsData: ModificationEntry[],
 ): ParsedModData | undefined {
-  const mmTag = getTagAlt(feature, 'MM', 'Mm') as string | undefined
+  const mmTag = getModTag(feature)
   if (!mmTag) {
     return
   }

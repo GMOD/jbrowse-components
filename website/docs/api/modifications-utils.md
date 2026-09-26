@@ -69,6 +69,20 @@ still wants `getModProbabilities`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
 
+## getModTag
+
+The read's MM tag, or undefined when its MN tag says MM was computed on a
+sequence of a different length than SEQ. Per SAMtags, MN catches a hard clip
+or trim that shifted the bases MM's deltas count, so on a mismatch every
+position MM would place is wrong.
+
+```js
+// type signature
+(feature: Feature) => string | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModTag.ts)
+
 ## getModTypes
 
 The modification types an MM tag declares, from its headers alone.
