@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getConf } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
@@ -199,6 +200,109 @@ test('a v4 multi-wiggle display opens as rows, in its order and colours', async 
   expect(getConf(display, ['rowColor', 'range'])).toEqual(['red'])
 })
 
+// A v4 multi-bigwig the user added themselves is a session track, so the entry
+// the lifted settings land on still spells the retired type and meets the
+// retired-type fold a second time when it hydrates.
+test('a v4 multi-wiggle SESSION track opens as rows', async () => {
+  const { display } = await load({
+    name: 'v4',
+    sessionTracks: [
+      {
+        type: 'MultiQuantitativeTrack',
+        trackId: 'st_multi',
+        name: 'st_multi',
+        assemblyNames: ['volvox'],
+        adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
+        displays: [
+          {
+            type: 'MultiLinearWiggleDisplay',
+            displayId: 'st_multi-MultiLinearWiggleDisplay',
+          },
+        ],
+      },
+    ],
+    views: [
+      {
+        id: 'lgv',
+        type: 'LinearGenomeView',
+        offsetPx: 0,
+        bpPerPx: 1,
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+        ],
+        tracks: [
+          {
+            id: 't1',
+            type: 'MultiQuantitativeTrack',
+            configuration: 'st_multi',
+            displays: [
+              {
+                id: 'd1',
+                type: 'MultiLinearWiggleDisplay',
+                configuration: 'st_multi-MultiLinearWiggleDisplay',
+                rendererTypeNameState: 'multirowxy',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  })
+  expect(display.type).toBe('LinearWiggleDisplay')
+  expect(display.renderingType).toBe('xyplot')
+  expect(display.isRowLayout).toBe(true)
+  expect(getConf(display, ['rows', 'field'])).toBe('source')
+})
+
+test('a v4 multi-wiggle SESSION track left overlaid stays overlaid', async () => {
+  const { display } = await load({
+    name: 'v4',
+    sessionTracks: [
+      {
+        type: 'MultiQuantitativeTrack',
+        trackId: 'st_multi2',
+        name: 'st_multi2',
+        assemblyNames: ['volvox'],
+        adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
+        displays: [
+          {
+            type: 'MultiLinearWiggleDisplay',
+            displayId: 'st_multi2-MultiLinearWiggleDisplay',
+          },
+        ],
+      },
+    ],
+    views: [
+      {
+        id: 'lgv',
+        type: 'LinearGenomeView',
+        offsetPx: 0,
+        bpPerPx: 1,
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+        ],
+        tracks: [
+          {
+            id: 't1',
+            type: 'MultiQuantitativeTrack',
+            configuration: 'st_multi2',
+            displays: [
+              {
+                id: 'd1',
+                type: 'MultiLinearWiggleDisplay',
+                configuration: 'st_multi2-MultiLinearWiggleDisplay',
+                rendererTypeNameState: 'xyplot',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  })
+  expect(getConf(display, ['rows', 'field'])).toBe('')
+  expect(display.isRowLayout).toBe(false)
+})
+
 test('a v4 multi-wiggle display left overlaid stays overlaid', async () => {
   const { display } = await load(
     v4Session('MultiQuantitativeTrack', 'multi', {
@@ -313,4 +417,81 @@ test("a beta session track's scatterPointSize is the wiggle display's size", asy
     ],
   })
   expect(getConf(display, 'size')).toBe(5)
+})
+
+function wiggleSlots(display: Parameters<typeof getConf>[0]) {
+  return {
+    rows: getConf(display, ['rows', 'field']),
+    height: getConf(display, 'height'),
+    summaryScoreMode: getConf(display, 'summaryScoreMode'),
+  }
+}
+
+async function reload({ root, pluginManager }: ReturnType<typeof setup>) {
+  const snap = getSnapshot(root.session)
+  await pluginManager.preloadSessionTypes(snap)
+  root.setSession(snap)
+  return root.session.views[0].tracks[0]?.displays[0]
+}
+
+test.each([
+  [{}, { rows: 'source', height: 200, summaryScoreMode: 'avg' }],
+  [
+    { rows: '', height: 100, summaryScoreMode: 'whiskers' },
+    { rows: '', height: 100, summaryScoreMode: 'whiskers' },
+  ],
+])(
+  'a multi-wiggle session track spelling %j reads %j, before and after a reload',
+  async (spelled, expected) => {
+    const harness = setup()
+    const { root, pluginManager } = harness
+    const snap = {
+      ...v4Session('MultiQuantitativeTrack', 'st_fresh', {
+        type: 'LinearWiggleDisplay',
+        configuration: 'st_fresh-LinearWiggleDisplay',
+      }),
+      sessionTracks: [
+        {
+          type: 'MultiQuantitativeTrack',
+          trackId: 'st_fresh',
+          name: 'st_fresh',
+          assemblyNames: ['volvox'],
+          adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
+          displays: [
+            {
+              type: 'LinearWiggleDisplay',
+              displayId: 'st_fresh-LinearWiggleDisplay',
+              ...spelled,
+            },
+          ],
+        },
+      ],
+    }
+    await pluginManager.preloadSessionTypes(snap)
+    root.setSession(snap)
+    const display = root.session.views[0].tracks[0]?.displays[0]
+    expect(display.type).toBe('LinearWiggleDisplay')
+    expect(wiggleSlots(display)).toEqual(expected)
+    expect(wiggleSlots(await reload(harness))).toEqual(expected)
+  },
+)
+
+test('a multi-wiggle track a reader overlays stays overlaid after a reload', async () => {
+  const harness = setup()
+  const { root, pluginManager } = harness
+  const snap = v4Session('MultiQuantitativeTrack', 'multi', {
+    type: 'LinearWiggleDisplay',
+    configuration: 'multi-LinearWiggleDisplay',
+  })
+  await pluginManager.preloadSessionTypes(snap)
+  root.setSession(snap)
+  const track = root.session.views[0].tracks[0]
+  const display = track.displays[0]
+  expect(display.type).toBe('LinearWiggleDisplay')
+  expect(display.isRowLayout).toBe(true)
+  display.setRowLayout(false)
+  track.persistConfigurationNow()
+  const reloaded = await reload(harness)
+  expect(reloaded.isRowLayout).toBe(false)
+  expect(getConf(reloaded, ['rows', 'field'])).toBe('')
 })

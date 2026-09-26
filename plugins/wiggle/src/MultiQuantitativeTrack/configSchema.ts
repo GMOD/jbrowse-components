@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
+import { multiQuantitativeDisplaySchemas } from './displaySchema.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
@@ -30,7 +32,14 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 const configSchema = (pluginManager: PluginManager) => {
   return ConfigurationSchema(
     'MultiQuantitativeTrack',
-    {},
+    {
+      /**
+       * #slot
+       * As every track's, except that the quantitative display defaults to a
+       * row per source, averaged scores and a 200px height.
+       */
+      displays: multiQuantitativeDisplaySchemas(pluginManager),
+    },
     {
       /**
        * #baseConfiguration

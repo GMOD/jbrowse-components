@@ -42,6 +42,9 @@ const MULTI_RENDERINGS: Record<string, readonly [string, string]> = {
  * whether its sources took a row each. On a multi-source track's
  * `displayDefaults`, which names no display, a plain plot name is the current
  * display's, so `plainNames: false` folds the multi names alone.
+ *
+ * A `rows.field` the entry spells wins, so a folded entry folds to itself: a
+ * session track's entry keeps the retired type and meets the fold again.
  */
 export function foldMultiWiggleRendering(
   entry: DisplayEntry,
@@ -61,7 +64,11 @@ export function foldMultiWiggleRendering(
   return {
     ...entry,
     defaultRendering: plot,
-    rows: isRecord(rows) ? { ...rows, field } : field,
+    rows: isRecord(rows)
+      ? { field, ...rows }
+      : typeof rows === 'string'
+        ? rows
+        : field,
   }
 }
 

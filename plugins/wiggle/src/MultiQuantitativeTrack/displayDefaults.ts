@@ -4,53 +4,17 @@ import { foldMultiWiggleRendering } from '../LinearWiggleDisplay/retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// What a MultiQuantitativeTrack asks of the one quantitative display, which a
-// QuantitativeTrack does not. The display's own defaults are the single-source
-// picture — one plot box, whiskers, 100px — because that is what a
-// `QuantitativeTrack` with no display settings at all has always drawn.
-//
-// The track types differ in adapter shorthand and add-track workflow, not in
-// what they draw, so this is the whole of the difference: several files arrive
-// as several rows, averaged, in a taller track.
-const DEFAULTS: Record<string, unknown> = {
-  rows: 'source',
-  summaryScoreMode: 'avg',
-  height: 200,
-}
-
 const QUANTITATIVE_TRACK_TYPES = new Set([
   'QuantitativeTrack',
   'MultiQuantitativeTrack',
 ])
 
-function wiggleDisplays(snap: Record<string, unknown>) {
-  return Array.isArray(snap.displays)
-    ? (snap.displays as Record<string, unknown>[])
-    : []
-}
-
-// Seeded into `displayDefaults` rather than declared on the display: one
-// display type has one set of slot defaults, and `expandTrackConfigShorthand`
-// runs after this extension point, so a key the config already spells — in
-// `displayDefaults` or in an explicit `displays` entry — wins.
-export function seedDisplayDefaults(snap: Record<string, unknown>) {
+export function foldRetiredRenderingDefaults(snap: Record<string, unknown>) {
   const given = snap.displayDefaults as Record<string, unknown> | undefined
   const written = given
     ? foldMultiWiggleRendering(given, { plainNames: false })
     : undefined
-  const spelled = new Set([
-    ...Object.keys(written ?? {}),
-    ...wiggleDisplays(snap)
-      .filter(d => d.type === 'LinearWiggleDisplay')
-      .flatMap(d => Object.keys(d)),
-  ])
-  const missing = Object.entries(DEFAULTS).filter(([key]) => !spelled.has(key))
-  return missing.length === 0 && written === given
-    ? snap
-    : {
-        ...snap,
-        displayDefaults: { ...Object.fromEntries(missing), ...written },
-      }
+  return written === given ? snap : { ...snap, displayDefaults: written }
 }
 
 /**
@@ -59,7 +23,7 @@ export function seedDisplayDefaults(snap: Record<string, unknown>) {
  * would send either to every display declaring it, the mark display among
  * them: a `facet`, the spelling `rows` replaced, would make the mark display
  * the track's first in silence rather than meet the quantitative display's
- * refusal, and the seeded `rows: 'source'` would give a mark display rows no
+ * refusal, and a `rows` written for the plot would give a mark display rows no
  * config wrote for it.
  */
 export function wiggleEntryShorthand(snap: Record<string, unknown>) {
@@ -74,7 +38,9 @@ export default function MultiQuantitativeTrackDefaultsF(
       return snap
     }
     return wiggleEntryShorthand(
-      snap.type === 'MultiQuantitativeTrack' ? seedDisplayDefaults(snap) : snap,
+      snap.type === 'MultiQuantitativeTrack'
+        ? foldRetiredRenderingDefaults(snap)
+        : snap,
     )
   })
 }

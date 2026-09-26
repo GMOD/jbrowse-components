@@ -71,12 +71,15 @@ checkbox split "multi-row XY plot" across two controls. The two axes stay apart
 in the model and the config, and the `<layout>:<plot>` key is menu-local.
 
 **The track types differ in defaults and nothing else.**
-`MultiQuantitativeTrack/displayDefaults.ts` seeds `facet: 'source'`,
+~~`MultiQuantitativeTrack/displayDefaults.ts` seeds `facet: 'source'`,
 `summaryScoreMode: 'avg'` and `height: 200` into `displayDefaults` through
 `Core-preProcessTrackConfig`, which runs before `expandTrackConfigShorthand`, so
-a key the config already spells wins. The display's own defaults stay the
-single-source picture, which is what a `QuantitativeTrack` naming no display
-setting has always drawn.
+a key the config already spells wins.~~ The multi track's `displays` union holds
+a `LinearWiggleDisplay` schema whose defaults are `rows: 'source'`,
+`summaryScoreMode: 'avg'` and `height: 200`, because a seed a snapshot strips
+against other defaults cannot hold the single-source values (ADR-170). The
+display's own defaults stay the single-source picture, which is what a
+`QuantitativeTrack` naming no display setting has always drawn.
 
 **A lone plot in the box is not the shared-plot colour mode.** `rowColorMode`
 asks whether several sources share one plot rather than whether the facet is
@@ -171,6 +174,6 @@ multi-region pass. Only an adapter carrying several sources in one file
   remote store behind a hosted plugin. Resolving rows at runtime instead is shut
   by `summaryScoreMode` being a fetch key: seeding `avg` after the data lands
   refetches every region. So the track type stays as the one place the config
-  author states it — a named bundle of the three `displayDefaults` in
-  `MultiQuantitativeTrack/displayDefaults.ts`, which the guessers already return
+  author states it — a named bundle of three display defaults, stated in
+  `MultiQuantitativeTrack/displaySchema.ts` since ADR-170, which the guessers already return
   and the Add-track dropdown already offers.

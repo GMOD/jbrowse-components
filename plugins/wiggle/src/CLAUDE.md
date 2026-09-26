@@ -6,9 +6,10 @@ other plugins draw a wiggle-shaped axis against it.
 
 `LinearWiggleDisplay` registers against both `QuantitativeTrack` and
 `MultiQuantitativeTrack`; the track types differ in adapter shorthand and
-add-track workflow, and `MultiQuantitativeTrack/displayDefaults.ts` is the whole
-of what they differ in on screen — one row per source, average scores, 200px,
-seeded into `displayDefaults` through `Core-preProcessTrackConfig`. ADR-143.
+add-track workflow, and `MultiQuantitativeTrack/displaySchema.ts` is the whole
+of what they differ in on screen — one row per source, average scores, 200px, as
+the slot defaults of the wiggle schema the multi track's `displays` union holds.
+ADR-143, ADR-170.
 
 ## Four records, because a module reflects one instance struct
 

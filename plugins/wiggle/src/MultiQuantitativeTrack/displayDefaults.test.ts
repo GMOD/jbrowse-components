@@ -1,11 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 import WigglePlugin from '../index.ts'
-import { seedDisplayDefaults, wiggleEntryShorthand } from './displayDefaults.ts'
-
-const track = { type: 'MultiQuantitativeTrack', trackId: 't' }
+import { wiggleEntryShorthand } from './displayDefaults.ts'
 
 describe('displayDefaults.facet on a quantitative track', () => {
   const quantitative = { type: 'QuantitativeTrack', trackId: 'q' }
@@ -98,19 +97,52 @@ function loadTrack(snap: Record<string, unknown>) {
   )
 }
 
-test('a MultiQuantitativeTrack seeds rows onto the quantitative display alone', () => {
-  const { displays } = getSnapshot(
-    loadTrack({ type: 'MultiQuantitativeTrack' }),
-  ) as { displays: Record<string, unknown>[] }
-  expect(displays).toEqual([
-    {
-      type: 'LinearWiggleDisplay',
-      displayId: 't-LinearWiggleDisplay',
-      rows: { field: 'source' },
-      summaryScoreMode: 'avg',
-      height: 200,
+function threeSlots(snap: Record<string, unknown>) {
+  const track = loadTrack(snap)
+  const [display] = track.displays
+  return {
+    track,
+    slots: {
+      rows: readConfObject(display, ['rows', 'field']),
+      height: readConfObject(display, 'height'),
+      summaryScoreMode: readConfObject(display, 'summaryScoreMode'),
     },
+  }
+}
+
+test('a MultiQuantitativeTrack reads a row per source, averaged, 200px', () => {
+  const { track, slots } = threeSlots({ type: 'MultiQuantitativeTrack' })
+  expect(slots).toEqual({
+    rows: 'source',
+    height: 200,
+    summaryScoreMode: 'avg',
+  })
+  expect(getSnapshot(track).displays).toEqual([
+    { type: 'LinearWiggleDisplay', displayId: 't-LinearWiggleDisplay' },
   ])
+})
+
+test('a QuantitativeTrack reads one plot box, whiskers, 100px', () => {
+  expect(threeSlots({ type: 'QuantitativeTrack' }).slots).toEqual({
+    rows: '',
+    height: 100,
+    summaryScoreMode: 'whiskers',
+  })
+})
+
+// The single-source values are not this track's defaults, so the snapshot
+// keeps them and a reload reads them back.
+test('the single-source values survive two round trips', () => {
+  const explicit = { rows: '', height: 100, summaryScoreMode: 'whiskers' }
+  let snap: Record<string, unknown> = {
+    type: 'MultiQuantitativeTrack',
+    displays: [{ type: 'LinearWiggleDisplay', displayId: 'w', ...explicit }],
+  }
+  for (let i = 0; i < 2; i++) {
+    const { track, slots } = threeSlots(snap)
+    expect(slots).toEqual(explicit)
+    snap = getSnapshot(track) as Record<string, unknown>
+  }
 })
 
 test.each(['QuantitativeTrack', 'MultiQuantitativeTrack'])(
@@ -121,33 +153,3 @@ test.each(['QuantitativeTrack', 'MultiQuantitativeTrack'])(
     ).toThrow(/a quantitative display puts "source" alone on rows/)
   },
 )
-
-test('a track naming no display setting gets the whole set', () => {
-  expect(seedDisplayDefaults(track).displayDefaults).toEqual({
-    rows: 'source',
-    summaryScoreMode: 'avg',
-    height: 200,
-  })
-})
-
-test('a key the config spells in displayDefaults wins', () => {
-  const snap = { ...track, displayDefaults: { rows: '', height: 90 } }
-  expect(seedDisplayDefaults(snap).displayDefaults).toEqual({
-    rows: '',
-    summaryScoreMode: 'avg',
-    height: 90,
-  })
-})
-
-// The shorthand expands after this runs, so a key written on the display entry
-// itself has to count as spelled here or the seed would fight it.
-test('a key the config spells on the display entry wins', () => {
-  const snap = {
-    ...track,
-    displays: [{ type: 'LinearWiggleDisplay', rows: '' }],
-  }
-  expect(seedDisplayDefaults(snap).displayDefaults).toEqual({
-    summaryScoreMode: 'avg',
-    height: 200,
-  })
-})

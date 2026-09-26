@@ -1,4 +1,4 @@
-import { seedDisplayDefaults } from '../MultiQuantitativeTrack/displayDefaults.ts'
+import { foldRetiredRenderingDefaults } from '../MultiQuantitativeTrack/displayDefaults.ts'
 import { foldMultiWiggleRendering } from './retired.ts'
 
 test.each([
@@ -33,6 +33,14 @@ test('the layout joins an arrangement already lifted', () => {
   })
 })
 
+test.each(['multirowxy', 'multixyplot', 'density'])(
+  'folding a folded %s entry changes nothing',
+  rendering => {
+    const once = foldMultiWiggleRendering({ defaultRendering: rendering })
+    expect(foldMultiWiggleRendering(once)).toEqual(once)
+  },
+)
+
 test('an entry with no rendering is left alone', () => {
   const entry = { height: 300 }
   expect(foldMultiWiggleRendering(entry)).toBe(entry)
@@ -40,7 +48,7 @@ test('an entry with no rendering is left alone', () => {
 
 test('a multi-source track’s displayDefaults folds the multi names alone', () => {
   const seeded = (defaultRendering: string) =>
-    seedDisplayDefaults({
+    foldRetiredRenderingDefaults({
       type: 'MultiQuantitativeTrack',
       displayDefaults: { defaultRendering },
     }).displayDefaults
@@ -48,8 +56,5 @@ test('a multi-source track’s displayDefaults folds the multi names alone', () 
     defaultRendering: 'xyplot',
     rows: '',
   })
-  expect(seeded('xyplot')).toMatchObject({
-    defaultRendering: 'xyplot',
-    rows: 'source',
-  })
+  expect(seeded('xyplot')).toEqual({ defaultRendering: 'xyplot' })
 })

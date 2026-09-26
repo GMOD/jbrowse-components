@@ -340,9 +340,9 @@ many and registers against both `QuantitativeTrack` and
 workflow rather than in what they draw. `rows: 'source'` puts each source on a
 row of its own, with the tree sidebar, clustering, the row-order sort and the
 row labels, and `rows: ''` draws every source in one shared plot. A
-`MultiQuantitativeTrack` seeds `rows: 'source'`, `summaryScoreMode: 'avg'` and
-`height: 200` into its display defaults, so a multi track that names no display
-setting still opens as a stack of rows.
+`MultiQuantitativeTrack` defaults its display to `rows: 'source'`,
+`summaryScoreMode: 'avg'` and `height: 200`, so a multi track that names no
+display setting still opens as a stack of rows.
 
 `defaultRendering` is the five plot names — `xyplot`, `density`, `line`,
 `linecenter` and `scatter`. A config or a session naming
