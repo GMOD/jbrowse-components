@@ -36,7 +36,11 @@ const DENSITY_MARKS = [
   },
 ]
 
-function createTestEnvironment(marks: unknown[], densityAdapter?: unknown) {
+function createTestEnvironment(
+  marks: unknown[],
+  densityAdapter?: unknown,
+  display: Record<string, unknown> = {},
+) {
   return createDisplayTestEnvironment<LinearMarkDisplayModel>({
     plugins: [new LinearGenomeViewPlugin(), new WigglePlugin()],
     trackType: 'FeatureTrack',
@@ -49,7 +53,7 @@ function createTestEnvironment(marks: unknown[], densityAdapter?: unknown) {
     configSchema: () => configSchemaFactory(),
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
-    displayConfig: { marks },
+    displayConfig: { marks, ...display },
     regions: [REGION],
     assemblyRegions: [REGION],
     onViewReady: view => {
@@ -225,4 +229,21 @@ test('past the budget a bin opens nothing, and the notice says what is drawn', (
   expect(session.openedWidgets).toHaveLength(0)
   expect(display.densityStandInNotice).toContain('density sidecar')
   expect(display.densityStandInNotice).toContain('1 other mark')
+})
+
+test('under rows the sidecar binds no row table, since its bins carry no key', () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS, SIDECAR, {
+    rows: 'source',
+  })
+  const { display, view } = createDisplay()
+  expect(display.rowTable).toBeDefined()
+  refuse(display, view)
+  display.setCoarseTier([{ displayedRegionIndex: 0, payload: bins() }], {
+    regions: [],
+    key: '',
+  })
+  expect(display.coarseTierStandsIn).toBe(true)
+  expect(display.rowTable).toBeUndefined()
+  expect(display.renderState.rowTable).toBeUndefined()
+  expect([...display.rpcDataMap.get(0)!.layers[1]!.y!]).toEqual([4, 17, 9])
 })
