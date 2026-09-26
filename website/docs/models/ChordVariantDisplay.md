@@ -64,6 +64,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> | the panel the linear variant displays open for the same record | ChordVariantDisplay |
+| <span id="getter-shapes">**shapes**</span><br><code>ChordShape[]</code> | each drawn record's chord, with the colour its config slot answers | ChordVariantDisplay |
+| <span id="getter-shapealpha">**shapeAlpha**</span><br><code>number</code> | a chord's colour carries its own alpha | ChordVariantDisplay |
 | <span id="getter-legendcolor">**legendColor**</span><br><code>string &#124; undefined</code> | the chord color the circle's key shows, when every chord shares one | ChordVariantDisplay |
 | <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;Omit&lt;Omit&lt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;Omit&lt;Omit&lt;…&gt;, never&gt;, _OverrideProps&lt;...&gt;&gt;, { ...; }&gt;&gt; &amp; ... 25 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | [BaseChordDisplay](../basechorddisplay#getter-view) |
 | <span id="getter-trackassemblynames">**trackAssemblyNames**</span><br><code>string[]</code> | <span data-pagefind-ignore>the track's assemblies that are on the circle, canonical and in the order the circle lays them out</span> | [BaseChordDisplay](../basechorddisplay#getter-trackassemblynames) |
@@ -81,6 +83,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-drawnfeatures">**drawnFeatures**</span><br><code>Feature[] &#124; undefined</code> | <span data-pagefind-ignore>what the chord components draw</span> | [BaseChordDisplay](../basechorddisplay#getter-drawnfeatures) |
 | <span id="getter-highlightedfeatureidset">**highlightedFeatureIdSet**</span><br><code>Set&lt;string&gt; &#124; undefined</code> |  | [BaseChordDisplay](../basechorddisplay#getter-highlightedfeatureidset) |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | [BaseChordDisplay](../basechorddisplay#getter-selectedfeatureid) |
+| <span id="getter-hoveredfeatureid">**hoveredFeatureId**</span><br><code>string &#124; undefined</code> | <span data-pagefind-ignore>the feature under the pointer, which the view resolves off its pick canvas for every chord display at once</span> | [BaseChordDisplay](../basechorddisplay#getter-hoveredfeatureid) |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
 | <span id="getter-renderingcomponent">**RenderingComponent**</span><br><code>FC&lt;…&gt;</code> |  | [BaseDisplay](../basedisplay#getter-renderingcomponent) |
 | <span id="getter-displayblurb">**DisplayBlurb**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>FC&lt;{ model: ModelInstanceTypeProps&lt;{ id: IOptionalIType&lt;ISimple…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>FC&lt;{ model: ModelInstanceTypeProps&lt;{ id: IOptionalIType&lt;ISimpleType&lt;string&gt;, [undefined]&gt;; type: ISimpleType&lt;string&gt;; }&gt; &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }&gt; &#124; null</code></pre></dialog></span> |  | [BaseDisplay](../basedisplay#getter-displayblurb) |
@@ -94,6 +97,8 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="method-shapelabel">**shapeLabel**</span><br><code>(feature: Feature) =&gt; string</code> |  | ChordVariantDisplay |
+| <span id="method-shapepathfor">**shapePathFor**</span><br><code>(feature: Feature) =&gt; string &#124; undefined</code> | a drawn feature's outline as an SVG path, for anything that has to find a chord on screen without a DOM node to find | ChordVariantDisplay |
 | <span id="method-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_opts: ViewExportSvgOptions &amp; { theme?: ThemeOptions &#124; undefin…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_opts: ViewExportSvgOptions &amp; { theme?: ThemeOptions &#124; undefined; }) =&gt; Promise&lt;Element &#124; null&gt;</code></pre></dialog></span> |  | ChordVariantDisplay |
 | <span id="method-assemblyof">**assemblyOf**</span><br><code>(assemblyName: string &#124; undefined) =&gt; string &#124; undefined</code> | <span data-pagefind-ignore>the assembly on the circle a feature names, in whatever spelling the adapter wrote. A feature that names none, as a VCF record does not, is on the track's first assembly.</span> | [BaseChordDisplay](../basechorddisplay#method-assemblyof) |
 | <span id="method-canonicalrefname">**canonicalRefName**</span><br><code>(assemblyName: string, refName: string) =&gt; string</code> | <span data-pagefind-ignore>a refName as the adapter wrote it, in the assembly's canonical spelling</span> | [BaseChordDisplay](../basechorddisplay#method-canonicalrefname) |
@@ -107,6 +112,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-onchordclick">**onChordClick**</span><br><code>(feature: Feature) =&gt; void</code> | the `onChordClick` callback when the config sets one, else the record's details | ChordVariantDisplay |
+| <span id="action-clickfeature">**clickFeature**</span><br><code>(feature: Feature) =&gt; void</code> | what a click on the canvas reaches | ChordVariantDisplay |
 | <span id="action-openerrordialog">**openErrorDialog**</span><br><code>() =&gt; void</code> |  | [BaseChordDisplay](../basechorddisplay#action-openerrordialog) |
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(features: Feature[] &#124; undefined) =&gt; void</code> |  | [BaseChordDisplay](../basechorddisplay#action-setfeatures) |
 | <span id="action-sethighlightedfeatureids">**setHighlightedFeatureIds**</span><br><code>(ids: string[] &#124; undefined) =&gt; void</code> |  | [BaseChordDisplay](../basechorddisplay#action-sethighlightedfeatureids) |
