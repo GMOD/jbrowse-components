@@ -191,6 +191,31 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(display.topSnp).toBe('ctgA:501')
   })
 
+  it('reads no top hit off an LD mark whose points are aggregated bins', () => {
+    const { display } = createTestEnvironment({
+      marks: [
+        {
+          mark: 'bar',
+          transform: [
+            { type: 'bin', step: 1000 },
+            { type: 'aggregate', ops: [{ op: 'max', field: 'ld', as: 'ld' }] },
+          ],
+          encoding: { y: 'ld' },
+        },
+        ...LD_MARKS,
+      ],
+    }).createDisplay()
+    const at = (pos: number, score: number) =>
+      manhattanFixture({ x: [pos], y: [score], flatbush: false })
+    display.setRpcData(
+      0,
+      { layers: [at(0, 50), at(500, 9), at(700, 3)] },
+      HIT_REGION,
+    )
+    expect(display.ldMarkIndexes).toEqual([1, 2])
+    expect(display.topSnp).toBe('ctgA:501')
+  })
+
   // Regression (empty SVG/PNG export): `awaitSvgReady` samples `svgReady` once
   // and then renders. The first load lands with no index SNP, so the export
   // gate opened over data the auto-pick was about to invalidate — by paint time

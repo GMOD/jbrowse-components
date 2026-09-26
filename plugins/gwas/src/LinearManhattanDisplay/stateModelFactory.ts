@@ -91,14 +91,21 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The marks drawing at this zoom that name an LD field and plot a `y`,
-       * whose points the top hit and the missing-index check read.
+       * The marks drawing at this zoom that name an LD field and plot a SNP's
+       * own `y`, whose points the top hit reads. An `aggregate` or `coverage`
+       * step makes its points from bins, so a mark behind one has none.
        */
       get ldMarkIndexes(): number[] {
         const { visible } = self.markView
         const requests = self.layerRequests
+        const shared = [...self.conf.transform, ...self.conf.facet.transform]
         return self.conf.marks.flatMap((m, i) =>
-          visible[i] && readsLd(m) && requests[i]!.lanes.includes('y')
+          visible[i] &&
+          readsLd(m) &&
+          requests[i]!.lanes.includes('y') &&
+          ![...shared, ...m.transform].some(
+            s => s.type === 'aggregate' || s.type === 'coverage',
+          )
             ? [i]
             : [],
         )
