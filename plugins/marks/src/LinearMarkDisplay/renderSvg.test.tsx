@@ -45,3 +45,25 @@ test('a text mark exports with the plot, and stays out of a plot-only export', a
     'geneA',
   )
 })
+
+test('under rows the export places labels through the row table, a focused-out row placing none', async () => {
+  const { display } = createTestEnvironment({
+    rows: 'source',
+    marks: [{ mark: 'text', encoding: { text: 'name' } }],
+  }).createDisplay()
+  display.setRpcData(
+    0,
+    workerResult(
+      display,
+      features([
+        { source: 'dad', start: 1000, end: 4000, name: 'fromDad' },
+        { source: 'mom', start: 5000, end: 8000, name: 'fromMom' },
+      ]),
+    ),
+    REGION,
+  )
+  display.setRowFocus(['mom'])
+  const svg = draw(await renderSvg(display, {}))
+  expect(svg).toContain('fromMom')
+  expect(svg).not.toContain('fromDad')
+})
