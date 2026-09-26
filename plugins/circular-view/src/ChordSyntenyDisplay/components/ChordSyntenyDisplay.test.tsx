@@ -2,12 +2,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
-import { Slice } from '../../CircularView/slices.ts'
 import ShapePaths from '../../chords/ShapePaths.tsx'
-import { ribbonShape } from '../../chords/shapes.ts'
 import configSchemaF from '../models/configSchema.ts'
 import ChordSyntenyDisplay from './ChordSyntenyDisplay.tsx'
 
+import type { ChordCell } from '../../chords/chordMarks.ts'
+import type { RibbonShape } from '../../chords/shapes.ts'
 import type { RibbonDisplayModel } from '../../chords/types.ts'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -19,29 +19,6 @@ const configuration = configSchemaF(pluginManager).create(
   { pluginManager },
 )
 
-function block(refName: string, assemblyName: string, offsetRadians: number) {
-  return new Slice(
-    { bpPerRadian: 1000 },
-    {
-      elided: false,
-      widthBp: 10000,
-      start: 0,
-      end: 10000,
-      refName,
-      assemblyName,
-    },
-    offsetRadians,
-  )
-}
-
-const slices = {
-  'hg38 chr1': block('chr1', 'hg38', 0),
-  'mm39 chr1': block('chr1', 'mm39', 3),
-}
-
-const sliceFor = (assemblyName: string | undefined, refName: string) =>
-  slices[`${assemblyName} ${refName}` as keyof typeof slices]
-
 function alignment(strand: number, uniqueId = 'aln1') {
   return new SimpleFeature({
     uniqueId,
@@ -50,25 +27,20 @@ function alignment(strand: number, uniqueId = 'aln1') {
     start: 1000,
     end: 3000,
     strand,
-    mate: {
-      assemblyName: 'mm39',
-      refName: 'chr1',
-      start: 2000,
-      end: 5000,
-    },
+    mate: { assemblyName: 'mm39', refName: 'chr1', start: 2000, end: 5000 },
   })
 }
 
-function shapesOf(...features: SimpleFeature[]) {
-  return features.flatMap(feature => {
-    const shape = ribbonShape({
-      feature,
-      sliceFor,
-      radius: 1000,
-      fill: '#4682b4',
-    })
-    return shape ? [shape] : []
-  })
+function shapesOf(...features: SimpleFeature[]): RibbonShape[] {
+  return features.map(feature => ({
+    kind: 'ribbon',
+    feature,
+    angles:
+      feature.get('strand') === -1
+        ? { a1: 1, a2: 3, m1: 5, m2: 8 }
+        : { a1: 1, a2: 3, m1: 8, m2: 5 },
+    fill: '#4682b4',
+  }))
 }
 
 function ribbonModel(
@@ -79,19 +51,27 @@ function ribbonModel(
     id: 'paf',
     error: undefined,
     displayError: undefined,
-    view: { offsetRadians: 0 },
+    view: {
+      offsetRadians: 0,
+      chordPass: { drew: () => true, renderError: undefined },
+    },
     ready: phase === 'ready',
     displayPhase: phase,
     svgReady: phase !== 'loading',
     drawnFeatures: [],
+    drawnCount: overrides.shapes?.length ?? 0,
     shapes: [],
+    shapeFor: id =>
+      (overrides.shapes ?? []).find(shape => shape.feature.id() === id),
+    chordCell: undefined,
+    hitAt: () => undefined,
     shapeAlpha: 0.25,
     selectedFeatureId: undefined,
     hoveredFeatureId: undefined,
     configuration,
     radiusPx: 1000,
     bezierRadius: 100,
-    sliceFor,
+    sliceFor: () => undefined,
     clickFeature: () => {},
     shapeLabel: () => 'an alignment',
     openErrorDialog: () => {},
@@ -140,22 +120,25 @@ test('the error terminal is finished rather than pending', () => {
   })
 })
 
-// each end resolves against its own assembly's slices, which is what a
-// two-assembly circle needs: both sides here are named chr1
-test('an alignment across two assemblies is one ribbon', () => {
-  expect(shapesOf(alignment(1))).toHaveLength(1)
-})
-
-test('an end whose slice is off the circle drops the ribbon', () => {
-  expect(
-    ribbonShape({
-      feature: alignment(1),
-      sliceFor: assemblyName =>
-        assemblyName === 'hg38' ? slices['hg38 chr1'] : undefined,
-      radius: 1000,
-      fill: '#4682b4',
-    }),
-  ).toBeUndefined()
+// the canvas holds the display's cell, so its frame is drawn when the canvas
+// has painted that cell and not before
+test('a ready display is drawn once the canvas has painted its cell', () => {
+  const cell = { kind: 'ribbon' } as ChordCell
+  const drawnWith = (painted: boolean) =>
+    attrs(
+      ribbonModel('ready', {
+        chordCell: cell,
+        view: {
+          offsetRadians: 0,
+          chordPass: {
+            drew: c => painted && c === cell,
+            renderError: undefined,
+          },
+        },
+      }),
+    ).drawn
+  expect(drawnWith(false)).toBe('false')
+  expect(drawnWith(true)).toBe('true')
 })
 
 // the canvas holds the resting ribbons, so the screen draws only what it

@@ -40,6 +40,7 @@ export interface MarkContext2D extends ClipContext2D {
     radius: number,
     startAngle: number,
     endAngle: number,
+    counterclockwise?: boolean,
   ): void
   ellipse(
     x: number,

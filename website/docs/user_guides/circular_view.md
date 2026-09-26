@@ -113,8 +113,8 @@ three go in a session as `color`, `alpha` and `minAlignmentLength`.
 <Figure src="/img/circular_synteny/color_by_chromosome.png" caption="Color by... → Query on the human and mouse circle: each ribbon takes the ideogram color of the human chromosome it leaves, so a human chromosome's pieces can be followed to every mouse chromosome that carries one." />
 
 Hovering a ribbon or a chord highlights it and names it in a tooltip; clicking
-opens its details. The resting ribbons are painted, so a whole-genome chain
-draws at once and a hover costs nothing.
+opens its details. Ribbons and chords draw on the GPU, so a circle holding tens
+of thousands of them still turns and zooms without a pause.
 
 ## Interacting with chords
 

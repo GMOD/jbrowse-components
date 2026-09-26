@@ -3,10 +3,10 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { render } from '@testing-library/react'
 
 import ShapePaths from '../../chords/ShapePaths.tsx'
-import { chordShape } from '../../chords/shapes.ts'
 import configSchemaF from '../models/configSchema.ts'
 import ChordVariantDisplay from './ChordVariantDisplay.tsx'
 
+import type { ChordShape } from '../../chords/shapes.ts'
 import type { ChordDisplayModel } from '../../chords/types.ts'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -23,12 +23,20 @@ function chordModel(
     id: 'sv',
     error: undefined,
     displayError: undefined,
-    view: { offsetRadians: 0 },
+    view: {
+      offsetRadians: 0,
+      chordPass: { drew: () => true, renderError: undefined },
+    },
     ready: phase === 'ready',
     displayPhase: phase,
     svgReady: phase !== 'loading',
     drawnFeatures: [],
+    drawnCount: overrides.shapes?.length ?? 0,
     shapes: [],
+    shapeFor: id =>
+      (overrides.shapes ?? []).find(shape => shape.feature.id() === id),
+    chordCell: undefined,
+    hitAt: () => undefined,
     shapeAlpha: 1,
     sliceFor: () => undefined,
     selectedFeatureId: undefined,
@@ -98,13 +106,6 @@ test('the error terminal is finished rather than pending', () => {
   })
 })
 
-const slice = {
-  startRadians: 0,
-  endRadians: Math.PI,
-  bpPerRadian: 1000,
-  region: { elided: false as const, start: 0 },
-} as unknown as ReturnType<ChordDisplayModel['sliceFor']>
-
 function bnd(uniqueId: string, start: number, mate: number) {
   return new SimpleFeature({
     uniqueId,
@@ -115,16 +116,16 @@ function bnd(uniqueId: string, start: number, mate: number) {
   })
 }
 
-function shapesOf(...features: SimpleFeature[]) {
-  return features.flatMap(feature => {
-    const shape = chordShape({
-      feature,
-      sliceFor: () => slice,
-      radius: 100,
-      stroke: 'rgba(255,133,0,0.32)',
-    })
-    return shape ? [shape] : []
-  })
+function shapesOf(...features: SimpleFeature[]): ChordShape[] {
+  return features.map(feature => ({
+    kind: 'chord',
+    feature,
+    ends: {
+      startRadians: feature.get('start') / 1000,
+      endRadians: Math.PI,
+    },
+    stroke: 'rgba(255,133,0,0.32)',
+  }))
 }
 
 test('on screen the renderer group counts every chord and draws the hovered one', () => {

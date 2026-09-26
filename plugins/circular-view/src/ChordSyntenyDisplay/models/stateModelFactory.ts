@@ -28,12 +28,16 @@ import {
   BaseChordDisplay,
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
-import { shapePath } from '../../chords/chordLayer.ts'
+import { hitRibbon } from '../../chords/chordHit.ts'
+import { axisX, ribbonAnglesAt } from '../../chords/chordStage.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
-import { ribbonShape } from '../../chords/shapes.ts'
+import { shapePath } from '../../chords/shapePath.ts'
+import { DIMMED_ALPHA } from '../../chords/types.ts'
 
 import type { ExportSvgOptions } from '../../CircularView/model.ts'
+import type { ChordCell } from '../../chords/chordMarks.ts'
+import type { RibbonLanes } from '../../chords/chordStage.ts'
 import type { RibbonShape } from '../../chords/shapes.ts'
 import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -249,25 +253,147 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * each drawn alignment as the four angles its ribbon visits and the
-       * fill it rests in; an end off the circle drops the ribbon
+       * every held alignment's feet on the circle's unrolled axis, by the
+       * feature's place in `features`: rebuilt by a fetch or a change to the
+       * regions, never by a recolour, a zoom or a rotation
        */
-      get shapes(): RibbonShape[] {
-        const { radiusPx } = self
-        const fill = this.ribbonFill
-        const out: RibbonShape[] = []
+      get ribbonFeet() {
+        const features = self.features ?? []
+        const n = features.length
+        const feet = {
+          x1: new Float32Array(n),
+          x2: new Float32Array(n),
+          y1: new Float32Array(n),
+          y2: new Float32Array(n),
+          xSlice: new Uint32Array(n),
+          ySlice: new Uint32Array(n),
+          strand: new Float32Array(n),
+          placed: new Uint8Array(n),
+          index: new Map<Feature, number>(),
+        }
+        features.forEach((feature, i) => {
+          feet.index.set(feature, i)
+          const mate = getMate(feature)
+          const own = self.axisSlice(
+            feature.get('assemblyName') as string | undefined,
+            feature.get('refName'),
+          )
+          const other = mate
+            ? self.axisSlice(mate.assemblyName, mate.refName)
+            : undefined
+          if (mate && own && other) {
+            feet.placed[i] = 1
+            feet.x1[i] = axisX(own, feature.get('start'))
+            feet.x2[i] = axisX(own, feature.get('end'))
+            feet.y1[i] = axisX(other, mate.start)
+            feet.y2[i] = axisX(other, mate.end)
+            feet.xSlice[i] = own.index
+            feet.ySlice[i] = other.index
+            feet.strand[i] = feature.get('strand') ?? 1
+          }
+        })
+        return feet
+      },
+      /**
+       * #getter
+       * the drawn alignments as the ribbon mark's lanes, each in its fill with
+       * the alpha the SV inspector's dimming leaves it
+       */
+      get ribbonLanes(): RibbonLanes {
+        const feet = this.ribbonFeet
+        const colors = this.ribbonColors
+        const highlighted = self.highlightedFeatureIdSet
+        const picked: number[] = []
+        const features: Feature[] = []
         for (const feature of this.drawnFeatures ?? []) {
-          const shape = ribbonShape({
-            feature,
-            sliceFor: self.sliceFor,
-            radius: radiusPx,
-            fill: fill(feature),
-          })
-          if (shape) {
-            out.push(shape)
+          const i = feet.index.get(feature)
+          if (i !== undefined && feet.placed[i]) {
+            picked.push(i)
+            features.push(feature)
           }
         }
-        return out
+        const n = picked.length
+        const lanes: RibbonLanes = {
+          x1: new Float32Array(n),
+          x2: new Float32Array(n),
+          y1: new Float32Array(n),
+          y2: new Float32Array(n),
+          xSlice: new Uint32Array(n),
+          ySlice: new Uint32Array(n),
+          strand: new Float32Array(n),
+          color: new Uint32Array(n),
+          count: n,
+          features,
+        }
+        picked.forEach((i, k) => {
+          const id = features[k]!.id()
+          lanes.x1[k] = feet.x1[i]!
+          lanes.x2[k] = feet.x2[i]!
+          lanes.y1[k] = feet.y1[i]!
+          lanes.y2[k] = feet.y2[i]!
+          lanes.xSlice[k] = feet.xSlice[i]!
+          lanes.ySlice[k] = feet.ySlice[i]!
+          lanes.strand[k] = feet.strand[i]!
+          lanes.color[k] = withAbgrAlpha(
+            colors.get(id) ?? DEFAULT_ABGR,
+            highlighted?.has(id) === false ? DIMMED_ALPHA : 255,
+          )
+        })
+        return lanes
+      },
+      /**
+       * #getter
+       */
+      get drawnCount() {
+        return this.ribbonLanes.count
+      },
+      /**
+       * #getter
+       * each drawn feature's place in the lanes, by id
+       */
+      get laneIndexById() {
+        return new Map(this.ribbonLanes.features.map((f, i) => [f.id(), i]))
+      },
+      /**
+       * #method
+       * lane `i` as the SVG side draws it, on the unrotated figure
+       */
+      shapeAt(i: number): RibbonShape {
+        const { ribbonLanes: lanes, ribbonFill } = this
+        const feature = lanes.features[i]!
+        return {
+          kind: 'ribbon',
+          feature,
+          angles: ribbonAnglesAt(lanes, i, self.figureStage),
+          fill: ribbonFill(feature),
+        }
+      },
+      /**
+       * #method
+       */
+      shapeFor(featureId: string) {
+        const i = this.laneIndexById.get(featureId)
+        return i === undefined ? undefined : this.shapeAt(i)
+      },
+      /**
+       * #getter
+       * every drawn alignment as the export draws it
+       */
+      get shapes(): RibbonShape[] {
+        return this.ribbonLanes.features.map((_, i) => this.shapeAt(i))
+      },
+      /**
+       * #method
+       * the alignment whose ribbon covers a point CSS px from the circle's
+       * centre in the screen frame, the topmost where several do
+       */
+      hitAt(dx: number, dy: number) {
+        if (self.displayPhase !== 'ready') {
+          return undefined
+        }
+        const lanes = this.ribbonLanes
+        const i = hitRibbon(lanes, self.chordStage, dx, dy)
+        return i === undefined ? undefined : lanes.features[i]
       },
       /**
        * #method
@@ -277,11 +403,11 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #method
-       * a drawn feature's outline as an SVG path, for anything that has to
-       * find a chord on screen without a DOM node to find
+       * a drawn feature's outline as an SVG path on the unrotated figure, for
+       * anything that has to find a ribbon on screen without a DOM node to find
        */
       shapePathFor(feature: Feature) {
-        const shape = this.shapes.find(s => s.feature === feature)
+        const shape = this.shapeFor(feature.id())
         return shape
           ? shapePath(shape, self.radiusPx, self.bezierRadius)
           : undefined
@@ -348,6 +474,18 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           }
         }
         return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * what the view's canvas draws for this display: its lanes while it is
+       * ready, nothing while its loading or error ring covers the circle
+       */
+      get chordCell(): ChordCell | undefined {
+        return self.displayPhase === 'ready'
+          ? { kind: 'ribbon', lanes: self.ribbonLanes, display: self }
+          : undefined
       },
     }))
     .actions(self => {

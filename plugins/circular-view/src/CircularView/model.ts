@@ -63,6 +63,8 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { autorun } from 'mobx'
 
+import { ChordPass } from '../chords/chordPass.ts'
+import { buildChordAxis } from '../chords/chordStage.ts'
 import { RingHost } from '../rings/ringHost.ts'
 import { circularLegendSpec } from './circularLegend.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
@@ -73,6 +75,7 @@ import {
 } from './rulerLabels.ts'
 import { calculateStaticSlices } from './slices.ts'
 
+import type { ChordAxis } from '../chords/chordStage.ts'
 import type {
   ChordHit,
   ChordHover,
@@ -456,13 +459,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       chordHover: undefined as ChordHover | undefined,
       /**
        * #volatile
-       * what answers "which chord is here", registered by the canvas that
-       * paints them; takes CSS px from the centre in the screen frame and the
-       * rotation the figure is at
+       * the canvas the chords and ribbons of every chord display draw on
        */
-      chordHitTest: undefined as
-        | ((dx: number, dy: number, rotation: number) => ChordHit | undefined)
-        | undefined,
+      chordPass: ChordPass.create({}),
     }))
     .views(self => ({
       /**
@@ -650,16 +649,32 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * which displayed regions are too narrow at this zoom to draw as
+       * themselves, one character each
+       */
+      get elisionMask() {
+        let mask = ''
+        for (const region of self.displayedRegions) {
+          mask +=
+            (region.end - region.start) / self.bpPerPx < self.minVisibleWidth
+              ? '1'
+              : '0'
+        }
+        return mask
+      },
+      /**
+       * #getter
        * this is displayedRegions, post-processed to elide regions that are too
        * small to see reasonably. A run of them never crosses from one assembly
-       * into the next, so each genome's arcs stay its own.
+       * into the next, so each genome's arcs stay its own. Read off
+       * `elisionMask`, so a zoom that elides nothing new rebuilds nothing
        */
       get elidedRegions() {
+        const mask = this.elisionMask
         const visible: SliceRegion[] = []
-        for (const region of self.displayedRegions) {
+        self.displayedRegions.forEach((region, i) => {
           const widthBp = region.end - region.start
-          const widthPx = widthBp / self.bpPerPx
-          if (widthPx < self.minVisibleWidth) {
+          if (mask[i] === '1') {
             const lastVisible = visible.at(-1)
             if (
               lastVisible?.elided &&
@@ -677,7 +692,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           } else {
             visible.push({ ...region, widthBp, elided: false })
           }
-        }
+        })
 
         // a lone elided region draws as itself, keyed like any visible region
         return visible.map(v =>
@@ -928,7 +943,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           .filter(
             (d): d is ChordLayerDisplay =>
               d !== undefined &&
-              'shapes' in d &&
+              'chordCell' in d &&
               pluginManager.getDisplayType(d.type).viewType === 'CircularView',
           )
       },
@@ -937,8 +952,44 @@ function stateModelFactory(pluginManager: PluginManager) {
        * the chord or ribbon under a point `dx`,`dy` CSS px from the circle's
        * centre in the screen frame
        */
-      chordAt(dx: number, dy: number) {
-        return self.chordHitTest?.(dx, dy, self.offsetRadians)
+      chordAt(dx: number, dy: number): ChordHit | undefined {
+        const displays = this.chordDisplays
+        for (let i = displays.length - 1; i >= 0; i--) {
+          const display = displays[i]!
+          const feature = display.hitAt(dx, dy)
+          if (feature) {
+            return { display, feature }
+          }
+        }
+        return undefined
+      },
+      /**
+       * #getter
+       * whether the pointer is on a chord or ribbon, which only changes as it
+       * crosses onto one or off it
+       */
+      get hoversChord() {
+        return self.chordHover !== undefined
+      },
+      /**
+       * #getter
+       * the circle's slices on the unrolled genome axis, which the chord
+       * displays place their feet on; rebuilt when the regions or their
+       * elision change, never by a zoom or a rotation alone
+       */
+      get chordAxis(): ChordAxis {
+        return buildChordAxis(self.elidedRegions)
+      },
+      /**
+       * #getter
+       * the polar stage's scale from the unrolled axis to radians: per base,
+       * and per gap between slices
+       */
+      get chordScale() {
+        return {
+          radiansPerBp: 1 / self.bpPerRadian,
+          gapRadians: self.effectiveSpacingPx / self.radiusPx,
+        }
       },
       /**
        * #getter
@@ -1195,16 +1246,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       setChordHover(hover: ChordHover | undefined) {
         self.chordHover = hover
       },
-      /**
-       * #action
-       */
-      setChordHitTest(
-        hitTest:
-          | ((dx: number, dy: number, rotation: number) => ChordHit | undefined)
-          | undefined,
-      ) {
-        self.chordHitTest = hitTest
-      },
 
       /**
        * #action
@@ -1429,9 +1470,11 @@ function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       afterCreate() {
         self.ringHost.setView(self as CircularViewModel)
+        self.chordPass.setView(self as CircularViewModel)
       },
       beforeDestroy() {
         destroy(self.ringHost)
+        destroy(self.chordPass)
       },
       afterAttach() {
         // a hover names a display; a track hidden under the pointer would

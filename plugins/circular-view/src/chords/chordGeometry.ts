@@ -1,22 +1,11 @@
 import { polarToCartesian } from '@jbrowse/core/util'
 import { svMateLocus } from '@jbrowse/sv-core'
 
-import { bpToRadians } from '../CircularView/slices.ts'
-import { svgPathSink } from './pathSink.ts'
+import { chordTurn } from './shaders/chordStage.js.generated.ts'
 
-import type { Slice } from '../CircularView/slices.ts'
+import type { ChordEnds } from './chordStage.ts'
 import type { PathSink } from './pathSink.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-/** The signed turn from `from` to `to` the short way round, in [-π, π]. */
-function shortTurn(from: number, to: number) {
-  const turn = (to - from) % (2 * Math.PI)
-  return turn > Math.PI
-    ? turn - 2 * Math.PI
-    : turn < -Math.PI
-      ? turn + 2 * Math.PI
-      : turn
-}
 
 /**
  * How far from the center a chord's Bezier control point sits, which sets how
@@ -48,7 +37,7 @@ export function chordControlRadius({
   radius: number
   bezierRadius: number
 }) {
-  const sweep = Math.abs(shortTurn(startRadians, endRadians))
+  const sweep = Math.abs(chordTurn(startRadians, endRadians))
   return radius - (radius - bezierRadius) * Math.sin(sweep / 2)
 }
 
@@ -62,7 +51,7 @@ export function chordControlPoint(opts: {
   const { startRadians, endRadians } = opts
   return polarToCartesian(
     chordControlRadius(opts),
-    startRadians + shortTurn(startRadians, endRadians) / 2,
+    startRadians + chordTurn(startRadians, endRadians) / 2,
   )
 }
 
@@ -71,51 +60,15 @@ export function chordControlPoint(opts: {
  * names one, else the feature's own end — which for anything but a breakend is
  * where the chord degenerates to a point.
  */
-export function getEndpoint(
+export function getEndpoint<S>(
   feature: Feature,
-  sliceForRef: (refName: string) => Slice | undefined,
-  startBlock: Slice,
+  sliceForRef: (refName: string) => S | undefined,
+  startBlock: S,
 ) {
   const mate = svMateLocus(feature)
   return mate
     ? { endBlock: sliceForRef(mate.refName), endPosition: mate.pos }
     : { endBlock: startBlock, endPosition: feature.get('end') }
-}
-
-/** The two angles a chord joins, in the order the record names them. */
-export interface ChordEnds {
-  startRadians: number
-  endRadians: number
-}
-
-/**
- * Where a chord's two ends sit, or undefined when there is nothing to draw: an
- * end on a region the circle is not showing, or two ends under a pixel apart.
- * The second is every deletion and insertion of a whole-genome callset, and
- * such a chord is an antialiased speck on the rim, under the ideogram.
- */
-export function chordEnds({
-  feature,
-  sliceFor,
-  radius,
-}: {
-  feature: Feature
-  sliceFor: (refName: string) => Slice | undefined
-  radius: number
-}): ChordEnds | undefined {
-  const startBlock = sliceFor(feature.get('refName'))
-  if (!startBlock) {
-    return undefined
-  }
-  const { endBlock, endPosition } = getEndpoint(feature, sliceFor, startBlock)
-  if (!endBlock) {
-    return undefined
-  }
-  const startRadians = bpToRadians(startBlock, feature.get('start'))
-  const endRadians = bpToRadians(endBlock, endPosition)
-  return Math.abs(shortTurn(startRadians, endRadians)) * radius < 1
-    ? undefined
-    : { startRadians, endRadians }
 }
 
 /** A chord's outline: from one end, bowing through the control point, to the other. */
@@ -133,25 +86,4 @@ export function traceChord(
   })
   sink.moveTo(radius, startRadians)
   sink.quadTo(cx, cy, radius, endRadians)
-}
-
-/** A chord's SVG path, or undefined when there is nothing to draw. */
-export function chordPath({
-  feature,
-  sliceFor,
-  radius,
-  bezierRadius,
-}: {
-  feature: Feature
-  sliceFor: (refName: string) => Slice | undefined
-  radius: number
-  bezierRadius: number
-}) {
-  const ends = chordEnds({ feature, sliceFor, radius })
-  if (!ends) {
-    return undefined
-  }
-  const sink = svgPathSink()
-  traceChord(sink, ends, radius, bezierRadius)
-  return sink.toString()
 }

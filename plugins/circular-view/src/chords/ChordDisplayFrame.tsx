@@ -14,6 +14,12 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
   children: ReactNode
 }) {
   const phase = display.displayPhase
+  const cell = display.chordCell
+  const { chordPass } = display.view
+  const drawn =
+    phase === 'error' ||
+    (phase === 'ready' &&
+      (!cell || chordPass.drew(cell) || chordPass.renderError !== undefined))
   return (
     <g
       // The fourth attribute the chrome publishes, not three: `displayPainted`
@@ -23,11 +29,11 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
       // inner group, which the loading branch does not render.
       data-testid="circular-chord-display"
       data-display-id={display.configuration.displayId}
-      // The view's chord canvas paints in the same MobX pass that lands the
-      // data, so paint has no state of its own to publish: the terminals that
-      // never paint are finished rather than pending, as `foundationPaintInert`
-      // reads them for the canvas families.
-      data-display-drawn={phase !== 'loading'}
+      // Drawn once the view's chord canvas has painted this display's current
+      // cell, or can paint nothing more: an error ring, or a backend that
+      // failed to start, is finished rather than pending, as
+      // `foundationPaintInert` reads them for the canvas families.
+      data-display-drawn={drawn}
       data-display-phase={phase}
     >
       {phase === 'error' ? (

@@ -232,8 +232,8 @@ export const circularSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // Hovering the widest X ribbon fills it in the hover colour. The browser's
-  // native tooltip naming both loci does not reach a headless capture.
+  // Hovering the widest X ribbon fills it in the hover colour, and the tooltip
+  // names its span in each genome.
   {
     mode: 'url',
     name: 'circular_synteny/ribbon_hover',

@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { shapePath } from './chordLayer.ts'
+import { shapePath } from './shapePath.ts'
 import { DIMMED_OPACITY } from './types.ts'
 
 import type { Shape } from './shapes.ts'
@@ -55,7 +55,6 @@ const ShapePaths = observer(function ShapePaths({
   only: 'highlighted' | 'all'
 }) {
   const {
-    shapes,
     radiusPx,
     bezierRadius,
     shapeAlpha,
@@ -65,20 +64,29 @@ const ShapePaths = observer(function ShapePaths({
   } = display
   // a hover is a screen state; the export draws the selection and nothing of
   // the pointer
+  const hovered = only === 'highlighted' ? hoveredFeatureId : undefined
   const stateOf = (shape: Shape) => {
     const id = shape.feature.id()
-    return only === 'highlighted' && id === hoveredFeatureId
+    return id === hovered
       ? 'hovered'
       : id === selectedFeatureId
         ? 'selected'
         : 'resting'
   }
-  const drawn =
-    only === 'all' ? shapes : shapes.filter(s => stateOf(s) !== 'resting')
+  const drawn: readonly Shape[] =
+    only === 'all'
+      ? display.shapes
+      : [
+          ...new Set(
+            [hovered, selectedFeatureId].filter(id => id !== undefined),
+          ),
+        ]
+          .map(id => display.shapeFor(id))
+          .filter(shape => shape !== undefined)
   return (
     <g
       data-testid={testid}
-      data-chord-count={shapes.length}
+      data-chord-count={only === 'all' ? drawn.length : display.drawnCount}
       pointerEvents="none"
       fillOpacity={only === 'all' ? shapeAlpha : undefined}
     >

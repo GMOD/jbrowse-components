@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 41 shaders with entry points. 119 functions
-are inside the emitter's subset, of which **91 are exported**.
+Scanned 43 shaders with entry points. 123 functions
+are inside the emitter's subset, of which **94 are exported**.
 
 ## Candidates
 
@@ -46,6 +46,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `expandToMinWidthPx` | `(f32, f32, f32) -> vec2f` | the float2 over expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports as the twins; a float2 twin is a tuple per call, and the pileup walk allocating one per span measured 0.85x against 0.78x of its hand painter |
 | `expandToMinWidthX` | `(f32, f32, f32, f32) -> vec2f` | clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX |
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
+| `footRadians` | `(f32, f32, f32, f32) -> f32` | the stage's two-term scale, which chordAxis.ts applies with the same two uniforms |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
 | `insetValueYPx` | `(f32, f32, f32, f32, i32, f32, f32) -> f32` | its two consumers lift it under their own anchors, pointMark.slang as pointYPx and linkMark.slang as linkValuePx, and those are the spellings the painters and hit tests read; a third twin would be one nothing calls |
 | `linkIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated linkRadiiPx, so the far decision is shared without a second way to ask it |
@@ -75,9 +76,9 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| type 'vec2' is outside the supported scalar subset | 24 | `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, `covSegQuad`, … |
+| type 'vec2' is outside the supported scalar subset | 27 | `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, `covSegQuad`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 14 | `bandCoverage`, `barAaPx`, `bpToClipX`, `cutScore`, `drawsBar`, `drawsDisc`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 16 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
 | type 'vec4' is outside the supported scalar subset | 14 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
 | type 'Instance' is outside the supported scalar subset | 4 | `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
@@ -88,12 +89,16 @@ noticing in a diff.
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
+| //! js-export: 'chordControlPoint' reaches polarPoint(), which is outside the supported scalar subset | 1 | `chordControlPoint` |
 | //! js-export: 'rowScoreToClipY' reaches rowScoreToYPx(), which is outside the supported scalar subset | 1 | `rowScoreToClipY` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
+| call to 'sin' at line N is neither a supported builtin nor a function in this module | 1 | `chordControlRadius` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
+| type 'RibbonInstance' is outside the supported scalar subset | 1 | `ribbonAngles` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'RowRectUniforms' is outside the supported scalar subset | 1 | `rowRectClipPos` |
+| vec2<f32> built from 1 component(s) (only the two-scalar form is supported, not a splat or a copy) is outside the supported scalar subset | 1 | `polarPoint` |
 
 ## Exported, but nothing imports it
 

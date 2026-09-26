@@ -211,8 +211,9 @@ test('a right-button drag does not rotate the figure', () => {
 })
 
 // The resting chords are canvas pixels, so the svg routes a pointer off every
-// ring to whatever the pick canvas answers: a move is the hover the highlight
-// and tooltip read, a click reaches the display, and a leave clears it
+// ring to the chord the view's displays answer for there: a move is the hover
+// the highlight and tooltip read, a click reaches the display, and a leave
+// clears it
 test('a pointer off every ring reaches the chord under it', () => {
   const { view, svg } = setup()
   const clicked: string[] = []
@@ -224,30 +225,23 @@ test('a pointer off every ring reaches the chord under it', () => {
   })
   const display = {
     id: 'd',
-    shapes: [],
-    radiusPx: 1,
-    bezierRadius: 1,
-    shapeAlpha: 1,
-    displayPhase: 'ready' as const,
+    chordCell: undefined,
+    hitAt: () => undefined,
     clickFeature: (f: { id: () => string }) => {
       clicked.push(f.id())
     },
     shapeLabel: () => 'the chord under the pointer',
   }
-  // a hit only to the right of the centre, and only with the rotation the
-  // figure is actually at, so the routing has to pass both through
-  const seen: number[] = []
-  view.setChordHitTest((dx, dy, rotation) => {
-    seen.push(rotation)
-    return dx > 0 && Math.abs(dy) < 5 && rotation === view.offsetRadians
-      ? { display, feature }
-      : undefined
-  })
+  // a hit only to the right of the centre, in the screen frame
+  jest
+    .spyOn(view, 'chordAt')
+    .mockImplementation((dx, dy) =>
+      dx > 0 && Math.abs(dy) < 5 ? { display, feature } : undefined,
+    )
   const c = centerOf(view)
   fireEvent.pointerMove(svg, { clientX: c.x + 10, clientY: c.y, buttons: 0 })
   expect(view.chordHover?.feature.id()).toBe('f1')
   expect(document.body.textContent).toContain('the chord under the pointer')
-  expect(seen.at(-1)).toBe(view.offsetRadians)
 
   fireEvent.pointerMove(svg, { clientX: c.x - 10, clientY: c.y, buttons: 0 })
   expect(view.chordHover).toBeUndefined()

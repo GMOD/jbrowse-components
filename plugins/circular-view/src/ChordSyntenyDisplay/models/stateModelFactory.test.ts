@@ -1,7 +1,9 @@
 import { colord } from '@jbrowse/core/util/colord'
 import { applySnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { when } from 'mobx'
+import { autorun, when } from 'mobx'
+
+import { DIMMED_ALPHA } from '../../chords/types.ts'
 
 import type { CircularViewModel } from '../../CircularView/model.ts'
 import type { Slice } from '../../CircularView/slices.ts'
@@ -190,4 +192,52 @@ test("a ribbon shorter than the view's minimum length is not drawn", async () =>
   expect(display.drawnFeatures).toHaveLength(1)
   view.setMinAlignmentLength(101)
   expect(display.drawnFeatures).toHaveLength(0)
+}, 20000)
+
+// each end resolves against its own assembly's slices, which is what a
+// two-assembly circle needs: both genomes here have a ctgA and a ctgB
+test('an alignment across two assemblies is one ribbon', async () => {
+  const { view, display } = await setup(['volvox', 'volvox2'])
+  const lanes = display.ribbonLanes
+  expect(lanes.count).toBe(1)
+  const own = view.chordAxis.slices[lanes.xSlice[0]!]!
+  const mate = view.chordAxis.slices[lanes.ySlice[0]!]!
+  expect(view.elidedRegions[own.index]).toMatchObject({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+  })
+  expect(view.elidedRegions[mate.index]).toMatchObject({
+    assemblyName: 'volvox2',
+    refName: 'ctgB',
+  })
+}, 20000)
+
+test('an end whose region is off the circle draws no ribbon', async () => {
+  const { view, display } = await setup(['volvox', 'volvox2'])
+  view.setDisplayedRegions(
+    view.displayedRegions.filter(r => r.assemblyName === 'volvox'),
+  )
+  expect(display.ribbonLanes.count).toBe(0)
+}, 20000)
+
+// the polar stage is uniforms, so what the canvas uploads is untouched by
+// either; observed, since an unobserved getter is a fresh object per read
+test('a rotation or a zoom leaves the uploaded cell as it was', async () => {
+  const { view, display } = await setup(['volvox', 'volvox2'])
+  const cells: unknown[] = []
+  const dispose = autorun(() => {
+    cells.push(display.chordCell)
+  })
+  view.rotate(0.7)
+  view.zoomToPoint(view.bpPerPx * 0.8, 10, 10)
+  dispose()
+  expect(cells).toHaveLength(1)
+  expect(cells[0]).toBeDefined()
+}, 20000)
+
+test("the SV inspector's dimming reaches the ribbon's alpha", async () => {
+  const { display } = await setup(['volvox', 'volvox2'])
+  expect(display.ribbonLanes.color[0]! >>> 24).toBe(255)
+  display.setHighlightedFeatureIds([])
+  expect(display.ribbonLanes.color[0]! >>> 24).toBe(DIMMED_ALPHA)
 }, 20000)

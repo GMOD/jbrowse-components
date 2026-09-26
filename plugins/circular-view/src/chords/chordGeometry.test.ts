@@ -4,7 +4,6 @@ import { Slice } from '../CircularView/slices.ts'
 import {
   chordControlPoint,
   chordControlRadius,
-  chordPath,
   getEndpoint,
 } from './chordGeometry.ts'
 
@@ -156,42 +155,5 @@ describe('chordControlRadius', () => {
       }),
     )
     expect(depths).toEqual([...depths].sort((a, b) => b - a))
-  })
-})
-
-describe('chordPath', () => {
-  // 1 Mb per radian on a 300px circle: a pixel is about 3.3 kb
-  const genome = new Slice(
-    { bpPerRadian: 1_000_000 },
-    {
-      elided: false,
-      widthBp: 6_000_000,
-      start: 0,
-      end: 6_000_000,
-      refName: 'chr1',
-      assemblyName: 'a',
-    },
-    0,
-  )
-  const sliceFor = (refName: string) =>
-    refName === 'chr1' ? genome : undefined
-  const path = (start: number, end: number, refName = 'chr1') =>
-    chordPath({
-      feature: new SimpleFeature({ uniqueId: 'x', refName, start, end }),
-      sliceFor,
-      radius: 300,
-      bezierRadius: 30,
-    })
-
-  test('a deletion whose ends share a pixel draws nothing', () => {
-    expect(path(1_000_000, 1_000_172)).toBeUndefined()
-  })
-
-  test('a span wider than a pixel is a chord', () => {
-    expect(path(1_000_000, 3_000_000)).toMatch(/^M [-\d.e]+ [-\d.e]+ Q /)
-  })
-
-  test('an end on a region the circle is not showing draws nothing', () => {
-    expect(path(0, 3_000_000, 'chr9')).toBeUndefined()
   })
 })

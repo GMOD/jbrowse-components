@@ -1,5 +1,7 @@
 import { polarToCartesian } from '@jbrowse/core/util'
 
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
+
 /**
  * Where a chord or ribbon's outline goes: an SVG `d` string for the export and
  * the highlight paths, a 2D context for the canvas the resting shapes are
@@ -44,18 +46,37 @@ export function svgPathSink() {
   }
 }
 
-export function canvasPathSink(ctx: CanvasRenderingContext2D): PathSink {
+// A quadratic's cubic is the same curve, its controls two thirds of the way
+// from each end to the one control
+export function canvasPathSink(ctx: MarkContext2D): PathSink {
+  let lastX = 0
+  let lastY = 0
+  const at = (x: number, y: number) => {
+    lastX = x
+    lastY = y
+  }
   return {
     moveTo(radius, radians) {
       const [x, y] = polarToCartesian(radius, radians)
       ctx.moveTo(x, y)
+      at(x, y)
     },
     arcTo(from, to, radius) {
       ctx.arc(0, 0, radius, from, to, to < from)
+      const [x, y] = polarToCartesian(radius, to)
+      at(x, y)
     },
     quadTo(cx, cy, radius, radians) {
       const [x, y] = polarToCartesian(radius, radians)
-      ctx.quadraticCurveTo(cx, cy, x, y)
+      ctx.bezierCurveTo(
+        lastX + (2 / 3) * (cx - lastX),
+        lastY + (2 / 3) * (cy - lastY),
+        x + (2 / 3) * (cx - x),
+        y + (2 / 3) * (cy - y),
+        x,
+        y,
+      )
+      at(x, y)
     },
     close() {
       ctx.closePath()

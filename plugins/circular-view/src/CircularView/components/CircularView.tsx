@@ -11,8 +11,7 @@ import {
 } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import ChordCanvas from '../../chords/ChordCanvas.tsx'
-import { ChordPicker } from '../../chords/chordLayer.ts'
+import ChordLayer from '../../chords/ChordLayer.tsx'
 import { RingAxes } from '../../rings/RingAxes.tsx'
 import { RingCanvases, RingStrips } from '../../rings/RingLayer.tsx'
 import { RingPointer } from '../../rings/ringPointer.ts'
@@ -104,6 +103,20 @@ const Slices = observer(function Slices({
   )
 })
 
+const ChordTooltip = observer(function ChordTooltip({
+  model,
+}: {
+  model: CircularViewModel
+}) {
+  const hover = model.chordHover
+  return hover ? (
+    <ComparativeTooltip
+      lines={[hover.display.shapeLabel(hover.feature)]}
+      clientPoint={{ x: hover.clientX, y: hover.clientY }}
+    />
+  ) : null
+})
+
 const CircularView = observer(function CircularView({
   model,
 }: {
@@ -174,19 +187,14 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   const ringPointer = (ringPointerRef.current ??= new RingPointer(
     model.ringHost,
   ))
-  // a pointer off every ring goes to the chord under it, off the pick canvas
-  // the chord canvas keeps
-  const [picker] = useState(() => new ChordPicker())
   // whether the press that is ending became a rotation, which is not a click
   const draggedRef = useRef(false)
 
   useEffect(() => {
-    model.setChordHitTest((dx, dy, rotation) => picker.hit(dx, dy, rotation))
     return () => {
-      model.setChordHitTest(undefined)
       model.setChordHover(undefined)
     }
-  }, [model, picker])
+  }, [model])
 
   // Non-passive wheel listener so we can call preventDefault(). The handler only
   // accumulates: one model write per animation frame, not per event. A trackpad
@@ -332,8 +340,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       // Only now take the pointer, so the rotation keeps following a cursor
       // that leaves the figure. Capturing on pointerdown instead retargets the
       // whole gesture at this <svg> — including the click that ends it — and
-      // the chords underneath, which carry their own onClick, would never see
-      // one. A press that doesn't move never captures, and stays a click.
+      // the error ring's retry underneath would never see one. A press that
+      // doesn't move never captures, and stays a click.
       event.currentTarget.setPointerCapture(event.pointerId)
       draggedRef.current = true
       leaveFigure()
@@ -371,7 +379,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       data-testid={id}
     >
       <RingCanvases view={model} />
-      <ChordCanvas view={model} picker={picker} />
+      <ChordLayer view={model} />
       <div
         className={classes.panWrapper}
         style={{
@@ -383,7 +391,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
             classes.circularSvg,
             isDragging
               ? classes.grabbing
-              : model.chordHover
+              : model.hoversChord
                 ? classes.crosshair
                 : classes.grab,
           )}
@@ -416,17 +424,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       </div>
       <RingStrips host={model.ringHost} />
       <Controls model={model} />
-      {model.chordHover ? (
-        <ComparativeTooltip
-          lines={[
-            model.chordHover.display.shapeLabel(model.chordHover.feature),
-          ]}
-          clientPoint={{
-            x: model.chordHover.clientX,
-            y: model.chordHover.clientY,
-          }}
-        />
-      ) : null}
+      <ChordTooltip model={model} />
       {model.showLegend ? (
         <FloatingLegend
           sections={model.legendSpec.sections}

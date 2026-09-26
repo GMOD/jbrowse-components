@@ -19,9 +19,12 @@ import {
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
+import { sliceKey } from './chordStage.ts'
+
 import type { CircularViewModel } from '../CircularView/model.ts'
 import type { Slice } from '../CircularView/slices.ts'
 import type { ChordConfigModel } from './chordConfigSchemaFields.ts'
+import type { AxisSlice, ChordStage } from './chordStage.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { Region } from '@jbrowse/core/util/types'
@@ -47,10 +50,6 @@ interface ChordConfigHost {
 }
 
 const confNode = (self: object) => self as ChordConfigHost
-
-function sliceKey(assemblyName: string, refName: string) {
-  return `${assemblyName}\u0000${refName}`
-}
 
 /**
  * #stateModel BaseChordDisplay
@@ -250,6 +249,28 @@ export function BaseChordDisplay() {
         const hover = this.view.chordHover
         return hover?.display.id === self.id ? hover.feature.id() : undefined
       },
+      /**
+       * #getter
+       * the polar stage as the canvas and the pointer see it, rotation in
+       */
+      get chordStage(): ChordStage {
+        return { ...this.figureStage, offsetRadians: this.view.offsetRadians }
+      },
+      /**
+       * #getter
+       * the polar stage on the unrotated figure, which the view's SVG turns:
+       * what the export and the highlight paths are placed on
+       */
+      get figureStage(): ChordStage {
+        const { radiansPerBp, gapRadians } = this.view.chordScale
+        return {
+          radiansPerBp,
+          gapRadians,
+          offsetRadians: 0,
+          radiusPx: this.radiusPx,
+          bezierRadiusPx: this.bezierRadius,
+        }
+      },
     }))
     .views(self => ({
       /**
@@ -290,6 +311,21 @@ export function BaseChordDisplay() {
           : self.sliceIndex[
               sliceKey(assembly, self.canonicalRefName(assembly, refName))
             ]
+      },
+      /**
+       * #method
+       * the slice of the unrolled axis one end of a feature lands on
+       */
+      axisSlice(
+        assemblyName: string | undefined,
+        refName: string,
+      ): AxisSlice | undefined {
+        const assembly = self.assemblyOf(assemblyName)
+        return assembly === undefined
+          ? undefined
+          : self.view.chordAxis.byKey.get(
+              sliceKey(assembly, self.canonicalRefName(assembly, refName)),
+            )
       },
     }))
     .actions(self => ({
