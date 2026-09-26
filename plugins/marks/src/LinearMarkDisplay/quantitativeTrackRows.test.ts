@@ -12,6 +12,7 @@ import type {
   MarkSnapshot,
   RowsSnapshot,
 } from './markProblems.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface DisplaySnapshot {
   type: string
@@ -47,8 +48,8 @@ function loadedDisplays(snap: Record<string, unknown>) {
 }
 
 function rowsFields(snap: Record<string, unknown>) {
-  return loadedTrack(snap).displays.map((d: { type: string }) => [
-    d.type,
+  return loadedTrack(snap).displays.map((d: AnyConfigurationModel) => [
+    readConfObject(d, 'type'),
     readConfObject(d, ['rows', 'field']),
   ])
 }
