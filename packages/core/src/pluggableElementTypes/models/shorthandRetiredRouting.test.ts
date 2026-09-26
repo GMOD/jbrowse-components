@@ -89,18 +89,3 @@ test('an explicit entry still wins over the members a lift answers', () => {
     ),
   ).toEqual([{ type: 'SecondDisplay', displayId: 't-SecondDisplay', size: 3 }])
 })
-
-test('a retired name with no replacement is refused, naming it', () => {
-  const { refused } = collectDisplayOverrides(
-    { partitionField: 'sample' },
-    new Map([
-      ['OnlyDisplay', display('OnlyDisplay', {}, { partitionField: '`rows`' })],
-    ]),
-  )
-  expect(refused).toEqual([
-    {
-      key: 'partitionField',
-      reasons: ['OnlyDisplay: `partitionField` is `rows`'],
-    },
-  ])
-})

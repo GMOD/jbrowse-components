@@ -112,11 +112,10 @@ function isOwnSnapshot(
 /**
  * The snapshot with each spelling `retired` names rewritten: a lift's members
  * take the old key's place, and a key the snapshot already spells wins, since
- * writing the current name is the stronger statement. A retired name with no
- * replacement throws, naming what replaced it. The old key goes whether or not
- * it carried a value, so a `closed` schema never meets it. Where two retired
- * names lift onto one member — a slot the entry spelt directly and the same
- * slot inside a retired `renderer` — the one declared first wins.
+ * writing the current name is the stronger statement. The old key goes whether
+ * or not it carried a value, so a `closed` schema never meets it. Where two
+ * retired names lift onto one member — a slot the entry spelt directly and the
+ * same slot inside a retired `renderer` — the one declared first wins.
  */
 export function liftRetiredSpellings(
   schema: ConfigurationSchemaMetadata,
@@ -124,7 +123,7 @@ export function liftRetiredSpellings(
 ) {
   const { retired } = schema.options
   return retired && isOwnSnapshot(schema, snapshot)
-    ? applyRetiredSpellings(schema.name, retired, snapshot)
+    ? applyRetiredSpellings(retired, snapshot)
     : snapshot
 }
 
@@ -136,20 +135,10 @@ export function liftRetiredSpellings(
  * reads.
  */
 export function applyRetiredSpellings(
-  name: string,
   retired: Record<string, RetiredSpelling>,
   snapshot: Record<string, unknown>,
 ) {
   const present = Object.keys(retired).filter(key => key in snapshot)
-  const written = present.filter(key => snapshot[key] !== undefined)
-  const gone = written.filter(key => typeof retired[key] === 'string')
-  if (gone.length > 0) {
-    throw new Error(
-      `${name}: ${gone
-        .map(key => `\`${key}\` is ${retired[key] as string}`)
-        .join('; ')}`,
-    )
-  }
   if (present.length === 0) {
     return snapshot
   }
@@ -157,10 +146,8 @@ export function applyRetiredSpellings(
   for (const key of present) {
     delete out[key]
   }
-  for (const key of written) {
-    const lifted = (
-      retired[key] as (value: unknown) => Record<string, unknown>
-    )(snapshot[key])
+  for (const key of present.filter(key => snapshot[key] !== undefined)) {
+    const lifted = retired[key]!(snapshot[key])
     for (const [name, value] of Object.entries(lifted)) {
       if (out[name] === undefined) {
         out[name] = value

@@ -61,11 +61,7 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   // `basicRetired` again, because the renderer lift above uncovers the same v4
   // names one level down: `renderer: { color1 }` is a `color1` no earlier pass
   // could see.
-  const result = applyRetiredSpellings(
-    'LinearBasicDisplay',
-    basicRetired,
-    liftRendererProps(snap),
-  )
+  const result = applyRetiredSpellings(basicRetired, liftRendererProps(snap))
   // A unified-enum value already present wins over a stale `showDescriptions`
   // beside it, so a re-saved config is not rewritten.
   if (

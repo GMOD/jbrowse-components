@@ -43,7 +43,8 @@ out of `displayDefaults` onto an explicit entry where the refusal could see it.
 `ConfigurationSchemaOptions` gains `retired`: a map from the name an older
 release used to a function answering the members its value becomes, or to a
 string naming what replaced a setting that is gone, which the schema throws on.
-It merges per key down the `baseConfiguration` chain, so a subclass adds a
+Amended 2026-09-26: the string form went with its last callers, the multi-row
+and MAF refusals of names only v5 betas wrote. It merges per key down the `baseConfiguration` chain, so a subclass adds a
 spelling without dropping the ones its base retired.
 
 `liftRetiredSpellings` applies it, and four readers share that one function:

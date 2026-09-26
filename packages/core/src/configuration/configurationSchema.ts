@@ -68,9 +68,7 @@ export interface ConfigurationSchemaDefinition {
   [n: string]: ConfigSlotDefinition | string | number | IAnyType
 }
 
-export type RetiredSpelling =
-  | string
-  | ((value: unknown) => Record<string, unknown>)
+export type RetiredSpelling = (value: unknown) => Record<string, unknown>
 
 export interface ConfigurationSchemaOptions<
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
@@ -113,9 +111,8 @@ export interface ConfigurationSchemaOptions<
    */
   closed?: boolean
   /**
-   * The spellings an older release used, by the name it used. A function
-   * answers the members that name's value becomes; a string names what
-   * replaced a setting that is gone, and the schema throws naming it. Lifted
+   * The spellings an older release used, by the name it used, each answering
+   * the members that name's value becomes. Lifted
    * before the `closed` check and `preProcessSnapshot`, on every path a
    * snapshot or a settings bag arrives by, and read by the `displayDefaults`
    * router, so one declaration serves a config entry, the shorthand object, a

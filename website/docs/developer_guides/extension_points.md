@@ -988,9 +988,8 @@ config schema's `retired`:
 retired: { colorBy: colorSlotsOf },
 ```
 
-Each entry maps the old name to the members its value becomes, or to a string
-naming what replaced a setting that is gone, which the schema throws on. One
-declaration serves every door into a display setting: a `displays` entry, the
+Each entry maps the old name to the members its value becomes. One declaration
+serves every door into a display setting: a `displays` entry, the
 `displayDefaults` shorthand — which routes an old name to the display that
 retired it, rather than reporting a key no display declares — a session spec or
 share link, an agent's settings bag, and the session migration.

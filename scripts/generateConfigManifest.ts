@@ -365,13 +365,10 @@ function legacyKeysOf(configSchema, declaredSlots) {
   const declared = new Set(declaredSlots.map(slot => slot.name))
   // A schema that DECLARES its retired spellings needs no probe for them: the
   // map is the answer, and a probe could not find a key whose lift the
-  // candidate list never thought to try. A string-valued entry is a setting
-  // that is gone rather than renamed, so it stays a key the validator refuses.
-  const declaredRetired = Object.entries(
+  // candidate list never thought to try.
+  const declaredRetired = Object.keys(
     getConfigurationSchemaMetadata(configSchema)?.options.retired ?? {},
-  )
-    .filter(([key, value]) => typeof value === 'function' && !declared.has(key))
-    .map(([key]) => key)
+  ).filter(key => !declared.has(key))
   // Most schemas have a required explicitIdentifier (displayId / trackId /
   // ...), and two things go wrong without pinning it:
   // create({}) throws outright, and a schema that DEFAULTS its identifier

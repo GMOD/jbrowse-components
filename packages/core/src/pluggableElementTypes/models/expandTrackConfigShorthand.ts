@@ -24,9 +24,6 @@ function verdictOf(
 ) {
   const meta = getConfigurationSchemaMetadata(schema)
   const retired = meta?.options.retired?.[key]
-  if (typeof retired === 'string') {
-    return { refusal: `\`${key}\` is ${retired}` }
-  }
   const members = retired
     ? retired(value)
     : meta?.definition[key]
