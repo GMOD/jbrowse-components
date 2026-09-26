@@ -105,13 +105,13 @@ It is the same pass the linear synteny view and the dotplot run, over the same
 alignment file, and it is offered on a two-genome circle carrying a synteny
 track and nowhere else.
 
-A two-genome circle opens with each ribbon in the ideogram color of the first
-genome's chromosome it leaves. **Color by...** in the view's menu offers what
-the linear synteny view's palette offers: either genome's chromosome, strand,
-identity or another measurement, a column the track declares, or one color per
-track when several overlay. **Opacity**, **Identity fade** and **Min length**
-sit beside it, and as view settings they go in a session as `color`, `alpha`,
-`opacityByIdentity` and `minAlignmentLength`.
+A synteny circle, of one genome or two, opens with each ribbon in the ideogram
+color of the first genome's chromosome it leaves. **Color by...** in the view's
+menu offers what the linear synteny view's palette offers: either genome's
+chromosome, strand, identity or another measurement, a column the track
+declares, or one color per track when several overlay. **Opacity**, **Identity
+fade** and **Min length** sit beside it, and as view settings they go in a
+session as `color`, `alpha`, `opacityByIdentity` and `minAlignmentLength`.
 
 An alignment narrower than a pixel draws at the share of the pixel it covers, as
 in the linear synteny view, so a circle of tens of thousands of short alignments

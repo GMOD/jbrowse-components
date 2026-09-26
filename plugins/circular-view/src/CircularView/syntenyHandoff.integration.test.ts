@@ -147,3 +147,16 @@ test('the dotplot opens a circle of its two genomes with its colour', async () =
   expect(view.tracks.map(t => t.configuration.trackId)).toEqual(['aln'])
   expect(view.colorField).toBe('target')
 }, 60000)
+
+test('a dotplot on its default colour opens a circle by chromosome', async () => {
+  const session = sessionWithTracks()
+  const dotplot = await session.launchView('DotplotView', {
+    views: [{ assembly: 'A' }, { assembly: 'B' }],
+    tracks: ['aln'],
+  })
+  dotplot.setWidth(800)
+  await when(() => dotplot.assemblyNames.length === 2, { timeout: 30000 })
+  dotplot.openInCircularSyntenyView()
+  const view = (await viewOfType(session, 'CircularView')) as CircularViewModel
+  expect(view.colorField).toBe('query')
+}, 60000)

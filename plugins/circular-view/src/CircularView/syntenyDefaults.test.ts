@@ -1,3 +1,4 @@
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import { WIDTH_FADE_FLOOR } from '@jbrowse/synteny-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
@@ -100,6 +101,14 @@ describe('a two-genome circle', () => {
     expect(layout(unsaid.circle)).toEqual(layout(asked.circle))
     expect(layout(unsaid.circle)).not.toEqual(layout(declined.circle))
   }, 40000)
+})
+
+test('a circle of one genome, hand-authored, paints by chromosome', async () => {
+  const session = createTestSession() as any
+  const { pluginManager } = getEnv(session)
+  await pluginManager.getViewType('CircularView').loadStateModel()
+  const circle = session.addView('CircularView', {}) as CircularViewModel
+  expect(circle.colorField).toBe('query')
 })
 
 describe('the thin fade', () => {

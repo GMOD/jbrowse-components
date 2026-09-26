@@ -14,14 +14,21 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * The colour settings every view drawing synteny tracks shares — the linear
  * synteny view, the dotplot and the circular view: `TrackColorsMixin`'s colour
  * object and palette, the plot's opacity and the shortest alignment drawn,
- * over the tracks the view says it draws. A view supplies `syntenyTracks()`
- * and its opacity default.
+ * over the tracks the view says it draws. A view supplies `syntenyTracks()`,
+ * its opacity default and, optionally, the field it paints by until told
+ * otherwise.
  */
-export function SyntenyColorsMixin({ defaultAlpha }: { defaultAlpha: number }) {
+export function SyntenyColorsMixin({
+  defaultAlpha,
+  defaultColorField,
+}: {
+  defaultAlpha: number
+  defaultColorField?: string
+}) {
   return types
     .compose(
       'SyntenyColorsMixin',
-      TrackColorsMixin(),
+      TrackColorsMixin({ defaultColorField }),
       types.model({
         /**
          * #property
@@ -114,13 +121,19 @@ export interface SyntenyColorsModel extends Instance<
 /**
  * #api
  * What a view holding `SyntenyColorsMixin` hands the view it opens on the same
- * alignments: the colour object, the pinned track colours, the unlabelled
+ * alignments: the colour it paints by, which a view on its default scheme
+ * leaves to the new view's own, the pinned track colours, the unlabelled
  * filter and the length filter. Opacity stays each view's own default, since a
  * linear ribbon, a dotplot point and a circle's ribbon draw at densities of
  * their own.
  */
 export function carriedSyntenySettings(view: SyntenyColorsModel) {
-  const { color, trackColors, hideUnlabelled, minAlignmentLength } =
-    getSnapshot(view)
-  return { color, trackColors, hideUnlabelled, minAlignmentLength }
+  const { trackColors, hideUnlabelled, minAlignmentLength } = getSnapshot(view)
+  const paintsDefault = view.colorField === '' && view.colorValue === undefined
+  return {
+    ...(paintsDefault ? {} : { color: getSnapshot(view.color) }),
+    trackColors,
+    hideUnlabelled,
+    minAlignmentLength,
+  }
 }

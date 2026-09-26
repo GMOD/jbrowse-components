@@ -126,7 +126,7 @@ export function orderAttributeLabels(
  * that list (palette assignment, mode resolution, legend rows) is identical, so
  * it lives here rather than being copied into both models.
  */
-export function TrackColorsMixin() {
+export function TrackColorsMixin({ defaultColorField = '' } = {}) {
   return types
     .model({
       /**
@@ -136,10 +136,13 @@ export function TrackColorsMixin() {
        * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
        * a measurement (`identity`, `mapq`, `dnds`) or a column the
        * tracks declare, with `domain` ordering a text column's labels; a
-       * colour string paints every alignment. Unset, the default scheme
-       * paints.
+       * colour string paints every alignment. Unset, the view's default
+       * paints: `query` on the circular view, the default scheme elsewhere.
        */
-      color: syntenyColorConfigSchema,
+      color: types.stripDefault(
+        syntenyColorConfigSchema,
+        defaultColorField ? { field: defaultColorField } : {},
+      ),
       /**
        * #property
        * trackId -> explicit color under `color: { field: 'track' }`. Absent

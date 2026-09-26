@@ -104,7 +104,7 @@ import type {
 
 const twoPi = 2 * Math.PI
 
-const DEFAULT_RIBBON_ALPHA = 0.25
+const DEFAULT_RIBBON_ALPHA = 0.45
 
 // a track is a synteny track here by what it draws: one ribbon display makes
 // it one for the reorder and for the colour settings alike
@@ -260,13 +260,7 @@ async function applyInit(
       `${launchAssemblyNames(init).join(' and ')} has no regions to display`,
     )
   }
-  // Two genomes open as a synteny figure: coloured by the first genome's
-  // chromosomes unless the launch chose a colour, and with the second genome
-  // reordered to follow the first unless the launch said not to
   const twoGenomes = new Set(drawn.map(r => r.assemblyName)).size === 2
-  if (twoGenomes && self.colorField === '' && self.colorValue === undefined) {
-    self.setColorField('query')
-  }
   const reorder = init.autoDiagonalize ?? twoGenomes
   // declare the reorder gate up front, before any ribbon can paint: it outlives
   // this pass, since only the reorder itself lowers it
@@ -333,7 +327,10 @@ function stateModelFactory(pluginManager: PluginManager) {
       BaseViewModel,
       DiagonalizeProgressMixin(),
       ImportFormSyntenyMixin(),
-      SyntenyColorsMixin({ defaultAlpha: DEFAULT_RIBBON_ALPHA }),
+      SyntenyColorsMixin({
+        defaultAlpha: DEFAULT_RIBBON_ALPHA,
+        defaultColorField: 'query',
+      }),
       SyntenyFadeMixin(),
       types.model({
         /**

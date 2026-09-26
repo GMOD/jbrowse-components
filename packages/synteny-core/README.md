@@ -101,13 +101,14 @@ than over an assumed white.
 ### carriedSyntenySettings
 
 What a view holding `SyntenyColorsMixin` hands the view it opens on the same
-alignments: the colour object, the pinned track colours, the unlabelled filter
-and the length filter. Opacity stays each view's own default, since a linear
-ribbon, a dotplot point and a circle's ribbon draw at densities of their own.
+alignments: the colour it paints by, which a view on its default scheme leaves
+to the new view's own, the pinned track colours, the unlabelled filter and the
+length filter. Opacity stays each view's own default, since a linear ribbon, a
+dotplot point and a circle's ribbon draw at densities of their own.
 
 ```js
 // type signature
-(view: SyntenyColorsModel) => { color: ModelSnapshotType<Record<string, any>>; trackColors: IKeyValueMap<string>; hideUnlabelled: boolean; minAlignmentLength: number; }
+(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<…>; hideUnlabelled: boolean; minAlignmentLength: number; color?: ModelSnapshotType<Record<string, any>> | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts)
