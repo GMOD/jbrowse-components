@@ -215,9 +215,6 @@ describe('draw passes', () => {
   })
 })
 
-// `featureHighlightInk` files a region's primitives under a mark INDEX, and
-// every mark here takes the same lens over the same buffers — so an index
-// pointing at the wrong mark inks the wrong boxes with nothing throwing.
 describe('the index a primitive family is filed under', () => {
   const FAMILIES = ['line', 'chevron', 'rect', 'arrow', 'continuation'] as const
 

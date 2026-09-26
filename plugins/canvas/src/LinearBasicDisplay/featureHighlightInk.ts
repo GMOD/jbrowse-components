@@ -17,9 +17,6 @@ import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { MarkInstance } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// The three primitive families, each read back through the index the mark list
-// assigns it. The chevron and continuation marks declare no `ink`, so
-// `inkOfInstances` would skip anything filed under them.
 const INKED_MARKS = [
   { mark: glyphMarkIndex('line'), kind: 'line' },
   { mark: glyphMarkIndex('rect'), kind: 'rect' },

@@ -1557,11 +1557,10 @@ test('a flattened band plans no density collapse', () => {
   expect(flattened.collapsedSpansPx).toEqual([])
 })
 
-// A flattened pack put every mark on row 0 because the band said so, not
-// because any of them won that row — so the pack after it must start from
-// nothing, the way the collapse's own pinned marks already do. Seeded from one,
-// every mark it held outranks every mark that arrives later, whatever the bp.
-test('a flattened pack seeds no rows into the pack after it', () => {
+test.each([
+  ['a flattened', { flattenRows: true }],
+  ['a collapsed', { displayMode: 'collapsed' as const }],
+])('%s pack seeds no rows into the pack after it', (_, singleRow) => {
   const overlapping = (ids: string[]) =>
     new Map([
       [
@@ -1590,13 +1589,13 @@ test('a flattened pack seeds no rows into the pack after it', () => {
     )
 
   const memo = createIncrementalLayout()
-  memo(overlapping(['a', 'b']), { ...base, flattenRows: true })
-  const afterFlattened = memo(overlapping(['a', 'b', 'late']), base)
+  memo(overlapping(['a', 'b']), { ...base, ...singleRow })
+  const afterSingleRow = memo(overlapping(['a', 'b', 'late']), base)
 
   const cold = createIncrementalLayout()(overlapping(['a', 'b', 'late']), base)
   // `late` starts earliest, so a cold pack inserts it first and it takes row 0
   expect(rows(cold).late).toBe(0)
-  expect(rows(afterFlattened)).toEqual(rows(cold))
+  expect(rows(afterSingleRow)).toEqual(rows(cold))
 })
 
 test('two piles whose painted spans merely touch stay two piles', () => {

@@ -13,11 +13,10 @@ import type { FeatureGlyphParams } from './featureGlyphShapes.ts'
 import type { Mark, MarkFrame } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// Paint order, stated once. `glyphMarkIndex` reads a family's position off
-// this list rather than restating it, so a reorder cannot leave a consumer
-// filing instances under the wrong mark — which is silent, since every mark
-// here takes the same channel lens and indexes the same buffers. The optional
-// member is LAST on purpose: dropping it renumbers none of the others.
+// Every mark here takes the same lens over the same buffers, so an instance
+// filed under the wrong index draws nothing and throws nothing; consumers read
+// indices through `glyphMarkIndex`. The optional member is last so dropping it
+// renumbers no other.
 const PAINT_ORDER = [
   'line',
   'chevron',

@@ -93,9 +93,6 @@ export function displayModeMetrics(
     // height.
     labelFontPx: inputs.dropBelowLabelRows ? 0 : labelFontSize(displayMode),
     rowPadding: ROW_PADDING[displayMode] * bodyScale,
-    // The display mode's way of asking for one row, and the density band's,
-    // answered once: split, the pack read one and the density collapse the
-    // other.
     singleRow: displayMode === 'collapsed' || !!inputs.flattenRows,
   }
 }

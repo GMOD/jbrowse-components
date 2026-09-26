@@ -280,11 +280,7 @@ test("selectionInk boxes the session's selected feature", () => {
   ])
 })
 
-// `featureHighlightInk` files a region's primitives under a mark INDEX, one
-// entry per family, and the chevron and continuation marks declare no `ink` —
-// so a family paired with the wrong index inks nothing and nothing throws. The
-// rest of this file builds rects only, which leaves the two families that are
-// not rects covered by the index table alone.
+// The rest of this file builds rects only.
 describe('a family other than rect still inks', () => {
   const stroke = { color: 0xff_20_20_20, colorClass: LITERAL, flatbushIdx: 0 }
 
@@ -358,5 +354,7 @@ describe('a family other than rect still inks', () => {
       }),
     )
     expect(ink).toHaveLength(1)
+    // the arrowhead sits just past the span's 200px end
+    expect(ink[0]).toMatchObject({ left: 200, width: 7 })
   })
 })
