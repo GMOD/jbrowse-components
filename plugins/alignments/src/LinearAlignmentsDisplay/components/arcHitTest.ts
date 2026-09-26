@@ -136,8 +136,9 @@ export interface ArcHighlight {
 
 // The block's own clamped screen span, carried alongside the hit-test frame
 // because every consumer that draws over the band has to clip to it. Both
-// edges, because the frame's own width is the VIEW's — `arcRadiiPx`' near/far
-// threshold — and the renderers cut this pass at the block's `scissorW`.
+// edges, because the frame's own width is the track canvas's — `arcRadiiPx`'
+// near/far threshold — and the renderers cut this pass at the block's
+// `scissorW`.
 interface ArcBandScale extends ArcHitOptions {
   clipLeft: number
   clipWidth: number

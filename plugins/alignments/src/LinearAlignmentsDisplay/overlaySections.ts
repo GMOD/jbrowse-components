@@ -97,8 +97,9 @@ export interface CrossRegionArcSectionsInput {
   ) => { left: number; right: number } | undefined
   lineWidth: number
   colors: ColorPalette
-  // The whole track's width, `arcRadiiPx`' near/far threshold — see
-  // `ArcBandFrame`.
+  // `arcRadiiPx`' near/far threshold, and for this overlay that is the VIEW's
+  // width — the box it paints on — not the track canvas a per-region pass
+  // takes. See `ArcBandFrame`.
   viewWidthPx: number
   // Said out loud rather than dropped silently, which is this repo's rule for a
   // cap — but the caller owns the reporting, because this runs inside a computed

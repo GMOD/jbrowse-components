@@ -42,12 +42,15 @@ const BAND = { top: 0, height: 20, down: false }
 
 /**
  * The rightmost block of a panned view: it starts on a fractional pixel and
- * runs past the track's right edge.
+ * ends at the viewport's edge, past the track canvas inside it.
  *
- * Both trims at once and unequal (-0.5 left, 102.5 right), which is what makes
- * the reversed row of the table below mean something: `clipBlock` pulls the
- * LOW bp in by the right trim on a reversed block and by the left trim on a
- * forward one, so a fixture whose two trims match passes either way.
+ * Both are at their reachable limits. `visibleRegions` clamps a block to the
+ * viewport, so `screenEndPx` cannot exceed `view.width` and the right trim
+ * cannot exceed the 2px the track outline takes; the left trim is
+ * `frac(screenStartPx)`, since `screenStartPx` is never negative. Unequal is
+ * what matters: `clipBlock` pulls the LOW bp in by the right trim on a
+ * reversed block and by the left trim on a forward one, so a fixture whose two
+ * trims match passes either way.
  */
 function block(reversed: boolean): RenderBlock {
   return {
@@ -55,7 +58,7 @@ function block(reversed: boolean): RenderBlock {
     start: 1_000_000,
     end: 1_001_000,
     screenStartPx: 100.5,
-    screenEndPx: 900.5,
+    screenEndPx: 800,
     reversed,
   }
 }
@@ -146,7 +149,7 @@ test('the fixture really is clipped, unequally, on both edges', () => {
   const b = block(false)
   const clip = clipBlock(b, CANVAS_W, CANVAS_H, { x: 1, y: 1 })!
   expect(clip.scissorX - b.screenStartPx).toBe(-0.5)
-  expect(b.screenEndPx - (clip.scissorX + clip.scissorW)).toBe(102.5)
+  expect(b.screenEndPx - (clip.scissorX + clip.scissorW)).toBe(2)
 })
 
 // The table above reads the uniforms the band wrote; this one pins that the

@@ -92,9 +92,9 @@ function describeMark(mark: ArcMark) {
 // TypeScript. Here the overlay is itself the paint, off the very same `d`, so
 // agreement proves nothing. The FRAME and the NUMBERS are what is worth drawing:
 // these are the only arcs resolved through a different projector
-// (`makeBpToScreenX`, and the VIEW's width where every other arc takes a
-// block's), so a wrong `rx`/`ry` would come from here and the labels are how you
-// would see it.
+// (`makeBpToScreenX`, and the VIEW's width where every other arc takes the
+// track canvas's), so a wrong `rx`/`ry` would come from here and the labels are
+// how you would see it.
 const CrossRegionArcDebugBand = observer(function CrossRegionArcDebugBand({
   model,
   section,

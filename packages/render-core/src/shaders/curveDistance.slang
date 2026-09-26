@@ -169,11 +169,11 @@ public float legSweepAngle(float radiusPx, float yReachPx) {
 
 // Which leg vertex pair `seg` of a `segments`-long strip builds (x: +1 the right
 // leg, -1 the left), and its angle from that leg's foot (y). The strip has
-// `segments + 1` pairs and the right leg takes the extra one, so each leg is
-// spread over ITS OWN count and both reach `legSweep` — and both do so in equal
-// angular steps, which is what puts a chord's sagitta below a pixel everywhere
-// the band can show. The quad between the two tips is the seam the fragment
-// discards.
+// `segments + 1` pairs, one more than either leg needs, and at an even
+// `segments` the right leg takes it. Each leg is spread over ITS OWN count, so
+// both reach `legSweep` — and both do so in equal angular steps, which is what
+// puts a chord's sagitta below a pixel everywhere the band can show. The quad
+// between the two tips is the seam the fragment discards.
 //
 // `segments` is at least 3; below that the left leg is a single pair and has no
 // span to spread. Both callers pass a compile-time 64.

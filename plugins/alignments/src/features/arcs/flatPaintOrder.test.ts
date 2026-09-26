@@ -60,7 +60,6 @@ const BAND = {
     readConnectionsLineWidth: 1,
   }),
   arcBand: { top: 0, height: 100, down: true },
-  viewWidthPx: 800,
 }
 
 function paint(arcs: ComputedArc[]) {

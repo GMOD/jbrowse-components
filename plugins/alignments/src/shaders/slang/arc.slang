@@ -182,11 +182,13 @@ struct VsOut {
 // one predicate, and spelling it twice is how they would come to disagree about
 // which shape an arc at exactly the threshold is.
 //
-// `viewWidthPx` is the VIEW's width. ADR-163 settled that for the link mark —
-// "the view's width, not the block's, so the two blocks holding a pair's feet
-// draw one curve" — and the band is the same argument: a threshold measured
-// against a block moves when a region edge scrolls on screen, which redraws a
-// settled arc as a different mark partway through a pan.
+// `viewWidthPx` is the width of the SURFACE the arc is drawn across — the
+// track canvas for this pass, and the export's own width when it exports.
+// ADR-163 settled that for the link mark — "the view's width, not the block's,
+// so the two blocks holding a pair's feet draw one curve" — and the band is
+// the same argument: a threshold measured against a block moves when a region
+// edge scrolls on screen, which redraws a settled arc as a different mark
+// partway through a pan.
 bool arcIsFar(float halfWidthPx, float viewWidthPx) {
   return 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * viewWidthPx;
 }
@@ -257,7 +259,7 @@ Curve arcCurve(Instance inst, ArcBandUniforms u, float strokeHalfPx) {
   cv.yDir = yDir;
   cv.ends = float2(min(x1Px, x2Px), max(x1Px, x2Px));
   // `far` is purely a function of on-screen span — no bp limit — and it is
-  // measured against the VIEW's width, so the same pair is the same shape
+  // measured against the whole surface, so the same pair is the same shape
   // wherever the blocks fall. `u.canvasW` is this block's.
   bool far = arcIsFar(halfWidthPx, u.viewWidthPx);
   cv.kind = far ? KIND_CIRCLE : KIND_ELLIPSE;

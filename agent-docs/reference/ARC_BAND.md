@@ -46,11 +46,18 @@ own:
 
 ## A far pair keeps its direction for three screen widths
 
-**The width is the VIEW's**, on the GPU (`viewWidthPx`, beside the block's own
-`canvasW`), in the Canvas2D painter and in the hit test alike — ADR-163's rule
-for the link mark. Against a BLOCK the threshold moves as a region edge scrolls
-on screen, so a settled arc is repainted as a different mark partway through a
+**The width is the SURFACE the mark is drawn across**, never a block's — the
+GPU carries it as `viewWidthPx`, beside the block's own `canvasW`, and the
+Canvas2D painter and the hit test read the same number. ADR-163's rule for the
+link mark. Against a BLOCK the threshold moves as a region edge scrolls on
+screen, so a settled arc is repainted as a different mark partway through a
 pan, and only near a chromosome end or in a multi-region view.
+
+Which surface depends on the pass. A per-region pass draws onto the track
+canvas, so it takes `RenderState.canvasWidth` — `trackWidthPx` on screen, and
+the export's own width when exporting. `CrossRegionArcsOverlay` draws onto a
+box `view.width` wide and takes that. The two differ by the track outline's 2
+px, which is 0.25% of the threshold and moves no arc either drew.
 
 **`ARC_FAR_SCREEN_WIDTHS` is 3, not the 1 that would mean "both endpoints fit on
 screen".** Past it a paired arc's ellipse becomes a true circle and the band clips

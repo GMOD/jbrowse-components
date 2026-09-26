@@ -32,19 +32,22 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 /**
  * Which width `arcIsFar` measures a pair against.
  *
- * The view's, so a pair is the same shape wherever the block edges fall.
- * Measured against the BLOCK, the threshold moves as a region edge scrolls on
- * screen — near a chromosome end, or in any multi-region view — and a settled
- * arc is redrawn as a different mark partway through a pan. ADR-163 settled
- * this for the link mark; the band was the copy still measuring its block.
+ * The whole surface the mark is drawn across, so a pair is the same shape
+ * wherever the block edges fall. For these three consumers that surface is the
+ * track canvas; `CrossRegionArcsOverlay` paints on the view's own box and is
+ * pinned in `crossRegionArcs.test.ts`. Measured against a BLOCK, the threshold
+ * moves as a region edge scrolls on screen — near a chromosome end, or in any
+ * multi-region view — and a settled arc is redrawn as a different mark partway
+ * through a pan. ADR-163 settled this for the link mark; the band was the copy
+ * still measuring its block.
  */
 
-const VIEW_W = 800
+const CANVAS_W = 800
 const BLOCK_W = 400
 const BAND_H = 100
-// A pair spanning 2.5 view widths: inside the threshold against the view, past
-// it against a half-width block.
-const SPAN_PX = 2.5 * VIEW_W
+// A pair spanning 2.5 canvas widths: inside the threshold against the canvas,
+// past it against a half-width block.
+const SPAN_PX = 2.5 * CANVAS_W
 
 const frame = (viewWidthPx: number): Omit<ArcBandFrame, 'bpToScreenX'> => ({
   arcsYDomainBp: 1000,
@@ -69,9 +72,9 @@ function dome(viewWidthPx: number) {
 test('the pair this file is about straddles the threshold', () => {
   // Both readings, so the cases below are known to be measuring something.
   // `circular` IS the far branch: it collapses `ry` onto `rx`.
-  expect(SPAN_PX).toBeLessThan(ARC_FAR_SCREEN_WIDTHS * VIEW_W)
+  expect(SPAN_PX).toBeLessThan(ARC_FAR_SCREEN_WIDTHS * CANVAS_W)
   expect(SPAN_PX).toBeGreaterThan(ARC_FAR_SCREEN_WIDTHS * BLOCK_W)
-  expect(dome(VIEW_W).circular).toBe(false)
+  expect(dome(CANVAS_W).circular).toBe(false)
   expect(dome(BLOCK_W).circular).toBe(true)
 })
 
@@ -126,20 +129,20 @@ function sources(): AlignmentsSources {
   }
 }
 
-test('the GPU carries the view width beside the block clip, not instead of it', () => {
+test('the GPU carries the surface width beside the block clip, not instead of it', () => {
   const hal = new MockHal(ALIGNMENTS_PASSES)
   const renderer = new GpuAlignmentsRenderer(hal)
   renderer.upload('sources', sources())
   renderer.renderBlocks(
     [BLOCK],
     makeTestRenderState({
-      canvasWidth: VIEW_W,
+      canvasWidth: CANVAS_W,
       canvasHeight: 200,
       sections: [SECTION],
     }),
   )
   const u = hal.getUniformWritesF32().at(-1)!
-  expect(u[UNIFORM_OFFSET_F32.viewWidthPx]).toBe(VIEW_W)
+  expect(u[UNIFORM_OFFSET_F32.viewWidthPx]).toBe(CANVAS_W)
   // Still the block's span: clip space normalizes over the scissor, and the
   // two uniforms have to be able to differ for that to keep working.
   expect(u[UNIFORM_OFFSET_F32.canvasW]).toBe(BLOCK_W)
@@ -164,11 +167,11 @@ function ellipses() {
   return { ctx, drawn }
 }
 
-test('the Canvas2D painter strokes the dome the view width earns', () => {
+test('the Canvas2D painter strokes the dome the canvas width earns', () => {
   const { ctx, drawn } = ellipses()
   paintArcBand(ctx, oneArc(), BLOCK, {
     ...makeTestRenderState({
-      canvasWidth: VIEW_W,
+      canvasWidth: CANVAS_W,
       colors: makeTestPalette(),
       readConnectionsLineWidth: 1,
     }),
@@ -189,7 +192,7 @@ test('the hit test resolves that same dome, and still clips to the block', () =>
     scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 200 },
     lineWidth: 1,
     arcsYDomainBp: undefined,
-    canvasWidthPx: VIEW_W,
+    canvasWidthPx: CANVAS_W,
   } satisfies ArcHitBandOptions
   const debug = resolveArcBandDebug(oneArc(), opts)!
   const { mark } = debug.shapes[0]!
@@ -222,7 +225,7 @@ function bodyOf(src: string, fn: string) {
 test.each([
   ['wgsl', wgsl.WGSL_SOURCE],
   ['glsl', glsl.GLSL_VERTEX],
-])('%s resolves the curve against the view width alone', (_name, src) => {
+])('%s resolves the curve against the surface width alone', (_name, src) => {
   const body = bodyOf(src, 'arcCurve_0')
   expect(body).toContain('viewWidthPx')
   // `canvasW` is the block's clamped span and belongs to `arcBandClipPos`,
