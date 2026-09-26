@@ -186,7 +186,7 @@ const HPRC_MAF_ROWS = [
 
 // The C4 window maf_hprc_pangenome opens, as the two shapes the session needs:
 // a locus for the linear view and a region for the subgraph the graph pane cuts.
-// It is pangenome/hprc_graph_anatomy's window, so part 3's pane is the cut part 1
+// It is pangenome/hprc_graph_anatomy's window, so part 2's pane is the cut part 1
 // labels.
 // One pair of numbers, because the reference-position ramp below is a function
 // of the graph's own loadedRegion — a second copy is how a block above and a
