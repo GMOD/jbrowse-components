@@ -12,6 +12,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import corePlugins from './corePlugins.ts'
 
+import type { AdapterSpec } from '@jbrowse/add-track-core'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 jest.mock('./makeWorkerInstance', () => () => {})
@@ -209,4 +210,114 @@ test.each(
   expect(
     guessAdapter(uri(`${base}/whatever.dat`), undefined, adapterType)?.type,
   ).toBe(adapterType)
+})
+
+// `formats.ts` states each adapter's file layout — which slot the data file goes
+// in, and where its index or sidecars sit — and every adapter's `uri` shorthand
+// knows the same thing. Two statements of one fact, so derive one from the other
+// and compare: run the shorthand on a probe name and read the layout back out of
+// what it expanded to.
+//
+// The table stays the source of truth. What it holds that no normalizer knows is
+// the part worth reading as a table: the extension regexes and their order, the
+// track-type overrides, the formats JBrowse deliberately refuses, and `fromIndex`
+// — which sidecar receives a file the user typed into the "index file" field.
+const PROBE = 'probe.dat'
+
+interface Layout {
+  locField: string
+  index?: { suffix: string; indexType: string }
+  sidecars: { field: string; suffix: string }[]
+}
+
+function declaredLayout(spec: AdapterSpec): Layout | undefined {
+  switch (spec.kind) {
+    case 'single':
+    case 'anchors':
+      return { locField: spec.locField, sidecars: [] }
+    case 'indexed':
+      return {
+        locField: spec.locField,
+        index: { suffix: spec.suffix, indexType: spec.indexType },
+        sidecars: [],
+      }
+    case 'sidecar':
+      return {
+        locField: spec.locField,
+        sidecars: spec.sidecars.map(s => ({
+          field: s.field,
+          suffix: s.suffix,
+        })),
+      }
+    case 'unsupported':
+      return undefined
+  }
+}
+
+// the suffix a location carries over the probe name, or undefined where it is not
+// the probe's sibling at all
+function suffixOf(location: unknown) {
+  const uri =
+    typeof location === 'object' && location && 'uri' in location
+      ? String(location.uri)
+      : undefined
+  return uri?.startsWith(PROBE) ? uri.slice(PROBE.length) : undefined
+}
+
+function derivedLayout(
+  normalize: (snap: Record<string, unknown>) => Record<string, unknown>,
+): Layout | undefined {
+  const out = normalize({ type: 'probe', uri: PROBE })
+  let locField: string | undefined
+  let index: Layout['index']
+  const sidecars: Layout['sidecars'] = []
+  for (const [key, value] of Object.entries(out)) {
+    if (key === 'index') {
+      const inner = value as { location?: unknown; indexType?: unknown }
+      const suffix = suffixOf(inner.location)
+      index = suffix
+        ? { suffix, indexType: String(inner.indexType) }
+        : undefined
+      continue
+    }
+    const suffix = suffixOf(value)
+    if (suffix === '') {
+      locField = key
+    } else if (suffix !== undefined) {
+      sidecars.push({ field: key, suffix })
+    }
+  }
+  return locField ? { locField, index, sidecars } : undefined
+}
+
+// `rootUrlTemplate` and `endpoint` are a URL rather than a file location, and
+// neither adapter lifts a `uri` into one
+const NO_SHORTHAND = new Set(['NCListAdapter', 'SPARQLAdapter'])
+
+const tableAdapters = [
+  ...new Set(
+    formats
+      .map(f => ('adapterType' in f.spec ? f.spec.adapterType : undefined))
+      .filter((t): t is string => Boolean(t)),
+  ),
+]
+
+test('the table names exactly the adapters with no uri shorthand', () => {
+  const { pluginManager } = setup()
+  expect(
+    tableAdapters
+      .filter(t => !pluginManager.getAdapterType(t).normalizeSnapshot)
+      .sort(),
+  ).toEqual([...NO_SHORTHAND].sort())
+})
+
+test.each(
+  tableAdapters.filter(t => !NO_SHORTHAND.has(t)).map(t => [t] as const),
+)("%s's table layout is the one its shorthand derives", adapterType => {
+  const { pluginManager } = setup()
+  const normalize = pluginManager.getAdapterType(adapterType).normalizeSnapshot!
+  const spec = formats.find(
+    f => 'adapterType' in f.spec && f.spec.adapterType === adapterType,
+  )!.spec
+  expect(derivedLayout(normalize)).toEqual(declaredLayout(spec))
 })

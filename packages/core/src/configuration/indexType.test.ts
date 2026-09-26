@@ -102,6 +102,15 @@ describe('the shorthand reads one index type out of three spellings', () => {
     })
   })
 
+  // the derived type is stated first and the written `index` spread over it, so a
+  // value the enumeration does not have reaches MST rather than being read as the
+  // sibling format
+  test('an indexType the enumeration does not have is left to be refused', () => {
+    expect(tabix({ index: { indexType: 'BOGUS' } })).toMatchObject({
+      indexType: 'BOGUS',
+    })
+  })
+
   test('baseUri rides onto the derived index', () => {
     expect(tabix({ baseUri: 'file:///d/' })).toMatchObject({
       location: { uri: 'x.vcf.gz.tbi', baseUri: 'file:///d/' },

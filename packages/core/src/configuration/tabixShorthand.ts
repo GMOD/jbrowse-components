@@ -29,11 +29,12 @@ export function requestedIndexType(
 }
 
 /**
- * The `index` half of an indexed adapter's shorthand snapshot. The type comes
- * from {@link requestedIndexType} and the filename follows from the type, so the
- * two cannot disagree; whatever the config wrote under `index` still wins, member
- * by member, so naming a location keeps the derived type and naming a type keeps
- * the derived location.
+ * The `index` half of an indexed adapter's shorthand snapshot. The filename
+ * follows from {@link requestedIndexType}, so the type and the extension cannot
+ * disagree, and whatever the config wrote under `index` then wins member by
+ * member: naming a location keeps the derived type, naming a type keeps the
+ * derived location, and an `indexType` the enumeration does not have reaches MST
+ * to be refused rather than being quietly read as the sibling format.
  */
 export function indexSnapshot(
   snap: Record<string, unknown>,
@@ -41,14 +42,12 @@ export function indexSnapshot(
 ) {
   const indexType = requestedIndexType(snap, fallback)
   return {
+    indexType,
     location: {
       uri: `${snap.uri}${indexSuffix(indexType)}`,
       baseUri: snap.baseUri,
     },
     ...(isPlainObject(snap.index) ? snap.index : {}),
-    // last, and not an override: requestedIndexType has already read what the
-    // config wrote here
-    indexType,
   }
 }
 
