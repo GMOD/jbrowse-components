@@ -44,7 +44,7 @@ you release the slider:
 - **Minor allele frequency** hides variants whose minor allele frequency falls
   below the threshold, so singletons and near-monomorphic sites drop out and the
   common, population-informative variants remain.
-- **Missingness** hides variants whose fraction of no-call genotypes rises above
+- **Missingness** hides variants whose fraction of uncalled alleles rises above
   the threshold. Its
   [default](/docs/config/linearmultisamplevariantdisplay/#slot-maxmissingnessfilter)
   keeps every variant; lowering it drops the poorly-genotyped columns that are

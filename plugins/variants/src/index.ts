@@ -72,7 +72,7 @@ export default class VariantsPlugin extends Plugin {
 
     /** #jexlFunction Variant functions | maf(feature) | minor allele frequency over the called alleles */
     jexl.addFunction('maf', featureMinorAlleleFrequency)
-    /** #jexlFunction Variant functions | missingness(feature) | fraction of samples with no call */
+    /** #jexlFunction Variant functions | missingness(feature) | fraction of alleles with no call, so ./1 counts half */
     jexl.addFunction('missingness', featureMissingness)
 
     // Variant-consequence helpers, reading SnpEff ANN / VEP CSQ. `impact` and

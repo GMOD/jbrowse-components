@@ -223,7 +223,7 @@ export default function configSchemaFactory() {
         defaultValue: 1,
         advanced: true,
         description:
-          'Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant',
+          'Hide variants whose fraction of uncalled alleles is above this threshold; 1 keeps every variant',
       },
       /**
        * #slot
