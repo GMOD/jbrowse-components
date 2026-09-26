@@ -701,14 +701,14 @@ and so do format-specific displays rebuilt on the grammar (ADR-114, ADR-118).
   that reason.
 - **Pan and zoom write one uniform and no buffer.** GenomeSpy achieves the
   same through scale uniforms; the tree does it with shapes a person can read.
-- **The row axis rides a texture the vertex stage samples.** A `span`
-  instance carries a stable row key, and a per-pass row table maps each key
-  to its drawn slot, hidden, or a colour override
+- **The row axis rides a texture the vertex stage samples.** A `span`, `bar`,
+  `point` or `link` instance carries a stable row key, and a per-pass row
+  table maps each key to its drawn slot, hidden, or a colour override
   ([ADR-165](../architecture-decision-records/adr-165-the-row-axis-rides-a-table-the-vertex-stage-samples.md)), so a
-  reorder, focus or recolour on the multi-row feature display uploads one
-  small texture and no instance bytes, the way a y domain rides a uniform.
-  The mark display's rows still re-pack their lanes (`facetRegion`), because
-  its bar and point marks spend their one sampler on the colour ramp.
+  reorder, focus or recolour on the multi-row feature display, and a reorder
+  or focus of the mark display's `rows`, uploads one small texture and no
+  instance bytes, the way a y domain rides a uniform. A `facet`, whose
+  sections vary in height, still offsets its lanes (`facetRegion`).
 - **Guides derive from scales on both surfaces**, screen and export, from one
   declaration, and a display places neither.
 - **The config rung is visible two levels down** to the manifest, the JSON

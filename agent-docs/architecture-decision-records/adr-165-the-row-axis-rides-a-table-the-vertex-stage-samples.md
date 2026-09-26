@@ -60,14 +60,15 @@ the display; a focus is the table and one region's scan for the key and
 extents the legend and axis read, the one cost left that grows with the
 instances.
 
-What the HALs allow: a render shader binds one uniform block and at most one
-combined `Sampler2D` (`RENDER_SHAPES`, `shader-codegen/bindings.ts`); the span,
+What the HALs allow: a render shader binds one uniform block and up to two
+combined `Sampler2D`s, at bindings 2/3 and 4/5, each under its own filter
+(`RENDER_SHAPES`, `shader-codegen/bindings.ts`; the second arrived with stage
+2, so bar, point and link bind the ramp and the table side by side); the span,
 variant, MAF and wiggle line and band passes bind no texture; vertex-stage
 sampling ships (`barMark` samples its ramp there) and WebGPU binding visibility
 follows the stages the reflected table names; a texture uploads only when its
-identity moves. Stage 2 lets a render pass take a second combined sampler at
-bindings 4/5 (`RENDER_SHAPES`), each under its own filter, so bar, point and
-link bind the ramp and the table side by side.
+identity moves, and neither HAL draws a pass until every texture it declares
+has arrived.
 Uniform arrays are out — WebGL2's 16 KB block floor, the
 WebGPU uniform ring's cost per block, and a scalar `uint[N]` crashing slangc's
 WGSL backend (`colorPack.slang`) — and storage buffers are refused on the
@@ -98,14 +99,15 @@ key's bytes where they say; `rowTable.test.ts` walks the bytes for the one
 texel written at keys 0, 2047, 2048 and 5000 and holds it to the twins. The
 result is one `RowTable` — `keys`, `slot` (`HIDDEN_ROW` where hidden),
 `color` (`NO_ROW_COLOR` where none) and its `texture` — that the shader, the
-painter, the ink and the hit test all place a key through. The span shape
-declares `texture(params)` as `params.rowTable?.texture`, a new `MarkShape`
-member: a shape whose texture is its own concept binds it off the params the
-painter reads, so the two backends cannot be handed different tables. It
-binds after the gates, inside `drawRegion`, through the `TextureBinder`
-(`MarkTextureBinder`) the backend hands `drawMarks`, and the backend skips its
-own pre-block bind for such a mark (`texturedByParams`). The pass samples
-`nearest`, so the read-back is the byte the builder wrote.
+painter, the ink and the hit test all place a key through. A shape that reads
+the table declares `textures(params)` answering `{ rowTable:
+params.rowTable?.texture }`, a `MarkShape` member keyed by sampler: a shape
+whose texture is its own concept binds it off the params the painter reads,
+so the two backends cannot be handed different tables. Every sampler a pass
+declares is bound after the gates, inside `drawRegion`, through the
+`TextureBinder` (`MarkTextureBinder`) the backend hands `drawMarks`, the
+display's own lens answering first and the shape's params next. The pass
+samples `nearest`, so the read-back is the byte the builder wrote.
 
 **`RowKeys` assigns a name its key at first arrival and never moves it.** A
 region encoded against the registry stays valid as later regions add names;
