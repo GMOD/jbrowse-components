@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-25. The per-base gutter landed and the gutter aligner is deleted, so every gutter below the anchor composes and sequence two haplotypes share that GRCh38 lacks draws as nothing; a graph-stated successor is unbuilt. The plugin is unpublished with that deletion. Walk rows draws every haplotype on its own bp, and naming the haplotypes returns whole walks where the cohort cut splits them. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
+description: The HPRC graph thread as of 2026-09-25. The gutter aligner is deleted, so every gutter below the anchor composes through GRCh38 — and composition now carries the two records' own alignment, so those gutters draw indels and mismatches rather than a bare ribbon, the marks bounded by the pixel and faded to their width. Sequence two haplotypes share that GRCh38 lacks still draws as nothing; a graph-stated successor is unbuilt. The plugin is unpublished with that deletion. Walk rows draws every haplotype on its own bp, and naming the haplotypes returns whole walks where the cohort cut splits them. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -43,8 +43,10 @@ sparse, so it is a host-side prep tool, not a gutter source.
 that we are not truly pangenome ready, and puts the GBZ effort in question. So
 the panel plan below is not agreed, and what replaces it is open.
 
-**Open calls for Colin.** How mismatches are inked in the gutter (≥1 px at full colour, or faded to
-their width; captures at https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86).
+**Answered 2026-09-25.** A gutter mismatch fades with its width
+(`KIND_BASE_TILE`) rather than holding ≥1 px at full colour — a difference you
+cannot yet read fades out. Captures:
+https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86
 
 **Next, in order.**
 
@@ -93,9 +95,31 @@ as explicitly unaligned, which needs no DP; nobody has built it.
 unpkg url, so publishing moves every hosted config at once.
 
 **Found along the way, unfixed.** The hosted `demos/hprc/config.json` still
-names a retired betabuild plugin bundle (2026-09-20). `demos/hprc/config.json`
+names the retired betabuild prefix (bundle of 2026-09-20, still served, so the
+demo works off old code); the in-repo copy moved to the unversioned unpkg url in
+`a0da38418c`, and only a redeploy carries that across. `demos/hprc/config.json`
 also has no
 `defaultSession` and its `hprc_v2_1_gbz_lanes` names only the curated eight, so
 a reader who switches that track on meets the panel Colin rejected. gbz-base's
 `Subgraph.alignment()` writes `M` for match and mismatch alike, so the anchor
 gutter inks no mismatch until that one line writes `X`.
+
+**A composed gutter carries the composed alignment.** `composeLaneLinks` used to
+hand a gutter a ribbon and nothing inside it, so deleting the aligner would have
+left every lane pair below the anchor blank. It now steps the two records
+through each other (`composeAlignmentOps`): over the anchor stretch both cover,
+a base each lane places is a match between them, a base only one places is that
+lane's own insertion, and a base one calls a mismatch while the other calls it a
+match is a mismatch between the two. Where BOTH call it a mismatch the file has
+not said whether they share the alternative, so the op is `M` and no mark draws.
+Nothing is aligned here; every op comes from an op the file carries. Stepping
+them through each other also places the stretch where the alignment puts it
+instead of where the record's overall ratio does, which is finding 4.1's
+remainder in `reference/MULTIWAY_SYNTENY_DISPLAY.md`.
+
+Mismatches sharing a pixel on both lanes draw as one mark carrying their
+mismatched length, so a gutter emits at most one per pixel of its width: the
+eight hosted `demos/hprc_multiway` records state 85,864 mismatches at the widest
+window the fine tier serves, against a 1,588 px canvas. The `alignmentDetail`
+gate is gone with the asymmetry it protected — a record with ops draws them,
+wherever it sits.

@@ -32,7 +32,14 @@ Re-checked against the code and every tutorial the display appears in.
 - **4.1**, alignment records drawn as affine blocks. `SPLIT_AT_GAP_BP = 10_000`
   (`MW/afterAttach.ts`) rides both the anchor fetch and the pair fetch and is
   honoured through `clipFeatureToRegion`, so a record is cut at every large
-  indel and the hg38 page documents the cut rather than the artefact.
+  indel and the hg38 page documents the cut rather than the artefact. Inside a
+  run the affine placement is gone too: every gutter now draws the record's own
+  ops, the anchor's from the record itself and a lower one's composed from the
+  two records it sits between (`composeAlignmentOps`), which also places the
+  composed stretch exactly instead of interpolating the record's overall ratio.
+  Mismatches sharing a pixel draw as one mark carrying their mismatched length,
+  so the marks are bounded by the ribbon's width in px and the width fade reads
+  as density.
 - **4.2**, the two strand semantics. `configSchema.ts`, the `Color ribbons by`
   help text and `multiwayGeometry.ts` now all say the record's strand and not
   the drawn twist; the four tutorials that stated the crossing were corrected
@@ -100,10 +107,10 @@ pairwise alignments over one human locus. It is the wrong frame, unmodified, for
 three things: more than one row of content per genome (a lane is a
 display-internal object that hosts one annotation and nothing else), alignment
 sources whose within-record structure matters (at TP53 a 25 kb mouse indel drew
-as a straight ribbon until the gap split landed; a gutter that is a direct pair
-now draws its record's own indels and mismatches, but `SPLIT_AT_GAP_BP` still
-cuts at 10 kb, so a larger indel is the space between two placements rather than
-a drawn wedge), and cohorts of hundreds to thousands of haplotypes (every cost is
+as a straight ribbon until the gap split landed; every gutter now draws its
+record's own indels and mismatches, but `SPLIT_AT_GAP_BP` still cuts at 10 kb,
+so a larger indel is the space between two placements rather than a drawn
+wedge), and cohorts of hundreds to thousands of haplotypes (every cost is
 linear in lanes, the picker is a flat checkbox list, and the graph fetch is the
 whole cohort regardless of the selection). The row-per-haplotype picture should
 be kept as the *reading* for a chosen handful; the *choosing* and the *fetching*

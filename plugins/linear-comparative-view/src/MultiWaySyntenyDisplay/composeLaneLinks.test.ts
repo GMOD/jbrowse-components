@@ -1,3 +1,4 @@
+import { CIGAR_D, CIGAR_EQ, CIGAR_I, CIGAR_X } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { composeLaneLinks } from './composeLaneLinks.ts'
@@ -17,6 +18,7 @@ function record(
   lane: [string, number, number],
   strand: 1 | -1 = 1,
   anchorRefName = 'chr1',
+  alignmentOps?: Uint32Array,
 ): LanePlacementRecord {
   return {
     anchorRefName,
@@ -31,8 +33,15 @@ function record(
       refName: anchorRefName,
       start: anchor[0],
       end: anchor[1],
+      strand,
+      ...(alignmentOps ? { alignmentOps } : {}),
+      mate: { refName: lane[0], start: lane[1], end: lane[2] },
     }),
   }
+}
+
+function ops(...pairs: [number, number][]) {
+  return Uint32Array.from(pairs.map(([len, op]) => (len << 4) | op))
 }
 
 function compose(
@@ -268,4 +277,48 @@ test('runs of one record compose within themselves and never across the gap', ()
       },
     },
   ])
+})
+
+// A star states each haplotype against the reference and never states one
+// haplotype against another, so this gutter's alignment is the only one there
+// will ever be — and it draws the same indels and mismatches a directly
+// fetched pair draws.
+test('a gutter a star never states carries the alignment composed through it', () => {
+  const upper = record(
+    'u',
+    [100, 200],
+    ['Pp1', 1000, 1090],
+    1,
+    'chr1',
+    ops([40, CIGAR_EQ], [10, CIGAR_D], [49, CIGAR_EQ], [1, CIGAR_X]),
+  )
+  const lower = record(
+    'l',
+    [100, 200],
+    ['Tc1', 5000, 5100],
+    1,
+    'chr1',
+    ops([100, CIGAR_EQ]),
+  )
+  const [link] = compose([upper], [lower])
+  const packed = link!.get('alignmentOps') as Uint32Array
+  expect([...packed].map(v => [v >>> 4, v & 0xf])).toEqual([
+    [40, CIGAR_EQ],
+    [10, CIGAR_I],
+    [49, CIGAR_EQ],
+    [1, CIGAR_X],
+  ])
+  const mate = link!.get('mate') as Mate
+  expect([link!.get('start'), link!.get('end'), mate.start, mate.end]).toEqual([
+    1000, 1090, 5000, 5100,
+  ])
+})
+
+test('a gutter whose records state no alignment keeps the interpolated span', () => {
+  const [link] = compose(
+    [record('u', [100, 200], ['Pp1', 1000, 1090])],
+    [record('l', [100, 200], ['Tc1', 5000, 5100])],
+  )
+  expect(link!.get('alignmentOps')).toBeUndefined()
+  expect([link!.get('start'), link!.get('end')]).toEqual([1000, 1090])
 })

@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { mateSlice } from '../mateBpAt.ts'
+import { composeAlignmentOps } from './composeAlignmentOps.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -62,10 +63,14 @@ function stillOpen(active: LanePlacementRecord[], next: LanePlacementRecord) {
  * The links between two adjacent mate lanes that a star of pairwise
  * alignments never states directly, composed through the anchor: wherever an
  * upper-lane record and a lower-lane record cover the same stretch of the
- * anchor, that stretch is mapped into each lane by linear interpolation within
- * its record and emitted as one link in the shape the display's direct
- * lane-link features have — `refName`/`start`/`end` in the upper lane,
- * `mate` in the lower, `strand` the product of the two orientations.
+ * anchor, that stretch is mapped into each lane and emitted as one link in the
+ * shape the display's direct lane-link features have — `refName`/`start`/`end`
+ * in the upper lane, `mate` in the lower, `strand` the product of the two
+ * orientations. Where both records carry their own alignment the two are
+ * stepped through together (`composeAlignmentOps`), which places the stretch
+ * exactly and hands the link the `alignmentOps` a direct pair carries, so the
+ * gutter draws the same indels and mismatches; otherwise the stretch is mapped
+ * by linear interpolation within each record.
  *
  * A sweep over both lists in anchor order with an active set per side, so the
  * work is the sort plus one step per overlapping pair. Intersections shorter
@@ -88,8 +93,13 @@ export function composeLaneLinks({
     const s = Math.max(u.anchorStart, l.anchorStart)
     const e = Math.min(u.anchorEnd, l.anchorEnd)
     if (e - s >= minBp) {
-      const upperSpan = projectOntoLane(u, s, e)
-      const lowerSpan = projectOntoLane(l, s, e)
+      const composed = composeAlignmentOps(u, l, s, e)
+      const upperSpan = composed
+        ? { start: composed.upperStart, end: composed.upperEnd }
+        : projectOntoLane(u, s, e)
+      const lowerSpan = composed
+        ? { start: composed.lowerStart, end: composed.lowerEnd }
+        : projectOntoLane(l, s, e)
       links.push(
         new SimpleFeature({
           uniqueId: `composed:${u.feature.id()}@${u.start}-${u.end}|${l.feature.id()}@${l.start}-${l.end}|${u.anchorRefName}:${s}-${e}`,
@@ -100,6 +110,7 @@ export function composeLaneLinks({
           strand: u.strand * l.strand,
           type: 'match',
           composedThrough: { refName: u.anchorRefName, start: s, end: e },
+          ...(composed ? { alignmentOps: composed.ops } : {}),
           mate: {
             assemblyName: lowerAssemblyName,
             refName: l.refName,

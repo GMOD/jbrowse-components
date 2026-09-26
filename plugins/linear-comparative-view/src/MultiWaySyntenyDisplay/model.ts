@@ -1935,7 +1935,6 @@ export function stateModelFactory(
           hideUnlabelled: self.hideUnlabelled,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
-          alignmentDetail: self.adjacentLanesAlignDirectly,
         })
       },
     }))

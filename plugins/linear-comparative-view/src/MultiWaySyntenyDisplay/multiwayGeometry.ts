@@ -22,6 +22,7 @@ import {
 
 import {
   KIND_BASE,
+  KIND_BASE_TILE,
   KIND_CIGAR_D,
   KIND_CIGAR_I,
   KIND_CIGAR_N,
@@ -289,7 +290,15 @@ function indelKind(op: number) {
  * merged below a px of either, the way the synteny view merges them, so a lane
  * pair aligned base by base draws the wedges LinearSyntenyView draws for the
  * same PAF. Each mismatch joins its base on one lane to its base on the other,
- * at least a px wide whatever the zoom.
+ * fading with its width so a difference you cannot yet read fades out rather
+ * than inking a whole pixel. Mismatches sharing a pixel on both lanes join into
+ * one mark AS LONG AS THEIR MISMATCHED BASES: an HPRC pair states about one
+ * mismatch per kb over a record tens of Mb long, and marking each separately
+ * spends an instance to paint a pixel that already has one. Carrying the run's
+ * mismatched length rather than the stretch it spans keeps the width fade
+ * reading as density — the same ink the separate marks composited to — while
+ * bounding the marks by the ribbon's width in px, the bound
+ * `visitCigarRenderedSegments` gives the indels above.
  */
 function addAlignmentDetail(
   builder: RibbonBuilder,
@@ -349,11 +358,38 @@ function addAlignmentDetail(
     )
     let bp1 = start
     let bp2 = start2
+    let markStart1 = 0
+    let markStart2 = 0
+    let markLen = 0
+    const flushMark = () => {
+      if (markLen > 0) {
+        add(
+          markStart1,
+          markStart1 + markLen,
+          markStart2,
+          markStart2 + markLen * dir2,
+          KIND_BASE_TILE,
+          colors.X,
+        )
+        markLen = 0
+      }
+    }
     for (let k = 0; k < ops.length; k++) {
       const len = ops[k]! >>> 4
       const op = ops[k]! & 0xf
       if (op === CIGAR_X) {
-        add(bp1, bp1 + len, bp2, bp2 + len * dir2, KIND_BASE, colors.X)
+        if (
+          markLen > 0 &&
+          Math.abs(bp1 + len - markStart1) <= upper.bpPerPx &&
+          Math.abs(bp2 + len * dir2 - markStart2) <= lower.bpPerPx
+        ) {
+          markLen += len
+        } else {
+          flushMark()
+          markStart1 = bp1
+          markStart2 = bp2
+          markLen = len
+        }
       }
       if (op === CIGAR_RUN) {
         bp1 += len
@@ -367,13 +403,16 @@ function addAlignmentDetail(
         bp2 += len * dir2
       }
     }
+    flushMark()
   }
 }
 
 /**
  * The ortholog ribbons between each adjacent lane pair, one per pair of runs
- * both lanes place, and from the second gutter down the direct alignment
- * records an alignment source fetched for that pair.
+ * both lanes place, and from the second gutter down the alignment records an
+ * alignment source fetched for that pair, or composed for it through the
+ * anchor. A record carrying its own ops draws them; one that carries none
+ * draws the ribbon alone.
  */
 export function buildRibbonGeometry({
   stack,
@@ -384,7 +423,6 @@ export function buildRibbonGeometry({
   hideUnlabelled = false,
   drawCurves,
   bridgeSkippedLanes,
-  alignmentDetail = false,
 }: {
   stack: LaneStack
   /** per `upper|lower` pair, the direct records fetched for it */
@@ -400,12 +438,6 @@ export function buildRibbonGeometry({
    * that does; off, the chain breaks at every lane the group is missing from
    */
   bridgeSkippedLanes: boolean
-  /**
-   * draw each record's own indels and mismatches, which only reads true where
-   * every gutter is a direct pair: a star's lower gutters are composed through
-   * its anchor and carry none
-   */
-  alignmentDetail?: boolean
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
@@ -464,7 +496,6 @@ export function buildRibbonGeometry({
       // the anchor gutter's groups are the anchor's own records, each against
       // one lane, so the first gutter carries each record's alignment too
       const direct =
-        alignmentDetail &&
         upper.isAnchor &&
         !bridged &&
         spans.length === 1 &&
@@ -534,7 +565,7 @@ export function buildRibbonGeometry({
         })
         const fill = colorOf(link.get('strand') === -1 ? -1 : 1, link)
         ribbons.add(s1, ordered, KIND_BASE, idx, fill)
-        if (alignmentDetail && fill >>> 24 !== 0) {
+        if (fill >>> 24 !== 0) {
           addAlignmentDetail(ribbons, link, upper, lower, idx, detailColors)
         }
       }

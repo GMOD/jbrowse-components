@@ -37,7 +37,6 @@ interface MultiWayFetchArgs {
   lodTier: LodTier
   haplotypes: string[] | undefined
   anchor: string
-  alignment: boolean
 }
 
 const DEPENDENT_FETCH_DELAY = 500
@@ -74,7 +73,6 @@ function fetchPhases(
             lodTier: self.lodTier,
             haplotypes: self.fetchLaneSelection,
             anchor: self.anchorAssemblyName,
-            alignment: self.adjacentLanesAlignDirectly,
           }
         : undefined
     },
@@ -88,16 +86,16 @@ function fetchPhases(
     // cuts each alignment record to the window on both axes before it crosses
     // the RPC: a lane fitted to whole liftOver chains sat at 80x the window.
     // `splitAtGapBp` cuts it again at every large indel, one placement per run,
-    // and `keepAlignment` keeps each run's own ops for the indels a gutter
-    // draws, where every gutter is a direct pair: a star's lower gutters are
-    // composed and have none, so its top gutter alone would draw them.
+    // and `keepAlignment` keeps each run's own ops, which every gutter draws:
+    // the anchor's from the record itself, a lower one's composed from the two
+    // records it sits between (`composeAlignmentOps`).
     // `haplotypes` is the lane selection where the source can cut on it, and it
     // narrows what is FETCHED rather than what is drawn: a pangenome graph
     // holds hundreds of haplotypes and the display usually shows eight, and
     // without this the window comes back whole and the stack throws away the
     // rest. Captured in `prepare` with the tier, so a landing is labelled with
     // the selection it was asked for and not a live re-read at commit
-    run: async ({ regions, lodTier, haplotypes, alignment }, ctx) =>
+    run: async ({ regions, lodTier, haplotypes }, ctx) =>
       dedupe(
         await ctx.callRpc('CoreGetFeatures', {
           regions,
@@ -107,7 +105,7 @@ function fetchPhases(
             lodMode: lodTier,
             clipToRegion: true,
             splitAtGapBp: SPLIT_AT_GAP_BP,
-            keepAlignment: alignment,
+            keepAlignment: true,
             ...(haplotypes === undefined ? {} : { haplotypes }),
           },
         }),

@@ -16,6 +16,7 @@ import {
 
 import {
   KIND_BASE,
+  KIND_BASE_TILE,
   KIND_CIGAR_D,
   KIND_CIGAR_I,
   KIND_MARKER,
@@ -121,12 +122,14 @@ function stack({
   features,
   assemblyNames = ['grape', 'peach'],
   peach = peachFrame,
+  cacao = cacaoFrame,
   contigOf = () => undefined,
   splitStrands = false,
 }: {
   features: Feature[]
   assemblyNames?: string[]
   peach?: RowFrame
+  cacao?: RowFrame
   contigOf?: BuildLanesOpts['contigOf']
   splitStrands?: boolean
 }) {
@@ -142,7 +145,7 @@ function stack({
     ),
     rowFrames: new Map([
       ['peach', peach],
-      ['cacao', cacaoFrame],
+      ['cacao', cacao],
     ]),
     laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
@@ -353,7 +356,6 @@ describe('the ribbons', () => {
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: false,
-      alignmentDetail: true,
     })
     const data = ribbonData(cells, 'ribbons:1')
     expect([...data.kinds]).toEqual([KIND_BASE, KIND_CIGAR_D])
@@ -388,7 +390,6 @@ describe('the ribbons', () => {
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: false,
-      alignmentDetail: true,
     })
     const data = ribbonData(cells, 'ribbons:1')
     expect(data.instanceCount).toBe(2)
@@ -397,6 +398,61 @@ describe('the ribbons', () => {
       [440, 440.8, 440, 440.8].map(Math.fround),
     )
     expect(data.colors[1]).toBe(alignmentColors('').X)
+  })
+
+  // 25 bp/px on both lanes, so each cluster of three mismatches below spans
+  // under a pixel while the ribbon carrying them is 80 px wide
+  test('mismatches sharing a pixel draw as one mark, and a later pixel starts another', () => {
+    const wide = { min: 1000, max: 21_000 }
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200),
+        pairFeature('g2', 300, 400, { mate: 'cacao', mateRef: 'Tc1' }),
+      ],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+      peach: { ...peachFrame, ...wide },
+      cacao: { ...cacaoFrame, ...wide },
+    })
+    const cluster: [number, number][] = [
+      [1, CIGAR_X],
+      [9, CIGAR_EQ],
+      [1, CIGAR_X],
+      [9, CIGAR_EQ],
+      [1, CIGAR_X],
+    ]
+    const link = new SimpleFeature({
+      uniqueId: 'link',
+      refName: 'Pp1',
+      start: 1500,
+      end: 3500,
+      strand: 1,
+      assemblyName: 'peach',
+      mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 3500 },
+      alignmentOps: ops(...cluster, [979, CIGAR_EQ], ...cluster, [
+        979,
+        CIGAR_EQ,
+      ]),
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    const data = ribbonData(cells, 'ribbons:1')
+    // the full-span ribbon, then one mark per cluster, each 3 bp long — the
+    // mismatched bases of its cluster, not the 21 bp they are spread over, so
+    // the width fade lays down the ink the three separate marks composited to
+    expect(data.instanceCount).toBe(3)
+    expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE_TILE, KIND_BASE_TILE])
+    expect([data.colors[1], data.colors[2]]).toEqual([
+      alignmentColors('').X,
+      alignmentColors('').X,
+    ])
+    expect([data.bp1[1], data.bp2[1], data.bp1[2], data.bp2[2]]).toEqual(
+      [20, 20.12, 60, 60.12].map(Math.fround),
+    )
   })
 
   // the walk starts at the mate's end and runs back along it, as a '-' PAF
@@ -418,7 +474,6 @@ describe('the ribbons', () => {
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: false,
-      alignmentDetail: true,
     })
     const data = ribbonData(cells, 'ribbons:0')
     expect([...data.kinds]).toEqual([KIND_BASE, KIND_CIGAR_I])
