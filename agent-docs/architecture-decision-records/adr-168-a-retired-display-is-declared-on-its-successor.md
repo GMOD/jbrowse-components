@@ -77,7 +77,9 @@ display's `retiredConfig` before it lands: in the `sessionTracks` entry in
 place, or in `trackConfigDeltas`. `heightPreConfig` is every display's.
 `mergeTrackConfig` lands a delta display whose id the base lacks on the base
 display of its type, for a config.json that still spells a retired type with
-an explicit id.
+an explicit id. A delta the app wrote names its displays by id alone, so the
+migration re-keys an id a retired type minted (`bam-LinearPileupDisplay`) to
+the successor's before anything merges, whether or not a view shows the track.
 
 **What each display declares:**
 

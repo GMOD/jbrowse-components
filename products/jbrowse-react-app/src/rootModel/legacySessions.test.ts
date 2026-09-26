@@ -34,6 +34,20 @@ const tracks = [
     ],
   },
   {
+    type: 'AlignmentsTrack',
+    trackId: 'bam_styled',
+    name: 'bam_styled',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'BamAdapter', uri: 'a.bam' },
+    displays: [
+      {
+        type: 'LinearAlignmentsDisplay',
+        displayId: 'bam_styled-LinearAlignmentsDisplay',
+        showCoverage: true,
+      },
+    ],
+  },
+  {
     type: 'MultiQuantitativeTrack',
     trackId: 'multi',
     name: 'multi',
@@ -495,3 +509,25 @@ test('a multi-wiggle track a reader overlays stays overlaid after a reload', asy
   expect(reloaded.isRowLayout).toBe(false)
   expect(getConf(reloaded, ['rows', 'field'])).toBe('')
 })
+
+test.each(['bam', 'bam_styled'])(
+  'a share-link delta keyed on the retired display id reaches the display of %s',
+  async trackId => {
+    const { display } = await load({
+      ...v4Session('AlignmentsTrack', trackId, {
+        type: 'LinearPileupDisplay',
+        configuration: `${trackId}-LinearPileupDisplay`,
+      }),
+      trackConfigDeltas: {
+        [trackId]: {
+          trackId,
+          displays: [
+            { displayId: `${trackId}-LinearPileupDisplay`, height: 321 },
+          ],
+        },
+      },
+    })
+    expect(display.type).toBe('LinearAlignmentsDisplay')
+    expect(getConf(display, 'height')).toBe(321)
+  },
+)
