@@ -13,19 +13,23 @@ whose landed block names what not to re-fix. What follows is what was
 deliberately NOT built, with the reasoning that shaped each cut, and what is
 still open.
 
-**Per-base alignment lanes (CIGAR in row-local frames).** The most-wanted
-extension and the wrong one to bolt onto this display. The backend draws
-tens-to-hundreds of glyphs packed on the main thread; per-base mismatch
-rendering at LGVSyntenyDisplay
-density is worker-emitted GPU geometry, and every existing emitter
-(`buildSyntenyGeometry`, the alignments packers) emits into reference-anchored
-or view-pair frames. Row-local lanes need the worker to emit into each mate's
-own frame — a frame the MAIN thread computes from the fetched placements, so
-either the frame computation moves worker-side or the frame rides into the RPC
-as part of the request key (and then every frame re-fit is a refetch; see the
-follow-snap-grid refetch entry in [synteny-comparative](synteny-comparative.md)
-for how that cost behaves). Treat it as a fourth backend consumer of the
-synteny GPU stack, not as a change to this display.
+**Per-base alignment lanes — built, 2026-09-24 and 2026-09-25.** This entry
+argued the extension was the wrong one to bolt onto this display, on two
+grounds, and neither survived. The frame argument was that row-local lanes need
+the worker to emit into each mate's own frame, which the MAIN thread computes
+from the fetched placements — so either the frame computation moves worker-side
+or the frame rides into the RPC as part of the request key, making every frame
+re-fit a refetch. It does not arise: the ops pack on the main thread, where the
+frames already live (`addAlignmentDetail`). The density argument was that the
+backend packs tens-to-hundreds of glyphs while per-base mismatch rendering at
+`LGVSyntenyDisplay` density is worker-emitted GPU geometry. That one was real
+and is now bounded — mismatches sharing a pixel join into one mark, so a gutter
+emits at most one per pixel of its width whatever the CIGAR states, the bound
+`visitCigarRenderedSegments` already gave the indels.
+
+A gutter the file never states is composed from the two records it sits between
+(`composeAlignmentOps`), so a star of pairwise alignments draws every gutter and
+not just its anchor's.
 
 **The selection-scan pairing demo.** The storytelling shape the E. coli figure
 proves — a quantitative signal above, the lanes naming which genomes explain it
