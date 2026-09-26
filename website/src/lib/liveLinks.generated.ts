@@ -1335,7 +1335,7 @@ export const figureFrames: Record<
   },
   "breakpoint_split_view": {
     "width": 1500,
-    "height": 1000
+    "height": 824
   },
   "read_vs_ref_insertion": {
     "width": 1500,
@@ -1595,7 +1595,7 @@ export const figureFrames: Record<
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "width": 1500,
-    "height": 1000
+    "height": 944
   },
   "sv_cgiab/sv_callset_comparison": {
     "width": 1500,
@@ -1659,7 +1659,7 @@ export const figureFrames: Record<
   },
   "cancer_sv/multihop_split_view": {
     "width": 1000,
-    "height": 1126
+    "height": 1188
   },
   "cancer_sv/derivative_synteny": {
     "width": 1600,
@@ -1667,19 +1667,19 @@ export const figureFrames: Record<
   },
   "cancer_sv/derivative_inserts": {
     "width": 1600,
-    "height": 1345
+    "height": 1355
   },
   "cancer_sv/split_view_from_breakend": {
     "width": 900,
-    "height": 700
+    "height": 771
   },
   "cancer_sv/realigned_reads_reference": {
     "width": 700,
-    "height": 785
+    "height": 833
   },
   "cancer_sv/realigned_reads_derivative": {
     "width": 700,
-    "height": 785
+    "height": 833
   },
   "cancer_sv/k562_fusion_inspector_form": {
     "width": 1500,
