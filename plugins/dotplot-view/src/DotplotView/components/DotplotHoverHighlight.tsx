@@ -1,5 +1,5 @@
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { bandPalette } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -28,8 +28,8 @@ const KNOCKOUT_EXTRA_PX = 7
  *
  * The cue is opacity and width rather than a highlight hue, because every hue is
  * taken: category10 paints the chromosome color-by modes, and red/blue/black are
- * the strand and default schemes. The knockout is the theme's own background, so
- * it works in both palettes without naming a color either.
+ * the strand and default schemes. The knockout is the plot's own ground, so it
+ * reads as an outline without naming a color either.
  *
  * See `DotplotDisplay.hoveredFeatureHighlight` for why the shading is here at
  * all rather than in the two renderers, as synteny's is.
@@ -40,14 +40,13 @@ const DotplotHoverHighlight = observer(function DotplotHoverHighlight({
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
-  const palette = usePalette()
   const { hoveredHighlight, lineWidth, viewWidth, viewHeight } = model
   return hoveredHighlight ? (
     <svg className={classes.root} width={viewWidth} height={viewHeight}>
       <path
         d={hoveredHighlight.path}
         fill="none"
-        stroke={palette.background.default}
+        stroke={bandPalette.background.paper}
         strokeOpacity={0.85}
         strokeWidth={lineWidth + KNOCKOUT_EXTRA_PX}
         strokeLinecap="round"

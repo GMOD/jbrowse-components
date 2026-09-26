@@ -1,4 +1,8 @@
-import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
+import {
+  alpha,
+  getContrastText,
+  resolvePalette,
+} from '@jbrowse/core/ui/palette'
 
 /**
  * #api
@@ -10,13 +14,22 @@ import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
  * Light in every theme. The ribbons are translucent colour that reads as tint
  * over a light ground and as murk over a dark one, so a dark theme's paper made
  * a whole-genome band nearly unreadable. The band is the one sheet in the app
- * that keeps its own ground.
+ * that keeps its own ground, and the dotplot's plot area is the same sheet: it
+ * paints the same colour schemes, whose default is black.
  */
 export const BAND_GROUND_COLOR = '#fff'
 
 export function bandGroundColor() {
   return BAND_GROUND_COLOR
 }
+
+/**
+ * #api
+ * The palette whose paper `BAND_GROUND_COLOR` is, for chrome drawn on the band
+ * that has a palette token of its own — the dotplot's gridlines and region
+ * boundaries — so it matches the light theme's exactly in either mode.
+ */
+export const bandPalette = resolvePalette({ mode: 'light' })
 
 /**
  * #api

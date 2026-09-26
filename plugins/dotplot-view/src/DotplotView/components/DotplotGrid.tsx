@@ -1,5 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getFillProps, getStrokeProps, minmax } from '@jbrowse/core/util'
+import { bandPalette } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import type { DotplotPlotAxisModel } from '../1dview.ts'
@@ -43,14 +44,17 @@ function gridPath(
   ].join('')
 }
 
-// Mounted only under `hasVisibleRegions`
+// Mounted only under `hasVisibleRegions`. Drawn in `bandPalette` whatever the
+// mode: the plot paints synteny's colour schemes, whose default point is black
+// and whose strand blue and ramp ends are dark, so the plot keeps the same light
+// ground the synteny band does.
 const RegionGrid = observer(function RegionGrid({
   model,
 }: {
   model: DotplotViewModel
 }) {
   const { viewWidth, viewHeight, hview, vview } = model
-  const palette = usePalette()
+  const palette = bandPalette
   // `regionBoundary`, not the divider tint this used to draw at: that tint is
   // lighter than a MAJOR gridline, which made the chromosome seam disappear into
   // a plot that now draws fifty lines — and the seam is the landmark every
