@@ -39,8 +39,8 @@ struct RibbonInstance {
   float x2      : ATTR1;
   float y1      : ATTR2;
   float y2      : ATTR3;
-  uint  xSlice  : ATTR4;
-  uint  ySlice  : ATTR5;
+  uint  xGaps  : ATTR4;
+  uint  yGaps  : ATTR5;
   float strand  : ATTR6;
   uint  color   : ATTR7;
 };
@@ -70,10 +70,10 @@ float2 widenedSpan(float a, float b) {
 // Each end's two angles on the stage, before the floor widens them.
 float4 footAngles(RibbonInstance inst) {
   return float4(
-      footRadians(inst.x1, float(inst.xSlice), u.radiansPerBp, u.gapRadians),
-      footRadians(inst.x2, float(inst.xSlice), u.radiansPerBp, u.gapRadians),
-      footRadians(inst.y1, float(inst.ySlice), u.radiansPerBp, u.gapRadians),
-      footRadians(inst.y2, float(inst.ySlice), u.radiansPerBp, u.gapRadians));
+      footRadians(inst.x1, float(inst.xGaps), u.radiansPerBp, u.gapRadians),
+      footRadians(inst.x2, float(inst.xGaps), u.radiansPerBp, u.gapRadians),
+      footRadians(inst.y1, float(inst.yGaps), u.radiansPerBp, u.gapRadians),
+      footRadians(inst.y2, float(inst.yGaps), u.radiansPerBp, u.gapRadians));
 }
 
 // The four angles the boundary visits: along the span, across to the mate,
@@ -117,7 +117,7 @@ VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
   float fade = ribbonThinFade(abs(feet.y - feet.x) * u.radiusPx,
                               abs(feet.w - feet.z) * u.radiusPx,
                               MIN_RIBBON_END_PX, u.thinFadeFloor) *
-               focusAlpha(float(inst.xSlice), float(inst.ySlice), u.focusSlice);
+               focusAlpha(float(inst.xGaps), float(inst.yGaps), u.focusGaps);
   float4 g = ribbonAngles(inst, feet);
   float a1 = g.x;
   float a2 = g.y;

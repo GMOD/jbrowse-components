@@ -20,7 +20,7 @@ export interface ChordPassView {
   chordRadiusPx: number
   chordScale: { radiansPerBp: number; gapRadians: number }
   chordThinFadeFloor: number
-  chordFocusSlice: number
+  chordFocusGaps: number
   chordDisplays: readonly { chordCell: ChordCell | undefined }[]
 }
 
@@ -70,7 +70,7 @@ export const ChordPass = types
         offsetRadians: view.offsetRadians,
         radiusPx: view.chordRadiusPx,
         thinFadeFloor: view.chordThinFadeFloor,
-        focusSlice: view.chordFocusSlice,
+        focusGaps: view.chordFocusGaps,
       }
     },
     get cells(): ReadonlyMap<number, ChordCell> {

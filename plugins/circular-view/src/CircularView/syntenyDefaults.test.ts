@@ -174,13 +174,13 @@ describe('a hovered band', () => {
 
   test('focuses the chord stage on its slice', async () => {
     const { circle } = await launch({})
-    expect(circle.chordPass.frame.focusSlice).toBe(-1)
+    expect(circle.chordPass.frame.focusGaps).toBe(-1)
     circle.setHover({ kind: 'band', key: keyOf(circle, 'B') })
-    expect(circle.chordPass.frame.focusSlice).toBe(
+    expect(circle.chordPass.frame.focusGaps).toBe(
       circle.chordAxis.byKey.get('B\u0000ctgB')!.gaps,
     )
     circle.setHover(undefined)
-    expect(circle.chordPass.frame.focusSlice).toBe(-1)
+    expect(circle.chordPass.frame.focusGaps).toBe(-1)
   }, 40000)
 
   test('a move within it moves only the tooltip', async () => {

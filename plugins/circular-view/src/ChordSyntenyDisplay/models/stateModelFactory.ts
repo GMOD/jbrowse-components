@@ -281,8 +281,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           x2: new Float32Array(n),
           y1: new Float32Array(n),
           y2: new Float32Array(n),
-          xSlice: new Uint32Array(n),
-          ySlice: new Uint32Array(n),
+          xGaps: new Uint32Array(n),
+          yGaps: new Uint32Array(n),
           strand: new Float32Array(n),
           placed: new Uint8Array(n),
           index: new Map<Feature, number>(),
@@ -303,8 +303,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
             feet.x2[i] = axisX(own, feature.get('end'))
             feet.y1[i] = axisX(other, mate.start)
             feet.y2[i] = axisX(other, mate.end)
-            feet.xSlice[i] = own.gaps
-            feet.ySlice[i] = other.gaps
+            feet.xGaps[i] = own.gaps
+            feet.yGaps[i] = other.gaps
             feet.strand[i] = feature.get('strand') ?? 1
           }
         })
@@ -340,8 +340,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           x2: new Float32Array(n),
           y1: new Float32Array(n),
           y2: new Float32Array(n),
-          xSlice: new Uint32Array(n),
-          ySlice: new Uint32Array(n),
+          xGaps: new Uint32Array(n),
+          yGaps: new Uint32Array(n),
           strand: new Float32Array(n),
           color: new Uint32Array(n),
           count: n,
@@ -354,8 +354,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           lanes.x2[k] = feet.x2[i]!
           lanes.y1[k] = feet.y1[i]!
           lanes.y2[k] = feet.y2[i]!
-          lanes.xSlice[k] = feet.xSlice[i]!
-          lanes.ySlice[k] = feet.ySlice[i]!
+          lanes.xGaps[k] = feet.xGaps[i]!
+          lanes.yGaps[k] = feet.yGaps[i]!
           lanes.strand[k] = feet.strand[i]!
           lanes.color[k] = withAbgrAlpha(
             colors.get(id) ?? DEFAULT_ABGR,

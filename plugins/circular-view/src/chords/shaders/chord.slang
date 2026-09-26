@@ -20,8 +20,8 @@ public static const uint VERTS_PER_INSTANCE = (CHORD_SEGMENTS + 1u) * 2u;
 struct ChordInstance {
   float x       : ATTR0;
   float x2      : ATTR1;
-  uint  xSlice  : ATTR2;
-  uint  x2Slice : ATTR3;
+  uint  xGaps  : ATTR2;
+  uint  x2Gaps : ATTR3;
   uint  color   : ATTR4;
 };
 
@@ -36,8 +36,8 @@ struct VsOut {
 
 [shader("vertex")]
 VsOut vs_main(ChordInstance inst, uint vid : SV_VertexID) {
-  float a = footRadians(inst.x, float(inst.xSlice), u.radiansPerBp, u.gapRadians) + u.offsetRadians;
-  float b = footRadians(inst.x2, float(inst.x2Slice), u.radiansPerBp, u.gapRadians) + u.offsetRadians;
+  float a = footRadians(inst.x, float(inst.xGaps), u.radiansPerBp, u.gapRadians) + u.offsetRadians;
+  float b = footRadians(inst.x2, float(inst.x2Gaps), u.radiansPerBp, u.gapRadians) + u.offsetRadians;
   float r = u.radiusPx;
   float2 p0 = polarPoint(r, a);
   float2 c = chordControlPoint(a, b, r, u.bezierRadiusPx);
@@ -57,7 +57,7 @@ VsOut vs_main(ChordInstance inst, uint vid : SV_VertexID) {
   o.position = screenToClip(float2(u.centerX, u.centerY) + p,
                             float2(u.canvasWidth, u.canvasHeight));
   o.color = unpackRGBA(inst.color);
-  o.color.a *= focusAlpha(float(inst.xSlice), float(inst.x2Slice), u.focusSlice);
+  o.color.a *= focusAlpha(float(inst.xGaps), float(inst.x2Gaps), u.focusGaps);
   o.across = side * reach;
   return o;
 }

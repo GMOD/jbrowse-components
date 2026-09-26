@@ -31,8 +31,8 @@ function ribbonLanes(
     x2: new Float32Array(rows.map(r => r[1])),
     y1: new Float32Array(rows.map(r => r[2])),
     y2: new Float32Array(rows.map(r => r[3])),
-    xSlice: new Uint32Array(n),
-    ySlice: new Uint32Array(n),
+    xGaps: new Uint32Array(n),
+    yGaps: new Uint32Array(n),
     strand: new Float32Array(rows.map(r => r[4])),
     color: new Uint32Array(rows.map(r => r[5])),
     count: n,
@@ -45,8 +45,8 @@ function chordLanes(rows: [number, number, number][]): ChordLanes {
   return {
     x: new Float32Array(rows.map(r => r[0])),
     x2: new Float32Array(rows.map(r => r[1])),
-    xSlice: new Uint32Array(rows.length),
-    x2Slice: new Uint32Array(rows.length),
+    xGaps: new Uint32Array(rows.length),
+    x2Gaps: new Uint32Array(rows.length),
     color: new Uint32Array(rows.map(r => r[2])),
     count: rows.length,
     features: [],
@@ -65,7 +65,7 @@ const params: ChordStageParams = {
   alpha: 0.25,
   strokeWidthPx: 1,
   thinFadeFloor: 1,
-  focusSlice: -1,
+  focusGaps: -1,
 }
 
 const frame: ChordLayerFrame = {
@@ -78,7 +78,7 @@ const frame: ChordLayerFrame = {
   offsetRadians: 0.3,
   radiusPx: 200,
   thinFadeFloor: 1,
-  focusSlice: -1,
+  focusGaps: -1,
 }
 
 function recordingContext() {

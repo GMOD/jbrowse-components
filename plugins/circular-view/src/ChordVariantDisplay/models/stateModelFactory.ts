@@ -94,8 +94,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         const feet = {
           x: new Float32Array(n),
           x2: new Float32Array(n),
-          xSlice: new Uint32Array(n),
-          x2Slice: new Uint32Array(n),
+          xGaps: new Uint32Array(n),
+          x2Gaps: new Uint32Array(n),
           placed: new Uint8Array(n),
           index: new Map<Feature, number>(),
         }
@@ -111,8 +111,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             feet.placed[i] = 1
             feet.x[i] = axisX(start, feature.get('start'))
             feet.x2[i] = axisX(endBlock, endPosition)
-            feet.xSlice[i] = start.gaps
-            feet.x2Slice[i] = endBlock.gaps
+            feet.xGaps[i] = start.gaps
+            feet.x2Gaps[i] = endBlock.gaps
           }
         })
         return feet
@@ -153,8 +153,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         const lanes: ChordLanes = {
           x: new Float32Array(n),
           x2: new Float32Array(n),
-          xSlice: new Uint32Array(n),
-          x2Slice: new Uint32Array(n),
+          xGaps: new Uint32Array(n),
+          x2Gaps: new Uint32Array(n),
           color: new Uint32Array(n),
           count: n,
           features,
@@ -169,8 +169,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           }
           lanes.x[k] = feet.x[i]!
           lanes.x2[k] = feet.x2[i]!
-          lanes.xSlice[k] = feet.xSlice[i]!
-          lanes.x2Slice[k] = feet.x2Slice[i]!
+          lanes.xGaps[k] = feet.xGaps[i]!
+          lanes.x2Gaps[k] = feet.x2Gaps[i]!
           lanes.color[k] =
             highlighted?.has(feature.id()) === false
               ? withAbgrAlpha(

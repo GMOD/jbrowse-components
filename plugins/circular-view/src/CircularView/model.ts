@@ -1017,7 +1017,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * that chromosome as the chord stage's focus: its slice's gap count,
        * the name a foot gives it, or -1 for none
        */
-      get chordFocusSlice() {
+      get chordFocusGaps() {
         return this.hoveredBand?.gaps ?? -1
       },
       /**

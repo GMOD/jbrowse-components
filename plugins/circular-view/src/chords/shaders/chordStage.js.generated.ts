@@ -37,17 +37,17 @@ export function ribbonThinFade(anchorPx: number, matePx: number, minEndPx: numbe
   return _clamp(((anchorPx + matePx) / (_max(anchorPx, minEndPx) + _max(matePx, minEndPx))), floor, 1.0)
 }
 
-export function focusAlpha(aSlice: number, bSlice: number, focusSlice: number): number {
+export function focusAlpha(aGaps: number, bGaps: number, focusGaps: number): number {
   let _t0: boolean
-  if ((focusSlice < 0.0)) {
+  if ((focusGaps < 0.0)) {
     _t0 = true
   } else {
-    _t0 = (aSlice == focusSlice)
+    _t0 = (aGaps == focusGaps)
   }
   if (_t0) {
     _t0 = true
   } else {
-    _t0 = (bSlice == focusSlice)
+    _t0 = (bGaps == focusGaps)
   }
   let _t1: number
   if (_t0) {

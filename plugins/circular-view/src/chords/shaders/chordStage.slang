@@ -43,7 +43,7 @@ public struct ChordStageUniforms {
   // the least alpha the thin fade leaves a ribbon; 1 is no fade
   public float thinFadeFloor;
   // the slice the pointer is on, as a foot's gap count names it; -1 for none
-  public float focusSlice;
+  public float focusGaps;
 };
 
 public float footRadians(float x, float gaps, float radiansPerBp, float gapRadians) {
@@ -115,8 +115,8 @@ public bool chordIsSpeck(float a, float b, float radius) {
 
 // A mark with an end on the focused slice keeps its alpha, and every other
 // dims, so a chromosome under the pointer shows only its own links.
-public float focusAlpha(float aSlice, float bSlice, float focusSlice) {
-  return focusSlice < 0.0 || aSlice == focusSlice || bSlice == focusSlice
+public float focusAlpha(float aGaps, float bGaps, float focusGaps) {
+  return focusGaps < 0.0 || aGaps == focusGaps || bGaps == focusGaps
              ? 1.0
              : DIMMED_OPACITY;
 }

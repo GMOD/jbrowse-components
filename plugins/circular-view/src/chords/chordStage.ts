@@ -128,8 +128,8 @@ export interface RibbonLanes {
   x2: Float32Array
   y1: Float32Array
   y2: Float32Array
-  xSlice: Uint32Array
-  ySlice: Uint32Array
+  xGaps: Uint32Array
+  yGaps: Uint32Array
   strand: Float32Array
   /** packed ABGR, the alpha a dimmed instance draws at */
   color: Uint32Array
@@ -141,8 +141,8 @@ export interface RibbonLanes {
 export interface ChordLanes {
   x: Float32Array
   x2: Float32Array
-  xSlice: Uint32Array
-  x2Slice: Uint32Array
+  xGaps: Uint32Array
+  x2Gaps: Uint32Array
   color: Uint32Array
   count: number
   features: readonly Feature[]
@@ -163,8 +163,8 @@ export function ribbonAnglesAt(
   stage: ChordStage,
 ): RibbonAngles {
   const { radiusPx, offsetRadians } = stage
-  const xs = lanes.xSlice[i]!
-  const ys = lanes.ySlice[i]!
+  const xs = lanes.xGaps[i]!
+  const ys = lanes.yGaps[i]!
   const a = widenedSpan(
     footRadians(lanes.x1[i]!, xs, stage),
     footRadians(lanes.x2[i]!, xs, stage),
@@ -194,8 +194,8 @@ export function ribbonFadeAt(
   stage: ChordStage,
   floor: number,
 ) {
-  const xs = lanes.xSlice[i]!
-  const ys = lanes.ySlice[i]!
+  const xs = lanes.xGaps[i]!
+  const ys = lanes.yGaps[i]!
   const span = (a: number, b: number, gaps: number) =>
     Math.abs(footRadians(b, gaps, stage) - footRadians(a, gaps, stage)) *
     stage.radiusPx
@@ -224,9 +224,9 @@ export function chordEndsAt(
   stage: ChordStage,
 ): ChordEnds | undefined {
   const startRadians =
-    footRadians(lanes.x[i]!, lanes.xSlice[i]!, stage) + stage.offsetRadians
+    footRadians(lanes.x[i]!, lanes.xGaps[i]!, stage) + stage.offsetRadians
   const endRadians =
-    footRadians(lanes.x2[i]!, lanes.x2Slice[i]!, stage) + stage.offsetRadians
+    footRadians(lanes.x2[i]!, lanes.x2Gaps[i]!, stage) + stage.offsetRadians
   return chordIsSpeck(startRadians, endRadians, stage.radiusPx)
     ? undefined
     : { startRadians, endRadians }

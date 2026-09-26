@@ -202,8 +202,8 @@ test('an alignment across two assemblies is one ribbon', async () => {
   expect(lanes.count).toBe(1)
   const atGaps = (gaps: number | undefined) =>
     view.chordAxis.slices.find(slice => slice.gaps === gaps)!
-  const own = atGaps(lanes.xSlice[0])
-  const mate = atGaps(lanes.ySlice[0])
+  const own = atGaps(lanes.xGaps[0])
+  const mate = atGaps(lanes.yGaps[0])
   expect(view.elidedRegions[own.index]).toMatchObject({
     assemblyName: 'volvox',
     refName: 'ctgA',

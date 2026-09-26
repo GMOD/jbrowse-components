@@ -32,7 +32,7 @@ export const UNIFORM_OFFSET_F32 = {
   strokeWidthPx: 10,
   devicePixelRatio: 11,
   thinFadeFloor: 12,
-  focusSlice: 13,
+  focusGaps: 13,
 } as const
 
 
@@ -50,7 +50,7 @@ export interface Uniforms {
   strokeWidthPx: number
   devicePixelRatio: number
   thinFadeFloor: number
-  focusSlice: number
+  focusGaps: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -68,7 +68,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[10] = uniforms.strokeWidthPx
   f32[11] = uniforms.devicePixelRatio
   f32[12] = uniforms.thinFadeFloor
-  f32[13] = uniforms.focusSlice
+  f32[13] = uniforms.focusGaps
 }
 
 export const INSTANCE_STRIDE_BYTES = 20
@@ -82,24 +82,24 @@ export const INSTANCE_OFFSET_F32 = {
 
 // Word indices into a Uint32Array view over the instance buffer.
 export const INSTANCE_OFFSET_U32 = {
-  xSlice: 2,
-  x2Slice: 3,
+  xGaps: 2,
+  x2Gaps: 3,
   color: 4,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_x', components: 1, type: 'float', offsetBytes: 0, integer: false },
   { name: 'a_x2', components: 1, type: 'float', offsetBytes: 4, integer: false },
-  { name: 'a_xSlice', components: 1, type: 'uint', offsetBytes: 8, integer: true },
-  { name: 'a_x2Slice', components: 1, type: 'uint', offsetBytes: 12, integer: true },
+  { name: 'a_xGaps', components: 1, type: 'uint', offsetBytes: 8, integer: true },
+  { name: 'a_x2Gaps', components: 1, type: 'uint', offsetBytes: 12, integer: true },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
 ]
 
 export interface InstanceArrays {
   x: ArrayLike<number>
   x2: ArrayLike<number>
-  xSlice: ArrayLike<number>
-  x2Slice: ArrayLike<number>
+  xGaps: ArrayLike<number>
+  x2Gaps: ArrayLike<number>
   color: ArrayLike<number>
 }
 
@@ -110,13 +110,13 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { x, x2, xSlice, x2Slice, color } = arrays
+  const { x, x2, xGaps, x2Gaps, color } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     f32[o + 0] = x[i]!
     f32[o + 1] = x2[i]!
-    u32[o + 2] = xSlice[i]!
-    u32[o + 3] = x2Slice[i]!
+    u32[o + 2] = xGaps[i]!
+    u32[o + 3] = x2Gaps[i]!
     u32[o + 4] = color[i]!
   }
   return buf
@@ -140,21 +140,21 @@ export function setInstanceX2(f32: Float32Array, i: number, v: number) {
   f32[i * INSTANCE_STRIDE_WORDS + 1] = v
 }
 
-// Instance `i`'s `xSlice`.
-export function getInstanceXSlice(u32: Uint32Array, i: number) {
+// Instance `i`'s `xGaps`.
+export function getInstanceXGaps(u32: Uint32Array, i: number) {
   return u32[i * INSTANCE_STRIDE_WORDS + 2]!
 }
 
-export function setInstanceXSlice(u32: Uint32Array, i: number, v: number) {
+export function setInstanceXGaps(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 2] = v
 }
 
-// Instance `i`'s `x2Slice`.
-export function getInstanceX2Slice(u32: Uint32Array, i: number) {
+// Instance `i`'s `x2Gaps`.
+export function getInstanceX2Gaps(u32: Uint32Array, i: number) {
   return u32[i * INSTANCE_STRIDE_WORDS + 3]!
 }
 
-export function setInstanceX2Slice(u32: Uint32Array, i: number, v: number) {
+export function setInstanceX2Gaps(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 3] = v
 }
 

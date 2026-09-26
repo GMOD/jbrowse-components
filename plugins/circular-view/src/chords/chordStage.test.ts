@@ -108,8 +108,8 @@ function ribbonLanes(
     x2: new Float32Array(n),
     y1: new Float32Array(n),
     y2: new Float32Array(n),
-    xSlice: new Uint32Array(n),
-    ySlice: new Uint32Array(n),
+    xGaps: new Uint32Array(n),
+    yGaps: new Uint32Array(n),
     strand: new Float32Array(n),
     color: new Uint32Array(n),
     count: n,
@@ -122,8 +122,8 @@ function ribbonLanes(
     lanes.x2[i] = axisX(own, end)
     lanes.y1[i] = axisX(other, mateStart)
     lanes.y2[i] = axisX(other, mateEnd)
-    lanes.xSlice[i] = own.index
-    lanes.ySlice[i] = other.index
+    lanes.xGaps[i] = own.index
+    lanes.yGaps[i] = other.index
     lanes.strand[i] = strand
   })
   return lanes
@@ -220,8 +220,8 @@ describe('a chord', () => {
     const lanes: ChordLanes = {
       x: new Float32Array(n),
       x2: new Float32Array(n),
-      xSlice: new Uint32Array(n),
-      x2Slice: new Uint32Array(n),
+      xGaps: new Uint32Array(n),
+      x2Gaps: new Uint32Array(n),
       color: new Uint32Array(n),
       count: n,
       features: [],
@@ -231,8 +231,8 @@ describe('a chord', () => {
       const other = axis.byKey.get(sliceKey('a', mateRef))!
       lanes.x[i] = axisX(own, bp)
       lanes.x2[i] = axisX(other, mateBp)
-      lanes.xSlice[i] = own.index
-      lanes.x2Slice[i] = other.index
+      lanes.xGaps[i] = own.index
+      lanes.x2Gaps[i] = other.index
     })
     return lanes
   }
