@@ -53,11 +53,7 @@ function build({
   regions: Region[]
 }) {
   const f = frameFor({ type, uri })
-  const { plot, notes } = markPlot({
-    display,
-    frame: f,
-    region: { start: regions[0]!.start, end: regions.at(-1)!.end },
-  })
+  const { plot, notes } = markPlot({ display, frame: f, regions })
   return assembleRScript({
     regions,
     panels: [{ variable: 'p1', plot, helpers: helpersFor(type) }],
@@ -114,11 +110,9 @@ maybe('the emitted script runs', () => {
   })
 
   it('stacks GFF features as spans on their rows', () => {
-    if (!existsSync(GFF)) {
-      return
-    }
     const source = build({
       display: {
+        transform: [{ type: 'pileup' }],
         marks: [
           {
             mark: 'span',
@@ -137,8 +131,61 @@ maybe('the emitted script runs', () => {
       uri: GFF,
       regions: [{ refName: 'ctgA', start: 0, end: 50000 }],
     })
-    expect(source).toContain('read_gff(')
-    expect(source).toContain('scale_fill_manual')
+    expect(existsSync(runR(source, 'gffspans'))).toBe(true)
+  })
+
+  it('draws a threshold scale over real data', () => {
+    const source = build({
+      display: {
+        marks: [
+          {
+            mark: 'point',
+            encoding: {
+              y: 'score',
+              color: {
+                field: 'score',
+                scale: 'threshold',
+                domain: ['10', '50'],
+                range: ['#357ebd', '#eea236', '#d43f3a'],
+              },
+            },
+          },
+        ],
+      },
+      type: 'BigWigAdapter',
+      uri: BIGWIG,
+      regions: [{ refName: 'ctgA', start: 0, end: 5000 }],
+    })
+    expect(existsSync(runR(source, 'threshold'))).toBe(true)
+  })
+
+  it('gives each mark its own frame when their transforms differ', () => {
+    const source = build({
+      display: {
+        marks: [
+          {
+            mark: 'bar',
+            transform: [
+              { type: 'bin', step: 500, field: 'start', as: ['start', 'end'] },
+              {
+                type: 'aggregate',
+                ops: [{ op: 'mean', field: 'score', as: 'binned' }],
+              },
+            ],
+            encoding: { y: 'binned' },
+          },
+          { mark: 'point', encoding: { y: 'score' } },
+        ],
+      },
+      type: 'BigWigAdapter',
+      uri: BIGWIG,
+      regions: [{ refName: 'ctgA', start: 0, end: 5000 }],
+    })
+    // the derived frame is its own binding, and the mark without a transform
+    // still reads the frame it was derived from
+    expect(source).toContain('df_1 <- df')
+    expect(source).toContain('data = df')
+    expect(existsSync(runR(source, 'twoframes'))).toBe(true)
   })
 })
 
@@ -190,7 +237,7 @@ maybe('the readers agree with the file', () => {
       .join('\n\n')
     writeFileSync(
       script,
-      `suppressMessages({library(rtracklayer); library(GenomicRanges)})\n${defs}\n${body}\n`,
+      `suppressMessages({library(rtracklayer); library(GenomicRanges); library(IRanges)})\n${defs}\n${body}\n`,
     )
     return execFileSync('Rscript', [script], { encoding: 'utf8' }).trim()
   }
@@ -205,6 +252,64 @@ cat(sum(df$start[-1] != head(df$end, -1)))
 `,
     )
     expect(gaps).toBe('0')
+  })
+
+  /**
+   * Each reader converts rtracklayer's 1-based inclusive coordinates to the
+   * repo's 0-based half-open, and a sabotage sweep found every one of these
+   * mutations green before these probes existed. The doc calls that seam the
+   * bug that cost a wrong figure.
+   */
+  it('reads GFF features at the coordinates the file states', () => {
+    const out = probe(
+      ['read_gff'],
+      `
+df <- read_gff(${JSON.stringify(GFF)}, "ctgA", 0, 50000)
+g <- df[df$type == "gene", ]
+cat(min(g$start), max(g$end))
+`,
+    )
+    const [start, end] = out.split(' ').map(Number)
+    // volvox's first gene starts at 1049 0-based; a lost conversion reads 1050
+    expect(start).toBe(1049)
+    expect(end).toBeLessThanOrEqual(50000)
+  })
+
+  it('shifts and clips a region onto the cumulative axis', () => {
+    const out = probe(
+      ['read_regions', 'read_bigwig'],
+      `
+regions <- region_layout(data.frame(
+  chrom = c("ctgA", "ctgA"), start = c(0, 20000), end = c(2000, 22000)))
+df <- read_regions(
+  function(chrom, start, end) read_bigwig(${JSON.stringify(BIGWIG)}, chrom, start, end),
+  regions, c("start", "end"))
+cat(min(df$start), max(df$end), max(regions$cum_end))
+`,
+    )
+    const [lo, hi, cumEnd] = out.split(' ').map(Number)
+    // the second region lands beside the first, not at its genomic 20000
+    expect(lo).toBe(0)
+    expect(hi).toBeLessThanOrEqual(cumEnd!)
+    expect(hi).toBeLessThan(20000)
+  })
+
+  it('packs a pileup into rows that do not overlap', () => {
+    const out = probe(
+      ['read_gff'],
+      `
+df <- read_gff(${JSON.stringify(GFF)}, "ctgA", 0, 50000)
+df$row <- IRanges::disjointBins(IRanges(df$start + 1L, df$end)) - 1L
+bad <- 0
+for (r in unique(df$row)) {
+  g <- df[df$row == r, ]
+  g <- g[order(g$start), ]
+  if (nrow(g) > 1) bad <- bad + sum(head(g$end, -1) > g$start[-1])
+}
+cat(bad, min(df$row))
+`,
+    )
+    expect(out).toBe('0 0')
   })
 
   it('reads the window it was asked for, not one shifted by a base', () => {

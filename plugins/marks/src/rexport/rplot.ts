@@ -65,7 +65,10 @@ export interface RFrame<C extends string = string> {
   name: string
   columns: readonly C[]
   packages: readonly string[]
+  /** This frame's own statements — not its parent's. */
   statements: string
+  /** The frame these statements build on, emitted before them. */
+  parent?: RFrame
 }
 
 export function frame<const C extends string>(f: {
@@ -73,8 +76,14 @@ export function frame<const C extends string>(f: {
   columns: readonly C[]
   packages?: readonly string[]
   statements: string
+  parent?: RFrame
 }): RFrame<C> {
   return { packages: [], ...f }
+}
+
+/** A frame and everything it builds on, parents first, each once. */
+export function frameChain(f: RFrame): RFrame[] {
+  return f.parent ? [...frameChain(f.parent), f] : [f]
 }
 
 export interface Layer {
@@ -108,7 +117,16 @@ export type Scale =
   | { kind: 'manual'; values: Record<string, string>; name?: string }
   | { kind: 'linewidth'; range: [number, number]; name?: string }
   | { kind: 'linewidthLog'; range: [number, number]; name?: string }
-  | { kind: 'gradient'; colours: string[]; log?: boolean; name?: string }
+  | {
+      kind: 'gradient'
+      colours: string[]
+      log?: boolean
+      /** The declared domain, so the ramp does not stretch to the data. */
+      limits?: [number | undefined, number | undefined]
+      /** Where a diverging ramp's middle stop sits inside those limits. */
+      rescaleMid?: number
+      name?: string
+    }
   | { kind: 'steps'; colours: string[]; breaks: number[]; name?: string }
   | { kind: 'identity' }
   | { kind: 'log' }
@@ -126,7 +144,7 @@ export interface Plot {
    * range from its own data and three panels drawn for one locus show three
    * different loci.
    */
-  xlim?: { start: number; end: number }
+  xlim?: { start: number; end: number } | RExpr
   ylim?: { min?: number; max?: number }
   legend?: boolean
 }
@@ -192,8 +210,17 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
     return `scale_linewidth_continuous(${args.join(', ')})`
   }
   if (s.kind === 'gradient') {
+    const [lo, hi] = s.limits ?? []
     const args = [
       `colours = c(${s.colours.map(c => rStr(rColour(c))).join(', ')})`,
+      ...(s.limits ? [`limits = c(${lo ?? 'NA'}, ${hi ?? 'NA'})`] : []),
+      // scales::rescale_mid puts the middle stop at the declared value rather
+      // than halfway between the limits, which is what a diverging ramp means.
+      ...(s.rescaleMid !== undefined
+        ? [
+            `rescaler = ~ scales::rescale_mid(.x, mid = ${s.rescaleMid}, to = c(0, 1), from = c(${lo}, ${hi}))`,
+          ]
+        : []),
       ...(s.log ? ['trans = "log10"'] : []),
       name,
     ].filter(Boolean)
@@ -248,7 +275,11 @@ export function renderPlot(variable: string, plot: Plot) {
 function renderCoordArgs(plot: Plot) {
   const { xlim, ylim } = plot
   return [
-    ...(xlim ? [`xlim = c(${xlim.start}, ${xlim.end})`] : []),
+    ...(xlim
+      ? [
+          `xlim = c(${'expr' in xlim ? xlim.expr : `${xlim.start}, ${xlim.end}`})`,
+        ]
+      : []),
     ...(ylim ? [`ylim = c(${ylim.min ?? 'NA'}, ${ylim.max ?? 'NA'})`] : []),
   ].join(', ')
 }

@@ -18,34 +18,41 @@ instead of the branches.
 | --- | --- | --- | --- |
 | `r-export4-rebase` | `db6e771092` (2026-08-27) | yes | the fidelity-first exporter: 53 R helpers, `exportR.ts`, nine per-display fragments, the equivalence oracles, a 19-figure gallery |
 | `r-export-rewrite` | `ddbae50e74` (2026-08-26) | **no** | the idiomatic-first one: `FigureSpec`, `rplot.ts`, `emitR.ts`, `jb2export --out fig.R` |
-| `R_export4`, `R_export4-pre-rebase` | — | yes | superseded by `r-export4-rebase` |
+| `R_export4` | `b90ffa8d1a` (2026-07-17) | **stale ref** | superseded by `r-export4-rebase` |
+| `R_export4-pre-rebase` | `1ad207795c` (2026-08-07) | yes | superseded by `r-export4-rebase` |
 
-`r-export-rewrite` exists only in this checkout. Push it before deleting
-anything, or `rplot.ts` goes with it.
+**Check before deleting either unpushed branch.** `origin/R_export4` was
+force-updated and sits behind the local branch —
+`git rev-list --count R_export4 ^origin/R_export4` was 32 on 2026-09-25 — so the
+remote name is not a backup of what the local ref holds. `r-export-rewrite` has
+no remote at all; `rplot.ts` is the part of it that matters and now lives in
+`plugins/marks/src/rexport/`, but `emitR.ts` and `figureSpec.ts` do not.
 
 ## The seam main cut
 
 Main moved through the exporter rather than around it, and it split cleanly.
 
-| what | size | invalidated |
-| --- | --- | --- |
-| `rhelpers/*.R` — 53 helpers | 1,703 lines | no |
-| `exportR.ts` — assembler, helper-dep closure | 524 lines | no |
-| `rplot.ts` — the typed plot model | 261 lines | no |
-| the equivalence and `Rscript` oracles | ~3,000 lines | mostly no |
-| `exportRCode.ts`, one per display | ~2,100 lines | **yes** |
+| what | branch | size | invalidated |
+| --- | --- | --- | --- |
+| `rhelpers/*.R` — 53 helpers | `r-export4-rebase` | 1,703 lines | no |
+| `exportR.ts` — assembler, helper-dep closure | `r-export4-rebase` | 524 lines | no |
+| the equivalence and `Rscript` oracles | `r-export4-rebase` | ~3,000 lines | mostly no |
+| `rplot.ts` — the typed plot model | `r-export-rewrite` | 261 lines | no |
+| `exportRCode.ts`, one per display | `r-export4-rebase` | ~2,100 lines | **yes** |
 
 `read_bam.R`, `pileup_layout.R` and `cram_to_bam.R` are R-side and format-side,
 so nothing done to the display models reached them. The nine `exportRCode.ts`
-files each read one display model's getters, and two of those displays are
-gone: `MultiLinearWiggleDisplay` folded into `LinearWiggleDisplay`
-([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)),
-`LinearMultiSampleVariantMatrixDisplay` into
-`LinearMultiSampleVariantDisplay`, and the arc displays became a `link` mark
-([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)).
+files each read one display model's getters, and two of the displays they read
+are gone: `MultiLinearWiggleDisplay` folded into `LinearWiggleDisplay`
+([ADR-143](../architecture-decision-records/adr-143-one-quantitative-display-and-facet-is-the-layout.md),
+whose `facet` half [ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)
+then superseded) and `LinearMultiSampleVariantMatrixDisplay` into
+`LinearMultiSampleVariantDisplay`. The arc displays became a `link` mark
+([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)),
+though no arc display ever carried an `exportRCode.ts`.
 
 So a rebase spends its whole conflict budget on the one file family a rewrite
-deletes. Pull the other four rows across instead.
+deletes. Pull the other rows across instead — note they come from two branches.
 
 ## Settled decisions
 
@@ -249,10 +256,22 @@ Four transform steps run as base R: `bin`, `aggregate`, `coverage` and
 jexl callback and `flatten` and `mate` fan out structure a table does not hold,
 so each is reported in the header instead.
 
-A step's output columns flow into the next step and then into the layer's
-`Aes<C>`, so a mark naming a column no stage produced fails `tsc`.
+A step's output columns flow into the next step and then to the layer, where
+`missingColumns` refuses a mark naming one no stage produced and reports it in
+the header. **That check is a runtime one, and it has to be**: the step list is
+config, so `applyTransforms` can only answer `string[]` and `Aes<C>` widens to
+any string at every call site the pipeline actually uses. The `NoInfer` check
+on `layer()` bites only where a frame's columns are a literal — the tests, and
+any statically known path. This doc said `tsc` covered the pipeline until
+2026-09-25; it never did, and a review found eleven configs that exported
+scripts dying at `Rscript` because of it.
+
 `rScriptRun.test.ts` runs the emitted scripts through `Rscript` against
-`test_data/volvox`, and skips itself where R is absent.
+`test_data/volvox` and skips itself where R is absent — **which is every CI
+run**, since no workflow installs R. Treat it as a local gate, and note that a
+suite of pure string assertions would have caught none of the defects it has:
+the CSS-versus-hex ramp colour, `df_1 <- df_1`, and a display-level frame whose
+base read the assembler dropped were all found by running the script.
 
 ## Open on the branch
 

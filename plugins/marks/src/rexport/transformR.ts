@@ -1,3 +1,5 @@
+import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
+
 import { frame, rStr } from './rplot.ts'
 
 import type { RFrame } from './rplot.ts'
@@ -46,35 +48,73 @@ df$${hi} <- df$${lo} + ${width}`,
   }
 }
 
+/** The bin field pair a step list leaves behind, which a later empty groupby follows. */
+export function lastBinOf(steps: readonly Step[]) {
+  let out: string[] | undefined
+  for (const s of steps) {
+    if (s.type === 'bin') {
+      out = s.as ?? ['start', 'end']
+    }
+  }
+  return out
+}
+
+/**
+ * An aggregate keeps the span it folded — `min(start)` to `max(end)` — beside
+ * its groupby keys and its ops, as `featureTransforms.ts` does, so a mark can
+ * still place the result. An empty `groupby` folds the whole frame into one
+ * row, which `split` cannot express: `df[c()]` is an R error, not one group.
+ */
 function aggregateR(
   s: Extract<Step, { type: 'aggregate' }>,
-  columns: string[],
   previousBin: string[] | undefined,
 ): Applied {
   const groupby = s.groupby?.length ? s.groupby : (previousBin ?? [])
   const ops = (s.ops ?? []).filter(o => AGGREGATE_R[o.op ?? 'count'])
-  const keys = groupby.map(g => `${g} = g$${g}[1]`)
-  const values = ops.map(o => {
-    const name = o.as || o.op || 'count'
-    return `${name} = ${AGGREGATE_R[o.op ?? 'count']!(o.field ?? '')}`
-  })
+  const names = ops.map(o =>
+    aggregateFieldName({ op: o.op ?? 'count', field: o.field, as: o.as }),
+  )
+  const values = ops.map(
+    (o, i) => `${names[i]} = ${AGGREGATE_R[o.op ?? 'count']!(o.field ?? '')}`,
+  )
+  const fold = `function(g) data.frame(${[
+    ...groupby.map(g => `${g} = g$${g}[1]`),
+    'start = min(g$start), end = max(g$end)',
+    ...values,
+  ].join(', ')})`
   return {
-    statements: `df <- do.call(rbind, lapply(
+    statements: groupby.length
+      ? `df <- do.call(rbind, lapply(
   split(df, df[c(${groupby.map(g => rStr(g)).join(', ')})], drop = TRUE),
-  function(g) data.frame(${[...keys, ...values].join(', ')})))`,
-    columns: [...groupby, ...ops.map(o => o.as || o.op || 'count')],
+  ${fold}))`
+      : `df <- (${fold})(df)`,
+    columns: [...groupby, 'start', 'end', ...names],
   }
 }
 
+/**
+ * Depth as intervals, read off the Rle rather than an expanded vector.
+ *
+ * `as.vector()` on the coverage expands to an integer per base from position 1,
+ * so a feature at chr1:150 Mb materialised a 600 MB vector and took 11.7 s.
+ * The run-length encoding already is the interval list, shifted by the offset
+ * the ranges start at.
+ *
+ * Depth-0 runs are dropped, as `featureTransforms.ts` drops them, and
+ * `.region` is carried so a multi-region figure still separates.
+ */
 function coverageR(s: Extract<Step, { type: 'coverage' }>): Applied {
   const as = s.as ?? 'coverage'
   return {
-    statements: `df <- local({
-  runs <- rle(as.vector(IRanges::coverage(IRanges(df$start + 1L, df$end))))
-  ends <- cumsum(runs$lengths)
-  data.frame(start = c(0L, head(ends, -1L)), end = ends, ${as} = runs$values)
-})`,
-    columns: ['start', 'end', as],
+    statements: `df <- do.call(rbind, lapply(split(df, df$.region), function(g) {
+  runs <- IRanges::coverage(IRanges(g$start + 1L, g$end), shift = -min(g$start))
+  ends <- cumsum(runLength(runs)) + min(g$start)
+  out <- data.frame(
+    start = c(min(g$start), head(ends, -1L)), end = ends,
+    ${as} = as.integer(runValue(runs)), .region = g$.region[1])
+  out[out$${as} > 0, ]
+}))`,
+    columns: ['start', 'end', as, '.region'],
     packages: ['IRanges'],
   }
 }
@@ -106,32 +146,38 @@ export function applyTransforms({
   base,
   steps,
   notes,
+  name,
+  inheritedBin,
 }: {
   base: RFrame
   steps: readonly Step[]
   notes: string[]
+  /** A name of its own where the steps change what the frame holds. */
+  name?: string
+  /** The bin a step list above this one left, which an empty groupby follows. */
+  inheritedBin?: string[]
 }): RFrame {
   let columns: string[] = base.columns.slice()
   const packages = new Set(base.packages)
   const parts: string[] = []
-  let lastBin: string[] | undefined
+  let lastBin = inheritedBin
   for (const step of steps) {
     let applied: Applied | undefined
     if (step.type === 'bin') {
       applied = binR(step, columns)
       lastBin = step.as ?? ['start', 'end']
     } else if (step.type === 'aggregate') {
-      applied = aggregateR(step, columns, lastBin)
+      applied = aggregateR(step, lastBin)
     } else if (step.type === 'coverage') {
       applied = coverageR(step)
     } else if (step.type === 'pileup') {
       applied = pileupR(step, columns)
     } else if (step.type === 'formula') {
-      notes.push(`transform: ${step.type} carries a jexl callback, not drawn`)
-      const as = step.as ?? 'value'
-      if (!columns.includes(as)) {
-        columns.push(as)
-      }
+      // No column: a formula emits no R, so claiming its output would let a
+      // mark name a field the script never writes and die at draw time.
+      notes.push(
+        `transform: formula writes ${step.as ?? 'value'} from a jexl callback, which has no R counterpart`,
+      )
     } else {
       notes.push(
         step.type === 'filter'
@@ -147,10 +193,22 @@ export function applyTransforms({
       }
     }
   }
+  if (!parts.length) {
+    return base
+  }
+  // A renamed frame rebinds itself first, so its steps read the new name and
+  // the frame it derives from stays intact for the marks still reading that.
+  const out = name ?? base.name
+  // The rebind names both frames, so it is written directly and never goes
+  // through the rename — `df_1 <- df` became `df_1 <- df_1`, assigning from a
+  // binding that did not exist yet.
+  const rebind = out === base.name ? [] : [`${out} <- ${base.name}`]
+  const body = [...rebind, ...parts.map(s => s.replaceAll(/\bdf\b/g, out))]
   return frame({
-    name: base.name,
+    name: out,
     columns,
     packages: [...packages],
-    statements: [base.statements, ...parts].join('\n'),
+    statements: body.join('\n'),
+    parent: base,
   })
 }

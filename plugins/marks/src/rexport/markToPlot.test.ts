@@ -1,17 +1,25 @@
+import { frameFor } from './frameFor.ts'
 import { markPlot } from './markToPlot.ts'
-import { frame, renderPlot } from './rplot.ts'
+import { renderPlot } from './rplot.ts'
 
 import type { DisplaySpec } from './markToPlot.ts'
+import type { RFrame } from './rplot.ts'
 
-const bigwig = frame({
-  name: 'df',
-  columns: ['start', 'end', 'score', 'strand', 'row', 'name', 'color'],
-  packages: ['rtracklayer'],
-  statements: 'df <- read_bigwig(path, chrom, start, end)',
-})
+/**
+ * The frames come from `frameFor`, never hand-written. A fixture that declares
+ * its own columns can declare ones no reader produces — this file did, with
+ * `row` and `color`, and every test in it then rendered against a frame the
+ * real pipeline cannot build.
+ */
+const bigwig = frameFor({ type: 'BigWigAdapter', uri: 'volvox.bw' })
+const gff = frameFor({ type: 'Gff3TabixAdapter', uri: 'volvox.gff3.gz' })
 
-function render(display: DisplaySpec, region = { start: 100, end: 200 }) {
-  const { plot, notes } = markPlot({ display, frame: bigwig, region })
+function render(
+  display: DisplaySpec,
+  regions = [{ start: 100, end: 200 }],
+  frame: RFrame = bigwig,
+) {
+  const { plot, notes } = markPlot({ display, frame, regions })
   return { r: renderPlot('p', plot), notes, plot }
 }
 
@@ -32,16 +40,24 @@ describe('a mark becomes a geom', () => {
     expect(r).toContain('ymin = 5')
   })
 
-  it('stacks a span on its row band', () => {
+  it('puts a span with no row on one band, as the schema says', () => {
     const { r } = render({ marks: [{ mark: 'span', encoding: {} }] })
+    expect(r).toContain('ymin = 0, ymax = 0 + 0.8')
+  })
+
+  it('stacks a span on the row a pileup step wrote', () => {
+    const { r } = render({
+      transform: [{ type: 'pileup' }],
+      marks: [{ mark: 'span', encoding: { row: 'row' } }],
+    })
     expect(r).toContain('ymin = row, ymax = row + 0.8')
   })
 
-  it('centres a point between the two edges', () => {
+  it('draws a point at x, where both backends append the glyph', () => {
     const { r } = render({
       marks: [{ mark: 'point', encoding: { y: 'score' } }],
     })
-    expect(r).toContain('x = (start + end) / 2')
+    expect(r).toContain('geom_point(aes(x = start, y = score))')
   })
 
   it('curves a link, arc deeper than dome', () => {
@@ -55,9 +71,11 @@ describe('a mark becomes a geom', () => {
   })
 
   it('labels a text mark from its text field', () => {
-    const { r } = render({
-      marks: [{ mark: 'text', encoding: { text: 'name' } }],
-    })
+    const { r } = render(
+      { marks: [{ mark: 'text', encoding: { text: 'name' } }] },
+      [{ start: 0, end: 100 }],
+      gff,
+    )
     expect(r).toContain('geom_text(')
     expect(r).toContain('label = name')
   })
@@ -128,7 +146,7 @@ describe('a channel scale becomes a ggplot scale', () => {
           encoding: {
             y: 'score',
             color: {
-              field: 'pip',
+              field: 'score',
               scale: 'threshold',
               domain: ['0.1', '0.5'],
               range: ['#357ebd', '#eea236', '#d43f3a'],
@@ -137,21 +155,12 @@ describe('a channel scale becomes a ggplot scale', () => {
         },
       ],
     })
-    expect(r).toContain('scale_colour_stepsn(')
-    expect(r).toContain('breaks = c(0.1, 0.5)')
-  })
-
-  it('passes an identity colour through untouched', () => {
-    const { r } = render({
-      marks: [
-        {
-          mark: 'span',
-          encoding: { color: { scale: 'identity', value: 'color' } },
-        },
-      ],
-    })
-    expect(r).toContain('fill = color')
-    expect(r).toContain('scale_fill_identity()')
+    expect(r).toContain('cut(score, breaks = c(-Inf, 0.1, 0.5, Inf)')
+    expect(r).toContain('scale_colour_manual(')
+    // the literal declared colours, not a gradient re-interpolated through them
+    expect(r).toContain('"#357ebd"')
+    expect(r).toContain('"#eea236"')
+    expect(r).toContain('"#d43f3a"')
   })
 
   it('colours a point through colour and a bar through fill', () => {
@@ -170,7 +179,7 @@ describe('the display stages', () => {
   it('pins x to the region so stacked panels line up', () => {
     const { r } = render(
       { marks: [{ mark: 'bar', encoding: { y: 'score' } }] },
-      { start: 1000, end: 2000 },
+      [{ start: 1000, end: 2000 }],
     )
     expect(r).toContain('coord_cartesian(xlim = c(1000, 2000))')
   })
@@ -261,14 +270,14 @@ describe('what the figure does not show', () => {
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'strand', domain: ['1'], range: ['blue'] },
+            color: { field: 'strand', domain: ['+'], range: ['blue'] },
           },
         },
         {
           mark: 'bar',
           encoding: {
             y: 'score',
-            color: { field: 'type', domain: ['x'], range: ['red'] },
+            color: { field: 'seqnames', domain: ['ctgA'], range: ['red'] },
           },
         },
       ],
@@ -301,17 +310,21 @@ describe('a mark reads the grammar’s own vocabulary', () => {
   })
 
   it('maps a shape scale onto R pch codes', () => {
-    const { r } = render({
-      marks: [
-        {
-          mark: 'point',
-          encoding: {
-            y: 'score',
-            shape: { field: 'type', domain: ['snv', 'del'] },
+    const { r } = render(
+      {
+        marks: [
+          {
+            mark: 'point',
+            encoding: {
+              y: 'start',
+              shape: { field: 'type', domain: ['snv', 'del'] },
+            },
           },
-        },
-      ],
-    })
+        ],
+      },
+      [{ start: 0, end: 100 }],
+      gff,
+    )
     expect(r).toContain('shape = type')
     expect(r).toContain('scale_shape_manual(values = c(snv = 16, del = 25))')
   })

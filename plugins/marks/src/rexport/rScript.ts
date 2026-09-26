@@ -1,7 +1,7 @@
 import { HELPERS } from './rHelpers.generated.ts'
-import { packagesFor, renderPlot, rStr } from './rplot.ts'
+import { frameChain, packagesFor, renderPlot, rStr } from './rplot.ts'
 
-import type { Plot } from './rplot.ts'
+import type { Plot, RFrame } from './rplot.ts'
 
 /**
  * Helper to helper calls. A panel declares only what its own code calls, and
@@ -100,10 +100,15 @@ export function assembleRScript({
     packages.add('patchwork')
   }
   const helpers = resolveHelpers(panels.flatMap(p => [...p.helpers]))
-  const frames = new Map<string, string>()
+  // Keyed by the frame itself, not its name: a derived frame that keeps its
+  // base's name is a second step over the same binding, and keying by name
+  // dropped the read it builds on.
+  const frames = new Set<RFrame>()
   for (const p of panels) {
     for (const l of p.plot.layers) {
-      frames.set(l.frame.name, l.frame.statements)
+      for (const f of frameChain(l.frame)) {
+        frames.add(f)
+      }
     }
   }
   return [
@@ -126,7 +131,7 @@ export function assembleRScript({
     '',
     regionsFrame(regions),
     '',
-    [...frames.values()].join('\n\n'),
+    [...frames].map(f => f.statements).join('\n\n'),
     '',
     panels.map(p => renderPlot(p.variable, p.plot)).join('\n\n'),
     '',

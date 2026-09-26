@@ -94,7 +94,7 @@ describe('the assembled script', () => {
         marks: [{ mark: 'bar', encoding: { y: 'score', color: 'steelblue' } }],
       },
       frame: f,
-      region: { start: regions[0]!.start, end: regions.at(-1)!.end },
+      regions,
     })
     return assembleRScript({
       regions,

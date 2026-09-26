@@ -259,9 +259,14 @@ The seams, named honestly:
   `LegendMixin`.
   `range` is one output word for every kind, a palette, a threshold's colours
   or a ramp's stops, and `scheme` a named ramp from one table every baker
-  reads. `threshold` is ggplot2's `scale_colour_steps`: ascending cut points in
-  `domain` and one `range` colour more, so a value takes the bin it falls in
-  (`thresholdIndex`, `@jbrowse/core/util/thresholdScale`). FeatureColor alone
+  reads. `threshold` is ggplot2's `cut()` into `scale_colour_manual`: ascending
+  cut points in `domain` and one `range` colour more, so a value takes the bin
+  it falls in and paints that bin's literal colour (`thresholdIndex`,
+  `@jbrowse/core/util/thresholdScale`). Not `scale_colour_steps`, which this
+  doc said until 2026-09-25 — that one bins an *interpolated* gradient, so it
+  repaints every colour the declaration names: the R export measured
+  `#357ebd`/`#eea236`/`#d43f3a` coming back as
+  `#4F80B6`/`#BA9275`/`#E1723A`. FeatureColor alone
   adds `identity`, ggplot2's `scale_colour_identity` with a guide: each feature
   keeps the colour it carries, `value` or its own itemRgb, and the key names
   the `domain` colours with `labels`

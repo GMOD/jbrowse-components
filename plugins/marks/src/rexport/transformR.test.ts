@@ -43,7 +43,10 @@ describe('a step becomes R, and says what it now holds', () => {
     expect(out.statements).toContain('split(df, df[c("strand")], drop = TRUE)')
     expect(out.statements).toContain('meanScore = mean(g$score, na.rm = TRUE)')
     expect(out.statements).toContain('n = nrow(g)')
-    expect(out.columns).toEqual(['strand', 'meanScore', 'n'])
+    // the folded span comes too, as featureTransforms.ts emits it, or a mark
+    // has nothing to place the result at
+    expect(out.statements).toContain('start = min(g$start), end = max(g$end)')
+    expect(out.columns).toEqual(['strand', 'start', 'end', 'meanScore', 'n'])
   })
 
   it('groups an aggregate on the bin before it where none is named', () => {
@@ -70,7 +73,7 @@ describe('a step becomes R, and says what it now holds', () => {
   it('replaces the frame with depth runs for a coverage step', () => {
     const { out } = run([{ type: 'coverage', as: 'depth' }])
     expect(out.statements).toContain('IRanges::coverage(')
-    expect(out.columns).toEqual(['start', 'end', 'depth'])
+    expect(out.columns).toEqual(['start', 'end', 'depth', '.region'])
   })
 
   it('runs the steps in order, each over the last one’s columns', () => {
@@ -78,7 +81,14 @@ describe('a step becomes R, and says what it now holds', () => {
       { type: 'coverage', as: 'depth' },
       { type: 'bin', step: 100, field: 'start', as: ['bs', 'be'] },
     ])
-    expect(out.columns).toEqual(['start', 'end', 'depth', 'bs', 'be'])
+    expect(out.columns).toEqual([
+      'start',
+      'end',
+      'depth',
+      '.region',
+      'bs',
+      'be',
+    ])
     expect(out.statements.indexOf('IRanges::coverage')).toBeLessThan(
       out.statements.indexOf('floor(df$start / 100)'),
     )
@@ -93,10 +103,12 @@ describe('a step it cannot run is reported, never approximated', () => {
     ])
   })
 
-  it('still gives a formula its output column, so a mark can name it', () => {
+  it('does not claim a formula\u2019s output column, since it emits no R', () => {
     const { out, notes } = run([{ type: 'formula', expr: 'jexl:1', as: 'v' }])
-    expect(notes).toHaveLength(1)
-    expect(out.columns).toContain('v')
+    expect(notes).toEqual([
+      'transform: formula writes v from a jexl callback, which has no R counterpart',
+    ])
+    expect(out.columns).not.toContain('v')
   })
 
   it('says flatten and mate need structure a table lacks', () => {
