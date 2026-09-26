@@ -747,16 +747,22 @@ type reads.
 <Figure src="/img/mark_display/edit_plot.png" caption="Edit plot over an Alu track declaring a multiscale pair: the two marks in paint order on the left, and on the right the selected mark's type, a picker per channel a bar reads, and the zoom range that hands over to the binned count."/>
 
 A picker takes free text as well as a scanned field, so `INFO.DP`, a `jexl:`
-expression or a constant all go through. Two things it shows rather than
-rewrites: a channel declaring more than a field, and a channel the mark's type
-stopped reading. The rules run as you type and each finding sits under the
-control that caused it. The corner notice opens the same dialog.
+expression or a constant all go through. Under a field naming a scale sits the
+kind it reads through, and for a ramp the `scheme` it samples, its `reverse`,
+and the ends that pin it — an end left empty spans the loaded regions, so
+pinning both is what fixes a figure's colours. Changing the kind drops the
+members the new one does not paint.
 
-**Edit as JSON...**, inside it, is the same plot as text — and where a scale's
-other members and the transform steps live. A setting left out stays as it is;
-`null` clears one. Neither editor refuses a plot the rules complain about, since
-the display draws what it can; Apply refuses only what a config file is refused
-for.
+Two things the form shows rather than rewrites: a channel declaring more than
+those, such as a `domain`, a `range` or a key's `labels`, and a channel the
+mark's type stopped reading. The rules run as you type and each finding sits
+under the control that caused it. The corner notice opens the same dialog.
+
+**Edit as JSON...**, inside it, is the same plot as text — and where those
+lists, the key's caption and the transform steps live. A setting left out stays
+as it is; `null` clears one. Neither editor refuses a plot the rules complain
+about, since the display draws what it can; Apply refuses only what a config
+file is refused for.
 
 With no `marks` at all a display plots `score` as bars, links a record to the
 other end it names, or opens the dialog where the fields say neither.

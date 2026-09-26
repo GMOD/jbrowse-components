@@ -1,3 +1,5 @@
+import { COLOR_SCALES } from '@jbrowse/display-kit/colorScale'
+
 import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_MARK_TYPE } from './markVocabulary.ts'
 
@@ -45,11 +47,43 @@ export interface ChannelEdit {
 
 const UNSET: ChannelEdit = { value: '', beyond: false }
 
-// A channel object a picker can round-trip says a field and at most the scale
-// that field implies, or a constant in `value` — the slot a shorthand lifts
-// into. Anything else — a domain, a range, a scheme, a far foot's sequence —
-// is the box's.
-const PICKABLE_MEMBERS = new Set(['field', 'scale', 'value'])
+/**
+ * The scale members a control shows beside a channel's field: the kind it
+ * reads through, and for a ramp the ends that pin it and the named stops it
+ * samples. `domain`, `range`, `labels`, `title` and `domainMid` are lists and
+ * captions, which the JSON box holds better than a row of boxes would.
+ */
+export const SCALE_MEMBERS = [
+  'scheme',
+  'reverse',
+  'domainMin',
+  'domainMax',
+] as const
+export type ScaleMember = (typeof SCALE_MEMBERS)[number]
+
+/**
+ * The scale kinds a channel offers, off the vocabulary its own schema
+ * declares: every colour scale for `color`, and `categorical` alone for
+ * `shape`, which has no other. `none` is the constant, which the field picker
+ * above already means.
+ */
+export function channelScales(channel: EditChannel): readonly string[] {
+  return channel === 'color'
+    ? COLOR_SCALES.filter(scale => scale !== 'none')
+    : channel === 'shape'
+      ? ['categorical']
+      : []
+}
+
+// A channel object a picker can round-trip: a field, the scale it reads
+// through, the ramp members above, or a constant in `value` — the slot a
+// shorthand lifts into. Anything else is the box's.
+const PICKABLE_MEMBERS = new Set<string>([
+  'field',
+  'scale',
+  'value',
+  ...SCALE_MEMBERS,
+])
 
 function pickedValue(declared: Record<string, unknown>) {
   const { field, value } = declared
@@ -82,6 +116,96 @@ export function channelEdit(
   channel: EditChannel,
 ): ChannelEdit {
   return editOf(mark.encoding?.[channel])
+}
+
+function channelObject(mark: DraftMark, channel: EditChannel) {
+  const declared = mark.encoding?.[channel]
+  return typeof declared === 'object' && declared !== null
+    ? (declared as Record<string, unknown>)
+    : undefined
+}
+
+/**
+ * The scale a channel reads its field through, as its control shows it. Empty
+ * where the channel names no field, since a constant reads through none.
+ */
+export function channelScale(mark: DraftMark, channel: EditChannel): string {
+  const declared = channelObject(mark, channel)
+  const scale = declared?.scale
+  return channelEdit(mark, channel).value !== '' && typeof scale === 'string'
+    ? scale
+    : ''
+}
+
+/** What one scale member says, as a control holds it: text, never a number. */
+export function scaleMember(
+  mark: DraftMark,
+  channel: EditChannel,
+  member: ScaleMember,
+): string {
+  const held = channelObject(mark, channel)?.[member]
+  return held === undefined || held === false ? '' : String(held)
+}
+
+function writeChannel(
+  mark: DraftMark,
+  channel: EditChannel,
+  members: Record<string, unknown>,
+): DraftMark {
+  const kept = Object.fromEntries(
+    Object.entries(members).filter(([, value]) => value !== undefined),
+  )
+  return { ...mark, encoding: { ...mark.encoding, [channel]: kept } }
+}
+
+/**
+ * The mark with a channel read through another scale. A field is required —
+ * a constant reads through no scale — and the members the new kind does not
+ * paint are dropped, which the rule list would otherwise report as unread.
+ */
+export function withChannelScale(
+  mark: DraftMark,
+  channel: EditChannel,
+  scale: string,
+): DraftMark {
+  const declared = channelObject(mark, channel) ?? {}
+  const ramp = scale === 'linear' || scale === 'log'
+  return writeChannel(mark, channel, {
+    field: declared.field,
+    scale,
+    ...(ramp
+      ? {
+          scheme: declared.scheme,
+          reverse: declared.reverse,
+          domainMin: declared.domainMin,
+          domainMax: declared.domainMax,
+        }
+      : {}),
+  })
+}
+
+/**
+ * The mark with one scale member written. An empty value clears it, so a
+ * cleared end autoscales over the loaded regions again.
+ */
+export function withScaleMember(
+  mark: DraftMark,
+  channel: EditChannel,
+  member: ScaleMember,
+  value: string,
+): DraftMark {
+  const held =
+    value === ''
+      ? undefined
+      : member === 'reverse'
+        ? value === 'true'
+        : member === 'scheme'
+          ? value
+          : Number(value)
+  return writeChannel(mark, channel, {
+    ...channelObject(mark, channel),
+    [member]: held,
+  })
 }
 
 /**

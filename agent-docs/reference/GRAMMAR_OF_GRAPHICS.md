@@ -652,10 +652,12 @@ The gaps a user meets first, in order:
    **Edit plot...** is the mark list with controls per channel, and the **Edit
    as JSON...** inside it the same plot as text; both lift through the config
    schema and run the rule list as you type, so they refuse what a config file
-   refuses and report the rest rather than blocking on it (ADR-133). What has
-   no controls: a colour or shape scale past its field — a `domain`, a `range`,
-   a `scheme`, a threshold's cuts — and the transform steps, both of which the
-   form shows and holds read-only rather than dropping. `facet` and `rows` are
+   refuses and report the rest rather than blocking on it (ADR-133). A channel
+   naming a field carries its scale kind beside it, and a ramp its `scheme`,
+   `reverse` and pinned ends. What has no controls: the list-valued members — a
+   `domain`, a `range`, a key's `labels`, a threshold's cuts — its `title`, and
+   the transform steps, all of which the form shows and holds read-only rather
+   than dropping. `facet` and `rows` are
    the JSON side only. And `marks` is still the one list in the grammar the
    config editor cannot add to, remove from or reorder: `transform` is a
    `ConfigurationSchemaUnion` array and has all three (`db4ef2f82a`), while a

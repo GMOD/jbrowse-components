@@ -6,12 +6,15 @@ import { observer } from 'mobx-react'
 
 import {
   channelEdit,
+  channelScales,
   draftMarks,
   editChannels,
   markTypeOf,
   unreadChannels,
   withChannel,
+  withChannelScale,
   withMarkType,
+  withScaleMember,
   withoutChannel,
 } from '../markEdit.ts'
 import { markPlotProblems, markPlotSettingsWritten } from '../markPlot.ts'
@@ -20,6 +23,7 @@ import { MARK_TYPES } from '../markVocabulary.ts'
 import MarkFieldPicker from './MarkFieldPicker.tsx'
 import MarkList from './MarkList.tsx'
 import { MarkProblemList } from './MarkProblems.tsx'
+import MarkScaleRow from './MarkScaleRow.tsx'
 
 import type { DraftMark } from '../markEdit.ts'
 import type { MarkPlot, MarkPlotSettings } from '../markPlot.ts'
@@ -158,16 +162,28 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
               ))}
             </TextField>
             {editChannels(markTypeOf(mark)).map(channel => (
-              <MarkFieldPicker
-                key={channel}
-                channel={channel}
-                edit={channelEdit(mark, channel)}
-                fields={fields}
-                problems={problems.under(at, `encoding.${channel}`)}
-                onChange={value => {
-                  write(withChannel(mark, channel, value, fields))
-                }}
-              />
+              <div key={channel}>
+                <MarkFieldPicker
+                  channel={channel}
+                  edit={channelEdit(mark, channel)}
+                  fields={fields}
+                  problems={problems.under(at, `encoding.${channel}`)}
+                  onChange={value => {
+                    write(withChannel(mark, channel, value, fields))
+                  }}
+                />
+                <MarkScaleRow
+                  mark={mark}
+                  channel={channel}
+                  scales={channelScales(channel)}
+                  onScale={scale => {
+                    write(withChannelScale(mark, channel, scale))
+                  }}
+                  onMember={(member, value) => {
+                    write(withScaleMember(mark, channel, member, value))
+                  }}
+                />
+              </div>
             ))}
             <div style={{ display: 'flex', gap: 8 }}>
               {zoomField('minBpPerPx', mark.minBpPerPx, value => {

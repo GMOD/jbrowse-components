@@ -112,8 +112,9 @@ it('keeps a channel a type change stopped reading, and clears it on request', ()
   })
 })
 
-// A ramp says more than a field picker can, so the control shows it rather
-// than offering to rewrite it without the members it never displayed.
+// A key's labels say more than a field picker and its scale row can, so the
+// control shows the declaration rather than offering to rewrite it without the
+// members it never displayed.
 it('holds a declaration the picker cannot round-trip read-only', () => {
   setup({
     marks: [
@@ -121,7 +122,7 @@ it('holds a declaration the picker cannot round-trip read-only', () => {
         mark: 'bar',
         encoding: {
           y: 'score',
-          color: { field: 'score', scale: 'linear', scheme: 'viridis' },
+          color: { field: 'score', scale: 'categorical', labels: ['a'] },
         },
       },
     ],
@@ -151,4 +152,90 @@ it('reports a value the schema refuses instead of crashing', () => {
   expect(apply()).toBeDisabled()
   fireEvent.click(apply())
   expect(applyDisplaySettings).not.toHaveBeenCalled()
+})
+
+describe('a scale beside its field', () => {
+  const RAMP: MarkPlot = {
+    marks: [
+      {
+        mark: 'bar',
+        encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
+      },
+    ],
+  }
+
+  it('shows no scale row for a channel holding a constant', () => {
+    setup({ marks: [{ mark: 'bar', encoding: { color: { value: 'red' } } }] })
+    expect(screen.queryByTestId('scale-color')).toBeNull()
+  })
+
+  it('offers every colour scale the schema declares, and shape only its own', () => {
+    setup(RAMP)
+    const options = [...screen.getByTestId('scale-color').children].map(
+      o => (o as HTMLOptionElement).value,
+    )
+    expect(options).toEqual(['categorical', 'linear', 'log', 'threshold'])
+  })
+
+  it('names a ramp its stops and pins its ends', () => {
+    const { channel, apply, applyDisplaySettings } = setup(RAMP)
+    fireEvent.change(screen.getByTestId('scheme-color'), {
+      target: { value: 'magma' },
+    })
+    fireEvent.change(screen.getByTestId('domainMin-color'), {
+      target: { value: '0' },
+    })
+    fireEvent.click(apply())
+    expect(
+      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.color,
+    ).toEqual({
+      field: 'score',
+      scale: 'linear',
+      scheme: 'magma',
+      domainMin: 0,
+    })
+    expect(channel('color')).toBeTruthy()
+  })
+
+  // A ramp's stops and ends say nothing under a categorical scale, and the rule
+  // list would report them, so the kind change drops what it cannot paint.
+  it('drops the ramp members when the kind stops painting them', () => {
+    const { apply, applyDisplaySettings } = setup({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'score', scale: 'linear', scheme: 'viridis' },
+          },
+        },
+      ],
+    })
+    fireEvent.change(screen.getByTestId('scale-color'), {
+      target: { value: 'categorical' },
+    })
+    expect(screen.queryByTestId('scheme-color')).toBeNull()
+    fireEvent.click(apply())
+    expect(
+      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.color,
+    ).toEqual({ field: 'score', scale: 'categorical' })
+  })
+
+  // The members the row does not show keep the picker above read-only, so the
+  // form still cannot drop a palette it never displayed.
+  it('leaves a channel naming a range to the JSON box', () => {
+    setup({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'x', scale: 'categorical', range: ['red'] },
+          },
+        },
+      ],
+    })
+    expect(screen.getByTestId('channel-color')).toBeDisabled()
+    expect(screen.queryByTestId('scale-color')).toBeNull()
+  })
 })

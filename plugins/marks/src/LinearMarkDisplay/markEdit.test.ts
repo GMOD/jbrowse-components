@@ -1,5 +1,9 @@
 import {
   addMark,
+  channelScale,
+  scaleMember,
+  withChannelScale,
+  withScaleMember,
   channelEdit,
   editChannels,
   markSummary,
@@ -194,8 +198,72 @@ describe('markSummary', () => {
   it('names a channel the picker cannot show without pretending to read it', () => {
     const ramp = {
       mark: 'bar',
-      encoding: { y: 'score', color: { field: 'x', scheme: 'viridis' } },
+      encoding: { y: 'score', color: { field: 'x', range: ['red', 'blue'] } },
     }
     expect(markSummary(ramp as MarkSnapshot)).toBe('bar · y score · color')
+  })
+})
+
+describe('the scale beside a field', () => {
+  const ramp = {
+    encoding: { color: { field: 'score', scale: 'linear', scheme: 'viridis' } },
+  }
+
+  it('reads the kind a field is read through, and nothing for a constant', () => {
+    expect(channelScale(ramp, 'color')).toBe('linear')
+    expect(
+      channelScale({ encoding: { color: { value: 'red' } } }, 'color'),
+    ).toBe('')
+  })
+
+  it('reads a member as text, and an unset one as empty', () => {
+    expect(scaleMember(ramp, 'color', 'scheme')).toBe('viridis')
+    expect(scaleMember(ramp, 'color', 'domainMin')).toBe('')
+  })
+
+  // A ramp's members mean nothing under a categorical scale, and the rule list
+  // would report them, so changing the kind drops what the new one cannot use.
+  it('drops the members a new kind does not paint', () => {
+    expect(
+      withChannelScale(ramp, 'color', 'categorical').encoding!.color,
+    ).toEqual({ field: 'score', scale: 'categorical' })
+  })
+
+  it('keeps the ramp members when one ramp becomes another', () => {
+    expect(withChannelScale(ramp, 'color', 'log').encoding!.color).toEqual({
+      field: 'score',
+      scale: 'log',
+      scheme: 'viridis',
+    })
+  })
+
+  it('writes an end as a number and a reverse as a boolean', () => {
+    expect(
+      withScaleMember(ramp, 'color', 'domainMin', '0').encoding!.color,
+    ).toMatchObject({ domainMin: 0 })
+    expect(
+      withScaleMember(ramp, 'color', 'reverse', 'true').encoding!.color,
+    ).toMatchObject({ reverse: true })
+  })
+
+  it('clears a member an empty value names, so an end autoscales again', () => {
+    const pinned = withScaleMember(ramp, 'color', 'domainMax', '50')
+    expect(
+      withScaleMember(pinned, 'color', 'domainMax', '').encoding!.color,
+    ).not.toHaveProperty('domainMax')
+  })
+
+  it('leaves a ramp within the picker rather than beyond it', () => {
+    expect(channelEdit(ramp, 'color')).toEqual({
+      value: 'score',
+      beyond: false,
+    })
+  })
+
+  it('is still beyond the picker for a domain or a range', () => {
+    const listed = {
+      encoding: { color: { field: 'x', scale: 'categorical', range: ['red'] } },
+    }
+    expect(channelEdit(listed, 'color').beyond).toBe(true)
   })
 })
