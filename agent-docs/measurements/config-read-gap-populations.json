@@ -28,14 +28,14 @@
       "values": {
         "population": "track or assembly schema",
         "slots": "`name`, `assemblyNames`, `trackId`, `adapter`",
-        "reads": 78
+        "reads": 77
       }
     },
     {
       "values": {
         "population": "root config",
         "slots": "`theme`, `extraThemes`, `defaultDriver`, `workerCount`, `shareURL`",
-        "reads": 10
+        "reads": 8
       }
     },
     {
