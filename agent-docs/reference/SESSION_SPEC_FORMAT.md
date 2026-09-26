@@ -155,8 +155,8 @@ its entries sit in the `facet` row until the census is taken again. The
 `layout`, `subtreeFilter` and `domain` entries of the multi-sample variant and
 MAF displays are `rows` now too, a `rows` with no field since those rows are
 the samples or the species, and so are the multi-row feature display's, whose
-`partitionField` is `rows.field` and whose `sampleColorMap` is `rowColor`, so
-the same lag holds for those rows.
+attribute is `rows.field` and whose colour map is `rowColor`, so the same lag
+holds for those rows.
 
 **The long tail names mechanisms, not aesthetics.** The keys used on one
 display type — `readConnections`, `showSoftClipping`, `conservationMode`,

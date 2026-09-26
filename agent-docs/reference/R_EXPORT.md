@@ -49,7 +49,7 @@ files each read one display model's getters, and two of the displays they read
 are gone: `MultiLinearWiggleDisplay` folded into `LinearWiggleDisplay`
 ([ADR-143](../architecture-decision-records/adr-143-one-quantitative-display-and-facet-is-the-layout.md),
 whose `facet` half [ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)
-then superseded) and `LinearMultiSampleVariantMatrixDisplay` into
+then superseded) and the multi-sample matrix display into
 `LinearMultiSampleVariantDisplay`. The arc displays became a `link` mark
 ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)),
 though no arc display ever carried an `exportRCode.ts`.
@@ -323,8 +323,8 @@ that decision is open.
 
 - **Bisulfite.** Reference-dependent C→T has no MM tag to read, so it needs the
   reference sequence and its own walk.
-- **Per-type modification filtering.** `shownModifications` /
-  `hiddenModifications` are not applied; the header says so.
+- **Per-type modification filtering.** `shownModifications` is not applied;
+  the header says so.
 - **Phased-HP PS hue** flattens to the flat secondary colour instead of a
   per-phase-set hue.
 - **Multi-wiggle pos/neg bicolor split**, and group/cluster tree order.
