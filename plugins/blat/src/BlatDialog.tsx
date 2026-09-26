@@ -11,15 +11,14 @@ import UcscQueryStatus from './UcscQueryStatus.tsx'
 import {
   DEFAULT_BLAT_URL,
   UCSC_BLAT_URL,
-  MAXIMUM_BLAT_LENGTH,
-  MAXIMUM_BLAT_QUERIES,
   MINIMUM_BLAT_LENGTH,
+  blatQueryProblem,
+  blatResidueCount,
   buildBlatBody,
-  fastaRecordCount,
   parseBlatResponse,
+  parseFastaRecords,
   pslToFeatures,
   queryLabel,
-  stripFasta,
 } from './blatQuery.ts'
 import { parseQuerySequences, pslToSam } from './pslToSam.ts'
 import { canRenderAlignments } from './ucscShared.ts'
@@ -43,21 +42,16 @@ const BlatDialog = observer(function BlatDialog({
   const { db, urlBase, fallbackUrl, apiKey } = query
   const [seq, setSeq] = useState('')
 
-  const residues = stripFasta(seq)
-  const queryCount = fastaRecordCount(seq)
-  const tooShort = residues.length < MINIMUM_BLAT_LENGTH
-  const tooLong = residues.length > MAXIMUM_BLAT_LENGTH
-  const tooMany = queryCount > MAXIMUM_BLAT_QUERIES
-  const seqError = tooLong
-    ? `Sequence is ${residues.length.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_LENGTH.toLocaleString()} bp`
-    : tooMany
-      ? `${queryCount} sequences; UCSC BLAT is limited to ${MAXIMUM_BLAT_QUERIES} per query`
-      : tooShort && residues
-        ? `Sequence must be at least ${MINIMUM_BLAT_LENGTH} bp`
-        : ''
+  const records = parseFastaRecords(seq)
+  const queryCount = records.length
+  const seqError = blatQueryProblem(records)
+  // an empty box disables submit without turning the field red, so the minimum
+  // is checked here rather than reported above
+  const submittable =
+    !seqError && blatResidueCount(records) >= MINIMUM_BLAT_LENGTH
 
   async function handleSubmit() {
-    const label = queryLabel(seq)
+    const label = queryLabel(records)
     await query.runQuery({
       // PSL states each hit as aligned blocks in query and target coordinates,
       // which is a CIGAR alignment: converting to SAM and showing it in an
@@ -133,7 +127,7 @@ const BlatDialog = observer(function BlatDialog({
           error={!!seqError}
           helperText={
             seqError ||
-            'DNA, or FASTA with up to 25 records, 25 kb total. Hits are added as a track, and listed best-first in a panel where each one is a link.'
+            'DNA, or FASTA with up to 25 records, 25 kb each and 50 kb in total. Hits are added as a track, and listed best-first in a panel where each one is a link.'
           }
         />
         <UcscQueryFields
@@ -145,7 +139,7 @@ const BlatDialog = observer(function BlatDialog({
       </DialogContent>
       <UcscQueryActions
         query={query}
-        submitDisabled={tooShort || tooLong || tooMany || !db}
+        submitDisabled={!submittable || !db}
         onSubmit={() => void handleSubmit()}
         onCancel={() => {
           handleClose()

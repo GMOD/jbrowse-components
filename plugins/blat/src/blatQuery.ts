@@ -183,49 +183,104 @@ function pslRowToFeature(
 }
 
 export function pslToFeatures(rows: PslRow[]): SimpleFeatureSerialized[] {
-  return rows.map((row, i) => pslRowToFeature(row, i))
+  return rows.map(pslRowToFeature)
 }
 
 export const MINIMUM_BLAT_LENGTH = 20
 
-// UCSC rejects queries over 25kb server-side; enforce locally for a clear message
-export const MAXIMUM_BLAT_LENGTH = 25000
-
-// hgBlat's per-submission cap on FASTA records
+// hgBlat's own three caps, which its submission page states: 25,000 bases in one
+// DNA sequence, 50,000 across a multi-record submission, 25 records. The
+// per-sequence and combined numbers are separate limits — holding the total to
+// 25,000 refused a three-record FASTA the server would have taken.
+export const MAXIMUM_BLAT_SEQUENCE_LENGTH = 25000
+export const MAXIMUM_BLAT_TOTAL_LENGTH = 50000
 export const MAXIMUM_BLAT_QUERIES = 25
 
-// residues only, for the length limits. The query itself goes to the server
-// verbatim: hgBlat parses FASTA and labels each hit with its record's name, so
-// stripping headers here would fuse a multi-record paste into one chimeric
-// query and throw away the names that tell the hits apart.
-//
-// Letters only, which is what kent's FASTA reader counts and therefore what the
-// limits are stated in — a sequence pasted with line numbers or alignment-gap
-// dashes is fewer bases to BLAT than it has characters. Counting whitespace out
-// but digits in measured a 25kb-limited query against a number the server does
-// not use. Same rule as parseQuerySequences, which has to agree with `qSize`.
-export function stripFasta(seq: string) {
-  return seq
-    .split('\n')
-    .filter(line => !line.startsWith('>'))
-    .join('')
-    .replaceAll(/[^A-Za-z]/g, '')
+/**
+ * One submitted FASTA record. `name` is the header's first token and is absent
+ * for a bare sequence, which hgBlat labels `YourSeq`.
+ *
+ * `residues` keeps letters only, which is what kent's FASTA reader counts and
+ * therefore what both the limits and `qSize` are stated in: a sequence pasted
+ * with line numbers or alignment-gap dashes is fewer bases to BLAT than it has
+ * characters.
+ */
+export interface FastaRecord {
+  name?: string
+  residues: string
 }
 
-// hgBlat places each FASTA record separately, so records are queries
-export function fastaRecordCount(seq: string) {
-  const headers = seq.match(/^>/gm)
-  return headers ? headers.length : 1
+/**
+ * The submitted text split the way hgBlat splits it: each record is placed
+ * separately and its hits are labelled with its name. The length limits, the
+ * track label and the name-to-bases map the SAM conversion needs all come off
+ * this one reader, so none of them can disagree about where a record starts.
+ *
+ * The text itself still goes to the server verbatim — stripping the headers here
+ * would fuse a multi-record paste into one chimeric query and throw away the
+ * names that tell the hits apart.
+ */
+export function parseFastaRecords(text: string): FastaRecord[] {
+  const records: FastaRecord[] = []
+  let name: string | undefined
+  let residues: string[] = []
+  const flush = () => {
+    const joined = residues.join('')
+    if (joined) {
+      records.push({ name, residues: joined })
+    }
+  }
+  for (const line of text.split('\n')) {
+    if (line.startsWith('>')) {
+      flush()
+      name = /^>\s*(\S+)/.exec(line)?.[1]
+      residues = []
+    } else {
+      residues.push(line.replaceAll(/[^A-Za-z]/g, ''))
+    }
+  }
+  flush()
+  return records
 }
 
-// names the result track after what was searched: the first FASTA header, or
+export function blatResidueCount(records: FastaRecord[]) {
+  return records.reduce((sum, record) => sum + record.residues.length, 0)
+}
+
+// Why this query cannot be sent, in the terms hgBlat states its limits in, or
+// '' when it can. Checked here rather than left to the server so an over-long
+// paste says which cap it broke instead of coming back as a kent error page.
+export function blatQueryProblem(records: FastaRecord[]) {
+  const total = blatResidueCount(records)
+  // reduced rather than spread into Math.max: the record cap is checked below
+  // this, so the list reaching here is whatever was pasted
+  const longest = records.reduce(
+    (max, record) => Math.max(max, record.residues.length),
+    0,
+  )
+  const subject = records.length > 1 ? 'Longest sequence' : 'Sequence'
+  if (longest > MAXIMUM_BLAT_SEQUENCE_LENGTH) {
+    return `${subject} is ${longest.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_SEQUENCE_LENGTH.toLocaleString()} bp per sequence`
+  } else if (total > MAXIMUM_BLAT_TOTAL_LENGTH) {
+    return `${total.toLocaleString()} bp in total; UCSC BLAT is limited to ${MAXIMUM_BLAT_TOTAL_LENGTH.toLocaleString()} bp per query`
+  } else if (records.length > MAXIMUM_BLAT_QUERIES) {
+    return `${records.length} sequences; UCSC BLAT is limited to ${MAXIMUM_BLAT_QUERIES} per query`
+  } else if (total > 0 && total < MINIMUM_BLAT_LENGTH) {
+    return `Sequence must be at least ${MINIMUM_BLAT_LENGTH} bp`
+  } else {
+    return ''
+  }
+}
+
+// names the result track after what was searched: the first record's header, or
 // the leading bases of a bare sequence
-export function queryLabel(seq: string) {
-  const header = /^>\s*(\S+)/m.exec(seq)
-  const residues = stripFasta(seq)
-  return header
-    ? header[1]!
-    : residues.slice(0, 12) + (residues.length > 12 ? '…' : '')
+export function queryLabel(records: FastaRecord[]) {
+  const first = records[0]
+  if (!first) {
+    return ''
+  }
+  const { name, residues } = first
+  return name ?? residues.slice(0, 12) + (residues.length > 12 ? '…' : '')
 }
 
 export function buildBlatBody({

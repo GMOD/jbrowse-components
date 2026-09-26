@@ -1,11 +1,12 @@
 import {
+  blatQueryProblem,
+  blatResidueCount,
   buildBlatBody,
-  fastaRecordCount,
   parseBlatResponse,
+  parseFastaRecords,
   parsePslRows,
   pslToFeatures,
   queryLabel,
-  stripFasta,
 } from './blatQuery.ts'
 
 // real shape of a UCSC hgBlat output=json response
@@ -181,33 +182,88 @@ test('submits FASTA verbatim rather than a concatenated sequence', () => {
     buildBlatBody({ db: 'hg38', seq: multiFasta }),
   )
   expect(body.get('userSeq')).toBe(multiFasta)
-  expect(fastaRecordCount(multiFasta)).toBe(2)
+  expect(parseFastaRecords(multiFasta)).toHaveLength(2)
 })
 
-test('counts a bare sequence as one query', () => {
-  expect(fastaRecordCount('ACGTACGTACGTACGTACGT')).toBe(1)
+test('reads a bare sequence as one unnamed record', () => {
+  expect(parseFastaRecords('ACGTACGTACGTACGTACGT')).toEqual([
+    { name: undefined, residues: 'ACGTACGTACGTACGTACGT' },
+  ])
+})
+
+// a paste that starts with bases and then names the rest is two records to
+// hgBlat; counting the '>' characters saw one
+test('reads bases before the first header as their own record', () => {
+  expect(parseFastaRecords('ACGTACGT\n>probeB\nTTTT\n')).toEqual([
+    { name: undefined, residues: 'ACGTACGT' },
+    { name: 'probeB', residues: 'TTTT' },
+  ])
 })
 
 test('measures residues without the headers', () => {
-  expect(stripFasta(multiFasta)).toHaveLength(40)
+  expect(blatResidueCount(parseFastaRecords(multiFasta))).toBe(40)
 })
 
 // the length limits are stated in the bases hgBlat counts, and kent's FASTA
 // reader keeps letters only — measuring the line numbers of a pasted GenBank
 // block, or alignment-gap dashes, holds the query to a length the server never
-// applies. parseQuerySequences already agreed with the server; this is the same
-// rule on the validating side.
+// applies, and puts the SAM conversion's bases out of register against `qSize`.
 test('counts only letters as residues', () => {
-  expect(stripFasta('   1 acgtacgtac  gtacgtacgt\n  21 ACGT\n')).toBe(
-    'acgtacgtacgtacgtacgtACGT',
+  expect(parseFastaRecords('   1 acgtacgtac  gtacgtacgt\n  21 ACGT\n')).toEqual(
+    [{ name: undefined, residues: 'acgtacgtacgtacgtacgtACGT' }],
   )
-  expect(stripFasta('>gapped\nACGT--ACGT\n')).toBe('ACGTACGT')
+  expect(parseFastaRecords('>gapped\nACGT--ACGT\n')[0]!.residues).toBe(
+    'ACGTACGT',
+  )
 })
 
 test('names the track after the first FASTA record', () => {
-  expect(queryLabel(multiFasta)).toBe('probeA')
+  expect(queryLabel(parseFastaRecords(multiFasta))).toBe('probeA')
 })
 
 test('names the track after the leading bases of a bare sequence', () => {
-  expect(queryLabel('ACGTACGTACGTACGTACGT')).toBe('ACGTACGTACGT…')
+  expect(queryLabel(parseFastaRecords('ACGTACGTACGTACGTACGT'))).toBe(
+    'ACGTACGTACGT…',
+  )
+})
+
+const fasta = (sizes: number[]) =>
+  parseFastaRecords(
+    sizes.map((size, i) => `>probe${i}\n${'A'.repeat(size)}\n`).join(''),
+  )
+
+test('a query inside every hgBlat cap has nothing to report', () => {
+  expect(blatQueryProblem(fasta([25000, 25000]))).toBe('')
+})
+
+// 25,000 is hgBlat's cap on one sequence and 50,000 its cap on the submission.
+// Holding the total to 25,000 refused this paste, quoting a limit that applies
+// to neither of its records.
+test('accepts a multi-record query over the per-sequence cap in total', () => {
+  expect(blatQueryProblem(fasta([15000, 15000, 15000]))).toBe('')
+})
+
+test('names the per-sequence cap when one record is too long', () => {
+  expect(blatQueryProblem(fasta([25001, 100]))).toBe(
+    'Longest sequence is 25,001 bp; UCSC BLAT is limited to 25,000 bp per sequence',
+  )
+})
+
+test('names the combined cap when the records only overrun together', () => {
+  expect(blatQueryProblem(fasta([25000, 25000, 1]))).toBe(
+    '50,001 bp in total; UCSC BLAT is limited to 50,000 bp per query',
+  )
+})
+
+test('names the record cap', () => {
+  expect(blatQueryProblem(fasta(Array.from({ length: 26 }, () => 100)))).toBe(
+    '26 sequences; UCSC BLAT is limited to 25 per query',
+  )
+})
+
+test('an empty box is not yet a mistake', () => {
+  expect(blatQueryProblem(parseFastaRecords(''))).toBe('')
+  expect(blatQueryProblem(parseFastaRecords('ACGT'))).toBe(
+    'Sequence must be at least 20 bp',
+  )
 })

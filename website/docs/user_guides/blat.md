@@ -41,10 +41,10 @@ best hit's row.
 
 <Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a query pasted (1), and the hit it produces, opened from the Search results list. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
 
-Pasting FASTA searches each record separately, up to 25 records and 25 kb of
-sequence in total. Records keep their own names, so hits from different queries
-stay attributable in the track. A bare sequence with no header is named
-`YourSeq` by the server.
+Pasting FASTA searches each record separately, up to 25 records, 25 kb in any
+one record and 50 kb across the submission. Records keep their own names, so
+hits from different queries stay attributable in the track. A bare sequence with
+no header is named `YourSeq` by the server.
 
 ### Which database gets searched
 

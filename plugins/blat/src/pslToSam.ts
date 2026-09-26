@@ -1,5 +1,7 @@
 import { revcom } from '@jbrowse/core/util'
 
+import { parseFastaRecords } from './blatQuery.ts'
+
 import type { PslRow } from './blatQuery.ts'
 
 /**
@@ -145,34 +147,15 @@ export function pslToSam(
 }
 
 /**
- * The submitted query text as name -> residues. hgBlat places each FASTA record
- * separately and labels its hits with that record's name, so this is the map
- * from a hit back to the bases it was made of.
- *
- * Keeps only letters, which is what Kent's FASTA reader counts: a pasted
- * sequence carrying line numbers, or alignment-gap dashes, is those bases to
- * BLAT and so `qSize` excludes them. Stripping only whitespace left our text
- * longer than the hit it describes, which is exactly the off-by-N that puts
- * every base out of register.
+ * The submitted query text as name -> residues, which is the map from a hit back
+ * to the bases it was made of. `YourSeq` is what hgBlat calls a record with no
+ * header, so that is the name its hits arrive under.
  */
 export function parseQuerySequences(text: string) {
-  const sequences = new Map<string, string>()
-  let name = 'YourSeq'
-  let residues: string[] = []
-  const flush = () => {
-    if (residues.length) {
-      sequences.set(name, residues.join(''))
-    }
-  }
-  for (const line of text.split('\n')) {
-    if (line.startsWith('>')) {
-      flush()
-      name = /^>\s*(\S+)/.exec(line)?.[1] ?? 'YourSeq'
-      residues = []
-    } else {
-      residues.push(line.replaceAll(/[^A-Za-z]/g, ''))
-    }
-  }
-  flush()
-  return sequences
+  return new Map(
+    parseFastaRecords(text).map(({ name, residues }) => [
+      name ?? 'YourSeq',
+      residues,
+    ]),
+  )
 }
