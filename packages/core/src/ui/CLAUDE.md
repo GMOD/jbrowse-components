@@ -82,6 +82,8 @@ way.
 MUI theme over it and holds none of its own. Colors shared with RPC workers are
 plain `export const` CSS strings — import them directly, never a fallback copy
 or a `theme.palette` hop. Theme-varying colors go on `StringColors`
-(`lightStringColors` + a `darkStringColors` override). A JSDoc
+(`lightStringColors` + a `darkStringColors` override). **`primary` is the brand
+and stays midnight on the dark theme**, so a mark on the page's own ground, such
+as a checked box, a selected row or a crosshair, reads `accent`. A JSDoc
 `#color <group> | <label> | <description>` tag surfaces one as a swatch row in
 the website guides.
