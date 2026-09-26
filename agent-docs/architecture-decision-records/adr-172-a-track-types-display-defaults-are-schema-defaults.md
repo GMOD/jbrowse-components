@@ -3,7 +3,7 @@ status: Accepted
 summary: "A `MultiQuantitativeTrack` states its three display defaults (`rows: 'source'`, `summaryScoreMode: 'avg'`, `height: 200`) as the slot defaults of a track-scoped `LinearWiggleDisplay` schema, which its `displays` union holds in place of the global one; the `Core-preProcessTrackConfig` seed into `displayDefaults` is deleted. A snapshot strips against the schema that refills it, so the single-source values (`rows: ''`, `whiskers`, 100px) survive a reload on a multi track, a session track shows them on first load, and a reset lands on the track's default. The retired multi-wiggle fold fills `rows.field` only where the entry leaves it unset, so it is a fixed point. Reverses ADR-143's \"one display type has one set of slot defaults\""
 ---
 
-# ADR-170: A track type's display defaults are its displays' schema defaults
+# ADR-172: A track type's display defaults are its displays' schema defaults
 
 ## Status
 

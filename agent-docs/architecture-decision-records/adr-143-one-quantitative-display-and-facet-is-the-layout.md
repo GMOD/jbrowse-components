@@ -77,7 +77,7 @@ in the model and the config, and the `<layout>:<plot>` key is menu-local.
 a key the config already spells wins.~~ The multi track's `displays` union holds
 a `LinearWiggleDisplay` schema whose defaults are `rows: 'source'`,
 `summaryScoreMode: 'avg'` and `height: 200`, because a seed a snapshot strips
-against other defaults cannot hold the single-source values (ADR-170). The
+against other defaults cannot hold the single-source values (ADR-172). The
 display's own defaults stay the single-source picture, which is what a
 `QuantitativeTrack` naming no display setting has always drawn.
 
@@ -175,5 +175,5 @@ multi-region pass. Only an adapter carrying several sources in one file
   by `summaryScoreMode` being a fetch key: seeding `avg` after the data lands
   refetches every region. So the track type stays as the one place the config
   author states it — a named bundle of three display defaults, stated in
-  `MultiQuantitativeTrack/displaySchema.ts` since ADR-170, which the guessers already return
+  `MultiQuantitativeTrack/displaySchema.ts` since ADR-172, which the guessers already return
   and the Add-track dropdown already offers.
