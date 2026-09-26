@@ -145,7 +145,21 @@ export {
   liftSyntenyViewSettings,
 } from './liftSyntenyViewSettings.ts'
 export { SyntenyViewMixin } from './SyntenyViewMixin.ts'
-export { minLengthMenuItem, opacityMenuItem } from './settingsMenuItems.ts'
+export {
+  identityFadeMenuItem,
+  minLengthMenuItem,
+  opacityMenuItem,
+} from './settingsMenuItems.ts'
+export {
+  FADE_AUTO_MIN_FEATURES,
+  FADE_WIDE_BLOCK_PX,
+  WIDTH_FADE_FLOOR,
+  cappedMeanWidthPx,
+  fadesThinAt,
+  identityAlphaByte,
+} from './fadeThin.ts'
+export { SyntenyFadeMixin, installAutoFadeLatch } from './SyntenyFadeMixin.ts'
+export type { FadeThinMode, SyntenyFadeModel } from './SyntenyFadeMixin.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
 export { colorByMenuItems } from './colorByMenuItems.tsx'
 export { colorByMenuTargetFor } from './colorByMenuTarget.ts'

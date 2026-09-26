@@ -1,8 +1,9 @@
 // The 'auto' thin-fade decision: the width it is made on, and the widths it is
-// made against. A leaf module because the display measures and the view decides,
+// made against. A leaf module because a display measures and its view decides,
 // and because the arithmetic is then testable without standing up either —
-// `LinearSyntenyView.fadeThinAlignments` reads `fadesThinAt` and
-// `installAutoFadeLatch` moves the latch by it, and the two must agree.
+// `SyntenyFadeMixin.fadeThinAlignments` reads `fadesThinAt` and
+// `installAutoFadeLatch` moves the latch by it, and the two must agree. The
+// linear synteny view and the circular view both decide by it.
 
 // Fade on when the narrowest display's mean on-screen alignment-block width is
 // below this many pixels — i.e. thin ribbons dominate, which is precisely when
@@ -48,8 +49,8 @@ export const FADE_AUTO_MIN_FEATURES = 10
  * cap. Absolute genomic bounds in, px out.
  */
 export function cappedMeanWidthPx(
-  starts: Uint32Array,
-  ends: Uint32Array,
+  starts: ArrayLike<number>,
+  ends: ArrayLike<number>,
   bpPerPx: number,
 ) {
   const n = starts.length
@@ -72,4 +73,21 @@ export function cappedMeanWidthPx(
  */
 export function fadesThinAt(meanPx: number, latched: boolean) {
   return meanPx < (latched ? RELEASE_PX : ENGAGE_PX)
+}
+
+/**
+ * The least alpha a faded sub-pixel alignment keeps, so a lone thin one stays
+ * findable. The linear synteny shader's `WIDTH_FADE_FLOOR` is this number.
+ */
+export const WIDTH_FADE_FLOOR = 0.15
+
+/**
+ * The alpha byte the identity fade gives an alignment: its identity over the
+ * byte's range, floored at 30% so a low-identity block stays perceptible, and
+ * full for an alignment of unknown identity.
+ */
+export function identityAlphaByte(identity: number | undefined) {
+  return identity === undefined || Number.isNaN(identity)
+    ? 0xff
+    : Math.max(0x4c, Math.round(identity * 255))
 }

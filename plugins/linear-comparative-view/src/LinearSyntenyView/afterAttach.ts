@@ -12,9 +12,11 @@ import {
   normalizeTrackInit,
   SearchResultsNotFoundError,
 } from '@jbrowse/plugin-linear-genome-view'
-import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
+import {
+  installAutoFadeLatch,
+  withDiagonalizeProgress,
+} from '@jbrowse/synteny-core'
 
-import { installAutoFadeLatch } from './installAutoFadeLatch.ts'
 import { normalizeTrackLevels } from './util/initHelpers.ts'
 
 import type { LinearSyntenyViewModel } from './model.ts'

@@ -28,7 +28,9 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   DiagonalizeProgressMixin,
+  FADE_AUTO_MIN_FEATURES,
   ImportFormSyntenyMixin,
+  SyntenyFadeMixin,
   SyntenyViewMixin,
   allSessionTracks,
   carriedSyntenySettings,
@@ -53,7 +55,6 @@ import { EMPTY_FOLLOW_REPORT } from '../SyntenyFollow/followHost.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import { DEFAULT_ALPHA, DEFAULT_OVERDRAW_PX } from './consts.ts'
-import { FADE_AUTO_MIN_FEATURES, fadesThinAt } from './fadeThin.ts'
 import { linearSyntenyLaunchKeys } from './launchKeys.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 import {
@@ -71,7 +72,6 @@ import type { FollowReport } from '../SyntenyFollow/followHost.ts'
 import type {
   CigarMode,
   ExportSvgOptions,
-  FadeThinMode,
   LinearSyntenyViewCommands,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -135,6 +135,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       DiagonalizeProgressMixin(),
       ImportFormSyntenyMixin(),
       SyntenyViewMixin({ defaultAlpha: DEFAULT_ALPHA }),
+      SyntenyFadeMixin(),
       types.model({
         /**
          * #property
@@ -182,24 +183,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * ribbons whose detail stops partway along them.
          */
         overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX),
-        /**
-         * #property
-         * Fade alignment blocks by per-feature identity (lower identity = more
-         * transparent), whatever the color mode.
-         */
-        opacityByIdentity: types.stripDefault(types.boolean, false),
-        /**
-         * #property
-         * Fade a sub-pixel-thin ribbon's opacity by its on-screen width, so an
-         * unfiltered whole-genome view doesn't read as a full-opacity hairball.
-         * 'auto' fades once a display is dominated by sub-pixel ribbons and
-         * leaves a sparse comparison at full alpha; 'on'/'off' pin it. Resolved
-         * view-wide by `fadeThinAlignments`.
-         */
-        fadeThinAlignmentsMode: types.stripDefault(
-          types.enumeration('FadeThinMode', ['auto', 'on', 'off']),
-          'auto',
-        ),
         /**
          * #property
          * Transient launch state: the settings written on the view object that
@@ -285,11 +268,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * synteny track, a multi-contig answer refused as mostly filler.
        */
       followReport: EMPTY_FOLLOW_REPORT,
-      /**
-       * #volatile
-       * Whether the 'auto' thin-fade is latched on (see `fadeThinAlignments`).
-       */
-      fadeThinLatch: false,
     }))
     .views(self => ({
       /**
@@ -537,19 +515,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           (mask, d) => mask | d.presentCigarKinds,
           0,
         )
-      },
-      /**
-       * #getter
-       * The resolved fade-thin flag every display renders by. 'auto' fades once
-       * any loaded display is dominated by sub-pixel ribbons, latched with a
-       * deadband (`fadesThinAt`, ADR-083) so a view near the threshold does not
-       * flip while panning. View-wide, so stacked levels fade together.
-       */
-      get fadeThinAlignments(): boolean {
-        const { fadeThinAlignmentsMode, fadeThinLatch } = self
-        return fadeThinAlignmentsMode === 'auto'
-          ? fadesThinAt(this.autoFadeWidthPx, fadeThinLatch)
-          : fadeThinAlignmentsMode === 'on'
       },
       /**
        * #getter
@@ -1153,26 +1118,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setOverdrawPx(arg: number) {
         self.overdrawPx = arg
-      },
-      /**
-       * #action
-       */
-      setOpacityByIdentity(arg: boolean) {
-        self.opacityByIdentity = arg
-      },
-      /**
-       * #action
-       */
-      setFadeThinAlignmentsMode(arg: FadeThinMode) {
-        self.fadeThinAlignmentsMode = arg
-      },
-      /**
-       * #action
-       * Move the latched 'auto' thin-fade decision — `installAutoFadeLatch` is
-       * the only caller.
-       */
-      setFadeThinLatch(arg: boolean) {
-        self.fadeThinLatch = arg
       },
       /**
        * #action

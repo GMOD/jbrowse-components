@@ -1,4 +1,5 @@
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
+import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 
 import {
@@ -40,6 +41,27 @@ export function opacityMenuItem(model: {
       model.setAlpha(model.defaultAlpha)
     },
   })
+}
+
+/**
+ * #api
+ * The Identity fade toggle of a view carrying `SyntenyFadeMixin`.
+ */
+export function identityFadeMenuItem(model: {
+  opacityByIdentity: boolean
+  setOpacityByIdentity: (value: boolean) => void
+}): MenuItem {
+  return toggleItem(
+    'Identity fade',
+    model.opacityByIdentity,
+    v => {
+      model.setOpacityByIdentity(v)
+    },
+    {
+      helpText:
+        'Fade each ribbon by its sequence identity, whatever the color mode.',
+    },
+  )
 }
 
 /**

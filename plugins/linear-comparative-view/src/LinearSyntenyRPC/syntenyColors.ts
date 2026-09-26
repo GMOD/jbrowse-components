@@ -8,6 +8,7 @@ import {
   DEFAULT_RIBBON_COLOR,
   colorSchemes,
   createComparativeColorFunction,
+  identityAlphaByte,
 } from '@jbrowse/synteny-core'
 
 import {
@@ -184,14 +185,8 @@ export function computeSyntenyColors({
       const base = hiddenFeatures?.has(f) ? 0 : colorFn(f)
       // a ribbon the colour mode hides stays hidden under the identity fade
       if (opacityByIdentity && base >>> 24 !== 0) {
-        // Identity in [0,1] -> alpha byte in [0x4c, 0xff] (30% floor so
-        // low-identity blocks remain perceptible). Unknown identity (NaN)
-        // gets full alpha.
-        const id = identities?.[f] ?? Number.NaN
-        const alphaByte = Number.isNaN(id)
-          ? 0xff
-          : Math.max(0x4c, Math.round(id * 255))
-        out[i] = (base & 0x00ffffff) | (alphaByte << 24)
+        out[i] =
+          (base & 0x00ffffff) | (identityAlphaByte(identities?.[f]) << 24)
       } else {
         out[i] = base
       }

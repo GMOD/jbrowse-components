@@ -15,6 +15,7 @@ import {
   bandGroundColor,
   bucketBpPerPx,
   coarseWalkIsApproximate,
+  cappedMeanWidthPx,
   comparativeDisplayPhase,
   featureAttributes,
   getCoarseBpPerPxThreshold,
@@ -28,7 +29,6 @@ import {
 
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
-import { cappedMeanWidthPx } from '../LinearSyntenyView/fadeThin.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
 import { culledRibbonMateData } from './culledRibbonMates.ts'

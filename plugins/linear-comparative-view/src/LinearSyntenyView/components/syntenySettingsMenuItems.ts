@@ -1,5 +1,6 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import {
+  identityFadeMenuItem,
   lodMenuItems,
   minLengthMenuItem,
   opacityMenuItem,
@@ -29,17 +30,7 @@ export function syntenySettingsMenuItems(
 ): MenuItem[] {
   const { cigarMode, hasCigarData } = model
   return [
-    toggleItem(
-      'Identity fade',
-      model.opacityByIdentity,
-      v => {
-        model.setOpacityByIdentity(v)
-      },
-      {
-        helpText:
-          'Fade each ribbon by its sequence identity, whatever the color mode.',
-      },
-    ),
+    identityFadeMenuItem(model),
     toggleItem('Curved lines', model.drawCurves, v => {
       model.setDrawCurves(v)
     }),
