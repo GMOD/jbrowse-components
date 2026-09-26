@@ -109,7 +109,7 @@ So the frame is shared wider than the distance:
 | dotplot | `capsuleFrame` | `capsuleDist` (round) | the width slider modulates line↔dot, and **the dot IS the degenerate round cap** — a segment shorter than its width grows isotropically |
 | wiggle `linecenter` | `capsuleFrame` | `capsuleDist` (round) | consecutive capsules share a cap centred on the joint vertex, so the max-blend pass unions them into a seamless join at any angle; square caps left nicks on sharp bends |
 | alignments `linkedReadLine` | `capsuleFrame` | `buttSegmentCoverage` (butt) | its Canvas2D/SVG twin strokes `moveTo`/`lineTo` with the default `lineCap` |
-| alignments `arcFlat` | none — its segment is horizontal by construction, so it adds `local` to a centre | `buttSegmentCoverage` (butt) | same twin |
+| render-core `linkMark` under `line` (the read cloud's bars) | none — its segment is horizontal by construction, so `local` runs along it from its left end | a segment distance whose round cap the quad cuts off at each end (butt, unramped) | its painter strokes `lineCap: 'butt'` |
 
 All four then ramp through the same `edgeCoverage`.
 
