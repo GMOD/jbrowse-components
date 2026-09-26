@@ -156,7 +156,7 @@ test('each pass keeps its own texture over a shared program', async () => {
 
 test('a pass missing one of its textures draws nothing, even with the unit bound by another pass', async () => {
   const { canvas, log } = fakeContext()
-  const both = { textures: [RAMP, ROW_TABLE] }
+  const both: Partial<PipelineDescriptor> = { textures: [RAMP, ROW_TABLE] }
   const hal = await WebGL2Hal.create(canvas, [
     pass('other', both),
     pass('point', both),

@@ -264,10 +264,10 @@ describe('MockHal texture uploads', () => {
     glUniformName: `u_${name}`,
     filter: 'nearest' as const,
   })
-  const twoSamplers = {
-    id: 'point',
+  const twoSamplers: PipelineDescriptor = {
+    ...pass('point'),
     textures: [sampler('colorRamp', 0), sampler('rowTable', 1)],
-  } as PipelineDescriptor
+  }
   const texels = new Uint8Array(4)
 
   it('throws on a sampler the pass does not declare', () => {
