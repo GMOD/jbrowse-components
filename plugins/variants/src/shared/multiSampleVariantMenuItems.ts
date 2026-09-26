@@ -146,11 +146,6 @@ export function variantShowSubmenuItems(
 export function variantTrackMenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
-  // "has a fetch landed yet", which is what separates "checking..." from "not
-  // in this dataset" on every gated entry below. Read off `cellData` rather
-  // than `featuresVolatile`, which answers the same boolean by materializing a
-  // SimpleFeature per loaded variant — thousands of objects built to open a
-  // menu, on a getter nothing else in this display reads.
   const loaded = !!self.cellData
   const recordField = recordHueField(self.colorEncoding)?.field
   return [

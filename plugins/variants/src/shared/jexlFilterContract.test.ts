@@ -1,5 +1,4 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import variantConfigSchemaFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import variantStateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
@@ -81,25 +80,4 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     display.setJexlFilters(["jexl:get(feature,'score')>99"])
     expect(getConf(display, 'jexlFilters')).toEqual([])
   })
-})
-
-// The property rename is the migration this needed: a session saved before it
-// carries the user's filters under `jexlFilters`, and an unknown key is dropped
-// in silence.
-test('a pre-rename session snapshot keeps its filters', () => {
-  const { view } = variant.createDisplay()
-  const display = view.tracks[0]!.displays[0]!
-  display.setJexlFilters(["jexl:get(feature,'score')>99"])
-  const snap = getSnapshot(display) as Record<string, unknown>
-  expect(snap.jexlFiltersSetting).toEqual(["jexl:get(feature,'score')>99"])
-
-  const { jexlFiltersSetting, ...rest } = snap
-  const legacy = { ...rest, jexlFilters: ["get(feature,'score')>99"] }
-  const revived = variantStateModelFactory(variantConfigSchema).create(
-    legacy as never,
-  )
-  // lifted onto the new name, and prefixed on the way in
-  expect(getSnapshot(revived).jexlFiltersSetting).toEqual([
-    "jexl:get(feature,'score')>99",
-  ])
 })

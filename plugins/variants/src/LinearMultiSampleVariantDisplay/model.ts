@@ -115,14 +115,6 @@ const VARIANT_LAYOUT_OPTIONS = [
   },
 ]
 
-// Display types this one answers to in a stored session: the matrix used to be
-// a display type of its own
-const RETIRED_TYPES = new Set([
-  'MultiLinearVariantDisplay',
-  'LinearMultiSampleVariantMatrixDisplay',
-  'LinearVariantMatrixDisplay',
-])
-
 type PlacedMatrixData = Placed<
   VariantMatrixUploadData & { refCellCount: number }
 >
@@ -152,26 +144,6 @@ export function stateModelFactory(
           type: types.literal(MULTI_SAMPLE_VARIANT_DISPLAY),
         }),
       )
-      // The DisplayType `aliases` rename the track config's entry; the view's
-      // display union dispatches on the instance's raw `type`, so a stored
-      // instance is renamed here, along with the stub display id it points at.
-      .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
-        const oldType = snap?.type
-        if (typeof oldType !== 'string' || !RETIRED_TYPES.has(oldType)) {
-          return snap
-        }
-        const { configuration } = snap!
-        return {
-          ...snap,
-          type: MULTI_SAMPLE_VARIANT_DISPLAY,
-          ...(typeof configuration === 'string' &&
-          configuration.endsWith(`-${oldType}`)
-            ? {
-                configuration: `${configuration.slice(0, -oldType.length)}${MULTI_SAMPLE_VARIANT_DISPLAY}`,
-              }
-            : {}),
-        }
-      })
       .volatile(() => ({
         /**
          * #volatile

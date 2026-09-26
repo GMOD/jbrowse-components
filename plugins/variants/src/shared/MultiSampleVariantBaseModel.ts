@@ -19,7 +19,6 @@ import {
   activeJexlFilters,
   configuredJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
-import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -32,6 +31,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
+import { refuseRetiredStateF } from '@jbrowse/display-kit/retiredSettings'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -168,16 +168,13 @@ export interface VariantContextMenuInfo extends ContextMenuAnchor {
   feature: Feature
 }
 
-// The display-state arrangement these displays kept before `rows`. A loaded
-// session's is lifted into `rows` before this model sees it (the DisplayType's
-// `retiredState`), so this refuses a snapshot written some other way, which
-// MST would otherwise open unarranged with nothing said.
-const RETIRED_ARRANGEMENT_PROPS = [
-  'layout',
-  'clusterTree',
-  'clusterProvenance',
-  'subtreeFilter',
-]
+// A loaded session's arrangement is lifted into `rows` before this model sees
+// it (the DisplayType's `retiredState`), so this refuses a snapshot written
+// some other way, which MST would otherwise open unarranged with nothing said.
+const refuseRetiredState = refuseRetiredStateF({
+  displayType: MULTI_SAMPLE_VARIANT_DISPLAY,
+  state: ['layout', 'clusterTree', 'clusterProvenance', 'subtreeFilter'],
+})
 
 // Loaded features in genomic order plus their interned genotype codes: what an
 // anchored sort needs. `simplifiedFeatures` is the single ordered list spanning
@@ -340,12 +337,6 @@ export default function MultiSampleVariantBaseModelF(
            * Runtime "Filter by..." override, already `jexl:`-prefixed. When set
            * (even to an empty list) it replaces the `jexlFilters` config slot;
            * when undefined the config default applies. See `JexlFilterModel`.
-           *
-           * The name is load-bearing: this used to be called `jexlFilters`, the
-           * same name as the inherited config slot, so `self.jexlFilters` read
-           * the property and the slot was live in no reader at all — a config
-           * declaring filters on one of these tracks did nothing and said
-           * nothing. `preProcessSnapshot` below carries the old name over.
            */
           jexlFiltersSetting: types.stripDefault(
             types.maybe(types.array(types.string)),
@@ -355,43 +346,7 @@ export default function MultiSampleVariantBaseModelF(
           // trigger a run whose output is that mixin's `rows`.
         }),
       )
-      // Unknown keys in an old display snapshot (blockState, the removed
-      // lengthCutoffFilter, display-instance height/heightOverride, a
-      // pre-config-slot rowHeight) need no handling — MST drops them, and
-      // length filtering is now a general jexl filter
-      // (`jexl:get(feature,'end')-get(feature,'start')<N`).
-      //
-      // `showTooltips` is one of those keys again. It came back as a config slot
-      // rather than the display-instance prop it was before the rewrite, so an
-      // old session's copy names no prop and is dropped like the rest — the same
-      // answer `height` and `rowHeight` got when they made the same move, and the
-      // reason the slot defaults to the old prop's default. Only the value is
-      // lost, never the session.
-      //
-      // `jexlFilters` is the exception, because it held a live value: a session
-      // saved before the rename carries the user's filters under it, and being
-      // dropped is silent. Prefixed on the way in, since the property stores the
-      // runtime form and the old one stored whatever the dialog was handed.
-      .preProcessSnapshot((snap: Record<string, unknown>) => {
-        const retired =
-          snap.type === MULTI_SAMPLE_VARIANT_DISPLAY
-            ? RETIRED_ARRANGEMENT_PROPS.filter(key => key in snap)
-            : []
-        if (retired.length) {
-          throw new Error(
-            `${retired.join(', ')} on a ${String(snap.type)}: the row arrangement is the display config's \`rows\` object (domain, labels, tree, treeProvenance, kept) and its colours \`rowColor\`, written by the arrangement dialog, a clustering run or a session spec's \`rows\``,
-          )
-        }
-        const { jexlFilters, ...rest } = snap
-        return Array.isArray(jexlFilters)
-          ? {
-              ...rest,
-              jexlFiltersSetting: (jexlFilters as string[]).map(
-                ensureJexlPrefix,
-              ),
-            }
-          : snap
-      })
+      .preProcessSnapshot(refuseRetiredState)
       .volatile(() => ({
         /**
          * #volatile
@@ -402,9 +357,9 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #volatile
          *
-         * Single source of truth for fetched per-display data. sampleInfo,
-         * featuresVolatile and the summary flags are derived from this via
-         * getters — fetchNeeded only needs to call setCellData(result).
+         * Single source of truth for fetched per-display data. sampleInfo
+         * and the summary flags are derived from this via getters —
+         * fetchNeeded only needs to call setCellData(result).
          */
         cellData: undefined as CellDataResult | undefined,
         /**
@@ -481,32 +436,15 @@ export default function MultiSampleVariantBaseModelF(
           return configuredJexlFilters(self)
         },
         /**
-         * #getter
-         * SimpleFeature instances derived from the simplifiedFeatures list in
-         * the most recent cellData payload. Cached by MobX while cellData is
-         * unchanged. Named `featuresVolatile` for backwards-compat with
-         * consumers that originally read it as a volatile field.
-         *
-         * These carry ONLY positional fields (id/start/end/refName/name) — not
-         * ALT or genotypes. Don't re-derive feature-level facts from them
-         * (`.get('ALT')` etc. returns undefined); summary facts are computed in
-         * the worker and exposed as scalars (hasPhasedOrHaploid/hasSecondaryAlt/
-         * hasUnphased), and per-feature genotype info lives in the cell-data
-         * featureGenotypeMap/featureData.
-         */
-        get featuresVolatile(): Feature[] | undefined {
-          return self.cellData?.simplifiedFeatures.map(
-            f => new SimpleFeature(f),
-          )
-        },
-        /**
          * #method
-         * The base feature a click enriches, by id — the one spelling of the
-         * lookup all three pointer surfaces (rows, lane, matrix) resolve
-         * through.
+         * The record a click on the rows, the lane or the matrix resolved to,
+         * positional fields only: its genotypes live in the cell payload.
          */
-        featureById(featureId: string) {
-          return this.featuresVolatile?.find(f => f.id() === featureId)
+        featureById(featureId: string): Feature | undefined {
+          const hit = self.cellData?.simplifiedFeatures.find(
+            f => f.id === featureId,
+          )
+          return hit && new SimpleFeature(hit)
         },
         /**
          * #getter

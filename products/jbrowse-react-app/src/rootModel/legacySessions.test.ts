@@ -374,7 +374,7 @@ test('a v4 wiggle display keeps the scale and colours a reader set', async () =>
   expect(getConf(display, ['color', 'range'])).toEqual(['#e01e26', 'green'])
 })
 
-test('a v4 clustered multi-sample variant display loads with its order and tree', async () => {
+test('a v4 clustered multi-sample variant display loads with its order, tree and filters', async () => {
   const { display } = await load(
     v4Session('VariantTrack', 'vcf', {
       type: 'MultiLinearVariantDisplay',
@@ -382,9 +382,11 @@ test('a v4 clustered multi-sample variant display loads with its order and tree'
       layout: [{ name: 'HG00097', color: '#e41a1c' }, { name: 'HG00096' }],
       clusterTree: '(HG00097:1,HG00096:1);',
       subtreeFilter: ['HG00097'],
+      jexlFilters: ["get(feature,'QUAL')>30"],
     }),
   )
   expect(display.type).toBe('LinearMultiSampleVariantDisplay')
+  expect(display.activeFilters()).toEqual(["jexl:get(feature,'QUAL')>30"])
   expect(display.rowDomain).toEqual(['HG00097', 'HG00096'])
   expect(getConf(display, ['rows', 'tree'])).toBe('(HG00097:1,HG00096:1);')
   expect(getConf(display, ['rows', 'kept'])).toEqual(['HG00097'])
