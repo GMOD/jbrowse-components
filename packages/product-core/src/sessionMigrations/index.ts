@@ -22,8 +22,7 @@ import type {
  * points at: a `sessionTracks` entry in place, or a `trackConfigDeltas` entry
  * for a track whose base is the config.json. Config nodes need nothing here;
  * the track config's own preprocessor loads a retired type wherever one
- * hydrates. A delta's display names no type, so its retired id is re-keyed
- * here.
+ * hydrates.
  */
 
 interface Resolved {
@@ -241,52 +240,6 @@ function applyExtractedSettings(
   }
 }
 
-function currentDisplayId(
-  trackId: string,
-  displayId: unknown,
-  resolve: Resolve,
-) {
-  const prefix = `${trackId}-`
-  if (typeof displayId !== 'string' || !displayId.startsWith(prefix)) {
-    return displayId
-  }
-  const resolved = resolve(displayId.slice(prefix.length))
-  return resolved?.retired ? `${prefix}${resolved.display.name}` : displayId
-}
-
-// A delta names its displays by id alone, so one saved before its display type
-// retired names the id that type minted, which no base entry carries now.
-function migrateDeltaDisplayIds(
-  snapshot: Record<string, unknown>,
-  resolve: Resolve,
-): Record<string, unknown> {
-  const { trackConfigDeltas } = snapshot
-  if (!isObject(trackConfigDeltas)) {
-    return snapshot
-  }
-  const entries = Object.entries(trackConfigDeltas).map(([trackId, delta]) => {
-    if (!isObject(delta) || !Array.isArray(delta.displays)) {
-      return [trackId, delta] as const
-    }
-    const displays = delta.displays as unknown[]
-    const next = displays.map(d => {
-      if (!isObject(d)) {
-        return d
-      }
-      const displayId = currentDisplayId(trackId, d.displayId, resolve)
-      return displayId === d.displayId ? d : { ...d, displayId }
-    })
-    return next.every((d, i) => d === displays[i])
-      ? ([trackId, delta] as const)
-      : ([trackId, { ...delta, displays: next }] as const)
-  })
-  return entries.every(
-    ([trackId, delta]) => delta === trackConfigDeltas[trackId],
-  )
-    ? snapshot
-    : { ...snapshot, trackConfigDeltas: Object.fromEntries(entries) }
-}
-
 /**
  * Returns the snapshot by identity when nothing in it is retired, which is
  * every session this build wrote.
@@ -298,15 +251,14 @@ export function migrateSessionSnapshot(
   snapshot: Record<string, unknown>,
   pluginManager: PluginManager,
 ): Record<string, unknown> {
-  const resolve = resolverFor(pluginManager)
-  const rekeyed = migrateDeltaDisplayIds(snapshot, resolve)
-  const { views, view } = rekeyed
+  const { views, view } = snapshot
   const many = Array.isArray(views)
   if (!many && !isObject(view)) {
-    return rekeyed
+    return snapshot
   }
+  const resolve = resolverFor(pluginManager)
   const collected: ExtractedDisplaySettings[] = []
-  let result = rekeyed
+  let result = snapshot
   if (many) {
     const next = views.map(v =>
       isObject(v) ? migrateView(v, resolve, collected) : v,

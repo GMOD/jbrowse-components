@@ -34,27 +34,6 @@ const tracks = [
     ],
   },
   {
-    type: 'AlignmentsTrack',
-    trackId: 'bam_styled',
-    name: 'bam_styled',
-    assemblyNames: ['volvox'],
-    adapter: { type: 'BamAdapter', uri: 'a.bam' },
-    displays: [
-      {
-        type: 'LinearAlignmentsDisplay',
-        displayId: 'bam_styled-LinearAlignmentsDisplay',
-        showCoverage: true,
-      },
-    ],
-  },
-  {
-    type: 'GCContentTrack',
-    trackId: 'gc',
-    name: 'gc',
-    assemblyNames: ['volvox'],
-    adapter: { type: 'GCContentAdapter' },
-  },
-  {
     type: 'MultiQuantitativeTrack',
     trackId: 'multi',
     name: 'multi',
@@ -515,45 +494,4 @@ test('a multi-wiggle track a reader overlays stays overlaid after a reload', asy
   const reloaded = await reload(harness)
   expect(reloaded.isRowLayout).toBe(false)
   expect(getConf(reloaded, ['rows', 'field'])).toBe('')
-})
-
-test.each(['bam', 'bam_styled'])(
-  'a share-link delta keyed on the retired display id reaches the display of %s',
-  async trackId => {
-    const { display } = await load({
-      ...v4Session('AlignmentsTrack', trackId, {
-        type: 'LinearPileupDisplay',
-        configuration: `${trackId}-LinearPileupDisplay`,
-      }),
-      trackConfigDeltas: {
-        [trackId]: {
-          trackId,
-          displays: [
-            { displayId: `${trackId}-LinearPileupDisplay`, height: 321 },
-          ],
-        },
-      },
-    })
-    expect(display.type).toBe('LinearAlignmentsDisplay')
-    expect(getConf(display, 'height')).toBe(321)
-  },
-)
-
-test('a share link from before the GC displays merged keeps its window', async () => {
-  const { display } = await load({
-    ...v4Session('GCContentTrack', 'gc', {
-      type: 'LinearGCContentTrackDisplay',
-      configuration: 'gc-LinearGCContentTrackDisplay',
-    }),
-    trackConfigDeltas: {
-      gc: {
-        trackId: 'gc',
-        displays: [
-          { displayId: 'gc-LinearGCContentTrackDisplay', windowSize: 7 },
-        ],
-      },
-    },
-  })
-  expect(display.type).toBe('LinearGCContentDisplay')
-  expect(getConf(display, 'windowSize')).toBe(7)
 })
