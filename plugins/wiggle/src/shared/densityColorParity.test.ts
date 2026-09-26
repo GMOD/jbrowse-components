@@ -1,9 +1,4 @@
-import {
-  buildColorRampLut,
-  colorRampStops,
-  rampLutOf,
-  sampleColorRamp,
-} from '@jbrowse/core/util/colorRamp'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
@@ -396,22 +391,14 @@ describe('named-ramp (LUT) density mode', () => {
   )
 })
 
-// A table baked with its middle, `buildColorRampLut(stops, mid)`, and a straight
-// one read through `rampMidT` at wiggle's `rampMidNorm` pick the same point on
-// the stops for every middle, in view or not: over a 0..1 linear domain the
-// normalizer clamps the middle as the builder does.
+// Wiggle's `rampMidNorm` clamps a middle out of view onto the domain's end, so
+// a ramp whose middle is off the plot reads from that end.
 test.each([-0.5, 0, 0.2, 0.5, 0.8, 1, 1.5])(
-  'rampMidT at rampMidNorm reads as buildColorRampLut bakes, middle at %p',
+  'rampMidNorm clamps a middle at %p onto the domain',
   mid => {
-    const stops = colorRampStops({ range: ['blue', 'white', 'red'] })
-    const core = buildColorRampLut(stops, mid)
-    const midNorm = rampMidNorm(0, 1, SCALE_TYPE_LINEAR, mid)
-    for (let i = 0; i < COLOR_RAMP_LUT_ENTRIES; i++) {
-      const t = i / (COLOR_RAMP_LUT_ENTRIES - 1)
-      expect(sampleColorRamp(stops, rampMidT(t, midNorm))).toEqual([
-        ...core.slice(i * 4, i * 4 + 4),
-      ])
-    }
+    expect(rampMidNorm(0, 1, SCALE_TYPE_LINEAR, mid)).toBe(
+      Math.min(1, Math.max(0, mid)),
+    )
   },
 )
 

@@ -12,6 +12,7 @@ import {
   thresholdLabels,
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { isBakedScheme } from '../shared/alignmentsColor.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
@@ -80,25 +81,24 @@ function linearScale(
   const span = max - min
   const norm = (v: number) => (span > 0 ? (v - min) / span : 0.5)
   const { domainMid } = encoding
-  const lut = flattenOntoWhite(
-    buildColorRampLut(
-      colorRampStops(encoding),
-      domainMid === undefined ? 0.5 : norm(domainMid),
-    ),
-  )
+  const midNorm =
+    domainMid === undefined ? 0.5 : Math.max(0, Math.min(1, norm(domainMid)))
+  const lut = flattenOntoWhite(buildColorRampLut(colorRampStops(encoding)))
   const last = lut.length / 4 - 1
   const css = new Map<number, string>()
   return {
     kind: 'linear',
     declared: true,
     domain: [min, max],
-    stops: stopsFromRampLut(lut, LEGEND_RAMP_STOPS),
+    stops: stopsFromRampLut(lut, LEGEND_RAMP_STOPS, midNorm),
     color: value => {
       const v = Number(value)
       if (value === '' || !Number.isFinite(v)) {
         return undefined
       }
-      const i = Math.round(Math.max(0, Math.min(1, norm(v))) * last)
+      const i = Math.round(
+        rampMidT(Math.max(0, Math.min(1, norm(v))), midNorm) * last,
+      )
       let color = css.get(i)
       if (color === undefined) {
         const o = i * 4

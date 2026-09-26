@@ -219,19 +219,16 @@ export function sampleColorRamp(stops: readonly ColorRampStop[], t: number) {
  * the color at `t = i / (N - 1)`. N comes off the shader that samples it, so
  * the table and `rampColor`'s texel mapping cannot disagree.
  *
- * `mid` is where the stop list's own midpoint lands in the table, so a
- * diverging ramp whose middle colour belongs at a value off the centre of the
- * domain is baked into the bytes. Every reader — the shader, the Canvas2D
- * fillStyle table, the legend bar — then samples one evenly spaced table and
- * cannot disagree about the warp.
+ * The table is always straight. A diverging ramp whose middle belongs at a
+ * value off the centre of the domain reads it through `rampMidT`, the shader's
+ * rule and its generated twin, so the middle follows a moving domain without a
+ * new table.
  */
-export function buildColorRampLut(stops: readonly ColorRampStop[], mid = 0.5) {
+export function buildColorRampLut(stops: readonly ColorRampStop[]) {
   const last = COLOR_RAMP_LUT_ENTRIES - 1
   const data = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
-  const m = Math.min(1, Math.max(0, mid))
   for (let i = 0; i < COLOR_RAMP_LUT_ENTRIES; i++) {
-    const t = i / last
-    const [r, g, b, a] = sampleColorRamp(stops, rampMidT(t, m))
+    const [r, g, b, a] = sampleColorRamp(stops, i / last)
     data[i * 4] = r
     data[i * 4 + 1] = g
     data[i * 4 + 2] = b

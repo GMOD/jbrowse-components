@@ -1,3 +1,5 @@
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
+
 import {
   buildColorRampLut,
   darkAtLowEnd,
@@ -87,24 +89,23 @@ test('stopsFromRampLut reads the entries sampleColorRamp defines, exactly', () =
 
 // ggplot2's gradient2: the middle stop at `mid`, and both sides on one scale,
 // so the farther end reaches its end stop, the nearer stops short of its own,
-// and two values equally far from the middle take mirrored colours.
-test('domainMid puts the middle stop there, both sides on one scale', () => {
-  const stops: ColorRampStop[] = [
-    [0, 0, 255, 255],
-    [255, 255, 255, 255],
-    [255, 0, 0, 255],
-  ]
-  const lut = buildColorRampLut(stops, 0.25)
-  const last = lut.length / 4 - 1
-  const at = (i: number) => [lut[i * 4], lut[i * 4 + 1], lut[i * 4 + 2]]
-  const expected = (i: number) =>
-    sampleColorRamp(stops, 0.5 + (i / last - 0.25) / 1.5).slice(0, 3)
-  for (const i of [0, 32, 64, 160, last]) {
-    expect(at(i)).toEqual(expected(i))
+// and two values equally far from the middle take mirrored colours. Every
+// reader of a straight table places a value through this one rule.
+test('rampMidT puts the middle stop at mid, both sides on one scale', () => {
+  expect(rampMidT(0.25, 0.25)).toBe(0.5)
+  expect(rampMidT(1, 0.25)).toBe(1)
+  expect(rampMidT(0, 0.25)).toBeCloseTo(1 / 3, 12)
+  for (const d of [0.05, 0.1, 0.25]) {
+    expect(rampMidT(0.25 - d, 0.25) + rampMidT(0.25 + d, 0.25)).toBeCloseTo(
+      1,
+      12,
+    )
   }
-  expect(at(last)).toEqual([255, 0, 0])
-  expect(at(0)).toEqual(sampleColorRamp(stops, 1 / 3).slice(0, 3))
-  expect(at(0)).not.toEqual([0, 0, 255])
+  // exactly the identity with no middle declared, so such a ramp reads its
+  // table as it always did
+  for (const t of [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1]) {
+    expect(rampMidT(t, 0.5)).toBe(t)
+  }
 })
 
 test('a ramp is dark at its low end when its first stop is darker over white', () => {
