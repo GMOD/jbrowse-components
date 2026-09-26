@@ -259,7 +259,7 @@ const LEVEL_SCHEMES = new Set<ReadColorSchemeType>([
 ])
 
 function levelNotices(encoding: AlignmentsColorEncoding): string[] {
-  if (typeof encoding !== 'object' || !encoding.domain?.length) {
+  if (typeof encoding !== 'object') {
     return []
   }
   const { type } = colorByOf(encoding)
@@ -268,9 +268,10 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
   }
   const levels = READ_COLOR_LEVELS[type].map(([value]) => value)
   const named = levels.filter(level => level !== '').join(', ')
-  const domain = encoding.domain.map(String)
   if (encoding.scale === 'threshold') {
-    return domain.some(value => levels.includes(value))
+    return Array.from(encoding.domain ?? [], String).some(value =>
+      levels.includes(value),
+    )
       ? [
           `color.domain: names a level of ${encoding.field} (${named}), which a threshold scale reads as a cut point; scale: "categorical" colours the levels`,
         ]
@@ -279,7 +280,7 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
   if (encoding.scale !== 'categorical') {
     return []
   }
-  return domain
+  return Array.from(encoding.domain ?? [], String)
     .filter(value => !levels.includes(value))
     .map(
       value =>
