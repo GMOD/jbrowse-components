@@ -191,6 +191,12 @@ key, `init` nesting.
 - **`@cfworker/json-schema` or another small validator.** ajv is in the tree,
   and its `verbose` errors carry `parentSchema`, which is what the messages
   are built from.
+- **A bare string for every `fileLocation` slot** (`"bigWigLocation":
+  "x.bw"`). `expandUriShorthand` and `expandTabixShorthand` already take a
+  one-file adapter's `uri`, which left about six slots that would gain from
+  it, against widening `FileLocationOrJexl` for all 85 slots that reference
+  it and adding a pre-MST lift so an embedded blob location still gets its
+  blob substituted.
 - **Dropping the manifest.** `add-track` reads `displayDefaultsForTrackType`
   off it and the warnings need its legacy-key, legacy-value and alias tables,
   none of which a schema states. The drift test keeps the two equal.
