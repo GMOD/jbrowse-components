@@ -4,21 +4,22 @@ import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 // renderers that draw one (the pileup's bezier overlay and BreakpointSplitView's
 // AlignmentConnections). Shared so the mark means the same thing in both.
 //
-// The depth is `band * f(spanBp)`. Keying on BASE PAIRS is what makes it say
-// something: keyed on the endpoints' pixel separation, as it was, the only
-// channel the mark has left restated the x-axis — one 20 kb event drew 55 px
-// deep in a 20 kb view and 7.5 px deep in a 400 kb view. `f` is the log law the
-// sashimi band already ships (`arcHeightFraction`), not a second one.
+// Keying on BASE PAIRS is what makes the depth say something: keyed on the
+// endpoints' pixel separation, as it was, the only channel the mark has left
+// restated the x-axis — one 20 kb event drew 55 px deep in a 20 kb view and
+// 7.5 px deep in a 400 kb view. The log lerp below is sashimi's
+// `arcHeightFraction` shape on an SV-scale window, not that one's 50 bp - 100 kb.
 //
-// Scaling by the BAND is what keeps the ink: each pileup section clips at its
-// band bottom and the split view bleeds past its panel, so a fixed 110 px dip
-// under a six-read pileup fell off the bottom and read as a breakend tick. The
-// band a caller passes has to be a layout quantity — a pileup section's
-// `pileupHeight`, a split-view panel's height — and not a scroll-dependent one,
-// or the depth moves as the reader scrolls.
+// `bandPx` scales it, so a deep pileup spends more of its room on the same
+// event, and has to be a LAYOUT quantity — a pileup section's `pileupHeight`, a
+// split-view panel's height — not a scroll-dependent one, or the depth moves as
+// the reader scrolls.
 //
-// Residual: a read on the pileup's bottom row has no band below it, so its dip
-// clips whatever this returns. That was true of the pixel rule too.
+// `roomBelowPx` is what keeps the ink inside that band: the dip starts at the
+// lower read's row, not the band's top, so a 900 kb event in a 60 px band asked
+// for 56 px from every row and the clip cut the apex off all but the top one.
+// Capping rather than scaling keeps the depth purely event-keyed wherever the
+// room is there to spend.
 const MIN_DIP_FRAC = 0.3
 const MAX_DIP_FRAC = 0.95
 const DIP_REF_MIN_BP = 1_000
@@ -44,13 +45,22 @@ function dipFraction(spanBp: number | undefined) {
 
 /**
  * Apex depth in px for a discordant connector covering `spanBp`, drawn under a
- * band `bandPx` tall. Pass no span for a connection whose ends share no
- * coordinate system, which gives that band's deepest dip.
+ * band `bandPx` tall with `roomBelowPx` left beneath the lower of its two reads.
+ * Never exceeds that room. Pass no span for a connection whose ends share no
+ * coordinate system, which gives the deepest dip the room allows.
  */
-export function discordantDipPx(bandPx: number, spanBp?: number) {
+export function discordantDipPx({
+  bandPx,
+  roomBelowPx,
+  spanBp,
+}: {
+  bandPx: number
+  roomBelowPx: number
+  spanBp?: number
+}) {
   // The band, not the depth, is what the ceiling clamps: clamping the depth
   // would bottom every event past the ceiling out at one identical depth in a
   // deep pileup, which is the spaghetti a size-keyed depth exists to avoid.
   const band = Math.min(Math.max(0, bandPx), BEZIER_CONNECTOR_MAX_REACH_PX)
-  return band * dipFraction(spanBp)
+  return Math.min(band * dipFraction(spanBp), Math.max(0, roomBelowPx))
 }
