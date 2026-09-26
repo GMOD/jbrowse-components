@@ -1,5 +1,5 @@
 import { resolvePalette } from './palette.ts'
-import { defaultThemes } from './theme.ts'
+import { createJBrowseThemeFromArgs, defaultThemes } from './theme.ts'
 
 /**
  * Every built-in theme resolved to its last colour, so a change to how a
@@ -25,4 +25,18 @@ test.each([
   expect(
     resolvePalette({ themeName: 'default', configTheme }),
   ).toMatchSnapshot()
+})
+
+// The MUI half, which the palette oracle cannot see: `darkStock` alone turns on
+// `enableColorOnDark` today, so its AppBar keeps the brand where every other
+// dark theme flattens to the paper colour. Whether that stays true of a palette
+// drawn dark is a decision, and this is what makes it one.
+test.each(Object.keys(defaultThemes))('%s builds the same chrome', name => {
+  const theme = createJBrowseThemeFromArgs({ themeName: name })
+  expect({
+    mode: theme.palette.mode,
+    primary: theme.palette.primary.main,
+    appBarColorOnDark:
+      theme.components?.MuiAppBar?.defaultProps?.enableColorOnDark ?? false,
+  }).toMatchSnapshot()
 })

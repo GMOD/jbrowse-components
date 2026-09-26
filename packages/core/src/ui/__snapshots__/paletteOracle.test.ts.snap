@@ -1,5 +1,13 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`darkMinimal builds the same chrome 1`] = `
+{
+  "appBarColorOnDark": false,
+  "mode": "dark",
+  "primary": "#616161",
+}
+`;
+
 exports[`darkMinimal resolves the same colours 1`] = `
 {
   "action": {
@@ -246,6 +254,14 @@ exports[`darkMinimal resolves the same colours 1`] = `
     "light": "#ffb74d",
     "main": "#ffa726",
   },
+}
+`;
+
+exports[`darkStock builds the same chrome 1`] = `
+{
+  "appBarColorOnDark": true,
+  "mode": "dark",
+  "primary": "#0D233F",
 }
 `;
 
@@ -1494,6 +1510,14 @@ exports[`default + a config brand, dark resolves the same colours 1`] = `
 }
 `;
 
+exports[`default builds the same chrome 1`] = `
+{
+  "appBarColorOnDark": false,
+  "mode": "light",
+  "primary": "#0D233F",
+}
+`;
+
 exports[`default resolves the same colours 1`] = `
 {
   "action": {
@@ -1743,6 +1767,14 @@ exports[`default resolves the same colours 1`] = `
 }
 `;
 
+exports[`lightMinimal builds the same chrome 1`] = `
+{
+  "appBarColorOnDark": false,
+  "mode": "light",
+  "primary": "#212121",
+}
+`;
+
 exports[`lightMinimal resolves the same colours 1`] = `
 {
   "action": {
@@ -1989,6 +2021,14 @@ exports[`lightMinimal resolves the same colours 1`] = `
     "light": "#ff9800",
     "main": "#ed6c02",
   },
+}
+`;
+
+exports[`lightStock builds the same chrome 1`] = `
+{
+  "appBarColorOnDark": false,
+  "mode": "light",
+  "primary": "#0D233F",
 }
 `;
 

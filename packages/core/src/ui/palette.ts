@@ -845,12 +845,27 @@ export interface JBrowsePalette
 }
 
 /**
+ * The colors a palette wants when JBrowse draws it dark. Only the slots that
+ * differ: the neutrals, the semantics and two dozen string colors already
+ * follow the mode on their own, so a palette that states nothing here still
+ * has a working dark half.
+ *
+ * What does not survive a mode flip is a brand color. `primary` is the case —
+ * a deep navy reads at 1.2:1 against a dark background where it reads at 16:1
+ * against a light one — and it is the reason this exists rather than a `mode`
+ * flag being the whole story.
+ */
+export type DarkPaletteInput = Omit<PaletteInput, 'mode' | 'dark'>
+
+/**
  * The palette half of what a theme may declare. Structurally compatible with
  * MUI's `PaletteOptions`, which is what the config `theme` slot carries, so a
  * config theme is assignable here without a cast.
  */
 export interface PaletteInput extends Partial<StringColors> {
   mode?: 'light' | 'dark'
+  /** what changes when this palette is drawn dark; see {@link DarkPaletteInput} */
+  dark?: DarkPaletteInput
   primary?: ShadeInput
   secondary?: ShadeInput
   tertiary?: ShadeInput
@@ -932,6 +947,14 @@ export interface PaletteArgs {
   configTheme?: ThemeInput
   themeName?: string
   extraThemes?: Record<string, ThemeInput>
+  /**
+   * Draw the named palette light or dark, whatever mode it declares. This is
+   * the axis a user picks along, so it wins over a `mode` written into the
+   * palette or the config `theme` slot; leaving it out keeps reading the mode
+   * off the palette, which is how every theme named `dark*` still resolves
+   * dark.
+   */
+  mode?: 'light' | 'dark'
 }
 
 /**
@@ -970,11 +993,15 @@ export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
     ),
   }
   const preset = presets[themeName] ?? presets.default ?? {}
-  const input: PaletteInput =
+  const declared: PaletteInput =
     themeName === 'default' ? { ...preset, ...configTheme?.palette } : preset
 
-  const mode = input.mode ?? 'light'
+  const mode = args.mode ?? declared.mode ?? 'light'
   const isDark = mode === 'dark'
+  // the palette's own dark half, over the light one it is a delta against
+  const input: PaletteInput = isDark
+    ? { ...declared, ...declared.dark }
+    : declared
   const neutrals = isDark ? darkNeutrals : lightNeutrals
   const brandFallback = isDark ? darkBrandFallback : lightBrandFallback
   const semantics = isDark ? darkSemantics : lightSemantics
