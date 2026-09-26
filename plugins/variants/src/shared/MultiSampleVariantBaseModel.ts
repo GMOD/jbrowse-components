@@ -31,7 +31,6 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
-import { refuseRetiredStateF } from '@jbrowse/display-kit/retiredSettings'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -53,7 +52,6 @@ import { cellHueField } from './cellHue.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
-  MULTI_SAMPLE_VARIANT_DISPLAY,
   VARIANT_FEATURE_WIDGET,
 } from './constants.ts'
 import { buildSampleIndex } from './genotypeCodec.ts'
@@ -167,14 +165,6 @@ function warnMissingAttribute(
 export interface VariantContextMenuInfo extends ContextMenuAnchor {
   feature: Feature
 }
-
-// A loaded session's arrangement is lifted into `rows` before this model sees
-// it (the DisplayType's `retiredState`), so this refuses a snapshot written
-// some other way, which MST would otherwise open unarranged with nothing said.
-const refuseRetiredState = refuseRetiredStateF({
-  displayType: MULTI_SAMPLE_VARIANT_DISPLAY,
-  state: ['layout', 'clusterTree', 'clusterProvenance', 'subtreeFilter'],
-})
 
 // Loaded features in genomic order plus their interned genotype codes: what an
 // anchored sort needs. `simplifiedFeatures` is the single ordered list spanning
@@ -346,7 +336,6 @@ export default function MultiSampleVariantBaseModelF(
           // trigger a run whose output is that mixin's `rows`.
         }),
       )
-      .preProcessSnapshot(refuseRetiredState)
       .volatile(() => ({
         /**
          * #volatile

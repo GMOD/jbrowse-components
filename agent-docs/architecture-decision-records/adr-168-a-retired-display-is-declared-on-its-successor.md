@@ -13,8 +13,6 @@ Accepted (2026-09-25). Reverses the "no migration" consequence of
 sessions, share links and the multi-wiggle config spelling, under the rule
 [ADR-070](adr-070-viewport-is-a-stored-window.md) records for `bpPerPx`: v5
 breaks configs and plugin APIs freely, but not state in URLs other people hold.
-`refuseRetiredState` and `checkRowsField` still refuse what reaches a model or
-a schema some other way.
 
 ## Context
 
@@ -86,15 +84,17 @@ an explicit id.
 - `LinearBasicDisplay`: `LinearFeatureDisplay`, and its legacy slot values.
 - `LinearGCContentDisplay`: `LinearGCContentTrackDisplay`, a byte-identical
   schema registered against `GCContentTrack`, with nothing to migrate.
-- `LinearMultiSampleVariantDisplay`: `MultiLinearVariantDisplay` and the two
-  matrix types in columns; the arrangement, the sidebar and `jexlFilters`. A v4
+- `LinearMultiSampleVariantDisplay`: `MultiLinearVariantDisplay`, and
+  `LinearVariantMatrixDisplay` in columns; the arrangement, the sidebar and
+  `jexlFilters`. A v4
   layout's colours stay behind, since the colorBy palette wrote them.
 - `LinearWiggleDisplay`: `MultiLinearWiggleDisplay`, its rendering names folded
   into a plot and `rows`, v4.3.0's and the betas' both; the v4 plot, scale,
   autoscale, domain, colours, summary mode, cross-hatches and resolution; the
   arrangement and the sidebar.
-- `LinearMultiRowFeatureDisplay` and `LinearMafDisplay`: the arrangement and
-  the sidebar, which only v5 betas wrote.
+- `LinearMafDisplay`: `treeAreaWidth` and `subtreeFilter`, which
+  jbrowse-plugin-mafviewer wrote. Amended 2026-09-26: the multi-row display's
+  lift and MAF's other keys went, since only v5 betas wrote them.
 
 `legacySessions.test.ts` loads v4 sessions through `setSession` and reads the
 live display.

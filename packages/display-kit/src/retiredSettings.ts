@@ -1,36 +1,6 @@
 type Snapshot = Record<string, unknown>
 
 /**
- * The refusal a display raises for the state-model props the row-model port
- * retired. Its retired *config* spellings are the config schema's `retired`
- * option, which every door into a config reads; this is the instance side,
- * where a saved session carries a prop no model declares any more.
- *
- * A display model's union runs every member's preprocessor over every snapshot
- * while it works out which display a snapshot is, so one naming another
- * display type is left alone, and one naming no type is a bag headed for this
- * display and is checked.
- */
-export function refuseRetiredStateF({
-  displayType,
-  state,
-}: {
-  displayType: string
-  state: readonly string[]
-}) {
-  return function refuseRetiredState(snap: Snapshot) {
-    const own = snap.type === undefined || snap.type === displayType
-    const retired = own ? state.filter(key => key in snap) : []
-    if (retired.length) {
-      throw new Error(
-        `${retired.join(', ')} on a ${displayType}: the row arrangement is the display config's \`rows\` object (domain, labels, tree, treeProvenance, kept) and its colours \`rowColor\``,
-      )
-    }
-    return snap
-  }
-}
-
-/**
  * `snap` with the `keys` its `displayDefaults` spells moved onto its
  * `displayType` entry, added where the track lists none, so the shorthand
  * router sends them to that display alone. A value the entry spells wins.
@@ -75,7 +45,6 @@ export function moveDisplayDefaults(
 export const RETIRED_ROW_STATE_KEYS = [
   'layout',
   'clusterTree',
-  'clusterProvenance',
   'subtreeFilter',
   'treeAreaWidth',
   'showTreeSetting',
@@ -118,9 +87,6 @@ export function liftRetiredRowState(
       : {}),
     ...(typeof instance.clusterTree === 'string'
       ? { tree: instance.clusterTree }
-      : {}),
-    ...(isRecord(instance.clusterProvenance)
-      ? { treeProvenance: instance.clusterProvenance }
       : {}),
     ...(Array.isArray(instance.subtreeFilter)
       ? { kept: instance.subtreeFilter }

@@ -20,11 +20,10 @@ function multiSampleEntries(displays: Record<string, unknown>[]) {
   )
 }
 
-test.each([
-  'LinearMultiSampleVariantMatrixDisplay',
-  'LinearVariantMatrixDisplay',
-])('a config choosing the %s opens this display in columns', type => {
-  expect(multiSampleEntries([{ type, height: 400 }])).toEqual([
+test('a config choosing the v4 matrix opens this display in columns', () => {
+  expect(
+    multiSampleEntries([{ type: 'LinearVariantMatrixDisplay', height: 400 }]),
+  ).toEqual([
     {
       type: 'LinearMultiSampleVariantDisplay',
       displayId: 't-LinearMultiSampleVariantDisplay',
@@ -45,8 +44,8 @@ test('the matrix entry wins over a bare stub, under the stub id', () => {
         displayId: 't-LinearMultiSampleVariantDisplay',
       },
       {
-        type: 'LinearMultiSampleVariantMatrixDisplay',
-        displayId: 't-LinearMultiSampleVariantMatrixDisplay',
+        type: 'LinearVariantMatrixDisplay',
+        displayId: 't-LinearVariantMatrixDisplay',
         height: 400,
       },
     ]),
@@ -63,10 +62,10 @@ test('the matrix entry wins over a bare stub, under the stub id', () => {
 test.each([
   [
     { type: 'LinearMultiSampleVariantDisplay', height: 300 },
-    { type: 'LinearMultiSampleVariantMatrixDisplay', height: 400 },
+    { type: 'LinearVariantMatrixDisplay', height: 400 },
   ],
   [
-    { type: 'LinearMultiSampleVariantMatrixDisplay', height: 400 },
+    { type: 'LinearVariantMatrixDisplay', height: 400 },
     { type: 'LinearMultiSampleVariantDisplay', height: 300 },
   ],
 ])('a configured entry for this display keeps it genomic', (...displays) => {

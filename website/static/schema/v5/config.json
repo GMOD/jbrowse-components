@@ -5864,7 +5864,6 @@
           "enum": [
             "LinearMultiSampleVariantDisplay",
             "MultiLinearVariantDisplay",
-            "LinearMultiSampleVariantMatrixDisplay",
             "LinearVariantMatrixDisplay"
           ]
         },
@@ -12828,7 +12827,6 @@
                 "enum": [
                   "LinearMultiSampleVariantDisplay",
                   "MultiLinearVariantDisplay",
-                  "LinearMultiSampleVariantMatrixDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
               }
@@ -13779,34 +13777,6 @@
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterProvenance": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterTree": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "layout": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "showSidebarLabelsSetting": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "showTreeSetting": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "subtreeFilter": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "treeAreaWidth": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -14370,10 +14340,6 @@
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
-        "clusterProvenance": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
         "clusterTree": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
@@ -14418,7 +14384,6 @@
           "enum": [
             "LinearMultiSampleVariantDisplay",
             "MultiLinearVariantDisplay",
-            "LinearMultiSampleVariantMatrixDisplay",
             "LinearVariantMatrixDisplay"
           ]
         },
@@ -14499,10 +14464,6 @@
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "autoscale": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterProvenance": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
@@ -14661,26 +14622,6 @@
         },
         "sortRowsBy": {},
         "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterProvenance": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterTree": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "layout": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "showSidebarLabelsSetting": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "showTreeSetting": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
@@ -15559,7 +15500,6 @@
                 "enum": [
                   "LinearMultiSampleVariantDisplay",
                   "MultiLinearVariantDisplay",
-                  "LinearMultiSampleVariantMatrixDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
               }

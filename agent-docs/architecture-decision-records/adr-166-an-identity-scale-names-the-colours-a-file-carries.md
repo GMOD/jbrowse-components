@@ -37,8 +37,8 @@ colours at all.
   threshold's closed bins, so a figure's key is the one the `legend` slot drew.
   A constant `value` paints no colour of the feature's own and keys nothing,
   which is also what a Solid color pick over an identity scale leaves.
-- **The multi-row `legend` slot goes**, refused through `retiredSettings` with
-  the new spelling, and every config, script and tutorial moves onto
+- **The multi-row `legend` slot goes**, and every config, script and tutorial
+  moves onto
   `color: { scale: 'identity', domain, labels }`. The basic display keys an
   identity scale the same way; Edit as JSON reads and writes it.
 - `COLOR_SCALES` stays the field scales, so wiggle and the mark display, which

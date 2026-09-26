@@ -334,21 +334,6 @@ export default function configSchemaFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      preProcessSnapshot: snap => {
-        if (snap.type === MULTI_SAMPLE_VARIANT_DISPLAY) {
-          if (snap.domain !== undefined) {
-            throw new Error(
-              'domain on a multi-sample variant display is rows: { "domain": [...] }, the row order beside the labels, tree and focus',
-            )
-          }
-          if (snap.featureColor !== undefined) {
-            throw new Error(
-              'featureColor on a multi-sample variant display is color: a CSS colour or jexl callback, or { "field": "impact" | "svType" | "phaseSet" | <any record field> }',
-            )
-          }
-        }
-        return snap
-      },
     },
   )
 }

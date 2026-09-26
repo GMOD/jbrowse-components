@@ -82,7 +82,6 @@ import {
 } from './rendering/colorLegend.ts'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
-import { refuseRetiredState } from './retiredSettings.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
@@ -177,7 +176,6 @@ export default function stateModelFactory(
         hiddenCategories: types.array(types.string),
       }),
     )
-    .preProcessSnapshot(refuseRetiredState)
     .views(self => ({
       /**
        * #getter

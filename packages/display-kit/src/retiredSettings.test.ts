@@ -33,12 +33,10 @@ test('colors: false leaves the colours a copied palette put there', () => {
   ).toEqual({ rows: { domain: ['HG00096'] } })
 })
 
-test('the tree, its provenance, the focus and the sidebar come across', () => {
-  const clusterProvenance = { regions: [{ refName: 'ctgA', start: 0, end: 9 }] }
+test('the tree, the focus and the sidebar come across', () => {
   expect(
     liftRetiredRowState({
       clusterTree: '(a:1,b:1);',
-      clusterProvenance,
       subtreeFilter: ['a'],
       treeAreaWidth: 120,
       showTreeSetting: false,
@@ -47,7 +45,6 @@ test('the tree, its provenance, the focus and the sidebar come across', () => {
   ).toEqual({
     rows: {
       tree: '(a:1,b:1);',
-      treeProvenance: clusterProvenance,
       kept: ['a'],
     },
     treeAreaWidth: 120,

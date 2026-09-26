@@ -504,18 +504,3 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     })
   })
 })
-
-// MST drops a key no prop declares, so a session carrying the display-state
-// arrangement these displays kept before `rows` would open unarranged in
-// silence.
-test('a layout or subtreeFilter on the display snapshot fails the load', () => {
-  const env = createTestEnvironment()
-  expect(() =>
-    env.createDisplay({ displaySnapshot: { layout: [{ name: 'S0' }] } }),
-  ).toThrow(/layout on a LinearMultiSampleVariantDisplay: .*`rows`/)
-  expect(() =>
-    env.createDisplay({
-      displaySnapshot: { subtreeFilter: ['S0'], clusterTree: '(S0);' },
-    }),
-  ).toThrow(/clusterTree, subtreeFilter/)
-})

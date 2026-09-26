@@ -379,42 +379,21 @@ one is named.
 | v4 | v5 display config |
 | --- | --- |
 | `layout` display prop, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor.domain`/`range` |
-| `clusterTree`, `clusterProvenance` display props | `rows.tree`, `rows.treeProvenance` |
+| `clusterTree` display prop | `rows.tree` |
 | `subtreeFilter` display prop | `rows.kept` |
-| `domain` config slot | `rows.domain` |
 
-A session carrying `layout`, `clusterTree`, `clusterProvenance` or
-`subtreeFilter` opens with them moved into `rows`, less the colors, which a v4
-`colorBy` copied into `layout` from its palette. A display config carrying
-`domain` fails the load with a message naming `rows`; a `domain` in a session
-spec's track entry is reported as a setting no display takes.
+A session carrying `layout`, `clusterTree` or `subtreeFilter` opens with them
+moved into `rows`, less the colors, which a v4 `colorBy` copied into `layout`
+from its palette.
 
 ## The multi-row feature display's rows are config too
 
-The multi-row feature display is new in v5, and earlier v5 documentation spelled
-its settings differently. Its rows are the values of a feature attribute, and
-`rows` holds both halves: `rows.field` is the attribute, empty still picking one
-off the data, and the other members are the arrangement, as on the quantitative
-display. `rowColor: { domain, range }` pairs row values with colors, the one
-home for a color a config names and a color a reader sets in **Edit
-colors/arrangement...**.
-
-<!-- prettier-ignore -->
-| earlier v5 | v5 |
-| --- | --- |
-| `partitionField` config slot | `rows.field`, or `rows: "<field>"` |
-| `domain` config slot | `rows.domain` |
-| `sampleColorMap: { <row>: <color> }` config slot | `rowColor: { domain: [<row>], range: [<color>] }` |
-| `layout` display prop, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor` |
-| `clusterTree`, `clusterProvenance` display props | `rows.tree`, `rows.treeProvenance` |
-| `subtreeFilter` display prop | `rows.kept` |
-| `setPartitionField` action | `setRowsField` |
-
-A session carrying `layout`, `clusterTree`, `clusterProvenance` or
-`subtreeFilter` opens with them moved into `rows` and `rowColor`. A multi-row
-display config carrying `partitionField`, `domain` or `sampleColorMap`, or a
-feature track's `displayDefaults` carrying one of the three, fails the load with
-a message naming the replacement.
+The multi-row feature display is new in v5. Its rows are the values of a feature
+attribute, and `rows` holds both halves: `rows.field` is the attribute, empty
+still picking one off the data, and the other members are the arrangement, as on
+the quantitative display. `rowColor: { domain, range }` pairs row values with
+colors, the one home for a color a config names and a color a reader sets in
+**Edit colors/arrangement...**.
 
 ## The MAF rows are config too
 
@@ -424,20 +403,9 @@ tree stays the adapter's: it draws while some rotation of it lists the species
 in `rows.domain`'s order, so a reorder that splits a clade hides it and **Reset
 row order** brings it back, and a clustering run's tree in `rows.tree` replaces
 it. `rowColor: { domain, range }` pairs species with the label tint a reader
-set, over the adapter's `samples[].color`.
-
-<!-- prettier-ignore -->
-| earlier v5 | v5 |
-| --- | --- |
-| `domain` config slot | `rows.domain` |
-| `layout` display prop, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor` |
-| `clusterTree`, `clusterProvenance` display props | `rows.tree`, `rows.treeProvenance` |
-| `subtreeFilter` display prop | `rows.kept` |
-
-A session carrying `layout`, `clusterTree`, `clusterProvenance` or
-`subtreeFilter` opens with them moved into `rows` and `rowColor`. A MAF display
-config carrying `domain`, or a MAF track's `displayDefaults` carrying it, fails
-the load with a message naming `rows`.
+set, over the adapter's `samples[].color`. A session saved with
+jbrowse-plugin-mafviewer opens with its `subtreeFilter` in `rows.kept` and its
+`treeAreaWidth` on the display config.
 
 ## The wiggle color is one `color` object
 

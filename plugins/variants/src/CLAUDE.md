@@ -186,11 +186,6 @@ never writes the `facet` slot, so a session spec's own `facet` survives it, and
 the colour key lists its values in the band order while both read one attribute
 (`rowColorKeyOrder`).
 
-**A `layout`, `clusterTree`, `clusterProvenance` or `subtreeFilter` on the
-display snapshot, or a `domain` in its config, fails the load**, naming `rows`:
-MST drops an undeclared key in silence, and the track would otherwise open
-unarranged.
-
 ## One display, two layouts: `variantLayout`
 
 The x position is a setting of the one display, `'genomic'` or `'columns'`, the

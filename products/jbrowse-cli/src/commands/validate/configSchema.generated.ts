@@ -6180,7 +6180,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "enum": [
             "LinearMultiSampleVariantDisplay",
             "MultiLinearVariantDisplay",
-            "LinearMultiSampleVariantMatrixDisplay",
             "LinearVariantMatrixDisplay"
           ]
         },
@@ -13595,7 +13594,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "LinearMultiSampleVariantDisplay",
                   "MultiLinearVariantDisplay",
-                  "LinearMultiSampleVariantMatrixDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
               }
@@ -14643,34 +14641,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterProvenance": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterTree": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "layout": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "showSidebarLabelsSetting": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "showTreeSetting": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "subtreeFilter": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "treeAreaWidth": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         }
       }
     },
@@ -15254,10 +15224,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
-        "clusterProvenance": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
         "clusterTree": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
@@ -15302,7 +15268,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "enum": [
             "LinearMultiSampleVariantDisplay",
             "MultiLinearVariantDisplay",
-            "LinearMultiSampleVariantMatrixDisplay",
             "LinearVariantMatrixDisplay"
           ]
         },
@@ -15387,10 +15352,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "autoscale": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterProvenance": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
@@ -15559,26 +15520,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "sortRowsBy": {},
         "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterProvenance": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "clusterTree": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "layout": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "showSidebarLabelsSetting": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        },
-        "showTreeSetting": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
@@ -16516,7 +16457,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "enum": [
                   "LinearMultiSampleVariantDisplay",
                   "MultiLinearVariantDisplay",
-                  "LinearMultiSampleVariantMatrixDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
               }

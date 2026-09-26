@@ -166,9 +166,7 @@ still beats~~ and since
 [ADR-160](adr-160-a-rows-colour-is-one-categorical-channel-on-the-row-axis.md)
 the dialog's per-row tints are the entries of `field: "name"`, one keyspace per
 object, so a tint set under the attribute palette turns every row's colour into
-one. A `layout`, `clusterTree`, `clusterProvenance` or `subtreeFilter`
-on a variant display snapshot, or a `domain` in its config, fails the load
-naming `rows`.
+one.
 
 **The multi-row feature display moves third.** Its rows are the values of a
 feature attribute, so `rows` is the field-keyed `Rows` wiggle declares.
@@ -185,11 +183,7 @@ the dialog shows the config's colours and writes its own beside them. An entry
 paints the row's blocks; a row without one takes the palette where no `color`
 slot and no `itemRgb` paint, dealt over the rows in the config.json's declared
 order, so no arrangement recolours a row. The dialog stores a label only where
-it differs from the derived `(no <field>)` label. `partitionField`,
-`sampleColorMap` or `domain` in its config, the same three in a feature
-track's `displayDefaults`, and a `layout`, `clusterTree`, `clusterProvenance` or
-`subtreeFilter` on its display snapshot fail the load naming the replacement.
-It has no Edit as JSON box, so no `setRowsSpec`.
+it differs from the derived `(no <field>)` label. It has no Edit as JSON box, so no `setRowsSpec`.
 
 **MAF moves fourth.** Its rows are the species, so `rows` is the field-less
 `RowArrangement` the variant displays declare. The adapter's guide tree is
@@ -210,10 +204,7 @@ from the blocks, and `sources` narrows the same way (`keptRows`,
 the rows shipped.
 `rowColor: { domain, range }` (`RowColor`) holds the label tint a reader sets,
 over the adapter's `samples[].color`, and the arrangement dialog's colour column
-edits that tint, where it had edited a `color` no renderer read. A
-`domain` in its config or in a MAF track's `displayDefaults`, and a `layout`,
-`clusterTree`, `clusterProvenance` or `subtreeFilter` on its display snapshot,
-fail the load naming `rows`.
+edits that tint, where it had edited a `color` no renderer read.
 
 **The mark display moves fifth.** Its rows are a field's values, so `rows`
 is the field-keyed `Rows`, beside `facet`, which keeps the labelled sections
@@ -293,17 +284,15 @@ one-shot trigger that clears itself.
 - gccontent composes this model and extends this schema, so its displays carry
   `rows` and `rowColor` where they carried `facet`, as dead there as `facet` was
   (ADR-143).
-- No migration (v5 breaks compat) for configs; a session's `layout`,
-  `clusterTree`, `clusterProvenance` and `subtreeFilter` move into `rows` and
-  `rowColor` on all four displays
-  ([ADR-168](adr-168-a-retired-display-is-declared-on-its-successor.md)), and
-  the refusals below meet only a snapshot written some other way. `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter` on a
-  wiggle display snapshot name nothing the display declares, so a session
-  carrying them opens unarranged; on a multi-sample variant display they fail
-  the load, and so does a `domain` in its config, each naming `rows`. On the
-  multi-row feature display they fail the load too, and so do `partitionField`,
-  `sampleColorMap` and `domain` in its config. On MAF they fail the load, and
-  so does `domain` in its config or a MAF track's `displayDefaults`.
+- No migration (v5 breaks compat) for configs; a v4 session's `layout`,
+  `clusterTree` and `subtreeFilter` move into `rows` and `rowColor` on the
+  wiggle and multi-sample variant displays, and a jbrowse-plugin-mafviewer
+  session's `subtreeFilter` on MAF
+  ([ADR-168](adr-168-a-retired-display-is-declared-on-its-successor.md)).
+  Amended 2026-09-26: the refusals of these props, of `clusterProvenance`, and
+  of the config slots `partitionField`, `sampleColorMap` and `domain` are gone,
+  since only v5 betas wrote them, and MST drops such a key like any other it
+  does not declare.
 - On the multi-row feature display a reorder or a dialog submit sees only the
   rows the loaded regions hold, and the names and entries it did not see stand
   behind them, so a declared order or colour map keeps the rows a window has

@@ -66,8 +66,9 @@ threshold.
 
 ## Consequences
 
-- A config or session naming `featureColor` on a multi-sample display fails
-  the load naming `color` (v5 carries no migrations).
+- ~~A config or session naming `featureColor` on a multi-sample display fails
+  the load naming `color`~~. Amended 2026-09-26: no refusal either, since only
+  v5 betas wrote `featureColor`, so MST drops it like any undeclared key.
 - The single-variant display still paints SV type through the fixed class
   colours and the multi-sample cells through the palette dealt over the types
   present; a plain SNV is grey on the first and the alt hue on the second, as

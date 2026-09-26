@@ -4434,8 +4434,7 @@
       "names": [
         "RETIRED_ROW_STATE_KEYS",
         "liftRetiredRowState",
-        "moveDisplayDefaults",
-        "refuseRetiredStateF"
+        "moveDisplayDefaults"
       ],
       "worker": "real"
     },

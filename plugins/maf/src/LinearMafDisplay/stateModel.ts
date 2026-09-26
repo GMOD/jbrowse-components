@@ -97,7 +97,6 @@ import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
-import { refuseRetiredState } from './retiredSettings.ts'
 import { paintsBases, rowRenderingSettings } from './rowRenderings.ts'
 import {
   ZOOM_IN_FOR_BAND,
@@ -2723,7 +2722,6 @@ export default function stateModelFactory(
           })
         },
       }))
-      .preProcessSnapshot(refuseRetiredState)
   )
 }
 

@@ -49,16 +49,13 @@ export default function LinearMultiSampleVariantDisplayF(
       },
       retiredTypes: [
         { type: 'MultiLinearVariantDisplay' },
-        ...[
-          'LinearMultiSampleVariantMatrixDisplay',
-          'LinearVariantMatrixDisplay',
-        ].map(type => ({
-          type,
+        {
+          type: 'LinearVariantMatrixDisplay',
           migrate: (entry: Record<string, unknown>) => ({
             ...entry,
             variantLayout: 'columns',
           }),
-        })),
+        },
       ],
     })
   })

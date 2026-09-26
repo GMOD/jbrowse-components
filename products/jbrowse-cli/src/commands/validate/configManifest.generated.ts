@@ -4757,7 +4757,6 @@ export const configManifest: ConfigManifest = {
       ],
       "aliases": [
         "MultiLinearVariantDisplay",
-        "LinearMultiSampleVariantMatrixDisplay",
         "LinearVariantMatrixDisplay"
       ],
       "stateModelProps": [
@@ -6804,15 +6803,6 @@ export const configManifest: ConfigManifest = {
     "*": [
       "heightPreConfig"
     ],
-    "LinearMultiRowFeatureDisplay": [
-      "clusterProvenance",
-      "clusterTree",
-      "layout",
-      "showSidebarLabelsSetting",
-      "showTreeSetting",
-      "subtreeFilter",
-      "treeAreaWidth"
-    ],
     "LinearAlignmentsDisplay": [
       "PileupDisplay",
       "SNPCoverageDisplay",
@@ -6824,7 +6814,6 @@ export const configManifest: ConfigManifest = {
       "trackMaxHeight"
     ],
     "LinearMultiSampleVariantDisplay": [
-      "clusterProvenance",
       "clusterTree",
       "jexlFilters",
       "layout",
@@ -6835,7 +6824,6 @@ export const configManifest: ConfigManifest = {
     ],
     "LinearWiggleDisplay": [
       "autoscale",
-      "clusterProvenance",
       "clusterTree",
       "color",
       "constraints",
@@ -6853,11 +6841,6 @@ export const configManifest: ConfigManifest = {
       "treeAreaWidth"
     ],
     "LinearMafDisplay": [
-      "clusterProvenance",
-      "clusterTree",
-      "layout",
-      "showSidebarLabelsSetting",
-      "showTreeSetting",
       "subtreeFilter",
       "treeAreaWidth"
     ],

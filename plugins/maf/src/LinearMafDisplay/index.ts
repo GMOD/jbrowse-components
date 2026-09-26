@@ -1,9 +1,6 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
-import {
-  RETIRED_ROW_STATE_KEYS,
-  liftRetiredRowState,
-} from '@jbrowse/display-kit/retiredSettings'
+import { liftRetiredRowState } from '@jbrowse/display-kit/retiredSettings'
 
 import configSchemaF from './configSchema.ts'
 
@@ -27,8 +24,9 @@ export default function LinearMafDisplayF(pluginManager: PluginManager) {
       viewType: 'LinearGenomeView',
       trackType: 'MafTrack',
       displayName: 'MAF display',
+      // what jbrowse-plugin-mafviewer's display kept of the arrangement
       retiredState: {
-        keys: RETIRED_ROW_STATE_KEYS,
+        keys: ['treeAreaWidth', 'subtreeFilter'],
         lift: liftRetiredRowState,
       },
     })
