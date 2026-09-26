@@ -17,9 +17,10 @@ Each of those assemblies walks the graph as a named path, and `vg deconstruct`
 turns those paths into a VCF. The same locus then reads as a graph showing where
 sequence is present and absent, and as a callset naming who carries it.
 
-We serve the graph as the same rGFA projections
-[hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds for
-HPRC, so the tracks, the adapters and the coarse tier are that page's.
+The graph and the callset are hosted at
+[staging.genomes.jbrowse.org/pangenomes/bovine](https://staging.genomes.jbrowse.org/pangenomes/bovine)
+(staging, until the graph plugin's JBrowse 5 host ships), and every step below
+starts from that page.
 
 :::caution Experimental
 
@@ -31,8 +32,8 @@ describes a current limit of the view. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin),
-  loaded the way the HPRC page loads it
+- `python3` and htslib (`bgzip`, `tabix`), to build the
+  [OMIA lane](#the-celtic-polled-allele)
 
 ## Where the data comes from
 
@@ -59,9 +60,38 @@ and OMIA supplies the curated causal variants:
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) describes
 what each of the graph files holds and how a graph produces them.
 
-[staging.genomes.jbrowse.org/pangenomes/bovine](https://staging.genomes.jbrowse.org/pangenomes/bovine)
-(staging, until the graph plugin's JBrowse 5 host ships) lists the graph's most
-variable loci, ranked off the coarse tier, each with a launch into the graph.
+## A whole chromosome, off the coarse tier
+
+On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine), the
+**Graph** line opens a whole chromosome and the **Loci** table the graph's most
+variable loci, ranked off the coarse tier. Click **chr23** on the **Graph**
+line. JBrowse opens ARS-UCD1.2's chromosome 23 with the genes, the curve of
+segments per bubble and the bubble tier as lanes. The tier has one node per
+bubble, which makes a whole chromosome drawable: over a full cattle chromosome
+the fine segments track refuses with "Too many features", and the tier draws.
+
+<Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
+
+The portal's chr23 view also holds a graph under the lanes, cut from the same
+tier: the segments track names the tier in its adapter's `coarse` slot, and past
+that slot's handover the graph cuts one node per bubble with no limit on the
+span. The graph follows the linear view, so zooming in below the handover cuts
+the segments instead.
+
+:::note
+
+The bovine pangenome holds a dozen assemblies. Its cuts are chains with a few
+loops, which the anchored layout the graph opens in draws well. Check the node
+and edge counts in the graph pane's header before switching to the force layout,
+and use it where the bubbles lane reports a tangled window.
+
+:::
+
+BoLA came out of the same ranking the
+[mouse page](/docs/tutorials/pangenome_mouse#finding-the-loci) describes, which
+ranks the coarse tier by segments per bubble and then names each entry off the
+reference annotation. It is the densest stretch of chr23 in the figure above,
+and the ranking found it without a curated list.
 
 ## Where the graph and the callset show different things
 
@@ -148,8 +178,10 @@ second alternate allele in a colour of its own:
 }
 ```
 
-Open `chr23:27,508,000-27,536,000` with the RefSeq genes, the callset and the
-allele inventory.
+In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
+graph follows the view down to _HSPA1A_ and cuts the segments there. Turn on the
+callset and the allele inventory in the track selector; the figure shows them
+under the RefSeq genes.
 
 <Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, and the allele inventory. Every row but the yak carries the insertion the inventory lists without carriers." src="/img/pangenome/bovine_bola.png" />
 
@@ -218,42 +250,22 @@ deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 The four cattle rows hold an allele about as long as the reference with a
 different sequence. Click one to compare the two.
 
-## A whole chromosome, off the coarse tier
-
-The level-of-detail tier has one node per bubble, which makes a whole chromosome
-drawable. Type `chr23` on ARS-UCD1.2 with the tier and the bubble curve showing.
-Over a full cattle chromosome the _fine_ segments track refuses with "Too many
-features", and the tier draws.
-
-<Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
-
-A graph view pointed at a tier raises `maxRegionBp` explicitly. The view refuses
-a cut wider than 5 Mb. That width limit stands in for node count, and it tracks
-node count well only at segment granularity.
-
-:::note
-
-The bovine pangenome holds a dozen assemblies, against ninety haplotypes for
-HPRC. Its cuts are chains with a few loops, and the anchored layout often reads
-better. Check the node and edge counts in the graph pane's header before
-switching to the force layout. Use the force layout where the bubbles lane
-reports a tangled window.
-
-:::
-
-BoLA came out of the same ranking the
-[mouse page](/docs/tutorials/pangenome_mouse#finding-the-loci) describes, which
-ranks the coarse tier by segments per bubble and then names each entry off the
-reference annotation. It is the densest stretch of chr23 in the figure above,
-and the ranking found it without a curated list.
-
 ## Build it yourself
 
+[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
+turns a graph into the files above with one command, `build_pangenome_graph.sh`.
+The published bovine graphs need three steps beyond it, which
 [`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
-downloads the published archive, recovers rGFA tags from its path lines with
-[`gfa_paths_to_rgfa.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_paths_to_rgfa.py),
-projects the files above, and deconstructs the callset. It takes about half an
-hour after the download.
+runs:
+
+- **Join the autosomes.** The archive holds one graph per autosome, each
+  numbering its segments from 1, so the script renumbers and concatenates them.
+- **Recover rGFA tags.** The graphs state their coordinates in P lines, and
+  [`gfa_paths_to_rgfa.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_paths_to_rgfa.py)
+  walks those paths back into `SN`/`SO`/`SR` tags.
+- **Deconstruct the callset**, with the `vg deconstruct` call above.
+
+It takes about half an hour after the download.
 
 The script writes a `README.txt` beside the data recording the source, the
 modifications, the tool versions and the audits that ran. Copy the audits into
@@ -262,11 +274,9 @@ reference chromosome lengths, and stops on a duplicate segment id after
 renumbering. Without these audits, either failure produces a graph with wrong
 coordinates, and every downstream check passes on it.
 
-If your own graph has path lines, use
-[`build_pggb_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pggb_tabix.sh)
-in place of `build_rgfa_tabix.sh`. The PGGB script walks the paths and writes a
-carriage tag, which rGFA has no field for. The graph view then shows which
-samples cross each node.
+For a graph of your own with path lines and no rGFA tags, the one command walks
+the paths itself and writes a carriage tag, which rGFA has no field for; the
+graph view then shows which samples cross each node.
 
 The OMIA lane comes from OMIA's nightly database dump.
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)

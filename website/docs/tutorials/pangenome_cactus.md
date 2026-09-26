@@ -439,7 +439,7 @@ indexes it by its rGFA route with no further arguments:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
-# the rGFA route runs gfatools, so gfatools and GNU awk have to be on PATH
+# the rGFA route runs gfatools and GNU awk (gawk), so both have to be on PATH
 bash build_pangenome_graph.sh mc/ecoli.sv.gfa.gz ecoli_cactus_sv
 ```
 
