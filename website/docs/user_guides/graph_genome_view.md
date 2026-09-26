@@ -17,7 +17,7 @@ synteny, variants, alignment, or depth.
 **Prerequisites:** the plugin (below), a graph in rGFA or GFA, and the
 contributing assemblies if you want to open a node on them.
 
-<Figure caption="50 kb of K12 with the graph as its bottom track. The segments lane and the graph read the same two tabix indexes and use the same reference-position ramp, so a block and its node share a hue: the blue boxes are one segment in both. The charcoal nodes are the alternate alleles, like the ringed one CFT073 carries in place of the boxed segment. They have no K12 coordinates, so the segments lane does not draw them." src="/img/pangenome/rgfa_subgraph_launch.png" />
+<Figure caption="50 kb of K12 with the graph as its bottom track. The segments lane and the graph share the reference-position ramp, so a block and its node share a hue: the blue boxes are one segment in both. The charcoal nodes are alternate alleles, like the ringed one CFT073 carries in place of the boxed segment; with no K12 coordinates, the lane does not draw them." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 :::info Requires the graph genome view plugin
 
