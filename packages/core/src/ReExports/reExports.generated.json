@@ -5282,7 +5282,10 @@
       "package": "@jbrowse/render-core",
       "names": [
         "distToWideCirclePx",
-        "wideCircleLeg"
+        "ellipseHullPoint",
+        "wideCircleHullPoint",
+        "wideCircleLeg",
+        "wideCircleLegStep"
       ],
       "worker": "real"
     },
