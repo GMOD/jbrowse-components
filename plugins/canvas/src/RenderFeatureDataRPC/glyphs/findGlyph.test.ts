@@ -66,6 +66,14 @@ describe('findGlyph structural dispatch', () => {
     expect(findGlyph(gene, config)).toBe(layoutProcessedTranscript)
   })
 
+  it('routes a discontinuous top-level CDS to ProcessedTranscript', () => {
+    const cds = mockFeature({
+      type: 'CDS',
+      subfeatures: [mockFeature({ type: 'CDS' }), mockFeature({ type: 'CDS' })],
+    })
+    expect(findGlyph(cds, config)).toBe(layoutProcessedTranscript)
+  })
+
   it('routes a gene whose children are containers to Subfeatures', () => {
     const gene = mockFeature({
       type: 'gene',

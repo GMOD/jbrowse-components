@@ -1,0 +1,10 @@
+##gff-version 3
+ctgA	NCBI	gene	1000	5000	.	+	.	ID=gene1;Name=gene1
+ctgA	NCBI	mRNA	1000	5000	.	+	.	ID=rna1;Parent=gene1;Name=NM_1
+ctgA	NCBI	exon	1000	1200	.	+	.	Parent=rna1
+ctgA	RefSeq	cDNA_match	1000	1200	.	+	.	ID=aln1;Target=NM_1 1 201 +
+ctgA	NCBI	exon	2000	2300	.	+	.	Parent=rna1
+ctgA	RefSeq	cDNA_match	2000	2300	.	+	.	ID=aln1;Target=NM_1 202 502 +
+ctgA	NCBI	exon	4500	5000	.	+	.	Parent=rna1
+ctgA	RefSeq	cDNA_match	4500	5000	.	+	.	ID=aln1;Target=NM_1 503 1003 +
+ctgA	RefSeq	match	7000	7500	.	+	.	ID=aln2;Target=NG_1 1 501 +

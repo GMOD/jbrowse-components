@@ -218,3 +218,38 @@ describe('discontinuous feature parsing', () => {
     expect(cds.map(f => f.start)).toEqual([0, 199, 399])
   })
 })
+
+describe('top-level discontinuous features', () => {
+  it('folds a cDNA_match into one feature with a block per line', async () => {
+    const adapter = new Gff3TabixAdapter(
+      configSchema.create({
+        gffGzLocation: {
+          localPath: require.resolve('../test_data/cdna_match.gff3.gz'),
+        },
+        index: {
+          location: {
+            localPath: require.resolve('../test_data/cdna_match.gff3.gz.tbi'),
+          },
+        },
+      }),
+    )
+    const features = adapter.getFeatures({
+      refName: 'ctgA',
+      start: 2100,
+      end: 2200,
+      assemblyName: 'volvox',
+    })
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
+    expect(featuresArray.map(f => f.get('type'))).toEqual([
+      'gene',
+      'cDNA_match',
+    ])
+    const aln = featuresArray[1]!.toJSON()
+    expect([aln.start, aln.end]).toEqual([999, 5000])
+    expect(aln.subfeatures!.map(f => [f.type, f.start, f.end])).toEqual([
+      ['cDNA_match', 999, 1200],
+      ['cDNA_match', 1999, 2300],
+      ['cDNA_match', 4499, 5000],
+    ])
+  })
+})

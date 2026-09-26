@@ -35,7 +35,9 @@ export function findGlyph(
   if (typeGlyph) {
     return typeGlyph
   }
-  if (isCDS(feature)) {
+  // A CDS whose rows are CDS is a discontinuous top-level one, and draws its
+  // segments below as any coding transcript does.
+  if (isCDS(feature) && !hasCDSSubfeature(feature)) {
     return hasMatureProteinChildren(feature)
       ? layoutMatureProteinRegion
       : layoutBox

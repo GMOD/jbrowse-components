@@ -12,6 +12,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseLinesLazy } from 'gff-nostream'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
+import { groupDiscontinuous } from '../groupDiscontinuous.ts'
 
 import type { Gff3AdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -49,7 +50,9 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
         // rather than stamped onto it, so the parsed feature is the library's
         // shape and Gff3Feature serializes it identically for both adapters.
         (lines, refName) =>
-          parseLinesLazy(lines).map((feature, i) => ({
+          groupDiscontinuous(
+            parseLinesLazy(lines).map(feature => ({ feature })),
+          ).map(({ feature }, i) => ({
             start: feature.start,
             end: feature.end,
             feature,

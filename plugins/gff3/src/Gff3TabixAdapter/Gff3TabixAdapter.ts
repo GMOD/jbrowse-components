@@ -12,6 +12,7 @@ import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
 import { hasIdAttribute, parseRecordsLazy } from 'gff-nostream'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
+import { groupDiscontinuous } from '../groupDiscontinuous.ts'
 
 import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -100,7 +101,9 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         // emit only top-level features intersecting the original query. the
         // byte offset stays on our own record and is used purely to mint a
         // stable id, so it never pollutes the feature's data
-        for (const { feature, record } of parseRecordsLazy(lines)) {
+        for (const { feature, record } of groupDiscontinuous(
+          parseRecordsLazy(lines),
+        )) {
           if (
             doesIntersect2(feature.start, feature.end, query.start, query.end)
           ) {
