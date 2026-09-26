@@ -8,7 +8,6 @@ import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { traceChord } from './chordGeometry.ts'
-import { chordDistanceSq, CHORD_HIT_PX, ribbonContains } from './chordHit.ts'
 import { chordEndsAt, ribbonAnglesAt, ribbonFadeAt } from './chordStage.ts'
 import { canvasPathSink } from './pathSink.ts'
 import { traceRibbon } from './ribbonGeometry.ts'
@@ -20,7 +19,6 @@ import type { ChordLanes, ChordStage, RibbonLanes } from './chordStage.ts'
 import type {
   MarkContext2D,
   MarkFrame,
-  MarkHit,
   MarkShape,
 } from '@jbrowse/render-core/marks'
 
@@ -65,15 +63,17 @@ function writeStage(
   })
 }
 
-// one css colour per packed colour and fade, per paint, at its alpha times the
-// display's and the fade as the shader multiplies them, unrounded
+// one css colour per packed colour and alpha byte, per paint: its alpha times
+// the display's and the instance's, rounded to the byte the canvas keeps, so a
+// fade that differs per instance still makes no more than 256 per colour
 function colorCache(alpha: number) {
-  const cache = new Map<string, string>()
-  return (abgr: number, fade = 1) => {
-    const key = `${abgr} ${fade}`
+  const cache = new Map<number, string>()
+  return (abgr: number, instanceAlpha = 1) => {
+    const byte = Math.round(abgrAlpha(abgr) * alpha * instanceAlpha)
+    const key = abgr * 256 + byte
     let css = cache.get(key)
     if (css === undefined) {
-      css = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${(abgrAlpha(abgr) / 255) * alpha * fade})`
+      css = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${byte / 255})`
       cache.set(key, css)
     }
     return css
@@ -131,25 +131,6 @@ export const ribbonMark: MarkShape<RibbonLanes, ChordStageParams> = {
       }
     })
   },
-
-  hitNearest(lanes, _block, _frame, params, xPx, yPx, candidates) {
-    const dx = xPx - params.centerX
-    const dy = yPx - params.centerY
-    for (const i of candidates) {
-      if (
-        ribbonContains(
-          dx,
-          dy,
-          ribbonAnglesAt(lanes, i, params),
-          params.radiusPx,
-          params.bezierRadiusPx,
-        )
-      ) {
-        return { index: i, x: xPx, y: yPx, distSq: 0 }
-      }
-    }
-    return undefined
-  },
 }
 
 /**
@@ -186,30 +167,6 @@ export const chordMark: MarkShape<ChordLanes, ChordStageParams> = {
         }
       }
     })
-  },
-
-  hitNearest(lanes, _block, _frame, params, xPx, yPx, candidates, maxDistSq) {
-    const dx = xPx - params.centerX
-    const dy = yPx - params.centerY
-    const reach = Math.max(Math.sqrt(maxDistSq), CHORD_HIT_PX)
-    let best: MarkHit | undefined
-    for (const i of candidates) {
-      const ends = chordEndsAt(lanes, i, params)
-      const distSq = ends
-        ? chordDistanceSq(
-            dx,
-            dy,
-            ends,
-            params.radiusPx,
-            params.bezierRadiusPx,
-            reach,
-          )
-        : Infinity
-      if (distSq <= maxDistSq && (!best || distSq < best.distSq)) {
-        best = { index: i, x: xPx, y: yPx, distSq }
-      }
-    }
-    return best
   },
 }
 

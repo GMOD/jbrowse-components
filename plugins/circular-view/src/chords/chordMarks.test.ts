@@ -181,6 +181,7 @@ describe('one trace, two sinks', () => {
 })
 
 describe('the canvas2d rung', () => {
+  // rounded to the alpha byte the canvas keeps
   test("fills each ribbon at its colour's alpha times the display's", () => {
     const { ctx, calls } = recordingContext()
     ribbonMark.paintBlock(
@@ -194,8 +195,8 @@ describe('the canvas2d rung', () => {
       params,
     )
     expect(calls.filter(c => c.startsWith('  paint='))).toEqual([
-      `  paint=rgba(255,0,0,${(0x26 / 255) * 0.25})`,
-      '  paint=rgba(0,0,255,0.25)',
+      `  paint=rgba(255,0,0,${Math.round(0x26 * 0.25) / 255})`,
+      `  paint=rgba(0,0,255,${Math.round(255 * 0.25) / 255})`,
     ])
   })
 
