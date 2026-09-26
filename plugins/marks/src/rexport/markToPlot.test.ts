@@ -1,3 +1,5 @@
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
+
 import { frameFor } from './frameFor.ts'
 import { fieldsRead, markPlot } from './markToPlot.ts'
 import { renderPlot } from './rplot.ts'
@@ -16,7 +18,7 @@ const gff = frameFor({ type: 'Gff3TabixAdapter', uri: 'volvox.gff3.gz' })
 
 function render(
   display: DisplaySpec,
-  regions = [{ start: 100, end: 200 }],
+  regions = [{ refName: 'ctgA', start: 100, end: 200 }],
   frame: RFrame = bigwig,
 ) {
   const { plot, notes } = markPlot({ display, frame, regions })
@@ -73,7 +75,7 @@ describe('a mark becomes a geom', () => {
   it('labels a text mark from its text field', () => {
     const { r } = render(
       { marks: [{ mark: 'text', encoding: { text: 'name' } }] },
-      [{ start: 0, end: 100 }],
+      [{ refName: 'ctgA', start: 0, end: 100 }],
       gff,
     )
     expect(r).toContain('geom_text(')
@@ -103,6 +105,53 @@ describe('a channel scale becomes a ggplot scale', () => {
     expect(r).toContain(
       'scale_fill_manual(values = c("1" = "blue", "-1" = "red"))',
     )
+  })
+
+  it('continues a short range into the palette, as the browser does', () => {
+    const { r } = render({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: {
+              field: 'strand',
+              domain: ['1', '0', '-1'],
+              range: ['blue'],
+            },
+          },
+        },
+      ],
+    })
+    expect(r).toContain(
+      `"1" = "blue", "0" = "${categoricalPalette[0]}", "-1" = "${categoricalPalette[1]}"`,
+    )
+  })
+
+  it('walks the palette in the data\u2019s order for an unlisted domain', () => {
+    const { r } = render({
+      marks: [
+        { mark: 'bar', encoding: { y: 'score', color: { field: 'strand' } } },
+      ],
+    })
+    expect(r).toContain(
+      `discrete_scale("fill", palette = function(n) rep_len(c("${categoricalPalette[0]}", `,
+    )
+  })
+
+  it('cuts a threshold scale with no cuts into one bin, not a syntax error', () => {
+    const { r } = render({
+      marks: [
+        {
+          mark: 'point',
+          encoding: {
+            y: 'score',
+            color: { field: 'score', scale: 'threshold' },
+          },
+        },
+      ],
+    })
+    expect(r).toContain('breaks = c(-Inf, Inf), labels = c("any value")')
   })
 
   it('reads a ramp through the same LUT the legend indexes', () => {
@@ -179,9 +228,24 @@ describe('the display stages', () => {
   it('pins x to the region so stacked panels line up', () => {
     const { r } = render(
       { marks: [{ mark: 'bar', encoding: { y: 'score' } }] },
-      [{ start: 1000, end: 2000 }],
+      [{ refName: 'ctgA', start: 1000, end: 2000 }],
     )
-    expect(r).toContain('coord_cartesian(xlim = c(1000, 2000))')
+    expect(r).toContain('coord_cartesian(xlim = c(1000, 2000), expand = FALSE)')
+    expect(r).toContain('x = "ctgA (bp)"')
+  })
+
+  it('labels a shared axis as one, and pins it to the layout', () => {
+    const { r } = render(
+      { marks: [{ mark: 'bar', encoding: { y: 'score' } }] },
+      [
+        { refName: 'ctgA', start: 0, end: 100 },
+        { refName: 'ctgB', start: 0, end: 100 },
+      ],
+    )
+    expect(r).toContain(
+      'xlim = c(min(regions$cum_start), max(regions$cum_end))',
+    )
+    expect(r).toContain('x = "bp, regions end to end"')
   })
 
   it('facets on the display facet field', () => {
@@ -322,11 +386,26 @@ describe('a mark reads the grammar’s own vocabulary', () => {
           },
         ],
       },
-      [{ start: 0, end: 100 }],
+      [{ refName: 'ctgA', start: 0, end: 100 }],
       gff,
     )
     expect(r).toContain('shape = type')
     expect(r).toContain('scale_shape_manual(values = c(snv = 16, del = 25))')
+  })
+
+  it('cycles the shape list over a domain the config leaves unlisted', () => {
+    const { r } = render(
+      {
+        marks: [
+          { mark: 'point', encoding: { y: 'start', shape: { field: 'type' } } },
+        ],
+      },
+      undefined,
+      gff,
+    )
+    expect(r).toContain(
+      'discrete_scale("shape", palette = function(n) rep_len(c(16, 25, 18), n))',
+    )
   })
 
   it('scales a link stroke through the size channel', () => {
@@ -553,6 +632,37 @@ describe('what the display asks the file for', () => {
         marks: [{ mark: 'bar', encoding: { y: 'depth', row: 'row' } }],
       }),
     ).toEqual([])
+  })
+})
+
+describe('a step reading what no stage produced', () => {
+  it('is skipped and reported, where R would die on it after every read', () => {
+    const { notes, plot } = render({
+      transform: [{ type: 'bin', field: 'pos' }, { type: 'pileup' }],
+      marks: [{ mark: 'span', encoding: { row: 'row' } }],
+    })
+    expect(notes).toEqual([
+      'transform: bin reads pos, which no stage produces, so it is skipped',
+    ])
+    expect(plot.layers[0]!.frame.statements).not.toContain('floor(')
+    expect(plot.layers[0]!.frame.statements).toContain('disjointBins')
+  })
+
+  it('leaves out an aggregate op naming no field', () => {
+    const { notes, plot } = render({
+      transform: [
+        {
+          type: 'aggregate',
+          groupby: ['strand'],
+          ops: [{ op: 'mean' }, { op: 'count' }],
+        },
+      ],
+      marks: [{ mark: 'bar', encoding: { y: 'count' } }],
+    })
+    expect(notes).toEqual([
+      'transform: aggregate mean names no field, so it is left out',
+    ])
+    expect(plot.layers).toHaveLength(1)
   })
 })
 

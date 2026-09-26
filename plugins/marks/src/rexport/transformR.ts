@@ -1,8 +1,10 @@
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 
-import { autoBinStep } from '../LinearMarkDisplay/autoBin.ts'
+import { binStepWidth } from '../LinearMarkDisplay/autoBin.ts'
 import {
   DEFAULT_BIN_AS,
+  DEFAULT_BIN_FIELD,
+  DEFAULT_BIN_STEP,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
@@ -11,6 +13,7 @@ import {
 } from '../LinearMarkDisplay/markVocabulary.ts'
 import { frame, rIdent, rStr } from './rplot.ts'
 
+import type { StepSnapshot } from '../LinearMarkDisplay/markProblems.ts'
 import type { RFrame } from './rplot.ts'
 
 /**
@@ -18,19 +21,7 @@ import type { RFrame } from './rplot.ts'
  * `transform` hold one. Every arm carries only its own slots (ADR-150), so the
  * translation is one arm per step kind and a new step kind is one more.
  */
-export type Step =
-  | { type: 'filter'; expr?: string }
-  | { type: 'formula'; expr?: string; as?: string }
-  | { type: 'bin'; step?: number | 'auto'; field?: string; as?: string[] }
-  | {
-      type: 'aggregate'
-      groupby?: string[]
-      ops?: { op?: string; field?: string; as?: string }[]
-    }
-  | { type: 'coverage'; as?: string }
-  | { type: 'flatten'; field?: string; index?: string; keepEmpty?: boolean }
-  | { type: 'pileup'; as?: string; fields?: string[]; padding?: number }
-  | { type: 'mate' }
+export type Step = StepSnapshot
 
 const AGGREGATE_R: Record<string, (field: string) => string> = {
   count: () => 'nrow(g)',
@@ -43,26 +34,76 @@ const AGGREGATE_R: Record<string, (field: string) => string> = {
 interface Applied {
   statements: string
   columns: string[]
+  /** The columns holding positions on the figure's axis. */
+  coords: string[]
   packages?: string[]
+}
+
+function union(a: readonly string[], b: readonly string[]) {
+  return [...new Set([...a, ...b])]
 }
 
 function binEdges(s: Extract<Step, { type: 'bin' }>): readonly string[] {
   return s.as?.length === 2 ? s.as : DEFAULT_BIN_AS
 }
 
+function pileupFields(s: Extract<Step, { type: 'pileup' }>) {
+  return s.fields?.length === 2 ? s.fields : DEFAULT_PILEUP_FIELDS
+}
+
+/** The columns a step reads, which the frame in front of it has to hold. */
+export function stepReads(step: Step): string[] {
+  switch (step.type) {
+    case 'bin': {
+      return [step.field ?? DEFAULT_BIN_FIELD]
+    }
+    case 'aggregate': {
+      return [
+        ...(step.groupby ?? []),
+        ...(step.ops ?? []).flatMap(o =>
+          o.field && (o.op ?? 'count') !== 'count' ? [o.field] : [],
+        ),
+      ]
+    }
+    case 'pileup': {
+      return step.fields?.length === 2 ? step.fields : []
+    }
+    default: {
+      return []
+    }
+  }
+}
+
+/**
+ * A bin on the figure's axis aligns to genomic multiples of its width, as the
+ * browser bins each region; a lone region's axis is genomic, so only a shared
+ * one takes each row's region offset out and puts it back.
+ */
 function binR(
   s: Extract<Step, { type: 'bin' }>,
   columns: string[],
+  coords: string[],
   bpPerPx: number,
+  shifted: boolean,
 ): Applied {
-  const field = rIdent(s.field ?? 'start')
-  const [lo, hi] = binEdges(s).map(rIdent) as [string, string]
-  const width =
-    s.step === 'auto' || s.step === undefined ? autoBinStep(bpPerPx) : s.step
+  const field = s.field ?? DEFAULT_BIN_FIELD
+  const [lo, hi] = binEdges(s) as [string, string]
+  const width = binStepWidth(s.step ?? DEFAULT_BIN_STEP, bpPerPx)
+  const onAxis = coords.includes(field)
+  const f = `df$${rIdent(field)}`
+  const edge = `df$${rIdent(hi)} <- df$${rIdent(lo)} + ${width}`
   return {
-    statements: `df$${lo} <- floor(df$${field} / ${width}) * ${width}
-df$${hi} <- df$${lo} + ${width}`,
-    columns: [...new Set([...columns, ...binEdges(s)])],
+    statements:
+      shifted && onAxis
+        ? `offset <- (regions$offset - regions$start)[df$.region]
+df$${rIdent(lo)} <- floor((${f} - offset) / ${width}) * ${width} + offset
+${edge}`
+        : `df$${rIdent(lo)} <- floor(${f} / ${width}) * ${width}
+${edge}`,
+    columns: union(columns, [lo, hi]),
+    coords: onAxis
+      ? union(coords, [lo, hi])
+      : coords.filter(c => c !== lo && c !== hi),
   }
 }
 
@@ -80,8 +121,8 @@ export function lastBinOf(steps: readonly Step[]) {
 /**
  * An aggregate keeps the span it folded — `min(start)` to `max(end)` — beside
  * its groupby keys and its ops, as `featureTransforms.ts` does, so a mark can
- * still place the result. An empty `groupby` folds the whole frame into one
- * row, which `split` cannot express: `df[c()]` is an R error, not one group.
+ * still place the result. It folds within each region, as the browser runs
+ * each region's steps alone, so two regions on one axis never fold together.
  *
  * The keys go through `addNA` because `split` drops a group whose key is NA,
  * where the encoder keys `undefined` as a group of its own.
@@ -89,9 +130,18 @@ export function lastBinOf(steps: readonly Step[]) {
 function aggregateR(
   s: Extract<Step, { type: 'aggregate' }>,
   previousBin: readonly string[] | undefined,
+  coords: string[],
+  notes: string[],
 ): Applied {
   const groupby = s.groupby?.length ? s.groupby : (previousBin ?? [])
-  const ops = (s.ops ?? []).filter(o => AGGREGATE_R[o.op ?? 'count'])
+  const ops = (s.ops ?? []).filter(o => {
+    const op = o.op ?? 'count'
+    if (op !== 'count' && !o.field) {
+      notes.push(`transform: aggregate ${op} names no field, so it is left out`)
+      return false
+    }
+    return op in AGGREGATE_R
+  })
   const names = ops.map(o =>
     aggregateFieldName({ op: o.op ?? 'count', field: o.field, as: o.as }),
   )
@@ -107,14 +157,19 @@ function aggregateR(
     ...groupby.map(g => `${rIdent(g)} = g$${rIdent(g)}[1]`),
     ...span,
     ...values,
+    '.region = g$.region[1]',
   ].join(', ')}, check.names = FALSE)`
+  const keys = [...groupby, '.region'].map(k => rStr(k)).join(', ')
+  const columns = union(groupby, ['start', 'end', ...names, '.region'])
   return {
-    statements: groupby.length
-      ? `df <- do.call(rbind, lapply(
-  split(df, lapply(df[c(${groupby.map(g => rStr(g)).join(', ')})], addNA), drop = TRUE),
-  ${fold}))`
-      : `df <- (${fold})(df)`,
-    columns: [...new Set([...groupby, 'start', 'end', ...names])],
+    statements: `df <- bind_groups(lapply(
+  split(df, lapply(df[c(${keys})], addNA), drop = TRUE),
+  ${fold}), c(${columns.map(c => rStr(c)).join(', ')}))`,
+    columns,
+    coords: union(
+      ['start', 'end'],
+      groupby.filter(g => coords.includes(g)),
+    ),
   }
 }
 
@@ -131,8 +186,9 @@ function aggregateR(
  */
 function coverageR(s: Extract<Step, { type: 'coverage' }>): Applied {
   const as = s.as ?? DEFAULT_COVERAGE_AS
+  const columns = ['start', 'end', as, '.region']
   return {
-    statements: `df <- do.call(rbind, lapply(split(df, df$.region), function(g) {
+    statements: `df <- bind_groups(lapply(split(df, df$.region), function(g) {
   runs <- IRanges::coverage(${ranges('g', 'start', 'end')}, shift = -min(g$start))
   ends <- cumsum(runLength(runs)) + min(g$start)
   out <- data.frame(
@@ -140,8 +196,9 @@ function coverageR(s: Extract<Step, { type: 'coverage' }>): Applied {
     ${rIdent(as)} = as.integer(runValue(runs)), .region = g$.region[1],
     check.names = FALSE)
   out[out$${rIdent(as)} > 0, ]
-}))`,
-    columns: ['start', 'end', as, '.region'],
+}), c(${columns.map(c => rStr(c)).join(', ')}))`,
+    columns,
+    coords: ['start', 'end'],
     packages: ['IRanges'],
   }
 }
@@ -159,15 +216,15 @@ function ranges(df: string, lo: string, hi: string, pad = 0) {
 function pileupR(
   s: Extract<Step, { type: 'pileup' }>,
   columns: string[],
+  coords: string[],
 ): Applied {
   const as = s.as ?? DEFAULT_PILEUP_AS
-  const [lo, hi] = (
-    s.fields?.length === 2 ? s.fields : DEFAULT_PILEUP_FIELDS
-  ).map(rIdent) as [string, string]
+  const [lo, hi] = pileupFields(s).map(rIdent) as [string, string]
   return {
     statements: `df$${rIdent(as)} <- IRanges::disjointBins(
   ${ranges('df', lo, hi, s.padding ?? 0)}) - 1L`,
-    columns: [...new Set([...columns, as])],
+    columns: union(columns, [as]),
+    coords,
     packages: ['IRanges'],
   }
 }
@@ -214,7 +271,9 @@ export function stepOutputs(lists: readonly (readonly Step[])[]) {
  * `bin`, `aggregate`, `coverage` and `pileup` state a rule over rows and become
  * base R. `filter` and `formula` carry a jexl callback, and `flatten` and
  * `mate` fan out structure a flat frame does not hold — each is reported rather
- * than approximated, so the figure never silently shows unfiltered data.
+ * than approximated, so the figure never silently shows unfiltered data. A
+ * step reading a column no stage produced is reported and skipped, where R
+ * would die on it after every read.
  *
  * `within` runs the steps over each value of a field alone, which is what the
  * facet's own steps do: a `pileup` there packs each section on its own rows.
@@ -226,6 +285,7 @@ export function applyTransforms({
   name,
   inheritedBin,
   bpPerPx,
+  shifted = false,
   within,
 }: {
   base: RFrame
@@ -237,24 +297,34 @@ export function applyTransforms({
   inheritedBin?: readonly string[]
   /** The zoom an `auto` bin follows: the figure's width over the regions'. */
   bpPerPx: number
+  /** Whether the axis concatenates several regions, each shifted from its genomic position. */
+  shifted?: boolean
   /** A field whose every value the steps run over separately. */
   within?: string
 }): RFrame {
   let columns: string[] = base.columns.slice()
+  let coords: string[] = base.coords.slice()
   const packages = new Set(base.packages)
   const parts: string[] = []
   let lastBin = inheritedBin
   for (const step of steps) {
+    const missing = stepReads(step).filter(f => !columns.includes(f))
+    if (missing.length) {
+      notes.push(
+        `transform: ${step.type} reads ${missing.join(', ')}, which no stage produces, so it is skipped`,
+      )
+      continue
+    }
     let applied: Applied | undefined
     if (step.type === 'bin') {
-      applied = binR(step, columns, bpPerPx)
+      applied = binR(step, columns, coords, bpPerPx, shifted)
       lastBin = binEdges(step)
     } else if (step.type === 'aggregate') {
-      applied = aggregateR(step, lastBin)
+      applied = aggregateR(step, lastBin, coords, notes)
     } else if (step.type === 'coverage') {
       applied = coverageR(step)
     } else if (step.type === 'pileup') {
-      applied = pileupR(step, columns)
+      applied = pileupR(step, columns, coords)
     } else if (step.type === 'formula') {
       // No column: a formula emits no R, so claiming its output would let a
       // mark name a field the script never writes and die at draw time.
@@ -271,6 +341,7 @@ export function applyTransforms({
     if (applied) {
       parts.push(applied.statements)
       columns = applied.columns
+      coords = applied.coords
       for (const p of applied.packages ?? []) {
         packages.add(p)
       }
@@ -286,20 +357,22 @@ export function applyTransforms({
   // through the rename — `df_1 <- df` became `df_1 <- df_1`, assigning from a
   // binding that did not exist yet.
   const rebind = out === base.name ? [] : [`${out} <- ${base.name}`]
+  const held = within ? union(columns, [within]) : columns
   const steps_ = within
     ? [
-        `df <- do.call(rbind, lapply(split(df, addNA(df$${rIdent(within)}), drop = TRUE), function(df) {
+        `df <- bind_groups(lapply(split(df, addNA(df$${rIdent(within)}), drop = TRUE), function(df) {
 key <- df$${rIdent(within)}[1]
 ${parts.join('\n')}
 df$${rIdent(within)} <- key
 df
-}))`,
+}), c(${held.map(c => rStr(c)).join(', ')}))`,
       ]
     : parts
   const body = [...rebind, ...steps_.map(s => s.replaceAll(/\bdf\b/g, out))]
   return frame({
     name: out,
-    columns: within ? [...new Set([...columns, within])] : columns,
+    columns: held,
+    coords,
     packages: [...packages],
     statements: body.join('\n'),
     parent: base,

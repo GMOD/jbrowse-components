@@ -54,6 +54,8 @@ export type Aes<C extends string> = Partial<Record<Aesthetic, C | RExpr>>
 export interface RFrame<C extends string = string> {
   name: string
   columns: readonly C[]
+  /** The columns holding positions on the figure's axis. */
+  coords: readonly string[]
   packages: readonly string[]
   /** This frame's own statements — not its parent's. */
   statements: string
@@ -64,11 +66,12 @@ export interface RFrame<C extends string = string> {
 export function frame<const C extends string>(f: {
   name: string
   columns: readonly C[]
+  coords?: readonly string[]
   packages?: readonly string[]
   statements: string
   parent?: RFrame
 }): RFrame<C> {
-  return { packages: [], ...f }
+  return { coords: [], packages: [], ...f }
 }
 
 /** A frame and everything it builds on, parents first, each once. */
@@ -104,7 +107,14 @@ export function layer<C extends string>(l: {
 }
 
 export type Scale =
-  | { kind: 'manual'; values: Record<string, string>; name?: string }
+  /** A value per listed key, in the key order the config declares. */
+  | {
+      kind: 'manual'
+      values: readonly (readonly [string, string])[]
+      name?: string
+    }
+  /** A palette walked in the data's own order, for a domain the config leaves unlisted. */
+  | { kind: 'cycle'; values: readonly (string | number)[] }
   | { kind: 'linewidth'; range: [number, number]; name?: string }
   | { kind: 'linewidthLog'; range: [number, number]; name?: string }
   | {
@@ -188,6 +198,12 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
   if (s.kind === 'log') {
     return `scale_${aesthetic}_log10()`
   }
+  if (s.kind === 'cycle') {
+    const values = s.values.map(v =>
+      typeof v === 'number' ? String(v) : rStr(rColour(v)),
+    )
+    return `discrete_scale(${rStr(aesthetic)}, palette = function(n) rep_len(c(${values.join(', ')}), n))`
+  }
   const name = s.name ? `name = ${rStr(s.name)}` : ''
   if (s.kind === 'linewidth' || s.kind === 'linewidthLog') {
     const args = [
@@ -214,9 +230,7 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
     ].filter(Boolean)
     return `scale_${aesthetic}_gradientn(${args.join(', ')})`
   }
-  const values = Object.entries(s.values).map(
-    ([k, v]) => `${rName(k)} = ${value(v)}`,
-  )
+  const values = s.values.map(([k, v]) => `${rName(k)} = ${value(v)}`)
   const args = [`values = c(${values.join(', ')})`, name].filter(Boolean)
   return values.length > 3
     ? `scale_${aesthetic}_manual(\n    values = c(\n      ${values.join(',\n      ')})${s.name ? `,\n    ${name}` : ''})`
@@ -279,6 +293,8 @@ function renderCoordArgs(plot: Plot) {
         ]
       : []),
     ...(ylim ? [`ylim = c(${ylim.min ?? 'NA'}, ${ylim.max ?? 'NA'})`] : []),
+    // The browser's panel spans the region exactly, with no margin past it.
+    'expand = FALSE',
   ].join(', ')
 }
 

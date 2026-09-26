@@ -1,43 +1,23 @@
-import {
-  frameFor,
-  helpersFor,
-  locationPath,
-  READERS,
-  sourceNotes,
-} from './frameFor.ts'
+import { frameFor, locationPath, READERS, sourceNotes } from './frameFor.ts'
 import { markPlot } from './markToPlot.ts'
 import { HELPERS } from './rHelpers.generated.ts'
-import { assembleRScript, HELPER_DEPS, resolveHelpers } from './rScript.ts'
+import { assembleRScript, helpersIn } from './rScript.ts'
+import { frame } from './rplot.ts'
 
-describe('the helper closure', () => {
-  it('adds a helper its caller never named', () => {
-    expect(resolveHelpers(['read_regions'])).toContain('region_layout')
-  })
-
-  it('answers a set, not a multiset', () => {
-    expect(resolveHelpers(['read_regions', 'read_regions'])).toEqual([
+describe('the helpers a script reaches for', () => {
+  it('are read off the code, closure included', () => {
+    expect(helpersIn('df <- read_regions(f, regions, c("start"))')).toEqual([
       'read_regions',
       'region_layout',
     ])
   })
 
-  /**
-   * The oracle for HELPER_DEPS: a helper body naming another helper needs the
-   * edge declared, or a script emits a call to a function it never defined.
-   */
-  it('declares every helper-to-helper call the R bodies make', () => {
-    const names = Object.keys(HELPERS)
-    for (const [name, body] of Object.entries(HELPERS)) {
-      const called = names.filter(
-        other => other !== name && new RegExp(`\\b${other}\\s*\\(`).test(body),
-      )
-      for (const dep of called) {
-        expect([name, HELPER_DEPS[name] ?? []]).toEqual([
-          name,
-          expect.arrayContaining([dep]),
-        ])
-      }
-    }
+  it('come once however often the code calls them', () => {
+    expect(helpersIn('read_bigwig(a)\nread_bigwig(b)')).toEqual(['read_bigwig'])
+  })
+
+  it('are not a name the code merely mentions', () => {
+    expect(helpersIn('# read_vcf is not called here')).toEqual([])
   })
 
   it('names each helper the file it came from defines', () => {
@@ -104,7 +84,7 @@ describe('the assembled script', () => {
     })
     return assembleRScript({
       regions,
-      panels: [{ variable: 'p1', plot, helpers: helpersFor('BigWigAdapter') }],
+      panels: [{ variable: 'p1', plot }],
       notes,
     })
   }
@@ -112,6 +92,23 @@ describe('the assembled script', () => {
   it('carries only the helpers it reached for', () => {
     expect(script()).toContain('read_bigwig <- function')
     expect(script()).not.toContain('read_vcf <- function')
+    expect(script()).not.toContain('bind_groups <- function')
+  })
+
+  it('carries the helper a step reaches for', () => {
+    const f = frameFor({ type: 'BigWigAdapter', uri: '/x/volvox.bw' })
+    const { plot } = markPlot({
+      display: {
+        transform: [{ type: 'coverage' }],
+        marks: [{ mark: 'bar', encoding: { y: 'coverage' } }],
+      },
+      frame: f,
+    })
+    const r = assembleRScript({
+      regions: [{ refName: 'ctgA', start: 0, end: 1000 }],
+      panels: [{ variable: 'p1', plot }],
+    })
+    expect(r).toContain('bind_groups <- function')
   })
 
   it('lays the regions out before any panel reads them', () => {
@@ -133,7 +130,7 @@ describe('the assembled script', () => {
     })
     const r = assembleRScript({
       regions: [{ refName: 'ctgA', start: 0, end: 100 }],
-      panels: [{ variable: 'p1', plot, helpers: [], heightWeight: 2504 }],
+      panels: [{ variable: 'p1', plot, heightWeight: 2504 }],
     })
     expect(r).toContain('height = 50,')
   })
@@ -148,7 +145,7 @@ describe('the assembled script', () => {
     })
     const r = assembleRScript({
       regions: [{ refName: 'ctgA', start: 0, end: 100 }],
-      panels: [{ variable: 'p1', plot, helpers: [] }],
+      panels: [{ variable: 'p1', plot }],
       notes,
     })
     expect(r).toContain('# What this figure does not show:')
@@ -203,19 +200,37 @@ describe('the script says where it reads from', () => {
   })
 })
 
-describe('a helper the library does not hold', () => {
-  it('fails the export rather than emitting a call to nothing', () => {
+describe('two panels over one frame name', () => {
+  const regions = [{ refName: 'ctgA', start: 0, end: 10 }]
+  const panel = (
+    variable: string,
+    f = frameFor({ type: 'BigWigAdapter', uri: '/x/v.bw' }),
+  ) => ({
+    variable,
+    plot: markPlot({
+      display: { marks: [{ mark: 'bar', encoding: { y: 'score' } }] },
+      frame: f,
+    }).plot,
+  })
+
+  it('refuse to assemble, since the second read would overwrite the first', () => {
     expect(() =>
-      assembleRScript({
-        regions: [{ refName: 'ctgA', start: 0, end: 10 }],
-        panels: [
-          {
-            variable: 'p1',
-            plot: { layers: [] },
-            helpers: ['read_cram'],
-          },
-        ],
-      }),
-    ).toThrow('no R helper named read_cram')
+      assembleRScript({ regions, panels: [panel('p1'), panel('p2')] }),
+    ).toThrow('both named df')
+  })
+
+  it('assemble when the frames are one chain, each step over the same binding', () => {
+    const base = frameFor({ type: 'BigWigAdapter', uri: '/x/v.bw' })
+    const derived = frame({
+      name: 'df',
+      columns: ['start', 'end', 'score', '.region'],
+      statements: 'df <- df[df$score > 0, ]',
+      parent: base,
+    })
+    const r = assembleRScript({
+      regions,
+      panels: [panel('p1', base), panel('p2', derived)],
+    })
+    expect(r).toContain('df <- df[df$score > 0, ]')
   })
 })

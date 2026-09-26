@@ -5,14 +5,18 @@ import type { Step } from './transformR.ts'
 
 const base = frame({
   name: 'df',
-  columns: ['start', 'end', 'score', 'strand'],
+  columns: ['start', 'end', 'score', 'strand', '.region'],
+  coords: ['start', 'end'],
   packages: ['rtracklayer'],
   statements: 'df <- read_bigwig(path, chrom, start, end)',
 })
 
-function run(steps: Step[], bpPerPx = 100) {
+function run(steps: Step[], bpPerPx = 100, shifted = false) {
   const notes: string[] = []
-  return { out: applyTransforms({ base, steps, notes, bpPerPx }), notes }
+  return {
+    out: applyTransforms({ base, steps, notes, bpPerPx, shifted }),
+    notes,
+  }
 }
 
 describe('a step becomes R, and says what it now holds', () => {
@@ -22,6 +26,27 @@ describe('a step becomes R, and says what it now holds', () => {
       'df$start <- floor(df$start / 1000) * 1000',
     )
     expect(out.statements).toContain('df$end <- df$start + 1000')
+    expect(out.statements).not.toContain('offset')
+  })
+
+  it('aligns a bin on a shared axis to genomic multiples of its width', () => {
+    const { out } = run([{ type: 'bin', step: 1000 }], 100, true)
+    expect(out.statements).toContain(
+      'offset <- (regions$offset - regions$start)[df$.region]',
+    )
+    expect(out.statements).toContain(
+      'df$start <- floor((df$start - offset) / 1000) * 1000 + offset',
+    )
+  })
+
+  it('bins a value field as it is, on any axis', () => {
+    const { out } = run(
+      [{ type: 'bin', step: 10, field: 'score', as: ['lo', 'hi'] }],
+      100,
+      true,
+    )
+    expect(out.statements).toContain('df$lo <- floor(df$score / 10) * 10')
+    expect(out.coords).toEqual(['start', 'end'])
   })
 
   it('takes the bin width the display would follow the zoom with', () => {
@@ -44,16 +69,26 @@ describe('a step becomes R, and says what it now holds', () => {
         ],
       },
     ])
-    // addNA keeps a group whose key is missing, as the encoder keys undefined
+    // addNA keeps a group whose key is missing, as the encoder keys undefined;
+    // the region is a key of its own, as the browser folds each region alone
     expect(out.statements).toContain(
-      'split(df, lapply(df[c("strand")], addNA), drop = TRUE)',
+      'split(df, lapply(df[c("strand", ".region")], addNA), drop = TRUE)',
     )
+    // no groups is an empty frame with the columns, not NULL
+    expect(out.statements).toContain('bind_groups(')
     expect(out.statements).toContain('meanScore = mean(g$score, na.rm = TRUE)')
     expect(out.statements).toContain('n = nrow(g)')
     // the folded span comes too, as featureTransforms.ts emits it, or a mark
     // has nothing to place the result at
     expect(out.statements).toContain('start = min(g$start), end = max(g$end)')
-    expect(out.columns).toEqual(['strand', 'start', 'end', 'meanScore', 'n'])
+    expect(out.columns).toEqual([
+      'strand',
+      'start',
+      'end',
+      'meanScore',
+      'n',
+      '.region',
+    ])
   })
 
   it('groups an aggregate on the bin before it where none is named', () => {
@@ -61,7 +96,7 @@ describe('a step becomes R, and says what it now holds', () => {
       { type: 'bin', step: 500, as: ['binStart', 'binEnd'] },
       { type: 'aggregate', ops: [{ op: 'sum', field: 'score', as: 'total' }] },
     ])
-    expect(out.statements).toContain('df[c("binStart", "binEnd")]')
+    expect(out.statements).toContain('df[c("binStart", "binEnd", ".region")]')
   })
 
   it('packs a pileup into rows counted from zero', () => {
@@ -103,6 +138,14 @@ describe('a step becomes R, and says what it now holds', () => {
 })
 
 describe('a step it cannot run is reported, never approximated', () => {
+  it('skips a step reading a column no stage produces', () => {
+    const { out, notes } = run([{ type: 'pileup', fields: ['pos', 'end'] }])
+    expect(notes).toEqual([
+      'transform: pileup reads pos, which no stage produces, so it is skipped',
+    ])
+    expect(out).toBe(base)
+  })
+
   it('says a filter left the rows in', () => {
     const { notes } = run([{ type: 'filter', expr: 'jexl:x > 1' }])
     expect(notes).toEqual([

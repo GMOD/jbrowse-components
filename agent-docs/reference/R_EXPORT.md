@@ -115,13 +115,12 @@ gen:shaders` convention. Real `.R` files mean no TS-template escaping
 (`"\\.cram$"`, not `"\\\\.cram$"`), and the test R-`parse()`s every file and
 `sys.source()`s the library to prove each defines exactly its own helper.
 
-A fragment declares only the helpers **its own plot code** calls; `HELPER_DEPS`
-plus `resolveHelpers` adds the transitive closure at assemble time, and a test
-scans the R bodies and fails on a missing edge. A name no `.R` file defines
-fails the export rather than emitting a call to nothing. `region_layout` and
-`read_regions` emit into every script; the branch's divider, ruler and title
-helpers are not on main yet, so a multi-region figure has one cumulative-bp
-axis and no per-region label.
+The assembler reads the helpers a script needs off the emitted code — every
+`HELPERS` name called in a frame's statements, a plot or the region layout, and
+then in those helpers' own bodies — so nothing declares a dependency and no
+declaration can miss one. `region_layout` and `read_regions` reach every
+script; the branch's divider, ruler and title helpers are not on main yet, so a
+multi-region figure has one cumulative-bp axis and no per-region label.
 
 A reader takes `(uri, chrom, start, end)` and returns a **genomic**-coordinate
 frame, plus the file's fields the display names: `fieldsRead` collects every
@@ -129,9 +128,18 @@ plain field a channel, a step, the facet or the rows read, less what a step
 writes, and `frameFor` hands them to the reader as GFF3 attributes (matched
 without regard to case, as JBrowse matches them) or VCF INFO keys under the
 dotted `INFO.DP` spelling a channel reads. A column every value of which parses
-as a number comes back numeric. `read_regions` is the only place genomic →
-cumulative happens; it clips each feature to its region and shifts the named
-coordinate columns.
+as a number comes back numeric. A contig the file's index lacks reads as no
+rows, as the browser draws it, and `read_gff` reads through the tabix index,
+which is what makes a hosted 40 MB annotation a 3 s read rather than a
+download. `read_regions` is the only place genomic → cumulative happens; it
+shifts the named coordinate columns, and clips each feature to its region only
+where there is more than one, since the browser hands its transforms the
+unclipped feature and clips the drawing.
+
+**The region's `refName` has to be the file's spelling.** R has no assembly
+manager, so a view's `chr1` reaches a file indexed as `1` as a contig it lacks
+(CLAUDE.md §Names: resolve a name before it crosses to a side that cannot).
+The wiring that hands `assembleRScript` its regions owes that translation.
 
 ## Parity facts
 
@@ -261,10 +269,17 @@ Four transform steps run as base R: `bin`, `aggregate`, `coverage` and
 `pileup`, the last through `IRanges::disjointBins`, which is what makes a
 `row` a real column rather than an assumption. An `auto` bin follows the
 figure's zoom — the regions' span over the figure's width in device px —
-through the same `autoBinStep` ladder the display uses. The facet's own steps
-run over each section alone, `split` by the facet field with `addNA` so a
-section whose key is missing is a section and not a dropped row, which is
-also how an `aggregate` keys `undefined`. `filter` and `formula` carry a jexl
+through the same `autoBinStep` ladder the display uses. The browser runs each
+region's steps alone, so an `aggregate` keys `.region` beside its groupby and
+a `bin` on a shared axis aligns to genomic multiples of its width, taking the
+region's offset out before it floors. The facet's own steps run over each
+section alone, `split` by the facet field with `addNA` so a section whose key
+is missing is a section and not a dropped row, which is also how an
+`aggregate` keys `undefined`. Every split rebinds through `bind_groups`,
+because `do.call(rbind, list())` is `NULL` and an empty window is a state the
+browser draws as an empty panel; a facet over an empty window still dies,
+since `facet_wrap` refuses a frame with no rows. A step reading a column no
+stage produced is skipped and reported, the way a mark is. `filter` and `formula` carry a jexl
 callback and `flatten` and `mate` fan out structure a table does not hold, so
 each is reported in the header instead, as are `jexlFilters` and `rowColor`.
 
@@ -286,8 +301,10 @@ any statically known path. This doc said `tsc` covered the pipeline until
 scripts dying at `Rscript` because of it.
 
 `rScriptRun.test.ts` runs the emitted scripts through `Rscript` against
-`test_data/volvox` and skips itself where R is absent — **which is every CI
-run**, since no workflow installs R. Treat it as a local gate, and note that a
+`test_data/volvox` — one R session for every case, since attaching
+Bioconductor costs ~25 s and a session per case made the suite a seven-minute
+gate — and skips itself where R is absent — **which is every CI run**, since
+no workflow installs R. Treat it as a local gate, and note that a
 suite of pure string assertions would have caught none of the defects it has:
 the CSS-versus-hex ramp colour, `df_1 <- df_1`, a display-level frame whose
 base read the assembler dropped, and an aggregate on a bin naming `start` twice

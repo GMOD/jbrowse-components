@@ -1,3 +1,8 @@
+import {
+  categoricalColorScale,
+  categoricalPalette,
+  categoricalScale,
+} from '@jbrowse/core/ui/colors'
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import {
@@ -21,8 +26,14 @@ import {
 } from '../LinearMarkDisplay/markVocabulary.ts'
 import { FIGURE_WIDTH_PX } from './rScript.ts'
 import { colourAesthetic, expr, layer, rIdent, rStr } from './rplot.ts'
-import { applyTransforms, lastBinOf, stepOutputs } from './transformR.ts'
+import {
+  applyTransforms,
+  lastBinOf,
+  stepOutputs,
+  stepReads,
+} from './transformR.ts'
 
+import type { Region } from './rScript.ts'
 import type {
   Aesthetic,
   Geom,
@@ -180,14 +191,24 @@ function rampScale(color: FieldColor): Scale {
   }
 }
 
-function categoricalScale(color: FieldColor): Scale {
+/**
+ * The colour each listed value takes is the browser's own answer: `range` in
+ * `domain` order, continued into the wide palette past its end. A domain
+ * left unlisted walks that palette in the data's order, as ggplot's own
+ * discrete scale would walk its hue wheel.
+ */
+function categoricalColour(color: FieldColor): Scale {
   const domain = color.domain ?? []
-  const range = color.range ?? []
+  if (!domain.length) {
+    return {
+      kind: 'cycle',
+      values: color.range?.length ? color.range : categoricalPalette,
+    }
+  }
+  const colourOf = categoricalColorScale(domain, color.range)
   return {
     kind: 'manual',
-    values: Object.fromEntries(
-      domain.map((v, i) => [v, range[i] ?? range.at(-1) ?? 'grey50']),
-    ),
+    values: domain.map(v => [v, colourOf(v)] as const),
     name: color.title,
   }
 }
@@ -208,13 +229,13 @@ function thresholdScale(color: FieldColor, field: string) {
   const labels = thresholdLabels(domain)
   return {
     field: expr(
-      `cut(${rIdent(field)}, breaks = c(-Inf, ${domain.join(', ')}, Inf), labels = c(${labels
+      `cut(${rIdent(field)}, breaks = c(${['-Inf', ...domain, 'Inf'].join(', ')}), labels = c(${labels
         .map(l => rStr(l))
         .join(', ')}), right = FALSE)`,
     ),
     scale: {
       kind: 'manual',
-      values: Object.fromEntries(labels.map((l, i) => [l, palette[i]!])),
+      values: labels.map((l, i) => [l, palette[i]!] as const),
       name: color.title,
     } as Scale,
   }
@@ -270,13 +291,7 @@ function colourOf(
   if (bound.scale === 'threshold') {
     return { reads: field, ...thresholdScale(bound, field) }
   }
-  // An unlisted domain is every value deriving its colour from itself, which a
-  // manual scale cannot express — it needs the values, and only the data has
-  // them. ggplot's own discrete palette is the same rule.
-  if (!bound.domain?.length) {
-    return { field }
-  }
-  return { field, scale: categoricalScale(bound) }
+  return { field, scale: categoricalColour(bound) }
 }
 
 function markAes(m: MarkConfig, origin: RExpr) {
@@ -353,18 +368,29 @@ function shapeOf(
     notes.push('shape: a jexl callback has no R counterpart')
     return {}
   }
+  // The browser's rule, from `markEncoding.ts`: `range` in domain order,
+  // continued into the shape list where it runs out, and the shape list alone
+  // for a domain left unlisted.
   const domain = shape.domain ?? []
-  const range = shape.range ?? SHAPE_NAMES
+  const range = shape.range ?? []
+  const pch = (name: string) => PCH[name] ?? PCH.circle!
+  if (!domain.length) {
+    return {
+      field,
+      scale: {
+        kind: 'cycle',
+        values: (range.length ? range : SHAPE_NAMES).map(pch),
+      },
+    }
+  }
+  const shapeOfValue = categoricalScale(domain, range, {
+    fallback: range.length > domain.length ? [] : SHAPE_NAMES,
+  })
   return {
     field,
     scale: {
       kind: 'manual',
-      values: Object.fromEntries(
-        domain.map((v, i) => [
-          v,
-          String(PCH[range[i % range.length] ?? 'circle'] ?? PCH.circle),
-        ]),
-      ),
+      values: domain.map(v => [v, String(pch(shapeOfValue(v)))] as const),
     },
   }
 }
@@ -494,18 +520,6 @@ function missingColumns(aes: Record<string, unknown>, frame: RFrame) {
     .filter(v => !held.has(v))
 }
 
-function stepFields(steps: readonly Step[]) {
-  return steps.flatMap(s =>
-    s.type === 'bin'
-      ? [s.field ?? 'start']
-      : s.type === 'aggregate'
-        ? [...(s.groupby ?? []), ...(s.ops ?? []).map(o => o.field)]
-        : s.type === 'pileup'
-          ? (s.fields ?? [])
-          : [],
-  )
-}
-
 function channelFields(m: MarkConfig) {
   const { x, x2, y, row, text, color, shape, size }: Encoding = m.encoding ?? {}
   return [
@@ -536,7 +550,7 @@ export function fieldsRead(display: DisplaySpec) {
   ]
   const made = stepOutputs(lists)
   const named = [
-    ...lists.flatMap(stepFields),
+    ...lists.flat().flatMap(stepReads),
     ...display.marks.flatMap(channelFields),
     facet.field,
     rowsOf(display.rows).field,
@@ -567,7 +581,7 @@ export function markPlot({
    * axis, so the x range is the one `region_layout` computed and not the
    * genomic span — pinning the latter left a two-region figure 82% empty.
    */
-  regions?: readonly { start: number; end: number }[]
+  regions?: readonly Region[]
 }): TranslatedPlot {
   const notes: string[] = []
   const y = display.scales?.y
@@ -580,6 +594,7 @@ export function markPlot({
   const scales: Partial<Record<Aesthetic, Scale>> = {}
   const span = (regions ?? []).reduce((a, r) => a + (r.end - r.start), 0)
   const bpPerPx = Math.max(span, 1) / FIGURE_WIDTH_PX
+  const shifted = (regions?.length ?? 0) > 1
   const facet = facetOf(display.facet)
   // The display's steps run before every mark's own, as the encoder runs them:
   // the shared frame is what each mark then reads, and its columns are what the
@@ -589,6 +604,7 @@ export function markPlot({
     steps: display.transform ?? [],
     notes,
     bpPerPx,
+    shifted,
   })
   const facetField = splitField('facet', facet.field, displayed, notes)
   const shared = applyTransforms({
@@ -596,6 +612,7 @@ export function markPlot({
     steps: facet.transform ?? [],
     notes,
     bpPerPx,
+    shifted,
     within: facetField,
     inheritedBin: lastBinOf(display.transform ?? []),
   })
@@ -609,6 +626,7 @@ export function markPlot({
           name: `${frame.name}_${i + 1}`,
           inheritedBin: lastBinOf(above),
           bpPerPx,
+          shifted,
         })
       : shared
     const built = markLayer(m, own, baseline, notes)
@@ -666,12 +684,18 @@ export function markPlot({
       scales,
       facetBy,
       rules: rules.length ? rules : undefined,
-      xlim:
-        regions && regions.length > 1
-          ? expr('min(regions$cum_start), max(regions$cum_end)')
-          : regions?.[0],
+      xlim: shifted
+        ? expr('min(regions$cum_start), max(regions$cum_end)')
+        : regions?.[0],
       ylim: ylimOf(y, logY, notes),
-      labs: { y: y?.title ?? null },
+      labs: {
+        x: shifted
+          ? 'bp, regions end to end'
+          : regions?.[0]
+            ? `${regions[0].refName} (bp)`
+            : 'bp',
+        y: y?.title ?? null,
+      },
       legend: display.showLegend ?? true,
     },
     notes,

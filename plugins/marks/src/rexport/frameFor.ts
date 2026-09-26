@@ -26,7 +26,7 @@ export const READERS = {
   Gff3TabixAdapter: {
     helper: 'read_gff',
     location: 'gffGzLocation',
-    packages: ['rtracklayer', 'GenomicRanges'],
+    packages: ['rtracklayer', 'Rsamtools', 'GenomicRanges'],
     columns: [
       'start',
       'end',
@@ -143,14 +143,10 @@ export function frameFor<K extends ReaderName>({
   return frame({
     name,
     columns: [...reader.columns, ...asked, '.region'],
+    coords: reader.coords,
     packages: reader.packages,
     statements: `${name} <- read_regions(
   function(chrom, start, end) ${reader.helper}(${rStr(uri)}, chrom, start, end${args}),
   regions, c(${coords}))`,
   })
-}
-
-/** The helpers a frame's statements reference, for the script's closure. */
-export function helpersFor(type: ReaderName) {
-  return [READERS[type].helper, 'read_regions', 'region_layout']
 }
