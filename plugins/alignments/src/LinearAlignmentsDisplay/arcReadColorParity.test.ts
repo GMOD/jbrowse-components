@@ -1,7 +1,5 @@
-import {
-  arcColorLegendCategory,
-  getArcColorType,
-} from '../features/arcs/arcColors.ts'
+import { getArcColorType } from '../features/arcs/arcColors.ts'
+import { arcSlotCategory } from '../shaders/palettes.ts'
 import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
 import { readColorCategory } from './colorUtils.ts'
 
@@ -29,7 +27,7 @@ function arcCategory(
   pairOrientationNum: number,
   tlen: number,
 ) {
-  return arcColorLegendCategory(
+  return arcSlotCategory(
     getArcColorType({
       arc: {
         isSplit: false,

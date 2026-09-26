@@ -842,7 +842,7 @@ export interface ArcsByGroupResult {
   // connections exist for — has ink in the overlay only, and must still reserve.
   inkGroupKeys: Set<string>
   // The arc colour slots actually drawn, across every lane. The legend maps them
-  // through `arcColorLegendCategory`, which needs a setting this pass doesn't
+  // through `arcSlotCategory`, which needs a setting this pass doesn't
   // have, so the slots stay raw here.
   colorSlots: Set<number>
   // Whether any interchromosomal mark stands on a mate pair rather than only

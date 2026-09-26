@@ -1,6 +1,7 @@
 import { readCategoryColor } from '../LinearAlignmentsDisplay/colorUtils.ts'
 
 import type { SwatchCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ArcColorField } from '../shared/types.ts'
 import type { ColorPalette } from './colors.ts'
 
 // One table per overlay, saying what each slot MEANS. The colour follows from
@@ -19,8 +20,7 @@ import type { ColorPalette } from './colors.ts'
 // Slot → meaning for the read-connection band's colour types, which
 // `buildArcBandFeeds` bakes into each connection's colour lane.
 //
-// Slot 0 is the baseline. It paints as `normalInsert` and `arcColorLegendCategory`
-// names it per coloring mode: 'Normal' insert, or 'LR' orientation.
+// Slot 0 is the baseline, which `arcSlotCategory` reads per colouring mode.
 export const ARC_SLOT_CATEGORY = [
   'normalInsert',
   'longInsert',
@@ -52,14 +52,36 @@ export const LINKED_READ_SLOT_CATEGORY = [
   'interchrom',
 ] as const satisfies readonly SwatchCategory[]
 
-function resolve(categories: readonly SwatchCategory[], c: ColorPalette) {
-  return categories.map(category => readCategoryColor(c, category))
+/**
+ * What an arc or read-cloud colour slot means. The baseline slot, and any slot
+ * past the table, is the normal insert or, colouring by pair orientation, the
+ * LR pair, so its label and its declared colour follow the mode; every other
+ * slot means the same thing whatever the mode. The band's palette, its key and
+ * its tooltip all read this.
+ */
+export function arcSlotCategory(
+  slot: number,
+  colorField: ArcColorField,
+): SwatchCategory {
+  const category = ARC_SLOT_CATEGORY[slot]
+  return category === undefined || category === 'normalInsert'
+    ? colorField === 'pairOrientation'
+      ? 'pairLR'
+      : 'normalInsert'
+    : category
 }
 
-export function buildArcColorPalette(c: ColorPalette) {
-  return resolve(ARC_SLOT_CATEGORY, c)
+export function buildArcColorPalette(
+  c: ColorPalette,
+  colorField: ArcColorField,
+) {
+  return ARC_SLOT_CATEGORY.map((_, slot) =>
+    readCategoryColor(c, arcSlotCategory(slot, colorField)),
+  )
 }
 
 export function buildLinkedReadColorPalette(c: ColorPalette) {
-  return resolve(LINKED_READ_SLOT_CATEGORY, c)
+  return LINKED_READ_SLOT_CATEGORY.map(category =>
+    readCategoryColor(c, category),
+  )
 }

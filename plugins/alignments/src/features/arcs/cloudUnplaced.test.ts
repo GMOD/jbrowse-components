@@ -343,6 +343,7 @@ describe('an unplaced connection no longer sizes the axis', () => {
     // And it still DRAWS as a bar. Every flat variant does and only the two on
     // the axis may size it, so the axis assertion above cannot see this one.
     const feed = buildArcBandFeeds({
+      colorField: 'insertSizeAndOrientation',
       byRegion: result.byGroup.get('')!,
       crossRegion: [],
       displayed: loaded,
@@ -396,6 +397,7 @@ describe('an unplaced connection resolves to a minimum-width mark on the anchor'
     )
     expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT_UNPLACED)
     const feed = buildArcBandFeeds({
+      colorField: 'insertSizeAndOrientation',
       byRegion: arcsToRegionMap({ arcs, lines }, [r]),
       crossRegion: [],
       displayed: [r],

@@ -10,11 +10,11 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import {
   ARC_COLOR_INTERCHROM,
   ARC_COLOR_SHORT_INSERT,
-  arcColorLegendCategory,
   arcPaintRank,
 } from './arcColors.ts'
 import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
@@ -145,7 +145,7 @@ describe('computeArcsFromPileupData', () => {
     // interchromosomal slot under the insert-size schemes" is now structural
     // rather than a per-instance value to assert. What still needs pinning is
     // that the slot means the interchrom swatch; see the legend test below.
-    expect(arcColorLegendCategory(ARC_COLOR_INTERCHROM, 'insertSize')).toBe(
+    expect(arcSlotCategory(ARC_COLOR_INTERCHROM, 'insertSize')).toBe(
       'interchrom',
     )
   })
@@ -2802,30 +2802,26 @@ describe('arcsToRegionResult', () => {
 // mode) would be missing. These map the arc color slots back to legend
 // categories; each returned category's swatch must equal the plotted mark's
 // color (see ARC_SLOT_CATEGORY / swatchPaletteKeys).
-describe('arcColorLegendCategory', () => {
+describe('arcSlotCategory', () => {
   test('split junctions map to the cloud-only categories', () => {
     // COLOR_SPLIT_INVERSION = 7, COLOR_SPLIT_DELETION = 8
-    expect(arcColorLegendCategory(7, 'insertSizeAndOrientation')).toBe(
+    expect(arcSlotCategory(7, 'insertSizeAndOrientation')).toBe(
       'splitInversion',
     )
-    expect(arcColorLegendCategory(8, 'insertSizeAndOrientation')).toBe(
-      'splitDeletion',
-    )
+    expect(arcSlotCategory(8, 'insertSizeAndOrientation')).toBe('splitDeletion')
   })
   test('insert-size + orientation slots map to their read-fill categories', () => {
-    expect(arcColorLegendCategory(1, 'insertSize')).toBe('longInsert')
-    expect(arcColorLegendCategory(2, 'insertSize')).toBe('shortInsert')
-    expect(arcColorLegendCategory(3, 'pairOrientation')).toBe('interchrom')
-    expect(arcColorLegendCategory(4, 'pairOrientation')).toBe('pairLL')
-    expect(arcColorLegendCategory(5, 'pairOrientation')).toBe('pairRR')
-    expect(arcColorLegendCategory(6, 'pairOrientation')).toBe('pairRL')
+    expect(arcSlotCategory(1, 'insertSize')).toBe('longInsert')
+    expect(arcSlotCategory(2, 'insertSize')).toBe('shortInsert')
+    expect(arcSlotCategory(3, 'pairOrientation')).toBe('interchrom')
+    expect(arcSlotCategory(4, 'pairOrientation')).toBe('pairLL')
+    expect(arcSlotCategory(5, 'pairOrientation')).toBe('pairRR')
+    expect(arcSlotCategory(6, 'pairOrientation')).toBe('pairRL')
   })
   test('the default slot labels by coloring mode (both colorPairLR)', () => {
-    expect(arcColorLegendCategory(0, 'insertSize')).toBe('normalInsert')
-    expect(arcColorLegendCategory(0, 'insertSizeAndOrientation')).toBe(
-      'normalInsert',
-    )
-    expect(arcColorLegendCategory(0, 'pairOrientation')).toBe('pairLR')
+    expect(arcSlotCategory(0, 'insertSize')).toBe('normalInsert')
+    expect(arcSlotCategory(0, 'insertSizeAndOrientation')).toBe('normalInsert')
+    expect(arcSlotCategory(0, 'pairOrientation')).toBe('pairLR')
   })
 })
 

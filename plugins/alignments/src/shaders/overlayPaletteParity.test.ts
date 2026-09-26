@@ -4,7 +4,6 @@ import {
   swatchPaletteKeys,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
 import {
   LINKED_READ_COLOR_PAIR_LL,
   LINKED_READ_COLOR_PAIR_LR,
@@ -17,6 +16,7 @@ import {
 import { readColorCategoryLabel } from '../shared/legendUtils.ts'
 import {
   ARC_SLOT_CATEGORY,
+  arcSlotCategory,
   buildArcColorPalette,
   buildLinkedReadColorPalette,
 } from './palettes.ts'
@@ -25,6 +25,7 @@ import type {
   ReadColorCategory,
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ColorPalette } from './colors.ts'
 
 // A pileup draws one meaning through three vocabularies — read fills, arc /
 // read-cloud overlays, linked-read connectors — and each used to carry its own
@@ -57,7 +58,10 @@ const OVERRIDDEN = makeTestPalette({
 
 describe('overlay palettes follow the theme', () => {
   test.each([
-    ['arc', buildArcColorPalette],
+    [
+      'arc',
+      (c: ColorPalette) => buildArcColorPalette(c, 'insertSizeAndOrientation'),
+    ],
     ['linked read', buildLinkedReadColorPalette],
   ])('%s palette resolves against the palette it is given', (_name, build) => {
     // Nothing is left over from the module constants: every slot has to be one
@@ -77,12 +81,12 @@ describe('overlay palettes follow the theme', () => {
   // dark-mode bug this file exists to stop coming back (`pairLR` is the entry
   // the stock dark palette dims).
   test('each arc slot equals the read swatch of the category it keys', () => {
-    const arc = buildArcColorPalette(OVERRIDDEN)
+    const arc = buildArcColorPalette(OVERRIDDEN, 'insertSizeAndOrientation')
     for (const [slot, rgb] of arc.entries()) {
-      const category = arcColorLegendCategory(slot, 'insertSizeAndOrientation')
+      const category = arcSlotCategory(slot, 'insertSizeAndOrientation')
       expect([slot, rgb255(rgb)]).toEqual([
         slot,
-        categorySwatchColor(category as SwatchCategory, OVERRIDDEN),
+        categorySwatchColor(category, OVERRIDDEN),
       ])
     }
   })
@@ -137,6 +141,6 @@ describe('unknown pair orientation', () => {
   test('the arc baseline and the read fill are the same grey', () => {
     expect(swatchPaletteKeys.nonSplit).toBe(swatchPaletteKeys.pairLR)
     expect(ARC_SLOT_CATEGORY[0]).toBe('normalInsert')
-    expect(arcColorLegendCategory(0, 'pairOrientation')).toBe('pairLR')
+    expect(arcSlotCategory(0, 'pairOrientation')).toBe('pairLR')
   })
 })

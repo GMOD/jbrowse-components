@@ -19,6 +19,7 @@ const block = {
 function clampedDomeInk(down: boolean, width: number) {
   const band = { top: 20, height: 50, down }
   const feed = buildArcBandFeeds({
+    colorField: 'insertSizeAndOrientation',
     byRegion: new Map([
       [
         0,

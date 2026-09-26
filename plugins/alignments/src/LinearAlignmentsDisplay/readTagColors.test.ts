@@ -143,6 +143,19 @@ describe('categorical tag colors', () => {
   test('a read the tag is absent from packs the palette fallback, not a strand color', () => {
     expect([...build([''])]).toEqual([0])
   })
+
+  // '' names the no-value read, which the category table colours; the scale
+  // hands the other range entries to the values beside it.
+  test("'' in the domain leaves the scale with its colour", () => {
+    const scale = scaleFor(TAG, {
+      domain: ['', '1'],
+      range: ['#ff0000', '#00ff00'],
+    })
+    expect([...buildReadTagColors(pileupWith(['1', '']), TAG, scale)]).toEqual([
+      packed('#00ff00'),
+      0,
+    ])
+  })
 })
 
 describe('strand tag colors', () => {

@@ -17,6 +17,7 @@ function strokeFor(support: number, base: number) {
     displayedRegionIndex: 0,
   }
   const feed = buildArcBandFeeds({
+    colorField: 'insertSizeAndOrientation',
     byRegion: new Map([
       [
         0,

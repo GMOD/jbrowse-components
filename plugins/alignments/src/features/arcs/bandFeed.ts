@@ -10,6 +10,7 @@ import { ARC_COLOR_INTERCHROM, arcColorSlot } from './arcColors.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './shapes.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
+import type { ArcColorField } from '../../shared/types.ts'
 import type { CrossRegionArc, PartnerLocus, RegionInfo } from './arcTypes.ts'
 import type { ArcsUploadData } from './types.ts'
 import type { LinkChannels, PointChannels } from '@jbrowse/render-core/marks'
@@ -172,6 +173,8 @@ export interface ArcBandFeedInput {
   /** The view's displayed regions, which a far foot resolves against. */
   displayed: readonly RegionInfo[]
   colors: ColorPalette
+  /** The field the band colours by, which names its baseline slot. */
+  colorField: ArcColorField
 }
 
 /**
@@ -187,8 +190,9 @@ export function buildArcBandFeeds({
   crossRegion,
   displayed,
   colors,
+  colorField,
 }: ArcBandFeedInput): Map<number, ArcBandFeed> {
-  const palette = buildArcColorPalette(colors).map(([r, g, b]) =>
+  const palette = buildArcColorPalette(colors, colorField).map(([r, g, b]) =>
     normalizedRgbToABGR(r, g, b),
   )
   const colorOf = (colorType: number, shapeType: number) => {

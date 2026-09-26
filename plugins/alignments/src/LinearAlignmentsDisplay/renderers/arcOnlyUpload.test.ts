@@ -52,6 +52,7 @@ function oneArc(x2: number): ArcBandFeed {
     numArcs: 1,
   }
   return buildArcBandFeeds({
+    colorField: 'insertSizeAndOrientation',
     byRegion: new Map([[0, arcs]]),
     crossRegion: [],
     displayed: [

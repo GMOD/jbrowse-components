@@ -192,6 +192,7 @@ function arcFeed(seed: number): ArcBandFeed {
     numArcs: n,
   }
   return buildArcBandFeeds({
+    colorField: 'insertSizeAndOrientation',
     byRegion: new Map([[0, arcs]]),
     crossRegion: [],
     displayed: [

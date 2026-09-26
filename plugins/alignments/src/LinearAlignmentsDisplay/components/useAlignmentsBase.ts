@@ -4,7 +4,7 @@ import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
-import { arcColorLegendCategory } from '../../features/arcs/arcColors.ts'
+import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import { readColorCategoryLabel } from '../../shared/legendUtils.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
@@ -208,7 +208,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
               hit,
               refName,
               readColorCategoryLabel(
-                arcColorLegendCategory(hit.colorType, model.arcColorField),
+                arcSlotCategory(hit.colorType, model.arcColorField),
               ),
               hit.endRefName,
             ),

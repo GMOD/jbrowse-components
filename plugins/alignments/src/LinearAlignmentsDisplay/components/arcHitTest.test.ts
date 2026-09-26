@@ -63,6 +63,7 @@ function hover(
   { arcs = [], lines = [], cloud = false, band = upBand }: HoverCase = {},
 ) {
   const feeds = buildArcBandFeeds({
+    colorField: 'insertSizeAndOrientation',
     byRegion: new Map([[0, arcsToRegionResult(arcs, lines)]]),
     crossRegion: [],
     displayed,

@@ -1,5 +1,6 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
+import { buildArcColorPalette } from '../shaders/palettes.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../shaders/slang/read.iface.generated.ts'
 import {
   alignmentsColorEncoding,
@@ -92,6 +93,18 @@ describe('a declared range on a preset field', () => {
     expect(everyPathPaints(palette, 'pairLR')).toEqual(
       Array(3).fill(categorySwatchColor('pairLR', DEFAULT)),
     )
+  })
+
+  test("an LR override reaches the arc band's baseline under pair orientation only", () => {
+    const lr = paletteFor({
+      field: 'pairOrientation',
+      domain: ['LR'],
+      range: ['#1b9e77'],
+    })
+    const baseline = (field: 'pairOrientation' | 'insertSize') =>
+      rgb255(buildArcColorPalette(lr, field)[0]!)
+    expect(baseline('pairOrientation')).toBe('rgb(27,158,119)')
+    expect(baseline('insertSize')).toBe(categorySwatchColor('pairLR', DEFAULT))
   })
 
   test('the key names RR in the declared colour and LR in its default', () => {

@@ -3,7 +3,6 @@ import { splitJunctionKind } from '@jbrowse/alignments-core'
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 
-import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ArcColorField } from '../../shared/types.ts'
 import type { ComputedArc, PendingArc } from './arcTypes.ts'
@@ -110,32 +109,6 @@ export function arcPaintOrder(a: ComputedArc, b: ComputedArc) {
     a.support - b.support ||
     (a.key < b.key ? -1 : 1)
   )
-}
-
-// Legend category for an arc / read-cloud color slot. The read legend is
-// otherwise driven purely by read-fill categories (readColorCategory), so
-// cloud-only buckets — split junctions especially, which no read fill produces
-// outside chain mode — would be missing; mapping the slots back to categories
-// fills that gap.
-//
-// Reads ARC_SLOT_CATEGORY, the same table the arc palette resolves its colours
-// through, so "each square's colour equals its category swatch" is now true by
-// construction rather than by inspection. It used to be a second hand-written
-// switch, which is how the two ended up describing different things.
-export function arcColorLegendCategory(
-  colorType: number,
-  colorField: ArcColorField,
-): ReadColorCategory {
-  const category = ARC_SLOT_CATEGORY[colorType]
-  // Slot 0 and anything out of range are the baseline colorPairLR; its LABEL is
-  // the one thing that follows the coloring mode ('Normal' insert vs 'LR'
-  // orientation), which is why this is not a bare table lookup. Every other slot
-  // means the same thing whatever the mode.
-  return category === undefined || category === 'normalInsert'
-    ? colorField === 'pairOrientation'
-      ? 'pairLR'
-      : 'normalInsert'
-    : category
 }
 
 // This path's encoding of the shared junction classifier: magenta inversion /

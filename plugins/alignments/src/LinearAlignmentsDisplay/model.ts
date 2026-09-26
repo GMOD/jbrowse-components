@@ -60,7 +60,6 @@ import {
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, compareStructural, observable } from 'mobx'
 
-import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from '../features/arcs/compute.ts'
 import { densityCoverageFields } from '../features/coverage/densityBand.ts'
@@ -71,6 +70,7 @@ import {
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
 import { junctionSupportingReadSlots } from '../features/sashimi/supportingReads.ts'
+import { arcSlotCategory } from '../shaders/palettes.ts'
 import {
   BASE_COLOR_FIELDS,
   colorFieldOf,
@@ -1205,7 +1205,7 @@ export default function stateModelFactory(
               // `ArcsByGroupResult`, which also says why it is computed after
               // regionization rather than before.
               for (const slot of this.arcsResult.colorSlots) {
-                present.add(arcColorLegendCategory(slot, self.arcColorField))
+                present.add(arcSlotCategory(slot, self.arcColorField))
               }
             }
             return present
@@ -2031,6 +2031,7 @@ export default function stateModelFactory(
                   crossRegion: crossRegionByGroup.get(key) ?? [],
                   displayed,
                   colors,
+                  colorField: self.arcColorField,
                 }),
               ]),
             )
