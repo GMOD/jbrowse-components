@@ -9,9 +9,14 @@ import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { binStepWidth } from './autoBin.ts'
 import { markShapeScale } from './configSchema.ts'
 import { MARK_SPECS } from './markSpecs.ts'
-import { DEFAULT_BIN_AS, DEFAULT_PILEUP_FIELDS } from './markVocabulary.ts'
+import {
+  DEFAULT_BIN_AS,
+  DEFAULT_PILEUP_FIELDS,
+  DEFAULT_X2,
+} from './markVocabulary.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
+import type { StepChannels } from './stepChannels.ts'
 import type {
   AggregateOp,
   ShapeEncoding,
@@ -20,10 +25,20 @@ import type {
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
 
-// The config's raw slot values as the worker's encoding: a `jexl:` string
-// crosses untouched, which is why nothing here reads through `getConf`.
-export function encodingOf(mark: MarkConfig): MarkEncoding {
-  const { x, x2, y, row, shape, color, text, size } = mark.encoding
+// The config's raw slot values as the worker's encoding, each channel left
+// unwritten taking what the mark's steps fill: a `jexl:` string crosses
+// untouched, which is why nothing here reads through `getConf`.
+export function encodingOf(
+  mark: MarkConfig,
+  filled: StepChannels = {},
+): MarkEncoding {
+  const { x, shape, color, text, size } = mark.encoding
+  const y = mark.encoding.y || filled.y
+  const row = mark.encoding.row || filled.row
+  const x2 =
+    mark.encoding.x2.pos === DEFAULT_X2 && !mark.encoding.x2.chrom
+      ? (filled.x2 ?? mark.encoding.x2)
+      : mark.encoding.x2
   const channels = MARK_SPECS[mark.mark].channels as readonly string[]
   // The request carries only what the mark's type reads, so editing a slot it
   // draws nothing from refetches no region.
@@ -46,7 +61,7 @@ export function encodingOf(mark: MarkConfig): MarkEncoding {
     // through is the display's `scales.y`. Shipping that scale would put the
     // axis type and its bounds in the fetch's inputs, so a menu toggle
     // between linear and log would refetch every region to no effect.
-    y: reads('y') && y !== '' ? y : undefined,
+    y: reads('y') && y ? y : undefined,
     row: (reads('row') && row) || undefined,
     color: colorEncodingOf(color),
     ...(reads('shape') ? { shape: shapeEncoding } : {}),

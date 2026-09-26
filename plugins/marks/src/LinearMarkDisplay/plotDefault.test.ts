@@ -29,6 +29,24 @@ test('a field is numeric only where every value it carries reads as a number', (
   expect(fields.categorical).toEqual(['milliDiv', 'repClass', 'strand'])
 })
 
+test('aligned reads draw their depth, whatever score each read carries', () => {
+  const reads = scanPlotFields(
+    features([
+      { score: 60, flags: 99, template_length: 300 },
+      { score: 0, flags: 147, template_length: -300 },
+    ]),
+    { listedSources: 0 },
+  )
+  expect(reads.reads).toBe(true)
+  expect(defaultPlotMarks(reads)).toEqual([
+    { mark: 'bar', transform: [{ type: 'coverage' }] },
+  ])
+  const peaks = scanPlotFields(features([{ score: 5 }, { score: 9 }]), {
+    listedSources: 0,
+  })
+  expect(peaks.reads).toBeUndefined()
+})
+
 test('the default is a bar of score, and nothing where the features carry none', () => {
   expect(
     defaultPlotMarks({ numeric: ['score', 'qual'], categorical: [] }),
@@ -131,11 +149,7 @@ test('a paired record draws links, whichever way it names its other end', () => 
   // a score of its own does not make a paired record a bar chart
   expect(bedpe.numeric).toContain('score')
   expect(defaultPlotMarks(bedpe)).toEqual([
-    {
-      mark: 'link',
-      encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
-      transform: [{ type: 'mate' }],
-    },
+    { mark: 'link', transform: [{ type: 'mate' }] },
   ])
 
   const breakends = scanPlotFields(

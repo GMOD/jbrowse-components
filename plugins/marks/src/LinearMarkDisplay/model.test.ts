@@ -813,7 +813,7 @@ function noticesOf(marks: unknown[], display: Record<string, unknown> = {}) {
 // load. It loads, draws nothing for that mark, and says so.
 test('a bar or point naming no y loads, draws nothing and says so', () => {
   expect(noticesOf([{ mark: 'bar', encoding: { color: 'red' } }])).toEqual([
-    'mark 0 encoding.y: a bar or a point stands at a value and names no y field to plot, so it draws nothing',
+    'mark 0 encoding.y: a bar stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing',
   ])
   expect(noticesOf([{ mark: 'point', encoding: { y: '' } }])).toHaveLength(1)
   expect(noticesOf([{ mark: 'span', encoding: {} }])).toEqual([])
@@ -1157,7 +1157,7 @@ test("a transform list reaches the worker as its own layer's steps, every slot w
 
 // Each of these is a restatement a config author had to write out, and each
 // has one answer the step or the channel beside it already knows.
-test('a bin hands its edges to the aggregate behind it, and a pileup leaves the row to the worker', () => {
+test('a bin hands its edges to the aggregate behind it, and a pileup the row to the mark', () => {
   const { createDisplay } = createTestEnvironment([
     {
       mark: 'bar',
@@ -1198,13 +1198,44 @@ test('a bin hands its edges to the aggregate behind it, and a pileup leaves the 
   expect((layers[2]!.transform![0] as { groupby: string[] }).groupby).toEqual(
     [],
   )
-  // the worker reads the layer's own pileup (CoreGetEncodedLayers.test.ts), so
-  // a caller of the RPC gets the same row a display does
   expect(layers.slice(3).map(l => l.encoding.row)).toEqual([
-    undefined,
-    undefined,
+    'row',
+    'lane',
     undefined,
   ])
+})
+
+test('a step fills the y and the far end its mark leaves unwritten', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'bar', transform: [{ type: 'coverage' }] },
+    { mark: 'link', transform: [{ type: 'mate' }] },
+    {
+      mark: 'bar',
+      transform: [
+        {
+          type: 'aggregate',
+          ops: [{ op: 'count' }, { op: 'mean', field: 'score' }],
+        },
+      ],
+      encoding: { y: 'mean_score' },
+    },
+    {
+      mark: 'link',
+      transform: [{ type: 'mate' }],
+      encoding: { x2: { chrom: 'chrom2', pos: 'start2' } },
+    },
+  ])
+  const { display } = createDisplay()
+  const { layers } = display.rpcProps()
+  expect(layers.map(l => [l.encoding.y, l.encoding.x2])).toEqual([
+    ['coverage', 'end'],
+    [undefined, { chrom: 'mate.refName', pos: 'mate.start' }],
+    ['mean_score', 'end'],
+    [undefined, { chrom: 'chrom2', pos: 'start2' }],
+  ])
+  expect(layers[0]!.lanes).toContain('y')
+  expect(display.markEntries[0]!.valued).toBe(true)
+  expect(display.notices).toEqual([])
 })
 
 // Group by → None keeps the facet's steps, so with no field to split on they

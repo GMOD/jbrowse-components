@@ -87,12 +87,24 @@ in full and of the format-typed displays only where it says so.
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own. An adapter with zoom levels is sent the view's `bpPerPx` ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)), so a BigWig answers from the summary tier the wiggle display reads |
-| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — each step its own schema taking only its own slots ([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)), run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreGetEncodedLayers` request and then each layer's own | whole, layout included — `pileup` is a read pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
+| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — each step its own schema taking only its own slots ([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)), run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreGetEncodedLayers` request and then each layer's own | whole, layout included — `pileup` is a read pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | the colour and shape channels carry their own, `{ field, scale, domain, range }` and on a ramp `domainMin`, `domainMax` and `scheme`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md), generalised to every quantitative display by [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`); and `text`, a DOM layer over the canvas placed by one rule the SVG export shares ([ADR-162](../architecture-decision-records/adr-162-a-text-mark-is-a-dom-layer-placed-by-one-rule.md)) | whole, for the shapes the library has; a label answers no hover |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, its title, hatches, and the reference lines `scales.y.rules` declares (`packages/wiggle-core/src/ScoreAxisMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
 | layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every drawing mark folds into the display's one y domain, ggplot2's one-scale-per-aesthetic rule ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the domain, legend and row count fold only the marks drawing | y is the plot's, colour and shape are each mark's; semantic zoom per layer; the display's `facet` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
 | coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
+
+**A step names the channel its output feeds**, the way a ggplot2 stat names
+what its geom draws (`after_stat`): a mark leaving `y` unwritten plots the
+depth a `coverage` wrote or the one summary a single-op `aggregate` wrote, a
+link leaving `x2` at `end` reaches the other end a `mate` found, and an empty
+`row` stands in the rows the last surviving `pileup` packed. `stepChannels`
+(`plugins/marks/src/LinearMarkDisplay/stepChannels.ts`) is the one reading,
+over the display's, the facet's and the mark's steps; the model resolves it
+before the request, so the worker reads each channel as named, and the rule
+list and `jbrowse validate` read the same function, so a bar behind a
+coverage step is no `mark-without-value`. A written channel wins, and an
+aggregate writing two summaries fills nothing.
 
 The encoding — field to channel, evaluated once — is the grammar's central
 idea and the tree has it as one loop. Four packers that were hand-written
@@ -634,7 +646,7 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 | Channels | x, x2, y, row, color, shape, text, size (on a link) | adds y2, opacity, stroke, angle, tooltip | adds ye, opacity, stroke |
 | y scales | linear, log, symlog | 13 kinds, incl. symlog and sqrt | none on y |
 | Named colour ramps | 10 (`COLOR_SCHEMES`), incl. viridis and two diverging | the d3 set | — |
-| Transforms | 7 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
+| Transforms | 8 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
 | y shared across tracks | yes, `scales.y.autoscaleGroup` | yes, `resolve.scale.y: "shared"` | same `domain` pinned by hand |
 | Selections, conditional colour | no | yes, compiled to shaders | hover/select styles only |
 | Legend title / axis title | yes / yes | yes / yes | yes / no |
@@ -654,19 +666,17 @@ The gaps a user meets first, in order:
    marks over the mean, and than wiggle's whisker band
    ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)).
 2. **In-app authoring reaches the marks, and stops at a channel's scale.**
-   **Edit plot...** is the mark list with controls per channel, and the **Edit
-   as JSON...** inside it the same plot as text; both lift through the config
-   schema and run the rule list as you type, so they refuse what a config file
-   refuses and report the rest rather than blocking on it (ADR-133). A channel
-   naming a field carries its scale kind beside it, and a ramp its `scheme`,
-   `reverse` and pinned ends. What has no controls: the list-valued members — a
-   `domain`, a `range`, a key's `labels`, a threshold's cuts — its `title`, and
-   the transform steps, all of which the form shows and holds read-only rather
-   than dropping. `facet` and `rows` are
-   the JSON side only. And `marks` is still the one list in the grammar the
-   config editor cannot add to, remove from or reorder: `transform` is a
-   `ConfigurationSchemaUnion` array and has all three (`db4ef2f82a`), while a
-   plain sub-schema array has none.
+   **Edit plot...** is the mark list with a type, a field and a scale kind per
+   channel, and a ramp's `scheme`, `reverse` and pinned ends; its **Edit as
+   JSON...** is `marks`, `transform`, `facet` and `rows` as text, lifted
+   through the config schema with the rule list run as you type, so it refuses
+   what a config file refuses and reports the rest rather than blocking on it
+   (ADR-133). The form shows no transform step at all, and has no control for
+   a `domain`, a `range`, a key's `labels`, a threshold's cuts, a `title`,
+   `facet` or `rows`; the Settings editor edits each of those, a mark's steps
+   included, but cannot add, remove or reorder the marks themselves, since
+   `marks` is a plain sub-schema array where `transform` is a
+   `ConfigurationSchemaUnion` (`db4ef2f82a`).
 
 A link's `size` is a channel, a field through a linear or log scale into a px
 range, unioned over the loaded regions the way a ramp's domain is

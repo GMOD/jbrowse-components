@@ -2,7 +2,7 @@ import fs from 'node:fs'
 
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { configSchemaFactory, markRequirementProblems } from './configSchema.ts'
+import { configSchemaFactory } from './configSchema.ts'
 import { MARK_RULES, markProblems, problemText } from './markProblems.ts'
 
 import type {
@@ -38,10 +38,7 @@ function problemsOf(
     }),
   )
   const lifted = snap.marks ?? []
-  const problems = [
-    ...markRequirementProblems(lifted),
-    ...markProblems(lifted, snap.facet, snap.transform, snap.rows),
-  ]
+  const problems = markProblems(lifted, snap.facet, snap.transform, snap.rows)
   for (const { rule } of problems) {
     reached.add(rule)
   }
@@ -123,7 +120,7 @@ test('the guide examples have no problems', () => {
   expect(found([COVERAGE])).toEqual([])
 })
 
-test('a bar or point naming no y is the schema requirement, said once', () => {
+test('a bar or point naming no y, with no step writing one, draws nothing', () => {
   expect(
     problemsOf([{ mark: 'bar' }, { mark: 'point', encoding: {} }]),
   ).toEqual(
@@ -132,11 +129,37 @@ test('a bar or point naming no y is the schema requirement, said once', () => {
       level: 'error',
       mark,
       slot: 'encoding.y',
-      message:
-        'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
+      message: `a ${mark === 0 ? 'bar' : 'point'} stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing`,
     })),
   )
   expect(found([{ mark: 'span' }])).toEqual([])
+})
+
+test("a step's output is the y a bar leaves unwritten", () => {
+  const count = { type: 'aggregate', ops: [{ op: 'count' }] }
+  expect(found([{ mark: 'bar', transform: [{ type: 'coverage' }] }])).toEqual(
+    [],
+  )
+  expect(found([{ mark: 'point', transform: [count] }])).toEqual([])
+  expect(found([{ mark: 'bar' }], undefined, [{ type: 'coverage' }])).toEqual(
+    [],
+  )
+  expect(found([{ mark: 'bar' }], { field: 'HP', transform: [count] })).toEqual(
+    [],
+  )
+  expect(
+    found([
+      {
+        mark: 'bar',
+        transform: [
+          {
+            type: 'aggregate',
+            ops: [{ op: 'count' }, { op: 'mean', field: 'score' }],
+          },
+        ],
+      },
+    ]),
+  ).toEqual(['error mark-without-value mark 0 encoding.y'])
 })
 
 test('a channel the mark does not read waits unread', () => {
@@ -502,6 +525,24 @@ test('threshold cuts written high to low are told which way they are read', () =
   ])
 })
 
+test('a threshold naming no cut is told it paints one colour', () => {
+  const noCuts = {
+    mark: 'point',
+    encoding: { y: 'score', color: { field: 'pip', scale: 'threshold' } },
+  }
+  expect(found([noCuts])).toEqual([
+    'warning threshold-no-cuts mark 0 encoding.color.domain',
+  ])
+  expect(
+    found([
+      {
+        mark: 'point',
+        encoding: { y: 'score', color: { field: 'pip', scale: 'categorical' } },
+      },
+    ]),
+  ).toEqual([])
+})
+
 test('a threshold range with other than one colour per interval is named', () => {
   const colors = (range: string[]) => [
     {
@@ -645,7 +686,5 @@ test("a pileup under rows is told its packed rows share their value's row", () =
 })
 
 test('every rule of the list is reached by a case above', () => {
-  expect([...reached].sort()).toEqual(
-    [...Object.keys(MARK_RULES), 'mark-without-value'].sort(),
-  )
+  expect([...reached].sort()).toEqual(Object.keys(MARK_RULES).sort())
 })

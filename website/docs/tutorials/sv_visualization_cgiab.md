@@ -306,9 +306,6 @@ paired-end counts:
         {
           "mark": "link",
           "size": 2,
-          "encoding": {
-            "x2": { "chrom": "mate.refName", "pos": "mate.start" }
-          },
           "transform": [{ "type": "mate" }]
         }
       ]

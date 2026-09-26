@@ -1807,7 +1807,6 @@
               "mark": "link",
               "size": 2,
               "encoding": {
-                "x2": { "chrom": "mate.refName", "pos": "mate.start" },
                 "color": "#a65628"
               },
               "transform": [{ "type": "mate" }]
@@ -2102,7 +2101,6 @@
               "mark": "link",
               "size": 2,
               "encoding": {
-                "x2": { "chrom": "mate.refName", "pos": "mate.start" },
                 "color": "#8b1a1a"
               },
               "transform": [{ "type": "mate" }]

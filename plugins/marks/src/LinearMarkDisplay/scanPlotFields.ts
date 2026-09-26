@@ -41,6 +41,8 @@ export interface PlotFields {
    * `mate` a paired adapter filled, or a breakend or symbolic `ALT`.
    */
   mated?: 'mate' | 'alt'
+  /** Every scanned feature carries SAM `flags`: they are aligned reads. */
+  reads?: true
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -97,6 +99,7 @@ export function scanPlotFields(
   const carried = new Map<string, number>()
   const values = new Map<string, Set<unknown>>()
   let mated: PlotFields['mated']
+  let reads = features.length > 0
   const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
   for (let i = 0; i < n; i++) {
     const feature = features[i]!
@@ -104,6 +107,7 @@ export function scanPlotFields(
       mated = matedBy(feature) ?? mated
     }
     const record = feature.toJSON()
+    reads &&= typeof record.flags === 'number'
     for (const [field, value] of fieldEntries(record)) {
       const v = datumOf(value)
       if (v === undefined) {
@@ -130,5 +134,6 @@ export function scanPlotFields(
     ),
     ...(listedSources > 1 ? { rows: ROWS_FIELD } : {}),
     ...(mated === undefined ? {} : { mated }),
+    ...(reads ? { reads: true as const } : {}),
   }
 }

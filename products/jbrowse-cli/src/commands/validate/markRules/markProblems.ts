@@ -18,6 +18,7 @@ import {
   DEFAULT_PILEUP_FIELDS,
   MATE_FIELDS,
 } from './markVocabulary.ts'
+import { stepChannels } from './stepChannels.ts'
 
 import type { ColorScaleName } from './markRuleFacts.ts'
 import type {
@@ -37,10 +38,11 @@ export type MarkProblemLevel = 'error' | 'warning'
 
 /**
  * The level of every rule of the list, by the stable id a report and a test
- * refer to it by. A single mark's combination that a JSON schema can state is
- * the mark schema's `requires` and is not restated here.
+ * refer to it by.
  */
 export const MARK_RULES = {
+  /** A bar or point naming no `y`, with no step before it writing one it reads by default. */
+  'mark-without-value': 'error',
   /** A channel the mark's type does not read, such as `y` on a `span`. */
   'unread-channel': 'warning',
   /** A `size` on a mark that draws no point and strokes no link. */
@@ -51,6 +53,8 @@ export const MARK_RULES = {
   'span-density-source': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
   'threshold-cuts': 'warning',
+  /** A threshold colour naming no cut, so every value paints one colour. */
+  'threshold-no-cuts': 'warning',
   /** A threshold `range` not one colour longer than its cuts. */
   'threshold-range': 'warning',
   /** A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. */
@@ -254,18 +258,6 @@ function packs(mark: MarkSnapshot) {
   return packsIn(stepsOf(mark))
 }
 
-// Whether the last pileup of a step list still has its rows on the features
-// at the end, as the worker's `layerRow` reads it: an aggregate or coverage
-// after it makes features from nothing.
-function pileupSurvives(steps: readonly StepSnapshot[]) {
-  return (
-    steps.findLast(
-      s =>
-        s.type === 'pileup' || s.type === 'aggregate' || s.type === 'coverage',
-    )?.type === 'pileup'
-  )
-}
-
 function named(field: unknown) {
   return typeof field === 'string' && field !== ''
 }
@@ -302,7 +294,10 @@ function packingsUnderRows(
 }
 
 function banded(mark: MarkSnapshot, shared: readonly StepSnapshot[]) {
-  return !!mark.encoding?.row || pileupSurvives([...shared, ...stepsOf(mark)])
+  return (
+    !!mark.encoding?.row ||
+    stepChannels([...shared, ...stepsOf(mark)]).row !== undefined
+  )
 }
 
 // The fields the last step that makes its features from nothing leaves behind,
@@ -433,6 +428,19 @@ function ownProblems(
   const type = markTypeOf(mark)
   const problems: OwnProblem[] = []
   const y = mark.encoding?.y
+  if (
+    readsValue(type) &&
+    !y &&
+    !stepChannels([...display, ...section, ...stepsOf(mark)]).y
+  ) {
+    problems.push(
+      found(
+        'mark-without-value',
+        'encoding.y',
+        `a ${type} stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing`,
+      ),
+    )
+  }
   const channels = new Set<string>(['x', 'x2', ...MARK_SPECS[type].channels])
   for (const channel of Object.keys(mark.encoding ?? {})) {
     if (!channels.has(channel)) {
@@ -478,6 +486,21 @@ function ownProblems(
     CATEGORICAL_FIELD_PRESETS,
   )) {
     problems.push(found(rule, `encoding.color.${slot}`, message))
+  }
+  if (
+    paintedScale(
+      { scale: color.scale, field: color.field ?? '' },
+      'categorical',
+    ) === 'threshold' &&
+    (color.domain ?? []).length === 0
+  ) {
+    problems.push(
+      found(
+        'threshold-no-cuts',
+        'encoding.color.domain',
+        'a threshold names its cut points in domain, and with none every value paints the first colour',
+      ),
+    )
   }
   const ramp = rampColor(mark)
   if (ramp) {

@@ -73,7 +73,6 @@
                 }
               ],
               "encoding": {
-                "y": "coverage",
                 "color": "#c8d8ee"
               }
             }
@@ -221,7 +220,6 @@
                 }
               ],
               "encoding": {
-                "y": "count",
                 "color": "#d62728"
               }
             }

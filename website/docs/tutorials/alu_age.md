@@ -135,7 +135,7 @@ over the copies a `filter` admits, in AluY's colour.
       { "type": "bin", "step": "auto" },
       { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
     ],
-    "encoding": { "y": "count", "color": "#c0c0c0" },
+    "encoding": { "color": "#c0c0c0" },
     "minBpPerPx": 100
   },
   {
@@ -145,7 +145,7 @@ over the copies a `filter` admits, in AluY's colour.
       { "type": "bin", "step": "auto" },
       { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
     ],
-    "encoding": { "y": "count", "color": "#d73027" },
+    "encoding": { "color": "#d73027" },
     "minBpPerPx": 100
   }
 ]
@@ -232,7 +232,7 @@ The adapter gains a `densityAdapter` and the count mark gains
               "ops": [{ "op": "count" }]
             }
           ],
-          "encoding": { "y": "count", "color": "#c0c0c0" },
+          "encoding": { "color": "#c0c0c0" },
           "minBpPerPx": 100
         },
         {
@@ -249,7 +249,7 @@ The adapter gains a `densityAdapter` and the count mark gains
               "ops": [{ "op": "count" }]
             }
           ],
-          "encoding": { "y": "count", "color": "#d73027" },
+          "encoding": { "color": "#d73027" },
           "minBpPerPx": 100
         }
       ]

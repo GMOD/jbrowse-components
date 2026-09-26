@@ -1,7 +1,4 @@
-import {
-  ConfigurationSchema,
-  requirementProblems,
-} from '@jbrowse/core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import {
   normalizeChannel,
@@ -25,7 +22,6 @@ import { markColorSchema } from './markColorConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
 import { markLocusSchema } from './markLocusConfigSchema.ts'
 import { markSizeSchema } from './markSizeConfigSchema.ts'
-import { readsValue } from './markSpecs.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
   DEFAULT_LINK_SHAPE,
@@ -37,7 +33,6 @@ import {
   MARK_SOURCES,
 } from './markVocabulary.ts'
 
-import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export { MARK_TYPES, MARK_SOURCES } from './markVocabulary.ts'
@@ -139,22 +134,25 @@ const markEncodingSchema = ConfigurationSchema(
      * The feature field, or jexl expression, giving the mark's right edge in
      * bp, or for a link its far foot: an object naming the field holding
      * the foot's sequence beside the one holding its position, where a mate
-     * may lie on another sequence.
+     * may lie on another sequence. Left at `end` behind a `mate` step, it is
+     * the other end the step found.
      */
     x2: markLocusSchema,
     /**
      * #slot marks.encoding.y
      * The feature field, or jexl expression over `feature`, plotted on the score
-     * axis. A feature whose value is not a finite number is skipped. Empty for
-     * a mark with no value, such as a span; a bar or point naming none draws
-     * nothing, and the track's corner notice says so, while a text naming none
-     * stands in the middle of its band. The scale it is read through is the
-     * display's `scales.y`.
+     * axis. A feature whose value is not a finite number is skipped. Empty
+     * reads what the steps before this mark's encode wrote, the way a ggplot2
+     * stat names what its geom plots: a `coverage` step's depth, or the one
+     * summary an `aggregate` with one op writes. A bar or point with neither
+     * draws nothing, and the track's corner notice says so, while a text with
+     * neither stands in the middle of its band. The scale it is read through
+     * is the display's `scales.y`.
      */
     y: {
       type: 'featureField',
       defaultValue: '',
-      description: 'value field, or jexl expression',
+      description: 'value field, or jexl expression; empty follows a step',
     },
     /**
      * #slot marks.encoding.row
@@ -287,7 +285,8 @@ const markSchema = ConfigurationSchema(
      * Steps over the region's features before this mark encodes them, in
      * order, after the display's own `transform`, and over each section alone
      * under a facet. A `bin` then an `aggregate` grouped by `start` and `end`
-     * is a density: `count` per bin, plotted as `y`.
+     * is a density: `count` per bin, which the mark plots as `y` unless its
+     * encoding names another field.
      */
     transform: types.array(markTransformStep),
     /**
@@ -326,41 +325,8 @@ const markSchema = ConfigurationSchema(
       description: 'draw only below this bp/px',
     },
   },
-  {
-    closed: true,
-    requires: [
-      {
-        id: 'mark-without-value',
-        when: { mark: MARK_TYPES.filter(readsValue) },
-        slots: ['encoding.y'],
-        message:
-          'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
-      },
-    ],
-  },
+  { closed: true },
 )
-
-/**
- * What each mark's own slots say together that it cannot mean, read off the
- * mark schema's `requires`. The generated JSON schema states the same entries,
- * so an editor and `jbrowse validate` report them from the one declaration,
- * where a file refuses them as errors.
- */
-export function markRequirementProblems(
-  marks: readonly MarkSnapshot[],
-): MarkProblem[] {
-  return marks.flatMap((mark, i) =>
-    requirementProblems(markSchema, mark).map(
-      ({ id, slot, message }): MarkProblem => ({
-        rule: id,
-        level: 'error',
-        mark: i,
-        slot,
-        message,
-      }),
-    ),
-  )
-}
 
 /**
  * #config LinearMarkDisplay
@@ -398,7 +364,6 @@ export function markRequirementProblems(
  *             { type: 'bin', step: 10000 },
  *             { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
  *           ],
- *           encoding: { y: 'count' },
  *           minBpPerPx: 100,
  *         },
  *       ],

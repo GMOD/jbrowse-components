@@ -353,25 +353,13 @@ describe('the schema', () => {
     ])
   })
 
-  it('reports a requires entry once, at the slot it requires, in its own words', () => {
-    const unmet = {
-      where: 'tracks[1].displays[0].marks[0].encoding.y',
-      message:
-        'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
-    }
+  it('leaves a bar naming no y to the rule list, which reads its steps', () => {
     expect(
       problemsOfMarks([{ mark: 'bar', encoding: { x: 'start' } }]),
-    ).toEqual([unmet])
-    expect(problemsOfMarks([{ mark: 'point' }])).toEqual([unmet])
-    expect(problemsOfMarks([{ encoding: {} }])).toEqual([unmet])
-    expect(problemsOfMarks([{ mark: 'bar', encoding: { y: '' } }])).toEqual([
-      unmet,
-    ])
+    ).toEqual([])
     const config = baseConfig()
     config.tracks[0]!.displayDefaults = { marks: [{ mark: 'bar' }] }
-    expect(schemaProblems(config).map(p => p.rule)).toEqual([
-      'mark-without-value',
-    ])
+    expect(schemaProblems(config)).toEqual([])
   })
 
   it('tells a wrong key or type from an unmet requirement', () => {

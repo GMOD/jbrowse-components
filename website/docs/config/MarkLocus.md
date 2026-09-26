@@ -8,11 +8,12 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 ## Example usage
 
+A BEDPE-like file whose second end sits in its own columns:
+
 ```js
 {
   mark: 'link',
-  encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
-  transform: [{ type: 'mate' }],
+  encoding: { x2: { chrom: 'chrom2', pos: 'start2' } },
 }
 ```
 
@@ -22,6 +23,7 @@ A mark's far end as a position that may lie on another sequence: `pos`,
 the feature field holding its coordinate, and `chrom`, the field holding
 its refName, as a paired record states its mate. Writing a field name
 directly on the encoding lands in `pos`, on the feature's own sequence.
+Left unwritten behind a `mate` step, it is the other end the step found.
 
 ## Config slots
 

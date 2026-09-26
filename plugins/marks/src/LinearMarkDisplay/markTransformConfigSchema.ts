@@ -219,8 +219,7 @@ const flatten = ConfigurationSchema(
 )
 
 // One feature per other end a record states, with the mate's locus written
-// beside it: what a `link` mark's `x2` reads through
-// `{ chrom: 'mate.refName', pos: 'mate.start' }`. It has no settings.
+// beside it, which a `link` mark's unwritten `x2` reads. It has no settings.
 const mate = ConfigurationSchema('mate', {}, STEP)
 
 const pileup = ConfigurationSchema(

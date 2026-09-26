@@ -30,6 +30,7 @@ export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS = ['start', 'end'] as const
 export const DEFAULT_TEXT_FIELD = 'name'
+export const DEFAULT_X2 = 'end'
 
 /** What a `mate` step writes on every feature it answers. */
 export const MATE_FIELDS = [

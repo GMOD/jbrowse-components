@@ -94,7 +94,7 @@ it('applies a plot whose rules report an error, having said so', () => {
   const { type, apply, applyDisplaySettings } = setup(BAR)
   type({ marks: [{ mark: 'bar' }] })
   expect(screen.getByTestId('mark-plot-problems').textContent).toMatch(
-    /names no y field to plot/,
+    /names no y field while no step before it writes one/,
   )
   expect(apply()).not.toBeDisabled()
   fireEvent.click(apply())

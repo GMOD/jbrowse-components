@@ -2,7 +2,6 @@ import { pluralize } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { markRequirementProblems } from './configSchema.ts'
 import { markProblems } from './markProblems.ts'
 
 import type { LinearMarkDisplayConfigModel } from './configSchema.ts'
@@ -34,7 +33,7 @@ export const MARK_PLOT_EXAMPLES = [
     description: 'one band per haplotype, each packed on its own',
   },
   {
-    plot: '{"marks":[{"mark":"bar","encoding":{"y":"count"},"transform":[{"type":"bin","step":"auto"},{"type":"aggregate","ops":[{"op":"count"}]}],"minBpPerPx":100}]}',
+    plot: '{"marks":[{"mark":"bar","transform":[{"type":"bin","step":"auto"},{"type":"aggregate","ops":[{"op":"count"}]}],"minBpPerPx":100}]}',
     description: 'a count per zoom-following bin, drawn only zoomed out',
   },
   { plot: '{"facet":null}', description: 'stop faceting' },
@@ -148,17 +147,14 @@ export function liftMarkPlot(
   }
 }
 
-/** Every rule the declared plot breaks: the mark schema's, then the list's. */
+/** Every rule the declared plot breaks. */
 export function markPlotProblems({
   marks,
   facet,
   transform,
   rows,
 }: MarkPlotSettings): MarkProblem[] {
-  return [
-    ...markRequirementProblems(marks),
-    ...markProblems(marks, facet, transform, rows),
-  ]
+  return markProblems(marks, facet, transform, rows)
 }
 
 /** Which settings a plot writes and which it resets, against what is declared. */

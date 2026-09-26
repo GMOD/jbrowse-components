@@ -7579,7 +7579,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/MarkLocus"
         },
         "y": {
-          "description": "value field, or jexl expression.",
+          "description": "value field, or jexl expression; empty follows a step.",
           "$ref": "#/$defs/FeatureField",
           "default": ""
         },
@@ -8003,46 +8003,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "Mark": {
       "title": "Mark",
       "type": "object",
-      "allOf": [
-        {
-          "x-requirement": {
-            "id": "mark-without-value",
-            "slot": "encoding.y"
-          },
-          "if": {
-            "type": "object",
-            "properties": {
-              "mark": {
-                "enum": [
-                  "bar",
-                  "point"
-                ]
-              }
-            }
-          },
-          "then": {
-            "type": "object",
-            "required": [
-              "encoding"
-            ],
-            "properties": {
-              "encoding": {
-                "type": "object",
-                "required": [
-                  "y"
-                ],
-                "properties": {
-                  "y": {
-                    "type": "string",
-                    "minLength": 1
-                  }
-                }
-              }
-            }
-          },
-          "errorMessage": "a bar or a point stands at a value and names no y field to plot, so it draws nothing"
-        }
-      ],
       "x-closed": true,
       "properties": {
         "mark": {

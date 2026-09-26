@@ -16,7 +16,7 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
       name: 'LinearMarkDisplay',
       displayName: 'Marks',
       helpText:
-        'Bars, points and spans drawn from an encoding declared in the track config',
+        'A plot of the features: bars, points, spans, labels or links, each mapping fields to position and colour; Edit plot... picks them',
       configSchema,
       stateModel: () =>
         import('./model.ts').then(f =>

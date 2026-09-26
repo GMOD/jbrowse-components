@@ -207,7 +207,6 @@
                 }
               ],
               "encoding": {
-                "y": "coverage",
                 "color": "#c8d8ee"
               },
               "minBpPerPx": 20
@@ -271,7 +270,6 @@
                 }
               ],
               "encoding": {
-                "y": "count",
                 "color": "#c0c0c0"
               },
               "minBpPerPx": 20
@@ -311,7 +309,6 @@
                 }
               ],
               "encoding": {
-                "y": "coverage",
                 "color": {
                   "field": "coverage",
                   "scale": "linear",

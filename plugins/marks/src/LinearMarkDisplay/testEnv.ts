@@ -57,7 +57,7 @@ export function features(
 /**
  * What the worker answers the display's own request with over `feats`: the
  * shared steps, the facet split and each layer's encode, as
- * `CoreGetEncodedLayers` runs them for a layer naming no row of its own.
+ * `CoreGetEncodedLayers` runs them.
  */
 export function workerResult(
   display: LinearMarkDisplayModel,
@@ -69,7 +69,7 @@ export function workerResult(
     ? facetLayers(
         shared,
         facet,
-        layers.map(l => ({ transform: l.transform, row: undefined })),
+        layers.map(l => ({ transform: l.transform, row: l.encoding.row })),
       )
     : undefined
   return {
@@ -77,7 +77,7 @@ export function workerResult(
       const own = split?.layers[i]
       return encodeFeatures(
         own?.features ?? runTransforms(shared, request.transform ?? []),
-        { ...request.encoding, row: own?.rows },
+        { ...request.encoding, row: own?.rows ?? request.encoding.row },
         request.lanes,
       )
     }),

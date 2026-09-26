@@ -84,17 +84,24 @@ describe('a marks list in a config file', () => {
     expect(found([COVERAGE])).toEqual([])
   })
 
-  it('reports a bar or point naming no y once, from the schema requirement', () => {
+  it('reports a bar or point naming no y once, unless a step writes one', () => {
     expect(
-      problemsOf(configOf([{ mark: 'bar' }, { encoding: { x: 'start' } }])),
+      problemsOf(
+        configOf([
+          { mark: 'bar' },
+          { mark: 'point', encoding: { x: 'start' } },
+        ]),
+      ),
     ).toEqual(
       [0, 1].map(mark => ({
         level: 'error',
         where: `${DISPLAY}.marks[${mark}].encoding.y`,
         rule: 'mark-without-value',
-        message:
-          'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
+        message: `a ${mark === 0 ? 'bar' : 'point'} stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing`,
       })),
+    )
+    expect(found([{ mark: 'bar', transform: [{ type: 'coverage' }] }])).toEqual(
+      [],
     )
     expect(found([{ mark: 'point', encoding: { y: '' } }])).toEqual([
       `error mark-without-value ${DISPLAY}.marks[0].encoding.y`,
@@ -486,10 +493,24 @@ describe('a marks list in a config file', () => {
     ])
   })
 
-  it('reaches every rule of the list and the schema requirement', () => {
-    expect([...reached].sort()).toEqual(
-      [...Object.keys(MARK_RULES), 'mark-without-value'].sort(),
-    )
+  it('warns on a threshold naming no cut', () => {
+    expect(
+      found([
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'score', scale: 'threshold' },
+          },
+        },
+      ]),
+    ).toEqual([
+      `warning threshold-no-cuts ${DISPLAY}.marks[0].encoding.color.domain`,
+    ])
+  })
+
+  it('reaches every rule of the list', () => {
+    expect([...reached].sort()).toEqual(Object.keys(MARK_RULES).sort())
   })
 })
 

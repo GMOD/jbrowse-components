@@ -77,7 +77,7 @@ constant depth.
         {
           "mark": "bar",
           "transform": [{ "type": "coverage" }],
-          "encoding": { "y": "coverage", "color": "#c8d8ee" }
+          "encoding": { "color": "#c8d8ee" }
         }
       ]
     }
@@ -308,7 +308,7 @@ file:
               "ops": [{ "op": "count" }]
             }
           ],
-          "encoding": { "y": "count", "color": "#d62728" }
+          "encoding": { "color": "#d62728" }
         }
       ]
     }

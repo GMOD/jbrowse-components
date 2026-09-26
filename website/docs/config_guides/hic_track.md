@@ -85,10 +85,7 @@ keeps the high-scoring calls, drawn here in dark red as thin arcs:
         {
           "mark": "link",
           "size": 1,
-          "encoding": {
-            "x2": { "chrom": "mate.refName", "pos": "mate.start" },
-            "color": "#8b1a1a"
-          },
+          "encoding": { "color": "#8b1a1a" },
           "transform": [
             { "type": "mate" },
             { "type": "filter", "expr": "jexl:get(feature,'score')>=500" }

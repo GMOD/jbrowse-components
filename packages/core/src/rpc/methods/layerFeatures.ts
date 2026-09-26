@@ -1,9 +1,5 @@
 import { checkAbortSignal } from '../../util/aborting.ts'
-import {
-  DEFAULT_PILEUP_AS,
-  facetLayers,
-  runTransforms,
-} from '../../util/featureTransforms.ts'
+import { facetLayers, runTransforms } from '../../util/featureTransforms.ts'
 import { updateStatus } from '../../util/progress.ts'
 
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
@@ -11,8 +7,6 @@ import type { JexlInstance } from '../../util/jexlStrings.ts'
 import type {
   CoreGetEncodedLayersArgs,
   FieldRef,
-  LayerRequest,
-  TransformStep,
 } from '../../util/markEncodingTypes.ts'
 import type { StatusCallback } from '../../util/progress.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
@@ -25,40 +19,6 @@ import type { Feature } from '../../util/simpleFeature.ts'
 export interface LayerFeatures {
   features: readonly Feature[]
   row: FieldRef | readonly number[] | undefined
-}
-
-/**
- * The field the last `pileup` of a step list wrote, unless an `aggregate` or
- * `coverage` after it made its features from nothing and left no row on them.
- */
-function survivingPileupField(steps: readonly TransformStep[]) {
-  for (let i = steps.length - 1; i >= 0; i--) {
-    const step = steps[i]!
-    if (step.type === 'pileup') {
-      return step.as ?? DEFAULT_PILEUP_AS
-    }
-    if (step.type === 'aggregate' || step.type === 'coverage') {
-      return undefined
-    }
-  }
-  return undefined
-}
-
-/**
- * The field a layer's `row` channel reads: the one its encoding names, else
- * the one the last pileup before its encode wrote — the layer's own, the
- * facet's per-section one, or the request's shared one — so a packed layer
- * restates nothing. Resolved once here for the facet split and the encoder
- * alike, so a facet stacks the rows the unfaceted encoder reads.
- */
-function layerRow(
-  { encoding, transform = [] }: LayerRequest,
-  shared: readonly TransformStep[],
-  section: readonly TransformStep[],
-) {
-  return (
-    encoding.row ?? survivingPileupField([...shared, ...section, ...transform])
-  )
 }
 
 /**
@@ -99,9 +59,7 @@ export async function layerFeatures(
   checkAbortSignal(signal)
 
   const shared = runTransforms(fetched, transform, jexl)
-  const rowFields = requested.map(r =>
-    layerRow(r, transform, facet?.transform ?? []),
-  )
+  const rowFields = requested.map(r => r.encoding.row)
   const faceted = facet
     ? facetLayers(
         shared,

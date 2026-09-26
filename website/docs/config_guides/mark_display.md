@@ -75,7 +75,7 @@ one.
 | which colours, in which order | `scale_fill_manual(values, breaks)` | `"scale": {"domain": […], "range": […]}` | `domain` and `range` on the colour |
 | a colour ramp over a number | `scale_fill_viridis_c()`, `scale_fill_gradientn(colours)` | `"type": "quantitative"`, `"scale": {"scheme"}` | `"scale": "linear"` with `scheme` or `range` |
 | the ramp's middle stop at a value | `scale_fill_gradient2(midpoint)` | `"scale": {"domainMid"}` | `domainMid` on the colour |
-| a colour per interval of a number | `scale_fill_stepsn(breaks, colours)` | `"scale": {"type": "threshold", "domain", "range"}` | `"scale": "threshold"`, `domain` holding the cuts |
+| a colour per interval of a number | `cut()` into `scale_fill_manual(values)` | `"scale": {"type": "threshold", "domain", "range"}` | `"scale": "threshold"`, `domain` holding the cuts |
 | a shape per category | `aes(shape = svtype)` | `"shape": {"field": "svtype"}` | `"shape": {"field": "svtype", "scale": "categorical"}` |
 | a log axis | `scale_y_log10()` | `"y": {"scale": {"type": "log"}}` | `"scales": {"y": {"type": "log"}}` |
 | a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"scales": {"y": {"type": "symlog", "symlogConstant"}}` |
@@ -94,7 +94,7 @@ one.
 | a label at each feature | `geom_text(aes(label = name), check_overlap = TRUE)` | `"mark": "text"`, `"text": {"field": "name"}` | `"mark": "text"`, `"encoding": {"text": "name"}` |
 | a curve between two positions | `geom_curve(aes(x, xend))` | GenomeSpy `"mark": "link"`, `"x2"` | `"mark": "link"`, `x` to `x2` |
 | a stroke width per feature | `aes(linewidth = score)` | `"size": {"field": "score"}` | `"encoding": {"size": {"field": "score"}}` on a link |
-| a record's other end | | | `{"type": "mate"}`, then `"x2": {"chrom": "mate.refName", "pos": "mate.start"}` |
+| a record's other end | | | `{"type": "mate"}`, which a link's `x2` then reads |
 | a band of the plot per category | `facet_grid(rows = vars(sample))` | `"row": {"field": "sample"}` | `"facet": "sample"`, or `"rows": "sample"` for one row each |
 | layers drawn in order | `+ geom_…()` | `"layer": […]` | `marks`, in list order |
 | a layer that draws at some zooms only | | GenomeSpy `multiscale` with `stops` | `minBpPerPx` and `maxBpPerPx` on the mark |
@@ -222,7 +222,7 @@ still does it: give each mark a zoom range and they never draw together.
   {
     "mark": "bar",
     "transform": [{ "type": "coverage" }],
-    "encoding": { "y": "coverage", "color": "#c8d8ee" },
+    "encoding": { "color": "#c8d8ee" },
     "minBpPerPx": 20
   },
   { "mark": "point", "encoding": { "y": "score" }, "maxBpPerPx": 20 }
@@ -432,10 +432,7 @@ Write them out to say more — a colour by type, a stroke by score, a shape:
         {
           "mark": "link",
           "size": 2,
-          "encoding": {
-            "x2": { "chrom": "mate.refName", "pos": "mate.start" },
-            "color": { "field": "svtype" }
-          },
+          "encoding": { "color": { "field": "svtype" } },
           "transform": [{ "type": "mate" }]
         }
       ]
@@ -565,10 +562,15 @@ file with no summary track beside it:
 ```json
 {
   "mark": "bar",
-  "transform": [{ "type": "coverage" }],
-  "encoding": { "y": "coverage" }
+  "transform": [{ "type": "coverage" }]
 }
 ```
+
+A mark that names no `y` plots what its steps wrote, the way a ggplot2 stat
+names what its geom draws (`after_stat`): the depth a `coverage` writes, or the
+one summary an `aggregate` with a single op writes. An aggregate writing two
+summaries leaves the choice to `y`. A link behind a `mate` step reaches the
+other end the step found without naming `x2`, and a written channel always wins.
 
 `pileup` is the packing a read pileup is, said as a step. It writes the lowest
 row on which each feature overlaps nothing already there, and a `span` reading
@@ -614,7 +616,6 @@ one fetch per region:
       { "type": "bin", "step": 10000 },
       { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
     ],
-    "encoding": { "y": "count" },
     "minBpPerPx": 100
   }
 ]
@@ -674,7 +675,6 @@ bins there instead of the banner:
           { "type": "bin", "step": "auto" },
           { "type": "aggregate", "ops": [{ "op": "count" }] }
         ],
-        "encoding": { "y": "count" },
         "minBpPerPx": 100
       }
     ]
@@ -706,6 +706,7 @@ reported under its id:
 <!-- prettier-ignore -->
 | Rule | Level | Reports |
 | --- | --- | --- |
+| `mark-without-value` | error | A bar or point naming no `y`, with no step before it writing one it reads by default. |
 | `empty-zoom-range` | error | A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. |
 | `step-expression` | error | A `filter` or `formula` whose `expr` is not a `jexl:` expression. |
 | `bin-width` | error | A `bin` whose `step` is neither `"auto"` nor a positive width. |
@@ -717,6 +718,7 @@ reported under its id:
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
 | `span-density-source` | warning | `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
+| `threshold-no-cuts` | warning | A threshold colour naming no cut, so every value paints one colour. |
 | `threshold-range` | warning | A threshold `range` not one colour longer than its cuts. |
 | `ramp-domain` | warning | A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. |
 | `ramp-ends` | warning | A colour ramp's `domainMax` below its `domainMin`. |

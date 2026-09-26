@@ -175,7 +175,7 @@ test('a facet runs every layer per section and stacks the sections', async () =>
 
 // The reads carry a `row` field of their own, to pin that a layer nothing
 // packs reads none rather than that field by its default name.
-describe('a pileup is the row a layer stands in where its encoding names none', () => {
+describe('a layer stands in the row its encoding names, stacked per section under a facet', () => {
   const reads = (['a', 'b', 'c'] as const).map(
     (uniqueId, i) =>
       new SimpleFeature({
@@ -214,12 +214,13 @@ describe('a pileup is the row a layer stands in where its encoding names none', 
     const { value } = result as RpcResult<EncodedLayersResult>
     return value.layers.map(l => [...l.row!])
   }
-  const packed = (row?: string): LayerRequest => ({
-    encoding: row === undefined ? {} : { row },
+  const packed = (row = 'lane'): LayerRequest => ({
+    encoding: { row },
     lanes: ['row'],
     transform: [{ type: 'pileup', as: 'lane' }],
   })
   const unpacked: LayerRequest = { encoding: {}, lanes: ['row'] }
+  const lane: LayerRequest = { encoding: { row: 'lane' }, lanes: ['row'] }
   const SHARED: CoreGetEncodedLayersArgs['transform'] = [
     { type: 'pileup', as: 'lane' },
   ]
@@ -240,31 +241,22 @@ describe('a pileup is the row a layer stands in where its encoding names none', 
   })
 
   test("the display's, without a facet", async () => {
-    expect(await rowsOf([unpacked], undefined, SHARED)).toEqual([[0, 1, 2]])
+    expect(await rowsOf([lane, unpacked], undefined, SHARED)).toEqual([
+      [0, 1, 2],
+      [0, 0, 0],
+    ])
   })
 
   test("the display's, under a facet", async () => {
-    expect(await rowsOf([unpacked], { field: 'source' }, SHARED)).toEqual([
+    expect(await rowsOf([lane], { field: 'source' }, SHARED)).toEqual([
       [0, 1, 2],
     ])
   })
 
   test("the facet's, per section", async () => {
     expect(
-      await rowsOf([unpacked], { field: 'source', transform: SHARED }),
+      await rowsOf([lane], { field: 'source', transform: SHARED }),
     ).toEqual([[0, 1, 2]])
-  })
-
-  test('none, where a layer of its own steps makes its features from nothing', async () => {
-    const depth: LayerRequest = {
-      encoding: {},
-      lanes: ['row'],
-      transform: [{ type: 'coverage' }],
-    }
-    expect(await rowsOf([depth], undefined, SHARED)).toEqual([[0, 0, 0]])
-    expect(
-      await rowsOf([depth], { field: 'source', transform: SHARED }),
-    ).toEqual([[0, 0, 0]])
   })
 })
 
@@ -305,7 +297,7 @@ describe("a facet's own pileup packs per section, the display's across every sec
       sessionId: 's',
       adapterConfig: { type: 'AnyAdapter' },
       region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
-      layers: [{ encoding: {}, lanes: ['row'] }],
+      layers: [{ encoding: { row: 'row' }, lanes: ['row'] }],
       ...args,
     })
     const { value } = result as RpcResult<EncodedLayersResult>

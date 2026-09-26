@@ -132,6 +132,7 @@ import {
 import { markLanes, plotsValue, readsValue } from './markSpecs.ts'
 import { DEFAULT_LINK_STROKE_PX } from './markVocabulary.ts'
 import { defaultPlotMarks } from './plotDefault.ts'
+import { stepChannels } from './stepChannels.ts'
 
 import type { ListedSource } from '../MarkRowsRPC/MarkGetRowSources.ts'
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
@@ -159,6 +160,7 @@ import type {
   StepSnapshot,
 } from './markProblems.ts'
 import type { PlotFields } from './scanPlotFields.ts'
+import type { StepChannels } from './stepChannels.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
@@ -243,13 +245,16 @@ function markConstantColor(mark: MarkConfig): number {
   )
 }
 
-/** Whether a mark names a `y` to plot, and so folds into the axis and stands at its value. */
-function marksValue(mark: MarkConfig) {
-  return plotsValue(mark.mark) && mark.encoding.y !== ''
+/**
+ * Whether a mark plots a `y`, named or filled by its steps, and so folds into
+ * the axis and stands at its value.
+ */
+function marksValue(mark: MarkConfig, channels: StepChannels) {
+  return plotsValue(mark.mark) && (mark.encoding.y !== '' || !!channels.y)
 }
 
-function markEntryOf(mark: MarkConfig): MarkEntry {
-  const valued = marksValue(mark)
+function markEntryOf(mark: MarkConfig, channels: StepChannels): MarkEntry {
+  const valued = marksValue(mark, channels)
   return {
     type: mark.mark,
     minBpPerPx: mark.minBpPerPx,
@@ -463,7 +468,8 @@ export function stateModelFactory(
          * Each mark's type and zoom range, what the mark list is built from.
          */
         get markEntries(): MarkEntry[] {
-          return self.conf.marks.map(m => markEntryOf(m))
+          const { markChannels } = this
+          return self.conf.marks.map((m, i) => markEntryOf(m, markChannels[i]!))
         },
         /**
          * #getter
@@ -556,7 +562,19 @@ export function stateModelFactory(
          * The declared marks' encodings, as the worker takes them.
          */
         get encodings(): MarkEncoding[] {
-          return self.conf.marks.map(m => encodingOf(m))
+          const { markChannels } = this
+          return self.conf.marks.map((m, i) => encodingOf(m, markChannels[i]))
+        },
+        /**
+         * #getter
+         * The channels each mark's steps fill where its encoding leaves them
+         * unwritten, over the display's, the facet's and the mark's own steps.
+         */
+        get markChannels(): StepChannels[] {
+          const shared = [...self.conf.transform, ...self.conf.facet.transform]
+          return self.conf.marks.map(m =>
+            stepChannels([...shared, ...m.transform]),
+          )
         },
         /**
          * #getter
@@ -589,7 +607,7 @@ export function stateModelFactory(
           const binEdges =
             lastBinEdges(self.conf.facet.transform) ??
             lastBinEdges(self.conf.transform)
-          const { encodings } = this
+          const { encodings, markChannels } = this
           return self.conf.marks.map((m, i): LayerRequest => {
             const transform = stepsOf(
               m.transform,
@@ -601,7 +619,7 @@ export function stateModelFactory(
             // size no field feeds.
             const lanes = markLanes(m.mark).filter(
               lane =>
-                (lane !== 'y' || marksValue(m)) &&
+                (lane !== 'y' || marksValue(m, markChannels[i]!)) &&
                 (lane !== 'size' || m.encoding.size.field !== ''),
             )
             return {
@@ -948,7 +966,9 @@ export function stateModelFactory(
             ...(types.includes('bar') ? [origin] : []),
           ]
           return visibleStatsRange({
-            active: indices.some(i => marksValue(self.conf.marks[i]!)),
+            active: indices.some(i =>
+              marksValue(self.conf.marks[i]!, self.markChannels[i]!),
+            ),
             view: self.host,
             payloadFor: index => self.rpcDataMap.get(index),
             itemsFor: data =>
