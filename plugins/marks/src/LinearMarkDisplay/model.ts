@@ -55,7 +55,13 @@ import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
-import { addDisposer, cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
@@ -1905,7 +1911,13 @@ export function stateModelFactory(
               const fields = await self
                 .ensurePlotFields()
                 .catch(() => undefined)
-              if (!fields || self.conf.marks.length > 0) {
+              // The scan is an RPC, and a view can be torn down while one is in
+              // flight — a headless export destroys its session the moment the
+              // SVG is out, and over a slow source that lands first. Resuming
+              // on a dead node read `self.conf` as undefined and threw out of
+              // an async autorun body, which nothing catches: jb2export wrote
+              // its image and then exited 1.
+              if (!isAlive(self) || !fields || self.conf.marks.length > 0) {
                 return
               }
               const marks = defaultPlotMarks(fields)

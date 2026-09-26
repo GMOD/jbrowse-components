@@ -19,7 +19,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
-import { asArrayType, isType } from '@jbrowse/mobx-state-tree'
+import { asArrayType, destroy, isType } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -2616,6 +2616,39 @@ test('a scan a newer one aborted answers with the newer one', async () => {
   expect((await first).numeric).toEqual(['score'])
   expect(display.plotFields?.numeric).toEqual(['score'])
   expect(display.plotFieldsError).toBeUndefined()
+})
+
+// A headless export destroys its session the moment the SVG is out, and over a
+// slow source the scan lands after that. Resuming on a dead node read
+// `self.conf` as undefined and threw out of an async autorun body, which
+// nothing catches — jb2export wrote its image and then exited 1.
+test('a scan landing after the session is destroyed is dropped', async () => {
+  let land: (fields: unknown) => void = () => {}
+  const { createDisplay } = createTestEnvironment(
+    [],
+    WIDE_REGION,
+    'BedAdapter',
+    {},
+    (_sessionId, method) =>
+      method === 'MarkScanPlotFields'
+        ? new Promise(resolve => {
+            land = resolve
+          })
+        : new Promise(() => {}),
+  )
+  const { session } = createDisplay()
+  const escaped: unknown[] = []
+  const catchEscaped = (e: unknown) => escaped.push(e)
+  process.on('unhandledRejection', catchEscaped)
+  try {
+    await Promise.resolve()
+    destroy(session)
+    land({ numeric: ['score'], categorical: [] })
+    await new Promise(resolve => setTimeout(resolve, 0))
+  } finally {
+    process.off('unhandledRejection', catchEscaped)
+  }
+  expect(escaped).toEqual([])
 })
 
 test('a failed scan is tried again on the next ask', async () => {
