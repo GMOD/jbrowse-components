@@ -9,7 +9,7 @@
 // Anchored at the end so 'intergenic_region' is not a gene, 'rnapol_binding_site'
 // is not an RNA, and 'transcriptional_cis_regulatory_region' is not a
 // transcript.
-const GENE_LIKE_TYPE = /gene(_segment)?$|rna$|transcript(_region)?$/
+const GENE_LIKE_TYPE = /gene(_segment)?$|rna$|transcript$/
 
 /**
  * Whether the type names a unit of transcription — a gene, a transcript, or an

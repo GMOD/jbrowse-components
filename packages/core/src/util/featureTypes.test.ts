@@ -14,7 +14,6 @@ describe('isGeneLikeType', () => {
     'pseudogenic_transcript',
     'primary_transcript',
     'protein_coding_primary_transcript',
-    'transcript_region',
   ])('accepts %s', type => {
     expect(isGeneLikeType(type)).toBe(true)
   })
@@ -29,6 +28,7 @@ describe('isGeneLikeType', () => {
     'cDNA_match',
     'transcriptional_cis_regulatory_region',
     'transcription_start_site',
+    'transcript_region',
     undefined,
   ])('refuses %s', type => {
     expect(isGeneLikeType(type)).toBe(false)
