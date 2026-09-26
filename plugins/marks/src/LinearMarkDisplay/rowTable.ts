@@ -31,7 +31,7 @@ export function keyRegion(
       ...layer,
       row: layer.row
         ? layer.row.map(r => keyOf[r] ?? HIDDEN_ROW)
-        : new Uint32Array(layer.count).fill(facet ? 0 : HIDDEN_ROW),
+        : new Uint32Array(layer.count).fill(HIDDEN_ROW),
     })),
   }
 }
