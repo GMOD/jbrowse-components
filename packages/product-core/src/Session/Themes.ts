@@ -60,8 +60,7 @@ function storedSelection() {
 
 /**
  * The theme the stored selection resolves to, for UI drawn before a session
- * exists — Desktop's start screen — so it opens in the palette and mode the
- * last session left, not always light.
+ * exists, such as Desktop's start screen.
  */
 export function storedThemeArgs(): SerializableThemeArgs {
   const { sessionThemeName, sessionThemeMode } = storedSelection()

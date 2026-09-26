@@ -195,8 +195,8 @@ test('a stored legacy name splits on the way in, and is stored split', () => {
   expect(localStorage.getItem('themeMode')).toBe('dark')
 })
 
-// Desktop's start screen draws before any session exists, and opens in what
-// the last one stored rather than always light
+// Desktop's start screen draws before any session exists, and opens in the
+// palette and mode the last one stored
 test.each([
   [{ themeName: 'minimal', themeMode: 'dark' }, false, 'minimal', 'dark'],
   [{ themeName: 'darkStock' }, false, 'stock', 'dark'],

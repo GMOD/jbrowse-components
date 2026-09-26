@@ -21,8 +21,8 @@ const useStyles = makeStyles()(theme => ({
   boundaryBlock: {
     background: theme.palette.action.disabledBackground,
   },
-  // opaque, and must stay so: a translucent fill would darken unevenly where
-  // the container-level and per-track PaddingBlocks overlap
+  // opaque, since a translucent fill would darken unevenly where the
+  // container-level and per-track PaddingBlocks overlap
   regionSeparator: {
     background: theme.palette.regionSeparator,
   },
