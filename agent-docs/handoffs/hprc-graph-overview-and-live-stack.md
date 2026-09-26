@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-25. The gutter aligner is deleted, so every gutter below the anchor composes through GRCh38 — and composition now carries the two records' own alignment, so those gutters draw indels and mismatches rather than a bare ribbon, the marks bounded by the pixel and faded to their width. Sequence two haplotypes share that GRCh38 lacks still draws as nothing; a graph-stated successor is unbuilt. The plugin is unpublished with that deletion. Walk rows draws every haplotype on its own bp, and naming the haplotypes returns whole walks where the cohort cut splits them. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call. Measured 2026-09-26 - composing through GRCh38 loses 12-38% of what two non-reference haplotypes share at C4, GSTT1, KIR and HLA-DR - and a follow-the-linear-view prototype exists on the plugin's follow-spike branch.
+description: The HPRC graph thread as of 2026-09-26. The graph pane follows the linear view and picks its coarse tier by zoom, lanes read from the graph draw the alignment the graph states between any two haplotypes with no aligner, one command builds a host's files and config, and the tutorials open on the hosted instance. Left - publish the reader and the plugin, bump the store pin, deploy the portal, the three graph demos and the docs, then film and capture the reshot figures.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -48,14 +48,17 @@ the panel plan below is not agreed, and what replaces it is open.
 cannot yet read fades out. Captures:
 https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86
 
-**Next, in order.**
-
-1. Time one whole-genome haplotype pair with minimap2 on ada (wall time, RSS,
-   PIF bytes, and whether its records at the six loci below match the window
-   runs). The panel's cost follows: 36 pairs for eight haplotypes plus GRCh38,
-   estimated 70-200 CPU-h and ~0.5 GB hosted.
-2. Build and host the panel all-vs-all for the `demos/hprc_multiway` eight and
-   check it at the six loci.
+**What replaced that plan (2026-09-26).** The curated panel and the offline
+minimap2 all-vs-all are dropped. A lane pair is the alignment the graph
+states: `@gmod/gbz-base` `pairAlignments({ bases: false })` chains the nodes
+two walks share as `=` and writes the sequence between two shared stretches as
+`I` then `D`, and the plugin's `GbzBaseSyntenyAdapter` answers the display's
+restored `lanePairsOnAnchor` route with it (jbrowse-components `dfc136f47d`,
+`7a56432548`; plugin `63b9e20`..`b45fa44`, which also ported core's
+`keepAlignment` into the plugin's clip helper, without which no GBZ gutter ever
+received an op). Every pair of the 464 works and no aligner runs. What the
+graph does not state stays a gap: at a tandem array the copies fold onto nodes
+GRCh38 visits once, and the lane length carries the count.
 
 **Measured 2026-09-24** (scripts in `~/tutorial_spikes/lane_pairs/`:
 `pairbench.mjs`, `bubblebench.mjs`, `mm.sh`; captures under `captures/`):
@@ -156,27 +159,47 @@ loses 64,352 bp. Cuts took 4.3-7.2 s hosted; HLA-DR's full window is 50,065
 nodes, 65 over the reader's limit. `pairAlignments` returned FLNA's inversion
 record twice with identical spans, against its own one-record-per-base rule.
 
-**The graph pane following the linear view is built and unlanded**: plugin
-worktree `~/src/jb2plugins/ggv-follow-spike`, branch `follow-spike`, six
-commits on 3.0.5, per the plugin's `FOLLOW_THE_LINEAR_VIEW.md`. A frame clock
-sets the transform from the connected view's window with no fetch; a settle
-clock re-cuts the window plus one window-width each side when the window
-leaves the cut; `coarseTrackId`/`coarseAboveBp`/`coarseCut` pick the tier by
-zoom; `viewportOwner` (`fit`, `user`, `follow`) replaces the two-state flag;
-the follow is off, and the toolbar says why, on force and ordered layouts, an
-open bubble, a reversed region and a GBZ cut. Ten tests in `follow.test.ts`,
-the plugin suite (734 tests) and tsc green, and it lined up in a browser to the
-linear view's pixel rounding. A 2 Mb pan at a 60 kb window in 10 kb steps
-re-cuts 28 times at a one-window margin and 15 at two; zooming out crosses to
-the tier at 1.92 Mb. Still open before landing: the reference-position ramp
-re-spans on every re-cut and repaints the lane above, sample rows reshuffle per
-window, `maxRegionBp` is still read by every fine cut, and neither the launcher
-nor the portal sets the tier props. The doc's fetch-ordering hazard is stale:
-`beginLoad`/`liveLoad` already order cuts.
+**Landed the same day.** The graph pane follows the linear view (plugin main
+`0fb3c0e`..`b9b36cc`): a launch from a linear view opens anchored and
+following, `Pin` holds it and `Follow` hands it back, and `RgfaTabixAdapter`'s
+`coarse: { uri, aboveBpPerPx }` names the one-node-per-bubble tier the pane
+cuts past that zoom, with no `maxRegionBp` on that route. Every hosted graph
+track carries the slot with a handover measured off its index (HPRC 1014,
+bovine 880, mouse 328, Arabidopsis 117, pggb 1; jbrowse-components
+`0343e1b62a`, jb2hubs `be51522310a`), the portal launcher sets
+`followLinearView`, `layoutMode: 'auto'` and `coarseCut` for a wide window
+(same jb2hubs commit), `scripts/build_pangenome_graph.sh` builds a host's
+files and config in one command (`44a1f847ad`, `7d6bca8cab`), and the
+tutorials open on the hosted instance: `pangenome_hprc` browses the graph and
+absorbs the portal page and part 4, part 3 folds in the amylase and multi-way
+pages, the retired slugs redirect, and the host page is one command
+(`eae099f299`, `4a1695b2ea`..`294c873e86`, `5028a0a582`..`37e1186e94`).
 
-**Plan proposed to Colin, not yet agreed**: land follow and tier; lanes align
-by shared nodes through the display's existing direct-pair fetch; one
-`build_pangenome_graph.sh` writing one config; collapse the tutorials to a
-browse page on the hosted instance, a host page and short findings pages, with
-one tour per persona.
+**Next, in order.** Each is outward-facing and Colin's to run.
 
+1. Publish `@gmod/gbz-base` 2.8.0 (`pnpm version minor` in its checkout; the
+   tag publishes) and put the plugin primary's `node_modules/@gmod/gbz-base`
+   back from the checkout symlink to the npm package (`pnpm install` after
+   bumping the dependency to `^2.8.0`).
+2. Publish the plugin as 3.1.0 (`pnpm version minor`; preversion runs the host
+   probe, whose `scripts/host-compat-probe.mjs` carries an uncommitted edit),
+   bump the pin in jbrowse-plugin-list's `plugins.json` and run `pnpm dep`
+   there, which moves the store's `latest/` and every hosted graph figure.
+3. Push jb2hubs and deploy staging; `scripts/deploy-demo.sh` for `hprc`,
+   `ecoli_pangenome` and `arabidopsis_pangenome`; a docs deploy.
+4. Film `pangenome/hprc_browse` and capture the re-specced figures on ada
+   (`genomes_hprc_mhc_graph`, `hprc_haplotype_launch`, `graph_kiv2_walks`,
+   `graph_kiv2_walk_rows`, `hprc_gbz_cfhr_lanes`, `hprc_c4_graph_stack`,
+   `hprc_amylase_lanes`, `host_your_own`, `hprc_amylase_walk_rows`,
+   `pggb_bubble_tier`), re-film `tier_to_fine`, `pggb_subgraph_launch` and
+   `pangenome_cactus/subgraph_launch`, then push the stores and commit the
+   locks; `check-figure-refs` and `videoFrames.test.ts` are red until then.
+
+**Still open, none blocking the above.** The segments lane in the linear view
+cannot pick a tier by zoom, because `RenderFeatureData` hands an adapter no
+bpPerPx, so a tier track stays a lane. The follow is off on a GBZ cut. The
+portal's graph configs carry no text index and no cytobands, so the browse
+page types coordinates. `ecoli_minigraph` has no hosted tier, and the portal's
+bovine callset lacks `renderingMode: "phased"`. `build_ecoli_pangenome_graph.sh`
+builds no tier. Expand-a-bubble-on-click across tiers is unbuilt; `popBubble`
+opens a bubble inside the current cut only.

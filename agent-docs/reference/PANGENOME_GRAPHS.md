@@ -1042,8 +1042,11 @@ that plugin's repo, not this one.
   of one graph being laid out consistently with each other.
   The input exists: `~/ecoli_graph5/pggb/*.smooth.final.og.lay.tsv`.
 - ~~**Bubble collapse is the one that matters** for scale.~~ Producer done
-  2026-08-02, see "Level of detail" above: a chromosome is 474 nodes. What is
-  open is the view picking a tier by `bpPerPx`, and expand-on-click.
+  2026-08-02, see "Level of detail" above: a chromosome is 474 nodes. The view
+  picks the tier by zoom since 2026-09-26: `RgfaTabixAdapter`'s
+  `coarse: { uri, aboveBpPerPx }` names the pair, and a graph pane following
+  its linear view cuts it past that bp per pixel. Expand-on-click across the
+  two tiers stays open; `popBubble` opens a bubble inside the current cut.
 - **HPRC needs no per-haplotype path track after all.** `--call` would need the
   464 assemblies re-mapped, but `pgbi.vcf.gz` (above) already states carriage at
   bubble granularity and is tabix-indexed.
