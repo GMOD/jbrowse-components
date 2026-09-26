@@ -5,7 +5,11 @@ import {
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
 import { syntenyRibbonMarks } from '../LinearSyntenyDisplay/syntenyRibbonMarks.ts'
-import { glyphBlockRange, ribbonParams } from './multiwayRenderTypes.ts'
+import {
+  MULTIWAY_OVERDRAW_PX,
+  glyphBlockRange,
+  ribbonParams,
+} from './multiwayRenderTypes.ts'
 
 import type {
   MultiWayCell,
@@ -47,7 +51,7 @@ export const MULTIWAY_MARKS = [
             track: ribbonParams(ribbon, state),
             base0: cell.data.base0,
             base1: cell.data.base1,
-            overdrawPx: 0,
+            overdrawPx: MULTIWAY_OVERDRAW_PX,
             groundColor: state.groundColor,
           }
         : undefined

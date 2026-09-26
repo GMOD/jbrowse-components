@@ -8,13 +8,13 @@ import { UNIFORM_OFFSET_F32 as SYNTENY_U } from '../LinearSyntenyDisplay/shaders
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { MULTIWAY_MARKS, multiwayBlocks } from './multiwayMarks.ts'
-import { PX_ORIGIN, ribbonParams } from './multiwayRenderTypes.ts'
+import {
+  MULTIWAY_OVERDRAW_PX,
+  PX_ORIGIN,
+  ribbonPickState,
+} from './multiwayRenderTypes.ts'
 
 import type { PickCanvasLike } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
-import type {
-  SyntenyRenderState,
-  SyntenyTrackRenderParams,
-} from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
   LaneGlyphData,
@@ -104,23 +104,6 @@ const state: MultiWayRenderState = {
     [RIBBON_KEY, ribbonLayer],
     [GLYPH_KEY, { kind: 'glyphs', key: 'glyphs:1', scrolled: true, row: 1 }],
   ]),
-}
-
-// the stack as the pick engine reads it — the model's `ribbonPickState`
-function pickState(s: MultiWayRenderState): SyntenyRenderState {
-  const perTrack = new Map<number, SyntenyTrackRenderParams>()
-  for (const [key, layer] of s.layers) {
-    if (layer.kind === 'ribbons') {
-      perTrack.set(key, ribbonParams(layer, s))
-    }
-  }
-  return {
-    canvasWidth: s.canvasWidth,
-    canvasHeight: s.canvasHeight,
-    overdrawPx: 0,
-    groundColor: s.groundColor,
-    perTrack,
-  }
 }
 
 function drawMultiWay(ctx: Ctx2D, s: MultiWayRenderState) {
@@ -318,11 +301,49 @@ describe('a scrolled stack shifts every layer by the same offset', () => {
     const pick = createSyntenyPicker(polygonPickCtx)
     const regions = new Map([[RIBBON_KEY, ribbon]])
     expect(
-      pick(regions, pickState(scrolled), WIDTH, 250 + DRAG, 70 - SCROLL),
+      pick(regions, ribbonPickState(scrolled), WIDTH, 250 + DRAG, 70 - SCROLL),
     ).toEqual({ key: RIBBON_KEY, instanceIndex: 0 })
     expect(
-      pick(regions, pickState(scrolled), WIDTH, 250 + DRAG, 70),
+      pick(regions, ribbonPickState(scrolled), WIDTH, 250 + DRAG, 70),
     ).toBeUndefined()
+  })
+})
+
+// A flipped lane's ribbons run from one side of the canvas to the other, so
+// one end of each lies wholly off it; the cull keeps any ribbon whose ends lie
+// within the overdraw, on the GPU, on Canvas2D and in the pick alike.
+describe('a ribbon with one end off the canvas', () => {
+  // the top lane slid 500px left: its end at -400..-300, the bottom's at
+  // 300..400
+  const offLeft: MultiWayRenderState = {
+    ...state,
+    dragOffsetPx: 0,
+    laneMaps: new Map([[0, { scale: 1, offset: -500 }]]),
+  }
+
+  test('draws on Canvas2D', () => {
+    const ctx = recordingCtx()
+    drawMultiWay(ctx, offLeft)
+    expect(ctx.calls.find(c => c.method === 'moveTo')!.args[0]).toBe(-400)
+  })
+
+  test('reaches the GPU cull with the same overdraw', () => {
+    const { hal } = gpuFrame(offLeft)
+    const fill = hal.draws().find(d => d.passId === 'fillStraight')!
+    expect(hal.uniformsOf(fill)![SYNTENY_U.overdrawPx]).toBe(
+      MULTIWAY_OVERDRAW_PX,
+    )
+    expect(ribbonPickState(offLeft).overdrawPx).toBe(MULTIWAY_OVERDRAW_PX)
+  })
+
+  test('answers a pick on its visible part', () => {
+    const pick = createSyntenyPicker(polygonPickCtx)
+    const regions = new Map([[RIBBON_KEY, ribbon]])
+    // three quarters down the gutter the ribbon spans 125..225
+    expect(pick(regions, ribbonPickState(offLeft), WIDTH, 175, 90)).toEqual({
+      key: RIBBON_KEY,
+      instanceIndex: 0,
+    })
   })
 })
 
@@ -330,7 +351,7 @@ test('a pick over the drawn ribbon answers its instance through the same transfo
   const picker = createSyntenyPicker(polygonPickCtx)
   const regions = new Map([[RIBBON_KEY, ribbon]])
   const pick = (x: number, y: number) =>
-    picker(regions, pickState(state), WIDTH, x, y)
+    picker(regions, ribbonPickState(state), WIDTH, x, y)
   // at mid-height the ribbon spans 200..300 before the drag carries it right
   expect(pick(250 + DRAG, 70)).toEqual({
     key: RIBBON_KEY,
@@ -397,7 +418,7 @@ describe.each([
     // a quarter of the way down the gutter, clear of the pinch a mirrored
     // edge makes at mid-height
     const x = 150 + DRAG + (drawn(350) - 150 - DRAG) / 4
-    expect(pick(regions, pickState(moving), WIDTH, x, 50)).toEqual({
+    expect(pick(regions, ribbonPickState(moving), WIDTH, x, 50)).toEqual({
       key: RIBBON_KEY,
       instanceIndex: 0,
     })

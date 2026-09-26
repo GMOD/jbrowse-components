@@ -115,13 +115,10 @@ import {
   drawnPx,
   laneMapOf,
   packedPx,
-  ribbonParams,
+  ribbonPickState,
 } from './multiwayRenderTypes.ts'
 
-import type {
-  SyntenyRenderState,
-  SyntenyTrackRenderParams,
-} from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
+import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AxisPlacement } from './anchorAxis.ts'
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
@@ -2365,25 +2362,10 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the render state as the synteny pick engine reads it: a numeric key per
-       * gutter, topmost last, so a point over two gutters answers the one drawn
-       * over
+       * the render state as the synteny pick engine reads it
        */
       get ribbonPickState(): SyntenyRenderState {
-        const state = self.renderState
-        const perTrack = new Map<number, SyntenyTrackRenderParams>()
-        for (const [key, layer] of state.layers) {
-          if (layer.kind === 'ribbons') {
-            perTrack.set(key, ribbonParams(layer, state))
-          }
-        }
-        return {
-          canvasWidth: state.canvasWidth,
-          canvasHeight: state.canvasHeight,
-          overdrawPx: 0,
-          groundColor: state.groundColor,
-          perTrack,
-        }
+        return ribbonPickState(self.renderState)
       },
     }))
     .views(self => {

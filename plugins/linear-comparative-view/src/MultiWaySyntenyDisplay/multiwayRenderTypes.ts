@@ -1,4 +1,9 @@
-import type { SyntenyTrackRenderParams } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
+import { DEFAULT_OVERDRAW_PX } from '../LinearSyntenyView/consts.ts'
+
+import type {
+  SyntenyRenderState,
+  SyntenyTrackRenderParams,
+} from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyOutlineChannels } from '../LinearSyntenyDisplay/syntenyRibbonMarks.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { PaintedFill } from './geneColor.ts'
@@ -168,6 +173,35 @@ export function ribbonParams(
     bpPerPx0: 1 / top.scale,
     bpPerPx1: 1 / bottom.scale,
     drawCurves: layer.curves,
+  }
+}
+
+/**
+ * How far past a canvas edge a ribbon's end may lie and still draw: the
+ * pairwise view's default. The cull drops a ribbon once either end is wholly
+ * outside it, so at 0 a flipped lane lost every ribbon crossing the canvas.
+ */
+export const MULTIWAY_OVERDRAW_PX = DEFAULT_OVERDRAW_PX
+
+/**
+ * The stack as the synteny pick engine reads it: a numeric key per gutter,
+ * topmost last, so a point over two gutters answers the one drawn over.
+ */
+export function ribbonPickState(
+  state: MultiWayRenderState,
+): SyntenyRenderState {
+  const perTrack = new Map<number, SyntenyTrackRenderParams>()
+  for (const [key, layer] of state.layers) {
+    if (layer.kind === 'ribbons') {
+      perTrack.set(key, ribbonParams(layer, state))
+    }
+  }
+  return {
+    canvasWidth: state.canvasWidth,
+    canvasHeight: state.canvasHeight,
+    overdrawPx: MULTIWAY_OVERDRAW_PX,
+    groundColor: state.groundColor,
+    perTrack,
   }
 }
 
