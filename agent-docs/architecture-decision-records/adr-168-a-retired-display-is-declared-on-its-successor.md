@@ -89,8 +89,9 @@ an explicit id.
   `jexlFilters`. A v4
   layout's colours stay behind, since the colorBy palette wrote them.
 - `LinearWiggleDisplay`: `MultiLinearWiggleDisplay`, v4.3.0's rendering names
-  and jb2hubs' `multixyplot` folded into a plot and `rows` (amended 2026-09-26:
-  the betas' other names went); the v4 plot, scale,
+  and the `multixyplot` hosted jb2hubs configs carry folded into a plot and
+  `rows` (amended 2026-09-26: the betas' other names went, and jb2hubs writes
+  `xyplot` now); the v4 plot, scale,
   autoscale, domain, colours, summary mode, cross-hatches and resolution; the
   arrangement and the sidebar.
 - `LinearMafDisplay`: `treeAreaWidth` and `subtreeFilter`, which

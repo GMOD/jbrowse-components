@@ -16,9 +16,9 @@ by..." menu keeps its label. Older spellings lift into place
 (`liftSyntenyViewSettings`, in both views' `preProcessSnapshot`): v4.3.0 held
 `colorBy`, `alpha` and `minAlignmentLength` on each synteny display, so the
 first display carrying each lands on the view, `colorBy` as `color`, a mode
-string mapped the way `coerceColorBy` mapped it. The genomes portal's launch
-links write the mode string on the view, which lifts the same way. That
-reverses the rejected alternative below that let the string fail at load:
+string mapped the way `coerceColorBy` mapped it. Launch links the genomes
+portal handed out carry the mode string on the view, which lifts the same way.
+That reverses the rejected alternative below that let the string fail at load:
 state other people hold in URLs keeps working. The two views name `colorBy` as
 launch-key `passThrough`, and the validator manifest takes the display keys
 from the lift, so `jbrowse validate` accepts an older session. jbrowse-img

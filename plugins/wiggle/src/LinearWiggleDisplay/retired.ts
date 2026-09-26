@@ -18,7 +18,9 @@ const isRecord = (v: unknown): v is DisplayEntry =>
   !!v && typeof v === 'object' && !Array.isArray(v)
 
 // v4.3.0's multi-wiggle renderings, each a plot and a layout at once, and the
-// `multixyplot` jb2hubs writes for a UCSC overlay multiWig.
+// `multixyplot` the hosted jb2hubs configs carry on a UCSC overlay multiWig.
+// jb2hubs writes `xyplot` now, so that entry goes once the hosted configs are
+// synced from it.
 const MULTI_RENDERINGS: Record<string, readonly [string, string]> = {
   multirowxy: ['xyplot', 'source'],
   multirowdensity: ['density', 'source'],

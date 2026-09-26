@@ -90,7 +90,7 @@ test('color round-trips a session spec and refuses a stray key', async () => {
   )
 })
 
-// the genomes portal's launch links write the mode string on the view
+// launch links the genomes portal handed out hold the mode string on the view
 test('a colorBy mode string lands as color', async () => {
   expect((await open({ views: ROWS, colorBy: 'query' })).colorField).toBe(
     'query',

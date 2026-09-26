@@ -78,8 +78,9 @@ function liftDisplaySettings(snap: Snap) {
  * #api
  * A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
  * view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
- * synteny display, and `colorBy` lands as `color`. The genomes portal's launch
- * links write the mode string on the view itself, which lifts the same way.
+ * synteny display, and `colorBy` lands as `color`. Launch links the genomes
+ * portal handed out carry the mode string on the view itself, which lifts the
+ * same way.
  */
 export function liftSyntenyViewSettings(snap: Snap | undefined) {
   return snap ? liftColorBy(liftDisplaySettings(snap)) : snap

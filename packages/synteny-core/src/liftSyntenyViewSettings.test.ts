@@ -1,6 +1,6 @@
 import { liftSyntenyViewSettings } from './liftSyntenyViewSettings.ts'
 
-// the genomes portal's launch links hold the mode string on the view
+// launch links the genomes portal handed out hold the mode string on the view
 test('a mode string lifts into the field it paints', () => {
   expect(liftSyntenyViewSettings({ colorBy: 'strand' })).toEqual({
     color: { field: 'strand' },

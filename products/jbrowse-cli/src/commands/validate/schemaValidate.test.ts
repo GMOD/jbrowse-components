@@ -583,7 +583,7 @@ describe('the schema', () => {
   })
 
   // v4.3.0 held colorBy, alpha and minAlignmentLength on each synteny display,
-  // and the genomes portal's links write colorBy on the view
+  // and links the genomes portal handed out hold colorBy on the view
   it('accepts the synteny settings an older session spells another way', () => {
     const config = baseConfig()
     config.defaultSession.views = [

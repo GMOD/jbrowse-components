@@ -40,8 +40,7 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
   },
-  // what jb2hubs writes for a UCSC overlaid multiWig, and keeps writing for
-  // older releases
+  // what the hosted jb2hubs configs carry for a UCSC overlaid multiWig
   {
     type: 'MultiQuantitativeTrack',
     trackId: 'layered',
