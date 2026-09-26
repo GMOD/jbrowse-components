@@ -10,7 +10,7 @@ const suite: TestSuite = {
       snapshot: 'gwas-manhattan',
       loc: 'ctgA:1-50000',
       tracks: ['volvox_gwas'],
-      displayTestId: 'manhattan-display',
+      displayTestId: 'mark-display',
     }),
     // The extent-bar branch on the GPU, which no browser capture reached until
     // 2026-09-08. The scores random-walk ON PURPOSE: the bar band is 4 px
@@ -25,7 +25,7 @@ const suite: TestSuite = {
       snapshot: 'gwas-manhattan-bars',
       loc: 'ctgA:1-8000',
       tracks: ['volvox_gwas_windows'],
-      displayTestId: 'manhattan-display',
+      displayTestId: 'mark-display',
       // Its own config: a track added to the shared volvox catalog moves the
       // workspaces goldens, which open the track selector on it.
       config: 'test_data/volvox/config_gwas_windows.json',
