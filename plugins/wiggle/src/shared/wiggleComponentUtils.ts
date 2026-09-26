@@ -32,6 +32,15 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }
 
+// The band a score is in: how many cuts it is at or past.
+export function cutBand(score: number, cuts: readonly number[]) {
+  let band = 0
+  while (band < cuts.length && score >= cuts[band]!) {
+    band++
+  }
+  return band
+}
+
 // The interpolated line's break rule, shared by its line and band on both
 // backends.
 export function centerLinksToPrevious(

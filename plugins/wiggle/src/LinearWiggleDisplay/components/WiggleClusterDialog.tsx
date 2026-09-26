@@ -14,10 +14,8 @@ import {
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
 
-// What "cluster rows by score" means for a multi-wiggle display: the score matrix
-// over the visible region, binned at the chosen sampling density. The dialog
-// itself is shared, and `run` is the same function the declarative
-// `runClustering` autorun calls.
+// "Cluster rows by score": the score matrix over the visible region, binned at
+// the chosen sampling density.
 const WiggleClusterDialog = observer(function WiggleClusterDialog({
   model,
   handleClose,

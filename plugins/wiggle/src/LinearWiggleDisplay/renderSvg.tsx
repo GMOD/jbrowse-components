@@ -15,10 +15,7 @@ import type {
   LgvSvgExportable,
 } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type {
-  ClusterHierarchyNode,
-  ClusterProvenance,
-} from '@jbrowse/tree-sidebar'
+import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 import type {
   WiggleDataResult,
   WiggleGPURenderState,
@@ -40,11 +37,10 @@ export interface RenderSvgModel extends LgvSvgExportable {
   gpuProps: () => WiggleGpuProps
   plotGeometry: WigglePlotGeometry
 
-  // the dendrogram and its caption
+  // the dendrogram
   showTree: boolean
   treeAreaWidth: number
   hierarchy?: ClusterHierarchyNode
-  rowTreeProvenance?: ClusterProvenance
 
   // read by WiggleRowLabels
   sources: {

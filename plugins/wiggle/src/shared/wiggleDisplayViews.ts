@@ -26,10 +26,8 @@ export interface WigglePlotGeometry {
 
 /** What the shared views below read off the display that installs them. */
 export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
-  id: string
   canvasWidthPx: number
   plotGeometry: WigglePlotGeometry
-  minimalTicks: boolean
   /** The `color` object resolved against the origin and the layout. */
   wiggleColor: ResolvedWiggleColor
   effectiveSummaryScoreMode: string

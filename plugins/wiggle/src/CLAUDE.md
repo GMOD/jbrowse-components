@@ -110,7 +110,7 @@ The gradient follows the y domain and y scale, so the colour declares no
 misconfiguration grey, because a two-sided plot has nothing to paint a colour
 per score or a cut over subtrack names with. ADR-144, ADR-153.
 
-**Everything shared over the geometry is `wiggleDisplayViews`**: `ticks`,
+**Everything shared over the geometry is `wiggleDisplayViews`**:
 `scoreColorScale`, `renderState` and the shared halves of the two props methods,
 as a plain function the display installs as one `.views()` layer. Not a mixin —
 composed beside `TrackHeightMixin` it could not see `height` or `canvasWidthPx`

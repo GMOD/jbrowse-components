@@ -33,11 +33,6 @@ const WiggleComponent = observer(function WiggleComponent({
 }: {
   model: WiggleDisplayModel
 }) {
-  // The model owns the upload/render autorun and the GPU backend lifecycle —
-  // see startRenderingBackend / stopRenderingBackend / renderNow on
-  // the MultiLinearWiggleDisplay model. Sources changes are picked up because
-  // installUpload's encode step reads `self.gpuProps()`, so a
-  // gpuProps change re-fires every per-region autorun and re-uploads.
   const totalWidth = model.canvasWidthPx
   const height = model.height
 
@@ -83,8 +78,6 @@ const WiggleComponent = observer(function WiggleComponent({
       style={{
         width: totalWidth,
         height,
-        // inherited from `DisplayContainer` until it was deleted; kept verbatim
-        // so the row labels and legend lay out the same
         whiteSpace: 'nowrap',
         textAlign: 'left',
       }}

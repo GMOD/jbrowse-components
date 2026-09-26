@@ -67,7 +67,7 @@ export const wiggleConfigSchemaFields = {
     type: 'number',
     defaultValue: DEFAULT_GAP_BREAK_MULTIPLE,
     description:
-      "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout)",
+      "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 keeps one connected line",
     advanced: true,
   },
 } as const

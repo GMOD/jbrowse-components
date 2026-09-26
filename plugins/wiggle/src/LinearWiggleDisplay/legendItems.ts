@@ -11,7 +11,7 @@ interface LegendSource {
 }
 
 /**
- * The color key for a multi-wiggle track: one row per (group, color) pair in
+ * The color key for a track of several sources: one row per (group, color) pair in
  * first-appearance order, with every color resolved.
  *
  * **Collapsing rows by color makes a key possible on a cohort track.**

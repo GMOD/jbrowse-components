@@ -4,9 +4,6 @@ import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core/renderingBackendTypes'
 import type { Feature } from '@jbrowse/core/util'
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
-// The rendering-type table lives in renderingTypes.ts (import-free) so non-UI
-// consumers can pull the menu labels without loading the wiggle-core barrel;
-// re-exported here so existing `../util.ts` importers are unaffected.
 export { WIGGLE_RENDERINGS, WIGGLE_RENDERING_TYPES } from './renderingTypes.ts'
 
 export {
@@ -14,21 +11,7 @@ export {
   WIGGLE_POS_COLOR_DEFAULT,
 } from './colorDefaults.ts'
 
-// A row of the wiggle display, which is exactly the metadata its adapter
-// reported — so this is `SourceInfo`, not a widened copy of it.
-//
-// It used to carry a second required field, `source`, always set equal to
-// `name`. That came from the adapter side, where `source` is a real and
-// different thing: BigWigAdapter's `source` config slot is what a subtrack is
-// *named by*, `MultiWiggleAdapter` disambiguates colliding ones, and every
-// feature is stamped with it. The display type mirrored the word and then had
-// to keep the two in lockstep, which is what `name === source` was: an
-// invariant standing in for a field that carried no information. Nothing ever
-// read it — not the tree sidebar (its helpers constrain on `{ name: string }`),
-// not clustering, not the legends, not the colour dialog — and every sibling
-// row display (variants, MAF, canvas's multi-row) declares its row type without
-// it. `layout` is `types.frozen`, so a saved session that still has the key
-// loads unchanged and simply carries a field no one asks for.
+// A row of the wiggle display: exactly the metadata its adapter reported.
 export type Source = SourceInfo
 
 // One score entry shown in a wiggle tooltip. `source`/`color` are populated
@@ -54,11 +37,6 @@ export interface WiggleHoveredFeature {
   end: number
   rows: WiggleTooltipRow[]
 }
-
-// Single-source synthetic name for LinearWiggleDisplay's worker output. Multi
-// uses real source names; single just needs a stable label so it fits the
-// shared { sources: [...] } shape.
-export const SINGLE_WIGGLE_SOURCE_NAME = 'default'
 
 // Bucket features by their `source` field, for the adapters that carry several
 // sources in one file (bedMethyl, a bedGraph with a source column) and are used
@@ -210,12 +188,7 @@ export function featuresToRaw(
   }
 }
 
-// The floor itself is NOT a second decision: it is wiggle.slang's own
-// `MIN_FILL_WIDTH_PX`, generated in (adr-051), under the name this module has
-// always published it as — the same shape `pointMarker.ts` re-exports
-// `SMALL_POINT_MAX_DIAMETER` in. It spent a while as a `1.5` on each side, each
-// with a comment naming the other, which is what a shared constant looks like
-// right up until one of them moves.
+// wiggle.slang's own `MIN_FILL_WIDTH_PX` (adr-051), under this module's name.
 export const WIGGLE_MIN_PX = MIN_FILL_WIDTH_PX
 
 // Shared by MultiWiggleAdapter (bigWigs shorthand entries) and the multiwiggle

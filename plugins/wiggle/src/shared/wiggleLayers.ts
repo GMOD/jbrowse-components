@@ -10,6 +10,8 @@ import {
   getEffectiveScores,
 } from '@jbrowse/wiggle-core'
 
+import { cutBand } from './wiggleComponentUtils.ts'
+
 import type {
   FeatureArrays,
   SourceRenderData,
@@ -41,16 +43,9 @@ function darkenColor(
 // once alongside which layers there are at all.
 export type WiggleLayer = Omit<SourceRenderData, 'rowIndex' | 'renderingType'>
 
-// One whisker band's per-instance colors: each feature takes the colour of
-// the band between two cuts its value falls in, then the band tint is baked
-// in. The tint is mirrored across the pivot so lightness always tracks
-// magnitude, not signed value: at or past the lowest cut the max band
-// lightens and the min band darkens (biggest positive = lightest); below it
-// that flips (posTint vs negTint), so the most-negative min band lightens and
-// the least-negative max band darkens (most negative = lightest red, not a
-// dark brown). The packed colours are computed once and indexed by band — and
-// where they all come out the same (a solid-color track), the band carries no
-// per-instance lane at all and both backends read the layer color.
+// Each feature takes the colour of the band between two cuts its score is
+// in, with the tint `summaryBands` gives its side of the pivot. Undefined
+// where every band comes out one colour, so both backends read the layer's.
 function bandColorsAbgr(
   bandScores: Float32Array,
   numFeatures: number,
@@ -64,15 +59,9 @@ function bandColorsAbgr(
   if (packed.every(c => c === packed[0])) {
     return undefined
   }
-  const { cuts } = bands
   const out = new Uint32Array(numFeatures)
   for (let i = 0; i < numFeatures; i++) {
-    const score = bandScores[i]!
-    let k = 0
-    while (k < cuts.length && score >= cuts[k]!) {
-      k++
-    }
-    out[i] = packed[k]!
+    out[i] = packed[cutBand(bandScores[i]!, bands.cuts)]!
   }
   return out
 }

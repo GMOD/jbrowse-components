@@ -1,3 +1,4 @@
+import { normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
@@ -186,21 +187,14 @@ function rgb255(source: SourceRenderData) {
   }
 }
 
-function rgbCss([r, g, b]: [number, number, number]) {
-  return `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`
-}
-
 function cssRgb(source: SourceRenderData) {
-  return rgbCss(source.color)
+  return normalizedRgbToCss(source.color)
 }
 
 function lineColors(source: SourceRenderData) {
-  const rgb = cssRgb(source)
   return {
-    rgb,
-    negRgb: source.negColor
-      ? cssRgb({ ...source, color: source.negColor })
-      : rgb,
+    rgb: cssRgb(source),
+    negRgb: normalizedRgbToCss(source.negColor ?? source.color),
   }
 }
 
@@ -212,10 +206,8 @@ function lineColors(source: SourceRenderData) {
  * as the pass: a region whose layers are not this family declines the block
  * rather than drawing another family's painter over them.
  *
- * `getRowHeight`, not a bare divide: `makeWiggleRenderState` floors `numRows`
- * at 1 for the shader's sake, but the SVG export reaches the same painters
- * with a hand-built state, and an Infinity here would propagate to NaN rect
- * geometry.
+ * `getRowHeight`, not a bare divide, so a state with `numRows` 0 draws
+ * geometry rather than NaN.
  */
 function wiggleShape(
   pass: InstancePass<SourceRenderData[]>,

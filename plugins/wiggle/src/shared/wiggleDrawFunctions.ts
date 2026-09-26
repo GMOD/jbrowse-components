@@ -1,4 +1,8 @@
-import { setAbgrFill } from '@jbrowse/core/util/colorBits'
+import {
+  normalizedRgbToCss,
+  normalizedRgbToCssRgba,
+  setAbgrFill,
+} from '@jbrowse/core/util/colorBits'
 import {
   CANVAS_SEAM_PX,
   CappedPath,
@@ -20,7 +24,7 @@ import {
   makeDensityRgbStringFn,
 } from './getDensityColor.ts'
 import { WHISKER_BAND_OPACITY } from './shaders/wiggleBand.consts.generated.ts'
-import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
+import { centerLinksToPrevious, cutBand } from './wiggleComponentUtils.ts'
 
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -57,11 +61,10 @@ export interface RowDraw {
   rampMid: number | undefined
 }
 
-// Per-instance colors (summary bands) exist on every layer the GPU encodes
-// them for, so each draw fn must honor them or the Canvas2D fallback and the
-// SVG export diverge from the on-screen shader. A band holds only two packed
-// values, so switching on change batches into a couple of runs rather than one
-// state change per feature. `-1` can't collide with a u32 ABGR value.
+// Every painter honours a layer's per-instance colours, or Canvas2D and the
+// SVG export diverge from the shader. A band holds one packed value per colour
+// band, so switching fill only on a change batches the features into runs.
+// `-1` can't collide with a u32 ABGR value.
 const NO_COLOR = -1
 
 function makeScoreToY(
@@ -316,10 +319,6 @@ function strokeByBands(
   }
 }
 
-function lineRgb([r, g, b]: [number, number, number]) {
-  return `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`
-}
-
 export function drawLine({
   ctx,
   source,
@@ -349,7 +348,7 @@ export function drawLine({
   strokeByBands(
     ctx,
     cuts.map(cut => cutToY(cut) + rowTop),
-    bandStyles(negRgb, innerColors, rgb, lineRgb),
+    bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss),
     pen => {
       let inRun = false
       for (let i = 0; i < n; i++) {
@@ -415,7 +414,7 @@ export function drawLineCenter({
   strokeByBands(
     ctx,
     cuts.map(cut => cutToY(cut) + rowTop),
-    bandStyles(negRgb, innerColors, rgb, lineRgb),
+    bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss),
     pen => {
       for (let i = 0; i < n; i++) {
         const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
@@ -521,10 +520,13 @@ export function drawWhiskerBand({
   const lowest = cutBand(low, cuts)
   const highest = cutBand(high, cuts)
   const fills = bandStyles(
-    cssRgba(source.negColor ?? source.color, WHISKER_BAND_OPACITY),
+    normalizedRgbToCssRgba(
+      source.negColor ?? source.color,
+      WHISKER_BAND_OPACITY,
+    ),
     innerColors,
-    cssRgba(source.color, WHISKER_BAND_OPACITY),
-    rgb => cssRgba(rgb, WHISKER_BAND_OPACITY),
+    normalizedRgbToCssRgba(source.color, WHISKER_BAND_OPACITY),
+    rgb => normalizedRgbToCssRgba(rgb, WHISKER_BAND_OPACITY),
   )
   const drawn = fills.slice(lowest, highest + 1)
   if (drawn.every(fill => fill === drawn[0])) {
@@ -550,19 +552,6 @@ export function drawWhiskerBand({
       }
     }
   }
-}
-
-// The band a score is in: how many cuts it is at or past.
-function cutBand(score: number, cuts: number[]) {
-  let band = 0
-  while (band < cuts.length && score >= cuts[band]!) {
-    band++
-  }
-  return band
-}
-
-function cssRgba([r, g, b]: [number, number, number], alpha: number) {
-  return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${alpha})`
 }
 
 export function drawScatter(
