@@ -30,6 +30,8 @@ import * as m36 from '@jbrowse/display-kit/gateCommit'
 import * as m37 from '@jbrowse/display-kit/GlobalFetchMixin'
 import * as m38 from '@jbrowse/display-kit/groupByMenu'
 import * as m39 from '@jbrowse/display-kit/GroupLabelBox'
+import * as m40 from '@jbrowse/display-kit/GroupLabelChips'
+import * as m41 from '@jbrowse/display-kit/groupLabelChipStyles'
 import * as m42 from '@jbrowse/display-kit/groupLabelStyle'
 import * as m43 from '@jbrowse/display-kit/heightMode'
 import * as m44 from '@jbrowse/display-kit/heightModeConfigSchemaFields'
@@ -174,8 +176,8 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/GlobalFetchMixin': { ...m37, __esModule: true },
   '@jbrowse/display-kit/groupByMenu': m38,
   '@jbrowse/display-kit/GroupLabelBox': { ...m39, __esModule: true },
-  '@jbrowse/display-kit/GroupLabelChips': uiNamespace(['GroupLabelChips']),
-  '@jbrowse/display-kit/groupLabelChipStyles': uiNamespace(['useGroupLabelStyles']),
+  '@jbrowse/display-kit/GroupLabelChips': m40,
+  '@jbrowse/display-kit/groupLabelChipStyles': m41,
   '@jbrowse/display-kit/groupLabelStyle': m42,
   '@jbrowse/display-kit/heightMode': m43,
   '@jbrowse/display-kit/heightModeConfigSchemaFields': m44,

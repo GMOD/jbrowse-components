@@ -4223,20 +4223,14 @@
       "names": [
         "GroupLabelChips"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material"
-      ]
+      "worker": "real"
     },
     "@jbrowse/display-kit/groupLabelChipStyles": {
       "package": "@jbrowse/display-kit",
       "names": [
         "useGroupLabelStyles"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material"
-      ]
+      "worker": "real"
     },
     "@jbrowse/display-kit/groupLabelStyle": {
       "package": "@jbrowse/display-kit",

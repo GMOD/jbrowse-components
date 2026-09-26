@@ -65,6 +65,8 @@ theme; anything you don't set keeps its preset value.
 | `plotGridlineMinor` | `string` | Minor coordinate gridlines inside a plot area, e.g. the dotplot's. Lighter than the genome gridlines above: a 2D grid crosses itself, so it lays down far more ink at the same alpha than one running behind a linear genome |
 | `plotGridlineMajor` | `string` | Major coordinate gridlines inside a plot area. See plotGridlineMinor |
 | `regionBoundary` | `string` | Line marking a chromosome or region boundary, well above both plot gridline weights: it is the landmark the coordinates hang off, so it has to stay readable as a boundary on a plot that also draws a full grid |
+| `regionSeparator` | `string` | Opaque bar between two displayed regions of a linear genome view. Opaque because it paints over track data on both sides and has to mask it |
+| `tableBorder` | `string` | Cell and header rules in JBrowse's own tables, e.g. the faceted track selector |
 | `featureHover` | `string` | Hover shading over a single feature |
 | `featureHoverStrong` | `string` | Hover shading over a feature group, e.g. a linked-read chain |
 | `featureSelected` | `string` | Border accent around the click-selected feature |
