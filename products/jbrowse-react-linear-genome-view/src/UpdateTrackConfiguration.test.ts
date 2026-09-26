@@ -307,37 +307,37 @@ describe('a reset of an admin-set slot survives a reload', () => {
     const base = fstTrack({
       description: 'admin description',
       displayDefaults: {
-        size: 9,
+        origin: 9,
         scales: { y: { domainMax: 50 } },
       },
     })
     const state = createViewState({ assembly, tracks: [base] })
-    const defaultSize = readConfObject(
+    const defaultOrigin = readConfObject(
       manhattan(hydrateTrackConfig(pluginManagerOf(state), fstTrack({}))!),
-      'size',
+      'origin',
     )
     edit(state, conf => {
       setConf(conf, 'description', undefined)
-      setConf(manhattan(conf), 'size', undefined)
+      setConf(manhattan(conf), 'origin', undefined)
       setConf(manhattan(conf), DOMAIN_MAX, undefined)
     })
 
     const reloaded = effective(await reload(state, base))
     expect(readConfObject(reloaded, 'description')).toBe('')
-    expect(readConfObject(manhattan(reloaded), 'size')).toBe(defaultSize)
+    expect(readConfObject(manhattan(reloaded), 'origin')).toBe(defaultOrigin)
     expect(readConfObject(manhattan(reloaded), DOMAIN_MAX)).toBeUndefined()
   })
 
   // Both sides of the diff are post-stripDefault, so a slot the admin spelled
   // at its default is absent from both and no reset is inferred for it
   test('a slot the admin wrote at its default takes no null, and a later admin value flows through', async () => {
-    const size = readConfObject(
+    const origin = readConfObject(
       manhattan(
         effective(createViewState({ assembly, tracks: [fstTrack({})] })),
       ),
-      'size',
+      'origin',
     ) as number
-    const base = fstTrack({ displayDefaults: { size } })
+    const base = fstTrack({ displayDefaults: { origin } })
     const state = createViewState({ assembly, tracks: [base] })
     edit(state, conf => {
       setConf(manhattan(conf), DOMAIN_MAX, 20)
@@ -353,10 +353,10 @@ describe('a reset of an admin-set slot survives a reload', () => {
     })
 
     const adminChanged = fstTrack({
-      displayDefaults: { size: size + 3 },
+      displayDefaults: { origin: origin + 3 },
     })
     const display = manhattan(effective(await reload(state, adminChanged)))
-    expect(readConfObject(display, 'size')).toBe(size + 3)
+    expect(readConfObject(display, 'origin')).toBe(origin + 3)
     expect(readConfObject(display, DOMAIN_MAX)).toBe(20)
   })
 

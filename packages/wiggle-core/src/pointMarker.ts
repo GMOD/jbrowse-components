@@ -12,7 +12,7 @@ import type { MarkContext2D } from '@jbrowse/render-core/marks'
 export const SMALL_POINT_MAX_DIAMETER_PX = SMALL_POINT_MAX_DIAMETER
 
 /**
- * The diameter the mark and Manhattan displays draw points at by default,
+ * The diameter the mark display draws points at by default,
  * where points are the plot rather than one of wiggle's renderings.
  */
 export const DEFAULT_POINT_DIAMETER_PX = 4

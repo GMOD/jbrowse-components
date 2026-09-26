@@ -837,7 +837,9 @@ test('an encoding channel refuses a key it does not declare', () => {
     createTestEnvironment([
       { mark: 'point', encoding: { y: 'score', shape: { glyph: 'circle' } } },
     ]).createDisplay(),
-  ).toThrow('MarkShape takes value, field, scale, range and domain, not glyph')
+  ).toThrow(
+    'MarkShape takes value, field, scale, range, domain and title, not glyph',
+  )
   expect(() =>
     createTestEnvironment(
       [{ mark: 'bar', encoding: { y: 'score' } }],
@@ -1782,8 +1784,44 @@ test('the hovered instance lights the box its mark painted, inset by the plot to
   expect(box!.width).toBeCloseTo(50 * pxPerBp)
   expect(box!.height).toBe(display.renderState.canvasHeight / 2)
   expect(box!.top).toBeGreaterThan(display.renderState.canvasHeight / 2)
+  expect(display.highlightStyle).toBe('shade')
   display.clearHoveredFeature()
   expect(display.hoverInk).toEqual([])
+})
+
+// A wash over a 4 px glyph is invisible, so a point lights as a ring a fixed
+// margin outside it, never smaller than 6 px across the radius.
+test('a hovered point lights as a ring around its glyph', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'point', size: 4, encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  const points = result([{ y: [5, 8] }])
+  display.setRpcData(
+    0,
+    { layers: points.layers.map(l => ({ ...l, glyph: new Uint8Array(2) })) },
+    REGION,
+  )
+  display.setHoveredFeature({
+    markIndex: 0,
+    regionIndex: 0,
+    instance: 1,
+    featureIndex: 1,
+    refName: 'ctgA',
+    start: 100,
+    end: 150,
+    bp: 100,
+    y: 8,
+    color: undefined,
+    colorValue: undefined,
+    glyph: undefined,
+    row: undefined,
+    screenX: 0,
+    screenY: 0,
+  })
+  expect(display.highlightStyle).toBe('ring')
+  const [ring] = display.hoverInk
+  expect(ring).toMatchObject({ width: 12, height: 12 })
 })
 
 const DENSITY_MARKS = [

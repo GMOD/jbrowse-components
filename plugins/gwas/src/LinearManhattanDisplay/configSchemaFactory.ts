@@ -1,25 +1,22 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import {
-  DEFAULT_POINT_DIAMETER_PX,
-  retiredAxisSpellings,
-  scalesSchema,
-  scoreFieldConfigSchemaFields,
-  valueScaleSchema,
-} from '@jbrowse/wiggle-core'
+  linearMarkDisplayConfigSchemaFactory,
+  markListSchema,
+} from '@jbrowse/plugin-marks'
 
-import { manhattanColorConfigSchema } from './colorConfigSchema.ts'
+import { MANHATTAN_MARK } from './ldPlot.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// Extending LinearWiggleDisplay's schema advertised twelve slots no Manhattan
-// code reads, so this declares its own and shares only `scales.y`.
 /**
  * #config LinearManhattanDisplay
  * #category display
- * configuration for the Manhattan plot display: the default display of a GWAS
- * track, and one a FeatureTrack can switch to, plotting any numeric feature
- * field as a scored scatter
+ * The Manhattan plot: the default display of a GWAS track, and one a
+ * FeatureTrack can switch to. It is the mark display with a point per feature
+ * at its `score` as its default plot, so every mark, scale, facet and row
+ * setting applies, and a plot whose encoding names `ld` or `ld_role` joins
+ * each SNP's r² to the index SNP from the `GWASAdapter`'s `ldAdapter`.
  *
  * #example
  * Minimal `GWASTrack` config. See the
@@ -38,12 +35,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * Taller track, LocusZoom-style coloring: `color: { field: 'ld' }` colors
- * each point by its r² to the index SNP read from the adapter's `ldAdapter`
- * sub-adapter. The LD data is a second source on `GWASAdapter` (mirroring
- * MAF's `annotationAdapter`), so it nests under `adapter`, while display-only
- * options like `height`/`color` go in `displayDefaults` — see
- * [configuring displays](/docs/config_guides/tracks#configuring-displays):
+ * LocusZoom-style colouring: each point's r² to the index SNP in five bins,
+ * the index itself a diamond. The LD data is a second source on `GWASAdapter`,
+ * so it nests under `adapter`, while the plot goes in `displayDefaults`. The
+ * track menu's "Color by LD to index SNP" writes the same mark:
  * ```js
  * {
  *   type: 'GWASTrack',
@@ -60,15 +55,33 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   },
  *   displayDefaults: {
  *     height: 400,
- *     color: { field: 'ld' },
+ *     marks: [
+ *       {
+ *         mark: 'point',
+ *         encoding: {
+ *           y: 'score',
+ *           color: {
+ *             field: 'ld',
+ *             scale: 'threshold',
+ *             domain: [0.2, 0.4, 0.6, 0.8],
+ *             range: ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a'],
+ *             title: 'r² to index SNP',
+ *           },
+ *           shape: {
+ *             field: 'ld_role',
+ *             domain: ['index', 'partner'],
+ *             range: ['diamond', 'circle'],
+ *           },
+ *         },
+ *       },
+ *     ],
  *   },
  * }
  * ```
  *
  * #example
- * A selection scan as a plain `FeatureTrack`: the plot reads the file's `fst`
- * column through `scoreField` and colors each point by its `population`
- * column, with the color key derived from the values it meets:
+ * A selection scan as a plain `FeatureTrack`: a point per window at its
+ * `fst` column, coloured by its `population` column:
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -82,8 +95,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   displays: [
  *     {
  *       type: 'LinearManhattanDisplay',
- *       scoreField: 'fst',
- *       color: { field: 'population' },
+ *       marks: [
+ *         {
+ *           mark: 'point',
+ *           encoding: { y: 'fst', color: { field: 'population' } },
+ *         },
+ *       ],
  *     },
  *   ],
  * }
@@ -95,64 +112,19 @@ export function configSchemaFactory() {
     {
       ...trackHeightConfigSchemaFields(),
       /**
-       * #slot color
-       * `"goldenrod"` or a `jexl:` callback paints every point;
-       * `{ field: "population" }` gives each value a palette colour with a
-       * key; `{ field: "ld" }` colours by r² to the index SNP.
+       * #slot marks
+       * The plot, as `LinearMarkDisplay` reads it: unwritten, a point per
+       * feature at its `score`.
        */
-      color: manhattanColorConfigSchema,
-      ...scoreFieldConfigSchemaFields,
-      /**
-       * #slot scales
-       * The y scale: `domainMin`, `domainMax` and `rules`. -log10 p values are
-       * pre-transformed, so `type` admits `linear` only and the plot's domain
-       * is plain min/max over the loaded regions with no autoscale mode to
-       * consult — the track menu draws neither radio, because the scale
-       * declares neither.
-       *
-       * A threshold a scan is read against — genome-wide significance on a
-       * GWAS, an empirical outlier cutoff on a differentiation scan — is a
-       * `scales.y.rules` entry, on the plot's own scale, so it is a
-       * `-log10(p)` where the points are and an Fst where `scoreColumn` names
-       * an Fst column. A scan read against two thresholds, suggestive and
-       * genome-wide, names both. The axis widens to reach a rule, so a window
-       * where nothing clears the threshold still shows it.
-       */
-      scales: scalesSchema(
-        valueScaleSchema({
-          types: ['linear'],
-          rules: true,
-          grid: true,
-          minimalTicks: true,
-        }),
-      ),
-      /**
-       * #slot
-       * Manhattan point diameter in px (adjustable from the track menu). Larger
-       * default than wiggle's since Manhattan points are the primary glyph.
-       */
-      size: {
-        type: 'number',
-        defaultValue: DEFAULT_POINT_DIAMETER_PX,
-        description: 'Point diameter in px',
-      },
-      /**
-       * #slot
-       * Draw the color key: the r² ramp under LD coloring, the value table
-       * under field coloring. Nothing under the plain single-color scheme,
-       * which has no key to draw.
-       */
-      showLegend: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'Draw the color key while LD or field coloring is active. Defaults to on',
-      },
+      marks: markListSchema([MANHATTAN_MARK]),
     },
     {
+      /**
+       * #baseConfiguration
+       */
+      baseConfiguration: linearMarkDisplayConfigSchemaFactory(),
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      retired: retiredAxisSpellings,
     },
   )
 }

@@ -61,9 +61,9 @@ display keeps a Canvas2D-only renderer, having no GPU path to pair it with.
 **The grammar — a config-declared `encoding` and `transform`, run through
 one encoder — reaches three consumers.** The mark display (`plugins/marks`) is
 where a user gets all seven stages from JSON over any feature adapter, and
-`AlignmentsTrack`, `VariantTrack` and `FeatureTrack` may all carry it.
-Manhattan and wiggle's array-less fallback are the other two callers of
-`encodeFeatures`. Canvas's feature glyphs, the alignments pileup and variants'
+`AlignmentsTrack`, `VariantTrack` and `FeatureTrack` may all carry it, and
+Manhattan is the mark display with a default plot of its own. Wiggle's
+array-less fallback is the other caller of `encodeFeatures`. Canvas's feature glyphs, the alignments pileup and variants'
 genotype grid still hand-wire features into their arrays; wiggle's main path and
 Hi-C build no `Feature` and pack the parser's typed arrays directly. Two of
 those refusals are measured and stand: canvas's packer at 3.11x the encoder's cost
@@ -107,9 +107,9 @@ coverage step is no `mark-without-value`. A written channel wins, and an
 aggregate writing two summaries fills nothing.
 
 The encoding — field to channel, evaluated once — is the grammar's central
-idea and the tree has it as one loop. Four packers that were hand-written
-spellings of it call it now: the mark display, Manhattan, the example plugin
-and wiggle's array-less fallback ([MARK_ENCODING.md](MARK_ENCODING.md) §"A
+idea and the tree has it as one loop. Three packers that were hand-written
+spellings of it call it now: the mark display, the example plugin and wiggle's
+array-less fallback ([MARK_ENCODING.md](MARK_ENCODING.md) §"A
 reader in a channel's place"). Canvas's `packRenderArrays`
 (`plugins/canvas/src/RenderFeatureDataRPC/packRenderArrays.ts`) is the one
 hand-written packer left and stays that way, measured
@@ -230,16 +230,16 @@ The seams, named honestly:
   one is. ADR-118 measured the layout half of it and the position held: the
   rule those displays pack by is the step's rule, and everything they pack
   *with* is the display's own.
-- **A join is a field the adapter writes.** Manhattan's LD colouring is
-  `color: { field: 'ld' }`
-  ([ADR-135](../architecture-decision-records/adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)),
-  a variable prepared before the plot: `GWASAdapter` joins each SNP against its
-  `ldAdapter` when the fetch's `opts` name the index SNP, and writes the r² as
-  `ld` and the index as `ld_role`. The display declares a threshold over the
-  first and a shape over the second, so hue carries r² alone and the index is
-  the diamond in the colour of r² 1.
+- **A join is a field the adapter writes.** Manhattan's LD colouring is a
+  point mark whose colour is a threshold over `ld` and whose shape is a
+  categorical scale over `ld_role`, a variable prepared before the plot:
+  `GWASAdapter` joins each SNP against its `ldAdapter` when the fetch's `opts`
+  name the index SNP, and writes the r² as `ld` and the index as `ld_role`. The
+  join runs because the plot names one of the two, so hue carries r² alone and
+  the index is the diamond in the colour of r² 1. The index SNP itself is the
+  display's state, set by a click or following the top hit.
 - **The colour objects are one shape, and a preset is a field.** FeatureColor,
-  ManhattanColor, RibbonColor, MarkColor, AlignmentsColor, VariantCellColor,
+  RibbonColor, MarkColor, AlignmentsColor, VariantCellColor,
   WiggleColor and MultiWayGeneColor each take `{ value, field, scale }` and
   whichever of `domain`, `range`, `domainMin`, `domainMax`, `domainMid`,
   `scheme`, `reverse`, `labels` and `title` the scales they declare read —

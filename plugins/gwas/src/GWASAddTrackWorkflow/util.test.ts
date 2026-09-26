@@ -1,3 +1,4 @@
+import { LD_MARK } from '../LinearManhattanDisplay/ldPlot.ts'
 import { buildGwasTrackConfig, canSubmit } from './util.ts'
 
 const uri = (s: string) => ({ uri: s, locationType: 'UriLocation' as const })
@@ -157,7 +158,7 @@ test('a raw p-value column bakes scoreTransform into the adapter', () => {
   })
 })
 
-test('with LD: adds a LinearManhattanDisplay in ld color mode', () => {
+test('with LD: adds a LinearManhattanDisplay coloured by LD to the index SNP', () => {
   const cfg = buildGwasTrackConfig({
     trackId: 't1',
     trackName: 'GWAS',
@@ -177,9 +178,6 @@ test('with LD: adds a LinearManhattanDisplay in ld color mode', () => {
     },
   })
   expect(cfg.displays).toEqual([
-    {
-      type: 'LinearManhattanDisplay',
-      color: { field: 'ld' },
-    },
+    { type: 'LinearManhattanDisplay', marks: [LD_MARK] },
   ])
 })

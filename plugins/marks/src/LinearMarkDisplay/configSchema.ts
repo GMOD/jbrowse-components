@@ -34,7 +34,7 @@ import {
   MARK_SOURCES,
 } from './markVocabulary.ts'
 
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 export { MARK_TYPES, MARK_SOURCES } from './markVocabulary.ts'
 export type { MarkType, MarkSourceName } from './markVocabulary.ts'
@@ -108,6 +108,16 @@ const markShapeSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description: 'category order',
+    },
+    /**
+     * #slot marks.encoding.shape.title
+     * The heading of the key a categorical scale draws, naming what the
+     * shape marks. Unset, the key is titled with `field`; `""` is a key with
+     * no title.
+     */
+    title: {
+      type: 'maybeString',
+      description: 'key title; unset follows field, "" draws none',
     },
   },
   {
@@ -330,6 +340,15 @@ const markSchema = ConfigurationSchema(
 )
 
 /**
+ * A `marks` list that draws `defaults` until a config writes its own: how a
+ * display built on this one names its default plot, which a snapshot at that
+ * plot then leaves out.
+ */
+export function markListSchema(defaults: SnapshotIn<typeof markSchema>[]) {
+  return types.stripDefault(types.array(markSchema), defaults)
+}
+
+/**
  * #config LinearMarkDisplay
  * #category display
  * A grammar of graphics over a feature, alignments or variant track: a list of
@@ -385,7 +404,7 @@ export function configSchemaFactory() {
        * The marks to draw, in order — a later one paints over an earlier one.
        * Each is a `mark` and an `encoding`.
        */
-      marks: types.array(markSchema),
+      marks: markListSchema([]),
       /**
        * #slot transform
        * Steps over the region's features before the facet splits them and

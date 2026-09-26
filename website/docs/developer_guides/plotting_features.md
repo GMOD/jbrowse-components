@@ -20,10 +20,11 @@ fits needs a shape of its own, which is
 Plotting a field of a feature file needs no plugin at all. A `marks` entry on
 [`LinearMarkDisplay`](/docs/config_guides/mark_display) draws a `bar`, `point`
 or `span` over any feature adapter, with an `encoding` naming which fields feed
-it, and that page is the first rung. This guide is the second: a **shape** the
-library lacks, over the same worker encoding. The third is a display of your
-own, for a layout or a meaning the mark display does not have; the plugin below
-composes one, and `plugins/gwas` is the in-tree form of it.
+it, and that page is the first rung. The second is a display built on the mark
+display, adding a meaning it lacks and drawing through its marks:
+`plugins/gwas`'s Manhattan plot is the mark display's point mark plus the join
+to an index SNP's r². This guide is the third: a **shape** the library lacks,
+over the same worker encoding, in a display of your own.
 
 :::
 
@@ -35,7 +36,7 @@ than [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
 versions you develop against. `@jbrowse/render-core` first publishes in the next
 release; until then, build against a `jbrowse-components` checkout.
 
-<Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and declares one mark over the shared point shape. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
+<Figure src="/img/gwas/manhattan.png" caption="The mark display's point mark over a GWAS file: the worker encodes the scored points as typed arrays and the shared point shape draws them. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
 
 ## Rendering across two threads
 
@@ -62,10 +63,6 @@ is fuller):
 - **`displayedRegionIndex`**: a region's index in `view.displayedRegions`, the
   join key between `rpcDataMap` and the blocks:
   `rpcDataMap.get(block.displayedRegionIndex)`.
-
-The simplest complete in-tree reference is
-`plugins/gwas/src/LinearManhattanDisplay/`, whose whole drawing is one mark over
-the shared `pointMark`; this guide mirrors its shape.
 
 ## Files to create
 
@@ -444,36 +441,10 @@ it in place of `scoreMark` with nothing else to write:
   bar where `x2 - x` is wider than the glyph: a scatter plot, Manhattan's
   points, any datum placed by a value.
 
-Manhattan's whole drawing, over `pointMark`:
-
-<!-- include: plugins/gwas/src/LinearManhattanDisplay/manhattanMarks.ts -->
-
-```ts
-import { defineMark, pointMark } from '@jbrowse/render-core/marks'
-
-import type { ManhattanChannels } from './manhattanLayer.ts'
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
-
-/**
- * What this display draws, as a declaration: one `point` mark over the
- * encoder's channels, which already carry the shape's lane names.
- *
- * The GPU pass and its packer, the Canvas2D painter (which is also the SVG
- * export) and the hit-test geometry all come from `pointMark`; what is written
- * here is only which of this display's render-state values reach the shape's
- * uniforms.
- */
-export const MANHATTAN_MARKS = [
-  defineMark({
-    shape: pointMark,
-    channels: (d: ManhattanChannels) => d,
-    params: (s: ManhattanRenderState) => ({
-      domain: s.domainY,
-      diameterPx: s.diameterPx,
-    }),
-  }),
-]
-```
+The mark display's `point` case in
+`plugins/marks/src/LinearMarkDisplay/markList.ts` is the in-tree form:
+`pointMark` in place of `scoreMark`, and `params` handing it the domain, the
+scale and the diameter.
 
 `ScoreRenderState` must include `canvasWidth` and `canvasHeight` (the
 `FrameDimensions` the backend needs to size the backing store); add whatever
@@ -655,7 +626,7 @@ the answer:
 // few thousand boxes. A display with hundreds of thousands asks the encoder for
 // its `index` lane — a Flatbush over (bp, score) — and answers with what that
 // finds between the reach's `bpMin`/`valueMin` and `bpMax`/`valueMax` instead
-// (`findManhattanHit` in plugins/gwas is the worked form).
+// (`findMarkHit` in plugins/marks is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -696,8 +667,8 @@ body reads back. A display with many features per block builds a spatial index
 [`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
 from `rpcDataMap` in a cached view, and its `candidates` answers what the index
 finds in the reach it is handed, which carries the values the shape can ink near
-the cursor as well as the bp, instead of every instance; `plugins/gwas`'s
-`findManhattanHit.ts` does that.
+the cursor as well as the bp, instead of every instance; `plugins/marks`'s
+`findMarkHit.ts` does that.
 
 ## SVG export
 
@@ -775,10 +746,10 @@ to each other by a sweep test. See
 - `plugins/marks/src/LinearMarkDisplay/` - the config-declared display: one
   `CoreGetEncodedLayers` call per region, a mark list built from the `marks`
   slot, the legend off the encoder's scale tables
-- `plugins/gwas/src/LinearManhattanDisplay/` - a real feature-plotting display
-  (scored scatter) on the shared `pointMark`, its worker on `encodeFeatures`
-  with LD's colour and r² as reader channels, plus an indexed hit test (this
-  guide mirrors it)
+- `plugins/gwas/src/LinearManhattanDisplay/` - a display built on the mark
+  display: its model composes `LinearMarkDisplay`'s, its schema takes that
+  display's as its base with a default plot of its own, and what it adds is the
+  LD join each region's fetch hands the adapter
 - `plugins/variants/src/LinearMultiSampleVariantDisplay/` - a display that keeps
   a shape of its own (`cellMark.ts`) beside its shader
 - `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic

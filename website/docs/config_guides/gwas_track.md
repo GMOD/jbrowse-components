@@ -8,10 +8,12 @@ guide_category: Track types
 
 A `GWASTrack` renders association results as a Manhattan plot. The main work is
 prep: a bgzipped, tabix-indexed BED-like file whose score column is in -log₁₀(p)
-units (or set `scoreTransform` to convert). Add a PLINK `.ld` file and
-`color: { "field": "ld" }` to color points by linkage disequilibrium to an index
-SNP. Any `FeatureTrack` can draw the same plot from one of its numeric columns —
-see [any scored feature file](#any-scored-feature-file).
+units (or set `scoreTransform` to convert). Add a PLINK `.ld` file to color
+points by linkage disequilibrium to an index SNP. The plot is a
+[mark display](/docs/config_guides/mark_display) whose default plot is a point
+per SNP at its score, so its marks, scales, facets and rows all apply, and any
+`FeatureTrack` can draw the same plot from one of its numeric columns — see
+[any scored feature file](#any-scored-feature-file).
 
 <Figure src="/img/gwas/manhattan.png" caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background."/>
 
@@ -70,11 +72,12 @@ why the header is commented with `#`.
 
 ## Example
 
-`color: { "field": "ld" }` on the display colors points by r² to the index SNP
-and needs an `ldAdapter` sub-adapter on the `GWASAdapter`; swap in
-`PlinkLDTabixAdapter` for an indexed `.ld.gz`. A bare `color` string is a CSS
-literal or a `jexl:` expression per feature, and `size` sets the point diameter
-in px ([](/docs/config/linearmanhattandisplay)):
+A plot naming `ld` or `ld_role` joins each SNP's r² to the index SNP from the
+`GWASAdapter`'s `ldAdapter`; swap in `PlinkLDTabixAdapter` for an indexed
+`.ld.gz`. The mark below colors each point by r² in LocusZoom's five bins and
+draws the index SNP as a diamond. The track menu's **LD → Color by LD to index
+SNP** writes the same mark, and right-clicking a point pins it as the index
+([](/docs/config/linearmanhattandisplay)):
 
 ```json addtrack
 {
@@ -92,7 +95,26 @@ in px ([](/docs/config/linearmanhattandisplay)):
     }
   },
   "displayDefaults": {
-    "color": { "field": "ld" }
+    "marks": [
+      {
+        "mark": "point",
+        "encoding": {
+          "y": "score",
+          "color": {
+            "field": "ld",
+            "scale": "threshold",
+            "domain": [0.2, 0.4, 0.6, 0.8],
+            "range": ["#357ebd", "#46b8da", "#5cb85c", "#eea236", "#d43f3a"],
+            "title": "r² to index SNP"
+          },
+          "shape": {
+            "field": "ld_role",
+            "domain": ["index", "partner"],
+            "range": ["diamond", "circle"]
+          }
+        }
+      }
+    ]
   }
 }
 ```
@@ -103,22 +125,21 @@ in px ([](/docs/config/linearmanhattandisplay)):
 scan, a QTL table or any BED-like file with a numeric column draws as a
 Manhattan plot without a `GWASTrack` or a `GWASAdapter`. Name the display in the
 track's `displays` (it is also offered under the track menu's **Display
-types**), and two slots choose what it reads:
+types**), and its point mark chooses what it reads:
 
-- [`scoreField`](/docs/config/linearmanhattandisplay/#slot-scorefield) — the
-  column plotted as y. The default `score` is the BED score column (or what the
-  adapter's `scoreColumn` rewrote it to); an explicit name reaches a raw column
-  of the file. A feature with no finite value there is skipped.
-- [`color: { "field": "population" }`](/docs/config/manhattancolor/#slot-field)
-  — gives each distinct value of a column its own color and draws a key of the
-  values met. A value takes the same color in every region and session. The
-  track menu's **Color by...** submenu switches between a single color, a field
-  and (with an LD file) LD, and keeps the field and its order through a switch,
-  so picking the field again finds them. The object's
-  [`domain`](/docs/config/manhattancolor/#slot-domain) is the order those values
+- `encoding.y` — the column plotted as y. The default `score` is the BED score
+  column (or what the adapter's `scoreColumn` rewrote it to); an explicit name
+  reaches a raw column of the file. A feature with no finite value there is
+  skipped.
+- `encoding.color: { "field": "population" }` — gives each distinct value of a
+  column its own color and draws a key of the values met. A value takes the same
+  color in every region and session. Its
+  [`domain`](/docs/config/markcolor/#slot-domain) is the order those values
   take, in the key and in the colors: the values it lists come first, in that
-  order, and the rest follow sorted. A scan whose tiers read high to low names
-  them here, and `range` hands them colors.
+  order, and the rest follow sorted, and `range` hands them colors.
+
+The track menu's **Edit plot...** edits both, and the mark's `size` is the point
+diameter in px.
 
 ```json addtrack
 {
@@ -133,8 +154,12 @@ types**), and two slots choose what it reads:
   "displays": [
     {
       "type": "LinearManhattanDisplay",
-      "scoreField": "fst",
-      "color": { "field": "population" },
+      "marks": [
+        {
+          "mark": "point",
+          "encoding": { "y": "fst", "color": { "field": "population" } }
+        }
+      ],
       "scales": { "y": { "rules": [0.25] } }
     }
   ]

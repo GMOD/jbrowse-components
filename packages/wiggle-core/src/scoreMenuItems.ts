@@ -42,9 +42,8 @@ export interface ScoreScaleModel extends IStateTreeNode {
 }
 
 // The autoscale half, apart because a display can have a value scale and no
-// autoscale mode behind it: Manhattan's domain is plain min/max over the loaded
-// regions and consults none, so its `scales.y` carries no `autoscale` member and
-// this half answers `undefined`.
+// autoscale mode behind it: its `scales.y` then carries no `autoscale` member
+// and this half answers `undefined`.
 export interface AutoscaleModel {
   autoscaleType: string | undefined
   setAutoscale: (v?: string) => void
@@ -65,9 +64,7 @@ const SCALE_TYPE_LABELS: Record<string, string> = {
 }
 
 // The radio offers exactly what the display's own `scales.y.type` enum admits,
-// read back through `scaleTypeChoices`. Offering a fixed three wrote values an
-// enumeration rejected, which is why Manhattan and the mark display each used to
-// drop the radio by hand.
+// read back through `scaleTypeChoices`, since a value outside it is refused.
 export function makeScaleTypeSubMenu(self: {
   scaleType: string
   scaleTypeChoices: string[]

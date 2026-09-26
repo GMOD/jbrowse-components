@@ -1,12 +1,11 @@
 import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 
-import type { ManhattanChannels } from './manhattanLayer.ts'
 import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
 
 /**
- * A worker payload for tests, from parallel lists: the encoder's dense
- * channels, the score extremes and a Flatbush over (bp, score), the way
- * `encodeFeatures` ships them.
+ * One point layer as the worker ships it, for tests, from parallel lists: the
+ * encoder's dense channels, the score extremes and a Flatbush over (bp,
+ * score), the way `encodeFeatures` ships them.
  */
 export function manhattanFixture({
   x,
@@ -23,7 +22,7 @@ export function manhattanFixture({
   color?: number[]
   glyph?: number[]
   flatbush?: boolean
-} & Partial<Pick<EncodedChannels, 'scale' | 'shapeScale'>>): ManhattanChannels {
+} & Partial<Pick<EncodedChannels, 'scale' | 'shapeScale'>>): EncodedChannels {
   const count = x.length
   let yMin = Infinity
   let yMax = -Infinity

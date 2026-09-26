@@ -764,15 +764,13 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
   the adapter puts on each payload
   ([ADR-125](../architecture-decision-records/adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md)).
 
-GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It builds
-its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixin()`
-+ `ScoreFieldConfigMixin()` — and declares its own config schema over
-`scoreAxisConfigSchemaFields`, all from `@jbrowse/wiggle-core`. It fetches
-through `CoreGetEncodedLayers` as the mark display does, one `point` layer of
-per-feature points, implements its own `ManhattanRenderingBackend` with its own
-pass, and is zoom-independent:
-it declares no `zoomFetchArgs` and its payload carries no `zoomRange`, so no
-zoom invalidates a region it has loaded.
+GWAS's Manhattan is the mark display with a default plot: its model composes
+`LinearMarkDisplay`'s and its schema takes that display's as its base
+([ADR-178](../architecture-decision-records/adr-178-manhattan-is-the-mark-display-with-a-default-plot.md)).
+It draws through the mark display's backend and is zoom-independent: a plot
+with no binning step sends the same `rpcProps` at every zoom and a GWAS
+payload carries no `zoomRange`, so no zoom invalidates a region it has
+loaded.
 
 ### Upload patterns
 

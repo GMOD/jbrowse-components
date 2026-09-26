@@ -506,8 +506,9 @@ so only it is untouched by ADR-078:
   would not stop the double draw. Band geometry has to follow the laid-out data,
   making that path structural. `model.coupling.test.ts` §"a region arrival
   invalidates renderState, not just the size gate" pins it.
-- **`LinearManhattanDisplay`** passes `self.rpcDataMap` into `renderBlocks`,
-  where the renderer `.get()`s per block inside the render autorun.
+- **`LinearMarkDisplay`**, and Manhattan built on it, passes `self.rpcDataMap`
+  into `renderBlocks`, where the renderer `.get()`s per block inside the render
+  autorun.
 - **The wiggle family** through `renderState` → `domain` →
   `visibleStatsDomain` (`WiggleCommonMixin`), which reads `rpcDataMap.size` and
   `.get()`.

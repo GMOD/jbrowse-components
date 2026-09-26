@@ -75,11 +75,9 @@ export type ValueScaleRuleConfig = Instance<
  * #config ValueScale
  * #category display
  * The value scale of a quantitative display, written as `scales.y`: the
- * wiggle plot, the Manhattan plot, the alignments coverage band and the mark
- * display each carry one, with the axis guides it draws — its ticks, its
- * `grid`, its `rules` and its `title`. Which members it has follows what the
- * display draws: Manhattan places a linear axis and consults no autoscale
- * mode, so it has neither `type` alternatives nor `autoscale`.
+ * wiggle plot, the alignments coverage band and the mark display, the
+ * Manhattan plot among them, each carry one, with the axis guides it draws —
+ * its ticks, its `grid`, its `rules` and its `title`.
  *
  * Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, and an end
  * left unset autoscales over the loaded regions.
@@ -90,7 +88,7 @@ export type ValueScaleRuleConfig = Instance<
  * at `0` on the wiggle family and the mark display and at `1` on the coverage
  * band.
  *
- * The wiggle family, the Manhattan plot and the mark display also carry
+ * The wiggle family and the mark display also carry
  * `rules`, reference lines at chosen values, `grid`, a line at every tick,
  * and `minimalTicks`; the mark display adds `title`, the caption beside the
  * axis. A rule naming no `color` draws in the one

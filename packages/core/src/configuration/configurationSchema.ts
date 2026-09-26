@@ -2,6 +2,7 @@ import {
   getEnv,
   isArrayType,
   isMapType,
+  isOptionalType,
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -312,13 +313,16 @@ function makeConfigurationSchemaModel<
     if (isConfigurationSchemaType(slotDefinition)) {
       // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
       // (so it strips when all-default); an array/map of sub-schemas gets
-      // wrapped so an empty/default collection is likewise omitted from the
-      // snapshot.
-      if (isArrayType(slotDefinition)) {
-        modelDefinition[slotName] = types.stripDefault(slotDefinition, [])
-        collectionKeys.add(slotName)
-      } else if (isMapType(slotDefinition)) {
-        modelDefinition[slotName] = types.stripDefault(slotDefinition, {})
+      // wrapped so an empty collection is likewise omitted from the snapshot,
+      // unless it is wrapped in a default of its own: a display built on
+      // another names its own default plot that way.
+      if (isArrayType(slotDefinition) || isMapType(slotDefinition)) {
+        modelDefinition[slotName] = isOptionalType(slotDefinition)
+          ? slotDefinition
+          : types.stripDefault(
+              slotDefinition,
+              isArrayType(slotDefinition) ? [] : {},
+            )
         collectionKeys.add(slotName)
       } else {
         modelDefinition[slotName] = slotDefinition
@@ -365,7 +369,8 @@ function makeConfigurationSchemaModel<
     .actions((self): ConfigNodeActions => ({
       // Replace a sub-schema member whole. `data` is whatever the sub-schema's
       // `preProcessSnapshot` takes, a string shorthand included; for a
-      // collection it is the whole list or map, and `null` empties it.
+      // collection it is the whole list or map, and `null` resets it to its
+      // default, empty unless the collection names one.
       setSubschema(slotName: string, data: unknown) {
         if (collectionKeys.has(slotName)) {
           self[slotName] = data ?? undefined

@@ -53,7 +53,20 @@
         {
           "type": "LinearManhattanDisplay",
           "displayId": "ukb_mcv_sv_gwas-LinearManhattanDisplay",
-          "height": 250
+          "height": 250,
+          "marks": [
+            {
+              "mark": "point",
+              "encoding": {
+                "y": "score",
+                "shape": {
+                  "field": "svtype",
+                  "domain": ["INS"],
+                  "range": ["triangle-down", "circle"]
+                }
+              }
+            }
+          ]
         }
       ],
       "adapter": {

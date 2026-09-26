@@ -658,6 +658,23 @@ describe('setSubschema', () => {
     node.setSubschema('items', null)
     expect(node.items).toHaveLength(0)
   })
+
+  test('a collection wrapped in its own default fills, strips and resets to it', () => {
+    const Item = ConfigurationSchema('DefaultedItem', {
+      x: { type: 'number', defaultValue: 1 },
+    })
+    const schema = ConfigurationSchema('WithDefaultedCollection', {
+      items: types.stripDefault(types.array(Item), [{ x: 7 }]),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(getSnapshot(node.items)).toEqual([{ x: 7 }])
+    expect(getSnapshot(node)).toEqual({})
+
+    node.setSubschema('items', [])
+    expect(getSnapshot(node)).toEqual({ items: [] })
+    node.setSubschema('items', null)
+    expect(getSnapshot(node.items)).toEqual([{ x: 7 }])
+  })
 })
 
 describe('setSlot', () => {

@@ -215,7 +215,9 @@ describe('validateConfig', () => {
       ],
     }
     expect(errorsOf(config)).toEqual([])
-    expect(warningsOf(config)[0]?.message).toContain('legacy value')
+    expect(warningsOf(config)[0]?.message).toContain(
+      '"defaultRendering" is a legacy key',
+    )
   })
 
   it('warns rather than errors on a legacy key a schema retires', () => {
@@ -430,17 +432,6 @@ describe('validateConfig', () => {
           ...display('LinearWiggleDisplay', { field: 'source', ...cuts }),
         }),
       ).toEqual([])
-      expect(
-        found({
-          type: 'GWASTrack',
-          adapter: { type: 'GWASAdapter', uri: 'x.tsv.gz' },
-          ...display('LinearManhattanDisplay', {
-            field: 'ld',
-            domain: [0.2, 0.8],
-            range: ['red', 'blue'],
-          }),
-        }),
-      ).toEqual([`threshold-range ${where}.range`])
     })
 
     it("checks a feature track's threshold colour", () => {

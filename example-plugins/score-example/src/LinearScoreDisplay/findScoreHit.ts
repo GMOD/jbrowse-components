@@ -31,7 +31,7 @@ const HIT_RADIUS_PX = 4
 // few thousand boxes. A display with hundreds of thousands asks the encoder for
 // its `index` lane — a Flatbush over (bp, score) — and answers with what that
 // finds between the reach's `bpMin`/`valueMin` and `bpMax`/`valueMax` instead
-// (`findManhattanHit` in plugins/gwas is the worked form).
+// (`findMarkHit` in plugins/marks is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,

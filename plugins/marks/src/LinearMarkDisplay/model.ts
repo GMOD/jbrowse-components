@@ -6,6 +6,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
@@ -176,7 +177,10 @@ import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { CoarseTierMode } from '@jbrowse/display-kit/coarseTier'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
-import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
+import type {
+  HighlightRect,
+  HighlightStyle,
+} from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -437,6 +441,29 @@ export function stateModelFactory(
          */
         get prefersOffset() {
           return true
+        },
+        /**
+         * #getter
+         * Overridable hook: what every region's fetch hands the adapter beside
+         * the region and the zoom, or undefined for nothing. A fetch input, so
+         * a change refetches; `resolveAdapterOptions` places it on each region.
+         * Manhattan's LD join is one.
+         */
+        get adapterOptions(): object | undefined {
+          return undefined
+        },
+        /**
+         * #method
+         * Overridable hook: `adapterOptions` as one region's fetch sends them
+         * as `CoreGetEncodedLayers`'s `opts`, resolved on the main thread,
+         * where the assembly's aliases are; undefined sends none.
+         */
+        resolveAdapterOptions(
+          options: object,
+          _region: Region,
+          _signal: AbortSignal,
+        ): Promise<object | undefined> {
+          return Promise.resolve(options)
         },
         /**
          * #getter
@@ -1067,15 +1094,18 @@ export function stateModelFactory(
          * #method
          * the fetch inputs SettingsInvalidate watches: each mark's encoding
          * and lanes, and the filters as transform steps, all evaluated in the
-         * worker
+         * worker, and the `adapterOptions` each region resolves
          */
         rpcProps(): {
           layers: LayerRequest[]
           transform: TransformStep[]
           facet?: FacetSpec
+          opts?: object
         } {
           const field = self.splitField
+          const opts = self.adapterOptions
           return {
+            ...(opts ? { opts } : {}),
             layers: self.layerRequests,
             transform: [
               ...self.activeFilters.map(expr => ({
@@ -1218,12 +1248,32 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * The mark the hover or the open context menu is on, or undefined.
+         */
+        get highlightedHit(): MarkHitInfo | undefined {
+          return self.hoveredFeature ?? self.contextMenuInfo?.hit
+        },
+        /**
+         * #getter
+         * A ring around a point, since a wash over a 4 px glyph is invisible
+         * and every hue may be the colour scale's; a shade over anything else.
+         */
+        get highlightStyle(): HighlightStyle {
+          const hit = this.highlightedHit
+          return hit && self.markTypes[hit.markIndex] === 'point'
+            ? 'ring'
+            : 'shade'
+        },
+        /**
+         * #getter
          * The box the hovered instance painted, for the chrome's highlight; the
          * context menu's hit stands in while a menu is open. In the chrome's px,
-         * so the plot's inset is added to the canvas box.
+         * so the plot's inset is added to the canvas box. A point's ring sits a
+         * fixed margin outside the glyph and floors at 6 px, so a tiny point
+         * stays findable.
          */
         get hoverInk(): HighlightRect[] {
-          const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
+          const hit = this.highlightedHit
           if (!hit) {
             return []
           }
@@ -1234,7 +1284,7 @@ export function stateModelFactory(
           if (mark === -1) {
             return []
           }
-          return inkOfInstances(
+          const boxes = inkOfInstances(
             self.markList,
             self.renderBlocks,
             index => self.rpcDataMap.get(index),
@@ -1245,6 +1295,16 @@ export function stateModelFactory(
                 : undefined,
             [hit.regionIndex],
           ).map(r => ({ ...r, top: r.top + top }))
+          if (this.highlightStyle !== 'ring') {
+            return boxes
+          }
+          const r = Math.max(6, self.markSizes[hit.markIndex]! / 2 + 4)
+          return boxes.map(box => ({
+            left: box.left + box.width / 2 - r,
+            top: box.top + box.height / 2 - r,
+            width: 2 * r,
+            height: 2 * r,
+          }))
         },
         /**
          * #getter
@@ -1264,10 +1324,15 @@ export function stateModelFactory(
          * The plot as declared, defaults left off: `marks`, `transform`,
          * `facet`, `rows` and `scales`, which "Edit as JSON..." opens on. An
          * agent edits a copy and hands it to `applyDisplaySettings`, or first
-         * to `plotProblems`.
+         * to `plotProblems`. The marks are the ones drawn wherever any are,
+         * since a display built on this one names a default plot of its own.
          */
         get markPlot(): MarkPlot {
-          return markPlotOf(getSnapshot(self.conf))
+          const marks = getSnapshot(self.conf.marks)
+          return markPlotOf({
+            ...getSnapshot(self.conf),
+            ...(marks.length > 0 ? { marks } : {}),
+          })
         },
         /**
          * #method
@@ -1289,15 +1354,24 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The config problems as lines an agent's settle report carries, and
-         * a mark whose every loaded feature was skipped, which a mistyped
-         * field is: a display with either still draws, so nothing else
-         * reaches a caller that cannot see the corner notice.
+         * Overridable hook: what a display built on this one says about its
+         * loaded data that the plot cannot show, for the corner notice.
+         */
+        get dataNotices(): string[] {
+          return []
+        },
+        /**
+         * #getter
+         * The config problems as lines an agent's settle report carries, a
+         * mark whose every loaded feature was skipped, which a mistyped field
+         * is, and `dataNotices`: a display with any of them still draws, so
+         * nothing else reaches a caller that cannot see the corner notice.
          */
         get notices(): string[] {
           const { skipped, total, fields } = this.skippedFeatures
           return [
             ...this.configProblems.map(problemText),
+            ...this.dataNotices,
             ...(total > 0 && skipped === total
               ? [
                   `every one of ${total.toLocaleString()} ${pluralize(total, 'feature')} was skipped: ${fields.join(', ') || 'start or end'} missing or not a number`,
@@ -1367,7 +1441,7 @@ export function stateModelFactory(
          * #getter
          * the colour keys the loaded regions carry, one per scale the marks
          * drawing at the view's zoom resolve through, each headed with its
-         * colour's `title`
+         * channel's `title`
          */
         get legendSections() {
           const { visible } = self.markView
@@ -1375,7 +1449,7 @@ export function stateModelFactory(
           return buildMarkLegend(
             self.rpcDataMap.values(),
             i => !!visible[i],
-            i => marks[i]?.encoding.color.title,
+            (i, channel) => marks[i]?.encoding[channel].title,
           )
         },
         /**
@@ -1830,17 +1904,29 @@ export function stateModelFactory(
                   ),
                 }))
               : needed
-          const { byteLimit, ...request } = { ...rpcArgs(self), bpPerPx }
+          const { byteLimit, opts, ...request } = {
+            ...rpcArgs(self),
+            bpPerPx,
+          }
           return fetchEachRegion(self, regions, {
-            call: (region, ctx) =>
-              ctx.callRpc('CoreGetEncodedLayers', {
+            call: async (region, ctx) => {
+              const resolved =
+                opts &&
+                (await self.resolveAdapterOptions(opts, region, ctx.signal))
+              const asked = {
                 ...request,
-                byteLimit,
                 region,
-              }),
-            onResult: (_idx, result, region) => ({
+                ...(resolved ? { opts: resolved } : {}),
+              }
+              const result = await ctx.callRpc('CoreGetEncodedLayers', {
+                ...asked,
+                byteLimit,
+              })
+              return isRegionRefused(result) ? result : { result, asked }
+            },
+            onResult: (_idx, { result, asked }) => ({
               ...storedRegionData(result),
-              request: { ...request, region },
+              request: asked,
             }),
           })
         },
@@ -1935,6 +2021,23 @@ export function stateModelFactory(
       }))
   )
 }
+
+export type { ListedSource } from '../MarkRowsRPC/MarkGetRowSources.ts'
+export type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
+export type { FacetLayout } from './facet.ts'
+export type { MarkHitInfo } from './findMarkHit.ts'
+export type { MarkLegendSection } from './legend.ts'
+export type {
+  DisplayMark,
+  MarkEntry,
+  MarkRegionData,
+  MarkRenderState,
+  TextMarkEntry,
+} from './markList.ts'
+export type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
+export type { MarkProblem } from './markProblems.ts'
+export type { PlotFields } from './scanPlotFields.ts'
+export type { StepChannels } from './stepChannels.ts'
 
 export type LinearMarkDisplayStateModel = ReturnType<typeof stateModelFactory>
 export interface LinearMarkDisplayModel extends Instance<LinearMarkDisplayStateModel> {}

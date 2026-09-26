@@ -4,14 +4,9 @@ import type { MenuItem } from './MenuTypes.ts'
 import type { SettingRowOptions } from './toggleMenuItems.ts'
 
 /**
- * The "Show legend" checkbox, which seven displays build by hand — Hi-C, LD,
- * alignments, LGVSynteny, multi-wiggle, multi-row features, both multi-sample
- * variant displays and the Manhattan plot.
- *
- * Takes the value and the toggle rather than a `{ showLegend, setShowLegend }`
- * model, because the Manhattan plot's pair is named for the LD legend it draws
- * and would otherwise need an adapter object at the call site. Same argument
- * order as `checkboxItem`, which is all this adds a label to.
+ * The "Show legend" checkbox behind `LegendMixin`'s row and the circular
+ * view's. Takes the value and the toggle, in `checkboxItem`'s order, which is
+ * all this adds a label to.
  *
  * The `showLegend` **config slots** stay per display: their default values
  * legitimately differ (a Hi-C color scale is off by default, a variant genotype

@@ -8,8 +8,8 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 
 `WiggleScoreConfigMixin` plus `scoreField`, for a display that plots one
 configured feature field and so declares `scoreFieldConfigSchemaFields`:
-both wiggle displays and the Manhattan plot. `LinearMarkDisplay` names a
-field per mark and composes the base instead.
+the wiggle display. `LinearMarkDisplay` names a field per mark and composes
+the base instead.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 

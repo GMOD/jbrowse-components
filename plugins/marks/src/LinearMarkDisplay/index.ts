@@ -5,7 +5,7 @@ import { configSchemaFactory } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const ReactComponent = lazyWithPreload(
+export const ReactComponent = lazyWithPreload(
   () => import('./components/LinearMarkDisplayComponent.tsx'),
 )
 

@@ -110,24 +110,19 @@ function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
   return getSnapshot(display(conf, type).color)
 }
 
-// `ld` is a field the Manhattan display computes, so `{ field: 'ld' }` is a
-// field like any other to the routing and reaches the feature display too,
-// where it paints a field the features lack (ADR-135).
+// `ld` is a field the GWAS adapter joins, so `{ field: 'ld' }` is a field
+// like any other to the routing and reaches the feature display, where it
+// paints a field the features lack (ADR-135).
 test.each(['type', 'ld'])(
   'a colour field %s reaches the displays whose colour is an object',
   field => {
     const conf = hydrateFeatureTrack({ color: { field } })
-    expect(colorOf(conf, 'LinearManhattanDisplay')).toEqual({ field })
     expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({ field })
   },
 )
 
-test('a dormant field under scale none reaches both colour objects as written', () => {
+test('a dormant field under scale none reaches the colour object as written', () => {
   const conf = hydrateFeatureTrack({ color: { field: 'type', scale: 'none' } })
-  expect(colorOf(conf, 'LinearManhattanDisplay')).toEqual({
-    field: 'type',
-    scale: 'none',
-  })
   expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({
     field: 'type',
     scale: 'none',
@@ -136,6 +131,6 @@ test('a dormant field under scale none reaches both colour objects as written', 
 
 test('a colour no display takes fails the load, naming every reason', () => {
   expect(() => hydrateFeatureTrack({ color: { scale: 'ordinal' } })).toThrow(
-    /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: [\s\S]*LinearManhattanDisplay: /,
+    /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: /,
   )
 })

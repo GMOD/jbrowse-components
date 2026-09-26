@@ -12,8 +12,8 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * track" against "default height for the track") over the same slot.
  *
  * The default height is the parameter because it is what genuinely differs: a
- * Hi-C contact triangle opens at 300px, a multi-source wiggle at 200, a
- * Manhattan plot at 100. The type is not, and a `maybeNumber` height is a
+ * Hi-C contact triangle opens at 300px, a mark display at 150, a Manhattan
+ * plot at 100. The type is not, and a `maybeNumber` height is a
  * different contract — a display with an auto-fit mode declares its own.
  *
  * **Write the description as the whole explanation.** A slot reached by

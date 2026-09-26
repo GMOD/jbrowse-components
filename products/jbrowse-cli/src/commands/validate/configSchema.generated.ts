@@ -6996,192 +6996,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "ManhattanColor": {
-      "title": "ManhattanColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1",
-          "type": "string"
-        },
-        {
-          "title": "ManhattanColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "CSS color or jexl callback for Manhattan points.",
-              "$ref": "#/$defs/CssColorOrJexl",
-              "default": "#0068d1"
-            },
-            "field": {
-              "description": "the feature field whose values each take a range colour, with a key listing the values met: name, refName, a BED extra column, a GFF attribute; ld is each point's r² to the index SNP, read from the GWASAdapter's ldAdapter.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            },
-            "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points domain lists; unset follows field, and is threshold over ld and categorical over anything else.",
-              "enum": [
-                "none",
-                "categorical",
-                "threshold"
-              ]
-            },
-            "domain": {
-              "description": "under a categorical scale, the field's values that take the range first, in order, in the key as on the points, the rest following sorted, each on a colour no listed value paints; under a threshold scale, the cut points in ascending order, range taking one entry more than this, one per interval; r² to the index SNP cuts at 0.2, 0.4, 0.6 and 0.8 into the LocusZoom blue-through-red bins unless these say otherwise.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                }
-              ]
-            },
-            "range": {
-              "description": "CSS colours a categorical scale hands its domain in order, continuing into the default palette past its end, or a threshold scale hands its intervals, lowest first.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColor"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "ValueScale3": {
-      "title": "ValueScale3",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "description": "linear.",
-          "const": "linear",
-          "default": "linear"
-        },
-        "domainMin": {
-          "description": "pinned bottom of the axis; unset autoscales.",
-          "type": "number"
-        },
-        "domainMax": {
-          "description": "pinned top of the axis; unset autoscales.",
-          "type": "number"
-        },
-        "autoscaleGroup": {
-          "description": "tracks naming one group autoscale together.",
-          "$ref": "#/$defs/PlainString"
-        },
-        "grid": {
-          "description": "rule the plot at the tick positions.",
-          "type": "boolean",
-          "default": false
-        },
-        "minimalTicks": {
-          "description": "label only the ends of the axis.",
-          "type": "boolean",
-          "default": false
-        },
-        "rules": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ValueScaleRule"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "Scales3": {
-      "title": "Scales3",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "y": {
-          "$ref": "#/$defs/ValueScale3"
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "LinearManhattanDisplaySlots": {
-      "type": "object",
-      "properties": {
-        "height": {
-          "description": "default height for the track.",
-          "type": "number",
-          "default": 100
-        },
-        "color": {
-          "$ref": "#/$defs/ManhattanColor"
-        },
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/PlainString",
-          "default": "score"
-        },
-        "scales": {
-          "$ref": "#/$defs/Scales3"
-        },
-        "size": {
-          "description": "Point diameter in px.",
-          "type": "number",
-          "default": 4
-        },
-        "showLegend": {
-          "description": "Draw the color key while LD or field coloring is active. Defaults to on.",
-          "type": "boolean",
-          "default": true
-        },
-        "displayCrossHatches": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "minimalTicks": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        }
-      }
-    },
-    "LinearManhattanDisplay": {
-      "title": "LinearManhattanDisplay",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearManhattanDisplaySlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "const": "LinearManhattanDisplay"
-        },
-        "displayId": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
     "MarkLocus": {
       "title": "MarkLocus",
       "anyOf": [
@@ -7418,6 +7232,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               ]
+            },
+            "title": {
+              "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {
@@ -8037,8 +7855,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "ValueScale4": {
-      "title": "ValueScale4",
+    "ValueScale3": {
+      "title": "ValueScale3",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -8113,19 +7931,151 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Scales4": {
-      "title": "Scales4",
+    "Scales3": {
+      "title": "Scales3",
       "type": "object",
       "x-closed": true,
       "properties": {
         "y": {
-          "$ref": "#/$defs/ValueScale4"
+          "$ref": "#/$defs/ValueScale3"
         }
       },
       "patternProperties": {
         "^_+comment": {}
       },
       "additionalProperties": false
+    },
+    "LinearManhattanDisplaySlots": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "description": "default height for the track.",
+          "type": "number",
+          "default": 100
+        },
+        "fetchSizeLimit": {
+          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
+          "type": "number",
+          "default": 1000000
+        },
+        "forceLoad": {
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "type": "boolean",
+          "default": false
+        },
+        "densityTier": {
+          "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
+          "enum": [
+            "auto",
+            "features",
+            "density"
+          ],
+          "default": "auto"
+        },
+        "densityTierBpPerPx": {
+          "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
+          "type": "number",
+          "default": 0
+        },
+        "marks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Mark"
+          }
+        },
+        "transform": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MarkTransform"
+          }
+        },
+        "facet": {
+          "$ref": "#/$defs/MarkFacet"
+        },
+        "rows": {
+          "$ref": "#/$defs/Rows"
+        },
+        "rowColor": {
+          "$ref": "#/$defs/RowColor"
+        },
+        "showTree": {
+          "description": "show the cluster tree beside the rows.",
+          "type": "boolean",
+          "default": true
+        },
+        "showBranchLength": {
+          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
+          "type": "boolean",
+          "default": true
+        },
+        "showRowLabels": {
+          "description": "draw the row value over the left of each row.",
+          "type": "boolean",
+          "default": true
+        },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "type": "number",
+          "default": 80
+        },
+        "scales": {
+          "$ref": "#/$defs/Scales3"
+        },
+        "origin": {
+          "description": "baseline value for bars.",
+          "type": "number",
+          "default": 0
+        },
+        "minWidthPx": {
+          "description": "minimum bar/span width in px.",
+          "type": "number",
+          "default": 1
+        },
+        "showLegend": {
+          "description": "draw the colour key.",
+          "type": "boolean",
+          "default": true
+        },
+        "jexlFilters": {
+          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "displayCrossHatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        }
+      }
+    },
+    "LinearManhattanDisplay": {
+      "title": "LinearManhattanDisplay",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/LinearManhattanDisplaySlots"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "LinearManhattanDisplay"
+        },
+        "displayId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "unevaluatedProperties": false
     },
     "LinearMarkDisplaySlots": {
       "type": "object",
@@ -8201,7 +8151,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 80
         },
         "scales": {
-          "$ref": "#/$defs/Scales4"
+          "$ref": "#/$defs/Scales3"
         },
         "origin": {
           "description": "baseline value for bars.",
@@ -8593,6 +8543,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/fetchSizeLimit"
                 },
                 {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
                 }
               ]
@@ -8604,6 +8557,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/forceLoad"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
@@ -8651,6 +8607,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/densityTier"
                 },
                 {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/densityTier"
+                },
+                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
                 }
               ]
@@ -8664,6 +8623,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/densityTierBpPerPx"
                 },
                 {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/densityTierBpPerPx"
+                },
+                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
                 }
               ]
@@ -8672,6 +8634,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "anyOf": [
                 {
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
@@ -8713,9 +8678,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/color"
                 }
               ]
             },
@@ -8735,6 +8697,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/facet"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
@@ -8810,6 +8775,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rows"
                 },
                 {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rows"
+                },
+                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
                 }
               ]
@@ -8824,6 +8792,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "anyOf": [
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowColor"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
@@ -8851,6 +8822,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showTree"
                 },
                 {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showTree"
+                },
+                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
                 }
               ]
@@ -8859,6 +8833,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "anyOf": [
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showBranchLength"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
@@ -8871,6 +8848,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowLabels"
                 },
                 {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowLabels"
+                },
+                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
                 }
               ]
@@ -8881,12 +8861,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/treeAreaWidth"
                 },
                 {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
+                },
+                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
                 }
               ]
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scoreField"
+            "marks": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/marks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+                }
+              ]
+            },
+            "transform": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/transform"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+                }
+              ]
             },
             "scales": {
               "anyOf": [
@@ -8898,8 +8898,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "size": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
+            "origin": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/origin"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+                }
+              ]
+            },
+            "minWidthPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minWidthPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+                }
+              ]
             },
             "displayCrossHatches": {
               "anyOf": [
@@ -8920,18 +8937,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
                 }
               ]
-            },
-            "marks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
-            },
-            "transform": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
-            },
-            "origin": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
-            },
-            "minWidthPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             }
           },
           "patternProperties": {
@@ -11536,20 +11541,59 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "height": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/height"
             },
-            "color": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/color"
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/fetchSizeLimit"
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scoreField"
+            "forceLoad": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/forceLoad"
+            },
+            "densityTier": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/densityTier"
+            },
+            "densityTierBpPerPx": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/densityTierBpPerPx"
+            },
+            "marks": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/marks"
+            },
+            "transform": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/transform"
+            },
+            "facet": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/facet"
+            },
+            "rows": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rows"
+            },
+            "rowColor": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowColor"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowLabels"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
             },
             "scales": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
             },
-            "size": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
+            "origin": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minWidthPx"
             },
             "showLegend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
@@ -15354,6 +15398,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearManhattanDisplayState": {
       "type": "object",
       "properties": {
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
+        "jexlFiltersSetting": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "indexSnp": {
           "type": "string"
         },

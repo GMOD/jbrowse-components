@@ -1,4 +1,5 @@
 import { scoreAdapterFields } from '../GWASAdapter/configSchema.ts'
+import { LD_MARK } from '../LinearManhattanDisplay/ldPlot.ts'
 import {
   buildLdAdapterConfig,
   deriveTbiLocation,
@@ -76,7 +77,7 @@ export function buildGwasTrackConfig({
           displays: [
             {
               type: 'LinearManhattanDisplay',
-              color: { field: 'ld' },
+              marks: [LD_MARK],
             },
           ],
         }

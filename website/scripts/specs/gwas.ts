@@ -29,7 +29,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: displayPainted('manhattan-display'),
+    readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
     viewportHeight: 470,
   },
@@ -38,8 +38,8 @@ export const gwasSpecs: ScreenshotSpec[] = [
   // stats). The index SNP auto-tracks the top hit (the lead rs4274624 the
   // bundled SLE.ld is keyed to), so points shade red→blue by r² to it on load
   // with no interaction. A compact gene track below anchors the peak to the
-  // STAT4 gene body (reviewer: add gene track), and the points are enlarged
-  // (`size` 4 -> 7) so the r² shading reads clearly (reviewer).
+  // STAT4 gene body (reviewer: add gene track), and the config's LD mark
+  // draws its points at 7 px so the r² shading reads clearly (reviewer).
   {
     mode: 'url',
     name: 'gwas/locuszoom_ld',
@@ -52,7 +52,6 @@ export const gwasSpecs: ScreenshotSpec[] = [
           trackId: 'sle_gwas_ld',
           type: 'LinearManhattanDisplay',
           height: 200,
-          size: 7,
         },
         {
           trackId: 'ncbi_gff_hg19',
@@ -62,7 +61,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: displayPainted('manhattan-display'),
+    readySelector: displayPainted('mark-display'),
     readyTimeout: 60000,
     // Manhattan(200) + gene strip(90) + headers/ruler/overview clear the crop
     viewportHeight: 520,

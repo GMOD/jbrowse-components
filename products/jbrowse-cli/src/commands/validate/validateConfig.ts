@@ -479,11 +479,23 @@ function slotPath(slot: string) {
   return slot.replaceAll(/\.(\d+)(?=\.|$)/g, '[$1]')
 }
 
+// The display types that read a marks list: the mark display and every one
+// built on it, which the manifest tells apart by the `marks` slot each lists.
+function isMarkDisplayType(type: unknown, manifest: ConfigManifest) {
+  return (
+    typeof type === 'string' &&
+    !!manifest.displays[type]?.slots.some(slot => slot.name === 'marks')
+  )
+}
+
 // A mark display's own entry, whose marks may come from `displayDefaults`, or
 // a `displayDefaults` holding marks. A mark is a record with a `transform` of
 // its own, so an untyped node counts only by its `marks`.
-function holdsMarkRules(node: Record<string, unknown>) {
-  return node.type === MARK_DISPLAY
+function holdsMarkRules(
+  node: Record<string, unknown>,
+  manifest: ConfigManifest,
+) {
+  return isMarkDisplayType(node.type, manifest)
     ? Array.isArray(node.marks) || Array.isArray(node.transform)
     : node.type === undefined && Array.isArray(node.marks)
 }
@@ -497,7 +509,8 @@ function checkMarkDisplay(
   where: string,
   report: Report,
 ) {
-  const slots = manifest.displays[MARK_DISPLAY]?.slots
+  const type = typeof display.type === 'string' ? display.type : MARK_DISPLAY
+  const slots = manifest.displays[type]?.slots
   const lifted = liftToSnapshot(display, slots ?? [])
   if (!slots || !isRecord(lifted)) {
     return
@@ -568,10 +581,10 @@ function checkColorSlots(
   }
 }
 
-// A marks list sits wherever a config takes the mark display's slots: a
+// A marks list sits wherever a config takes a mark display's slots: a
 // track's `displays` entry, its `displayDefaults`, a session's inline track
-// entry. No other type declares `marks`, so the walk is over the whole file,
-// past a place where the schema refused the key: a session display node
+// entry. Only a mark display declares `marks`, so the walk is over the whole
+// file, past a place where the schema refused the key: a session display node
 // drops it.
 function checkMarkDisplays(
   node: unknown,
@@ -603,7 +616,7 @@ function checkMarkDisplays(
       }
     }
     if (
-      holdsMarkRules(node) &&
+      holdsMarkRules(node, manifest) &&
       !report.problems.some(p => p.where === `${where}.marks`)
     ) {
       checkMarkDisplay(node, manifest, where, report)

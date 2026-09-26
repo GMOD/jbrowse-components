@@ -39,8 +39,8 @@ const confNode = (self: object) => self as ScoreScaleHost
  * #category display
  * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `autoscaleType` / `numStdDev` / `numQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
- * The value scale of every quantitative display: wiggle, Manhattan, the
- * alignments coverage band and the mark display each declare
+ * The value scale of every quantitative display: wiggle, the alignments
+ * coverage band and the mark display, Manhattan among them, each declare
  * `scales.y` through {@link valueScaleSchema} and compose this. It backs
  * {@link ScoreAxisMixin}'s three overridable members off that object and adds
  * the setters that write it, so composing this is how a display satisfies
@@ -48,8 +48,8 @@ const confNode = (self: object) => self as ScoreScaleHost
  * Score menu, the scale and autoscale submenus and `SetMinMaxDialog` consume.
  *
  * What a display's scale offers follows what it draws, so the members below
- * answer `undefined` where its factory call left them out: `autoscaleType` on
- * Manhattan, whose domain is plain min/max, and `symlogConstant` wherever
+ * answer `undefined` where its factory call left them out: `autoscaleType`
+ * where the scale declares no `autoscale`, and `symlogConstant` wherever
  * `symlog` is not among the scale types. `scaleTypeChoices` reads the declared
  * enum back, which is what the scale-type radio offers.
  *

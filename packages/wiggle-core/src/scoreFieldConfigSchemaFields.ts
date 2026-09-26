@@ -2,9 +2,6 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 export const DEFAULT_SCORE_FIELD = 'score'
 
-// One declaration for the three displays that plot a feature field on a score
-// axis — the two wiggle displays and the Manhattan plot — so the slot has one
-// name, one default and one description wherever it appears.
 export const scoreFieldConfigSchemaFields = {
   scoreField: {
     type: 'string',

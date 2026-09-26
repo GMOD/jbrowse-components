@@ -509,6 +509,29 @@ describe('a marks list in a config file', () => {
     ])
   })
 
+  it('checks the marks of a display built on the mark display', () => {
+    const config = configOf([
+      {
+        mark: 'point',
+        encoding: { y: 'score', color: { field: 'ld', scale: 'threshold' } },
+      },
+    ])
+    const track = (config.tracks as Record<string, unknown>[])[0]!
+    Object.assign(track, {
+      type: 'GWASTrack',
+      adapter: { type: 'GWASAdapter', uri: 'gwas.bed.gz' },
+      displays: [
+        {
+          ...(track.displays as Record<string, unknown>[])[0],
+          type: 'LinearManhattanDisplay',
+        },
+      ],
+    })
+    expect(problemsOf(config).map(p => `${p.rule} ${p.where}`)).toEqual([
+      `threshold-no-cuts ${DISPLAY}.marks[0].encoding.color.domain`,
+    ])
+  })
+
   it('reaches every rule of the list', () => {
     expect([...reached].sort()).toEqual(Object.keys(MARK_RULES).sort())
   })
@@ -518,9 +541,10 @@ describe('where a config holds a marks list', () => {
   const marks = [{ mark: 'span', encoding: { y: 'score' } }]
   const base = () => configOf([{ mark: 'bar', encoding: { y: 'score' } }])
 
-  // Why the walk is the whole file and an untyped node carrying `marks` is one
-  // of this display's: no other type declares the slot, at any depth.
-  it('is the only type in the manifest declaring a marks slot', () => {
+  // Why the walk is the whole file and an untyped node carrying `marks` is a
+  // mark display's: no type but the mark display and the one built on it
+  // declares the slot, at any depth.
+  it('finds a marks slot on the mark displays alone', () => {
     const declares = (slots: unknown): boolean =>
       Array.isArray(slots) &&
       slots.some(
@@ -533,7 +557,7 @@ describe('where a config holds a marks list', () => {
           isRecord(entry) && declares(entry.slots) ? [type] : [],
         ),
       ),
-    ).toEqual(['LinearMarkDisplay'])
+    ).toEqual(['LinearManhattanDisplay', 'LinearMarkDisplay'])
   })
 
   it('finds it in displayDefaults', () => {

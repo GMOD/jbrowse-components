@@ -148,8 +148,8 @@ function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
  * describe different colors.
  *
  * A lone scale names itself: section titles draw only beside other sections,
- * so a lone categorical scale's title becomes the box's (Manhattan's field
- * name over its values) and a lone ramp's goes on its row. Empty scales are
+ * so a lone categorical scale's title becomes the box's (a field's name over
+ * its values) and a lone ramp's goes on its row. Empty scales are
  * dropped first, so one waiting for data does not leave its sibling untitled.
  */
 export function legendSpecOf(scales: ColorScale[]): LegendSpec {

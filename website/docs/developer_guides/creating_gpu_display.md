@@ -80,12 +80,12 @@ no painter and no hit test:
   `domain` of `y`, widening to a bar where `x2 - x` is wider than the glyph. A
   scatter plot, Manhattan's points, any datum placed by a value.
 
-`plugins/gwas/src/LinearManhattanDisplay/manhattanMarks.ts` holds all of
-Manhattan's drawing, over `pointMark`. The example's score box spans start to
-end and grows up from the bottom to its value. It is neither a row band nor a
-glyph, so the example writes a new shape. A shape moves into `render-core` once
-two displays share it. Until then it stays beside the display that declares it,
-so the score shape goes there.
+The mark display draws its `point` marks over `pointMark`
+(`plugins/marks/src/LinearMarkDisplay/markList.ts`), and a Manhattan plot is one
+of them. The example's score box spans start to end and grows up from the bottom
+to its value. It is neither a row band nor a glyph, so the example writes a new
+shape. A shape moves into `render-core` once two displays share it. Until then
+it stays beside the display that declares it, so the score shape goes there.
 
 ## Files to create
 
@@ -746,7 +746,7 @@ instance. It passes every instance of every block under the cursor to the mark's
 // few thousand boxes. A display with hundreds of thousands asks the encoder for
 // its `index` lane — a Flatbush over (bp, score) — and answers with what that
 // finds between the reach's `bpMin`/`valueMin` and `bpMax`/`valueMax` instead
-// (`findManhattanHit` in plugins/gwas is the worked form).
+// (`findMarkHit` in plugins/marks is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,

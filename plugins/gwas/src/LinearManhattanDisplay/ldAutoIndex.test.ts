@@ -1,11 +1,10 @@
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
-import { LD_FIELD } from '../GWASAdapter/ldFields.ts'
+import { LD_MARK } from './ldPlot.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { ManhattanChannels } from './manhattanLayer.ts'
 import type { Region } from '@jbrowse/core/util'
 
 // Two regions, with the top hit deliberately in the SECOND one — the region
@@ -46,15 +45,15 @@ async function settle(times: number) {
 }
 
 describe('LinearManhattanDisplay LD auto-index', () => {
-  // Regression: indexSnp is both a fetch input (rpcProps -> SettingsInvalidate
-  // -> invalidateSettings) and derived from the fetched data (topSnp). Reading
+  // Regression: indexSnp is both a fetch input (adapterOptions -> rpcProps ->
+  // SettingsInvalidate) and derived from the fetched data (topSnp). Reading
   // a partial load made the index flip between each partially-loaded winner
   // and the true top hit, each flip superseding the fetch and refetching —
   // forever, with the plot never settling. Gating on a settled load makes
   // topSnp a fixpoint.
   it('settles on the global top hit without refetching forever', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      color: { field: 'ld' },
+      marks: [LD_MARK],
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -80,7 +79,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // "Color by LD" toggle, flipped on a display that has already loaded. Every
   // other test here starts in LD mode because that is what a restored session
   // does, and that shape cannot see a toggle whose write fails to reach the
-  // fetch — `colorByField` writes a config slot, so it invalidates through
+  // fetch — `setLdColoring` writes the marks, so it invalidates through
   // `settingsFetchInputs` rather than through anything the display holds.
   it('adopts the index when the user turns LD colouring on', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
@@ -95,7 +94,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(display.indexSnp).toBeUndefined()
     const beforeToggle = mockRpcCall.mock.calls.length
 
-    display.colorByField(LD_FIELD)
+    display.setLdColoring(true)
     await settle(8)
 
     await waitFor(() => {
@@ -111,7 +110,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // livelock as above, reached a different way.
   it('breaks a score tie by region index, not by which region landed first', () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      color: { field: 'ld' },
+      marks: [LD_MARK],
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -123,8 +122,9 @@ describe('LinearManhattanDisplay LD auto-index', () => {
       end: 1000,
       assemblyName: 'volvox',
     }
-    const tied = (pos: number): ManhattanChannels =>
-      manhattanFixture({ x: [pos], y: [9], flatbush: false })
+    const tied = (pos: number) => ({
+      layers: [manhattanFixture({ x: [pos], y: [9], flatbush: false })],
+    })
 
     const first = createDisplay().display
     first.setRpcData(0, tied(100), tiedRegion)
@@ -145,7 +145,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // shut until the index the data was colored under is the one being kept.
   it('opens the export gate only on data colored under the adopted index', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      color: { field: 'ld' },
+      marks: [LD_MARK],
     })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
@@ -170,10 +170,10 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   })
 
   // With no ldAdapter the `ld` field is read off the features like any other
-  // threshold field, and no join reads an index, so none is adopted.
+  // field, and no join reads an index, so none is adopted.
   it('adopts no index and fetches once with no ldAdapter configured', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
-      color: { field: 'ld' },
+      marks: [LD_MARK],
       ldAdapter: false,
     })
     mockRpcCall.mockImplementation(
@@ -195,7 +195,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     await settle(8)
     disposer()
 
-    expect(display.ldColoringActive).toBe(false)
+    expect(display.joinsLd).toBe(false)
     expect(atGate).toEqual({ indexSnp: undefined, regions: 2 })
     expect(mockRpcCall).toHaveBeenCalledTimes(2)
   })

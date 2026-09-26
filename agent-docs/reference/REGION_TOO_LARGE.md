@@ -512,7 +512,8 @@ mark display too, which opts in: it hands a BigWig the zoom it reads at
 so the fetch is a summary tier's size and the gate has nothing to measure. An
 estimate for BigWig was written and reverted; it would need a budget row in the
 table above for a fetch the tier already bounds. `LinearManhattanDisplay`
-never opts in, by decision: its case is a genome-wide summary-stats view.
+turns the mark display's opt-in back off, by decision: its case is a
+genome-wide summary-stats view.
 `LGVSyntenyDisplay` inherits alignments' opt-in but no comparative adapter
 implements the estimate, so its gate is inert
 ([ideas/waiting-on-a-call/synteny-byte-gate.md](../ideas/waiting-on-a-call/synteny-byte-gate.md)).

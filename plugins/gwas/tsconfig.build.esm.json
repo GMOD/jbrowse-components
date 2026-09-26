@@ -8,6 +8,7 @@
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },
     { "path": "../../packages/wiggle-core/tsconfig.build.esm.json" },
     { "path": "../bed/tsconfig.build.esm.json" },
-    { "path": "../linear-genome-view/tsconfig.build.esm.json" }
+    { "path": "../linear-genome-view/tsconfig.build.esm.json" },
+    { "path": "../marks/tsconfig.build.esm.json" }
   ]
 }

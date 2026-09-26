@@ -426,28 +426,6 @@ function hasChannelMenus(displayType: string | undefined) {
 // The Manhattan display's `color` object: its Color by... submenu picks the
 // scale, and a field is typed into the Field... dialog. The order and colors
 // the values take have no menu row, and a field under `none` waits unread.
-function manhattanColorStep(
-  scale: Record<string, unknown>,
-): FieldStep | undefined {
-  const colorBy = `${TRACK_MENU} → Color by...`
-  const field = scale.scale === 'none' ? undefined : asString(scale.field)
-  if (field === 'ld') {
-    return {
-      path: `${colorBy} → LD to index SNP`,
-      note: "Needs a PLINK .ld file as the GWASAdapter's ldAdapter.",
-    }
-  }
-  return field
-    ? {
-        path: `${colorBy} → Field... → enter "${field}"`,
-        note:
-          asList(scale.domain) || asList(scale.range)
-            ? 'The order and colors the values take have no menu row; the figure declares them in the track config.'
-            : undefined,
-      }
-    : undefined
-}
-
 // The canvas displays' `color` object: a string is the constant, and
 // `{ field, domain, range }` a field through a range. The dialog names the
 // field; the order and colors it spends are the JSON the same dialog opens.
@@ -477,9 +455,6 @@ function colorStep(
   const scale = asRecord(value)
   if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
     return scale ? variantCellColorStep(scale) : undefined
-  }
-  if (scale && displayType === 'LinearManhattanDisplay') {
-    return manhattanColorStep(scale)
   }
   if (scale && displayType === 'LinearHicDisplay') {
     return hicColorStep(scale)
@@ -678,12 +653,10 @@ function facetStep(
 }
 
 // One shared slider row (makeScatterPointSizeMenuItem) under a submenu each
-// display titles for itself: the wiggle displays call it 'Scatter point size',
-// the GWAS Manhattan display 'Point size'. The submenu label is what a reader
-// looks for, so it is what varies here.
+// display titles for itself. The submenu label is what a reader looks for, so
+// it is what varies here.
 const POINT_SIZE_MENUS: Record<string, string> = {
   LinearWiggleDisplay: 'Scatter point size',
-  LinearManhattanDisplay: 'Point size',
 }
 
 // One toggle, one place, on every display with a dendrogram sidebar
@@ -1405,10 +1378,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? {
           path: `${TRACK_MENU} → ${menu} → drag the slider to ${value}px`,
           // sizeSubMenu gates the wiggle one on renderingType.includes('scatter')
-          note:
-            displayType === 'LinearManhattanDisplay'
-              ? undefined
-              : 'The submenu is offered only while the plot type is one of the scatter renderings.',
+          note: 'The submenu is offered only while the plot type is one of the scatter renderings.',
         }
       : undefined
   },

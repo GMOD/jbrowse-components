@@ -1048,12 +1048,11 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_size_fst',
           type: 'LinearManhattanDisplay',
           height: FST_LANE_H,
-          size: 4,
           ...FST_AXIS_RULED,
         },
       ],
     }),
-    readySelector: displayPainted('manhattan-display'),
+    readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
     // 460, tracking the lane's own 240 (was 600 for 380)
     viewportHeight: 460,
@@ -1150,12 +1149,12 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // a hundred windows across this view rather than the ten the 200 kb
           // lane drew, so the points come down from 9: at that size a hundred of
           // them merge into a band and the sweep stops having edges
-          size: 6,
+          marks: [{ mark: 'point', encoding: { y: 'score' }, size: 6 }],
           ...FST_AXIS,
         },
       ],
     }),
-    readySelector: displayPainted('manhattan-display'),
+    readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
     // the gene lane, all 240 px of the score lane, and its bottom border: at 700
     // the lowest windows sat on the frame edge, and 716 was that fixed against a
@@ -1754,7 +1753,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_igf1_fst',
           type: 'LinearManhattanDisplay',
           height: 150,
-          size: 4,
           // the same 0-0.8 axis as the genome-wide scan on the page above, so a
           // reader moving between them is reading one scale
           ...FST_AXIS,

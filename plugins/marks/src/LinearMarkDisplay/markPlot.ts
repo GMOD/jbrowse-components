@@ -128,7 +128,8 @@ function merged(plot: MarkPlot, current: MarkPlot) {
 /**
  * The plot the display would hold, through the schema's own lift and checks:
  * a shorthand becomes its object, a default falls off, and a mark type or a
- * stray key throws. Every member of the bag is `closed` — `rows` inherits it
+ * stray key throws. The marks are the ones drawn, a default list included,
+ * since a display built on this one names a default plot of its own. Every member of the bag is `closed` — `rows` inherits it
  * from `rowArrangementConfigSchema` — so the box refuses what a config file
  * refuses and swallows nothing.
  *
@@ -142,15 +143,13 @@ export function liftMarkPlot(
   plot: MarkPlot,
   current: MarkPlot,
 ): MarkPlotSettings {
-  const snapshot = getSnapshot<Record<string, unknown>>(
-    configSchema.create({
-      type: 'LinearMarkDisplay',
-      displayId: SYNTHETIC_DISPLAY_ID,
-      ...structuredClone(merged(plot, current)),
-    }),
-  )
+  const node = configSchema.create({
+    displayId: SYNTHETIC_DISPLAY_ID,
+    ...structuredClone(merged(plot, current)),
+  })
+  const snapshot = getSnapshot<Record<string, unknown>>(node)
   return {
-    marks: (snapshot.marks ?? []) as MarkSnapshot[],
+    marks: getSnapshot(node.marks) as MarkSnapshot[],
     transform: (snapshot.transform ?? []) as StepSnapshot[],
     facet: snapshot.facet as FacetSnapshot | undefined,
     rows: snapshot.rows as RowsSnapshot | undefined,

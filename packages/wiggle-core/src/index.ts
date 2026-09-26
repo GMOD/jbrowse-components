@@ -96,7 +96,6 @@ export type {
   ScoreScaleModel,
   ScoreSubMenuOptions,
 } from './scoreMenuItems.ts'
-export { unionRanges } from './autoscaleGroup.ts'
 export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export type { ScoreScaleHost } from './ScoreScaleMixin.ts'

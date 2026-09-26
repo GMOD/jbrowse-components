@@ -43,10 +43,15 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+const points = (encoding: Record<string, unknown>) => ({
+  type: 'LinearManhattanDisplay',
+  marks: [{ mark: 'point', encoding }],
+})
+
 test('a FeatureTrack offers the Manhattan display and paints it', async () => {
   const { track, display } = await openTrack(
     { type: 'LinearManhattanDisplay' },
-    'manhattan-display',
+    'mark-display',
   )
   expect(
     track.compatibleDisplays.map((d: { type: string }) => d.type),
@@ -58,22 +63,21 @@ test('a FeatureTrack offers the Manhattan display and paints it', async () => {
   expect(display.domain[1]).toBeLessThanOrEqual(1000)
 }, 30000)
 
-test('a Manhattan scoreField plots another column as y', async () => {
-  const { display } = await openTrack(
-    { type: 'LinearManhattanDisplay', scoreField: 'thickEnd' },
-    'manhattan-display',
-  )
+test('a Manhattan point mark plots another column as y', async () => {
+  const { display } = await openTrack(points({ y: 'thickEnd' }), 'mark-display')
   await waitFor(() => {
     expect(display.domain?.[1]).toBeGreaterThanOrEqual(50001)
   })
-  const scores = [...display.rpcDataMap.values()].flatMap(d => Array.from(d.y))
+  const scores = [...display.rpcDataMap.values()].flatMap(d =>
+    Array.from(d.layers[0].y),
+  )
   expect(scores).toContain(50001)
 }, 30000)
 
-test('a Manhattan scoreField naming no column says so in the corner', async () => {
+test('a Manhattan y naming no column says so in the corner', async () => {
   const { display, findByTestId } = await openTrack(
-    { type: 'LinearManhattanDisplay', scoreField: 'pvalue' },
-    'manhattan-display',
+    points({ y: 'pvalue' }),
+    'mark-display',
   )
   const chip = await findByTestId('track-control-filter', {}, { timeout })
   expect(chip.textContent).toContain('skipped')
@@ -85,8 +89,8 @@ test('a Manhattan scoreField naming no column says so in the corner', async () =
 
 test('Manhattan field coloring derives its key from the values the worker met', async () => {
   const { display, findByTestId } = await openTrack(
-    { type: 'LinearManhattanDisplay', color: { field: 'sample' } },
-    'manhattan-display',
+    points({ y: 'score', color: { field: 'sample' } }),
+    'mark-display',
   )
   await waitFor(() => {
     expect(display.colorScales).toHaveLength(1)

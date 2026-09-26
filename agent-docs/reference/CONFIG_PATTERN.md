@@ -251,11 +251,12 @@ spellings of that look nothing alike from the outside:
 
 | slot | expression | arg-less read | symptom |
 | --- | --- | --- | --- |
-| `LinearManhattanDisplay.color` | `jexl:get(feature,…)` | throws `reading 'get'` | escapes the model getter, banners the display |
+| `LinearMarkDisplay.marks[].encoding.color` | `jexl:get(feature,…)` | throws `reading 'get'` | escapes the model getter, banners the display |
 | `LinearMultiRowFeatureDisplay.rows.field` | `jexl:split(feature.name,…)` | `''`, because `split` is total | `''` ships as an attribute name; every feature lands in one unnamed row |
 
-Both are pinned by canaries at the display — `colorSlotTransport.test.ts` and
-`partitionFieldTransport.test.ts` — because there is nothing in the reader that
+Both are pinned by canaries at the display — the mark display's "jexl
+unevaluated" case in `model.test.ts` and `partitionFieldTransport.test.ts` —
+because there is nothing in the reader that
 can catch this: an arg-less read is a legitimate operation on the many slots that
 hold no callback.
 

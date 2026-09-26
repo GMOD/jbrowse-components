@@ -9,6 +9,7 @@ import type { BuiltinSlotTypeName } from './configurationSlot.ts'
 import type {
   IAnyType,
   IArrayType,
+  IOptionalIType,
   ISimpleType,
   IStateTreeNode,
   Instance,
@@ -91,7 +92,7 @@ type ConfigNodeValue<DEF> =
     ? any
     : DEF extends AnyConfigurationSchemaType
       ? DEF['Type']
-      : DEF extends IArrayType<any>
+      : DEF extends IArrayType<any> | IOptionalIType<IArrayType<any>, any>
         ? DEF['Type']
         : DEF extends string
           ? string

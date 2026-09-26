@@ -52,7 +52,7 @@ export interface MarkLegendSection {
   markIndexes: number[]
   channel: ScaledChannel
   scale: ScaleTable
-  /** A colour's `title` where written, else the field; `''` heads nothing. */
+  /** The channel's `title` where written, else the field; `''` heads nothing. */
   title: string
 }
 
@@ -187,13 +187,16 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
  * alike, in the field's order; a key's entry is the same in every region. A
  * ramp's domain takes each pinned end as the config wrote it and each open one
  * from the union of the regions' own extremes — the same number the shaders
- * read as a uniform. A colour key is headed with `colorTitleOf` for its mark
- * where that answers a string, and every other key with its field.
+ * read as a uniform. A key is headed with `titleOf` for its mark and channel
+ * where that answers a string, and with its field otherwise.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
   showsMark: (markIndex: number) => boolean = () => true,
-  colorTitleOf: (markIndex: number) => string | undefined = () => undefined,
+  titleOf: (
+    markIndex: number,
+    channel: ScaledChannel,
+  ) => string | undefined = () => undefined,
 ): MarkLegendSection[] {
   const sections = new Map<string, MarkLegendSection>()
   for (const region of regions) {
@@ -206,9 +209,7 @@ export function buildMarkLegend(
         if (!scale) {
           continue
         }
-        const title =
-          (channel === 'color' ? colorTitleOf(markIndex) : undefined) ??
-          scale.field
+        const title = titleOf(markIndex, channel) ?? scale.field
         const key = sectionKey(markIndex, scale, title)
         const current = sections.get(key)
         if (!current) {

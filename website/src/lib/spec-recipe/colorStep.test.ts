@@ -10,10 +10,3 @@ test('a declared range sends a canvas colour to the Edit as JSON box', () => {
     colorStep({ field: 'biotype', range: ['red'] }, 'LinearBasicDisplay')?.path,
   ).toBe('Track menu → Color by... → Attribute... → Edit as JSON...')
 })
-
-test('a declared range on Manhattan says no menu row spends it', () => {
-  expect(
-    colorStep({ field: 'population', range: ['red'] }, 'LinearManhattanDisplay')
-      ?.note,
-  ).toMatch(/no menu row/)
-})

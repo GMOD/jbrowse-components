@@ -24,8 +24,8 @@ export type MarkDisplayContextMenuInfo = ContextMenuAnchor & {
 }
 
 // The slice of the model the component and the SVG export read. Hand-rolled
-// for the reason Manhattan's is: `renderSvg.tsx` is imported from an action of
-// the model, so naming the inferred model type there closes a type cycle.
+// because `renderSvg.tsx` is imported from an action of the model, so naming
+// the inferred model type there closes a type cycle.
 export interface MarkDisplayModel
   extends
     WiggleGpuDisplayModel<MarkRenderingBackend, MarkRegionData>,

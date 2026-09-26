@@ -677,7 +677,15 @@
         {
           "type": "LinearManhattanDisplay",
           "displayId": "gwas_hg19_custom_color-LinearManhattanDisplay",
-          "color": "green"
+          "marks": [
+            {
+              "mark": "point",
+              "encoding": {
+                "y": "score",
+                "color": "green"
+              }
+            }
+          ]
         }
       ]
     },
@@ -705,7 +713,15 @@
         {
           "type": "LinearManhattanDisplay",
           "displayId": "gwas_hg19_color_callback-LinearManhattanDisplay",
-          "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+          "marks": [
+            {
+              "mark": "point",
+              "encoding": {
+                "y": "score",
+                "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+              }
+            }
+          ]
         }
       ]
     },

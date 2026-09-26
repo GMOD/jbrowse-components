@@ -104,7 +104,15 @@
         {
           "displayId": "gwas_display_custom_color",
           "type": "LinearManhattanDisplay",
-          "color": "green"
+          "marks": [
+            {
+              "mark": "point",
+              "encoding": {
+                "y": "score",
+                "color": "green"
+              }
+            }
+          ]
         }
       ]
     },
@@ -130,7 +138,15 @@
         {
           "displayId": "gwas_display_custom_color_callback_display",
           "type": "LinearManhattanDisplay",
-          "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+          "marks": [
+            {
+              "mark": "point",
+              "encoding": {
+                "y": "score",
+                "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+              }
+            }
+          ]
         }
       ]
     },
@@ -165,7 +181,34 @@
         {
           "displayId": "sle_gwas_ld-LinearManhattanDisplay",
           "type": "LinearManhattanDisplay",
-          "color": { "field": "ld" },
+          "marks": [
+            {
+              "mark": "point",
+              "encoding": {
+                "y": "score",
+                "color": {
+                  "field": "ld",
+                  "scale": "threshold",
+                  "domain": [0.2, 0.4, 0.6, 0.8],
+                  "range": [
+                    "#357ebd",
+                    "#46b8da",
+                    "#5cb85c",
+                    "#eea236",
+                    "#d43f3a"
+                  ],
+                  "title": "r² to index SNP"
+                },
+                "shape": {
+                  "field": "ld_role",
+                  "domain": ["index", "partner"],
+                  "range": ["diamond", "circle"],
+                  "title": "LD role"
+                }
+              },
+              "size": 7
+            }
+          ],
           "height": 250
         }
       ]

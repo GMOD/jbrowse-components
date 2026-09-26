@@ -77,8 +77,34 @@
           "displayId": "giant_bmi_ld-LinearManhattanDisplay",
           "type": "LinearManhattanDisplay",
           "height": 250,
-          "color": { "field": "ld" },
-          "size": 8
+          "marks": [
+            {
+              "mark": "point",
+              "encoding": {
+                "y": "score",
+                "color": {
+                  "field": "ld",
+                  "scale": "threshold",
+                  "domain": [0.2, 0.4, 0.6, 0.8],
+                  "range": [
+                    "#357ebd",
+                    "#46b8da",
+                    "#5cb85c",
+                    "#eea236",
+                    "#d43f3a"
+                  ],
+                  "title": "r² to index SNP"
+                },
+                "shape": {
+                  "field": "ld_role",
+                  "domain": ["index", "partner"],
+                  "range": ["diamond", "circle"],
+                  "title": "LD role"
+                }
+              },
+              "size": 8
+            }
+          ]
         }
       ]
     },

@@ -11,36 +11,30 @@ import {
   SLE_REGION,
   slePluginManager,
 } from '../GWASAdapter/sle.fixture.ts'
-import { LD_DOMAIN, LD_PALETTE } from './ldBins.ts'
+import { LD_MARK } from './ldPlot.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
-import { manhattanLayer } from './manhattanLayer.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { ManhattanRequest } from './manhattanLayer.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
+import type {
+  CoreGetEncodedLayersArgs,
+  EncodedLayersResult,
+} from '@jbrowse/core/util/markEncoding'
 
 // The worker half, run as the worker runs it: the core methods out of the
-// plugin manager's registry, over the SLE summary statistics and their `.ld`.
+// plugin manager's registry, over the SLE summary statistics and their `.ld`,
+// asked for the layer the LD plot's display sends.
 describe('a point reads back as its whole GWAS record', () => {
   const pluginManager = slePluginManager()
   const invoke = (method: string, args: object) =>
     pluginManager.getRpcMethodType(method).invoke({ sessionId: 's', ...args })
-  const request: ManhattanRequest = {
+  const { display } = createTestEnvironment({
+    marks: [LD_MARK],
+  }).createDisplay()
+  const request: Omit<CoreGetEncodedLayersArgs, 'byteLimit'> = {
     adapterConfig: SLE_ADAPTER,
     region: SLE_REGION,
-    layers: [
-      manhattanLayer({
-        scoreField: 'score',
-        color: {
-          field: 'ld',
-          scale: 'threshold',
-          domain: LD_DOMAIN,
-          range: LD_PALETTE,
-        },
-        ldColoring: true,
-      }),
-    ],
+    layers: display.layerRequests,
     opts: { ld: { index: { start: SLE_INDEX_START }, refName: '2' } },
   }
 
@@ -85,6 +79,28 @@ const REGION = {
   assemblyName: 'volvox',
 }
 
+// A click on one of the fixture's points on the first region, as the hit test
+// resolves it.
+function hitOn(instance: number) {
+  return {
+    markIndex: 0,
+    regionIndex: 0,
+    instance,
+    featureIndex: instance,
+    refName: 'ctgA',
+    start: 100 * (instance + 1),
+    end: 100 * (instance + 1) + 1,
+    bp: 100 * (instance + 1),
+    y: undefined,
+    color: undefined,
+    colorValue: undefined,
+    glyph: undefined,
+    row: undefined,
+    screenX: 0,
+    screenY: 0,
+  }
+}
+
 function callsOf(mock: jest.Mock, method: string) {
   return mock.mock.calls.filter(call => call[1] === method)
 }
@@ -119,14 +135,7 @@ test('a click asks the worker for the feature under the request its region came 
   const [, , fetched] = callsOf(mockRpcCall, 'CoreGetEncodedLayers').find(
     ([, , args]) => args.region.refName === 'ctgA',
   )!
-  display.selectFeature({
-    refName: 'ctgA',
-    start: 200,
-    end: 201,
-    score: 8,
-    regionIndex: 0,
-    instance: 1,
-  })
+  display.selectFeature(hitOn(1))
   await waitFor(() => {
     expect(session.openedWidgets).toHaveLength(1)
   })
@@ -145,16 +154,13 @@ test('a click asks the worker for the feature under the request its region came 
 
 test('a region no worker fetch produced holds no request, and a click on it asks nothing', () => {
   const { display, mockRpcCall } = createTestEnvironment().createDisplay()
-  display.setRpcData(0, manhattanFixture({ x: [100], y: [3] }), REGION)
+  display.setRpcData(
+    0,
+    { layers: [manhattanFixture({ x: [100], y: [3] })] },
+    REGION,
+  )
   mockRpcCall.mockClear()
-  display.selectFeature({
-    refName: 'ctgA',
-    start: 100,
-    end: 101,
-    score: 3,
-    regionIndex: 0,
-    instance: 0,
-  })
+  display.selectFeature(hitOn(0))
   expect(callsOf(mockRpcCall, 'CoreGetEncodedFeature')).toHaveLength(0)
 })
 
@@ -165,9 +171,9 @@ test('a region no worker fetch produced holds no request, and a click on it asks
 describe('the LD join a fetch asks for', () => {
   async function fetchedOpts(
     indexSnp: string,
-    color?: Record<string, unknown>,
+    marks?: Record<string, unknown>[],
   ) {
-    const { createDisplay, mockRpcCall } = createTestEnvironment({ color })
+    const { createDisplay, mockRpcCall } = createTestEnvironment({ marks })
     answerFetches(mockRpcCall)
     const { display } = createDisplay({
       displaySnapshot: { indexSnp, indexSnpPinned: true },
@@ -186,7 +192,7 @@ describe('the LD join a fetch asks for', () => {
   }
 
   it("names a placed index by its start and the region's contig in the LD file's spelling", async () => {
-    const { opts } = await fetchedOpts('chrA:501', { field: 'ld' })
+    const { opts } = await fetchedOpts('chrA:501', [LD_MARK])
     expect(opts).toEqual([
       { ld: { index: { start: 500 }, refName: 'LD_ctgA' } },
       undefined,
@@ -194,7 +200,7 @@ describe('the LD join a fetch asks for', () => {
   })
 
   it('names an index known only by id, on every region', async () => {
-    const { opts } = await fetchedOpts('rs1', { field: 'ld' })
+    const { opts } = await fetchedOpts('rs1', [LD_MARK])
     expect(opts).toEqual([
       { ld: { index: { name: 'rs1' }, refName: 'LD_ctgA' } },
       { ld: { index: { name: 'rs1' }, refName: 'LD_ctgB' } },
@@ -202,9 +208,9 @@ describe('the LD join a fetch asks for', () => {
   })
 
   // Resolving the LD file's names reads its refNames, which for the in-memory
-  // PLINK adapter parses the whole `.ld` file: a download a plot coloured any
-  // other way must not pay.
-  it('resolves nothing outside LD coloring', async () => {
+  // PLINK adapter parses the whole `.ld` file: a download a plot reading no LD
+  // field must not pay.
+  it('resolves nothing for a plot that reads no LD field', async () => {
     const { opts, names } = await fetchedOpts('ctgA:501')
     expect(opts).toEqual([undefined, undefined])
     expect(names).not.toHaveBeenCalled()

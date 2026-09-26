@@ -16,8 +16,8 @@ const confNode = (self: object) => self as ScoreFieldConfigHost
  *
  * `WiggleScoreConfigMixin` plus `scoreField`, for a display that plots one
  * configured feature field and so declares `scoreFieldConfigSchemaFields`:
- * both wiggle displays and the Manhattan plot. `LinearMarkDisplay` names a
- * field per mark and composes the base instead.
+ * the wiggle display. `LinearMarkDisplay` names a field per mark and composes
+ * the base instead.
  */
 export function ScoreFieldConfigMixin() {
   return WiggleScoreConfigMixin().views(self => ({

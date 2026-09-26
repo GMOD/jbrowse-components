@@ -1,13 +1,9 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
-import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
+import { LinearMarkDisplayReactComponent } from '@jbrowse/plugin-marks'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-
-const ManhattanReactComponent = lazyWithPreload(
-  () => import('./components/LinearManhattanDisplayComponent.tsx'),
-)
 
 export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
@@ -22,7 +18,7 @@ export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
         ),
       trackType: ['GWASTrack', 'FeatureTrack'],
       viewType: 'LinearGenomeView',
-      ReactComponent: ManhattanReactComponent,
+      ReactComponent: LinearMarkDisplayReactComponent,
     })
   })
 }

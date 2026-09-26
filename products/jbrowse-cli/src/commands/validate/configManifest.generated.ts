@@ -5401,20 +5401,289 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "color",
-          "type": "ManhattanColorConfigurationSchema",
+          "name": "fetchSizeLimit",
+          "type": "number"
+        },
+        {
+          "name": "forceLoad",
+          "type": "boolean"
+        },
+        {
+          "name": "densityTier",
+          "type": "Density tier"
+        },
+        {
+          "name": "densityTierBpPerPx",
+          "type": "number"
+        },
+        {
+          "name": "marks",
+          "type": "MarkConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "value",
-              "type": "(JexlString | CssColor)"
+              "name": "mark",
+              "type": "MarkType"
             },
+            {
+              "name": "size",
+              "type": "number"
+            },
+            {
+              "name": "linkShape",
+              "type": "LinkShape"
+            },
+            {
+              "name": "encoding",
+              "type": "MarkEncodingConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "x",
+                  "type": "string"
+                },
+                {
+                  "name": "x2",
+                  "type": "MarkLocusConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "pos",
+                      "type": "string"
+                    },
+                    {
+                      "name": "chrom",
+                      "type": "string"
+                    }
+                  ],
+                  "shorthand": "pos"
+                },
+                {
+                  "name": "y",
+                  "type": "string"
+                },
+                {
+                  "name": "row",
+                  "type": "string"
+                },
+                {
+                  "name": "color",
+                  "type": "MarkColorConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | CssColor)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "(MarkColorScale | undefined)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "autoscale",
+                      "type": "RampAutoscale"
+                    },
+                    {
+                      "name": "numQuantile",
+                      "type": "number"
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "labels",
+                      "type": "string[]"
+                    },
+                    {
+                      "name": "scheme",
+                      "type": "(ColorScheme | undefined)"
+                    },
+                    {
+                      "name": "reverse",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "domainMid",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "shorthand": "value",
+                  "fieldPresets": {
+                    "*": {
+                      "scale": "categorical"
+                    }
+                  }
+                },
+                {
+                  "name": "shape",
+                  "type": "MarkShapeConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | ShapeName)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "(MarkShapeScale | undefined)"
+                    },
+                    {
+                      "name": "range",
+                      "type": "ShapeName[]"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
+                    }
+                  ],
+                  "shorthand": "value"
+                },
+                {
+                  "name": "text",
+                  "type": "string"
+                },
+                {
+                  "name": "size",
+                  "type": "MarkSizeConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "SizeScale"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "range",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    }
+                  ],
+                  "shorthand": "field"
+                }
+              ]
+            },
+            {
+              "name": "transform",
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+            },
+            {
+              "name": "source",
+              "type": "MarkSource"
+            },
+            {
+              "name": "minBpPerPx",
+              "type": "number"
+            },
+            {
+              "name": "maxBpPerPx",
+              "type": "number"
+            }
+          ]
+        },
+        {
+          "name": "transform",
+          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+        },
+        {
+          "name": "facet",
+          "type": "MarkFacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "transform",
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+            }
+          ],
+          "shorthand": "field"
+        },
+        {
+          "name": "rows",
+          "type": "RowsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "shorthand": "field"
+        },
+        {
+          "name": "rowColor",
+          "type": "RowColorConfigurationSchema",
+          "subSlots": [
             {
               "name": "field",
               "type": "string"
             },
             {
               "name": "scale",
-              "type": "(ManhattanColorScale | undefined)"
+              "type": "(RowColorScale | undefined)"
             },
             {
               "name": "domain",
@@ -5426,32 +5695,23 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "value",
-          "fieldPresets": {
-            "ld": {
-              "scale": "threshold",
-              "domain": [
-                "0.2",
-                "0.4",
-                "0.6",
-                "0.8"
-              ],
-              "range": [
-                "#357ebd",
-                "#46b8da",
-                "#5cb85c",
-                "#eea236",
-                "#d43f3a"
-              ]
-            },
-            "*": {
-              "scale": "categorical"
-            }
-          }
+          "shorthand": "field"
         },
         {
-          "name": "scoreField",
-          "type": "string"
+          "name": "showTree",
+          "type": "boolean"
+        },
+        {
+          "name": "showBranchLength",
+          "type": "boolean"
+        },
+        {
+          "name": "showRowLabels",
+          "type": "boolean"
+        },
+        {
+          "name": "treeAreaWidth",
+          "type": "number"
         },
         {
           "name": "scales",
@@ -5478,12 +5738,32 @@ export const configManifest: ConfigManifest = {
                   "type": "(string | undefined)"
                 },
                 {
+                  "name": "symlogConstant",
+                  "type": "number"
+                },
+                {
+                  "name": "autoscale",
+                  "type": "ValueScaleAutoscale"
+                },
+                {
+                  "name": "numStdDev",
+                  "type": "number"
+                },
+                {
+                  "name": "numQuantile",
+                  "type": "number"
+                },
+                {
                   "name": "grid",
                   "type": "boolean"
                 },
                 {
                   "name": "minimalTicks",
                   "type": "boolean"
+                },
+                {
+                  "name": "title",
+                  "type": "(string | undefined)"
                 },
                 {
                   "name": "rules",
@@ -5509,12 +5789,20 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "size",
+          "name": "origin",
+          "type": "number"
+        },
+        {
+          "name": "minWidthPx",
           "type": "number"
         },
         {
           "name": "showLegend",
           "type": "boolean"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "string[]"
         }
       ],
       "legacyKeys": [
@@ -5524,7 +5812,11 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "runClustering",
+        "clusterRegion",
+        "sortRowsBy",
         "configuration",
+        "jexlFiltersSetting",
         "indexSnp",
         "indexSnpPinned"
       ]
@@ -5699,6 +5991,10 @@ export const configManifest: ConfigManifest = {
                       "name": "domain",
                       "type": "string[]",
                       "liftsNumbers": true
+                    },
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
                     }
                   ],
                   "shorthand": "value"

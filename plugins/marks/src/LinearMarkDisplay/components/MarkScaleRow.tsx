@@ -261,7 +261,7 @@ export default function MarkScaleRow({
           }}
         />
       ))}
-      {channel === 'color' ? (
+      {channel === 'color' || channel === 'shape' ? (
         <MemberField
           mark={mark}
           channel={channel}
