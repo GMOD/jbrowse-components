@@ -158,7 +158,8 @@ without saying so. `rows: ""` puts every source back in one shared plot box, and
 order. The same object takes `labels`, a label per source by name, and
 [`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) gives a source a
 color of its own. **Edit colors/arrangement...** in the track menu writes both,
-as settings a reader can undo or reset.
+as settings a reader can undo or reset, and choosing Each row there also writes
+the `color` below, since a colour per subtrack is the two together.
 
 ### The subadapters form
 

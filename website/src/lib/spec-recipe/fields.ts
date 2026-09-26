@@ -482,10 +482,22 @@ function colorStep(
     return hicColorStep(scale)
   }
   if (displayType === 'LinearWiggleDisplay') {
-    return {
-      path: `${TRACK_MENU} → Edit color... → the JSON box`,
-      note: 'The quantitative display writes its whole colour object there — a constant, a threshold cut, a ramp, or one colour per source.',
-    }
+    const editor = `${TRACK_MENU} → ${ROW_ARRANGEMENT_EDITORS.LinearWiggleDisplay}`
+    // Two swatches say a constant and a two-sided cut. A ramp, several cuts or
+    // a colour per source is more than they can express, and the dialog's JSON
+    // escape is where the whole object goes.
+    return !scale ||
+      (scale.field === 'score' &&
+        scale.scale === 'threshold' &&
+        (asList(scale.domain) ?? []).length <= 1)
+      ? {
+          path: `${editor} → the plot color swatches`,
+          note: 'The two colours the plot is drawn in, above and below the baseline; both the same paints a flat plot.',
+        }
+      : {
+          path: `${editor} → Edit as JSON...`,
+          note: 'More than two swatches can say, so the dialog writes the whole colour object as JSON.',
+        }
   }
   if (scale) {
     const field = scale.scale === 'none' ? undefined : asString(scale.field)
@@ -718,12 +730,12 @@ function mafRowHeightPath(rowHeight: number) {
 // The one dialog that edits row order, labels and which rows are shown. Each
 // display names its menu item for what its own dialog covers.
 const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
-  LinearMafDisplay: 'Edit row arrangement...',
+  LinearMafDisplay: 'Edit colors/arrangement...',
   LinearMultiRowFeatureDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantDisplay: 'Edit colors/arrangement...',
-  // The quantitative display reaches the same dialog from the same item. Its
-  // own `Edit color...` row is a different dialog: that one edits the channel,
-  // this one the adapter row metadata under the rows.
+  // On the quantitative display this is the only colour row there is: the
+  // plot's own two colours ride above the rows, and the channel-spec box is a
+  // button inside rather than a row of its own.
   LinearWiggleDisplay: 'Edit colors/arrangement...',
 }
 

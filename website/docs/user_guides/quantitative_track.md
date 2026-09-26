@@ -69,12 +69,16 @@ A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 
 ### Colors
 
-**Edit color...** opens the colour spec the config file holds. A CSS color
-string paints the whole plot in it; `{ "field": "score", "scale": "threshold" }`
-is the two-sided plot, one colour below the cut and one above; a ramp
-(`{ "field": "score", "scale": "linear", "scheme": "viridis" }`) is what density
-mode fades through; and `{ "field": "source" }` gives each signal in the track a
-palette entry of its own. The
+**Edit colors/arrangement...** opens the plot's two colours on one line: one
+above the baseline, one below, and both the same for a flat plot. Setting them
+is the whole colour story for a single signal, and a track with subtracks gets
+the list beneath them, where **Color rows by → Each row** hands every subtrack a
+palette entry of its own.
+
+**Edit as JSON...**, in that dialog, is the escape for what the line does not
+offer: a ramp (`{ "field": "score", "scale": "linear", "scheme": "viridis" }`),
+which is what density mode fades through, and a threshold naming several cut
+points, a colour per band. The
 [quantitative track configuration](/docs/config_guides/quantitative_track#colors)
 guide writes the same object into a config file.
 

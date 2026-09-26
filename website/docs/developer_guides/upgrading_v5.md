@@ -426,8 +426,10 @@ also the value the bars grow from.
 `setColor` and `setOrigin`. **None of it migrates**, in a config, a session or
 an `applyDisplaySettings` bag: MST drops a snapshot key the model no longer
 declares, so a track that named one of them reopens in the default colors.
-`domainMid` is new on the ramp, and the track menu's **Edit color...** opens the
-shared channel-spec dialog on the same object a config file holds.
+`domainMid` is new on the ramp. The track menu has no colour row of its own any
+more: **Edit colors/arrangement...** offers the plot's two colours on one line,
+and its **Edit as JSON...** opens the shared channel-spec dialog on the same
+object a config file holds.
 
 [](/docs/config/wigglecolor) lists the members.
 

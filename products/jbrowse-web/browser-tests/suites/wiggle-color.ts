@@ -36,8 +36,18 @@ const suite: TestSuite = {
         await menuIcon.click()
         await delay(300)
 
-        const colorItem = await findByText(page, 'Edit color...', 10000)
+        const colorItem = await findByText(
+          page,
+          'Edit colors/arrangement...',
+          10000,
+        )
         await colorItem.click()
+        await delay(500)
+
+        // the two swatches say a constant and a cut; a ramp or several cuts is
+        // the JSON escape inside the same dialog
+        const jsonItem = await findByText(page, 'Edit as JSON...', 10000)
+        await jsonItem.click()
         await delay(500)
 
         // the colour is one object written as JSON; a string is the constant
