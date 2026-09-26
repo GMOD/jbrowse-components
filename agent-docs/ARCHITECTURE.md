@@ -65,12 +65,11 @@ is declared in `STATES_NO_RULES`.
   way. And don't write a slot name onto a *session* display node: that node is
   built by the state model, so the key is dropped in silence. See [where a
   display's state lives](#where-a-displays-state-lives).
-- Don't rewrite the *value* of an existing constrained slot anywhere but the
-  DisplayType's `retiredConfig`. The display `types.union` validates the raw
-  snapshot before any schema `preProcessSnapshot` runs, so the union rejects the
-  legacy value first and the hook never fires; adding, removing or renaming a
-  slot needs none of this. See [where a display's state
-  lives](#where-a-displays-state-lives).
+- Don't declare a display's retired setting names anywhere but its config
+  schema's `retired` map. Four doors reach a display setting and each used to
+  read a different subset, so a name declared on one of them worked through
+  that door and silently did nothing through the others. See [where a display's
+  state lives](#where-a-displays-state-lives).
 - Don't canonicalize a refName worker-side. `renameRegionsIfNeeded` renamed
   `regions[]` before the call, so a second pass renames a name already in the
   adapter's namespace; main-thread text goes through `getCanonicalRefName`, and
@@ -423,13 +422,16 @@ The JSON Schema's `$defs/<Display>Snapshot` closes the node to its state-model
 properties, and `jbrowse validate` reports the slot as one written in the
 wrong place (ADR-120).
 
-**Migrating one:** adding, removing or renaming a slot needs only a
-config-schema `preProcessSnapshot`. Rewriting the **value** of an existing
-constrained slot goes in the DisplayType's `retiredConfig`, because the display
-`types.union` validates the raw snapshot before any schema hook runs. A retired
-display type goes in its successor's `retiredTypes`, and a display-instance
-prop an old session carries that is a slot now goes in its `retiredState`,
-which `migratedDisplayKeys` reads.
+**Migrating one:** a name an older release used goes in the config schema's
+`retired` map, which every door into a display setting reads — a `displays`
+entry, the `displayDefaults` shorthand, a share link or agent settings bag, and
+the session migration. Its value is what the old name becomes, or a string
+naming what replaced a setting that is gone. Rewriting the **value** of a slot
+the display still declares is the schema's `preProcessSnapshot`, which the
+`displays` union does run while it works out which display an entry is. A
+retired display type goes in its successor's `retiredTypes`, and a
+display-instance prop an old session carries that is a slot now goes in its
+`retiredState`, which `migratedDisplayKeys` reads.
 
 How a slot then reaches the renderer — snapshot, plain object, RPC payload, and
 the JEXL callbacks along the way — is

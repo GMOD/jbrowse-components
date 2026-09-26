@@ -9,9 +9,11 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 // The v5 betas spelt the point diameter `scatterPointSize`. Declared beside
 // the slot that replaced it, so every schema composing these slots takes the
 // old spelling on every door.
+// #region retired
 export const wiggleScoreRetired = {
   scatterPointSize: (size: unknown) => ({ size }),
 }
+// #endregion
 
 /** The slots its composers each declare, with their own defaults. */
 export const wiggleScoreConfigExtraSlots = {

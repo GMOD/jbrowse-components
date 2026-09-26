@@ -980,24 +980,39 @@ a plugin writes `declare module '@jbrowse/core/PluginManager'` for the same
 effect.
 
 For the common case — a _display's_ config across a format change — declare it
-on the `DisplayType` rather than registering a handler:
+rather than registering a handler. A name an older release used goes in the
+config schema's `retired`:
+
+<!-- include: packages/wiggle-core/src/WiggleScoreConfigMixin.ts#retired -->
+
+```typescript
+export const wiggleScoreRetired = {
+  scatterPointSize: (size: unknown) => ({ size }),
+}
+```
+
+Each entry maps the old name to the members its value becomes, or to a string
+naming what replaced a setting that is gone, which the schema throws on. One
+declaration serves every door into a display setting: a `displays` entry, the
+`displayDefaults` shorthand — which routes an old name to the display that
+retired it, rather than reporting a key no display declares — a session spec or
+share link, an agent's settings bag, and the session migration.
+
+A retired **value** in a slot the display still declares is the schema's
+`preProcessSnapshot`, which runs on the same doors.
+
+`retiredTypes` names the display types this one replaced, on the `DisplayType`:
 
 <!-- include: plugins/canvas/src/LinearBasicDisplay/index.ts#migration -->
 
 ```typescript
 retiredTypes: [{ type: 'LinearFeatureDisplay' }],
-retiredConfig: migrateBasicConfigSnapshot,
 ```
 
-`retiredTypes` names the display types this one replaced. A config or a session
-naming one loads as this display, the entry rewritten first by that entry's
-`migrate`, which is where the settings the old type's picture needs go.
-`retiredConfig` rewrites any entry of this display whose slot values an older
-release spelt differently. Both run before every `Core-preProcessTrackConfig`
-handler, so a handler reads current names, and before the display union reads
-the entry: a `types.union` tests the raw snapshot, so it rejects a legacy value
-before a schema-level `preProcessSnapshot` ever runs. `retiredConfig` runs on
-every entry, so it must leave a current one as it found it.
+A config or a session naming one loads as this display, the entry rewritten
+first by that entry's `migrate`, which is where the settings the old type's
+picture needs go. It runs before every `Core-preProcessTrackConfig` handler, so
+a handler reads current names.
 
 `retiredState` does the same for an old session's display instance: `keys` names
 the props it carried that are config slots now, and `lift` answers the slots
