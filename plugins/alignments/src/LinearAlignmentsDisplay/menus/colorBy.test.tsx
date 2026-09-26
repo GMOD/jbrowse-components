@@ -252,24 +252,6 @@ describe('color by modifications menu', () => {
     })
   })
 
-  test('a hiddenModifications config reads back as unticked, and ticking clears it', () => {
-    const model = makeModModel(['m', 'h'])
-    model.baseLayer = {
-      type: 'modifications',
-      modifications: { hiddenModifications: ['h'] },
-    }
-    expect(
-      subMenuOf(byLabel(model, 'Modification types')).map(i =>
-        'checked' in i ? i.checked : undefined,
-      ),
-    ).toEqual([true, false])
-    tickModType(model, '5hmC')
-    expect(model.baseLayer).toEqual({
-      type: 'modifications',
-      modifications: {},
-    })
-  })
-
   test('the per-type filter is hidden when only one type is detected', () => {
     const model = makeModModel(['m'])
     model.baseLayer = { type: 'modifications' }

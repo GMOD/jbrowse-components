@@ -80,9 +80,6 @@ function patchMods(
       ...(m.shownModifications !== undefined
         ? { shownModifications: m.shownModifications }
         : {}),
-      ...(m.hiddenModifications?.length
-        ? { hiddenModifications: m.hiddenModifications }
-        : {}),
       ...(keepThreshold ? { threshold: m.threshold } : {}),
       ...(m.cytosineContext && m.cytosineContext !== 'CG'
         ? { cytosineContext: m.cytosineContext }
@@ -93,10 +90,7 @@ function patchMods(
 
 // Tick/untick one modification type. The current selection is read back through
 // isModificationTypeVisible — the same predicate the worker filter and the
-// legend use — so the boxes always reflect what is actually drawn, including
-// when a hand-written config expressed the filter as a hiddenModifications
-// deny-list. The write is always an allow-list, and clears that deny-list, so
-// the two mechanisms can't stack into a confusing state.
+// legend use — so the boxes always reflect what is actually drawn.
 function setModTypeShown(
   model: ModificationsMenuModel,
   type: string,
@@ -111,7 +105,6 @@ function setModTypeShown(
   // that was written before it was detected.
   patchMods(model, {
     shownModifications: types.every(t => next.includes(t)) ? undefined : next,
-    hiddenModifications: undefined,
   })
 }
 

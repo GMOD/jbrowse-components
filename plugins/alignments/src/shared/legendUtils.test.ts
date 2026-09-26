@@ -647,24 +647,6 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('hiddenModifications drops the swatch even though the type was detected', () => {
-    const mods = new Map([
-      ['m', 'red'],
-      ['h', 'blue'],
-      ['a', 'purple'],
-    ])
-    expect(
-      legendFor(
-        {
-          type: 'modifications',
-          modifications: { hiddenModifications: ['m', 'h'] },
-        },
-        [],
-        { detectedModifications: mods },
-      ).map(i => i.label),
-    ).toEqual(['6mA'])
-  })
-
   test('shownModifications allow-list keeps only the listed swatch', () => {
     const mods = new Map([
       ['m', 'red'],

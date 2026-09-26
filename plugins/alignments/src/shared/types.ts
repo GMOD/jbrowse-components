@@ -15,13 +15,7 @@ export interface ModificationColorBy {
   // `twoColor !== false`, so the same field name meant opposite things with
   // opposite defaults in the two modes.
   twoColor?: boolean
-  // Legacy deny-list of modification type codes, read-only: no UI has ever
-  // written it, and the type checkboxes now clear it the first time one is
-  // toggled (any deny-list is expressible as the allow-list below). Kept so a
-  // hand-written config keeps resolving; don't add new writers.
-  hiddenModifications?: string[]
-  // Allow-list of modification type codes to draw, and the only filter the UI
-  // writes. Present wins over hiddenModifications: ONLY these render, so a "6mA
+  // Allow-list of modification type codes to draw: ONLY these render, so a "6mA
   // only" view (shownModifications: ['a']) stays 6mA-only even if the basecaller
   // also emits 5mC/5hmC on the same reads. Absent means every detected type —
   // the default, so a type first seen as more reads stream in shows up. The
@@ -42,8 +36,6 @@ export interface ModificationColorBy {
 }
 
 // Single source for "is this modification type visible?" given a colorBy.
-// shownModifications (allow-list) wins whenever it is present at all; otherwise
-// hiddenModifications (deny-list) is subtracted from the all-visible default.
 // Shared by the worker extract filter, the legend, and the color-by menu — the
 // type checkboxes render straight off this predicate, so what is ticked and what
 // is drawn cannot disagree.
@@ -57,9 +49,7 @@ export function isModificationTypeVisible(
   type: string,
 ) {
   const shown = modifications?.shownModifications
-  return shown === undefined
-    ? !(modifications?.hiddenModifications ?? []).includes(type)
-    : shown.includes(type)
+  return shown === undefined || shown.includes(type)
 }
 
 // Shader color-scheme dispatch paths — the distinct branches read.slang
