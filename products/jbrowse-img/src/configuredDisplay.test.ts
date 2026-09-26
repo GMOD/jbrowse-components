@@ -343,4 +343,27 @@ describe('a mark declared in paths', () => {
       exportTrack(configWith(basic), ['display:marks', 'marks.0.mark=bar']),
     ).rejects.toThrow(/mark 0 encoding\.y: /)
   }, 60000)
+
+  // A `y` the data does not carry draws an axis with nothing under it. The app
+  // says so in a corner indicator, which nobody can open on a PNG, so the
+  // picture of an empty plot got written with the field name nowhere in it.
+  test('a y the data does not carry fails the run rather than writing an empty plot', async () => {
+    await expect(
+      exportTrack(configWith(basic), [
+        'display:marks',
+        'marks.0.mark=bar',
+        'marks.0.encoding.y=nosuchfield',
+      ]),
+    ).rejects.toThrow(/plotted none of its \d+ features.*nosuchfield/s)
+  }, 60000)
+
+  // Fetching nothing is a different answer, and an ordinary one.
+  test('a region with no features is not a failure', async () => {
+    const svg = await exportTrack(
+      configWith(basic),
+      ['display:marks', 'marks.0.mark=bar', 'marks.0.encoding.y=score'],
+      ['ctgA:24,000-25,000'],
+    )
+    expect(svg).toContain('<svg')
+  }, 60000)
 })

@@ -235,27 +235,75 @@ function configProblemsOf(display: object): readonly ConfigProblem[] {
     : []
 }
 
+/** What a display fetched and could not plot: `skippedFeatures` on the mark display. */
+interface Skipped {
+  skipped: number
+  total: number
+  fields: string[]
+}
+
+function skippedOf(display: object): Skipped | undefined {
+  const value =
+    'skippedFeatures' in display ? display.skippedFeatures : undefined
+  return typeof value === 'object' &&
+    value !== null &&
+    'skipped' in value &&
+    'total' in value
+    ? (value as Skipped)
+    : undefined
+}
+
 /**
- * What each open display says it cannot draw as configured, the mark display's
- * rule list that the app shows in the track's corner chip. Read off the
- * display rather than run over the config, so the problems are the ones of the
- * display type drawn, after every modifier, in the display's own words. A
- * warning goes to stderr and an error fails the run, ahead of any render
- * failure it may have caused. Read once the render has settled or failed,
- * which leaves no fetch in flight for the teardown to cut off.
+ * A plot that fetched features and could read none of them. `y` naming a field
+ * the data does not carry draws an axis and nothing under it, and the app says
+ * so in a corner indicator nobody can open on a PNG — so the picture of an
+ * empty plot got written with the field name nowhere in it. Fetching nothing is
+ * not this: an empty region is an ordinary answer, and only a feature the
+ * encoder had to leave out counts here.
+ */
+function skipLine(trackId: string, { skipped, total, fields }: Skipped) {
+  const unreadable = fields.length
+    ? `: nothing readable for ${fields.join(', ')}`
+    : ''
+  return skipped === total
+    ? {
+        level: 'error',
+        line: `track "${trackId}" plotted none of its ${total} features${unreadable}`,
+      }
+    : {
+        level: 'warning',
+        line: `track "${trackId}" left ${skipped} of ${total} features out of the plot${unreadable}`,
+      }
+}
+
+/**
+ * What each open display says it could not draw: the mark display's rule list,
+ * which the app shows in the track's corner chip, and the features its encoder
+ * had to leave out. Read off the display rather than run over the config, so
+ * the problems are the ones of the display type drawn, after every modifier, in
+ * the display's own words. A warning goes to stderr and an error fails the run,
+ * ahead of any render failure it may have caused. Read once the render has
+ * settled or failed, which leaves no fetch in flight for the teardown to cut
+ * off.
  */
 function reportConfigProblems(session: Model['session']) {
   const errors = new Set<string>()
   const warnings = new Set<string>()
+  const found = ({ level, line }: { level: string; line: string }) => {
+    ;(level === 'error' ? errors : warnings).add(line)
+  }
   for (const track of openTracks(session)) {
+    const { trackId } = track.configuration
     for (const display of track.displays) {
       for (const { level, mark, slot, message } of configProblemsOf(display)) {
-        const line = `track "${track.configuration.trackId}" ${mark === undefined ? '' : `mark ${mark} `}${slot}: ${message}`
-        if (level === 'error') {
-          errors.add(line)
-        } else {
-          warnings.add(line)
-        }
+        found({
+          level,
+          line: `track "${trackId}" ${mark === undefined ? '' : `mark ${mark} `}${slot}: ${message}`,
+        })
+      }
+      const skipped = skippedOf(display)
+      if (skipped && skipped.skipped > 0) {
+        found(skipLine(trackId, skipped))
       }
     }
   }
