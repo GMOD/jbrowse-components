@@ -25,6 +25,7 @@ export interface ColorChannel {
 }
 
 interface RampBake {
+  values: Float32Array
   min: number
   max: number
   log: boolean
@@ -94,12 +95,12 @@ export function paintColors(
   const { lut } = ramp
   const bake = c.rampBake
   if (
-    bake &&
+    bake?.values === colorValue &&
     bake.min === min &&
     bake.max === max &&
     bake.log === log &&
     bake.lut === lut &&
-    bake.colors.length >= count
+    bake.colors.length === count
   ) {
     return bake.colors
   }
@@ -129,6 +130,6 @@ export function paintColors(
         lut[o]!) >>>
       0
   }
-  c.rampBake = { min, max, log, lut, colors }
+  c.rampBake = { values: colorValue, min, max, log, lut, colors }
   return colors
 }

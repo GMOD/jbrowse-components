@@ -136,6 +136,17 @@ test('an unchanged domain reuses the bake; a widened one redoes it', () => {
   expect(widened[1]).not.toBe(first[1])
 })
 
+// A lane filtered into a copy of its payload, as a hidden facet section is,
+// carries the bake the original was painted with.
+test('a copy with other values bakes its own', () => {
+  const c = bars([0, 50, 100])
+  paintColors(c, 3, ramp)
+  const kept = { ...c, colorValue: Float32Array.of(100, 0), count: 2 }
+  expect([...(paintColors(kept, 2, ramp) as Uint32Array)]).toEqual([
+    ...(paintColors(bars([100, 0]), 2, ramp) as Uint32Array),
+  ])
+})
+
 test('a log ramp reads the domain the way the shader does', () => {
   const c = bars([1, 10, 100])
   const linear = paintColors(c, 3, ramp) as Uint32Array
