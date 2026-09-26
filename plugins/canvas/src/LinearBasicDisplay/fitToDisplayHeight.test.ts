@@ -238,8 +238,8 @@ function displaySignature(display: TestDisplay) {
     fitScale: display.fitScale,
     bodyScale,
     fitLevel: level,
-    labelRoomFactor:
-      level === 'decimated' ? display.fitDecimatedFactor : undefined,
+    labelRoomFactors:
+      level === 'decimated' ? display.fitDecimatedFactors : undefined,
     maxIsoforms,
   })
 }
@@ -741,7 +741,7 @@ describe('canvas display fit escalation ladder', () => {
         kept,
         maxY: display.maxY,
         h,
-        factor: display.fitDecimatedFactor,
+        factor: display.fitDecimatedFactors?.labelRoomFactor,
         bodyScale: display.fitStage.bodyScale,
         names: display.fitDrops.names,
       }
@@ -1020,10 +1020,10 @@ describe('canvas display fit escalation ladder', () => {
     display.setHeight(Math.round((labelsH + bodiesH) / 2))
     expect(display.fitStage.level).toBe('decimated')
 
-    const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
-    expect(factor).toBeDefined()
+    const factors = display.solveLabelRoomFactors(display.fitTargetHeight)
+    expect(factors).toBeDefined()
     const inputs = {
-      ...display.decimatedLayoutInputs(factor!),
+      ...display.decimatedLayoutInputs(factors!),
       bodyScale: display.fitDecimatedBodyScale,
     }
     expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
@@ -1046,10 +1046,10 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.fitStage.level).toBe('decimated')
 
     const before = display.laidOutDataMap.get(0)
-    const factorBefore = display.solveLabelRoomFactor(display.fitTargetHeight)
+    const factorsBefore = display.solveLabelRoomFactors(display.fitTargetHeight)
     display.setHeight(h + 0.01)
-    expect(display.solveLabelRoomFactor(display.fitTargetHeight)).toBe(
-      factorBefore,
+    expect(display.solveLabelRoomFactors(display.fitTargetHeight)).toEqual(
+      factorsBefore,
     )
     expect(display.laidOutDataMap.get(0)).toBe(before)
   })
@@ -1078,8 +1078,10 @@ describe('canvas display fit escalation ladder', () => {
     display.setRpcData(0, mixedWidthRegionData(30), ctgA)
     display.setHeightMode('fit')
     const roomy = maxBottom(display.fitLabelsOnlyLayout) + 500
-    expect(display.solveLabelRoomFactor(roomy)).toBe(0)
-    expect(display.solveLabelRoomFactor(1)).toBeUndefined()
+    expect(display.solveLabelRoomFactors(roomy)).toEqual({
+      labelRoomFactor: 0,
+    })
+    expect(display.solveLabelRoomFactors(1)).toBeUndefined()
   })
 
   it('solves and commits consistently in a reversed region', () => {
@@ -1098,9 +1100,9 @@ describe('canvas display fit escalation ladder', () => {
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     display.setHeight(Math.round((labelsH + bodiesH) / 2))
 
-    const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
-    expect(factor).toBeDefined()
-    const inputs = display.decimatedLayoutInputs(factor!)
+    const factors = display.solveLabelRoomFactors(display.fitTargetHeight)
+    expect(factors).toBeDefined()
+    const inputs = display.decimatedLayoutInputs(factors!)
     expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
       maxBottom(computeLaidOutData(display.rpcDataMap, inputs)),
     )
@@ -1122,7 +1124,7 @@ describe('canvas display fit escalation ladder', () => {
       const heights = [0, 0.25, 0.5, 1, 2, 4, 8].map(f =>
         packedContentHeight(
           display.rpcDataMap,
-          display.decimatedLayoutInputs(f),
+          display.decimatedLayoutInputs({ labelRoomFactor: f }),
         ),
       )
       for (let i = 1; i < heights.length; i++) {

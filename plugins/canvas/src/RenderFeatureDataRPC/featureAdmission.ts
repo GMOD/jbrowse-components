@@ -13,6 +13,21 @@ export type AdmissionConfig = Pick<
   'jexlFilters' | 'transcriptTypes' | 'containerTypes' | 'hideSourceFeatures'
 >
 
+// Core's gene-like rule keeps an Ensembl `ncRNA_gene` or a bare `tRNA`; the
+// configured types and a prokaryote's top-level CDS join it. "Show only genes"
+// admits by it, and these names claim the fit height first.
+export function geneTypeTest(
+  config: Pick<DisplayConfig, 'transcriptTypes' | 'containerTypes'>,
+) {
+  const geneTypes = new Set(
+    [...config.transcriptTypes, ...config.containerTypes, 'CDS'].map(t =>
+      t.toLowerCase(),
+    ),
+  )
+  return (type: string) =>
+    isGeneLikeType(type) || geneTypes.has(type.toLowerCase())
+}
+
 // The single place that decides which fetched features get laid out and drawn.
 // The `jexlFilters` slot stores expressions without the `jexl:` prefix, so this
 // adds it before compiling, and binds the worker's plugin jexl instance so a
@@ -35,22 +50,9 @@ export function buildFeatureAdmission({
     jexl,
   })
 
-  // Core's gene-like rule keeps an Ensembl `ncRNA_gene` or a bare `tRNA`; the
-  // configured types and a prokaryote's top-level CDS join it.
-  const geneTypes = showOnlyGenes
-    ? new Set(
-        [...config.transcriptTypes, ...config.containerTypes, 'CDS'].map(t =>
-          t.toLowerCase(),
-        ),
-      )
-    : undefined
-  const passesGeneGate = (feature: Feature) => {
-    if (!geneTypes) {
-      return true
-    }
-    const type = featureType(feature)
-    return isGeneLikeType(type) || geneTypes.has(type.toLowerCase())
-  }
+  const isGeneType = showOnlyGenes ? geneTypeTest(config) : undefined
+  const passesGeneGate = (feature: Feature) =>
+    !isGeneType || isGeneType(featureType(feature))
 
   // An exact uniqueId-membership match; an empty or absent set admits
   // everything.

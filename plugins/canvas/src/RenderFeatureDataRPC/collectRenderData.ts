@@ -3,6 +3,7 @@ import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { createColorKey } from './collect/colorKey.ts'
 import { processFeatureRecord } from './collect/glyphEmitters.ts'
 import { createCollector } from './collect/renderContext.ts'
+import { geneTypeTest } from './featureAdmission.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { RenderContext } from './collect/renderContext.ts'
@@ -27,6 +28,7 @@ export function collectRenderData(
       config.facetField === undefined
         ? undefined
         : fieldReader(config.facetField, jexl),
+    isGeneType: geneTypeTest(config),
   }
 
   for (const layout of layouts) {

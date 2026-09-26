@@ -22,6 +22,7 @@ import {
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FitStage } from './fitLadder.ts'
+import type { LabelRoomFactors } from './layoutInputs.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface YMorphState {
@@ -40,7 +41,7 @@ export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
   morphEased: number
   fitStage: FitStage
   fitScale: number
-  fitDecimatedFactor: number | undefined
+  fitDecimatedFactors: LabelRoomFactors | undefined
   displayMode: DisplayMode
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
@@ -169,8 +170,8 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
         fitLevel: level,
         // Only where it selects rows: at any other rung reading it would pay
         // for a bisection to discriminate stacks it had no hand in.
-        labelRoomFactor:
-          level === 'decimated' ? self.fitDecimatedFactor : undefined,
+        labelRoomFactors:
+          level === 'decimated' ? self.fitDecimatedFactors : undefined,
         maxIsoforms,
       })
       const scaleUnchanged = geometry === prevGeometry

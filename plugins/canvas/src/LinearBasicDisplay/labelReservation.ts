@@ -3,13 +3,17 @@ import {
   renderedTextWidth,
 } from '../RenderFeatureDataRPC/constants.ts'
 
-import type { FeatureLabelData } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  FeatureDataResult,
+  FeatureLabelData,
+} from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LabelDecimation } from './layoutInputs.ts'
 
 // Keyed on the room the overhang can use (box plus the gap to the neighbour),
 // not box width alone, so an isolated feature keeps its name however narrow.
 // `roomFactor` is not bounded below by 1: the packer always reserves the full
 // name width, so a kept-but-crowded name drops a row rather than overlapping.
+// An infinite factor keeps no name, an isolated one's included.
 export function keepFeatureLabel(
   labelDecimation: LabelDecimation,
   availableRoomPx: number,
@@ -20,8 +24,37 @@ export function keepFeatureLabel(
   return (
     labelDecimation === 'all' ||
     pinned ||
-    availableRoomPx >= nameWidthPx * roomFactor
+    (roomFactor < Infinity && availableRoomPx >= nameWidthPx * roomFactor)
   )
+}
+
+// Which of the decimation's two tiers, gene names and the rest, hold a name
+// among `measureIds`.
+export function namedLabelTiers(
+  regions: Iterable<FeatureDataResult>,
+  measureIds?: ReadonlySet<string>,
+) {
+  let gene = false
+  let other = false
+  for (const data of regions) {
+    const geneIds = new Set<string>()
+    for (const item of data.flatbushItems) {
+      if (item.gene) {
+        geneIds.add(item.featureId)
+      }
+    }
+    for (const labelData of data.floatingLabelsData.values()) {
+      const id = labelData.parentFeatureId ?? labelData.featureId
+      if (labelData.nameLabel && (!measureIds || measureIds.has(id))) {
+        if (geneIds.has(id)) {
+          gene = true
+        } else {
+          other = true
+        }
+      }
+    }
+  }
+  return { gene, other }
 }
 
 // The padding is a fixed gap, added after the scale rather than scaled with

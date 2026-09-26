@@ -7,10 +7,11 @@ import {
   resolveFitLadder,
   solveBodyScale,
   solveIsoformCount,
-  solveLabelRoomFactor,
+  solveLabelRoomFactors,
   squeezeFloorScale,
 } from './fitLadder.ts'
 import { maxIsoformCount } from './isoformTrim.ts'
+import { namedLabelTiers } from './labelReservation.ts'
 import {
   createContentHeightProbe,
   createIncrementalLayout,
@@ -29,6 +30,7 @@ import type { IncrementalLayout } from './layout.ts'
 import type {
   IsoformCountFreeInputs,
   LabelRoomFactorFreeInputs,
+  LabelRoomFactors,
   LayoutInputs,
   LayoutRegionData,
 } from './layoutInputs.ts'
@@ -202,10 +204,11 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #method
-     * Layout inputs for the `decimated` rung at one whitespace factor.
+     * Layout inputs for the `decimated` rung at one pair of whitespace
+     * factors.
      */
-    decimatedLayoutInputs(labelRoomFactor: number): LayoutInputs {
-      return { ...this.decimatedBaseInputs, labelRoomFactor }
+    decimatedLayoutInputs(factors: LabelRoomFactors): LayoutInputs {
+      return { ...this.decimatedBaseInputs, ...factors }
     },
     /**
      * #getter
@@ -214,7 +217,10 @@ export function fitLadderViews(self: FitLadderHost) {
      * the solve picks is judged on the same stack the rung is then kept or
      * rejected on.
      */
-    get decimatedHeightProbe(): (labelRoomFactor: number) => number {
+    get decimatedHeightProbe(): (
+      labelRoomFactor: number,
+      geneLabelRoomFactor?: number,
+    ) => number {
       return createContentHeightProbe(
         self.rpcDataMap,
         this.decimatedBaseInputs,
@@ -223,12 +229,17 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #method
-     * The whitespace factor the `decimated` rung commits at: the smallest one
-     * whose packed stack fits `trackHeight` (smallest = most names kept), or
-     * undefined when even the most aggressive decimation overflows.
+     * The whitespace factors the `decimated` rung commits at: gene names
+     * first, then the rest, each the smallest whose packed stack fits
+     * `trackHeight` (smallest = most names kept), or undefined when even the
+     * most aggressive decimation overflows.
      */
-    solveLabelRoomFactor(trackHeight: number) {
-      return solveLabelRoomFactor(this.decimatedHeightProbe, trackHeight)
+    solveLabelRoomFactors(trackHeight: number) {
+      return solveLabelRoomFactors(
+        this.decimatedHeightProbe,
+        trackHeight,
+        namedLabelTiers(self.rpcDataMap.values(), self.fitMeasureFeatureIds),
+      )
     },
     /**
      * #getter
@@ -316,14 +327,14 @@ export function fitLadderViews(self: FitLadderHost) {
      */
     bodyScaleHeightProbe(
       inputs: LabelRoomFactorFreeInputs,
-      labelRoomFactor?: number,
+      factors?: LabelRoomFactors,
     ): (bodyScale: number) => number {
       return bodyScale =>
         createContentHeightProbe(
           self.rpcDataMap,
           { ...inputs, bodyScale },
           self.fitMeasureFeatureIds,
-        )(labelRoomFactor)
+        )(factors?.labelRoomFactor, factors?.geneLabelRoomFactor)
     },
     /**
      * #getter
@@ -391,36 +402,36 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * The whitespace factor the `decimated` rung commits at: the smallest one
+     * The whitespace factors the `decimated` rung commits at: the smallest
      * whose packed stack fits `fitTargetHeight`, so the most names are kept.
      */
-    get fitDecimatedFactor(): number | undefined {
+    get fitDecimatedFactors(): LabelRoomFactors | undefined {
       // Memoized so `rowGeometrySignature` reads the same answer the rung
       // packed at without a second bisection.
       return self.layoutReady && self.showLabels
-        ? this.solveLabelRoomFactor(self.fitTargetHeight)
+        ? this.solveLabelRoomFactors(self.fitTargetHeight)
         : undefined
     },
     /**
      * #getter
      * The `decimated` stack: names kept only on features with at least
-     * `fitDecimatedFactor ×` their label width in neighbour whitespace (plus
-     * pinned/highlighted, always).
+     * their tier's `fitDecimatedFactors ×` their label width in neighbour
+     * whitespace (plus pinned/highlighted, always).
      */
     get fitDecimatedSolved(): Map<number, FeatureDataResult> {
       // Probe and commit must pack identically, hence the unseeded
       // `incrementalLayoutDecimated`; seeding this rung from the `labels`
       // stack was tried and moved zero rows.
-      const factor = this.fitDecimatedFactor
+      const factors = this.fitDecimatedFactors
       // Falls back to the `isoforms` stack, not `labels`: this rung is below
       // that one, and falling past its trim packs a stack the ladder already
       // rejected.
       const bodyScale = this.fitDecimatedBodyScale
-      if (factor === undefined || bodyScale === undefined) {
+      if (factors === undefined || bodyScale === undefined) {
         return this.fitIsoformsSolved
       }
       const layout = self.incrementalLayoutDecimated(self.rpcDataMap, {
-        ...this.decimatedLayoutInputs(factor),
+        ...this.decimatedLayoutInputs(factors),
         bodyScale,
       })
       // With no name left it is the `bodies` stack under the wrong name.
@@ -431,18 +442,18 @@ export function fitLadderViews(self: FitLadderHost) {
     /**
      * #getter
      * The body scale the `decimated` rung commits at: with the names
-     * `fitDecimatedFactor` kept, the bodies grow back into whatever height
+     * `fitDecimatedFactors` kept, the bodies grow back into whatever height
      * the dropped names freed.
      */
     get fitDecimatedBodyScale(): number | undefined {
-      const factor = this.fitDecimatedFactor
-      if (factor === undefined) {
+      const factors = this.fitDecimatedFactors
+      if (factors === undefined) {
         return undefined
       }
       const floor = this.fitLabeledBodyFloor
       return (
         solveBodyScale(
-          this.bodyScaleHeightProbe(this.decimatedBaseInputs, factor),
+          this.bodyScaleHeightProbe(this.decimatedBaseInputs, factors),
           self.fitTargetHeight,
           floor,
         ) ?? floor

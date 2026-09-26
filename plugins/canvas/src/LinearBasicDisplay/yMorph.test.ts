@@ -168,7 +168,7 @@ test('rowGeometrySignature separates two isoform counts', () => {
       fitScale: 1,
       bodyScale: 1,
       fitLevel: 'isoforms',
-      labelRoomFactor: undefined,
+      labelRoomFactors: undefined,
       maxIsoforms,
     })
   expect(at(5)).not.toBe(at(4))

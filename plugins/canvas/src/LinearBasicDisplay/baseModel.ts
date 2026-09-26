@@ -825,7 +825,7 @@ export default function baseStateModelFactory(
           // Solving for one costs a bisection, and only this rung reports
           // it.
           self.fitStage.level === 'decimated'
-            ? self.fitDecimatedFactor
+            ? self.fitDecimatedFactors
             : undefined,
         )
       },

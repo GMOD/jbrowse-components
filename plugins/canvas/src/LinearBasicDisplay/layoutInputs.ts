@@ -39,6 +39,8 @@ export interface LayoutInputs {
   pinnedFeatureIds: ReadonlySet<string>
   labelDecimation?: LabelDecimation
   labelRoomFactor?: number
+  // Gene names' own factor; absent, `labelRoomFactor` decimates them too.
+  geneLabelRoomFactor?: number
   maxIsoformsPerGene?: number
   expandedGeneIds?: ReadonlySet<string>
   // Packs one section per facet value, stacked in `facetOrder` with a chip row
@@ -97,9 +99,15 @@ export function displayModeMetrics(
   }
 }
 
+export type LabelRoomFactors = Required<Pick<LayoutInputs, 'labelRoomFactor'>> &
+  Pick<LayoutInputs, 'geneLabelRoomFactor'>
+
 // `prepareRefPack` takes this type so the prepared half of a pack cannot read
-// `labelRoomFactor`, making one prep valid for every factor probed.
-export type LabelRoomFactorFreeInputs = Omit<LayoutInputs, 'labelRoomFactor'>
+// either factor, making one prep valid for every factor probed.
+export type LabelRoomFactorFreeInputs = Omit<
+  LayoutInputs,
+  keyof LabelRoomFactors
+>
 
 // Twin of `LabelRoomFactorFreeInputs`: one preparation is valid for every
 // count, because the trim happens per count in `trimPreparedRef`.

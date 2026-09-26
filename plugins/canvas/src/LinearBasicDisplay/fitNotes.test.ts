@@ -27,8 +27,8 @@ const drops = (
   at: ReturnType<typeof stage>,
   showLabels: boolean,
   showDescriptions: boolean,
-  decimatedFactor = 1,
-) => fitDrops(at, showLabels, showDescriptions, decimatedFactor)
+  labelRoomFactor = 1,
+) => fitDrops(at, showLabels, showDescriptions, { labelRoomFactor })
 
 describe('fitDrops', () => {
   it('reports nothing at the full rung', () => {

@@ -1,4 +1,5 @@
 import type { FitStage } from './fitLadder.ts'
+import type { LabelRoomFactors } from './layoutInputs.ts'
 
 // `names`/`descriptions` are relative to what was reserved, so a rung
 // dropping descriptions nobody turned on drops nothing.
@@ -25,13 +26,15 @@ export function fitDrops(
   // Factor 0 drops no name and the rung reaches it legitimately, since the
   // unseeded pack can fit where the seeded `labels` pack did not; any factor
   // above 0 means at least one name went.
-  decimatedFactor: number | undefined,
+  decimated: LabelRoomFactors | undefined,
 ): FitDrops {
   const names = !showLabels
     ? 'none'
     : !stage.showLabels
       ? 'all'
-      : stage.level === 'decimated' && (decimatedFactor ?? 0) > 0
+      : stage.level === 'decimated' &&
+          ((decimated?.labelRoomFactor ?? 0) > 0 ||
+            (decimated?.geneLabelRoomFactor ?? 0) > 0)
         ? 'some'
         : 'none'
   const descriptions = showDescriptions && !stage.showDescriptions

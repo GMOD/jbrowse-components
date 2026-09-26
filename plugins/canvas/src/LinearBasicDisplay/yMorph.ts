@@ -1,6 +1,7 @@
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LabelRoomFactors } from './layoutInputs.ts'
 
 // Above this many rects the per-frame re-upload costs more than the animation
 // is worth, so snap instead.
@@ -40,7 +41,7 @@ export function morphOffset(
 // Equal signatures differ only in row assignment and can morph; a changed one
 // rescaled the rows and must snap. Reads the rendered label flags, not the
 // raw config, because a fit-stage boundary can drop descriptions without a
-// config flag changing; the stage, `labelRoomFactor`, `bodyScale` and
+// config flag changing; the stage, the label room factors, `bodyScale` and
 // `maxIsoforms` ride along because two stacks at different values rescale rows
 // with every other field equal.
 export function rowGeometrySignature(g: {
@@ -50,7 +51,7 @@ export function rowGeometrySignature(g: {
   fitScale: number
   bodyScale: number
   fitLevel: string
-  labelRoomFactor: number | undefined
+  labelRoomFactors: LabelRoomFactors | undefined
   maxIsoforms: number | undefined
 }) {
   return [
@@ -60,7 +61,8 @@ export function rowGeometrySignature(g: {
     g.fitScale,
     g.bodyScale,
     g.fitLevel,
-    g.labelRoomFactor,
+    g.labelRoomFactors?.labelRoomFactor,
+    g.labelRoomFactors?.geneLabelRoomFactor,
     g.maxIsoforms,
   ].join('|')
 }

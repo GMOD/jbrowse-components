@@ -21,6 +21,7 @@ export interface RenderContext {
   jexl: JexlInstance
   // Reads `config.facetField`, built once per walk.
   readGroupKey?: (feature: Feature) => unknown
+  isGeneType?: (type: string) => boolean
 }
 
 export interface GlyphPlacement {

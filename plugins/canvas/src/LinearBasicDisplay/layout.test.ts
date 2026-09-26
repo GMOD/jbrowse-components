@@ -9,6 +9,8 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
 import { featureGroupSections } from './facet.ts'
+import { solveLabelRoomFactor, solveLabelRoomFactors } from './fitLadder.ts'
+import { namedLabelTiers } from './labelReservation.ts'
 import {
   computeLaidOutData,
   createContentHeightProbe,
@@ -33,6 +35,7 @@ function makeFeatureData(opts: {
     height: number
     strand?: number
     densityFade?: boolean
+    gene?: boolean
   }[]
   regionKey?: string
 }): LayoutRegionData {
@@ -50,6 +53,7 @@ function makeFeatureData(opts: {
           featureHeightPx: f.height,
           strand: f.strand,
           densityFade: !!f.densityFade,
+          gene: f.gene,
         }),
       ),
       rectPositions: new Uint32Array(
@@ -91,6 +95,7 @@ function labeledFeatureData(
     startBp: number
     endBp: number
     height: number
+    gene?: boolean
   }[],
   nameWidthPx = 40,
 ): LayoutRegionData {
@@ -943,6 +948,140 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
   const rLeft = rev.get(0)!.flatbushItems[0]!
   const rLabel = rev.get(0)!.flatbushItems[1]!
   expect(rLeft.topPx).not.toBe(rLabel.topPx)
+})
+
+describe('gene names claim the height first', () => {
+  // EDEN's shape in volvox's gene track at ctgA:1050-9000: a gene sharing its
+  // start with two EST alignments, and a remark with the room after them.
+  const volvoxEden = () =>
+    new Map([
+      [
+        0,
+        labeledFeatureData([
+          {
+            featureId: 'EDEN',
+            startBp: 1050,
+            endBp: 9000,
+            height: 20,
+            gene: true,
+          },
+          { featureId: 'est1', startBp: 1050, endBp: 3202, height: 20 },
+          { featureId: 'est2', startBp: 1050, endBp: 7300, height: 20 },
+          { featureId: 'f06', startBp: 3014, endBp: 6130, height: 20 },
+        ]),
+      ],
+    ])
+  const inputs = {
+    bpPerPx: 6.6,
+    showLabels: true,
+    showDescriptions: false,
+    reversedRegions: new Set<number>(),
+    displayMode: 'normal' as const,
+    pinnedFeatureIds: new Set<string>(),
+    labelDecimation: 'fitWidth' as const,
+  }
+  const keptNames = (
+    data: Map<number, LayoutRegionData>,
+    factors: { labelRoomFactor: number; geneLabelRoomFactor?: number },
+  ) =>
+    [
+      ...computeLaidOutData(data, { ...inputs, ...factors })
+        .get(0)!
+        .floatingLabelsData.values(),
+    ]
+      .filter(l => l.nameLabel)
+      .map(l => l.featureId)
+      .sort()
+
+  it('decimates each tier by its own factor, and the genes by the shared one when they have none', () => {
+    const data = volvoxEden()
+    expect(keptNames(data, { labelRoomFactor: 1 })).toEqual(['f06'])
+    expect(
+      keptNames(data, { labelRoomFactor: 1, geneLabelRoomFactor: 0 }),
+    ).toEqual(['EDEN', 'f06'])
+    expect(
+      keptNames(data, { labelRoomFactor: Infinity, geneLabelRoomFactor: 0 }),
+    ).toEqual(['EDEN'])
+  })
+
+  it('keeps the gene name where the height holds one name and the gene is crowded', () => {
+    const data = volvoxEden()
+    const heightAt = createContentHeightProbe(data, inputs)
+    const trackHeight = heightAt(Infinity, 0)
+    expect(trackHeight).toBeLessThan(heightAt(0))
+    const factors = solveLabelRoomFactors(
+      heightAt,
+      trackHeight,
+      namedLabelTiers(data.values()),
+    )!
+    expect(keptNames(data, factors)).toContain('EDEN')
+    expect(
+      heightAt(factors.labelRoomFactor, factors.geneLabelRoomFactor),
+    ).toBeLessThanOrEqual(trackHeight)
+  })
+
+  it('still names a feature whose label costs no height when no gene name fits', () => {
+    const data = new Map([
+      [
+        0,
+        labeledFeatureData([
+          { featureId: 'p1', startBp: 100, endBp: 400, height: 20 },
+          { featureId: 'p2', startBp: 100, endBp: 400, height: 20 },
+          {
+            featureId: 'gene',
+            startBp: 100,
+            endBp: 400,
+            height: 20,
+            gene: true,
+          },
+          { featureId: 'lone', startBp: 900, endBp: 1200, height: 20 },
+        ]),
+      ],
+    ])
+    const at1 = { ...inputs, bpPerPx: 1 }
+    const heightAt = createContentHeightProbe(data, at1)
+    const bodies = heightAt(Infinity, Infinity)
+    expect(heightAt(Infinity, 0)).toBeGreaterThan(bodies)
+    expect(heightAt(Infinity, Infinity)).toBe(bodies)
+    const factors = solveLabelRoomFactors(
+      heightAt,
+      bodies,
+      namedLabelTiers(data.values()),
+    )!
+    expect(
+      [
+        ...computeLaidOutData(data, { ...at1, ...factors })
+          .get(0)!
+          .floatingLabelsData.values(),
+      ]
+        .filter(l => l.nameLabel)
+        .map(l => l.featureId),
+    ).toEqual(['lone'])
+  })
+
+  it('solves names of one tier alone with the one factor every track used before', () => {
+    const heightAt = (f: number) => 100 - 10 * f
+    const oneTier = solveLabelRoomFactor(heightAt, 50)
+    expect(
+      solveLabelRoomFactors(heightAt, 50, { gene: true, other: false }),
+    ).toEqual({ labelRoomFactor: oneTier })
+    expect(
+      solveLabelRoomFactors(heightAt, 50, { gene: false, other: true }),
+    ).toEqual({ labelRoomFactor: oneTier })
+  })
+
+  it('reads the tiers off the names on screen', () => {
+    const data = volvoxEden()
+    expect(namedLabelTiers(data.values())).toEqual({ gene: true, other: true })
+    expect(namedLabelTiers(data.values(), new Set(['EDEN']))).toEqual({
+      gene: true,
+      other: false,
+    })
+    expect(namedLabelTiers(data.values(), new Set(['f06']))).toEqual({
+      gene: false,
+      other: true,
+    })
+  })
 })
 
 describe('subfeature-label overhang is reserved even with no name line', () => {

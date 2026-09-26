@@ -1,6 +1,7 @@
 import { maxBottom } from './layoutQueries.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LabelRoomFactors } from './layoutInputs.ts'
 
 // Past ~8x almost nothing but pinned survives, which caps the search.
 const FIT_MAX_ROOM_FACTOR = 8
@@ -82,6 +83,31 @@ export function solveLabelRoomFactor(
     return undefined
   }
   return bisectSmallestFitting(fits, 0, FIT_MAX_ROOM_FACTOR, FIT_SOLVE_ITERS)
+}
+
+// Gene names claim the height first and the rest fill what they leave: the
+// genes' factor is solved with every other name gone, then the others' beside
+// the gene names that stayed. Names all of one tier solve a single factor.
+export function solveLabelRoomFactors(
+  heightAt: (labelRoomFactor: number, geneLabelRoomFactor?: number) => number,
+  trackHeight: number,
+  tiers: { gene: boolean; other: boolean },
+): LabelRoomFactors | undefined {
+  if (!tiers.gene || !tiers.other) {
+    const labelRoomFactor = solveLabelRoomFactor(f => heightAt(f), trackHeight)
+    return labelRoomFactor === undefined ? undefined : { labelRoomFactor }
+  }
+  const geneLabelRoomFactor =
+    solveLabelRoomFactor(g => heightAt(Infinity, g), trackHeight) ?? Infinity
+  const labelRoomFactor = solveLabelRoomFactor(
+    f => heightAt(f, geneLabelRoomFactor),
+    trackHeight,
+  )
+  return labelRoomFactor !== undefined
+    ? { labelRoomFactor, geneLabelRoomFactor }
+    : geneLabelRoomFactor < Infinity
+      ? { labelRoomFactor: Infinity, geneLabelRoomFactor }
+      : undefined
 }
 
 // The pack snaps rows to a pitch of a tenth of the body height, so a finer

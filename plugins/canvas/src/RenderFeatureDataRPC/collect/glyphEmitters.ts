@@ -754,6 +754,7 @@ export function processFeatureRecord(
     kind: 'feature',
     featureId: feature.id(),
     type: feature.get('type'),
+    gene: !!ctx.isGeneType?.(featureType(feature)),
     startBp: featureStart,
     endBp: featureEnd,
     topPx: 0,

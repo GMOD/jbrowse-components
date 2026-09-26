@@ -50,6 +50,7 @@ interface FeatureGeometry {
   readonly stack: IsoformStack | undefined
   readonly strand: number
   readonly densityFade: boolean
+  readonly gene: boolean
   hasReversed: boolean
   hasNonReversed: boolean
 }
@@ -175,6 +176,7 @@ function gatherFeatureGeometry(
           hasReversed: reversed,
           hasNonReversed: !reversed,
           densityFade: item.densityFade,
+          gene: !!item.gene,
         })
       }
     }
@@ -347,6 +349,7 @@ function decideLabelReservations(
     pinnedFeatureIds,
     labelDecimation = 'all',
     labelRoomFactor = 1,
+    geneLabelRoomFactor = labelRoomFactor,
   } = inputs
   const { labelFontPx, rowPadding } = metrics
   const { labelInfoByFeatureId, features, overhangRoom } = prep
@@ -372,7 +375,7 @@ function decideLabelReservations(
         availableRoomPx,
         nameWidthPx,
         pinnedFeatureIds.has(id),
-        labelRoomFactor,
+        geom.gene ? geneLabelRoomFactor : labelRoomFactor,
       )
     if (hasDrawableName && !keepName) {
       droppedLabelIds.add(id)

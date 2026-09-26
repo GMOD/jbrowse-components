@@ -279,6 +279,9 @@ export interface FlatbushItem extends HitItemBase {
   // unless a facet other than strand asked for it.
   groupKey?: string
   densityFade: boolean
+  // A type "Show only genes" keeps, whose name claims the fit height first.
+  // Absent in fixtures predating the field.
+  gene?: boolean
   // Whether "Collapse introns" has a gap to close here. Decided in the worker
   // because only the worker holds the whole feature: on the main thread an
   // isoform the trim dropped and an exon the `subParts` slot left undrawn look

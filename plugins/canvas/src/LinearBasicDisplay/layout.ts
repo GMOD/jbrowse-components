@@ -345,8 +345,15 @@ function createPackProbe(
   )
   return (maxIsoformsPerGene: number | undefined) => {
     const trimmedInputs = { ...inputs, maxIsoformsPerGene }
-    return (labelRoomFactor: number | undefined) => {
-      const packInputs = { ...trimmedInputs, labelRoomFactor }
+    return (
+      labelRoomFactor: number | undefined,
+      geneLabelRoomFactor?: number,
+    ) => {
+      const packInputs = {
+        ...trimmedInputs,
+        labelRoomFactor,
+        geneLabelRoomFactor,
+      }
       const refs = preps.map(
         ref => packRefSections(ref, packInputs, metrics).sections,
       )
@@ -388,7 +395,10 @@ export function createIsoformCountProbe(
 ) {
   const trimAt = createPackProbe(rpcDataMap, inputs, measureIds)
   return (maxIsoformsPerGene: number) =>
-    trimAt(maxIsoformsPerGene)(inputs.labelRoomFactor)
+    trimAt(maxIsoformsPerGene)(
+      inputs.labelRoomFactor,
+      inputs.geneLabelRoomFactor,
+    )
 }
 
 // Shared by the committed layout and the probe so both pack the same groups
@@ -424,6 +434,7 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   pinnedFeatureIds: true,
   labelDecimation: true,
   labelRoomFactor: true,
+  geneLabelRoomFactor: true,
   maxIsoformsPerGene: true,
   expandedGeneIds: true,
   facet: true,

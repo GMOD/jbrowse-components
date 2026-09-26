@@ -780,6 +780,23 @@ describe('collectRenderData density-fade eligibility', () => {
   })
 })
 
+describe('collectRenderData gene stamp', () => {
+  it('stamps the types "Show only genes" keeps, and no others', () => {
+    const stamped = (type: string, configured: string[] = []) =>
+      collect(boxLayout(mockFeature({ type, id: 'f', start: 0, end: 10 })), {
+        config: mockDisplayConfig({ transcriptTypes: configured }),
+      }).flatbushItems[0]!.gene
+    expect(stamped('gene')).toBe(true)
+    expect(stamped('ncRNA_gene')).toBe(true)
+    expect(stamped('tRNA')).toBe(true)
+    expect(stamped('CDS')).toBe(true)
+    expect(stamped('lincRNA_cluster', ['lincRNA_cluster'])).toBe(true)
+    expect(stamped('EST_match')).toBe(false)
+    expect(stamped('remark')).toBe(false)
+    expect(stamped('repeat_region')).toBe(false)
+  })
+})
+
 // Transcript coordinates ride on the transcript's SubfeatureInfo when it sits
 // under a gene, on the feature's own FlatbushItem when it stands alone.
 describe('collectRenderData transcript coords', () => {
