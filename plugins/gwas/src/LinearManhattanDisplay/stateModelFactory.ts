@@ -180,11 +180,13 @@ export function stateModelFactory(
         const partnerJoined = layers.some(
           ({ scale, color, row, count }) =>
             scale?.field === LD_FIELD &&
-            !!color?.subarray(0, count).some(
-              (c, i) =>
-                c !== NO_VALUE_ABGR &&
-                (!drawnKeys || drawnKeys[row?.[i] ?? 0] === 1),
-            ),
+            !!color
+              ?.subarray(0, count)
+              .some(
+                (c, i) =>
+                  c !== NO_VALUE_ABGR &&
+                  (!drawnKeys || drawnKeys[row?.[i] ?? 0] === 1),
+              ),
         )
         return self.joinsLd && indexDrawn && !partnerJoined
       },
