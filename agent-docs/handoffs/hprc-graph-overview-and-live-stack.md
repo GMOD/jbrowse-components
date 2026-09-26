@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-25. The per-base gutter landed; the blocking decision is now lanePairsOnAnchor, because resyncing the plugin's drifted clipFeatureToRegion is what inks our own DP aligner's indels and mismatches in every gutter. Walk rows draws every haplotype on its own bp, and naming the haplotypes returns whole walks where the cohort cut splits them. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
+description: The HPRC graph thread as of 2026-09-25. The per-base gutter landed and the gutter aligner is deleted, so every gutter below the anchor composes and sequence two haplotypes share that GRCh38 lacks draws as nothing; a graph-stated successor is unbuilt. The plugin is unpublished with that deletion. Walk rows draws every haplotype on its own bp, and naming the haplotypes returns whole walks where the cohort cut splits them. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -34,11 +34,9 @@ indexes it with `jbrowse make-pif`, and serves it through
 `MultiGenomeIndexedPAFAdapter`. That adapter names no star anchor, so
 `MultiWaySyntenyDisplay` fetches each adjacent pair directly and any lane order
 keeps every gutter a stated alignment. Haplotypes outside the panel stay lanes
-against GRCh38, their gutters composed through it. Retire from the gutter path:
-`Subgraph.pairAlignments` (our k-mer + DP aligner in the worker),
-`lanePairsOnAnchor` in `GbzBaseSyntenyAdapter`, and
-`scripts/build_graph_haplotype_stack.sh`. gbz-base keeps locating haplotypes
-and the graph view. impg reads local files only and HPRC's all-vs-all set is
+against GRCh38, their gutters composed through it. The gutter aligner has since been deleted outright (below);
+`scripts/build_graph_haplotype_stack.sh` stays, being offline. gbz-base keeps
+locating haplotypes and the graph view. impg reads local files only and HPRC's all-vs-all set is
 sparse, so it is a host-side prep tool, not a gutter source.
 
 **Colin rejected the curated panel (2026-09-24)**: a hand-picked 8-16 shows
@@ -78,33 +76,26 @@ their width; captures at https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86).
 - HPRC's assemblies publish `.fa.gz` with `.fai` and `.gzi`, so windows are
   range-readable.
 
-**The blocking decision: resyncing the plugin's clip arms our own aligner.**
-The plugin declares `lanePairsOnAnchor`, so `MultiWayLaneLinks` already fires
-and already sends `keepAlignment: true`, and `pairFeatures` already calls
-`subgraph.pairAlignments` — the k-mer chain and DP. Its records already draw a
-ribbon each; what does not draw is the DP's indels and mismatches, because
-`addAlignmentDetail` opens on `alignmentOps` and gets `undefined`. The reason is
-accidental: the plugin's vendored `clipFeatureToRegion` (`src/synteny/`) has
-drifted from core's and carries no `keepAlignment`, so it strips every alignment
-field (0 hits for `keepAlignment|alignmentOps` in both shipped bundles).
-**Resyncing that file — which every other step in this thread needs — inks the
-DP's `=`/`X` in every gutter**, the anchor one included, since its `direct`
-branch calls the same function off the group feature and its ops come through
-the same vendored base. That is what Colin ruled out. Retire the capability or
-replace the DP with a graph-stated mode first; do not resync and then decide.
-The same drift also costs the id scheme that keeps a nameless record's group key
-stable across refetches, which is likely a live bug in the hosted demo.
+**The gutter aligner is deleted.** `lanePairsOnAnchor` and everything it
+reached are gone from both repos: the capability, `pairFeatures`,
+`referencePieces`, `pairFeature`, `PairTargetError` and `laneHaplotypes` in the
+plugin, and `adapterPairsOnAnchor`, the anchor-window fetch branch and
+`queryAssemblyName` in core. Every gutter below the anchor now composes through
+the reference. `Subgraph.pairAlignments` stays in gbz-base's CLI (`--against`,
+`--stack`), where a host runs it offline and the result arrives as a file.
 
-A third gate sits under all of it: `pairFeatures` answers `[]` unless the
-database has haplotype anchor rows and every subgraph's `anchorWalk` is whole,
-falling back to `composeLaneLinks`, which carries no alignment at all.
+What that gives up, and it is real: sequence two haplotypes share and GRCh38
+lacks has no anchor interval to compose through, so a band draws nothing there.
+A graph-stated successor would emit shared-node runs as `=` and everything else
+as explicitly unaligned, which needs no DP; nobody has built it.
+
+**The plugin is not published with this.** Its configs name an unversioned
+unpkg url, so publishing moves every hosted config at once.
 
 **Found along the way, unfixed.** The hosted `demos/hprc/config.json` still
-names the retired betabuild plugin (bundle of 2026-09-20, no
-`lanePairsOnAnchor`), and turning the capability on costs N−1 extra
-`getSubgraphForRange` calls per settle with no subgraph cache — measure the
-hosted demo before redeploying. `demos/hprc/config.json` also has no
+names a retired betabuild plugin bundle (2026-09-20). `demos/hprc/config.json`
+also has no
 `defaultSession` and its `hprc_v2_1_gbz_lanes` names only the curated eight, so
 a reader who switches that track on meets the panel Colin rejected. gbz-base's
-`Subgraph.alignment()` writes `M` for match and mismatch alike — that is the
-anchor path, and `pairAlignments` already emits `=`/`X`/`I`/`D`.
+`Subgraph.alignment()` writes `M` for match and mismatch alike, so the anchor
+gutter inks no mismatch until that one line writes `X`.

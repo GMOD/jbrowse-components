@@ -351,13 +351,6 @@ export interface ComparativeOptions extends BaseOptions {
   // pair a band draws — `assemblyName` alone can't, since one file backs every
   // pair. Pairwise adapters (which already know their pair) ignore it.
   targetAssemblyName?: string
-  // This side of the band, when it is not the region's assembly: a region on
-  // the anchor of a source that holds every lane inside the anchor's window (a
-  // pangenome graph, indexed on its reference alone) asks for this lane and
-  // `targetAssemblyName` aligned to each other, read inside that window. The
-  // records are on this lane's coordinates. An adapter declares that it
-  // answers these with the `lanePairsOnAnchor` capability.
-  queryAssemblyName?: string
   // A multi-genome adapter answering a no-target query folds the pairs
   // anchored on one query feature into one feature carrying `mates: [...]`,
   // each mate with its own pairwise `orientation`. Absent, one `mate`-carrying

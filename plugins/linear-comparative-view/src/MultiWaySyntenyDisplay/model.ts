@@ -953,16 +953,6 @@ export function stateModelFactory(
         return self.adapterCapabilities.includes('headerLanes')
       },
       /**
-       * #getter
-       * whether a window of the anchor answers any two lanes aligned to each
-       * other (`adapterCapabilities: ['lanePairsOnAnchor']`), the way a
-       * pangenome graph holds every haplotype's walk inside a window cut on
-       * its reference
-       */
-      get adapterPairsOnAnchor(): boolean {
-        return self.adapterCapabilities.includes('lanePairsOnAnchor')
-      },
-      /**
        * #method
        * the one spelling two names for the same assembly share
        */
@@ -982,7 +972,7 @@ export function stateModelFactory(
        * alignment to draw
        */
       get adjacentLanesAlignDirectly(): boolean {
-        return self.adapterPairsOnAnchor || self.starAnchor === undefined
+        return self.starAnchor === undefined
       },
       /**
        * #getter
@@ -1730,35 +1720,25 @@ export function stateModelFactory(
       /**
        * #getter
        * one spec per ADJACENT mate-lane pair of an alignment-level source, at
-       * the settled tier. A source whose adapter reads lane pairs on its anchor
-       * (`adapterPairsOnAnchor`) is asked for each pair inside the anchor's
-       * window, the one window it can cut. Any other source naming no star
-       * anchor is asked on the upper lane's window against the lower lane's
-       * assembly, which a multi-genome adapter answers with the direct records
-       * it holds for that pair — none, for a star that did not name its
-       * anchor; one that announced itself a star holds no such rows and is not
-       * asked. That route needs the session to hold both assemblies: the fetch
+       * the settled tier. A source naming no star anchor is asked on the upper
+       * lane's window against the lower lane's assembly, which a multi-genome
+       * adapter answers with the direct records it holds for that pair — none,
+       * for a star that did not name its anchor; one that announced itself a
+       * star holds no such rows and is not asked. That route needs the session
+       * to hold both assemblies: the fetch
        * renames its region through the assembly manager, which refuses a PanSN
        * sample the config never declared, and a multi-genome file routinely
        * carries more of those than the config names
        */
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
         const specs: LaneLinksFetchSpec[] = []
-        const onAnchor = self.adapterPairsOnAnchor
         if (self.featuresAreNameless && self.adjacentLanesAlignDirectly) {
           const { lodTier } = self
           const rows = self.rowAssemblies
-          const view = self.lgv
-          const anchorRegions =
-            onAnchor && view.initialized
-              ? mergeContiguousRegions(view.staticBlocks.contentBlocks)
-              : []
           const pairWindow = (upperAssembly: string, lowerAssembly: string) => {
             const upper = self.rowFrames.get(upperAssembly)
             if (!upper || !self.rowFrames.get(lowerAssembly)) {
               return []
-            } else if (onAnchor) {
-              return anchorRegions
             } else if (
               self.holdsAssembly(upperAssembly) &&
               self.holdsAssembly(lowerAssembly)
@@ -1781,7 +1761,6 @@ export function stateModelFactory(
                 upperAssembly,
                 lowerAssembly,
                 regions,
-                onAnchor,
                 lodTier,
               })
             }
