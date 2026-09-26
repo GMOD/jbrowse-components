@@ -2,11 +2,9 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  aggregateQuantitativeStats,
-  blankStats,
-} from '@jbrowse/core/data_adapters/BaseAdapter/stats'
+import { aggregateQuantitativeStats } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { SimpleFeature, createStatusFanOut } from '@jbrowse/core/util'
+import { isAbortException } from '@jbrowse/core/util/aborting'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 import { firstValueFrom, merge } from 'rxjs'
@@ -16,8 +14,8 @@ import { fetchRegionRaws } from '../fetchRegionRaws.ts'
 import { getFilename } from '../util.ts'
 import { mapWithConcurrency } from './mapWithConcurrency.ts'
 
+import type { MultiSourceFetchOpts as WiggleOptions } from '../multiSourceAdapter.ts'
 import type { RawFeatureArrays } from '../util.ts'
-import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
 import type {
   BaseOptions,
   ZoomRange,
@@ -28,28 +26,21 @@ import type {
   AugmentedRegion as Region,
 } from '@jbrowse/core/util/types'
 
-interface WiggleOptions extends WiggleAdapterOptions {
-  sources?: { name: string }[]
-}
-
-// How many subtracks fetch at once. A multiwiggle carries as many subtracks as
-// someone points at it — hundreds is ordinary, a thousand happens — and the
-// fan-out used to be a bare Promise.all over every one of them.
-//
-// The bound is about bytes in flight, not sockets. The browser already caps
-// connections per origin, so the requests queue either way; what does not queue
-// is what each in-flight fetch holds while it runs — the block group it
-// downloaded, the wasm decompression output, and the parsed typed arrays. All
-// of those live at once, per subtrack, and none of it is released until that
-// subtrack's fetch resolves. Unbounded, peak worker memory scales with the
-// subtrack count rather than with anything the machine has, which is a tab that
-// dies rather than a view that is slow.
-//
-// Ten because wall-clock is set by the server and the connection cap well below
-// this, so a higher number buys throughput no one can use and costs memory
-// linearly. Deliberately a constant and not a config slot: nobody has a reason
-// to tune it yet, and a slot is a support surface forever.
+// Bounds bytes in flight rather than sockets: each running subtrack fetch holds
+// its downloaded blocks, decompression output and parsed arrays until it
+// resolves, so unbounded peak worker memory grows with the subtrack count.
 const SUBTRACK_FETCH_CONCURRENCY = 10
+
+async function namingSource<T>(source: string, work: Promise<T>) {
+  try {
+    return await work
+  } catch (e) {
+    if (isAbortException(e)) {
+      throw e
+    }
+    throw new Error(`Subtrack "${source}": ${e}`, { cause: e })
+  }
+}
 
 interface AdapterConfig {
   type?: string
@@ -206,7 +197,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     const ranges = await mapWithConcurrency(
       adapters,
       SUBTRACK_FETCH_CONCURRENCY,
-      adp => adp.dataAdapter.getZoomRange(opts),
+      adp => namingSource(adp.source, adp.dataAdapter.getZoomRange(opts)),
     )
     let range: ZoomRange | undefined
     for (const r of ranges) {
@@ -249,8 +240,15 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const adapters = await this.getFilteredAdapters(opts.sources)
+      const slot = createStatusFanOut(opts.statusCallback)
       merge(
-        ...adapters.map(adp => this.sourceFeatures(adp, region, opts)),
+        ...adapters.map(adp =>
+          this.sourceFeatures(adp, region, {
+            ...opts,
+            statusCallback: slot(),
+          }),
+        ),
+        SUBTRACK_FETCH_CONCURRENCY,
       ).subscribe(observer)
     }, opts.signal)
   }
@@ -260,12 +258,22 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // the instance, so arrival order would open another file's feature.
   public async getFeaturesArray(region: Region, opts: WiggleOptions = {}) {
     const adapters = await this.getFilteredAdapters(opts.sources)
-    const [first = [], ...rest] = await Promise.all(
-      adapters.map(adp =>
-        firstValueFrom(this.sourceFeatures(adp, region, opts).pipe(toArray())),
-      ),
+    const slot = createStatusFanOut(opts.statusCallback)
+    const perSource = await mapWithConcurrency(
+      adapters,
+      SUBTRACK_FETCH_CONCURRENCY,
+      adp =>
+        namingSource(
+          adp.source,
+          firstValueFrom(
+            this.sourceFeatures(adp, region, {
+              ...opts,
+              statusCallback: slot(),
+            }).pipe(toArray()),
+          ),
+        ),
     )
-    return first.concat(...rest)
+    return perSource.flat()
   }
 
   // Every visible region in one call per subtrack: each subadapter is its own
@@ -293,17 +301,17 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       SUBTRACK_FETCH_CONCURRENCY,
       async ({ source, dataAdapter }) => ({
         source,
-        raws: await fetchRegionRaws(dataAdapter, regions, {
-          ...opts,
-          statusCallback: slot(),
-        }),
+        raws: await namingSource(
+          source,
+          fetchRegionRaws(dataAdapter, regions, {
+            ...opts,
+            statusCallback: slot(),
+          }),
+        ),
       }),
     )
   }
 
-  // UNUSED in-tree, same as BigWigAdapter's pair: autoscale is computed
-  // client-side from the rendered arrays now (WiggleCommonMixin), so these only
-  // fan out to subadapters for external callers.
   public async getRegionQuantitativeStats(
     region: Region,
     opts?: WiggleOptions,
@@ -314,25 +322,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         adp.dataAdapter.getRegionQuantitativeStats(region, opts),
       ),
     )
-    return aggregateQuantitativeStats(allStats)
-  }
-
-  async getMultiRegionQuantitativeStats(
-    regions: Region[] = [],
-    opts: WiggleOptions = {},
-  ) {
-    if (!regions.length) {
-      return blankStats()
-    }
-
-    const adapters = await this.getAdapters()
-
-    const allStats = await Promise.all(
-      adapters.map(adp =>
-        adp.dataAdapter.getMultiRegionQuantitativeStats(regions, opts),
-      ),
-    )
-
     return aggregateQuantitativeStats(allStats)
   }
 

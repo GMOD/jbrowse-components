@@ -3,10 +3,6 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  aggregateQuantitativeStats,
-  blankStats,
-} from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { downloadStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -311,13 +307,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     return this.readRegions(regions, opts)
   }
 
-  // UNUSED in-tree as of the client-side autoscale move: the wiggle displays
-  // derive their domain from the rendered arrays (WiggleCommonMixin's
-  // visibleScoreStats), so nothing calls these two or computeStatsFromView
-  // above except their own tests. Kept because they override
-  // BaseFeatureDataAdapter's much slower feature-walking versions and are part
-  // of the adapter surface an external plugin can call. Delete together with
-  // computeStatsFromView if that stops being worth carrying.
+  // No in-tree caller; overrides the base class's feature walk for external
+  // plugins, and the base class's multi-region version builds on it.
   public async getRegionQuantitativeStats(
     region: Region,
     opts?: WiggleOptions,
@@ -329,18 +320,5 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     })
 
     return computeStatsFromView(view, start, end)
-  }
-
-  async getMultiRegionQuantitativeStats(
-    regions: Region[] = [],
-    opts: WiggleOptions = {},
-  ) {
-    if (!regions.length) {
-      return blankStats()
-    }
-    const stats = await Promise.all(
-      regions.map(region => this.getRegionQuantitativeStats(region, opts)),
-    )
-    return aggregateQuantitativeStats(stats)
   }
 }

@@ -1005,6 +1005,49 @@ describe('MultiWiggleAdapter.getFeaturesArray order', () => {
   })
 })
 
+describe('MultiWiggleAdapter.getFeaturesArray fan-out', () => {
+  const region = { refName: 'chr1', start: 0, end: 100, assemblyName: 'a' }
+
+  function adapterOver(count: number, read: (source: string) => Promise<void>) {
+    return new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: Array.from({ length: count }, (_, i) => `https://x/s${i}.bw`),
+      }),
+      jest.fn().mockImplementation(async (conf: { source: string }) => ({
+        dataAdapter: {
+          getFeatures: () =>
+            ObservableCreate<Feature>(async observer => {
+              await read(conf.source)
+              observer.complete()
+            }),
+        },
+      })),
+    )
+  }
+
+  it('reads no more subtracks at once than the render fetch does', async () => {
+    let inFlight = 0
+    let peak = 0
+    await adapterOver(25, async () => {
+      inFlight++
+      peak = Math.max(peak, inFlight)
+      await new Promise(res => setTimeout(res, 0))
+      inFlight--
+    }).getFeaturesArray(region)
+    expect(peak).toBe(10)
+  })
+
+  it('names the subtrack whose read failed', async () => {
+    await expect(
+      adapterOver(3, async source => {
+        if (source === 's1') {
+          throw new Error('not a BigWig/BigBed file')
+        }
+      }).getFeaturesArray(region),
+    ).rejects.toThrow('Subtrack "s1": Error: not a BigWig/BigBed file')
+  })
+})
+
 describe('MultiWiggleAdapter with samplesTsvLocation', () => {
   function adapterWithTsv() {
     const getFeatureArrays = jest.fn().mockResolvedValue({

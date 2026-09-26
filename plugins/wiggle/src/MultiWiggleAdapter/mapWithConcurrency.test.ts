@@ -85,7 +85,7 @@ describe('mapWithConcurrency', () => {
         return i
       }),
     ).rejects.toThrow('boom')
-    // the two that were already in flight ran; the rest never started
-    expect(started.length).toBeLessThan(6)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(started).toEqual([0, 1])
   })
 })

@@ -1,15 +1,7 @@
 /**
- * `Promise.all(items.map(fn))` with at most `limit` of them in flight, results
- * in input order.
- *
- * Rejection behaves as `Promise.all` does — the first rejection rejects the
- * whole call — with the one difference that items not yet started never start,
- * which is the point of having a queue at all.
- *
- * Kept local rather than pulled from `p-limit`: it is fifteen lines, and
- * `@jbrowse/plugin-wiggle` is published, so a runtime dependency here lands in
- * everyone's bundle. Promote it to `@jbrowse/core/util` if a second caller
- * appears.
+ * `Promise.all(items.map(fn))` with at most `limit` in flight, results in input
+ * order. The first rejection rejects the call, and items not yet started never
+ * start.
  */
 export async function mapWithConcurrency<T, R>(
   items: readonly T[],
@@ -20,7 +12,12 @@ export async function mapWithConcurrency<T, R>(
   let next = 0
   async function worker() {
     for (let i = next++; i < items.length; i = next++) {
-      results[i] = await fn(items[i]!, i)
+      try {
+        results[i] = await fn(items[i]!, i)
+      } catch (e) {
+        next = items.length
+        throw e
+      }
     }
   }
   await Promise.all(
