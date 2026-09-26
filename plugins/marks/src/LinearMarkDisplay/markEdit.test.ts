@@ -1,6 +1,7 @@
 import {
   addMark,
   channelScale,
+  channelScales,
   scaleMember,
   withChannelScale,
   withScaleMember,
@@ -265,5 +266,26 @@ describe('the scale beside a field', () => {
       encoding: { color: { field: 'x', scale: 'categorical', range: ['red'] } },
     }
     expect(channelEdit(listed, 'color').beyond).toBe(true)
+  })
+})
+
+// MarkSize is closed and has no scheme or reverse, so a width ramp keeps its
+// ends across a kind change and nothing a colour ramp would.
+describe('the scale beside a width', () => {
+  const width = {
+    mark: 'link' as const,
+    encoding: { size: { field: 'score', scale: 'linear', domainMin: 1 } },
+  }
+
+  it("offers a width's two ramps", () => {
+    expect(channelScales('size')).toEqual(['linear', 'log'])
+  })
+
+  it('keeps the ends when one width ramp becomes the other', () => {
+    expect(withChannelScale(width, 'size', 'log').encoding!.size).toEqual({
+      field: 'score',
+      scale: 'log',
+      domainMin: 1,
+    })
   })
 })

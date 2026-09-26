@@ -264,4 +264,25 @@ describe('a scale beside its field', () => {
     expect(screen.getByTestId('channel-color')).toBeDisabled()
     expect(screen.queryByTestId('scale-color')).toBeNull()
   })
+
+  it("offers a link's width its own ramps, and no colour's stops", () => {
+    const { apply, applyDisplaySettings } = setup({
+      marks: [
+        { mark: 'link', encoding: { size: { field: 'score', scale: 'log' } } },
+      ],
+    })
+    const options = [...screen.getByTestId('scale-size').children].map(
+      o => (o as HTMLOptionElement).value,
+    )
+    expect(options).toEqual(['linear', 'log'])
+    expect(screen.queryByTestId('scheme-size')).toBeNull()
+    fireEvent.change(screen.getByTestId('domainMax-size'), {
+      target: { value: '100' },
+    })
+    expect(apply()).toBeEnabled()
+    fireEvent.click(apply())
+    expect(
+      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.size,
+    ).toEqual({ field: 'score', scale: 'log', domainMax: 100 })
+  })
 })

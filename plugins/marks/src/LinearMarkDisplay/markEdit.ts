@@ -1,7 +1,7 @@
 import { COLOR_SCALES } from '@jbrowse/display-kit/colorScale'
 
 import { MARK_SPECS } from './markSpecs.ts'
-import { DEFAULT_MARK_TYPE } from './markVocabulary.ts'
+import { DEFAULT_MARK_TYPE, SIZE_SCALES } from './markVocabulary.ts'
 
 import type { MarkSnapshot } from './markProblems.ts'
 import type { MarkChannel } from './markSpecs.ts'
@@ -61,18 +61,32 @@ export const SCALE_MEMBERS = [
 ] as const
 export type ScaleMember = (typeof SCALE_MEMBERS)[number]
 
+/** The ends a ramp is pinned by, which a width ramp shares with a colour one. */
+export const RAMP_ENDS = ['domainMin', 'domainMax'] as const
+
+export function isRamp(scale: unknown) {
+  return scale === 'linear' || scale === 'log'
+}
+
+/** The members a ramp of this channel paints: a colour's stops, and the ends. */
+function rampMembers(channel: EditChannel): readonly ScaleMember[] {
+  return channel === 'color' ? SCALE_MEMBERS : RAMP_ENDS
+}
+
 /**
  * The scale kinds a channel offers, off the vocabulary its own schema
- * declares: every colour scale for `color`, and `categorical` alone for
- * `shape`, which has no other. `none` is the constant, which the field picker
- * above already means.
+ * declares: every colour scale for `color`, `categorical` alone for `shape`,
+ * and a width's two ramps for `size`. `none` is the constant, which the field
+ * picker above already means.
  */
 export function channelScales(channel: EditChannel): readonly string[] {
   return channel === 'color'
     ? COLOR_SCALES.filter(scale => scale !== 'none')
     : channel === 'shape'
       ? ['categorical']
-      : []
+      : channel === 'size'
+        ? SIZE_SCALES
+        : []
 }
 
 // A channel object a picker can round-trip: a field, the scale it reads
@@ -169,18 +183,11 @@ export function withChannelScale(
   scale: string,
 ): DraftMark {
   const declared = channelObject(mark, channel) ?? {}
-  const ramp = scale === 'linear' || scale === 'log'
+  const kept = isRamp(scale) ? rampMembers(channel) : []
   return writeChannel(mark, channel, {
     field: declared.field,
     scale,
-    ...(ramp
-      ? {
-          scheme: declared.scheme,
-          reverse: declared.reverse,
-          domainMin: declared.domainMin,
-          domainMax: declared.domainMax,
-        }
-      : {}),
+    ...Object.fromEntries(kept.map(member => [member, declared[member]])),
   })
 }
 

@@ -2,14 +2,9 @@ import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { TextField } from '@mui/material'
 
-import { SCALE_MEMBERS, scaleMember, channelScale } from '../markEdit.ts'
+import { RAMP_ENDS, channelScale, isRamp, scaleMember } from '../markEdit.ts'
 
 import type { DraftMark, EditChannel, ScaleMember } from '../markEdit.ts'
-
-/** A ramp is the one kind with ends to pin and stops to name. */
-function isRamp(scale: string) {
-  return scale === 'linear' || scale === 'log'
-}
 
 function memberLabel(member: ScaleMember) {
   return member === 'domainMin'
@@ -47,6 +42,7 @@ export default function MarkScaleRow({
     return null
   }
   const ramp = isRamp(scale)
+  const colorRamp = ramp && channel === 'color'
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <TextField
@@ -67,7 +63,7 @@ export default function MarkScaleRow({
           </option>
         ))}
       </TextField>
-      {ramp ? (
+      {colorRamp ? (
         <TextField
           select
           label="scheme"
@@ -89,9 +85,7 @@ export default function MarkScaleRow({
         </TextField>
       ) : null}
       {ramp
-        ? SCALE_MEMBERS.filter(
-            member => member !== 'scheme' && member !== 'reverse',
-          ).map(member => (
+        ? RAMP_ENDS.map(member => (
             <TextField
               key={member}
               type="number"
@@ -106,7 +100,7 @@ export default function MarkScaleRow({
             />
           ))
         : null}
-      {ramp ? (
+      {colorRamp ? (
         <LabeledCheckbox
           checked={scaleMember(mark, channel, 'reverse') === 'true'}
           onChange={next => {
