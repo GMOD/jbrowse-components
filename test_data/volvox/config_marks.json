@@ -555,6 +555,497 @@
           ]
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "marks_rows_arranged",
+      "name": "Mark rows reordered and focused",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "uniqueId": "a-bar0",
+            "refName": "ctgA",
+            "start": 20,
+            "end": 70,
+            "grp": "a",
+            "kind": "bar",
+            "score": 20
+          },
+          {
+            "uniqueId": "b-bar0",
+            "refName": "ctgA",
+            "start": 40,
+            "end": 90,
+            "grp": "b",
+            "kind": "bar",
+            "score": 35
+          },
+          {
+            "uniqueId": "c-bar0",
+            "refName": "ctgA",
+            "start": 60,
+            "end": 110,
+            "grp": "c",
+            "kind": "bar",
+            "score": 50
+          },
+          {
+            "uniqueId": "d-bar0",
+            "refName": "ctgA",
+            "start": 80,
+            "end": 130,
+            "grp": "d",
+            "kind": "bar",
+            "score": 65
+          },
+          {
+            "uniqueId": "a-bar1",
+            "refName": "ctgA",
+            "start": 140,
+            "end": 190,
+            "grp": "a",
+            "kind": "bar",
+            "score": 30
+          },
+          {
+            "uniqueId": "b-bar1",
+            "refName": "ctgA",
+            "start": 160,
+            "end": 210,
+            "grp": "b",
+            "kind": "bar",
+            "score": 45
+          },
+          {
+            "uniqueId": "c-bar1",
+            "refName": "ctgA",
+            "start": 180,
+            "end": 230,
+            "grp": "c",
+            "kind": "bar",
+            "score": 60
+          },
+          {
+            "uniqueId": "d-bar1",
+            "refName": "ctgA",
+            "start": 200,
+            "end": 250,
+            "grp": "d",
+            "kind": "bar",
+            "score": 75
+          },
+          {
+            "uniqueId": "a-bar2",
+            "refName": "ctgA",
+            "start": 260,
+            "end": 310,
+            "grp": "a",
+            "kind": "bar",
+            "score": 40
+          },
+          {
+            "uniqueId": "b-bar2",
+            "refName": "ctgA",
+            "start": 280,
+            "end": 330,
+            "grp": "b",
+            "kind": "bar",
+            "score": 55
+          },
+          {
+            "uniqueId": "c-bar2",
+            "refName": "ctgA",
+            "start": 300,
+            "end": 350,
+            "grp": "c",
+            "kind": "bar",
+            "score": 70
+          },
+          {
+            "uniqueId": "d-bar2",
+            "refName": "ctgA",
+            "start": 320,
+            "end": 370,
+            "grp": "d",
+            "kind": "bar",
+            "score": 85
+          },
+          {
+            "uniqueId": "a-point0",
+            "refName": "ctgA",
+            "start": 505,
+            "end": 506,
+            "grp": "a",
+            "kind": "point",
+            "score": 90
+          },
+          {
+            "uniqueId": "b-point0",
+            "refName": "ctgA",
+            "start": 512,
+            "end": 513,
+            "grp": "b",
+            "kind": "point",
+            "score": 75
+          },
+          {
+            "uniqueId": "c-point0",
+            "refName": "ctgA",
+            "start": 519,
+            "end": 520,
+            "grp": "c",
+            "kind": "point",
+            "score": 60
+          },
+          {
+            "uniqueId": "d-point0",
+            "refName": "ctgA",
+            "start": 526,
+            "end": 527,
+            "grp": "d",
+            "kind": "point",
+            "score": 45
+          },
+          {
+            "uniqueId": "a-point1",
+            "refName": "ctgA",
+            "start": 535,
+            "end": 536,
+            "grp": "a",
+            "kind": "point",
+            "score": 82
+          },
+          {
+            "uniqueId": "b-point1",
+            "refName": "ctgA",
+            "start": 542,
+            "end": 543,
+            "grp": "b",
+            "kind": "point",
+            "score": 67
+          },
+          {
+            "uniqueId": "c-point1",
+            "refName": "ctgA",
+            "start": 549,
+            "end": 550,
+            "grp": "c",
+            "kind": "point",
+            "score": 52
+          },
+          {
+            "uniqueId": "d-point1",
+            "refName": "ctgA",
+            "start": 556,
+            "end": 557,
+            "grp": "d",
+            "kind": "point",
+            "score": 37
+          },
+          {
+            "uniqueId": "a-point2",
+            "refName": "ctgA",
+            "start": 565,
+            "end": 566,
+            "grp": "a",
+            "kind": "point",
+            "score": 74
+          },
+          {
+            "uniqueId": "b-point2",
+            "refName": "ctgA",
+            "start": 572,
+            "end": 573,
+            "grp": "b",
+            "kind": "point",
+            "score": 59
+          },
+          {
+            "uniqueId": "c-point2",
+            "refName": "ctgA",
+            "start": 579,
+            "end": 580,
+            "grp": "c",
+            "kind": "point",
+            "score": 44
+          },
+          {
+            "uniqueId": "d-point2",
+            "refName": "ctgA",
+            "start": 586,
+            "end": 587,
+            "grp": "d",
+            "kind": "point",
+            "score": 29
+          },
+          {
+            "uniqueId": "a-point3",
+            "refName": "ctgA",
+            "start": 595,
+            "end": 596,
+            "grp": "a",
+            "kind": "point",
+            "score": 66
+          },
+          {
+            "uniqueId": "b-point3",
+            "refName": "ctgA",
+            "start": 602,
+            "end": 603,
+            "grp": "b",
+            "kind": "point",
+            "score": 51
+          },
+          {
+            "uniqueId": "c-point3",
+            "refName": "ctgA",
+            "start": 609,
+            "end": 610,
+            "grp": "c",
+            "kind": "point",
+            "score": 36
+          },
+          {
+            "uniqueId": "d-point3",
+            "refName": "ctgA",
+            "start": 616,
+            "end": 617,
+            "grp": "d",
+            "kind": "point",
+            "score": 21
+          },
+          {
+            "uniqueId": "a-point4",
+            "refName": "ctgA",
+            "start": 625,
+            "end": 626,
+            "grp": "a",
+            "kind": "point",
+            "score": 58
+          },
+          {
+            "uniqueId": "b-point4",
+            "refName": "ctgA",
+            "start": 632,
+            "end": 633,
+            "grp": "b",
+            "kind": "point",
+            "score": 43
+          },
+          {
+            "uniqueId": "c-point4",
+            "refName": "ctgA",
+            "start": 639,
+            "end": 640,
+            "grp": "c",
+            "kind": "point",
+            "score": 28
+          },
+          {
+            "uniqueId": "d-point4",
+            "refName": "ctgA",
+            "start": 646,
+            "end": 647,
+            "grp": "d",
+            "kind": "point",
+            "score": 13
+          },
+          {
+            "uniqueId": "a-point5",
+            "refName": "ctgA",
+            "start": 655,
+            "end": 656,
+            "grp": "a",
+            "kind": "point",
+            "score": 50
+          },
+          {
+            "uniqueId": "b-point5",
+            "refName": "ctgA",
+            "start": 662,
+            "end": 663,
+            "grp": "b",
+            "kind": "point",
+            "score": 35
+          },
+          {
+            "uniqueId": "c-point5",
+            "refName": "ctgA",
+            "start": 669,
+            "end": 670,
+            "grp": "c",
+            "kind": "point",
+            "score": 20
+          },
+          {
+            "uniqueId": "d-point5",
+            "refName": "ctgA",
+            "start": 676,
+            "end": 677,
+            "grp": "d",
+            "kind": "point",
+            "score": 5
+          },
+          {
+            "uniqueId": "a-link0",
+            "refName": "ctgA",
+            "start": 805,
+            "end": 855,
+            "grp": "a",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "b-link0",
+            "refName": "ctgA",
+            "start": 817,
+            "end": 867,
+            "grp": "b",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "c-link0",
+            "refName": "ctgA",
+            "start": 829,
+            "end": 879,
+            "grp": "c",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "d-link0",
+            "refName": "ctgA",
+            "start": 841,
+            "end": 891,
+            "grp": "d",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "a-link1",
+            "refName": "ctgA",
+            "start": 865,
+            "end": 915,
+            "grp": "a",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "b-link1",
+            "refName": "ctgA",
+            "start": 877,
+            "end": 927,
+            "grp": "b",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "c-link1",
+            "refName": "ctgA",
+            "start": 889,
+            "end": 939,
+            "grp": "c",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "d-link1",
+            "refName": "ctgA",
+            "start": 901,
+            "end": 951,
+            "grp": "d",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "a-link2",
+            "refName": "ctgA",
+            "start": 925,
+            "end": 975,
+            "grp": "a",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "b-link2",
+            "refName": "ctgA",
+            "start": 937,
+            "end": 987,
+            "grp": "b",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "c-link2",
+            "refName": "ctgA",
+            "start": 949,
+            "end": 999,
+            "grp": "c",
+            "kind": "link",
+            "score": 1
+          },
+          {
+            "uniqueId": "d-link2",
+            "refName": "ctgA",
+            "start": 961,
+            "end": 1011,
+            "grp": "d",
+            "kind": "link",
+            "score": 1
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_rows_arranged-LinearMarkDisplay",
+          "rows": {
+            "field": "grp",
+            "domain": ["c", "a", "d", "b"],
+            "kept": ["c", "a", "b"]
+          },
+          "marks": [
+            {
+              "mark": "bar",
+              "transform": [
+                {
+                  "type": "filter",
+                  "expr": "jexl:feature.kind == 'bar'"
+                }
+              ],
+              "encoding": {
+                "y": "score"
+              }
+            },
+            {
+              "mark": "point",
+              "size": 28,
+              "transform": [
+                {
+                  "type": "filter",
+                  "expr": "jexl:feature.kind == 'point'"
+                }
+              ],
+              "encoding": {
+                "y": "score"
+              }
+            },
+            {
+              "mark": "link",
+              "size": 6,
+              "transform": [
+                {
+                  "type": "filter",
+                  "expr": "jexl:feature.kind == 'link'"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }

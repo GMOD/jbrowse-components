@@ -109,6 +109,25 @@ const suite: TestSuite = {
       snapshotSelector: withChrome,
       readySelector: '[data-testid="mark-row-labels"]',
     }),
+    // One mark type per capture, so the gate sees each shader's row
+    // placement on its own.
+    ...(
+      [
+        ['bars', 'ctgA:1-400'],
+        ['points', 'ctgA:490-690'],
+        ['links', 'ctgA:790-1020'],
+      ] as const
+    ).map(([mark, loc]) =>
+      lgvSnapshotTest({
+        name: `${mark} reordered and focused through the row table`,
+        snapshot: `mark-rows-arranged-${mark}`,
+        loc,
+        tracks: ['marks_rows_arranged'],
+        config,
+        displayTestId,
+        readySelector: '[data-testid="mark-row-labels"]',
+      }),
+    ),
     // The chips are the chrome's overlay, so the display's paint does not gate
     // them — the capture waits on a chip.
     lgvSnapshotTest({
