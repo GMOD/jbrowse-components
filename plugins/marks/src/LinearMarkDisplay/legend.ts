@@ -40,6 +40,20 @@ const NUMERIC_KEY_HINT =
 export type ScaledChannel = 'color' | 'shape'
 
 /**
+ * What a mark's channel says of its key beyond the table the worker resolved,
+ * as ggplot2's scale arguments do: the heading, which values it lists and in
+ * what order, what it calls a value's absence, and for a shape the name of
+ * each domain value. A colour's `labels` ride in the table instead.
+ */
+export interface MarkKeySetting {
+  title?: string
+  labels?: readonly string[]
+  breaks?: readonly string[]
+  descending?: boolean
+  missingLabel?: string
+}
+
+/**
  * One scaled channel's key: the table the worker resolved, the marks it is
  * the key of, and its heading. Marks whose channel reads one field through
  * one declaration under one title share a section, the way ggplot2 keeps one
@@ -54,6 +68,7 @@ export interface MarkLegendSection {
   scale: ScaleTable
   /** The channel's `title` where written, else the field; `''` heads nothing. */
   title: string
+  key: MarkKeySetting
 }
 
 const CHANNELS: {
@@ -135,10 +150,11 @@ function union(current: ScaleTable, next: ScaleTable) {
 }
 
 // What a section is keyed on: the declaration that assigns a value its colour
-// or shape, and the title over it, so two marks sharing both share the key. A
-// ramp with an open end stays the mark's, its domain being the uniform that
-// mark's shaders read off its own loaded values.
-function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
+// or shape, and the key settings over it, so two marks sharing both share the
+// key. A ramp with an open end stays the mark's, its domain being the uniform
+// that mark's shaders read off its own loaded values.
+function sectionKey(markIndex: number, scale: ScaleTable, key: MarkKeySetting) {
+  const title = JSON.stringify({ ...key, title: key.title ?? scale.field })
   switch (scale.kind) {
     case 'ramp':
       return fullyPinned(scale)
@@ -187,16 +203,16 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
  * alike, in the field's order; a key's entry is the same in every region. A
  * ramp's domain takes each pinned end as the config wrote it and each open one
  * from the union of the regions' own extremes — the same number the shaders
- * read as a uniform. A key is headed with `titleOf` for its mark and channel
- * where that answers a string, and with its field otherwise.
+ * read as a uniform. A key is headed with the `title` `keyOf` answers for its
+ * mark and channel, and with its field otherwise.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
   showsMark: (markIndex: number) => boolean = () => true,
-  titleOf: (
+  keyOf: (
     markIndex: number,
     channel: ScaledChannel,
-  ) => string | undefined = () => undefined,
+  ) => MarkKeySetting = () => ({}),
 ): MarkLegendSection[] {
   const sections = new Map<string, MarkLegendSection>()
   for (const region of regions) {
@@ -209,15 +225,16 @@ export function buildMarkLegend(
         if (!scale) {
           continue
         }
-        const title = titleOf(markIndex, channel) ?? scale.field
-        const key = sectionKey(markIndex, scale, title)
-        const current = sections.get(key)
+        const key = keyOf(markIndex, channel)
+        const id = sectionKey(markIndex, scale, key)
+        const current = sections.get(id)
         if (!current) {
-          sections.set(key, {
+          sections.set(id, {
             markIndexes: [markIndex],
             channel,
             scale: copyOf(scale),
-            title,
+            title: key.title ?? scale.field,
+            key,
           })
         } else {
           if (!current.markIndexes.includes(markIndex)) {
@@ -274,26 +291,81 @@ function keyField(
   return facet?.field === scale.field ? { ...facet, label: own.label } : own
 }
 
+// A key's rows as its channel lists them: only the values `breaks` names, in
+// its order, where it names any, and the no-value row under `missingLabel`.
+function listedRows(
+  entries: CategoricalEntry[],
+  { breaks = [], missingLabel }: MarkKeySetting,
+) {
+  const rows =
+    breaks.length === 0
+      ? entries
+      : [
+          ...new Set(
+            breaks.flatMap(value =>
+              entries.filter(e => (e.values ?? [e.value]).includes(value)),
+            ),
+          ),
+        ]
+  return missingLabel === undefined
+    ? rows
+    : rows.map(e => (e.missing ? { ...e, label: missingLabel } : e))
+}
+
+function listedKey(scale: CategoricalScale, key: MarkKeySetting) {
+  const { breaks = [] } = key
+  return {
+    ...scale,
+    entries: listedRows(scale.entries, key),
+    ...(breaks.length > 0 ? { domain: breaks } : {}),
+  }
+}
+
 function shapeKey(
   id: string,
   title: string | undefined,
   scale: ShapeScaleTable,
   facet: CategoricalField | undefined,
+  key: MarkKeySetting,
 ): CategoricalScale {
-  const field = keyField(scale, facet)
-  return {
-    kind: 'categorical',
-    id,
-    title,
-    entries: scale.entries
-      .toSorted((a, b) => field.compare(a.value, b.value))
-      .map(e => ({
-        value: e.value,
-        label: field.label(e.value),
-        swatches: [{ color: 'currentColor', shape: e.shape }],
-        ...(e.value === '' ? { missing: true } : {}),
-      })),
-  }
+  const field = keyField({ ...scale, labels: [...(key.labels ?? [])] }, facet)
+  return listedKey(
+    {
+      kind: 'categorical',
+      id,
+      title,
+      entries: scale.entries
+        .toSorted((a, b) => field.compare(a.value, b.value))
+        .map(e => ({
+          value: e.value,
+          label: field.label(e.value),
+          swatches: [{ color: 'currentColor', shape: e.shape }],
+          ...(e.value === '' ? { missing: true } : {}),
+        })),
+    },
+    key,
+  )
+}
+
+// A threshold's rows, its intervals from the highest where the key descends;
+// the rows for no value and not a number stay last either way.
+function thresholdRows(
+  scale: Extract<ScaleTable, { kind: 'threshold' }>,
+  { descending, missingLabel }: MarkKeySetting,
+) {
+  const rows = thresholdKeyEntries(
+    scale.domain,
+    scale.range,
+    scale,
+    scale.labels,
+  )
+  const intervals = scale.domain.length + 1
+  return listedRows(
+    descending
+      ? [...rows.slice(0, intervals).reverse(), ...rows.slice(intervals)]
+      : rows,
+    { missingLabel },
+  )
 }
 
 // A colour row names every value painted in its colour, so it draws each
@@ -330,7 +402,7 @@ export function markColorScales(
     if (folded.has(section)) {
       return []
     }
-    const { markIndexes, channel, scale } = section
+    const { markIndexes, channel, scale, key } = section
     const id = `mark-${markIndexes.join('-')}-${channel}`
     const title = section.title || undefined
     switch (scale.kind) {
@@ -351,10 +423,10 @@ export function markColorScales(
         const hinted =
           scale.numericKeys && scale.entries.length > NUMERIC_KEY_HINT_ROWS
         if (!hinted) {
-          return keys
+          return keys.map(k => listedKey(k, key))
         }
         return keys.length > 0
-          ? keys.map(key => ({ ...key, note: NUMERIC_KEY_HINT }))
+          ? keys.map(k => ({ ...listedKey(k, key), note: NUMERIC_KEY_HINT }))
           : [
               {
                 kind: 'categorical',
@@ -365,19 +437,14 @@ export function markColorScales(
             ]
       }
       case 'shape':
-        return [shapeKey(id, title, scale, facet)]
+        return [shapeKey(id, title, scale, facet, key)]
       case 'threshold':
         return [
           {
             kind: 'categorical',
             id,
             title,
-            entries: thresholdKeyEntries(
-              scale.domain,
-              scale.range,
-              scale,
-              scale.labels,
-            ),
+            entries: thresholdRows(scale, key),
           },
         ]
       case 'ramp':
@@ -394,7 +461,12 @@ export function markColorScales(
             ),
             extent: scale.extent,
           },
-          ...rampGapScales(`${id}-gaps`, scale),
+          ...rampGapScales(`${id}-gaps`, scale).map(gaps => ({
+            ...gaps,
+            entries: listedRows(gaps.entries, {
+              missingLabel: key.missingLabel,
+            }),
+          })),
         ]
     }
   })

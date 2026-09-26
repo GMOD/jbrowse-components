@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`LinearManhattanDisplay` is the mark display with a default plot: its schema takes `LinearMarkDisplay`'s as its base and redeclares `marks` as a list defaulting to a point per feature at its `score` (`markListSchema`, over a core change that keeps a collection slot's own default), and its model composes the mark model and adds only the LD join. A plot whose encoding names `ld` or `ld_role` joins r² to the index SNP; the join travels as the mark model's `adapterOptions` hook, a fetch input resolved per region by `resolveAdapterOptions`. LD colouring is written into the plot, a threshold colour over `ld` and a shape over `ld_role`, rather than implied by a field preset. `scoreField`, `color`, `size`, `ManhattanColor` and the hand-written point display go, with no retired spellings: the display shipped only in v5 betas. The byte gate stays off for Manhattan, and the mark display gains a hover ring for points and a title on its shape key"
+summary: "`LinearManhattanDisplay` is the mark display with a default plot: its schema takes `LinearMarkDisplay`'s as its base and redeclares `marks` as a list defaulting to a point per feature at its `score` (`markListSchema`, over a core change that keeps a collection slot's own default), and its model composes the mark model and adds only the LD join. A plot whose encoding names `ld` or `ld_role` joins r² to the index SNP; the join travels as the mark model's `adapterOptions` hook, a fetch input resolved per region by `resolveAdapterOptions`. LD colouring is written into the plot, a threshold colour over `ld` and a shape over `ld_role`, rather than implied by a field preset. `scoreField`, `color`, `size`, `ManhattanColor` and the hand-written point display go, with no retired spellings: the display shipped only in v5 betas. The byte gate stays off for Manhattan. The mark display gains a hover ring for points and three key members any plot may write, as ggplot2's scale arguments are: `breaks` (the values a key lists), `descending` (a threshold key highest first) and `missingLabel` (the no-value row's name), with `title` and `labels` on the shape key too; the LD mark writes all of them, so its key reads as LocusZoom's"
 ---
 
 # ADR-178: Manhattan is the mark display with a default plot
@@ -51,16 +51,25 @@ transforms or Edit plot.
 - **The byte gate stays off**, as it was: a genome-wide view of summary
   statistics is the display's case.
 - **Two gains for every mark display**: a hovered point lights as a ring, as
-  Manhattan's did, and a shape key takes a `title`, as a colour key does.
+  Manhattan's did, and a key takes ggplot2's controls. `breaks` lists only the
+  values it names, `descending` lists a threshold's intervals from the
+  highest, `missingLabel` names the grey row, and the shape key gains the
+  `title` and `labels` the colour key has. They are read on the main thread
+  when the key is built, so writing one refetches nothing.
+- **LocusZoom's key comes from those members**, not from Manhattan: the LD
+  colour descends and names its missing row "No LD data", and the LD shape
+  lists only the index, as "Index SNP", under no heading. Colin chose this
+  over a key Manhattan draws itself, which only Manhattan could have had, and
+  over shipping the generic two keys.
 
 ## Consequences
 
 - A Manhattan plot facets, splits into rows, bins and aggregates like any mark
   display; the add-track workflow writes the LD mark when it is given an LD
   file.
-- The r² key is the mark display's threshold key, and the index SNP has a
-  shape key of its own, where the old legend listed the index as a row of the
-  r² key.
+- The r² key and the index SNP's row are two keys where the old legend was
+  one, the index's swatch a diamond in the text colour rather than in the
+  colour of r² 1.
 - The insertion triangle is the SV-GWAS demo's own `shape` over `svtype`, no
   longer a Manhattan default applied to every file.
 - `jbrowse validate` runs the mark rules on any display whose manifest lists

@@ -831,14 +831,14 @@ test('an encoding channel refuses a key it does not declare', () => {
       { mark: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkColor takes value, field, scale, domain, domainMin, domainMax, autoscale, numQuantile, range, labels, scheme, reverse, domainMid and title, not colour',
+    'MarkColor takes value, field, scale, domain, domainMin, domainMax, autoscale, numQuantile, range, labels, scheme, reverse, domainMid, title, breaks, descending and missingLabel, not colour',
   )
   expect(() =>
     createTestEnvironment([
       { mark: 'point', encoding: { y: 'score', shape: { glyph: 'circle' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkShape takes value, field, scale, range, domain and title, not glyph',
+    'MarkShape takes value, field, scale, range, domain, title, labels, breaks and missingLabel, not glyph',
   )
   expect(() =>
     createTestEnvironment(
@@ -1505,6 +1505,7 @@ test('the legend reads the scale table the worker resolved', () => {
         entries: [{ value: 'gene', color: 0xff0000ff }],
       },
       title: 'type',
+      key: expect.any(Object),
     },
   ])
   expect(display.showLegend).toBe(true)
@@ -1584,6 +1585,7 @@ test('two marks colouring by one field through one range share a key', () => {
         { value: '-1', color: 0xff00ff00 },
       ]),
       title: 'strand',
+      key: expect.any(Object),
     },
   ])
   expect(shared.colorScales.map(s => s.id)).toEqual(['mark-0-1-color'])
@@ -1730,6 +1732,7 @@ test('a shape scale reaches the worker beside the colour, and its key draws the 
         ],
       },
       title: 'strand',
+      key: expect.any(Object),
     },
   ])
   expect(display.colorScales).toEqual([

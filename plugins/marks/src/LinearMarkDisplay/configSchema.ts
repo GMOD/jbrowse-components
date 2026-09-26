@@ -119,6 +119,35 @@ const markShapeSchema = ConfigurationSchema(
       type: 'maybeString',
       description: 'key title; unset follows field, "" draws none',
     },
+    /**
+     * #slot marks.encoding.shape.labels
+     * What the key names each `domain` value, one each in order; one past the
+     * list keeps its own name.
+     */
+    labels: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'key names for the domain values, in order',
+    },
+    /**
+     * #slot marks.encoding.shape.breaks
+     * The values the key lists, in this order; empty lists every value the
+     * loaded regions met. A value left out still takes its shape.
+     */
+    breaks: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'values the key lists; empty lists every value met',
+    },
+    /**
+     * #slot marks.encoding.shape.missingLabel
+     * What the key calls a feature with nothing in `field`; unset is
+     * "(no value)".
+     */
+    missingLabel: {
+      type: 'maybeString',
+      description: 'key row for a feature with no value',
+    },
   },
   {
     shorthand: 'value',

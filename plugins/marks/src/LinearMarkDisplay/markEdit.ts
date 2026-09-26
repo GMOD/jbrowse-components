@@ -50,11 +50,14 @@ export interface ChannelEdit {
 
 const UNSET: ChannelEdit = { value: '', beyond: false }
 
+/** The members that shape a channel's key and paint nothing. */
+const KEY_MEMBERS = ['title', 'descending', 'missingLabel'] as const
+
 /**
  * The single-valued scale members a control shows beside a channel's field:
  * for a ramp the ends that pin it, its middle, how an open end follows the
  * data, the named stops it samples and their direction, and for any scale the
- * key's title.
+ * key's title, row order and name for no value.
  */
 export const SCALE_MEMBERS = [
   'scheme',
@@ -64,16 +67,16 @@ export const SCALE_MEMBERS = [
   'domainMid',
   'autoscale',
   'numQuantile',
-  'title',
+  ...KEY_MEMBERS,
 ] as const
 export type ScaleMember = (typeof SCALE_MEMBERS)[number]
 
 /**
  * The list members a control holds as comma-separated text: a categorical
  * scale's values in order or a threshold's cut points, the colours or shapes
- * handed to them, and the key's name for each.
+ * handed to them, the key's name for each, and the values the key lists.
  */
-export const LIST_MEMBERS = ['domain', 'range', 'labels'] as const
+export const LIST_MEMBERS = ['domain', 'range', 'labels', 'breaks'] as const
 export type ListMember = (typeof LIST_MEMBERS)[number]
 
 /** The ends a ramp is pinned by, which a width ramp shares with a colour one. */
@@ -86,7 +89,9 @@ export function isRamp(scale: unknown) {
 /** The members a ramp of this channel paints: a colour's stops, and the ends. */
 function rampMembers(channel: EditChannel): readonly ScaleMember[] {
   return channel === 'color'
-    ? SCALE_MEMBERS.filter(member => member !== 'title')
+    ? SCALE_MEMBERS.filter(
+        member => !(KEY_MEMBERS as readonly string[]).includes(member),
+      )
     : RAMP_ENDS
 }
 
@@ -227,7 +232,11 @@ export function withChannelScale(
   scale: string,
 ): DraftMark {
   const declared = channelObject(mark, channel) ?? {}
-  const kept = [...(isRamp(scale) ? rampMembers(channel) : []), 'title']
+  const kept = [
+    ...(isRamp(scale) ? rampMembers(channel) : []),
+    'title',
+    'missingLabel',
+  ]
   return writeChannel(mark, channel, {
     field: channelField(mark, channel) || undefined,
     scale,
@@ -248,9 +257,12 @@ export function withScaleMember(
   const held =
     value === ''
       ? undefined
-      : member === 'reverse'
+      : member === 'reverse' || member === 'descending'
         ? value === 'true'
-        : member === 'scheme' || member === 'autoscale' || member === 'title'
+        : member === 'scheme' ||
+            member === 'autoscale' ||
+            member === 'title' ||
+            member === 'missingLabel'
           ? value
           : Number(value)
   return writeChannel(mark, channel, {

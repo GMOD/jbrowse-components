@@ -5523,6 +5523,18 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "title",
                       "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "breaks",
+                      "type": "string[]"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "missingLabel",
+                      "type": "(string | undefined)"
                     }
                   ],
                   "shorthand": "value",
@@ -5559,6 +5571,18 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "labels",
+                      "type": "string[]"
+                    },
+                    {
+                      "name": "breaks",
+                      "type": "string[]"
+                    },
+                    {
+                      "name": "missingLabel",
                       "type": "(string | undefined)"
                     }
                   ],
@@ -5958,6 +5982,18 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "title",
                       "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "breaks",
+                      "type": "string[]"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "missingLabel",
+                      "type": "(string | undefined)"
                     }
                   ],
                   "shorthand": "value",
@@ -5994,6 +6030,18 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "title",
+                      "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "labels",
+                      "type": "string[]"
+                    },
+                    {
+                      "name": "breaks",
+                      "type": "string[]"
+                    },
+                    {
+                      "name": "missingLabel",
                       "type": "(string | undefined)"
                     }
                   ],

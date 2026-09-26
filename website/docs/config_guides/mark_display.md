@@ -84,6 +84,8 @@ one.
 | one axis over several tracks | — | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `scales.y.autoscaleGroup` |
 | an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `scales.y.title` |
 | a key heading | `labs(fill = "…")` | `"legend": {"title"}` | `title` on the colour |
+| which values the key lists | `scale_fill_manual(breaks)` | `"legend": {"values"}` | `breaks` on the colour or shape |
+| a stepped key, highest first | `guide_legend(reverse = TRUE)` | | `descending` on a threshold colour |
 | a horizontal line at a value | `geom_hline(yintercept)` | `"mark": "rule"` with a `datum` | `scales.y.rules` |
 | a histogram | `geom_histogram(binwidth)` | `{"bin": {"step"}}` then `{"aggregate": [{"op": "count"}]}` | `{"type": "bin", "step"}` then `{"type": "aggregate", "ops": [{"op": "count"}]}` |
 | a summary per bin | `stat_summary_bin(fun = mean)` | `bin` then `aggregate` with `"op": "mean"` | `bin` then `aggregate` with `"op": "mean"` |
@@ -267,6 +269,11 @@ the same table the colours came from.
 `title` heads the key and has the axis `title`'s three states: unset reads the
 `field` name, text is that text, `""` draws no heading. Marks share one key only
 under one title, and share a ramp only with both ends pinned.
+
+Three more members shape the key and paint nothing. `breaks` lists only the
+values it names, in that order, while every value still takes its colour.
+`descending` lists a threshold's intervals from the highest down. `missingLabel`
+names the grey row for features with nothing in the field.
 
 ## Shape scales
 

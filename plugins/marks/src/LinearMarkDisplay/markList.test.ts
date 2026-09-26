@@ -572,6 +572,7 @@ test("the legend unions categorical tables across regions, keeping the first col
         ],
       },
       title: 'type',
+      key: {},
     },
   ])
   expect(

@@ -145,6 +145,7 @@ import type {
 } from './configSchema.ts'
 import type { FacetLayout } from './facet.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
+import type { MarkKeySetting, ScaledChannel } from './legend.ts'
 import type {
   MarkEntry,
   MarkRegionData,
@@ -247,6 +248,23 @@ function markConstantColor(mark: MarkConfig): number {
       ? encoding
       : DEFAULT_MARK_COLOR,
   )
+}
+
+// What a mark's channel says of its key: its guide members, copied out of the
+// config so a section holds plain values.
+function keySettingOf(
+  mark: MarkConfig | undefined,
+  channel: ScaledChannel,
+): MarkKeySetting {
+  if (!mark) {
+    return {}
+  }
+  if (channel === 'color') {
+    const { title, breaks, descending, missingLabel } = mark.encoding.color
+    return { title, breaks: [...breaks], descending, missingLabel }
+  }
+  const { title, labels, breaks, missingLabel } = mark.encoding.shape
+  return { title, labels: [...labels], breaks: [...breaks], missingLabel }
 }
 
 /**
@@ -1449,7 +1467,7 @@ export function stateModelFactory(
           return buildMarkLegend(
             self.rpcDataMap.values(),
             i => !!visible[i],
-            (i, channel) => marks[i]?.encoding[channel].title,
+            (i, channel) => keySettingOf(marks[i], channel),
           )
         },
         /**

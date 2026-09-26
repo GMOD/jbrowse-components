@@ -197,13 +197,17 @@
                     "#eea236",
                     "#d43f3a"
                   ],
-                  "title": "r² to index SNP"
+                  "title": "r² to index SNP",
+                  "descending": true,
+                  "missingLabel": "No LD data"
                 },
                 "shape": {
                   "field": "ld_role",
                   "domain": ["index", "partner"],
                   "range": ["diamond", "circle"],
-                  "title": "LD role"
+                  "breaks": ["index"],
+                  "labels": ["Index SNP"],
+                  "title": ""
                 }
               },
               "size": 7

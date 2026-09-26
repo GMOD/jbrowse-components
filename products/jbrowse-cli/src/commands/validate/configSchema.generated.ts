@@ -7142,6 +7142,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "title": {
               "description": "key title; unset follows field, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
+            },
+            "breaks": {
+              "description": "values the key lists; empty lists every value met.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "descending": {
+              "description": "threshold key lists the highest interval first.",
+              "type": "boolean",
+              "default": false
+            },
+            "missingLabel": {
+              "description": "key row for a feature with no value.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {
@@ -7235,6 +7251,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "title": {
               "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
+            },
+            "labels": {
+              "description": "key names for the domain values, in order.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "breaks": {
+              "description": "values the key lists; empty lists every value met.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "missingLabel": {
+              "description": "key row for a feature with no value.",
               "$ref": "#/$defs/PlainString"
             }
           },

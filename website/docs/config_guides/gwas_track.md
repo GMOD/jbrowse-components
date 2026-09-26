@@ -105,12 +105,17 @@ SNP** writes the same mark, and right-clicking a point pins it as the index
             "scale": "threshold",
             "domain": [0.2, 0.4, 0.6, 0.8],
             "range": ["#357ebd", "#46b8da", "#5cb85c", "#eea236", "#d43f3a"],
-            "title": "r² to index SNP"
+            "title": "r² to index SNP",
+            "descending": true,
+            "missingLabel": "No LD data"
           },
           "shape": {
             "field": "ld_role",
             "domain": ["index", "partner"],
-            "range": ["diamond", "circle"]
+            "range": ["diamond", "circle"],
+            "breaks": ["index"],
+            "labels": ["Index SNP"],
+            "title": ""
           }
         }
       }

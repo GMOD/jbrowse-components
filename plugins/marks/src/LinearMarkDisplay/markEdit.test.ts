@@ -17,6 +17,7 @@ import {
   withListMember,
 } from './markEdit.ts'
 
+import type { DraftMark } from './markEdit.ts'
 import type { MarkSnapshot } from './markProblems.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 
@@ -416,4 +417,42 @@ describe('the scale beside a width', () => {
       domainMin: 1,
     })
   })
+})
+
+// LocusZoom's key is written through the same members a config writes, so a
+// Manhattan plot coloured by LD opens in the form rather than the JSON box.
+test('a channel shaping its key stays in the form, and each key member round-trips', () => {
+  const mark: DraftMark = {
+    mark: 'point',
+    encoding: {
+      y: 'score',
+      color: {
+        field: 'ld',
+        scale: 'threshold',
+        domain: ['0.5'],
+        range: ['blue', 'red'],
+        descending: true,
+        missingLabel: 'No LD data',
+      },
+      shape: {
+        field: 'ld_role',
+        breaks: ['index'],
+        labels: ['Index SNP'],
+        title: '',
+      },
+    },
+  }
+  expect(channelEdit(mark, 'color').beyond).toBe(false)
+  expect(channelEdit(mark, 'shape').beyond).toBe(false)
+  expect(scaleMember(mark, 'color', 'descending')).toBe('true')
+  expect(listMember(mark, 'shape', 'breaks')).toBe('index')
+  expect(
+    withScaleMember(mark, 'color', 'descending', '').encoding?.color,
+  ).not.toHaveProperty('descending')
+  expect(
+    withScaleMember(mark, 'color', 'missingLabel', 'unjoined').encoding?.color,
+  ).toMatchObject({ missingLabel: 'unjoined' })
+  expect(
+    withChannelScale(mark, 'color', 'categorical').encoding?.color,
+  ).toMatchObject({ missingLabel: 'No LD data' })
 })

@@ -36,7 +36,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * #example
  * LocusZoom-style colouring: each point's r² to the index SNP in five bins,
- * the index itself a diamond. The LD data is a second source on `GWASAdapter`,
+ * the index itself a diamond, and a key listing the bins highest first with
+ * the index as its own row. The LD data is a second source on `GWASAdapter`,
  * so it nests under `adapter`, while the plot goes in `displayDefaults`. The
  * track menu's "Color by LD to index SNP" writes the same mark:
  * ```js
@@ -66,11 +67,16 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *             domain: [0.2, 0.4, 0.6, 0.8],
  *             range: ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a'],
  *             title: 'r² to index SNP',
+ *             descending: true,
+ *             missingLabel: 'No LD data',
  *           },
  *           shape: {
  *             field: 'ld_role',
  *             domain: ['index', 'partner'],
  *             range: ['diamond', 'circle'],
+ *             breaks: ['index'],
+ *             labels: ['Index SNP'],
+ *             title: '',
  *           },
  *         },
  *       },

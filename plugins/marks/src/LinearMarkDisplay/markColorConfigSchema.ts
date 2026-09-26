@@ -118,6 +118,36 @@ export const markColorSchema = ConfigurationSchema(
     ...colorLabelsSlot,
     ...colorRampSlots,
     ...colorTitleSlot,
+    /**
+     * #slot breaks
+     * The values a categorical key lists, in this order; empty lists every
+     * value the loaded regions met. A value left out still paints, as
+     * ggplot2's `breaks` leaves it.
+     */
+    breaks: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'values the key lists; empty lists every value met',
+    },
+    /**
+     * #slot descending
+     * A threshold key lists its intervals from the highest down, the way a
+     * vertical stepped legend stands.
+     */
+    descending: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'threshold key lists the highest interval first',
+    },
+    /**
+     * #slot missingLabel
+     * What the key calls a feature with nothing in `field`; unset is
+     * "(no value)".
+     */
+    missingLabel: {
+      type: 'maybeString',
+      description: 'key row for a feature with no value',
+    },
   },
   colorChannelOptions('color'),
 )

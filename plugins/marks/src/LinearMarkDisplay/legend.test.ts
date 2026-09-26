@@ -436,7 +436,7 @@ test('a key rebuilt over a widened extent hands back the same table', () => {
 
 function keyTitle(written: string | undefined, loaded: MarkRegionData) {
   const [key] = markColorScales(
-    buildMarkLegend([loaded], undefined, () => written),
+    buildMarkLegend([loaded], undefined, () => ({ title: written })),
   )
   return key?.title
 }
@@ -459,11 +459,9 @@ test('a bare key leaves the legend no heading row', () => {
     legendEntries(
       legendSpecOf(
         markColorScales(
-          buildMarkLegend(
-            [region(table(['1', '2']))],
-            undefined,
-            () => written,
-          ),
+          buildMarkLegend([region(table(['1', '2']))], undefined, () => ({
+            title: written,
+          })),
         ),
       ),
     ).map(e => e.label)
@@ -475,7 +473,9 @@ test('a bare key leaves the legend no heading row', () => {
 test('two marks over one declaration share a key only under one title', () => {
   const both = region(table(['1']), table(['1']))
   const keys = (titleOf: (markIndex: number) => string | undefined) =>
-    buildMarkLegend([both], undefined, titleOf).map(s => s.title)
+    buildMarkLegend([both], undefined, i => ({ title: titleOf(i) })).map(
+      s => s.title,
+    )
   expect(keys(() => 'MAPQ')).toEqual(['MAPQ'])
   expect(keys(i => (i === 0 ? 'score' : undefined))).toEqual(['score'])
   expect(keys(i => (i === 0 ? 'MAPQ' : undefined))).toEqual(['MAPQ', 'score'])
@@ -499,4 +499,83 @@ test('a key names a domain value by the label the colour lists for it', () => {
     'Gain',
     'INV',
   ])
+})
+
+const shapeRegion = (values: [string, ShapeName][]): MarkRegionData => ({
+  layers: [
+    {
+      count: 0,
+      skipped: 0,
+      x: new Uint32Array(0),
+      x2: new Uint32Array(0),
+      featureIndex: new Uint32Array(0),
+      yMin: Infinity,
+      yMax: -Infinity,
+      shapeScale: {
+        kind: 'shape',
+        field: 'ld_role',
+        domain: ['index', 'partner'],
+        entries: values.map(([value, shape]) => ({ value, shape })),
+      },
+    },
+  ],
+})
+
+function rowLabels(scales: ColorScale[]) {
+  return scales.map(s =>
+    s.kind === 'categorical' ? s.entries.map(e => e.label) : [],
+  )
+}
+
+// LocusZoom's key, from the grammar: the r² bins highest first ending in the
+// row it names, and the diamond alone in a key of its own.
+test('a key lists the values its breaks name, highest first where it descends, and names its no-value row', () => {
+  const r2: ColorScaleTable = { ...thresholdTable(), missing: true }
+  expect(
+    rowLabels(
+      markColorScales(
+        buildMarkLegend([region(r2)], undefined, () => ({
+          descending: true,
+          missingLabel: 'No LD data',
+        })),
+      ),
+    ),
+  ).toEqual([['≥ 0.5', '0.1 – 0.5', '< 0.1', 'No LD data']])
+
+  const roles = shapeRegion([
+    ['index', 'diamond'],
+    ['partner', 'circle'],
+    ['', 'circle'],
+  ])
+  expect(
+    rowLabels(
+      markColorScales(
+        buildMarkLegend([roles], undefined, () => ({
+          breaks: ['index'],
+          labels: ['Index SNP'],
+        })),
+      ),
+    ),
+  ).toEqual([['Index SNP']])
+  expect(
+    rowLabels(
+      markColorScales(
+        buildMarkLegend([roles], undefined, () => ({
+          missingLabel: 'unjoined',
+        })),
+      ),
+    ),
+  ).toEqual([['index', 'partner', 'unjoined']])
+})
+
+test('a categorical colour key lists its breaks in their order', () => {
+  expect(
+    rowLabels(
+      markColorScales(
+        buildMarkLegend([region(table(['1', '2', '3']))], undefined, () => ({
+          breaks: ['3', '1'],
+        })),
+      ),
+    ),
+  ).toEqual([['3', '1']])
 })

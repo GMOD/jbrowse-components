@@ -25,7 +25,8 @@ Minimal `GWASTrack` config. See the
 ```
 
 LocusZoom-style colouring: each point's r² to the index SNP in five bins,
-the index itself a diamond. The LD data is a second source on `GWASAdapter`,
+the index itself a diamond, and a key listing the bins highest first with
+the index as its own row. The LD data is a second source on `GWASAdapter`,
 so it nests under `adapter`, while the plot goes in `displayDefaults`. The
 track menu's "Color by LD to index SNP" writes the same mark:
 
@@ -56,11 +57,16 @@ track menu's "Color by LD to index SNP" writes the same mark:
             domain: [0.2, 0.4, 0.6, 0.8],
             range: ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a'],
             title: 'r² to index SNP',
+            descending: true,
+            missingLabel: 'No LD data',
           },
           shape: {
             field: 'ld_role',
             domain: ['index', 'partner'],
             range: ['diamond', 'circle'],
+            breaks: ['index'],
+            labels: ['Index SNP'],
+            title: '',
           },
         },
       },
@@ -119,13 +125,16 @@ These slots go on a display entry: `"displays": [{ "type": "LinearManhattanDispl
 | --- | --- |
 | <span id="slot-marks">**marks**</span><br><code>markListSchema([MANHATTAN_MARK])</code> | The plot, as `LinearMarkDisplay` reads it: unwritten, a point per feature at its `score`. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
-| <span class="slot-group">Inherited from [LinearMarkDisplay](../linearmarkdisplay)</span> | <span class="slot-group-count">39 slots</span> |
+| <span class="slot-group">Inherited from [LinearMarkDisplay](../linearmarkdisplay)</span> | <span class="slot-group-count">42 slots</span> |
 | <span id="slot-marksencodingshapevalue">**marks.encoding.shape.value**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'circle'</code> | `circle`, `triangle-down` or `diamond`, or a jexl callback over `feature` returning one, for a point mark whose shape is not a scale. Writing `shape: 'triangle-down'` directly on the encoding lands here.<br>_callback args:_ `feature` |
 | <span id="slot-marksencodingshapefield">**marks.encoding.shape.field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field a categorical scale reads — or a jexl expression over `feature`, which is slower per feature and so the opt-in. |
 | <span id="slot-marksencodingshapescale">**marks.encoding.shape.scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical) | `categorical` hands a shape from `range` to each distinct value of `field`; `none` draws `value`. Unset beside a `field`, it is `categorical`. |
 | <span id="slot-marksencodingshaperange">**marks.encoding.shape.range**</span><br>[`stringEnumArray`](/docs/config_guides/slot_types#stringenumarray) = <code>[]</code> | The shape names a categorical scale hands out, in order. Empty is `circle`, `triangle-down`, `diamond`. |
 | <span id="slot-marksencodingshapedomain">**marks.encoding.shape.domain**</span><br>`stringArray` = <code>[]</code> | The values in legend order, walking `range` from the first entry; left empty, each value derives its shape from itself, so every region agrees. |
 | <span id="slot-marksencodingshapetitle">**marks.encoding.shape.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The heading of the key a categorical scale draws, naming what the shape marks. Unset, the key is titled with `field`; `""` is a key with no title. |
+| <span id="slot-marksencodingshapelabels">**marks.encoding.shape.labels**</span><br>`stringArray` = <code>[]</code> | What the key names each `domain` value, one each in order; one past the list keeps its own name. |
+| <span id="slot-marksencodingshapebreaks">**marks.encoding.shape.breaks**</span><br>`stringArray` = <code>[]</code> | The values the key lists, in this order; empty lists every value the loaded regions met. A value left out still takes its shape. |
+| <span id="slot-marksencodingshapemissinglabel">**marks.encoding.shape.missingLabel**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | What the key calls a feature with nothing in `field`; unset is "(no value)". |
 | <span id="slot-marksencodingx">**marks.encoding.x**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'start'</code> | The feature field, or jexl expression over `feature`, giving the mark's left edge in bp. |
 | <span id="slot-marksencodingx2">**marks.encoding.x2**</span><br>[MarkLocus](../marklocus) | The feature field, or jexl expression, giving the mark's right edge in bp, or for a link its far foot: an object naming the field holding the foot's sequence beside the one holding its position, where a mate may lie on another sequence. Left at `end` behind a `mate` step, it is the other end the step found. |
 | <span id="slot-marksencodingy">**marks.encoding.y**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field, or jexl expression over `feature`, plotted on the score axis. A feature whose value is not a finite number is skipped. Empty reads what the steps before this mark's encode wrote, the way a ggplot2 stat names what its geom plots: a `coverage` step's depth, or the one summary an `aggregate` with one op writes. A bar or point with neither draws nothing, and the track's corner notice says so, while a text with neither stands in the middle of its band. The scale it is read through is the display's `scales.y`. |

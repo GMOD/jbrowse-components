@@ -12,21 +12,28 @@ export const LD_PALETTE = [
   '#d43f3a',
 ]
 
-/** A point's colour under LD: its r² to the index SNP, in LocusZoom's bins. */
+/**
+ * A point's colour under LD: its r² to the index SNP in LocusZoom's bins, the
+ * key listing them highest first as LocusZoom does.
+ */
 export const LD_COLOR = {
   field: LD_FIELD,
   scale: 'threshold',
   domain: LD_DOMAIN,
   range: LD_PALETTE,
   title: 'r² to index SNP',
+  descending: true,
+  missingLabel: 'No LD data',
 }
 
-/** A point's shape under LD: the index SNP is the diamond. */
+/** A point's shape under LD: the index SNP is the diamond, the key's one row. */
 export const LD_SHAPE = {
   field: LD_ROLE_FIELD,
   domain: ['index', 'partner'],
   range: ['diamond', 'circle'],
-  title: 'LD role',
+  breaks: ['index'],
+  labels: ['Index SNP'],
+  title: '',
 }
 
 /** A Manhattan plot's one mark: a point per feature at its `score`. */

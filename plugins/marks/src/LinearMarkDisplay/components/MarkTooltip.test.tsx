@@ -66,6 +66,7 @@ test('a point reads its shape scale, naming the category the plot drew', async (
       {
         markIndexes: [0],
         channel: 'shape',
+        key: {},
         scale: {
           kind: 'shape',
           field: 'svtype',

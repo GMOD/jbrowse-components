@@ -26,12 +26,16 @@ const MEMBER_LABELS: Partial<Record<ScaleMember, string>> = {
   domainMid: 'middle',
   numQuantile: 'percentile',
   title: 'key title',
+  missingLabel: 'key name for no value',
 }
 
 // What each list is, in the words of the scale it belongs to.
 function listLabel(channel: EditChannel, scale: string, member: ListMember) {
   if (member === 'labels') {
     return scale === 'threshold' ? 'interval names' : 'key names'
+  }
+  if (member === 'breaks') {
+    return 'values the key lists'
   }
   if (member === 'domain') {
     return scale === 'threshold' ? 'cut points' : 'values, in order'
@@ -44,8 +48,9 @@ function listLabel(channel: EditChannel, scale: string, member: ListMember) {
 }
 
 // Which lists a scale reads: a categorical or threshold colour its values or
-// cuts, their colours and their names; a shape its values and shapes; a width
-// ramp its two px ends; a colour ramp its stops.
+// cuts, their colours and their names; a shape its values, shapes and names;
+// a categorical key the values it lists; a width ramp its two px ends; a
+// colour ramp its stops.
 function listsOf(channel: EditChannel, scale: string): ListMember[] {
   if (channel === 'size') {
     return ['range']
@@ -53,9 +58,9 @@ function listsOf(channel: EditChannel, scale: string): ListMember[] {
   if (isRamp(scale)) {
     return channel === 'color' ? ['range'] : []
   }
-  return channel === 'color'
+  return scale === 'threshold'
     ? ['domain', 'range', 'labels']
-    : ['domain', 'range']
+    : ['domain', 'range', 'labels', 'breaks']
 }
 
 function MemberField({
@@ -261,6 +266,23 @@ export default function MarkScaleRow({
           }}
         />
       ))}
+      {scale === 'threshold' ? (
+        <LabeledCheckbox
+          checked={scaleMember(mark, channel, 'descending') === 'true'}
+          onChange={next => {
+            onMember('descending', next ? 'true' : '')
+          }}
+          label="key lists the highest first"
+        />
+      ) : null}
+      {channel === 'color' || channel === 'shape' ? (
+        <MemberField
+          mark={mark}
+          channel={channel}
+          member="missingLabel"
+          onMember={onMember}
+        />
+      ) : null}
       {channel === 'color' || channel === 'shape' ? (
         <MemberField
           mark={mark}
