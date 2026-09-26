@@ -19,9 +19,8 @@ module colorPack;
 // bought nothing here. FOUR to a `uint4` element, read as `p[i >> 2][i & 3]`,
 // does compile and does save — it is the only form that beats the padding — and
 // on alignments' 23-colour palette it was measured and declined:
-// agent-docs/reference/ARCHITECTURAL_LIMITS.md §"The uniform ring is allocated
-// at 2048 slots". Packing still earns its keep in VERTEX ATTRIBUTES, which is
-// what this is for.
+// agent-docs/reference/ARCHITECTURAL_LIMITS.md §"The uniform ring". Packing
+// still earns its keep in VERTEX ATTRIBUTES, which is what this is for.
 public float4 unpackRGBA(uint c) {
   return float4(
     float((c >>  0u) & 0xFFu),
