@@ -110,6 +110,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-layoutready">**layoutReady**</span><br><code>boolean</code> | Whether features can be laid out: data is fetched, in-bounds, and the view is measured. | LinearCanvasBaseDisplay |
 | <span id="getter-onscreenfeatureids">**onScreenFeatureIds**</span><br><code>ReadonlySet&lt;string&gt; &#124; undefined</code> | The features whose bp span touches the viewport. | LinearCanvasBaseDisplay |
 | <span id="getter-labeldensityperpx">**labelDensityPerPx**</span><br><code>number</code> | Features per pixel of what is actually ON SCREEN — the density the `auto` label modes gate on (ADR-093). | LinearCanvasBaseDisplay |
+| <span id="getter-onscreenwidthpx">**onScreenWidthPx**</span><br><code>number</code> |  | LinearCanvasBaseDisplay |
+| <span id="getter-genelabeldensityperpx">**geneLabelDensityPerPx**</span><br><code>number &#124; undefined</code> | On-screen gene features per pixel, which `auto` holds to the same threshold so gene names outlast a crowd of other features. Undefined with no gene on screen. | LinearCanvasBaseDisplay |
 | <span id="getter-renderstate">**renderState**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ scrollY: number; canvasWidth: number; canvasHeight: number; o…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ scrollY: number; canvasWidth: number; canvasHeight: number; outlineColor: number; hideChevrons: boolean; }</code></pre></dialog></span> |  | LinearCanvasBaseDisplay |
 | <span id="getter-displaydirectionalchevrons">**displayDirectionalChevrons**</span><br><code>boolean</code> | Overridable hook (default on): whether intron lines carry chevrons. Drawn from the render state, not baked by the worker, so the toggle refetches nothing. | LinearCanvasBaseDisplay |
 | <span id="getter-labelscrollbucket">**labelScrollBucket**</span><br><code>number</code> |  | LinearCanvasBaseDisplay |
@@ -120,6 +122,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-labelfontsize">**labelFontSize**</span><br><code>number</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-showlabelsmode">**showLabelsMode**</span><br><code>"auto" &#124; "description" &#124; "name" &#124; "nameAndDescription" &#124; "none"</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  | LinearCanvasBaseDisplay |
+| <span id="getter-genenamesonly">**geneNamesOnly**</span><br><code>boolean</code> | `auto` past the name threshold, with the gene features alone still under it: gene names stay and every other name goes. | LinearCanvasBaseDisplay |
 | <span id="getter-showdescriptions">**showDescriptions**</span><br><code>boolean</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-effectiveshowdescriptions">**effectiveShowDescriptions**</span><br><code>boolean</code> |  | LinearCanvasBaseDisplay |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | LinearCanvasBaseDisplay |
