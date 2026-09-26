@@ -1,6 +1,5 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
-import { liftScatterPointSize } from '@jbrowse/wiggle-core'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
 
@@ -24,7 +23,6 @@ export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
       trackType: ['GWASTrack', 'FeatureTrack'],
       viewType: 'LinearGenomeView',
       ReactComponent: ManhattanReactComponent,
-      retiredConfig: liftScatterPointSize,
     })
   })
 }

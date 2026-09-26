@@ -11,7 +11,7 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
-import { refuseRetiredConfig } from './retiredSettings.ts'
+import { retired } from './retiredSettings.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -271,7 +271,7 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      preProcessSnapshot: refuseRetiredConfig,
+      retired,
     },
   )
 }

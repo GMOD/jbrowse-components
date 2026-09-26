@@ -2,6 +2,9 @@
 // baseTrackConfig.ts so the schema definition stays free of legacy-format
 // handling.
 
+import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
+import { liftRetiredSpellings } from '../../configuration/snapshotPreprocess.ts'
+
 import type PluginManager from '../../PluginManager'
 
 // #region registry
@@ -39,11 +42,11 @@ interface Migrated {
 
 /**
  * Loads each display entry a retired type names as the display it retired
- * into, and rewrites every entry's retired slot values, as each DisplayType's
- * `retiredTypes` and `retiredConfig` declare. Runs on the track config before
- * the `Core-preProcessTrackConfig` handlers, which read the current names, and
- * before the display union, which refuses a retired value where a schema's own
- * `preProcessSnapshot` never runs.
+ * into, and rewrites every entry's retired spellings, as each DisplayType's
+ * `retiredTypes` and its config schema's `retired` declare. Runs on the track
+ * config before the `Core-preProcessTrackConfig` handlers, which read the
+ * current names, and before the display union, which refuses a retired value
+ * where a schema's own `preProcessSnapshot` never runs.
  *
  * Entries that collapse onto one type become one: an entry written for this
  * display beats one written for a retired type, a bare `{ type, displayId }`
@@ -87,7 +90,8 @@ export function migrateRetiredDisplays(
             }),
       }
     }
-    next = display.retiredConfig?.(next) ?? next
+    const meta = getConfigurationSchemaMetadata(display.configSchema)
+    next = meta ? liftRetiredSpellings(meta, next) : next
     return {
       entry: next,
       type: display.name,

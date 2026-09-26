@@ -63,6 +63,7 @@ export { applyConfSettings, getConf, setConf } from './getConf.ts'
 export type { ConfSettingsReport } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'
 export {
+  liftRetiredSpellings,
   preProcessConfigSnapshot,
   preProcessSnapshotWith,
   shorthandForm,

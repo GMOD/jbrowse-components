@@ -1,6 +1,5 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
-import { liftScatterPointSize } from '@jbrowse/wiggle-core'
 
 import configSchema from './configSchema.ts'
 import { retiredState, retiredTypes } from './retired.ts'
@@ -44,7 +43,6 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
         viewType: 'LinearGenomeView',
         ReactComponent,
         retiredTypes,
-        retiredConfig: liftScatterPointSize,
         retiredState,
       }),
   )

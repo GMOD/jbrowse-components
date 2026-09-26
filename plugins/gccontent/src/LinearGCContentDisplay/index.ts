@@ -1,8 +1,5 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
-import {
-  LinearWiggleDisplayReactComponent,
-  liftScatterPointSize,
-} from '@jbrowse/plugin-wiggle'
+import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 
 import linearGCContentDisplayConfigSchema from './configSchemaReferenceSequence.ts'
 import linearGCContentTrackDisplayConfigSchema from './configSchemaTrack.ts'
@@ -49,7 +46,6 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: LinearWiggleDisplayReactComponent,
-      retiredConfig: liftScatterPointSize,
     })
   })
 
@@ -66,7 +62,6 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
       trackType: 'GCContentTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: LinearWiggleDisplayReactComponent,
-      retiredConfig: liftScatterPointSize,
     })
   })
 }

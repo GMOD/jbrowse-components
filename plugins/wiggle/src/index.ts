@@ -60,7 +60,7 @@ export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
 // names this plugin published them as.
 export {
   WiggleScoreConfigMixin,
-  liftScatterPointSize,
+  wiggleScoreRetired,
 } from '@jbrowse/wiggle-core'
 export type { ScorePlotSvgModel as WiggleFamilySvgModel } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'

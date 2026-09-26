@@ -68,6 +68,10 @@ export interface ConfigurationSchemaDefinition {
   [n: string]: ConfigSlotDefinition | string | number | IAnyType
 }
 
+export type RetiredSpelling =
+  | string
+  | ((value: unknown) => Record<string, unknown>)
+
 export interface ConfigurationSchemaOptions<
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
   EXPLICIT_IDENTIFIER extends string | undefined,
@@ -108,6 +112,17 @@ export interface ConfigurationSchemaOptions<
    * `preProcessSnapshot`, on the same paths.
    */
   closed?: boolean
+  /**
+   * The spellings an older release used, by the name it used. A function
+   * answers the members that name's value becomes; a string names what
+   * replaced a setting that is gone, and the schema throws naming it. Lifted
+   * before the `closed` check and `preProcessSnapshot`, on every path a
+   * snapshot or a settings bag arrives by, and read by the `displayDefaults`
+   * router, so one declaration serves a config entry, the shorthand object, a
+   * share link and an agent's bag alike. A spelling the snapshot already
+   * carries wins over the one a lift produces.
+   */
+  retired?: Record<string, RetiredSpelling>
   /**
    * A colour object's defaults by `field`, `*` for any other: the scale while
    * `scale` is unset, and the members that scale reads while unwritten.
@@ -229,13 +244,14 @@ function preprocessConfigurationSchemaArguments(
       schemaDefinition,
     )
     // Everything else merges as a shallow `{...base, ...child}` spread, where
-    // the child's value replaces the base's. The four hooks and `requires`
-    // must not: `createBaseTrackConfig` alone declares two of the hooks, so
+    // the child's value replaces the base's. The four hooks, `requires` and
+    // `retired` must not: `createBaseTrackConfig` alone declares two of the hooks, so
     // replace-semantics meant no track config schema could ever declare its
     // own without silently dropping display-stub injection and the legacy-key
     // migration, and a subclass stating one requirement would have dropped
-    // every one its base stated. They compose instead, base first. See
-    // MergedConfigurationSchemaOptions.
+    // every one its base stated. They compose instead, base first, and
+    // `retired` merges per key so a subclass adds a spelling without dropping
+    // the ones its base retired. See MergedConfigurationSchemaOptions.
     const basePreProcess = baseMeta.options.preProcessSnapshot
     const childPreProcess = inputOptions.preProcessSnapshot
     const requires = [
@@ -253,6 +269,10 @@ function preprocessConfigurationSchemaArguments(
         basePreProcess && childPreProcess
           ? snapshot => childPreProcess(basePreProcess(snapshot))
           : (childPreProcess ?? basePreProcess),
+      retired:
+        baseMeta.options.retired || inputOptions.retired
+          ? { ...baseMeta.options.retired, ...inputOptions.retired }
+          : undefined,
       requires: requires.length ? requires : undefined,
     }
   }

@@ -92,12 +92,77 @@ function nullMembersAsUnset(
 }
 
 /**
+ * A schema reads its own entry alone. A `displays` union runs every member's
+ * preprocessor over every entry while it works out which display an entry is,
+ * so an entry naming another type is left as it was, and one naming no type is
+ * a bag headed here.
+ */
+function isOwnSnapshot(
+  { name, options }: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+) {
+  return (
+    !options.explicitlyTyped ||
+    snapshot.type === undefined ||
+    snapshot.type === name
+  )
+}
+
+/**
+ * The snapshot with each spelling `retired` names rewritten: a lift's members
+ * take the old key's place, and a key the snapshot already spells wins, since
+ * writing the current name is the stronger statement. A retired name with no
+ * replacement throws, naming what replaced it. The old key goes whether or not
+ * it carried a value, so a `closed` schema never meets it. Where two retired
+ * names lift onto one member — a slot the entry spelt directly and the same
+ * slot inside a retired `renderer` — the one declared first wins.
+ */
+export function liftRetiredSpellings(
+  schema: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+) {
+  const { retired } = schema.options
+  if (!retired || !isOwnSnapshot(schema, snapshot)) {
+    return snapshot
+  }
+  const present = Object.keys(retired).filter(key => key in snapshot)
+  const written = present.filter(key => snapshot[key] !== undefined)
+  const gone = written.filter(key => typeof retired[key] === 'string')
+  if (gone.length > 0) {
+    throw new Error(
+      `${schema.name}: ${gone
+        .map(key => `\`${key}\` is ${retired[key] as string}`)
+        .join('; ')}`,
+    )
+  }
+  if (present.length === 0) {
+    return snapshot
+  }
+  const out = { ...snapshot }
+  for (const key of present) {
+    delete out[key]
+  }
+  for (const key of written) {
+    const lifted = (
+      retired[key] as (value: unknown) => Record<string, unknown>
+    )(snapshot[key])
+    for (const [name, value] of Object.entries(lifted)) {
+      if (out[name] === undefined) {
+        out[name] = value
+      }
+    }
+  }
+  return out
+}
+
+/**
  * What a schema does to every snapshot on its way in, whichever door it
  * arrives by (`create`, `applySnapshot`, `setSubschema`, a settings bag): a
  * bare string or number lifts into the declared `shorthand` slot, beside any
  * `shorthandWith` slots, and `null` into the empty object that clears it; a
  * `null` member reads as unset, except in a frozen-family slot, which stores
- * it; a `closed` schema refuses a key it does not declare, then the schema's
+ * it; a `retired` spelling becomes the members that replaced it; a `closed`
+ * schema refuses a key it does not declare, then the schema's
  * own `preProcessSnapshot` runs, and a `jexl:` callback in a slot declaring no
  * `contextVariable` is refused. A bare value the shorthand does not lift
  * passes through for MST to refuse.
@@ -117,10 +182,11 @@ export function preProcessSnapshotWith(
             snapshot as Record<string, unknown>,
             schema.storesNull,
           )
+  const named = liftRetiredSpellings(schema, lifted)
   if (closed) {
-    refuseUndeclaredKeys(schema, lifted)
+    refuseUndeclaredKeys(schema, named)
   }
-  const processed = preProcessSnapshot ? preProcessSnapshot(lifted) : lifted
+  const processed = preProcessSnapshot ? preProcessSnapshot(named) : named
   refuseCallbacks(schema, processed)
   return processed
 }

@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/display-kit/retiredSettings'
 
 import configSchemaF from './configSchema.ts'
-import { routeRetiredShorthandF } from './retiredSettings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -15,7 +14,6 @@ const ReactComponent = lazyWithPreload(
 )
 
 export default function LinearMafDisplayF(pluginManager: PluginManager) {
-  routeRetiredShorthandF(pluginManager)
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF()
     return new DisplayType({

@@ -71,7 +71,7 @@ const V4_BASE_COLOR_FIELDS: Record<string, string> = {
   bisulfite: 'bisulfite',
 }
 
-function colorSlotsOf(value: unknown): DisplayEntry {
+export function colorSlotsOf(value: unknown): DisplayEntry {
   if (!isObject(value)) {
     return {}
   }
@@ -101,16 +101,6 @@ function colorSlotsOf(value: unknown): DisplayEntry {
     ...(baseField ? { baseColor: { field: baseField } } : {}),
     ...(settings ? { modifications: settings } : {}),
   }
-}
-
-// A v4 `colorBy` named a scheme and held the modification settings, which are
-// the `color` or `baseColor` object's field and the `modifications` slot now.
-export function retiredConfig(entry: DisplayEntry) {
-  if (entry.colorBy === undefined) {
-    return entry
-  }
-  const { colorBy, ...rest } = entry
-  return { ...rest, ...colorSlotsOf(colorBy) }
 }
 
 // The `*Setting` names are what v4.3.0 sessions carry: its mixin declared

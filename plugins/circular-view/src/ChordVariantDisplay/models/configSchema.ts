@@ -11,27 +11,28 @@ const STROKE_SLOTS = {
 } as const
 
 // v4 spelt the chord colours `strokeColor*`, on the display or inside its
-// `renderer`, and session tracks in share links still carry both
-function liftStrokeSlots(snap: Record<string, unknown>) {
-  const { renderer, ...rest } = snap
-  const sources = [
-    renderer && typeof renderer === 'object'
-      ? (renderer as Record<string, unknown>)
+// `renderer`, and session tracks in share links still carry both. The display's
+// own spelling is declared first, so it wins over the one under `renderer`.
+const retired = {
+  ...Object.fromEntries(
+    Object.entries(STROKE_SLOTS).map(([old, name]) => [
+      old,
+      (value: unknown) => ({ [name]: value }),
+    ]),
+  ),
+  renderer: (value: unknown) =>
+    value && typeof value === 'object'
+      ? Object.fromEntries(
+          Object.entries(STROKE_SLOTS)
+            .filter(
+              ([old]) => (value as Record<string, unknown>)[old] !== undefined,
+            )
+            .map(([old, name]) => [
+              name,
+              (value as Record<string, unknown>)[old],
+            ]),
+        )
       : {},
-    rest,
-  ]
-  const lifted: Record<string, unknown> = {}
-  for (const source of sources) {
-    for (const [old, name] of Object.entries(STROKE_SLOTS)) {
-      if (source[old] !== undefined) {
-        lifted[name] = source[old]
-      }
-    }
-  }
-  for (const old of Object.keys(STROKE_SLOTS)) {
-    delete rest[old]
-  }
-  return { ...rest, ...lifted }
 }
 
 /**
@@ -111,7 +112,7 @@ function configSchemaF(_pluginManager: PluginManager) {
     {
       explicitIdentifier: 'displayId',
       explicitlyTyped: true,
-      preProcessSnapshot: liftStrokeSlots,
+      retired,
     },
   )
 }

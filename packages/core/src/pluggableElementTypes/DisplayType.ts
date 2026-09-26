@@ -53,13 +53,6 @@ export default class DisplayType extends LazyStateModelElement {
 
   retiredTypes: readonly RetiredDisplayType[]
 
-  /**
-   * Rewrites a config entry of this display whose slot values an older
-   * release spelt differently. Runs on every entry, before the display union
-   * reads it, so it must leave a current entry as it found it.
-   */
-  retiredConfig?: (entry: DisplayEntry) => DisplayEntry
-
   retiredState?: RetiredDisplayState
 
   constructor(stuff: {
@@ -72,7 +65,6 @@ export default class DisplayType extends LazyStateModelElement {
     ReactComponent: AnyReactComponentType
     helpText?: string
     retiredTypes?: readonly RetiredDisplayType[]
-    retiredConfig?: (entry: DisplayEntry) => DisplayEntry
     retiredState?: RetiredDisplayState
   }) {
     super({
@@ -85,7 +77,6 @@ export default class DisplayType extends LazyStateModelElement {
     this.viewType = stuff.viewType
     this.helpText = stuff.helpText
     this.retiredTypes = stuff.retiredTypes ?? []
-    this.retiredConfig = stuff.retiredConfig
     this.retiredState = stuff.retiredState
   }
 }

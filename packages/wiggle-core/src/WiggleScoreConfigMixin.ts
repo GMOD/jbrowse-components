@@ -5,14 +5,12 @@ import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 
 import type { scalesSchema } from './valueScaleConfigSchema.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
-import type { DisplayEntry } from '@jbrowse/core/pluggableElementTypes'
 
-// A v4 entry spelt the point diameter `scatterPointSize`, which is `size` now.
-export function liftScatterPointSize(entry: DisplayEntry): DisplayEntry {
-  const { scatterPointSize, ...rest } = entry
-  return scatterPointSize === undefined
-    ? entry
-    : { size: scatterPointSize, ...rest }
+// The v5 betas spelt the point diameter `scatterPointSize`. Declared beside
+// the slot that replaced it, so every schema composing these slots takes the
+// old spelling on every door.
+export const wiggleScoreRetired = {
+  scatterPointSize: (size: unknown) => ({ size }),
 }
 
 /** The slots its composers each declare, with their own defaults. */

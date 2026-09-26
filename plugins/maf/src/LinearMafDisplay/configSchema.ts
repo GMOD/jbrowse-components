@@ -9,7 +9,7 @@ import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebar
 import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafColorConfigSchema } from './mafColorConfigSchema.ts'
-import { refuseRetiredConfig } from './retiredSettings.ts'
+import { retired } from './retiredSettings.ts'
 import { MAF_Y_FIELDS } from './rowRenderings.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -326,7 +326,7 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      preProcessSnapshot: refuseRetiredConfig,
+      retired,
     },
     // #endregion
   )

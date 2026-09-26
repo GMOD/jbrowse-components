@@ -11,16 +11,43 @@ export interface DisplaySnapshot {
   [key: string]: unknown
 }
 
-function declares(schema: AnyConfigurationSchemaType, key: string) {
-  return !!getConfigurationSchemaMetadata(schema)?.definition[key]
+/**
+ * What one display would do with a shorthand setting: the members it would
+ * write, or why it will not take it. `undefined` means the display has no
+ * member of that name and no retired spelling of one, so it is not a candidate
+ * and the key is not its business.
+ */
+function verdictOf(
+  schema: AnyConfigurationSchemaType,
+  key: string,
+  value: unknown,
+) {
+  const meta = getConfigurationSchemaMetadata(schema)
+  const retired = meta?.options.retired?.[key]
+  if (typeof retired === 'string') {
+    return { refusal: `\`${key}\` is ${retired}` }
+  }
+  const members = retired
+    ? retired(value)
+    : meta?.definition[key]
+      ? { [key]: value }
+      : undefined
+  if (!members) {
+    return undefined
+  }
+  const refusal = Object.entries(members)
+    .map(([name, member]) => slotValueRefusal(schema, name, member))
+    .find(reason => reason !== undefined)
+  return refusal === undefined ? { members } : { refusal }
 }
 
 /**
  * Route each shorthand `displayDefaults: {...}` setting to the display types
- * whose slot of that name takes its value: `color: 'red'` reaches every display
- * with a colour, `color: { field: 'type' }` only those whose colour maps a
- * field. A key no display declares is an `unknownKeys` entry, and one every
- * declaring display refuses a `refused` entry carrying each display's reason.
+ * whose member of that name takes its value: `color: 'red'` reaches every
+ * display with a colour, `color: { field: 'type' }` only those whose colour
+ * maps a field, and a spelling a display retired reaches that display as the
+ * members it became. A key no display knows is an `unknownKeys` entry, and one
+ * every display that knows it refuses a `refused` entry carrying each reason.
  */
 export function collectDisplayOverrides(
   displaySettings: Record<string, unknown>,
@@ -30,13 +57,11 @@ export function collectDisplayOverrides(
   const unknownKeys: string[] = []
   const refused: { key: string; reasons: string[] }[] = []
   for (const [key, value] of Object.entries(displaySettings)) {
-    const verdicts = [...displaySchemas]
-      .filter(([, schema]) => declares(schema, key))
-      .map(([name, schema]) => ({
-        name,
-        refusal: slotValueRefusal(schema, key, value),
-      }))
-    const targets = verdicts.filter(v => v.refusal === undefined)
+    const verdicts = [...displaySchemas].flatMap(([name, schema]) => {
+      const verdict = verdictOf(schema, key, value)
+      return verdict ? [{ name, ...verdict }] : []
+    })
+    const targets = verdicts.filter(v => v.members)
     if (verdicts.length === 0) {
       unknownKeys.push(key)
     } else if (targets.length === 0) {
@@ -45,8 +70,8 @@ export function collectDisplayOverrides(
         reasons: verdicts.map(v => `${v.name}: ${v.refusal}`),
       })
     }
-    for (const { name } of targets) {
-      overrides.set(name, { ...overrides.get(name), [key]: value })
+    for (const { name, members } of targets) {
+      overrides.set(name, { ...overrides.get(name), ...members })
     }
   }
   return { overrides, unknownKeys, refused }

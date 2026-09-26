@@ -1,3 +1,8 @@
+import {
+  getConfigurationSchemaMetadata,
+  liftRetiredSpellings,
+} from '@jbrowse/core/configuration'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   DisplayEntry,
@@ -96,7 +101,8 @@ function migrateDisplay(
       : {}),
   }
   const migrated = retired?.migrate?.(lifted) ?? lifted
-  const settings = displayType.retiredConfig?.(migrated) ?? migrated
+  const meta = getConfigurationSchemaMetadata(displayType.configSchema)
+  const settings = meta ? liftRetiredSpellings(meta, migrated) : migrated
   const displayId =
     retired && configuration === `${trackConfigId}-${retired.type}`
       ? `${trackConfigId}-${displayType.name}`

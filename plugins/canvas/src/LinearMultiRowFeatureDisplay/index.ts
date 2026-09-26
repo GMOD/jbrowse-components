@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/display-kit/retiredSettings'
 
 import configSchemaFactory from './configSchema.ts'
-import { routeRetiredShorthandF } from './retiredSettings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -15,7 +14,6 @@ const LinearMultiRowFeatureDisplayComponent = lazyWithPreload(
 )
 
 export default function register(pluginManager: PluginManager) {
-  routeRetiredShorthandF(pluginManager)
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory()
     return new DisplayType({

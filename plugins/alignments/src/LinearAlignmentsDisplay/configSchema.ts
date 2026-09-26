@@ -15,6 +15,7 @@ import {
   READ_CONNECTIONS_MODES,
   SASHIMI_ARCS_MODES,
 } from './constants.ts'
+import { colorSlotsOf } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -542,6 +543,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      // v4's `colorBy` named a scheme and held the modification settings,
+      // which are the `color` or `baseColor` object's field and the
+      // `modifications` slot now.
+      retired: { colorBy: colorSlotsOf },
     },
   )
 }

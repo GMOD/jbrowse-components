@@ -2,7 +2,6 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
-import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -28,7 +27,6 @@ export default function register(pluginManager: PluginManager) {
       ReactComponent: LinearBasicDisplayComponent,
       // #region migration
       retiredTypes: [{ type: 'LinearFeatureDisplay' }],
-      retiredConfig: migrateBasicConfigSnapshot,
       // #endregion
     })
   })
