@@ -215,6 +215,7 @@ exports[`darkMinimal resolves the same colours 1`] = `
   },
   "readOverlap": "#e4e4e4",
   "regionBoundary": "rgba(255,255,255,0.3)",
+  "regionSeparator": "#9e9e9e",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(46, 46, 46)",
@@ -231,6 +232,7 @@ exports[`darkMinimal resolves the same colours 1`] = `
     "light": "#81c784",
     "main": "#66bb6a",
   },
+  "tableBorder": "#515151",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(23, 23, 23)",
@@ -472,6 +474,7 @@ exports[`darkStock resolves the same colours 1`] = `
   },
   "readOverlap": "#e4e4e4",
   "regionBoundary": "rgba(255,255,255,0.3)",
+  "regionSeparator": "#9e9e9e",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(79, 21, 69)",
@@ -488,6 +491,7 @@ exports[`darkStock resolves the same colours 1`] = `
     "light": "#81c784",
     "main": "#66bb6a",
   },
+  "tableBorder": "#515151",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(13, 59, 67)",
@@ -721,6 +725,7 @@ exports[`default + a bare mode resolves the same colours 1`] = `
   },
   "readOverlap": "#e4e4e4",
   "regionBoundary": "rgba(255,255,255,0.3)",
+  "regionSeparator": "#9e9e9e",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(79, 21, 69)",
@@ -737,6 +742,7 @@ exports[`default + a bare mode resolves the same colours 1`] = `
     "light": "#81c784",
     "main": "#66bb6a",
   },
+  "tableBorder": "#515151",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(13, 59, 67)",
@@ -970,6 +976,7 @@ exports[`default + a config background resolves the same colours 1`] = `
   },
   "readOverlap": "#555555",
   "regionBoundary": "rgba(0,0,0,0.42)",
+  "regionSeparator": "#757575",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(79, 21, 69)",
@@ -986,6 +993,7 @@ exports[`default + a config background resolves the same colours 1`] = `
     "light": "#4caf50",
     "main": "#2e7d32",
   },
+  "tableBorder": "#e0e0e0",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(13, 59, 67)",
@@ -1219,6 +1227,7 @@ exports[`default + a config brand resolves the same colours 1`] = `
   },
   "readOverlap": "#555555",
   "regionBoundary": "rgba(0,0,0,0.42)",
+  "regionSeparator": "#757575",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(79, 21, 69)",
@@ -1235,6 +1244,7 @@ exports[`default + a config brand resolves the same colours 1`] = `
     "light": "#4caf50",
     "main": "#2e7d32",
   },
+  "tableBorder": "#e0e0e0",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(13, 59, 67)",
@@ -1468,6 +1478,7 @@ exports[`default + a config brand, dark resolves the same colours 1`] = `
   },
   "readOverlap": "#e4e4e4",
   "regionBoundary": "rgba(255,255,255,0.3)",
+  "regionSeparator": "#9e9e9e",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(79, 21, 69)",
@@ -1484,6 +1495,7 @@ exports[`default + a config brand, dark resolves the same colours 1`] = `
     "light": "#81c784",
     "main": "#66bb6a",
   },
+  "tableBorder": "#515151",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(13, 59, 67)",
@@ -1725,6 +1737,7 @@ exports[`default resolves the same colours 1`] = `
   },
   "readOverlap": "#555555",
   "regionBoundary": "rgba(0,0,0,0.42)",
+  "regionSeparator": "#757575",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(79, 21, 69)",
@@ -1741,6 +1754,7 @@ exports[`default resolves the same colours 1`] = `
     "light": "#4caf50",
     "main": "#2e7d32",
   },
+  "tableBorder": "#e0e0e0",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(13, 59, 67)",
@@ -1982,6 +1996,7 @@ exports[`lightMinimal resolves the same colours 1`] = `
   },
   "readOverlap": "#555555",
   "regionBoundary": "rgba(0,0,0,0.42)",
+  "regionSeparator": "#757575",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(46, 46, 46)",
@@ -1998,6 +2013,7 @@ exports[`lightMinimal resolves the same colours 1`] = `
     "light": "#4caf50",
     "main": "#2e7d32",
   },
+  "tableBorder": "#e0e0e0",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(23, 23, 23)",
@@ -2239,6 +2255,7 @@ exports[`lightStock resolves the same colours 1`] = `
   },
   "readOverlap": "#555555",
   "regionBoundary": "rgba(0,0,0,0.42)",
+  "regionSeparator": "#757575",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(79, 21, 69)",
@@ -2255,6 +2272,7 @@ exports[`lightStock resolves the same colours 1`] = `
     "light": "#4caf50",
     "main": "#2e7d32",
   },
+  "tableBorder": "#e0e0e0",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(13, 59, 67)",
@@ -2496,6 +2514,7 @@ exports[`minimal resolves the same colours 1`] = `
   },
   "readOverlap": "#555555",
   "regionBoundary": "rgba(0,0,0,0.42)",
+  "regionSeparator": "#757575",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(46, 46, 46)",
@@ -2512,6 +2531,7 @@ exports[`minimal resolves the same colours 1`] = `
     "light": "#4caf50",
     "main": "#2e7d32",
   },
+  "tableBorder": "#e0e0e0",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(23, 23, 23)",
@@ -2753,6 +2773,7 @@ exports[`stock resolves the same colours 1`] = `
   },
   "readOverlap": "#555555",
   "regionBoundary": "rgba(0,0,0,0.42)",
+  "regionSeparator": "#757575",
   "secondary": {
     "contrastText": "#fff",
     "dark": "rgb(79, 21, 69)",
@@ -2769,6 +2790,7 @@ exports[`stock resolves the same colours 1`] = `
     "light": "#4caf50",
     "main": "#2e7d32",
   },
+  "tableBorder": "#e0e0e0",
   "tertiary": {
     "contrastText": "#fff",
     "dark": "rgb(13, 59, 67)",

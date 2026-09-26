@@ -1,5 +1,5 @@
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha, darken, lighten } from '@mui/material/styles'
 
 export const ROW_HEIGHT = 25
 export const HEADER_HEIGHT = 35
@@ -12,10 +12,7 @@ export const checkboxSx = {
 }
 
 export const useFacetedTableStyles = makeStyles()(theme => {
-  const borderColor =
-    theme.palette.mode === 'light'
-      ? lighten(alpha(theme.palette.divider, 1), 0.88)
-      : darken(alpha(theme.palette.divider, 1), 0.68)
+  const borderColor = theme.palette.tableBorder
   const border = `1px solid ${borderColor}`
   return {
     root: {

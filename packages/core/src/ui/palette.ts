@@ -619,6 +619,13 @@ export interface StringColors {
    * readable as a boundary on a plot that also draws a full grid
    */
   regionBoundary: string
+  /**
+   * Opaque bar between two displayed regions of a linear genome view. Opaque
+   * because it paints over track data on both sides and has to mask it
+   */
+  regionSeparator: string
+  /** Cell and header rules in JBrowse's own tables, e.g. the faceted track selector */
+  tableBorder: string
   /** Hover shading over a single feature */
   featureHover: string
   /** Hover shading over a feature group, e.g. a linked-read chain */
@@ -707,6 +714,8 @@ const lightStringColors: StringColors = {
   plotGridlineMinor: 'rgba(0,0,0,0.06)',
   plotGridlineMajor: 'rgba(0,0,0,0.13)',
   regionBoundary: 'rgba(0,0,0,0.42)',
+  regionSeparator: grey[600],
+  tableBorder: grey[300],
   // hover shading over a feature
   featureHover: 'rgba(0,0,0,0.15)',
   // stronger shade for a hovered group (e.g. a linked-read chain), so the group
@@ -731,6 +740,8 @@ const darkStringColors: Partial<StringColors> = {
   plotGridlineMinor: 'rgba(255,255,255,0.05)',
   plotGridlineMajor: 'rgba(255,255,255,0.1)',
   regionBoundary: 'rgba(255,255,255,0.3)',
+  regionSeparator: grey[500],
+  tableBorder: '#515151',
   featureHover: 'rgba(255,255,255,0.25)',
   featureHoverStrong: 'rgba(255,255,255,0.4)',
   featureSelected: 'rgba(120,180,255,0.9)',

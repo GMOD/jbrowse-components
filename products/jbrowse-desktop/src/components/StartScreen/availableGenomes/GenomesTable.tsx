@@ -1,16 +1,12 @@
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox } from '@mui/material'
-import { alpha, darken, lighten } from '@mui/material/styles'
 
 import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
 import type { Sorting } from './useGenomesTableState.ts'
 
 const useStyles = makeStyles()(theme => {
-  const borderColor =
-    theme.palette.mode === 'light'
-      ? lighten(alpha(theme.palette.divider, 1), 0.88)
-      : darken(alpha(theme.palette.divider, 1), 0.68)
-  const border = `1px solid ${borderColor}`
+  const border = `1px solid ${theme.palette.tableBorder}`
   return {
     table: {
       width: '100%',

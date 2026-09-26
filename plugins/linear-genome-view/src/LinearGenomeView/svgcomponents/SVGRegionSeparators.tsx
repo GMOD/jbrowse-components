@@ -25,8 +25,7 @@ export default function SVGRegionSeparators({
   model: LGV
 }) {
   const { dynamicBlocks, offsetPx } = model
-  const palette = usePalette()
-  const fill = palette.mode === 'dark' ? palette.grey[500] : palette.grey[600]
+  const fill = usePalette().regionSeparator
   return (
     <>
       {dynamicBlocks.contentBlocks

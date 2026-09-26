@@ -21,16 +21,10 @@ const useStyles = makeStyles()(theme => ({
   boundaryBlock: {
     background: theme.palette.action.disabledBackground,
   },
+  // opaque, and must stay so: a translucent fill would darken unevenly where
+  // the container-level and per-track PaddingBlocks overlap
   regionSeparator: {
-    // opaque (not text.disabled, which is translucent): regions are now laid
-    // out contiguously so the separator paints directly over track data on both
-    // sides. A translucent fill would tint the data instead of masking it, and
-    // would darken unevenly where the container-level and per-track
-    // PaddingBlocks overlap. An opaque grey masks cleanly and stays seamless.
-    background:
-      theme.palette.mode === 'dark'
-        ? theme.palette.grey[500]
-        : theme.palette.grey[600],
+    background: theme.palette.regionSeparator,
   },
   elided: {
     ...elidedBlockStyles,
