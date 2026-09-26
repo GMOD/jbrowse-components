@@ -246,6 +246,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
+    expectTooltip: true,
     actions: [
       { type: 'hover', anchor: { chord: 'chrX:10,447,551..34,924,653' } },
       { type: 'delay', ms: 1500 },
