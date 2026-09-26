@@ -13,11 +13,13 @@
 //
 // What the callers legitimately differ on is the min-width floor they write
 // into `minCellPx` — a uniform-write decision, not a reason for two shaders.
-// Whether to floor at all turns on whether the caller's marks TILE: MAF's cells
-// do, so a sub-pixel one is read as part of the run around it and widening it
-// paints ink the alignment does not contain (measured, and MAF now passes 0 —
-// `agent-docs/reference/MAF_SUBPIXEL_CELLS.md`). The multi-row painter's features
-// are sparse intervals with nothing beside them, so it floors.
+// Whether to floor at all turns on whether the caller's marks leave GAPS: a
+// floored quad grows off its start edge, so a neighbour abutting it covers the
+// growth and the floor paints nothing extra. The multi-row painter's features
+// are sparse intervals with nothing beside them, so it floors; MAF's cells
+// never gap and it passes 0; wiggle density tiles at most zooms and gaps where
+// its source does, so it floors and pays nothing for it on the tiling. Both
+// halves measured — `agent-docs/reference/MAF_SUBPIXEL_CELLS.md`.
 //! export-consts: MIN_DRAWN_ROW_PX, MULTI_ROW_MIN_CELL_PX
 //! js-export: drawnRowHeightPx, rowBandOffsetPx
 module rowRect;
@@ -42,8 +44,10 @@ public struct RowRectUniforms {
   // measurably differently on a retina screen until it stopped flooring.
   public float  minCellDenomPx;
   // Narrowest a cell is painted, in whatever unit `minCellDenomPx` is in. Zero
-  // is a no-op and is what a tiling caller writes (MAF); the multi-row painter
-  // names its own width, MULTI_ROW_MIN_CELL_PX.
+  // is a no-op, and over marks that tile so is every other value; what a floor
+  // decides is what a GAP next to a sub-pixel mark looks like. MAF writes 0,
+  // the multi-row painter MULTI_ROW_MIN_CELL_PX, wiggle density
+  // MIN_FILL_WIDTH_PX.
   public float  minCellPx;
   public float  zero;          // always 0.0 — prevents hp-split collapse
   public float  rowHeight;     // CSS px per row

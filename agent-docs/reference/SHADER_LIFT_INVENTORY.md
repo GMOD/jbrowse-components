@@ -116,7 +116,7 @@ is no longer shared with anything.
 | `aaRamp` | tests only — `pointGlyphPad.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
-| `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `markParity.test.ts`, `rectSpanParity.test.ts` |
+| `extendToMinWidthPx` | tests only — `densityMinWidth.test.ts`, `hpmathParity.test.ts`, `markParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |

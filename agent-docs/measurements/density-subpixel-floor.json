@@ -1,0 +1,106 @@
+{
+  "id": "density-subpixel-floor",
+  "published": false,
+  "measured": "2026-09-25",
+  "source": {
+    "kind": "bench",
+    "repro": "node --experimental-transform-types plugins/wiggle/benches/densitySubpixelFloor.ts --file=test_data/volvox/volvox-sorted.bam.coverage.bw --refName=ctgA --start=20000 --bpPerPx=3.25 — it prints both scenes and all six arms. No GPU: the quads are flat and opaque, so the GPU arms apply the one rule every rasteriser implements for them, a sample taking the colour of the LAST quad covering it, over the shader's own extendToMinWidthPx. The Canvas2D arms are drawDensity itself, on node-canvas.",
+    "notes": "Ground truth is MAF_SUBPIXEL_CELLS' own: the unfloored geometry supersampled (16x here) and box-downsampled, which is the bp-weighted mix a pixel should hold. The supersampled arm has to be the UNFLOORED one, because a CSS-px floor does not shrink away at high dpr the way MAF's device-px floor did. `ink` is that doc's `chroma` under the name it has here: the density ramp runs white to the track colour, so max(r,g,b)-min(r,g,b) reads how much colour the row carries, which is what a floor inflates. Scene: volvox-sorted.bam.coverage.bw at ctgA:20000, 1000 CSS px at 3.25 bp/px — the raw section, 1-bp records, 0.308 px a bin, deliberately off the 4x sample grid that an integer bp/px lands on. The sparse scene keeps every 8th of those records, 0.308 px marks with 2.3 px of white between them. The shipped GPU path is 4x MSAA: deriveSampleCount gives 4 unless every pass declares `coverage: analytic`, and wiggle's fill and density passes do not."
+  },
+  "columns": [
+    { "key": "arm", "label": "arm" },
+    {
+      "key": "tilingDist",
+      "label": "tiling: dist",
+      "format": "ratio",
+      "align": "right",
+      "absent": "—"
+    },
+    {
+      "key": "tilingInk",
+      "label": "tiling: ink",
+      "format": "ratio",
+      "align": "right"
+    },
+    {
+      "key": "sparseDist",
+      "label": "sparse: dist",
+      "format": "ratio",
+      "align": "right",
+      "absent": "—"
+    },
+    {
+      "key": "sparseInk",
+      "label": "sparse: ink",
+      "format": "ratio",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "arm": "GPU floored 1.5px, 4x MSAA (shipped)",
+        "tilingDist": 0.26,
+        "tilingInk": 126.31,
+        "sparseDist": 41.35,
+        "sparseInk": 76.84
+      },
+      "emphasize": ["tilingDist", "sparseInk"]
+    },
+    {
+      "values": {
+        "arm": "GPU no floor, 4x MSAA",
+        "tilingDist": 0.26,
+        "tilingInk": 126.31,
+        "sparseDist": 3.28,
+        "sparseInk": 15.77
+      },
+      "emphasize": ["tilingDist"]
+    },
+    {
+      "values": {
+        "arm": "GPU floored 1.5px, 1 sample",
+        "tilingDist": 0.94,
+        "tilingInk": 126.19,
+        "sparseDist": 46.57,
+        "sparseInk": 74.92
+      }
+    },
+    {
+      "values": {
+        "arm": "GPU no floor, 1 sample",
+        "tilingDist": 0.94,
+        "tilingInk": 126.19,
+        "sparseDist": 14.52,
+        "sparseInk": 15.96
+      }
+    },
+    {
+      "values": {
+        "arm": "Canvas2D floored (shipped)",
+        "tilingDist": 0.33,
+        "tilingInk": 126.29,
+        "sparseDist": 40.96,
+        "sparseInk": 77.06
+      }
+    },
+    {
+      "values": {
+        "arm": "Canvas2D no floor (seam only)",
+        "tilingDist": 0.33,
+        "tilingInk": 126.28,
+        "sparseDist": 27.62,
+        "sparseInk": 57.06
+      }
+    },
+    {
+      "values": {
+        "arm": "ground truth (unfloored, 16x supersampled)",
+        "tilingDist": null,
+        "tilingInk": 126.28,
+        "sparseDist": null,
+        "sparseInk": 15.8
+      }
+    }
+  ]
+}
