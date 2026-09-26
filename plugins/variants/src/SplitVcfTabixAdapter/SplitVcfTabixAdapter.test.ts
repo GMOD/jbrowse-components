@@ -47,6 +47,16 @@ test('fetches features from the per-ref file', async () => {
   expect(feats.map(f => f.get('refName')).every(r => r === 'ctgA')).toBe(true)
 })
 
+// tabix offsets are per file, and per-contig files with one header put
+// every contig's first record at one offset
+test('a feature id names its contig', async () => {
+  const adapter = makeAdapter()
+  const [first] = await firstValueFrom(
+    adapter.getFeatures(region).pipe(toArray()),
+  )
+  expect(first!.id()).toMatch(new RegExp(`^${adapter.id}-ctgA-vcf-`))
+})
+
 test('getRegionByteSize returns a positive index estimate', async () => {
   const bytes = await makeAdapter().getRegionByteSize([region])
   expect(bytes).toBeGreaterThan(0)

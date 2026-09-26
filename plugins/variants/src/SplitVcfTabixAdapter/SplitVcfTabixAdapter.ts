@@ -142,7 +142,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     return ObservableCreate<Feature>(async observer => {
       const { vcf, parser } = await this.configure(query.refName, opts)
       await streamVcfFeatures(
-        { vcf, parser, idPrefix: this.id },
+        { vcf, parser, idPrefix: `${this.id}-${query.refName}` },
         query,
         opts,
         observer,
