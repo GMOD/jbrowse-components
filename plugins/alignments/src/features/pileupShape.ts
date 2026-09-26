@@ -12,7 +12,7 @@ import {
   bpAtPx,
   bpAtPxExact,
   bpProjection,
-  makeCellLeftMapper,
+  makeBpMapper,
   projectBp,
   pxPerBpOf,
 } from '@jbrowse/render-core/canvas2dUtils'
@@ -129,8 +129,8 @@ export function pileupChannels({
  *
  * - `span` widens about the mark's midpoint (`fillSpanRect`, the twin of the
  *   shader's `expandMinWidthX`) and contains the FRACTIONAL `genomicPos`.
- * - `cell` floors one-sidedly into the base's own cell (`makeCellLeftMapper`,
- *   matching mismatch.slang's snapped left edge) and contains the INTEGER
+ * - `cell` floors one-sidedly from the base's low-coordinate edge
+ *   (`cellPlacement`, matching `pileupCellX`) and contains the INTEGER
  *   `basePos`.
  * - `point` has NO genomic extent — it sits on the edge BETWEEN two reference
  *   bases — so it centres a declared pixel width on the fractional `genomicPos`
@@ -551,6 +551,13 @@ function pointToleranceBp(
     : Math.max(CLIP_HIT_MIN_TOLERANCE_BP, bpPerPx * CLIP_HIT_TOLERANCE_PX)
 }
 
+// A cell stands on its base's low-coordinate edge and grows toward the next
+// base, leftward on a reversed block: `pileupCellX`, mirrored by `flipX`.
+function cellPlacement(block: RenderBlock, w: number) {
+  const toX = makeBpMapper(block)
+  return { w, cellX: block.reversed ? (bp: number) => toX(bp) - w : toX }
+}
+
 /**
  * One row-instanced pileup shape over render-core's `MarkShape`. `walk` states
  * the projection, the reversed-block edge ordering, the row band, the sub-pixel
@@ -586,10 +593,7 @@ export function pileupShape(
       point,
       cell:
         pivot === 'cell'
-          ? {
-              w: pileupCellWidth(bpPerPx, contiguous),
-              cellX: makeCellLeftMapper(block),
-            }
+          ? cellPlacement(block, pileupCellWidth(bpPerPx, contiguous))
           : undefined,
       decorate,
       bandOffset: centerline ? featureHeight / 2 - 0.5 : 0,

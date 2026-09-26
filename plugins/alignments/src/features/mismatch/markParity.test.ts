@@ -138,3 +138,24 @@ describe.each([false, true])('reversed: %s', reversed => {
     expect(hit?.index).toBe(index)
   })
 })
+
+// Past 1px a base the cell floors to 1px, and on a reversed block it floors
+// toward the next base as the GPU's `pileupCellX` does after `flipX`: the
+// forward cell mirrored, not shifted a base left and grown rightward.
+test('a floored cell on a reversed block mirrors the forward one', () => {
+  const wide = (reversed: boolean): RenderBlock => ({
+    ...block(reversed),
+    end: START + 400,
+    screenEndPx: 100,
+  })
+  const cellOn = (reversed: boolean) => {
+    const { ctx, rects } = recordingCtx()
+    MISMATCH_MARK.paintBlock(ctx, oneMismatch(0), wide(reversed), state())
+    return rects[0]!
+  }
+  const forward = cellOn(false)
+  const reversed = cellOn(true)
+  expect(forward).toEqual({ x: 0.5, w: 1 })
+  expect(reversed.w).toBe(forward.w)
+  expect(reversed.x).toBeCloseTo(100 - forward.x - forward.w, 9)
+})

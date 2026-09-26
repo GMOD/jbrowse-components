@@ -330,7 +330,7 @@ export function frequencyFade(
 // Canvas2D-only compensation; keeping it here means every base-wall layer shares
 // one rule instead of hardcoding (or forgetting) the `+ 0.5` locally.
 const PILEUP_CELL_SEAM_FUDGE_PX = 0.5
-// Paired with render-core's `makeCellLeftMapper`, which owns the reversed-block
+// Paired with pileupShape's `cellPlacement`, which owns the reversed-block
 // pivot the width goes with.
 export function pileupCellWidth(bpPerPx: number, contiguous: boolean) {
   return Math.max(1, 1 / bpPerPx) + (contiguous ? PILEUP_CELL_SEAM_FUDGE_PX : 0)

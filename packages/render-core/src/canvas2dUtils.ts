@@ -568,9 +568,10 @@ export function pxPerBpOf(bounds: BpRegionBounds) {
 }
 
 /**
- * Left edge of the **1bp cell** covering `bp` — for painters that fill a rect
- * per base (MAF alignment cells, the alignments pileup's mismatch /
- * modification / per-base quality+letter / soft-clip base layers).
+ * Left edge of the **1bp cell** covering `bp`, for a painter filling a rect
+ * exactly one base wide. A cell floored wider than its base grows from the
+ * base's low-coordinate edge instead, leftward on a reversed block, as the
+ * alignments pileup's `cellPlacement` does.
  *
  * Use this, not `makeBpMapper`, whenever the mark is a cell rather than a point
  * or a two-edge span. `makeBpMapper(bp)` is the cell's left edge only on a
@@ -587,9 +588,6 @@ export function pxPerBpOf(bounds: BpRegionBounds) {
  * `bpToClipX(pos)`→`bpToClipX(pos+1)` unflipped and mirror via `flipX` — and
  * gets its own pivot from `writeBpRangeUniforms`.
  *
- * Callers own the cell *width*: it's a per-plugin rule (MAF uses the raw
- * bp-scale; the pileup floors at 1px and adds a seam fudge). Only the pivot is
- * shared.
  */
 export function makeCellLeftMapper(bounds: BpRegionBounds) {
   const toX = makeBpMapper(bounds)

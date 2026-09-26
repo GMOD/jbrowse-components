@@ -27,9 +27,11 @@ const PX_PER_BP = BLOCK_WIDTH / BP_LENGTH
 const TEST_BP = 1005
 // Forward: bp 1005 is 5bp from the low edge => [100,120].
 const FORWARD_LEFT = 100
-// Reversed: bp runs leftward, so bp 1005 spans [80,100] — its left edge is
-// the mapper at 1006, NOT at 1005 (which is 100, the right edge).
+// Reversed: bp runs leftward, so bp 1005 spans [80,100]. A cell stands on the
+// base's low-coordinate edge, its right one here, and grows leftward — the
+// forward cell mirrored, seam overdraw included.
 const REVERSED_LEFT = 80
+const REVERSED_RIGHT = 100
 
 function recordingCtx() {
   const rects: { x: number; w: number }[] = []
@@ -140,7 +142,9 @@ describe.each(MARKS)('$name cell geometry', p => {
   })
 
   test('reversed block: cell covers its own base, not the neighbor', () => {
-    expect(cellFor(p, true).x).toBeCloseTo(REVERSED_LEFT)
+    const cell = cellFor(p, true)
+    expect(cell.x + cell.w).toBeCloseTo(REVERSED_RIGHT)
+    expect(cell.x).toBeCloseTo(REVERSED_LEFT - (p.contiguous ? 0.5 : 0))
   })
 
   test('width spans one base (plus the seam fudge for base walls)', () => {
@@ -151,10 +155,16 @@ describe.each(MARKS)('$name cell geometry', p => {
 })
 
 describe('all 1bp-cell marks agree', () => {
-  test.each([false, true])('same left edge for one bp (reversed=%s)', rev => {
-    const xs = MARKS.map(p => cellFor(p, rev).x)
-    for (const x of xs) {
-      expect(x).toBeCloseTo(xs[0]!)
-    }
-  })
+  test.each([false, true])(
+    'same anchored edge for one bp (reversed=%s)',
+    rev => {
+      const xs = MARKS.map(p => {
+        const cell = cellFor(p, rev)
+        return rev ? cell.x + cell.w : cell.x
+      })
+      for (const x of xs) {
+        expect(x).toBeCloseTo(xs[0]!)
+      }
+    },
+  )
 })

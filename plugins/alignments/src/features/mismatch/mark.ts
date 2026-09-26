@@ -76,8 +76,8 @@ export function mismatchHit(
 
 // One mismatched base: a single reference base's cell on one pileup row. The
 // first `cell` mark — the pivot every 1bp-cell layer shares, which is
-// deliberately NOT the span pivot the gap bars use. `makeCellLeftMapper` floors
-// one-sidedly to match mismatch.slang's snapped left edge, and the cursor
+// deliberately NOT the span pivot the gap bars use. `cellPlacement` floors
+// one-sidedly from the base's low-coordinate edge as `pileupCellX` does, and the cursor
 // coordinate that agrees with that floor is `basePos`; see `PileupPivot`.
 export const MISMATCH_MARK = defineMark({
   shape: pileupShape({

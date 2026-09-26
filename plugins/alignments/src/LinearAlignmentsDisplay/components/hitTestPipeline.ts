@@ -400,7 +400,7 @@ export function canvasXToGenomicPos(canvasX: number, resolved: ResolvedBlock) {
 // Not `Math.floor(canvasXToGenomicPos(...))`: on a reversed block bp runs
 // leftward, so the fractional position lands in `(b, b+1]` and flooring names
 // `b+1` on base b's leftmost pixel column. bpAtPx owns that pivot — it is the
-// inverse of the makeCellLeftMapper the per-base painters use.
+// base the per-base painters' `cellPlacement` stands a cell on.
 export function canvasXToBasePos(canvasX: number, resolved: ResolvedBlock) {
   return bpAtPx(canvasX, boundsOf(resolved))
 }
