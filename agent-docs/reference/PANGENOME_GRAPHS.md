@@ -17,17 +17,18 @@ are `website/docs/user_guides/graph_genome_view.md`. The package, its bundle,
 its GitHub repo, its hosted prefix and the local checkout are all spelled
 `graphgenomeview**er**`; only `test_data/graphgenomeview/` drops the `er`.
 
-**A publish moves the figures, and `test_data/graphgenomeview/README.md` is the
-rule**: every config names the unversioned unpkg url, which redirects to the
-newest npm release — the figure fixtures, the `demos/` configs and the tutorials
-alike — and `pnpm check-live-configs` refuses a version pin in any of them. So publishing the plugin gives readers the new build
-immediately and moves the graph figures at the next regen, with no commit here
-to attribute the move to; `pnpm figures:report` after that regen is where it is
-read, and a spec that clicked a label the plugin renamed fails there rather than
-silently. The fixtures pinned the plugin's content-addressed betabuild
-(`demos/graphgenomeviewer/<hash>/`) until 2026-09-06, and the pin cost a bump
-nobody remembered; that prefix retired on 2026-09-24 when the plugin reached
-npm.
+**A store bump moves the figures, and `test_data/graphgenomeview/README.md` is
+the rule**: every config names the plugin list's `latest/` url on jbrowse.org —
+the figure fixtures, the `demos/` configs and the tutorials alike — and `pnpm
+check-live-configs` refuses any other. jbrowse-plugin-list pins the release its
+`GraphGenomeView` entry serves, so an npm publish reaches readers when that pin
+is bumped and `pnpm dep` runs there, and moves the graph figures at the next
+regen with no commit here to attribute the move to; `pnpm figures:report` after
+that regen is where it is read, and a spec that clicked a label the plugin
+renamed fails there rather than silently. The fixtures pinned the plugin's
+content-addressed betabuild (`demos/graphgenomeviewer/<hash>/`) until
+2026-09-06, and the pin cost a bump nobody remembered; that prefix retired on
+2026-09-24, and unpkg on 2026-09-25.
 
 **Read the build's date against the commits before assuming a bump re-renders
 anything.** The 2026-08-26 publish looked like it carried a visual change —

@@ -32,7 +32,7 @@ try {
       const raw = localStorage.getItem(KEY)
       const trusted = new Set<string>(raw ? (JSON.parse(raw) as string[]) : [])
       trusted.add(
-        'https://unpkg.com/jbrowse-plugin-graphgenomeviewer/dist/jbrowse-plugin-graphgenomeviewer.esm.js',
+        'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js',
       )
       localStorage.setItem(KEY, JSON.stringify([...trusted]))
     } catch (e) {

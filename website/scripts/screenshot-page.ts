@@ -158,7 +158,7 @@ export function freezeAnimations(page: Page) {
 // process.argv on import: generate-video.ts trusts the same plugins and takes
 // different flags.
 const TRUSTED_PLUGIN_URLS = [
-  'https://unpkg.com/jbrowse-plugin-graphgenomeviewer/dist/jbrowse-plugin-graphgenomeviewer.esm.js',
+  'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js',
   // demos/alphagenome/config.json, pinned to a content-addressed build — see
   // that demo's README for why the pin is there and what bumping it means here
   'https://jbrowse.org/demos/alphagenome-plugin/1e7b10385f41/jbrowse-plugin-alphagenome.umd.js',

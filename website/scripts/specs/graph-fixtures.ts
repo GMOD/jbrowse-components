@@ -73,7 +73,7 @@ export const GRAPH_DRAWN =
 // fire on whichever landed first.
 export const TOOLBAR_READY = `body:has(${GRAPH_DRAWN}) [data-testid="graph-layout-select"]`
 
-// The tracked fixtures, whose `esmUrl` is the plugin's npm url on unpkg.
+// The tracked fixtures, whose `esmUrl` is the plugin list's `latest/` url.
 // Their `*_local.json` siblings point that url at a local
 // `pnpm build` of the plugin instead and are gitignored, so a spec naming one
 // renders here and gives the reader a live link to a config that exists on no

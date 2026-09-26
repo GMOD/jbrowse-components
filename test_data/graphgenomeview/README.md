@@ -43,10 +43,10 @@ Six configs live here, data-free but for one gene slice:
   tour; `hprc.json` deliberately does not carry the assembly, since the extra
   `Open in` rows would change the node menu the MHC layout figure captures.
 
-The plugin bundle is served from npm through unpkg and the GFA slices from
-`jbrowse.org/demos/ecoli_pangenome`, so no build output and no `ecoli_*` data is
-vendored into the repo (both are gitignored on purpose — the E. coli data is
-built by `scripts/build_ecoli_pangenome_graph.sh`).
+The plugin bundle is served from jbrowse.org's plugin store and the GFA slices
+from `jbrowse.org/demos/ecoli_pangenome`, so no build output and no `ecoli_*`
+data is vendored into the repo (both are gitignored on purpose — the E. coli
+data is built by `scripts/build_ecoli_pangenome_graph.sh`).
 
 The config is served **same-origin** with the app by the screenshot server, and
 that is the whole point: jbrowse-web only raises the cross-origin plugin-trust
@@ -63,23 +63,24 @@ The plugin is a native ES module, loaded via `esmUrl`. Two things it depends on:
   which the host only provides as of GMOD/jbrowse-components#5606.
 
 The entry loads its code-split chunks (including the Bandage WASM layout engine)
-relative to its own url via `import.meta.url`, and unpkg serves the package's
-whole `dist/` tree, `chunks/` included. Publish with the plugin's
+relative to its own url via `import.meta.url`, and the store rehosts the
+package's whole `dist/` tree, `chunks/` included. Publish with the plugin's
 `pnpm version patch`, never by hand: its preversion gates on lint, typecheck,
 tests and a boot of the built bundle on hosted releases, and the pushed tag's CI
-run publishes to npm.
+run publishes to npm. It reaches the configs here once the `GraphGenomeView` pin
+in jbrowse-plugin-list names it and `pnpm dep` runs there.
 
-**Every config here names the plugin's unversioned `esmUrl`**, the unpkg url
-that redirects to the newest release, which is also what the `demos/` configs
-name and what the tutorials tell a reader to install. So a plugin publish moves
-the graph figures with no commit here to attribute it to; the next regen's
+**Every config here names the store's `latest/` `esmUrl`**, which is also what
+the `demos/` configs name and what the tutorials tell a reader to install. So
+bumping the release jbrowse-plugin-list pins for `GraphGenomeView` moves the
+graph figures with no commit here to attribute it to; the next regen's
 `pnpm figures:report` is where that move is read, and a spec that clicked a
 label the plugin renamed fails there rather than silently. The fixtures pinned a
 content-addressed betabuild (`jbrowse.org/demos/graphgenomeviewer/<hash>/`)
 until 2026-09-06; pinning cost a bump nobody remembered, and
 `demos/hprc/config.json` went stale twice that way. That betabuild prefix
-retired on 2026-09-24 when the plugin reached npm, and `pnpm check-live-configs`
-refuses an `@version` pin and the retired prefix in either place.
+retired on 2026-09-24 and unpkg on 2026-09-25, and `pnpm check-live-configs`
+refuses any url but the store's `latest/` one in either place.
 
 **The corollary, which costs a five-minute timeout per figure to learn the hard
 way: an unversioned `esmUrl` means a STALE local `jbrowse-web` build renders

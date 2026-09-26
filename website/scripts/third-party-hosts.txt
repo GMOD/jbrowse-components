@@ -17,5 +17,4 @@ ftp.1000genomes.ebi.ac.uk
 hgdownload.soe.ucsc.edu
 s3-us-west-2.amazonaws.com
 s3.amazonaws.com
-unpkg.com
 zenodo.org

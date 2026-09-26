@@ -840,7 +840,7 @@ name = 'GraphGenomeView'
 if not any(p.get('name') == name for p in plugins):
     plugins.append({
         'name': name,
-        'esmUrl': 'https://unpkg.com/jbrowse-plugin-graphgenomeviewer/dist/jbrowse-plugin-graphgenomeviewer.esm.js',
+        'esmUrl': 'https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js',
     })
 with open(path, 'w') as fh:
     json.dump(config, fh, indent=2)
