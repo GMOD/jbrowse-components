@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds a two-plane RGBA8 row table the vertex stage samples — key to drawn slot or hidden, and a colour override — so a reorder, focus, hide or recolour uploads one small texture and no instance bytes, the way a y domain rides a uniform. `buildRowTable` writes the texels where the shader's lifted twins put them, `RowKeys` assigns each row name a key at its first arrival and never moves it, the painter, the ink and the hit test read the same table, and a pass binding no table draws `row` as the slot. The multi-row feature display adopts it: its encode runs once per region arrival, a category toggle is the one thing that still re-encodes, and the gated volvox fixture keeps a focus. The mark display waits for stage 2, since its bar and point marks spend their one sampler on the ramp. Measured: a reorder at 1000 rows and 500k features moves from 10.7 ms and 7.8 MB per region to 0.22 ms and 7.8 KB; a heavy focus costs a frame what the unfocused draw costs (6.6 vs 6.9 ms at 500k instances on an Intel UHD 630), against 0.7 ms compacted, which is the alternative recorded"
+summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds a two-plane RGBA8 row table the vertex stage samples — key to drawn slot or hidden, and a colour override — so a reorder, focus, hide or recolour uploads one small texture and no instance bytes, the way a y domain rides a uniform. `buildRowTable` writes the texels where the shader's lifted twins put them, `RowKeys` assigns each row name a key at its first arrival and never moves it, the painter, the ink and the hit test read the same table, and a pass binding no table draws `row` as the slot. The multi-row feature display adopts it: its encode runs once per region arrival, a category toggle is the one thing that still re-encodes, and the gated volvox fixture keeps a focus. Stage 2 gives a render pass a second sampler and the mark display the table under `rows`, keyed at arrival, a facet still offsetting its rows. Measured: a reorder at 1000 rows and 500k features moves from 10.7 ms and 7.8 MB per region to 0.22 ms and 7.8 KB; a heavy focus costs a frame what the unfocused draw costs (6.6 vs 6.9 ms at 500k instances on an Intel UHD 630), against 0.7 ms compacted, which is the alternative recorded"
 ---
 
 # ADR-165: The row axis rides a table the vertex stage samples
@@ -16,6 +16,16 @@ row axis, and closes §3 of
 [wiggle-instance-records-carry-per-row-constants](../ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md)
 for the span pass. Builds on ADR-113 (a span's colour is packed in the worker)
 and ADR-157/160 (the rows and their colours are one config object each).
+
+Stage 2 (2026-09-26): the mark display adopted the table under `rows`. Each
+region's `row` lanes are keyed once as it arrives (`LinearMarkDisplay/rowTable.ts`),
+the table follows the rows' order and focus, and bar, point, link and span
+read it, as do the text labels, the tooltip and the sort at a column. A
+focus's legend, axis and size scales come from a scan of each region's `row`
+lane against the drawn keys, which copies no lane (`drawnScales.ts`). A facet
+still offsets its rows through `facetRegion`, since its sections are of
+variable height, and binds no table; so does the density sidecar, whose bins
+carry no key.
 
 ## Context
 
@@ -35,18 +45,30 @@ shared box at load 30 (`plugins/canvas/benches/rowTableRepack.bench.ts`,
 | multi-row recolour (one row) | 1.6 ms, 781 KiB        | 1.8 ms, 781 KiB | 10.2 ms, 7.8 MiB |
 | mark display reorder (bars)  | 1.1 ms, 977 KiB        | 1.1 ms, 977 KiB | 19.5 ms, 9.5 MiB |
 | mark display focus           | 1.2 ms, 488 KiB        | 1.2 ms, 488 KiB | 17.2 ms, 4.8 MiB |
+| mark display reorder, table  | 0.03 ms, 0.8 KiB       | 0.23 ms, 7.8 KiB | 0.26 ms, 7.8 KiB |
+| mark display focus, table    | 0.34 ms, 0.8 KiB       | 0.58 ms, 7.8 KiB | 3.5 ms, 7.8 KiB  |
 
 The bytes are exact; the times are the encode and the pack on one region, and a
 whole-genome view multiplies both by the regions loaded. Wiggle's numbers are
 in the idea doc: 45–250 ms of fill or 60–500 ms of line per region at 1000
 sources.
 
+The two table rows are stage 2's, on this box at load 3 (same bench and
+fixtures, min of 15 rounds, controls 0.98–0.99x; the re-pack arms read 0.76,
+0.82 and 8.1 ms for a reorder there). A reorder is the table alone, once for
+the display; a focus is the table and one region's scan for the key and
+extents the legend and axis read, the one cost left that grows with the
+instances.
+
 What the HALs allow: a render shader binds one uniform block and at most one
 combined `Sampler2D` (`RENDER_SHAPES`, `shader-codegen/bindings.ts`); the span,
 variant, MAF and wiggle line and band passes bind no texture; vertex-stage
 sampling ships (`barMark` samples its ramp there) and WebGPU binding visibility
 follows the stages the reflected table names; a texture uploads only when its
-identity moves. Uniform arrays are out — WebGL2's 16 KB block floor, the
+identity moves. Stage 2 lets a render pass take a second combined sampler at
+bindings 4/5 (`RENDER_SHAPES`), each under its own filter, so bar, point and
+link bind the ramp and the table side by side.
+Uniform arrays are out — WebGL2's 16 KB block floor, the
 WebGPU uniform ring's cost per block, and a scalar `uint[N]` crashing slangc's
 WGSL backend (`colorPack.slang`) — and storage buffers are refused on the
 render path.
@@ -109,7 +131,7 @@ glyphs, the sort at a column and the legend keep reading drawn row space
 through `featurePaintInputs`; `hiddenByCategory` is the one spelling of the
 exemption they and the encode share.
 
-**The mark display stays as it is.** Its `rows` draw bars and points, whose
+**The mark display stays as it is** in stage 1. Its `rows` draw bars and points, whose
 one sampler is the colour ramp, and a mixed mark list would keep
 `facetRegion` rewriting the bar lanes on every reorder, so no gate there could
 pass. Its transport — a second texture binding in both HALs, or the ramp and
@@ -169,6 +191,12 @@ below.
   display, tests included, and +700/−50 over fifteen of render-core, the
   generated shader text included.
 - Hidden instances stay resident on the GPU and in the encoded map.
+- Under `rows` a mark display's reorder or focus uploads one table and no
+  instance bytes, `rpcDataMap` keeps its identity, and a hidden row answers no
+  hit, lights no ink and places no label (`rowTable.test.tsx`). A `rows.field`
+  change starts a new key space. The autoscale's `ScoreSpan` takes the row
+  lane and the drawn keys, so a hidden row's values leave the axis without a
+  copied lane.
 
 ## Stage 2
 
@@ -179,7 +207,10 @@ below.
   on row 0 and `rampColor` sampling `0.5 / height`. With either, the mark
   display keys its `rows` layers at arrival through `RowKeys`, its `rowsLayout`
   becomes a table, and `facetRegion` stays for `facet`, whose sections are of
-  variable height.
+  variable height. Stage 2 took the second sampler, each under its own
+  filter, since one shared texture would force one filter on both and the
+  ramp's linear tap would bleed into the table. The mark display has adopted
+  it (Status); wiggle's fill and density can take the table the same way.
 - **Wiggle's line and band** passes bind nothing and read `rowIndex` per
   instance, so they take the table as span did; density draws off the fill
   buffer and waits for the fill.
