@@ -1,4 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import {
+  getConfigurationSchemaMetadata,
+  preProcessSnapshotWith,
+} from '@jbrowse/core/configuration'
 import { migrateRetiredDisplays } from '@jbrowse/core/pluggableElementTypes/models'
 
 import registerLinearBasicDisplay from './index.ts'
@@ -23,14 +27,27 @@ type TrackConfigSnapshot = {
   displays?: DisplaySnapshot[]
 }
 
+// The two passes a track config's displays go through: `migrateRetiredDisplays`
+// loads an entry naming a retired display type as this one, and each entry then
+// meets its own schema, whose `preProcessSnapshot` is where this display's
+// legacy keys and values are rewritten.
 function evaluate(snap: TrackConfigSnapshot) {
   const pm = new PluginManager()
   registerLinearBasicDisplay(pm)
   pm.createPluggableElements()
-  return migrateRetiredDisplays(pm, snap) as TrackConfigSnapshot
+  const migrated = migrateRetiredDisplays(pm, snap) as TrackConfigSnapshot
+  const meta = getConfigurationSchemaMetadata(
+    pm.getDisplayType('LinearBasicDisplay').configSchema,
+  )!
+  return {
+    ...migrated,
+    displays: migrated.displays?.map(d =>
+      d.type === 'LinearBasicDisplay' ? preProcessSnapshotWith(meta, d) : d,
+    ),
+  } as TrackConfigSnapshot
 }
 
-test('remaps legacy geneGlyphMode "longest" before the display union validates', () => {
+test('remaps legacy geneGlyphMode "longest"', () => {
   const out = evaluate({
     type: 'FeatureTrack',
     displays: [{ type: 'LinearBasicDisplay', geneGlyphMode: 'longest' }],

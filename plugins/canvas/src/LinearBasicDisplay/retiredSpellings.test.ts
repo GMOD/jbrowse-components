@@ -1,57 +1,44 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
-import BedPlugin from '@jbrowse/plugin-bed'
+import { types } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
 import CanvasPlugin from '../index.ts'
 
-// The display's whole migration is its schema's `preProcessSnapshot`, with no
-// second registration on the DisplayType. Both cases below go through the
-// track's `displays` union, which is a bare `types.union` with no dispatcher:
-// a member's preprocessor runs while the union works out which display an
-// entry is, so it reaches a legacy value in a constrained slot as well as a
-// legacy key. Neutering the preprocessor fails both.
-function basicDisplay(entry: Record<string, unknown>) {
-  const pluginManager = new PluginManager([
+// This display's whole migration is its config schema's `preProcessSnapshot`,
+// with no second registration on the DisplayType. A track holds its displays in
+// `types.array(pluginManager.pluggableConfigSchemaType('display'))`, a bare
+// union with no dispatcher, and the pair below is what says a member's
+// preprocessor runs while the union works out which display an entry is: a
+// legacy value the preprocessor rewrites loads, and one nothing rewrites is
+// still refused by the slot's enumeration.
+function pluginManager() {
+  const pm = new PluginManager([
     new LinearGenomeViewPlugin(),
-    new BedPlugin(),
     new CanvasPlugin(),
   ])
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-  const snapshot = preprocessTrackConfigSnapshot(pluginManager, {
-    type: 'FeatureTrack',
-    trackId: 't',
-    name: 't',
-    assemblyNames: ['volvox'],
-    adapter: { type: 'BedTabixAdapter', uri: 'x.bed.gz' },
-    displays: [
-      {
-        type: 'LinearBasicDisplay',
-        displayId: 't-LinearBasicDisplay',
-        ...entry,
-      },
-    ],
-  })
-  const conf = pluginManager
-    .getTrackType('FeatureTrack')
-    .configSchema.create(snapshot, { pluginManager })
-  return (conf.displays as { type: string }[]).find(
-    d => d.type === 'LinearBasicDisplay',
-  )!
+  pm.createPluggableElements()
+  pm.configure()
+  return pm
 }
 
-test('a retired value in a constrained slot', () => {
-  expect(
-    readConfObject(basicDisplay({ displayMode: 'reducedRepresentation' }), [
-      'displayMode',
-    ]),
-  ).toBe('normal')
+const base = { type: 'LinearBasicDisplay', displayId: 'd' }
+
+test('a retired value in a constrained slot survives the display union', () => {
+  const displays = types.array(
+    pluginManager().pluggableConfigSchemaType('display'),
+  )
+  expect(() =>
+    displays.create([{ ...base, displayMode: 'reducedRepresentation' }]),
+  ).not.toThrow()
+  expect(() => displays.create([{ ...base, displayMode: 'notAMode' }])).toThrow(
+    /displayMode/,
+  )
 })
 
-test('a retired colour key', () => {
-  expect(
-    readConfObject(basicDisplay({ color1: 'red' }), ['color', 'value']),
-  ).toBe('red')
+test('a retired colour key becomes the slot that replaced it', () => {
+  const conf = pluginManager()
+    .getDisplayType('LinearBasicDisplay')
+    .configSchema.create({ ...base, color1: 'red' })
+  expect(readConfObject(conf, ['color', 'value'])).toBe('red')
 })
