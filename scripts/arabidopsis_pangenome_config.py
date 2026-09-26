@@ -293,6 +293,7 @@ def main():
                         'type': 'LinearMultiRowFeatureDisplay',
                         'displayId': 'syri_regions_on_TAIR10-LinearMultiRowFeatureDisplay',
                         'rows': {'field': 'query', 'domain': names},
+                        'color': {'domain': SYRI_TYPES},
                     }
                 ],
             },

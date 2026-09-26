@@ -10,12 +10,12 @@
 # Requires: curl, unzip, awk, python3, samtools, minimap2, bgzip and tabix, the
 #           NCBI `datasets` CLI, and SyRI (`syri` on the PATH, or Docker, which
 #           runs the biocontainers image)
-# Usage:    bash build_syri_synteny.sh [outdir]
+# Usage:    bash build_syri_synteny.sh [outdir] [rows]
 #
-# Your own genomes: replace ROWS with `<name> <assembly accession>` lines in
-# stack order, the reference first, or drop chromosome-level FASTAs named
-# <name>.fa into the output directory, whose homologous chromosomes share a
-# name, and the download step skips them.
+# Your own genomes: <rows> is a file of `<name> [assembly accession]` lines in
+# stack order, the reference first. A chromosome-level <name>.fa already in the
+# output directory is used as is, its homologous chromosomes named alike across
+# genomes; a row without one needs the accession to download it.
 
 set -euo pipefail
 
@@ -27,6 +27,7 @@ for h in "${HELPERS[@]}"; do
 done
 
 OUT="${1:-syri_synteny}"
+ROWS_FILE="${2:+$(realpath "$2")}"
 mkdir -p "$OUT"
 cd "$OUT"
 
@@ -41,7 +42,10 @@ Cvi GCA_902460275.1
 Eri GCA_902460315.1
 Kyo GCA_902460305.1
 Sha GCA_902460295.1"
-mapfile -t NAMES < <(cut -d' ' -f1 <<<"$ROWS")
+if [ -n "$ROWS_FILE" ]; then
+  ROWS="$(grep -v '^[[:space:]]*$' "$ROWS_FILE")"
+fi
+mapfile -t NAMES < <(awk '{print $1}' <<<"$ROWS")
 REFERENCE="${NAMES[0]}"
 
 run_syri() {
@@ -54,19 +58,25 @@ run_syri() {
 
 echo "== the assemblies, nuclear chromosomes only, named Chr1 to Chr5"
 while read -r name accession; do
-  [ -s "$name.fa" ] && continue
-  datasets download genome accession "$accession" --include genome \
-    --filename "$name.zip" --no-progressbar
-  unzip -o -q "$name.zip" -d "$name.ncbi"
-  # SyRI pairs chromosomes by name, so both genomes have to spell them alike;
-  # the organelles and unplaced contigs carry no "chromosome N" in the header
-  awk '
-    /^>/ {
-      keep = match($0, /chromosome:? ?[1-5]([^0-9]|$)/) && $0 !~ /mitochond|chloroplast/
-      if (keep) { n = substr($0, RSTART, RLENGTH); gsub(/[^0-9]/, "", n); print ">Chr" n }
-      next
-    }
-    keep { print }' "$name.ncbi"/ncbi_dataset/data/*/*.fna >"$name.fa"
+  if [ ! -s "$name.fa" ]; then
+    if [ -z "${accession:-}" ]; then
+      echo "no $name.fa, and no accession to download it" >&2
+      exit 1
+    fi
+    datasets download genome accession "$accession" --include genome \
+      --filename "$name.zip" --no-progressbar
+    unzip -o -q "$name.zip" -d "$name.ncbi"
+    # SyRI pairs chromosomes by name, so both genomes have to spell them alike;
+    # the organelles and unplaced contigs carry no "chromosome N" in the header
+    awk '
+      /^>/ {
+        keep = match($0, /chromosome:? ?[1-5]([^0-9]|$)/) && $0 !~ /mitochond|chloroplast/
+        if (keep) { n = substr($0, RSTART, RLENGTH); gsub(/[^0-9]/, "", n); print ">Chr" n }
+        next
+      }
+      keep { print }' "$name.ncbi"/ncbi_dataset/data/*/*.fna >"$name.fa"
+    rm -rf "$name.zip" "$name.ncbi"
+  fi
   samtools faidx "$name.fa"
   cut -f1,2 "$name.fa.fai" >"$name.chrom.sizes"
 done <<<"$ROWS"
@@ -75,32 +85,32 @@ done <<<"$ROWS"
 # the reference's first mate is in both
 PAIRS=()
 for name in "${NAMES[@]:1}"; do
-  PAIRS+=("${REFERENCE}_$name")
+  PAIRS+=("$REFERENCE $name")
 done
 for ((i = 2; i < ${#NAMES[@]}; i++)); do
-  PAIRS+=("${NAMES[i - 1]}_${NAMES[i]}")
+  PAIRS+=("${NAMES[i - 1]} ${NAMES[i]}")
 done
 
 echo "== SyRI on each pair"
-for pair in "${PAIRS[@]}"; do
-  ref="${pair%%_*}"
-  qry="${pair#*_}"
+for p in "${PAIRS[@]}"; do
+  read -r ref qry <<<"$p"
+  pair="${ref}_$qry"
   if [ ! -s "$pair.syri.out" ]; then
     # asm5 is for genomes of one species; --eqx writes the =/X CIGAR SyRI reads
-    minimap2 -ax asm5 --eqx -t "$THREADS" "$ref.fa" "$qry.fa" |
-      samtools sort -O BAM -o "$pair.bam" -
-    # -F B says the alignment is BAM; --nc runs the chromosomes in parallel
-    run_syri -c "$pair.bam" -r "$ref.fa" -q "$qry.fa" -F B --prefix "$pair." --nc 5
+    minimap2 -cx asm5 --eqx -t "$THREADS" "$ref.fa" "$qry.fa" >"$pair.aln.paf"
+    # -F P says the alignment is PAF; --nc runs the chromosomes in parallel
+    run_syri -c "$pair.aln.paf" -r "$ref.fa" -q "$qry.fa" -F P --prefix "$pair." --nc 5
   fi
-  python3 "$SCRIPT_DIR/syri_to_paf.py" "$pair.syri.out" --prefix "$pair"
+  python3 "$SCRIPT_DIR/syri_to_paf.py" "$pair.syri.out" --reference "$ref" --query "$qry"
 done
 
 echo "== one PAF for every pair, one BED for every accession on the reference"
-for pair in "${PAIRS[@]}"; do cat "$pair.paf"; done >syri_pangenome.paf
-# the reference's pairs are the regions on the reference
+for p in "${PAIRS[@]}"; do cat "${p/ /_}.paf"; done >syri_pangenome.paf
 {
-  head -n1 "${PAIRS[0]}.regions.bed"
-  tail -q -n +2 "${REFERENCE}"_*.regions.bed | sort -k1,1 -k2,2n
+  head -n1 "${REFERENCE}_${NAMES[1]}.regions.bed"
+  for name in "${NAMES[@]:1}"; do
+    tail -n +2 "${REFERENCE}_$name.regions.bed"
+  done | sort -k1,1 -k2,2n
 } | bgzip >syri_regions.bed.gz
 tabix -f -p bed syri_regions.bed.gz
 
@@ -111,6 +121,7 @@ import os
 
 names = os.environ['NAMES'].split()
 reference = names[0]
+syri_types = ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP']
 
 
 def assembly(name):
@@ -141,6 +152,14 @@ config = {
                 'uri': 'syri_pangenome.paf',
                 'attributeColumns': ['syri', 'color'],
             },
+            'displays': [
+                {
+                    'type': 'MultiWaySyntenyDisplay',
+                    'displayId': 'syri_pangenome-MultiWaySyntenyDisplay',
+                    'domain': names[1:],
+                    'ribbonColor': {'field': 'syri', 'domain': syri_types},
+                }
+            ],
         },
         {
             'type': 'FeatureTrack',
@@ -158,7 +177,7 @@ config = {
                     'displayId': f'syri_regions_on_{reference}-LinearMultiRowFeatureDisplay',
                     'rows': {'field': 'query', 'domain': names[1:]},
                     # the key in plotsr's order; the blocks keep their itemRgb
-                    'color': {'domain': ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP']},
+                    'color': {'domain': syri_types},
                 }
             ],
         },

@@ -2,14 +2,14 @@
 """SyRI's syri.out as PAF records, plus the same regions on the reference.
 
 Each top-level structural region (syntenic, inverted, translocated, duplicated)
-becomes a line of <prefix>.paf between PanSN-named sequences
+becomes a line of <reference>_<query>.paf between PanSN-named sequences
 (<genome>#1#<chrom>), carrying its type and that type's color as the tags
 syri:Z: and color:Z:. An inverted type is on the minus strand, which is what
 draws its ribbon crossed. The PAFs of several pairs concatenate into one file,
 which MultiGenomePAFAdapter reads with attributeColumns ["syri", "color"].
-Sequence lengths come from <genome>.chrom.sizes beside the input where present.
+Sequence lengths come from <genome>.chrom.sizes beside the input.
 
-<prefix>.regions.bed places the regions on the reference alone, named by type,
+<reference>_<query>.regions.bed places the regions on the reference alone, named by type,
 colored by itemRgb and carrying the query's name, so the regions of several
 queries against one reference concatenate into one track whose rows are the
 queries.
@@ -17,6 +17,7 @@ queries.
 
 import argparse
 import os
+import sys
 
 # plotsr's palette, so a figure here reads like the one SyRI's users know. It
 # paints an inverted translocation or duplication as the plain one, and so
@@ -46,24 +47,24 @@ def regions(path):
                 }
 
 
-def chrom_sizes(genome):
-    path = f'{genome}.chrom.sizes'
+def chrom_sizes(directory, genome):
+    path = os.path.join(directory, f'{genome}.chrom.sizes')
     if not os.path.exists(path):
-        return {}
+        sys.exit(f'{path} not found: PAF records need each sequence length')
     with open(path) as fh:
         return {chrom: int(size) for chrom, size in (l.split('\t')[:2] for l in fh)}
 
 
-def write_paf(path, found, reference, query):
-    ref_sizes, qry_sizes = chrom_sizes(reference), chrom_sizes(query)
+def write_paf(path, found, reference, query, sizes_dir):
+    ref_sizes, qry_sizes = chrom_sizes(sizes_dir, reference), chrom_sizes(sizes_dir, query)
     with open(path, 'w') as fh:
         for r in found:
             rchrom, rstart, rend = r['ref']
             qchrom, qstart, qend = r['qry']
             lengths = (rend - rstart, qend - qstart)
             fh.write(
-                f'{query}#1#{qchrom}\t{qry_sizes.get(qchrom, 0)}\t{qstart}\t{qend}'
-                f"\t{r['strand']}\t{reference}#1#{rchrom}\t{ref_sizes.get(rchrom, 0)}"
+                f'{query}#1#{qchrom}\t{qry_sizes[qchrom]}\t{qstart}\t{qend}'
+                f"\t{r['strand']}\t{reference}#1#{rchrom}\t{ref_sizes[rchrom]}"
                 f'\t{rstart}\t{rend}\t{min(lengths)}\t{max(lengths)}\t60'
                 f"\tsyri:Z:{r['type']}\tcolor:Z:{COLORS[r['type']]}\n"
             )
@@ -88,18 +89,15 @@ def write_regions_bed(path, found, query):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('syri_out')
-    parser.add_argument(
-        '--prefix',
-        required=True,
-        help='<reference>_<query>, the two assembly names the files are named by',
-    )
+    parser.add_argument('--reference', required=True, help="the assembly name of SyRI's -r genome")
+    parser.add_argument('--query', required=True, help="the assembly name of SyRI's -q genome")
     args = parser.parse_args()
-    reference, query = args.prefix.split('_', 1)
+    pair = f'{args.reference}_{args.query}'
 
     found = list(regions(args.syri_out))
-    write_paf(f'{args.prefix}.paf', found, reference, query)
-    write_regions_bed(f'{args.prefix}.regions.bed', found, query)
-    print(f'{args.prefix}: {len(found)} regions')
+    write_paf(f'{pair}.paf', found, args.reference, args.query, os.path.dirname(args.syri_out))
+    write_regions_bed(f'{pair}.regions.bed', found, args.query)
+    print(f'{pair}: {len(found)} regions')
 
 
 if __name__ == '__main__':

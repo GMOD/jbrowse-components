@@ -78,7 +78,18 @@
         "type": "MultiGenomePAFAdapter",
         "uri": "syri_pangenome.paf",
         "attributeColumns": ["syri", "color"]
-      }
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "syri_pangenome-MultiWaySyntenyDisplay",
+          "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"],
+          "ribbonColor": {
+            "field": "syri",
+            "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+          }
+        }
+      ]
     },
     {
       "type": "FeatureTrack",

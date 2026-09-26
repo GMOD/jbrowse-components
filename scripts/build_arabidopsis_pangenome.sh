@@ -37,7 +37,7 @@ cd "$OUT"
 THREADS="${THREADS:-8}"
 PORTAL=https://1001genomes.org/data/1001Gp/27genomes/releases/current
 SCANS=https://1001genomes.org/data/GMI-MPI/releases/current/fst_scans
-SYRI_IMAGE=quay.io/biocontainers/syri:1.7.1--py310h7e8219e_1
+SYRI_IMAGE=quay.io/biocontainers/syri:1.8.2--py310h0c14f88_0
 REF=TAIR10
 GRAPH=arabidopsis-tair10-minigraph
 
@@ -139,7 +139,7 @@ while read -r id name _ _; do
     run_syri -c "$pair.aln.paf" -r $REF.fa -q "$name.fa" -F P --prefix "$pair." --nc 5 >"$pair.syri.log" 2>&1
     rm -f "$pair.aln.paf"
   fi
-  python3 "$SCRIPT_DIR/syri_to_paf.py" "$pair.syri.out" --prefix "$pair"
+  python3 "$SCRIPT_DIR/syri_to_paf.py" "$pair.syri.out" --reference $REF --query "$name"
   rm -f "$name.fa" "$name.fa.fai"
 done <accessions.tsv
 

@@ -1765,17 +1765,24 @@ with open(os.path.join(d, "Col-0.chrom.sizes"), "w") as fh:
     fh.write("Chr4\t18585056\n")
 cwd = os.getcwd()
 os.chdir(d)
+sys.argv = ["syri_to_paf.py", "Col-0_Ler.syri.out", "--reference", "Col-0", "--query", "Ler"]
 try:
-    sys.argv = ["syri_to_paf.py", "Col-0_Ler.syri.out", "--prefix", "Col-0_Ler"]
+    syri.main()
+    check("a missing chrom.sizes is refused, not written as length 0", "no exit", "SystemExit")
+except SystemExit as e:
+    check("a missing chrom.sizes is refused, not written as length 0", "Ler.chrom.sizes" in str(e), True)
+with open(os.path.join(d, "Ler.chrom.sizes"), "w") as fh:
+    fh.write("Chr4\t18900000\n")
+try:
     with contextlib.redirect_stdout(io.StringIO()):
         syri.main()
 finally:
     os.chdir(cwd)
 check("each kept region is one PAF record, the inversion on the minus strand",
       open(os.path.join(d, "Col-0_Ler.paf")).read().splitlines(),
-      ["Ler#1#Chr4\t0\t1100\t2100\t+\tCol-0#1#Chr4\t18585056\t1000\t2000"
+      ["Ler#1#Chr4\t18900000\t1100\t2100\t+\tCol-0#1#Chr4\t18585056\t1000\t2000"
        "\t1000\t1000\t60\tsyri:Z:SYN\tcolor:Z:#c8c8c8",
-       "Ler#1#Chr4\t0\t4100\t5100\t-\tCol-0#1#Chr4\t18585056\t3000\t4000"
+       "Ler#1#Chr4\t18900000\t4100\t5100\t-\tCol-0#1#Chr4\t18585056\t3000\t4000"
        "\t1000\t1000\t60\tsyri:Z:INV\tcolor:Z:#ffa500"])
 check("the reference BED names the type, colors it and carries the query",
       open(os.path.join(d, "Col-0_Ler.regions.bed")).read().splitlines()[1:],
