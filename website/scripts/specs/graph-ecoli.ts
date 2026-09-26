@@ -118,6 +118,7 @@ const PGGB_SEGMENTS_SESSION_TRACK = {
   adapter: {
     type: 'RgfaTabixAdapter',
     uri: `${DATA}/ecoli_pggb`,
+    coarse: { uri: `${DATA}/ecoli_pggb.tier50`, aboveBpPerPx: 1 },
   },
 }
 
@@ -224,6 +225,15 @@ const PGGB_TIER_SESSION_TRACK = {
     type: 'RgfaTabixAdapter',
     uri: `${DATA}/ecoli_pggb.tier50`,
   },
+}
+
+const PGGB_TIER_LGV = 'pggb_tier_lgv'
+const pggbTierCut = {
+  loadedTrackId: PGGB_SEGMENTS_TRACK,
+  loadedRegion: PGGB_TIER_REGION,
+  coarseCut: true,
+  connectedViewId: PGGB_TIER_LGV,
+  followLinearView: true,
 }
 
 // The per-strain window, which cannot be the kilobase above (review of the sample
@@ -1330,7 +1340,11 @@ export const PGGB_SEGMENTS_TRACK_JSON = `{
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb"
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb",
+    "coarse": {
+      "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50",
+      "aboveBpPerPx": 1
+    }
   },
   "displayDefaults": { "showLabels": "none" }
 }`
@@ -1376,7 +1390,8 @@ export const pggbVideoFixtures = {
   tierTrack: PGGB_TIER_SESSION_TRACK,
   tierTrackId: PGGB_TIER_TRACK,
   tierWindow: PGGB_TIER_WINDOW,
-  tierRegion: PGGB_TIER_REGION,
+  tierLgvId: PGGB_TIER_LGV,
+  tierCut: pggbTierCut,
   tierIs5Node: PGGB_TIER_IS5_NODE,
   // The ramp the figure paints its tier lane with. A fixture rather than a
   // second spelling in the video module: it is a function of the region, and a
@@ -1426,10 +1441,12 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         K12_GENES_SESSION_TRACK,
         K12_IS_SESSION_TRACK,
         PGGB_TIER_SESSION_TRACK,
+        PGGB_SEGMENTS_SESSION_TRACK,
       ],
       views: [
         {
           type: 'LinearGenomeView',
+          id: PGGB_TIER_LGV,
           assembly: 'K12',
           loc: PGGB_TIER_WINDOW,
           highlight: [
@@ -1464,8 +1481,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'GraphGenomeView',
-          loadedTrackId: PGGB_TIER_TRACK,
-          loadedRegion: PGGB_TIER_REGION,
+          ...pggbTierCut,
           // 'auto' IS the anchored layout; the enum spells the mode and the
           // menu spells the label (layoutModes.ts). There is no 'anchored'
           // value, and a snapshot naming one is rejected by MST with the view

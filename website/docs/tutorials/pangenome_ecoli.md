@@ -32,8 +32,9 @@ welcome your [feedback](/contact).
   CLI, to fetch the RefSeq genomes for the
   [whole build](#reproduce-it-end-to-end) rather than the steps on this page
 - `unzip`, to unpack them for the same [whole build](#reproduce-it-end-to-end)
-- the GraphGenomeView plugin, for [the graph itself](#installing-the-plugin);
-  every other track here is a built-in type
+- the GraphGenomeView plugin, for
+  [the graph itself](#opening-the-graph-in-the-graph-genome-view); every other
+  track here is a built-in type
 
 On Debian/Ubuntu, `apt install samtools tabix unzip python3` covers four of
 those. Docker installs from
@@ -699,52 +700,32 @@ layouts.
 JBrowse can also draw the graph as a graph beside a linear view of the same
 window, through the
 [graph genome view plugin](/docs/user_guides/graph_genome_view). That guide
-covers the view and its layouts; this section covers getting a base-level graph
-in.
-
-### Installing the plugin
-
-The plugin is beta and not in the [plugin store](/docs/user_guides/plugin_store)
-yet, so it loads by URL from a top-level `plugins` array in `config.json` (see
-[configuring plugins](/docs/config_guides/plugins)):
-
-<!-- GRAPH_PLUGIN_CONFIG START -->
-
-```json
-{
-  "plugins": [
-    {
-      "name": "GraphGenomeView",
-      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
-    }
-  ]
-}
-```
-
-<!-- GRAPH_PLUGIN_CONFIG END -->
-
-`RgfaTabixAdapter` ships in the same plugin, so the segment tracks below need it
-too. On [JBrowse Desktop](/docs/quickstart_desktop), install it once from the
-start screen at **Global plugins... → Add custom plugin**, putting that `esmUrl`
-under **Advanced options** in **ESM build URL**.
+covers the view and its layouts.
+[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
+covers installing the plugin and the one command that indexes a graph for it,
+which this section runs on the base-level graph.
 
 ### Browsing the whole graph by locus
 
 A plain GFA records no coordinates on its segments, but walking a P line in step
-order gives every segment an interval on that path. Doing that once, offline,
-and writing the two tabix-indexed BEDs `RgfaTabixAdapter` reads makes the whole
-graph queryable by locus:
+order gives every segment an interval on that path.
+[`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
+does that walk once, offline, from the path of the sample `--reference` names,
+and takes the graph's bubbles from the raw snarl VCF kept
+[above](#why-the-reference-path-takes-a-length):
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
-bash build_pggb_tabix.sh "$gfa" ecoli_pggb K12
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
+bash build_pangenome_graph.sh "$gfa" ecoli_pggb --reference K12 --snarls ecoli_pggb_snarls.vcf.gz
 ```
 
-It produces `ecoli_pggb.segs.bed.gz` and `ecoli_pggb.links.bed.gz` with their
-indexes. The
+It writes the tabix-indexed segments and links `RgfaTabixAdapter` reads, a
+coarse tier beside them, the bubbles, the allele inventory, and
+`ecoli_pggb.config.json` with a track for each. The
 [graph view guide](/docs/user_guides/graph_genome_view#route-1-a-graph-track-browsable-by-locus)
-covers the four choices that walk makes. Load the pair as one `FeatureTrack`
-pointed at the shared prefix:
+covers the four choices the walk makes. The graph track is one `FeatureTrack`
+pointed at the shared prefix, with the tier under `coarse`. The `uri`s below are
+our hosted copy, where a local build has the `ecoli_pggb` prefix written above:
 
 ```json addtrack
 {
@@ -754,7 +735,11 @@ pointed at the shared prefix:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb"
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb",
+    "coarse": {
+      "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50",
+      "aboveBpPerPx": 1
+    }
   },
   "displayDefaults": { "showLabels": "none" }
 }
@@ -764,9 +749,12 @@ A segment's name is its GFA id, and pggb cuts one every ~17 bp, so `showLabels`
 is off here and in the figures below.
 
 The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
-genome view (this region)** cuts a subgraph from the index with no `odgi` step.
-Rubberbanding the ruler and picking **Graph genome view (this selection)** does
-the same for a dragged window. With the
+genome view (this region)** opens the window on screen as a graph under the
+linear view, with no `odgi` step. From then on the graph follows the linear
+view: type a locus, search a gene or drag a zoom, and the graph moves with it,
+cutting the new window whenever the view leaves the last cut. Rubberbanding the
+ruler and picking **Graph genome view (this selection)** first moves the view to
+the dragged window. With the
 [all-vs-all alignment](/docs/tutorials/allvsall_synteny) open in the same view,
 that **Launch** submenu carries **Linear synteny view** beside it. Each view
 reaches the other again: a drag on any synteny row's scale bar raises the same
@@ -780,41 +768,40 @@ opens the strains as a stack.
 
 The clip below takes that from the beginning: a K12 session carrying the plugin
 and its gene track, the block above added through **Open track... → Add
-pangenome graph track**, and the graph cut from the window that leaves.
+pangenome graph track**, and the graph cut from the window that leaves. The form
+takes the segments prefix and the track name, and leaves the `coarse` tier to
+the pasted config.
 
-<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the track above added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the segments lane's menu cutting the graph below. The graph's nodes are the blocks the lane above draws, and the cut paints that lane in the graph's colors." />
+<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the track above added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the segments lane's menu cutting the graph below, laid out on K12's coordinates under the lane it follows. The graph's nodes are the blocks the lane above draws, and the cut paints that lane in the graph's colors." />
 
-A node's drawn length is proportional to its sequence by default, so one long
-arm can swallow the rest of the drawing. **Bubble spread → Compress lengths**
-pulls the longest and shortest nodes towards the mean; use it whenever a cut
-spans kilobases and single bases at once.
+In the force layout, a node's drawn length is proportional to its sequence by
+default, so one long arm can swallow the rest of the drawing. **Bubble spread →
+Compress lengths** pulls the longest and shortest nodes towards the mean; use it
+whenever a cut spans kilobases and single bases at once.
 
 #### One node per bubble, when the window is wider than the graph can draw
 
-The index above draws one node per GFA segment, about 17 bp each, so the
-drawable window is a kilobase or so. A coarse tier draws one node per **bubble**
-instead, with the invariant reference between bubbles as backbone.
+The segments draw one node per GFA segment, about 17 bp each, so a cut of them
+stays legible over a kilobase or so. The coarse tier draws one node per
+**bubble** instead, with the invariant reference between bubbles as backbone.
 `RgfaTabixAdapter` reads it unchanged, since a collapsed bubble is a reference
-span with an id and a rank. The bubble decomposition comes from `pggb -V`: the
-`LV=0` records of its snarl VCF are the top-level bubbles, and
-[`snarls_to_bubble_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/snarls_to_bubble_bed.py)
-turns them into the bubble BED the tier builder reads:
+span with an id and a rank. The command built it from the `LV=0` records of the
+raw snarl tree kept [above](#why-the-reference-path-takes-a-length), the
+top-level bubbles, since vcfbub pops exactly the top-level records a tier is
+built from. (`gfatools bubble` reads rGFA `SN`/`SO`/`SR` tags, which a pggb
+graph lacks, so it reports nothing here.)
 
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/snarls_to_bubble_bed.py
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_bubble_tier.sh
-python3 snarls_to_bubble_bed.py ecoli_pggb_snarls.vcf.gz ecoli_pggb.bubbles.bed
-bash build_bubble_tier.sh ecoli_pggb.bubbles.bed ecoli_pggb.tier50 50
-```
+On the plain-GFA route the tier's threshold defaults to 50 bp of content, so
+single-base alternatives are absorbed into the backbone and every indel is kept,
+taking the whole graph to about a thousand nodes. The builder ranks an invariant
+stretch 0 and a bubble 1, so the reference-position ramp colors the stretches
+the strains agree on and paints charcoal on the sites they differ at.
 
-That is the raw snarl tree kept [above](#why-the-reference-path-takes-a-length),
-since vcfbub pops exactly the top-level records a tier is built from.
-(`gfatools bubble` reads rGFA `SN`/`SO`/`SR` tags, which a pggb graph lacks, so
-it reports nothing here.)
-
-The third argument is the threshold in bp of content: at 50, single-base
-alternatives are absorbed into the backbone and every indel is kept, taking the
-whole graph to about a thousand nodes:
+The graph track names the tier under `coarse`, and `aboveBpPerPx` is the
+handover. Type `chr:1,250,000-1,350,000`, 100 kb around the IS5 element: the
+linear view is past one bp per pixel there, so the following graph cuts the tier
+in place of the segments. The segments lane refuses a window that wide, and the
+tier also loads as a lane of its own, which draws at any width:
 
 ```json addtrack
 {
@@ -829,49 +816,46 @@ whole graph to about a thousand nodes:
 }
 ```
 
-The builder ranks an invariant stretch 0 and a bubble 1, so the
-reference-position ramp colors the stretches the strains agree on and paints
-charcoal on the sites they differ at.
-
-<Figure caption="100 kb of K12 around an IS5 element, one node per bubble, as a linear track above and the graph it indexes below. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane above, and below it the graph, which the segments track cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Hover a node for the segments it collapsed, how many traversals cross it, and
-its shortest and longest allele. The two tiers are read together, the coarse one
-to find an event and the fine one to open it: a tier node's **Open in K12**
-takes the linear view to the span it stands for, inside the kilobase the fine
-index draws at.
+its shortest and longest allele. The tier finds an event and the segments open
+it: a tier node's **Open in K12** takes the linear view to the span it stands
+for, and the graph follows the view in and cuts the segments there.
 
-<Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the fine index: hovering the node marks the K12 span it stands for in the linear view above, and the node's Open in K12 entry moves the view to that span, where the segments lane draws." />
+<Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the segments: hovering the node marks the K12 span it stands for in the linear view above, and the node's Open in K12 entry moves the view to that span, where the segments lane draws and the graph, following the view, cuts the segments." />
 
 Switching **Layout** to **Sample rows** gives each strain its own row. On this
 graph a row means carriage, since it names a path that walks the segment; on an
 rGFA it means build order, from minigraph's `SR`.
 
-This layout needs a narrower window, a few hundred bp, since each segment is
-read individually. A row's bar is drawn over the **reference it replaces**,
-never over its own sequence length, so the tooltip gives an insertion's length.
-That is why CFT073's row draws one long bar labelled `7 kb del` running off the
-left edge: its segment is 75 bp on CFT073's own contig, and its two links land
-on `K12:1,004,667` inside the window and on `K12:997,574` 7.1 kb upstream.
-`pggb -V` writes the same event as one record at `chr:997,575` genotyped in
-CFT073 alone, and it is drawn again [below](#out-of-the-graph-into-the-strain)
-from CFT073's own coordinates.
+This layout reads each segment individually, so it wants a few hundred bp: type
+`chr:1,004,500-1,004,961`, and the graph follows the view down to it. A row's
+bar is drawn over the **reference it replaces**, never over its own sequence
+length, so the tooltip gives an insertion's length. That is why CFT073's row
+draws one long bar labelled `7 kb del` running off the left edge: its segment is
+75 bp on CFT073's own contig, and its two links land on `K12:1,004,667` inside
+the window and on `K12:997,574` 7.1 kb upstream. `pggb -V` writes the same event
+as one record at `chr:997,575` genotyped in CFT073 alone, and it is drawn again
+[below](#out-of-the-graph-into-the-strain) from CFT073's own coordinates.
 
 In **Sample rows** the top row is the K12 backbone, and below it each strain's
 marks are the segments it takes instead, in the MAF's own row order.
 
 <Figure caption="460 bp at the ycbF/pyrD boundary in Sample rows, under the MAF lane. CFT073's row is the long bar running off the left edge, and its MAF row is empty over the same span." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
-The dropdown redraws the same nodes force-directed:
+The dropdown redraws the same nodes force-directed. The force drawing has no
+reference axis, so the graph stops following while it is up and the toolbar says
+so; switching back to **Sample rows** resumes the following:
 
 <Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes extend from the backbone where the rows had flattened them." />
 
 #### Who carries a segment
 
 Clicking a node opens its details, which on a graph indexed this way include
-**`carriedBy`**: every haplotype whose path walks that segment, recorded by
-`build_pggb_tabix.sh` as an `SM:Z:` tag. **`contributingAssembly`** in the same
-panel is the field an rGFA has to use, and there `SR` is build order.
+**`carriedBy`**: every haplotype whose path walks that segment, recorded by the
+walk as an `SM:Z:` tag. **`contributingAssembly`** in the same panel is the
+field an rGFA has to use, and there `SR` is build order.
 
 #### Carriage as a linear lane
 
@@ -954,8 +938,9 @@ Three limits on browsing a base-level graph by locus:
   [`partition-before-pggb`](https://github.com/pangenome/pggb#partitioning)) and
   prefer the SV-resolution minigraph graph for whole-genome browsing, as the
   [HPRC tutorial](/docs/tutorials/pangenome_hprc) does.
-- **The drawable window is small.** At 17 bp per segment, 3 kb is a solid braid,
-  and the view declines past its node budget.
+- **A cut of segments covers a small window.** At 17 bp per segment, 3 kb is a
+  solid braid, and the view declines past its node budget; a wider window is the
+  tier's.
 
 A segment carried by several assemblies draws on one row, the first path that
 walks it; the rest are in the node popup under

@@ -35,8 +35,10 @@ welcome your [feedback](/contact).
 - `unzip`, additionally for the [whole build](#reproduce-it-end-to-end)
 - `wget`, additionally for the [whole build](#reproduce-it-end-to-end)
 - the GraphGenomeView plugin, for
-  [drawing the graph as a graph](#installing-the-plugin); every other track here
-  is a built-in type
+  [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view);
+  every other track here is a built-in type
+- [`gfatools`](https://github.com/lh3/gfatools) and GNU awk, for
+  [indexing the graph](#indexing-the-graph)
 
 On Debian/Ubuntu, `apt install samtools tabix unzip wget python3` covers five of
 those. Docker installs from
@@ -44,7 +46,8 @@ those. Docker installs from
 CLI and `bedGraphToBigWig` are each a
 [single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/); and `node`
 comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
-cactus image.
+cactus image, apart from `gfatools`, which bioconda packages, and GNU awk, which
+is apt's `gawk`.
 
 ## Where the data comes from
 
@@ -422,47 +425,33 @@ the two derived files before re-mapping.
 
 JBrowse can also draw the graph as a graph, through the
 [graph genome view plugin](/docs/user_guides/graph_genome_view).
-
-### Installing the plugin
-
-The plugin is beta and not in the [plugin store](/docs/user_guides/plugin_store)
-yet, so it loads by URL from a top-level `plugins` array in `config.json` (see
-[configuring plugins](/docs/config_guides/plugins)):
-
-<!-- GRAPH_PLUGIN_CONFIG START -->
-
-```json
-{
-  "plugins": [
-    {
-      "name": "GraphGenomeView",
-      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
-    }
-  ]
-}
-```
-
-<!-- GRAPH_PLUGIN_CONFIG END -->
-
-`RgfaTabixAdapter` ships in the same plugin, so the segments track below needs
-it too. On [JBrowse Desktop](/docs/quickstart_desktop), install it once from the
-start screen at **Global plugins... → Add custom plugin**, putting that `esmUrl`
-under **Advanced options** in **ESM build URL**.
+[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
+covers installing the plugin and the one command that indexes a graph for it.
 
 ### Indexing the graph
 
-`mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags, so `build_pggb_tabix.sh` walks
-the path lines offline and writes the two tabix-indexed BEDs `RgfaTabixAdapter`
-reads, making the whole graph queryable by locus.
+Beside the base-level graph, `cactus-pangenome` wrote the graph its minigraph
+stage built, `mc/ecoli.sv.gfa.gz`. That one is an rGFA of the structural
+variation alone, whose segments state their place on a genome in `SN`/`SO`/`SR`
+tags, so
+[`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
+indexes it by its rGFA route with no further arguments:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
-bash build_pggb_tabix.sh mc/ecoli.gfa.gz ecoli_cactus K12
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
+# the rGFA route runs gfatools, so gfatools and GNU awk have to be on PATH
+bash build_pangenome_graph.sh mc/ecoli.sv.gfa.gz ecoli_cactus_sv
 ```
 
-The third argument anchors rank 0 on the K12 path. The pair loads as one
-`FeatureTrack` pointed at the shared prefix; the `uri` below is our hosted copy,
-and a local build swaps in the `ecoli_cactus` prefix written above.
+It writes the segments and links, the bubbles, a tier of one node per bubble,
+the allele inventory and `ecoli_cactus_sv.config.json`, whose graph track names
+the tier under `coarse`. Zoomed out past that track's handover, a following
+graph cuts the tier, so the whole K12 chromosome draws as a graph.
+
+The figures below draw the base-level graph instead, where every SNP is a
+bubble. The [build script](#reproduce-it-end-to-end) indexes it by walking its
+path lines, and our hosted copy of that index loads as one `FeatureTrack`
+pointed at the shared prefix:
 
 ```json addtrack
 {
@@ -479,14 +468,18 @@ and a local build swaps in the `ecoli_cactus` prefix written above.
 ```
 
 The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
-genome view (this region)** cuts a subgraph at whatever is on screen.
+genome view (this region)** opens the window on screen as a graph under the
+linear view, which the graph then follows.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session, the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) run from the segments lane's menu, painting the lane in the graph's colors as the graph loads." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session, the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) run from the segments lane's menu, which opens the graph on K12's coordinates under the lane it follows and paints the lane in the graph's colors." />
 
 A kilobase or two is the width to open one at. Past the flagellar operon, K12
-carries an IS1 element the other four skip. A second copy of the segments track,
-colored by the `SM:Z:` carriage the walk recorded, shows which segments those
-are; the pggb page gives
+carries an IS1 element the other four skip: type `chr:1,978,100-1,979,700`, and
+the graph follows the view there. Pick **Force-directed layout** from the
+**Layout** dropdown to see the element's shape; the force drawing has no
+reference axis, so it holds the graph at this cut. A second copy of the segments
+track, colored by the `SM:Z:` carriage the walk recorded, shows which segments
+those are; the pggb page gives
 [that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane).
 
 <Figure caption="1.6 kb of K12 past flhD, as a linear view above and as a graph below, both reading the same two tabix indexes. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />

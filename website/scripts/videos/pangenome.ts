@@ -35,7 +35,8 @@ const {
   tierTrack: PGGB_TIER_TRACK_CONF,
   tierTrackId: PGGB_TIER_TRACK,
   tierWindow: PGGB_TIER_WINDOW,
-  tierRegion: PGGB_TIER_REGION,
+  tierLgvId: PGGB_TIER_LGV,
+  tierCut: PGGB_TIER_CUT,
   tierIs5Node: PGGB_TIER_IS5_NODE,
   tierLaneColor: PGGB_TIER_LANE_COLOR,
 } = pggbVideoFixtures
@@ -99,12 +100,12 @@ const cactusTourStart = sessionSpec(cactusVideoFixtures.config, {
   ],
 })
 
-// BOTH TIERS OVER ONE WINDOW, which is the state the section's "read together"
-// sentence describes and has no picture of. 100 kb is 60x what the fine index
-// can draw, so the segments lane opens on its own density gate while the tier
-// lane draws eleven bubbles and the pane below draws them as a graph -- and the
-// tour's whole move is getting the linear view from the first state to the
-// second without a coordinate being typed.
+// BOTH TIERS OVER ONE WINDOW. 100 kb is 60x what the fine index can draw, so
+// the segments lane opens on its own density gate, the tier lane draws eleven
+// bubbles, and the graph below follows the linear view on the tier the
+// segments track names under `coarse`. The tour's whole move is zooming the
+// linear view in without a coordinate being typed, and the graph re-cutting
+// from the segments as it follows.
 //
 // The tier lane carries pggb_bubble_tier's own ramp over the same region, so the
 // bubble the figure arrows keeps its colour when the tour lands on it, and the
@@ -114,6 +115,7 @@ const pggbTierStart = sessionSpec(PGGB_CONFIG, {
   views: [
     {
       type: 'LinearGenomeView',
+      id: PGGB_TIER_LGV,
       assembly: 'K12',
       loc: PGGB_TIER_WINDOW,
       tracks: [
@@ -138,8 +140,7 @@ const pggbTierStart = sessionSpec(PGGB_CONFIG, {
     },
     {
       type: 'GraphGenomeView',
-      loadedTrackId: PGGB_TIER_TRACK,
-      loadedRegion: PGGB_TIER_REGION,
+      ...PGGB_TIER_CUT,
       // 'auto' IS the anchored layout, and it is the figure's: a tier is a chain
       // of backbone and bubble, so there is no shape for a force solver to find
       // and an anchored row puts each bubble under its own coordinate.
@@ -151,6 +152,7 @@ const pggbTierStart = sessionSpec(PGGB_CONFIG, {
 
 // The layout dropdown's own row, which is the same element in every graph view.
 const LAYOUT_SELECT = '[data-testid="graph-layout-select"]'
+const FOLLOW_STATUS = '[data-testid="graph-follow-status"]'
 
 const {
   haplotype: HAPLOTYPE,
@@ -439,11 +441,12 @@ export const pangenomeVideos: VideoSpec[] = [
   // the fine cut, and how a reader gets from one to the other is nowhere.
   //
   // The move is the NODE'S OWN MENU. A tier node knows the K12 span it stands
-  // for, and `showInLinearView` navigates the CONNECTED linear view rather than
-  // adding one -- with a single K12 view in the session the plugin pairs with it
-  // by assembly -- so the whole route is a hover and two clicks, and the reader
-  // never types a coordinate. That is also why this is not a second filming of
-  // `pggb_subgraph_launch`: no paste, no location box, no launch.
+  // for, and `showInLinearView` navigates the connected linear view rather than
+  // adding one, so the whole route is a hover and two clicks, and the reader
+  // never types a coordinate. The graph follows that view in and re-cuts from
+  // the segments once the zoom passes the track's `coarse` handover. That is
+  // also why this is not a second filming of `pggb_subgraph_launch`: no paste,
+  // no location box, no launch.
   //
   // THE OPENING FRAME IS THE DENSITY GATE ON PURPOSE, which is the one place
   // that message is the state the page describes rather than an accident: the
@@ -453,14 +456,11 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/tier_to_fine',
     description:
-      "The coarse tier's IS5 bubble taken down to the fine index: hover the node for the K12 span it collapses, then take its Open in K12 entry, which lands the linear view on that span",
+      "The coarse tier's IS5 bubble taken down to the segments: hover the node for the K12 span it collapses, then take its Open in K12 entry, which lands the linear view on that span while the following graph re-cuts from the segments",
     url: pggbTierStart,
-    // The app is the same height at both ends -- the tour navigates a view
-    // rather than adding one, and the anchored pane sizes to its two rank rows
-    // whatever the window says -- so this is a frame with slack in it rather
-    // than a compromise between two states. The slack is for the caption chip,
-    // which is fixed off the frame's bottom and would otherwise sit over the
-    // graph pane's own rows.
+    // Measured on the static tier pane, which sized to its two rank rows; the
+    // fine cut the tour now ends on can carry more, so re-read the run's
+    // content report before trusting this.
     viewportHeight: 810,
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
@@ -483,7 +483,7 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         anchor: { view: 1, graphNode: PGGB_TIER_IS5_NODE },
-        say: 'Take the bubble down to the fine index',
+        say: "Open the bubble's span in the linear view",
         hold: 900,
       },
       { type: 'waitForText', text: 'Open in K12' },
@@ -503,10 +503,21 @@ export const pangenomeVideos: VideoSpec[] = [
         selector: PGGB_SEGMENTS_READY,
         timeout: 120000,
       },
+      {
+        type: 'waitForSelector',
+        selector: `${FOLLOW_STATUS}::-p-text(coarse tier)`,
+        hidden: true,
+        timeout: 120000,
+      },
+      { type: 'waitForAppSettled' },
       // the pointer off the canvas, or the graph's hover tooltip stands over the
       // frame the poster is taken from
       { type: 'hover', selector: '[aria-label="JBrowse"]' },
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'The graph follows the view down to the segments',
+      },
     ],
     tailMs: 3000,
   },
