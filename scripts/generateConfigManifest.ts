@@ -326,12 +326,10 @@ function shorthandKeysOf(adapterType) {
 // Extra settings a candidate needs present before its effect is observable at
 // all. \`showDescriptions\` alone migrates to showLabels 'auto' — the slot's own
 // default, so stripDefault removes it again and the probe sees an unchanged
-// snapshot. Only alongside the legacy \`showLabels: 'off'\` does it choose
-// between 'none' and 'description'. Probed alone it read as unconsumed, and
-// test_data/dog10k, which carries exactly that pair, was told its
-// \`showDescriptions\` was an unknown slot rather than a legacy one.
+// snapshot. Only alongside the legacy \`showLabels: false\` does it choose
+// between 'none' and 'description'; probed alone it reads as unconsumed.
 const LEGACY_COMPANIONS = {
-  showDescriptions: { showLabels: 'off' },
+  showDescriptions: { showLabels: false },
 }
 
 const PROBE_COLOR = '#123456'
@@ -348,7 +346,6 @@ const LEGACY_CANDIDATES = {
   pileupDisplay: { type: 'LinearPileupDisplay' },
   snpCoverageDisplay: { type: 'LinearSNPCoverageDisplay' },
   defaultRendering: 'probe',
-  autoHeight: true,
   showDescriptions: false,
   color1: PROBE_COLOR,
   color2: PROBE_COLOR,
@@ -437,8 +434,6 @@ function legacyKeysOf(configSchema, declaredSlots) {
 const LEGACY_VALUE_CANDIDATES = [
   true,
   false,
-  'on',
-  'off',
   'reducedRepresentation',
   'collapse',
 ]

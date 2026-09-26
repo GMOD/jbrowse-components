@@ -53,8 +53,6 @@ export const basicRetired = {
   color2: (connectorColor: unknown) => ({ connectorColor }),
   color3: (utrColor: unknown) => ({ utrColor }),
   outline: (outlineColor: unknown) => ({ outlineColor }),
-  // v4's grow toggle, whose `false` was the default and becomes nothing
-  autoHeight: (value: unknown) => (value ? { heightMode: 'grow' } : {}),
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
   maxHeight: () => ({}),
 }
@@ -70,12 +68,8 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   )
   // A unified-enum value already present wins over a stale `showDescriptions`
   // beside it, so a re-saved config is not rewritten.
-  const legacyShowLabels =
-    typeof result.showLabels === 'boolean' ||
-    result.showLabels === 'on' ||
-    result.showLabels === 'off'
   if (
-    legacyShowLabels ||
+    typeof result.showLabels === 'boolean' ||
     (result.showLabels === undefined && result.showDescriptions !== undefined)
   ) {
     result.showLabels = legacyShowLabelsToMode(

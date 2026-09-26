@@ -3102,7 +3102,6 @@ export const configManifest: ConfigManifest = {
         "color2",
         "color3",
         "outline",
-        "autoHeight",
         "maxHeight",
         "renderer",
         "showDescriptions"
@@ -3110,9 +3109,7 @@ export const configManifest: ConfigManifest = {
       "legacyValues": {
         "showLabels": [
           true,
-          false,
-          "on",
-          "off"
+          false
         ],
         "displayMode": [
           "reducedRepresentation",
@@ -4523,7 +4520,6 @@ export const configManifest: ConfigManifest = {
         "color2",
         "color3",
         "outline",
-        "autoHeight",
         "maxHeight",
         "renderer",
         "showDescriptions"
@@ -4531,9 +4527,7 @@ export const configManifest: ConfigManifest = {
       "legacyValues": {
         "showLabels": [
           true,
-          false,
-          "on",
-          "off"
+          false
         ],
         "displayMode": [
           "reducedRepresentation",

@@ -71,9 +71,3 @@ test('a retired colour on the entry beats the shorthand’s current one', () => 
     entryAgainstShorthand({ color1: 'red' }, { color: 'blue' }),
   ).toMatchObject({ color: 'red' })
 })
-
-test('a retired autoHeight on the entry beats the shorthand’s heightMode', () => {
-  expect(
-    entryAgainstShorthand({ autoHeight: true }, { heightMode: 'fixed' }),
-  ).toMatchObject({ heightMode: 'grow' })
-})

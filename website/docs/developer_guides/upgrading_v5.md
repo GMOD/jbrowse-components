@@ -26,8 +26,6 @@ Most sessions and configs migrate through `preProcessSnapshot`:
 
 - canvas `color1`/`color2`/`color3` become `color`/`connectorColor`/`utrColor`
 - `outline` becomes `outlineColor`
-- the old `autoHeight` boolean becomes `heightMode: 'grow'` on the unified
-  height slot
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
 
 The `heightOverride` shadow-prop that existed during development is gone, and

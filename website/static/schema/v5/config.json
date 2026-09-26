@@ -3649,7 +3649,7 @@
               ]
             },
             {
-              "enum": [true, false, "on", "off"],
+              "enum": [true, false],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."
             }
@@ -3794,10 +3794,6 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "outline": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "autoHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -5493,7 +5489,7 @@
               ]
             },
             {
-              "enum": [true, false, "on", "off"],
+              "enum": [true, false],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."
             }
@@ -5556,10 +5552,6 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "outline": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "autoHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -8415,9 +8407,6 @@
             "outline": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
             },
-            "autoHeight": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/autoHeight"
-            },
             "maxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
             },
@@ -9384,9 +9373,6 @@
             },
             "outline": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"
-            },
-            "autoHeight": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/autoHeight"
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"

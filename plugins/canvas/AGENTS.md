@@ -45,8 +45,8 @@ Two asymmetries live in that predicate and are easy to "simplify" away:
 
 - The **description is gated on `showDescriptions` alone**, not also on
   `showLabels`. Descriptions-without-names is a real state — the fit ladder's
-  `labels` rung reaches it, and so does a session carrying the retired
-  `showLabels: 'off'` + `showDescriptions: true` pair.
+  `labels` rung reaches it, and so does a v4 config carrying `showLabels: false`
+  beside `showDescriptions: true`.
 - A **subfeature label is ungated**, because it is baked in the worker and there
   is nothing main-thread to gate. `collapsed` mode suppresses it by forcing
   `effectiveSubfeatureLabels` to `'none'` instead, which is why that

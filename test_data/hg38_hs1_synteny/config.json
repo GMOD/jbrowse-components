@@ -55,7 +55,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "hg38-genes-LinearBasicDisplay",
-          "autoHeight": true
+          "heightMode": "grow"
         }
       ]
     },
@@ -74,7 +74,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "hs1-genes-LinearBasicDisplay",
-          "autoHeight": true
+          "heightMode": "grow"
         }
       ]
     },

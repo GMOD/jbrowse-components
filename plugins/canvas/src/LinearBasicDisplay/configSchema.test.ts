@@ -227,10 +227,9 @@ describe('LinearBasicDisplay configSchema', () => {
     })
 
     it.each([
-      [{ showLabels: 'on' }, 'nameAndDescription'],
-      [{ showLabels: 'on', showDescriptions: false }, 'name'],
-      [{ showLabels: 'off' }, 'description'],
-      [{ showLabels: 'off', showDescriptions: false }, 'none'],
+      [{ showLabels: true }, 'auto'],
+      [{ showLabels: true, showDescriptions: false }, 'auto'],
+      [{ showLabels: false }, 'description'],
       [{ showLabels: false, showDescriptions: false }, 'none'],
       [{ showLabels: 'auto', showDescriptions: false }, 'auto'],
     ])('folds the legacy %s pair onto the unified enum', (legacy, expected) => {

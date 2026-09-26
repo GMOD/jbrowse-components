@@ -27,14 +27,7 @@ export function legacyShowLabelsToMode(
   value: unknown,
   showDescriptions: boolean,
 ): ShowLabelsMode {
-  const withDescriptions = (a: ShowLabelsMode, b: ShowLabelsMode) =>
-    showDescriptions ? a : b
-  return value === false || value === 'off'
-    ? withDescriptions('description', 'none')
-    : value === 'on'
-      ? withDescriptions('nameAndDescription', 'name')
-      : // 'auto' + descriptions off has no home on the unified enum: it wants a
-        // 'auto' rather than 'name', so the density gate is not silently
-        // forfeited.
-        'auto'
+  // v4's labels on with descriptions off has no home on the unified enum: it
+  // wants 'auto' rather than 'name', so the density gate is not forfeited.
+  return value === false ? (showDescriptions ? 'description' : 'none') : 'auto'
 }

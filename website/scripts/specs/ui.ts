@@ -433,15 +433,13 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
           // spec used to have to hide by selector.
           color: '#4a5568',
         },
-        // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
+        // showLabels:'name' forces gene names on at this zoom; showOnlyGenes
         // drops the per-transcript subfeatures so RHD/RHCE read as single
         // labelled glyphs under the matrix
         {
           trackId: 'ncbi_refseq_hg38',
           type: 'LinearBasicDisplay',
           height: 120,
-          // 'on' + showDescriptions:false is the retired pair;
-          // migrateBasicConfigSnapshot folds exactly that into 'name'
           showLabels: 'name',
           showOnlyGenes: true,
         },
@@ -733,7 +731,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               forceLoad: true,
               height: 400,
             },
-            // showLabels:'on' forces gene names on (the default 'auto' hides
+            // showLabels:'name' forces gene names on (the default 'auto' hides
             // them at this 5Mb zoom past maxLabelFeatureDensity); showOnlyGenes
             // drops the per-transcript subfeatures so only gene-level glyphs
             // render. heightMode 'fit' puts the whole stack inside the lane: at
@@ -746,8 +744,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_refseq_109_hg38',
               type: 'LinearBasicDisplay',
               height: 140,
-              // 'on' + showDescriptions:false is the retired pair;
-              // migrateBasicConfigSnapshot folds exactly that into 'name'
               showLabels: 'name',
               showOnlyGenes: true,
               heightMode: 'fit',
@@ -812,8 +808,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_refseq_109_hg38',
               type: 'LinearBasicDisplay',
               height: 140,
-              // 'on' + showDescriptions:false is the retired pair;
-              // migrateBasicConfigSnapshot folds exactly that into 'name'
               showLabels: 'name',
               showOnlyGenes: true,
               heightMode: 'fit',
@@ -999,8 +993,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               // in this file.
               heightMode: 'grow',
               geneGlyphMode: 'longestCoding',
-              // 'on' + showDescriptions:false is the retired pair;
-              // migrateBasicConfigSnapshot folds exactly that into 'name'
               showLabels: 'name',
               showOnlyGenes: true,
             },

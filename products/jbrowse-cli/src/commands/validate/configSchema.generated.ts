@@ -3799,9 +3799,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             {
               "enum": [
                 true,
-                false,
-                "on",
-                "off"
+                false
               ],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."
@@ -3965,10 +3963,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "outline": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "autoHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -5781,9 +5775,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             {
               "enum": [
                 true,
-                false,
-                "on",
-                "off"
+                false
               ],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."
@@ -5855,10 +5847,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "outline": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "autoHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -8926,9 +8914,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "outline": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
             },
-            "autoHeight": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/autoHeight"
-            },
             "maxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
             },
@@ -9917,9 +9902,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "outline": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"
-            },
-            "autoHeight": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/autoHeight"
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"
