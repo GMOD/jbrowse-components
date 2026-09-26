@@ -294,6 +294,22 @@ describe('MockHal texture uploads', () => {
     }).toThrow("pass 'point' samples 'colorRamp', 'rowTable'")
   })
 
+  it('draws a pass only once every sampler has its texture, as both HALs do', () => {
+    const hal = new MockHal([twoSamplers, pass('bare')])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.drawPass('bare', 0)
+    hal.uploadTexture('point', texels, 1, 1, 'colorRamp')
+    hal.drawPass('point', 0)
+    expect(hal.callsOf('drawPass').map(c => c.args[0])).toEqual(['bare'])
+    hal.uploadTexture('point', texels, 1, 1, 'rowTable')
+    hal.drawPass('point', 0)
+    hal.endFrame()
+    expect(hal.callsOf('drawPass').map(c => c.args[0])).toEqual([
+      'bare',
+      'point',
+    ])
+  })
+
   it('keeps each named upload under its own sampler', () => {
     const hal = new MockHal([twoSamplers])
     const table = Uint8Array.of(1, 2, 3, 4)

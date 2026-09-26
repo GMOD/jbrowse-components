@@ -151,6 +151,8 @@ let totalDisposed = 0
 // (ARCHITECTURAL_LIMITS.md).
 const MAX_VERTEX_BUFFER_BYTES = 256 * 1024 * 1024
 
+const NO_TEXTURES: readonly TextureBinding[] = []
+
 export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
@@ -503,7 +505,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       return
     }
     const textures = this.passTextures.get(passId)
-    const samplers = pass.descriptor.textures ?? []
+    const samplers = pass.descriptor.textures ?? NO_TEXTURES
     if (samplers.some(tb => !textures?.has(tb.name))) {
       return
     }
