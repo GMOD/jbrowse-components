@@ -1777,7 +1777,7 @@ export const figureFrames: Record<
   },
   "gwas/locuszoom_ld": {
     "width": 1500,
-    "height": 520
+    "height": 542
   },
   "gene_density_chr1": {
     "width": 1500,
