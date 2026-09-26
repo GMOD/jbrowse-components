@@ -117,6 +117,18 @@
       }
     },
     {
+      "type": "SyntenyTrack",
+      "trackId": "hg38ToMm39_blocks",
+      "name": "Synteny blocks",
+      "assemblyNames": ["mm39", "hg38"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.blocks.pif.gz",
+        "queryAssembly": "mm39",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
       "type": "QuantitativeTrack",
       "trackId": "hg38ToMm39_gene_density",
       "name": "Genes per 100 kb",
