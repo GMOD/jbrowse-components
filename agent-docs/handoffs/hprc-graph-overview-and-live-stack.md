@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-25. The gutter aligner is deleted, so every gutter below the anchor composes through GRCh38 — and composition now carries the two records' own alignment, so those gutters draw indels and mismatches rather than a bare ribbon, the marks bounded by the pixel and faded to their width. Sequence two haplotypes share that GRCh38 lacks still draws as nothing; a graph-stated successor is unbuilt. The plugin is unpublished with that deletion. Walk rows draws every haplotype on its own bp, and naming the haplotypes returns whole walks where the cohort cut splits them. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
+description: The HPRC graph thread as of 2026-09-25. The gutter aligner is deleted, so every gutter below the anchor composes through GRCh38 — and composition now carries the two records' own alignment, so those gutters draw indels and mismatches rather than a bare ribbon, the marks bounded by the pixel and faded to their width. Sequence two haplotypes share that GRCh38 lacks still draws as nothing; a graph-stated successor is unbuilt. The plugin is unpublished with that deletion. Walk rows draws every haplotype on its own bp, and naming the haplotypes returns whole walks where the cohort cut splits them. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call. Measured 2026-09-26 - composing through GRCh38 loses 12-38% of what two non-reference haplotypes share at C4, GSTT1, KIR and HLA-DR - and a follow-the-linear-view prototype exists on the plugin's follow-spike branch.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -123,3 +123,64 @@ eight hosted `demos/hprc_multiway` records state 85,864 mismatches at the widest
 window the fine tier serves, against a 1,588 px canvas. The `alignmentDetail`
 gate is gone with the asymmetry it protected — a record with ops draws them,
 wherever it sits.
+
+## 3. Measured 2026-09-26: what composition loses, and a follow prototype
+
+Colin asked where the simplicity went across the pangenome tutorials, graph
+navigation, the graph-to-stack route, video, PangyPlot's lessons and scale. Two
+experiments ran; scripts, tables and screenshots are in
+`~/tutorial_spikes/pangenome_simplicity/`.
+
+**Composition through GRCh38, per adjacent pair, bp** (hosted v2.1 `gbz.db`
+plus the anchored companion, `keep` on 4-5 named haplotypes, context 1000;
+`expA/measure.mjs`, tables in `expA/tables.txt`):
+
+| locus | pair | shared on graph nodes | drawable through GRCh38 | lost |
+| --- | --- | --: | --: | --: |
+| C4 | HG01978#2, HG02004#2 | 182,945 | 150,178 | 32,767 |
+| GSTT1 | HG00097#1, HG00146#1 | 145,014 | 90,478 | 54,536 |
+| KIR | HG00133#1, NA20503#1 | 231,857 | 157,566 | 74,291 |
+| HLA-DR | NA19036#2, NA18906#1 | 186,684 | 164,037 | 22,647 |
+| CFH | HG01109#1, HG01123#1 | 115,337 | 115,013 | 324 |
+| FLNA/EMD | HG01150#2, HG00735#1 | 99,977 | 99,934 | 43 |
+| amylase | NA18608#2, HG00232#1 | 213,977 | 213,918 | 59 |
+
+The lost column is the third C4 module, the GSTT1 branch, the KIR B-haplotype
+genes and the DR52 region: the sequence each showcase locus exists to show. A
+pair that includes a GRCh38-like haplotype loses under 0.3 kb, and the CFH
+deletion and the FLNA inversion lose nothing, since there the shared sequence
+is GRCh38's own. None of the lost bp sits on a GRCh38 node within 250 kb of
+the window. The reader's chained shared runs (`sharedRuns` plus `chainRuns`
+in `pairAlignment.ts`, no bases compared) are within 0.3% of the set count
+wherever a node is visited once, so a graph-stated gutter is that function
+with the gap filling replaced by plain gaps. The tandem array is the limit:
+at amylase the chain anchors 148 kb of the 214 kb two walks share, the extra
+copies fold onto nodes GRCh38 visits once, and counted by visits the pair
+loses 64,352 bp. Cuts took 4.3-7.2 s hosted; HLA-DR's full window is 50,065
+nodes, 65 over the reader's limit. `pairAlignments` returned FLNA's inversion
+record twice with identical spans, against its own one-record-per-base rule.
+
+**The graph pane following the linear view is built and unlanded**: plugin
+worktree `~/src/jb2plugins/ggv-follow-spike`, branch `follow-spike`, six
+commits on 3.0.5, per the plugin's `FOLLOW_THE_LINEAR_VIEW.md`. A frame clock
+sets the transform from the connected view's window with no fetch; a settle
+clock re-cuts the window plus one window-width each side when the window
+leaves the cut; `coarseTrackId`/`coarseAboveBp`/`coarseCut` pick the tier by
+zoom; `viewportOwner` (`fit`, `user`, `follow`) replaces the two-state flag;
+the follow is off, and the toolbar says why, on force and ordered layouts, an
+open bubble, a reversed region and a GBZ cut. Ten tests in `follow.test.ts`,
+the plugin suite (734 tests) and tsc green, and it lined up in a browser to the
+linear view's pixel rounding. A 2 Mb pan at a 60 kb window in 10 kb steps
+re-cuts 28 times at a one-window margin and 15 at two; zooming out crosses to
+the tier at 1.92 Mb. Still open before landing: the reference-position ramp
+re-spans on every re-cut and repaints the lane above, sample rows reshuffle per
+window, `maxRegionBp` is still read by every fine cut, and neither the launcher
+nor the portal sets the tier props. The doc's fetch-ordering hazard is stale:
+`beginLoad`/`liveLoad` already order cuts.
+
+**Plan proposed to Colin, not yet agreed**: land follow and tier; lanes align
+by shared nodes through the display's existing direct-pair fetch; one
+`build_pangenome_graph.sh` writing one config; collapse the tutorials to a
+browse page on the hosted instance, a host page and short findings pages, with
+one tour per persona.
+
