@@ -1,4 +1,5 @@
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { cssColorToRgba } from './colorBits.ts'
 import { DEFAULT_COLOR_SCHEME } from './colorSchemes.ts'
@@ -230,23 +231,13 @@ export function buildColorRampLut(stops: readonly ColorRampStop[], mid = 0.5) {
   const m = Math.min(1, Math.max(0, mid))
   for (let i = 0; i < COLOR_RAMP_LUT_ENTRIES; i++) {
     const t = i / last
-    const [r, g, b, a] = sampleColorRamp(stops, unwarp(t, m))
+    const [r, g, b, a] = sampleColorRamp(stops, rampMidT(t, m))
     data[i * 4] = r
     data[i * 4 + 1] = g
     data[i * 4 + 2] = b
     data[i * 4 + 3] = a
   }
   return data
-}
-
-// Both sides of `mid` on one scale, the farther end reaching its end stop and
-// the nearer one stopping short, so equal distances from the middle take equal
-// colours: ggplot2's `rescale_mid`, and the density fade's own rule.
-function unwarp(t: number, mid: number) {
-  return Math.min(
-    1,
-    Math.max(0, 0.5 + (t - mid) / (2 * Math.max(mid, 1 - mid))),
-  )
 }
 
 /**
@@ -290,16 +281,20 @@ export function rampLutOf(ramp: RampDeclaration): Uint8Array {
  * {@link buildColorRampLut} byte table — the same 256×1 RGBA array
  * `uploadColorRampLut` hands the GPU and the Canvas2D fillStyle LUTs index —
  * as the stops of a `RampScale`. It holds one claim by construction: the
- * swatch at bar fraction `t` is byte-identical to the ramp entry at `t` on
- * both backends. Alpha rides `opacity` (the juicebox fade), never baked into
+ * swatch at bar fraction `t` is byte-identical to the ramp entry both backends
+ * read at `t`, through the ramp's middle stop at `midNorm` (`rampMidT`). Alpha rides `opacity` (the juicebox fade), never baked into
  * the color string.
  */
-export function stopsFromRampLut(lut: Uint8Array, n: number): RampStop[] {
+export function stopsFromRampLut(
+  lut: Uint8Array,
+  n: number,
+  midNorm = 0.5,
+): RampStop[] {
   const lastEntry = lut.length / 4 - 1
   const out: RampStop[] = []
   for (let i = 0; i < n; i++) {
     const t = n === 1 ? 0 : i / (n - 1)
-    const o = Math.round(t * lastEntry) * 4
+    const o = Math.round(rampMidT(t, midNorm) * lastEntry) * 4
     out.push({
       offset: t,
       color: `rgb(${lut[o]!},${lut[o + 1]!},${lut[o + 2]!})`,

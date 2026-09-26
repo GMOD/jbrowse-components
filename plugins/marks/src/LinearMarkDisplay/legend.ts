@@ -6,7 +6,7 @@ import {
   derivedColorScale,
   everyRowPaints,
 } from '@jbrowse/core/util/legendCandidates'
-import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
+import { rampMidNorm, rampOverExtent } from '@jbrowse/core/util/markEncoding'
 import {
   rampGapScales,
   thresholdKeyEntries,
@@ -386,7 +386,11 @@ export function markColorScales(
             id,
             title,
             domain: scale.domain,
-            stops: stopsFromRampLut(scale.lut, RAMP_STOPS),
+            stops: stopsFromRampLut(
+              scale.lut,
+              RAMP_STOPS,
+              rampMidNorm(scale.scale, scale.domain, scale.domainMid),
+            ),
             extent: scale.extent,
           },
           ...rampGapScales(`${id}-gaps`, scale),

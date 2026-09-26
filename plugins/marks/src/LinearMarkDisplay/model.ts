@@ -1103,16 +1103,22 @@ export function stateModelFactory(
         /**
          * #getter
          * Each mark's quantitative colour scale: the ramp its regions carry,
-         * over the domain the legend already unioned across them. A pan that
-         * widens it writes one uniform and uploads no instance bytes, which is
-         * what resolving the ramp here rather than per region buys.
+         * over the domain the legend already unioned across them, its middle
+         * stop a value. A pan that widens it writes uniforms and uploads no
+         * instance bytes and no table, which is what resolving the ramp here
+         * rather than per region buys.
          */
         get colorRamps(): (MarkRamp | undefined)[] {
           const sections = this.legendSections
           return self.conf.marks.map((_, i) => {
             const table = colorSection(sections, i)
             return table?.kind === 'ramp'
-              ? { domain: table.domain, scale: table.scale, lut: table.lut }
+              ? {
+                  domain: table.domain,
+                  scale: table.scale,
+                  lut: table.lut,
+                  mid: table.domainMid,
+                }
               : undefined
           })
         },

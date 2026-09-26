@@ -16,7 +16,10 @@
 // instance and costs no bytes.
 //
 // `normalizeScore` is `scoreScale`'s, so a ramp's domain is read exactly as the
-// axis reads y's and as the Canvas2D twin reads both.
+// axis reads y's and as the Canvas2D twin reads both. A diverging ramp's middle
+// stop is `rampMidNorm`, read through `colorRampLut`'s `rampMidT` over a
+// straight table, so a domain that moves under a pinned middle moves uniforms
+// and uploads no table.
 //! export-consts: RAMP_NONE, RAMP_LINEAR, RAMP_LOG, RAMP_NO_VALUE_BITS, RAMP_NO_VALUE_COLOR, RAMP_NOT_A_NUMBER_COLOR
 module markColor;
 
@@ -46,6 +49,7 @@ public float4 markInstanceColor(
   int rampMode,
   float rampMin,
   float rampMax,
+  float rampMidNorm,
 ) {
   if (rampMode == RAMP_NONE) {
     return unpackRGBA(packed);
@@ -57,11 +61,15 @@ public float4 markInstanceColor(
     // an infinity takes the ramp's end on its side, as a threshold places it
     return (packed & 0x007FFFFFu) != 0u
       ? unpackRGBA(RAMP_NOT_A_NUMBER_COLOR)
-      : rampColor(ramp, (packed & 0x80000000u) != 0u ? 0.0 : 1.0);
+      : rampColor(
+          ramp, rampMidT((packed & 0x80000000u) != 0u ? 0.0 : 1.0, rampMidNorm));
   }
   int scaleType = rampMode == RAMP_LOG ? SCALE_TYPE_LOG : 0;
   return rampColor(
     ramp,
-    normalizeScore(asfloat(packed), rampMin, rampMax, scaleType, 1.0),
+    rampMidT(
+      normalizeScore(asfloat(packed), rampMin, rampMax, scaleType, 1.0),
+      rampMidNorm,
+    ),
   );
 }

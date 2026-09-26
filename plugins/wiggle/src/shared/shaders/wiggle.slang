@@ -137,7 +137,7 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   o.localPos = localPos;
   o.barInkPx = barInkPx;
   o.rampT = u.rampLut == 1
-    ? densityRampT(
+    ? rampMidT(
         normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant),
         u.rampMidNorm)
     : 0.0;

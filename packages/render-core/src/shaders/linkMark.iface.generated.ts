@@ -28,29 +28,30 @@ export const UNIFORM_OFFSET_F32 = {
   valueSymlogConstant: 7,
   rampMin: 9,
   rampMax: 10,
-  sizeConstantPx: 14,
-  sizeDomainMin: 15,
-  sizeDomainMax: 16,
-  sizeRangeMin: 18,
-  sizeRangeMax: 19,
-  canvasWidth: 20,
-  zero: 22,
+  rampMidNorm: 11,
+  sizeConstantPx: 15,
+  sizeDomainMin: 16,
+  sizeDomainMax: 17,
+  sizeRangeMin: 19,
+  sizeRangeMax: 20,
+  canvasWidth: 21,
+  zero: 23,
   ownEntry: 24,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
-  regionCount: 21,
+  regionCount: 22,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
   valueScaleType: 6,
   rampMode: 8,
-  valued: 11,
-  linkShape: 12,
-  sizeMode: 13,
-  sizeScaleType: 17,
+  valued: 12,
+  linkShape: 13,
+  sizeMode: 14,
+  sizeScaleType: 18,
 } as const
 
 
@@ -91,6 +92,7 @@ export interface Uniforms {
   rampMode: number
   rampMin: number
   rampMax: number
+  rampMidNorm: number
   valued: number
   linkShape: number
   sizeMode: number
@@ -122,18 +124,19 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[8] = uniforms.rampMode
   f32[9] = uniforms.rampMin
   f32[10] = uniforms.rampMax
-  i32[11] = uniforms.valued
-  i32[12] = uniforms.linkShape
-  i32[13] = uniforms.sizeMode
-  f32[14] = uniforms.sizeConstantPx
-  f32[15] = uniforms.sizeDomainMin
-  f32[16] = uniforms.sizeDomainMax
-  i32[17] = uniforms.sizeScaleType
-  f32[18] = uniforms.sizeRangeMin
-  f32[19] = uniforms.sizeRangeMax
-  f32[20] = uniforms.canvasWidth
-  u32[21] = uniforms.regionCount
-  f32[22] = uniforms.zero
+  f32[11] = uniforms.rampMidNorm
+  i32[12] = uniforms.valued
+  i32[13] = uniforms.linkShape
+  i32[14] = uniforms.sizeMode
+  f32[15] = uniforms.sizeConstantPx
+  f32[16] = uniforms.sizeDomainMin
+  f32[17] = uniforms.sizeDomainMax
+  i32[18] = uniforms.sizeScaleType
+  f32[19] = uniforms.sizeRangeMin
+  f32[20] = uniforms.sizeRangeMax
+  f32[21] = uniforms.canvasWidth
+  u32[22] = uniforms.regionCount
+  f32[23] = uniforms.zero
   f32[24] = uniforms.ownEntry[0]
   f32[25] = uniforms.ownEntry[1]
   f32[26] = uniforms.ownEntry[2]

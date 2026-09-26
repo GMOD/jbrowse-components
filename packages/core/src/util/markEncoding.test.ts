@@ -474,8 +474,12 @@ test('domainMid puts the ramp middle stop at that value', () => {
     ALL,
     { jexl },
   )
-  // score 10 is the middle stop, 40 the far end
-  expect(r.color[0]).toBe(cssColorToABGR('white'))
+  // score 10 is the middle stop, 40 the far end: the middle falls between two
+  // entries of the straight table, so it is white to within one step
+  const [red, green, blue] = [0, 8, 16].map(s => (r.color[0]! >>> s) & 255)
+  for (const channel of [red, green, blue]) {
+    expect(channel).toBeGreaterThanOrEqual(254)
+  }
   expect(r.color[1]).toBe(cssColorToABGR('black'))
   if (r.scale?.kind === 'ramp') {
     expect(r.scale.domainMid).toBe(10)

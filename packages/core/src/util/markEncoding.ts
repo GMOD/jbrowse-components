@@ -2,6 +2,7 @@ import {
   makeScoreNormalizer,
   scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 import { RAMP_NO_VALUE_BITS } from '@jbrowse/render-core/shaders/markColorConsts'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
@@ -9,7 +10,7 @@ import { categoricalScale } from '../ui/colors.ts'
 import { categoricalField } from './categoricalField.ts'
 import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR, packAbgr } from './colorBits.ts'
-import { buildColorRampLut, colorRampStops, rampDomain } from './colorRamp.ts'
+import { rampDomain, rampLutOf } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { valueText } from './groupKeys.ts'
@@ -25,7 +26,6 @@ import {
 } from './thresholdScale.ts'
 
 import type { CategoricalField } from './categoricalField.ts'
-import type { ColorRampStop } from './colorRamp.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
   ColorEncoding,
@@ -543,10 +543,7 @@ export function encodeFeatures<L extends LaneName>(
     const extent = finiteExtremes(rampValues, count)
     const { domainMin, domainMax, domainMid, range, scheme, reverse } =
       rampEncoding
-    const { domain, stops, lut, colorOf } = continuousColorScale(
-      rampEncoding,
-      extent,
-    )
+    const { domain, lut, colorOf } = continuousColorScale(rampEncoding, extent)
     if (color && rampBits) {
       for (let i = 0; i < count; i++) {
         color[i] =
@@ -561,7 +558,7 @@ export function encodeFeatures<L extends LaneName>(
       scale: rampEncoding.scale,
       domain,
       pinned: [domainMin !== undefined, domainMax !== undefined],
-      ...(domainMid === undefined ? {} : { domainMid, stops }),
+      ...(domainMid === undefined ? {} : { domainMid }),
       ...(range ? { range: [...range] } : {}),
       ...(scheme ? { scheme } : {}),
       ...(reverse ? { reverse } : {}),
@@ -662,9 +659,15 @@ export function encodeFeatures<L extends LaneName>(
   return encoded as Encoded<L>
 }
 
-function rampMid(
+/**
+ * #api
+ * Where a ramp's middle stop sits in the normalized `domain`: `domainMid`'s
+ * fraction, clamped as the normalizer clamps, else the middle. Every reader of
+ * a ramp's straight table passes a value's fraction through `rampMidT` with it.
+ */
+export function rampMidNorm(
   scale: 'linear' | 'log',
-  domain: [number, number],
+  domain: readonly [number, number],
   domainMid: number | undefined,
 ) {
   return domainMid === undefined
@@ -677,23 +680,15 @@ function rampMid(
       )(domainMid)
 }
 
-function rampLut(
-  stops: readonly ColorRampStop[],
-  scale: 'linear' | 'log',
-  domain: [number, number],
-  domainMid: number | undefined,
-) {
-  return buildColorRampLut(stops, rampMid(scale, domain, domainMid))
-}
-
 /**
  * #api
  * A continuous colour scale over `extent`, the values it met: the domain its
- * declared ends and the extent make, the stops and the table they bake to,
- * and the packed colour a value paints through them: an infinity the end on
- * its side, as a threshold places it, and NaN, text that is no number, the
- * misconfiguration grey. The encoder and every display painting a ramp itself
- * read it, so a value takes one colour whoever paints it.
+ * declared ends and the extent make, the straight table its stops bake to and
+ * where its middle stop sits, and the packed colour a value paints through
+ * them: an infinity the end on its side, as a threshold places it, and NaN,
+ * text that is no number, the misconfiguration grey. The encoder and every
+ * display painting a ramp itself read it, so a value takes one colour whoever
+ * paints it.
  */
 export function continuousColorScale(
   encoding: ContinuousRef,
@@ -707,61 +702,43 @@ export function continuousColorScale(
     scaleTypeCode(scale),
     1,
   )
-  const stops = colorRampStops(encoding)
-  const lut = rampLut(stops, scale, domain, domainMid)
+  const lut = rampLutOf(encoding)
+  const midNorm = rampMidNorm(scale, domain, domainMid)
   return {
     domain,
-    stops,
     lut,
+    midNorm,
     colorOf: (value: number) =>
       Number.isNaN(value)
         ? FALLBACK_COLOR
         : lutColorAt(
             lut,
-            Number.isFinite(value) ? norm(value) : value > 0 ? 1 : 0,
+            rampMidT(
+              Number.isFinite(value) ? norm(value) : value > 0 ? 1 : 0,
+              midNorm,
+            ),
           ),
   }
 }
-
-const MAX_BAKED_RAMPS = 16
-const bakedRamps = new Map<string, Uint8Array>()
 
 /**
  * #api
  * A ramp table over `extent`, the union a display took across the regions it
  * loaded: each open end of the domain moved to the union's, the pinned ends
- * kept, and the table baked again where a `domainMid` places its middle stop
- * by that domain. Each region baked its own, so keeping the first region's
- * put the middle colour at a value none of them declared.
- *
- * One table per stop list and middle position, so a display asking again over
- * an extent that has not moved gets the bytes it already uploaded: a backend
- * re-uploads a ramp on identity.
+ * kept. The table stays straight and `domainMid` a value, so the middle stop
+ * follows the widened domain with no table baked again.
  */
 export function rampOverExtent(
   table: Extract<ColorScaleTable, { kind: 'ramp' }>,
   extent: [number, number],
 ): Extract<ColorScaleTable, { kind: 'ramp' }> {
-  const { stops, pinned } = table
+  const { pinned } = table
   const domain = rampDomain(
     pinned[0] ? table.domain[0] : undefined,
     pinned[1] ? table.domain[1] : undefined,
     extent,
   )
-  if (!stops) {
-    return { ...table, extent, domain }
-  }
-  const mid = rampMid(table.scale, domain, table.domainMid)
-  const key = `${mid}|${stops.join(';')}`
-  let lut = bakedRamps.get(key)
-  if (!lut) {
-    if (bakedRamps.size >= MAX_BAKED_RAMPS) {
-      bakedRamps.delete(bakedRamps.keys().next().value!)
-    }
-    lut = buildColorRampLut(stops, mid)
-    bakedRamps.set(key, lut)
-  }
-  return { ...table, extent, domain, lut }
+  return { ...table, extent, domain }
 }
 
 function keysAreNumeric(entries: readonly { value: string }[]) {

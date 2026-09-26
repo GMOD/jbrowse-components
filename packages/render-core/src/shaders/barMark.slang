@@ -56,6 +56,7 @@ struct Uniforms {
   int    rampMode;
   float  rampMin;
   float  rampMax;
+  float  rampMidNorm;
   // The baseline, in CSS px below the band's top: `origin` through the same
   // scale `y` reads, resolved on the CPU because the whole draw shares it.
   float  originYPx;
@@ -111,7 +112,7 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
 
   VsOut o;
   o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);
-  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax);
+  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm);
   o.barInkPx = float2(vy - topPx, vy - botPx);
   return o;
 }

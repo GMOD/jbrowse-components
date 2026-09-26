@@ -237,7 +237,11 @@ export type ColorScaleTable =
        * an open end is what a display widens to the union of theirs.
        */
       pinned: [boolean, boolean]
-      /** The declared {@link ColorEncoding} `domainMid`, already baked into `lut`. */
+      /**
+       * The declared {@link ColorEncoding} `domainMid`: where the middle stop
+       * of the straight `lut` sits, which every reader places through
+       * `rampMidNorm` and `rampMidT`.
+       */
       domainMid?: number
       /**
        * The declared stops — `range`'s colours or the `scheme` — and
@@ -261,12 +265,6 @@ export type ColorScaleTable =
       missing?: boolean
       /** Whether text that is no number painted here, in the misconfiguration grey. */
       notNumber?: boolean
-      /**
-       * The ramp's RGBA stops, carried beside a `domainMid`: where the middle
-       * stop lands in `lut` depends on the domain, so a display that unions an
-       * unpinned domain past this region's bakes `lut` again from these.
-       */
-      stops?: readonly (readonly [number, number, number, number])[]
     }
 
 /**

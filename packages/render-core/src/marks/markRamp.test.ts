@@ -1,9 +1,15 @@
 import { INSTANCE_STRIDE_BYTES } from '../shaders/barMark.generated.ts'
+import { GLSL_VERTEX as BAR_GLSL } from '../shaders/barMark.glsl.generated.ts'
+import { WGSL_SOURCE as BAR_WGSL } from '../shaders/barMark.wgsl.generated.ts'
+import { GLSL_VERTEX as LINK_GLSL } from '../shaders/linkMark.glsl.generated.ts'
+import { WGSL_SOURCE as LINK_WGSL } from '../shaders/linkMark.wgsl.generated.ts'
 import {
   RAMP_NOT_A_NUMBER_COLOR,
   RAMP_NO_VALUE_BITS,
   RAMP_NO_VALUE_COLOR,
 } from '../shaders/markColor.generated.ts'
+import { GLSL_VERTEX as POINT_GLSL } from '../shaders/pointMark.glsl.generated.ts'
+import { WGSL_SOURCE as POINT_WGSL } from '../shaders/pointMark.wgsl.generated.ts'
 import { barMark } from './barMark.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
@@ -160,18 +166,35 @@ test('a log ramp reads the domain the way the shader does', () => {
   expect((linear[1]! >>> 0) & 255).toBe(26)
 })
 
-test('the ramp reaches the shader as three uniforms and nothing else', () => {
+test('the ramp reaches the shader as four uniforms and nothing else', () => {
   expect(rampUniforms(undefined)).toEqual({
     rampMode: 0,
     rampMin: 0,
     rampMax: 1,
+    rampMidNorm: 0.5,
   })
   expect(rampUniforms(ramp)).toEqual({
     rampMode: 1,
     rampMin: 0,
     rampMax: 100,
+    rampMidNorm: 0.5,
   })
+  expect(rampUniforms({ ...ramp, mid: 25 }).rampMidNorm).toBe(0.25)
   expect(rampUniforms({ ...ramp, scale: 'log' }).rampMode).toBe(2)
+})
+
+// The table is straight; a declared middle is where the painter reads it, so
+// the value at the middle takes the middle entry and each end its end entry.
+test('a declared middle moves where the bake reads the straight table', () => {
+  const c = bars([0, 25, 100])
+  const colors = paintColors(c, 3, { ...ramp, mid: 25 }) as Uint32Array
+  expect([...colors].map(abgr => abgr & 255)).toEqual([85, 128, 255])
+  const widened = paintColors(c, 3, {
+    ...ramp,
+    domain: [0, 200],
+    mid: 25,
+  }) as Uint32Array
+  expect(widened[1]! & 255).toBe(128)
 })
 
 test('the painter fills the baked colours, batching a run of one', () => {
@@ -180,4 +203,19 @@ test('the painter fills the baked colours, batching a run of one', () => {
   const grey = (v: number) =>
     abgrToCssRgba((0xff000000 | (v << 16) | (v << 8) | v) >>> 0)
   expect(calls.map(c => c.fillStyle)).toEqual([grey(255), grey(255), grey(0)])
+})
+
+// The Canvas2D bake above reads a declared middle through `rampMidT`; this
+// holds the three shapes' emitted shaders to the same read, off the uniform
+// `rampUniforms` writes, where the table would otherwise be read straight.
+test.each([
+  ['bar WGSL', BAR_WGSL],
+  ['bar GLSL', BAR_GLSL],
+  ['point WGSL', POINT_WGSL],
+  ['point GLSL', POINT_GLSL],
+  ['link WGSL', LINK_WGSL],
+  ['link GLSL', LINK_GLSL],
+])('%s reads the ramp through its middle', (_name, src) => {
+  expect(src).toMatch(/rampMidT_0\(normalizeScore_0\(/)
+  expect(src).toMatch(/markInstanceColor_0\([^;]*u_0\.rampMidNorm_0\)/)
 })

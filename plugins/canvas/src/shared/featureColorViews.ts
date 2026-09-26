@@ -259,7 +259,7 @@ export function featureColorViews(self: FeatureColorHost) {
               id,
               title: this.colorKeyTitle,
               domain: ramp.domain,
-              stops: stopsFromRampLut(ramp.lut, RAMP_KEY_STOPS),
+              stops: stopsFromRampLut(ramp.lut, RAMP_KEY_STOPS, ramp.midNorm),
               extent: this.colorValueExtent,
             },
             ...rampGapScales(`${id}-gaps`, this.colorValueGaps),

@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/util/colorRamp'
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
   RENDERING_TYPE_SCATTER,
@@ -25,10 +26,7 @@ import {
   GLSL_VERTEX as FILL_GLSL_VERTEX,
 } from './shaders/wiggle.glsl.generated.ts'
 import { WGSL_SOURCE as FILL_WGSL_SOURCE } from './shaders/wiggle.wgsl.generated.ts'
-import {
-  densityGradientT,
-  densityRampT,
-} from './shaders/wiggleCommon.js.generated.ts'
+import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 import { GLSL_FRAGMENT } from './shaders/wiggleDensity.glsl.generated.ts'
 import { WGSL_SOURCE } from './shaders/wiggleDensity.wgsl.generated.ts'
 import { WIGGLE_MARKS } from './wiggleMarks.ts'
@@ -100,7 +98,7 @@ const TRACK_COLORS: [number, number, number][] = [
 ]
 
 // The named-ramp (LUT) mode's GPU side: the generated normalizer, then
-// wiggleCommon.slang's `densityRampT` against the `rampMidNorm` uniform, then
+// colorRampLut.slang's `rampMidT` against the `rampMidNorm` uniform, then
 // wiggleDensity.slang's fragment samples the ramp texture through
 // colorRampLut.slang — a linear-filter, clamp-to-edge SampleLevel that both
 // HALs configure identically, mirrored here texel for texel. `rampColor` maps
@@ -115,7 +113,7 @@ function gpuLutChannels(
   symlogConstant: number,
   rampMid: number | undefined,
 ) {
-  const t = densityRampT(
+  const t = rampMidT(
     normalizeScore(score, domainMin, domainMax, scaleType, symlogConstant),
     rampMidNorm(domainMin, domainMax, scaleType, rampMid, symlogConstant),
   )
@@ -398,19 +396,19 @@ describe('named-ramp (LUT) density mode', () => {
   )
 })
 
-// The mark display bakes `domainMid` into its table with core's
-// `buildColorRampLut`; wiggle warps per read with `densityRampT`. Over a 0..1
-// linear domain `rampMidNorm` is the middle itself, clamped, so both must pick
-// the same point on the stops for every middle, in view or not.
+// A table baked with its middle, `buildColorRampLut(stops, mid)`, and a straight
+// one read through `rampMidT` at wiggle's `rampMidNorm` pick the same point on
+// the stops for every middle, in view or not: over a 0..1 linear domain the
+// normalizer clamps the middle as the builder does.
 test.each([-0.5, 0, 0.2, 0.5, 0.8, 1, 1.5])(
-  'densityRampT warps as buildColorRampLut does, middle at %p',
+  'rampMidT at rampMidNorm reads as buildColorRampLut bakes, middle at %p',
   mid => {
     const stops = colorRampStops({ range: ['blue', 'white', 'red'] })
     const core = buildColorRampLut(stops, mid)
     const midNorm = rampMidNorm(0, 1, SCALE_TYPE_LINEAR, mid)
     for (let i = 0; i < COLOR_RAMP_LUT_ENTRIES; i++) {
       const t = i / (COLOR_RAMP_LUT_ENTRIES - 1)
-      expect(sampleColorRamp(stops, densityRampT(t, midNorm))).toEqual([
+      expect(sampleColorRamp(stops, rampMidT(t, midNorm))).toEqual([
         ...core.slice(i * 4, i * 4 + 4),
       ])
     }
@@ -421,7 +419,7 @@ test('an unset domainMid runs the ramp straight across the domain', () => {
   const midNorm = rampMidNorm(-4, 12, SCALE_TYPE_LINEAR, undefined)
   expect(midNorm).toBe(0.5)
   for (const norm of [0, 0.1, 0.25, 0.5, 0.7, 1]) {
-    expect(densityRampT(norm, midNorm)).toBeCloseTo(norm, 9)
+    expect(rampMidT(norm, midNorm)).toBeCloseTo(norm, 9)
   }
 })
 
@@ -469,7 +467,7 @@ describe('bars and points under a gradient', () => {
     '%s places each instance on the ramp as density does, under the flag alone',
     (_lang, src) => {
       expect(src).toMatch(
-        /rampLut_0\) == (i32\()?1\)?\)[^}]*densityRampT_0\(normalizeScore_0\([^;]*score[^;]*\), u_0\.rampMidNorm_0\);/,
+        /rampLut_0\) == (i32\()?1\)?\)[^}]*rampMidT_0\(normalizeScore_0\([^;]*score[^;]*\), u_0\.rampMidNorm_0\);/,
       )
     },
   )

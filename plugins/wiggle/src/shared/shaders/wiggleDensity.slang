@@ -84,7 +84,7 @@ DensityVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
     inst.startEnd.x, inst.startEnd.y, inst.rowIndex, vid, r);
   o.color = float4(
     lerp(float3(1.0), unpackRGBA(inst.color).rgb, t), 1.0);
-  o.rampT = densityRampT(norm, u.rampMidNorm);
+  o.rampT = rampMidT(norm, u.rampMidNorm);
   return o;
 }
 

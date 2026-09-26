@@ -42,6 +42,7 @@ struct Uniforms {
   int    rampMode;
   float  rampMin;
   float  rampMax;
+  float  rampMidNorm;
   float  zero;
   float  viewportWidth;
   float  radiusPx;
@@ -142,7 +143,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   bool isBar = pointDrawsBar(spanPx, u.radiusPx);
 
   VsOut o;
-  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax);
+  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm);
   if (isBar) {
     // Horizontal bar from x→x2, height 2*radiusPx px, centered on the value.
     //

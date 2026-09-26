@@ -21,7 +21,19 @@
 // contract, so a consumer picks the form that matches its blend declaration.
 //! texture-filter: linear
 //! export-consts: RAMP_LUT_ENTRIES
+//! js-export: rampMidT
 module colorRampLut;
+
+// Where a normalized value `t` reads the ramp when its middle stop sits at
+// `mid`: both sides of the middle on one scale, the farther end reaching its
+// end stop and the nearer stopping short, so equal distances from the middle
+// take equal colours — ggplot2's `rescale_mid`. A `mid` of 0.5 reads `t`
+// itself, exactly, so a ramp with no middle declared reads its table as it
+// always did, and a moving domain moves one uniform and no table.
+public float rampMidT(float t, float mid) {
+  float far = max(mid, 1.0 - mid);
+  return clamp((t + (far - mid)) / (2.0 * far), 0.0, 1.0);
+}
 
 // Entries in the ramp texture. Exported because `buildColorRampLut` sizes the
 // array by it and the mapping below divides by it: a table built to one number

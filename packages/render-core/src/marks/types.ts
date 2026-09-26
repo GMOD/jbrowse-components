@@ -96,12 +96,16 @@ export type MarkValueScaleType = 'linear' | 'log' | 'symlog'
 
 /**
  * The colour scale a ramp channel's raw `colorValue`s resolve through each
- * frame, with the 256-entry RGBA LUT the pass's sampler binds.
+ * frame, with the 256-entry RGBA LUT the pass's sampler binds: straight, its
+ * middle stop at the middle, and `mid`, where a diverging ramp puts that stop,
+ * read through a uniform.
  */
 export interface MarkRamp {
   domain: [number, number]
   scale: 'linear' | 'log'
   lut: Uint8Array
+  /** The value the ramp's middle stop sits at; the domain's middle when absent. */
+  mid?: number
 }
 
 /** A horizontal strip of the canvas, in CSS px down from its top edge. */

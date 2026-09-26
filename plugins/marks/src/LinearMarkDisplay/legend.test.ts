@@ -9,6 +9,7 @@ import {
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 
+import { paintColors } from '../../../../packages/render-core/src/marks/markRamp.ts'
 import { buildMarkLegend, categoryLabel, markColorScales } from './legend.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
@@ -389,23 +390,39 @@ test('an unpinned diverging ramp unioned over two regions keeps its middle stop 
   if (table.kind !== 'ramp') {
     return
   }
-  const [min, max] = table.domain
-  expect(min).toBeCloseTo(-0.2)
-  expect(max).toBeCloseTo(3)
-  const entries = table.lut.length / 4
-  let whitest = 0
-  for (let i = 0; i < entries; i++) {
-    if (table.lut[i * 4 + 1]! > table.lut[whitest * 4 + 1]!) {
-      whitest = i
-    }
+  expect(table.domain[0]).toBeCloseTo(-0.2)
+  expect(table.domain[1]).toBeCloseTo(3)
+  // what both backends paint through: the straight table and the middle
+  const colors = paintColors(
+    { colorValue: Float32Array.of(0, -0.2, 0.2, 3) },
+    4,
+    {
+      domain: table.domain,
+      scale: table.scale,
+      lut: table.lut,
+      mid: table.domainMid,
+    },
+  )
+  const [white, below, above, far] = Array.from(colors, abgr => [
+    abgr & 255,
+    (abgr >>> 8) & 255,
+    (abgr >>> 16) & 255,
+  ])
+  for (const channel of white!) {
+    expect(channel).toBeGreaterThanOrEqual(254)
   }
-  const valueAtWhite = min + (whitest / (entries - 1)) * (max - min)
-  expect(Math.abs(valueAtWhite)).toBeLessThan((max - min) / entries)
+  // equal distances either side of the middle take mirrored colours, and only
+  // the farther end reaches its end stop
+  expect(below).toEqual([...above!].reverse())
+  expect(below![2]).toBe(255)
+  expect(below![0]).toBeLessThan(255)
+  expect(far).toEqual([255, 0, 0])
 })
 
 // A backend re-uploads a ramp on identity, and the key is rebuilt whenever a
-// region lands.
-test('a key rebuilt over an extent that has not moved hands back the table it baked', () => {
+// region lands; a domain that widens under a declared middle moves where the
+// middle is read, not the table.
+test('a key rebuilt over a widened extent hands back the same table', () => {
   const regions = [divergingRegion([-0.2, 0.2]), divergingRegion([-0.1, 3])]
   const lutOf = (loaded: MarkRegionData[]) => {
     const { scale } = buildMarkLegend(loaded)[0]!
@@ -414,7 +431,7 @@ test('a key rebuilt over an extent that has not moved hands back the table it ba
   const first = lutOf(regions)
   expect(first).toBeDefined()
   expect(lutOf(regions)).toBe(first)
-  expect(lutOf([...regions, divergingRegion([-1, 0.5])])).not.toBe(first)
+  expect(lutOf([...regions, divergingRegion([-1, 0.5])])).toBe(first)
 })
 
 function keyTitle(written: string | undefined, loaded: MarkRegionData) {

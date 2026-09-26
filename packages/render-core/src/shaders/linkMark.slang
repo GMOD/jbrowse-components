@@ -85,6 +85,7 @@ struct Uniforms {
   int    rampMode;
   float  rampMin;
   float  rampMax;
+  float  rampMidNorm;
   // Whether the mark names a `y`: the apex is then the value's height.
   int    valued;
   int    linkShape;
@@ -249,7 +250,7 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
       screen.x / u.canvasWidth * 2.0 - 1.0,
       yPxToClipY(screen.y, u.canvasHeight),
       0.0, 1.0);
-  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax);
+  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm);
   o.local = local;
   o.radii = radii;
   o.kind = kind;

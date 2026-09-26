@@ -1,4 +1,5 @@
 import { SCALE_TYPE_LOG } from '../scoreScale.ts'
+import { rampMidT } from '../shaders/colorRampLut.js.generated.ts'
 import {
   RAMP_LINEAR,
   RAMP_LOG,
@@ -29,21 +30,37 @@ interface RampBake {
   min: number
   max: number
   log: boolean
+  midNorm: number
   lut: Uint8Array
   colors: Uint32Array
 }
 
 const NO_COLORS = new Uint32Array(0)
 
-/** `markColor.slang`'s three uniforms for a frame's ramp, or for none. */
+// Where the ramp's middle stop sits in the normalized domain, clamped by the
+// normalizer as `buildColorRampLut` clamps its own.
+function rampMidNorm({ domain, scale, mid }: MarkRamp) {
+  return mid === undefined
+    ? 0.5
+    : normalizeScore(
+        mid,
+        domain[0],
+        domain[1],
+        scale === 'log' ? SCALE_TYPE_LOG : 0,
+        1,
+      )
+}
+
+/** `markColor.slang`'s four uniforms for a frame's ramp, or for none. */
 export function rampUniforms(ramp: MarkRamp | undefined) {
   return ramp
     ? {
         rampMode: ramp.scale === 'log' ? RAMP_LOG : RAMP_LINEAR,
         rampMin: ramp.domain[0],
         rampMax: ramp.domain[1],
+        rampMidNorm: rampMidNorm(ramp),
       }
-    : { rampMode: RAMP_NONE, rampMin: 0, rampMax: 1 }
+    : { rampMode: RAMP_NONE, rampMin: 0, rampMax: 1, rampMidNorm: 0.5 }
 }
 
 /**
@@ -92,6 +109,7 @@ export function paintColors(
   }
   const [min, max] = ramp.domain
   const log = ramp.scale === 'log'
+  const midNorm = rampMidNorm(ramp)
   const { lut } = ramp
   const bake = c.rampBake
   if (
@@ -99,6 +117,7 @@ export function paintColors(
     bake.min === min &&
     bake.max === max &&
     bake.log === log &&
+    bake.midNorm === midNorm &&
     bake.lut === lut &&
     bake.colors.length === count
   ) {
@@ -117,11 +136,14 @@ export function paintColors(
       colors[i] = RAMP_NOT_A_NUMBER_COLOR
       continue
     }
-    const t = Number.isFinite(value)
-      ? normalizeScore(value, min, max, log ? SCALE_TYPE_LOG : 0, 1)
-      : value > 0
-        ? 1
-        : 0
+    const t = rampMidT(
+      Number.isFinite(value)
+        ? normalizeScore(value, min, max, log ? SCALE_TYPE_LOG : 0, 1)
+        : value > 0
+          ? 1
+          : 0,
+      midNorm,
+    )
     const o = Math.round(t * (entries - 1)) * 4
     colors[i] =
       ((lut[o + 3]! << 24) |
@@ -130,6 +152,6 @@ export function paintColors(
         lut[o]!) >>>
       0
   }
-  c.rampBake = { values: colorValue, min, max, log, lut, colors }
+  c.rampBake = { values: colorValue, min, max, log, midNorm, lut, colors }
   return colors
 }

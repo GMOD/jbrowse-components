@@ -1,10 +1,8 @@
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
-import {
-  densityGradientT,
-  densityRampT,
-} from './shaders/wiggleCommon.js.generated.ts'
+import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
@@ -79,7 +77,7 @@ export function rampMidNorm(
 }
 
 // The named-ramp counterpart: the same normalizer the default fn and the
-// shader share, then wiggleCommon.slang's `densityRampT` into the same
+// shader share, then colorRampLut.slang's `rampMidT` into the same
 // 256-entry ramp bytes the GPU samples as the density pass's texture —
 // `makeRampFillStyleLut` is the fillStyle LUT HiC's and LD's Canvas2D twins
 // already index the same way. densityColorParity.test.ts sweeps the two
@@ -106,5 +104,5 @@ export function makeDensityLutFillFn(
     symlogConstant,
   )
   const fill = makeRampFillStyleLut(ramp)
-  return (score: number) => fill(densityRampT(normalize(score), midNorm))
+  return (score: number) => fill(rampMidT(normalize(score), midNorm))
 }

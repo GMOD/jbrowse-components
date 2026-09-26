@@ -25,7 +25,7 @@
 // back from there.
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX, MAX_WIGGLE_CUTS
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
-//! js-export: densityGradientT, densityRampT
+//! js-export: densityGradientT
 module wiggleCommon;
 
 import hpmath;
@@ -194,15 +194,4 @@ public float4 bandColorAt(float centerLineYPx, float4 cutYsLo, float4 cutYsHi, U
 public float densityGradientT(float norm, float zeroNorm) {
   float maxDist = max(zeroNorm, 1.0 - zeroNorm);
   return abs(norm - zeroNorm) / max(maxDist, 0.0001);
-}
-
-// A named ramp's position: `midNorm`, in [0, 1], at its middle stop, and both
-// sides on one scale, the farther domain end at its end stop. core's
-// `buildColorRampLut` warps by the same rule, as the white fade already reads.
-public float densityRampT(float norm, float midNorm) {
-  return clamp(
-    0.5 + (norm - midNorm) / (2.0 * max(midNorm, 1.0 - midNorm)),
-    0.0,
-    1.0,
-  );
 }
