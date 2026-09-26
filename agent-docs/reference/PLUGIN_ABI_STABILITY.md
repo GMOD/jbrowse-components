@@ -820,6 +820,23 @@ author who lands on a behavior change can find the sentence that explains it.
   freezes under semver (ADR-030), third-party plugins pin an exact version, and
   v5 ships no migrations — so this is recorded rather than deprecated.
 
+- **A render lifecycle's callbacks must answer `releaseTargets`**
+  (`@jbrowse/render-core/RenderLifecycleMixin`, `@jbrowse/render-core/installUpload`).
+  A display scrolled out of a mounted view used to keep its 4x MSAA colour
+  attachment, the largest per-display allocation this app makes. The render
+  autorun now skips a frame for an off-screen canvas and calls `releaseTargets`,
+  which frees that texture and leaves the HAL, the device and the pipelines
+  alive.
+
+  **The field is required rather than optional, and the same narrowing hole
+  applies**: the manifest serves the same names and `publicApi.test.ts` pins the
+  same subpaths, neither of which sees the shape of an exported interface. An
+  in-tree display meets nothing — `installUpload` supplies the callback, and
+  `noHandRolledAttach` already makes it the only route to
+  `attachRenderingBackend`. What an external author meets is a rebuild, and only
+  if they called `attachRenderingBackend` directly against the lint rule.
+  **Opt-out: none; call `installUpload`, which answers it for you.**
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably
