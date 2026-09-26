@@ -1,4 +1,4 @@
-import { assembleLocString, polarToCartesian } from '@jbrowse/core/util'
+import { assembleLocStringRaw, polarToCartesian } from '@jbrowse/core/util'
 
 import type { Region } from '@jbrowse/core/util'
 
@@ -48,7 +48,7 @@ export function bpToRadians(
 }
 
 function elidedKey(regions: Region[]) {
-  return `${assembleLocString(regions[0]!)}..${assembleLocString(regions.at(-1)!)}[${regions.length}]`
+  return `${assembleLocStringRaw(regions[0]!)}..${assembleLocStringRaw(regions.at(-1)!)}[${regions.length}]`
 }
 
 /**
@@ -73,7 +73,7 @@ export class Slice {
     const { bpPerRadian } = view
     this.key = region.elided
       ? elidedKey(region.regions)
-      : assembleLocString(region)
+      : assembleLocStringRaw(region)
     this.bpPerRadian = bpPerRadian
     this.startRadians = offsetRadians
     this.endRadians = region.widthBp / bpPerRadian + offsetRadians

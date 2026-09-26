@@ -129,16 +129,16 @@ const PointerTooltip = observer(function PointerTooltip({
 }: {
   model: CircularViewModel
 }) {
-  const { chordHover, bandHover, bandComposition } = model
-  return chordHover ? (
+  const { hoveredChord, bandComposition, hoverClientXY } = model
+  const lines = hoveredChord
+    ? [hoveredChord.display.shapeLabel(hoveredChord.feature)]
+    : bandComposition
+      ? bandLines(bandComposition)
+      : []
+  return hoverClientXY && lines.length ? (
     <ComparativeTooltip
-      lines={[chordHover.display.shapeLabel(chordHover.feature)]}
-      clientPoint={{ x: chordHover.clientX, y: chordHover.clientY }}
-    />
-  ) : bandHover && bandComposition ? (
-    <ComparativeTooltip
-      lines={bandLines(bandComposition)}
-      clientPoint={{ x: bandHover.clientX, y: bandHover.clientY }}
+      lines={lines}
+      clientPoint={{ x: hoverClientXY[0], y: hoverClientXY[1] }}
     />
   ) : null
 })
@@ -218,7 +218,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
 
   useEffect(() => {
     return () => {
-      model.clearHover()
+      model.setHover(undefined)
     }
   }, [model])
 
@@ -268,7 +268,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
         const [ax, ay] = anchor
         // the figure moves under a pointer that does not, so what it hovered
         // is no longer under it
-        model.clearHover()
+        model.setHover(undefined)
         if (rotateDelta) {
           model.rotate(rotateDelta * 0.003)
         }
@@ -306,8 +306,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     lastAngleRef.current = angleFromCenter(event.clientX, event.clientY)
   }
 
-  // a ring takes the pointer first; off every ring it goes to the chord under
-  // it, which the highlight paths and the tooltip then read off the model
+  // a ring takes the pointer first, then an ideogram band, then the chord
+  // under it, which the highlight paths and the tooltip read off the model
   const routePointer = (
     event: React.MouseEvent<SVGSVGElement>,
     type: RingPointerEvent,
@@ -317,23 +317,21 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     const { clientX, clientY } = event
     const onRing = ringPointer.move(clientX, clientY, dx, dy, rect, type)
     if (onRing !== undefined) {
-      model.clearHover()
+      model.setHover(undefined)
       return onRing
     }
     const band = model.bandAt(dx, dy)
-    if (band !== undefined) {
-      model.clearHover()
-      if (type === 'mousemove') {
-        model.setBandHover({ index: band, clientX, clientY })
-      }
-      return undefined
-    }
-    const hit = model.chordAt(dx, dy)
+    const hit = band === undefined ? model.chordAt(dx, dy) : undefined
     if (type === 'mousemove') {
-      model.clearHover()
-      if (hit) {
-        model.setChordHover({ ...hit, clientX, clientY })
-      }
+      model.setHover(
+        band !== undefined
+          ? { kind: 'band', key: band }
+          : hit
+            ? { kind: 'chord', ...hit }
+            : undefined,
+        clientX,
+        clientY,
+      )
     } else if (type === 'click' && hit) {
       hit.display.clickFeature(hit.feature)
     }
@@ -342,7 +340,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
 
   const leaveFigure = () => {
     ringPointer.leave()
-    model.clearHover()
+    model.setHover(undefined)
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {

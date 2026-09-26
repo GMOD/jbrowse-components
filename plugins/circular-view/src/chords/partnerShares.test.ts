@@ -9,7 +9,7 @@ test('each partner covers its share of the chromosome, most first', () => {
         { partner: 'chr2', start: 700, end: 800 },
         { partner: 'chr5', start: 800, end: 890 },
       ],
-      1000,
+      { start: 0, end: 1000 },
     ),
   ).toEqual([
     { partner: 'chr17', fraction: 0.6 },
@@ -26,7 +26,16 @@ test('overlapping alignments to one partner count their bases once', () => {
         { partner: 'chr1', start: 250, end: 750 },
         { partner: 'chr1', start: 300, end: 400 },
       ],
-      1000,
+      { start: 0, end: 1000 },
     ),
   ).toEqual([{ partner: 'chr1', fraction: 0.75 }])
+})
+
+test('bases past the region count none', () => {
+  expect(
+    partnerShares([{ partner: 'chr1', start: 500, end: 5000 }], {
+      start: 0,
+      end: 1000,
+    }),
+  ).toEqual([{ partner: 'chr1', fraction: 0.5 }])
 })

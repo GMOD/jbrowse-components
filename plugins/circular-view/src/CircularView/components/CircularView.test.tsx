@@ -240,16 +240,16 @@ test('a pointer off every ring reaches the chord under it', () => {
     )
   const c = centerOf(view)
   fireEvent.pointerMove(svg, { clientX: c.x + 10, clientY: c.y, buttons: 0 })
-  expect(view.chordHover?.feature.id()).toBe('f1')
+  expect(view.hoveredChord?.feature.id()).toBe('f1')
   expect(document.body.textContent).toContain('the chord under the pointer')
 
   fireEvent.pointerMove(svg, { clientX: c.x - 10, clientY: c.y, buttons: 0 })
-  expect(view.chordHover).toBeUndefined()
+  expect(view.hoveredChord).toBeUndefined()
 
   fireEvent.click(svg, { clientX: c.x + 10, clientY: c.y })
   expect(clicked).toEqual(['f1'])
 
   fireEvent.pointerMove(svg, { clientX: c.x + 10, clientY: c.y, buttons: 0 })
   fireEvent.pointerLeave(svg)
-  expect(view.chordHover).toBeUndefined()
+  expect(view.hoveredChord).toBeUndefined()
 })

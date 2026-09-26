@@ -121,10 +121,11 @@ export async function ideogramPoint(page: Page, anchor: AnnotationAnchor) {
       figureOriginXY: [number, number]
       centerXY: [number, number]
       staticSlices: {
+        key: string
         region: { elided: boolean; refName?: string; assemblyName?: string }
       }[]
-      bandCenter: (index: number) => [number, number] | undefined
-      bandAt: (dx: number, dy: number) => number | undefined
+      bandCenter: (key: string) => [number, number] | undefined
+      bandAt: (dx: number, dy: number) => string | undefined
     }
     const [first, second] = name.split(' ')
     const [assemblyName, refName] = second
@@ -134,17 +135,17 @@ export async function ideogramPoint(page: Page, anchor: AnnotationAnchor) {
       window as unknown as { JBrowseSession: { views: BandView[] } }
     ).JBrowseSession.views.filter(v => v.type === 'CircularView')
     for (const view of views) {
-      const index = view.staticSlices.findIndex(
+      const key = view.staticSlices.find(
         ({ region }) =>
           !region.elided &&
           region.refName === refName &&
           (assemblyName === undefined || region.assemblyName === assemblyName),
-      )
-      const centre = view.bandCenter(index)
+      )?.key
+      const centre = key === undefined ? undefined : view.bandCenter(key)
       const box = document
         .querySelector(`[data-testid="${CSS.escape(view.id)}"]`)
         ?.getBoundingClientRect()
-      if (centre && box && view.bandAt(...centre) === index) {
+      if (centre && box && view.bandAt(...centre) === key) {
         return {
           x: box.left + view.figureOriginXY[0] + view.centerXY[0] + centre[0],
           y: box.top + view.figureOriginXY[1] + view.centerXY[1] + centre[1],

@@ -22,18 +22,23 @@ function coveredBp(spans: PartnerSpan[]) {
 }
 
 /**
- * What share of a chromosome of `lengthBp` each partner's alignments cover,
- * most first. Overlapping alignments to one partner count their bases once.
+ * What share of `region` each partner's alignments cover, most first.
+ * Overlapping alignments to one partner count their bases once, and bases
+ * past the region count none.
  */
 export function partnerShares(
   spans: readonly PartnerSpan[],
-  lengthBp: number,
+  region: { start: number; end: number },
 ): PartnerShare[] {
-  const byPartner = Map.groupBy(spans, s => s.partner)
-  return [...byPartner]
+  const clipped = spans.map(s => ({
+    ...s,
+    start: Math.max(s.start, region.start),
+    end: Math.min(s.end, region.end),
+  }))
+  return [...Map.groupBy(clipped, s => s.partner)]
     .map(([partner, list]) => ({
       partner,
-      fraction: coveredBp([...list]) / lengthBp,
+      fraction: coveredBp(list) / (region.end - region.start),
     }))
     .sort((a, b) => b.fraction - a.fraction)
 }

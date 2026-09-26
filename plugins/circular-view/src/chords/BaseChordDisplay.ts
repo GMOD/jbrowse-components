@@ -242,11 +242,11 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * the feature under the pointer, which the view resolves off its pick
-       * canvas for every chord display at once
+       * the feature under the pointer, which the view hit-tests for every
+       * chord display at once
        */
       get hoveredFeatureId() {
-        const hover = this.view.chordHover
+        const hover = this.view.hoveredChord
         return hover?.display.id === self.id ? hover.feature.id() : undefined
       },
       /**

@@ -1,7 +1,7 @@
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { WIDTH_FADE_FLOOR } from '@jbrowse/synteny-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { when } from 'mobx'
+import { reaction, when } from 'mobx'
 
 import type { CircularViewModel } from './model.ts'
 
@@ -141,42 +141,83 @@ test('the identity fade reaches the ribbon’s alpha', async () => {
 }, 40000)
 
 describe('a hovered band', () => {
+  const keyOf = (circle: CircularViewModel, assemblyName: string) =>
+    circle.staticSlices.find(
+      ({ region }) =>
+        !region.elided &&
+        region.assemblyName === assemblyName &&
+        region.refName === 'ctgB',
+    )!.key
+
   test('is found under the pointer, off it the chords are', async () => {
     const { circle } = await launch({})
     circle.rotate(1)
-    circle.staticSlices.forEach((_, i) => {
-      expect(circle.bandAt(...circle.bandCenter(i)!)).toBe(i)
-    })
+    for (const { key, region } of circle.staticSlices) {
+      if (!region.elided) {
+        expect(circle.bandAt(...circle.bandCenter(key)!)).toBe(key)
+      }
+    }
     expect(circle.bandAt(0, 0)).toBeUndefined()
   }, 40000)
 
   test('focuses the chord stage on its slice', async () => {
     const { circle } = await launch({})
     expect(circle.chordPass.frame.focusSlice).toBe(-1)
-    const index = circle.staticSlices.findIndex(
-      s => !s.region.elided && s.region.assemblyName === 'B',
-    )
-    circle.setBandHover({ index, clientX: 0, clientY: 0 })
+    circle.setHover({ kind: 'band', key: keyOf(circle, 'B') })
     expect(circle.chordPass.frame.focusSlice).toBe(
-      circle.chordAxis.slices[index]!.gaps,
+      circle.chordAxis.byKey.get('B\u0000ctgB')!.gaps,
     )
-    circle.clearHover()
+    circle.setHover(undefined)
     expect(circle.chordPass.frame.focusSlice).toBe(-1)
+  }, 40000)
+
+  test('a move within it moves only the tooltip', async () => {
+    const { circle } = await launch({})
+    circle.setHover({ kind: 'band', key: keyOf(circle, 'B') }, 10, 10)
+    const hover = circle.hover
+    let recomputed = 0
+    const stop = reaction(
+      () => circle.bandComposition,
+      () => {
+        recomputed++
+      },
+    )
+    circle.setHover({ kind: 'band', key: keyOf(circle, 'B') }, 12, 11)
+    stop()
+    expect(circle.hover).toBe(hover)
+    expect(circle.hoverClientXY).toEqual([12, 11])
+    expect(recomputed).toBe(0)
+  }, 40000)
+
+  test('names the same chromosome after a reorder', async () => {
+    const { circle } = await launch({ autoDiagonalize: false })
+    circle.setHover({ kind: 'band', key: keyOf(circle, 'B') })
+    circle.setDisplayedRegions([...circle.displayedRegions].reverse())
+    expect(circle.bandComposition?.name).toBe('B ctgB')
   }, 40000)
 
   // three 5 kb alignments a kb apart cover 7 kb of the 16 kb contig
   test('names the share of it each partner covers', async () => {
     const { circle } = await launch({})
-    const index = circle.staticSlices.findIndex(
-      s =>
-        !s.region.elided &&
-        s.region.assemblyName === 'B' &&
-        s.region.refName === 'ctgB',
-    )
-    circle.setBandHover({ index, clientX: 0, clientY: 0 })
+    circle.setHover({ kind: 'band', key: keyOf(circle, 'B') })
     expect(circle.bandComposition).toEqual({
       name: 'B ctgB',
       shares: [{ partner: 'A ctgA', fraction: 7000 / 16000 }],
     })
+  }, 40000)
+
+  test('counts only the bases on the region the circle draws', async () => {
+    const { circle } = await launch({})
+    circle.setDisplayedRegions(
+      circle.displayedRegions.map(r =>
+        r.assemblyName === 'B' && r.refName === 'ctgB'
+          ? { ...r, start: 0, end: 1000 }
+          : r,
+      ),
+    )
+    circle.setHover({ kind: 'band', key: keyOf(circle, 'B') })
+    expect(circle.bandComposition?.shares).toEqual([
+      { partner: 'A ctgA', fraction: 0.5 },
+    ])
   }, 40000)
 })

@@ -4,7 +4,7 @@ exports[`one slice 1`] = `
 Slice {
   "bpPerRadian": 1591.5494309189535,
   "endRadians": 6.283185307179586,
-  "key": "toast:1..10,000",
+  "key": "toast:1..10000",
   "region": {
     "end": 10000,
     "refName": "toast",
@@ -20,7 +20,7 @@ exports[`two slices 1`] = `
   Slice {
     "bpPerRadian": 3183.098861837907,
     "endRadians": 3.141592653589793,
-    "key": "{wow}toast:1..10,000",
+    "key": "{wow}toast:1..10000",
     "region": {
       "assemblyName": "wow",
       "elided": false,
@@ -34,7 +34,7 @@ exports[`two slices 1`] = `
   Slice {
     "bpPerRadian": 3183.098861837907,
     "endRadians": 6.288185307179586,
-    "key": "{wow}tiny1:1..5,000..{wow}tiny2:1..5,000[2]",
+    "key": "{wow}tiny1:1..5000..{wow}tiny2:1..5000[2]",
     "region": {
       "elided": true,
       "regions": [
@@ -63,7 +63,7 @@ exports[`volvox 1`] = `
   Slice {
     "bpPerRadian": 8925.40920859349,
     "endRadians": 5.602096086738348,
-    "key": "{volvox}ctgA:1..50,001",
+    "key": "{volvox}ctgA:1..50001",
     "region": {
       "assemblyName": "volvox",
       "end": 50001,
@@ -76,7 +76,7 @@ exports[`volvox 1`] = `
   Slice {
     "bpPerRadian": 8925.40920859349,
     "endRadians": 6.288185307179587,
-    "key": "{volvox}ctgB:1..6,079",
+    "key": "{volvox}ctgB:1..6079",
     "region": {
       "assemblyName": "volvox",
       "end": 6079,

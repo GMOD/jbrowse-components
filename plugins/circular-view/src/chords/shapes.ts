@@ -41,15 +41,22 @@ export interface ChordHit {
   feature: Feature
 }
 
-/** The shape under the pointer, and where the pointer was. */
-export interface ChordHover extends ChordHit {
-  clientX: number
-  clientY: number
-}
+/**
+ * What the pointer is on: a chord or ribbon, or a chromosome's ideogram band
+ * named by its slice's key, which a reorder leaves naming the same
+ * chromosome.
+ */
+export type PointerTarget =
+  | ({ kind: 'chord' } & ChordHit)
+  | { kind: 'band'; key: string }
 
-/** The ideogram band under the pointer, by its slice's place, and where the pointer was. */
-export interface BandHover {
-  index: number
-  clientX: number
-  clientY: number
+export function samePointerTarget(
+  a: PointerTarget | undefined,
+  b: PointerTarget | undefined,
+) {
+  return a?.kind === 'chord' && b?.kind === 'chord'
+    ? a.display === b.display && a.feature.id() === b.feature.id()
+    : a?.kind === 'band' && b?.kind === 'band'
+      ? a.key === b.key
+      : a === b
 }
