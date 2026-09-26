@@ -40,6 +40,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./shaders/barMarkIface",
   "./shaders/capsule",
   "./shaders/capsuleConsts",
+  "./shaders/colorRampLut",
   "./shaders/coverageBar",
   "./shaders/coverageIndicator",
   "./shaders/coverageInterbase",
