@@ -5,7 +5,10 @@ import {
   withPassId,
 } from '@jbrowse/render-core/marks'
 
-import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
+import {
+  ARC_WIDTH_MAX_SCALE,
+  arcStrokeScale,
+} from '../../features/arcs/arcLineWidth.ts'
 
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { ArcBand, RenderState } from './rendererTypes.ts'
@@ -27,33 +30,36 @@ export const ARC_DASH: readonly [number, number] = [3, 3]
  * The band's y scale. The read cloud plots |TLEN| on a log axis; arc mode
  * plots an arc's genomic radius at the view's own px per bp, so a pair inside
  * one region rises as high as it is wide, and an interchromosomal arc, whose
- * radius is past every domain, rises to the band's top. `down` hangs the
+ * radius is past every domain, rises to the band's far edge, less half the
+ * widest stroke so the band's clip leaves its apex whole. `down` hangs the
  * band from its top.
  */
 export function arcBandYScale(state: ArcBandState) {
   const { arcBand, arcsYDomainBp, linkRegions } = state
-  const pxPerBp = Math.abs(linkRegions[0]?.signedPxPerBp ?? 0)
-  const band = {
-    reverse: arcBand.down,
-    rowOffsetPx: arcBand.top,
-    rowHeight: arcBand.height,
+  if (arcsYDomainBp !== undefined) {
+    return {
+      reverse: arcBand.down,
+      rowOffsetPx: arcBand.top,
+      rowHeight: arcBand.height,
+      domain: [1, Math.max(2, arcsYDomainBp)] as [number, number],
+      scaleType: 'log' as const,
+      insetPx: ARC_BAND_INSET_PX,
+    }
   }
-  return arcsYDomainBp === undefined
-    ? {
-        ...band,
-        domain: [0, pxPerBp > 0 ? arcBand.height / pxPerBp : 1] as [
-          number,
-          number,
-        ],
-        scaleType: 'linear' as const,
-        insetPx: 0,
-      }
-    : {
-        ...band,
-        domain: [1, Math.max(2, arcsYDomainBp)] as [number, number],
-        scaleType: 'log' as const,
-        insetPx: ARC_BAND_INSET_PX,
-      }
+  const pxPerBp = Math.abs(linkRegions[0]?.signedPxPerBp ?? 0)
+  const margin = Math.min(
+    arcBand.height,
+    (ARC_WIDTH_MAX_SCALE * state.readConnectionsLineWidth) / 2,
+  )
+  const reach = arcBand.height - margin
+  return {
+    reverse: arcBand.down,
+    rowOffsetPx: arcBand.down ? arcBand.top : arcBand.top + margin,
+    rowHeight: reach,
+    domain: [0, pxPerBp > 0 ? reach / pxPerBp : 1] as [number, number],
+    scaleType: 'linear' as const,
+    insetPx: 0,
+  }
 }
 
 function linkParams(state: ArcBandState, dashed: boolean): LinkParams {

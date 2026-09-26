@@ -92,8 +92,10 @@ Settled while building, each against the picture the band drew before:
 
 - **Arc mode is valued**: its y is the genomic radius on a linear axis at the
   view's px per bp, so an interchromosomal arc, whose radius is past every
-  domain, still rises to the band's top. Left unvalued, a translocation across a
-  seam drew as a dome as wide as the screen gap and read as a short event.
+  domain, still rises to the band's far edge. Left unvalued, a translocation
+  across a seam drew as a dome as wide as the screen gap and read as a short
+  event. The axis stops half the widest stroke short of that edge, or the
+  band's clip halves a clamped apex.
 - **The split-read connector is a second link mark** under `strokeDash`, not a
   per-instance lane, so it paints after the solid bars.
 - **Every arc is filed under one loaded region.** The links draw unclipped, so
