@@ -41,7 +41,6 @@ import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { paintRuns } from '../../chords/ideogramPaint.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
 import { shapePath } from '../../chords/shapePath.ts'
-import { DIMMED_ALPHA } from '../../chords/types.ts'
 
 import type { ExportSvgOptions } from '../../CircularView/model.ts'
 import type { Slice, SliceNonElidedRegion } from '../../CircularView/slices.ts'
@@ -247,14 +246,14 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * what the ribbons draw: the visible alignments at least the view's
+       * what the ribbons draw: the held alignments at least the view's
        * `minAlignmentLength` long on their own side, less those the view's
        * colour hides
        */
       get drawnFeatures(): Feature[] | undefined {
         const min = self.view.minAlignmentLength
         const colors = this.ribbonColors
-        return self.visibleFeatures?.filter(
+        return self.features?.filter(
           f =>
             Math.abs(f.get('end') - f.get('start')) >= min &&
             abgrAlpha(colors.get(f.id()) ?? DEFAULT_ABGR) > 0,
@@ -312,13 +311,12 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the drawn alignments as the ribbon mark's lanes, each in its fill with
-       * the alpha the SV inspector's dimming leaves it
+       * the drawn alignments as the ribbon mark's lanes, each in its fill at
+       * the identity fade's alpha
        */
       get ribbonLanes(): RibbonLanes {
         const feet = this.ribbonFeet
         const colors = this.ribbonColors
-        const highlighted = self.highlightedFeatureIdSet
         const { opacityByIdentity } = self.view
         const picked: number[] = []
         for (const feature of this.drawnFeatures ?? []) {
@@ -359,11 +357,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           lanes.strand[k] = feet.strand[i]!
           lanes.color[k] = withAbgrAlpha(
             colors.get(id) ?? DEFAULT_ABGR,
-            highlighted?.has(id) === false
-              ? DIMMED_ALPHA
-              : opacityByIdentity
-                ? identityAlphaByte(identityOf(feature))
-                : 255,
+            opacityByIdentity ? identityAlphaByte(identityOf(feature)) : 255,
           )
         })
         return lanes

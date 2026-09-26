@@ -194,31 +194,6 @@ test('the export leaves a hovered ribbon in its resting fill', () => {
   expect(fills[1]).not.toBe('#4682b4')
 })
 
-test('the export draws every ribbon and dims those outside the highlighted set', () => {
-  const opacities = (overrides: Partial<RibbonDisplayModel>) => {
-    const { container } = render(
-      <svg>
-        <ShapePaths
-          display={ribbonModel('ready', {
-            shapes: shapesOf(alignment(1, 'a'), alignment(1, 'b')),
-            ...overrides,
-          })}
-          testid="syntenyRibbonRenderer"
-          only="all"
-        />
-      </svg>,
-    )
-    return [...container.querySelectorAll('path')].map(p =>
-      p.getAttribute('opacity'),
-    )
-  }
-  expect(opacities({})).toEqual([null, null])
-  expect(opacities({ highlightedFeatureIdSet: new Set(['b']) })).toEqual([
-    '0.15',
-    null,
-  ])
-})
-
 // a capture waits for the display's frame to be visible, and with nothing
 // highlighted the canvas holds every shape, so the group's extent is its disc
 test('on screen the renderer group spans its disc with nothing highlighted', () => {

@@ -73,20 +73,6 @@ export function BaseChordDisplay() {
        * the fetch's pure "go again" signal
        */
       reloadCounter: 0,
-      /**
-       * #volatile
-       * ids of the features to keep at full strength while the rest dim;
-       * undefined dims nothing. The SV inspector writes the selected record's
-       * event here
-       */
-      highlightedFeatureIds: undefined as string[] | undefined,
-      /**
-       * #volatile
-       * ids of the features to draw; undefined draws them all. The SV
-       * inspector writes the rows its sheet's filters leave here, so a filter
-       * change is a redraw and no refetch
-       */
-      visibleFeatureIds: undefined as string[] | undefined,
     }))
     .views(self => ({
       /**
@@ -205,30 +191,10 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * `features`, narrowed to `visibleFeatureIds`
-       */
-      get visibleFeatures() {
-        const visible = self.visibleFeatureIds
-          ? new Set(self.visibleFeatureIds)
-          : undefined
-        return visible
-          ? self.features?.filter(f => visible.has(f.id()))
-          : self.features
-      },
-      /**
-       * #getter
        * what the chord components draw
        */
       get drawnFeatures(): Feature[] | undefined {
-        return this.visibleFeatures
-      },
-      /**
-       * #getter
-       */
-      get highlightedFeatureIdSet() {
-        return self.highlightedFeatureIds
-          ? new Set(self.highlightedFeatureIds)
-          : undefined
+        return self.features
       },
       /**
        * #getter
@@ -343,18 +309,6 @@ export function BaseChordDisplay() {
        */
       setFeatures(features: Feature[] | undefined) {
         self.features = features
-      },
-      /**
-       * #action
-       */
-      setHighlightedFeatureIds(ids: string[] | undefined) {
-        self.highlightedFeatureIds = ids
-      },
-      /**
-       * #action
-       */
-      setVisibleFeatureIds(ids: string[] | undefined) {
-        self.visibleFeatureIds = ids
       },
       /**
        * #action

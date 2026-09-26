@@ -1,5 +1,3 @@
-import { DIMMED_OPACITY } from './shaders/chordStage.generated.ts'
-
 import type { Slice } from '../CircularView/slices.ts'
 import type { ChordCell } from './chordMarks.ts'
 import type { ChordShape, ChordLayerDisplay, RibbonShape } from './shapes.ts'
@@ -28,9 +26,6 @@ export interface ChordDisplayFrameModel {
   openErrorDialog: () => void
   reload: () => void
 }
-
-/** `DIMMED_OPACITY` as a packed colour's alpha byte. */
-export const DIMMED_ALPHA = Math.round(DIMMED_OPACITY * 255)
 
 // What the chord and ribbon displays both answer. The canvas draws their lanes
 // through `chordCell`; the SVG side draws the hovered and selected shapes over

@@ -3,8 +3,6 @@ import { applySnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { autorun, when } from 'mobx'
 
-import { DIMMED_ALPHA } from '../../chords/types.ts'
-
 import type { CircularViewModel } from '../../CircularView/model.ts'
 import type { Slice } from '../../CircularView/slices.ts'
 
@@ -262,11 +260,4 @@ test('a rotation or a zoom leaves the uploaded cell as it was', async () => {
   dispose()
   expect(cells).toHaveLength(1)
   expect(cells[0]).toBeDefined()
-}, 20000)
-
-test("the SV inspector's dimming reaches the ribbon's alpha", async () => {
-  const { display } = await setup(['volvox', 'volvox2'])
-  expect(display.ribbonLanes.color[0]! >>> 24).toBe(255)
-  display.setHighlightedFeatureIds([])
-  expect(display.ribbonLanes.color[0]! >>> 24).toBe(DIMMED_ALPHA)
 }, 20000)

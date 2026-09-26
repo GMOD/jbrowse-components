@@ -74,6 +74,44 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         configuration: ConfigurationReference(configSchema),
       }),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       * ids of the records to keep at full strength while the rest dim;
+       * undefined dims nothing. The SV inspector writes the selected record's
+       * event here
+       */
+      highlightedFeatureIds: undefined as string[] | undefined,
+      /**
+       * #volatile
+       * ids of the records to draw; undefined draws them all. The SV
+       * inspector writes the rows its sheet's filters leave here, so a filter
+       * change is a redraw and no refetch
+       */
+      visibleFeatureIds: undefined as string[] | undefined,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the held records `visibleFeatureIds` leaves
+       */
+      get drawnFeatures(): Feature[] | undefined {
+        const visible = self.visibleFeatureIds
+          ? new Set(self.visibleFeatureIds)
+          : undefined
+        return visible
+          ? self.features?.filter(f => visible.has(f.id()))
+          : self.features
+      },
+      /**
+       * #getter
+       */
+      get highlightedFeatureIdSet() {
+        return self.highlightedFeatureIds
+          ? new Set(self.highlightedFeatureIds)
+          : undefined
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -319,6 +357,18 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        */
       clickFeature(feature: Feature) {
         self.onChordClick(feature)
+      },
+      /**
+       * #action
+       */
+      setHighlightedFeatureIds(ids: string[] | undefined) {
+        self.highlightedFeatureIds = ids
+      },
+      /**
+       * #action
+       */
+      setVisibleFeatureIds(ids: string[] | undefined) {
+        self.visibleFeatureIds = ids
       },
     }))
     .actions(self => ({
