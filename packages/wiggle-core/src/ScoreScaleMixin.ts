@@ -37,7 +37,7 @@ const confNode = (self: object) => self as ScoreScaleHost
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `autoscaleType` / `numStdDev` / `numQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `autoscaleType` / `autoscaleChoices` / `numStdDev` / `numQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
  * The value scale of every quantitative display: wiggle, the alignments
  * coverage band and the mark display, Manhattan among them, each declare
@@ -83,6 +83,21 @@ export function ScoreScaleMixin() {
        */
       get autoscaleType(): string {
         return getConf(confNode(self), ['scales', 'y', 'autoscale'])
+      },
+      /**
+       * #getter
+       * The autoscale modes this display's own enum admits, which is what the
+       * Autoscale type radio offers.
+       */
+      get autoscaleChoices(): string[] {
+        return (
+          slotChoices(
+            getSlotDefinition(
+              confNode(self).configuration.scales.y,
+              'autoscale',
+            ),
+          ) ?? []
+        )
       },
       /**
        * #getter

@@ -9,11 +9,12 @@
 // that builds them. A leaf module makes the recipe import the label instead of
 // retyping it, which is the difference between a copy that drifts and one that
 // cannot.
-export const DEFAULT_AUTOSCALE_OPTIONS: [string, string][] = [
-  ['local', 'Local'],
-  ['localpercentile', 'Local (99th percentile)'],
-  ['localsd', 'Local ± 3σ'],
-]
+/** What the Autoscale type radio calls each mode a scale declares. */
+export const AUTOSCALE_LABELS: Record<string, string> = {
+  local: 'Local',
+  localpercentile: 'Local (99th percentile)',
+  localsd: 'Local ± 3σ',
+}
 
 export interface FeatureArrays {
   featurePositions: Uint32Array

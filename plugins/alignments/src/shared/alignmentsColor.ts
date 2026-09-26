@@ -110,7 +110,10 @@ export const ALIGNMENTS_FIELD_PRESETS = {
 
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function alignmentsColorNotices(setting: AlignmentsColorSetting) {
-  return colorNotices(setting, ALIGNMENTS_FIELD_PRESETS)
+  return [
+    ...colorNotices(setting, ALIGNMENTS_FIELD_PRESETS),
+    ...levelNotices(alignmentsColorEncoding(setting)),
+  ]
 }
 
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>
@@ -244,6 +247,44 @@ const READ_COLOR_LEVELS: Record<
   mappingQuality: [[`${MAPQ_UNAVAILABLE}`, 'mapqUnavailable']],
   mateRefName: [NO_VALUE_LEVEL],
   tag: [NO_VALUE_LEVEL],
+}
+
+/** The schemes whose levels are their whole vocabulary, so a `domain` names them. */
+const LEVEL_SCHEMES = new Set<ReadColorSchemeType>([
+  'strand',
+  'firstOfPairStrand',
+  'pairOrientation',
+  'insertSize',
+  'insertSizeAndOrientation',
+])
+
+function levelNotices(encoding: AlignmentsColorEncoding): string[] {
+  if (typeof encoding !== 'object' || !encoding.domain?.length) {
+    return []
+  }
+  const { type } = colorByOf(encoding)
+  if (!LEVEL_SCHEMES.has(type)) {
+    return []
+  }
+  const levels = READ_COLOR_LEVELS[type].map(([value]) => value)
+  const named = levels.filter(level => level !== '').join(', ')
+  const domain = encoding.domain.map(String)
+  if (encoding.scale === 'threshold') {
+    return domain.some(value => levels.includes(value))
+      ? [
+          `color.domain: names a level of ${encoding.field} (${named}), which a threshold scale reads as a cut point; scale: "categorical" colours the levels`,
+        ]
+      : []
+  }
+  if (encoding.scale !== 'categorical') {
+    return []
+  }
+  return domain
+    .filter(value => !levels.includes(value))
+    .map(
+      value =>
+        `color.domain: "${value}" names no level of ${encoding.field}, whose levels are ${named}`,
+    )
 }
 
 function levelOrder(

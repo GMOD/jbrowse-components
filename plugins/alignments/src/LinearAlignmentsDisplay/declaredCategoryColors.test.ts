@@ -4,6 +4,7 @@ import { buildArcColorPalette } from '../shaders/palettes.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../shaders/slang/read.iface.generated.ts'
 import {
   alignmentsColorEncoding,
+  alignmentsColorNotices,
   declaredReadCategoryColors,
 } from '../shared/alignmentsColor.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
@@ -159,6 +160,33 @@ describe('the five levels that share the neutral default', () => {
         categorySwatchColor(c, palette),
       ),
     ).toEqual(['rgb(0,0,0)', 'rgb(136,136,136)', 'rgb(255,255,255)'])
+  })
+})
+
+describe('a domain that names no level says so', () => {
+  const notices = (color: Partial<AlignmentsColorSetting>) =>
+    alignmentsColorNotices({ ...UNSET, ...color })
+
+  test("strand's levels are 1 and -1, so '+' names none", () => {
+    expect(
+      notices({ field: 'strand', domain: ['+', '-'], range: ['#f00', '#00f'] }),
+    ).toEqual([
+      'color.domain: "+" names no level of strand, whose levels are 1, -1',
+      'color.domain: "-" names no level of strand, whose levels are 1, -1',
+    ])
+  })
+
+  test('a level under the threshold insert size reads as a cut point', () => {
+    expect(
+      notices({ field: 'insertSize', domain: ['normal'], range: ['#1b9e77'] }),
+    ).toContain(
+      'color.domain: names a level of insertSize (short, normal, long), which a threshold scale reads as a cut point; scale: "categorical" colours the levels',
+    )
+  })
+
+  test('a level the field has, or a tag value, passes', () => {
+    expect(notices({ field: 'pairOrientation', domain: ['RR'] })).toEqual([])
+    expect(notices({ field: 'tags.HP', domain: ['x'] })).toEqual([])
   })
 })
 

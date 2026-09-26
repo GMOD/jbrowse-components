@@ -24,7 +24,7 @@ import {
   GROUP_BY_LABELS,
   facetTag,
 } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
-import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/autoscale.ts'
+import { AUTOSCALE_LABELS } from '../../../../packages/wiggle-core/src/autoscale.ts'
 import {
   ARC_COLOR_OPTIONS,
   SAME_AS_READS_LABEL,
@@ -729,11 +729,6 @@ const SCALE_TYPES: Record<string, string> = {
   log: 'Log scale',
 }
 
-// The alignments coverage band passes a shorter list whose σ label interpolates
-// numStdDev, so it is deliberately not served here.
-const AUTOSCALE_TYPES: Record<string, string> = Object.fromEntries(
-  DEFAULT_AUTOSCALE_OPTIONS,
-)
 
 function ruleValues(rules: unknown[]) {
   const values = rules.map(rule =>
@@ -771,10 +766,10 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
         }
       : undefined,
     autoscale &&
-    AUTOSCALE_TYPES[autoscale] &&
+    AUTOSCALE_LABELS[autoscale] &&
     displayType === 'LinearWiggleDisplay'
       ? {
-          path: `${TRACK_MENU} → Score → Autoscale type → ${AUTOSCALE_TYPES[autoscale]}`,
+          path: `${TRACK_MENU} → Score → Autoscale type → ${AUTOSCALE_LABELS[autoscale]}`,
         }
       : undefined,
     typeof y.grid === 'boolean' && displayType === 'LinearWiggleDisplay'

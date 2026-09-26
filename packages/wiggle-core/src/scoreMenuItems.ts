@@ -4,7 +4,7 @@ import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
-import { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
+import { AUTOSCALE_LABELS } from './autoscale.ts'
 import { autoscaleGroupMembers, autoscalePeers } from './autoscaleGroup.ts'
 
 import type { AutoscalePeer } from './autoscaleGroup.ts'
@@ -32,6 +32,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
   scaleTypeChoices: string[]
   autoscaleType: string
+  autoscaleChoices: string[]
   manualMinScore: number | undefined
   manualMaxScore: number | undefined
   minScoreBound: number | undefined
@@ -79,14 +80,20 @@ export function makeScaleTypeSubMenu(self: {
   }
 }
 
-export function makeAutoscaleTypeSubMenu(
-  self: { autoscaleType: string; setAutoscale: (v?: string) => void },
-  options: [string, string][] = DEFAULT_AUTOSCALE_OPTIONS,
-): MenuItem {
+// The radio offers the modes the display's own `scales.y.autoscale` enum
+// admits, read back through `autoscaleChoices`.
+export function makeAutoscaleTypeSubMenu(self: {
+  autoscaleType: string
+  autoscaleChoices: string[]
+  setAutoscale: (v?: string) => void
+}): MenuItem {
   return {
     label: 'Autoscale type',
     subMenu: radioItems(
-      options.map(([value, label]) => ({ value, label })),
+      self.autoscaleChoices.map(value => ({
+        value,
+        label: AUTOSCALE_LABELS[value] ?? value,
+      })),
       self.autoscaleType,
       v => {
         self.setAutoscale(v)
@@ -139,17 +146,13 @@ export function makeCrossHatchItem(self: {
 // The single Score submenu every quantitative display builds. Composition is
 // capability-driven: `leadingItems` lets wiggle prepend its Resolution/Summary
 // submenus, `trailingItems` appends what belongs after the range controls rather
-// than before them (the alignments band's allele-fraction floor);
-// `autoscaleOptions` is overridden by coverage's reduced + dynamic-σ list.
+// than before them (the alignments band's allele-fraction floor).
 //
-// Neither radio is opted out of any more. Both derive from the display's own
-// `scales.y`: the scale-type radio appears where the declared enum holds more
-// than one type, the autoscale radios where the object has an `autoscale`
-// member. A display whose domain consults no mode declares none, so there is no
-// longer a way to draw radios that change nothing.
+// Neither radio is opted out of: both derive from the display's own
+// `scales.y`, the scale-type radio appearing where the declared enum holds
+// more than one type and the autoscale radio offering the declared modes.
 export interface ScoreSubMenuOptions {
   label?: string
-  autoscaleOptions?: [string, string][]
   // The domain drawn right now, which the min/max dialog's "Use current range"
   // button copies into the slots; undefined before it resolves.
   domain?: [number, number]
@@ -228,7 +231,6 @@ export function makeScoreSubMenu(
 ): MenuItem {
   const {
     label = 'Score',
-    autoscaleOptions,
     domain,
     leadingItems = [],
     trailingItems = [],
@@ -243,7 +245,7 @@ export function makeScoreSubMenu(
     subMenu: [
       ...leadingItems,
       ...(self.scaleTypeChoices.length > 1 ? [makeScaleTypeSubMenu(self)] : []),
-      makeAutoscaleTypeSubMenu(self, autoscaleOptions),
+      makeAutoscaleTypeSubMenu(self),
       makeSetMinMaxScoreItem(self, domain),
       ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
       ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),

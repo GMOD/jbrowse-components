@@ -39,9 +39,8 @@ function nearestSnpFrequencyOption(fraction: number) {
 // Single "Coverage" submenu: scale type, autoscale, min/max range dialog, and
 // the band's allele-fraction floor. The coverage band exposes the canonical
 // ScoreScaleModel shape, so this is the shared wiggle-core Score submenu
-// relabelled "Coverage" with a reduced, dynamic-σ autoscale list — no adapter
-// shim needed. The on/off toggle lives in the "Show..." menu (see reads.ts)
-// rather than being duplicated here.
+// relabelled "Coverage". The on/off toggle lives in the "Show..." menu (see
+// reads.ts) rather than being duplicated here.
 //
 // Which is why the whole submenu greys out with the band hidden. Every setting
 // in it feeds the band's draw and its hit test and nothing else, so with
@@ -50,17 +49,12 @@ function nearestSnpFrequencyOption(fraction: number) {
 // visibility toggle, there is nothing in here that could turn it back on. The
 // gate names that switch instead.
 export function getCoverageMenuItem(model: CoverageModel) {
-  const sigma = model.numStdDev
   return makeScoreSubMenu(model, {
     label: 'Coverage',
     domain: model.coverageDomain,
     disabled: !model.showCoverage,
     disabledHelpText:
       'These settings scale the coverage band — turn on "Show coverage" first',
-    autoscaleOptions: [
-      ['local', 'Local'],
-      ['localsd', `Local ± ${sigma}σ`],
-    ],
     // After the range controls, not before: this is about what the bars are
     // coloured with, and reads as a footnote to the scale rather than a peer of
     // it. At depth 500 every sequencing error paints a sliver, so without a

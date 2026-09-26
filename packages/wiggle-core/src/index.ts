@@ -83,7 +83,7 @@ export {
   appendPointMarker,
 } from './pointMarker.ts'
 
-export { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
+export { AUTOSCALE_LABELS } from './autoscale.ts'
 export {
   makeAutoscaleTypeSubMenu,
   makeCrossHatchItem,

@@ -20,6 +20,7 @@ function makeSelf(over: Partial<ScoreScaleModel> = {}) {
     scaleType: 'linear',
     scaleTypeChoices: ['linear', 'log', 'symlog'],
     autoscaleType: 'local',
+    autoscaleChoices: ['local', 'localpercentile', 'localsd'],
     manualMinScore: undefined,
     manualMaxScore: undefined,
     minScoreBound: undefined,
