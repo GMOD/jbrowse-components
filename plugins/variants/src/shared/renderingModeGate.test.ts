@@ -60,11 +60,7 @@ function phasedRow(flags?: {
   if (!row) {
     throw new Error('no "Phased" rendering-mode row')
   }
-  return row as MenuItem & {
-    label: string
-    disabled?: boolean
-    disabledHelpText?: string
-  }
+  return row as MenuItem & { label: string; disabled?: boolean }
 }
 
 const diploidPhased = { hasPhased: true, hasPhasedOrHaploid: true }
@@ -87,14 +83,11 @@ test('offers phased mode on a callset that is entirely haploid', () => {
   expect(row.label).toBe('Phased')
 })
 
-test('refuses phased mode when every genotype is unphased, and says so', () => {
+test('refuses phased mode when every genotype in view is unphased, and says so', () => {
   const row = phasedRow(diploidUnphased)
 
   expect(row.disabled).toBe(true)
-  expect(row.label).toBe('Phased (every genotype is unphased)')
-  expect(row.disabledHelpText).toBe(
-    'Every genotype in view is unphased (a / separator), so there is no haplotype to split a sample into',
-  )
+  expect(row.label).toBe('Phased (no phased genotypes in view)')
 })
 
 // Before a fetch lands the answer is unknown, not "no" — a row that blamed the
@@ -103,6 +96,5 @@ test('says it is still checking before the first fetch lands', () => {
   const row = phasedRow()
 
   expect(row.disabled).toBe(true)
-  expect(row.label).toBe('Phased (checking for phased variants...)')
-  expect(row.disabledHelpText).toBe('Checking for phased variants...')
+  expect(row.label).toBe('Phased (checking for phased genotypes...)')
 })

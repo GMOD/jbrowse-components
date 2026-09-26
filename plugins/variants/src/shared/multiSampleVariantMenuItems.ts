@@ -70,6 +70,17 @@ function sampleAttributeItems(
   ]
 }
 
+// A row that needs something in the fetched window, greyed with the reason
+// until it is there
+function needs(label: string, what: string, present: boolean, loaded: boolean) {
+  return present
+    ? { label, disabled: false }
+    : {
+        label: `${label} (${loaded ? `no ${what} in view` : `checking for ${what}...`})`,
+        disabled: true,
+      }
+}
+
 // The rows' colour, as the arrangement dialog offers it: none, each row its
 // own, or an attribute's values.
 function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
@@ -148,6 +159,12 @@ export function variantTrackMenuItems(
 ): MenuItem[] {
   const loaded = !!self.cellData
   const recordField = recordHueField(self.colorEncoding)?.field
+  const phaseSet = needs(
+    'Phase set',
+    'phase sets (FORMAT PS)',
+    self.hasPhaseSet,
+    loaded,
+  )
   return [
     ...makeShowSubMenu(self.showSubmenuItems()),
     // No presets: a cohort's useful row heights depend on how many samples it
@@ -168,30 +185,16 @@ export function variantTrackMenuItems(
           },
         },
         {
-          // Gated on `hasPhasedOrHaploid`, the predicate the painter itself uses
-          // (`isPhasedOrHaploid`), not on a literal `|`. A pangenome callset is
-          // haploid per assembly path and `vg deconstruct` writes bare
-          // `0`/`1`/`23`, so `hasPhased` is false across a whole file that
-          // phased mode renders correctly — one HP0 row per sample coloured by
-          // allele identity — and `setPhasedMode` has no other caller, so the
-          // config slot was the only door into a rendering this menu claimed did
-          // not apply.
-          label: `Phased${
-            self.hasPhasedOrHaploid
-              ? ''
-              : !loaded
-                ? ' (checking for phased variants...)'
-                : ' (every genotype is unphased)'
-          }`,
+          // `hasPhasedOrHaploid`, the painter's own predicate: a pangenome
+          // callset is haploid, with no `|` anywhere, and phased mode draws it
+          ...needs(
+            'Phased',
+            'phased genotypes',
+            self.hasPhasedOrHaploid,
+            loaded,
+          ),
           helpText:
             'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1 HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
-          disabled: !self.hasPhasedOrHaploid,
-          // What is left when the gate is off is exactly "every called genotype
-          // carries a `/`", so the message says that rather than the narrower
-          // "no phased variants", which was wrong about a haploid file.
-          disabledHelpText: !loaded
-            ? 'Checking for phased variants...'
-            : 'Every genotype in view is unphased (a / separator), so there is no haplotype to split a sample into',
           checked: self.renderingMode === 'phased',
           type: 'radio',
           onClick: () => {
@@ -223,63 +226,40 @@ export function variantTrackMenuItems(
           },
         },
         {
-          label: `Phase set${
-            self.hasPhaseSet
-              ? ''
-              : !loaded
-                ? ' (checking for phase sets...)'
-                : ' (no PS field found)'
-          }`,
+          ...phaseSet,
           helpText:
             'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
           type: 'radio',
           checked: self.colorField === PHASE_SET_FIELD,
-          disabled: !self.hasPhaseSet || self.renderingMode !== 'phased',
-          disabledHelpText: !self.hasPhaseSet
-            ? !loaded
-              ? 'Checking for phase sets...'
-              : 'No phase sets (FORMAT PS) found in this dataset'
+          disabled: phaseSet.disabled || self.renderingMode !== 'phased',
+          disabledHelpText: phaseSet.disabled
+            ? undefined
             : 'Only applies in phased mode — switch Rendering mode to phased',
           onClick: () => {
             self.setColorField(PHASE_SET_FIELD)
           },
         },
         {
-          label: `Consequence impact${
-            self.hasConsequence
-              ? ''
-              : !loaded
-                ? ' (checking for annotations...)'
-                : ' (no SnpEff/VEP annotations found)'
-          }`,
+          ...needs(
+            'Consequence impact',
+            'SnpEff/VEP annotations',
+            self.hasConsequence,
+            loaded,
+          ),
           helpText:
             'Color every alt-carrying cell by the variant’s most severe SnpEff (ANN) / VEP (CSQ) consequence impact tier; ref and no-call cells keep their normal coloring',
           type: 'radio',
           checked: self.colorField === IMPACT_FIELD,
-          disabled: !self.hasConsequence,
-          disabledHelpText: !loaded
-            ? 'Checking for annotations...'
-            : 'No SnpEff/VEP annotations (ANN/CSQ) found in this dataset',
           onClick: () => {
             self.setColorField(IMPACT_FIELD)
           },
         },
         {
-          label: `SV type${
-            self.hasSvType
-              ? ''
-              : !loaded
-                ? ' (checking for structural variants...)'
-                : ' (no structural variants found)'
-          }`,
+          ...needs('SV type', 'structural variants', self.hasSvType, loaded),
           helpText:
             'Color every alt-carrying cell by the variant’s structural-variant class (deletion, duplication, insertion, inversion, ...); ref and no-call cells keep their normal coloring',
           type: 'radio',
           checked: self.colorField === SV_TYPE_FIELD,
-          disabled: !self.hasSvType,
-          disabledHelpText: !loaded
-            ? 'Checking for structural variants...'
-            : 'No structural variants (SVTYPE) found in this dataset',
           onClick: () => {
             self.setColorField(SV_TYPE_FIELD)
           },

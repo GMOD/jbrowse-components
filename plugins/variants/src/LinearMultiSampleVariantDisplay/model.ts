@@ -1,5 +1,4 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { makeSizeMenu } from '@jbrowse/core/ui'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -34,9 +33,6 @@ import {
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import {
-  DEFAULT_VARIANT_LANE_HEIGHT,
-  MAX_VARIANT_LANE_HEIGHT,
-  MIN_VARIANT_LANE_HEIGHT,
   VARIANT_LANE_BOUNDS,
   VARIANT_LANE_LABEL_OPTIONS,
 } from '../shared/variantTopBands.ts'
@@ -325,7 +321,7 @@ export function stateModelFactory(
             }
           },
           trackMenuItems(): MenuItem[] {
-            const items = [
+            return [
               ...superTrackMenuItems(),
               {
                 label: 'Variant layout',
@@ -338,35 +334,6 @@ export function stateModelFactory(
                 ),
               },
             ]
-            // Only offered while the lane is on: a slider that silently does
-            // nothing is worse than an absent one, and the checkbox that turns
-            // it on is in the "Show..." submenu at the head of the same menu.
-            return self.showVariantLane
-              ? [
-                  ...items,
-                  makeSizeMenu({
-                    label: 'Variant lane height',
-                    title: 'Variant lane height',
-                    min: MIN_VARIANT_LANE_HEIGHT,
-                    // the clamp's own ceiling, so the slider stops exactly
-                    // where `setVariantLaneHeight` would stop it
-                    max: MAX_VARIANT_LANE_HEIGHT,
-                    step: 1,
-                    // Pure layout — no refetch and no re-upload, only a band
-                    // resize — so it tracks the drag rather than waiting for
-                    // release the way the fetch-input filter sliders do.
-                    getValue: () => self.topBands.laneHeight,
-                    isDefault:
-                      self.variantLaneHeight === DEFAULT_VARIANT_LANE_HEIGHT,
-                    onChange: n => {
-                      self.setVariantLaneHeight(n)
-                    },
-                    onReset: () => {
-                      self.setVariantLaneHeight(DEFAULT_VARIANT_LANE_HEIGHT)
-                    },
-                  }),
-                ]
-              : items
           },
         }
       })
