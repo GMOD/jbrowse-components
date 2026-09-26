@@ -62,6 +62,11 @@ describe('getVariantSvType', () => {
     expect(getVariantSvType(feat({ ALT: ['<CN0>', '<CN3>'] }))).toBe('CNV')
   })
 
+  it('is empty for the gVCF and mpileup any-other-allele symbols', () => {
+    expect(getVariantSvType(feat({ REF: 'A', ALT: ['<NON_REF>'] }))).toBe('')
+    expect(getVariantSvType(feat({ REF: 'A', ALT: ['G', '<*>'] }))).toBe('')
+  })
+
   it('is empty for plain SNVs and indels under SV size', () => {
     expect(getVariantSvType(feat({ REF: 'G', ALT: ['A'] }))).toBe('')
     expect(getVariantSvType(feat({ REF: 'G', ALT: ['ACGT'] }))).toBe('')

@@ -117,6 +117,10 @@ function copyNumberColor(cn: number) {
   return `hsl(${Math.round(240 * (1 - v))}, 70%, 50%)`
 }
 
+// gVCF's `<NON_REF>` and bcftools mpileup's `<*>` stand for whatever allele
+// the caller did not name, not for a structure.
+const ANY_OTHER_ALLELE = new Set(['<NON_REF>', '<*>'])
+
 /**
  * The SV class implied by a single ALT allele string: the token inside a
  * symbolic `<...>` allele (normalized), `BND` for breakend notation, or '' for
@@ -125,6 +129,9 @@ function copyNumberColor(cn: number) {
  * distinct classes (every breakend flavor becomes 'breakend').
  */
 export function svTypeFromAlt(alt: string) {
+  if (ANY_OTHER_ALLELE.has(alt)) {
+    return ''
+  }
   if (alt.startsWith('<') && alt.endsWith('>')) {
     return normalizeRawToken(alt.slice(1, -1))
   }
