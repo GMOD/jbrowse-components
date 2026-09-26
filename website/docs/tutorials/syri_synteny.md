@@ -348,6 +348,8 @@ chromosome 4 inversion with the SyRI rows, ordered by admixture group:
 The hosted demo also carries the 1135-accession Fst scan, the 1001 Genomes SNPs
 and a minigraph pangenome of the same genomes, all built by
 [`build_arabidopsis_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_arabidopsis_pangenome.sh).
+[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
+turns a graph of your own into the files the pangenome's tracks read.
 
 ## Check it against syri.out
 
