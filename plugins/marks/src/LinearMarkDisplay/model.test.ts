@@ -1677,7 +1677,7 @@ test('a shape scale over the field the colour classifies folds into one key', ()
   ])
 })
 
-test('a shape scale reaches the worker beside the colour, and its key draws the shapes', () => {
+test("a shape scale reaches the worker beside the colour, and its key draws the shapes in the mark's colour", () => {
   const { createDisplay } = createTestEnvironment([
     {
       mark: 'point',
@@ -1744,12 +1744,12 @@ test('a shape scale reaches the worker beside the colour, and its key draws the 
         {
           value: '1',
           label: 'Forward strand',
-          swatches: [{ color: 'currentColor', shape: 'triangle-down' }],
+          swatches: [{ color: 'red', shape: 'triangle-down' }],
         },
         {
           value: '-1',
           label: 'Reverse strand',
-          swatches: [{ color: 'currentColor', shape: 'diamond' }],
+          swatches: [{ color: 'red', shape: 'diamond' }],
         },
       ],
     },

@@ -579,3 +579,27 @@ test('a categorical colour key lists its breaks in their order', () => {
     ),
   ).toEqual([['3', '1']])
 })
+
+// As ggplot2 draws a layer's key glyphs in the layer's fixed aesthetics.
+test('a shape key draws its shapes in the one colour its mark paints, and in the text colour otherwise', () => {
+  const [layer] = shapeRegion([['index', 'diamond']]).layers
+  const twoMarks = { layers: [layer!, layer!] }
+  const swatches = (colors: (string | undefined)[]) =>
+    markColorScales(
+      buildMarkLegend([twoMarks], undefined, i => ({
+        swatchColor: colors[i],
+      })),
+    ).map(s =>
+      s.kind === 'categorical' ? s.entries.flatMap(e => e.swatches) : [],
+    )
+  expect(swatches(['#c951c9', '#c951c9'])).toEqual([
+    [{ color: '#c951c9', shape: 'diamond' }],
+  ])
+  expect(swatches([undefined, undefined])).toEqual([
+    [{ color: 'currentColor', shape: 'diamond' }],
+  ])
+  expect(swatches(['red', 'blue'])).toEqual([
+    [{ color: 'red', shape: 'diamond' }],
+    [{ color: 'blue', shape: 'diamond' }],
+  ])
+})

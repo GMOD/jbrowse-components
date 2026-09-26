@@ -43,7 +43,8 @@ export type ScaledChannel = 'color' | 'shape'
  * What a mark's channel says of its key beyond the table the worker resolved,
  * as ggplot2's scale arguments do: the heading, which values it lists and in
  * what order, what it calls a value's absence, and for a shape the name of
- * each domain value. A colour's `labels` ride in the table instead.
+ * each domain value and the one colour its mark paints, which ggplot2 draws a
+ * layer's key glyphs in. A colour's `labels` ride in the table instead.
  */
 export interface MarkKeySetting {
   title?: string
@@ -51,6 +52,7 @@ export interface MarkKeySetting {
   breaks?: readonly string[]
   descending?: boolean
   missingLabel?: string
+  swatchColor?: string
 }
 
 /**
@@ -339,7 +341,9 @@ function shapeKey(
         .map(e => ({
           value: e.value,
           label: field.label(e.value),
-          swatches: [{ color: 'currentColor', shape: e.shape }],
+          swatches: [
+            { color: key.swatchColor ?? 'currentColor', shape: e.shape },
+          ],
           ...(e.value === '' ? { missing: true } : {}),
         })),
     },
@@ -388,10 +392,10 @@ function shapeSwatches(shape: ShapeScaleTable) {
  * The keys as the color scales `LegendMixin` derives the legend from. A
  * categorical colour's key is the one every colour channel derives
  * (`derivedColorScale`), a row per colour. A shape table is a categorical
- * scale whose swatches are the shapes, drawn in the text colour: the key
- * describes the shape channel, not the colour one — unless the colour key is
- * over the same field, when it carries both, each swatch a value's shape in
- * its colour.
+ * scale whose swatches are the shapes, drawn in the one colour its mark
+ * paints, or in the text colour where that colour is a scale, which the shape
+ * key does not describe — unless the colour key is over the same field, when
+ * it carries both, each swatch a value's shape in its colour.
  */
 export function markColorScales(
   sections: MarkLegendSection[],

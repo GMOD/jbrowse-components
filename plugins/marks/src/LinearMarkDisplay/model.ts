@@ -238,16 +238,17 @@ function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
   return highest
 }
 
-// A mark's colour where it declares a constant one, packed as the worker
-// would have packed it. A scale has no meaning over a bin the sidecar wrote,
-// and a jexl callback has no feature to read.
-function markConstantColor(mark: MarkConfig): number {
+function constantColorOf(mark: MarkConfig): string | undefined {
   const encoding = colorEncodingOf(mark.encoding.color)
-  return cssColorToABGR(
-    typeof encoding === 'string' && !isJexl(encoding)
-      ? encoding
-      : DEFAULT_MARK_COLOR,
-  )
+  return typeof encoding === 'string' && !isJexl(encoding)
+    ? encoding
+    : undefined
+}
+
+// A scale has no meaning over a bin the sidecar wrote, and a jexl callback
+// has no feature to read.
+function markConstantColor(mark: MarkConfig): number {
+  return cssColorToABGR(constantColorOf(mark) ?? DEFAULT_MARK_COLOR)
 }
 
 // What a mark's channel says of its key: its guide members, copied out of the
@@ -264,7 +265,14 @@ function keySettingOf(
     return { title, breaks: [...breaks], descending, missingLabel }
   }
   const { title, labels, breaks, missingLabel } = mark.encoding.shape
-  return { title, labels: [...labels], breaks: [...breaks], missingLabel }
+  const swatchColor = constantColorOf(mark)
+  return {
+    title,
+    labels: [...labels],
+    breaks: [...breaks],
+    missingLabel,
+    ...(swatchColor === undefined ? {} : { swatchColor }),
+  }
 }
 
 /**
