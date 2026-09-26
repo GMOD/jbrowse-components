@@ -7,7 +7,7 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 
-import { indexSpellings } from '../../packages/core/src/util/indexCandidates.ts'
+import { indexSpellings } from '../../packages/add-track-core/src/indexCandidates.ts'
 import {
   syntenyTrackTypes,
   trackTypes,

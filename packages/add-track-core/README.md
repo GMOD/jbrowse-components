@@ -21,6 +21,12 @@ plugins loaded rather than from a list somebody has to remember to edit. A
 format the table cannot express is still added the old way, with
 `addAdapterGuesser` — those run later in the chain and win.
 
+`indexCandidates.ts` beside the table holds the other filename question both
+sides ask: the names an index file might be under — htslib's `.csi`, Picard and
+GATK's `reads.bai` beside `reads.bam`. Core probes those candidates over the
+network in `detectIndexLocation`, the CLI with `existsSync` in `siblingSidecar`,
+and neither spells the list itself.
+
 `products/jbrowse-web/src/addTrackFormats.test.ts` is the check over all of it:
 one filename per entry, compared between the app's guesser chain and the CLI.
 

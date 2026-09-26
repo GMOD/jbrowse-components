@@ -1,70 +1,12 @@
+import { indexCandidateNames } from '@jbrowse/add-track-core'
+
 import { getFileName } from './getFileName.ts'
 
 import type { FileLocation } from './types/data.ts'
 
-/**
- * Every conventional spelling of an index file, for the docs that describe this
- * behavior. Kept beside {@link indexCandidateNames}, which is the list actually
- * probed, so the two are edited together.
- */
-export const indexSpellings = [
-  {
-    name: '`<file>.tbi`, `<file>.bai`, `<file>.crai`',
-    writtenBy: 'samtools, tabix',
-  },
-  {
-    name: '`<file>.csi`',
-    writtenBy: 'htslib, for a reference over 512 Mb and on request at any size',
-  },
-  {
-    name: '`reads.bai` beside `reads.bam`',
-    writtenBy: 'Picard, GATK',
-  },
-]
-
-/**
- * The index filenames worth looking for beside `fileName`, best guess first.
- *
- * One data file has several names its index might carry, and picking only the
- * first left everyone else with a missing-file error naming a path they never
- * wrote:
- *
- * - `<file>.bai` / `.crai` / `.tbi` is what samtools and tabix write
- * - `<file>.csi` is what htslib writes for a reference over 512 Mb, and on
- *   request at any size
- * - `reads.bai` beside `reads.bam` is what Picard and GATK write, in place of
- *   samtools' `reads.bam.bai`
- *
- * Empty for a file type that carries no sibling index (BigWig, BigBed, hic),
- * which is how a caller knows not to go looking.
- *
- * `jbrowse-cli` answers the same question in `siblingSidecar`
- * (`commands/add-track-utils/adapter-utils.ts`) rather than calling this: it
- * carries no `@jbrowse/core` dependency, so `npm i -g @jbrowse/cli` stays a CLI
- * rather than a copy of the app. Change one, change the other.
- */
-export function indexCandidateNames(fileName: string) {
-  const lower = fileName.toLowerCase()
-  if (lower.endsWith('.bam')) {
-    return [
-      `${fileName}.bai`,
-      `${fileName}.csi`,
-      fileName.replace(/\.bam$/i, '.bai'),
-    ]
-  }
-  if (lower.endsWith('.cram')) {
-    return [`${fileName}.crai`, fileName.replace(/\.cram$/i, '.crai')]
-  }
-  // the tabix family is spelled by its compression, not its content: a .gz here
-  // is a bgzipped VCF/GFF/BED/SAM, all of which index the same two ways. `.bgz`
-  // is the same file under the name htslib's own tools give it, so it takes the
-  // same candidates — every format guesser accepts `\.b?gz$`, and matching only
-  // `.gz` left a `calls.vcf.bgz` with no detection at all
-  if (/\.b?gz$/.test(lower)) {
-    return [`${fileName}.tbi`, `${fileName}.csi`]
-  }
-  return []
-}
+// defined in `@jbrowse/add-track-core`, which is framework-free so `jbrowse-cli`
+// reads the same list; re-exported because this subpath serves them to plugins
+export { indexCandidateNames, indexSpellings } from '@jbrowse/add-track-core'
 
 /**
  * `location` with its filename replaced, i.e. the sibling of a data file.

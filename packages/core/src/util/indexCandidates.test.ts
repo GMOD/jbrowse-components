@@ -1,59 +1,10 @@
-import {
-  detectIndexLocation,
-  indexCandidateNames,
-  siblingLocation,
-} from './indexCandidates.ts'
+import { detectIndexLocation, siblingLocation } from './indexCandidates.ts'
 
 import type { FileLocation } from './types/data.ts'
 
 const uri = (u: string): FileLocation => ({
   uri: u,
   locationType: 'UriLocation',
-})
-
-describe('indexCandidateNames', () => {
-  it('offers the three spellings a BAM index is written under', () => {
-    // samtools writes reads.bam.bai, htslib .csi, Picard/GATK reads.bai
-    expect(indexCandidateNames('reads.bam')).toEqual([
-      'reads.bam.bai',
-      'reads.bam.csi',
-      'reads.bai',
-    ])
-  })
-
-  it('offers both CRAM spellings', () => {
-    expect(indexCandidateNames('reads.cram')).toEqual([
-      'reads.cram.crai',
-      'reads.crai',
-    ])
-  })
-
-  it('spells a tabix index by the compression, not the content', () => {
-    // a .gz here is a bgzipped VCF/GFF/BED, all indexed the same two ways
-    for (const f of ['calls.vcf.gz', 'genes.gff3.gz', 'peaks.bed.gz']) {
-      expect(indexCandidateNames(f)).toEqual([`${f}.tbi`, `${f}.csi`])
-    }
-  })
-
-  it('takes .bgz as the same file under another name', () => {
-    // every format guesser accepts `\.b?gz$`, so matching only `.gz` left a
-    // whole spelling of bgzip output with no detection
-    expect(indexCandidateNames('calls.vcf.bgz')).toEqual([
-      'calls.vcf.bgz.tbi',
-      'calls.vcf.bgz.csi',
-    ])
-  })
-
-  it('offers nothing for a file type that carries no sibling index', () => {
-    // so a caller knows not to go looking, rather than probing for a .tbi that
-    // a BigWig was never going to have
-    expect(indexCandidateNames('signal.bw')).toEqual([])
-    expect(indexCandidateNames('contacts.hic')).toEqual([])
-  })
-
-  it('is case-insensitive about the data extension', () => {
-    expect(indexCandidateNames('READS.BAM')).toContain('READS.BAM.bai')
-  })
 })
 
 describe('siblingLocation', () => {

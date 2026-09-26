@@ -471,14 +471,3 @@ export function trackTypeForAdapter(adapterType: string, fileName?: string) {
     ? entry.trackType
     : adapterTypesToTrackTypeMap[adapterType]
 }
-
-/**
- * The index spelling a location implies: htslib writes `.csi` in place of a
- * `.bai` or a `.tbi` for a reference over 512 Mb, and on request at any size.
- */
-export function resolveIndexType(
-  indexName: string | undefined,
-  fallback: 'BAI' | 'TBI',
-) {
-  return indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : fallback
-}

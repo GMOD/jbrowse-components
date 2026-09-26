@@ -5,6 +5,7 @@ import {
   formats,
   matchFormat,
   resolveIndexType,
+  sidecarCandidateNames,
   trackTypeForAdapter,
 } from '@jbrowse/add-track-core'
 
@@ -46,28 +47,6 @@ for (const { spec } of formats) {
   }
 }
 
-// What else the sidecar with this suffix can be named. `.csi` is htslib's
-// alternative for a BAI or a TBI — required for a reference over 512 Mb, and
-// written on request at any size. `stripped` is the form Picard and GATK write:
-// `reads.bai` beside `reads.bam`, where samtools writes `reads.bam.bai`.
-//
-// Per-suffix because the alternatives are: a `.crai` has no CSI form, and
-// stripping the extension off `calls.vcf.gz` would name `calls.vcf.tbi`, which
-// nothing writes. A `.fai`/`.gzi` has neither and so is absent here.
-//
-// This is `indexCandidateNames` in `@jbrowse/core/util/indexCandidates`, which
-// the add-track widget and jbrowse-img share and this CLI cannot import — it
-// carries no `@jbrowse/core` dependency, so `npm i -g @jbrowse/cli` stays a CLI
-// rather than a copy of the app. Change one, change the other.
-const ALTERNATE_SPELLINGS: Record<
-  string,
-  { csi?: boolean; stripped?: boolean }
-> = {
-  '.bai': { csi: true, stripped: true },
-  '.crai': { stripped: true },
-  '.tbi': { csi: true },
-}
-
 /**
  * The sidecar actually sitting beside `location`, or the conventional name when
  * none of the spellings is there — so a missing index still reports the file
@@ -76,21 +55,10 @@ const ALTERNATE_SPELLINGS: Record<
  * Probed with `existsSync`, which is false for every candidate of a URL and so
  * leaves a remote track with exactly the conventional guess it had before this
  * existed. A remote `.csi` still wants `--indexFile`.
- *
- * The guard on the stripped spelling is load-bearing: `replace` hands back the
- * subject unchanged when the pattern does not match, so `--adapterType
- * BamAdapter` on a file named with no extension at all would offer the data
- * file as its own index — and that file certainly exists.
  */
 export function siblingSidecar(location: string, suffix: string) {
-  const { csi, stripped } = ALTERNATE_SPELLINGS[suffix] ?? {}
-  const strippedName = location.replace(/\.[^./\\]+$/, suffix)
-  const candidates = [
-    `${location}${suffix}`,
-    ...(csi ? [`${location}.csi`] : []),
-    ...(stripped && strippedName !== location ? [strippedName] : []),
-  ]
-  return candidates.find(c => fs.existsSync(c)) ?? candidates[0]!
+  const candidates = sidecarCandidateNames(location, suffix)
+  return candidates.find(c => fs.existsSync(c)) ?? candidates[0]
 }
 
 // The adapters that declare a `densityAdapter` slot, read off the generated

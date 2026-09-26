@@ -629,7 +629,7 @@ A track is identified by its filename, so two inputs sharing one —
 With no `index:`, a **local** file's index is whichever of these siblings is
 actually there, opened as the type it is:
 
-<!-- INJECT_INDEX_SPELLINGS START: auto-filled from indexSpellings in packages/core/src/util/indexCandidates.ts by website/scripts/generate-img-doc.ts -->
+<!-- INJECT_INDEX_SPELLINGS START: auto-filled from indexSpellings in packages/add-track-core/src/indexCandidates.ts by website/scripts/generate-img-doc.ts -->
 
 | Spelling                                  | Written by                                                     |
 | ----------------------------------------- | -------------------------------------------------------------- |

@@ -4,7 +4,12 @@ export {
   type Sidecar,
   formats,
   matchFormat,
-  resolveIndexType,
   trackTypeForAdapter,
 } from './formats.ts'
+export {
+  indexCandidateNames,
+  indexSpellings,
+  resolveIndexType,
+  sidecarCandidateNames,
+} from './indexCandidates.ts'
 export { adapterTypesToTrackTypeMap } from './trackTypes.generated.ts'
