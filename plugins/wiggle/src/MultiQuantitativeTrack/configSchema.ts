@@ -35,8 +35,9 @@ const configSchema = (pluginManager: PluginManager) => {
     {
       /**
        * #slot
-       * As every track's, except that the quantitative display defaults to a
-       * row per source, averaged scores and a 200px height.
+       * As on [every track](../basetrack#slot-displays), except that a
+       * `LinearWiggleDisplay` entry defaults to `rows: 'source'`,
+       * `summaryScoreMode: 'avg'` and `height: 200`.
        */
       displays: multiQuantitativeDisplaySchemas(pluginManager),
     },

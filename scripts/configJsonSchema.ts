@@ -32,6 +32,7 @@ export interface SlotDefinition {
 }
 
 export interface SchemaMetadata {
+  name: string
   definition: Record<string, SlotDefinition | string | number | MstType>
   options: {
     explicitlyTyped?: boolean
@@ -290,6 +291,22 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     return { anyOf: unique }
   }
 
+  // A schema restating a registered one under its name and slots, with other
+  // defaults (a track type's own for a display it shares), validates as it.
+  function restatedDefName(meta: SchemaMetadata) {
+    const keys = Object.keys(meta.definition).sort().join('|')
+    for (const [type, name] of configDefNames) {
+      const theirs = deps.metadataOf(type)
+      if (
+        theirs?.name === meta.name &&
+        Object.keys(theirs.definition).sort().join('|') === keys
+      ) {
+        return name
+      }
+    }
+    return undefined
+  }
+
   // A plain MST type as JSON Schema. A registered config schema or state model
   // comes back as a $ref; anything else is inlined, to a depth.
   function mstSchema(raw: MstType, depth: number): JsonSchema {
@@ -306,7 +323,8 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
     const meta = deps.metadataOf(raw)
     if (meta) {
-      return configObject(raw, meta, depth)
+      const restated = restatedDefName(meta)
+      return restated ? ref(restated) : configObject(raw, meta, depth)
     }
     const { type, jexl, color } = unwrap(raw)
     if (jexl) {

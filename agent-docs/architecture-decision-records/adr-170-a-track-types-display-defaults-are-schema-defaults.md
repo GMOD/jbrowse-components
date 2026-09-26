@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `MultiQuantitativeTrack` states its three display defaults — `rows: 'source'`, `summaryScoreMode: 'avg'`, `height: 200` — as the slot defaults of a track-scoped `LinearWiggleDisplay` schema that its `displays` union holds in place of the global one, rather than seeding them into `displayDefaults` through `Core-preProcessTrackConfig`. A snapshot strips against the schema that refills it, so the single-source values (`rows: ''`, `whiskers`, 100px) survive a reload on a multi track, a session track shows them on first load, and a reset lands on the track's default. The retired multi-wiggle fold fills `rows.field` only where the entry leaves it unset, so it is a fixed point. Reverses ADR-143's \"one display type has one set of slot defaults\""
+summary: "A `MultiQuantitativeTrack` states its three display defaults (`rows: 'source'`, `summaryScoreMode: 'avg'`, `height: 200`) as the slot defaults of a track-scoped `LinearWiggleDisplay` schema, which its `displays` union holds in place of the global one; the `Core-preProcessTrackConfig` seed into `displayDefaults` is deleted. A snapshot strips against the schema that refills it, so the single-source values (`rows: ''`, `whiskers`, 100px) survive a reload on a multi track, a session track shows them on first load, and a reset lands on the track's default. The retired multi-wiggle fold fills `rows.field` only where the entry leaves it unset, so it is a fixed point. Reverses ADR-143's \"one display type has one set of slot defaults\""
 ---
 
 # ADR-170: A track type's display defaults are its displays' schema defaults
@@ -44,19 +44,19 @@ the shorthand router and `applyDisplaySettings` read nothing new. The seed is
 deleted. The legacy-rendering fold of `displayDefaults` stays, as
 `foldRetiredRenderingDefaults`.
 
-With the seed gone, the retired multi-wiggle fold ran twice on a session track
-and the second pass won: the session migration folds lifted state onto an entry
-that still spells `MultiLinearWiggleDisplay`, and hydration folds it again, so
+With the seed gone, a v4 session track's rows were lost to a second fold. The
+session migration folds lifted state onto an entry that still spells
+`MultiLinearWiggleDisplay`, and hydration folds that entry again, so
 `multirowxy` became `{ xyplot, rows: 'source' }` and then `rows: ''` off the
 plain-name row. The fold now fills `rows.field` only where the entry spells
 none.
 
 ## Consequences
 
-- Share links shrink: a default multi-wiggle stores `{ type, displayId }`
-  rather than all three keys.
-- A second track type wanting its own defaults for a shared display takes the
-  same form.
+- Share links shrink, since a default multi-wiggle stores only
+  `{ type, displayId }`.
+- A second track type that wants its own defaults for a shared display can
+  redeclare `displays` the same way.
 
 ## Rejected
 
