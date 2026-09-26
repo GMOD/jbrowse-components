@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
 import { Button, Divider, TextField, Typography } from '@mui/material'
@@ -25,7 +25,7 @@ import MarkList from './MarkList.tsx'
 import { MarkProblemList } from './MarkProblems.tsx'
 import MarkScaleRow from './MarkScaleRow.tsx'
 
-import type { DraftMark } from '../markEdit.ts'
+import type { DraftMark, EditChannel } from '../markEdit.ts'
 import type { MarkPlot, MarkPlotSettings } from '../markPlot.ts'
 import type { MarkType } from '../markVocabulary.ts'
 import type { PlotFields } from '../scanPlotFields.ts'
@@ -42,9 +42,8 @@ export interface MarkPlotDialogModel {
 }
 
 /**
- * What the rules say about the draft. The controls write free text — a shape
- * picker takes a name the enumeration does not have — so the lift can refuse,
- * and the form says so and holds Apply rather than throwing at the reader.
+ * What the rules say about the draft. A draft the lift refuses holds Apply and
+ * says why rather than throwing at the reader.
  */
 function readDraft(model: MarkPlotDialogModel, draft: MarkPlot) {
   try {
@@ -84,6 +83,9 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
 }) {
   const [marks, setMarks] = useState(() => draftMarks(model.markPlot))
   const [selected, setSelected] = useState(0)
+  const editing = useRef<{ at: number; channel: EditChannel; base: unknown }>(
+    undefined,
+  )
   const fields = model.plotFields ?? NO_FIELDS
   const draft: MarkPlot = { marks }
   // Once per change, not once per render: the lift builds a whole config tree,
@@ -168,8 +170,23 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
                   edit={channelEdit(mark, channel)}
                   fields={fields}
                   problems={problems.under(at, `encoding.${channel}`)}
+                  onEditStart={() => {
+                    editing.current = {
+                      at,
+                      channel,
+                      base: mark.encoding?.[channel],
+                    }
+                  }}
+                  onEditEnd={() => {
+                    editing.current = undefined
+                  }}
                   onChange={value => {
-                    write(withChannel(mark, channel, value, fields))
+                    const held = editing.current
+                    write(
+                      held?.at === at && held.channel === channel
+                        ? withChannel(mark, channel, value, fields, held.base)
+                        : withChannel(mark, channel, value, fields),
+                    )
                   }}
                 />
                 <MarkScaleRow

@@ -105,15 +105,110 @@ describe('withChannel', () => {
     })
   })
 
-  // `color: "red"` and `shape: "triangle-down"` are what a value no scan saw
-  // means, so the picker writes it as the constant it is.
-  it('writes a value no scan saw as a constant', () => {
-    expect(withChannel({}, 'color', 'red', FIELDS).encoding).toEqual({
-      color: 'red',
-    })
+  it('writes a value that spells a colour or a shape as the constant', () => {
+    for (const color of ['red', '#f00', 'rgb(0,0,255)', 'jexl:"red"']) {
+      expect(withChannel({}, 'color', color, FIELDS).encoding).toEqual({
+        color,
+      })
+    }
     expect(withChannel({}, 'shape', 'triangle-down', FIELDS).encoding).toEqual({
       shape: 'triangle-down',
     })
+  })
+
+  // A scan reads one window, and none has landed while it runs, so a field it
+  // did not list — a dotted path, a tag, a half-typed name — is still a field.
+  it('writes a value no scan saw and no constant spells as a field', () => {
+    for (const field of ['tags.HP', 'scor', 'currentcolor']) {
+      expect(withChannel({}, 'color', field, FIELDS).encoding).toEqual({
+        color: { field, scale: 'categorical' },
+      })
+    }
+    expect(withChannel({}, 'shape', 'rhombus', FIELDS).encoding).toEqual({
+      shape: { field: 'rhombus', scale: 'categorical' },
+    })
+  })
+
+  it('reads a scanned field as a field even where it spells a colour', () => {
+    const fields = { numeric: [], categorical: ['tan'] }
+    expect(withChannel({}, 'color', 'tan', fields).encoding).toEqual({
+      color: { field: 'tan', scale: 'categorical' },
+    })
+  })
+
+  it('reads a jexl expression over a field as the field', () => {
+    const over = { encoding: { color: { field: 'strand' } } }
+    expect(
+      withChannel(over, 'color', 'jexl:get(feature,"hp")', FIELDS).encoding,
+    ).toEqual({ color: { field: 'jexl:get(feature,"hp")' } })
+  })
+
+  it('reads a shape through categorical, the one scale it has', () => {
+    expect(withChannel({}, 'shape', 'score', FIELDS).encoding).toEqual({
+      shape: { field: 'score', scale: 'categorical' },
+    })
+  })
+
+  describe('over a field read through a scale', () => {
+    const ramp = {
+      encoding: {
+        color: {
+          field: 'score',
+          scale: 'log',
+          scheme: 'viridis',
+          domainMin: 1,
+          reverse: true,
+        },
+      },
+    }
+
+    it('keeps the scale and its members when the field changes', () => {
+      expect(withChannel(ramp, 'color', 'INFO.DP', FIELDS).encoding).toEqual({
+        color: { ...ramp.encoding.color, field: 'INFO.DP' },
+      })
+      expect(withChannel(ramp, 'color', 'tags.XY', FIELDS).encoding).toEqual({
+        color: { ...ramp.encoding.color, field: 'tags.XY' },
+      })
+    })
+
+    it('takes the scale a field the scan types the other way implies', () => {
+      expect(withChannel(ramp, 'color', 'strand', FIELDS).encoding).toEqual({
+        color: { field: 'strand', scale: 'categorical' },
+      })
+    })
+
+    // `reads` passes through `red`, a CSS colour, on its way; written against
+    // the channel as the edit began, the ramp survives the detour.
+    it('keeps the ramp through a constant typed on the way to a field', () => {
+      const detour = withChannel(ramp, 'color', 'red', FIELDS)
+      expect(detour.encoding!.color).toBe('red')
+      expect(
+        withChannel(detour, 'color', 'reads', FIELDS, ramp.encoding.color)
+          .encoding,
+      ).toEqual({ color: { ...ramp.encoding.color, field: 'reads' } })
+    })
+
+    it('starts afresh over a field painted through none', () => {
+      const none = {
+        encoding: { color: { field: 'score', scale: 'none', value: 'red' } },
+      }
+      expect(withChannel(none, 'color', 'strand', FIELDS).encoding).toEqual({
+        color: { field: 'strand', scale: 'categorical', value: 'red' },
+      })
+    })
+  })
+
+  it("keeps a width's scale when its field changes", () => {
+    const width = {
+      mark: 'link' as const,
+      encoding: { size: { field: 'score', scale: 'log', domainMax: 9 } },
+    }
+    expect(withChannel(width, 'size', 'count', FIELDS).encoding).toEqual({
+      size: { field: 'count', scale: 'log', domainMax: 9 },
+    })
+    expect(
+      withChannel({ mark: 'link' }, 'size', 'count', FIELDS).encoding,
+    ).toEqual({ size: 'count' })
   })
 
   it('clears the channel on an empty value', () => {
@@ -279,6 +374,15 @@ describe('the scale beside a width', () => {
 
   it("offers a width's two ramps", () => {
     expect(channelScales('size')).toEqual(['linear', 'log'])
+  })
+
+  it('reads a shorthand width as a field on the preset ramp, which a kind change keeps', () => {
+    const shorthand = { mark: 'link' as const, encoding: { size: 'score' } }
+    expect(channelScale(shorthand, 'size')).toBe('linear')
+    expect(withChannelScale(shorthand, 'size', 'log').encoding!.size).toEqual({
+      field: 'score',
+      scale: 'log',
+    })
   })
 
   it('keeps the ends when one width ramp becomes the other', () => {

@@ -1,3 +1,6 @@
+import { isCssColor } from '@jbrowse/core/util/cssColorParse'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import { COLOR_SCALES } from '@jbrowse/display-kit/colorScale'
 
 import { MARK_SPECS } from './markSpecs.ts'
@@ -132,11 +135,37 @@ export function channelEdit(
   return editOf(mark.encoding?.[channel])
 }
 
-function channelObject(mark: DraftMark, channel: EditChannel) {
-  const declared = mark.encoding?.[channel]
+function objectOf(declared: unknown) {
   return typeof declared === 'object' && declared !== null
     ? (declared as Record<string, unknown>)
     : undefined
+}
+
+function channelObject(mark: DraftMark, channel: EditChannel) {
+  return objectOf(mark.encoding?.[channel])
+}
+
+/** The scale a channel's field reads through where the declaration names none. */
+const PRESET_SCALES: Partial<Record<EditChannel, string>> = {
+  color: 'categorical',
+  shape: 'categorical',
+  size: 'linear',
+}
+
+/**
+ * The field a channel reads: an object's `field`, or the string shorthand of a
+ * `size`, which lifts into `field`. A colour's or a shape's string is the
+ * constant.
+ */
+function channelField(mark: DraftMark, channel: EditChannel): string {
+  const declared = mark.encoding?.[channel]
+  const field =
+    typeof declared === 'string'
+      ? channel === 'size'
+        ? declared
+        : ''
+      : objectOf(declared)?.field
+  return typeof field === 'string' ? field : ''
 }
 
 /**
@@ -144,11 +173,11 @@ function channelObject(mark: DraftMark, channel: EditChannel) {
  * where the channel names no field, since a constant reads through none.
  */
 export function channelScale(mark: DraftMark, channel: EditChannel): string {
-  const declared = channelObject(mark, channel)
-  const scale = declared?.scale
-  return channelEdit(mark, channel).value !== '' && typeof scale === 'string'
-    ? scale
-    : ''
+  if (channelEdit(mark, channel).beyond || !channelField(mark, channel)) {
+    return ''
+  }
+  const scale = channelObject(mark, channel)?.scale
+  return typeof scale === 'string' ? scale : (PRESET_SCALES[channel] ?? '')
 }
 
 /** What one scale member says, as a control holds it: text, never a number. */
@@ -185,7 +214,7 @@ export function withChannelScale(
   const declared = channelObject(mark, channel) ?? {}
   const kept = isRamp(scale) ? rampMembers(channel) : []
   return writeChannel(mark, channel, {
-    field: declared.field,
+    field: channelField(mark, channel) || undefined,
     scale,
     ...Object.fromEntries(kept.map(member => [member, declared[member]])),
   })
@@ -215,37 +244,82 @@ export function withScaleMember(
   })
 }
 
+function readsNumbers(scale: unknown) {
+  return isRamp(scale) || scale === 'threshold'
+}
+
 /**
- * The mark with one channel written to `value`. A channel carrying its own
- * scale takes the one the field implies — a number reads through `linear` and
- * anything else through `categorical`, the rule Color by already follows — and
- * a value no scan saw is a constant, since that is what `color: "red"` and
- * `shape: "triangle-down"` are. An empty value clears the channel.
+ * Whether a colour or shape value is the constant its shorthand spells: a CSS
+ * colour or a shape name, or a `jexl:` callback — except over a field, where a
+ * `jexl:` is the field's own expression.
+ */
+function spellsConstant(
+  channel: 'color' | 'shape',
+  value: string,
+  overField: boolean,
+) {
+  return isJexl(value)
+    ? !overField
+    : channel === 'color'
+      ? isCssColor(value)
+      : (SHAPE_NAMES as readonly string[]).includes(value)
+}
+
+/**
+ * The mark with one channel written to `value`, an empty one clearing it.
+ *
+ * A colour or shape value is a field unless it spells a constant, and a field
+ * the scan found is a field whatever it spells. A field edit keeps the scale
+ * it is read through and that scale's members; only a field the scan types
+ * the other way — a number under `categorical`, text under a ramp — takes the
+ * scale it implies, the rule Color by follows.
+ *
+ * `base` is the channel as declared before the edit began, so a value typed
+ * through a constant on its way to a field (`red` on the way to `reads`) keeps
+ * what the channel held.
  */
 export function withChannel(
   mark: DraftMark,
   channel: EditChannel,
   value: string,
   fields: PlotFields,
+  base: unknown = mark.encoding?.[channel],
 ): DraftMark {
-  const encoding = { ...mark.encoding }
   if (value === '') {
-    delete encoding[channel]
-  } else if (channel === 'color' || channel === 'shape') {
-    const known =
-      fields.numeric.includes(value) || fields.categorical.includes(value)
-    Object.assign(encoding, {
-      [channel]: known
-        ? {
-            field: value,
-            scale: fields.numeric.includes(value) ? 'linear' : 'categorical',
-          }
-        : value,
-    })
-  } else {
-    Object.assign(encoding, { [channel]: value })
+    return withoutChannel(mark, channel)
   }
-  return { ...mark, encoding }
+  const held = objectOf(base)
+  const implied = fields.numeric.includes(value)
+    ? 'linear'
+    : fields.categorical.includes(value)
+      ? 'categorical'
+      : undefined
+  if (channel === 'color' || channel === 'shape') {
+    const heldField = typeof held?.field === 'string' && held.field !== ''
+    if (implied === undefined && spellsConstant(channel, value, heldField)) {
+      return { ...mark, encoding: { ...mark.encoding, [channel]: value } }
+    }
+    if (channel === 'shape') {
+      return writeChannel(mark, channel, {
+        ...held,
+        field: value,
+        scale: 'categorical',
+      })
+    }
+    const heldScale = heldField ? held.scale : 'none'
+    return heldScale !== 'none' &&
+      (implied === undefined ||
+        readsNumbers(implied) === readsNumbers(heldScale))
+      ? writeChannel(mark, channel, { ...held, field: value })
+      : writeChannel(mark, channel, {
+          value: held?.value,
+          field: value,
+          scale: implied ?? 'categorical',
+        })
+  }
+  return channel === 'size' && held
+    ? writeChannel(mark, channel, { ...held, field: value })
+    : { ...mark, encoding: { ...mark.encoding, [channel]: value } }
 }
 
 /**

@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import { configSchemaFactory } from '../configSchema.ts'
 import { liftMarkPlot } from '../markPlot.ts'
@@ -167,17 +167,76 @@ it('hands the draft to the JSON box unapplied', () => {
   expect(applyDisplaySettings).not.toHaveBeenCalled()
 })
 
-// The controls take free text, so a shape name the enumeration lacks reaches
-// the lift. The form says so and holds Apply rather than throwing.
-it('reports a value the schema refuses instead of crashing', () => {
-  const { channel, apply, applyDisplaySettings } = setup({
-    marks: [{ mark: 'point', encoding: { y: 'score' } }],
-  })
-  fireEvent.change(channel('shape'), { target: { value: 'rhombus' } })
-  expect(screen.getByTestId('mark-plot-error')).toBeTruthy()
-  expect(apply()).toBeDisabled()
-  fireEvent.click(apply())
+it('reports a draft the schema refuses instead of crashing', () => {
+  const applyDisplaySettings = jest.fn()
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <MarkPlotDialog
+        model={{
+          markPlot: BAR,
+          plotFields: undefined,
+          plotScanLocus: undefined,
+          liftMarkPlot: () => {
+            throw new Error('refused')
+          },
+          applyDisplaySettings,
+          openPlotJsonDialog: jest.fn(),
+        }}
+        handleClose={jest.fn()}
+      />
+    </ThemeProvider>,
+  )
+  expect(screen.getByTestId('mark-plot-error').textContent).toContain('refused')
+  const apply = screen.getByRole('button', { name: 'Apply' })
+  expect(apply).toBeDisabled()
+  fireEvent.click(apply)
   expect(applyDisplaySettings).not.toHaveBeenCalled()
+})
+
+describe('a colour or shape typed into its picker', () => {
+  const POINT: MarkPlot = {
+    marks: [{ mark: 'point', encoding: { y: 'score' } }],
+  }
+
+  it('writes a field the scan did not list as a field, and applies', () => {
+    const { channel, apply, applyDisplaySettings } = setup(POINT)
+    fireEvent.change(channel('color'), { target: { value: 'INFO.DP' } })
+    fireEvent.change(channel('shape'), { target: { value: 'score' } })
+    expect(screen.queryByTestId('mark-plot-error')).toBeNull()
+    fireEvent.click(apply())
+    expect(
+      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding,
+    ).toMatchObject({
+      color: { field: 'INFO.DP', scale: 'categorical' },
+      shape: { field: 'score', scale: 'categorical' },
+    })
+  })
+
+  it('keeps the scale row through a constant typed on the way to a field', () => {
+    const { channel, apply, applyDisplaySettings } = setup({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'score', scale: 'log', scheme: 'viridis' },
+          },
+        },
+      ],
+    })
+    const input = channel('color')
+    act(() => {
+      input.focus()
+    })
+    for (const typed of ['r', 're', 'red', 'read', 'reads']) {
+      fireEvent.change(input, { target: { value: typed } })
+    }
+    expect(screen.getByTestId('scale-color')).toHaveValue('log')
+    fireEvent.click(apply())
+    expect(
+      applyDisplaySettings.mock.calls[0]![0].marks[0].encoding.color,
+    ).toEqual({ field: 'reads', scale: 'log', scheme: 'viridis' })
+  })
 })
 
 describe('a scale beside its field', () => {
