@@ -1906,8 +1906,8 @@ export default function stateModelFactory(
           /**
            * #getter
            * THE arc resolution, whole: both halves of what this fetch's reads say,
-           * from one pass. Read it through `arcsByGroup` (what a per-region pass
-           * draws) or `crossRegionArcsByGroup` (what only the overlay can), which
+           * from one pass. Read it through `arcsByGroup` (the arcs inside one
+           * region) or `crossRegionArcsByGroup` (the arcs joining two), which
            * are its two faces and are documented there.
            *
            * One getter rather than two, because the split between them is a single
