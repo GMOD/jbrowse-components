@@ -78,6 +78,13 @@ describe('a point reads back as its whole GWAS record', () => {
   })
 })
 
+const REGION = {
+  refName: 'ctgA',
+  start: 0,
+  end: 10_000,
+  assemblyName: 'volvox',
+}
+
 // A click on one of the fixture's points on the first region, as the hit test
 // resolves it.
 function hitOn(instance: number) {
@@ -149,6 +156,16 @@ test('a click asks the worker for the feature under the request its region came 
     featureIndex: 1,
   })
   expect(asked).not.toHaveProperty('byteLimit')
+})
+
+test('a region no worker fetch produced holds no request, and a click on it asks nothing', () => {
+  const { display, mockRpcCall } = createTestEnvironment().createDisplay()
+  display.setLoadedRegion(0, REGION, {
+    layers: [manhattanFixture({ x: [100], y: [3] })],
+  })
+  mockRpcCall.mockClear()
+  display.selectFeature(hitOn(0))
+  expect(callsOf(mockRpcCall, 'CoreGetEncodedFeature')).toHaveLength(0)
 })
 
 // The LD file may spell a contig otherwise than the view and the GWAS file,
