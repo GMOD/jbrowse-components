@@ -70,13 +70,6 @@ describe('forMark and display', () => {
   })
 })
 
-it('collects the errors across marks and the display alike', () => {
-  expect(index.errors.map(p => p.slot)).toEqual([
-    'encoding.y',
-    'transform.2.expr',
-  ])
-})
-
 describe('worstLevel', () => {
   it('is the error where one is present, whatever its place', () => {
     expect(worstLevel(index.forMark(0))).toBe('error')

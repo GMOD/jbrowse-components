@@ -24,8 +24,6 @@ export function worstLevel(
  * ask what is wrong with the slot it edits.
  */
 export interface MarkProblemIndex {
-  all: readonly MarkProblem[]
-  errors: readonly MarkProblem[]
   /** Problems naming no mark: the display's own `transform`, `facet`, `rows`. */
   display: readonly MarkProblem[]
   /** Every problem of one mark, in the order the rules found them. */
@@ -47,9 +45,8 @@ export function markProblemIndex(
 ): MarkProblemIndex {
   const byMark = new Map<number, MarkProblem[]>()
   const display: MarkProblem[] = []
-  const errors: MarkProblem[] = []
   for (const problem of problems) {
-    const { mark, level } = problem
+    const { mark } = problem
     if (mark === undefined) {
       display.push(problem)
     } else {
@@ -60,14 +57,9 @@ export function markProblemIndex(
         byMark.set(mark, [problem])
       }
     }
-    if (level === 'error') {
-      errors.push(problem)
-    }
   }
   const forMark = (mark: number) => byMark.get(mark) ?? NONE
   return {
-    all: problems,
-    errors,
     display,
     forMark,
     under: (mark, slot) =>

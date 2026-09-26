@@ -18,7 +18,6 @@ function setup(markPlot: MarkPlot = {}) {
   const handleClose = jest.fn()
   const model: PlotJsonDialogModel = {
     markPlot,
-    markPlotExamples: [{ plot: '{"facet":"HP"}', description: 'by haplotype' }],
     liftMarkPlot: plot => liftMarkPlot(schema, plot, markPlot),
     applyDisplaySettings,
   }
@@ -113,7 +112,6 @@ it('counts the problems beside what applying writes', () => {
 it('seeds over the declared plot without losing the rest', () => {
   const model: PlotJsonDialogModel = {
     markPlot: BAR,
-    markPlotExamples: [],
     liftMarkPlot: plot => liftMarkPlot(schema, plot, BAR),
     applyDisplaySettings: jest.fn(),
   }

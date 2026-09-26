@@ -116,7 +116,6 @@ import {
   zoomInRange,
 } from './markList.ts'
 import {
-  MARK_PLOT_EXAMPLES,
   liftMarkPlot as liftPlot,
   markPlotOf,
   markPlotProblems,
@@ -1280,14 +1279,6 @@ export function stateModelFactory(
          */
         liftMarkPlot(plot: MarkPlot): MarkPlotSettings {
           return liftPlot(configSchema, plot, this.markPlot)
-        },
-        /**
-         * #getter
-         * The plots the JSON box lists above its text, as a starting point for
-         * someone who has not written one.
-         */
-        get markPlotExamples(): { plot: string; description: string }[] {
-          return MARK_PLOT_EXAMPLES
         },
         /**
          * #getter

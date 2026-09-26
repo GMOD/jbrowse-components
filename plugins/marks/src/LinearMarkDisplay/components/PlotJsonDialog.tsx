@@ -5,6 +5,7 @@ import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
+  MARK_PLOT_EXAMPLES,
   markPlotProblems,
   markPlotSettingsWritten,
   markPlotText,
@@ -19,7 +20,6 @@ import type { MarkProblem } from '../markProblems.ts'
 export interface PlotJsonDialogModel {
   /** The plot as declared, which the box opens on. */
   markPlot: MarkPlot
-  markPlotExamples: { plot: string; description: string }[]
   /** Throws for a plot the config schema would refuse. */
   liftMarkPlot: (plot: MarkPlot) => MarkPlotSettings
   applyDisplaySettings: (settings: Record<string, unknown>) => unknown
@@ -92,7 +92,7 @@ const PlotJsonDialog = observer(function PlotJsonDialog({
         out stays as it is, and <code>null</code> clears one.
       </DialogContentText>
       <ul>
-        {model.markPlotExamples.map(({ plot, description }) => (
+        {MARK_PLOT_EXAMPLES.map(({ plot, description }) => (
           <li key={plot}>
             <code>{plot}</code> {description}
           </li>
