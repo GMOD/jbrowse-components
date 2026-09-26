@@ -67,31 +67,19 @@ function findGCTrack(session: Awaited<ReturnType<typeof makeSession>>) {
   return added
 }
 
-test('LinearReferenceSequenceDisplay adds a standalone GCContentTrack', async () => {
-  const session = await makeSession([
-    { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
-  ])
-  const display = session.views[0].tracks[0].displays[0]
-  display.addGCContentTrack()
-
-  const added = findGCTrack(session)
-  expect(readConfObject(added, 'assemblyNames')).toEqual(['volvox'])
-  expect(readConfObject(added, ['adapter', 'type'])).toBe('GCContentAdapter')
-  // the GCContentAdapter wraps the reference track's own sequence adapter
-  expect(readConfObject(added, ['adapter', 'sequenceAdapter', 'type'])).toBe(
-    'FromConfigSequenceAdapter',
-  )
-  // and it is shown in the view — the show goes through the async
-  // launchTrack path now
-  await waitFor(() => {
-    expect(
-      session.views[0].tracks.some(
-        (t: { configuration: AnyConfigurationModel }) =>
-          readConfObject(t.configuration, 'type') === 'GCContentTrack',
-      ),
-    ).toBe(true)
-  })
-})
+// The reachable route: the gccontent plugin's own Core-extraTrackMenuItems row,
+// which the hierarchical selector and the in-view track menu both reach.
+function addViaMenu(session: Awaited<ReturnType<typeof makeSession>>) {
+  const refseqConf =
+    session.assemblyManager.get('volvox')!.configuration.sequence
+  const addGc = session
+    .getTrackListMenuItems(refseqConf, session.views[0])
+    .find(item => 'label' in item && item.label === 'Add GC content track')
+  if (!addGc || !('onClick' in addGc)) {
+    throw new Error('no "Add GC content track" row')
+  }
+  addGc.onClick()
+}
 
 test('LinearGCContentDisplay carries its current params onto the new track', async () => {
   const session = await makeSession([
@@ -165,8 +153,8 @@ test('standalone GCContentTrack display does not double-wrap its adapter', async
   const session = await makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
-  // addGCContentTrack shows the new track through the async launchTrack path
-  session.views[0].tracks[0].displays[0].addGCContentTrack()
+  // the menu row shows the new track through the async launchTrack path
+  addViaMenu(session)
   await waitFor(() => {
     expect(
       session.views[0].tracks.some(

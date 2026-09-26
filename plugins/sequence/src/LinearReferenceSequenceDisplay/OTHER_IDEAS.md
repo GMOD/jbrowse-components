@@ -35,15 +35,16 @@ Config slot `minOrfLength`.
 `SequenceSearchAdapter` already does regex forward/reverse-strand matching, but
 users must hand-author the adapter config. Add a "Search sequence motif…" menu
 item that spins up a search track over this track's sequence adapter — mirror
-the existing `addGCContentTrack` action pattern (`model.ts`). Makes an existing
-capability discoverable.
+the gccontent plugin's `Core-extraTrackMenuItems` row
+(`plugins/gccontent/src/extraTrackMenuItems.ts`), which reaches the hierarchical
+selector's menu as well as this one. Makes an existing capability discoverable.
 
 ## Inline GC-content strip
 
-Today GC content requires adding a whole separate `GCContentTrack`
-(`addGCContentTrack`). An optional thin GC row inside this display would surface
-base composition without track-list clutter. Trade-off: adds a fetch/compute
-path to a display that is currently pure per-base rendering.
+Today GC content requires adding a whole separate `GCContentTrack` from the
+track menu. An optional thin GC row inside this display would surface base
+composition without track-list clutter. Trade-off: adds a fetch/compute path to
+a display that is currently pure per-base rendering.
 
 ## Peptide-track features
 

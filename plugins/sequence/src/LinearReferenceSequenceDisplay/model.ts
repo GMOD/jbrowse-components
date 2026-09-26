@@ -8,17 +8,13 @@ import { LAUNCH_LABEL } from '@jbrowse/core/ui'
 import { checkboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
-  addAndShowTrack,
   getContainingTrack,
   getPaletteHost,
   getSession,
   getDialogHost,
-  isSessionWithAddSessionTrack,
-  makeTrackId,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
-import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
@@ -332,39 +328,6 @@ export function modelFactory(
       toggleShowTranslation() {
         setConf(self, 'showTranslation', !self.showTranslation)
         setConf(self, 'height', undefined)
-      },
-      /**
-       * #action
-       * spins up a standalone GCContentTrack session track that wraps this
-       * track's sequence adapter (requires the gccontent plugin).
-       *
-       * Not on this display's menu: the gccontent plugin puts the item there
-       * itself, through `Core-extraTrackMenuItems`, which reaches the
-       * hierarchical selector's track menu as well as this one. A copy here
-       * showed it twice on an open reference sequence track, and had to ask
-       * whether the plugin was loaded — through `getTrackType`, which throws
-       * rather than answering no. Kept as an action because it is callable API.
-       */
-      addGCContentTrack() {
-        const session = getSession(self)
-        const track = getContainingTrack(self)
-        if (isSessionWithAddSessionTrack(session)) {
-          const name = 'GC content'
-          addAndShowTrack(
-            session,
-            {
-              trackId: makeTrackId({ name }),
-              type: 'GCContentTrack',
-              name,
-              assemblyNames: getTrackAssemblyNames(track),
-              adapter: {
-                type: 'GCContentAdapter',
-                sequenceAdapter: getConf(track, 'adapter'),
-              },
-            },
-            self.view,
-          )
-        }
       },
     }))
     .actions(self => ({
