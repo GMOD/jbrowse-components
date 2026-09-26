@@ -318,7 +318,7 @@ chip. A `pileup` in the facet's own `transform` packs each section on its own.
 }
 ```
 
-<Figure src="/img/mark_display_examples/facet.png" caption="Plus-strand copies packed in one section and minus-strand copies in another, each under a chip naming its strand, 1 or -1." />
+<Figure src="/img/mark_display_examples/facet.png" caption="Plus-strand copies packed in one section and minus-strand copies in another, each under a chip naming its strand." />
 
 ## Labels
 
@@ -430,7 +430,7 @@ pair, stroked by its mapping quality.
 }
 ```
 
-<Figure src="/img/mark_display_examples/links.png" caption="Every pair with an insert under 20 kb over 30 kb of chromosome 20, as an arc from its leftmost read to the end of its insert. The arcs straddling 32,937,500 to 32,941,500 are the pairs across a deletion." />
+<Figure src="/img/mark_display_examples/links.png" caption="The pairs across a deletion on chromosome 20, each an arc from its leftmost read to the end of its insert, stroked by its mapping quality." />
 
 ## One row per file
 
@@ -469,7 +469,7 @@ similarity...** in the track menu.
 }
 ```
 
-<Figure src="/img/mark_display_examples/rows.png" caption="Six individuals' copy number over CCL3L1, one row per file on a shared 0 to 10 axis, from nine copies at the top to none at the bottom." />
+<Figure src="/img/mark_display_examples/rows.png" caption="Six individuals' copy number over CCL3L1, one row per file on a shared axis, stepping down from the top row to the bottom." />
 
 ## More
 
