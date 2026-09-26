@@ -6498,12 +6498,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "multirowxy",
                 "multirowdensity",
                 "multirowline",
-                "multirowlinecenter",
-                "multirowscatter",
-                "multixyplot",
                 "multiline",
-                "multilinecenter",
-                "multiscatter"
+                "multixyplot"
               ],
               "deprecated": true,
               "description": "Legacy spellings a migration rewrites when the config loads."

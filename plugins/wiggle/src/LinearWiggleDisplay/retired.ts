@@ -17,24 +17,15 @@ import type {
 const isRecord = (v: unknown): v is DisplayEntry =>
   !!v && typeof v === 'object' && !Array.isArray(v)
 
-// A multi-wiggle rendering name was a plot and a layout at once. A plain plot
-// name on the multi display drew overlaid, in v4.3.0 and in the betas that
-// remapped each to its overlaid form, except density, which only drew on rows.
+// v4.3.0's multi-wiggle renderings, each a plot and a layout at once, and the
+// `multixyplot` jb2hubs writes for a UCSC overlay multiWig.
 const MULTI_RENDERINGS: Record<string, readonly [string, string]> = {
   multirowxy: ['xyplot', 'source'],
   multirowdensity: ['density', 'source'],
   multirowline: ['line', 'source'],
-  multirowlinecenter: ['linecenter', 'source'],
-  multirowscatter: ['scatter', 'source'],
-  multixyplot: ['xyplot', ''],
   multiline: ['line', ''],
-  multilinecenter: ['linecenter', ''],
-  multiscatter: ['scatter', ''],
   xyplot: ['xyplot', ''],
-  line: ['line', ''],
-  linecenter: ['linecenter', ''],
-  scatter: ['scatter', ''],
-  density: ['density', 'source'],
+  multixyplot: ['xyplot', ''],
 }
 
 /**

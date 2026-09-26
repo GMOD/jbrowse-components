@@ -5078,12 +5078,8 @@ export const configManifest: ConfigManifest = {
           "multirowxy",
           "multirowdensity",
           "multirowline",
-          "multirowlinecenter",
-          "multirowscatter",
-          "multixyplot",
           "multiline",
-          "multilinecenter",
-          "multiscatter"
+          "multixyplot"
         ]
       },
       "aliases": [

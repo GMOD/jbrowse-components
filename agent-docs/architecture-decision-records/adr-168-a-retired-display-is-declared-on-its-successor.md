@@ -88,8 +88,9 @@ an explicit id.
   `LinearVariantMatrixDisplay` in columns; the arrangement, the sidebar and
   `jexlFilters`. A v4
   layout's colours stay behind, since the colorBy palette wrote them.
-- `LinearWiggleDisplay`: `MultiLinearWiggleDisplay`, its rendering names folded
-  into a plot and `rows`, v4.3.0's and the betas' both; the v4 plot, scale,
+- `LinearWiggleDisplay`: `MultiLinearWiggleDisplay`, v4.3.0's rendering names
+  and jb2hubs' `multixyplot` folded into a plot and `rows` (amended 2026-09-26:
+  the betas' other names went); the v4 plot, scale,
   autoscale, domain, colours, summary mode, cross-hatches and resolution; the
   arrangement and the sidebar.
 - `LinearMafDisplay`: `treeAreaWidth` and `subtreeFilter`, which

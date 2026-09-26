@@ -4,15 +4,9 @@ test.each([
   ['multirowxy', 'xyplot', 'source'],
   ['multirowdensity', 'density', 'source'],
   ['multirowline', 'line', 'source'],
-  ['multirowlinecenter', 'linecenter', 'source'],
-  ['multirowscatter', 'scatter', 'source'],
-  ['multixyplot', 'xyplot', ''],
   ['multiline', 'line', ''],
-  ['multilinecenter', 'linecenter', ''],
-  ['multiscatter', 'scatter', ''],
   ['xyplot', 'xyplot', ''],
-  ['line', 'line', ''],
-  ['density', 'density', 'source'],
+  ['multixyplot', 'xyplot', ''],
 ])('the multi display’s %s is %s with rows %j', (old, plot, rows) => {
   expect(foldMultiWiggleRendering({ defaultRendering: old })).toEqual({
     defaultRendering: plot,
@@ -32,7 +26,7 @@ test('the layout joins an arrangement already lifted', () => {
   })
 })
 
-test.each(['multirowxy', 'multixyplot', 'density'])(
+test.each(['multirowxy', 'multiline', 'multirowdensity'])(
   'folding a folded %s entry changes nothing',
   rendering => {
     const once = foldMultiWiggleRendering({ defaultRendering: rendering })

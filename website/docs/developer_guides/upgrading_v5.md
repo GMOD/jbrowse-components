@@ -341,9 +341,9 @@ display setting still opens as a stack of rows.
 `defaultRendering` is the five plot names — `xyplot`, `density`, `line`,
 `linecenter` and `scatter`. A config or a session naming
 `MultiLinearWiggleDisplay` loads as `LinearWiggleDisplay`, its rendering read as
-the plot and the layout it drew: `multirowxy` is `xyplot` on rows, and
-`multixyplot`, or a plain `xyplot`, is `xyplot` with `rows: ""`. A
-`LinearWiggleDisplay` entry takes the five names alone.
+the plot and the layout it drew: `multirowxy` is `xyplot` on rows, and `xyplot`
+is `xyplot` with `rows: ""`. A `LinearWiggleDisplay` entry takes the five names
+alone.
 
 `rows` also holds a reader's arrangement of the rows, which
 `MultiLinearWiggleDisplay` kept as display props. The arrangement is therefore

@@ -102,7 +102,7 @@ test('a v4 multi-wiggle share link opens as rows, in its order', async () => {
 
 test('a v4 multi-wiggle left overlaid stays overlaid', async () => {
   const display = displayOf(
-    await restored(v4Session({ rendererTypeNameState: 'multixyplot' })),
+    await restored(v4Session({ rendererTypeNameState: 'xyplot' })),
   )
 
   expect(display.isRowLayout).toBe(false)
