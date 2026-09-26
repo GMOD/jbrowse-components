@@ -298,6 +298,38 @@ describe('pickVariantCell insertion markers', () => {
     expect(picked?.insertedBp).toBe(5000)
   })
 
+  test('an insertion marker outranks a later cell of the same span', () => {
+    // one site split into an insertion record and an SNV record, both carried
+    // on row 0: the SNV's cell is later, but the marker is painted over it
+    const split = build({
+      altCells: [
+        { feature: 0, row: 0, carriesAlt: true },
+        { feature: 1, row: 0, carriesAlt: true },
+      ],
+      features: [
+        [1000, 1001],
+        [1000, 1001],
+      ],
+      insertedBp: [5000, 0],
+    })
+    for (const candidateFeatures of [
+      [0, 1],
+      [1, 0],
+    ]) {
+      const picked = pickVariantCell({
+        data: split,
+        candidateFeatures,
+        mouseX: 200,
+        mouseY: rowY(0),
+        rowNearest: 0,
+        rowLowest: 0,
+        ...zoomedOut,
+      })
+      expect(picked?.featureIndex).toBe(0)
+      expect(picked?.insertedBp).toBe(5000)
+    }
+  })
+
   test('the reference row of the same record is not widened', () => {
     // It paints no marker, so its hit target stays the 2px cell — otherwise
     // hovering empty space would claim that haplotype carries the insertion.
