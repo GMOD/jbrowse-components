@@ -20,7 +20,7 @@ which:
   assemblyNames: ['grape', 'peach'],
   adapter: {
     type: 'BlastTabularAdapter',
-    blastTableLocation: { uri: 'https://example.com/hits.tsv' },
+    uri: 'https://example.com/hits.tsv',
     assemblyNames: ['grape', 'peach'],
     queryAssembly: 'grape',
     targetAssembly: 'peach',
@@ -42,7 +42,7 @@ where present:
   assemblyNames: ['grape', 'peach'],
   adapter: {
     type: 'BlastTabularAdapter',
-    blastTableLocation: { uri: 'https://example.com/hits.tsv' },
+    uri: 'https://example.com/hits.tsv',
     assemblyNames: ['grape', 'peach'],
     columns: 'qseqid sseqid qstart qend sstart send evalue',
   },
@@ -62,7 +62,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "BlastTabularAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "BlastTabularAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

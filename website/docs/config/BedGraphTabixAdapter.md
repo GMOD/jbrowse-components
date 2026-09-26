@@ -51,6 +51,5 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "BedGraphTabi
 | Slot | Description |
 | --- | --- |
 | <span id="slot-bedgraphgzlocation">**bedGraphGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }</code> | location of the bgzip-compressed bedGraph (`chrom start end value`, sorted by position). Must be bgzip rather than plain gzip, which tabix cannot index. |
+| <span id="slot-index">**index**</span><br>[TabixIndex](../tabixindex) | where the tabix index is and which kind it is. The `uri` shorthand derives both, so a config using it states neither. |
 | <span id="slot-columnnames">**columnNames**</span><br>`stringArray` = <code>[]</code> | List of column names |
-| <span id="slot-indexindextype">**index.indexType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (TBI, CSI) = <code>'TBI'</code> | `TBI` is the usual `tabix` output. `CSI` is required for a reference longer than 512 Mb, which TBI cannot address. |
-| <span id="slot-indexlocation">**index.location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.gz.tbi', locationType: 'UriLocation' }</code> | location of the tabix index. Only needed when it is not named `<file>.tbi`, which is what the `uri` shorthand assumes — a `.csi` beside the file is reached with `csi: true` rather than by spelling this out. |

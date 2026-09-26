@@ -21,7 +21,7 @@ error:
   assemblyNames: ['hg38'],
   adapter: {
     type: 'BigMafAdapter',
-    bigBedLocation: { uri: 'https://example.com/multiz.bb' },
+    uri: 'https://example.com/multiz.bb',
     samples: ['hg38', 'panTro6', 'rheMac10', 'mm39'],
   },
 }
@@ -38,7 +38,7 @@ used to configure BigMaf adapter
 
 ## Config slots
 
-These slots go inside the track's `adapter`: `"adapter": { "type": "BigMafAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "BigMafAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `nhUri` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

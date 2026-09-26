@@ -62,6 +62,11 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
       defaultValue: 10000,
       advanced: true,
     },
+    /**
+     * #slot
+     * where the tabix index is and which kind it is. The `uri` shorthand derives
+     * both, so a config using it states neither.
+     */
     index: tabixIndexSchema(),
   },
   {

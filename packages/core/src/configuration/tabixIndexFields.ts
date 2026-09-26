@@ -51,13 +51,15 @@ export const tabixIndexFields = {
 } as const
 
 /**
- * The `index` sub-schema itself, which nine adapters were each assembling out of
- * the fields above. A fresh one per adapter, so each index is a node in its own
- * config tree.
- *
- * It is also where `fillIndexType` hangs, which is the reason to have a factory
- * at all: the sub-schema sees every snapshot that reaches it, while an adapter's
- * `normalizeSnapshot` sees only the shorthand.
+ * #config TabixIndex
+ * #category adapter
+ * The `index` every tabix-indexed adapter hangs off itself: where the index is,
+ * and which of the two kinds it is. `indexType` is derived from the index file's
+ * own name where the config names a `.csi` and leaves it unset, so the usual
+ * config states neither — the `uri` shorthand derives both, and `csi: true`
+ * beside it switches the pair together. Spell `location` out for an index that
+ * does not sit beside its data file; a `.csi` named there is read as a CSI
+ * without `indexType` as well.
  */
 export function tabixIndexSchema() {
   return ConfigurationSchema(
