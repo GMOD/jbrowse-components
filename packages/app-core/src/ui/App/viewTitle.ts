@@ -18,7 +18,7 @@ export function viewName(
   return (
     view.displayName ||
     (assemblyNames.length
-      ? assemblyNames.map(r => getDisplayName(r)).join(',')
+      ? assemblyNames.map(r => getDisplayName(r)).join(', ')
       : 'Untitled view')
   )
 }

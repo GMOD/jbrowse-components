@@ -18,7 +18,7 @@ describe('viewTitle', () => {
         { assemblyNames: ['volvox', 'volvox2'], minimized: false },
         getDisplayName,
       ),
-    ).toBe('volvox display,volvox2 display')
+    ).toBe('volvox display, volvox2 display')
   })
 
   it('falls back to Untitled view when assemblyNames is empty', () => {
