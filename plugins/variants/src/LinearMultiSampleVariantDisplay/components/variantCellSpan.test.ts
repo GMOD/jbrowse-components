@@ -21,7 +21,6 @@ describe('variantCellSpanPx without an insertion', () => {
   test('a wide reference span is itself', () => {
     expect(
       variantCellSpanPx({
-        canvasWidth: CANVAS,
         x1: 100,
         x2: 140,
         insertedBp: 0,
@@ -35,7 +34,6 @@ describe('variantCellSpanPx without an insertion', () => {
   test('a sub-pixel span takes the 2px floor the shader and Canvas2D use', () => {
     expect(
       variantCellSpanPx({
-        canvasWidth: CANVAS,
         x1: 100,
         x2: 100.2,
         insertedBp: 0,
@@ -53,7 +51,6 @@ describe('variantCellSpanPx without an insertion', () => {
   // sitting on the record and sitting a full mark-width past it.
   test('a sub-pixel span on a reversed block hangs off its start edge', () => {
     const args = {
-      canvasWidth: CANVAS,
       insertedBp: 0,
       insertionsWiden: false,
       pxPerBp: 1,
@@ -72,7 +69,6 @@ describe('variantCellSpanPx without an insertion', () => {
   test('a reversed block hands x1/x2 back swapped', () => {
     expect(
       variantCellSpanPx({
-        canvasWidth: CANVAS,
         x1: 140,
         x2: 100,
         insertedBp: 0,
@@ -92,7 +88,6 @@ describe('variantCellSpanPx with an insertion', () => {
     expect(markerWidth).toBeGreaterThan(2)
     expect(
       variantCellSpanPx({
-        canvasWidth: CANVAS,
         x1: 100,
         x2: 100.2,
         insertedBp: 5000,
@@ -110,7 +105,6 @@ describe('variantCellSpanPx with an insertion', () => {
 
   test('centering survives a reversed block', () => {
     const forward = variantCellSpanPx({
-      canvasWidth: CANVAS,
       x1: 100,
       x2: 100.2,
       insertedBp: 5000,
@@ -120,7 +114,6 @@ describe('variantCellSpanPx with an insertion', () => {
     })
     expect(
       variantCellSpanPx({
-        canvasWidth: CANVAS,
         x1: 100.2,
         x2: 100,
         insertedBp: 5000,
@@ -136,7 +129,6 @@ describe('variantCellSpanPx with an insertion', () => {
     // would draw, so the overlay stays out of the way and the plain span wins.
     expect(
       variantCellSpanPx({
-        canvasWidth: CANVAS,
         x1: 100,
         x2: 300,
         insertedBp: 5,
@@ -157,7 +149,6 @@ describe('variantCellSpanPx with an insertion', () => {
     // target to be clickable off the glyph.
     for (const insertedBp of [50, 100, 500, 5000, 65481]) {
       const { left, width, drawsMarker, center } = variantCellSpanPx({
-        canvasWidth: CANVAS,
         x1: 100,
         x2: 100.2,
         insertedBp,
@@ -172,7 +163,6 @@ describe('variantCellSpanPx with an insertion', () => {
 
   test('a short row falls back to the unlabelled bar, not the wide box', () => {
     const { width, drawsMarker } = variantCellSpanPx({
-      canvasWidth: CANVAS,
       x1: 100,
       x2: 100.2,
       insertedBp: 5000,
@@ -195,7 +185,6 @@ describe('variantCellSpanPx with insertion widening switched off', () => {
   test('the largest insertion is its plain reference span', () => {
     expect(
       variantCellSpanPx({
-        canvasWidth: CANVAS,
         x1: 100,
         x2: 100.2,
         insertedBp: 5000,
@@ -208,7 +197,6 @@ describe('variantCellSpanPx with insertion widening switched off', () => {
 
   test('a record that inserts nothing is unaffected either way', () => {
     const args = {
-      canvasWidth: CANVAS,
       x1: 100,
       x2: 140,
       insertedBp: 0,
@@ -253,7 +241,6 @@ describe('the span is the one the cell painter drew', () => {
     const span = variantCellSpanPx({
       x1: toX(startBp),
       x2: toX(endBp),
-      canvasWidth,
       insertedBp: 0,
       insertionsWiden: false,
       pxPerBp: 0.01,

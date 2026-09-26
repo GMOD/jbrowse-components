@@ -8,17 +8,16 @@ function _max(a: number, b: number) {
   return b > a || Number.isNaN(a) ? b : a
 }
 
-function snapCellEdgePx(xPx: number, canvasWidth: number): number {
-  let half = (canvasWidth * 0.5)
-  return (Math.floor(((xPx - half) + 0.5)) + half)
+function snapCellEdgePx(xPx: number): number {
+  return Math.floor((xPx + 0.5))
 }
 
-export function snappedCellWidthPx(x1Px: number, x2Px: number, canvasWidth: number): number {
-  return _max(2.0, Math.abs((snapCellEdgePx(x2Px, canvasWidth) - snapCellEdgePx(x1Px, canvasWidth))))
+export function snappedCellWidthPx(x1Px: number, x2Px: number): number {
+  return _max(2.0, Math.abs((snapCellEdgePx(x2Px) - snapCellEdgePx(x1Px))))
 }
 
-export function snappedCellLeftPx(x1Px: number, x2Px: number, canvasWidth: number, widthPx: number): number {
-  let startPx = snapCellEdgePx(x1Px, canvasWidth)
+export function snappedCellLeftPx(x1Px: number, x2Px: number, widthPx: number): number {
+  let startPx = snapCellEdgePx(x1Px)
   let _t0: number
   if ((x2Px < x1Px)) {
     _t0 = (startPx - widthPx)

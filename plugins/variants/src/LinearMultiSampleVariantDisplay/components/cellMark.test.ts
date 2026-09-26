@@ -17,7 +17,7 @@ const retired: Required<
 > = {
   paintBlock(ctx, channels, block, frame, params) {
     const { startEnd, row, shapeType, color, count } = channels
-    const { canvasWidth, canvasHeight } = frame
+    const { canvasHeight } = frame
     const { rowHeight, scrollTop } = params
     const h = drawnCellHeightPx(rowHeight)
     const toX = makeBpMapper(block)
@@ -28,7 +28,6 @@ const retired: Required<
         const { x, width } = snapVariantCellX(
           toX(startEnd[i * 2]!),
           toX(startEnd[i * 2 + 1]!),
-          canvasWidth,
         )
         setFill(color[i]!)
         drawVariantShape(ctx, shapeType[i]!, x, y, width, h)
@@ -38,7 +37,7 @@ const retired: Required<
 
   ink(channels, block, frame, params, i) {
     const { startEnd, row } = channels
-    const { canvasWidth, canvasHeight } = frame
+    const { canvasHeight } = frame
     const { rowHeight, scrollTop } = params
     const height = drawnCellHeightPx(rowHeight)
     const top = row[i]! * rowHeight - scrollTop
@@ -49,7 +48,6 @@ const retired: Required<
     const { x, width } = snapVariantCellX(
       toX(startEnd[i * 2]!),
       toX(startEnd[i * 2 + 1]!),
-      canvasWidth,
     )
     return { left: x, top, width, height }
   },

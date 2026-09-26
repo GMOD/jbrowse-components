@@ -73,7 +73,6 @@ export function markersForBlock(
   region: VariantInsertionGlyphData,
   block: VariantRenderBlock,
   drawnRowHeight: number,
-  canvasWidth: number,
 ) {
   const numFeatures = region.featureInsertedBp.length
   const drawsMarker = new Uint8Array(numFeatures)
@@ -88,7 +87,7 @@ export function markersForBlock(
     // function's answer *is* the markers, and both callers already return early
     // when the setting is off. Asking for spans with the widening switched off
     // would be asking which markers a display that draws none draws.
-    { drawnHeight: drawnRowHeight, insertionsWiden: true, canvasWidth },
+    { drawnHeight: drawnRowHeight, insertionsWiden: true },
     (f, span) => {
       if (span.drawsMarker) {
         markerXCenter[f] = span.center
@@ -193,7 +192,7 @@ export function drawVariantInsertionGlyphs(
     },
     (region, block) => {
       const { drawsMarker, markerXCenter, anyMarker, pxPerBp } =
-        markersForBlock(region, block, drawnRowHeight, canvasWidth)
+        markersForBlock(region, block, drawnRowHeight)
       // A callset where nothing earns a marker — a SNP panel, or any window
       // zoomed out past the point an insertion outgrows its cell — skips the
       // per-cell walk entirely instead of running it to draw nothing.

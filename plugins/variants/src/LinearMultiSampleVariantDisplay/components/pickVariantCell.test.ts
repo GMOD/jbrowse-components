@@ -59,9 +59,6 @@ const block: VariantRenderBlock = {
   reversed: false,
 }
 
-// An even canvas width, so the shader's canvas-centred snap leaves whole-pixel
-// bp positions where they are and these cases stay about the pick, not about
-// the grid.
 const state: VariantRenderState = {
   canvasWidth: 800,
   canvasHeight: 600,

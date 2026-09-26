@@ -564,7 +564,6 @@ export function stateModelFactory(
             const marker = variantCellSpanPx({
               x1: toX(cell.genomicStart),
               x2: toX(cell.genomicEnd),
-              canvasWidth: self.canvasWidthPx,
               insertedBp: cell.insertedBp,
               insertionsWiden: self.showInsertionGlyphs,
               pxPerBp: pxPerBpOf(region),

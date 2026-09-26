@@ -237,7 +237,7 @@ describe('anyMarkerPossibleForBlock is pan-stable where the painter is not', () 
 
   test('the painter flips across sub-pixel pan', () => {
     const painter = phases.map(
-      p => markersForBlock(region, panBlock(p), 20, 1000).anyMarker,
+      p => markersForBlock(region, panBlock(p), 20).anyMarker,
     )
     expect(new Set(painter).size).toBe(2)
   })

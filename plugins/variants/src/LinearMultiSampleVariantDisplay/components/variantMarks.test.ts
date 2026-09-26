@@ -149,11 +149,10 @@ describe('uniforms', () => {
     expect(f32[shader.UNIFORM_OFFSET_F32.scrollTop]).toBe(50)
   })
 
-  // The snap grid is anchored on the FULL canvas width so it matches every CPU
-  // painter and hit test; the clipped block's span converts clip px.
-  test('a clipped block keeps the full canvas width beside its own span', () => {
+  // The clipped block's span converts clip px; the snap needs nothing more,
+  // the viewport starting on a whole pixel of the canvas grid.
+  test('a clipped block converts clip px by its own span', () => {
     const f32 = uniformsFor(makeBlock({ screenStartPx: 400, screenEndPx: 800 }))
-    expect(f32[shader.UNIFORM_OFFSET_F32.canvasWidth]).toBe(800)
     expect(f32[shader.UNIFORM_OFFSET_F32.viewportWidth]).toBe(400)
   })
 

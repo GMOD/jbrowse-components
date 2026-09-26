@@ -17,19 +17,17 @@ export const UNIFORMS_SIZE_BYTES = 48
 export const UNIFORM_OFFSET_F32 = {
   bpRangeX: 0,
   canvasHeight: 3,
-  canvasWidth: 4,
-  viewportWidth: 5,
-  rowHeight: 6,
-  scrollTop: 7,
-  zero: 8,
-  devicePixelRatio: 9,
+  viewportWidth: 4,
+  rowHeight: 5,
+  scrollTop: 6,
+  zero: 7,
+  devicePixelRatio: 8,
 } as const
 
 
 export interface Uniforms {
   bpRangeX: [number, number, number]
   canvasHeight: number
-  canvasWidth: number
   viewportWidth: number
   rowHeight: number
   scrollTop: number
@@ -43,12 +41,11 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[1] = uniforms.bpRangeX[1]
   f32[2] = uniforms.bpRangeX[2]
   f32[3] = uniforms.canvasHeight
-  f32[4] = uniforms.canvasWidth
-  f32[5] = uniforms.viewportWidth
-  f32[6] = uniforms.rowHeight
-  f32[7] = uniforms.scrollTop
-  f32[8] = uniforms.zero
-  f32[9] = uniforms.devicePixelRatio
+  f32[4] = uniforms.viewportWidth
+  f32[5] = uniforms.rowHeight
+  f32[6] = uniforms.scrollTop
+  f32[7] = uniforms.zero
+  f32[8] = uniforms.devicePixelRatio
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

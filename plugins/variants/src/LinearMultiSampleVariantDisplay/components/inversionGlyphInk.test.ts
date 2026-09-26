@@ -66,8 +66,8 @@ const cells: CellChannels = {
 // display: a ramp reaching past 2px dims every genome-wide inversion by a
 // constant it can never climb out of.
 test('the 2px floors leave a genome-wide cell 2px on both sides', () => {
-  expect(snappedCellWidthPx(700.1, 700.2, FRAME.canvasWidth)).toBe(2)
-  expect(snappedCellWidthPx(700.2, 700.1, FRAME.canvasWidth)).toBe(2)
+  expect(snappedCellWidthPx(700.1, 700.2)).toBe(2)
+  expect(snappedCellWidthPx(700.2, 700.1)).toBe(2)
   expect(drawnCellHeightPx(0.5)).toBe(2)
   expect(drawnCellHeightPx(7.5)).toBe(7.5)
 })

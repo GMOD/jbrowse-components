@@ -35,7 +35,6 @@ export const MAX_INSERTION_MARKER_WIDTH_PX = textWidthForNumber(99999)
 export function variantCellSpanPx({
   x1,
   x2,
-  canvasWidth,
   insertedBp,
   insertionsWiden,
   pxPerBp,
@@ -43,13 +42,12 @@ export function variantCellSpanPx({
 }: {
   x1: number
   x2: number
-  canvasWidth: number
   insertedBp: number
   insertionsWiden: boolean
   pxPerBp: number
   drawnRowHeight: number
 }) {
-  const { x: left, width } = snapVariantCellX(x1, x2, canvasWidth)
+  const { x: left, width } = snapVariantCellX(x1, x2)
   const center = (x1 + x2) / 2
   const markerWidth =
     insertionsWiden && insertedBp > 0

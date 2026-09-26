@@ -45,21 +45,10 @@ float drawnCellHeightPx(float rowHeight) {
 // corner case there, it is every cell — and they get that by importing the two
 // functions below, which reach this one inside the generated module.
 //
-// The half-canvas offset is not decoration. Clip space is 2 units across
-// `canvasWidth` px, so the shader's natural `floor(clipX / pxSize + 0.5)` rounds
-// about the canvas *centre*: whole pixels when the width is even, half pixels
-// when it is odd. A plain round() on the CPU would agree only half the time.
-//
-// `canvasWidth` is the FULL canvas width on both sides — in the shader too,
-// where the draw's viewport is one clipped block (`u.viewportWidth`). The grid
-// this anchors is `Z + frac(canvasWidth/2)`, so anchoring it on the block's own
-// width put GPU edges 0.5px off every CPU painter and hit test whenever the
-// block's width parity differed from the canvas's. The viewport's left edge
-// (`scissorX`) is integral, which is what lets the shader snap in
-// viewport-relative px and still land on the canvas-absolute grid.
-float snapCellEdgePx(float xPx, float canvasWidth) {
-  float half = canvasWidth * 0.5;
-  return floor(xPx - half + 0.5) + half;
+// The shader snaps in viewport px and a CPU painter in canvas px, and the two
+// grids agree because the viewport's left edge (`scissorX`) is a whole pixel.
+float snapCellEdgePx(float xPx) {
+  return floor(xPx + 0.5);
 }
 
 // A snapped cell paints at least 2px wide, so a lone variant in a sparse matrix
@@ -72,9 +61,8 @@ float snapCellEdgePx(float xPx, float canvasWidth) {
 // can no longer tell which way the block ran. Since that is every record at
 // genome-wide zoom, a pivot reading snapped edges would be a no-op exactly where
 // it is needed. Raw in, decision inside, so the orientation survives the snap.
-float snappedCellWidthPx(float x1Px, float x2Px, float canvasWidth) {
-  return max(2.0, abs(
-    snapCellEdgePx(x2Px, canvasWidth) - snapCellEdgePx(x1Px, canvasWidth)));
+float snappedCellWidthPx(float x1Px, float x2Px) {
+  return max(2.0, abs(snapCellEdgePx(x2Px) - snapCellEdgePx(x1Px)));
 }
 
 // Which edge the widened cell hangs off: the record's START, always.
@@ -89,10 +77,8 @@ float snappedCellWidthPx(float x1Px, float x2Px, float canvasWidth) {
 // LinearVariantDisplay beside it, which pivots correctly.
 //
 // `widthPx` is passed rather than recomputed so the floor stays one expression.
-float snappedCellLeftPx(
-  float x1Px, float x2Px, float canvasWidth, float widthPx
-) {
-  float startPx = snapCellEdgePx(x1Px, canvasWidth);
+float snappedCellLeftPx(float x1Px, float x2Px, float widthPx) {
+  float startPx = snapCellEdgePx(x1Px);
   return x2Px < x1Px ? startPx - widthPx : startPx;
 }
 
@@ -106,8 +92,6 @@ struct CellInstance {
 struct Uniforms {
   float3 bpRangeX;
   float  canvasHeight;
-  // The FULL canvas width — the snap grid's anchor (see snapCellEdgePx).
-  float  canvasWidth;
   // The clipped block's width, i.e. the draw's viewport/scissor span — what
   // clip-space x actually spans, so it alone converts clip px.
   float  viewportWidth;
@@ -139,9 +123,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float clipX2 = bpToClipX(inst.startEnd.y, u);
   // Pixel-snap + 2px floor, in px space (see snapCellEdgePx) so the CPU runs the
   // identical rounding. clipX/pxSize is already `px - viewportWidth/2` — the
-  // viewport spans the clipped block, so its width converts clip px — while the
-  // snap itself takes the FULL canvas width, the grid every CPU painter and hit
-  // test snaps against.
+  // viewport spans the clipped block, so its width converts clip px.
   //
   // The edges stay in RECORD order: reversal is baked into bpRangeX (negated
   // length), so clipX2 < clipX1 on a reversed region, and that is exactly what
@@ -151,8 +133,8 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float halfW = u.viewportWidth * 0.5;
   float rx1 = clipX1 / pxSize + halfW;
   float rx2 = clipX2 / pxSize + halfW;
-  float wPx = snappedCellWidthPx(rx1, rx2, u.canvasWidth);
-  float x1Px = snappedCellLeftPx(rx1, rx2, u.canvasWidth, wPx);
+  float wPx = snappedCellWidthPx(rx1, rx2);
+  float x1Px = snappedCellLeftPx(rx1, rx2, wPx);
   float cx1 = (x1Px - halfW) * pxSize;
   float cx2 = (x1Px + wPx - halfW) * pxSize;
 

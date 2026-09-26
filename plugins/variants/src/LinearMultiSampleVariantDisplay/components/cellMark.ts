@@ -39,7 +39,6 @@ export interface CellParams {
 }
 
 interface CellFrame extends BpProjection {
-  canvasWidth: number
   canvasHeight: number
   rowHeight: number
   scrollTop: number
@@ -60,7 +59,6 @@ function cellFrame(
     startBp,
     spanBp,
     signedSpanPx,
-    canvasWidth: frame.canvasWidth,
     canvasHeight: frame.canvasHeight,
     rowHeight: params.rowHeight,
     scrollTop: params.scrollTop,
@@ -83,13 +81,13 @@ function placeCellY(c: CellChannels, g: CellFrame, i: number) {
 function placeCellX(c: CellChannels, g: CellFrame, i: number) {
   const x1 = projectBp(g, c.startEnd[i * 2]!)
   const x2 = projectBp(g, c.startEnd[i * 2 + 1]!)
-  const width = snappedCellWidthPx(x1, x2, g.canvasWidth)
-  g.left = snappedCellLeftPx(x1, x2, g.canvasWidth, width)
+  const width = snappedCellWidthPx(x1, x2)
+  g.left = snappedCellLeftPx(x1, x2, width)
   g.width = width
 }
 
 /**
- * A pixel-snapped matrix cell on the half-canvas snap grid `variant.slang`
+ * A pixel-snapped matrix cell on the pixel grid `variant.slang`
  * owns, its x through the shader's generated twins. An inversion's triangle
  * inks its bounding box.
  */
@@ -104,7 +102,6 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
     shader.writeUniforms(scratch, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: frame.canvasHeight,
-      canvasWidth: frame.canvasWidth,
       viewportWidth: clip.scissorW,
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
@@ -123,7 +120,6 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
       startBp,
       spanBp,
       signedSpanPx,
-      canvasWidth: frame.canvasWidth,
       canvasHeight: frame.canvasHeight,
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,

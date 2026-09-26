@@ -135,7 +135,6 @@ export function pickVariantCell({
           const marker =
             insertionsWiden && insertedBp > 0
               ? variantCellSpanPx({
-                  canvasWidth: state.canvasWidth,
                   x1: toX(genomicStart),
                   x2: toX(genomicEnd),
                   insertedBp,

@@ -473,7 +473,8 @@ Mechanics worth not rediscovering, all in `oracleProbe.ts`:
   forced them to be classified.
 - **Not every mirror is worth converting.** The test is whether a hand-written
   twin could plausibly drift *and* the difference would be hard to see —
-  `snapCellEdgePx`'s half-canvas offset passes it, a multiply-add does not.
+  `snappedCellLeftPx`'s reversed-block pivot passes it, a multiply-add does
+  not.
 
 ## The two sweeps, when a shader gains a constant
 
