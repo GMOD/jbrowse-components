@@ -15,6 +15,8 @@ import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestCase, TestSuite } from '../types.ts'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
+import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Page } from 'puppeteer'
 
 const pileup = 'pileup-display'
@@ -33,6 +35,53 @@ interface LiveModel {
       }[]
     }[]
   }
+}
+
+// The page point of a named gene's glyph on the first track, off the layout the
+// display drew: its label is no target, since `auto` labels give way to row
+// density and the gene may carry none at the zoom a test opens at.
+async function geneGlyphPoint(page: Page, name: string) {
+  const at = await page.evaluate((name: string) => {
+    const { JBrowseSession } = window as unknown as {
+      JBrowseSession: {
+        views: (Pick<LinearGenomeViewModel, 'bpToPx' | 'offsetPx'> & {
+          tracks: {
+            displays: Pick<
+              LinearBasicDisplayModel,
+              'featureItemMap' | 'scrollTop'
+            >[]
+          }[]
+        })[]
+      }
+    }
+    const view = JBrowseSession.views[0]!
+    const display = view.tracks[0]!.displays[0]!
+    for (const entry of display.featureItemMap.values()) {
+      if (entry.kind === 'feature' && entry.item.name === name) {
+        const { startBp, endBp, topPx, featureHeightPx } = entry.item
+        const px = view.bpToPx({
+          refName: 'ctgA',
+          coord: Math.round((startBp + endBp) / 2),
+        })
+        return px
+          ? {
+              x: px.offsetPx - view.offsetPx,
+              y: topPx + featureHeightPx / 2 - display.scrollTop,
+            }
+          : undefined
+      }
+    }
+    return undefined
+  }, name)
+  if (!at) {
+    throw new Error(`${name} is not in the first track's layout`)
+  }
+  const track = await page.$('[data-testid="feature-display"]')
+  const box = await track?.boundingBox()
+  if (!box) {
+    throw new Error('the gene track has no box')
+  }
+  return { x: box.x + at.x, y: box.y + at.y }
 }
 
 // What the arc band actually resolved to, counted three ways because the three
@@ -323,20 +372,12 @@ const suite: TestSuite = {
         })
 
         await findByTestId(page, pileup, 60000)
+        await findDisplayPainted(page, 'feature-display', 60000)
         await waitForDataLoaded(page)
 
-        // Wait for the EDEN gene label overlay to appear — this confirms the
-        // gene annotation canvas has finished drawing
-        const edenLabel = await page.waitForSelector(
-          '[data-testid="feature-name-EDEN"]',
-          { timeout: 30000 },
-        )
-        if (!edenLabel) {
-          throw new Error('EDEN gene label not found')
-        }
-
-        // Right-click the label to trigger the feature context menu
-        await edenLabel.click({ button: 'right' })
+        // Right-click the EDEN gene itself for the feature context menu
+        const eden = await geneGlyphPoint(page, 'EDEN')
+        await page.mouse.click(eden.x, eden.y, { button: 'right' })
         await delay(500)
 
         const collapseItem = await findByText(page, /Collapse introns/, 10000)
@@ -364,8 +405,9 @@ const suite: TestSuite = {
         await waitForElementCount(page, displayPainted('pileup-display'), 2)
         await waitForDataLoaded(page)
 
-        // Full-page snapshot shows both views: original + collapsed exon view
-        // with sashimi arcs spanning the compressed intron gaps
+        // Both views: the original, and the collapsed exon view's gene track.
+        // Its sashimi band is below the page's fold, so the painted count
+        // above is what holds that one.
         await pageSnapshot(page, 'arcs-collapse-introns-sashimi')
       },
     },
