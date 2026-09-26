@@ -28,7 +28,10 @@ import {
 import { join } from 'node:path'
 
 import { pluginCheckout, repoRoot } from '../paths.ts'
+import { menuCascade, trackMenuIcon } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
+
+import type { ScreenshotAction } from '../screenshot-spec-types.ts'
 
 // The url the tracked fixture configs hardcode, and what ECOLI_DEMO_BASE
 // replaces in them when it is set.
@@ -80,6 +83,21 @@ export const graphTrack = (trackId: string, pane: Record<string, unknown>) => ({
   type: 'LinearGraphDisplay',
   pane,
 })
+
+// Open a graph track's menu and pick the row at the end of `path`, e.g.
+// ['Layout', 'Force-directed layout']. A radio or checkbox row leaves its menu
+// standing, so a frame of the result wants `closeMenusAfter`.
+export function graphTrackMenu(
+  trackId: string,
+  path: string[],
+): ScreenshotAction[] {
+  const row = path.at(-1)!.toLowerCase().replaceAll(/\s+/g, '_')
+  return [
+    trackMenuIcon(trackId),
+    ...menuCascade(path),
+    { type: 'click', selector: `[data-testid="cascading-menuitem-${row}"]` },
+  ]
+}
 
 // The standalone GraphGenomeView, which a whole GFA file still opens in. Its
 // showLoading holds the view phase until the geometry is built, and the ready
