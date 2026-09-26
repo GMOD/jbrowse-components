@@ -2103,8 +2103,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 'syri_pangenome',
               type: 'MultiWaySyntenyDisplay',
-              domain: SYRI_ACCESSIONS.slice(1),
-              ribbonColor: { field: 'syri', domain: SYRI_TYPES },
               height: 640,
             },
           ],
@@ -2112,6 +2110,39 @@ export const syntenySpecs: ScreenshotSpec[] = [
       ],
     }),
     readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    viewportHeight: 1000,
+  },
+
+  // The 1001 Genomes Plus demo: SyRI's regions of 26 accessions against TAIR10
+  // over the chromosome 4 inversion. Col-0's own assembly and KBS-Mac-74 run
+  // syntenic across it and every other row is inverted.
+  {
+    mode: 'url',
+    name: 'syri/tair10_1001g',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/arabidopsis_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'TAIR10',
+            loc: 'Chr4:1-4,000,000',
+            tracks: [
+              'TAIR10_genes',
+              {
+                trackId: 'syri_regions_on_TAIR10',
+                type: 'LinearMultiRowFeatureDisplay',
+                height: 644,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displayPainted('multirow_canvas'),
     readyTimeout: 120000,
     viewportHeight: 1000,
   },
