@@ -190,7 +190,7 @@ test('a display starts with a small ring and a frame of a few writes stays in it
   const hal = await makeHal(fake.device)
   frame(hal, 4)
   expect(fake.ringSizes).toEqual([16 * slot])
-  expect(fake.events).toEqual(['write:0:' + 4 * slot, 'submit'])
+  expect(fake.events).toEqual([`write:0:${4 * slot}`, 'submit'])
   hal.dispose()
   resetDeviceGpuCacheForTests(fake.device)
 })
@@ -202,9 +202,9 @@ test('a frame past the ring doubles it, and every draw reads the slots it was wr
   expect(fake.ringSizes).toEqual([16 * slot, 32 * slot, 64 * slot])
   const [a, b, c] = [0, 2, 3]
   expect(fake.drawnWith).toEqual([
-    ...Array<number>(16).fill(a),
-    ...Array<number>(16).fill(b),
-    ...Array<number>(8).fill(c),
+    ...new Array<number>(16).fill(a),
+    ...new Array<number>(16).fill(b),
+    ...new Array<number>(8).fill(c),
   ])
   // Each outgrown ring takes the prefix its draws read, before the submit,
   // and goes after it.
