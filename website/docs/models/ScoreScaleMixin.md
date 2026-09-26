@@ -6,7 +6,7 @@ sidebar_label: Mixin -> ScoreScaleMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
 
-#crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `autoscaleType` / `numStdDev` / `numQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+#crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `autoscaleType` / `autoscaleChoices` / `numStdDev` / `numQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
 
 The value scale of every quantitative display: wiggle, the alignments
 coverage band and the mark display, Manhattan among them, each declare
@@ -36,6 +36,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
 | <span id="getter-scaletypechoices">**scaleTypeChoices**</span><br><code>string[]</code> | The scale types this display's own enum admits, which is what the scale-type radio offers; a display with one draws no radio. | ScoreScaleMixin |
 | <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
+| <span id="getter-autoscalechoices">**autoscaleChoices**</span><br><code>string[]</code> | The autoscale modes this display's own enum admits, which is what the Autoscale type radio offers. | ScoreScaleMixin |
 | <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  | ScoreScaleMixin |
 | <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | ScoreScaleMixin |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. | ScoreScaleMixin |

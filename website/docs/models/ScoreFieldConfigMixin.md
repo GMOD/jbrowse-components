@@ -25,6 +25,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
 | <span id="getter-scaletypechoices">**scaleTypeChoices**</span><br><code>string[]</code> | <span data-pagefind-ignore>The scale types this display's own enum admits, which is what the scale-type radio offers; a display with one draws no radio.</span> | [ScoreScaleMixin](../scorescalemixin#getter-scaletypechoices) |
 | <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-autoscaletype) |
+| <span id="getter-autoscalechoices">**autoscaleChoices**</span><br><code>string[]</code> | <span data-pagefind-ignore>The autoscale modes this display's own enum admits, which is what the Autoscale type radio offers.</span> | [ScoreScaleMixin](../scorescalemixin#getter-autoscalechoices) |
 | <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-numstddev) |
 | <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-numquantile) |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | <span data-pagefind-ignore>Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known.</span> | [ScoreScaleMixin](../scorescalemixin#getter-symlogconstant) |
