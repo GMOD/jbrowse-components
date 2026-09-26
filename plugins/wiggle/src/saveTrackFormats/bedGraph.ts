@@ -14,11 +14,26 @@ export const bedGraphFormatOptions: Record<string, FileTypeExporter> = {
   },
 }
 
+// A BigWig score is a float32, whose double expansion prints 0.3 as
+// 0.30000001192092896; the shortest decimal naming the same float32 is what the
+// file held.
+export function scoreText(score: number) {
+  if (Math.fround(score) === score) {
+    for (let digits = 1; digits < 9; digits++) {
+      const shortest = +score.toPrecision(digits)
+      if (Math.fround(shortest) === score) {
+        return `${shortest}`
+      }
+    }
+  }
+  return `${score}`
+}
+
 function bedGraphRow(feature: Feature) {
   const chrom = feature.get('refName')
   const start = feature.get('start')
   const end = feature.get('end')
-  const score = feature.get('score') ?? 0
+  const score = scoreText(feature.get('score') ?? 0)
   return `${chrom}\t${start}\t${end}\t${score}`
 }
 

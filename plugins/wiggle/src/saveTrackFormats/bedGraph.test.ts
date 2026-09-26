@@ -1,6 +1,6 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { stringifyBedGraph } from './bedGraph.ts'
+import { scoreText, stringifyBedGraph } from './bedGraph.ts'
 
 function feat(data: {
   refName: string
@@ -24,6 +24,14 @@ test('writes the bare four columns for a single-file track', () => {
       ],
     }),
   ).toBe('ctgA\t0\t100\t5\nctgA\t100\t200\t7')
+})
+
+test('a float32 score writes as the decimal the file held', () => {
+  const f32 = new Float32Array([0.3, 1e-7, 123456.7, 2.5])
+  expect([...f32].map(scoreText)).toEqual(['0.3', '1e-7', '123456.7', '2.5'])
+  expect(scoreText(0.1)).toBe('0.1')
+  expect(scoreText(Math.PI)).toBe(`${Math.PI}`)
+  expect(scoreText(Number.NaN)).toBe('NaN')
 })
 
 test('a missing score writes as zero rather than as undefined', () => {
