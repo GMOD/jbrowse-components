@@ -116,12 +116,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       /**
        * #action
        */
-      setShowLDTriangle(show: boolean) {
-        setConf(self, 'showLDTriangle', show)
-      },
-      /**
-       * #action
-       */
       setShowVerticalGuides(show: boolean) {
         setConf(self, 'showVerticalGuides', show)
       },
@@ -159,12 +153,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       get ldMetric(): LDMetric {
         return getConf(self, 'ldMetric')
-      },
-      /**
-       * #getter
-       */
-      get showLDTriangle(): boolean {
-        return getConf(self, 'showLDTriangle')
       },
       /**
        * #getter
@@ -217,14 +205,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       get viewSignature(): string | undefined {
         return self.dynamicBlockSignature
-      },
-      /**
-       * #getter
-       * With the triangle off nothing loads or ever will, which the scrim, the
-       * SVG export's `svgReady` and `painted` all need to know.
-       */
-      get fetchInert(): boolean {
-        return !getConf(self, 'showLDTriangle')
       },
       /**
        * #getter
@@ -421,7 +401,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
         installGlobalFetchAutorun(self, {
           prepare: () => {
             const regions = self.host.dynamicBlocks.contentBlocks
-            if (!self.showLDTriangle || !regions.length) {
+            if (!regions.length) {
               return undefined
             }
             const { originBp, spanBp } = triangleAxis(

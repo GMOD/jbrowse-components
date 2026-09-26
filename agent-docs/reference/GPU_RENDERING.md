@@ -193,12 +193,12 @@ transform), so a pan shows no scrim
 beyond the `isLoading` window.
 
 `rendersCanvas` (default true) gates the clause so a display showing a static
-non-canvas placeholder — LD with `showLDTriangle` off — doesn't sit permanently
+non-canvas placeholder — the sequence display zoomed out — doesn't sit permanently
 under the scrim. It is an overridable hook rather than inlined because the
 pre-paint scrim needs both "nothing painted yet" and "not a deliberate empty
 placeholder", and only the display knows the second. The alternative that removes
-it — rendering LD's placeholder *outside* `DisplayChrome` — was rejected for
-disposing and re-initializing the GPU backend on every triangle toggle
+it — rendering the placeholder *outside* `DisplayChrome` — was rejected for
+disposing and re-initializing the GPU backend on every toggle
 ([ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md)).
 Deleting LD's override as "dead single-use code" regresses a stuck spinner.
 
@@ -2044,8 +2044,8 @@ does the shared-shape version); keep them in step with any change here.
     already measured; then the debounce); the display supplies the three phases.
     `prepare` runs synchronously in the autorun and returning `undefined` from
     it is the display's gate, so what it read to decline stays tracked (HiC
-    declines until `effectiveResolution` lands, LD while `showLDTriangle` is
-    off); `run` owns every await and writes nothing; `commit` writes while the
+    declines until `effectiveResolution` lands); `run` owns every await and
+    writes nothing; `commit` writes while the
     fetch is still current.
   - Compose `RenderLifecycleMixin()` directly only when neither fetch surface is
     needed (rare).

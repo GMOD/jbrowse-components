@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -115,24 +114,6 @@ const LDPointer = observer(function LDPointer({
   )
 })
 
-function EmptyState() {
-  const palette = usePalette()
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: palette.text.secondary,
-      }}
-    >
-      Enable LD triangle in display settings to view data
-    </div>
-  )
-}
-
 const LDBody = observer(function LDBody({
   model,
   canvasRef,
@@ -172,7 +153,7 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
 }: {
   model: LDDisplayModel
 }) {
-  const { showLDTriangle, canvasWidth: width, height } = model
+  const { canvasWidth: width, height } = model
 
   return (
     <DisplayChrome
@@ -184,7 +165,7 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
         // Click a cell to make its row SNP focal, empty space to clear.
         // Hit-tested from the click, since the hover can be a frame stale.
         const rect = event.currentTarget.getBoundingClientRect()
-        if (showLDTriangle && !model.isLoadingOrCanceled) {
+        if (!model.isLoadingOrCanceled) {
           const item = model.hitTest(
             event.clientX - rect.left,
             event.clientY - rect.top,
@@ -193,17 +174,13 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
         }
       }}
     >
-      {({ canvasRef, mouseTracker }) =>
-        showLDTriangle ? (
-          <LDBody
-            model={model}
-            canvasRef={canvasRef}
-            mouseTracker={mouseTracker}
-          />
-        ) : (
-          <EmptyState />
-        )
-      }
+      {({ canvasRef, mouseTracker }) => (
+        <LDBody
+          model={model}
+          canvasRef={canvasRef}
+          mouseTracker={mouseTracker}
+        />
+      )}
     </DisplayChrome>
   )
 })

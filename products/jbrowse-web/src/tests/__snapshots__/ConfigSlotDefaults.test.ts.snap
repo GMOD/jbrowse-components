@@ -364,7 +364,6 @@ exports[`every registered schema slot default 1`] = `
     "ldMetric": "stringEnum = "r2" of ["r2","dprime"]",
     "lineZoneHeight": "number = 100",
     "maxVariantSeparation": "number = 0",
-    "showLDTriangle": "boolean = true",
     "showLabels": "boolean = false",
     "showLegend": "boolean = false",
     "showVerticalGuides": "boolean = true",

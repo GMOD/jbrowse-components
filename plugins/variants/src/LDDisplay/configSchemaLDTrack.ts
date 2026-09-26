@@ -68,14 +68,6 @@ export default function ldTrackDisplayConfigSchema() {
       },
       /**
        * #slot
-       */
-      showLDTriangle: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'whether to show the LD triangle heatmap',
-      },
-      /**
-       * #slot
        * Maximum separation, in variants, between the two SNPs of a drawn pair.
        * Pairs further apart are dropped, which turns the matrix from n²/2 cells
        * into n·k. This is plink's `--ld-window`, and a file plink wrote is

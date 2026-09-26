@@ -12,7 +12,6 @@ export interface LDMenuSelf extends IStateTreeNode {
   r2Available: boolean
   dprimeAvailable: boolean
   focalSnpIndex: number
-  showLDTriangle: boolean
   showLegend: boolean
   showLabels: boolean
   showVerticalGuides: boolean
@@ -20,7 +19,6 @@ export interface LDMenuSelf extends IStateTreeNode {
   variantLayout: 'genomic' | 'columns'
   setFocalSnp: (snp: LDSnp | undefined) => void
   setLDMetric: (metric: LDMetric) => void
-  setShowLDTriangle: (arg: boolean) => void
   setShowLegend: (arg: boolean) => void
   setShowLabels: (arg: boolean) => void
   setShowVerticalGuides: (arg: boolean) => void
@@ -61,7 +59,6 @@ function metricMenuItems(self: LDMenuSelf): MenuItem[] {
 
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
-    toggleItem('Show LD triangle', self.showLDTriangle, self.setShowLDTriangle),
     legendCheckboxItem(self),
     toggleItem('Show variant labels', self.showLabels, self.setShowLabels),
     toggleItem(

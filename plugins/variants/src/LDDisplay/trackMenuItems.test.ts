@@ -13,7 +13,6 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     r2Available: true,
     dprimeAvailable: true,
     focalSnpIndex: -1,
-    showLDTriangle: true,
     showLegend: false,
     showLabels: false,
     showVerticalGuides: true,
@@ -21,7 +20,6 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     useGenomicPositions: false,
     setFocalSnp: jest.fn(),
     setLDMetric: jest.fn(),
-    setShowLDTriangle: jest.fn(),
     setShowLegend: jest.fn(),
     setShowLabels: jest.fn(),
     setShowVerticalGuides: jest.fn(),
@@ -123,7 +121,6 @@ test('the Show menu carries every visibility and layout toggle', () => {
   expect(
     labels(subMenuOf(buildLDTrackMenuItems(makeSelf()), 'Show...')!),
   ).toEqual([
-    'Show LD triangle',
     'Show legend',
     'Show variant labels',
     'Show vertical guides on hover',

@@ -368,12 +368,8 @@ it, and an export does neither — which is why `SvgReadyTerminals` takes it as 
 required field rather than leaving it to each display's memory.
 
 Read a global display's `prepare` and ask what leaves it declining forever.
-Three shapes have shipped this bug:
+Two shapes have shipped this bug:
 
-- **A user toggle in the gate.** LD's `prepare` returns `undefined` while
-  `showLDTriangle` is off, so with the triangle off nothing ever loads. It now
-  overrides `fetchInert` to `!showLDTriangle` — the same hook, and
-  the same reason, as sequence's `zoomedOut`.
 - **A failed prerequisite fetch.** HiC gates on `effectiveResolution`, which
   exists only once a one-shot `CoreGetInfo` lands. That failure used to go to a
   session snackbar, leaving `error` unset — permanent loading scrim, permanently
@@ -394,8 +390,8 @@ Three shapes have shipped this bug:
 **`awaitSvgReady`'s only bound is a half-hour backstop, so every resting state
 that never fetches must be terminal.** A correct `dataCurrent` says whether held
 data is current; it cannot say whether data will ever arrive. So read a display's fetch gate and ask
-what leaves it false indefinitely — a user toggle inside it (LD's
-`showLDTriangle`), an unmet prerequisite (HiC's `prepare` needs an
+what leaves it false indefinitely — a user toggle inside it, an unmet
+prerequisite (HiC's `prepare` needs an
 `effectiveResolution`, which `CoreGetInfo` supplies), a static "zoom in" mode
 (sequence). Each such state has to reach `svgReady` through `error`,
 `regionTooLarge`, `fetchCanceled` or `fetchInert`, or one track hangs the whole
