@@ -91,11 +91,14 @@ needs a JBrowse 5 build.
 Two kinds of graph turn up. An **rGFA** (minigraph, and the minigraph stage of
 Minigraph-Cactus) tags every segment with where it sits on a reference, and a
 **plain GFA** (pggb, odgi, vg, base-level Minigraph-Cactus) states the same
-thing in its P or W path lines. The command tells them apart by the first
-segment's tags. A plain GFA also needs `--reference` to say which sample is the
-backbone, and `--snarls` for its bubbles, which come from the `vg deconstruct`
-VCF pggb already wrote. An assembly graph (SPAdes, Flye) has no reference at
-all, and Bandage is the tool for it.
+thing in its P or W path lines. An rGFA tags every segment, so the command takes
+the path route as soon as it meets an untagged one, or when you name
+`--reference` or `--snarls`. A plain GFA needs `--reference` to say which sample
+is the backbone, and `--snarls` for its bubbles, which come from the
+`vg deconstruct` VCF pggb already wrote; a Minigraph-Cactus base-level graph
+tags its reference segments too, and takes this route with the same two
+arguments. An assembly graph (SPAdes, Flye) has no reference at all, and Bandage
+is the tool for it.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh

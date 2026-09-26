@@ -75,14 +75,19 @@ gfa() {
   esac
 }
 
-# rGFA when the first segment carries the SN tag; nothing else tells the two
-# apart. `|| true` because awk stops reading at that line, and the decompressor
-# it cuts off would otherwise fail the pipeline under pipefail.
-FIRST_SEGMENT="$(gfa 2>/dev/null | awk '/^S/ { print; exit }' || true)"
-case "$FIRST_SEGMENT" in
-  *$'\tSN:Z:'*) ROUTE=rgfa ;;
-  *) ROUTE=paths ;;
-esac
+# An rGFA tags every segment. A Minigraph-Cactus base-level GFA tags only its
+# reference walk's segments and states the rest in W lines, so one untagged
+# segment among the first hundred thousand, or a named reference or snarl file,
+# means the path route. `|| true` because awk stops reading early, and the
+# decompressor it cuts off would otherwise fail the pipeline under pipefail.
+if [ -n "$REFERENCE" ] || [ -n "$SNARLS" ]; then
+  ROUTE=paths
+else
+  ROUTE="$(gfa 2>/dev/null | awk '
+    /^S/ { n++; if ($0 !~ /\tSN:Z:/) { print "paths"; exit } if (n >= 100000) { print "rgfa"; exit } }
+    END { if (n && n < 100000) print "rgfa" }' || true)"
+  [ -n "$ROUTE" ] || { echo "no S lines in $GRAPH" >&2; exit 1; }
+fi
 echo "== $ROUTE graph: $GRAPH"
 
 case "$ROUTE" in
