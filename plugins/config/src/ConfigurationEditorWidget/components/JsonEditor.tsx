@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { MonospaceTextField } from '@jbrowse/core/ui'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -10,7 +11,7 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.background.default,
     width: '100%',
     marginTop: '16px',
-    border: '1px solid rgba(0,0,0,0.42)',
+    border: `1px solid ${alpha(theme.palette.text.primary, 0.42)}`,
   },
 }))
 

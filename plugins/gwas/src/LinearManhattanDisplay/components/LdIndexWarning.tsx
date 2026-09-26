@@ -1,17 +1,18 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   container: {
     position: 'absolute',
     left: 4,
-    background: 'rgba(255,243,205,0.95)',
-    border: '1px solid #e0c265',
+    color: theme.palette.text.primary,
+    background: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.warning.main}`,
     borderRadius: 3,
     padding: '2px 6px',
     fontSize: 11,
     pointerEvents: 'none',
   },
-})
+}))
 
 export default function LdIndexWarning({ offsetTop }: { offsetTop: number }) {
   const { classes } = useStyles()

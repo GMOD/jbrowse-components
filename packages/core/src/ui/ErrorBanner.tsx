@@ -8,7 +8,7 @@ import type { ReactNode } from 'react'
 const useStyles = makeStyles()(theme => ({
   bg: {
     background: theme.palette.divider,
-    border: '1px solid black',
+    border: `1px solid ${theme.palette.text.primary}`,
     margin: 20,
   },
   message: {
