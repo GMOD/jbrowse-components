@@ -88,10 +88,10 @@ describe('a declared range on a preset field', () => {
 
   test('paints RR its colour and leaves LR at its default on every backend', () => {
     expect(everyPathPaints(palette, 'pairRR')).toEqual(
-      Array(3).fill('rgb(217,95,2)'),
+      new Array(3).fill('rgb(217,95,2)'),
     )
     expect(everyPathPaints(palette, 'pairLR')).toEqual(
-      Array(3).fill(categorySwatchColor('pairLR', DEFAULT)),
+      new Array(3).fill(categorySwatchColor('pairLR', DEFAULT)),
     )
   })
 
@@ -144,7 +144,7 @@ describe('the five levels that share the neutral default', () => {
     for (const [, other] of LEVELS) {
       expect([other, everyPathPaints(palette, other)]).toEqual([
         other,
-        Array(3).fill(other === category ? 'rgb(27,158,119)' : neutral),
+        new Array(3).fill(other === category ? 'rgb(27,158,119)' : neutral),
       ])
     }
   })
