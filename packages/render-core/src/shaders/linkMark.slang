@@ -129,9 +129,8 @@ struct VsOut {
   float  legSide : COLOR5;
 };
 
-float entryPx(uint bp, float4 r) {
-  float2 split = hpSplitUint(bp);
-  return r.x + ((split.x - r.y) + (split.y - r.z)) * r.w;
+float entryPx(uint bp, float4 r, float hpZero) {
+  return r.x - hpViewportOffsetBp(hpSplitUint(bp), float3(r.y, r.z, 0.0), hpZero) * r.w;
 }
 
 bool linkIsFar(float halfWidthPx, float screenWidthPx) {
@@ -189,9 +188,9 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
 
   float baseY = u.rowHeight * float(inst.row) + u.rowHeight;
   float reach = max(u.rowHeight - u.insetPx, 0.0);
-  float xPx = entryPx(inst.x, u.ownEntry);
+  float xPx = entryPx(inst.x, u.ownEntry, u.zero);
   bool placed = inst.x2Region < u.regionCount;
-  float x2Px = placed ? entryPx(inst.x2, u.regionTable[inst.x2Region]) : xPx;
+  float x2Px = placed ? entryPx(inst.x2, u.regionTable[inst.x2Region], u.zero) : xPx;
 
   // Positive on the outer flank; the frame's y is negative upward.
   float pad = side * hw;

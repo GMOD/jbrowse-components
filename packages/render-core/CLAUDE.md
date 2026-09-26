@@ -50,8 +50,9 @@ follows is this package's own.
 ## The reversed-block family
 
 Three ways to misplace a mark on a flipped region, all invisible on forward
-blocks. Don't hand-roll: per-base cells → `makeCellLeftMapper`, min-width
-widening → `spanLeft`, a genomic strand from the worker → `flipX` /
+blocks. Don't hand-roll: min-width widening, a per-base cell's floor included →
+`spanLeft`'s pivot, growing from the start edge (the pileup's `cellPlacement`
+for cells); a genomic strand from the worker → `flipX` /
 `block.reversed ? -d : d` before it becomes left/right. Each helper's JSDoc says
 when to reach for it; `reversedGlyphDirection.test.ts` says why a
 Canvas2D-vs-GPU parity gate cannot catch the strand case.
