@@ -424,8 +424,13 @@ export function markColorScales(
         if (shape && keys.length > 0) {
           folded.add(shape)
         }
+        const breaks = key.breaks ?? []
+        const listed =
+          breaks.length === 0
+            ? scale.entries
+            : scale.entries.filter(e => breaks.includes(e.value))
         const hinted =
-          scale.numericKeys && scale.entries.length > NUMERIC_KEY_HINT_ROWS
+          scale.numericKeys && listed.length > NUMERIC_KEY_HINT_ROWS
         if (!hinted) {
           return keys.map(k => listedKey(k, key))
         }

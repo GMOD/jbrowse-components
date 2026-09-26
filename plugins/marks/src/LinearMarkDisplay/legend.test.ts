@@ -60,6 +60,16 @@ test('a numeric key a reader can still scan carries no hint', () => {
   expect(noteOf(table(['1', '2', '3'], true))).toBeUndefined()
 })
 
+test('a numeric key its breaks narrow to a handful of rows carries no hint', () => {
+  const [key] = markColorScales(
+    buildMarkLegend([region(table(TEN, true))], undefined, () => ({
+      breaks: ['1', '5', '10'],
+    })),
+  )
+  expect(key?.kind === 'categorical' && key.note).toBeFalsy()
+  expect(rowLabels(key ? [key] : [])).toEqual([['1', '5', '10']])
+})
+
 test('a long key over values that are not numbers carries no hint', () => {
   expect(noteOf(table(TEN.map(v => `type${v}`)))).toBeUndefined()
 })
