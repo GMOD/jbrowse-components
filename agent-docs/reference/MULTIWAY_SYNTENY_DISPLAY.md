@@ -249,14 +249,24 @@ draws only through the aliases.
 **Lane links.** For a source whose features carry no `name` and whose header
 names no `anchorAssemblyName`, one `CoreGetFeatures` per *adjacent* lane pair
 the session holds both assemblies of, on the upper lane's window with
-`targetAssemblyName: lower` (`laneLinksFetchSpecs`).
+`targetAssemblyName: lower` (`laneLinksFetchSpecs`). The display asks an
+adapter declaring `adapterCapabilities: ['lanePairsOnAnchor']`
+(`adapterPairsOnAnchor`) for every adjacent pair, star or not, on the anchor's
+merged blocks with `queryAssemblyName: upper` and `targetAssemblyName: lower`,
+since such an adapter cuts a pangenome graph on its reference alone and every
+lane's walk passes through that window. The adapter answers with the alignment
+the graph records between the two walks, the nodes they share, and runs no
+aligner; the display draws those records' `alignmentOps` in the gutter as it
+draws any direct pair's.
 `pairLinks` composes a pair's links through the anchor
 (`MW/composeLaneLinks.ts`) wherever a star holds no direct records for the pair
 (not asked, not landed yet, or answered empty), for any pair whose fetch came
 back empty or failed, and for a pair the session lacks an assembly of; a
 non-star pair whose fetch has not landed draws nothing yet. `composeLaneLinks`
-linearly interpolates each record between its clipped ends (`projectOntoLane`),
-so sequence two lanes share and the anchor lacks composes as nothing.
+steps two records that carry ops through each other (`composeAlignmentOps`) and
+interpolates any other between its clipped ends (`projectOntoLane`), so the
+display draws nothing in the gutter for sequence two lanes share and the anchor
+lacks.
 
 **Rendering.** Cells keyed by identity: `bands`, `ribbons:<row>` per gutter plus
 `ribbons:<row>><toRow>` per bridge, `ticks:<row>`, `glyphs:<row>` and
@@ -286,7 +296,8 @@ run, with the CIGAR dropped after the clip. A nameless record's group key is
 its id, so a source answering per window has to mint the same id for the same
 run on every refetch, or the clicked outline and the hover re-resolve to
 another group; `clipToRegion`'s region suffix is the pattern; (b) optionally, direct records for a mate
-pair, asked on the upper lane's window; (c) a `CoreGetInfo` header with `hasCoarseTier`, optionally
+pair, asked on the upper lane's window or, with `lanePairsOnAnchor`, on the
+anchor's; (c) a `CoreGetInfo` header with `hasCoarseTier`, optionally
 `anchorAssemblyName` and `lanes[{name,label,group}]` (`starAnchorOf`,
 `declaredLanesOf`).
 Today's providers:
@@ -314,13 +325,13 @@ Today's providers:
   empty; the indexed one cannot tell an unstated pair from an empty window
   without a scan, and answers empty.
 - `GbzBaseSyntenyAdapter` (`P/src/GbzBaseSyntenyAdapter/GbzBaseSyntenyAdapter.ts`):
-  anchor-only (a lane-assembly region emits nothing), and it answers no mate
-  pair: every gutter below the anchor composes. It once aligned two lanes with
-  `Subgraph.pairAlignments`, a k-mer chain and DP in the worker, and that route
-  was deleted rather than shipped — an aligner of ours deciding what the data
-  says is the thing this project does not do. The aligner remains in gbz-base's
-  CLI (`--against`, `--stack`), where a host runs it offline and the result
-  arrives as a file. Its reference records: one per haplotype contig after the sibling
+  anchor-only (it emits nothing for a lane-assembly region). With
+  `queryAssemblyName` it answers `lanePairsOnAnchor` from the graph's own
+  alignment of the two lanes' walks, the nodes they share, on the upper lane's
+  contigs; it runs no aligner, and the display composes a pair it answers
+  nothing for. gbz-base keeps its aligner, `Subgraph.pairAlignments`, in its CLI
+  (`--against`, `--stack`), where a host runs it offline and serves the result
+  as a file. Its reference records: one per haplotype contig after the sibling
   join (`G/src/subgraph.ts:255-300`), header `lanes` = every haplotype in the
   graph minus the reference (`getHeader`; 464 on HPRC v2.1),
   `hasCoarseTier: false`, no `identity`, and the lane selection handed to
@@ -518,7 +529,7 @@ so an eight-mate launch is eight 40 px bands.
 | --- | --- | --- |
 | **Control** | Order by drag/menu, hide, pick, pin contig, flip, re-anchor; no per-lane zoom, no extra tracks, no per-lane locstring | Full LGV per row: any tracks, independent navigation, rubberband, feature detail; order by moving views; no densest-first, no bridging, no lane picker |
 | **State** | the `domain` slot, and `laneFilter` and `lodMode`, on one display; features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`LinearSyntenyView`'s `levels` and `reconcileLevels`; `LinearSyntenyViewHelper`); every row's tracks persist |
-| **Fetches** | 1 star fetch (+ N children inside the adapter) + N lane-gene RPCs + (N-1) link RPCs for nameless non-star sources | N-1 synteny fetches (one per level, each its own display) + each row's own track fetches; each level refetches independently on its own pair of viewports |
+| **Fetches** | 1 star fetch (+ N children inside the adapter) + N lane-gene RPCs + (N-1) link RPCs for nameless non-star sources and `lanePairsOnAnchor` adapters | N-1 synteny fetches (one per level, each its own display) + each row's own track fetches; each level refetches independently on its own pair of viewports |
 | **Performance** | One canvas, ~10 GPU draw calls per lane (§3), 22 px per lane floor | N LGV React trees and rulers, a synteny canvas per level; rows are ≥ ruler height each, so 8 rows fill a screen and 44 do not fit |
 | **Correctness** | Lane frames are affine fits (§4.1); composed links interpolate; ordering by placement count (§4.3) | CIGAR-exact ribbons and per-base detail on each level; but for a star only levels touching the anchor draw, and a level with an unstated pair is either blank (MultiPairwise) or an error (MultiGenome) |
 | **Scale** | linear in N, readable to ~50 with scrolling | usable to ~5 rows; the design record calls a cohort "a multiple alignment rather than a stack of pairwise bands" (`comparative-adapters/src/util.ts:255-263`) |
@@ -542,7 +553,7 @@ N = mate lanes drawn (after selection).
 | …inside a PanSN PIF: records parsed | ≈lanes × records/lane | | | | one index read |
 | …inside GBZ: walks extracted, identified, aligned | every haplotype in the window (465 at KIV-2) regardless of N | same | same | same | `P/…/GbzBaseSyntenyAdapter.ts:381-412`; `P/agent-docs/HAPLOTYPE_WALKS_REVIEW.md:36-39` |
 | lane-gene RPCs (lanes the session holds) | 9 | 65 | 465 | 4,001 | `laneGenesFetchSpecs` |
-| lane-link RPCs (nameless non-star) | 7 | 63 | 463 | 3,999 | `laneLinksFetchSpecs` |
+| lane-link RPCs (nameless non-star, or `lanePairsOnAnchor`) | 7 | 63 | 463 | 3,999 | `laneLinksFetchSpecs` |
 | header read | 1 | 1 | 1 | 1 | `installLodTierInfoFetch` |
 
 The star fan-out is hidden inside one RPC but is still N HTTP range reads per
