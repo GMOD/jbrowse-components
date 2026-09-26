@@ -6,44 +6,6 @@ import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '../index.ts'
 import { wiggleEntryShorthand } from './displayDefaults.ts'
 
-describe('displayDefaults.facet on a quantitative track', () => {
-  const quantitative = { type: 'QuantitativeTrack', trackId: 'q' }
-
-  // The mark display still declares `facet`, so the shorthand router would
-  // otherwise send the key there in silence and open the track as a mark
-  // display; on the quantitative display's own entry it meets `checkRowsField`.
-  it('lands on an explicit quantitative-display entry', () => {
-    expect(
-      wiggleEntryShorthand({
-        ...quantitative,
-        displayDefaults: { facet: 'source', height: 90 },
-      }),
-    ).toEqual({
-      ...quantitative,
-      displayDefaults: { height: 90 },
-      displays: [
-        {
-          type: 'LinearWiggleDisplay',
-          displayId: 'q-LinearWiggleDisplay',
-          facet: 'source',
-        },
-      ],
-    })
-  })
-
-  it('joins an entry the config already spells', () => {
-    expect(
-      wiggleEntryShorthand({
-        ...quantitative,
-        displayDefaults: { facet: '' },
-        displays: [{ type: 'LinearWiggleDisplay', displayId: 'w', height: 50 }],
-      }).displays,
-    ).toEqual([
-      { type: 'LinearWiggleDisplay', displayId: 'w', height: 50, facet: '' },
-    ])
-  })
-})
-
 describe('displayDefaults.rows on a quantitative track', () => {
   const quantitative = { type: 'QuantitativeTrack', trackId: 'q' }
 

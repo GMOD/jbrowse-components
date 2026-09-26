@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while some rotation of it lists `rows.domain` and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints. `TreeSidebarMixin` then holds the row colours, the dialog's submit and the row derivation the four displays each carried, over hooks each supplies, and `LayoutTreeSidebarMixin` goes. The mark display moves fifth: `rows.field` on bar and point marks is the worker's one facet split laid out one row per value, `rowColor` its label tint, and `facet` keeps the labelled sections. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration for configs; ADR-168 moves a session's arrangement into `rows`"
+summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while some rotation of it lists `rows.domain` and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints. `TreeSidebarMixin` then holds the row colours, the dialog's submit and the row derivation the four displays each carried, over hooks each supplies, and `LayoutTreeSidebarMixin` goes. The mark display moves fifth: `rows.field` on bar and point marks is the worker's one facet split laid out one row per value, `rowColor` its label tint, and `facet` keeps the labelled sections. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration for configs; ADR-168 moves a session's arrangement into `rows`"
 ---
 
 # ADR-157: A row display's arrangement is the `rows` config object, written as session deltas
@@ -128,10 +128,10 @@ count, because it has a clear of its own, but a reset takes it with the rest.
 
 **The quantitative display moves first.** `facet: 'source'` is
 `rows: 'source'`, which `MultiQuantitativeTrack` seeds; `rows: ''` is every
-source in one plot box. `rows.field` admits `source` alone, and a `facet` left
-in a `LinearWiggleDisplay` config fails the load with a message naming
-`rows: "source"` (`checkRowsField`), since loading it as an overlay would drop
-the rows in silence. The model's `facet`, `isFaceted` and `setFaceted` are
+source in one plot box. `rows.field` admits `source` alone (`checkRowsField`). Amended 2026-09-26: a
+`facet` left in a `LinearWiggleDisplay` config had failed the load naming
+`rows: "source"`, and that refusal is gone, since only v5 betas wrote `facet`
+there. The model's `facet`, `isFaceted` and `setFaceted` are
 `rows`, `isRowLayout` and `setRowLayout`, and `gpuProps`' `faceted` is
 `rowLayout`. `setRowLayout` writes the field alone, so the arrangement survives
 a trip through the shared plot.
@@ -238,8 +238,8 @@ A pileup or `row` field under `rows` is reported, its packed rows sharing their
 value's row. An explicit `rows` on a mark display is one row per value, and
 the display honours no other: a quantitative track's preprocessor writes
 `displayDefaults.rows`, the `MultiQuantitativeTrack` seed `rows: 'source'`
-included, onto the quantitative display's entry alone, as it does
-`displayDefaults.facet`, so ADR-134 never routes either to the mark display.
+included, onto the quantitative display's entry alone, so ADR-134 never
+routes it to the mark display.
 Over a multi-BigWig the mark display therefore draws every source overlaid in
 one band until Plot field's default writes `rows: 'source'` where nothing
 already splits the features, and a `displayDefaults.rows` on another field
@@ -297,8 +297,7 @@ one-shot trigger that clears itself.
   `clusterTree`, `clusterProvenance` and `subtreeFilter` move into `rows` and
   `rowColor` on all four displays
   ([ADR-168](adr-168-a-retired-display-is-declared-on-its-successor.md)), and
-  the refusals below meet only a snapshot written some other way. `facet` in a
-  `LinearWiggleDisplay` config fails the load. `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter` on a
+  the refusals below meet only a snapshot written some other way. `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter` on a
   wiggle display snapshot name nothing the display declares, so a session
   carrying them opens unarranged; on a multi-sample variant display they fail
   the load, and so does a `domain` in its config, each naming `rows`. On the

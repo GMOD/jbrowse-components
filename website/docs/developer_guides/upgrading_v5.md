@@ -367,9 +367,7 @@ stay display props.
 
 A session carrying those props opens with them moved into `rows` and `rowColor`,
 and a v4 session's plot, scale, autoscale, domain and colours move to the config
-slots that hold them now. A `facet` in the display's config, the spelling
-earlier v5 documentation used for `rows`, fails the track's load with a message
-naming `rows: "source"`.
+slots that hold them now.
 
 ## The multi-sample variant rows are config too
 

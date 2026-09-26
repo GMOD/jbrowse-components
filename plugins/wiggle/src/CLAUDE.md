@@ -71,8 +71,7 @@ its own — an empty pack is how a pass releases its buffer.
 separators, clustering and the row-order sort all hang off `isRowLayout`.
 `rows: ''` puts every source in one plot box. The five `renderingType` names say
 what a source is drawn as and nothing about the layout, which is why there is
-one table and not nine names. `rows.field` admits `source` alone, and a leftover
-`facet` in the display config fails the load naming `rows: "source"`
+one table and not nine names. `rows.field` admits `source` alone
 (`checkRowsField`). The same object holds the reader's arrangement, which
 `TreeSidebarMixin` owns (`packages/tree-sidebar/CLAUDE.md`, ADR-157);
 `setRowLayout` writes the field alone, so the arrangement survives a trip

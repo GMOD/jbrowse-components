@@ -29,18 +29,12 @@ test('rows on any other field are refused where the config is read', () => {
   )
 })
 
-test('a facet left over from the old spelling is refused by name', () => {
-  expect(() => configSchema.create({ ...base, facet: 'source' })).toThrow(
-    /`rows: "source"`/,
-  )
-})
-
 // A track's `displays` union runs every candidate schema's preprocessor over
 // every entry while it works out which display a snapshot is, so a refusal that
 // did not ask whose snapshot it had would reject the mark display's
-// `facet: 'source'` from the schema it was never meant for.
-test("leaves another display type's facet alone", () => {
-  const foreign = { type: 'LinearMarkDisplay', facet: 'source' }
+// `rows: 'HP'` from the schema it was never meant for.
+test("leaves another display type's rows alone", () => {
+  const foreign = { type: 'LinearMarkDisplay', rows: 'HP' }
   expect(checkRowsField('LinearWiggleDisplay')(foreign)).toBe(foreign)
 })
 
