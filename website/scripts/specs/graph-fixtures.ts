@@ -68,11 +68,13 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // A graph track (LinearGraphDisplay) holding a cut. The display publishes
 // `data-node-count` once its pane has a graph, and `data-cut-tier` says which
 // tier that cut came from.
+// `:not([data-loading])`, because across a re-cut the old graph keeps its
+// node count and the tier flips before the new cut lands.
 export const GRAPH_DRAWN =
-  '[data-testid="linear-graph-display"][data-node-count]'
+  '[data-testid="linear-graph-display"][data-node-count]:not([data-loading])'
 
 export const graphCutDrawn = (tier: 'fine' | 'coarse') =>
-  `[data-testid="linear-graph-display"][data-cut-tier="${tier}"][data-node-count]`
+  `[data-testid="linear-graph-display"][data-cut-tier="${tier}"][data-node-count]:not([data-loading])`
 
 // A graph track's display entry. The pane holds the props the standalone view
 // has, and what it states wins over the display config's layout, colour and
