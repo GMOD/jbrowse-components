@@ -10,7 +10,9 @@
 // The band is the instance's `row`: `rowHeight` px per row, the value scale
 // ruling each band on its own over `rowBandPx` of it, `rowOffsetPx` below the
 // row's top. A caller with one row sends the canvas height for both and no
-// offset, so its bars stand where they always did (ADR-126).
+// offset, so its bars stand where they always did (ADR-126). The row is read
+// through the bound row table, as `spanMark` reads it; a pass binding none
+// (`rowTableKeys` −1) draws `row` as the band.
 //
 // The two HORIZONTAL cuts are antialiased analytically, as wiggle's xyplot bar
 // does: the top cut IS the datum, so it must not quantise to the output grid,
@@ -30,6 +32,7 @@ import antialias;
 import hpmath;
 import colorPack;
 import markColor;
+import rowTable;
 import valueScale;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -72,9 +75,11 @@ struct Uniforms {
   float  minCellDenomPx;
   float  minWidthPx;
   float  devicePixelRatio;
+  int    rowTableKeys;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 [[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
+[[vk::binding(4, 0)]] Sampler2D<float4> rowTable;
 
 struct VsOut {
   float4 position : SV_Position;
@@ -97,12 +102,21 @@ float barAaPx() {
 
 [shader("vertex")]
 VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
+  VsOut o;
+  RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
+    markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm));
+  if (place.hidden) {
+    o.position = float4(2.0, 2.0, 0.0, 1.0);
+    o.color = float4(0.0);
+    o.barInkPx = float2(0.0);
+    return o;
+  }
   float sx1 = bpToClipX(inst.x, u);
   float sx2 = bpToClipX(inst.x2, u);
   sx2 = extendToMinWidthX(sx1, sx2, u.minWidthPx, u.minCellDenomPx);
   float2 q = quadLocal(vid);
 
-  float bandTop = u.rowOffsetPx + u.rowHeight * float(inst.row);
+  float bandTop = u.rowOffsetPx + u.rowHeight * float(place.slot);
   float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
   float originY = bandTop + u.originYPx;
   float topPx = min(valueY, originY);
@@ -110,9 +124,8 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   float padPx = barAaPx();
   float vy = lerp(botPx + padPx, topPx - padPx, q.y);
 
-  VsOut o;
   o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);
-  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm);
+  o.color = place.color;
   o.barInkPx = float2(vy - topPx, vy - botPx);
   return o;
 }

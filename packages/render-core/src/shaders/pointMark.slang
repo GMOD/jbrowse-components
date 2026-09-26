@@ -5,6 +5,10 @@
 // instead — the shape's own answer to "this datum has extent".
 //
 // All four are a 6-vertex quad; the fragment shader carves the shape.
+//
+// `row` is read through the bound row table, as `spanMark` reads it: a key
+// resolved to its band and colour, or dropped off clip space where the table
+// hides it. A pass binding no table (`rowTableKeys` −1) draws `row` as the band.
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, TRIANGLE_MITER_REACHES, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND, GLYPH_SQUARE
 //! js-export: valueToYPxScaled, pointDrawsBar, pointYPx, pointRowYPx
@@ -15,6 +19,7 @@ import hpmath;
 import colorPack;
 import markColor;
 import pointGlyph;
+import rowTable;
 import valueScale;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -57,9 +62,11 @@ struct Uniforms {
   float  insetPx;
   // Read by the glyph pad alone; every other length in this block is CSS px.
   float  devicePixelRatio;
+  int    rowTableKeys;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 [[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
+[[vk::binding(4, 0)]] Sampler2D<float4> rowTable;
 
 float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
@@ -142,9 +149,20 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   float2 local = q * 2.0 - 1.0;
   bool xZero = q.x < 0.5;
 
+  VsOut o;
+  RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
+    markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm));
+  if (place.hidden) {
+    o.position = float4(2.0, 2.0, 0.0, 1.0);
+    o.color = float4(0.0);
+    o.localPos = float2(0.0);
+    o.shape = SHAPE_BAR;
+    return o;
+  }
+
   float startClipX = bpToClipX(inst.x, u);
   float endClipX = bpToClipX(inst.x2, u);
-  float yPx = pointRowYPx(u.rowOffsetPx + u.rowHeight * float(inst.row), u.rowHeight, u.reverse, pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx, u.valueSymlogConstant));
+  float yPx = pointRowYPx(u.rowOffsetPx + u.rowHeight * float(place.slot), u.rowHeight, u.reverse, pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx, u.valueSymlogConstant));
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).
@@ -153,8 +171,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   float spanPx = clipLenToPx(abs(endClipX - startClipX), u.viewportWidth);
   bool isBar = pointDrawsBar(spanPx, u.radiusPx);
 
-  VsOut o;
-  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm);
+  o.color = place.color;
   if (isBar) {
     // Horizontal bar from x→x2, height 2*radiusPx px, centered on the value.
     //

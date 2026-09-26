@@ -33,6 +33,7 @@ import colorPack;
 import curveDistance;
 import hpmath;
 import markColor;
+import rowTable;
 import scoreScale;
 import valueScale;
 
@@ -138,9 +139,12 @@ struct Uniforms {
   // Each region's screen extent, two to an element: (left, right) of region
   // 2i in xy and of region 2i + 1 in zw.
   float4 regionSpan[LINK_MAX_REGIONS / 2u];
+  // The keys the bound row table holds, −1 where `row` is the band itself.
+  int    rowTableKeys;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 [[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
+[[vk::binding(4, 0)]] Sampler2D<float4> rowTable;
 
 struct VsOut {
   float4 position : SV_Position;
@@ -351,12 +355,14 @@ LinkVertex footVertex(LinkInstance inst, LinkEnv e, uint f, uint k) {
 
 [shader("vertex")]
 VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
+  RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
+    markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm));
   LinkEnv e;
   e.strokeHalf = 0.5 * linkStrokeWidthPx(
     inst.size, u.sizeMode, u.sizeConstantPx, u.sizeDomainMin, u.sizeDomainMax,
     u.sizeScaleType, u.sizeRangeMin, u.sizeRangeMax, u.devicePixelRatio);
   e.hw = e.strokeHalf + aaHalfPx(u.devicePixelRatio);
-  e.baseY = linkBaseYPx(u.rowOffsetPx, u.rowHeight, inst.row, u.reverse);
+  e.baseY = linkBaseYPx(u.rowOffsetPx, u.rowHeight, place.slot, u.reverse);
   e.ySign = u.reverse != 0 ? -1.0 : 1.0;
   e.reach = max(u.rowHeight - u.insetPx, 0.0);
   e.xPx = entryPx(inst.x, u.ownEntry, u.zero);
@@ -373,13 +379,13 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   }
 
   VsOut o;
-  o.position = inst.x2Region == LINK_ELSEWHERE
+  o.position = inst.x2Region == LINK_ELSEWHERE || place.hidden
     ? float4(-2.0, -2.0, 0.0, 1.0)
     : float4(
       v.screen.x / u.canvasWidth * 2.0 - 1.0,
       yPxToClipY(v.screen.y, u.canvasHeight),
       0.0, 1.0);
-  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm);
+  o.color = place.color;
   o.local = v.local;
   o.radii = v.radii;
   o.kind = v.kind;
