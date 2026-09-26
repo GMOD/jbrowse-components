@@ -68,7 +68,7 @@ const INDEX_SUFFIXES: [RegExp, string][] = [
  * wrote. Empty for a file type that carries no sibling index (BigWig, BigBed,
  * hic), which is how a caller knows not to go looking.
  */
-export function indexCandidateNames(fileName: string) {
+export function indexCandidateNames(fileName: string): string[] {
   const suffix = INDEX_SUFFIXES.find(([re]) => re.test(fileName))?.[1]
   return suffix ? sidecarCandidateNames(fileName, suffix) : []
 }
