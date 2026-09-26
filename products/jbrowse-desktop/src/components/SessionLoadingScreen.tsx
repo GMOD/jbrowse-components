@@ -9,10 +9,6 @@ const appear = keyframes`
   to { opacity: 1; }
 `
 
-// Layout only: these launch routes all run before a session exists to mount
-// StyleThemeProvider, so `makeStyles` here sees the default style theme rather
-// than the app's. Color comes off the Material theme instead — the spinner's
-// own, and the body color CssBaseline sets, which the label inherits.
 const useStyles = makeStyles()(theme => ({
   root: {
     display: 'flex',

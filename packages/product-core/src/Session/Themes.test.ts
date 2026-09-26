@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { ThemeManagerSessionMixin } from './Themes.ts'
+import { ThemeManagerSessionMixin, storedThemeArgs } from './Themes.ts'
 
 const ConfigSchema = ConfigurationSchema('Root', {
   theme: { type: 'frozen', defaultValue: {} },
@@ -194,6 +194,25 @@ test('a stored legacy name splits on the way in, and is stored split', () => {
   expect(localStorage.getItem('themeName')).toBe('minimal')
   expect(localStorage.getItem('themeMode')).toBe('dark')
 })
+
+// Desktop's start screen draws before any session exists, and opens in what
+// the last one stored rather than always light
+test.each([
+  [{ themeName: 'minimal', themeMode: 'dark' }, false, 'minimal', 'dark'],
+  [{ themeName: 'darkStock' }, false, 'stock', 'dark'],
+  [{ themeMode: 'system' }, true, 'default', 'dark'],
+  [{ themeMode: 'system' }, false, 'default', 'light'],
+  [{}, true, 'default', 'light'],
+])(
+  'storedThemeArgs resolves %j (OS dark: %s)',
+  (stored, osDark, themeName, mode) => {
+    for (const [key, value] of Object.entries(stored)) {
+      localStorage.setItem(key, value)
+    }
+    installMatchMedia(osDark)
+    expect(storedThemeArgs()).toEqual({ themeName, mode })
+  },
+)
 
 // A stored name whose plugin is absent has to come back rather than being
 // coerced away.

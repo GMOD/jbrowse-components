@@ -1,10 +1,12 @@
 import { Suspense, lazy, useMemo, useRef, useState } from 'react'
 
 import { deleteQueryParams, useQueryParam } from '@jbrowse/app-core'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { localStorageGetItem } from '@jbrowse/core/util'
+import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
+import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
+import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui/theme'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
+import { storedThemeArgs } from '@jbrowse/product-core'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 import { prewarmGraphics } from '@jbrowse/render-core/graphicsCapabilities'
 import { CssBaseline, LinearProgress, ThemeProvider } from '@mui/material'
@@ -253,22 +255,22 @@ const LoaderContents = observer(function LoaderContents() {
 })
 
 export default function Loader() {
-  const theme = useMemo(
-    () =>
-      createJBrowseTheme(
-        undefined,
-        undefined,
-        localStorageGetItem('themeName') || 'default',
-      ),
-    [],
-  )
+  const { theme, styleTheme } = useMemo(() => {
+    const args = storedThemeArgs()
+    return {
+      theme: createJBrowseThemeFromArgs(args),
+      styleTheme: resolveStyleTheme(args),
+    }
+  }, [])
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <NotificationProvider>
-        <LoaderContents />
-      </NotificationProvider>
+      <StyleThemeProvider theme={styleTheme}>
+        <CssBaseline />
+        <NotificationProvider>
+          <LoaderContents />
+        </NotificationProvider>
+      </StyleThemeProvider>
     </ThemeProvider>
   )
 }

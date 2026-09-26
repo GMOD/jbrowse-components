@@ -24,7 +24,11 @@ export type {
   SessionWithDrawerWidgets,
   SessionWithDrawerWidgetsType,
 } from './DrawerWidgets.ts'
-export { ThemeManagerSessionMixin, isSessionWithThemes } from './Themes.ts'
+export {
+  ThemeManagerSessionMixin,
+  isSessionWithThemes,
+  storedThemeArgs,
+} from './Themes.ts'
 export type { ThemeModeSelection } from './Themes.ts'
 export type { SessionWithThemes, SessionWithThemesType } from './Themes.ts'
 export { TracksManagerSessionMixin, isSessionWithTracks } from './Tracks.ts'

@@ -59,6 +59,24 @@ function storedSelection() {
 }
 
 /**
+ * The theme the stored selection resolves to, for UI drawn before a session
+ * exists — Desktop's start screen — so it opens in the palette and mode the
+ * last session left, not always light.
+ */
+export function storedThemeArgs(): SerializableThemeArgs {
+  const { sessionThemeName, sessionThemeMode } = storedSelection()
+  return {
+    themeName: sessionThemeName,
+    mode:
+      sessionThemeMode === 'system'
+        ? prefersDarkColorScheme()
+          ? 'dark'
+          : 'light'
+        : sessionThemeMode,
+  }
+}
+
+/**
  * #stateModel ThemeManagerSessionMixin
  */
 export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {

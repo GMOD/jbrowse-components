@@ -57,6 +57,7 @@ export {
   isSessionWithThemes,
   isSessionWithTracks,
   pluginExtraTrackItems,
+  storedThemeArgs,
   trackActionItems,
   trackActionMenuItems,
   trackListMenuItems,
