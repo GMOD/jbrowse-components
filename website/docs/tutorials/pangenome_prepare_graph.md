@@ -175,7 +175,7 @@ coordinates, and the graph follows the linear view from then on.
 
 <Figure caption="The four tracks the command writes, over the C4 region on hg38: the graph track, the bubbles as a lane and as a curve, and the allele inventory, above the graph launched from the graph track's menu, anchored under the linear view and following it." src="/img/pangenome/host_your_own.png" />
 
-## Opening a node on its own haplotype
+## Opening a node on the haplotype that contributed it
 
 An allele's rGFA name places it on the haplotype that contributed it, as in
 `NA20809#2#CM094351.1`, and the node's right-click menu offers **Open in** that

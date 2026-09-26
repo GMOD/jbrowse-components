@@ -15,8 +15,8 @@ contributed it, so the graph alone cannot say who else carries it. The Human
 Pangenome Reference Consortium's release 2 publishes that answer beside its
 graph as a callset, one genotype per haplotype for all 464. We open the callset
 from the consortium's page on genomes.jbrowse.org at the MHC class II locus and
-gather the haplotypes that share alleles, then read the graph's own lanes for
-where it varies and by how much, and put the two products side by side.
+gather the haplotypes that share alleles, then read the graph's lanes for where
+it varies and by how much, and put the two products side by side.
 [Part 1](/docs/tutorials/pangenome_hprc) reads the graph itself.
 
 ## Prerequisites
@@ -148,17 +148,18 @@ carries 231 sample columns, without CHM13, so phased mode draws 462 rows and
 from **Edit filters** and the lane cuts to top-level sites, the tier the graph's
 bubbles hold. A record matches a bubble by interval.[^integer-nodes]
 
-This file adds the `AT` field, which records each allele as the **traversal** it
-takes through the graph. A pggb VCF carries the same `AT` field. The wave file
-drops it, and its header shows the `bcftools annotate -x INFO/AT` command that
-did so. Click any record and its details list `AT` with the rest of `INFO`.
+The snarl-level file adds the `AT` field, which records each allele as the
+**traversal** it takes through the graph. A pggb VCF carries the same `AT`
+field. The wave file drops it, and its header shows the
+`bcftools annotate -x INFO/AT` command that did so. Click any record and its
+details list `AT` with the rest of `INFO`.
 
 ## Where the graph varies {#the-bubble-track}
 
 A **bubble** is a place where haplotypes diverge and rejoin. Press **graph** on
 the same HLA / MHC row of the HPRC page for the session that holds the graph's
-own lanes: the RefSeq genes, the bubbles, the allele inventory and the rGFA
-segments over the same window, with the graph under them.
+lanes: the RefSeq genes, the bubbles, the allele inventory and the rGFA segments
+over the same window, with the graph under them.
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds each of
 these files and writes their tracks.
 
@@ -173,7 +174,7 @@ file, so we built this one with `gfatools bubble`.
 A window past a few hundred kilobases holds more segments than any layout can
 place. The bubble file gives a coarser level of detail: each bubble collapses to
 a single node, and the invariant reference between bubbles stays as backbone.
-The same bubble file also plots as a curve of segments per bubble, which says
+The same bubble file also plots as a curve of segments per bubble, which marks
 where the graph varies and by how much.
 
 Press **chr1** among the **Whole chromosome** links above the HPRC page's loci
@@ -184,7 +185,7 @@ the curve, and the tier lane with one block per bubble.
 
 Use the two granularities together: the tier to find an event, and the fine
 index to open it. Close the chromosome's graph pane from its title bar, type
-`chr6:31,500,001-33,500,000`, the whole MHC, and cut it from the tier lane's own
+`chr6:31,500,001-33,500,000`, the whole MHC, and cut it from the tier lane's
 menu with **Launch → Graph genome view (this region)**. One node per bubble
 draws the two megabases. Press **Pin** in that graph's toolbar so it holds this
 cut. Hover the widest node in the middle for its span, and right-click it for
@@ -216,15 +217,10 @@ Type the CFH cluster on chr1, `chr1:196,700,000-196,900,000`. One of the lane's
 rows there is the 84,684 bp deletion of _CFHR3_ and _CFHR1_, and the graph below
 follows to the same window, where the same deletion is an edge: under the
 anchored layout its dashed arc spans exactly the bases it removes. The figure
-sets two haplotypes from the release's own alignment beside it, one that carries
-the deletion and one that does not.
+sets two haplotypes from the release's all-vs-GRCh38 alignment beside it, one
+that carries the deletion and one that does not.
 
 <Figure caption="The complement factor H cluster: a carrier and a non-carrier haplotype aligned to GRCh38, above the same window as an anchored graph. The carrier's ribbon narrows where it has nothing to align, over CFHR3 and CFHR1, and the dashed arc under the graph's reference row spans the same stretch." src="/img/pangenome/hprc_cfhr_deletion.png" />
-
-With the inventory and a genotype column over one coordinate, two compatible
-readings sit together. The inventory gives the haplotype the graph records as
-contributing an allele, and a genotype column gives every haplotype that walks
-it.
 
 ## Comparing the graph with the callset
 
@@ -261,7 +257,7 @@ The graph and the callset are both derived from the multiple alignment, and
 release 2.1 publishes that too: `hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, 464
 haplotypes, beside a `.tai` index written by
 [taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The index makes it
-addressable, so a locus is a ranged read rather than a 53 GB download:
+addressable, so a locus is one ranged read out of the 53 GB file:
 
 ```json addtrack
 {

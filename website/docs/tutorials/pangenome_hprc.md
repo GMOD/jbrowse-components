@@ -78,7 +78,7 @@ window as a graph.
 The graph opens in the anchored layout, where every x is a GRCh38 coordinate.
 Four words describe the drawing:
 
-- the **backbone** is GRCh38's own path through the graph, the chain of segments
+- the **backbone** is GRCh38's path through the graph, the chain of segments
   along the top row
 - a **bubble** is a place where that chain opens out and closes again, at one
   locus where haplotypes disagree; each bubble in the hosted bubble index draws
@@ -132,8 +132,8 @@ more. Type `chr6` into the location box. The segments track names a zoom,
 `aboveBpPerPx` in its `coarse` slot, past which the graph switches from its
 segments to its bubble tier: one node per bubble, with the invariant reference
 between bubbles as backbone, so the whole chromosome draws. The toolbar reads
-**Following the linear view, coarse tier**, and the lanes above ask you to zoom
-in at this width.
+**Following the linear view, coarse tier**, and the lanes above show a zoom-in
+message at this width.
 
 Type the MHC class II window, `chr6:32,510,001-32,600,000`, to come back. Past
 the same zoom the graph crosses back to the segments, and the class II cut
@@ -172,10 +172,8 @@ CAT gene annotation. Zoom that view out a few steps for the genes around it.
 
 <Figure caption="The same launch in two frames. First, the MHC class II cut with the NA20809.2 allele ringed and its right-click menu open on Open in NA20809.2. Second, the view that entry opens: NA20809 haplotype 2's chromosome 6 with its CAT genes, which put HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 
-On GRCh38 the allele attaches across the 12 kb of backbone the band marks, which
-covers most of _HLA-DRB5_. On NA20809 haplotype 2 the same 1.8 kb sits between
-_HLA-DRB9_ and _HLA-DRB6_, and that haplotype's annotation has no _HLA-DRB5_
-model at all.
+On NA20809 haplotype 2 the same 1.8 kb sits between _HLA-DRB9_ and _HLA-DRB6_,
+and that haplotype's annotation has no _HLA-DRB5_ model at all.
 
 ## The LPA kringle repeat
 
@@ -191,10 +189,10 @@ around it labels it a repeat array.
 
 Every loop in the knot is a different number of copies. Click the array's label,
 the purple one on the knot: the view cuts the bubble's segments out and lays
-them out on their own, with a button back to the window. A bubble inside the
-array gets a label of its own to click in turn. The rGFA records which segments
-exist and how they link, and no haplotype walks through it, so nothing in this
-cut says who takes which loop.
+them out alone, with a button back to the window. A bubble inside the array
+carries a separate label to click in turn. The rGFA records which segments exist
+and how they link, and no haplotype walks through it, so this cut holds no
+record of who takes which loop.
 
 ## One haplotype's copies
 
@@ -221,8 +219,8 @@ window against the reference walk.
 <Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked in the Walk dropdown. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 Pick **Walk rows** in the **Layout** dropdown to read every haplotype at once,
-and **Uniform** from the **Color** dropdown so GRCh38's own bar draws in the
-same blue. Each walk becomes a bar on its own bp axis, longest first, blue where
+and **Uniform** from the **Color** dropdown so GRCh38's bar draws in the same
+blue. Each walk becomes a bar in that walk's bp, longest first, blue where
 GRCh38 carries the same sequence and purple where it does not, so the copies a
 haplotype adds read as the length of its purple stretch.
 
@@ -234,8 +232,8 @@ The bubbles lane over the array is one row of the hosted bubble index. Click the
 KIV-2 bubble in that lane, the block boxed in the last figure. Its details list
 the row's segment count, its path count and its `shortestAlleleLength` and
 `longestAlleleLength`, the shortest and longest routes the rGFA holds between
-the bubble's two ends. Every bar in walk rows is longer than the first and
-shorter than the second, and GRCh38's own bar, which carries no purple, is the
+the bubble's two ends. Every bar in walk rows falls between the shortest and the
+longest of those routes, and GRCh38's bar, which carries no purple, is the
 shortest of the nine.
 
 ## See also
