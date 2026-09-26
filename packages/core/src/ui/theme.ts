@@ -143,12 +143,6 @@ export const defaultThemes = {
   stock: {
     name: 'Stock',
     palette: palettePresets.stock,
-    components: {
-      // enableColorOnDark keeps the AppBar tinted with primary.main in dark
-      // mode (default MUI behavior is to flatten it to the paper color). MUI
-      // reads it only in dark mode, so it is inert on the light half.
-      MuiAppBar: { defaultProps: { enableColorOnDark: true } },
-    },
   },
   minimal: {
     name: 'Minimal',
@@ -214,6 +208,14 @@ const baseThemeOptions: ThemeOptions = {
     reducedMotion: 'always',
   },
   components: {
+    MuiAppBar: {
+      // JBrowse's header keeps its brand in dark mode; MUI's default is to
+      // flatten it to the paper colour. A property of the app rather than of
+      // one palette — it used to sit on `darkStock` alone, so the theme a
+      // reader reaches by picking Dark over the default palette lost the
+      // header the old dark theme had. MUI reads this only in dark mode.
+      defaultProps: { enableColorOnDark: true },
+    },
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
