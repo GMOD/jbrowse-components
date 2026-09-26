@@ -1,6 +1,6 @@
 ---
-title: Pangenome (HPRC) part 5, repeat lengths across haplotypes
-sidebar_label: Pangenome (HPRC 5, repeat lengths)
+title: Pangenome (HPRC) part 4, repeat lengths across haplotypes
+sidebar_label: Pangenome (HPRC 4, repeat lengths)
 description:
   Measure the ABCA7 intronic VNTR in every HPRC haplotype straight from the
   graph, set TRGT's read-based genotypes on the same bars, and find the samples
@@ -19,8 +19,8 @@ draw the repeat once per haplotype from the Human Pangenome Reference
 Consortium's release 2 graph, where each haplotype is an assembled sequence, set
 the TRGT genotypes PacBio called from HiFi reads of the same samples on the same
 bars, and look at the samples where the two disagree.
-[Part 3](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph) set up the
-graph track this page cuts from.
+[Part 3](/docs/tutorials/pangenome_hprc_part3) reads the same database as one
+lane per haplotype.
 
 :::caution Experimental
 
@@ -31,9 +31,10 @@ your [feedback](/contact).
 
 ## Prerequisites
 
-- [part 3](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph), for the
-  `hprc_v2_1_gbz_lanes` track
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
+- the GraphGenomeView plugin, which the hosted HPRC config the sessions below
+  open already loads;
+  [hosting your own graph](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
+  loads it into your own JBrowse
 
 ## Where the data comes from
 
@@ -49,47 +50,14 @@ genotypes of 100 of its samples (Dolzhenko et al. 2024):
 - the _ABCA7_ record of those genotypes, as a TRGT VCF:
   https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz
 
-## The TRGT genotypes
-
-[TRGT](https://github.com/PacificBiosciences/trgt) genotypes tandem repeats from
-HiFi reads against a catalogue of repeat loci, and writes a VCF whose `MOTIFS`
-field gives each locus its repeat unit and whose `AL` field gives each sample's
-two allele lengths. PacBio published TRGT's calls for 100 HPRC samples over the
-Genome in a Bottle repeat catalogue. We host the record for the _ABCA7_ locus as
-a VCF in TRGT's own format. Add it:
-
-```json addtrack
-{
-  "type": "VariantTrack",
-  "trackId": "hprc_abca7_trgt",
-  "name": "TRGT repeat genotypes at ABCA7, 100 HPRC samples",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz"
-  }
-}
-```
-
-Its one record spans `chr19:1,049,408-1,050,096` and names a 51 bp motif. TRGT
-writes the same fields for your own samples, one VCF each, which `trgt merge`
-joins:
-
-```bash
-# one run per sample: HiFi reads aligned to GRCh38, and the repeat catalogue
-trgt genotype --genome GRCh38.fa --reads sample.bam \
-  --repeats adotto_repeats.hg38.bed --output-prefix sample
-# one multi-sample VCF, which the steps below read unchanged
-trgt merge --vcf *.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
-```
-
 ## Every haplotype's walk through the repeat
 
-The session below opens _ABCA7_ with the TRGT track and the catalogue's own row
-for the VNTR, carried inline as a session track, and under them a graph view cut
-from `hprc_v2_1_gbz_lanes` over the same window for every haplotype the graph
-holds, drawn in **Walk rows** from the **Layout** dropdown with **Uniform** from
-the **Color** dropdown:
+Open the session below on the hosted HPRC config. It opens _ABCA7_ with the
+RefSeq genes, the catalogue's own row for the VNTR as a session track, and
+PacBio's TRGT genotypes of the same samples, and under them a graph view cut
+from the release's gbz-base database over the same window for every haplotype
+the graph holds, drawn in **Walk rows** from the **Layout** dropdown with
+**Uniform** from the **Color** dropdown:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -164,6 +132,38 @@ purple where it does not. GRCh38's own walk is the short bar at the top, the
 span the catalogue lane marks.
 
 ## TRGT's calls on the same bars
+
+[TRGT](https://github.com/PacificBiosciences/trgt) genotypes tandem repeats from
+HiFi reads against a catalogue of repeat loci, and writes a VCF whose `MOTIFS`
+field gives each locus its repeat unit and whose `AL` field gives each sample's
+two allele lengths. PacBio published TRGT's calls for 100 HPRC samples over the
+Genome in a Bottle repeat catalogue, and we host the record for the _ABCA7_
+locus as a VCF in TRGT's own format. The session's TRGT lane is this config:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "hprc_abca7_trgt",
+  "name": "TRGT repeat genotypes at ABCA7, 100 HPRC samples",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz"
+  }
+}
+```
+
+Its one record spans `chr19:1,049,408-1,050,096` and names a 51 bp motif. TRGT
+writes the same fields for your own samples, one VCF each, which `trgt merge`
+joins:
+
+```bash
+# one run per sample: HiFi reads aligned to GRCh38, and the repeat catalogue
+trgt genotype --genome GRCh38.fa --reads sample.bam \
+  --repeats adotto_repeats.hg38.bed --output-prefix sample
+# one multi-sample VCF, which the steps below read unchanged
+trgt merge --vcf *.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
+```
 
 With the TRGT track in the session, a **Repeat** dropdown appears beside
 **Walk**. Pick the _ABCA7_ record. The bars now start and end at the record's
@@ -309,6 +309,7 @@ the _ABCA7_ record with every sample's genotype.
 
 ## See also
 
+- [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part3)
 
 ## References

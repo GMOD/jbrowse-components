@@ -1,6 +1,6 @@
 ---
-title: Pangenome (HPRC) part 6, mitochondrial lineages from the graph
-sidebar_label: Pangenome (HPRC 6, mitochondrial lineages)
+title: Pangenome (HPRC) part 5, mitochondrial lineages from the graph
+sidebar_label: Pangenome (HPRC 5, mitochondrial lineages)
 description:
   Read a 9 bp deletion off the pangenome graph of the human mitochondrial
   chromosome, find who carries it, and cluster the graph's 234 haplotypes into
@@ -27,8 +27,8 @@ table of who carries what and let clustering recover the lineages from it.
 - [Haplogrep 3](https://github.com/genepi/haplogrep3) (`haplogrep3`), which
   needs Java
 - `python3`
-- A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
-  [desktop quickstart](/docs/quickstart_desktop))
+- the GraphGenomeView plugin, which the hosted config every session below opens
+  already loads, so the sessions need none of the tools above
 
 ## Where the data comes from
 
@@ -48,8 +48,8 @@ graph one chromosome to a file.
 
 The graph view comes from the
 [GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin),
-which [part 1](/docs/tutorials/pangenome_hprc) installs. The view opens a GFA
-file directly, which is how the graph loads here.
+which the hosted config the sessions below open already loads. The view opens a
+GFA file directly, which is how the graph loads here.
 
 ## One site as a graph
 
@@ -57,21 +57,8 @@ The end of the _COX2_ gene is followed by two copies of a 9 bp motif, and a
 deletion of one copy was among the first mitochondrial markers used to follow
 people across the Pacific
 [(Redd et al. 1995)](https://doi.org/10.1093/oxfordjournals.molbev.a040240).
-`odgi` cuts 200 bp around it out of the graph, along GRCh38's path:
-
-<!-- from: scripts/build_chrm_graph.sh -->
-
-```bash
-zstd -dc chrM.gfa.zst > chrM.gfa
-odgi build -g chrM.gfa -o chrM.og
-# -r is a range on one path, here the reference's
-# -c 0 takes the window's own nodes and no neighbours past it
-odgi extract -i chrM.og -o window.og -r 'GRCh38#0#chrM:8200-8400' -c 0
-odgi view -i window.og -g > chrM_window.gfa
-```
-
-Open the file from the graph view's import form and set **Color** to **Depth**,
-or open the session, which puts the same 200 bp of hg38 above it:
+Open the session below, which draws 200 bp of the graph around the site in
+**Depth** colors, under the same 200 bp of hg38:
 
 ```json session config=test_data/chrm/config.json
 {
@@ -106,6 +93,21 @@ reference walks its 9 bp, and the haplotypes that lack it take the edge straight
 across.
 
 <Figure caption="The end of COX2 and the start of ATP8 on hg38, above the same 200 bp of the mitochondrial graph, colored by how many of the 234 haplotypes walk each node. The loop under the labelled bubble is the 9 bp motif, which the haplotypes carrying the deletion bypass." src="/img/pangenome/chrm_deletion_graph.png" />
+
+`odgi` cut that window out of the graph along GRCh38's path, and the same
+commands cut one from your own graph, whose file the graph view's import form
+opens:
+
+<!-- from: scripts/build_chrm_graph.sh -->
+
+```bash
+zstd -dc chrM.gfa.zst > chrM.gfa
+odgi build -g chrM.gfa -o chrM.og
+# -r is a range on one path, here the reference's
+# -c 0 takes the window's own nodes and no neighbours past it
+odgi extract -i chrM.og -o window.og -r 'GRCh38#0#chrM:8200-8400' -c 0
+odgi view -i window.og -g > chrM_window.gfa
+```
 
 ## Who carries it
 
