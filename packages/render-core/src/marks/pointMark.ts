@@ -13,7 +13,14 @@ import { appendGlyph, glyphBox } from './glyphPaint.ts'
 import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
-import { bandHeightPx, rowColor, rowLane, rowSlot } from './rowLane.ts'
+import {
+  bandHeightPx,
+  rowColor,
+  rowLane,
+  rowSlot,
+  rowTableKeys,
+  rowTableTextures,
+} from './rowLane.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
 import type { ColorChannel } from './markRamp.ts'
@@ -80,13 +87,11 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       reverse: params.reverse ? 1 : 0,
       insetPx: params.insetPx ?? 0,
       devicePixelRatio: getDpr(),
-      rowTableKeys: params.rowTable ? params.rowTable.keys : -1,
+      rowTableKeys: rowTableKeys(params),
     })
   },
 
-  textures(params) {
-    return { rowTable: params.rowTable?.texture }
-  },
+  textures: rowTableTextures,
 
   paintBlock(ctx, channels, block, frame, params) {
     const { x, x2, y, glyph, row, count } = channels

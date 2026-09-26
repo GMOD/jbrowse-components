@@ -7,7 +7,14 @@ import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
-import { bandHeightPx, rowColor, rowLane, rowSlot } from './rowLane.ts'
+import {
+  bandHeightPx,
+  rowColor,
+  rowLane,
+  rowSlot,
+  rowTableKeys,
+  rowTableTextures,
+} from './rowLane.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
 import type { ColorChannel } from './markRamp.ts'
@@ -119,13 +126,11 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       minCellDenomPx: clip.scissorW,
       minWidthPx: params.minWidthPx,
       devicePixelRatio: getDpr(),
-      rowTableKeys: params.rowTable ? params.rowTable.keys : -1,
+      rowTableKeys: rowTableKeys(params),
     })
   },
 
-  textures(params) {
-    return { rowTable: params.rowTable?.texture }
-  },
+  textures: rowTableTextures,
 
   paintBlock(ctx, channels, block, frame, params) {
     const { x, x2, y, row, count } = channels

@@ -7,7 +7,7 @@ import {
 import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
-import { rowColor, rowSlot } from './rowLane.ts'
+import { rowColor, rowSlot, rowTableKeys, rowTableTextures } from './rowLane.ts'
 
 import type { BpProjection } from '../canvas2dUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
@@ -119,13 +119,11 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
       rowHeight: params.rowHeight,
       rowProportion: params.rowProportion,
       scrollTop: params.scrollTop,
-      rowTableKeys: params.rowTable ? params.rowTable.keys : -1,
+      rowTableKeys: rowTableKeys(params),
     })
   },
 
-  textures(params) {
-    return { rowTable: params.rowTable?.texture }
-  },
+  textures: rowTableTextures,
 
   paintBlock(ctx, channels, block, _frame, params) {
     const { count } = channels

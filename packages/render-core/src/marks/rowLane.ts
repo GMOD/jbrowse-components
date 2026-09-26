@@ -31,6 +31,19 @@ export function rowLane(row: Uint32Array | undefined, count: number) {
   return row ?? (count === 0 ? NO_ROWS : new Uint32Array(count))
 }
 
+/**
+ * The `rowTableKeys` uniform: the table's key count, or -1 with none bound,
+ * which a shader reads as each `row` being its own slot.
+ */
+export function rowTableKeys({ rowTable }: Pick<RowParams, 'rowTable'>) {
+  return rowTable ? rowTable.keys : -1
+}
+
+/** What a pass reading the table binds. */
+export function rowTableTextures({ rowTable }: Pick<RowParams, 'rowTable'>) {
+  return { rowTable: rowTable?.texture }
+}
+
 export function bandHeightPx(params: RowParams, canvasHeight: number) {
   return params.rowHeight ?? canvasHeight
 }

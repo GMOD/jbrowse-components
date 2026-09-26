@@ -32,7 +32,14 @@ import { abgrToCssRgba } from './colorFill.ts'
 import { ellipseNearest } from './ellipseDistance.ts'
 import { nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
-import { bandHeightPx, rowColor, rowLane, rowSlot } from './rowLane.ts'
+import {
+  bandHeightPx,
+  rowColor,
+  rowLane,
+  rowSlot,
+  rowTableKeys,
+  rowTableTextures,
+} from './rowLane.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
@@ -760,13 +767,11 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       ),
       regionTable: TABLE,
       regionSpan: SPANS,
-      rowTableKeys: params.rowTable ? params.rowTable.keys : -1,
+      rowTableKeys: rowTableKeys(params),
     })
   },
 
-  textures(params) {
-    return { rowTable: params.rowTable?.texture }
-  },
+  textures: rowTableTextures,
 
   paintsBlock(block, _frame, params) {
     return params.regions[block.displayedRegionIndex] !== undefined
