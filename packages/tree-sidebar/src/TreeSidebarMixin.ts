@@ -172,6 +172,22 @@ function namePairs(color: RowColorSnapshot): Record<string, string> {
 }
 
 /**
+ * Whether a `rowColor` object sets a row, or a value of the attribute it paints
+ * by, a colour the base does not. Exported because a display whose reader can
+ * reach a second colour setting from the same dialog — the quantitative
+ * display's `color` — has to ask the same question about both.
+ */
+export function rowColorIsCustom(
+  live: RowColorSnapshot,
+  base: RowColorSnapshot,
+): boolean {
+  return (
+    !compareStructural(namePairs(live), namePairs(base)) ||
+    !compareStructural(valuePairs(live), valuePairs(base, live.field || 'name'))
+  )
+}
+
+/**
  * The order a reorder writes: the rows it named lead, and the names the
  * current order carries beyond them follow in their current order, so a
  * declared row no loaded region holds yet keeps its place behind the rows on
@@ -492,12 +508,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * a config setting none it is not a custom arrangement.
        */
       get rowStylingIsCustom(): boolean {
-        const live = self.rowColorSetting
-        const base = self.baseRowColor
-        return (
-          !compareStructural(namePairs(live), namePairs(base)) ||
-          !compareStructural(valuePairs(live), valuePairs(base, live.field))
-        )
+        return rowColorIsCustom(self.rowColorSetting, self.baseRowColor)
       },
       /**
        * #getter

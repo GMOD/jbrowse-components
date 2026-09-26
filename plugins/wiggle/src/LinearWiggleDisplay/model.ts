@@ -47,6 +47,8 @@ import {
   treeSidebarOffset,
   treeSidebarShowMenuItems,
   fieldColorDeal,
+  baseDisplayConfig,
+  rowColorIsCustom,
 } from '@jbrowse/tree-sidebar'
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -77,6 +79,11 @@ import {
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 import { buildLegendItems } from './legendItems.ts'
+import {
+  PER_SOURCE_COLOR,
+  baseColorChannel,
+  isPerSourceColor,
+} from './rowPalette.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import {
   buildSources,
@@ -103,6 +110,7 @@ import type {
   IdentityChannel,
   RowColorDeal,
   RowColorEntries,
+  RowColorSnapshot,
 } from '@jbrowse/tree-sidebar'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
@@ -443,6 +451,21 @@ export default function stateModelFactory(
         return self.scoreGradientPaints && self.isRowLayout
           ? 'labelColor'
           : 'color'
+      },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s getter, plus the palette switch the dialog writes
+       * beside a row colour. Without it here, a reader who turned a colour per
+       * subtrack on is offered neither "Reset row order" nor an undo from
+       * "Clear custom settings", because the `rowColor` half often did not
+       * change: `name` is already its default.
+       */
+      get rowStylingIsCustom(): boolean {
+        return (
+          rowColorIsCustom(self.rowColorSetting, self.baseRowColor) ||
+          isPerSourceColor(self.colorSetting) !==
+            isPerSourceColor(baseColorChannel(self))
+        )
       },
       /**
        * #method
@@ -930,6 +953,66 @@ export default function stateModelFactory(
         self.setRowOrder((rows.domain ?? []).map(name => ({ name })))
       },
     }))
+    .actions(self => {
+      const {
+        applyRowEdits: superApplyRowEdits,
+        resetRowArrangement: superResetRowArrangement,
+      } = self
+      // The reader's own `color`, the switch behind "Color rows by → Each row",
+      // returned to whatever the display's base declares.
+      function clearPalette() {
+        self.setColor(baseDisplayConfig(self).color as Partial<ColorSetting>)
+      }
+      return {
+        /**
+         * #action
+         * `TreeSidebarMixin`'s action, plus the half of "a colour per subtrack"
+         * that lives on this display's own channel: the dialog writes the
+         * `rowColor` naming each row, and only `color: { field: 'source' }`
+         * makes the palette deal one.
+         *
+         * Two states where the switch is wrong and the row colour alone is
+         * right. Under a gradient it deals nothing to an ungrouped subtrack and
+         * takes the pair the fade runs on with it — four shipped CNV figures
+         * read that fade. Over one subtrack it makes the negative side take the
+         * positive colour, so a lone BigWig loses the red below its baseline.
+         */
+        applyRowEdits(rows: readonly Source[], rowColor?: RowColorSnapshot) {
+          superApplyRowEdits(rows, rowColor)
+          if (!rowColor) {
+            return
+          }
+          const byName =
+            (rowColor.field ?? 'name') === 'name' && rowColor.scale !== 'none'
+          const wants =
+            byName &&
+            !self.scoreGradientPaints &&
+            self.discoveredRows.length > 1
+          const has = isPerSourceColor(self.colorSetting)
+          if (wants && !has) {
+            self.setColor(PER_SOURCE_COLOR)
+          } else if (
+            !wants &&
+            has &&
+            !isPerSourceColor(baseColorChannel(self))
+          ) {
+            clearPalette()
+          }
+        },
+        /**
+         * #action
+         * `TreeSidebarMixin`'s action, plus the same switch: "Clear custom
+         * settings" and "Reset row order" both come through here, and a colour
+         * a reader cannot get back off is worse than one they could not set.
+         */
+        resetRowArrangement() {
+          superResetRowArrangement()
+          if (isPerSourceColor(self.colorSetting)) {
+            clearPalette()
+          }
+        },
+      }
+    })
     .actions(self => ({
       fetchNeeded(needed: IndexedRegion[]) {
         const view = self.host

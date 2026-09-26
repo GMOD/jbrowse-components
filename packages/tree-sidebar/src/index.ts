@@ -94,6 +94,7 @@ export {
   TreeSidebarMixin,
   baseDisplayConfig,
   orderOver,
+  rowColorIsCustom,
 } from './TreeSidebarMixin.ts'
 export type {
   ClusterRun,
