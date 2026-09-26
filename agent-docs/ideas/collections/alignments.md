@@ -163,6 +163,13 @@ axis/legend that changes with it; per ADR-016 it belongs in the worker (mode cha
 infrequently, per-base pass is cheap → rpcProps). Start with MAPQ/discordancy as the
 proof point. Cross-ref [bigly](https://github.com/brentp/bigly).
 
+The SV survey of 2026-09-26 ranks the MAPQ-0 and discordant partitions as the
+cheapest copy-number evidence the tree can add without a caller. A depth step
+that is really a segmental duplication reads grey in the MAPQ-0 partition, and
+the repeat-mediated junctions of a Carvalho-type inverted triplication are
+exactly the ones a plain depth bar cannot tell from a copy step. Nothing here
+infers a copy number; the bar shows which reads the depth is made of.
+
 **Read downsampling for a force-loaded dense region.** The wide-zoom half of
 large-region viewing landed as the density tier (`bf66d4cbdf`,
 [reference/REGION_TOO_LARGE.md](../../reference/REGION_TOO_LARGE.md)): a
