@@ -1,43 +1,29 @@
 ---
 name: arabidopsis-1001g-pangenome-demo
-description: The 1001G+ Arabidopsis demo (26 accessions vs TAIR10) as of 2026-09-24. SyRI lanes and a minigraph graph built on ada; the SyRI-only config is on jbrowse.org; a lane-order graph rebuild was running; the steps left to deploy the graph and add the dataset to jb2hubs. Read before touching demos/arabidopsis_pangenome or its build script.
+description: The 1001G+ Arabidopsis demo (26 accessions vs TAIR10) is live on jbrowse.org with SyRI lanes and the lane-order minigraph graph (2026-09-25). Left - add the dataset to jb2hubs. Read before touching demos/arabidopsis_pangenome or its build script.
 ---
 
-# 1001G+ Arabidopsis pangenome demo: finish the graph half, deploy, add to jb2hubs
+# 1001G+ Arabidopsis pangenome demo: add it to jb2hubs
 
-Branch `1001g-syri-demo` (worktree `.claude/worktrees/1001g-syri-demo`), rebased
-onto main after the attributeColumns commit landed there as 98f939e486.
+Live since 2026-09-25:
+`https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/arabidopsis_pangenome/config.json`.
+The default session draws genes, Fst, the SyRI rows and the graph's allele
+rows over the Chr4 knob. The hosted graph is the lane-order rebuild (ada
+`~/1001g/graph/`, minigraph 15:59-17:48, projections 20:11 on 2026-09-24),
+which is the order `scripts/build_arabidopsis_pangenome.sh` folds genomes in,
+so the script reproduces it. The first, graph_order.txt build is kept in
+`graph/order_v1/` on ada. The uncompressed `.rgfa` was not uploaded;
+`.rgfa.gz` is the download.
 
-The graph finished before ada went down (minigraph 10:16, projections 12:36 ada
-time); the projections are staged in `~/tutorial_spikes/1001g/host/`. The
-SyRI-only config and README are on jbrowse.org; the graph files are not.
+minigraph holds no knob-sized bubble (largest inside Chr4:1.6-2.8 Mb: 72 kb of
+TAIR10), so only the SyRI track shows the knob; the README says so. A
+GraphGenomeView over Chr4:1.5-2.9 Mb loads the tier (97 nodes, 96 edges, a
+plain chain) but jb2capture never sees it settle, so there is no graph frame.
 
-Three things block redeploying:
-
-- **The default session drops three of its four tracks on `code/jb2/main`.**
-  A spec-form `defaultSession` naming LinearWiggleDisplay,
-  LinearMultiRowFeatureDisplay or MultiWaySyntenyDisplay gets them pruned by
-  `pruneUnbuildableNodes.ts` as "pending plugins", because their lazy state
-  models have not loaded (`isStateModelLoaded === false`). It reproduces
-  same-origin on ada and without the GraphGenomeView plugin; the same session
-  passed as `session=spec-…` in the URL renders. Core bug, not this config.
-  Fixed by 250d44b8b5 (the prune leaves a track recipe for the launcher);
-  the demo needs it pushed and `code/jb2/main` redeployed.
-- **The hosted graph was built in `graph_order.txt` order** (TAIR10, Col-0.6909,
-  KBS-Mac-74, Fly2-2, Nyl-7, T690, TRA-01, Sq-1, HSm, …), not the ROWS lane
-  order the committed script uses, so the script does not reproduce it.
-- **minigraph holds no knob-sized bubble.** The largest bubble in
-  Chr4:1.5-2.9 Mb spans 77 kb; the largest inversion bubble genome-wide is
-  Chr4:4,205,393-4,794,539 (589 kb). Only the SyRI track shows the knob.
-
-gfatools stat: 190894 segments, 268283 links, max rank 26, total segment
-length 210,754,337, rank-0 length 119,146,348. Versions: minigraph 0.21-r606
-(`-t 12`), gfatools 0.5-r296.
-
-Capturing: ada's `~/1001g/www/app-main` is `s3://jbrowse.org/code/jb2/main`
-copied as-is, and `products/jbrowse-capture/esm-1001g` on ada's checkout is the
-laptop's current jb2capture (ada's own has no `--spec`). Chrome blocks
-jbrowse.org from fetching a localhost config, so capture same-origin on ada.
+Capturing on ada: `node` is not on a non-interactive PATH; prefix
+`PATH=$HOME/.local/share/fnm/node-versions/v24.2.0/installation/bin:$PATH`.
+`~/1001g/www/app-main2` is today's `code/jb2/main` (`app-main` predates the
+spec-session prune fix and drops default-session tracks).
 
 ## What exists
 
@@ -49,19 +35,15 @@ jbrowse.org from fetching a localhost config, so capture same-origin on ada.
   minigraph graph with the five mouse-style projections plus
   `build_minigraph_paths.sh` carriage rows. `--base-url` writes the absolute
   copy jb2hubs hosts.
-- `demos/arabidopsis_pangenome/README.txt` (uncommitted): provenance, tool
-  versions, the per-accession SyRI table and the knob-inversion finding.
-  The SyRI-only deploy dropped the graph's `gfatools stat` block and marks the graph "not uploaded yet"; restore both once the graph ships.
-- The actual run lives on `ssh ada`, `~/1001g/`: all 26 `TAIR10_<name>.{paf,regions.bed,syri.out}`,
-  `<name>.{chrom.sizes,aliases.txt}`, `graph/` with the 27 PanSN FASTAs,
-  `build_graph.sh` (minigraph -cxggs, was running at 07:31 ada time, about 3
-  min per genome) and `project_graph.sh` queued behind it, which writes
-  `graph/arabidopsis-tair10-minigraph.*`. Logs `build_graph.log`,
-  `project_graph.log`. A static server on ada port 8790 serves `~/1001g/www`
-  (`app/` = primary's 5.0.0-beta.9 web build, `data/` = `~/1001g/host`), and
-  `node ~/src/jbrowse-components/products/jbrowse-capture/esm/bin.js --instance
-  http://localhost:8790/app/ --config http://localhost:8790/data/config.json
-  --session <spec.json>` captures from it.
+- `demos/arabidopsis_pangenome/{config.json,README.txt}`, deployed as-is:
+  provenance, tool versions, `gfatools stat`, the per-accession SyRI table
+  and the knob finding.
+- The run lives on `ssh ada`, `~/1001g/`: all 26
+  `TAIR10_<name>.{paf,regions.bed,syri.out}`, `<name>.{chrom.sizes,aliases.txt}`,
+  `graph/` with the 27 PanSN FASTAs and the projections, logs
+  `rebuild_lane.log` and `graph/minigraph.log`. `node serve.mjs www 8790`
+  serves `~/1001g/www` (`data/` = `~/1001g/host`, which holds the deployed
+  files).
 - Laptop staging: `~/tutorial_spikes/1001g/` (`stage.sh` assembles `deploy/`
   and runs the repo generator; `cap2.png` is the 26-lane frame).
 
@@ -83,22 +65,7 @@ jbrowse.org from fetching a localhost config, so capture same-origin on ada.
 
 ## To finish
 
-1. On ada, when `project_graph.log` says `projections done`: rsync
-   `graph/arabidopsis-tair10-minigraph.*` into `~/tutorial_spikes/1001g/host/`,
-   rerun `stage.sh`, validate (`node --experimental-strip-types
-   products/jbrowse-cli/src/bin.ts validate deploy/config.json`), put
-   `gfatools stat` into the README, and capture a GraphGenomeView frame of
-   the inversion.
-2. `cp deploy/config.json demos/arabidopsis_pangenome/config.json`, commit
-   README and config, then `scripts/deploy-demo.sh` the config and README, and
-   every data file in `deploy/` with `DEPLOY_DEMO_ALLOW_UNTRACKED=1` to
-   `arabidopsis_pangenome/<file>` (about 75 objects). The build script is
-   committed, which HOSTING.md requires before the upload.
-3. Share URL once 5dc19f4ae2 is on `code/jb2/main`:
-   `https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/arabidopsis_pangenome/config.json`.
-   Until then the `syri` ribbon colouring is grey; `ribbonColor.field: strand`
-   is the fallback that draws on today's builds.
-4. jb2hubs (`~/src/jb2hubs`, another repo; this worktree session cannot run
+jb2hubs (`~/src/jb2hubs`, another repo; this worktree session cannot run
    git there): `website/pangenome-config/arabidopsis-tair10.json` =
    `deploy/config.jb2hubs.json`; a `DATASETS.arabidopsis` entry in
    `website/generatePangenomeLoci.ts` (`genome: 'GCF_000001735.4'`,
