@@ -1,5 +1,8 @@
+import PluginManager from '@jbrowse/core/PluginManager'
+import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
+
+import MafPlugin from '../index.ts'
 import configSchemaF from './configSchema.ts'
-import { routeRetiredShorthand } from './retiredSettings.ts'
 import stateModelFactory from './stateModel.ts'
 
 const configSchema = configSchemaF()
@@ -70,39 +73,26 @@ describe('the retired arrangement props on a MAF display snapshot', () => {
 })
 
 describe('displayDefaults.domain on a MAF track', () => {
-  const track = { type: 'MafTrack', trackId: 'maf' }
+  const pluginManager = new PluginManager([new MafPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
 
-  it('lands on an explicit MAF entry, where the refusal names rows.domain', () => {
-    const routed = routeRetiredShorthand({
-      ...track,
-      displayDefaults: { domain: ['mm10'], rowHeight: 12 },
-    }) as { displayDefaults: unknown; displays: Record<string, unknown>[] }
-    expect(routed.displayDefaults).toEqual({ rowHeight: 12 })
-    expect(routed.displays).toEqual([
-      {
-        type: 'LinearMafDisplay',
-        displayId: 'maf-LinearMafDisplay',
-        domain: ['mm10'],
-      },
-    ])
-    expect(() => configSchema.create(routed.displays[0])).toThrow(
-      /`rows.domain`/,
+  const load = (displayDefaults: Record<string, unknown>) =>
+    preprocessTrackConfigSnapshot(pluginManager, {
+      type: 'MafTrack',
+      trackId: 'maf',
+      assemblyNames: ['hg38'],
+      adapter: { type: 'MafTabixAdapter', uri: 'x.maf.gz' },
+      displayDefaults,
+    })
+
+  it('reaches the refusal that names rows.domain', () => {
+    expect(() => load({ domain: ['mm10'], rowHeight: 12 })).toThrow(
+      /`domain` is `rows.domain`/,
     )
   })
 
-  it('joins an entry the config already spells', () => {
-    const routed = routeRetiredShorthand({
-      ...track,
-      displayDefaults: { domain: ['mm10'] },
-      displays: [{ ...base, rowHeight: 12 }],
-    }) as { displays: unknown }
-    expect(routed.displays).toEqual([
-      { ...base, rowHeight: 12, domain: ['mm10'] },
-    ])
-  })
-
   it('leaves a track spelling rows alone', () => {
-    const snap = { ...track, displayDefaults: { rows: { domain: ['mm10'] } } }
-    expect(routeRetiredShorthand(snap)).toBe(snap)
+    expect(() => load({ rows: { domain: ['mm10'] } })).not.toThrow()
   })
 })

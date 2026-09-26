@@ -287,7 +287,9 @@ test('a v4 clustered multi-sample variant display loads with its order and tree'
   expect(getConf(display, ['rowColor', 'domain'])).toEqual([])
 })
 
-test("a v4 session track's scatterPointSize is the wiggle display's size", async () => {
+// `scatterPointSize` is a v5-beta spelling, not a v4 one — v4 had no
+// configurable scatter point diameter at all.
+test("a beta session track's scatterPointSize is the wiggle display's size", async () => {
   const { display } = await load({
     ...v4Session('QuantitativeTrack', 'bw_session', {
       type: 'LinearWiggleDisplay',

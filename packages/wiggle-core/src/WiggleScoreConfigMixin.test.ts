@@ -1,7 +1,5 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 
-import { liftScatterPointSize } from './WiggleScoreConfigMixin.ts'
-
 import type { ScoreFieldConfigHost } from './ScoreFieldConfigMixin.ts'
 import type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
@@ -39,19 +37,4 @@ test('the score-config host cannot reach scoreField', () => {
     getConf(score, 'scoreField'),
   ]
   expect([reads]).toHaveLength(1)
-})
-
-test('a v4 scatterPointSize becomes the size slot', () => {
-  expect(liftScatterPointSize({ scatterPointSize: 5, height: 100 })).toEqual({
-    size: 5,
-    height: 100,
-  })
-})
-
-// `migrateRetiredDisplays` rebuilds the track snapshot only where an entry
-// changed identity, so returning the same object is what keeps a v5 config off
-// that path.
-test('an entry with no v4 scatterPointSize is left as it was', () => {
-  const entry = { size: 5 }
-  expect(liftScatterPointSize(entry)).toBe(entry)
 })

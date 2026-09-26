@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
 
 import AlignmentsPlugin from '../index.ts'
-import { retiredConfig, retiredState } from './retired.ts'
+import { colorSlotsOf, retiredState } from './retired.ts'
 
 function alignmentsEntries(displays: Record<string, unknown>[]) {
   const pluginManager = new PluginManager([new AlignmentsPlugin()])
@@ -75,15 +75,28 @@ test.each([
     },
   ],
 ])('a v4 colorBy %j becomes %j', (colorBy, slots) => {
-  expect(retiredConfig({ colorBy, height: 300 })).toEqual({
-    height: 300,
-    ...slots,
-  })
+  expect(colorSlotsOf(colorBy)).toEqual(slots)
 })
 
-test('an entry with no v4 colorBy is left as it was', () => {
-  const entry = { color: { field: 'strand' } }
-  expect(retiredConfig(entry)).toBe(entry)
+// The schema declares `colorBy` retired, so the shorthand router asks it the
+// same question a `displays` entry does.
+test('a v4 colorBy reaches the display through displayDefaults too', () => {
+  const pluginManager = new PluginManager([new AlignmentsPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const out = preprocessTrackConfigSnapshot(pluginManager, {
+    type: 'AlignmentsTrack',
+    trackId: 't',
+    name: 't',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'BamAdapter', uri: 'a.bam' },
+    displayDefaults: { colorBy: { type: 'pairOrientation' } },
+  })
+  expect(
+    (out.displays as Record<string, unknown>[]).find(
+      d => d.type === 'LinearAlignmentsDisplay',
+    ),
+  ).toMatchObject({ color: { field: 'pairOrientation' } })
 })
 
 test('lifts the settings off the pre-4.x nested sub-nodes', () => {

@@ -1,6 +1,10 @@
+import PluginManager from '@jbrowse/core/PluginManager'
+import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
+import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
+
+import CanvasPlugin from '../index.ts'
 import configSchemaF from './configSchema.ts'
 import stateModelFactory from './model.ts'
-import { routeRetiredShorthand } from './retiredSettings.ts'
 
 const configSchema = configSchemaF()
 const stateModel = stateModelFactory(configSchema)
@@ -61,37 +65,29 @@ describe('the retired arrangement props on a multi-row display snapshot', () => 
 })
 
 describe('displayDefaults spelling a retired setting on a feature track', () => {
-  const track = { type: 'FeatureTrack', trackId: 'f' }
+  const pluginManager = new PluginManager([
+    new LinearGenomeViewPlugin(),
+    new CanvasPlugin(),
+  ])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
 
-  it('lands on an explicit multi-row entry, where the refusal names rows', () => {
-    const routed = routeRetiredShorthand({
-      ...track,
-      displayDefaults: { partitionField: 'sample', height: 90 },
-    }) as { displayDefaults: unknown; displays: Record<string, unknown>[] }
-    expect(routed.displayDefaults).toEqual({ height: 90 })
-    expect(routed.displays).toEqual([
-      {
-        type: 'LinearMultiRowFeatureDisplay',
-        displayId: 'f-LinearMultiRowFeatureDisplay',
-        partitionField: 'sample',
-      },
-    ])
-    expect(() => configSchema.create(routed.displays[0])).toThrow(/`rows`/)
-  })
+  const load = (displayDefaults: Record<string, unknown>) =>
+    preprocessTrackConfigSnapshot(pluginManager, {
+      type: 'FeatureTrack',
+      trackId: 'f',
+      assemblyNames: ['hg38'],
+      adapter: { type: 'BedTabixAdapter', uri: 'x.bed.gz' },
+      displayDefaults,
+    })
 
-  it('joins an entry the config already spells', () => {
-    const routed = routeRetiredShorthand({
-      ...track,
-      displayDefaults: { sampleColorMap: { a: 'red' } },
-      displays: [{ ...base, height: 50 }],
-    }) as { displays: unknown }
-    expect(routed.displays).toEqual([
-      { ...base, height: 50, sampleColorMap: { a: 'red' } },
-    ])
+  it('reaches the refusal that names rows', () => {
+    expect(() => load({ partitionField: 'sample', height: 90 })).toThrow(
+      /`partitionField` is `rows`/,
+    )
   })
 
   it('leaves a track spelling rows alone', () => {
-    const snap = { ...track, displayDefaults: { rows: 'sample' } }
-    expect(routeRetiredShorthand(snap)).toBe(snap)
+    expect(() => load({ rows: 'sample' })).not.toThrow()
   })
 })

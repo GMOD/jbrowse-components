@@ -8,10 +8,14 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 type DisplayArgs = ConstructorParameters<typeof DisplayType>[0]
 
-function display(name: string, extra: Partial<DisplayArgs> = {}) {
+function display(
+  name: string,
+  extra: Partial<DisplayArgs> = {},
+  retired?: Record<string, (value: unknown) => Record<string, unknown>>,
+) {
   return new DisplayType({
     name,
-    configSchema: ConfigurationSchema(name, {}),
+    configSchema: ConfigurationSchema(name, {}, { retired }),
     stateModel: types.model(name, {}),
     trackType: 'FeatureTrack',
     viewType: 'LinearGenomeView',
@@ -22,20 +26,23 @@ function display(name: string, extra: Partial<DisplayArgs> = {}) {
 
 const pluginManager = {
   getDisplayElements: () => [
-    display('BandedDisplay', {
-      retiredTypes: [
-        { type: 'OneBandDisplay', migrate: e => ({ otherBand: false, ...e }) },
-      ],
-      retiredConfig: e => {
-        const { legacyColor, ...rest } = e
-        return legacyColor === undefined ? e : { ...rest, color: legacyColor }
+    display(
+      'BandedDisplay',
+      {
+        retiredTypes: [
+          {
+            type: 'OneBandDisplay',
+            migrate: e => ({ otherBand: false, ...e }),
+          },
+        ],
+        retiredState: {
+          keys: ['colorSetting', 'subNode'],
+          lift: i =>
+            i.colorSetting === undefined ? {} : { legacyColor: i.colorSetting },
+        },
       },
-      retiredState: {
-        keys: ['colorSetting', 'subNode'],
-        lift: i =>
-          i.colorSetting === undefined ? {} : { legacyColor: i.colorSetting },
-      },
-    }),
+      { legacyColor: color => ({ color }) },
+    ),
     display('PlainDisplay'),
   ],
 } as unknown as PluginManager
