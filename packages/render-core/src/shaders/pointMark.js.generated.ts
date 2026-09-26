@@ -88,6 +88,16 @@ export function pointYPx(value: number, domainMin: number, domainMax: number, h:
   return insetValueYPx(value, domainMin, domainMax, h, scaleType, insetPx, symlogConstant)
 }
 
+export function pointRowYPx(bandTop: number, h: number, reverse: number, valueYPx: number): number {
+  let _t0: number
+  if ((reverse != 0)) {
+    _t0 = (h - valueYPx)
+  } else {
+    _t0 = valueYPx
+  }
+  return (bandTop + _t0)
+}
+
 export function pointDrawsBar(spanPx: number, radiusPx: number): boolean {
   return (spanPx > (radiusPx * 2.0))
 }

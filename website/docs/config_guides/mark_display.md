@@ -447,10 +447,11 @@ Write them out to say more — a colour by type, a stroke by score, a shape:
 The apex of a link is its half-width, clamped to the band under
 `linkShape: "dome"` (the default) and a true semicircle under `"arc"`; a `y`
 puts it at a value on the display's axis instead, so a link plotted by its score
-rises to it. A pair wider than three screens straightens into a leg rising from
-each end, and a mate the view does not show draws a short stem at the end it
-does. A link answers a hover and a click along its stroke, and the SVG export
-carries it as a path.
+rises to it. `"line"` draws a straight segment between the two ends, on the
+baseline or at the `y` value. A pair wider than three screens straightens into a
+leg rising from each end, and a mate the view does not show draws a short stem
+at the end it does. A link answers a hover and a click along its stroke, and the
+SVG export carries it as a path.
 
 ## Facets
 

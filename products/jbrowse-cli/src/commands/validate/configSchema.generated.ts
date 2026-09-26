@@ -8062,10 +8062,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 4
         },
         "linkShape": {
-          "description": "dome or arc.",
+          "description": "dome, arc or line.",
           "enum": [
             "dome",
-            "arc"
+            "arc",
+            "line"
           ],
           "default": "dome"
         },

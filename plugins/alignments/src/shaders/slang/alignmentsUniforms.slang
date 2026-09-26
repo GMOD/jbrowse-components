@@ -11,8 +11,6 @@
 // re-deriving it (adr-051).
 //! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot
 //! js-skip: expandMinWidthX — the clip-space half of this plugin's 1 CSS px floor; the px core it wraps is hpmath's expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports into @jbrowse/alignments-core and fillSpanRect (this pass's Canvas2D twin) places its edges with
-//! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
-//! js-skip: dashCoverage — the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly; it became liftable only when the ADR-040 granularity pass swapped its Uniforms parameter for a bare dpr, which changes what the emitter can see and nothing about who wants it
 module alignmentsUniforms;
 
 import antialias;
@@ -140,49 +138,6 @@ public struct Uniforms {
   public float devicePixelRatio;
 };
 
-// Coverage of a `dashPx` on / `gapPx` off pattern at `coord` CSS px along the
-// mark, with the ON run starting at coord 0 — the phase `ctx.setLineDash` and
-// `stroke-dasharray` give, so the three backends dash alike.
-//
-// The rotation is what makes both ends soft, and both halves of it were got
-// wrong here before. Measuring `min(phase, dashPx - phase)` straight off the
-// wrap ramps a dash's TRAILING edge and steps its LEADING edge 0 -> 0.5 in no
-// distance at all; rotating the run to the middle of the period fixes that but
-// then ramping over a constant 1 CSS px is two device px on a dpr=2 display —
-// twice the softness of the sides of the very same line. Centring the run at
-// half a period puts the wrap deep in the gap where nothing is drawn, and
-// `aaPx(dpr)` is the sides' own ramp.
-//
-// The reduction is `t - period * floor(t / period)` rather than the obvious
-// `frac(t / period) * period`, which are the same number only in exact
-// arithmetic. `frac` drops the integer part BEFORE multiplying back, so what
-// the quotient lost to rounding survives and gets scaled by the period;
-// subtracting the floored multiple keeps it, because THAT subtraction is exact
-// — its operands are within a period of each other, so nothing falls off the
-// end. Same op count, once `frac`'s own `floor` is counted.
-//
-// This is not a visible fix and don't sell it as one: swept against the old
-// spelling in float32 over both passes' whole coordinate range at dpr 1-4, the
-// two differ by at most 9.8e-4 of alpha and not one 8-bit pixel changes.
-//
-// It is a refereeable one, which the old spelling was not. check-oracle takes
-// every emittable scalar signature, not only the `//! js-export`ed ones, so a
-// scalar core here is swept whether or not anything imports it — and the `frac`
-// spelling missed the 1e-5 relative on 18 of its 2400 tuples, including
-// in-domain ones like `(255, 2.5, 0.5, 0.25)`, a real screen px at dpr=4. The
-// choice was a function nobody can check or a one-line change that costs
-// nothing, so: the dash geometry is now under the CI gate.
-public float dashCoverageAt(
-    float coord, float dashPx, float gapPx, float aaPx) {
-  float period = dashPx + gapPx;
-  float shifted = coord + gapPx * 0.5;
-  float phase = shifted - period * floor(shifted / period);
-  return aaRamp(dashPx * 0.5 - abs(phase - period * 0.5), aaPx);
-}
-
-public float dashCoverage(float coord, float dashPx, float gapPx, float dpr) {
-  return dashCoverageAt(coord, dashPx, gapPx, aaPx(dpr));
-}
 
 // A BUTT-capped stroked segment: the quad that covers it, and the coverage that
 // shades it. They belong together because the pad is the contract — the quad

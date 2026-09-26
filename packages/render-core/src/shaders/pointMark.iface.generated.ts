@@ -27,14 +27,16 @@ export const UNIFORM_OFFSET_F32 = {
   viewportWidth: 13,
   radiusPx: 14,
   rowHeight: 15,
-  insetPx: 16,
-  devicePixelRatio: 17,
+  rowOffsetPx: 16,
+  insetPx: 18,
+  devicePixelRatio: 19,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
   valueScaleType: 6,
   rampMode: 8,
+  reverse: 17,
 } as const
 
 
@@ -53,6 +55,8 @@ export interface Uniforms {
   viewportWidth: number
   radiusPx: number
   rowHeight: number
+  rowOffsetPx: number
+  reverse: number
   insetPx: number
   devicePixelRatio: number
 }
@@ -76,8 +80,10 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[13] = uniforms.viewportWidth
   f32[14] = uniforms.radiusPx
   f32[15] = uniforms.rowHeight
-  f32[16] = uniforms.insetPx
-  f32[17] = uniforms.devicePixelRatio
+  f32[16] = uniforms.rowOffsetPx
+  i32[17] = uniforms.reverse
+  f32[18] = uniforms.insetPx
+  f32[19] = uniforms.devicePixelRatio
 }
 
 export const INSTANCE_STRIDE_BYTES = 24

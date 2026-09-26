@@ -7596,8 +7596,8 @@
           "default": 4
         },
         "linkShape": {
-          "description": "dome or arc.",
-          "enum": ["dome", "arc"],
+          "description": "dome, arc or line.",
+          "enum": ["dome", "arc", "line"],
           "default": "dome"
         },
         "encoding": {

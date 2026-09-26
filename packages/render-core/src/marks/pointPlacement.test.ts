@@ -79,3 +79,24 @@ test('the inset compresses the range without reordering it', () => {
   expect(centre(0)).toBeCloseTo(CANVAS_HEIGHT - inset)
   expect(centre(500)).toBeCloseTo(CANVAS_HEIGHT / 2)
 })
+
+test('a reversed scale puts the domain minimum at the top of a band below its offset', () => {
+  const centre = (y: number) => {
+    const box = pointMark.ink!(
+      { ...channels, y: Float32Array.of(y), count: 1 },
+      block,
+      { canvasWidth: 1000, canvasHeight: 200 },
+      {
+        domain: DOMAIN,
+        diameterPx: DIAMETER,
+        rowHeight: CANVAS_HEIGHT,
+        rowOffsetPx: 100,
+        reverse: true,
+      },
+      0,
+    )!
+    return box.top + box.height / 2
+  }
+  expect(centre(0)).toBeCloseTo(100)
+  expect(centre(1000)).toBeCloseTo(100 + CANVAS_HEIGHT)
+})

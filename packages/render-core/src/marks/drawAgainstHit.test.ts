@@ -206,6 +206,7 @@ const SYMLOG = { scaleType: 'symlog', symlogConstant: 0.05 } as const
 test.each<[string, Partial<PointParams>]>([
   ['linear', {}],
   ['symlog', SYMLOG],
+  ['reversed below an offset', { reverse: true, rowOffsetPx: 12 }],
 ])('point: every drawn bar answers its own hit, %s', (_label, scale) => {
   for (const reversed of [false, true]) {
     expect(
@@ -261,6 +262,7 @@ describe('point: a glyph hit lands on the glyph the painter drew', () => {
     [2, {}],
     [6, {}],
     [6, SYMLOG],
+    [6, { reverse: true, rowOffsetPx: 12, rowHeight: 40 }],
   ])('diameter %i, scale %j', (diameterPx, scale) => {
     for (const reversed of [false, true]) {
       expect(
@@ -485,6 +487,11 @@ describe('link: every stroked curve answers its own hit, in both orientations', 
       { sizeScale: { domain: [0, 4], scale: 'linear', range: [1, 5] } },
     ],
     ['rows', { rowHeight: 20 }],
+    ['line', { linkShape: 'line' }],
+    ['valued line', { linkShape: 'line', valued: true }],
+    ['down', { reverse: true, rowOffsetPx: 10, rowHeight: 60 }],
+    ['down line', { linkShape: 'line', valued: true, reverse: true }],
+    ['long stem', { stemPx: 40, strokeDash: [3, 3] }],
   ])('%s', (_label, overrides) => {
     for (const reversed of [false, true]) {
       const params: LinkParams = {

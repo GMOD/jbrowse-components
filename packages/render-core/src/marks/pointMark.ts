@@ -1,7 +1,11 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { CappedPath, getDpr, makeBpMapper } from '../canvas2dUtils.ts'
 import * as shader from '../shaders/pointMark.generated.ts'
-import { pointDrawsBar, pointYPx } from '../shaders/pointMark.js.generated.ts'
+import {
+  pointDrawsBar,
+  pointRowYPx,
+  pointYPx,
+} from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
@@ -71,6 +75,8 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       viewportWidth: clip.scissorW,
       radiusPx: params.diameterPx / 2,
       rowHeight: bandHeightPx(params, frame.canvasHeight),
+      rowOffsetPx: params.rowOffsetPx ?? 0,
+      reverse: params.reverse ? 1 : 0,
       insetPx: params.insetPx ?? 0,
       devicePixelRatio: getDpr(),
     })
@@ -82,7 +88,8 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       return
     }
     const color = paintColors(channels, count, params.ramp)
-    const { diameterPx, domain, insetPx = 0 } = params
+    const { diameterPx, domain, insetPx = 0, rowOffsetPx: top = 0 } = params
+    const reverse = params.reverse ? 1 : 0
     const r = diameterPx / 2
     const band = bandHeightPx(params, frame.canvasHeight)
     const domainMin = domain[0]
@@ -104,9 +111,12 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       path.add()
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      const yPx =
-        bandTopPx(row, i, band) +
-        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c)
+      const yPx = pointRowYPx(
+        top + bandTopPx(row, i, band),
+        band,
+        reverse,
+        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),
+      )
       const widthPx = Math.abs(xEnd - xStart)
       if (pointDrawsBar(widthPx, r)) {
         ctx.rect(Math.min(xStart, xEnd), yPx - r, widthPx, diameterPx)
@@ -129,9 +139,12 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const band = bandHeightPx(params, frame.canvasHeight)
     const { valueScaleType: st, valueSymlogConstant: c } =
       valueScaleUniforms(params)
-    const cy =
-      bandTopPx(row, i, band) +
-      pointYPx(y[i]!, domain[0], domain[1], band, st, insetPx, c)
+    const cy = pointRowYPx(
+      (params.rowOffsetPx ?? 0) + bandTopPx(row, i, band),
+      band,
+      params.reverse ? 1 : 0,
+      pointYPx(y[i]!, domain[0], domain[1], band, st, insetPx, c),
+    )
     const lo = Math.min(xStart, xEnd)
     const hi = Math.max(xStart, xEnd)
     return pointDrawsBar(hi - lo, r)
@@ -146,7 +159,8 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
     const { x, x2, y, row } = channels
     const bpToPx = makeBpMapper(block)
-    const { diameterPx, domain, insetPx = 0 } = params
+    const { diameterPx, domain, insetPx = 0, rowOffsetPx: top = 0 } = params
+    const reverse = params.reverse ? 1 : 0
     const domainMin = domain[0]
     const domainMax = domain[1]
     const band = bandHeightPx(params, frame.canvasHeight)
@@ -155,9 +169,12 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     return nearestInk(candidates, maxDistSq, i => {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      const cy =
-        bandTopPx(row, i, band) +
-        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c)
+      const cy = pointRowYPx(
+        top + bandTopPx(row, i, band),
+        band,
+        reverse,
+        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),
+      )
       const lo = Math.min(xStart, xEnd)
       const hi = Math.max(xStart, xEnd)
       return pointDrawsBar(hi - lo, diameterPx / 2)

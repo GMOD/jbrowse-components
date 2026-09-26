@@ -10,7 +10,7 @@ export const MARK_TYPES = ['bar', 'point', 'span', 'text', 'link'] as const
 export type MarkType = (typeof MARK_TYPES)[number]
 export const DEFAULT_MARK_TYPE: MarkType = 'bar'
 
-export const LINK_SHAPES = ['dome', 'arc'] as const
+export const LINK_SHAPES = ['dome', 'arc', 'line'] as const
 export type LinkShape = (typeof LINK_SHAPES)[number]
 export const DEFAULT_LINK_SHAPE: LinkShape = 'dome'
 /** The stroke a link draws at where its `size` is left unwritten. */

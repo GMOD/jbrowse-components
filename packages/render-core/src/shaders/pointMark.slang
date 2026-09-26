@@ -7,7 +7,7 @@
 // All four are a 6-vertex quad; the fragment shader carves the shape.
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, TRIANGLE_MITER_REACHES, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
-//! js-export: valueToYPxScaled, pointDrawsBar, pointYPx
+//! js-export: valueToYPxScaled, pointDrawsBar, pointYPx, pointRowYPx
 // `valueScale`'s twin is lifted here, once, for the bar shape too.
 
 import antialias;
@@ -49,6 +49,9 @@ struct Uniforms {
   // CSS px per row band, the value scale ruling each on its own; the canvas
   // height where every instance is on row 0 (ADR-126).
   float  rowHeight;
+  float  rowOffsetPx;
+  // Whether the domain's minimum sits at the band's top.
+  int    reverse;
   // Ends of the value range, inset by `glyphPaint`'s `pointInsetPx` where the
   // display wants its edge glyphs whole; 0 centres a point on the plot's edge.
   float  insetPx;
@@ -115,6 +118,12 @@ float pointYPx(float value, float domainMin, float domainMax, float h, int scale
   return insetValueYPx(value, domainMin, domainMax, h, scaleType, insetPx, symlogConstant);
 }
 
+// A value's canvas y in the row band starting at `bandTop`, `h` tall, from
+// its `pointYPx`: mirrored within the band under a reversed scale.
+public float pointRowYPx(float bandTop, float h, int reverse, float valueYPx) {
+  return bandTop + (reverse != 0 ? h - valueYPx : valueYPx);
+}
+
 // The glyph channel's values. The numbering is a contract between whatever
 // packs the channel, the Canvas2D painter and the branches below, so it is
 // authored once here and `//! export-consts`ed.
@@ -133,7 +142,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
 
   float startClipX = bpToClipX(inst.x, u);
   float endClipX = bpToClipX(inst.x2, u);
-  float yPx = u.rowHeight * float(inst.row) + pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx, u.valueSymlogConstant);
+  float yPx = pointRowYPx(u.rowOffsetPx + u.rowHeight * float(inst.row), u.rowHeight, u.reverse, pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx, u.valueSymlogConstant));
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).

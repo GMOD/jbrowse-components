@@ -39,8 +39,6 @@ export interface BarParams extends RowParams, MarkValueScale {
   seamPx: number
   /** CSS px each row's value scale runs over; the row's own height when absent. */
   rowBandPx?: number
-  /** CSS px every row's band starts below its top, less a scroll; 0 when absent. */
-  rowOffsetPx?: number
 }
 
 // Where row `i`'s value scale sits: its top and height, in the frame's CSS px.

@@ -5,6 +5,10 @@ export const LINK_SHAPE_DOME = 0
 
 export const LINK_SHAPE_ARC = 1
 
+export const LINK_SHAPE_LINE = 2
+
+export const LINK_LINE_MIN_PX = 2.5
+
 export const LINK_NO_REGION = 4294967295
 
 export const LINK_ELSEWHERE = 4294967294

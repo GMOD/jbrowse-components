@@ -5294,6 +5294,7 @@
       "package": "@jbrowse/render-core",
       "names": [
         "linkApexPx",
+        "linkBaseYPx",
         "linkRadiiPx",
         "linkStrokeWidthPx",
         "linkValuePx"
@@ -5306,11 +5307,13 @@
         "LINK_CURVE_SEGMENTS",
         "LINK_ELSEWHERE",
         "LINK_FAR_SCREEN_WIDTHS",
+        "LINK_LINE_MIN_PX",
         "LINK_MAX_REGIONS",
         "LINK_NO_REGION",
         "LINK_NO_SIZE",
         "LINK_SHAPE_ARC",
         "LINK_SHAPE_DOME",
+        "LINK_SHAPE_LINE",
         "LINK_SIZE_CONSTANT",
         "LINK_SIZE_SCALED",
         "LINK_STEM_PX"
@@ -5349,6 +5352,7 @@
       "package": "@jbrowse/render-core",
       "names": [
         "pointDrawsBar",
+        "pointRowYPx",
         "pointYPx",
         "valueToYPxScaled"
       ],

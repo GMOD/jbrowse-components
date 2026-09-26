@@ -13,16 +13,19 @@
 // LINK_FAR_SCREEN_WIDTHS view widths degenerates to a circle whose legs
 // rise from each real foot, built endpoint-relative so a radius in the
 // millions of px cancels nothing. A foot the table cannot place draws a stem
-// at the placed one, so an off-view mate still says it exists.
+// at the placed one, so an off-view mate still says it exists. Under `line`
+// the pair is a straight segment at the apex height instead, GenomeSpy's
+// fourth link shape.
 //
 // The apex is a value on the display's y scale where the mark names one, else
 // the pair's own half-width, clamped to the band under `dome` and left to
-// leave it under `arc`.
+// leave it under `arc`. A reversed scale puts the baseline at the band's top
+// and the curve below it.
 //! targets: wgsl, glsl
 //! topology: triangle-strip
 //! coverage: analytic
-//! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
-//! js-export: linkApexPx, linkRadiiPx, linkStrokeWidthPx, linkValuePx
+//! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_SHAPE_LINE, LINK_LINE_MIN_PX, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
+//! js-export: linkApexPx, linkRadiiPx, linkStrokeWidthPx, linkValuePx, linkBaseYPx
 //! js-skip: linkIsFar — reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it
 
 import antialias;
@@ -39,6 +42,10 @@ static const float PI = 3.14159265359;
 
 public static const int LINK_SHAPE_DOME = 0;
 public static const int LINK_SHAPE_ARC = 1;
+public static const int LINK_SHAPE_LINE = 2;
+// The shortest segment a `line` draws, widened about its midpoint, so a pair
+// under a pixel apart still paints.
+public static const float LINK_LINE_MIN_PX = 2.5;
 // An `x2Region` the table has no entry for: the mate lies on no displayed
 // region, so the instance draws its stem.
 public static const uint LINK_NO_REGION = 0xFFFFFFFFu;
@@ -62,6 +69,7 @@ public static const float LINK_NO_SIZE = -1.0e30;
 static const float KIND_ELLIPSE = 0.0;
 static const float KIND_CIRCLE = 1.0;
 static const float KIND_STEM = 2.0;
+static const float KIND_LINE = 3.0;
 
 struct LinkInstance {
   uint  x        : ATTR0;
@@ -77,6 +85,11 @@ struct Uniforms {
   float  canvasHeight;
   float  devicePixelRatio;
   float  rowHeight;
+  float  rowOffsetPx;
+  int    reverse;
+  float  stemPx;
+  float  dashPx;
+  float  gapPx;
   float  insetPx;
   float  domainMin;
   float  domainMax;
@@ -114,8 +127,9 @@ struct Uniforms {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  // Fragment position in the frame its curve is measured in: the ellipse's
-  // centre, a far circle's leg foot, or the stem's foot.
+  // Fragment position in the frame its curve is measured in, y negative away
+  // from the baseline: the ellipse's centre, a far circle's leg foot, a
+  // stem's foot, or a line's left end.
   float2 local    : COLOR1;
   nointerpolation float2 radii : COLOR2;
   nointerpolation float  kind  : COLOR3;
@@ -147,8 +161,15 @@ public float linkValuePx(float value, float domainMin, float domainMax, float h,
 // The apex height of a pair, in CSS px above the baseline.
 public float linkApexPx(float halfWidthPx, float reachPx, int linkShape, int valued, float valuePx) {
   if (valued != 0) { return valuePx; }
+  if (linkShape == LINK_SHAPE_LINE) { return 0.0; }
   if (linkShape == LINK_SHAPE_ARC) { return halfWidthPx; }
   return min(halfWidthPx, reachPx);
+}
+
+// The baseline of a row's band, in canvas px: its bottom, or its top under a
+// reversed scale.
+public float linkBaseYPx(float rowOffsetPx, float rowHeight, uint row, int reverse) {
+  return rowOffsetPx + rowHeight * float(row) + (reverse != 0 ? 0.0 : rowHeight);
 }
 
 // The two radii of the half-ellipse a pair draws, or a true circle's once the
@@ -187,7 +208,8 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   float aaHalf = aaHalfPx(u.devicePixelRatio);
   float hw = strokeHalf + aaHalf;
 
-  float baseY = u.rowHeight * float(inst.row) + u.rowHeight;
+  float baseY = linkBaseYPx(u.rowOffsetPx, u.rowHeight, inst.row, u.reverse);
+  float ySign = u.reverse != 0 ? -1.0 : 1.0;
   float reach = max(u.rowHeight - u.insetPx, 0.0);
   float xPx = entryPx(inst.x, u.ownEntry, u.zero);
   bool placed = inst.x2Region < u.regionCount;
@@ -203,10 +225,10 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   float2 radii;
   if (!placed) {
     kind = KIND_STEM;
-    radii = float2(0.0, LINK_STEM_PX);
+    radii = float2(0.0, u.stemPx);
     // The stem's tip is a round cap, so the quad runs one pad past it. Its foot
     // stops at the baseline, where every dome's feet stop.
-    local = float2(pad, -t * (LINK_STEM_PX + hw));
+    local = float2(pad, -t * (u.stemPx + hw));
     origin = float2(xPx, baseY);
   } else {
     float pairHalf = abs(x2Px - xPx) * 0.5;
@@ -215,7 +237,13 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
     float apex = linkApexPx(pairHalf, reach, u.linkShape, u.valued, valuePx);
     radii = linkRadiiPx(pairHalf, apex, u.canvasWidth);
     float2 ends = float2(min(xPx, x2Px), max(xPx, x2Px));
-    if (linkIsFar(pairHalf, u.canvasWidth)) {
+    if (u.linkShape == LINK_SHAPE_LINE) {
+      kind = KIND_LINE;
+      float len = max(2.0 * pairHalf, LINK_LINE_MIN_PX);
+      radii = float2(len, 0.0);
+      local = float2(t * len, pad);
+      origin = float2((xPx + x2Px) * 0.5 - len * 0.5, baseY - apex * ySign);
+    } else if (linkIsFar(pairHalf, u.canvasWidth)) {
       kind = KIND_CIRCLE;
       float legSweep = legSweepAngle(radii.x, reach + strokeHalf + aaHalf);
       // Two legs, each built from ITS OWN foot outward with the half-angle
@@ -241,7 +269,7 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
     }
   }
 
-  float2 screen = origin + float2(legDir * local.x, local.y);
+  float2 screen = origin + float2(legDir * local.x, local.y * ySign);
 
   VsOut o;
   o.position = inst.x2Region == LINK_ELSEWHERE
@@ -261,6 +289,10 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
 
 // Perpendicular distance in CSS px from this fragment to its analytic curve.
 float linkDistance(VsOut i) {
+  if (i.kind >= 2.5) {
+    float x = clamp(i.local.x, 0.0, i.radii.x);
+    return length(float2(i.local.x - x, i.local.y));
+  }
   if (i.kind >= 1.5) {
     float y = clamp(i.local.y, -i.radii.y, 0.0);
     return length(float2(i.local.x, i.local.y - y));
@@ -269,10 +301,26 @@ float linkDistance(VsOut i) {
   return sdEllipse(i.local, i.radii);
 }
 
+// How far along a straight segment's axis the fragment is, from the end the
+// dash pattern starts at; a curve carries no dash.
+float linkDashAlong(VsOut i) {
+  if (i.kind >= 2.5) { return i.local.x; }
+  if (i.kind >= 1.5) { return -i.local.y; }
+  return -1.0;
+}
+
+float linkDash(VsOut i) {
+  float along = linkDashAlong(i);
+  return u.dashPx > 0.0 && along >= 0.0
+    ? dashCoverage(along, u.dashPx, u.gapPx, u.devicePixelRatio)
+    : 1.0;
+}
+
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   if (abs(fragIn.legSide) < 0.999) { discard; }
   // |∇d| is 1 per CSS px, so the ramp is a constant number of device pixels.
-  float alpha = edgeCoverage(fragIn.halfWidthPx - linkDistance(fragIn), u.devicePixelRatio);
+  float alpha = edgeCoverage(fragIn.halfWidthPx - linkDistance(fragIn), u.devicePixelRatio)
+    * linkDash(fragIn);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

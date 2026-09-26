@@ -264,16 +264,17 @@ const markSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.linkShape
-     * How a link mark naming no `y` rises: `dome`, a half-ellipse whose apex
-     * is the pair's half-width clamped to the band, or `arc`, a true
-     * semicircle that may leave it. Past three block widths either becomes
-     * a circle whose legs rise from each foot.
+     * How a link mark draws: `dome`, a half-ellipse whose apex is the pair's
+     * half-width clamped to the band, `arc`, a true semicircle that may leave
+     * it, or `line`, a straight segment between the feet, on the baseline or
+     * at the `y` value. Past three block widths a dome or arc becomes a
+     * circle whose legs rise from each foot.
      */
     linkShape: {
       type: 'stringEnum',
       model: types.enumeration('LinkShape', [...LINK_SHAPES]),
       defaultValue: DEFAULT_LINK_SHAPE,
-      description: 'dome or arc',
+      description: 'dome, arc or line',
     },
     /**
      * #slot marks.encoding

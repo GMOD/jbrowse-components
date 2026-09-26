@@ -1,7 +1,9 @@
 import { clipBlock } from '../blockClipUtils.ts'
 import {
+  LINK_LINE_MIN_PX,
   LINK_NO_REGION,
   LINK_NO_SIZE,
+  LINK_SHAPE_LINE,
   LINK_STEM_PX,
 } from '../shaders/linkMark.consts.generated.ts'
 import * as iface from '../shaders/linkMark.iface.generated.ts'
@@ -299,4 +301,103 @@ test('later-painted wins on the ink, nearer wins off it', () => {
     { x: 400, x2: 500 },
   ])
   expect(hitAt(c2, 452, 60)).toMatchObject({ index: 1 })
+})
+
+test('a line is a straight segment at the apex height, widened to its minimum under a pixel', () => {
+  const c = channels(
+    [
+      { x: 100, x2: 300, y: 5 },
+      { x: 400, x2: 400, y: 10 },
+    ],
+    { y: true },
+  )
+  const line: LinkParams = { ...params, linkShape: 'line', valued: true }
+  expect(linkMark.ink!(c, block, frame, line, 0)).toEqual({
+    left: 99,
+    top: 49,
+    width: 202,
+    height: 2,
+  })
+  expect(linkMark.ink!(c, block, frame, line, 1)).toEqual({
+    left: 400 - LINK_LINE_MIN_PX / 2 - 1,
+    top: -1,
+    width: LINK_LINE_MIN_PX + 2,
+    height: 2,
+  })
+  expect(hitAt(c, 200, 50, line)).toMatchObject({ index: 0, distSq: 0 })
+  expect(hitAt(c, 310, 50, line)!.distSq).toBeCloseTo((10 - 1) ** 2)
+  // unvalued, the segment lies on the baseline
+  expect(
+    linkMark.ink!(c, block, frame, { ...params, linkShape: 'line' }, 0),
+  ).toMatchObject({ top: 99, height: 2 })
+})
+
+test('a reversed scale hangs the curve from the top of a band placed by its offset', () => {
+  const c = channels([{ x: 100, x2: 200 }])
+  const down: LinkParams = {
+    ...params,
+    reverse: true,
+    rowOffsetPx: 20,
+    rowHeight: 60,
+  }
+  expect(linkMark.ink!(c, block, frame, down, 0)).toEqual({
+    left: 99,
+    top: 19,
+    width: 102,
+    height: 52,
+  })
+  expect(hitAt(c, 150, 70, down)).toMatchObject({ index: 0, distSq: 0 })
+  const under = hitAt(c, 150, 80, down)!
+  expect(under.y).toBeCloseTo(71)
+  expect(under.distSq).toBeCloseTo(81)
+  const { ctx, calls } = mockCtx()
+  linkMark.paintBlock(ctx, c, block, frame, down)
+  expect(Math.min(...calls.map(r => r.y))).toBeCloseTo(19)
+  expect(Math.max(...calls.map(r => r.y + r.h))).toBeCloseTo(71)
+})
+
+test('a stem rises as far as the mark says, and a dash strokes only straight ink', () => {
+  const c = channels([
+    { x: 500, x2: 42, region: LINK_NO_REGION },
+    { x: 100, x2: 200 },
+  ])
+  const long: LinkParams = { ...params, stemPx: 80, strokeDash: [3, 3] }
+  expect(linkMark.ink!(c, block, frame, long, 0)).toMatchObject({
+    top: 19,
+    height: 82,
+  })
+  const dashes: number[][] = []
+  const { ctx } = mockCtx()
+  ctx.setLineDash = (d: number[]) => {
+    dashes.push(d)
+  }
+  linkMark.paintBlock(ctx, c, block, frame, long)
+  expect(dashes).toEqual([[3, 3], [], []])
+})
+
+test('the band placement, direction, stem and dash reach the uniforms', () => {
+  const scratch = new ArrayBuffer(iface.UNIFORMS_SIZE_BYTES)
+  linkMark.writeUniforms(
+    scratch,
+    clipBlock(block, frame.canvasWidth, frame.canvasHeight, { x: 1, y: 1 })!,
+    block,
+    frame,
+    {
+      ...params,
+      linkShape: 'line',
+      rowOffsetPx: 12,
+      reverse: true,
+      stemPx: 30,
+      strokeDash: [4, 2],
+    },
+  )
+  const f32 = new Float32Array(scratch)
+  const i32 = new Int32Array(scratch)
+  const F = iface.UNIFORM_OFFSET_F32
+  const I = iface.UNIFORM_OFFSET_I32
+  expect(f32[F.rowOffsetPx]).toBe(12)
+  expect(i32[I.reverse]).toBe(1)
+  expect(f32[F.stemPx]).toBe(30)
+  expect([f32[F.dashPx], f32[F.gapPx]]).toEqual([4, 2])
+  expect(i32[I.linkShape]).toBe(LINK_SHAPE_LINE)
 })

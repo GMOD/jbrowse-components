@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 121 functions
-are inside the emitter's subset, of which **92 are exported**.
+Scanned 45 shaders with entry points. 123 functions
+are inside the emitter's subset, of which **94 are exported**.
 
 ## Candidates
 
@@ -40,8 +40,8 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
 | `covExpandMinWidthX` | `(f32, f32, f32) -> vec2f` | the clip-space half of the rule; nothing outside a shader is in clip space, so what a painter wants is the px core, and coverageBar.slang exports that (hpmath's expandToMinWidthLeftPx and RightPx, into alignments-core's spanMinWidth.generated.ts) for fillSpanRect to place its edges with |
-| `dashCoverage` | `(f32, f32, f32, f32) -> f32` | the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly; it became liftable only when the ADR-040 granularity pass swapped its Uniforms parameter for a bare dpr, which changes what the emitter can see and nothing about who wants it |
-| `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
+| `dashCoverage` | `(f32, f32, f32, f32) -> f32` | the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly |
+| `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage, so what they must agree on is each mark's dash and gap lengths |
 | `edgePerp` | `(f32, f32, f32) -> f32` | the analytic edge ramp's slope factor; Canvas2D fills the band as a path and antialiases it itself |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | the clip-space half of this plugin's 1 CSS px floor; the px core it wraps is hpmath's expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports into @jbrowse/alignments-core and fillSpanRect (this pass's Canvas2D twin) places its edges with |
 | `expandToMinWidthPx` | `(f32, f32, f32) -> vec2f` | the float2 over expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports as the twins; a float2 twin is a tuple per call, and the pileup walk allocating one per span measured 0.85x against 0.78x of its hand painter |
@@ -83,9 +83,9 @@ noticing in a diff.
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'vec3' is outside the supported scalar subset | 5 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `linkedReadColorByIndex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markInstanceColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
+| type 'VsOut' is outside the supported scalar subset | 4 | `arcDistance`, `linkDash`, `linkDashAlong`, `linkDistance` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
-| type 'VsOut' is outside the supported scalar subset | 2 | `arcDistance`, `linkDistance` |
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | 'vec3<f32>' construction is outside the supported scalar subset | 1 | `arcBpToLinear` |
 | //! js-export: 'arcYDir' reaches arcsPointDown(), which is outside the supported scalar subset | 1 | `arcYDir` |

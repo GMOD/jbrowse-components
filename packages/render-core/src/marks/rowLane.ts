@@ -11,6 +11,8 @@ export interface RowChannel {
 export interface RowParams {
   /** CSS px per row band; the canvas height when absent. */
   rowHeight?: number
+  /** CSS px every row's band starts below the canvas top, less a scroll; 0 when absent. */
+  rowOffsetPx?: number
 }
 
 const NO_ROWS = new Uint32Array(0)

@@ -136,7 +136,7 @@ export function recordingContext() {
       edges.length = 0
     },
     clip() {},
-    setLineDash() {},
+    setLineDash(_segments: number[]) {},
     moveTo(x: number, y: number) {
       pushPoint(x, y)
     },

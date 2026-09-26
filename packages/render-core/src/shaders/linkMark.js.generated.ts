@@ -89,6 +89,17 @@ export function linkStrokeWidthPx(raw: number, sizeMode: number, constantPx: num
   return _max(w, (1.5 / dpr))
 }
 
+export function linkBaseYPx(rowOffsetPx: number, rowHeight: number, row: number, reverse: number): number {
+  let _t0 = (rowOffsetPx + (rowHeight * (row)))
+  let _t1: number
+  if ((reverse != 0)) {
+    _t1 = 0.0
+  } else {
+    _t1 = rowHeight
+  }
+  return (_t0 + _t1)
+}
+
 function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, symlogConstant: number): number {
   return ((1.0 - normalizeScore(value, domainMin, domainMax, scaleType, symlogConstant)) * h)
 }
@@ -105,6 +116,9 @@ export function linkValuePx(value: number, domainMin: number, domainMax: number,
 export function linkApexPx(halfWidthPx: number, reachPx: number, linkShape: number, valued: number, valuePx: number): number {
   if ((valued != 0)) {
     return valuePx
+  }
+  if ((linkShape == 2)) {
+    return 0.0
   }
   if ((linkShape == 1)) {
     return halfWidthPx

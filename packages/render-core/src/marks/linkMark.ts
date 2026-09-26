@@ -7,8 +7,10 @@ import {
   LINK_MAX_REGIONS,
   LINK_NO_REGION,
   LINK_NO_SIZE,
+  LINK_LINE_MIN_PX,
   LINK_SHAPE_ARC,
   LINK_SHAPE_DOME,
+  LINK_SHAPE_LINE,
   LINK_SIZE_CONSTANT,
   LINK_SIZE_SCALED,
   LINK_STEM_PX,
@@ -16,6 +18,7 @@ import {
 import * as shader from '../shaders/linkMark.generated.ts'
 import {
   linkApexPx,
+  linkBaseYPx,
   linkRadiiPx,
   linkStrokeWidthPx,
   linkValuePx,
@@ -25,7 +28,7 @@ import { abgrToCssRgba } from './colorFill.ts'
 import { ellipseNearest } from './ellipseDistance.ts'
 import { nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
-import { bandHeightPx, bandTopPx, rowLane } from './rowLane.ts'
+import { bandHeightPx, rowLane } from './rowLane.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
@@ -69,13 +72,22 @@ export interface LinkSizeScale {
   range: [number, number]
 }
 
+export type LinkShape = 'dome' | 'arc' | 'line'
+
 export interface LinkParams extends RowParams, MarkValueScale {
   /** The quantitative colour scale, for a link whose colour is a ramp. */
   ramp?: MarkRamp
   /** The view's displayed regions, indexed as `x2Region` and the block's own index are. */
   regions: readonly LinkRegion[]
-  /** `dome` clamps the apex to the band; `arc` is a true semicircle. */
-  linkShape: 'dome' | 'arc'
+  /**
+   * `dome` clamps the apex to the band; `arc` is a true semicircle; `line` is
+   * a straight segment at the apex height.
+   */
+  linkShape: LinkShape
+  /** How far a stem rises from a foot whose mate lies on no displayed region. */
+  stemPx?: number
+  /** A straight segment's `[dash, gap]` in CSS px, starting on a dash. */
+  strokeDash?: readonly [number, number]
   /** Whether the mark names a `y`, which then places the apex. */
   valued: boolean
   /** The stroke width where no `size` channel is read. */
@@ -89,6 +101,7 @@ const KIND_ELLIPSE = 0
 const KIND_CIRCLE = 1
 const KIND_STEM = 2
 const KIND_NONE = 3
+const KIND_LINE = 4
 
 // The painter's leg polyline: enough segments that the chord sagitta on any
 // leg the band can show is under a pixel.
@@ -96,6 +109,11 @@ const LEG_SEGMENTS = 32
 
 interface LinkFrame {
   band: number
+  rowOffsetPx: number
+  reverse: number
+  /** Canvas y per frame y: the frame's y is negative away from the baseline. */
+  ySign: number
+  stemPx: number
   reach: number
   screenW: number
   regions: readonly LinkRegion[]
@@ -139,6 +157,10 @@ function linkFrame(
   const { sizeScale } = params
   return {
     band,
+    rowOffsetPx: params.rowOffsetPx ?? 0,
+    reverse: params.reverse ? 1 : 0,
+    ySign: params.reverse ? -1 : 1,
+    stemPx: params.stemPx ?? LINK_STEM_PX,
     reach: Math.max(band - (params.insetPx ?? 0), 0),
     screenW: frame.canvasWidth,
     regions: params.regions,
@@ -149,7 +171,7 @@ function linkFrame(
     domainMin: params.domain[0],
     domainMax: params.domain[1],
     insetPx: params.insetPx ?? 0,
-    shape: params.linkShape === 'arc' ? LINK_SHAPE_ARC : LINK_SHAPE_DOME,
+    shape: linkShapeCode(params.linkShape),
     valued: params.valued ? 1 : 0,
     sizeMode: sizeScale ? LINK_SIZE_SCALED : LINK_SIZE_CONSTANT,
     sizePx: params.sizePx,
@@ -168,6 +190,14 @@ function linkFrame(
     legSweep: 0,
     strokePx: 0,
   }
+}
+
+function linkShapeCode(shape: LinkShape) {
+  return shape === 'arc'
+    ? LINK_SHAPE_ARC
+    : shape === 'line'
+      ? LINK_SHAPE_LINE
+      : LINK_SHAPE_DOME
 }
 
 function regionPx(regions: readonly LinkRegion[], index: number, bp: number) {
@@ -193,7 +223,7 @@ function placeLink(c: LinkChannels, g: LinkFrame, i: number) {
     g.sizeRangeMax,
     g.dpr,
   )
-  g.baseY = bandTopPx(c.row, i, g.band) + g.band
+  g.baseY = linkBaseYPx(g.rowOffsetPx, g.band, c.row?.[i] ?? 0, g.reverse)
   g.xPx = regionPx(regions, g.own, c.x[i]!)
   const region = c.x2Region[i]!
   if (region === LINK_ELSEWHERE) {
@@ -204,7 +234,7 @@ function placeLink(c: LinkChannels, g: LinkFrame, i: number) {
     g.kind = KIND_STEM
     g.x2Px = g.xPx
     g.rx = 0
-    g.ry = LINK_STEM_PX
+    g.ry = g.stemPx
     return
   }
   g.x2Px = regionPx(regions, region, c.x2[i]!)
@@ -219,6 +249,12 @@ function placeLink(c: LinkChannels, g: LinkFrame, i: number) {
     g.symlogConstant,
   )
   const apex = linkApexPx(pairHalf, g.reach, g.shape, g.valued, valuePx)
+  if (g.shape === LINK_SHAPE_LINE) {
+    g.kind = KIND_LINE
+    g.rx = Math.max(2 * pairHalf, LINK_LINE_MIN_PX)
+    g.ry = apex
+    return
+  }
   const [rx, ry] = linkRadiiPx(pairHalf, apex, g.screenW)
   g.rx = rx
   g.ry = ry
@@ -281,6 +317,15 @@ interface LegPoint {
   y: number
 }
 
+// Canvas y of a point `up` px from the baseline on the drawn side.
+function yAt(g: LinkFrame, up: number) {
+  return g.baseY - g.ySign * up
+}
+
+function lineStart(g: LinkFrame) {
+  return (g.xPx + g.x2Px) / 2 - g.rx / 2
+}
+
 // The visible part of a far circle's leg rising from `footX`, in canvas px,
 // built from the foot outward with the half-angle identity as the shader
 // does, so a radius past 1e6 px cancels nothing.
@@ -291,7 +336,7 @@ function legPoints(g: LinkFrame, footX: number, legDir: number): LegPoint[] {
     const sh = Math.sin(b / 2)
     points.push({
       x: footX + legDir * (-2 * g.rx * sh * sh),
-      y: g.baseY - Math.sin(b) * g.rx,
+      y: yAt(g, Math.sin(b) * g.rx),
     })
   }
   return points
@@ -304,7 +349,14 @@ function tracePath(
   const { baseY } = g
   if (g.kind === KIND_STEM) {
     ctx.moveTo(g.xPx, baseY)
-    ctx.lineTo(g.xPx, baseY - LINK_STEM_PX)
+    ctx.lineTo(g.xPx, yAt(g, g.stemPx))
+    return
+  }
+  if (g.kind === KIND_LINE) {
+    const x = lineStart(g)
+    const y = yAt(g, g.ry)
+    ctx.moveTo(x, y)
+    ctx.lineTo(x + g.rx, y)
     return
   }
   const left = Math.min(g.xPx, g.x2Px)
@@ -323,8 +375,29 @@ function tracePath(
     return
   }
   const mid = (left + right) / 2
-  ctx.moveTo(mid - g.rx, baseY)
-  ctx.ellipse(mid, baseY, g.rx, g.ry, 0, Math.PI, 2 * Math.PI)
+  if (g.reverse) {
+    ctx.moveTo(mid + g.rx, baseY)
+    ctx.ellipse(mid, baseY, g.rx, g.ry, 0, 0, Math.PI)
+  } else {
+    ctx.moveTo(mid - g.rx, baseY)
+    ctx.ellipse(mid, baseY, g.rx, g.ry, 0, Math.PI, 2 * Math.PI)
+  }
+}
+
+function dashes(g: LinkFrame) {
+  return g.kind === KIND_LINE || g.kind === KIND_STEM
+}
+
+// The box from the baseline to `rise` px off it, padded by `pad`.
+function riseBox(
+  g: LinkFrame,
+  left: number,
+  width: number,
+  rise: number,
+  pad: number,
+): InkRect {
+  const top = g.reverse ? g.baseY - pad : g.baseY - rise - pad
+  return { left, top, width, height: rise + 2 * pad }
 }
 
 function inkBox(g: LinkFrame): InkRect | undefined {
@@ -332,24 +405,21 @@ function inkBox(g: LinkFrame): InkRect | undefined {
     return undefined
   }
   const half = g.strokePx / 2
-  const { baseY } = g
   if (g.kind === KIND_STEM) {
+    return riseBox(g, g.xPx - half, g.strokePx, g.stemPx, half)
+  }
+  if (g.kind === KIND_LINE) {
     return {
-      left: g.xPx - half,
-      top: baseY - LINK_STEM_PX - half,
-      width: g.strokePx,
-      height: LINK_STEM_PX + g.strokePx,
+      left: lineStart(g) - half,
+      top: yAt(g, g.ry) - half,
+      width: g.rx + g.strokePx,
+      height: g.strokePx,
     }
   }
   const left = Math.min(g.xPx, g.x2Px)
   const right = Math.max(g.xPx, g.x2Px)
   const rise = g.kind === KIND_CIRCLE ? g.legHeight : g.ry
-  return {
-    left: left - half,
-    top: baseY - rise - half,
-    width: right - left + g.strokePx,
-    height: rise + g.strokePx,
-  }
+  return riseBox(g, left - half, right - left + g.strokePx, rise, half)
 }
 
 interface CurvePoint {
@@ -359,12 +429,25 @@ interface CurvePoint {
 }
 
 // The nearest point of the drawn curve to (px, py), in canvas px, and how far
-// the cursor is from it.
+// the cursor is from it. Measured with the curve rising above its baseline:
+// under a reversed scale the cursor is reflected there and the answer back.
 function nearestOnCurve(g: LinkFrame, px: number, py: number): CurvePoint {
+  const flip = (y: number) => (g.reverse ? 2 * g.baseY - y : y)
+  const near = nearestRising(g, px, flip(py))
+  return { ...near, y: flip(near.y) }
+}
+
+function nearestRising(g: LinkFrame, px: number, py: number): CurvePoint {
   const { baseY } = g
   if (g.kind === KIND_STEM) {
-    const y = Math.min(baseY, Math.max(baseY - LINK_STEM_PX, py))
+    const y = Math.min(baseY, Math.max(baseY - g.stemPx, py))
     return { x: g.xPx, y, dist: Math.hypot(px - g.xPx, py - y) }
+  }
+  if (g.kind === KIND_LINE) {
+    const start = lineStart(g)
+    const x = Math.min(start + g.rx, Math.max(start, px))
+    const y = baseY - g.ry
+    return { x, y, dist: Math.hypot(px - x, py - y) }
   }
   const left = Math.min(g.xPx, g.x2Px)
   const right = Math.max(g.xPx, g.x2Px)
@@ -432,13 +515,18 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       canvasHeight: frame.canvasHeight,
       devicePixelRatio: getDpr(),
       rowHeight: bandHeightPx(params, frame.canvasHeight),
+      rowOffsetPx: params.rowOffsetPx ?? 0,
+      reverse: params.reverse ? 1 : 0,
+      stemPx: params.stemPx ?? LINK_STEM_PX,
+      dashPx: params.strokeDash?.[0] ?? 0,
+      gapPx: params.strokeDash?.[1] ?? 0,
       insetPx: params.insetPx ?? 0,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
       ...valueScaleUniforms(params),
       ...rampUniforms(params.ramp),
       valued: params.valued ? 1 : 0,
-      linkShape: params.linkShape === 'arc' ? LINK_SHAPE_ARC : LINK_SHAPE_DOME,
+      linkShape: linkShapeCode(params.linkShape),
       sizeMode: sizeScale ? LINK_SIZE_SCALED : LINK_SIZE_CONSTANT,
       sizeConstantPx: params.sizePx,
       sizeDomainMin: sizeScale?.domain[0] ?? 0,
@@ -465,6 +553,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
     }
     const color = paintColors(channels, count, params.ramp)
     const g = linkFrame(block, frame, params)
+    const dash = params.strokeDash ? [...params.strokeDash] : []
     ctx.lineCap = 'butt'
     for (let i = 0; i < count; i++) {
       placeLink(channels, g, i)
@@ -473,10 +562,12 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       }
       ctx.lineWidth = g.strokePx
       ctx.strokeStyle = abgrToCssRgba(color[i]!)
+      ctx.setLineDash(dashes(g) ? dash : [])
       ctx.beginPath()
       tracePath(ctx, g)
       ctx.stroke()
     }
+    ctx.setLineDash([])
   },
 
   // The box the stroke lies in: the curve's extent padded by half the stroke,
