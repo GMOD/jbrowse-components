@@ -26,11 +26,11 @@
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX, MAX_WIGGLE_CUTS
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 //! js-export: densityGradientT, densityRampT
-//! js-skip: scoreToY — a plot-box wrapper over scoreScale.slang's normalizeScore, which is where the shared decision is and where it is exported from. The Canvas2D side composes the same normalizer with its own box (wiggle-core yScaleTicks.ts), so a twin of this signature would have no caller
 module wiggleCommon;
 
 import hpmath;
 import scoreScale;
+import valueScale;
 
 public static const int RENDERING_TYPE_XYPLOT = 0;
 public static const int RENDERING_TYPE_DENSITY = 1;
@@ -127,15 +127,11 @@ public float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
 
-public float scoreToY(float score, float domainMin, float domainMax, float h, int scaleType, float symlogConstant) {
-  return (1.0 - normalizeScore(score, domainMin, domainMax, scaleType, symlogConstant)) * h;
-}
-
 // A score's CSS px down the canvas in its row. The line shaders and the band
 // place every vertex, neighbour and pivot through it, so a band lies under its
 // line exactly.
 public float rowScoreToYPx(float score, float rowTop, float rowHeight, Uniforms u) {
-  return scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
+  return valueToYPxScaled(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
 }
 
 public float cutScore(int i, Uniforms u) {

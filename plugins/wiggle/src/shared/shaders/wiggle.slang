@@ -88,7 +88,7 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
     // never a bar (unlike manhattan.slang, which bars wide bins). Tiny points
     // draw as a crisp square like manhattan.
     float midX = (sx1 + sx2) * 0.5;
-    float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
+    float scoreYPx = rowScoreToYPx(inst.score, rowTop, rowHeight, u);
     float2 q = quadLocal(vid);
     if (drawsDisc()) {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
@@ -115,10 +115,10 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
     float2 q = quadLocal(vid);
     sx = lerp(sx1, sx2, q.x);
 
-    float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
-    float originY = scoreToY(u.origin,   u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
-    float topPx = min(scoreY, originY) + rowTop;
-    float botPx = max(scoreY, originY) + rowTop;
+    float scoreY  = rowScoreToYPx(inst.score, rowTop, rowHeight, u);
+    float originY = rowScoreToYPx(u.origin,   rowTop, rowHeight, u);
+    float topPx = min(scoreY, originY);
+    float botPx = max(scoreY, originY);
     // The bar grows one device px past each horizontal cut so the fragment's
     // ramp has geometry to land on; the ramp is zero out there, so the extra
     // area costs a discarded fragment and paints nothing. A FULL pixel, not the

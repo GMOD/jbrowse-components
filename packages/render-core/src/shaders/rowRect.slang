@@ -2,11 +2,9 @@
 // spanning [x, x2) in absolute genomic coords, drawn on the row given by
 // `row` and filled with a per-instance packed ABGR color.
 //
-// Two renderers draw exactly this: the MAF alignment renderer (run-merged
-// per-base cells) and the multi-row feature painter / "chromosome painting"
-// (features are already intervals). They shipped as byte-identical copies of
-// one another joined only by a "probably belongs there too" comment; owning the
-// geometry here makes a change to the primitive land in both by construction.
+// The `span` mark draws exactly this for MAF (run-merged per-base cells) and
+// the multi-row feature painter (features are already intervals), and wiggle
+// density composes the same rect over a colour of its own.
 //
 // Row placement comes from uniforms rather than the instance data, so a
 // rowHeight / rowProportion change re-renders without a refetch.
@@ -24,7 +22,6 @@
 //! js-export: drawnRowHeightPx, rowBandOffsetPx
 module rowRect;
 
-import colorPack;
 import hpmath;
 
 public struct RowRectInstance {
@@ -141,13 +138,4 @@ public float4 rowRectClipPos(
 
   return float4(
     lerp(sx1, sx2, local.x), yPxToClipY(yPx, u.canvasHeight), 0.0, 1.0);
-}
-
-public RowRectVsOut rowRectVertex(
-  RowRectInstance inst, uint vid, RowRectUniforms u
-) {
-  RowRectVsOut o;
-  o.position = rowRectClipPos(inst.x, inst.x2, float(inst.row), vid, u);
-  o.color = unpackRGBA(inst.color);
-  return o;
 }
