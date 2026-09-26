@@ -41,6 +41,8 @@ export interface LayoutInputs {
   labelRoomFactor?: number
   // Gene names' own factor; absent, `labelRoomFactor` decimates them too.
   geneLabelRoomFactor?: number
+  // Drops every name but genes' and the pinned, whatever the decimation.
+  geneNamesOnly?: boolean
   maxIsoformsPerGene?: number
   expandedGeneIds?: ReadonlySet<string>
   // Packs one section per facet value, stacked in `facetOrder` with a chip row

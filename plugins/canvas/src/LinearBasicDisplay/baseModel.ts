@@ -395,16 +395,42 @@ export default function baseStateModelFactory(
        */
       get labelDensityPerPx() {
         const ids = this.onScreenFeatureIds
-        if (!ids) {
-          return self.visibleFeatureDensityPerPx
-        }
+        const widthPx = this.onScreenWidthPx
+        return ids && widthPx > 0
+          ? ids.size / widthPx
+          : self.visibleFeatureDensityPerPx
+      },
+      /**
+       * #getter
+       */
+      get onScreenWidthPx() {
         let widthPx = 0
         for (const block of containingLgv(self).coarseDynamicBlocks) {
           widthPx += block.widthPx
         }
-        return widthPx > 0
-          ? ids.size / widthPx
-          : self.visibleFeatureDensityPerPx
+        return widthPx
+      },
+      /**
+       * #getter
+       * On-screen gene features per pixel, which `auto` holds to the same
+       * threshold so gene names outlast a crowd of other features. Undefined
+       * with no gene on screen.
+       */
+      get geneLabelDensityPerPx() {
+        const ids = this.onScreenFeatureIds
+        const widthPx = this.onScreenWidthPx
+        if (!ids || widthPx === 0) {
+          return undefined
+        }
+        const geneIds = new Set<string>()
+        for (const data of self.rpcDataMap.values()) {
+          for (const item of data.flatbushItems) {
+            if (item.gene && ids.has(item.featureId)) {
+              geneIds.add(item.featureId)
+            }
+          }
+        }
+        return geneIds.size > 0 ? geneIds.size / widthPx : undefined
       },
     }))
     .views(self => ({
@@ -505,7 +531,24 @@ export default function baseStateModelFactory(
           this.displayMode !== 'collapsed' &&
           modeCanShowName(mode) &&
           (mode !== 'auto' ||
-            self.labelDensityPerPx <= getConf(self, 'maxLabelFeatureDensity'))
+            self.labelDensityPerPx <= getConf(self, 'maxLabelFeatureDensity') ||
+            this.geneNamesOnly)
+        )
+      },
+
+      /**
+       * #getter
+       * `auto` past the name threshold, with the gene features alone still
+       * under it: gene names stay and every other name goes.
+       */
+      get geneNamesOnly() {
+        const max = getConf(self, 'maxLabelFeatureDensity')
+        const geneDensity = self.geneLabelDensityPerPx
+        return (
+          this.showLabelsMode === 'auto' &&
+          self.labelDensityPerPx > max &&
+          geneDensity !== undefined &&
+          geneDensity <= max
         )
       },
 
@@ -531,6 +574,7 @@ export default function baseStateModelFactory(
           this.showDescriptions &&
           (this.showLabelsMode !== 'auto' ||
             (this.showLabels &&
+              !this.geneNamesOnly &&
               self.labelDensityPerPx <=
                 getConf(self, 'maxDescriptionFeatureDensity')))
         )
@@ -658,6 +702,7 @@ export default function baseStateModelFactory(
           expandedGeneIds: self.expandedGeneIdSet,
           facet: self.facet,
           hiddenGroupKeys: self.hiddenGroupKeys,
+          geneNamesOnly: self.geneNamesOnly,
         }
       },
       /**

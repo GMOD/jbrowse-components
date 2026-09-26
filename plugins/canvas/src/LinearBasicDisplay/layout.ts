@@ -435,6 +435,7 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   labelDecimation: true,
   labelRoomFactor: true,
   geneLabelRoomFactor: true,
+  geneNamesOnly: true,
   maxIsoformsPerGene: true,
   expandedGeneIds: true,
   facet: true,

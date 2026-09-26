@@ -350,6 +350,7 @@ function decideLabelReservations(
     labelDecimation = 'all',
     labelRoomFactor = 1,
     geneLabelRoomFactor = labelRoomFactor,
+    geneNamesOnly = false,
   } = inputs
   const { labelFontPx, rowPadding } = metrics
   const { labelInfoByFeatureId, features, overhangRoom } = prep
@@ -370,6 +371,7 @@ function decideLabelReservations(
     const nameWidthPx = (labelInfo?.widths.name ?? 0) + badgeWidthPx
     const keepName =
       hasDrawableName &&
+      (geom.gene || !geneNamesOnly || pinnedFeatureIds.has(id)) &&
       keepFeatureLabel(
         labelDecimation,
         availableRoomPx,

@@ -1429,6 +1429,44 @@ describe('showLabels auto density gate', () => {
     expect(display.effectiveShowDescriptions).toBe(false)
   })
 
+  it('keeps only gene names where the genes alone are sparse', () => {
+    const { display, view } = setup()
+    const data = featuresOver(200, 0, 50_000)
+    const genes = new Set(['f0', 'f100'])
+    data.flatbushItems = data.flatbushItems.map(item =>
+      genes.has(item.featureId) ? { ...item, gene: true } : item,
+    )
+    for (const { featureId } of data.flatbushItems) {
+      data.floatingLabelsData.set(featureId, {
+        featureId,
+        minX: 0,
+        maxX: 1,
+        topY: 0,
+        featureHeight: 10,
+        nameLabel: { text: featureId, relativeY: 0, textWidth: 20 },
+        descriptionLabel: { text: 'desc', relativeY: 0, textWidth: 20 },
+      })
+    }
+    display.setRpcData(0, data, {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 0,
+      end: 50_000,
+    })
+    zoomAndSettle(view, 62.5)
+
+    expect(display.labelDensityPerPx).toBeGreaterThan(0.2)
+    expect(display.geneNamesOnly).toBe(true)
+    expect(display.showLabels).toBe(true)
+    expect(display.effectiveShowDescriptions).toBe(false)
+    const named = [...display.laidOutDataMap.values()].flatMap(d =>
+      [...d.floatingLabelsData.values()]
+        .filter(l => l.nameLabel)
+        .map(l => l.featureId),
+    )
+    expect(named.sort()).toEqual(['f0', 'f100'])
+  })
+
   it('falls back to the region average with no on-screen set', () => {
     const { display, view } = setup()
     display.setDensityStats(0, { featureCount: 500, regionWidthBp: 50_000 })

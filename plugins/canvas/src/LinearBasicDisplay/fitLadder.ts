@@ -3,7 +3,10 @@ import { maxBottom } from './layoutQueries.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LabelRoomFactors } from './layoutInputs.ts'
 
-// Past ~8x almost nothing but pinned survives, which caps the search.
+// Past ~8x only pinned and isolated names survive, which caps the search. A
+// name with more room than 8x its width never drops, so when those alone
+// overflow, the solve keeps no name, not even the ones that cost no height.
+// No volvox view has needed more than 6.25.
 const FIT_MAX_ROOM_FACTOR = 8
 const FIT_SOLVE_ITERS = 8
 

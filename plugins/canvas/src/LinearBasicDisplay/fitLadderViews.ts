@@ -63,6 +63,7 @@ export interface FitLadderHost {
     | 'pinnedFeatureIds'
     | 'facet'
     | 'hiddenGroupKeys'
+    | 'geneNamesOnly'
   > &
     Required<Pick<LayoutInputs, 'expandedGeneIds'>>
   showLabels: boolean
@@ -235,10 +236,14 @@ export function fitLadderViews(self: FitLadderHost) {
      * most aggressive decimation overflows.
      */
     solveLabelRoomFactors(trackHeight: number) {
+      const tiers = namedLabelTiers(
+        self.rpcDataMap.values(),
+        self.fitMeasureFeatureIds,
+      )
       return solveLabelRoomFactors(
         this.decimatedHeightProbe,
         trackHeight,
-        namedLabelTiers(self.rpcDataMap.values(), self.fitMeasureFeatureIds),
+        self.layoutInputs.geneNamesOnly ? { ...tiers, other: false } : tiers,
       )
     },
     /**
