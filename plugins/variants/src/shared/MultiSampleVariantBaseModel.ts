@@ -394,7 +394,8 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          * Store a payload and the regions it covers. One payload serves every
          * region of a fetch and replaces the last one whole, so this is also
-         * where the previous batch's regions stop having data behind them.
+         * where the previous batch's regions stop having data behind them, and
+         * where a hover indexing the old payload's cells goes.
          */
         setCellData(
           data: CellDataResult | undefined,
@@ -404,6 +405,7 @@ export default function MultiSampleVariantBaseModelF(
           self.cellData = data
           self.cellDataRegionIndices = new Set(displayedRegionIndices)
           self.cellDataBpPerPx = bpPerPx
+          self.clearHoveredFeature()
         },
       }))
       .views(self => ({

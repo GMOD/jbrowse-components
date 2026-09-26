@@ -133,7 +133,7 @@ const VariantMatrixDisplayComponent = observer(
                 position: 'absolute',
                 top: rowsTopOffset,
                 left: 0,
-                width: model.matrixWidth,
+                width: model.canvasWidthPx,
                 height: model.availableHeight,
               }}
             >

@@ -470,7 +470,9 @@ export function stateModelFactory(
          * this, so columns, lines and clicks stay pixel-aligned.
          */
         get columnGeometry() {
-          const n = self.cellData?.simplifiedFeatures.length ?? 0
+          const { cellData } = self
+          const n =
+            cellData?.mode === 'matrix' ? cellData.simplifiedFeatures.length : 0
           return {
             n,
             columnWidth: n ? self.matrixWidth / n : 0,
@@ -490,10 +492,11 @@ export function stateModelFactory(
          * in screen order.
          */
         get connectorCoordsByColumn(): (ConnectorCoord | undefined)[] {
-          const features = self.cellData?.simplifiedFeatures
-          if (!features) {
+          const { cellData } = self
+          if (cellData?.mode !== 'matrix') {
             return []
           }
+          const features = cellData.simplifiedFeatures
           const locusX = locusViewportXFor(self)
           const { columnWidth, left } = self.columnGeometry
           return features.map(({ data }, i) => {

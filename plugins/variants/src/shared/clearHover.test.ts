@@ -69,3 +69,11 @@ test('setting a hover does not clear it', () => {
   const { display } = hovering()
   expect(display.hoveredFeature).toEqual(HOVER)
 })
+
+// a hovered cell is an index into the payload, so a refetch landing under a
+// still pointer would box whatever cell the new payload keeps there
+test('a new payload clears the hover', () => {
+  const { display } = hovering()
+  display.setCellData(undefined)
+  expect(display.hoveredFeature).toBeUndefined()
+})

@@ -62,6 +62,20 @@ function loadedDisplay({
   return { display, view }
 }
 
+// between a switch to columns and the columns fetch landing, the held payload
+// is the genomic one, whose variants no column was laid out for
+test('a genomic payload lays out no columns and draws no connectors', () => {
+  const { display } = loadedDisplay()
+  display.setCellData({
+    ...matrixCellData([0, 1000]),
+    mode: 'regular',
+    perRegionCellData: {},
+  } as unknown as CellDataResult)
+
+  expect(display.columnGeometry.n).toBe(0)
+  expect(display.connectorLineCoords).toEqual([])
+})
+
 test('columns are evenly pitched across the content width', () => {
   const { display } = loadedDisplay()
 
