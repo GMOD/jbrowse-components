@@ -90,6 +90,11 @@ const ShapePaths = observer(function ShapePaths({
       pointerEvents="none"
       fillOpacity={only === 'all' ? shapeAlpha : undefined}
     >
+      {only === 'highlighted' ? (
+        // the disc the canvas draws this display in, the group's extent on
+        // screen with nothing highlighted
+        <circle r={radiusPx} fill="none" />
+      ) : null}
       {drawn.map(shape => {
         const state = stateOf(shape)
         const dimmed =

@@ -217,3 +217,16 @@ test('the export draws every ribbon and dims those outside the highlighted set',
     null,
   ])
 })
+
+// a capture waits for the display's frame to be visible, and with nothing
+// highlighted the canvas holds every shape, so the group's extent is its disc
+test('on screen the renderer group spans its disc with nothing highlighted', () => {
+  const { container } = render(
+    <svg>
+      <ChordSyntenyDisplay display={ribbonModel('ready')} />
+    </svg>,
+  )
+  const g = container.querySelector('[data-testid="syntenyRibbonRenderer"]')!
+  expect(g.querySelector('circle')?.getAttribute('r')).toBe('1000')
+  expect(g.querySelectorAll('path')).toHaveLength(0)
+})
