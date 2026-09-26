@@ -11,28 +11,34 @@ const STROKE_SLOTS = {
 } as const
 
 // v4 spelt the chord colours `strokeColor*`, on the display or inside its
-// `renderer`, and session tracks in share links still carry both. The display's
-// own spelling is declared first, so it wins over the one under `renderer`.
-const retired = {
-  ...Object.fromEntries(
-    Object.entries(STROKE_SLOTS).map(([old, name]) => [
-      old,
-      (value: unknown) => ({ [name]: value }),
-    ]),
-  ),
-  renderer: (value: unknown) =>
-    value && typeof value === 'object'
-      ? Object.fromEntries(
-          Object.entries(STROKE_SLOTS)
-            .filter(
-              ([old]) => (value as Record<string, unknown>)[old] !== undefined,
-            )
-            .map(([old, name]) => [
-              name,
-              (value as Record<string, unknown>)[old],
-            ]),
-        )
-      : {},
+// `renderer`, and session tracks in share links still carry both.
+const retired = Object.fromEntries(
+  Object.entries(STROKE_SLOTS).map(([old, name]) => [
+    old,
+    (value: unknown) => ({ [name]: value }),
+  ]),
+)
+
+/**
+ * The same names inside a `renderer`, which is not declared retired: the track
+ * config's legacy-renderer lift hoists a renderer's props onto the entry, and
+ * consuming `renderer` before that lift would drop every renderer prop that is
+ * not a colour. Read here instead, where that lift has already run, so an entry
+ * created straight from a v4 snapshot still finds them. `retired` runs first,
+ * so the display's own spelling wins.
+ */
+function liftRendererStrokeSlots(snap: Record<string, unknown>) {
+  const { renderer, ...rest } = snap
+  if (!renderer || typeof renderer !== 'object') {
+    return 'renderer' in snap ? rest : snap
+  }
+  const inner = renderer as Record<string, unknown>
+  for (const [old, name] of Object.entries(STROKE_SLOTS)) {
+    if (rest[name] === undefined && inner[old] !== undefined) {
+      rest[name] = inner[old]
+    }
+  }
+  return rest
 }
 
 /**
@@ -113,6 +119,7 @@ function configSchemaF(_pluginManager: PluginManager) {
       explicitIdentifier: 'displayId',
       explicitlyTyped: true,
       retired,
+      preProcessSnapshot: liftRendererStrokeSlots,
     },
   )
 }

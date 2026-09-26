@@ -1,3 +1,5 @@
+import { applyRetiredSpellings } from '@jbrowse/core/configuration'
+
 import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
 import { legacyShowLabelsToMode } from './showLabelsMode.ts'
 
@@ -39,25 +41,33 @@ function normalizeDisplayMode(value: unknown) {
     : value
 }
 
-// New name wins if both are present.
-function renameLegacyColorKeys(
-  obj: Record<string, unknown>,
-): Record<string, unknown> {
-  const { color1, color2, color3, outline, ...result } = obj
-  const setIfAbsent = (key: string, legacyVal: unknown) => {
-    if (result[key] === undefined && legacyVal !== undefined) {
-      result[key] = legacyVal
-    }
-  }
-  setIfAbsent('color', color1)
-  setIfAbsent('connectorColor', color2)
-  setIfAbsent('utrColor', color3)
-  setIfAbsent('outlineColor', outline)
-  return result
+/**
+ * The v4 names whose value moves to one current slot unchanged. Declared rather
+ * than folded into the pass below so they are lifted with the retired display
+ * types, before the `displayDefaults` shorthand merges into the entry: a
+ * `color1` the entry spells has to beat a `color` the shorthand carries, and it
+ * cannot while it is still spelt `color1` when the two merge.
+ */
+export const basicRetired = {
+  color1: (color: unknown) => ({ color }),
+  color2: (connectorColor: unknown) => ({ connectorColor }),
+  color3: (utrColor: unknown) => ({ utrColor }),
+  outline: (outlineColor: unknown) => ({ outlineColor }),
+  // v4's grow toggle, whose `false` was the default and becomes nothing
+  autoHeight: (value: unknown) => (value ? { heightMode: 'grow' } : {}),
+  // a second grow ceiling, dead at its default; `growMaxHeight` is the one
+  maxHeight: () => ({}),
 }
 
 export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
-  const result = renameLegacyColorKeys(liftRendererProps(snap))
+  // `basicRetired` again, because the renderer lift above uncovers the same v4
+  // names one level down: `renderer: { color1 }` is a `color1` no earlier pass
+  // could see.
+  const result = applyRetiredSpellings(
+    'LinearBasicDisplay',
+    basicRetired,
+    liftRendererProps(snap),
+  )
   // A unified-enum value already present wins over a stale `showDescriptions`
   // beside it, so a re-saved config is not rewritten.
   const legacyShowLabels =
@@ -80,14 +90,5 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   if (result.displayMode !== undefined) {
     result.displayMode = normalizeDisplayMode(result.displayMode)
   }
-  if (result.autoHeight !== undefined) {
-    if (result.autoHeight && result.heightMode === undefined) {
-      result.heightMode = 'grow'
-    }
-    delete result.autoHeight
-  }
-  // `maxHeight` was a second grow ceiling, dead at its default;
-  // `growMaxHeight` is the one grow clamp.
-  delete result.maxHeight
   return result
 }

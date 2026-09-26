@@ -3,7 +3,10 @@ export {
   ConfigurationSchema,
   hydrateTrackConfig,
 } from './configurationSchema.ts'
-export type { ConfigurationSchemaDefinition } from './configurationSchema.ts'
+export type {
+  ConfigurationSchemaDefinition,
+  RetiredSpelling,
+} from './configurationSchema.ts'
 export {
   ConfigurationSchemaUnion,
   arraySlotUnion,
@@ -63,6 +66,7 @@ export { applyConfSettings, getConf, setConf } from './getConf.ts'
 export type { ConfSettingsReport } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'
 export {
+  applyRetiredSpellings,
   liftRetiredSpellings,
   preProcessConfigSnapshot,
   preProcessSnapshotWith,

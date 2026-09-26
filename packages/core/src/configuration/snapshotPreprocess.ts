@@ -3,6 +3,7 @@ import { slotWriteRefusal } from './configurationSlot.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { isConstantEntry, isSlotDefinitionEntry } from './schemaTypes.ts'
 
+import type { RetiredSpelling } from './configurationSchema.ts'
 import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
@@ -122,15 +123,29 @@ export function liftRetiredSpellings(
   snapshot: Record<string, unknown>,
 ) {
   const { retired } = schema.options
-  if (!retired || !isOwnSnapshot(schema, snapshot)) {
-    return snapshot
-  }
+  return retired && isOwnSnapshot(schema, snapshot)
+    ? applyRetiredSpellings(schema.name, retired, snapshot)
+    : snapshot
+}
+
+/**
+ * `liftRetiredSpellings` over a map directly, for a schema whose own
+ * `preProcessSnapshot` uncovers a retired name the pass above could not see —
+ * one that arrives out of a legacy sub-config rather than off the entry.
+ * Applying the same map twice costs nothing, since a lift deletes the name it
+ * reads.
+ */
+export function applyRetiredSpellings(
+  name: string,
+  retired: Record<string, RetiredSpelling>,
+  snapshot: Record<string, unknown>,
+) {
   const present = Object.keys(retired).filter(key => key in snapshot)
   const written = present.filter(key => snapshot[key] !== undefined)
   const gone = written.filter(key => typeof retired[key] === 'string')
   if (gone.length > 0) {
     throw new Error(
-      `${schema.name}: ${gone
+      `${name}: ${gone
         .map(key => `\`${key}\` is ${retired[key] as string}`)
         .join('; ')}`,
     )

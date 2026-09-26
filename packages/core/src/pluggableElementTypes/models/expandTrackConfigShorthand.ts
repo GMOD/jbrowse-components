@@ -32,7 +32,10 @@ function verdictOf(
     : meta?.definition[key]
       ? { [key]: value }
       : undefined
-  if (!members) {
+  // A lift answering nothing has not placed the value — a `colorBy` naming a
+  // scheme this display never had, a `renderer` holding none of the props it
+  // retired. That is the `unknownKeys` report, not a silent write of nothing.
+  if (!members || Object.keys(members).length === 0) {
     return undefined
   }
   const refusal = Object.entries(members)
@@ -53,6 +56,9 @@ export function collectDisplayOverrides(
   displaySettings: Record<string, unknown>,
   displaySchemas: ReadonlyMap<string, AnyConfigurationSchemaType>,
 ) {
+  // Seeded in the track type's own display order, which `mergeOverridesIntoDisplays`
+  // appends a created entry in: a track's first display is the one it opens
+  // with, and a shorthand setting only one display takes must not promote it.
   const overrides = new Map<string, Record<string, unknown>>()
   const unknownKeys: string[] = []
   const refused: { key: string; reasons: string[] }[] = []
@@ -74,7 +80,15 @@ export function collectDisplayOverrides(
       overrides.set(name, { ...overrides.get(name), ...members })
     }
   }
-  return { overrides, unknownKeys, refused }
+  return {
+    overrides: new Map(
+      [...displaySchemas.keys()]
+        .filter(name => overrides.has(name))
+        .map(name => [name, overrides.get(name)!]),
+    ),
+    unknownKeys,
+    refused,
+  }
 }
 
 /**

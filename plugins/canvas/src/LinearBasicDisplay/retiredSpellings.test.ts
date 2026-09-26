@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { preprocessTrackConfigSnapshot } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
@@ -41,4 +42,38 @@ test('a retired colour key becomes the slot that replaced it', () => {
     .getDisplayType('LinearBasicDisplay')
     .configSchema.create({ ...base, color1: 'red' })
   expect(readConfObject(conf, ['color', 'value'])).toBe('red')
+})
+
+// A v4 name the entry spells is the entry's own setting, so it has to beat a
+// current name the shorthand carries — which it can do only by already being
+// the current name when the two merge. `basicRetired` is declared for that
+// reason, and these are the inputs that say so.
+function entryAgainstShorthand(
+  entry: Record<string, unknown>,
+  displayDefaults: Record<string, unknown>,
+) {
+  const out = preprocessTrackConfigSnapshot(pluginManager(), {
+    type: 'FeatureTrack',
+    trackId: 't',
+    name: 't',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'BedTabixAdapter', uri: 'x.bed.gz' },
+    displays: [{ ...base, displayId: 't-LinearBasicDisplay', ...entry }],
+    displayDefaults,
+  })
+  return (out.displays as Record<string, unknown>[]).find(
+    d => d.type === 'LinearBasicDisplay',
+  )
+}
+
+test('a retired colour on the entry beats the shorthand’s current one', () => {
+  expect(
+    entryAgainstShorthand({ color1: 'red' }, { color: 'blue' }),
+  ).toMatchObject({ color: 'red' })
+})
+
+test('a retired autoHeight on the entry beats the shorthand’s heightMode', () => {
+  expect(
+    entryAgainstShorthand({ autoHeight: true }, { heightMode: 'fixed' }),
+  ).toMatchObject({ heightMode: 'grow' })
 })

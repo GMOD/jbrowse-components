@@ -12,7 +12,10 @@ import {
   MAX_DESCRIPTION_FEATURE_DENSITY,
   MAX_LABEL_FEATURE_DENSITY,
 } from '../RenderFeatureDataRPC/zoomThresholds.ts'
-import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
+import {
+  basicRetired,
+  migrateBasicConfigSnapshot,
+} from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -161,6 +164,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      retired: basicRetired,
       preProcessSnapshot: snap => migrateBasicConfigSnapshot(snap),
     },
   )
