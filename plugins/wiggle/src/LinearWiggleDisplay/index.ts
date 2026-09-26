@@ -12,11 +12,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // source. A static import puts that in the always-loaded chunk (and on Canvas2D
 // users, who never compile it). The dynamic import is the chunk boundary.
 //
-// One wrapper, exported: gccontent registers its own displays against this same
-// body (see plugins/gccontent/src/LinearGCContentDisplay/index.ts), and a second
-// `lazyWithPreload()` over the same import would be a distinct component type for React —
-// remounting the subtree rather than reusing it if a display ever swapped
-// between them.
+// One wrapper, exported: a plugin registering a display against this same body
+// takes it, since a second `lazyWithPreload()` over the same import would be a
+// distinct component type for React — remounting the subtree rather than
+// reusing it if a display ever swapped between them.
 export const ReactComponent = lazyWithPreload(
   () => import('./components/WiggleComponent.tsx'),
 )
@@ -37,9 +36,14 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
           import('./model.ts').then(f =>
             f.default(pluginManager, configSchema),
           ),
-        // Both quantitative track types draw the same picture; they differ in
-        // adapter shorthand and add-track workflow.
-        trackType: ['QuantitativeTrack', 'MultiQuantitativeTrack'],
+        // The quantitative track types draw the same picture; they differ in
+        // adapter shorthand, add-track workflow and, for GC content, the
+        // adapter that computes the signal.
+        trackType: [
+          'QuantitativeTrack',
+          'MultiQuantitativeTrack',
+          'GCContentTrack',
+        ],
         viewType: 'LinearGenomeView',
         ReactComponent,
         retiredTypes,

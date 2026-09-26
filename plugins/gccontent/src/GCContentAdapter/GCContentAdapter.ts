@@ -23,6 +23,17 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
   }
 
   /**
+   * GC content is a fraction of the bases in a window, so [0, 1] is the
+   * quantity's own range and holds the axis across loci. Skew is left to
+   * autoscale: its range is [-1, 1], but real skew sits within roughly ±0.3,
+   * and a [-1, 1] axis would flatten the sign flip at the replication origin
+   * the track is read for.
+   */
+  public async getValueDomain(): Promise<[number, number] | undefined> {
+    return this.getConf('gcMode') === 'content' ? [0, 1] : undefined
+  }
+
+  /**
    * The scored bins as the typed arrays the wiggle displays consume, written
    * straight out of the sliding window. `getFeatures` boxes these on demand;
    * the render path never asks it to.

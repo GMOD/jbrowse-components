@@ -1,0 +1,43 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "GCContentTrack",
+      "trackId": "volvox_gc_500",
+      "name": "GC content, 500 bp windows",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "GCContentAdapter",
+        "windowSize": 500,
+        "windowDelta": 500
+      }
+    },
+    {
+      "type": "GCContentTrack",
+      "trackId": "volvox_gc_skew_500",
+      "name": "GC skew, 500 bp windows",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "GCContentAdapter",
+        "gcMode": "skew",
+        "windowSize": 500,
+        "windowDelta": 500
+      }
+    }
+  ]
+}

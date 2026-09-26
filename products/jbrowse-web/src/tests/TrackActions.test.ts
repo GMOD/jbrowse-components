@@ -17,7 +17,7 @@ beforeEach(() => {
 const getView = async () => {
   const { view } = await getTestSession()
   await getEnv(view)
-    .pluginManager.getDisplayType('LinearGCContentDisplay')
+    .pluginManager.getDisplayType('LinearWiggleDisplay')
     .loadStateModel()
   return view
 }

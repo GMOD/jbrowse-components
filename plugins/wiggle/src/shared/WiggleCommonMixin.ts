@@ -232,6 +232,20 @@ export function WiggleCommonMixin() {
       get domain() {
         return self.autoscaledDomain
       },
+      /**
+       * #getter
+       * The bounds the adapter declares its values lie in, where it declares
+       * any (`getValueDomain`): a GC content track's [0, 1], so its axis
+       * reads alike at every locus. Config bounds still win.
+       */
+      get defaultScoreDomain(): [number | undefined, number | undefined] {
+        for (const data of self.rpcDataMap.values()) {
+          if (data.valueDomain) {
+            return data.valueDomain
+          }
+        }
+        return [undefined, undefined]
+      },
     }))
     .actions(self => ({
       /**

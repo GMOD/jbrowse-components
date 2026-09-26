@@ -63,6 +63,7 @@ describe('multi-source adapter (batched)', () => {
       .mockResolvedValue([{ name: 'a' }, { name: 'b' }])
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => ({ minBpPerPx: 2, maxBpPerPx: 8 }),
+      getValueDomain: async () => undefined,
       getMultiSourceFeatureArraysMulti,
       getSources,
     } as never)
@@ -88,6 +89,7 @@ describe('multi-source adapter (batched)', () => {
   it('gives a source absent from the payload an empty entry in every region', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
       getMultiSourceFeatureArraysMulti: jest
         .fn()
         .mockResolvedValue([{ source: 'a', raws: [raw([1]), raw([2])] }]),
@@ -109,6 +111,7 @@ describe('multi-source adapter (batched)', () => {
   it('ships every score of a signed source, unpartitioned', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
       getMultiSourceFeatureArraysMulti: jest
         .fn()
         .mockResolvedValue([{ source: 'a', raws: [raw([3, -2]), raw([1])] }]),
@@ -141,6 +144,7 @@ describe('plain feature adapter fallback', () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getFeaturesArray,
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
     } as never)
 
     const results = await run({})
@@ -172,6 +176,7 @@ describe('plain feature adapter fallback', () => {
       })
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
       getFeaturesArray: jest.fn().mockResolvedValue([anon(0, 5), anon(10, 6)]),
     } as never)
 
@@ -197,6 +202,7 @@ describe('plain feature adapter fallback', () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getFeaturesArray,
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
     } as never)
 
     const seen: unknown[] = []
@@ -228,6 +234,7 @@ describe('plain feature adapter fallback', () => {
   it('discovers numeric-looking sources in file order, not numeric order', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
       getFeaturesArray: jest
         .fn()
         .mockResolvedValue([
@@ -246,6 +253,7 @@ describe('plain feature adapter fallback', () => {
   it('handles a source named after an Object.prototype member', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
       getFeaturesArray: jest
         .fn()
         .mockResolvedValue([feature('constructor', 0, 7)]),
@@ -260,6 +268,7 @@ describe('plain feature adapter fallback', () => {
   it("keeps the caller's source order ahead of newly-discovered ones", async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
       getFeaturesArray: jest
         .fn()
         .mockResolvedValue([feature('z', 0, 1), feature('m', 10, 2)]),
@@ -283,6 +292,7 @@ describe('single-source typed-array adapter', () => {
     const getFeaturesArray = jest.fn()
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
       getZoomRange: async () => undefined,
+      getValueDomain: async () => undefined,
       getFeatureArraysMulti,
       getFeaturesArray,
     } as never)

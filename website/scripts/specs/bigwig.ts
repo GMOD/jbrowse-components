@@ -132,16 +132,10 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           adapter: {
             type: 'GCContentAdapter',
             sequenceAdapter: HPYLORI_26695_SEQ_ADAPTER,
+            gcMode: 'content',
+            windowSize: 2000,
+            windowDelta: 2000,
           },
-          displays: [
-            {
-              type: 'LinearGCContentTrackDisplay',
-              displayId: 'gc_content_hpylori-display',
-              gcMode: 'content',
-              windowSize: 2000,
-              windowDelta: 2000,
-            },
-          ],
         },
         {
           type: 'GCContentTrack',
@@ -151,14 +145,14 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           adapter: {
             type: 'GCContentAdapter',
             sequenceAdapter: HPYLORI_26695_SEQ_ADAPTER,
+            gcMode: 'skew',
+            windowSize: 20000,
+            windowDelta: 2000,
           },
           displays: [
             {
-              type: 'LinearGCContentTrackDisplay',
-              displayId: 'gc_skew_hpylori-display',
-              gcMode: 'skew',
-              windowSize: 20000,
-              windowDelta: 2000,
+              type: 'LinearWiggleDisplay',
+              displayId: 'gc_skew_hpylori-LinearWiggleDisplay',
               // taller so the two-arm skew and its zero-crossings at the origin
               // and terminus read clearly across the whole genome
               height: 160,

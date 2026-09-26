@@ -33,7 +33,7 @@ past `LinearGenomeView`:
 |  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmultirowfeaturedisplay) | LinearGenomeView |
 |  | [](/docs/config/linearscoredisplay) | LinearGenomeView |
-| [](/docs/config/gccontenttrack) | [](/docs/config/lineargccontentdisplay) | LinearGenomeView |
+| [](/docs/config/gccontenttrack) | [](/docs/config/linearwiggledisplay) | LinearGenomeView |
 | [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) | LinearGenomeView |
 | [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) | LinearGenomeView |
 | [](/docs/config/ldtrack) | [](/docs/config/ldtrackdisplay) | LinearGenomeView |
@@ -42,8 +42,7 @@ past `LinearGenomeView`:
 |  | [](/docs/config/linearwiggledisplay) | LinearGenomeView |
 | [](/docs/config/quantitativetrack) | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearwiggledisplay) | LinearGenomeView |
-| [](/docs/config/referencesequencetrack) | [](/docs/config/lineargccontentdisplay) | LinearGenomeView |
-|  | [](/docs/config/linearreferencesequencedisplay) | LinearGenomeView |
+| [](/docs/config/referencesequencetrack) | [](/docs/config/linearreferencesequencedisplay) | LinearGenomeView |
 | [](/docs/config/syntenytrack) | [](/docs/config/chordsyntenydisplay) | CircularView |
 |  | [](/docs/config/dotplotdisplay) | DotplotView |
 |  | [](/docs/config/lgvsyntenydisplay) | LinearGenomeView |

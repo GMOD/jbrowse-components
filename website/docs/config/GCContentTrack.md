@@ -8,11 +8,6 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 ## Example usage
 
-A standalone `GCContentTrack` (use this instead of the
-`ReferenceSequenceTrack` display when you want GC as its own track). The
-sequence comes from the assembly named in `assemblyNames`, so the adapter
-needs nothing but its type:
-
 ```js
 {
   type: 'GCContentTrack',
@@ -23,30 +18,35 @@ needs nothing but its type:
 }
 ```
 
-GC-skew mode with a small, overlapping sliding window for a smoother signal
-(`windowDelta` smaller than `windowSize` means windows overlap). The
-`displayDefaults` object shorthand applies settings to whichever display uses
-them — equivalent to writing a full `displays: [{ type, displayId, ... }]`
-array. See [configuring displays](/docs/config_guides/tracks#configuring-displays):
+GC skew over a small, overlapping sliding window for a smoother signal
+(`windowDelta` under `windowSize` overlaps the windows):
 
 ```js
 {
   type: 'GCContentTrack',
-  trackId: 'gc',
+  trackId: 'gc_skew',
   name: 'GC skew',
   assemblyNames: ['hg38'],
-  adapter: { type: 'GCContentAdapter' },
-  displayDefaults: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
+  adapter: {
+    type: 'GCContentAdapter',
+    gcMode: 'skew',
+    windowSize: 50,
+    windowDelta: 10,
+  },
 }
 ```
 
 _See the **Config slots** section below for all available configuration fields._
 
-used for having a gc content track outside of the "reference sequence display"
+GC content, or GC skew, of the assembly's sequence, computed as the view
+moves by a `GCContentAdapter` and drawn by the wiggle display. The adapter
+holds the window, the step and the mode; the track menu's GC parameters and
+GC skew write them there. The reference sequence track's menu has "Add GC
+content track", which makes one.
 
 ## Related links
 
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay) ([state model](../../models/lineargccontentdisplay))
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay) ([state model](../../models/linearwiggledisplay))
 - **Adapter:** [GCContentAdapter](../gccontentadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
@@ -57,7 +57,8 @@ These slots are top-level fields of the track config, alongside `trackId` and `n
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span class="slot-group">Inherited from [BaseTrack](../basetrack)</span> | <span class="slot-group-count">13 slots</span> |
+| <span id="slot-displays">**displays**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.array( types.union( ...pluginManager .getDisplayElements(…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.array(&#10;&#160;&#160;types.union(&#10;&#160;&#160;&#160;&#160;...pluginManager&#10;&#160;&#160;&#160;&#160;&#160;&#160;.getDisplayElements()&#10;&#160;&#160;&#160;&#160;&#160;&#160;.map(d =&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;d.configSchema === linearWiggleDisplayConfigSchema&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;? gcWiggleConfigSchema&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;: d.configSchema,&#10;&#160;&#160;&#160;&#160;&#160;&#160;),&#10;&#160;&#160;),&#10;)</code></pre></dialog></span> | As on [every track](../basetrack#slot-displays), except that a `LinearWiggleDisplay` entry defaults to `summaryScoreMode: 'avg'`. |
+| <span class="slot-group">Inherited from [BaseTrack](../basetrack)</span> | <span class="slot-group-count">12 slots</span> |
 | <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | descriptive name of the track, falls back to the trackId when unset |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>['assemblyName']</code> | name of the assembly (or assemblies) track belongs to |
 | <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the track |
@@ -68,6 +69,5 @@ These slots are top-level fields of the track config, alongside `trackId` and `n
 | <span id="slot-textsearchingindexingfeaturetypestoexclude">**textSearching.indexingFeatureTypesToExclude**</span><br>`stringArray` = <code>['CDS', 'exon']</code> | list of feature types to exclude in text search index |
 | <span id="slot-textsearchingindexingfeaturetypestoinclude">**textSearching.indexingFeatureTypesToInclude**</span><br>`stringArray` = <code>[]</code> | The only feature types to index, dropping every other type the file carries. Empty (the default) means no allow list, i.e. index everything `indexingFeatureTypesToExclude` does not name.<br><br>Use this instead of the exclude list when the file draws from a vocabulary you do not control. An NCBI RefSeq GFF3 uses 115 feature types, 80 of them leaf records with nothing to search for — a `match` is labelled with a bare UUID, a `cDNA_match` with an MD5, every `biological_region` with the literal string "biological region" — so a deny list leaks whichever type is added next, while the allow list (gene, pseudogene, and the transcript types) does not grow. Both may be set: this one admits, the exclude list then narrows.<br><br>GFF3 only; the GTF and VCF indexers do not filter by type. |
 | <span id="slot-textsearchingtextsearchadapter">**textSearching.textSearchAdapter**</span><br><code>optionalTextSearchAdapter</code> | a per-track name search index, normally a `TrixTextSearchAdapter` over what `jbrowse text-index --tracks` built; `'genes.ix'` is enough, searching this track's assemblies. Without one, this track's features are only findable through an assembly-wide search adapter. |
-| <span id="slot-displays">**displays**</span><br><code>types.array(pluginManager.pluggableConfigSchemaType('display'))</code> | An **array** of full display configs, e.g. `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`. Each entry names a display `type`; use this when you need exact control — your own `displayId`, different settings for two displays, or choosing which display is the default.<br><br>For the common case, prefer the `displayDefaults` shorthand instead — an object of appearance settings (e.g. `displayDefaults: { color: 'green' }`) that JBrowse routes to whichever display uses each setting, so you don't have to name the display or write the array.<br><br>See the [track config guide](/docs/config_guides/tracks/#configuring-displays). |
 | <span id="slot-formatdetails">**formatDetails**</span><br>[FormatDetails](../formatdetails) | jexl callbacks that add, rewrite or hide fields in this track's feature-details panel. The same schema exists session-wide as `configuration.formatDetails`. |
 | <span id="slot-formatabout">**formatAbout**</span><br>[FormatAbout](../formatabout) | jexl callbacks that add, rewrite or hide fields in this track's About dialog. The same schema exists session-wide as `configuration.formatAbout`. |

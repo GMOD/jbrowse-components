@@ -17,7 +17,7 @@ PreferencesConfigSchema
 RpcOptions
 TabixIndex
 
-# display/view models with no #example (12)
+# display/view models with no #example (11)
 # fix: add an #example to the type’s #stateModel JSDoc
 BaseChordDisplay
 BaseDisplay
@@ -25,7 +25,6 @@ BaseViewModel
 DotplotDisplay
 LDTrackDisplay
 LinearCanvasBaseDisplay
-LinearGCContentDisplay
 LinearManhattanDisplay
 LinearMarkDisplay
 LinearMultiRowFeatureDisplay
@@ -45,8 +44,14 @@ TimeTraveller
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (0)
+# member tags in a file that documents no #stateModel (6)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
+plugins/gccontent/src/GCContentTrack/index.ts gcAdapter
+plugins/gccontent/src/GCContentTrack/index.ts gcMode
+plugins/gccontent/src/GCContentTrack/index.ts setGCContentParams
+plugins/gccontent/src/GCContentTrack/index.ts setGCMode
+plugins/gccontent/src/GCContentTrack/index.ts windowDelta
+plugins/gccontent/src/GCContentTrack/index.ts windowSize
 
 # baseConfiguration references that resolved to no documented #config (0)
 # fix: document the base with #config, or accept that the page shows raw code

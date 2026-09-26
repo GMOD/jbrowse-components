@@ -10,8 +10,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #fileFormat quantitative | GC content | Computed from the assembly sequence, no data file
  * #category adapter
  * Computes GC content (or GC skew) from an assembly's sequence at render time,
- * so there is no data file to prepare, and nothing to configure: the sequence
- * comes from the assembly the track is displayed against.
+ * so there is no data file to prepare: the sequence comes from the assembly
+ * the track is displayed against. The window, the step and the mode are
+ * this adapter's, which the `GCContentTrack` menu's GC parameters and GC skew
+ * write.
  *
  * #example
  * ```js
@@ -44,7 +46,6 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       windowSize: {
         type: 'number',
         defaultValue: 100,
-        advanced: true,
       },
       /**
        * #slot
@@ -55,7 +56,6 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       windowDelta: {
         type: 'number',
         defaultValue: 100,
-        advanced: true,
       },
       /**
        * #slot

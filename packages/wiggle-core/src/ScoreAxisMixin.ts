@@ -71,7 +71,8 @@ export function ScoreAxisMixin() {
        * be read across loci.
        *
        * A hook rather than a config default because the answer can depend on
-       * display state — GC's does, on `gcMode` — and rather than each display
+       * the data — the wiggle display reads the bounds its adapter declares,
+       * a GC content track's [0, 1] — and rather than each display
        * re-resolving the sentinels, which is the one thing that must not be
        * duplicated: config bounds still win, precisely because they are checked
        * before this is consulted.

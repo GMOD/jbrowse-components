@@ -751,8 +751,9 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
 `@jbrowse/plugin-wiggle` — the wiggle displays' own model pieces:
 
 - `linearWiggleDisplayConfigSchema` / `linearWiggleDisplayModelFactory` — the full
-  LinearWiggleDisplay config + model. Composed **wholesale** by GC-content's
-  `LinearGCContentDisplay`. The config schema comes off the plugin barrel; the
+  LinearWiggleDisplay config + model, for a plugin composing it **wholesale**;
+  GC content draws through the display itself, over its own adapter. The
+  config schema comes off the plugin barrel; the
   model factory does **not** and cannot — it is
   `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel`, because the display
   registers a state model loader and a value edge from the eager barrel would

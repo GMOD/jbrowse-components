@@ -6295,150 +6295,12 @@
       ],
       "properties": {
         "type": {
-          "enum": ["LinearWiggleDisplay", "MultiLinearWiggleDisplay"]
-        },
-        "displayId": {
-          "type": "string"
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearGCContentDisplaySlots": {
-      "type": "object",
-      "properties": {
-        "mark": {
-          "description": "bar, point, line or heatmap.",
-          "enum": ["bar", "point", "line", "heatmap"],
-          "default": "bar"
-        },
-        "interpolate": {
-          "description": "step or linear, for a line.",
-          "enum": ["step", "linear"],
-          "default": "step"
-        },
-        "rows": {
-          "$ref": "#/$defs/Rows"
-        },
-        "rowColor": {
-          "$ref": "#/$defs/RowColor"
-        },
-        "height": {
-          "description": "default height for the track.",
-          "type": "number",
-          "default": 100
-        },
-        "color": {
-          "$ref": "#/$defs/WiggleColor"
-        },
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default `score` is the field every adapter serves — including the value a BED adapter's `scoreColumn` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/PlainString",
-          "default": "score"
-        },
-        "resolution": {
-          "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
-          "type": "number",
-          "default": 1
-        },
-        "origin": {
-          "description": "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin.",
-          "type": "number",
-          "default": 0
-        },
-        "size": {
-          "description": "Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size.",
-          "type": "number",
-          "default": 2
-        },
-        "lineWidth": {
-          "description": "Line thickness in px for line rendering. Defaults to 1.",
-          "type": "number",
-          "default": 1
-        },
-        "maxGapMultiple": {
-          "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 keeps one connected line.",
-          "type": "number",
-          "default": 0
-        },
-        "scales": {
-          "$ref": "#/$defs/Scales2"
-        },
-        "showLegend": {
-          "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
-          "type": "boolean",
-          "default": true
-        },
-        "summaryScoreMode": {
-          "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces the above-origin colour on every bin (buildSourceRenderData skips the two-sided split for whiskers) and hides negative GC-skew as if it were positive.",
-          "enum": ["max", "min", "avg", "whiskers"],
-          "default": "avg"
-        },
-        "showTree": {
-          "description": "Show the subtrack clustering tree in the sidebar.",
-          "type": "boolean",
-          "default": true
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
-        },
-        "showRowLabels": {
-          "description": "Name each subtrack row down the left edge.",
-          "type": "boolean",
-          "default": true
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
-        },
-        "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "type": "boolean",
-          "default": false
-        },
-        "windowSize": {
-          "type": "number",
-          "default": 100
-        },
-        "windowDelta": {
-          "type": "number",
-          "default": 100
-        },
-        "gcMode": {
-          "enum": ["content", "skew"],
-          "default": "content"
-        },
-        "displayCrossHatches": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "minimalTicks": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "defaultRendering": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        }
-      }
-    },
-    "LinearGCContentDisplay": {
-      "title": "LinearGCContentDisplay",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearGCContentDisplaySlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "enum": ["LinearGCContentDisplay", "LinearGCContentTrackDisplay"]
+          "enum": [
+            "LinearWiggleDisplay",
+            "MultiLinearWiggleDisplay",
+            "LinearGCContentDisplay",
+            "LinearGCContentTrackDisplay"
+          ]
         },
         "displayId": {
           "type": "string"
@@ -9020,14 +8882,7 @@
           "type": "object",
           "properties": {
             "height": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/height"
-                },
-                {
-                  "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/height"
-                }
-              ]
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/height"
             },
             "showForward": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/showForward"
@@ -9043,81 +8898,6 @@
             },
             "forceLoad": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/forceLoad"
-            },
-            "mark": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/mark"
-            },
-            "interpolate": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/interpolate"
-            },
-            "rows": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rows"
-            },
-            "rowColor": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rowColor"
-            },
-            "color": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/color"
-            },
-            "scoreField": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreField"
-            },
-            "resolution": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/resolution"
-            },
-            "origin": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/origin"
-            },
-            "size": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/size"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/lineWidth"
-            },
-            "maxGapMultiple": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/maxGapMultiple"
-            },
-            "scales": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scales"
-            },
-            "showLegend": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showLegend"
-            },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/summaryScoreMode"
-            },
-            "showTree": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showTree"
-            },
-            "showBranchLength": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showBranchLength"
-            },
-            "showRowLabels": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showRowLabels"
-            },
-            "treeAreaWidth": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/treeAreaWidth"
-            },
-            "showRowSeparators": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showRowSeparators"
-            },
-            "windowSize": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowSize"
-            },
-            "windowDelta": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowDelta"
-            },
-            "gcMode": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
-            },
-            "defaultRendering": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
             }
           },
           "patternProperties": {
@@ -10348,82 +10128,73 @@
           "type": "object",
           "properties": {
             "mark": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/mark"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
             },
             "interpolate": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/interpolate"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
             },
             "rows": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rows"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
             },
             "rowColor": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rowColor"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
             },
             "height": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/height"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/height"
             },
             "color": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/color"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
             "scoreField": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreField"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
             },
             "resolution": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/resolution"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
             "origin": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/origin"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/origin"
             },
             "size": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/size"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
             },
             "lineWidth": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/lineWidth"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "maxGapMultiple": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/maxGapMultiple"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
             },
             "scales": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scales"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
             },
             "showLegend": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showLegend"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showLegend"
             },
             "summaryScoreMode": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/summaryScoreMode"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "showTree": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showTree"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
             },
             "showBranchLength": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showBranchLength"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
             },
             "showRowLabels": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showRowLabels"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
             },
             "treeAreaWidth": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/treeAreaWidth"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
             },
             "showRowSeparators": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showRowSeparators"
-            },
-            "windowSize": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowSize"
-            },
-            "windowDelta": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/windowDelta"
-            },
-            "gcMode": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
             "displayCrossHatches": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
             },
             "defaultRendering": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             }
           },
           "patternProperties": {
@@ -12702,7 +12473,6 @@
                 "LinearMultiSampleVariantDisplay",
                 "LDTrackDisplay",
                 "LinearWiggleDisplay",
-                "LinearGCContentDisplay",
                 "LinearMafDisplay",
                 "LinearHicDisplay",
                 "LinearManhattanDisplay",
@@ -12914,21 +12684,9 @@
             "type": "object",
             "properties": {
               "type": {
-                "enum": ["LinearWiggleDisplay", "MultiLinearWiggleDisplay"]
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearWiggleDisplay"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
                 "enum": [
+                  "LinearWiggleDisplay",
+                  "MultiLinearWiggleDisplay",
                   "LinearGCContentDisplay",
                   "LinearGCContentTrackDisplay"
                 ]
@@ -12937,7 +12695,7 @@
             "required": ["type"]
           },
           "then": {
-            "$ref": "#/$defs/LinearGCContentDisplay"
+            "$ref": "#/$defs/LinearWiggleDisplay"
           }
         },
         {
@@ -14598,7 +14356,12 @@
       ],
       "properties": {
         "type": {
-          "enum": ["LinearWiggleDisplay", "MultiLinearWiggleDisplay"]
+          "enum": [
+            "LinearWiggleDisplay",
+            "MultiLinearWiggleDisplay",
+            "LinearGCContentDisplay",
+            "LinearGCContentTrackDisplay"
+          ]
         },
         "id": {
           "type": "string"
@@ -14610,55 +14373,6 @@
             },
             {
               "$ref": "#/$defs/LinearWiggleDisplay"
-            }
-          ]
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearGCContentDisplayState": {
-      "type": "object",
-      "properties": {
-        "runClustering": {
-          "type": "boolean"
-        },
-        "clusterRegion": {
-          "type": "string"
-        },
-        "sortRowsBy": {},
-        "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
-        }
-      }
-    },
-    "LinearGCContentDisplaySnapshot": {
-      "title": "LinearGCContentDisplaySnapshot",
-      "description": "A LinearGCContentDisplay node inside a saved session: the state model's own properties. A config slot does not belong here; it goes on the track's `displays` entry.",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearGCContentDisplayState"
-        }
-      ],
-      "properties": {
-        "type": {
-          "enum": ["LinearGCContentDisplay", "LinearGCContentTrackDisplay"]
-        },
-        "id": {
-          "type": "string"
-        },
-        "configuration": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/LinearGCContentDisplay"
             }
           ]
         }
@@ -15375,7 +15089,6 @@
                 "LinearMultiSampleVariantDisplay",
                 "LDTrackDisplay",
                 "LinearWiggleDisplay",
-                "LinearGCContentDisplay",
                 "LinearMafDisplay",
                 "LinearHicDisplay",
                 "LinearManhattanDisplay",
@@ -15587,21 +15300,9 @@
             "type": "object",
             "properties": {
               "type": {
-                "enum": ["LinearWiggleDisplay", "MultiLinearWiggleDisplay"]
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearWiggleDisplaySnapshot"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
                 "enum": [
+                  "LinearWiggleDisplay",
+                  "MultiLinearWiggleDisplay",
                   "LinearGCContentDisplay",
                   "LinearGCContentTrackDisplay"
                 ]
@@ -15610,7 +15311,7 @@
             "required": ["type"]
           },
           "then": {
-            "$ref": "#/$defs/LinearGCContentDisplaySnapshot"
+            "$ref": "#/$defs/LinearWiggleDisplaySnapshot"
           }
         },
         {
@@ -16213,40 +15914,6 @@
             },
             "type": {
               "const": "LinearWiggleDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearGCContentDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearGCContentDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearGCContentDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {
@@ -17030,40 +16697,6 @@
             },
             "type": {
               "const": "LinearWiggleDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearGCContentDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearGCContentDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearGCContentDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {

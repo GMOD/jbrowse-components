@@ -25,4 +25,6 @@ export type WiggleSourceData = SourceInfo & WiggleFeatureArrays
 export interface WiggleDataResult {
   sources: WiggleSourceData[]
   zoomRange?: ZoomRange
+  /** The bounds the adapter's values lie in by definition (`getValueDomain`). */
+  valueDomain?: [number, number]
 }

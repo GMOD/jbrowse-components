@@ -3,17 +3,9 @@ import { lgvSnapshotTest } from '../suiteHelpers.ts'
 import type { TestCase, TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
 
-function gcContentTrack(extra: Record<string, unknown>) {
-  return {
-    trackId: 'volvox_gc',
-    displaySnapshot: {
-      type: 'LinearGCContentTrackDisplay',
-      windowSize: 500,
-      windowDelta: 500,
-      ...extra,
-    },
-  }
-}
+// The window and mode are the GC adapter's, so each drawing is a track of
+// its own in a config beside volvox's.
+const GC_CONFIG = 'test_data/volvox/config_gc.json'
 
 interface LiveModel {
   JBrowseSession: {
@@ -132,14 +124,16 @@ const suite: TestSuite = {
       name: 'GC content track',
       snapshot: 'bigwig-gc-content',
       loc: 'ctgA:1-30000',
-      tracks: [gcContentTrack({})],
+      config: GC_CONFIG,
+      tracks: ['volvox_gc_500'],
       displayTestId: 'wiggle-display',
     }),
     lgvSnapshotTest({
       name: 'GC skew track',
       snapshot: 'bigwig-gc-skew',
       loc: 'ctgA:1-30000',
-      tracks: [gcContentTrack({ gcMode: 'skew' })],
+      config: GC_CONFIG,
+      tracks: ['volvox_gc_skew_500'],
       displayTestId: 'wiggle-display',
     }),
     lgvSnapshotTest({

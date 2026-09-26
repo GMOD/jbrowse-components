@@ -201,6 +201,20 @@ export abstract class BaseFeatureDataAdapter<
   }
 
   /**
+   * The interval every value this adapter answers lies in by definition, as a
+   * fraction lies in [0, 1], which a value scale's unpinned ends stand at
+   * rather than following the loaded data, so the axis reads alike at every
+   * locus. The default, `undefined`, is a quantity with no such bounds, whose
+   * axis autoscales. `GCContentAdapter` declares [0, 1] for GC content and none
+   * for skew.
+   */
+  async getValueDomain(
+    _opts?: BaseOptions,
+  ): Promise<[number, number] | undefined> {
+    return undefined
+  }
+
+  /**
    * Features per bin over each region, at the view's `bpPerPx`, for the density
    * tier the display draws where the region-too-large gate refused the
    * features. The default reads the `densityAdapter` sidecar slot

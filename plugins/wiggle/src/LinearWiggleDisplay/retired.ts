@@ -57,12 +57,17 @@ export function foldMultiWiggleRendering(entry: DisplayEntry): DisplayEntry {
   }
 }
 
+// The GC content display drew this display over a GCContentAdapter. Its
+// window, step and mode stay on the entry here for the GC plugin's track
+// handler, which moves them onto the adapter that computes them.
 export const retiredTypes: RetiredDisplayType[] = [
   {
     type: 'MultiLinearWiggleDisplay',
     migrate: foldMultiWiggleRendering,
     values: { defaultRendering: Object.keys(MULTI_RENDERINGS) },
   },
+  { type: 'LinearGCContentDisplay' },
+  { type: 'LinearGCContentTrackDisplay' },
 ]
 
 const AUTOSCALES = new Set(['local', 'localsd', 'localpercentile'])

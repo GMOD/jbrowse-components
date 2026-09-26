@@ -147,8 +147,8 @@ test('standalone GCContentTrack display does not double-wrap its adapter', async
     (t: { configuration: AnyConfigurationModel }) =>
       readConfObject(t.configuration, 'type') === 'GCContentTrack',
   )!
-  // the GC content display's adapterConfig must apply display params
-  // to the track's existing GCContentAdapter, not wrap it in another one
+  // the wiggle display reads the track's GCContentAdapter as it is, not
+  // wrapped in another one
   const { adapterConfig } = shown.displays[0]
   expect(adapterConfig.type).toBe('GCContentAdapter')
   expect(adapterConfig.sequenceAdapter.type).toBe('FromConfigSequenceAdapter')
@@ -249,37 +249,26 @@ function flatten(items: MenuItem[]): MenuItem[] {
 
 const labelOf = (item: MenuItem) => ('label' in item ? item.label : undefined)
 
-test.each(['LinearReferenceSequenceDisplay', 'LinearGCContentDisplay'])(
-  'the refseq label menu on %s offers "Add GC content track" exactly once',
-  async type => {
-    const session = await makeSession([{ id: 'display1', type }])
-    const labels = flatten(labelMenuItems(session)).map(labelOf)
-    expect(labels.filter(l => l === 'Add GC content track')).toHaveLength(1)
-  },
-)
-
-test('the label menu row carries the GC display parameters onto the new track', async () => {
-  // the display's own entry on the track config, where its slots are written
+test('the refseq label menu offers "Add GC content track" exactly once', async () => {
   const session = await makeSession([
-    {
-      id: 'display1',
-      type: 'LinearGCContentDisplay',
-      configuration: 'volvox_refseq-LinearGCContentDisplay',
-    },
+    { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
-  const display = session.views[0].tracks[0].displays[0]
-  display.setGCContentParams({ windowSize: 50, windowDelta: 10 })
-  display.setGCMode('skew')
+  const labels = flatten(labelMenuItems(session)).map(labelOf)
+  expect(labels.filter(l => l === 'Add GC content track')).toHaveLength(1)
+})
+
+test('the new GC track computes content through its adapter, drawn as a wiggle', async () => {
+  const session = await makeSession([
+    { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
+  ])
   const row = flatten(labelMenuItems(session)).find(
     item => labelOf(item) === 'Add GC content track',
   )
   if (row && 'onClick' in row) {
     row.onClick()
   }
-
-  const trackDisplay = findGCTrack(session).displays[0]
-  expect(readConfObject(trackDisplay, 'type')).toBe('LinearGCContentDisplay')
-  expect(readConfObject(trackDisplay, 'windowSize')).toBe(50)
-  expect(readConfObject(trackDisplay, 'windowDelta')).toBe(10)
-  expect(readConfObject(trackDisplay, 'gcMode')).toBe('skew')
+  const track = findGCTrack(session)
+  expect(readConfObject(track, ['adapter', 'type'])).toBe('GCContentAdapter')
+  expect(readConfObject(track, ['adapter', 'gcMode'])).toBe('content')
+  expect(readConfObject(track.displays[0], 'type')).toBe('LinearWiggleDisplay')
 })

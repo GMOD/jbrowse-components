@@ -23,12 +23,6 @@
           {
             "type": "LinearReferenceSequenceDisplay",
             "displayId": "volvox_refseq-LinearReferenceSequenceDisplay"
-          },
-          {
-            "type": "LinearGCContentDisplay",
-            "displayId": "volvox_refseq-LinearGCContentDisplay",
-            "windowSize": 10,
-            "windowDelta": 10
           }
         ]
       },

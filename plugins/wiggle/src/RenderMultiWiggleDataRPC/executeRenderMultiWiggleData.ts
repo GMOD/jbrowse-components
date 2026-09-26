@@ -89,13 +89,14 @@ export async function executeRenderMultiWiggleData({
     signal,
     statusCallback,
   }
-  const [perSource, zoomRange] = await updateStatus(
+  const [perSource, zoomRange, valueDomain] = await updateStatus(
     'Downloading wiggle data',
     statusCallback,
     () =>
       Promise.all([
         fetchSourceRaws(dataAdapter, regions, opts),
         dataAdapter.getZoomRange(opts),
+        dataAdapter.getValueDomain(opts),
       ]),
   )
   checkAbortSignal(signal)
@@ -127,6 +128,7 @@ export async function executeRenderMultiWiggleData({
       ),
     })),
     zoomRange,
+    ...(valueDomain ? { valueDomain } : {}),
   }))
   return rpcResult(results, collectWiggleTransferables(results))
 }

@@ -34,7 +34,6 @@ Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field 
 
 ## Related links
 
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay) ([state model](../../models/lineargccontentdisplay))
 - **Display:** [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay) ([state model](../../models/linearreferencesequencedisplay))
 - **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
 - **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
