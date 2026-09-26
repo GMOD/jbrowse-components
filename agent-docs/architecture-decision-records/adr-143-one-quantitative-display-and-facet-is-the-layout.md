@@ -64,8 +64,11 @@ table; `MULTI_WIGGLE_RENDERING_GROUPS`, `MULTI_WIGGLE_OVERLAY_TYPES`,
 `MULTI_WIGGLE_RENDERING_TYPES`, `isOverlayMode`, `SINGLE_TO_MULTI_RENDERING`,
 `remapMultiWiggleRendering` and the migration handler are gone. `isDensityMode`
 is `renderingType === 'density'`, and overlay density is offered rather than
-refused — the docs say to facet it. The Plot type menu is the five radios plus
-one checkbox, `One row per source`.
+refused — the docs say to facet it. ~~The Plot type menu is the five radios plus
+one checkbox, `One row per source`.~~ The Plot type menu is a group per layout
+with the five plots inside, so one leaf picks both (`62d19a6e7b`). Radios and a
+checkbox split "multi-row XY plot" across two controls. The two axes stay apart
+in the model and the config, and the `<layout>:<plot>` key is menu-local.
 
 **The track types differ in defaults and nothing else.**
 `MultiQuantitativeTrack/displayDefaults.ts` seeds `facet: 'source'`,

@@ -49,6 +49,14 @@ grammar converges the parts every display shares, not the displays. A new mark
 or channel arrives when it retires a hand-written spelling somewhere, which is
 ADR-040's two-consumer bar stated as a goal.
 
+A track type is not always a format. `MultiQuantitativeTrack`, `GWASTrack` and
+`GCContentTrack` are role bundles. Each is a name the guesser returns and
+Add-track offers, carrying which display leads and the `displayDefaults` it
+leads with. No display names `GWASTrack` alone — the Manhattan plot reads a score
+any feature adapter serves, so it attaches to `FeatureTrack` too
+(`plugins/gwas/src/LinearManhattanDisplay/index.ts`). The rule refuses a channel
+hidden inside a track type, which a bundle of defaults does not carry.
+
 ## Decided on 2026-09-23
 
 Colin's answers to the calls a Fable review of the mark display left open:
