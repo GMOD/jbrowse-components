@@ -1460,8 +1460,8 @@ smoothstep's half-width, the ramp came out 2–2.83 output pixels instead of 1.
 
 The first four were each found by someone looking at the mark. Chevron was found
 by asking which shaders still called `fwidth` after the fourth, which is the
-sweep worth repeating: its arms run at exactly 45°, so it took the full √2, and
-nobody had reported it because a too-wide LINEAR ramp does not thicken a mark —
+sweep worth repeating: its arms rise at half their run, so it took a third too
+much, and nobody had reported it because a too-wide LINEAR ramp does not thicken a mark —
 it dilutes it. The half-max contour does not move. That is the failure mode to
 look for, not a fat line.
 

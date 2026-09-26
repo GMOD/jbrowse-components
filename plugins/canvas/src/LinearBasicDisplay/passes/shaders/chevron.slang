@@ -179,13 +179,16 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 
   float sx;
   float sy;
+  // Both ends centred on the arm's line, the tip on `cy` and the outer end on
+  // `cy + armY`, where the Canvas2D path strokes it.
+  float outerSide = isTopArm ? extHalfThickness : -extHalfThickness;
   switch (qv) {
-    case 0u: sx = outerX; sy = cy + armY + (isTopArm ? aaPad : -aaPad);                                  break;
-    case 1u: sx = tipX;   sy = cy + extHalfThickness;                                                    break;
-    case 2u: sx = tipX;   sy = cy - extHalfThickness;                                                    break;
-    case 3u: sx = outerX; sy = cy + armY + (isTopArm ? aaPad : -aaPad);                                  break;
-    case 4u: sx = tipX;   sy = cy - extHalfThickness;                                                    break;
-    default: sx = outerX; sy = cy + armY + (isTopArm ? -(2.0*coreHalfThickness+aaPad) : (2.0*coreHalfThickness+aaPad)); break;
+    case 0u: sx = outerX; sy = cy + armY + outerSide; break;
+    case 1u: sx = tipX;   sy = cy + extHalfThickness; break;
+    case 2u: sx = tipX;   sy = cy - extHalfThickness; break;
+    case 3u: sx = outerX; sy = cy + armY + outerSide; break;
+    case 4u: sx = tipX;   sy = cy - extHalfThickness; break;
+    default: sx = outerX; sy = cy + armY - outerSide; break;
   }
 
   float d = isTopArm
@@ -201,10 +204,9 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   // `dist` is a vertical offset, not a perpendicular distance, so the ramp
-  // width has to be measured — with `aaGradient`, not `fwidth`. The arms run at
-  // 45 degrees (CHEVRON_W_PX == CHEVRON_H_PX), so |ddx| == |ddy| and fwidth
-  // returns exactly sqrt(2) times the true gradient: the widest it is ever
-  // wrong, at the one slope this glyph has.
+  // width has to be measured — with `aaGradient`, not `fwidth`. An arm rises
+  // CHEVRON_H_PX / 2 over its CHEVRON_W_PX run, so |ddx| is half |ddy| and
+  // fwidth, their sum, overstates the true gradient by a third.
   //
   // The half-max contour does not move — that is `coreHalfPx - |dist| == 0`,
   // which no ramp width touches. What moves is how much of the arm reaches full
