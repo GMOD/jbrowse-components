@@ -310,8 +310,8 @@ export function stateModelFactory(
             }
           },
           // A fetch input at genomic positions only, where the worker leaves
-          // reference cells out under 'skip'. Columns always carry them and
-          // grey the background instead, so a toggle there refetches nothing.
+          // reference cells out under 'skip'. Columns always carry them, so a
+          // toggle there refetches nothing.
           rpcProps() {
             return {
               ...superRpcProps(),

@@ -122,7 +122,8 @@ export function variantShowSubmenuItems(
     showRowLabelsMenuItem(self),
     showRowSeparatorsMenuItem(self),
     legendCheckboxItem(self),
-    ...(self.showsReferenceToggle
+    // columns always draw reference cells, so the toggle is genomic-only
+    ...(self.atGenomicPositions
       ? [
           {
             label: 'Show reference alleles',

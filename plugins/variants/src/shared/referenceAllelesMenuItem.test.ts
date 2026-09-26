@@ -38,6 +38,5 @@ test('the regular display offers the reference-alleles checkbox', () => {
 // intact — nothing gets stuck without the row.
 test('the matrix display does not', () => {
   const { display } = createMatrixTestEnvironment().createDisplay()
-  expect(display.showsReferenceToggle).toBe(false)
   expect(referenceItem(display.trackMenuItems())).toBeUndefined()
 })

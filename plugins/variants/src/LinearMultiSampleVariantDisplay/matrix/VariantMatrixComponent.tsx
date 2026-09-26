@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react'
 
 import { buildVariantHit } from '../../shared/buildVariantHit.ts'
-import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { findCellIndex } from '../../shared/variantCellLookup.ts'
@@ -182,8 +181,6 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
         position: 'absolute',
         left: 0,
         top: 0,
-        backgroundColor:
-          model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
       }}
       {...variantSurfaceHandlers(model, variantMatrixSurface(model))}
     />

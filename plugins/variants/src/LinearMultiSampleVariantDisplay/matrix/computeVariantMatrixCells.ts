@@ -209,8 +209,7 @@ export function computeVariantMatrixCells({
             HP!,
             mostFrequentAlt,
             phaseSets.present[si] ? phaseSets.value[si] : undefined,
-            // the matrix always draws reference cells and greys the background
-            // in CSS, so `referenceDrawingMode: 'skip'` never reaches here
+            // columns always draw reference cells
             true,
             overrideColor,
           )
@@ -285,10 +284,9 @@ export function computeVariantMatrixCells({
     swapCells(lo, hi)
   }
 
-  // Ref cells first, then non-ref, so alt paints over ref (the matrix always
-  // draws ref, unlike the regular variant display — "skip" mode is a grey
-  // background there). Close the gap that skipped genotypes left between the two
-  // cursors; a no-op in the dense case, where they already meet.
+  // Ref cells first, then non-ref, so alt paints over ref. Close the gap that
+  // skipped genotypes left between the two cursors; a no-op in the dense case,
+  // where they already meet.
   const refCellCount = refEnd
   const numCells = refCellCount + (maxCells - nonRefStart)
   if (nonRefStart !== refCellCount) {

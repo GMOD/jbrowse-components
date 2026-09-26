@@ -7,7 +7,6 @@ test('the layout is a fetch input, and columns spend no band on the lane', () =>
   expect(display.rpcProps().mode).toBe('regular')
   expect(display.showVariantLane).toBe(true)
   expect(display.lineZoneHeight).toBe(0)
-  expect(display.showsReferenceToggle).toBe(true)
 
   display.setVariantLayout('columns')
 
@@ -18,7 +17,6 @@ test('the layout is a fetch input, and columns spend no band on the lane', () =>
   expect(display.topBands.laneHeight).toBe(0)
   expect(display.lineZoneHeight).toBe(20)
   expect(display.rowsTopOffset).toBe(20)
-  expect(display.showsReferenceToggle).toBe(false)
   expect(display.drawsInsertionMarkers).toBe(false)
 })
 

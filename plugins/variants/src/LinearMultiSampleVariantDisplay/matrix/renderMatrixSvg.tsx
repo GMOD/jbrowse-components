@@ -4,7 +4,6 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import SvgVariantOverlay from '../../shared/components/SvgVariantOverlay.tsx'
-import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
@@ -20,7 +19,6 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 interface MatrixRenderSvgModel
   extends RenderSvgBaseModel, MatrixConnectorLinesModel {
-  referenceDrawingMode: string
   renderState: MatrixRenderState
   placedMatrixData: VariantMatrixUploadData | undefined
   matrixRegions: ReadonlyMap<number, VariantMatrixUploadData>
@@ -49,7 +47,7 @@ function VariantMatrixSvgBody({
   // content width its columns, connector lines and hit-test all key off), not
   // the outline-adjusted track width — so it is the right paint width here and
   // the shell's viewport `canvasWidth` only frames the overlay.
-  const { placedMatrixData, referenceDrawingMode, renderState } = model
+  const { placedMatrixData, renderState } = model
   const { canvasWidth: matrixWidth, canvasHeight } = renderState
   // The same origin the live matrix body takes (VariantMatrixDisplayComponent)
   // and the same one the columns are laid out from: when the content doesn't
@@ -81,13 +79,6 @@ function VariantMatrixSvgBody({
           height={canvasHeight}
           opts={opts}
           paint={ctx => {
-            // Matrix always draws ref cells; "skip" mode is realized by a grey
-            // background (matching the live canvas in VariantMatrixComponent),
-            // so no-call cells read the same grey as ref instead of white.
-            if (referenceDrawingMode === 'skip') {
-              ctx.fillStyle = REFERENCE_COLOR
-              ctx.fillRect(0, 0, matrixWidth, canvasHeight)
-            }
             paintMarkBlocks(
               ctx,
               VARIANT_MATRIX_MARKS,

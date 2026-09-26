@@ -943,18 +943,6 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * Whether the "Show reference alleles" row belongs in the menu: at
-         * genomic positions `skip` turns the gaps between variants into one
-         * solid grey row that overlapping SVs read against, while columns
-         * paint their reference cells the grey the background would be, so
-         * the toggle moves nothing there.
-         */
-        get showsReferenceToggle(): boolean {
-          return self.atGenomicPositions
-        },
-
-        /**
-         * #getter
          * Distinct sample-metadata attributes (from samplesTsv) the user can
          * color rows by — every key the sources carry except internal plumbing.
          */
