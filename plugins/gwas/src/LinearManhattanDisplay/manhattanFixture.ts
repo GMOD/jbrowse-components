@@ -22,7 +22,9 @@ export function manhattanFixture({
   color?: number[]
   glyph?: number[]
   flatbush?: boolean
-} & Partial<Pick<EncodedChannels, 'scale' | 'shapeScale'>>): EncodedChannels {
+} & Partial<
+  Pick<EncodedChannels, 'scale' | 'shapeScale' | 'colorValue' | 'row'>
+>): EncodedChannels {
   const count = x.length
   let yMin = Infinity
   let yMax = -Infinity

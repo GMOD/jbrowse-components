@@ -124,7 +124,6 @@ export function stateModelFactory(
        */
       get topSnp(): string | undefined {
         const marks = self.ldMarkIndexes
-        const { drawnKeys } = self
         let bestScore = -Infinity
         let bestPos = 0
         let bestIdx = -1
@@ -139,9 +138,8 @@ export function stateModelFactory(
                 const score = y[i]!
                 const pos = layer.x[i]!
                 if (
-                  (!drawnKeys || drawnKeys[layer.row?.[i] ?? 0] === 1) &&
-                  (score > bestScore ||
-                    (score === bestScore && idx === bestIdx && pos < bestPos))
+                  score > bestScore ||
+                  (score === bestScore && idx === bestIdx && pos < bestPos)
                 ) {
                   bestScore = score
                   bestPos = pos
@@ -159,36 +157,32 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * A loaded region draws the index SNP but no loaded point is its
+       * A loaded region holds the index SNP but no loaded point is its
        * partner, so every other point is grey: the LD file lacks the index or
-       * names it otherwise. The index is drawn where an LD mark's `ld_role`
-       * shape met it, and a partner where an instance of a mark coloured by
-       * `ld` is not the no-value grey; an index outside the loaded regions is
-       * not missing.
+       * names it otherwise. The index is held where an LD mark's `ld_role`
+       * shape met it, and a partner where a mark coloured by `ld` gave an
+       * instance a value, whichever scale it paints through; an index outside
+       * the loaded regions is not missing, and a row the focus hides still
+       * counts.
        */
       get indexSnpMissing(): boolean {
         const marks = self.ldMarkIndexes
-        const { drawnKeys } = self
-        const layers = [...self.scaleDataMap.values()].flatMap(d =>
+        const layers = [...self.rpcDataMap.values()].flatMap(d =>
           marks.flatMap(i => d.layers[i] ?? []),
         )
-        const indexDrawn = layers.some(
+        const indexHeld = layers.some(
           ({ shapeScale }) =>
             shapeScale?.field === LD_ROLE_FIELD &&
             shapeScale.entries.some(e => e.value === 'index'),
         )
         const partnerJoined = layers.some(
-          ({ scale, color, row, count }) =>
+          ({ scale, color, colorValue, count }) =>
             scale?.field === LD_FIELD &&
-            !!color
-              ?.subarray(0, count)
-              .some(
-                (c, i) =>
-                  c !== NO_VALUE_ABGR &&
-                  (!drawnKeys || drawnKeys[row?.[i] ?? 0] === 1),
-              ),
+            (colorValue
+              ? colorValue.subarray(0, count).some(v => Number.isFinite(v))
+              : !!color?.subarray(0, count).some(c => c !== NO_VALUE_ABGR)),
         )
-        return self.joinsLd && indexDrawn && !partnerJoined
+        return self.joinsLd && indexHeld && !partnerJoined
       },
       /**
        * #getter

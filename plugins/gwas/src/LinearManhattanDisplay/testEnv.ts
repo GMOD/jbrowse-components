@@ -30,9 +30,11 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
  */
 export function createTestEnvironment({
   marks,
+  rows,
   ldAdapter = true,
 }: {
   marks?: Record<string, unknown>[]
+  rows?: string
   ldAdapter?: boolean
 } = {}) {
   const env = createDisplayTestEnvironment<LinearManhattanDisplayModel>({
@@ -57,7 +59,10 @@ export function createTestEnvironment({
     configSchema: () => configSchemaFactory(),
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
-    displayConfig: marks === undefined ? {} : { marks },
+    displayConfig: {
+      ...(marks === undefined ? {} : { marks }),
+      ...(rows === undefined ? {} : { rows }),
+    },
     regions: REGIONS,
     onViewReady: view => {
       view.showAllRegions()

@@ -6,8 +6,10 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   LD_COLOR,
   LD_INDEX_COLOR,
+  LD_INDEX_MARK,
   LD_MARKS,
   LD_PALETTE,
+  LD_PARTNERS_MARK,
   MANHATTAN_MARK,
 } from './ldPlot.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
@@ -130,6 +132,87 @@ test('the LD menu is there only for a track with an LD file', () => {
   const without = createTestEnvironment({ ldAdapter: false }).createDisplay()
     .display
   expect(labels(without.trackMenuItems())).not.toContain('LD')
+})
+
+// A partner coloured through a ramp carries its r² in `colorValue` and no
+// `color` lane, and is joined all the same.
+test('a partner painted through a colour ramp counts as joined', () => {
+  const { display } = createTestEnvironment({
+    marks: [
+      {
+        ...LD_PARTNERS_MARK,
+        encoding: { y: 'score', color: { field: 'ld', scale: 'linear' } },
+      },
+      LD_INDEX_MARK,
+    ],
+  }).createDisplay()
+  display.setIndexSnp('ctgA:101')
+  const load = (r2: number[]): EncodedLayersResult => ({
+    layers: [
+      manhattanFixture({
+        x: r2.map((_, i) => 200 + i),
+        y: r2.map(() => 3),
+        flatbush: false,
+        colorValue: Float32Array.from(r2),
+        scale: {
+          kind: 'ramp',
+          field: 'ld',
+          scale: 'linear',
+          domain: [0, 1],
+          extent: [0, 1],
+          pinned: [true, true],
+          lut: new Uint8Array(4),
+        },
+      }),
+      manhattanFixture({
+        x: [100],
+        y: [5],
+        flatbush: false,
+        shapeScale: {
+          kind: 'shape',
+          field: 'ld_role',
+          domain: ['index'],
+          entries: [{ value: 'index', shape: 'diamond' }],
+        },
+      }),
+    ],
+  })
+  display.setRpcData(0, load([0.9, Number.NaN]), REGION)
+  expect(display.indexSnpMissing).toBe(false)
+  display.setRpcData(0, load([Number.NaN, Number.NaN]), REGION)
+  expect(display.indexSnpMissing).toBe(true)
+})
+
+// A focus uploads one table and no instance bytes, which a moved index would
+// undo with a refetch of every region.
+test('the top hit reads every loaded row, focused out or not', () => {
+  const { display } = createTestEnvironment({
+    marks: LD_MARKS,
+    rows: 'source',
+  }).createDisplay()
+  display.setRpcData(
+    0,
+    {
+      layers: [
+        manhattanFixture({
+          x: [100, 500],
+          y: [3, 9],
+          flatbush: false,
+          row: Uint32Array.from([0, 1]),
+        }),
+        manhattanFixture({ x: [], y: [], flatbush: false }),
+      ],
+      facet: [
+        { key: 'p1', firstRow: 0, rowCount: 1 },
+        { key: 'p2', firstRow: 1, rowCount: 1 },
+      ],
+    },
+    REGION,
+  )
+  expect(display.topSnp).toBe('ctgA:501')
+  display.setRowFocus(['p1'])
+  expect(display.sources.map(s => s.name)).toEqual(['p1'])
+  expect(display.topSnp).toBe('ctgA:501')
 })
 
 function ldLoad({
