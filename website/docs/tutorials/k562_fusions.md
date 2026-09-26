@@ -144,15 +144,14 @@ by spaces. The transcript reaches _ABL1_ at more than one place, so this view
 uses three regions, the _BCR_ donor and two acceptor windows.
 
 A read crossing the junction is one alignment on chr22 and a supplementary
-alignment on chr9. **Read connections → Use curved connectors** draws a curve
-between the two across the region divider. **Filter by... → Split alignments →
-Only split alignments** drops every read that stays on one chromosome.
+alignment on chr9. **Read connections → Use curved connectors** joins the two
+across the region divider. **Filter by... → Split alignments → Only split
+alignments** drops every read that stays on one chromosome.
 
-Near-identical curves stack into one line. **Read connections → Read arcs** adds
-a band under the coverage where each junction is drawn once, thickened by the
-reads behind it. An arc needs both ends in view, and each acceptor window
-receives one. The vertical at the _BCR_ donor stands for the molecules whose
-_ABL1_ alignment lands in neither window.
+**Read connections → Read arcs** adds a band under the coverage where each
+junction is drawn once, thickened by the reads behind it. An arc needs both ends
+in view, and each acceptor window receives one. The vertical at the _BCR_ donor
+stands for the molecules whose _ABL1_ alignment lands in neither window.
 
 <Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws one counted arc from the BCR donor into each ABL1 window, and only the right-hand window carries a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 

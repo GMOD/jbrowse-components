@@ -838,13 +838,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   filterBy: { split: 'only' },
                   linkedReads: 'normal',
-                  // curved connectors, same reviewer note and same reason as the
-                  // sibling lane on derivative_synteny: chain mode alone leaves
-                  // `bezierArcScope` at 'crossRegion', which draws a normal join
-                  // as a straight hairline. It matters more here than there --
-                  // this is the base-scale panel, where the point IS that a row
-                  // stops at the junction, and the curve is what carries the eye
-                  // to where the same molecule picks up again.
+                  // Chain mode alone joins only the pieces that straddle two
+                  // panels (`bezierArcScope` 'crossRegion'); this adds the
+                  // inverted and hidden-segment joins inside one panel, as on
+                  // the sibling lane on derivative_synteny.
                   showBezierConnections: true,
                   // NOT super-compact, unlike every other pileup in this
                   // tutorial, and the connectors above are the whole reason
@@ -928,14 +925,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // into chr12:72,273,111, and chr12 back into the inverted chr3
                   // arm at 25,352,683.
                   //
-                  // It says something the bezier fan above it cannot. A curve
-                  // per molecule shows each junction is real and cannot weigh
-                  // them against each other, because 28 near-identical curves
-                  // and 3 look alike; the band coalesces each junction into one
-                  // mark whose stroke width is its support, so the three
-                  // junctions of one allele are comparable at a glance. The
-                  // per-molecule fan stays: it is what says a single read runs
-                  // through all three.
+                  // A connector per molecule shows each junction is real and
+                  // cannot weigh them against each other, because 28
+                  // near-identical connectors and 3 look alike. The band
+                  // coalesces each junction into one mark whose stroke width is
+                  // its support, so the three junctions of one allele are
+                  // comparable at a glance. The per-molecule connectors stay,
+                  // since they show a single read running through all three.
                   //
                   // Default band height rather than a chosen one, as on
                   // k562_bcr_abl_split: three arcs is not a pile-up, and the
@@ -1660,14 +1656,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // The two chr9 windows are 7 kb each rather than one wide ABL1 window, and
   // that is forced: an LGV shares one bp/px across displayed regions, so a
   // ~180 kb chr9 panel beside a 7 kb chr22 one leaves BCR under 4% of the width
-  // and the read-by-read fan -- the thing this figure is for -- collapses into a
-  // smear. Three windows of the same size keep every panel at the zoom the fan
-  // is legible at.
+  // and the read-by-read connectors -- the thing this figure is for -- collapse
+  // into a smear. Three windows of the same size keep every panel at the zoom
+  // the connectors are legible at.
   //
   // One level rather than a breakpoint split view: that view stacks the partners
   // one above the other and runs its splines down the page between them, which
   // is a second screen of figure for the same read set. Side by side, the same
-  // splines run across the gap the fusion actually closes.
+  // connectors run across the gap the fusion actually closes.
   //
   // LINKED, which is the reviewer's own suggestion ("consider 'view as pairs' or
   // other things to sync across displayed regions") and turns out to be
@@ -1711,8 +1707,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // Only the split alignments: a read whose chr22 alignment has a chr9
         // supplementary is the fusion's own support, and dropping the reads that
         // stay on one chromosome leaves a pileup whose every row crosses the
-        // junction. Bezier connectors then join each read's two alignments, so
-        // the fan between the two regions is that read set, read by read.
+        // junction. A connector then carries each molecule's row from BCR to
+        // wherever its ABL1 alignment picks up, so the rows crossing the
+        // divider are that read set, read by read.
         {
           trackId: 'K562_isoseq',
           type: 'LinearAlignmentsDisplay',
@@ -1725,10 +1722,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // one row per molecule across both regions -- see the note above
           linkedReads: 'normal',
           showBezierConnections: true,
-          // The fan's TOTAL, beside the fan itself. A curve per molecule shows
-          // the junction is real and cannot show how many molecules say so --
-          // 200 near-identical curves and one curve look alike -- and the arc
-          // band coalesces them into one mark whose stroke width is the count.
+          // The connectors' TOTAL, beside the connectors themselves. A
+          // connector per molecule shows the junction is real and cannot show
+          // how many molecules say so -- 200 near-identical lines and one look
+          // alike -- and the arc band coalesces them into one mark whose stroke
+          // width is the count.
           //
           // It draws at all only because an interchromosomal connection with
           // both feet on screen is now an arc rather than two ticks -- so which
