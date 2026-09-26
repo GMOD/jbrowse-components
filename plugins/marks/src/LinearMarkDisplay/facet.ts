@@ -4,18 +4,10 @@ import {
   compareGroupKeys,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
-import {
-  MISCONFIGURED_ABGR,
-  NO_VALUE_ABGR,
-  hitIndexOf,
-  rampOverExtent,
-} from '@jbrowse/core/util/markEncoding'
-import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
-import {
-  RAMP_NO_VALUE_BITS,
-  keepRampValues,
-  rampValueBits,
-} from '@jbrowse/render-core/marks'
+import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
+import { keepRampValues } from '@jbrowse/render-core/marks'
+
+import { drawnScales } from './drawnScales.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
@@ -129,93 +121,6 @@ function rowRemap(region: MarkRegionData, layout: FacetLayout) {
     }
   }
   return remap
-}
-
-/**
- * The key and the extents over the instances a layer draws, so a hidden
- * section or row leaves the legend and the axis the way it leaves the plot:
- * every instance, or with `drawnKeys` those whose `row` key it marks 1. The
- * lanes are the layer's own.
- */
-export function drawnScales(
-  layer: StoredLayer,
-  drawnKeys?: Uint8Array,
-): StoredLayer {
-  const { y, row, color, colorValue, glyph, scale, shapeScale, sizeScale } =
-    layer
-  const bits = colorValue && rampValueBits(colorValue)
-  const colors = new Set<number>()
-  const glyphs = new Set<number>()
-  let yMin = Infinity
-  let yMax = -Infinity
-  let vMin = Infinity
-  let vMax = -Infinity
-  let sMin = Infinity
-  let sMax = -Infinity
-  let missing = false
-  let notNumber = false
-  for (let i = 0; i < layer.count; i++) {
-    if (drawnKeys && drawnKeys[row?.[i] ?? 0] !== 1) {
-      continue
-    }
-    if (color) {
-      colors.add(color[i]!)
-    }
-    if (glyph) {
-      glyphs.add(glyph[i]!)
-    }
-    if (y) {
-      yMin = Math.min(yMin, y[i]!)
-      yMax = Math.max(yMax, y[i]!)
-    }
-    const sv = layer.size?.[i]
-    if (sv !== undefined && Number.isFinite(sv)) {
-      sMin = Math.min(sMin, sv)
-      sMax = Math.max(sMax, sv)
-    }
-    if (colorValue) {
-      const v = colorValue[i]!
-      if (Number.isFinite(v)) {
-        vMin = Math.min(vMin, v)
-        vMax = Math.max(vMax, v)
-      } else if (Number.isNaN(v)) {
-        if (bits?.[i] === RAMP_NO_VALUE_BITS) {
-          missing = true
-        } else {
-          notNumber = true
-        }
-      }
-    }
-  }
-  const valued = Number.isFinite(layer.yMin)
-  return {
-    ...layer,
-    yMin: valued ? yMin : layer.yMin,
-    yMax: valued ? yMax : layer.yMax,
-    scale:
-      scale?.kind === 'categorical' && color
-        ? { ...scale, entries: scale.entries.filter(e => colors.has(e.color)) }
-        : scale?.kind === 'ramp' && colorValue
-          ? {
-              ...(scale.pinned[0] && scale.pinned[1]
-                ? { ...scale, extent: [vMin, vMax] as [number, number] }
-                : rampOverExtent(scale, [vMin, vMax])),
-              missing,
-              notNumber,
-            }
-          : (scale?.kind === 'threshold' || scale?.kind === 'ramp') && color
-            ? {
-                ...scale,
-                missing: scale.missing && colors.has(NO_VALUE_ABGR),
-                notNumber: scale.notNumber && colors.has(MISCONFIGURED_ABGR),
-              }
-            : scale,
-    shapeScale: shapeScale && {
-      ...shapeScale,
-      entries: shapeScale.entries.filter(e => glyphs.has(SHAPE_CODES[e.shape])),
-    },
-    sizeScale: sizeScale && { ...sizeScale, extent: [sMin, sMax] },
-  }
 }
 
 // The layer as drawn: its rows on the layout, and a hidden section's

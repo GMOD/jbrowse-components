@@ -1,6 +1,6 @@
 import { HIDDEN_ROW, buildRowTable } from '@jbrowse/render-core/marks'
 
-import { drawnScales } from './facet.ts'
+import { drawnScales } from './drawnScales.ts'
 
 import type { MarkRegionData } from './markList.ts'
 import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
