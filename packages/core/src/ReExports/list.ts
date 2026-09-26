@@ -308,6 +308,7 @@ export default [
   '@jbrowse/core/util/frameCoalescer',
   '@jbrowse/core/util/freezeDeep',
   '@jbrowse/core/util/geneticCodes',
+  '@jbrowse/core/util/getLocationUri',
   '@jbrowse/core/util/getRelativeX',
   '@jbrowse/core/util/groupKeys',
   '@jbrowse/core/util/highlights',
