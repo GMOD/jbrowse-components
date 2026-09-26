@@ -42,6 +42,11 @@ needs. **Delete this file once every step under "Next" is done or declined.**
    snapshot predates the Manhattan and mark-colour slots; CI reports it and it
    is fixed forward, per the root CLAUDE.md.
 
+## Unverified, read not driven, predating the round
+
+- `visibleIndexRange` in `wiggle-core/autoscale.ts` binary-searches starts it
+  assumes sorted, and a faceted layer's `x` is in section order.
+
 ## Declined during the round, so nobody re-tries it
 
 - Inferring the join from the encodings (`ld_role` shape entries, the colour
