@@ -340,8 +340,8 @@ header, and the top of an SVG export, list the colors the view is drawing.
 
 Hovering a spline shades the reads it joins, every segment of the read in every
 panel it visits, and every other spline of the same read thickens alongside it.
-Untick **Allow clicking alignment squiggles** in the view menu to turn the
-overlay back into a static picture.
+Untick **Allow clicking connections** in the view menu to turn the overlay, read
+splines and variant curves alike, back into a static picture.
 
 ### Launching it
 

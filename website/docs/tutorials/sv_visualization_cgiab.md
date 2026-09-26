@@ -714,18 +714,9 @@ single base of contig coordinate, with the same orientation flip the reads
 describe. Open it in the synteny or dotplot view against GRCh38 and the junction
 is the point where one contig stops following chr13 and starts following chr3.
 
-Back in the reconstruction, reading the list below the top route is the other
-half of the exercise. This window ends at the chr13 q-terminus, so most of what
-is offered under the real junction is reads mismapped into the terminal repeats
-of other chromosomes, each a confident-looking two-segment route with a real
-read count behind it. The read count ranks the routes; this route is picked out
-because the caller and the assembly put its two ends in the same two places.
-
-The reconstruction is bounded twice by what is loaded. It is assembled from the
-reads in the **displayed regions**, which is why both sides of this junction are
-open above. The hosted demo also slices the tumor reads to the loci these
-walkthroughs visit, so the reads reach one of `cluster_3`'s junctions where the
-assembly contig carries both. Rebuilding from the full BAM with
+What is loaded bounds the reads. The hosted demo slices the tumor reads to the
+loci these walkthroughs visit, so they reach one of `cluster_3`'s junctions
+where the assembly contig carries both. Rebuilding from the full BAM with
 [the build script](#reproduce-it-end-to-end) lifts that limit.
 
 ### Which calls are drivers

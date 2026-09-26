@@ -951,7 +951,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
           ]),
           {
-            label: 'Allow clicking alignment squiggles',
+            label: 'Allow clicking connections',
             type: 'checkbox',
             checked: self.interactiveOverlay,
             onClick: () => {
