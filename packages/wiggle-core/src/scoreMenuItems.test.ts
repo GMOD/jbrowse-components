@@ -3,7 +3,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-import { makePinCurrentRangeItem, makeScoreSubMenu } from './scoreMenuItems.ts'
+import { makeScoreSubMenu } from './scoreMenuItems.ts'
 import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
 
 import type { AutoscaleModel, ScoreScaleModel } from './scoreMenuItems.ts'
@@ -75,29 +75,7 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
     ).toEqual(['Set min/max score...'])
   })
 
-  it('offers the pin row while the drawn domain is known, and not before', () => {
-    const self = makeSelf({
-      scaleTypeChoices: ['linear'],
-      autoscaleType: undefined,
-    })
-    expect(labels(makeScoreSubMenu(self))).toEqual(['Set min/max score...'])
-    expect(labels(makeScoreSubMenu(self, { domain: [-3, 47] }))).toEqual([
-      'Set min/max score...',
-      'Pin current min/max',
-    ])
-  })
-
-  it('the pin writes the drawn domain, not the resolved bounds', () => {
-    const writes: (number | undefined)[] = []
-    const self = makeSelf({
-      setMinScore: n => writes.push(n),
-      setMaxScore: n => writes.push(n),
-    })
-    makePinCurrentRangeItem(self, [-3, 47]).onClick()
-    expect(writes).toEqual([-3, 47])
-  })
-
-  it('still offers the clear item when a manual bound is in force', () => {
+  it('still captions itself with the pinned pair', () => {
     expect(
       labels(
         makeScoreSubMenu(
@@ -109,7 +87,7 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
           }),
         ),
       ),
-    ).toEqual(['Set min/max score (2 – auto)...', 'Clear manual min/max'])
+    ).toEqual(['Set min/max score (2 – auto)...'])
   })
 })
 
@@ -118,8 +96,7 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
 // `defaultScoreDomain` pins an end (GC content's [0,1]) resolves
 // `minScoreBound`/`maxScoreBound` to real numbers with both bounds still unset,
 // so a menu asking the resolved bounds "is a manual bound in force?" answers yes
-// on a freshly opened track — and the Clear row it offers writes the nothing
-// that was already there.
+// on a freshly opened track — and captions the row with a pair nobody pinned.
 const testConfigSchema = ConfigurationSchema('TestScoreDisplay', {
   scales: scalesSchema(
     valueScaleSchema({
@@ -148,7 +125,7 @@ function makePinnedDomainDisplay() {
 }
 
 describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
-  it('offers no clear row while neither bound is set', () => {
+  it('captions nothing while neither bound is set', () => {
     const display = makePinnedDomainDisplay()
     expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
     expect(labels(makeScoreSubMenu(display))).toEqual([
@@ -158,14 +135,13 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
     ])
   })
 
-  it('offers it once a bound is really set, and clearing takes it away', () => {
+  it('captions once a bound is really set, and clearing takes it away', () => {
     const display = makePinnedDomainDisplay()
     display.setMaxScore(0.75)
     expect(labels(makeScoreSubMenu(display))).toEqual([
       'Scale type',
       'Autoscale type',
       'Set min/max score (auto – 0.75)...',
-      'Clear manual min/max',
     ])
 
     display.setMinScore(undefined)

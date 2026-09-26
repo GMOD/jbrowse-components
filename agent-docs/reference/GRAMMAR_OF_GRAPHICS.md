@@ -342,8 +342,8 @@ The seams, named honestly:
   never been seen, so the domain still grows as the user pans. That is the
   design and not a seam
   ([ADR-124](../architecture-decision-records/adr-124-the-score-axis-autoscales-over-what-is-loaded.md)):
-  a pinned `domain` is what fixes a legend for a figure, and the Score menu's
-  "Pin current min/max" writes it from what is drawn. The feature display's
+  a pinned `domain` is what fixes a legend for a figure, and the Set min/max
+  score dialog's "Use current range" writes it from what is drawn. The feature display's
   categorical counterpart is "Pin distinct colors" (`pinColorDomain`), which
   appends every value its key's rows list to `color.domain`, since two
   unlisted values can hash onto one colour — and a row sharing a colour

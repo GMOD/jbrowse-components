@@ -3,13 +3,12 @@ import { lazy } from 'react'
 import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
-import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 
 import { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
 import { autoscaleGroupMembers, autoscalePeers } from './autoscaleGroup.ts'
 
 import type { AutoscalePeer } from './autoscaleGroup.ts'
-import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -113,7 +112,16 @@ export function makeAutoscaleTypeSubMenu(
 // pair captioned every GC content track "(0 – 1)", and once one end was really
 // set it printed the other end's default beside it, in the one place the user
 // looks to find out what they have pinned.
-export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
+//
+// The drawn domain rides along so the dialog can offer "Use current range",
+// which freezes the axis where it is drawn: never the resolved `*Bound` pair,
+// which on an autoscaled track is `undefined` at both ends and would pin
+// nothing. Each display names its own domain (`coverageDomain` on the
+// alignments band), so the caller hands it in.
+export function makeSetMinMaxScoreItem(
+  self: ScoreScaleModel,
+  domain?: [number, number],
+): MenuItem {
   const { manualMinScore, manualMaxScore } = self
   return {
     label: self.hasManualScoreBounds
@@ -122,39 +130,8 @@ export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
     onClick: () => {
       getDialogHost(self).queueDialog(handleClose => [
         SetMinMaxDialog,
-        { model: self, handleClose },
+        { model: self, domain, handleClose },
       ])
-    },
-  }
-}
-
-// Freezes the axis where it is drawn, so a pan or a zoom no longer moves it:
-// the drawn domain, never the resolved `*Bound` pair, which on an autoscaled
-// track is `undefined` at both ends and would pin nothing. The caller hands
-// the domain in, since each display names its own (`coverageDomain` on the
-// alignments band), and `makeScoreSubMenu` offers the row only while it is
-// known.
-export function makePinCurrentRangeItem(
-  self: ScoreScaleModel,
-  domain: [number, number],
-): NormalMenuItem {
-  return {
-    label: 'Pin current min/max',
-    onClick: () => {
-      self.setMinScore(domain[0])
-      self.setMaxScore(domain[1])
-    },
-  }
-}
-
-// Only offered when a manual bound is set; clears both (same path the dialog
-// takes when its fields are cleared) so autoscale resumes.
-function makeClearMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
-  return {
-    label: 'Clear manual min/max',
-    onClick: () => {
-      self.setMinScore(undefined)
-      self.setMaxScore(undefined)
     },
   }
 }
@@ -182,8 +159,8 @@ export function makeCrossHatchItem(self: {
 export interface ScoreSubMenuOptions {
   label?: string
   autoscaleOptions?: [string, string][]
-  // The domain drawn right now, which "Pin current min/max" copies into the
-  // slots; undefined before it resolves, and the row waits with it.
+  // The domain drawn right now, which the min/max dialog's "Use current range"
+  // button copies into the slots; undefined before it resolves.
   domain?: [number, number]
   leadingItems?: MenuItem[]
   trailingItems?: MenuItem[]
@@ -245,7 +222,6 @@ export function makeSetScoreRulesItem(
   const count = self.scoreRules.length
   return {
     label: count > 0 ? `Reference lines (${count})...` : 'Reference lines...',
-    icon: HorizontalRuleIcon,
     onClick: () => {
       getDialogHost(self).queueDialog(handleClose => [
         SetScoreRulesDialog,
@@ -290,9 +266,7 @@ export function makeScoreSubMenu(
             ),
           ]
         : []),
-      makeSetMinMaxScoreItem(self),
-      ...(domain ? [makePinCurrentRangeItem(self, domain)] : []),
-      ...(self.hasManualScoreBounds ? [makeClearMinMaxScoreItem(self)] : []),
+      makeSetMinMaxScoreItem(self, domain),
       ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
       ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),
       ...trailingItems,

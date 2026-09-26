@@ -1612,7 +1612,7 @@ export default function baseStateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * The categorical analogue of the Score menu's "Pin current min/max"
+       * The categorical analogue of the min/max dialog's "Use current range"
        * (ADR-124): writes `pinnedColorDomain`, so every value the key lists
        * spends its own range color in key order, where the hash could give
        * two values one color.

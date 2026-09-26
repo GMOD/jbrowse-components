@@ -767,13 +767,13 @@ file is refused for.
 With no `marks` at all a display plots `score` as bars, links a record to the
 other end it names, or opens the dialog where the fields say neither.
 
-The score submenu writes `scales.y`: **Set min/max score...**, **Pin current
-min/max**, **Clear manual min/max**. Beside it, **Point size**, **Show cross
-hatches**, the legend toggle, and **Filter by...**, whose jexl runs in the
-worker before the encoding, so a filtered feature is neither drawn nor in the
-axis. Hovering a mark shows its location, value and colour class; clicking opens
-the feature, and clicking a binned or coverage bar opens the bin remade over the
-features under it.
+The score submenu writes `scales.y` through **Set min/max score...**, whose
+dialog also fills both fields from the range on screen or empties them back to
+autoscale. Beside it, **Point size**, **Show cross hatches**, the legend toggle,
+and **Filter by...**, whose jexl runs in the worker before the encoding, so a
+filtered feature is neither drawn nor in the axis. Hovering a mark shows its
+location, value and colour class; clicking opens the feature, and clicking a
+binned or coverage bar opens the bin remade over the features under it.
 
 The full slot list is the
 [LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the

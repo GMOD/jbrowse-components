@@ -145,9 +145,8 @@ test('an explicit score bound still beats the pinned default', async () => {
 
 // The pinned domain resolves both score bounds to numbers with neither config
 // slot set, so a Score menu asking the resolved bounds whether a manual range is
-// in force captioned every freshly opened GC track "(0 – 1)" and offered it a
-// "Clear manual min/max" row that wrote the sentinels already there — nothing
-// changed on screen and the row stayed.
+// in force captioned every freshly opened GC track "(0 – 1)", naming a range
+// nobody had pinned in the one place the user looks to find out.
 function scoreMenuLabels(display: { trackMenuItems: () => unknown[] }) {
   const walk = (items: unknown[]): string[] =>
     items.flatMap(item => {
@@ -166,7 +165,6 @@ test('the pinned domain is not mistaken for a manual score bound', async () => {
   display.setMaxScore(0.75)
   expect(scoreMenuLabels(display)).toEqual([
     'Set min/max score (auto – 0.75)...',
-    'Clear manual min/max',
   ])
 
   display.setMinScore(undefined)

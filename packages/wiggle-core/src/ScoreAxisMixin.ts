@@ -154,9 +154,9 @@ export function ScoreAxisMixin() {
        * Whether the user has pinned either end, which is a different question
        * from whether either end resolved to a number: `defaultScoreDomain` fills
        * the unset ends in, so a GC content track answers yes to the second with
-       * nothing configured. The score menu asks this one — it gates the "Clear
-       * manual min/max" row, and a Clear that writes the nothing already there
-       * is a row that does nothing and never goes away.
+       * nothing configured. The score menu asks this one — it captions the
+       * min/max row with the range in force, and a caption off the resolved
+       * pair named a range on every freshly opened GC content track.
        */
       get hasManualScoreBounds(): boolean {
         return (

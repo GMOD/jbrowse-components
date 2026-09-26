@@ -25,7 +25,6 @@ import LinearGenomeViewPlugin, {
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
 import { LINK_NO_REGION, pointInsetPx } from '@jbrowse/render-core/marks'
-import { makePinCurrentRangeItem } from '@jbrowse/wiggle-core'
 import { render, screen, waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
@@ -495,7 +494,8 @@ test("pinning the current range lands on the display's scale", () => {
   display.setRpcData(0, result([{ y: [3, 40] }]), REGION)
   const drawn = display.domain!
   expect(drawn[1]).toBeGreaterThanOrEqual(40)
-  makePinCurrentRangeItem(display, drawn).onClick()
+  display.setMinScore(drawn[0])
+  display.setMaxScore(drawn[1])
   expect([
     display.conf.scales.y.domainMin,
     display.conf.scales.y.domainMax,
