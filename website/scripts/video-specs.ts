@@ -21,7 +21,6 @@
 import { liveHref } from '../src/lib/code-base.ts'
 import { GENE_CHANNEL_SPEC_JSON } from './specs/features.ts'
 import { PGGB_SEGMENTS_TRACK_JSON } from './specs/graph-ecoli.ts'
-import { HPRC_SEGMENTS_TRACK_JSON } from './specs/graph-hprc.ts'
 import { CACTUS_SEGMENTS_TRACK_JSON } from './specs/pangenome_cactus.ts'
 import { configVideos } from './videos/config.ts'
 import { dog10kVideos } from './videos/dog10k.ts'
@@ -122,11 +121,6 @@ export const externalClips: ExternalClip[] = [
 // A tour reading its config through ECOLI_DEMO_BASE would need the check to
 // know that; none does yet, and the check says so rather than guessing.
 export const pastedTrackConfigs = [
-  {
-    video: 'pangenome/hprc_end_to_end',
-    doc: 'tutorials/pangenome_hprc.md',
-    json: HPRC_SEGMENTS_TRACK_JSON,
-  },
   {
     video: 'pangenome/pggb_subgraph_launch',
     doc: 'tutorials/pangenome_ecoli.md',

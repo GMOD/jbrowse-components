@@ -1,27 +1,20 @@
-// The graph tours, on the three pangenome pages. Three of the four shapes the
-// corpus films start here: the launch ROUTE, the layout RE-LAYOUT, and the WHOLE
-// SESSION that opens pangenome_hprc.
+// The graph tours, on the pangenome pages: the launch ROUTE, the layout
+// RE-LAYOUT, and the HPRC browse page's route from the HPRC page itself.
 //
-// Each of the three pages now has one tour that starts from a session holding
+// The two E. coli pages each have one tour that starts from a session holding
 // none of the page's data, because getting a graph into JBrowse IS the
-// difficulty on all three: the adapter reads four files off one prefix, so the
+// difficulty there: the adapter reads four files off one prefix, so the
 // file-or-URL workflow has no extension to guess an adapter from and pasting the
-// config is the route. The two E. coli tours and the HPRC one walk the same four
-// moves — paste, navigate, launch, read — on three different graphs.
+// config is the route. The HPRC browse page starts where its reader does, on
+// the hosted page's launch.
 import { menuCascade, sessionSpec } from '../screenshot-spec-helpers.ts'
+import { HPRC_PAGE, MHC_GRAPH_LINK } from '../specs/genomes_pangenome.ts'
 import {
   PGGB_SEGMENTS_TRACK_JSON,
   pggbVideoFixtures,
 } from '../specs/graph-ecoli.ts'
 import { GRAPH_DRAWN, TOOLBAR_READY } from '../specs/graph-fixtures.ts'
-import {
-  HPRC_SEGMENTS_TRACK_JSON,
-  TOUR_MHC_LOCUS,
-  TOUR_NODE,
-  hprcClusterFixtures,
-  hprcTourSession,
-  hprcVideoFixtures,
-} from '../specs/graph-hprc.ts'
+import { hprcClusterFixtures, hprcVideoFixtures } from '../specs/graph-hprc.ts'
 import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
 import { LOCATION_BOX, RUBBERBAND, displayReady, trackMenu } from './shared.ts'
 
@@ -163,8 +156,9 @@ const {
   haplotype: HAPLOTYPE,
   haplotypeNode: HAPLOTYPE_NODE,
   haplotypeGenesDisplay: HAPLOTYPE_GENES_DISPLAY,
-  haplotypeSession,
   launchedZoomOut,
+  c4Window: HPRC_C4_WINDOW,
+  mhcWindow: HPRC_MHC_WINDOW,
   tierSession,
   tierGraphViewId: TIER_GRAPH_VIEW,
   mhcBubbleNode: MHC_BUBBLE,
@@ -172,7 +166,7 @@ const {
   mhcSelection: MHC_SELECTION,
 } = hprcVideoFixtures
 
-// What the HPRC tour drives, named here because a menu label and a testid read
+// What the add-track tours drive, named here because a menu label and a testid read
 // as noise inline and each has a reason to be the one it is.
 const GRAPH_WORKFLOW = 'Add pangenome graph track'
 const URL_INPUT = '[data-testid="urlInput"]'
@@ -193,10 +187,10 @@ const formTrackMenu = (json: string) =>
 const formDisplayReady = (json: string) =>
   `[data-display-id^="${formTrackSlug(json)}-"][data-display-id$="-LinearBasicDisplay"][data-display-phase="ready"]`
 
-// GETTING A GRAPH INTO A SESSION, which is the opening of all three graph tours
-// and one route rather than three: **File → Open track... → Add pangenome graph
-// track**, the form, **Submit**. Written once so the three pages cannot
-// document three different ways in, which is the failure a reader hits hardest
+// GETTING A GRAPH INTO A SESSION, which is the opening of both E. coli graph
+// tours and one route rather than two: **File → Open track... → Add pangenome
+// graph track**, the form, **Submit**. Written once so the two pages cannot
+// document two different ways in, which is the failure a reader hits hardest
 // -- following a route on one page and finding the labels renamed on the next.
 //
 // Every field is read off the page's own fence (check-paste-configs holds the
@@ -293,7 +287,6 @@ function launchGraphSteps(menu: string): VideoStep[] {
   ]
 }
 const GENES_READY = displayReady('hg38_ncbiRefSeq_ucsc-LinearBasicDisplay')
-const HPRC_FORM_READY = formDisplayReady(HPRC_SEGMENTS_TRACK_JSON)
 const PGGB_FORM_READY = formDisplayReady(PGGB_SEGMENTS_TRACK_JSON)
 const CACTUS_FORM_READY = formDisplayReady(
   cactusVideoFixtures.segmentsTrackJson,
@@ -575,103 +568,112 @@ export const pangenomeVideos: VideoSpec[] = [
     ],
     tailMs: 3000,
   },
-  // THE WHOLE PAGE IN ONE SESSION. Every other tour here starts in an app that
-  // already has the data; this one starts in hg38 with its genes and nothing
-  // else, and the first thing it does is put HPRC's graph into the session
-  // through the form a reader would use.
-  //
-  // It sits under "Cut the window out as a graph" on pangenome_hprc and is one
-  // of two clips on that page: the sections it walks through are "Add the graph
-  // track", "Cut the window out as a graph", "Lay it out on GRCh38 coordinates"
-  // and "From the allele back to GRCh38", which is most of the page's working
-  // route. A second clip of the Layout dropdown alone stood in that third
-  // section until this one existed, and it was the same subgraph making the
-  // same move a screen further down.
+  // THE BROWSE PAGE'S ROUTE, from the HPRC page itself. The graph launch is a
+  // target="_blank" link, so the tour follows it into the new tab and films the
+  // session it opens: the graph following the linear view to C4 and out to the
+  // bubble tier over the whole chromosome, then back to MHC class II and one
+  // allele taken out to the haplotype that contributed it.
   {
-    name: 'pangenome/hprc_end_to_end',
+    name: 'pangenome/hprc_browse',
     description:
-      "HPRC release 2's graph from the add-track form to an allele read off the drawing: add, navigate, cut a subgraph, anchor it, and take one node back to its GRCh38 interval",
-    url: hprcTourSession(),
-    // Sized to the FORCE drawing, which is the tour's tallest state and neither
-    // of its ends. The run reports 276px of app at the first frame (one gene
-    // lane), 1103px at its tallest, and 723px at the last, because the anchored
-    // layout the tour finishes in is seven rank rows where the force pane takes
-    // the plugin's whole MAX_CANVAS_HEIGHT.
-    //
-    // The pane is not a free parameter here the way it is in a figure: the
-    // graph view is created by the menu item, so nothing in this spec can write
-    // the `paneHeight` a session snapshot can. So the choice is a frame with
-    // page background under its short states or a frame that clips the force
-    // drawing, and the drawing is what the launch was filmed for.
-    viewportHeight: 1120,
-    readySelector: GENES_READY,
+      'HPRC release 2 from its genomes.jbrowse.org page: the HLA / MHC graph launch, the graph following the linear view to C4 and out to the bubble tier across chromosome 6, and one allele highlighted in hg38 and opened on the haplotype that contributed it',
+    url: HPRC_PAGE,
+    noSession: true,
+    readyText: 'Whole chromosome',
     readyTimeout: 120000,
+    viewportHeight: 1300,
     steps: [
-      ...addGraphTrackSteps(HPRC_SEGMENTS_TRACK_JSON),
-      // Submit dismisses the widget itself (finishAddTrack), so the drawer
-      // closing is the app's answer rather than a step.
       {
-        type: 'waitForSelector',
-        selector: HPRC_FORM_READY,
-        timeout: 180000,
-        cut: true,
+        type: 'hover',
+        selector: MHC_GRAPH_LINK,
+        say: 'Press graph on the HLA / MHC row',
+        hold: 1500,
       },
-      { type: 'delay', ms: 2600 },
-      ...navigateSteps(TOUR_MHC_LOCUS),
-      {
-        type: 'waitForSelector',
-        selector: HPRC_FORM_READY,
-        timeout: 180000,
-      },
-      { type: 'delay', ms: 1800 },
-      ...launchGraphSteps(formTrackMenu(HPRC_SEGMENTS_TRACK_JSON)),
+      { type: 'click', selector: MHC_GRAPH_LINK, opensTab: true },
       {
         type: 'waitForSelector',
         selector: TOOLBAR_READY,
-        timeout: 180000,
+        timeout: 240000,
         cut: true,
       },
-      { type: 'delay', ms: 2500 },
-      // The re-layout, on the human graph: every x becomes a GRCh38 coordinate,
-      // so each allele drops under the place it attaches and the drawing lines
-      // up with the segments lane above it.
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {
-        type: 'click',
-        selector: LAYOUT_SELECT,
-        say: 'Lay the alleles out on GRCh38 coordinates',
-        hold: 800,
+        type: 'delay',
+        ms: 3000,
+        say: 'MHC class II, the graph anchored under the linear view',
       },
-      { type: 'waitForText', text: 'Anchored' },
-      { type: 'click', text: 'Anchored' },
       {
-        type: 'waitForSelector',
-        selector: TOOLBAR_READY,
-        timeout: 180000,
-        cut: true,
+        type: 'type',
+        selector: LOCATION_BOX,
+        value: HPRC_C4_WINDOW,
+        clear: true,
+        say: 'Type the C4 window, and the graph follows',
       },
-      { type: 'delay', ms: 2500 },
-      // And back to a coordinate. The node is NAMED rather than pointed at, so
-      // a cut that comes back different fails the run instead of right-clicking
-      // empty canvas. What the item writes into the linear view is the
-      // reference segment this allele attaches across, not the allele's own
-      // length — which is why the clip ends holding both panes.
+      { type: 'press', key: 'Enter' },
+      { type: 'waitForAppSettled', timeout: 180000, cut: true },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 3000, say: 'C4, cut again under the linear view' },
+      {
+        type: 'type',
+        selector: LOCATION_BOX,
+        value: 'chr6',
+        clear: true,
+        say: 'Out to the whole chromosome',
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'waitForAppSettled', timeout: 240000, cut: true },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Chromosome 6 from the bubble tier, one node per bubble',
+      },
+      {
+        type: 'type',
+        selector: LOCATION_BOX,
+        value: HPRC_MHC_WINDOW,
+        clear: true,
+        say: 'Back to MHC class II',
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'waitForAppSettled', timeout: 180000, cut: true },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 2500, say: 'The segments again' },
       {
         type: 'rightclick',
-        anchor: { view: 1, graphNode: TOUR_NODE },
-        say: 'Find where this node attaches in hg38',
+        anchor: { view: 1, graphNode: HAPLOTYPE_NODE },
+        say: 'Right-click the allele under HLA-DRB5',
         hold: 900,
       },
       { type: 'waitForText', text: HIGHLIGHT_ITEM },
       { type: 'click', text: HIGHLIGHT_ITEM },
-      { type: 'delay', ms: 2000 },
+      { type: 'delay', ms: 2500 },
+      {
+        type: 'rightclick',
+        anchor: { view: 1, graphNode: HAPLOTYPE_NODE },
+        say: `Open in ${HAPLOTYPE}`,
+        hold: 900,
+      },
+      { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
+      { type: 'click', text: `Open in ${HAPLOTYPE}` },
+      {
+        type: 'waitForSelector',
+        selector: displayReady(HAPLOTYPE_GENES_DISPLAY),
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'NA20809 haplotype 2, on its own chromosome 6',
+      },
+      ...launchedZoomOut(6).map((step, i) =>
+        i === 0 ? { ...step, say: 'Zoom out for its neighbours' } : step,
+      ),
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 3000 },
     ],
-    // THE FORCE DRAWING, not the last frame. A poster is what a reader sees
-    // before pressing play, and the default (the state the tour ends in) is the
-    // anchored layout, which fills two thirds of a frame sized for the pane
-    // above it — so the still standing in for the whole tour would be a strip
-    // of app over page background. This is the clip's own fullest frame, in the
-    // seconds between the launch landing and the Layout dropdown opening.
-    posterAt: 30,
     tailMs: 3500,
   },
   // OUT OF THE GRAPH AND INTO THE STRAIN, which is the one route on the pggb
@@ -769,74 +771,6 @@ export const pangenomeVideos: VideoSpec[] = [
     ],
     tailMs: 4000,
   },
-  // OUT OF THE GRAPH AND INTO THE HAPLOTYPE, on the human graph. The E. coli
-  // page films this move as pggb_out_to_strain; on HPRC the page said the
-  // haplotypes could not be loaded, and the end-to-end tour stops at
-  // `Highlight in hg38`. With NA20809 haplotype 2 loaded from its GenArk hub
-  // (hprcHaplotypeSession says why that works), the same node's menu carries
-  // `Open in NA20809.2` with the allele's own locus, and this is that entry
-  // taken. pangenome/hprc_haplotype_launch is the still of what it opens.
-  {
-    name: 'pangenome/hprc_out_to_haplotype',
-    description:
-      "An HPRC allele opened on the haplotype that contributed it: right-click the NA20809.2 node in the MHC class II cut, take its Open in entry, and read the same sequence on that haplotype's own chromosome 6",
-    // 420 on the graph pane, as the still has it: the launched view below is
-    // what the tour is for, and at the pane's own 600 the run put it 265 px
-    // under the frame.
-    url: haplotypeSession(420),
-    // Sized to the state the tour ENDS in: the linear view, the force pane and
-    // the haplotype's view the launch adds under them, off the run's own
-    // tallest-frame report.
-    viewportHeight: 1280,
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 180000,
-    steps: [
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      {
-        type: 'delay',
-        ms: 2000,
-        say: 'The MHC class II cut, with NA20809 haplotype 2 loaded',
-      },
-      // the tooltip names contributingAssembly, which is what says which
-      // haplotype to have loaded
-      {
-        type: 'hover',
-        anchor: { view: 1, graphNode: HAPLOTYPE_NODE },
-        say: 'Hover an allele for the haplotype that contributed it',
-        hold: 3200,
-      },
-      {
-        type: 'rightclick',
-        anchor: { view: 1, graphNode: HAPLOTYPE_NODE },
-        say: `Open in ${HAPLOTYPE}`,
-        hold: 900,
-      },
-      { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
-      { type: 'click', text: `Open in ${HAPLOTYPE}` },
-      // Gate on the launched view's own gene lane, fetched off hgdownload: the
-      // launch carries the session's annotation for the assembly it opens.
-      {
-        type: 'waitForSelector',
-        selector: displayReady(HAPLOTYPE_GENES_DISPLAY),
-        timeout: 180000,
-        cut: true,
-      },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      {
-        type: 'delay',
-        ms: 2500,
-        say: 'NA20809 haplotype 2, on its own chromosome 6',
-      },
-      // The launch frames the pane on the allele alone, so the first thing a
-      // reader does is zoom out for what surrounds it on the haplotype.
-      ...launchedZoomOut(6).map((step, i) =>
-        i === 0 ? { ...step, say: 'Zoom out for its neighbours' } : step,
-      ),
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'delay', ms: 3000 },
-    ],
-    tailMs: 3500,
-  },
   // THE LADDER ON THE HUMAN GRAPH: the bubble tier over a region, down to a
   // bubble, down to the fine index. pangenome/tier_to_fine films the first rung
   // on E. coli; here the tier is two megabases of the MHC, the bubble is the
@@ -845,8 +779,8 @@ export const pangenomeVideos: VideoSpec[] = [
   // not the whole chromosome the figure draws is at hprcTierSession.
   //
   // What the clip shows that the prose can only assert: the fine cut arrives
-  // as a SECOND pane under the tier's, because a graph pane is a cut and does
-  // not follow the linear view.
+  // as a SECOND pane under the tier's, because the session opens the tier pane
+  // without the follow, which is the state Pin leaves on the HPRC page.
   {
     name: 'pangenome/hprc_tier_to_fine',
     description:

@@ -454,12 +454,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.29, 1],
     position: 'left',
   },
-  genomes_pangenome: {
-    // The MHC class II graph the page's graph launch draws, the graph pane only.
-    src: 'pangenome/genomes_hprc_mhc_graph.png',
-    band: [0.74, 1],
-    xband: [0, 0.5],
-  },
   genomes_synteny: {
     // curved ribbons with transparent indels: the blue reverse-strand sweep
     // crossing the pink forward-strand, indels dropped to white
@@ -475,11 +469,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.05, 0.95],
   },
   pangenome_hprc: {
-    // The CFHR3/CFHR1 deletion arc under the reference row, the graph pane only.
-    src: 'pangenome/hprc_cfhr_deletion.png',
-    band: [0.78, 0.97],
-  },
-  pangenome_graph_reading: {
     // The KIV-2 window force-directed with its bubbles haloed: the knot of
     // loops and the labels naming each bubble, below the linear lanes.
     // xband starts right of the kringle-copies callout.

@@ -23,7 +23,7 @@ published reference of its own.
   hg38 with its genes and the rGFA segments track loaded on it, plus
   [part 2's callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset)
   for the first figure
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
+- [the GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin),
   for the track that uses `GbzBaseSyntenyAdapter` and part 1's segments track;
   every other track here is a URL you can paste
 - `bcftools`, to genotype the panel out of the callset
@@ -438,7 +438,6 @@ window.
 
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/pangenome_graph_reading)
 - [](/docs/tutorials/hprc_multiway_synteny)
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/pangenome_prepare_graph)

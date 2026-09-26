@@ -457,7 +457,6 @@ bash build_amylase_haplotypes.sh
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/pangenome_hprc_part3)
-- [](/docs/tutorials/pangenome_graph_reading)
 
 ## References
 

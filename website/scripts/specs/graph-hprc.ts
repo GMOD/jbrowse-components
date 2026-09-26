@@ -8,6 +8,11 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import {
+  PORTAL_CONFIG,
+  PORTAL_LGV_ID,
+  portalGraphLaunch,
+} from './genomes_pangenome.ts'
+import {
   GRAPH_DRAWN,
   TOOLBAR_READY,
   local,
@@ -197,51 +202,6 @@ const INV_NONCARRIER_PPIAL4F = 'JBHDTM010000033.1:4,284,528-4,285,287'
 // the callout sits at the start of the row it names instead of at a measured x.
 const windowStart = (loc: string) => loc.split('-')[0]!
 
-// The CHM13 figure, at 17q25.3. Every other haplotype in this graph names contigs
-// by GenBank accession and is not a loadable assembly, so a donor node's
-// right-click menu has nothing to open. CHM13 is the exception: it is in the graph
-// as a contributor (rank 61, added after 60 haplotypes, so it is credited with
-// little), it spells its contigs `chr17`, and T2T-CHM13v2.0 is hosted at UCSC. So
-// this is the one HPRC window where the graph's own sequence can be opened on the
-// assembly that contributed it.
-//
-// The node is the largest CHM13-only segment in the graph that touches GRCh38 at
-// all, found by scanning `tabix links.bed.gz CHM13#0#chr<n>` for rows with a
-// GRCh38 endpoint: 141,710 bp of CHM13 chr17 hanging off a GRCh38 anchor,
-// one link in and one link out. Subtelomeric, which is where T2T has sequence and
-// GRCh38 has none.
-const CHM13_WINDOW = 'chr17:83,010,000-83,040,000'
-const CHM13_REGION = {
-  refName: 'chr17',
-  assemblyName: 'hg38',
-  start: 83010000,
-  end: 83040000,
-}
-const CHM13_NODE = 's460574'
-// The bubble the node is the long allele of: 28 segments over a 928 bp
-// reference span, longest allele 145,411 bp (`tabix bubbles.bed.gz
-// 'GRCh38#0#chr17:83,022,000-83,024,000'`; release 2.0 had it as 34 segments
-// over 1,023 bp with a 146,023 bp allele).
-const CHM13_BUBBLE = { refName: 'chr17', start: 83022324, end: 83023252 }
-// The node's own span on CHM13, from its `SN`/`SO` tags.
-const CHM13_ALLELE = { refName: 'chr17', start: 83899717, end: 84041427 }
-// The node's own span padded to a round window, and it STAYS this tight
-// (review: "ideally we would zoom out the lineargenomeview even more to show
-// how these L1 transposons are more frequent here than elsewhere"). Widening it
-// draws nothing, and that is a fact about the SEQUENCE rather than about the
-// lane: the flank is the same material as the allele. Counted off
-// chm13v2.0_rmsk.bb over matched 142 kb windows, the allele carries 44 L1
-// records at 24.0% bp-weighted divergence and the left flank 41 at 23.9%, both
-// 95% L1M*. There is no boundary for a wider window to put in frame.
-//
-// (Two earlier passes each concluded something wider WAS there -- first "no
-// local contrast", then a 5.3 Mb density lane in which the allele was the
-// tallest bin. The first was the joined-span bug in build_repeat_density.sh,
-// every number in it roughly double. The second was real but window-dependent:
-// binned to 100 kb, 130 of chr17's 843 bins carry more LINE than this allele,
-// so the lane was measuring the box it was drawn in.)
-const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
-
 // C4, from the tutorial's own table of loci worth a look.
 // `tabix hprc-v2.1-mc-grch38.links.bed.gz 'GRCh38#0#chr6:31980000-32050000'`
 // gives 13 rank-0 backbone segments and 21 links out to non-reference segments
@@ -374,30 +334,6 @@ function haplotypeGeneLane(trackId: string) {
   }
 }
 
-// UCSC's RepeatMasker on CHM13, as a session track: the fixture config carries
-// no repeat annotation, and hs1 has no copy on jbrowse.org, so it comes off
-// hgdownload's bigBed, which answers ranged reads with CORS in well under a
-// second. (The note further down ruling hgdownload out is about a whole-file GET
-// of hs1.2bit; this is a handful of index reads over a 180 kb window.) There was
-// a matching hg38 lane beside it until this round — see repeatLane for the
-// measurement that retired it.
-const HS1_RMSK_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'hs1_rmsk_ucsc',
-  // The colour key lives in the track NAME, not in a pill over the lane. The
-  // lane is one collapsed row now, so a pill on it covers the whole thing --
-  // which is what the previous round's pill did the moment the row shrank.
-  name: 'RepeatMasker (T2T-CHM13v2.0), LINE elements in red',
-  assemblyNames: ['hs1'],
-  adapter: {
-    type: 'BigBedAdapter',
-    bigBedLocation: {
-      uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb',
-      locationType: 'UriLocation',
-    },
-  },
-}
-
 // ClinVar and ClinGen were the first candidates and mark nothing here: ClinVar
 // is ~300 SNVs across all of LPA. Swiss-Prot's domain annotation names each
 // kringle, one per KIV-2 copy the reference carries.
@@ -409,61 +345,6 @@ const HG38_UNIPROT_DOMAINS_TRACK = {
   name: 'UniProt domains (Swiss-Prot)',
   assemblyNames: ['hg38'],
   uri: 'https://jbrowse.org/demos/hprc/lpa_uniprot_domains.bed.gz',
-}
-
-// A repeat lane read for WHAT THE SEQUENCE IS MADE OF, never for how much of it
-// there is (review: "the repeatmasker track is not very interesting
-// unfortunately and looks sort of glitchy even, just being collapsed layout.
-// its also too zoomed in to tell if this amount of repeat is significant
-// compared to background"). The second half of that is right and unfixable, and
-// three rounds were spent trying to fix it anyway -- a wider element window, a
-// 3 Mb density lane, a 5.3 Mb one -- before the annotation itself said why.
-//
-// THE L1 HERE IS DEAD, and the composition rules out the reading a density lane
-// kept being built to support (review: "i just wanted to show that it seems like
-// the loop in the graph is an 'l1 invasion' or cluster"). Over the allele's
-// 142 kb, chm13v2.0_rmsk.bb carries 44 L1 records at 24.0% bp-weighted
-// divergence, 95% of them L1M* -- the mammalian-wide subfamilies, not primate
-// ones. There is no L1HS and nothing under 6% divergence. An invasion is L1PA2
-// through L1HS under 5%, so whatever built this interval finished before the
-// primates. The left flank is 41 records at 23.9%, also 95% L1M*: the same
-// material, which is why nothing separates the two at any window.
-//
-// What the lane CAN say is per-element and true: this interval is built out of
-// old L1 fossils, which is the sequence a BAC-and-Sanger reference had no way to
-// place, and that is the mechanism the lane was added for. Labels stay off: 171
-// repeat names over 180 kb is a wall of small print, and the class is the one
-// thing the colour already carries.
-//
-// (`bigRmskBed` JOINS the fragments of one insertion across intervening
-// sequence, so a record's span is not an element length -- an earlier version of
-// this comment read a 13.6 kb span off it and called it an L1MD element. Aligned
-// bases top out near 7.9 kb, and joined records overlap enough that summing them
-// passes 100% of the window. Coverage comes from the merged bigWig instead.)
-function repeatLane(trackId: string) {
-  return {
-    trackId,
-    type: 'LinearBasicDisplay',
-    // COLLAPSED, which is a height decision and costs this lane nothing (review:
-    // "also try to extensively reduce y-screen real estate on left side"). The
-    // labels are already off and what the lane is read for is how much of the
-    // interval is red, so packing 171 elements into rows that avoid overlap was
-    // spending ~150 px on a layout nobody reads: collapsed draws them all on one
-    // row, and an overlap between two repeat elements is a couple of bases.
-    displayMode: 'collapsed',
-    showLabels: 'none',
-    // LINE red, everything else grey, off the class the bigBed writes into the
-    // name after a '#' (`L1MD1#LINE/L1`). Two colors rather than one per class:
-    // the finding is that one class builds this interval, so a per-class palette
-    // would spend a legend on the four that do not. It is also what lets the
-    // labels stay off — a bar's color says its class without a name on it.
-    color:
-      "jexl:includes(get(feature,'name'),'#LINE') ? 'rgb(200,60,45)' : 'rgb(158,158,158)'",
-    // grow, so the band is whatever one collapsed row needs rather than a
-    // number picked in advance
-    heightMode: 'grow',
-    height: 90,
-  }
 }
 
 // The structural tier of the wave VCF, which is what makes it comparable to the
@@ -622,8 +503,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
       // over the ceiling and the pane took all of it. `paneHeight` replaces the
       // ceiling (the MIN_CANVAS_HEIGHT floor of 160 still wins), the drawing
       // auto-fits smaller, and the node labels are drawn at a fixed size, so
-      // they stay the size they were. Same value as hprc_chm13_allele, which
-      // was measured over the same trade.
+      // they stay the size they were.
       //
       // It also squares the composite from the other end. `+append` pads the
       // shorter part, and the note on the anchored half below records that
@@ -693,80 +573,6 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
 // ---------------------------------------------------------------------------
 // What website/scripts/video-specs.ts films on this dataset
 // ---------------------------------------------------------------------------
-//
-// THE TOUR STARTS WITH NO HPRC TRACK IN THE SESSION, which is the whole reason
-// it has a config of its own. `hprc.json` already carries
-// `hprc_minigraph_segments`, and `doPasteConfigSubmit` rejects a pasted config
-// whose `trackId` is taken rather than merging it — so a tour filmed against
-// the figures' config could not add the track the figures use. `hprc_tour.json`
-// is that config with the HPRC tracks removed: hg38, its genes, and the plugin.
-//
-// It is also the tour's live link (videoLiveUrls), and that is the stronger
-// half of the trade. A figure's link opens the state the figure shows; a tour's
-// opens the state the tour STARTS in, so a reader who has just watched the
-// route can take it, paste the same block, and end up where the clip ended.
-const HPRC_TOUR_CONFIG = local('test_data/graphgenomeview/hprc_tour.json')
-
-// The reader's window before they cut anything: wide enough that narrowing to
-// the class II locus is a visible move, narrow enough that the fine segments
-// index draws (it is one feature per graph SEGMENT, so a megabase is a mat).
-const TOUR_OPENING_WINDOW = 'chr6:32,400,000-32,700,000'
-
-// WHAT THE TOUR TYPES INTO THE PASTE BOX, and it is `pangenome_hprc.md`'s own
-// "Load the graph" fence character for character. A reader watching the clip is
-// meant to recognise the block above it on the page, so the two are one text:
-// change the fence and change this in the same commit.
-//
-// It carries `assemblyNameToPanSN`, which is the reason this track cannot be
-// added the ordinary way. `Add a track from file or URL` guesses an adapter
-// from a file extension and offers no adapter options, so a graph whose
-// segments are named `GRCh38#0#chr6` has nowhere to say which loaded assembly
-// that prefix means. Pasting the config is the route, which is what makes it
-// worth filming rather than describing.
-export const HPRC_SEGMENTS_TRACK_JSON = `{
-  "type": "FeatureTrack",
-  "trackId": "hprc_minigraph_segments",
-  "name": "HPRC release 2 graph (rGFA segments)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
-    "assemblyNameToPanSN": { "hg38": "GRCh38" }
-  },
-  "displayDefaults": { "showLabels": "none" }
-}`
-
-// The locus the tour navigates to before it launches a graph, and the window
-// every MHC figure on the page is cut from. Typed into the location box rather
-// than opened at: the drawer that carries the paste box takes ~400 px off the
-// linear view while it is open, and an LGV keeps its bp-per-pixel across a
-// resize, so the window a session opened at is not the window standing when the
-// drawer closes. The launch reads `dynamicBlocks`, so without this step the cut
-// is whatever the drawer left behind — and TOUR_NODE, which the tour
-// right-clicks by id, is an id THIS window's cut returns.
-export const TOUR_MHC_LOCUS = 'chr6:32,500,000-32,560,000'
-
-// The node the tour right-clicks, which is the node the force half of
-// pangenome/hprc_mhc_anchored opens its menu on: the 1.8 kb NA20809.2 allele
-// over HLA-DRB5. HPRC_ALLELE above carries the whole account, including why
-// `Highlight in hg38` marks a different node than the one clicked.
-export const TOUR_NODE = HPRC_ALLELE
-
-// The state the tour opens in: hg38 and its genes, nothing of the pangenome
-// yet. The gene lane is the figures' own, so the track that arrives mid-tour
-// lands under the same annotation the rest of the page draws it under.
-export function hprcTourSession() {
-  return sessionSpec(HPRC_TOUR_CONFIG, {
-    views: [
-      {
-        type: 'LinearGenomeView',
-        assembly: 'hg38',
-        loc: TOUR_OPENING_WINDOW,
-        tracks: [hg38GeneLane(70)],
-      },
-    ],
-  })
-}
 
 // The callset lane the clustering tour drives, and the session it sits in.
 //
@@ -867,84 +673,28 @@ function cytobandLane() {
 }
 
 // ---------------------------------------------------------------------------
-// A haplotype loaded as an assembly, which turns the node menu's `Open in`
-// from the reference's flanking interval into the donor's own coordinates
+// A node opened on the haplotype that contributed it, on the config the HPRC
+// page launches
 // ---------------------------------------------------------------------------
 //
-// NA20809 haplotype 2 is the donor minigraph credits HPRC_ALLELE to (the
-// class II bubble's off-reference sequence is mostly HG01071 haplotype 1's, 64
-// of its 254 segments and 121 kb, but this allele is not among them). UCSC's
-// GenArk hub for that assembly (GCA_044166615.1) names its sequences by
-// GenBank accession, which is how the graph names them too
-// (`NA20809#2#CM094351.1` in the graph is `CM094351.1` in the 2bit), and its
-// chromAlias file spells the graph's PanSN name in an `hprcV2` column. The
-// assembly loads as `NA20809.2` with the graph's `NA20809#2` among its
-// aliases, and the launch resolves the node's haplotype against that alias.
-// The fixture is test_data/graphgenomeview/hprc_haplotype.json.
-//
-// The segments track there lists the haplotype among its `assemblyNames`, so
-// the pane the launch opens carries the graph's own segments on the
-// haplotype's coordinates as well as GenArk's RefSeq-mRNA lane.
-const HPRC_HAPLOTYPE_CONFIG = local(
-  'test_data/graphgenomeview/hprc_haplotype.json',
-)
+// NA20809 haplotype 2 is the donor minigraph credits HPRC_ALLELE to. The
+// portal config declares every release 2 haplotype as its chromosome lengths,
+// aliased by its PanSN `sample#haplotype`, beside a BED of its CAT genes, so
+// the node menu offers `Open in NA20809.2` with no map on the segments track.
 const HAPLOTYPE = 'NA20809.2'
-// HPRC_ALLELE's own span on the haplotype, which the launched pane is titled by
+// HPRC_ALLELE's own span on the haplotype
 const HAPLOTYPE_ALLELE_LOCUS = 'CM094351.1:32,495,297-32,497,076'
-// `<trackId>-<displayType>`, the id a track shown with no explicit displayId
-// gets (packages/core/src/util/tracks.ts); the launched pane shows its lanes
-// that way. The lane is HPRC's CAT annotation of this haplotype, sliced to the
-// MHC (test_data/graphgenomeview/hprc_mhc_NA20809.2.genes.gff3.gz): GenArk's
-// own gene lanes are empty here, RefSeq mRNAs mapping nothing within 100 kb of
-// the allele. CAT puts HLA-DRB9 and HLA-DRB6 either side of it and no HLA-DRB5
-// anywhere on this haplotype.
-const HAPLOTYPE_GENES_DISPLAY = 'NA20809.2_cat_genes-LinearBasicDisplay'
+const HAPLOTYPE_GENES_TRACK = 'NA20809.2_cat_genes'
+const HAPLOTYPE_GENES_DISPLAY = `${HAPLOTYPE_GENES_TRACK}-LinearBasicDisplay`
 const HAPLOTYPE_GENES_READY = `[data-display-id="${HAPLOTYPE_GENES_DISPLAY}"][data-display-phase="ready"]`
-const HAPLOTYPE_LGV = 'hprc_haplotype_lgv'
-const HAPLOTYPE_GRAPH = 'hprc_haplotype_graph'
-// The pane the launch adds is the one view the session did not pin an id for.
-// The launch frames it on the allele alone, 1.8 kb, which shows the segment
-// and nothing around it; a few zoom-outs on that pane's own button bring the
-// haplotype's neighbouring mRNAs and the graph's other segments into frame.
-const LAUNCHED_VIEW = `[data-testid^="view-container-"]:not([data-testid="view-container-${HAPLOTYPE_LGV}"]):not([data-testid="view-container-${HAPLOTYPE_GRAPH}"])`
-const LAUNCHED_ZOOM_OUT = `${LAUNCHED_VIEW} [data-testid="zoom_out"]`
+// The launched pane is the linear view the session did not pin an id for; the
+// graph pane has no zoom_out button.
+const LAUNCHED_ZOOM_OUT = `[data-testid^="view-container-"]:not([data-testid="view-container-${PORTAL_LGV_ID}"]) [data-testid="zoom_out"]`
 const launchedZoomOut = (clicks: number): ScreenshotAction[] =>
   Array.from({ length: clicks }, () => [
     { type: 'click' as const, selector: LAUNCHED_ZOOM_OUT },
     { type: 'waitForAppSettled' as const, timeout: 120000 },
   ]).flat()
-
-// The MHC class II cut with the haplotype loaded and nothing opened yet. The
-// tour takes the node's menu from here; the figure takes it too and captures
-// what it adds.
-//
-// No `connectedViewId` on any of these graph panes, and the recipe worklist is
-// why: it is a session-spec field the figure-recipe dialog cannot map to a
-// click, so carrying it would grow spec-recipe-unmapped.txt. It is also not
-// needed — with one linear view on the assembly in the session, the plugin
-// pairs hover sync and `Open in` with that view (linearViewTarget's fallback).
-export function hprcHaplotypeSession(paneHeight?: number) {
-  return sessionSpec(HPRC_HAPLOTYPE_CONFIG, {
-    views: [
-      {
-        id: HAPLOTYPE_LGV,
-        type: 'LinearGenomeView',
-        assembly: 'hg38',
-        loc: TOUR_MHC_LOCUS,
-        tracks: [hg38GeneLane(70), hprcSegmentsLane(MHC_REGION)],
-      },
-      {
-        id: HAPLOTYPE_GRAPH,
-        type: 'GraphGenomeView',
-        loadedTrackId: SEGMENTS_TRACK,
-        loadedRegion: MHC_REGION,
-        layoutMode: 'force',
-        colorScheme: 'reference-position',
-        ...(paneHeight === undefined ? {} : { paneHeight }),
-      },
-    ],
-  })
-}
 
 // ---------------------------------------------------------------------------
 // The bubble tier over the MHC, the coarse end of the ladder the tier tour
@@ -1016,19 +766,14 @@ export function hprcTierSession() {
   })
 }
 
-// ---------------------------------------------------------------------------
-// The synteny launch out of the graph, which needs two loaded contributors AND
-// a synteny track aligning them
-// ---------------------------------------------------------------------------
-//
-// What website/scripts/videos/pangenome.ts films on the human graph beyond the
-// end-to-end tour: the two sessions above and the ids their steps click.
+// What website/scripts/videos/pangenome.ts films on the human graph.
 export const hprcVideoFixtures = {
   haplotype: HAPLOTYPE,
   haplotypeNode: HPRC_ALLELE,
   haplotypeGenesDisplay: HAPLOTYPE_GENES_DISPLAY,
-  haplotypeSession: hprcHaplotypeSession,
   launchedZoomOut,
+  c4Window: C4_WINDOW,
+  mhcWindow: 'chr6:32,510,001-32,600,000',
   tierSession: hprcTierSession,
   tierGraphViewId: MHC_TIER_GRAPH,
   mhcBubbleNode: MHC_TIER_BUBBLE,
@@ -1818,240 +1563,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // A donor node opened on the assembly that contributed it, which needs a
-  // contributor the session can load: see CHM13_WINDOW for why CHM13 is the only
-  // one in this graph, and for how the node was found.
-  //
-  // Three panes, and the middle one is the join. Top: the 30 kb GRCh38 window,
-  // whose segments lane ends where the reference does. Middle: the graph cut from
-  // that window, where the boxed node is 142 kb of CHM13 attached at a 75 bp
-  // anchor -- an insertion the reference has no coordinates for, which is why the
-  // top pane cannot show it. Bottom: that node on CHM13's own chr17, where it is
-  // an ordinary interval and the same segments track draws it as one feature.
-  //
-  // A REPEATMASKER LANE ON THE CHM13 PANE, which is what the figure is otherwise
-  // missing (review: "there is no gene in this region, but if some other track
-  // would help potentially explain why this was missed in hg38 e.g. repeats can
-  // add that"). There is no gene, and there is no assembly gap either -- UCSC's
-  // hg38 `gap` track has one record past 82.5 Mb on chr17 and it is the terminal
-  // 10 kb telomere, so this is a real insertion allele rather than a hole GRCh38
-  // never closed. What the lane shows is the mechanism: the inserted 142 kb is
-  // built out of ancient L1, which is the sequence a BAC-and-Sanger reference had
-  // no way to place.
-  //
-  // ONE lane, where there were two, and the claim is COMPOSITION rather than
-  // amount: see repeatLane for the divergence and subfamily counts that decided
-  // both, and for the density part that used to sit beside this one.
-  //
-  // The bottom pane's gene lane is GONE with it, for the reason the top pane
-  // never had one: `jbrowse.org/ucsc/hs1/hs1.gff.gz` has nothing in this window,
-  // so it was 70 px of empty lane under a caption about a 142 kb insertion.
-  //
-  // `resolveContributors` matches a node's PanSN sample against the session's
-  // assembly *names*, so the assembly has to be named `CHM13` for the node menu to
-  // offer it. `hs1` is an alias, not the name.
-  //
-  // The fixture's hs1 is a committed chrom.sizes, where the tutorial tells a
-  // reader to load UCSC's `hs1.2bit`. Not a preference: hgdownload fetches fail
-  // often enough from the capture box to have committed a broken figure twice (a
-  // whole-file GET times out outright; the ranged 2bit read failed 2 of 6 times),
-  // and this pane draws no sequence at 180 kb. Same shape as the four haplotype
-  // assemblies beside it in that config. The genes are ours, not UCSC's,
-  // `jbrowse.org/ucsc/hs1/hs1.gff.gz`, which is what the hg38 lane above reads
-  // too.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_chm13_allele',
-    url: sessionSpec(HPRC_CONFIG, {
-      sessionTracks: [HS1_RMSK_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          // Which pane is which, in the app rather than over it (review: "might
-          // want text annotation toward the top that says HG38 and text
-          // annotation at the bottom that says T2T-CHM13v2.0"). A view header
-          // falls back to its assembly names, which read `hg38` and
-          // `Human (T2T-CHM13v2.0/hs1)` and are easy to miss between three
-          // panes; naming all three, graph included, leaves no `Untitled view`
-          // in the middle of the stack.
-          displayName: 'hg38 (GRCh38) — no coordinates for this sequence',
-          assembly: 'hg38',
-          loc: CHM13_WINDOW,
-          highlight: [{ ...CHM13_BUBBLE, color: 'rgba(60,65,72,0.10)' }],
-          tracks: [
-            // no gene lane on this pane: 17q25.3 is subtelomeric and RefSeq has
-            // one gene edge in the whole 30 kb, so the lane was blank. The bubble
-            // is what this pane is for -- a 1,023 bp reference span whose longest
-            // alternative is 146,023 bp, which is the number the graph below
-            // draws.
-            {
-              trackId: 'hprc_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              // cut to the one bubble this figure is about. 29 bubbles land in
-              // this 30 kb, each labelled over two lines, so the unfiltered lane
-              // packs ten rows of small print and the reader has to find the
-              // subject in it.
-              jexlFiltersSetting: ['jexl:feature.longestAlleleLength>100000'],
-              // one two-line label on one row; 60 was sized when the lane was
-              // unfiltered
-              height: 46,
-            },
-            // no repeat lane on THIS pane, where there used to be one on each.
-            // Two lanes is a comparison, and the comparison was the part that
-            // could not be read (see repeatLane): 41 elements scattered over
-            // 30 kb here against a near-solid strip over 180 kb there is a
-            // difference in bp/px before it is a difference in repeat. The lane
-            // below stands on its own as what the inserted sequence is made of.
-            hprcSegmentsLane(CHM13_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          displayName: 'HPRC release 2 graph, cut from the window above',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: CHM13_REGION,
-          layoutMode: 'force',
-          colorScheme: 'reference-position',
-          // 420 rather than the 600 px ceiling this pane pinned (reviewer: "we
-          // might want to consider ways to reduce height of the graph genome
-          // viewer, it takes a lot of height"). The pane is as tall as the
-          // drawing's own aspect ratio, and one 142 kb node among sub-kb ones
-          // makes that ratio all arc, so most of the 600 went to the loop with
-          // the chain squashed along the bottom edge. Measured at 420: the
-          // drawing scales 24.6% to 16.1%, the boxed arc is still what the eye
-          // lands on and the chain stays legible. `paneHeight` is a plugin prop
-          // (published bundle 35eccae5db30); the floor at MIN_CANVAS_HEIGHT
-          // still wins, so this cannot squeeze the pane below hover height.
-          //
-          // 320 now, from 420 (review: "also try to extensively reduce y-screen
-          // real estate on left side"). Same reasoning one notch further: what
-          // the pane is read for is the boxed arc against the chain it leaves
-          // and rejoins, and both survive the scale change because the drawing
-          // is fitted rather than cropped.
-          paneHeight: 320,
-        },
-        {
-          type: 'LinearGenomeView',
-          displayName: 'T2T-CHM13v2.0 (hs1) — an ordinary interval',
-          assembly: 'hs1',
-          loc: CHM13_ALLELE_WINDOW,
-          // the node's own span, drawn by the app from its coordinates rather
-          // than painted over the capture
-          highlight: [{ ...CHM13_ALLELE, color: 'rgba(60,65,72,0.10)' }],
-          tracks: [
-            repeatLane(HS1_RMSK_TRACK.trackId),
-            // the same lane as the pane above, deliberately: a display's config
-            // is per track, so a second color here would repaint the first pane
-            // too. It needs no second color anyway -- the ramp's other branch
-            // paints every rank>0 segment dark grey, which is what the graph
-            // paints the boxed node, and every segment on this pane is rank 61.
-            hprcSegmentsLane(CHM13_REGION),
-          ],
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 180000,
-    // the graph's own fetch is ~7 s here and the node box is anchored through the
-    // view's nodePositions, so a shorter settle can capture before there are any
-    // the force layout's "Computing layout" overlay can go up after readiness
-    actions: [
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="loading-overlay"]',
-        hidden: true,
-        timeout: 180000,
-      },
-    ],
-    viewportWidth: 1000,
-    // 1112, off the run's own reports, after three height cuts asked for by the
-    // same review note: the graph pane 420 -> 320, the repeat lane to one
-    // collapsed row, and the bubble lane to the one row its filter leaves. It
-    // was 1078, which the CLIPPED BELOW THE FOLD report then put 33 px over.
-    viewportHeight: 1222,
-    hideTooltip: true,
-    annotations: [
-      {
-        type: 'box',
-        anchor: { view: 1, graphNode: CHM13_NODE },
-        strokeWidth: 3,
-      },
-      // The badge that sat on the arc is GONE with the rest of the ① pairing
-      // (review: "presumably the loop should also be labeled with '1'"). It
-      // numbered this node against the bar below it and a shaded column in a
-      // part that no longer exists; with two panes to pair rather than three,
-      // the box is the landmark and a number on it counts to one.
-      // WHICH PANE IS WHICH, OVER THE APP AS WELL AS IN IT (review: "the in-app
-      // texts are too small to see. we need to add them"). Each pane already
-      // carries a `displayName`, which is what an earlier round asked for, and
-      // a view header draws it at 13 css px in a 1000 px frame that is 2,630 px
-      // tall -- correct, and not what the eye lands on. These repeat the pane
-      // headers at 18 px in each pane's own empty corner. If a header is
-      // reworded, reword the overlay with it -- EXCEPT the graph pane's, which
-      // deliberately says something the header does not; see below.
-      {
-        type: 'text',
-        text: 'hg38: no coordinates for this sequence',
-        fontSize: 18,
-        maxWidth: 320,
-        // RIGHT, where the filtered bubble lane is empty. On the left it sat on
-        // the one bubble the filter keeps and on the segment blocks under it.
-        textAlign: 'end',
-        anchor: {
-          view: 0,
-          track: 'hprc_minigraph_bubbles',
-          fracY: 0,
-          alignX: 'right',
-          dx: -16,
-          // the track rect starts at its HEADER, so dy has to clear the
-          // "HPRC release 2 bubbles" row before the lane's own whitespace
-          dy: 30,
-        },
-      },
-      // THE GRAPH PANE'S OVERLAY IS NOT ITS HEADER (review: "the text annotation
-      // 'cut to that window' is meaningless"). It was, and the header is where
-      // that belongs: which interval the subgraph was cut from is a fact about
-      // the pane, and repeating it at 18 px spent the pane's one free corner
-      // saying nothing twice. What the pane cannot say for itself is why one
-      // node is charcoal in a rainbow: `reference-position` ramps hue across the
-      // window the cut came from and drops any segment with no reference
-      // coordinate off the ramp entirely (graph_genome_view.md, "Color schemes
-      // and matching a linear track"). So the boxed arc is grey for
-      // exactly the reason the pane above it carries no coordinates for that
-      // sequence -- one claim, stated once per pane in each pane's own terms.
-      //
-      // PLURAL on purpose: the boxed arc is the largest charcoal node, not the
-      // only one. The chain carries a dozen small grey segments between the
-      // coloured ones, which is the same statement at a scale that does not
-      // need a box.
-      {
-        type: 'text',
-        text: 'charcoal nodes have no hg38 coordinate',
-        fontSize: 18,
-        maxWidth: 320,
-        anchor: {
-          selector: '[data-testid="graph-genome-canvas"]',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 16,
-          dy: 10,
-        },
-      },
-      // The pane's colour-key pill is GONE, into the track's own name (see
-      // HS1_RMSK_TRACK). It used to carry which assembly, what red means, and a
-      // percentage against the flanks; the percentage is a measurement a reader
-      // cannot check against the picture, and the rest is a label, which belongs
-      // on the track.
-      //
-      // This was ① of a numbered pair and the density part it paired with is
-      // gone, so NOTHING replaces it (review: "i just wanted to show that it
-      // seems like the loop in the graph is an 'l1 invasion' or cluster"). A
-      // label naming the allele here would be naming the largest thing in the
-      // frame: the bottom pane is 180 kb and the allele is 142 kb of it, so the
-      // bar runs nearly the pane's width. The pane's own displayName pairs with
-      // the top one's, and the app draws the allele's `highlight` under it.
-    ],
-  },
   // pangenome/hprc_repeat_classes was here and is DELETED (review: "i dont think
   // i really understand this figure. consider deleting. just not actually
   // valuable information?"). It drew each assembly's own last 650 kb of chr17 in
@@ -2070,8 +1581,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // DO NOT rebuild this as the insertion allele on its own, which is the obvious
   // next idea: the allele runs LINE 23.70% against 14.18% and 14.47% either
   // side, and 1.7x as a mean is not a shape a reader can see per bin.
-  // hprc_chm13_allele already draws that sequence per element, which is the
-  // resolution at which the L1 tiling is visible at all.
+  // pangenome/hprc_chm13_allele drew that sequence per element, the resolution
+  // at which the L1 tiling is visible at all, and retired with part 3's CHM13
+  // section.
   //
   // A SYNTENY VIEW WAS ALSO TRIED HERE AND IS WRONG FOR THIS COMPARISON
   // (rendered twice before concluding). A band needs the two panes to be
@@ -2382,39 +1894,21 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // OUT OF THE GRAPH AND INTO THE HAPLOTYPE, at human scale. The E. coli page
-  // has pangenome/pggb_strain_launch for this move and this page had only
-  // CHM13 (hprc_chm13_allele), on the belief that the other 460 haplotypes
-  // could not be loaded — see hprcHaplotypeSession for why they can. The node
-  // is the 1.8 kb NA20809.2 allele over HLA-DRB5 that the layout pair and the
-  // end-to-end tour already open a menu on; here the menu's `Open in
-  // NA20809.2` entry is taken, and what the frame adds is the pane that opens:
-  // the haplotype's own chr6 (CM094351.1) at the segment's own offset, with
-  // the GenArk RefSeq-mRNA lane and the segments track on those coordinates.
-  //
-  // The menu is driven rather than the end state declared, so the pane is the
-  // one the launch makes, not an imitation of it.
+  // The node menu's Open in NA20809.2 taken on the HPRC page's graph launch,
+  // in two frames: the menu, then the view it opens.
   {
     mode: 'url',
     name: 'pangenome/hprc_haplotype_launch',
-    // 420: the same trade the CHM13 figure and the force half of the layout
-    // pair make, since the pane is read for one ringed node beside the chain
-    // it hangs off and the launched pane below needs the height more.
-    url: hprcHaplotypeSession(420),
+    url: portalGraphLaunch(),
     readySelector: TOOLBAR_READY,
     readyTimeout: 180000,
     viewportWidth: 1100,
-    // off the run's own below-the-fold report at 1150: the launched pane
-    // arrives at its lanes' default heights, which no session pins
     viewportHeight: 1250,
     hideTooltip: true,
-    // Two frames, on review: the node's menu with the entry taken, then the pane
-    // it opens with the node's own segment boxed and joined to the ring.
     stages: [
       {
         viewportHeight: 820,
         actions: [
-          // the auto-fit has to have finished before the anchor means anything
           { type: 'delay', ms: 2000 },
           { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
           { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
@@ -2430,22 +1924,18 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // reloaded at full height: the launched pane's lanes do not load
-        // below the first frame's fold
-        url: hprcHaplotypeSession(420),
+        url: portalGraphLaunch(),
         viewportHeight: 1170,
         actions: [
           { type: 'delay', ms: 2000 },
           { type: 'rightclick', anchor: { view: 1, graphNode: HPRC_ALLELE } },
           { type: 'waitForText', text: `Open in ${HAPLOTYPE}` },
           { type: 'click', text: `Open in ${HAPLOTYPE}` },
-          // the launched pane's own gene lane, fetched off hgdownload
           {
             type: 'waitForSelector',
             selector: HAPLOTYPE_GENES_READY,
             timeout: 180000,
           },
-          // 1.8 kb to ~28 kb, so the allele sits among the haplotype's own genes
           ...launchedZoomOut(6),
           { type: 'delay', ms: 3000 },
         ],
@@ -2460,7 +1950,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             type: 'box',
             anchor: {
               view: 2,
-              track: SEGMENTS_TRACK,
+              track: HAPLOTYPE_GENES_TRACK,
               locus: HAPLOTYPE_ALLELE_LOCUS,
             },
             pad: 4,
@@ -2470,7 +1960,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             fromAnchor: { view: 1, graphNode: HPRC_ALLELE, dy: 22 },
             anchor: {
               view: 2,
-              track: SEGMENTS_TRACK,
+              track: HAPLOTYPE_GENES_TRACK,
               locus: HAPLOTYPE_ALLELE_LOCUS,
               fracY: 0,
               dy: -6,
@@ -2584,5 +2074,40 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     // 700 left 297 css px of blank under a two-lane view
     viewportHeight: 404,
+  },
+  // What the host page's one command writes, drawn: its four tracks over C4 and
+  // the graph launched from the graph track, following the linear view.
+  {
+    mode: 'url',
+    name: 'pangenome/host_your_own',
+    url: sessionSpec(PORTAL_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          id: PORTAL_LGV_ID,
+          assembly: 'hg38',
+          loc: C4_WINDOW,
+          tracks: [
+            SEGMENTS_TRACK,
+            'hprc_minigraph_bubbles',
+            'hprc_bubble_score',
+            'hprc_minigraph_alleles',
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: SEGMENTS_TRACK,
+          loadedRegion: C4_REGION,
+          connectedViewId: PORTAL_LGV_ID,
+          followLinearView: true,
+          layoutMode: 'auto',
+          colorScheme: 'reference-position',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 180000,
+    viewportHeight: 1100,
+    hideTooltip: true,
   },
 ]

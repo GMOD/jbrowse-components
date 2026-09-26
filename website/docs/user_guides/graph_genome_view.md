@@ -151,8 +151,9 @@ The `uri` is the shared prefix, from which the adapter resolves `.segs.bed.gz`,
 `.links.bed.gz` and both `.tbi` files. These stable names are PanSN
 (`K12#1#chr`), and their sample prefix is already the assembly name, so the
 track needs no `assemblyNameToPanSN` mapping. The
-[HPRC tutorial](/docs/tutorials/pangenome_hprc#add-the-graph-track) needs one,
-because that graph calls the reference `GRCh38` while the assembly is `hg38`.
+[HPRC graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
+needs one, because that graph calls the reference `GRCh38` while the assembly is
+`hg38`.
 
 Then **Track menu → Launch → Graph genome view (this region)** cuts a subgraph
 from the index. The menu offers the item only for a track whose adapter can cut
@@ -253,8 +254,8 @@ Anchored and Sample rows both need a backbone, from rGFA tags or from a
 reference path. A graph with neither greys them out. Force-directed is then the
 only layout available, and it draws the classic Bandage picture with alternate
 alleles as bubbles. The
-[MHC figure](/docs/tutorials/pangenome_hprc#cut-the-window-out-as-a-graph) shows
-it beside a linear view.
+[MHC figure](/docs/tutorials/pangenome_hprc#from-an-allele-to-its-haplotype)
+shows it beside a linear view.
 
 **Rank** is minigraph's `SR` tag, and it counts build order. Rank 0 is the first
 assembly on the command line, rank 1 is sequence first added with the second,
@@ -307,8 +308,8 @@ chip names the walks that take the route and gives the route's length. The
 **Walk** dropdown in the toolbar highlights one walk. Its nodes keep their
 colour, its links draw dark, and everything else fades. A readout beside the
 legend compares the walk's length with the reference walk's.
-[Part 4](/docs/tutorials/pangenome_graph_reading) of the HPRC tutorial reads a
-repeat array this way.
+[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#one-haplotypes-copies)
+reads a repeat array this way.
 
 ## Bubble spread and graph context {#two-settings-that-decide-what-is-drawn}
 
@@ -465,11 +466,11 @@ assembly it opens on, so each strain opens with its genes. An alignment in a
 offers the same jump from its right-click menu, **Open \<strain\> at the
 matching region**, so either view opens a strain the same way.
 
-On HPRC's graph the contributors are its 464 haplotypes. A session loads none of
-them by default, so a node there offers only GRCh38. The
-[HPRC tutorial](/docs/tutorials/pangenome_hprc#loading-a-haplotype-as-an-assembly)
-loads one haplotype from UCSC GenArk under its PanSN name, and the menu needs
-nothing more to offer it.
+On HPRC's graph the contributors are its 464 haplotypes, and the config the HPRC
+page on genomes.jbrowse.org opens declares every one as an assembly under its
+PanSN name, so a node there offers the haplotype that contributed it.
+[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#from-an-allele-to-its-haplotype)
+opens one this way.
 
 <Figure caption="Top: the graph's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes, in that strain's coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, here with curved ribbons, transparent indels and Follow switched on so each row tracks the K12 window above it." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
@@ -640,7 +641,6 @@ per-strain route when you have the assemblies.
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part2)
 - [](/docs/tutorials/pangenome_hprc_part3)
-- [](/docs/tutorials/pangenome_graph_reading)
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cactus)
 - [Configuring plugins](/docs/config_guides/plugins)

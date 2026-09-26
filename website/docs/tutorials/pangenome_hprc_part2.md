@@ -22,7 +22,7 @@ reads a window at a time.
 - the session from [part 1](/docs/tutorials/pangenome_hprc): hg38 with its
   genes, the rGFA segments track loaded on it, and the band that **Highlight in
   hg38** left across _HLA-DRB5_
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
+- [the GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin),
   for the tracks that use `MinigraphBubbleAdapter` and `RgfaTabixAdapter`; both
   callsets are a URL you can paste and need no plugin
 

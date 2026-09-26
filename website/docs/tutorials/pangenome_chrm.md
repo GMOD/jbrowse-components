@@ -47,7 +47,7 @@ graph one chromosome to a file.
 ## The graph plugin
 
 The graph view comes from the
-[GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
+[GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin),
 which [part 1](/docs/tutorials/pangenome_hprc) installs. The view opens a GFA
 file directly, which is how the graph loads here.
 
@@ -278,7 +278,6 @@ bash build_chrm_graph.sh
 
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/pangenome_graph_reading)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/population_genomics)
 

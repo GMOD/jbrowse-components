@@ -1,10 +1,10 @@
 // A config a video tour fills the add-track form from has to be a config the
 // page it sits on prints.
 //
-// `pangenome/hprc_end_to_end` films **Open track... → Add track from pasted
-// JSON** with the HPRC segments track going into the box, and the whole of what
-// that clip is worth is that a reader recognises the block from the page above
-// it and pastes the same one. The two copies are a template literal in
+// `pangenome/pggb_subgraph_launch` films **Open track... → Add pangenome graph
+// track** with the pggb segments track's fields going into the form, and the
+// whole of what that clip is worth is that a reader recognises the block from
+// the page above it and enters the same one. The two copies are a template literal in
 // video-specs.ts and a fence in markdown, so nothing but this holds them
 // together: reword the track `name`, rehost the `uri`, add one display slot to
 // the block a reader copies, and the page moves while the film keeps showing
@@ -45,9 +45,9 @@ function jsonFences(text: string) {
 
 // The first line that differs, so the report names the edit rather than
 // printing two configs and leaving the reader to diff them. Compared against
-// the CLOSEST fence — a page prints the same track more than once (the HPRC
-// segments track appears three times, once per section that changes a slot on
-// it), and the nearest of those is the one that drifted.
+// the CLOSEST fence — a page can print the same track more than once, once per
+// section that changes a slot on it, and the nearest of those is the one that
+// drifted.
 function firstDifference(want: string[], got: string[]) {
   const at = want.findIndex((line, i) => line !== got[i])
   return at === -1

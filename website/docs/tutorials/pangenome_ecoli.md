@@ -1075,8 +1075,9 @@ With the paths in the file, the view derives the bubble itself and labels each
 route through it for the strains that take it (off in the figure, under **Mark
 bubbles**, where the labels stacked over the loop), and the **Walk** dropdown
 lifts one strain's path out of the drawing with a readout of its length against
-the reference path. The [HPRC part 4](/docs/tutorials/pangenome_graph_reading)
-page does the same with eight human haplotypes through a repeat array.
+the reference path.
+[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#one-haplotypes-copies)
+does the same with eight human haplotypes through a repeat array.
 
 ## Reproduce it end to end
 

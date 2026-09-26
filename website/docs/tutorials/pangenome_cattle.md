@@ -17,9 +17,9 @@ Each of those assemblies walks the graph as a named path, and `vg deconstruct`
 turns those paths into a VCF. The same locus then reads as a graph showing where
 sequence is present and absent, and as a callset naming who carries it.
 
-We serve the graph as the same rGFA projections the
-[HPRC pangenome page](/docs/tutorials/pangenome_hprc/) opens, so the tracks, the
-adapters and the coarse tier are that page's.
+We serve the graph as the same rGFA projections
+[hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds for
+HPRC, so the tracks, the adapters and the coarse tier are that page's.
 
 :::caution Experimental
 
@@ -31,7 +31,7 @@ describes a current limit of the view. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
+- [the GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin),
   loaded the way the HPRC page loads it
 
 ## Where the data comes from

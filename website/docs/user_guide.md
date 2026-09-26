@@ -63,7 +63,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/genomes_basics)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/genomes_proteins)
-- [](/docs/tutorials/genomes_pangenome)
 - [](/docs/tutorials/repeatmasker_classes)
 
 ### Synteny & comparative genomics
@@ -103,7 +102,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part2)
 - [](/docs/tutorials/pangenome_hprc_part3)
-- [](/docs/tutorials/pangenome_graph_reading)
 - [](/docs/tutorials/pangenome_hprc_part5)
 - [](/docs/tutorials/pangenome_chrm)
 

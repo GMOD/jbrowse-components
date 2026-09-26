@@ -33,7 +33,7 @@ your [feedback](/contact).
 
 - [part 3](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph), for the
   `hprc_v2_1_gbz_lanes` track
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin)
+- [the GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
 
 ## Where the data comes from
 
@@ -310,7 +310,6 @@ the _ABCA7_ record with every sample's genotype.
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc_part3)
-- [](/docs/tutorials/pangenome_graph_reading)
 
 ## References
 

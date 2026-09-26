@@ -25,8 +25,8 @@ welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
-  which supplies the adapters every track here uses
+- [the GraphGenomeView plugin](#the-graphgenomeview-plugin), which supplies the
+  adapters every track here uses
 - htslib (`bgzip`, `tabix`), `python3`, and `sort`
 - [`gfatools`](https://github.com/lh3/gfatools) and GNU awk, for an rGFA
 - [`minigraph`](https://github.com/lh3/minigraph), for the optional carriage
@@ -53,6 +53,38 @@ files built here.
 - the finished files, hosted so a build can be compared against one that worked,
   with the exact commands recorded beside them:
   https://jbrowse.org/demos/hprc/README.txt
+- the config the HPRC page on genomes.jbrowse.org opens, which carries every
+  track built here: https://jbrowse.org/pangenome/hprc-grch38/config.json
+
+## The GraphGenomeView plugin
+
+GraphGenomeView is beta and not in the
+[plugin store](/docs/user_guides/plugin_store) yet, so it loads by URL. In
+JBrowse Web that is a `plugins` array at the top level of `config.json`, beside
+`assemblies` and `tracks` (see
+[configuring plugins](/docs/config_guides/plugins)), and the config the command
+below writes carries the same entry:
+
+<!-- GRAPH_PLUGIN_CONFIG START -->
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ]
+}
+```
+
+<!-- GRAPH_PLUGIN_CONFIG END -->
+
+On [JBrowse Desktop](/docs/quickstart_desktop), install it once from the start
+screen at **Global plugins... → Add custom plugin**, putting that `esmUrl` under
+**Advanced options** in **ESM build URL** and leaving the two fields above it
+empty. The plugin reads two things core first exported in v5.0.0-beta.1, so it
+needs a JBrowse 5 build.
 
 ## One command {#what-your-graph-can-produce}
 
@@ -103,7 +135,7 @@ The config's first track is the graph. Its `uri` is the prefix, from which the
 adapter resolves the segment and link pair, and `coarse` names the bubble tier
 beside it, which the graph pane cuts from instead once the window is wider than
 `aboveBpPerPx` bp per pixel. The script derives that handover from the graph's
-mean backbone segment: about 1,000 for HPRC, where a segment is 11 kb, and 1 for
+mean backbone segment: about 1,000 for HPRC, where a segment is 10 kb, and 1 for
 a pggb graph, where a segment is 17 bp.
 
 ```json addtrack
@@ -116,7 +148,7 @@ a pggb graph, where a segment is 17 bp.
     "type": "RgfaTabixAdapter",
     "uri": "hprc",
     "assemblyNameToPanSN": { "hg38": "GRCh38" },
-    "coarse": { "uri": "hprc.tier10000", "aboveBpPerPx": 1094 }
+    "coarse": { "uri": "hprc.tier10000", "aboveBpPerPx": 1014 }
   },
   "displayDefaults": { "showLabels": "none" }
 }
@@ -129,15 +161,32 @@ refName aliasing your assembly already does, so an hg38 spelling chr6 as `6`
 needs nothing further.
 
 With the track showing, the segments tile the window and break where the graph
-branches, and the track menu's **Launch → Graph genome view (this region)**
-opens the window as a graph under the linear view, which then follows it.
+branches.
 
 <Figure caption="The HPRC graph's segment index drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
 
 The other three tracks the script writes read the files beside the pair: the
 bubbles as a feature lane and again as a curve of segments per bubble, and the
 allele inventory as an alignments track, whose CIGAR draws a 63 kb insertion at
-its real magnitude where a feature track would draw it one pixel wide.
+its real magnitude where a feature track would draw it one pixel wide. With all
+four showing, the graph track's menu **Launch → Graph genome view (this
+region)** opens the window as a graph under the linear view, anchored to its
+coordinates, and the graph follows the linear view from then on.
+
+<Figure caption="The four tracks the command writes, over the C4 region on hg38: the graph track, the bubbles as a lane and as a curve, and the allele inventory, above the graph launched from the graph track's menu, anchored under the linear view and following it." src="/img/pangenome/host_your_own.png" />
+
+## Opening a node on its own haplotype
+
+An allele's rGFA name places it on the haplotype that contributed it, as in
+`NA20809#2#CM094351.1`, and the node's right-click menu offers **Open in** that
+haplotype when the session holds an assembly whose name or alias is its
+`sample#haplotype`. The launched view shows whatever the session annotates that
+assembly with. The config the HPRC page opens is the worked example: it declares
+each release 2 haplotype as its chromosome lengths alone, named `NA20809.2` with
+`NA20809#2` as an alias, beside that haplotype's CAT genes as a tabix-indexed
+BED, which is enough for a view that draws annotation and no sequence.
+[Browsing the graph](/docs/tutorials/pangenome_hprc#from-an-allele-to-its-haplotype)
+takes that route.
 
 ## Checking the index against the graph
 

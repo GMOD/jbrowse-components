@@ -16,9 +16,9 @@ of the strains, which inverts the sign of the best-known variant in it. And
 nobody has published a locus list for this panel, so the loci have to come out
 of the graph.
 
-We serve the graph as the same rGFA projections the
-[HPRC pangenome page](/docs/tutorials/pangenome_hprc/) opens, so the tracks, the
-adapters and the coarse tier are that page's.
+We serve the graph as the same rGFA projections
+[hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds for
+HPRC, so the tracks, the adapters and the coarse tier are that page's.
 
 :::caution Experimental
 
@@ -30,7 +30,7 @@ describes a current limit of the view. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
+- [the GraphGenomeView plugin](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin),
   loaded the way the HPRC page loads it
 - htslib (`tabix`), to query the hosted indexes from the command line
 
@@ -134,8 +134,8 @@ those. It then derives bubbles from the popped graph. A backbone node that no
 edge jumps over is a boundary, and whatever lies between two boundaries is a
 bubble. Each derived bubble gets a halo and a label, and one of them opens in
 turn.
-[Part 4 of the HPRC tutorial](/docs/tutorials/pangenome_graph_reading#open-the-array)
-shows one such level opened under its linear view.
+[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#the-lpa-kringle-repeat)
+opens one such level under its linear view.
 
 Each level has a button that returns to the level above, so you climb back out
 in the order you descended. The view types the labels at each level the way the
@@ -180,7 +180,6 @@ coordinates, and every downstream check passes on it.
 ## See also
 
 - [](/docs/tutorials/pangenome_cattle)
-- [](/docs/tutorials/pangenome_graph_reading)
 - [](/docs/tutorials/pangenome_prepare_graph)
 
 ## References

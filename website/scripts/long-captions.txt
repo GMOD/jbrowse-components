@@ -7,10 +7,6 @@
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
 tutorials/odp_linkage_groups_synteny.md /img/linkage_groups/alg_stack.png
-tutorials/pangenome_hprc.md /img/pangenome/hprc_cfhr_deletion.png
-tutorials/pangenome_hprc.md /img/pangenome/hprc_graph_anatomy.png
-tutorials/pangenome_hprc.md /img/pangenome/hprc_haplotype_launch.png
-tutorials/pangenome_hprc.md /img/pangenome/hprc_mhc_anchored.png
 tutorials/pangenome_hprc_part2.md /img/pangenome/hprc_graph_vs_callset.png
 tutorials/pangenome_hprc_part2.md /img/pangenome/hprc_inversion.png
 tutorials/pangenome_hprc_part3.md /img/maf_hprc_pangenome.png
