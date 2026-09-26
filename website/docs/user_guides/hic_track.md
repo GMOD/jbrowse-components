@@ -62,9 +62,9 @@ ramps every colour scale in JBrowse names, so a config spells one as
 [`color.scheme`](/docs/config/hiccolor/#slot-scheme).
 
 **Color scheme → Emphasize faint contacts (95th percentile)** decides what the
-ramp spans. Off, the diagonal owns the scale and everything below it washes out;
-on (the default) the scale saturates at the 95th percentile of counts and TAD
-structure separates from background.
+ramp spans. <!-- menu-path-ok --> Off, the diagonal owns the scale and
+everything below it washes out; on (the default) the scale saturates at the 95th
+percentile of counts and TAD structure separates from background.
 
 <Figure caption="4.2 Mb of hg19 chr8 with Emphasize faint contacts off and on, each frame labeled with its setting. Only the saturation point of the color scale differs; the contact data is identical." src="/img/hic/faint_contacts.png" links="Emphasize faint contacts off=hic/percentile_off,Emphasize faint contacts on=hic/percentile_on" />
 

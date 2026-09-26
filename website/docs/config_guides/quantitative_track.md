@@ -35,10 +35,11 @@ three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
 all three go through `displayDefaults`.
 
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `point`,
-`line` or `heatmap`, and a line's
-[`interpolate`](/docs/config/linearwiggledisplay/#slot-interpolate) is `step` or
-`linear`. Those say what a signal is drawn as; `rows` says how many rows there
+`line` or `heatmap`, what a signal is drawn as; `rows` says how many rows there
 are, so the two can be set independently.
+
+A line's [`interpolate`](/docs/config/linearwiggledisplay/#slot-interpolate) is
+`step` or `linear`.
 
 Reference lines belong to the axis object too.
 [`scales.y.rules`](/docs/config/valuescale/#slot-scalesyrules) draws a dashed

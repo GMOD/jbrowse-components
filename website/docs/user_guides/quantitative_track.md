@@ -78,8 +78,8 @@ palette entry of its own.
 
 **Edit as JSON...**, in that dialog, is the escape for what the line does not
 offer: a ramp (`{ "field": "score", "scale": "linear", "scheme": "viridis" }`),
-which is what density mode fades through, and a threshold naming several cut
-points, a colour per band. The
+the colours a heatmap fades through, and a threshold naming several cut points,
+a colour per band. The
 [quantitative track configuration](/docs/config_guides/quantitative_track#colors)
 guide writes the same object into a config file.
 
