@@ -139,6 +139,21 @@ describe('feature modifiers', () => {
     ).toBe('gene_biotype')
   })
 
+  // Each spelling belongs to one track type, and the other one used to fall
+  // through to the field itself: `group:tag:HP` copied onto a GFF stacked a
+  // single section headed `tag` and dropped the HP.
+  test('the other track type spelling is an error, not a field named for it', () => {
+    expect(() => buildDisplaySnapshot('feature', ['group:tag:HP'])).toThrow(
+      /Invalid group value "tag"/,
+    )
+    expect(() => buildDisplaySnapshot('variant', ['group:tag:HP'])).toThrow(
+      /group:attribute:<name> on a variant track/,
+    )
+    expect(() =>
+      buildDisplaySnapshot('alignments', ['group:attribute:type']),
+    ).toThrow(/group:tag:<name> on an? alignments track/)
+  })
+
   test('featureHeight preset maps to displayMode for canvas features', () => {
     const { snap } = buildDisplaySnapshot('feature', [
       'featureHeight:super-compact',

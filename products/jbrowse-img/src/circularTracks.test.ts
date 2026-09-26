@@ -105,10 +105,26 @@ test('--track naming no track in the config fails', async () => {
   )
 }, 60000)
 
-// A modifier following the trackId reaches the launch blob now, so a bad value
-// is reported. It used to be dropped with the trackId it followed.
-test('a modifier on a --track is read', async () => {
-  await expect(
-    renderCircular(twoChordTracks(), ['sv_one', 'height:8o']),
-  ).rejects.toThrow(/Invalid height value "8o"/)
-}, 60000)
+// The modifiers name slots on the LINEAR displays, a variant track here draws
+// chords, and a key a display does not declare fails the whole export — so
+// `height:400` beside a --vcfgz drew a chord plot until this view read
+// `--track`, and carrying the snapshot over killed the render instead. Both a
+// named modifier and a slot-path write land in the same warning, since neither
+// reaches the view. A typo'd value is covered by the same line, which is why
+// nothing here parses one.
+test('a modifier the chord display has no slot for is said, not applied', async () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  const config = twoChordTracks()
+  const plain = await renderCircular(config, ['sv_one'])
+  const modified = await renderCircular(config, [
+    'sv_one',
+    'height:400',
+    'force:true',
+    'color.field=SVTYPE',
+  ])
+  expect(modified).toBe(plain)
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('have no effect on a circular view'),
+  )
+  warn.mockRestore()
+}, 90000)

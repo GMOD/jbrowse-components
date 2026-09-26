@@ -22,7 +22,6 @@ import {
   applyDisplayOpts,
   configTrackCategory,
   resolveTrackId,
-  trackInits,
   writeMembers,
 } from './applyTrackOpts.ts'
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
@@ -360,6 +359,16 @@ function sequenceTrackId({ name, sequence }: Config['assembly']) {
     : `${name}-ReferenceSequenceTrack`
 }
 
+// Every track `--track` can name: the config's, and the assembly's sequence
+// track, which lives on the assembly rather than in `tracks` and so is missing
+// from any list derived from that one.
+function trackCandidates(data: Config): Track[] {
+  return [
+    ...data.tracks,
+    { ...data.assembly.sequence, trackId: sequenceTrackId(data.assembly) },
+  ]
+}
+
 // The trackIds `--track` named, each with the display modifiers that followed
 // it. The token is resolved to a real trackId (accepting the
 // assembly-name-prefix shorthand); a file flag's id was already assigned when
@@ -368,10 +377,7 @@ function resolvedShowTracks(
   showTracks: Entry[] | undefined,
   data: Config,
 ): OpenTrack[] {
-  const candidates = [
-    ...data.tracks,
-    { ...data.assembly.sequence, trackId: sequenceTrackId(data.assembly) },
-  ]
+  const candidates = trackCandidates(data)
   return (showTracks ?? []).map(([, [trackInput, ...opts]]) => {
     if (!trackInput) {
       // a bare `--track` used to be skipped in silence, so the track the user
@@ -583,6 +589,14 @@ function circularDrawable(
 // hundreds of tracks and would otherwise open every one of them whole-genome —
 // and until it was read here, `--track` was parsed, warned about, and dropped.
 //
+// **The modifiers that follow a track do not reach it here**, and a run passing
+// one is told so. They name slots on the LINEAR displays, this view draws a
+// variant track as chords instead, and a key a display does not declare fails
+// the whole export — so `height:400` beside a --vcfgz, which drew a chord plot
+// before this view read `--track` at all, killed the render. Which display it
+// picks per track is `showTrackGeneric`'s to decide, and a second copy of that
+// rule here would be one more thing to drift.
+//
 // Unlike the comparative builders this needs the model (circularDrawable asks
 // the pluginManager which tracks the view can open), so it stays here rather
 // than in comparativeInit.ts.
@@ -595,13 +609,16 @@ function circularInit(ctx: ModeContext): CircularViewCommands {
   const open = named.length
     ? named
     : data.tracks.map(({ trackId }) => ({ trackId, opts: [] }))
+  const drawable = circularDrawable(model, trackCandidates(data), open)
+  const modified = drawable.filter(({ opts: mods }) => mods.length > 0)
+  if (modified.length > 0) {
+    console.warn(
+      `Warning: display modifiers on ${modified.map(({ trackId }) => `"${trackId}"`).join(', ')} have no effect on a circular view`,
+    )
+  }
   return {
     assembly: data.assembly.name,
-    tracks: trackInits(
-      circularDrawable(model, data.tracks, open),
-      data.tracks,
-      'a circular view draws whole chromosomes and has no center position',
-    ),
+    tracks: drawable.map(({ trackId }) => trackId),
   }
 }
 

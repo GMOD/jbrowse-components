@@ -12,14 +12,7 @@ import {
 } from './slotPath.ts'
 import { trackMatches, trackName } from './trackFields.ts'
 
-import type {
-  AssertNever,
-  AssertTrue,
-  Covers,
-  OpenTrack,
-  Track,
-} from './types.ts'
-import type { TrackInit } from '@jbrowse/core/util/tracks'
+import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -621,10 +614,21 @@ const modifiers: Record<string, Modifier> = {
     on: ['alignments', ...CANVAS],
     apply: (r, v, arg, category) => {
       const field = parseStr('group', v, 'group field')
+      const reads = category === 'alignments'
+      // The spelling the OTHER track type uses. Left to fall through it became
+      // the field itself — `group:tag:HP` on a GFF stacked one section headed
+      // `tag` and dropped the HP, which is the shape of a copied recipe.
+      if (field === (reads ? 'attribute' : 'tag')) {
+        invalid(
+          'group',
+          field,
+          `group:${reads ? 'tag' : 'attribute'}:<name> on a ${category} track (a field of that name is facet.field=${field})`,
+        )
+      }
       r.snap.facet =
-        category === 'alignments' && field === 'tag'
+        field === 'tag'
           ? `tags.${parseStr('group:tag', arg ?? '', 'tag')}`
-          : category !== 'alignments' && field === 'attribute'
+          : field === 'attribute'
             ? parseStr('group:attribute', arg ?? '', 'attribute name')
             : field
     },
@@ -1010,43 +1014,6 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
     applyModifier(result, category, prefix, val1, val2)
   }
   return result
-}
-
-/**
- * The tracks a view opens from its own launch blob, each carrying what its
- * modifiers asked for. The breakpoint and circular views both open their
- * tracks this way rather than through `applyDisplayOpts` — they have no LGV to
- * call `launchTrack` on — and a bare trackId here is how `height:240` and
- * `force:true` came to be parsed, validated and then dropped.
- *
- * Every key but `trackId` folds into the display snapshot
- * (`normalizeTrackInit`), the same route a session spec takes.
- *
- * `noCenterLine` says why a `sort:` cannot run, in the words of the view
- * asking: the pivot is the position under a view's centre, and neither of
- * these views has one to offer.
- */
-export function trackInits(
-  openTracks: OpenTrack[],
-  tracks: Track[],
-  noCenterLine: string,
-): TrackInit[] {
-  return openTracks.map(({ trackId, opts }) => {
-    const { snap, sort, displayType } = buildDisplaySnapshot(
-      configTrackCategory(tracks, trackId),
-      opts,
-    )
-    if (sort) {
-      console.warn(
-        `Warning: sort:${sort.type} on "${trackId}" ignored — ${noCenterLine}`,
-      )
-    }
-    return {
-      trackId,
-      ...snap,
-      ...(displayType ? { type: displayType } : {}),
-    }
-  })
 }
 
 // Open a track already known to the view's config (a `--bam` file whose adapter
