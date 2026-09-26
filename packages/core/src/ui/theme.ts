@@ -361,6 +361,10 @@ const baseThemeOptions: ThemeOptions = {
         content: ({ theme: t }: { theme: Theme }) => ({
           color: t.palette.tertiary.contrastText,
         }),
+        // MUI paints the chevron action.active, which vanishes on tertiary
+        expandIconWrapper: ({ theme: t }: { theme: Theme }) => ({
+          color: t.palette.tertiary.contrastText,
+        }),
       },
     },
     MuiToggleButtonGroup: {

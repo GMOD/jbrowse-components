@@ -44,13 +44,6 @@ const useStyles = makeStyles()(theme => ({
       margin: theme.spacing(0.5, 0),
     },
   },
-  // The expand chevron inherits the default text colour, which on that teal is
-  // near-invisible — the same override AboutWidget's accordions carry. Missing
-  // it is how the first cut of this shipped a header with no affordance on it
-  // at all, plainly visible in multiway_synteny/ecoli_launch_dialog.
-  advancedIcon: {
-    color: theme.palette.tertiary.contrastText || '#fff',
-  },
   advancedDetails: {
     padding: 0,
   },
@@ -77,9 +70,7 @@ export function AdvancedLaunchOptions({ children }: { children: ReactNode }) {
   return (
     <Accordion disableGutters elevation={0} className={classes.advanced}>
       <AccordionSummary
-        expandIcon={
-          <ExpandMoreIcon fontSize="small" className={classes.advancedIcon} />
-        }
+        expandIcon={<ExpandMoreIcon fontSize="small" />}
         className={classes.advancedSummary}
       >
         <Typography variant="subtitle2">Advanced</Typography>

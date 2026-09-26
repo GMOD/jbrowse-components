@@ -14,10 +14,7 @@ import { observer } from 'mobx-react'
 import type { JobModel } from '../jobModel.ts'
 import type { ReactNode } from 'react'
 
-const useStyles = makeStyles()(theme => ({
-  expandIcon: {
-    color: theme.palette.tertiary.contrastText,
-  },
+const useStyles = makeStyles()({
   summaryTitle: {
     flexGrow: 1,
   },
@@ -25,7 +22,7 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     justifyContent: 'flex-end',
   },
-}))
+})
 
 const JobsSection = observer(function JobsSection({
   title,
@@ -43,9 +40,7 @@ const JobsSection = observer(function JobsSection({
   const { classes } = useStyles()
   return (
     <Accordion defaultExpanded>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-      >
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant="h5" className={classes.summaryTitle}>
           {title}
         </Typography>

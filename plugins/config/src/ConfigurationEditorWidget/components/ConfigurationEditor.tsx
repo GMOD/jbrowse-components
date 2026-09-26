@@ -42,9 +42,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
-  icon: {
-    color: theme.palette.tertiary.contrastText || '#fff',
-  },
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
@@ -261,9 +258,7 @@ const Member = observer(function Member(props: {
         }
         className={classes.accordion}
       >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.icon} />}
-        >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography>{[...path, slotName].join('➔')}</Typography>
         </AccordionSummary>
         <AccordionDetails className={classes.expansionPanelDetails}>
@@ -453,9 +448,7 @@ const ConfigurationEditor = observer(function ConfigurationEditor({
   const name = readConfObject(target, 'name')
   return (
     <Accordion key={key} defaultExpanded className={classes.accordion}>
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon className={classes.icon} />}
-      >
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography>
           <SanitizedHTML html={name ?? 'Configuration'} />
         </Typography>

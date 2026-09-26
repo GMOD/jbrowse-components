@@ -28,9 +28,6 @@ import type { PluginStoreModel } from '../model.ts'
 const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog.tsx'))
 
 const useStyles = makeStyles()(theme => ({
-  expandIcon: {
-    color: theme.palette.tertiary.contrastText,
-  },
   adminBadge: {
     borderRadius: 3,
     backgroundColor: theme.palette.quaternary.main,
@@ -130,9 +127,7 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
         }}
       />
       <Accordion defaultExpanded>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-        >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h5">Installed plugins</Typography>
         </AccordionSummary>
         <div className={classes.m}>
@@ -144,9 +139,7 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
         </div>
       </Accordion>
       <Accordion defaultExpanded>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-        >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h5">Available plugins</Typography>
         </AccordionSummary>
         {error ? (

@@ -27,9 +27,6 @@ const useStyles = makeStyles()(theme => ({
   accordions: {
     marginTop: theme.spacing(3),
   },
-  icon: {
-    color: theme.palette.tertiary.contrastText || '#fff',
-  },
 }))
 
 const AboutWidget = observer(function AboutWidget({
@@ -77,9 +74,7 @@ const AboutWidget = observer(function AboutWidget({
 
       <div className={classes.accordions}>
         <Accordion defaultExpanded>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon className={classes.icon} />}
-          >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Browser settings</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -98,9 +93,7 @@ const AboutWidget = observer(function AboutWidget({
         </Accordion>
 
         <Accordion defaultExpanded>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon className={classes.icon} />}
-          >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Plugins loaded</Typography>
           </AccordionSummary>
           <AccordionDetails>

@@ -15,9 +15,6 @@ const useStyles = makeStyles()(theme => ({
     display: 'block',
     padding: theme.spacing(1),
   },
-  icon: {
-    color: theme.palette.tertiary.contrastText || '#fff',
-  },
 }))
 
 export default function BaseCard({
@@ -32,7 +29,7 @@ export default function BaseCard({
       slotProps={{ transition: { unmountOnExit: true } }}
       data-testid={`BaseCard-${title}`}
     >
-      <AccordionSummary expandIcon={<ExpandMore className={classes.icon} />}>
+      <AccordionSummary expandIcon={<ExpandMore />}>
         <Typography variant="button">{title}</Typography>
       </AccordionSummary>
       <AccordionDetails className={classes.expansionPanelDetails}>
