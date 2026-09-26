@@ -6,12 +6,13 @@ import {
 const tracks = [
   {
     type: 'SyntenyTrack',
-    trackId: 'hg38ToMm39_blocks',
-    name: 'hg38 vs mm39 (liftOver chains of 100 kb and over)',
+    trackId: 'hg38ToMm39_liftover',
+    name: 'hg38 to mm39 liftOver chain',
     assemblyNames: ['mm39', 'hg38'],
     adapter: {
       type: 'PairwiseIndexedPAFAdapter',
-      uri: 'https://jbrowse.org/demos/circular_synteny/hg38ToMm39.blocks.pif.gz',
+      uri: 'https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz',
+      csi: true,
       queryAssembly: 'mm39',
       targetAssembly: 'hg38',
     },
@@ -48,8 +49,8 @@ export default function CircularSynteny() {
     view: {
       height: 700,
       displayedRegionNames: chromosomes,
-      autoDiagonalize: true,
-      tracks: ['hg38ToMm39_blocks'],
+      minAlignmentLength: 100_000,
+      tracks: ['hg38ToMm39_liftover'],
     },
   })
 

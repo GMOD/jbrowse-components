@@ -1,0 +1,15 @@
+---
+import Example from '../examples/OatHomoeologs.tsx'
+import code from '../examples/OatHomoeologs.tsx?raw'
+import { getPage } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('oat-homoeologs')
+---
+
+<Layout page={page}>
+  <Section slug="oat-homoeologs" code={code}>
+    <Example client:only="react" />
+  </Section>
+</Layout>

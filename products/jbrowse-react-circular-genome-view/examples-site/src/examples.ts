@@ -48,10 +48,19 @@ export const pages: ExamplePage[] = [
   {
     slug: 'circular-synteny',
     title: 'Human and mouse on one circle',
-    description: 'Two genomes on one circle, their liftOver blocks as ribbons.',
+    description: 'Two genomes on one circle, their liftOver chain as ribbons.',
     group: 'Real-world demos',
     sections: [
       { slug: 'circular-synteny', title: 'Human and mouse on one circle' },
+    ],
+  },
+  {
+    slug: 'oat-homoeologs',
+    title: 'Oat subgenomes on one circle',
+    description: "A hexaploid's homoeolog blocks between its own chromosomes.",
+    group: 'Real-world demos',
+    sections: [
+      { slug: 'oat-homoeologs', title: 'Oat subgenomes on one circle' },
     ],
   },
   {
