@@ -15,15 +15,16 @@ and the rest sit under `color`), and the circular view composes it too, through
 by..." menu keeps its label. Older spellings lift into place
 (`liftSyntenyViewSettings`, in both views' `preProcessSnapshot`): v4.3.0 held
 `colorBy`, `alpha` and `minAlignmentLength` on each synteny display, so the
-first display carrying each lands on the view; the v5 betas held `colorBy` on
-the view, the mode string with a `colorDomain` beside it and then the object;
-and a v4 `init` blob holds it too. Each lands as `color`, a mode string mapped
-the way `coerceColorBy` mapped it. That reverses the rejected alternative
-below that let the string fail at load: share links carry every one of these,
-and state other people hold in URLs keeps working. The two views name
-`colorBy` and `colorDomain` as launch-key `passThrough`, and the validator
-manifest takes the display keys from the lift, so `jbrowse validate` accepts
-an older session. jbrowse-img keeps its `--colorBy` flag and writes `color`.
+first display carrying each lands on the view, `colorBy` as `color`, a mode
+string mapped the way `coerceColorBy` mapped it. The genomes portal's launch
+links write the mode string on the view, which lifts the same way. That
+reverses the rejected alternative below that let the string fail at load:
+state other people hold in URLs keeps working. The two views name `colorBy` as
+launch-key `passThrough`, and the validator manifest takes the display keys
+from the lift, so `jbrowse validate` accepts an older session. jbrowse-img
+keeps its `--colorBy` flag and writes `color`. Amended 2026-09-26: the betas'
+`colorDomain`, the object under `colorBy`, the `attribute:` prefix, the modes
+v4.3.0 lacked and the `init` lift went, since only the betas wrote them.
 
 Accepted (2026-09-18). Supersedes one consequence of
 [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md) ("The

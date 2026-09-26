@@ -90,15 +90,11 @@ test('color round-trips a session spec and refuses a stray key', async () => {
   )
 })
 
-// a share link from before the colour object holds the mode string, and one
-// saved while the views held the object under that name holds the object
-test('a colorBy from an older session lands as color', async () => {
-  expect((await open({ views: ROWS, colorBy: 'strand' })).colorField).toBe(
-    'strand',
+// the genomes portal's launch links write the mode string on the view
+test('a colorBy mode string lands as color', async () => {
+  expect((await open({ views: ROWS, colorBy: 'query' })).colorField).toBe(
+    'query',
   )
-  expect(
-    (await open({ views: ROWS, colorBy: { field: 'query' } })).colorField,
-  ).toBe('query')
 })
 
 test('an omitted property keeps its default', async () => {
@@ -122,12 +118,9 @@ describe('the v4 nested form', () => {
     expect(warnings()).toContain(DEPRECATED)
   })
 
-  // The v4 demos wrote `"init": { "colorBy": "reference", … }` and v4 applied
-  // it, so unwrapping has to reach a declared property too, under the name it
-  // has now
   test('a declared property nested inside it lands', async () => {
     const view = await open({
-      init: { views: ROWS, colorBy: 'reference' },
+      init: { views: ROWS, color: { field: 'reference' } },
     })
     expect(view.colorField).toBe('reference')
     expect(warnings()).toEqual([DEPRECATED])
@@ -212,21 +205,4 @@ test('the tracks lift leaves the levels to the launch', async () => {
   const view = await open({ views: ROWS, tracks: [['a_track']] })
   expect(view.launch).toEqual({ views: ROWS, tracks: [['a_track']] })
   expect(getSnapshot(view).levels).toEqual([])
-})
-
-// `fadeThinAlignments` is the boolean the fade was before the tri-state
-// `fadeThinAlignmentsMode`. The view's own preProcessSnapshot converts it and
-// `passThrough` declares it, so neither the partition nor a document's key
-// check reads it as a typo. `true` converts as well as `false`: only `false`
-// ever persisted, but a hand-written spec reaches for `true` to turn the fade
-// on, and dropping it would leave the key looking accepted while it wrote
-// nothing.
-test('the legacy fade boolean converts both ways, and warns about neither', async () => {
-  const off = await open({ views: ROWS, fadeThinAlignments: false })
-  expect(off.fadeThinAlignmentsMode).toBe('off')
-
-  const on = await open({ views: ROWS, fadeThinAlignments: true })
-  expect(on.fadeThinAlignmentsMode).toBe('on')
-
-  expect(warnings()).toEqual([])
 })

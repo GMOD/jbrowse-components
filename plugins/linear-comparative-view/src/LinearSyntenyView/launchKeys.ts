@@ -20,12 +20,9 @@ import type { LinearSyntenyViewCommands } from './types.ts'
 // `minAlignmentLength` and the rest are plain properties — writing them is the
 // whole job, so none of them is a launch key.
 //
-// `fadeThinAlignments` is the boolean the fade was before the tri-state
-// `fadeThinAlignmentsMode`. It is no longer a declared property, so the
-// partition would read it as a typo; the model's own preProcessSnapshot
-// converts it, so a saved session or a hand-written document naming it keeps
-// working. `colorBy` and `colorDomain` are older spellings of `color` the same
-// way (`liftSyntenyViewSettings`).
+// `colorBy` is v4's spelling of `color`, which the model's own
+// preProcessSnapshot converts (`liftSyntenyViewSettings`), so the partition
+// passes it through rather than reading it as a typo.
 export const linearSyntenyLaunchKeys =
   defineLaunchKeys<LinearSyntenyViewCommands>()(
     {
@@ -36,5 +33,5 @@ export const linearSyntenyLaunchKeys =
       collapseEmptyRows: { kind: 'launch' },
       sameScale: { kind: 'replay' },
     },
-    { passThrough: ['fadeThinAlignments', ...LIFTED_VIEW_KEYS] },
+    { passThrough: LIFTED_VIEW_KEYS },
   )

@@ -80,12 +80,9 @@ describe('the v4 nested form', () => {
     expect(warnings()).toContain(DEPRECATED)
   })
 
-  // `scripts/build_oat_homoeologs.sh` shipped `"init": { …, "colorBy": "dnds" }`
-  // and v4 applied it, so unwrapping has to reach a declared property too,
-  // under the name it has now
   test('a declared property nested inside it lands', async () => {
     const view = await open({
-      init: { views: AXES, colorBy: 'dnds' },
+      init: { views: AXES, color: { field: 'dnds' } },
     })
     expect(view.colorField).toBe('dnds')
     expect(warnings()).toEqual([DEPRECATED])

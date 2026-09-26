@@ -3364,20 +3364,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      // The cytobands setting has been `showCytobandsSetting` and (briefly)
-      // `cytobandsVisible`; both now persist as the bare `showCytobands` prop
+      // v4's `showCytobandsSetting` persists as the bare `showCytobands` prop
       // (the capability-gated getter is `effectiveShowCytobands`).
-      const {
-        showCytobandsSetting,
-        cytobandsVisible,
-        offsetPx,
-        bpPerPx,
-        ...rest
-      } = snap
-      const legacyShowCytobands = showCytobandsSetting ?? cytobandsVisible
+      const { showCytobandsSetting, offsetPx, bpPerPx, ...rest } = snap
       return {
-        ...(legacyShowCytobands !== undefined
-          ? { showCytobands: legacyShowCytobands }
+        ...(showCytobandsSetting !== undefined
+          ? { showCytobands: showCytobandsSetting }
           : {}),
         // The viewport used to persist as pixels. Half of that converts
         // exactly and needs no width — the left edge in bp is offsetPx *

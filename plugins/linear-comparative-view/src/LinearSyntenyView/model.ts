@@ -1444,20 +1444,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     registry: pluginManager,
     materialized: snap => !!snap.views?.length,
   })
-    .preProcessSnapshot<
-      ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
-    >(snap => {
-      // the boolean spelling of fadeThinAlignmentsMode, which shares its name
-      // with the resolved getter
-      const { fadeThinAlignments, ...rest } =
-        liftSyntenyViewSettings(snap) ?? {}
-      return typeof fadeThinAlignments === 'boolean'
-        ? {
-            ...rest,
-            fadeThinAlignmentsMode: fadeThinAlignments ? 'on' : 'off',
-          }
-        : rest
-    })
+    .preProcessSnapshot(liftSyntenyViewSettings)
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

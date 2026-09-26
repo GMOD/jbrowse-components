@@ -1,7 +1,6 @@
 import { liftSyntenyViewSettings } from './liftSyntenyViewSettings.ts'
 
-// a v5 beta session holds the mode string on the view, and one saved in the
-// week the views held the colour object under `colorBy` holds that
+// the genomes portal's launch links hold the mode string on the view
 test('a mode string lifts into the field it paints', () => {
   expect(liftSyntenyViewSettings({ colorBy: 'strand' })).toEqual({
     color: { field: 'strand' },
@@ -17,28 +16,7 @@ test('a mode string lifts into the field it paints', () => {
   })
 })
 
-test('a column mode keeps the order its colorDomain gave it', () => {
-  expect(
-    liftSyntenyViewSettings({
-      colorBy: 'attribute:gene_group',
-      colorDomain: ['B1', 'A1a'],
-    }),
-  ).toEqual({ color: { field: 'gene_group', domain: ['B1', 'A1a'] } })
-})
-
-test('the colour object and a colour string pass through under the new name', () => {
-  expect(liftSyntenyViewSettings({ colorBy: { field: 'query' } })).toEqual({
-    color: { field: 'query' },
-  })
-  expect(liftSyntenyViewSettings({ colorBy: 'grey' })).toEqual({
-    color: 'grey',
-  })
-})
-
-test('an init blob lifts too, and a snapshot with neither is left alone', () => {
-  expect(liftSyntenyViewSettings({ init: { colorBy: 'dnds' } })).toEqual({
-    init: { color: { field: 'dnds' } },
-  })
+test('a snapshot with no colorBy is left alone', () => {
   const snap = { color: { field: 'track' }, init: { views: [] } }
   expect(liftSyntenyViewSettings(snap)).toBe(snap)
 })

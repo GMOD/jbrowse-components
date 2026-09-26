@@ -256,20 +256,17 @@ as their launch keys' `passThrough` so a validator accepts them.
 
 ```js
 // type signature
-readonly ["colorBy", "colorDomain"]
+readonly ["colorBy"]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
 
 ## liftSyntenyViewSettings
 
-A linear synteny or dotplot view snapshot's older spellings of the settings
-the view holds now, lifted into place. A v4.3.0 session held `colorBy` (a
-mode string), `alpha` and `minAlignmentLength` on each synteny display; the
-v5 betas held them on the view with `colorBy` the mode string and a
-`colorDomain` beside it, then the colour object under that name; a v4
-`init` blob holds them too. Each lands on the view, `colorBy` as `color`.
-Share links carry every one of these.
+A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
+view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
+synteny display, and `colorBy` lands as `color`. The genomes portal's launch
+links write the mode string on the view itself, which lifts the same way.
 
 ```js
 // type signature

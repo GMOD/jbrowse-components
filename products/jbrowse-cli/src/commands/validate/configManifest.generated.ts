@@ -6612,7 +6612,6 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "bpPerPx",
-        "cytobandsVisible",
         "offsetPx",
         "showCytobandsSetting"
       ]
@@ -6684,8 +6683,7 @@ export const configManifest: ConfigManifest = {
         "views"
       ],
       "passThrough": [
-        "colorBy",
-        "colorDomain"
+        "colorBy"
       ]
     },
     "LinearSyntenyView": {
@@ -6726,9 +6724,7 @@ export const configManifest: ConfigManifest = {
         "views"
       ],
       "passThrough": [
-        "colorBy",
-        "colorDomain",
-        "fadeThinAlignments"
+        "colorBy"
       ]
     },
     "SpreadsheetView": {

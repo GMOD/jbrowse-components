@@ -582,15 +582,14 @@ describe('the schema', () => {
     ).toEqual(['defaultSession.views[0].tracks[0].displays[0].colorBy'])
   })
 
-  // the views lift their older colour spellings, and v4.3.0 held colorBy,
-  // alpha and minAlignmentLength on each synteny display
+  // v4.3.0 held colorBy, alpha and minAlignmentLength on each synteny display,
+  // and the genomes portal's links write colorBy on the view
   it('accepts the synteny settings an older session spells another way', () => {
     const config = baseConfig()
     config.defaultSession.views = [
       {
         type: 'LinearSyntenyView',
-        colorBy: 'attribute:gene_group',
-        colorDomain: ['B1'],
+        colorBy: 'query',
         levels: [
           {
             tracks: [
@@ -611,8 +610,7 @@ describe('the schema', () => {
           },
         ],
       },
-      { type: 'DotplotView', colorBy: { field: 'query' } },
-      { type: 'DotplotView', init: { colorBy: 'dnds' } },
+      { type: 'DotplotView', colorBy: 'strand' },
     ]
     expect(whereOf(config)).toEqual([])
   })

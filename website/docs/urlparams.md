@@ -494,10 +494,10 @@ restores natively:
 - `showCytobands` and `showTrackOutlines` default to the visitor's own stored
   preference, so set them explicitly in a link that has to look the same for
   everyone.
-- `showCytobandsSetting` and `cytobandsVisible` are what the cytoband toggle was
-  called before `showCytobands`. Neither is a declared property, but the view
-  converts both on the way in, so a link or saved spec naming one goes on
-  working; write `showCytobands` in a new one.
+- `showCytobandsSetting` is what the cytoband toggle was called before
+  `showCytobands`. It is not a declared property, but the view converts it on
+  the way in, so a v4 link or saved spec naming it goes on working; write
+  `showCytobands` in a new one.
 
 #### Live example: alignments display settings
 
