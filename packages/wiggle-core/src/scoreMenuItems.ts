@@ -137,11 +137,11 @@ export function makeSetMinMaxScoreItem(
 }
 
 export function makeCrossHatchItem(self: {
-  displayCrossHatches: boolean
-  toggleCrossHatches: () => void
+  grid: boolean
+  setGrid: (grid: boolean) => void
 }): MenuItem {
-  return checkboxItem('Show cross hatches', self.displayCrossHatches, () => {
-    self.toggleCrossHatches()
+  return checkboxItem('Show cross hatches', self.grid, () => {
+    self.setGrid(!self.grid)
   })
 }
 

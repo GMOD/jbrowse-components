@@ -845,7 +845,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { scales: { y: { min: 0 } } },
     ).createDisplay(),
   ).toThrow(
-    'ValueScale takes type, domainMin, domainMax, autoscaleGroup, symlogConstant, autoscale, numStdDev, numQuantile, title and rules, not min',
+    'ValueScale takes type, domainMin, domainMax, autoscaleGroup, symlogConstant, autoscale, numStdDev, numQuantile, grid, minimalTicks, title and rules, not min',
   )
   expect(() =>
     createTestEnvironment(

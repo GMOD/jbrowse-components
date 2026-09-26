@@ -234,8 +234,9 @@
           "displayId": "HG008-T_bicseq2-LinearWiggleDisplay",
           "defaultRendering": "line",
           "color": "#0068d1",
-          "displayCrossHatches": true,
-          "scales": { "y": { "domainMin": -2, "domainMax": 1.5 } },
+          "scales": {
+            "y": { "domainMin": -2, "domainMax": 1.5, "grid": true }
+          },
           "height": 90
         }
       ]

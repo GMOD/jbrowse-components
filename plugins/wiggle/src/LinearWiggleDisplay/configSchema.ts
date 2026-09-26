@@ -7,6 +7,7 @@ import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+import { retiredAxisSpellings } from '@jbrowse/wiggle-core'
 
 import { checkRowsField } from '../shared/checkRowsField.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
@@ -184,15 +185,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
         "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on",
       defaultValue: true,
     },
-    /**
-     * #slot
-     */
-    minimalTicks: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'Draw only the min/max Y-axis ticks',
-      advanced: true,
-    },
     ...summaryScoreModeConfigSchemaFields({ defaultMode: 'whiskers' }),
     ...treeSidebarConfigSchemaFields({
       tree: 'Show the subtrack clustering tree in the sidebar',
@@ -203,6 +195,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
+    retired: retiredAxisSpellings,
     preProcessSnapshot: checkRowsField('LinearWiggleDisplay'),
   },
 )

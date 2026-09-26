@@ -514,18 +514,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The configured cross-hatch setting the menu toggles; `showCrossHatches`
-         * is what draws, and on this display the two are one — nothing here
-         * spends colour on the score instead of height.
-         */
-        get displayCrossHatches(): boolean {
-          return getConf(self, 'displayCrossHatches')
-        },
-        /**
-         * #getter
+         * `scales.y.grid`: nothing here spends colour on the score instead of
+         * height, so the axis is always there to rule.
          */
         get showCrossHatches(): boolean {
-          return this.displayCrossHatches
+          return self.grid
         },
         /**
          * #getter
@@ -1034,7 +1027,7 @@ export function stateModelFactory(
          * the caption and its rules. Every mark reads the same pair.
          */
         get valueScales(): ValueScale[] {
-          const minimalTicks = getConf(self, 'minimalTicks')
+          const { minimalTicks } = self
           const height = self.height
           const pointInset = this.valueInsetPx
           // One band per row where the marks stand in rows, the scale ruling
@@ -1667,12 +1660,6 @@ export function stateModelFactory(
             PlotJsonDialog,
             { model: self, seed, handleClose },
           ])
-        },
-        /**
-         * #action
-         */
-        toggleCrossHatches() {
-          setConf(self, 'displayCrossHatches', !self.displayCrossHatches)
         },
         /**
          * #action

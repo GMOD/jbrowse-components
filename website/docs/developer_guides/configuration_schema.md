@@ -237,10 +237,9 @@ The full signatures are in the
 [configuration API reference](/docs/api/core-configuration).
 
 Use `getConf` when you hold a **state model** that has a `.configuration` member
-(a track model, display model, etc.) — `LinearMarkDisplay`'s
-`displayCrossHatches` getter is `getConf(self, 'displayCrossHatches')`, and its
-typed `conf` getter, in a block of its own, is what every later block reads a
-sub-schema through:
+(a track model, display model, etc.) — `LinearMarkDisplay`'s `origin` getter is
+`getConf(self, 'origin')`, and its typed `conf` getter, in a block of its own,
+is what every later block reads a sub-schema through:
 
 <!-- include: plugins/marks/src/LinearMarkDisplay/model.ts#chainedViews -->
 

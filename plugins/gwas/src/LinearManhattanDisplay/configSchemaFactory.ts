@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import {
   DEFAULT_POINT_DIAMETER_PX,
+  retiredAxisSpellings,
   scalesSchema,
   scoreFieldConfigSchemaFields,
   valueScaleSchema,
@@ -121,26 +122,10 @@ export function configSchemaFactory() {
         valueScaleSchema({
           types: ['linear'],
           rules: true,
+          grid: true,
+          minimalTicks: true,
         }),
       ),
-      /**
-       * #slot
-       */
-      displayCrossHatches: {
-        type: 'boolean',
-        defaultValue: false,
-        description:
-          'Rule the score axis with horizontal cross hatches at the tick positions',
-      },
-      /**
-       * #slot
-       */
-      minimalTicks: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Draw only the min/max Y-axis ticks',
-        advanced: true,
-      },
       /**
        * #slot
        * Manhattan point diameter in px (adjustable from the track menu). Larger
@@ -167,6 +152,7 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
+      retired: retiredAxisSpellings,
     },
   )
 }

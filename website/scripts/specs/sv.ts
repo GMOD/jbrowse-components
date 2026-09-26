@@ -376,8 +376,7 @@ const HG008_BICSEQ2_LANE = {
   trackId: 'hg008_bicseq2',
   type: 'LinearWiggleDisplay',
   defaultRendering: 'xyplot',
-  displayCrossHatches: true,
-  scales: { y: { domainMin: -2, domainMax: 2 } },
+  scales: { y: { domainMin: -2, domainMax: 2, grid: true } },
   height: 130,
 }
 
@@ -1509,8 +1508,7 @@ export const svSpecs: ScreenshotSpec[] = [
               defaultRendering: 'xyplot',
               color: '#0068d1',
               summaryScoreMode: 'avg',
-              scales: { y: { domainMin: 0, domainMax: 140 } },
-              displayCrossHatches: true,
+              scales: { y: { domainMin: 0, domainMax: 140, grid: true } },
               height: 180,
             },
             'hg008_cnv_calls',
@@ -2049,8 +2047,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // run to 497, so an autoscaled axis put every plateau in the
               // bottom fifth of the lane and the three tumor levels (0.6 / 1.1
               // / 1.9 by median, against the normal's flat 1.0) were one cloud.
-              scales: { y: { domainMin: 0, domainMax: 3 } },
-              displayCrossHatches: true,
+              scales: { y: { domainMin: 0, domainMax: 3, grid: true } },
               // finer binning (basesPerSpan = bpPerPx/resolution) so the
               // whole-chromosome scatter resolves more CNV detail
               resolution: 8,
@@ -2381,7 +2378,7 @@ export const svSpecs: ScreenshotSpec[] = [
               size: 1,
               resolution: 10,
               height: 180,
-              displayCrossHatches: true,
+              scales: { y: { grid: true } },
             },
             {
               trackId: 'hg008_baf',
@@ -2559,11 +2556,10 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               defaultRendering: 'xyplot',
               summaryScoreMode: 'avg',
-              scales: { y: { domainMin: 0, domainMax: 80 } },
-              resolution: 10,
               // no cross hatches: the read is one filled profile against the
               // other, and the gridlines only add texture across both
-              displayCrossHatches: false,
+              scales: { y: { domainMin: 0, domainMax: 80, grid: false } },
+              resolution: 10,
               height: 280,
             },
             {
@@ -2836,8 +2832,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // fixed 0..3 as on chr5: indexcov's centromere and repeat spikes
               // run into the hundreds, and an autoscaled axis puts every
               // plateau in the bottom fifth of the lane
-              scales: { y: { domainMin: 0, domainMax: 3 } },
-              displayCrossHatches: true,
+              scales: { y: { domainMin: 0, domainMax: 3, grid: true } },
               resolution: 8,
               height: 200,
             },

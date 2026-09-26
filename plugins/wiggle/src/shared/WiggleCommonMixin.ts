@@ -20,14 +20,13 @@ import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 /**
- * The slots this mixin reads that no shared table can hold: each wiggle
- * display gives `defaultRendering` its own enum and default, and declares
- * `minimalTicks` itself. A runtime value so `RestatedMixinSlots.test.ts` can
- * check the restated types; `defaultValue` is a placeholder.
+ * The slot this mixin reads that no shared table can hold: each wiggle
+ * display gives `defaultRendering` its own enum and default. A runtime value
+ * so `RestatedMixinSlots.test.ts` can check the restated type;
+ * `defaultValue` is a placeholder.
  */
 export const wiggleCommonExtraSlots = {
   defaultRendering: { type: 'stringEnum', defaultValue: '' },
-  minimalTicks: { type: 'boolean', defaultValue: false },
 } as const
 
 type WiggleCommonConfigModel = ConfigModelForFields<
@@ -130,12 +129,6 @@ export function WiggleCommonMixin() {
        */
       get renderingType(): string {
         return getConf(confNode(self), 'defaultRendering')
-      },
-      /**
-       * #getter
-       */
-      get minimalTicks(): boolean {
-        return getConf(confNode(self), 'minimalTicks')
       },
       /**
        * #getter

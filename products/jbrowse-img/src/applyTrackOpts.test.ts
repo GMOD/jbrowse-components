@@ -385,9 +385,10 @@ describe('wiggle / score modifiers', () => {
       'color:purple',
     ])
     expect(snap).toMatchObject({
-      scales: { y: { type: 'log', domainMin: 1, domainMax: 1024 } },
+      scales: {
+        y: { type: 'log', domainMin: 1, domainMax: 1024, grid: true },
+      },
       defaultRendering: 'scatter',
-      displayCrossHatches: true,
       resolution: 100,
       color: 'purple',
     })
@@ -416,7 +417,7 @@ describe('wiggle / score modifiers', () => {
       'crosshatch:true',
     ])
     expect(snap.defaultRendering).toBeUndefined()
-    expect(snap.displayCrossHatches).toBeUndefined()
+    expect(snap.scales?.y.grid).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(2)
     warn.mockRestore()
   })

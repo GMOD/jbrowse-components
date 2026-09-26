@@ -205,7 +205,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.toggleCrossHatches() // pure UI toggle — no GPU buffer impact
+    display.setGrid(true) // pure UI toggle — no GPU buffer impact
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 

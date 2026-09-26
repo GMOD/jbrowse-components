@@ -4948,10 +4948,6 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
-          "name": "displayCrossHatches",
-          "type": "boolean"
-        },
-        {
           "name": "resolution",
           "type": "number"
         },
@@ -5012,6 +5008,14 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 },
                 {
+                  "name": "grid",
+                  "type": "boolean"
+                },
+                {
+                  "name": "minimalTicks",
+                  "type": "boolean"
+                },
+                {
                   "name": "rules",
                   "type": "ValueScaleRuleConfigurationSchema[]",
                   "subSlots": [
@@ -5039,10 +5043,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "minimalTicks",
-          "type": "boolean"
-        },
-        {
           "name": "summaryScoreMode",
           "type": "Score type"
         },
@@ -5066,6 +5066,10 @@ export const configManifest: ConfigManifest = {
           "name": "showRowSeparators",
           "type": "boolean"
         }
+      ],
+      "legacyKeys": [
+        "displayCrossHatches",
+        "minimalTicks"
       ],
       "legacyValues": {
         "defaultRendering": [
@@ -5216,10 +5220,6 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
-          "name": "displayCrossHatches",
-          "type": "boolean"
-        },
-        {
           "name": "resolution",
           "type": "number"
         },
@@ -5280,6 +5280,14 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 },
                 {
+                  "name": "grid",
+                  "type": "boolean"
+                },
+                {
+                  "name": "minimalTicks",
+                  "type": "boolean"
+                },
+                {
                   "name": "rules",
                   "type": "ValueScaleRuleConfigurationSchema[]",
                   "subSlots": [
@@ -5304,10 +5312,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "boolean"
-        },
-        {
-          "name": "minimalTicks",
           "type": "boolean"
         },
         {
@@ -5346,6 +5350,10 @@ export const configManifest: ConfigManifest = {
           "name": "gcMode",
           "type": "gcMode"
         }
+      ],
+      "legacyKeys": [
+        "displayCrossHatches",
+        "minimalTicks"
       ],
       "aliases": [
         "LinearGCContentTrackDisplay"
@@ -5701,6 +5709,14 @@ export const configManifest: ConfigManifest = {
                   "type": "(string | undefined)"
                 },
                 {
+                  "name": "grid",
+                  "type": "boolean"
+                },
+                {
+                  "name": "minimalTicks",
+                  "type": "boolean"
+                },
+                {
                   "name": "rules",
                   "type": "ValueScaleRuleConfigurationSchema[]",
                   "subSlots": [
@@ -5724,14 +5740,6 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "displayCrossHatches",
-          "type": "boolean"
-        },
-        {
-          "name": "minimalTicks",
-          "type": "boolean"
-        },
-        {
           "name": "size",
           "type": "number"
         },
@@ -5739,6 +5747,10 @@ export const configManifest: ConfigManifest = {
           "name": "showLegend",
           "type": "boolean"
         }
+      ],
+      "legacyKeys": [
+        "displayCrossHatches",
+        "minimalTicks"
       ],
       "stateModelProps": [
         "id",
@@ -6104,6 +6116,14 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 },
                 {
+                  "name": "grid",
+                  "type": "boolean"
+                },
+                {
+                  "name": "minimalTicks",
+                  "type": "boolean"
+                },
+                {
                   "name": "title",
                   "type": "(string | undefined)"
                 },
@@ -6139,14 +6159,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "minimalTicks",
-          "type": "boolean"
-        },
-        {
-          "name": "displayCrossHatches",
-          "type": "boolean"
-        },
-        {
           "name": "showLegend",
           "type": "boolean"
         },
@@ -6154,6 +6166,10 @@ export const configManifest: ConfigManifest = {
           "name": "jexlFilters",
           "type": "string[]"
         }
+      ],
+      "legacyKeys": [
+        "displayCrossHatches",
+        "minimalTicks"
       ],
       "stateModelProps": [
         "id",

@@ -252,6 +252,22 @@ on every mark display. A multiscale pair derived one name per zoom, which
 nothing but a derivation could title, since one written `title` holds at every
 zoom. The slot stays a `maybeString`, whose unset and `""` now mean the same.
 
+### Amended 2026-09-26: the scale owns every axis guide
+
+`displayCrossHatches` and `minimalTicks` join the scale as `scales.y.grid`
+(Vega-Lite's `axis.grid`, ggplot2's panel grid) and `scales.y.minimalTicks`,
+two more opt-ins of the factory, which the wiggle, Manhattan and mark displays
+pass. The reason above for keeping the hatches outside — they toggle a guide
+and the ticks are already the scale's — is as true of `rules` and `title`,
+which moved in on 2026-09-20; what it left was four displays each declaring
+two slots with their own getters, and an axis read from two places. Colin
+chose the move on 2026-09-26. `ScoreScaleMixin` answers `grid`,
+`minimalTicks` and `setGrid`; the score menu's "Show cross hatches" writes
+`grid`. Each display declares the old names in `retired`
+(`retiredAxisSpellings`), and a retired lift now merges into an object the
+snapshot already writes, member by member, so `displayCrossHatches: true`
+beside a written `scales.y` keeps both.
+
 ## Rejected alternatives
 
 - **One fixed `valueScaleSchema` object, no factory.** It re-adds the dead

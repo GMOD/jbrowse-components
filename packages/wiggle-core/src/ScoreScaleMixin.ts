@@ -53,9 +53,10 @@ const confNode = (self: object) => self as ScoreScaleHost
  * `symlog` is not among the scale types. `scaleTypeChoices` reads the declared
  * enum back, which is what the scale-type radio offers.
  *
- * Deliberately just the scale. Colors, `resolution`, cross-hatches and the
- * autoscale *computation* stay in `WiggleScoreConfigMixin` / `WiggleCommonMixin`
- * — the alignments coverage band shares this scale but none of the rest.
+ * Deliberately just the scale and the guides it owns. Colors, `resolution`
+ * and the autoscale *computation* stay in `WiggleScoreConfigMixin` /
+ * `WiggleCommonMixin` — the alignments coverage band shares this scale but
+ * none of the rest.
  */
 export function ScoreScaleMixin() {
   return ScoreAxisMixin()
@@ -139,6 +140,20 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
+       * `scales.y.grid`, false on a display whose scale declares none.
+       */
+      get grid(): boolean {
+        return getConf(confNode(self), ['scales', 'y', 'grid']) ?? false
+      },
+      /**
+       * #getter
+       * `scales.y.minimalTicks`, false on a display whose scale declares none.
+       */
+      get minimalTicks(): boolean {
+        return getConf(confNode(self), ['scales', 'y', 'minimalTicks']) ?? false
+      },
+      /**
+       * #getter
        * Whether this display draws `scales.y.rules`, which is whether the
        * score menu offers the reference lines: its scale declares them, and
        * a scale it places y through rules a band for them to cross, which a
@@ -199,6 +214,12 @@ export function ScoreScaleMixin() {
        */
       setAutoscaleGroup(group?: string) {
         setConf(confNode(self), ['scales', 'y', 'autoscaleGroup'], group)
+      },
+      /**
+       * #action
+       */
+      setGrid(grid: boolean) {
+        setConf(confNode(self), ['scales', 'y', 'grid'], grid)
       },
       /**
        * #action

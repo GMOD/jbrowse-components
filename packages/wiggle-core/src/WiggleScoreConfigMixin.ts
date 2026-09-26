@@ -9,7 +9,6 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 /** The slots its composers each declare, with their own defaults. */
 export const wiggleScoreConfigExtraSlots = {
   size: { type: 'number', defaultValue: 2 },
-  displayCrossHatches: { type: 'boolean', defaultValue: false },
 } as const
 
 // Exactly the slots read here: `getConf` answers a slot a composer never
@@ -29,7 +28,7 @@ const confNode = (self: object) => self as WiggleScoreConfigHost
  * #category display
  *
  * The score-plot config every display with a score axis shares: the axis
- * (`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size. A
+ * and its guides (`ScoreScaleMixin`) and the scatter point size. A
  * display plotting one configured field composes `ScoreFieldConfigMixin`,
  * which adds `scoreField`.
  */
@@ -45,14 +44,6 @@ export function WiggleScoreConfigMixin() {
       },
       /**
        * #getter
-       * The configured cross-hatch setting the menu toggles; `showCrossHatches`
-       * is what draws.
-       */
-      get displayCrossHatches(): boolean {
-        return getConf(confNode(self), 'displayCrossHatches')
-      },
-      /**
-       * #getter
        * Whether score maps to color instead of height; a display overrides it.
        */
       get isDensityMode(): boolean {
@@ -63,16 +54,6 @@ export function WiggleScoreConfigMixin() {
       /**
        * #action
        */
-      toggleCrossHatches() {
-        setConf(
-          confNode(self),
-          'displayCrossHatches',
-          !self.displayCrossHatches,
-        )
-      },
-      /**
-       * #action
-       */
       setSize(val?: number) {
         setConf(confNode(self), 'size', val)
       },
@@ -80,11 +61,12 @@ export function WiggleScoreConfigMixin() {
     .views(self => ({
       /**
        * #getter
-       * Whether the score-axis cross hatches draw: never in density mode, which
-       * has no height axis to rule and no toggle in its menu.
+       * Whether the score-axis cross hatches draw: `scales.y.grid`, never in
+       * density mode, which has no height axis to rule and no toggle in its
+       * menu.
        */
       get showCrossHatches() {
-        return self.displayCrossHatches && !self.isDensityMode
+        return self.grid && !self.isDensityMode
       },
     }))
 }

@@ -291,9 +291,9 @@ interface DisplaySnapshot {
       domainMin?: number
       domainMax?: number
       autoscale?: string
+      grid?: boolean
     }
   }
-  displayCrossHatches?: boolean
   defaultRendering?: string
   resolution?: number
   // multi-sample variants: equal-width columns rather than genomic spans
@@ -913,7 +913,7 @@ const modifiers: Record<string, Modifier> = {
   crosshatch: {
     on: ['wiggle'],
     apply: (r, v) => {
-      r.snap.displayCrossHatches = parseBool('crosshatch', v)
+      valueScaleOf(r).grid = parseBool('crosshatch', v)
     },
   },
   // Legacy fill toggle. `fill:false` historically meant "no fill" on

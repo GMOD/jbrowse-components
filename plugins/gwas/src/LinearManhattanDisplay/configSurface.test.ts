@@ -1,7 +1,4 @@
-import {
-  getConf,
-  getConfigurationSchemaDefinition,
-} from '@jbrowse/core/configuration'
+import { getConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -29,9 +26,10 @@ describe('LinearManhattanDisplay config surface', () => {
     expect(display.size).toBeGreaterThan(0)
     expect(display.showCrossHatches).toBe(false)
     expect(display.isDensityMode).toBe(false)
+    expect(display.minimalTicks).toBe(false)
+    expect(display.grid).toBe(false)
     // Manhattan's own
     expect(display.color.scale).toBe('none')
-    expect(getConf(display, 'minimalTicks')).toBe(false)
   })
 
   it('keeps the base-display slots after dropping the wiggle base', () => {

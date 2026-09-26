@@ -109,13 +109,35 @@ function isOwnSnapshot(
   )
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+// `lifted` under `written`: what the snapshot spells wins, member by member
+// where both are objects.
+function underWritten(written: unknown, lifted: unknown): unknown {
+  if (written === undefined) {
+    return lifted
+  }
+  if (isPlainObject(written) && isPlainObject(lifted)) {
+    const out = { ...written }
+    for (const [key, value] of Object.entries(lifted)) {
+      out[key] = underWritten(written[key], value)
+    }
+    return out
+  }
+  return written
+}
+
 /**
  * The snapshot with each spelling `retired` names rewritten: a lift's members
- * take the old key's place, and a key the snapshot already spells wins, since
- * writing the current name is the stronger statement. The old key goes whether
- * or not it carried a value, so a `closed` schema never meets it. Where two
- * retired names lift onto one member — a slot the entry spelt directly and the
- * same slot inside a retired `renderer` — the one declared first wins.
+ * take the old key's place, and what the snapshot already spells wins, member
+ * by member inside an object, since writing the current name is the stronger
+ * statement — so a retired flag lifting into `scales.y` lands beside a
+ * `scales.y` the snapshot writes. The old key goes whether or not it carried a
+ * value, so a `closed` schema never meets it. Where two retired names lift
+ * onto one member — a slot the entry spelt directly and the same slot inside a
+ * retired `renderer` — the one declared first wins.
  */
 export function liftRetiredSpellings(
   schema: ConfigurationSchemaMetadata,
@@ -149,9 +171,7 @@ export function applyRetiredSpellings(
   for (const key of present.filter(key => snapshot[key] !== undefined)) {
     const lifted = retired[key]!(snapshot[key])
     for (const [name, value] of Object.entries(lifted)) {
-      if (out[name] === undefined) {
-        out[name] = value
-      }
+      out[name] = underWritten(out[name], value)
     }
   }
   return out

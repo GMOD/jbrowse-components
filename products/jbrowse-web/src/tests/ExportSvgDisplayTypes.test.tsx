@@ -180,9 +180,9 @@ test('wiggle SVG export includes cross-hatches when enabled', async () => {
   await findDisplayPainted('wiggle-display', delay)
 
   const display = view.tracks[0]!.displays[0] as {
-    toggleCrossHatches: () => void
+    setGrid: (grid: boolean) => void
   }
-  display.toggleCrossHatches()
+  display.setGrid(true)
 
   await view.exportSvg({ rasterizeLayers: false })
   // CrossHatchLines draws a guide line at each Y-scale tick. Its opacity is a
@@ -202,10 +202,10 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
   await findDisplayPainted('wiggle-display', delay)
 
   const display = view.tracks[0]!.displays[0] as {
-    toggleCrossHatches: () => void
+    setGrid: (grid: boolean) => void
     setShowRowSeparators: (arg: boolean) => void
   }
-  display.toggleCrossHatches()
+  display.setGrid(true)
   display.setShowRowSeparators(true)
 
   await view.exportSvg({ rasterizeLayers: false })

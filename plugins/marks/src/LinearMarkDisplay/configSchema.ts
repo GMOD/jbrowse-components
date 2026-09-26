@@ -14,6 +14,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import {
   DEFAULT_POINT_DIAMETER_PX,
+  retiredAxisSpellings,
   scalesSchema,
   valueScaleSchema,
 } from '@jbrowse/wiggle-core'
@@ -449,6 +450,8 @@ export function configSchemaFactory() {
           },
           rules: true,
           title: true,
+          grid: true,
+          minimalTicks: true,
         }),
       ),
       /**
@@ -472,26 +475,6 @@ export function configSchemaFactory() {
         advanced: true,
       },
       /**
-       * #slot minimalTicks
-       * Draw only the min/max y-axis ticks.
-       */
-      minimalTicks: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Draw only the min/max Y-axis ticks',
-        advanced: true,
-      },
-      /**
-       * #slot displayCrossHatches
-       * Rule the plot with horizontal cross hatches at the tick positions —
-       * the config form of the score menu's "Show cross hatches".
-       */
-      displayCrossHatches: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'rule the plot at the tick positions',
-      },
-      /**
        * #slot showLegend
        * Draw the colour key for every mark whose colour is a scale. Defaults to
        * on.
@@ -506,6 +489,7 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
+      retired: retiredAxisSpellings,
       preProcessSnapshot: checkMarks,
     },
   )

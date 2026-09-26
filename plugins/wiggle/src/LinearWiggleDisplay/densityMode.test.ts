@@ -52,13 +52,13 @@ it('scales a density domain to the averages it actually paints', () => {
 
 it('stops drawing cross hatches in density mode', () => {
   const display = makeDisplay()
-  display.toggleCrossHatches()
+  display.setGrid(true)
   expect(display.showCrossHatches).toBe(true)
 
   // the hatches rule a score axis density doesn't have, and the track menu
   // drops the toggle there — so leaving them drawn strands them on with no way
   // back off
   display.setRenderingType('density')
-  expect(display.displayCrossHatches).toBe(true)
+  expect(display.grid).toBe(true)
   expect(display.showCrossHatches).toBe(false)
 })

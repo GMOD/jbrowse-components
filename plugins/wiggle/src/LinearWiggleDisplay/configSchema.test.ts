@@ -51,3 +51,14 @@ test('a scale the display does not paint is refused', () => {
     create({ color: { field: 'score', scale: 'ordinal' } }),
   ).toThrow()
 })
+
+test('the old cross hatch and tick flags land on the scale, beside a scale the config writes', () => {
+  const conf = create({
+    displayCrossHatches: true,
+    minimalTicks: true,
+    scales: { y: { type: 'log', minimalTicks: false } },
+  })
+  expect(readConfObject(conf, ['scales', 'y', 'grid'])).toBe(true)
+  expect(readConfObject(conf, ['scales', 'y', 'type'])).toBe('log')
+  expect(readConfObject(conf, ['scales', 'y', 'minimalTicks'])).toBe(false)
+})

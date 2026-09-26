@@ -6446,6 +6446,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0.99
         },
+        "grid": {
+          "description": "rule the plot at the tick positions.",
+          "type": "boolean",
+          "default": false
+        },
+        "minimalTicks": {
+          "description": "label only the ends of the axis.",
+          "type": "boolean",
+          "default": false
+        },
         "rules": {
           "type": "array",
           "items": {
@@ -6520,11 +6530,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/PlainString",
           "default": "score"
         },
-        "displayCrossHatches": {
-          "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "type": "boolean",
-          "default": false
-        },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
           "type": "number",
@@ -6557,11 +6562,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
           "type": "boolean",
           "default": true
-        },
-        "minimalTicks": {
-          "description": "Draw only the min/max Y-axis ticks.",
-          "type": "boolean",
-          "default": false
         },
         "summaryScoreMode": {
           "description": "choose whether to use max/min/average or whiskers which combines all three into the same rendering.",
@@ -6597,6 +6597,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
           "type": "boolean",
           "default": false
+        },
+        "displayCrossHatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -6660,11 +6668,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/PlainString",
           "default": "score"
         },
-        "displayCrossHatches": {
-          "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "type": "boolean",
-          "default": false
-        },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
           "type": "number",
@@ -6697,11 +6700,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
           "type": "boolean",
           "default": true
-        },
-        "minimalTicks": {
-          "description": "Draw only the min/max Y-axis ticks.",
-          "type": "boolean",
-          "default": false
         },
         "summaryScoreMode": {
           "description": "GCContentAdapter never emits real per-bin min/max, so the inherited 'whiskers' default has no summary to draw — it just forces the above-origin colour on every bin (buildSourceRenderData skips the two-sided split for whiskers) and hides negative GC-skew as if it were positive.",
@@ -6752,6 +6750,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "skew"
           ],
           "default": "content"
+        },
+        "displayCrossHatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -7181,6 +7187,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "tracks naming one group autoscale together.",
           "$ref": "#/$defs/PlainString"
         },
+        "grid": {
+          "description": "rule the plot at the tick positions.",
+          "type": "boolean",
+          "default": false
+        },
+        "minimalTicks": {
+          "description": "label only the ends of the axis.",
+          "type": "boolean",
+          "default": false
+        },
         "rules": {
           "type": "array",
           "items": {
@@ -7226,16 +7242,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "scales": {
           "$ref": "#/$defs/Scales3"
         },
-        "displayCrossHatches": {
-          "description": "Rule the score axis with horizontal cross hatches at the tick positions.",
-          "type": "boolean",
-          "default": false
-        },
-        "minimalTicks": {
-          "description": "Draw only the min/max Y-axis ticks.",
-          "type": "boolean",
-          "default": false
-        },
         "size": {
           "description": "Point diameter in px.",
           "type": "number",
@@ -7245,6 +7251,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw the color key while LD or field coloring is active. Defaults to on.",
           "type": "boolean",
           "default": true
+        },
+        "displayCrossHatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -8164,6 +8178,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0.99
         },
+        "grid": {
+          "description": "rule the plot at the tick positions.",
+          "type": "boolean",
+          "default": false
+        },
+        "minimalTicks": {
+          "description": "label only the ends of the axis.",
+          "type": "boolean",
+          "default": false
+        },
         "title": {
           "description": "axis caption; unset draws none.",
           "$ref": "#/$defs/PlainString"
@@ -8280,16 +8304,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 1
         },
-        "minimalTicks": {
-          "description": "Draw only the min/max Y-axis ticks.",
-          "type": "boolean",
-          "default": false
-        },
-        "displayCrossHatches": {
-          "description": "rule the plot at the tick positions.",
-          "type": "boolean",
-          "default": false
-        },
         "showLegend": {
           "description": "draw the colour key.",
           "type": "boolean",
@@ -8301,6 +8315,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "items": {
             "type": "string"
           }
+        },
+        "displayCrossHatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -8967,6 +8989,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "size": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
+            },
             "displayCrossHatches": {
               "anyOf": [
                 {
@@ -8986,9 +9011,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
                 }
               ]
-            },
-            "size": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -9352,14 +9374,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
             },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -9494,9 +9516,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "scoreField": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreField"
             },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
-            },
             "resolution": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/resolution"
             },
@@ -9517,9 +9536,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLegend": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showLegend"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/summaryScoreMode"
@@ -9547,6 +9563,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "gcMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -9976,11 +9998,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-            },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -10273,16 +10295,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "scoreField": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
             },
-            "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
-            },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
@@ -10322,16 +10334,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
-                }
-              ]
-            },
-            "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
                 }
               ]
             },
@@ -10380,6 +10382,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+            },
+            "displayCrossHatches": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+                }
+              ]
+            },
+            "minimalTicks": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+                }
+              ]
             },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
@@ -10558,16 +10580,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "scoreField": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
             },
-            "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
-            },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
             },
@@ -10607,16 +10619,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
-                }
-              ]
-            },
-            "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
                 }
               ]
             },
@@ -10665,6 +10667,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+            },
+            "displayCrossHatches": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+                }
+              ]
+            },
+            "minimalTicks": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+                }
+              ]
             },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
@@ -10822,9 +10844,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "scoreField": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreField"
             },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
-            },
             "resolution": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/resolution"
             },
@@ -10845,9 +10864,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLegend": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showLegend"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
             },
             "summaryScoreMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/summaryScoreMode"
@@ -10875,6 +10891,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "gcMode": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/gcMode"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/displayCrossHatches"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -11681,17 +11703,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "scales": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
             },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
-            },
             "size": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
             },
             "showLegend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {

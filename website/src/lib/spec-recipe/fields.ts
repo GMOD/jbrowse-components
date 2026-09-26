@@ -801,6 +801,12 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
           path: `${TRACK_MENU} → Score → Autoscale type → ${AUTOSCALE_TYPES[autoscale]}`,
         }
       : undefined,
+    typeof y.grid === 'boolean' && displayType === 'LinearWiggleDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show... → Show cross hatches (${y.grid ? 'checked' : 'unchecked'})`,
+          note: 'Absent in the density plot types, where score maps to color rather than height and a hatch would mark nothing.',
+        }
+      : undefined,
     Array.isArray(y.rules) && y.rules.length
       ? {
           path: `${TRACK_MENU} → ${menu} → Reference lines...`,
@@ -1339,13 +1345,6 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   scales: scalesStep,
-  displayCrossHatches: (value, { displayType }) =>
-    typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
-      ? {
-          path: `${TRACK_MENU} → Show... → Show cross hatches (${value ? 'checked' : 'unchecked'})`,
-          note: 'Absent in the density plot types, where score maps to color rather than height and a hatch would mark nothing.',
-        }
-      : undefined,
   y: (value, { displayType }) =>
     value === 'identity' && displayType === 'LinearMafDisplay'
       ? { path: `${ROW_COLORING} → ${MAF_ROW_RENDERING_LABELS.get('xyplot')}` }

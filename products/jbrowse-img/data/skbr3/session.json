@@ -10,9 +10,8 @@
             "trackId": "ngmlr_cov",
             "height": 275,
             "resolution": 25,
-            "scales": { "y": { "autoscale": "localsd" } },
-            "defaultRendering": "scatter",
-            "displayCrossHatches": true
+            "scales": { "y": { "autoscale": "localsd", "grid": true } },
+            "defaultRendering": "scatter"
           }
         ]
       }

@@ -55,23 +55,25 @@ suggestive one:
 _See the **Config slots** section below for all available configuration fields._
 
 The value scale of a quantitative display, written as `scales.y`: the
-wiggle and multi-wiggle plots, the Manhattan plot, the alignments coverage
-band and the mark display each carry one. Which members it has follows what
-the display draws: Manhattan places a linear axis and consults no autoscale
+wiggle plot, the Manhattan plot, the alignments coverage band and the mark
+display each carry one, with the axis guides it draws — its ticks, its
+`grid`, its `rules` and its `title`. Which members it has follows what the
+display draws: Manhattan places a linear axis and consults no autoscale
 mode, so it has neither `type` alternatives nor `autoscale`.
 
 Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, and an end
 left unset autoscales over the loaded regions.
 
 Two defaults come from the display rather than from the scale. `autoscale`
-starts at `localpercentile` on the wiggle and multi-wiggle plots and at
-`local` on the coverage band and the mark display. `symlogConstant` starts
+starts at `localpercentile` on the wiggle plot and at `local` on the
+coverage band and the mark display. `symlogConstant` starts
 at `0` on the wiggle family and the mark display and at `1` on the coverage
 band.
 
 The wiggle family, the Manhattan plot and the mark display also carry
-`rules`, reference lines at chosen values; the mark display adds `title`,
-the caption beside the axis. A rule naming no `color` draws in the one
+`rules`, reference lines at chosen values, `grid`, a line at every tick,
+and `minimalTicks`; the mark display adds `title`, the caption beside the
+axis. A rule naming no `color` draws in the one
 colour the chrome rules every plot in, so a red line is a claim its author
 makes rather than a meaning a display assigns.
 
@@ -93,5 +95,7 @@ These slots go on a display entry: `"displays": [{ "type": "ValueScale", ... }]`
 | <span id="slot-scalesyautoscale">**scales.y.autoscale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = per display | What an unpinned end scales to: `local` takes the extremes of the visible region, `localsd` the mean ± `numStdDev` standard deviations, `localpercentile` the `numQuantile`-th percentile of each sign, which is robust to a peaky distribution. |
 | <span id="slot-scalesynumstddev">**scales.y.numStdDev**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>3</code> | Standard deviations either side of the mean the `localsd` autoscale reaches.<br>_advanced_ |
 | <span id="slot-scalesynumquantile">**scales.y.numQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.99</code> | The percentile `localpercentile` clips outliers at — 0.99 drops the outermost 1% of each sign. The two signs are measured independently and anchored at 0, so a sparse minority tail stays visible and all-positive data pins its bottom at 0.<br>_advanced_ |
+| <span id="slot-scalesygrid">**scales.y.grid**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Rule the plot across at every tick, ggplot2's panel grid and Vega-Lite's `axis.grid`. The score menu's "Show cross hatches" toggles it. |
+| <span id="slot-scalesyminimalticks">**scales.y.minimalTicks**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Label only the two ends of the axis.<br>_advanced_ |
 | <span id="slot-scalesytitle">**scales.y.title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The caption beside the axis, naming what it measures, drawn once however many bands the scale rules and at every zoom. Optional, as JBrowse's other captions are: unset, `""` or `null`, the axis has none; some text is that text. |
 | <span id="slot-scalesyrules">**scales.y.rules**</span><br><code>types.array(valueScaleRuleSchema())</code> | Horizontal reference lines at chosen values, across every band the scale rules: a significance threshold, a zero line, an allele-frequency cut. Each is `{ value, color, label }`, or a bare number for a plain line. An autoscaled end widens to keep every rule on the axis; a pinned `domainMin` or `domainMax` that excludes a rule drops it. |

@@ -326,7 +326,7 @@ export function stateModelFactory(
               domain: self.domain,
               scaleType: self.scaleType,
               height: self.height,
-              minimalTicks: getConf(self, 'minimalTicks'),
+              minimalTicks: self.minimalTicks,
               rules: self.scoreRules,
             },
           ]
