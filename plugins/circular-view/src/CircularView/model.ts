@@ -690,8 +690,10 @@ function stateModelFactory(pluginManager: PluginManager) {
        * the tracks drawing ribbons, which the view's colour settings paint
        */
       syntenyTracks(): ComparativeTrackModel[] {
-        return self.tracks.filter(
-          track => track.displays[0]?.type === 'ChordSyntenyDisplay',
+        return self.tracks.filter(track =>
+          track.displays.some(
+            (d: { type: string }) => d.type === 'ChordSyntenyDisplay',
+          ),
         )
       },
       /**
@@ -710,21 +712,16 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Every ribbon display under this view's tracks; a chromosome reorder
-       * reads its alignments from these. Filtered by `type` rather
-       * than taken as `tracks[i].displays[0]`, for the reason the dotplot's
-       * `dotplotDisplays` gives.
+       * the ribbon displays of `syntenyTracks()`; a chromosome reorder reads
+       * its alignments from these
        */
       get chordSyntenyDisplays(): ChordSyntenyDisplaySelf[] {
-        const out: ChordSyntenyDisplaySelf[] = []
-        for (const track of self.tracks) {
-          for (const display of track.displays) {
-            if (display.type === 'ChordSyntenyDisplay') {
-              out.push(display as ChordSyntenyDisplaySelf)
-            }
-          }
-        }
-        return out
+        return this.syntenyTracks().flatMap(track =>
+          track.displays.filter(
+            (d): d is ChordSyntenyDisplaySelf =>
+              d.type === 'ChordSyntenyDisplay',
+          ),
+        )
       },
       /**
        * #getter
