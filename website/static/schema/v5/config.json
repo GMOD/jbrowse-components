@@ -5913,11 +5913,6 @@
           "enum": ["r2", "dprime"],
           "default": "r2"
         },
-        "showLDTriangle": {
-          "description": "whether to show the LD triangle heatmap.",
-          "type": "boolean",
-          "default": true
-        },
         "maxVariantSeparation": {
           "type": "number",
           "default": 0
@@ -9657,9 +9652,6 @@
             },
             "ldMetric": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric"
-            },
-            "showLDTriangle": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLDTriangle"
             },
             "maxVariantSeparation": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxVariantSeparation"

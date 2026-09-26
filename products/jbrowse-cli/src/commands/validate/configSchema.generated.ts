@@ -6238,11 +6238,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "r2"
         },
-        "showLDTriangle": {
-          "description": "whether to show the LD triangle heatmap.",
-          "type": "boolean",
-          "default": true
-        },
         "maxVariantSeparation": {
           "type": "number",
           "default": 0
@@ -10198,9 +10193,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "ldMetric": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric"
-            },
-            "showLDTriangle": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLDTriangle"
             },
             "maxVariantSeparation": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxVariantSeparation"

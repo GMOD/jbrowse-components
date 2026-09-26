@@ -4807,10 +4807,6 @@ export const configManifest: ConfigManifest = {
           "type": "LDMetric"
         },
         {
-          "name": "showLDTriangle",
-          "type": "boolean"
-        },
-        {
           "name": "maxVariantSeparation",
           "type": "number"
         },
