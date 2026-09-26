@@ -29,8 +29,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="volatile-features">**features**</span><br><code>features: undefined as Feature[] &#124; undefined</code> |  | BaseChordDisplay |
 | <span id="volatile-reloadcounter">**reloadCounter**</span><br><code>reloadCounter: 0</code> | the fetch's pure "go again" signal | BaseChordDisplay |
-| <span id="volatile-highlightedfeatureids">**highlightedFeatureIds**</span><br><code>highlightedFeatureIds: undefined as string[] &#124; undefined</code> | ids of the features to keep at full strength while the rest dim; undefined dims nothing. The SV inspector writes the selected record's event here | BaseChordDisplay |
-| <span id="volatile-visiblefeatureids">**visibleFeatureIds**</span><br><code>visibleFeatureIds: undefined as string[] &#124; undefined</code> | ids of the features to draw; undefined draws them all. The SV inspector writes the rows its sheet's filters leave here, so a filter change is a redraw and no refetch | BaseChordDisplay |
 | <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
 | <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
 | <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
@@ -52,11 +50,9 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | how far from the center a chord across the circle passes, as a fraction of the radius; a shorter chord bows less, in proportion to its span | BaseChordDisplay |
 | <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> |  | BaseChordDisplay |
 | <span id="getter-sliceindex">**sliceIndex**</span><br><code>Record&lt;string, Slice&gt;</code> | every slice of the circle, keyed by canonical assembly AND refName: two genomes on one circle can each carry a `chr1`. An elided slice answers to each refName it swallowed. | BaseChordDisplay |
-| <span id="getter-visiblefeatures">**visibleFeatures**</span><br><code>Feature[] &#124; undefined</code> | `features`, narrowed to `visibleFeatureIds` | BaseChordDisplay |
 | <span id="getter-drawnfeatures">**drawnFeatures**</span><br><code>Feature[] &#124; undefined</code> | what the chord components draw | BaseChordDisplay |
-| <span id="getter-highlightedfeatureidset">**highlightedFeatureIdSet**</span><br><code>Set&lt;string&gt; &#124; undefined</code> |  | BaseChordDisplay |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | BaseChordDisplay |
-| <span id="getter-hoveredfeatureid">**hoveredFeatureId**</span><br><code>string &#124; undefined</code> | the feature under the pointer, which the view resolves off its pick canvas for every chord display at once | BaseChordDisplay |
+| <span id="getter-hoveredfeatureid">**hoveredFeatureId**</span><br><code>string &#124; undefined</code> | the feature under the pointer, which the view hit-tests for every chord display at once | BaseChordDisplay |
 | <span id="getter-chordstage">**chordStage**</span><br><code>ChordStage</code> | the polar stage as the canvas and the pointer see it, rotation in | BaseChordDisplay |
 | <span id="getter-figurestage">**figureStage**</span><br><code>ChordStage</code> | the polar stage on the unrotated figure, which the view's SVG turns: what the export and the highlight paths are placed on | BaseChordDisplay |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
@@ -87,8 +83,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="action-openerrordialog">**openErrorDialog**</span><br><code>() =&gt; void</code> |  | BaseChordDisplay |
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(features: Feature[] &#124; undefined) =&gt; void</code> |  | BaseChordDisplay |
-| <span id="action-sethighlightedfeatureids">**setHighlightedFeatureIds**</span><br><code>(ids: string[] &#124; undefined) =&gt; void</code> |  | BaseChordDisplay |
-| <span id="action-setvisiblefeatureids">**setVisibleFeatureIds**</span><br><code>(ids: string[] &#124; undefined) =&gt; void</code> |  | BaseChordDisplay |
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> |  | BaseChordDisplay |
 | <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setstatusmessage) |
 | <span id="action-seterror">**setError**</span><br><code>(error?: unknown) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-seterror) |
