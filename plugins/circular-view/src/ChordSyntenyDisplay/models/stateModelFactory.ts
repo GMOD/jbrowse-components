@@ -400,10 +400,13 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
               adapterConfig,
               regions,
             })
+            // a ribbon draws no CIGAR, and a PIF's coarse tier is the same
+            // rows with the CIGAR folded: a twentieth of the bytes on a chain
             return dedupeRibbons(
               await ctx.callRpc('CoreGetFeatures', {
                 adapterConfig,
                 regions: renamed,
+                opts: { lodMode: 'coarse' },
               }),
             )
           },
