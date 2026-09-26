@@ -24,9 +24,9 @@ The **Graph genome view** is a separate plugin,
 [jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer),
 not bundled in JBrowse Web, because its force-directed layout uses the
 GPL-licensed [Bandage](https://github.com/rrwick/Bandage) engine (its
-[OGDF](https://ogdf.github.io/) FMMM layout). The plugin is in **beta** and not
-in the [plugin store](/docs/user_guides/plugin_store) yet. It is a native ES
-module and loads from any config (see
+[OGDF](https://ogdf.github.io/) FMMM layout). The plugin is in **beta**. The
+[plugin store](/docs/user_guides/plugin_store) lists it as GraphGenomeView, and
+as a native ES module it also loads from any config (see
 [configuring plugins](/docs/config_guides/plugins)):
 
 <!-- GRAPH_PLUGIN_CONFIG START -->
@@ -53,13 +53,27 @@ adapter.
 
 ## Quick start
 
-To index a graph, convert it once into two tabix-indexed BED files that JBrowse
-can query by locus: `.segs.bed.gz` for the segments and `.links.bed.gz` for the
-links between them. Then **Add track** with `RgfaTabixAdapter` pointing at the
-shared prefix, and pick **Track menu → Launch → Graph genome view (this
-region)**. [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the pair.
-Skip to [Five layouts](#three-layouts) if you just need to know what the buttons
-do.
+To index a graph, convert it once into tabix-indexed BED files that JBrowse can
+query by locus: `.segs.bed.gz` for the segments and `.links.bed.gz` for the
+links between them. One command, `build_pangenome_graph.sh`, builds them and
+writes the track config that reads them, as
+[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
+describes. Then **Add track** with that config, whose adapter is
+`RgfaTabixAdapter`, and pick **Track menu → Launch → Graph genome view (this
+region)**. [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the
+index. Skip to [Five layouts](#three-layouts) if you just need to know what the
+buttons do.
+
+The graph opens under the linear view, laid out on reference coordinates, and
+follows it: typing in the location box, a gene search, a click on the cytoband
+and a drag-zoom all move the graph too. When the window moves past the stretch
+the graph was cut from, the view cuts the new window. **Pin** in the graph
+toolbar holds the graph where it is, and **Follow** hands it back.
+
+A graph track can also name a coarse tier, the same graph with one node per
+bubble. Zoomed out past the handover the track names, the following graph cuts
+the tier instead of the segments, so a whole chromosome draws as a graph, and
+zoomed back in it cuts the segments again.
 
 `RgfaTabixAdapter` is the only adapter that cuts a subgraph. The same pair
 behind a `BedTabixAdapter` draws as a feature track whose menu offers no graph.
@@ -87,23 +101,23 @@ layout here, was built for assembly graphs. Use Bandage for one.
 ## Route 1: a graph track, browsable by locus
 
 Once indexed, the graph loads as an ordinary `FeatureTrack`, and a menu item
-opens the graph for whatever is on screen. The format decides which script
-builds the index, and every step after that is the same. Both scripts are in the
-repo's
-[`scripts/`](https://github.com/GMOD/jbrowse-components/tree/main/scripts)
-directory and need `bgzip` and `tabix`, plus
-[`gfatools`](https://github.com/lh3/gfatools) for the rGFA route or `python3`
-for the plain-GFA one:
+opens the graph for whatever is on screen.
+[`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
+builds the index, the format decides which route it takes, and every step after
+that is the same. It needs `bgzip`, `tabix` and `python3`, plus
+[`gfatools`](https://github.com/lh3/gfatools) and GNU awk for an rGFA:
 
 ```bash
-# rGFA: the tags are already coordinates, so this is a projection
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
-bash build_rgfa_tabix.sh ecoli_minigraph.rgfa ecoli_minigraph
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
 
-# plain GFA: walk the P (or W) lines to derive the same thing
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
+# rGFA: the tags are already coordinates, so this is a projection
+bash build_pangenome_graph.sh ecoli_minigraph.rgfa ecoli_minigraph
+
+# plain GFA: walk the P (or W) lines to derive the same thing, with K12 as the
+# backbone, and take the bubbles from the snarl VCF that pggb -V wrote
 gfa=$(ls pggb/*.smooth.final.gfa)
-bash build_pggb_tabix.sh "$gfa" ecoli_pggb K12
+vcf=$(ls pggb/*.smooth.final.K12.vcf)
+bash build_pangenome_graph.sh "$gfa" ecoli_pggb --reference K12 --snarls "$vcf"
 ```
 
 The rGFA in these figures is a minigraph graph of five strains, built by the
@@ -115,13 +129,13 @@ command can query by strain.
 
 The plain-GFA walk makes four choices:
 
-- The third argument names an **assembly**, not a path. Every contig that
-  assembly contributes is reference, and the script walks those contigs first,
-  at rank 0. A genome with more than one contig has one reference path per
-  contig. Anchoring on only one of those paths would leave the other contigs'
-  segments to whichever donor path reaches them first. A bare sample (`GRCh38`)
-  is enough where the reference is haploid. For a diploid reference, write the
-  haplotype (`HG002#1`), or the script picks one and names it on stderr.
+- `--reference` names an **assembly**, not a path. Every contig that assembly
+  contributes is reference, and the script walks those contigs first, at rank 0.
+  A genome with more than one contig has one reference path per contig.
+  Anchoring on only one of those paths would leave the other contigs' segments
+  to whichever donor path reaches them first. A bare sample (`GRCh38`) is enough
+  where the reference is haploid. For a diploid reference, write the haplotype
+  (`HG002#1`), or the script picks one and names it on stderr.
 - The walk also records **who carries each segment**, as `SM:Z:` in the index.
   rGFA has no field for carriers. On this route that value fills `carriedBy` in
   the node popup.
@@ -131,8 +145,9 @@ The plain-GFA walk makes four choices:
   assembly that carries it**. rGFA places such segments the same way, which is
   why a reference query reaches them through the links file.
 
-Both scripts write `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz` with their
-tabix indexes, and both outputs load through one adapter:
+Both routes write `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz` with their
+tabix indexes, and a second such pair for the bubble tier, one node per bubble.
+One adapter reads all four, and `<prefix>.config.json` carries the track:
 
 ```json addtrack
 {
@@ -142,41 +157,60 @@ tabix indexes, and both outputs load through one adapter:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_minigraph"
+    "uri": "ecoli_minigraph",
+    "coarse": { "uri": "ecoli_minigraph.tier10000", "aboveBpPerPx": 307 }
   }
 }
 ```
 
 The `uri` is the shared prefix, from which the adapter resolves `.segs.bed.gz`,
-`.links.bed.gz` and both `.tbi` files. These stable names are PanSN
-(`K12#1#chr`), and their sample prefix is already the assembly name, so the
-track needs no `assemblyNameToPanSN` mapping. The
-[HPRC graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
+`.links.bed.gz` and both `.tbi` files. `coarse` names the tier by a prefix of
+its own, and `aboveBpPerPx` is the handover: the linear view's zoom, in bp per
+pixel, past which a following graph cuts the tier. The script derives it from
+the graph's mean backbone segment. These stable names are PanSN (`K12#1#chr`),
+and their sample prefix is already the assembly name, so the track needs no
+`assemblyNameToPanSN` mapping.
+[HPRC's graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
 needs one, because that graph calls the reference `GRCh38` while the assembly is
 `hg38`.
 
-Then **Track menu → Launch → Graph genome view (this region)** cuts a subgraph
-from the index. The menu offers the item only for a track whose adapter can cut
-a subgraph. Past the size the view will draw, the item greys out and names the
-limit. The view cuts on the graph's reference, which is the first assembly the
-track names. In the view of a contributing haplotype, the item therefore greys
-out and names the view to open it from.
+Then **Track menu → Launch → Graph genome view (this region)** cuts the window
+on screen out of the index and opens it as a graph under the linear view. The
+menu offers the item only for a track whose adapter can cut a subgraph. Past the
+size the view will draw, the item greys out and names the limit. The view cuts
+on the graph's reference, which is the first assembly the track names. In the
+view of a contributing haplotype, the item therefore greys out and names the
+view to open it from.
 
 The legible window width depends on the graph. A minigraph graph records
 structural variation and collapses everything smaller, so a legible window is
 hundreds of kb. A pggb graph puts a node at every SNP, so a legible window is
 hundreds of bp.
 
-Right-clicking one segment cuts the graph around that segment, padded by half
-its length on each side for context. Dragging across the ruler and picking
-**Graph genome view (this selection)** does the same for a window you choose,
-with no track menu involved. Right-clicking a feature in any other track, such
-as a gene, offers **Graph genome view (this feature)**. That item cuts from
-whichever graph track the session holds for the assembly, so the graph track
-need not be in the view at all.
+Right-clicking one segment offers **Graph genome view (this segment)**, which
+first moves the linear view to that segment, padded by half its length on each
+side for context, and cuts the graph there. Dragging across the ruler and
+picking **Graph genome view (this selection)** does the same for a window you
+choose, with no track menu involved. Right-clicking a feature in any other
+track, such as a gene, offers **Graph genome view (this feature)**. That item
+cuts from whichever graph track the session holds for the assembly, so the graph
+track need not be in the view at all.
 
-A launched pane keeps the window it was launched from while the linear view
-moves on. To see the next window, launch again, and each launch adds a pane.
+Every one of these launches leaves the graph following the linear view. Typing
+in the location box, a gene search, the cytoband and a drag-zoom move both
+views, and whenever the window leaves the last cut, the graph view cuts the new
+window with a window-width of margin on each side. **Pin** in the graph toolbar
+holds the graph at its cut while the linear view moves on, and **Follow** hands
+it back. The toolbar also names whatever else holds the graph: a layout whose x
+is not reference bp, an opened bubble, a region the linear view shows reversed,
+or a cut from a GBZ.
+
+A track whose adapter names `coarse` gives the graph a second tier to cut. Once
+the linear view is zoomed out past `aboveBpPerPx`, the following graph cuts the
+tier, one node per bubble, and the size limit no longer applies; zooming back in
+cuts the segments again. The segments lane in the linear view draws segments at
+every zoom, so the tier's prefix is also worth loading as a track of its own, a
+lane that draws a whole chromosome where the segments lane refuses.
 
 Each line in the launched graph is one graph link. The view draws a link only
 when both endpoints are inside the cut, so an allele near the window's edge
@@ -185,8 +219,9 @@ draws only the link that stays inside it.
 ## Route 2: a GFA file
 
 With no index, **Add → Graph genome view** takes a GFA by file or URL and draws
-all of it. Use this route for a window someone cut for you, and for a graph too
-large to index:
+all of it. The file is the whole graph, with no index to cut another window
+from, so a graph opened this way never follows a linear view. Use this route for
+a window someone cut for you, and for a graph too large to index:
 
 ```bash
 odgi extract -i graph.og -r K12#1#chr:1004500-1004900 -E -o - \
@@ -206,9 +241,9 @@ has no traversals to read. There `carriedBy` is empty, and the panel reports
 `contributingAssembly`, the one assembly that `SN` credits the segment to.
 
 Route 1 gives the same answer without the GFA file when the index came from a
-plain GFA. `build_pggb_tabix.sh` does the traversal walk offline and writes each
-segment's carriers into the index as `SM:Z:`. Only an index built from a
-minigraph rGFA lacks carriers.
+plain GFA. On that route `build_pangenome_graph.sh` does the traversal walk
+offline and writes each segment's carriers into the index as `SM:Z:`. Only an
+index built from a minigraph rGFA lacks carriers.
 
 **Sample rows** draws a row per contributing assembly. Each node is drawn once,
 on the row of the first path that reaches it, and the other carriers stay in
@@ -246,9 +281,14 @@ the same room as the kilobase segment beside it, and a bubble draws as a lens.
 **Variant map** draws only the reference line with one typed glyph per bubble on
 it. Clicking a glyph opens the bubble as a graph.
 
-Force-directed is the default, because an anchored drawing flattens both routes
-through a locus onto the reference axis, and an allele then looks like a stub
-hanging under a line.
+A launch from a linear view opens in **Anchored**, because only a layout whose x
+is reference bp can follow that view. **Ordered** and **Force-directed layout**
+give x another meaning, so picking either holds the graph where it is, and the
+toolbar says it is not following; switching back to a reference-bp layout
+resumes the following. Force-directed is the pinned picture of a locus, for when
+the shape matters: an anchored drawing flattens both routes through a locus onto
+the reference axis, and an allele then looks like a stub hanging under a line. A
+graph opened from a file starts in the force layout.
 
 Anchored and Sample rows both need a backbone, from rGFA tags or from a
 reference path. A graph with neither greys them out. Force-directed is then the
@@ -388,7 +428,8 @@ expression on the track itself. Reference position, over the 50 kb window from
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_minigraph"
+    "uri": "ecoli_minigraph",
+    "coarse": { "uri": "ecoli_minigraph.tier10000", "aboveBpPerPx": 307 }
   },
   "displayDefaults": {
     "color": "jexl:feature.rank>0 ? 'rgb(60,65,72)' : `hsl(${min(300, max(0, ((feature.start+feature.end)/2 - 4050000) / 50000 * 300))},70%,50%)`"
