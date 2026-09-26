@@ -10,9 +10,9 @@ const base = frame({
   statements: 'df <- read_bigwig(path, chrom, start, end)',
 })
 
-function run(steps: Step[]) {
+function run(steps: Step[], bpPerPx = 100) {
   const notes: string[] = []
-  return { out: applyTransforms({ base, steps, notes }), notes }
+  return { out: applyTransforms({ base, steps, notes, bpPerPx }), notes }
 }
 
 describe('a step becomes R, and says what it now holds', () => {
@@ -25,8 +25,12 @@ describe('a step becomes R, and says what it now holds', () => {
   })
 
   it('takes the bin width the display would follow the zoom with', () => {
-    const { out } = run([{ type: 'bin', step: 'auto' }])
-    expect(out.statements).toContain('/ 10000')
+    // four px of 100 bp/px is 400 bp, which the 1/2/5 ladder snaps up to 500
+    const { out } = run([{ type: 'bin', step: 'auto' }], 100)
+    expect(out.statements).toContain('/ 500')
+    expect(run([{ type: 'bin', step: 'auto' }], 2500).out.statements).toContain(
+      '/ 10000',
+    )
   })
 
   it('aggregates into the columns its ops name', () => {
@@ -40,7 +44,10 @@ describe('a step becomes R, and says what it now holds', () => {
         ],
       },
     ])
-    expect(out.statements).toContain('split(df, df[c("strand")], drop = TRUE)')
+    // addNA keeps a group whose key is missing, as the encoder keys undefined
+    expect(out.statements).toContain(
+      'split(df, lapply(df[c("strand")], addNA), drop = TRUE)',
+    )
     expect(out.statements).toContain('meanScore = mean(g$score, na.rm = TRUE)')
     expect(out.statements).toContain('n = nrow(g)')
     // the folded span comes too, as featureTransforms.ts emits it, or a mark

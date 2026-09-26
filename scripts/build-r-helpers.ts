@@ -15,9 +15,10 @@
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const REPO_ROOT = path.resolve(
-  path.dirname(import.meta.url.replace('file://', '')),
+  path.dirname(fileURLToPath(import.meta.url)),
   '..',
 )
 const DIR = path.join(REPO_ROOT, 'plugins/marks/src/rexport')

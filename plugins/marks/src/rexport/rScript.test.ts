@@ -1,4 +1,10 @@
-import { frameFor, helpersFor, locationPath, READERS } from './frameFor.ts'
+import {
+  frameFor,
+  helpersFor,
+  locationPath,
+  READERS,
+  sourceNotes,
+} from './frameFor.ts'
 import { markPlot } from './markToPlot.ts'
 import { HELPERS } from './rHelpers.generated.ts'
 import { assembleRScript, HELPER_DEPS, resolveHelpers } from './rScript.ts'
@@ -147,5 +153,69 @@ describe('the assembled script', () => {
     })
     expect(r).toContain('# What this figure does not show:')
     expect(r).toContain('#   - fill: a jexl callback has no R counterpart')
+  })
+})
+
+describe('a reader is asked for the fields the display reads', () => {
+  it('fetches GFF attributes by name, beside the fixed columns', () => {
+    const f = frameFor({
+      type: 'Gff3TabixAdapter',
+      uri: '/x/v.gff3.gz',
+      fields: ['gbkey', 'score', 'Note'],
+    })
+    expect(f.statements).toContain(
+      'read_gff("/x/v.gff3.gz", chrom, start, end, attrs = c("gbkey", "Note"))',
+    )
+    expect(f.columns).toEqual(
+      expect.arrayContaining(['gbkey', 'Note', 'score']),
+    )
+  })
+
+  it('fetches VCF INFO keys under the dotted names a channel reads', () => {
+    const f = frameFor({
+      type: 'VcfTabixAdapter',
+      uri: '/x/v.vcf.gz',
+      fields: ['INFO.DP', 'QUAL', 'nonsense'],
+    })
+    expect(f.statements).toContain('info = c("DP")')
+    expect(f.columns).toContain('INFO.DP')
+    expect(f.columns).not.toContain('nonsense')
+  })
+
+  it('asks a BigWig for nothing, since it holds nothing more', () => {
+    const f = frameFor({
+      type: 'BigWigAdapter',
+      uri: '/x/v.bw',
+      fields: ['gbkey'],
+    })
+    expect(f.statements).toContain('read_bigwig("/x/v.bw", chrom, start, end)')
+    expect(f.columns).not.toContain('gbkey')
+  })
+})
+
+describe('the script says where it reads from', () => {
+  it('warns that a presigned URL carries its credential', () => {
+    expect(
+      sourceNotes('https://b.s3.amazonaws.com/v.bw?X-Amz-Signature=abc'),
+    ).toHaveLength(1)
+    expect(sourceNotes('https://b.s3.amazonaws.com/v.bw')).toEqual([])
+    expect(sourceNotes('/data/v.bw')).toEqual([])
+  })
+})
+
+describe('a helper the library does not hold', () => {
+  it('fails the export rather than emitting a call to nothing', () => {
+    expect(() =>
+      assembleRScript({
+        regions: [{ refName: 'ctgA', start: 0, end: 10 }],
+        panels: [
+          {
+            variable: 'p1',
+            plot: { layers: [] },
+            helpers: ['read_cram'],
+          },
+        ],
+      }),
+    ).toThrow('no R helper named read_cram')
   })
 })

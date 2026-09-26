@@ -117,14 +117,21 @@ gen:shaders` convention. Real `.R` files mean no TS-template escaping
 
 A fragment declares only the helpers **its own plot code** calls; `HELPER_DEPS`
 plus `resolveHelpers` adds the transitive closure at assemble time, and a test
-scans the R bodies and fails on a missing edge. The region helpers
-(`region_layout`, `read_regions`, `region_scale`, `region_dividers`,
-`region_xlim`, `region_ruler`, `region_title`) emit into every script.
+scans the R bodies and fails on a missing edge. A name no `.R` file defines
+fails the export rather than emitting a call to nothing. `region_layout` and
+`read_regions` emit into every script; the branch's divider, ruler and title
+helpers are not on main yet, so a multi-region figure has one cumulative-bp
+axis and no per-region label.
 
 A reader takes `(uri, chrom, start, end)` and returns a **genomic**-coordinate
-frame. `read_regions` is the only place genomic → cumulative happens; it clips
-each feature to its region and shifts the named coordinate columns. Line-like
-geoms group by `.region` or a line connects across the gap.
+frame, plus the file's fields the display names: `fieldsRead` collects every
+plain field a channel, a step, the facet or the rows read, less what a step
+writes, and `frameFor` hands them to the reader as GFF3 attributes (matched
+without regard to case, as JBrowse matches them) or VCF INFO keys under the
+dotted `INFO.DP` spelling a channel reads. A column every value of which parses
+as a number comes back numeric. `read_regions` is the only place genomic →
+cumulative happens; it clips each feature to its region and shifts the named
+coordinate columns.
 
 ## Parity facts
 
@@ -252,9 +259,21 @@ data stage and `rScript.ts` the assembler. The helper library is
 
 Four transform steps run as base R: `bin`, `aggregate`, `coverage` and
 `pileup`, the last through `IRanges::disjointBins`, which is what makes a
-`row` a real column rather than an assumption. `filter` and `formula` carry a
-jexl callback and `flatten` and `mate` fan out structure a table does not hold,
-so each is reported in the header instead.
+`row` a real column rather than an assumption. An `auto` bin follows the
+figure's zoom — the regions' span over the figure's width in device px —
+through the same `autoBinStep` ladder the display uses. The facet's own steps
+run over each section alone, `split` by the facet field with `addNA` so a
+section whose key is missing is a section and not a dropped row, which is
+also how an `aggregate` keys `undefined`. `filter` and `formula` carry a jexl
+callback and `flatten` and `mate` fan out structure a table does not hold, so
+each is reported in the header instead, as are `jexlFilters` and `rowColor`.
+
+`rows` draws as `facet_wrap`, one panel per value in `domain` order, and yields
+to a `facet` where both are set, as the display does. `scales.y.rules` are
+`geom_hline`s with their labels. A log axis cannot pin a bound at or below
+zero, so that end follows the data and the header says so, and a bar under one
+grows from the panel bottom rather than from a log of the origin. A colour or
+shape `scale: 'none'` paints its `value`.
 
 A step's output columns flow into the next step and then to the layer, where
 `missingColumns` refuses a mark naming one no stage produced and reports it in
@@ -270,8 +289,14 @@ scripts dying at `Rscript` because of it.
 `test_data/volvox` and skips itself where R is absent — **which is every CI
 run**, since no workflow installs R. Treat it as a local gate, and note that a
 suite of pure string assertions would have caught none of the defects it has:
-the CSS-versus-hex ramp colour, `df_1 <- df_1`, and a display-level frame whose
-base read the assembler dropped were all found by running the script.
+the CSS-versus-hex ramp colour, `df_1 <- df_1`, a display-level frame whose
+base read the assembler dropped, and an aggregate on a bin naming `start` twice
+were all found by running the script. Beyond "the PNG exists", `probeFrame`
+builds the frame a mark reads and asks R what it holds — which sections pack
+from row 0, whether the NA group survived — and the reader probes ask one
+helper for a fact the file states. Installing R on CI means Bioconductor's
+`rtracklayer` and `Rsamtools`, a ten-minute install without a cached image;
+that decision is open.
 
 ## Open on the branch
 

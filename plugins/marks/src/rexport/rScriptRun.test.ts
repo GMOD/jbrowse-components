@@ -3,10 +3,11 @@ import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { frameFor, helpersFor } from './frameFor.ts'
-import { markPlot } from './markToPlot.ts'
+import { frameFor, helpersFor, sourceNotes } from './frameFor.ts'
+import { fieldsRead, markPlot } from './markToPlot.ts'
 import { HELPERS } from './rHelpers.generated.ts'
 import { assembleRScript, resolveHelpers } from './rScript.ts'
+import { frameChain } from './rplot.ts'
 
 import type { DisplaySpec } from './markToPlot.ts'
 import type { Region } from './rScript.ts'
@@ -17,18 +18,54 @@ import type { Region } from './rScript.ts'
  * and then ask R what it read, which is the technique
  * agent-docs/reference/R_EXPORT.md §Verification describes.
  */
+/** Every package an emitted script can load, so the skip is as wide as the suite. */
+const PACKAGES = [
+  'rtracklayer',
+  'GenomicRanges',
+  'IRanges',
+  'Rsamtools',
+  'ggplot2',
+  'patchwork',
+]
+
 const R = hasR()
 const BIGWIG = path.resolve('test_data/volvox/volvox.bw')
 const GFF = path.resolve('test_data/volvox/volvox.sort.gff3.gz')
+const VCF = path.resolve('test_data/volvox/volvox.filtered.vcf.gz')
 
 function hasR() {
   try {
-    execFileSync('Rscript', ['-e', 'library(rtracklayer); library(ggplot2)'], {
-      stdio: 'ignore',
-    })
+    execFileSync(
+      'Rscript',
+      ['-e', PACKAGES.map(p => `library(${p})`).join('; ')],
+      { stdio: 'ignore' },
+    )
     return true
   } catch {
     return false
+  }
+}
+
+/**
+ * Rscript, with a failure reported as R's own last lines rather than the
+ * library-loading noise every Bioconductor session prints first.
+ */
+function rscript(file: string) {
+  try {
+    return execFileSync('Rscript', [file], {
+      cwd: path.dirname(file),
+      encoding: 'utf8',
+      stdio: 'pipe',
+    }).trim()
+  } catch (e) {
+    const lines = String((e as { stderr?: string }).stderr ?? '')
+      .trim()
+      .split('\n')
+    const at = lines.findLastIndex(l => l.startsWith('Error'))
+    throw new Error(
+      `${file} failed:\n${lines.slice(Math.max(0, at), at + 12).join('\n')}`,
+      { cause: e },
+    )
   }
 }
 
@@ -37,28 +74,49 @@ function runR(source: string, name: string) {
   const script = path.join(dir, `${name}.R`)
   const out = path.join(dir, `${name}.png`)
   writeFileSync(script, source.replace('figure.png', out))
-  execFileSync('Rscript', [script], { cwd: dir, stdio: 'pipe' })
+  rscript(script)
   return out
 }
 
-function build({
-  display,
-  type,
-  uri,
-  regions,
-}: {
+interface Build {
   display: DisplaySpec
-  type: 'BigWigAdapter' | 'Gff3TabixAdapter'
+  type: 'BigWigAdapter' | 'Gff3TabixAdapter' | 'VcfTabixAdapter'
   uri: string
   regions: Region[]
-}) {
-  const f = frameFor({ type, uri })
+}
+
+function translate({ display, type, uri, regions }: Build) {
+  const f = frameFor({ type, uri, fields: fieldsRead(display) })
   const { plot, notes } = markPlot({ display, frame: f, regions })
+  return { plot, notes: [...sourceNotes(uri), ...notes] }
+}
+
+function build(b: Build) {
+  const { plot, notes } = translate(b)
   return assembleRScript({
-    regions,
-    panels: [{ variable: 'p1', plot, helpers: helpersFor(type) }],
+    regions: b.regions,
+    panels: [{ variable: 'p1', plot, helpers: helpersFor(b.type) }],
     notes,
   })
+}
+
+/**
+ * The frame a display's first mark reads, built by R, and then `body` over
+ * it: the transform stage asked what it produced rather than whether a
+ * picture came out.
+ */
+function probeFrame(b: Build, body: string) {
+  const { plot } = translate(b)
+  const frames = frameChain(plot.layers[0]!.frame)
+  const script = assembleRScript({
+    regions: b.regions,
+    panels: [{ variable: 'p1', plot, helpers: helpersFor(b.type) }],
+  })
+  const head = script.slice(0, script.indexOf('p1 <- ggplot'))
+  const dir = mkdtempSync(path.join(tmpdir(), 'rexport-frame-'))
+  const file = path.join(dir, 'frame.R')
+  writeFileSync(file, `${head}\n${body}\n`)
+  return { out: rscript(file), frame: frames.at(-1)! }
 }
 
 const maybe = R ? describe : describe.skip
@@ -239,7 +297,7 @@ maybe('the readers agree with the file', () => {
       script,
       `suppressMessages({library(rtracklayer); library(GenomicRanges); library(IRanges)})\n${defs}\n${body}\n`,
     )
-    return execFileSync('Rscript', [script], { encoding: 'utf8' }).trim()
+    return rscript(script)
   }
 
   it('hands back 0-based half-open bins that abut', () => {
@@ -323,5 +381,180 @@ cat(min(df$start), max(df$end))
     const [start, end] = first.split(' ').map(Number)
     expect(start).toBeGreaterThanOrEqual(100)
     expect(end).toBeLessThanOrEqual(200)
+  })
+})
+
+maybe('the fields the display names reach R', () => {
+  it('colours GFF spans by an attribute the file carries', () => {
+    const source = build({
+      display: {
+        transform: [{ type: 'pileup' }],
+        marks: [
+          { mark: 'span', encoding: { row: 'row', color: { field: 'Note' } } },
+        ],
+      },
+      type: 'Gff3TabixAdapter',
+      uri: GFF,
+      regions: [{ refName: 'ctgA', start: 0, end: 50000 }],
+    })
+    expect(source).toContain('attrs = c("Note")')
+    expect(existsSync(runR(source, 'gffattr'))).toBe(true)
+  })
+
+  it('plots a VCF INFO field on the value axis', () => {
+    const source = build({
+      display: {
+        marks: [
+          {
+            mark: 'point',
+            encoding: {
+              y: 'INFO.DP',
+              color: { field: 'QUAL', scale: 'linear', scheme: 'viridis' },
+            },
+          },
+        ],
+      },
+      type: 'VcfTabixAdapter',
+      uri: VCF,
+      regions: [{ refName: 'ctgA', start: 0, end: 50000 }],
+    })
+    expect(source).toContain('info = c("DP")')
+    expect(existsSync(runR(source, 'vcfinfo'))).toBe(true)
+  })
+})
+
+maybe('the display-level settings run', () => {
+  it('packs each facet section on its own rows', () => {
+    const { out } = probeFrame(
+      {
+        display: {
+          facet: { field: 'type', transform: [{ type: 'pileup' }] },
+          marks: [{ mark: 'span', encoding: { row: 'row' } }],
+        },
+        type: 'Gff3TabixAdapter',
+        uri: GFF,
+        regions: [{ refName: 'ctgA', start: 0, end: 50000 }],
+      },
+      `firsts <- tapply(df$row, df$type, min)
+cat(length(firsts), sum(firsts == 0))`,
+    )
+    const [sections, fromZero] = out.split(' ').map(Number)
+    expect(sections).toBeGreaterThan(1)
+    expect(fromZero).toBe(sections)
+  })
+
+  it('keeps an aggregate group whose key is missing', () => {
+    const { out } = probeFrame(
+      {
+        display: {
+          transform: [
+            { type: 'aggregate', groupby: ['Note'], ops: [{ op: 'count' }] },
+          ],
+          marks: [{ mark: 'bar', encoding: { y: 'count' } }],
+        },
+        type: 'Gff3TabixAdapter',
+        uri: GFF,
+        regions: [{ refName: 'ctgA', start: 0, end: 50000 }],
+      },
+      `cat(sum(is.na(df$Note)), sum(df$count))`,
+    )
+    const [naGroups, total] = out.split(' ').map(Number)
+    // the features without a Note fold into one group rather than vanishing
+    expect(naGroups).toBe(1)
+    expect(total).toBeGreaterThan(100)
+  })
+
+  it('draws rows as panels, rules as lines, and a log axis floored by the data', () => {
+    const source = build({
+      display: {
+        rows: 'strand',
+        scales: {
+          y: {
+            type: 'log',
+            domainMin: 0,
+            rules: [{ value: 20, label: 'twenty' }],
+          },
+        },
+        marks: [{ mark: 'point', encoding: { y: 'score' } }],
+      },
+      type: 'BigWigAdapter',
+      uri: BIGWIG,
+      regions: [{ refName: 'ctgA', start: 0, end: 5000 }],
+    })
+    expect(source).toContain('facet_wrap(~strand')
+    expect(source).toContain('geom_hline(yintercept = 20')
+    expect(existsSync(runR(source, 'rowsrules'))).toBe(true)
+  })
+
+  it('follows the figure width with an auto bin', () => {
+    const source = build({
+      display: {
+        transform: [
+          { type: 'bin', step: 'auto' },
+          { type: 'aggregate', ops: [{ op: 'mean', field: 'score' }] },
+        ],
+        marks: [{ mark: 'bar', encoding: { y: 'mean_score' } }],
+      },
+      type: 'BigWigAdapter',
+      uri: BIGWIG,
+      regions: [{ refName: 'ctgA', start: 0, end: 50000 }],
+    })
+    // 50 kb over 1500 px is 33 bp/px, four of which snap up to 200
+    expect(source).toContain('/ 200)')
+    expect(existsSync(runR(source, 'autobin'))).toBe(true)
+  })
+})
+
+maybe('the readers answer the fields they were asked for', () => {
+  const probe = (needs: string[], body: string) => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'rexport-probe-'))
+    const script = path.join(dir, 'probe.R')
+    const defs = resolveHelpers(needs)
+      .map(h => HELPERS[h])
+      .join('\n\n')
+    writeFileSync(
+      script,
+      `suppressMessages({library(rtracklayer); library(GenomicRanges); library(IRanges); library(Rsamtools)})\n${defs}\n${body}\n`,
+    )
+    return rscript(script)
+  }
+
+  it('matches a GFF attribute without regard to case and types a numeric one', () => {
+    const out = probe(
+      ['read_gff'],
+      `
+df <- read_gff(${JSON.stringify(GFF)}, "ctgA", 0, 50000, attrs = c("note", "Index", "absent"))
+cat(sum(!is.na(df$note)), is.numeric(df$Index), all(is.na(df$absent)), is.numeric(df$score))
+`,
+    )
+    const [notes, indexNumeric, absentNa, scoreNumeric] = out.split(' ')
+    expect(Number(notes)).toBeGreaterThan(0)
+    expect(indexNumeric).toBe('TRUE')
+    expect(absentNa).toBe('TRUE')
+    expect(scoreNumeric).toBe('TRUE')
+  })
+
+  it('reads a VCF INFO key as a typed column under its dotted name', () => {
+    const out = probe(
+      ['read_vcf'],
+      `
+df <- read_vcf(${JSON.stringify(VCF)}, "ctgA", 0, 1000, info = c("DP"))
+cat(df$start[1], df[["INFO.DP"]][1], is.numeric(df[["INFO.DP"]]), df$QUAL[1])
+`,
+    )
+    // the first record sits at POS 277 with DP=3 and QUAL 10.4
+    expect(out).toBe('276 3 TRUE 10.4')
+  })
+
+  it('survives a feature whose end precedes its start', () => {
+    const out = probe(
+      [],
+      `
+df <- data.frame(start = c(10, 50), end = c(5, 60))
+df$row <- IRanges::disjointBins(IRanges(df$start + 1L, pmax(df$end, df$start))) - 1L
+cat(df$row)
+`,
+    )
+    expect(out).toBe('0 0')
   })
 })

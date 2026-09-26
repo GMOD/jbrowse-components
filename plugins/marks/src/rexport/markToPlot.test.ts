@@ -1,5 +1,5 @@
 import { frameFor } from './frameFor.ts'
-import { markPlot } from './markToPlot.ts'
+import { fieldsRead, markPlot } from './markToPlot.ts'
 import { renderPlot } from './rplot.ts'
 
 import type { DisplaySpec } from './markToPlot.ts'
@@ -340,5 +340,235 @@ describe('a mark reads the grammar’s own vocabulary', () => {
     })
     expect(r).toContain('linewidth = score')
     expect(r).toContain('scale_linewidth_continuous(range = c(1, 6))')
+  })
+})
+
+describe('a channel drawn as a constant', () => {
+  it('paints the colour value where the scale is none', () => {
+    const { r, plot } = render({
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: { field: 'strand', scale: 'none', value: 'tomato' },
+          },
+        },
+      ],
+    })
+    expect(r).toContain('fill = "tomato"')
+    expect(r).not.toContain('fill = strand')
+    expect(plot.scales?.fill).toBeUndefined()
+  })
+
+  it('draws the shape value where the scale is none', () => {
+    const { r, plot } = render({
+      marks: [
+        {
+          mark: 'point',
+          encoding: {
+            y: 'score',
+            shape: { field: 'strand', scale: 'none', value: 'diamond' },
+          },
+        },
+      ],
+    })
+    expect(r).toContain('shape = 18')
+    expect(plot.scales?.shape).toBeUndefined()
+  })
+
+  it('sizes a point by the mark’s own diameter', () => {
+    const { r } = render({
+      marks: [{ mark: 'point', size: 8, encoding: { y: 'score' } }],
+    })
+    expect(r).toMatch(/size = 2\.11/)
+  })
+})
+
+describe('the facet runs its own steps over each section', () => {
+  it('packs each section on its own rows and keeps the key', () => {
+    const { r, plot, notes } = render(
+      {
+        facet: { field: 'strand', transform: [{ type: 'pileup' }] },
+        marks: [{ mark: 'span', encoding: { row: 'row' } }],
+      },
+      undefined,
+      gff,
+    )
+    const statements = plot.layers[0]!.frame.statements
+    expect(statements).toContain('split(df, addNA(df$strand), drop = TRUE)')
+    expect(statements).toContain('disjointBins')
+    expect(statements).toContain('df$strand <- key')
+    expect(r).toContain('facet_wrap(~strand')
+    expect(notes).toEqual([])
+  })
+
+  it('orders the sections by the declared domain', () => {
+    const { r } = render(
+      {
+        facet: { field: 'strand', domain: ['-', '+'] },
+        marks: [{ mark: 'span' }],
+      },
+      undefined,
+      gff,
+    )
+    expect(r).toContain('factor(strand, levels = c("-", "+"))')
+  })
+
+  it('refuses a facet on a field no stage produces', () => {
+    const { r, notes } = render(
+      { facet: 'HP', marks: [{ mark: 'span' }] },
+      undefined,
+      gff,
+    )
+    expect(r).not.toContain('facet_wrap')
+    expect(notes).toContain(
+      'facet: reads HP, which no stage produces, so it is not drawn',
+    )
+  })
+})
+
+describe('rows, filters and rules', () => {
+  it('draws one panel per row value', () => {
+    const { r } = render(
+      { rows: 'strand', marks: [{ mark: 'span' }] },
+      undefined,
+      gff,
+    )
+    expect(r).toContain('facet_wrap(~strand')
+  })
+
+  it('lets the facet draw beside rows and says so', () => {
+    const { r, notes } = render(
+      { facet: 'type', rows: 'strand', marks: [{ mark: 'span' }] },
+      undefined,
+      gff,
+    )
+    expect(r).toContain('facet_wrap(~type')
+    expect(notes).toContain('rows: the facet draws, so the rows are not drawn')
+  })
+
+  it('reports a row tint and jexl filters rather than dropping them', () => {
+    const { notes } = render({
+      rowColor: { field: 'name', domain: ['a'], range: ['red'] },
+      jexlFilters: ['get(feature,"score") > 5'],
+      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+    })
+    expect(notes).toContain(
+      'rowColor: the tint beside a row label has no ggplot counterpart',
+    )
+    expect(notes).toContain(
+      'jexlFilters: 1 jexl filter(s) have no R counterpart, so the figure shows unfiltered rows',
+    )
+  })
+
+  it('draws a y rule as a reference line with its label', () => {
+    const { r } = render({
+      scales: {
+        y: { rules: [{ value: 30, color: 'red', label: 'significant' }] },
+      },
+      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+    })
+    expect(r).toContain(
+      'geom_hline(yintercept = 30, colour = "red", linetype = "dashed")',
+    )
+    expect(r).toContain('label = "significant"')
+  })
+
+  it('rules in the chrome’s colour where none is named', () => {
+    const { r } = render({
+      scales: { y: { rules: [{ value: 2 }] } },
+      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+    })
+    expect(r).toContain('geom_hline(yintercept = 2, colour = "#787878"')
+  })
+})
+
+describe('a log axis', () => {
+  it('leaves a zero bound to the data and says so', () => {
+    const { r, notes } = render({
+      scales: { y: { type: 'log', domainMin: 0, domainMax: 50 } },
+      marks: [{ mark: 'point', encoding: { y: 'score' } }],
+    })
+    expect(r).toContain('ylim = c(NA, 50)')
+    expect(notes).toContain(
+      'y: a log axis cannot pin 0, so that end follows the data',
+    )
+  })
+
+  it('grows a bar from the panel bottom rather than from a log of zero', () => {
+    const { r } = render({
+      scales: { y: { type: 'log' } },
+      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+    })
+    expect(r).toContain('ymin = -Inf')
+    expect(r).toContain('scale_y_log10()')
+  })
+})
+
+describe('what the display asks the file for', () => {
+  it('names every plain field a channel, a step, the facet or the rows reads', () => {
+    expect(
+      fieldsRead({
+        facet: 'HP',
+        rows: 'source',
+        transform: [{ type: 'bin', field: 'pos' }],
+        marks: [
+          {
+            mark: 'point',
+            transform: [
+              {
+                type: 'aggregate',
+                groupby: ['gene'],
+                ops: [{ op: 'mean', field: 'depth' }],
+              },
+            ],
+            encoding: {
+              y: 'INFO.DP',
+              color: { field: 'gbkey' },
+              shape: { field: 'jexl:get(feature,"x")' },
+              text: 'Note',
+            },
+          },
+        ],
+      }).sort(),
+    ).toEqual(
+      [
+        'HP',
+        'INFO.DP',
+        'Note',
+        'depth',
+        'gbkey',
+        'gene',
+        'pos',
+        'source',
+      ].sort(),
+    )
+  })
+
+  it('leaves out what a step writes, so a reader is never asked for it', () => {
+    expect(
+      fieldsRead({
+        transform: [{ type: 'pileup' }, { type: 'coverage', as: 'depth' }],
+        marks: [{ mark: 'bar', encoding: { y: 'depth', row: 'row' } }],
+      }),
+    ).toEqual([])
+  })
+})
+
+describe('a column name R would misparse', () => {
+  it('is backticked in the aes and the steps', () => {
+    const { r } = render(
+      {
+        marks: [{ mark: 'point', encoding: { y: 'read-depth' } }],
+      },
+      undefined,
+      frameFor({
+        type: 'Gff3TabixAdapter',
+        uri: 'x.gff3.gz',
+        fields: ['read-depth'],
+      }),
+    )
+    expect(r).toContain('y = `read-depth`')
   })
 })

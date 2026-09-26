@@ -49,6 +49,21 @@ export interface Panel {
 /** ggsave refuses a dimension over 50 inches, and a panel stack can ask for more. */
 const MAX_INCHES = 50
 const INCHES_PER_WEIGHT = 2
+const WIDTH_INCHES = 10
+const DPI = 150
+/** The figure's width in device px, the zoom an `auto` bin follows. */
+export const FIGURE_WIDTH_PX = WIDTH_INCHES * DPI
+
+/** A name no `.R` file defines would otherwise vanish into the join and leave a call to nothing. */
+function helperBody(name: string) {
+  const body = HELPERS[name]
+  if (body === undefined) {
+    throw new Error(
+      `no R helper named ${name}: rhelpers/${name}.R does not exist`,
+    )
+  }
+  return body
+}
 
 function regionsFrame(regions: readonly Region[]) {
   const col = (f: (r: Region) => string | number) => regions.map(f).join(', ')
@@ -127,7 +142,7 @@ export function assembleRScript({
       .map(p => `library(${p})`)
       .join('\n'),
     '',
-    helpers.map(h => HELPERS[h]).join('\n\n'),
+    helpers.map(h => helperBody(h)).join('\n\n'),
     '',
     regionsFrame(regions),
     '',
@@ -136,7 +151,7 @@ export function assembleRScript({
     panels.map(p => renderPlot(p.variable, p.plot)).join('\n\n'),
     '',
     `ggsave(${rStr(out)}, ${stacked(panels)},
-  width = 10, height = ${figureHeight(panels)}, dpi = 150, limitsize = FALSE)`,
+  width = ${WIDTH_INCHES}, height = ${figureHeight(panels)}, dpi = ${DPI}, limitsize = FALSE)`,
     '',
   ].join('\n')
 }

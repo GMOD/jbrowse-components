@@ -6,16 +6,8 @@
  * R_EXPORT.md §"The typed plot model" has the three bugs this shape refuses.
  */
 
-export type Geom =
-  | 'rect'
-  | 'col'
-  | 'line'
-  | 'area'
-  | 'segment'
-  | 'point'
-  | 'text'
-  | 'curve'
-  | 'blank'
+/** The geoms a mark translates to; a member nothing produces is a lie the type tells. */
+export type Geom = 'rect' | 'point' | 'text' | 'curve'
 
 export type Aesthetic =
   | 'x'
@@ -36,9 +28,7 @@ export type Aesthetic =
 
 /** Which aesthetic a geom takes its colour through. */
 export function colourAesthetic(geom: Geom): 'fill' | 'colour' {
-  return geom === 'rect' || geom === 'col' || geom === 'area'
-    ? 'fill'
-    : 'colour'
+  return geom === 'rect' ? 'fill' : 'colour'
 }
 
 /**
@@ -127,18 +117,23 @@ export type Scale =
       rescaleMid?: number
       name?: string
     }
-  | { kind: 'steps'; colours: string[]; breaks: number[]; name?: string }
-  | { kind: 'identity' }
   | { kind: 'log' }
-  | { kind: 'reverse' }
+
+/** A reference line across the panel at a value on the y axis. */
+export interface Rule {
+  value: number
+  colour: string
+  label?: string
+}
 
 export interface Plot {
   layers: Layer[]
   /** At most one scale per aesthetic, which is all ggplot has. */
   scales?: Partial<Record<Aesthetic, Scale>>
   labs?: Partial<Record<Aesthetic | 'title', string | null>>
-  /** Split into one panel per value of this column. */
-  facetBy?: string
+  /** Split into one panel per value of this column, in `levels` order where given. */
+  facetBy?: { field: string; levels?: readonly string[] }
+  rules?: Rule[]
   /**
    * Pin the x range so stacked panels line up. Without it each panel takes its
    * range from its own data and three panels drawn for one locus show three
@@ -161,7 +156,7 @@ export function packagesFor(plot: Plot) {
 
 function renderAes(aes: Aes<string>) {
   return Object.entries(aes)
-    .map(([k, v]) => `${k} = ${typeof v === 'string' ? v : v.expr}`)
+    .map(([k, v]) => `${k} = ${typeof v === 'string' ? rIdent(v) : v.expr}`)
     .join(', ')
 }
 
@@ -187,18 +182,11 @@ function renderLayer(l: Layer, primary: string) {
 }
 
 function renderScale(aesthetic: Aesthetic, s: Scale) {
-  const suffix = aesthetic
   // A shape scale hands out R `pch` codes, which are numbers; every other
   // manual scale hands out colours, which are strings.
   const value = (v: string) => (aesthetic === 'shape' ? v : rStr(rColour(v)))
-  if (s.kind === 'reverse') {
-    return `scale_${aesthetic}_reverse()`
-  }
   if (s.kind === 'log') {
     return `scale_${aesthetic}_log10()`
-  }
-  if (s.kind === 'identity') {
-    return `scale_${suffix}_identity()`
   }
   const name = s.name ? `name = ${rStr(s.name)}` : ''
   if (s.kind === 'linewidth' || s.kind === 'linewidthLog') {
@@ -224,23 +212,34 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
       ...(s.log ? ['trans = "log10"'] : []),
       name,
     ].filter(Boolean)
-    return `scale_${suffix}_gradientn(${args.join(', ')})`
-  }
-  if (s.kind === 'steps') {
-    const args = [
-      `colours = c(${s.colours.map(c => rStr(rColour(c))).join(', ')})`,
-      `breaks = c(${s.breaks.join(', ')})`,
-      name,
-    ].filter(Boolean)
-    return `scale_${suffix}_stepsn(${args.join(', ')})`
+    return `scale_${aesthetic}_gradientn(${args.join(', ')})`
   }
   const values = Object.entries(s.values).map(
     ([k, v]) => `${rName(k)} = ${value(v)}`,
   )
   const args = [`values = c(${values.join(', ')})`, name].filter(Boolean)
   return values.length > 3
-    ? `scale_${suffix}_manual(\n    values = c(\n      ${values.join(',\n      ')})${s.name ? `,\n    ${name}` : ''})`
-    : `scale_${suffix}_manual(${args.join(', ')})`
+    ? `scale_${aesthetic}_manual(\n    values = c(\n      ${values.join(',\n      ')})${s.name ? `,\n    ${name}` : ''})`
+    : `scale_${aesthetic}_manual(${args.join(', ')})`
+}
+
+function renderFacet({ field, levels }: NonNullable<Plot['facetBy']>) {
+  const by = levels?.length
+    ? `factor(${rIdent(field)}, levels = c(${levels.map(l => rStr(l)).join(', ')}))`
+    : rIdent(field)
+  return `facet_wrap(~${by}, ncol = 1, strip.position = "right")`
+}
+
+function renderRule(r: Rule) {
+  const colour = rStr(rColour(r.colour))
+  return [
+    `geom_hline(yintercept = ${r.value}, colour = ${colour}, linetype = "dashed")`,
+    ...(r.label
+      ? [
+          `annotate("text", x = Inf, y = ${r.value}, label = ${rStr(r.label)}, hjust = 1.1, vjust = -0.4, colour = ${colour}, size = 3)`,
+        ]
+      : []),
+  ]
 }
 
 export function renderPlot(variable: string, plot: Plot) {
@@ -250,12 +249,11 @@ export function renderPlot(variable: string, plot: Plot) {
   const pieces = [
     `ggplot(${primary})`,
     ...plot.layers.map(l => renderLayer(l, primary)),
+    ...(plot.rules ?? []).flatMap(renderRule),
     ...Object.entries(plot.scales ?? {}).map(([a, s]) =>
       renderScale(a as Aesthetic, s),
     ),
-    ...(plot.facetBy
-      ? [`facet_wrap(~${plot.facetBy}, ncol = 1, strip.position = "right")`]
-      : []),
+    ...(plot.facetBy ? [renderFacet(plot.facetBy)] : []),
     ...(plot.xlim || plot.ylim
       ? [`coord_cartesian(${renderCoordArgs(plot)})`]
       : []),
@@ -284,13 +282,24 @@ function renderCoordArgs(plot: Plot) {
   ].join(', ')
 }
 
+const IDENTIFIER = /^[A-Za-z.][A-Za-z0-9._]*$/
+
 /**
  * An R name safe on the left of `=` inside `c()`. An identifier stays bare;
  * anything else is quoted, which is how `"+"` and `"-"` survive as strand
  * values.
  */
 export function rName(s: string) {
-  return /^[A-Za-z][A-Za-z0-9._]*$/.test(s) ? s : rStr(s)
+  return IDENTIFIER.test(s) ? s : rStr(s)
+}
+
+/**
+ * A column name where R reads a symbol — inside `aes()`, after `$`, in a
+ * formula. `INFO.DP` and `.region` are identifiers; a GFF attribute written
+ * `gene-name` is not, and bare it parses as a subtraction.
+ */
+export function rIdent(s: string) {
+  return IDENTIFIER.test(s) ? s : `\`${s.replaceAll('`', '\\`')}\``
 }
 
 export function rStr(s: string) {

@@ -1,21 +1,27 @@
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import { DEFAULT_SIZE_RANGE_PX } from '@jbrowse/core/util/markEncoding'
+import {
+  DEFAULT_MARK_COLOR,
+  DEFAULT_SIZE_RANGE_PX,
+} from '@jbrowse/core/util/markEncoding'
 import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import {
   thresholdCuts,
   thresholdLabels,
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
+import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 
 import { MARK_SPECS, readsValue } from '../LinearMarkDisplay/markSpecs.ts'
 import {
   DEFAULT_LINK_STROKE_PX,
+  DEFAULT_TEXT_FIELD,
   type LinkShape,
   type MarkType,
 } from '../LinearMarkDisplay/markVocabulary.ts'
-import { colourAesthetic, expr, layer, rStr } from './rplot.ts'
-import { applyTransforms, lastBinOf } from './transformR.ts'
+import { FIGURE_WIDTH_PX } from './rScript.ts'
+import { colourAesthetic, expr, layer, rIdent, rStr } from './rplot.ts'
+import { applyTransforms, lastBinOf, stepOutputs } from './transformR.ts'
 
 import type {
   Aesthetic,
@@ -33,11 +39,19 @@ import type {
   IdentityColorChannel,
 } from '@jbrowse/display-kit/channelSpec'
 
-/** The arm of a colour channel that binds a field, which the string arm leaves. */
-type FieldColor = Exclude<ColorChannel, string | IdentityColorChannel>
+/**
+ * The arm of a colour channel that binds a field, which the string arm leaves,
+ * with the `value` the schema keeps beside it for a `none` scale.
+ */
+type FieldColor = Exclude<ColorChannel, string | IdentityColorChannel> & {
+  value?: string
+}
 
 /** How many stops a continuous ramp hands ggplot's `gradientn`. */
 const RAMP_STOPS = 16
+
+/** A px on screen as ggplot's mm, at the 96 dpi a browser draws at. */
+const MM_PER_PX = 25.4 / 96
 
 function knownScheme(scheme: string | undefined) {
   return COLOR_SCHEMES.find((s): s is ColorSchemeName => s === scheme)
@@ -51,14 +65,22 @@ export interface MarkConfig {
   minBpPerPx?: number
   maxBpPerPx?: number
   transform?: Step[]
-  encoding: {
+  encoding?: {
     x?: string
     x2?: string | { pos?: string; chrom?: string }
     y?: string
     row?: string
     text?: string
-    color?: ColorChannel
-    shape?: string | { field: string; range?: string[]; domain?: string[] }
+    color?: string | IdentityColorChannel | FieldColor
+    shape?:
+      | string
+      | {
+          field?: string
+          scale?: string
+          value?: string
+          range?: string[]
+          domain?: string[]
+        }
     size?: {
       field?: string
       scale?: string
@@ -69,16 +91,28 @@ export interface MarkConfig {
   }
 }
 
+type Encoding = NonNullable<MarkConfig['encoding']>
+
+export interface Facet {
+  field?: string
+  domain?: string[]
+  transform?: Step[]
+}
+
 export interface DisplaySpec {
   marks: MarkConfig[]
   transform?: Step[]
-  facet?: { field?: string }
+  facet?: string | Facet
+  rows?: string | { field?: string; domain?: string[] }
+  rowColor?: { field?: string; domain?: string[]; range?: string[] }
+  jexlFilters?: string[]
   scales?: {
     y?: {
       type?: string
       domainMin?: number
       domainMax?: number
       title?: string
+      rules?: { value?: number; color?: string; label?: string }[]
     }
   }
   origin?: number
@@ -105,7 +139,15 @@ function plainField(field: string | undefined) {
 }
 
 function midpoint(x: string, x2: string | undefined) {
-  return x2 ? expr(`(${x} + ${x2}) / 2`) : x
+  return x2 ? expr(`(${rIdent(x)} + ${rIdent(x2)}) / 2`) : x
+}
+
+function facetOf(facet: DisplaySpec['facet']): Facet {
+  return typeof facet === 'string' ? { field: facet } : (facet ?? {})
+}
+
+function rowsOf(rows: DisplaySpec['rows']) {
+  return typeof rows === 'string' ? { field: rows } : (rows ?? {})
 }
 
 /**
@@ -166,7 +208,7 @@ function thresholdScale(color: FieldColor, field: string) {
   const labels = thresholdLabels(domain)
   return {
     field: expr(
-      `cut(${field}, breaks = c(-Inf, ${domain.join(', ')}, Inf), labels = c(${labels
+      `cut(${rIdent(field)}, breaks = c(-Inf, ${domain.join(', ')}, Inf), labels = c(${labels
         .map(l => rStr(l))
         .join(', ')}), right = FALSE)`,
     ),
@@ -186,7 +228,7 @@ function thresholdScale(color: FieldColor, field: string) {
  * at that fraction rather than a second reading of the scheme name.
  */
 function colourOf(
-  color: ColorChannel | undefined,
+  color: Encoding['color'],
   aesthetic: 'fill' | 'colour',
   notes: string[],
 ): {
@@ -213,6 +255,10 @@ function colourOf(
     return {}
   }
   const bound: FieldColor = color
+  // `none` paints `value` and keeps the field only for a switch back.
+  if (bound.scale === 'none') {
+    return colourOf(bound.value ?? DEFAULT_MARK_COLOR, aesthetic, notes)
+  }
   const field = plainField(bound.field)
   if (!field) {
     notes.push(`${aesthetic}: a jexl callback has no R counterpart`)
@@ -233,25 +279,33 @@ function colourOf(
   return { field, scale: categoricalScale(bound) }
 }
 
-function markAes(m: MarkConfig, origin: number) {
-  const { x = 'start', y, row, text } = m.encoding
-  const x2 = locusField(m.encoding.x2)
+function markAes(m: MarkConfig, origin: RExpr) {
+  const { x = 'start', y, row, text, x2: locus }: Encoding = m.encoding ?? {}
+  const x2 = locusField(locus)
   // An unwritten `row` is every mark on one band, not a column called `row`.
   // A preceding `pileup` writes one, and naming it is that step's `as`.
-  const bandSrc = row || '0'
   const band = row ? row : expr('0')
   switch (m.mark) {
     case 'bar':
-      return { xmin: x, xmax: x2, ymin: expr(String(origin)), ymax: y! }
+      return { xmin: x, xmax: x2, ymin: origin, ymax: y! }
     case 'span':
-      return { xmin: x, xmax: x2, ymin: band, ymax: expr(`${bandSrc} + 0.8`) }
+      return {
+        xmin: x,
+        xmax: x2,
+        ymin: band,
+        ymax: expr(`${row ? rIdent(row) : '0'} + 0.8`),
+      }
     // At `x`, not the midpoint: both backends append the glyph at the left
     // edge (`pointMark.ts` and the vertex stage), widening to a bar rather
     // than centring.
     case 'point':
       return { x, y: y! }
     case 'text':
-      return { x: midpoint(x, x2), y: y || band, label: text ?? 'name' }
+      return {
+        x: midpoint(x, x2),
+        y: y || band,
+        label: text ?? DEFAULT_TEXT_FIELD,
+      }
     // A link's apex rides `y` where it names one, and its feet sit on the row.
     case 'link':
       return { x, xend: x2, y: y || band, yend: y || band }
@@ -259,7 +313,7 @@ function markAes(m: MarkConfig, origin: number) {
 }
 
 /** A locus channel is a `pos` field, written bare or beside a `chrom`. */
-function locusField(locus: MarkConfig['encoding']['x2']) {
+function locusField(locus: Encoding['x2']) {
   if (!locus) {
     return 'end'
   }
@@ -277,7 +331,7 @@ const PCH: Record<string, number> = {
 }
 
 function shapeOf(
-  shape: MarkConfig['encoding']['shape'],
+  shape: Encoding['shape'],
   notes: string[],
 ): { field?: string; constant?: number; scale?: Scale } {
   if (!shape) {
@@ -288,7 +342,11 @@ function shapeOf(
       notes.push('shape: a jexl callback has no R counterpart')
       return {}
     }
-    return { constant: PCH[shape] }
+    return { constant: PCH[shape] ?? PCH.circle }
+  }
+  // `none` draws `value`, and so does a field left unwritten.
+  if (shape.scale === 'none' || !shape.field) {
+    return shapeOf(shape.value ?? 'circle', notes)
   }
   const field = plainField(shape.field)
   if (!field) {
@@ -312,7 +370,7 @@ function shapeOf(
 }
 
 /** A link's stroke: a field through a linear or log scale into a px width. */
-function sizeOf(size: MarkConfig['encoding']['size']) {
+function sizeOf(size: Encoding['size']) {
   const field = plainField(size?.field)
   if (!field || !size) {
     return {}
@@ -335,10 +393,15 @@ function markParams(m: MarkConfig) {
     : undefined
 }
 
+/** The mark's own `size`: a link's stroke in px, a point's diameter in px. */
 function markConstants(m: MarkConfig): Partial<Record<Aesthetic, number>> {
-  return m.mark === 'link'
-    ? { linewidth: m.size ?? DEFAULT_LINK_STROKE_PX }
-    : {}
+  if (m.mark === 'link') {
+    return { linewidth: m.size ?? DEFAULT_LINK_STROKE_PX }
+  }
+  if (m.mark === 'point' && m.size !== undefined) {
+    return { size: m.size * MM_PER_PX }
+  }
+  return {}
 }
 
 /**
@@ -351,18 +414,19 @@ function markConstants(m: MarkConfig): Partial<Record<Aesthetic, number>> {
 export function markLayer(
   m: MarkConfig,
   frame: RFrame,
-  origin: number,
+  origin: RExpr,
   notes: string[],
 ) {
   const geom = GEOM_OF[m.mark]
   // A bar or point reads a value, and the display draws nothing for one naming
   // none — inventing a field here would draw a figure the browser does not.
-  if (readsValue(m.mark) && !m.encoding.y) {
+  const encoding: Encoding = m.encoding ?? {}
+  if (readsValue(m.mark) && !encoding.y) {
     notes.push(`${m.mark}: names no value field, so it draws nothing`)
     return undefined
   }
   const colourAes = colourAesthetic(geom)
-  const colour = colourOf(m.encoding.color, colourAes, notes)
+  const colour = colourOf(encoding.color, colourAes, notes)
   const scales: Partial<Record<Aesthetic, Scale>> = {}
   if (colour.scale) {
     scales[colourAes] = colour.scale
@@ -377,11 +441,11 @@ export function markLayer(
   // which, so a channel written on a mark that does not take it is the config's
   // problem to report, not a scale to emit.
   const takes = MARK_SPECS[m.mark].channels as readonly string[]
-  const shape = takes.includes('shape') ? shapeOf(m.encoding.shape, notes) : {}
+  const shape = takes.includes('shape') ? shapeOf(encoding.shape, notes) : {}
   if (shape.scale) {
     scales.shape = shape.scale
   }
-  const width = takes.includes('size') ? sizeOf(m.encoding.size) : {}
+  const width = takes.includes('size') ? sizeOf(encoding.size) : {}
   if (width.scale) {
     scales.linewidth = width.scale
   }
@@ -430,6 +494,60 @@ function missingColumns(aes: Record<string, unknown>, frame: RFrame) {
     .filter(v => !held.has(v))
 }
 
+function stepFields(steps: readonly Step[]) {
+  return steps.flatMap(s =>
+    s.type === 'bin'
+      ? [s.field ?? 'start']
+      : s.type === 'aggregate'
+        ? [...(s.groupby ?? []), ...(s.ops ?? []).map(o => o.field)]
+        : s.type === 'pileup'
+          ? (s.fields ?? [])
+          : [],
+  )
+}
+
+function channelFields(m: MarkConfig) {
+  const { x, x2, y, row, text, color, shape, size }: Encoding = m.encoding ?? {}
+  return [
+    x,
+    typeof x2 === 'string' ? x2 : x2?.pos,
+    typeof x2 === 'string' ? undefined : x2?.chrom,
+    y,
+    row,
+    text,
+    typeof color === 'object' && 'field' in color ? color.field : undefined,
+    typeof shape === 'object' ? shape.field : undefined,
+    size?.field,
+  ]
+}
+
+/**
+ * The fields of the file a display reads, for the reader to fetch: every
+ * plain field a channel, a step, the facet or the rows names, less what a step
+ * writes — that one is not in the file, and asking a reader for it would hand
+ * the mark an all-NA column where `missingColumns` should refuse it.
+ */
+export function fieldsRead(display: DisplaySpec) {
+  const facet = facetOf(display.facet)
+  const lists = [
+    display.transform ?? [],
+    facet.transform ?? [],
+    ...display.marks.map(m => m.transform ?? []),
+  ]
+  const made = stepOutputs(lists)
+  const named = [
+    ...lists.flatMap(stepFields),
+    ...display.marks.flatMap(channelFields),
+    facet.field,
+    rowsOf(display.rows).field,
+  ]
+  return [
+    ...new Set(
+      named.map(plainField).filter((f): f is string => !!f && !made.has(f)),
+    ),
+  ]
+}
+
 /**
  * A mark display's config as a ggplot.
  *
@@ -452,17 +570,36 @@ export function markPlot({
   regions?: readonly { start: number; end: number }[]
 }): TranslatedPlot {
   const notes: string[] = []
+  const y = display.scales?.y
+  const logY = y?.type === 'log'
   const origin = display.origin ?? 0
+  // Under a log axis a bar from 0 transforms to -Inf with a warning per draw;
+  // the panel's bottom edge is what the display draws it from.
+  const baseline = expr(logY && origin <= 0 ? '-Inf' : String(origin))
   const layers: Layer[] = []
   const scales: Partial<Record<Aesthetic, Scale>> = {}
+  const span = (regions ?? []).reduce((a, r) => a + (r.end - r.start), 0)
+  const bpPerPx = Math.max(span, 1) / FIGURE_WIDTH_PX
+  const facet = facetOf(display.facet)
   // The display's steps run before every mark's own, as the encoder runs them:
   // the shared frame is what each mark then reads, and its columns are what the
   // steps left rather than what the adapter answered.
-  const shared = applyTransforms({
+  const displayed = applyTransforms({
     base: frame,
     steps: display.transform ?? [],
     notes,
+    bpPerPx,
   })
+  const facetField = splitField('facet', facet.field, displayed, notes)
+  const shared = applyTransforms({
+    base: displayed,
+    steps: facet.transform ?? [],
+    notes,
+    bpPerPx,
+    within: facetField,
+    inheritedBin: lastBinOf(display.transform ?? []),
+  })
+  const above = [...(display.transform ?? []), ...(facet.transform ?? [])]
   for (const [i, m] of display.marks.entries()) {
     const own = m.transform?.length
       ? applyTransforms({
@@ -470,10 +607,11 @@ export function markPlot({
           steps: m.transform,
           notes,
           name: `${frame.name}_${i + 1}`,
-          inheritedBin: lastBinOf(display.transform ?? []),
+          inheritedBin: lastBinOf(above),
+          bpPerPx,
         })
       : shared
-    const built = markLayer(m, own, origin, notes)
+    const built = markLayer(m, own, baseline, notes)
     if (!built) {
       continue
     }
@@ -489,32 +627,102 @@ export function markPlot({
       }
     }
   }
-  const y = display.scales?.y
-  if (y?.type === 'log') {
+  if (logY) {
     scales.y = { kind: 'log' }
   } else if (y?.type === 'symlog') {
     notes.push('y: symlog has no ggplot counterpart; drawn linear')
   }
-  const facetField = plainField(display.facet?.field)
-  if (display.facet?.field && !facetField) {
-    notes.push('facet: a jexl callback has no R counterpart')
+  const rows = rowsOf(display.rows)
+  const rowsField = splitField('rows', rows.field, displayed, notes)
+  // One row per value is one panel per value, which is what a facet draws;
+  // beside a facet the facet draws, as the display draws it.
+  let facetBy: Plot['facetBy']
+  if (facetField) {
+    facetBy = { field: facetField, levels: facet.domain }
+    if (rowsField) {
+      notes.push('rows: the facet draws, so the rows are not drawn')
+    }
+  } else if (rowsField) {
+    facetBy = { field: rowsField, levels: rows.domain }
   }
+  if (display.rowColor?.field || display.rowColor?.domain?.length) {
+    notes.push(
+      'rowColor: the tint beside a row label has no ggplot counterpart',
+    )
+  }
+  if (display.jexlFilters?.length) {
+    notes.push(
+      `jexlFilters: ${display.jexlFilters.length} jexl filter(s) have no R counterpart, so the figure shows unfiltered rows`,
+    )
+  }
+  const rules = (y?.rules ?? []).map(r => ({
+    value: r.value ?? 0,
+    colour: r.color ?? DEFAULT_RULE_COLOR,
+    label: r.label || undefined,
+  }))
   return {
     plot: {
       layers,
       scales,
-      facetBy: facetField,
+      facetBy,
+      rules: rules.length ? rules : undefined,
       xlim:
         regions && regions.length > 1
           ? expr('min(regions$cum_start), max(regions$cum_end)')
           : regions?.[0],
-      ylim:
-        y?.domainMin === undefined && y?.domainMax === undefined
-          ? undefined
-          : { min: y.domainMin, max: y.domainMax },
+      ylim: ylimOf(y, logY, notes),
       labs: { y: y?.title ?? null },
       legend: display.showLegend ?? true,
     },
     notes,
   }
+}
+
+/** A field the display splits on, where it is plain and the frame holds it. */
+function splitField(
+  slot: 'facet' | 'rows',
+  field: string | undefined,
+  frame: RFrame,
+  notes: string[],
+) {
+  if (!field) {
+    return undefined
+  }
+  const plain = plainField(field)
+  if (!plain) {
+    notes.push(`${slot}: a jexl callback has no R counterpart`)
+    return undefined
+  }
+  if (!frame.columns.includes(plain)) {
+    notes.push(
+      `${slot}: reads ${plain}, which no stage produces, so it is not drawn`,
+    )
+    return undefined
+  }
+  return plain
+}
+
+/**
+ * The pinned y range. A log axis cannot hold a bound at or below zero —
+ * `coord_cartesian` on a log scale asks for a finite transformed limit — so
+ * that bound is left to the data and the header says so.
+ */
+function ylimOf(
+  y: NonNullable<DisplaySpec['scales']>['y'],
+  logY: boolean,
+  notes: string[],
+) {
+  if (y?.domainMin === undefined && y?.domainMax === undefined) {
+    return undefined
+  }
+  const positive = (v: number | undefined) => {
+    if (logY && v !== undefined && v <= 0) {
+      notes.push(`y: a log axis cannot pin ${v}, so that end follows the data`)
+      return undefined
+    }
+    return v
+  }
+  const min = positive(y.domainMin)
+  const max = positive(y.domainMax)
+  return min === undefined && max === undefined ? undefined : { min, max }
 }
