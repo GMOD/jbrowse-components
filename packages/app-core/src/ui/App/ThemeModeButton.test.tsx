@@ -13,15 +13,25 @@ const theme = createJBrowseTheme()
 // a click leaves the following. What each theme name resolves to is pinned in
 // product-core's Themes.test.ts.
 const Session = types
-  .model({ selectedThemeName: 'system', themeIsDark: false })
+  .model({
+    themeMode: types.optional(
+      types.enumeration<'light' | 'dark' | 'system'>([
+        'light',
+        'dark',
+        'system',
+      ]),
+      'system',
+    ),
+    themeIsDark: false,
+  })
   .actions(self => ({
     stopFollowingSystemTheme() {
-      self.selectedThemeName = self.themeIsDark ? 'default' : 'darkStock'
+      self.themeMode = self.themeIsDark ? 'light' : 'dark'
     },
   }))
 
 function renderButton(snap: {
-  selectedThemeName?: string
+  themeMode?: 'light' | 'dark' | 'system'
   themeIsDark?: boolean
 }) {
   const session = Session.create(snap)
@@ -33,10 +43,10 @@ function renderButton(snap: {
   return { ...utils, session }
 }
 
-// The point of the gating: a session on a named theme is never shown a route
-// into dark it did not ask for.
-test('a named theme gets no control', () => {
-  const { queryByTestId } = renderButton({ selectedThemeName: 'default' })
+// The point of the gating: a session on an explicit mode is never shown a
+// route into dark it did not ask for.
+test('an explicit mode gets no control', () => {
+  const { queryByTestId } = renderButton({ themeMode: 'light' })
 
   expect(queryByTestId('theme-mode-button')).toBeNull()
 })
@@ -56,6 +66,6 @@ test('a click leaves the following, taking the control with it', () => {
 
   fireEvent.click(getByTestId('theme-mode-button'))
 
-  expect(session.selectedThemeName).toBe('default')
+  expect(session.themeMode).toBe('light')
   expect(queryByTestId('theme-mode-button')).toBeNull()
 })

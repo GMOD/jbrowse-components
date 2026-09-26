@@ -1,5 +1,5 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { getConf } from '@jbrowse/core/configuration'
+import { resolvePalette, resolveThemeSelection } from '@jbrowse/core/ui/palette'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import {
   createJBrowseThemeFromArgs,
@@ -17,7 +17,7 @@ import { asSession } from '../siblingCast.ts'
 import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { PaletteInput } from '@jbrowse/core/ui/palette'
+import type { PaletteMode } from '@jbrowse/core/ui/palette'
 import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui/theme'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
@@ -33,19 +33,30 @@ function resolveThemeName(themes: ThemeMap, name: string) {
   return themes[name] ? name : 'default'
 }
 
-/**
- * The selection that follows the OS light/dark preference rather than naming a
- * theme. A reader opts into it from the Preferences picker; a session starts on
- * `default`, so nobody lands in dark without asking for it.
- */
-export const SYSTEM_THEME = 'system'
+/** The three the mode picker offers; `system` follows the OS preference. */
+export type ThemeModeSelection = PaletteMode | 'system'
 
-// The two ends of the light/dark axis, for `system` and for the one click out
-// of it. `default` is the one theme that carries the config `theme` slot, and
-// `darkStock` is the same brand colors under `mode: 'dark'`, so a site's
-// palette survives the light half.
-const LIGHT_THEME = 'default'
-const DARK_THEME = 'darkStock'
+/**
+ * A session starts light, and follows the OS only when asked to. A dark OS is
+ * not a request for a dark genome browser.
+ */
+const DEFAULT_MODE: ThemeModeSelection = 'light'
+
+// A `themeName` stored before light and dark were an axis spells a mode into
+// the name. Split it once, on the way in, so the session persists the pair from
+// then on and the retired name goes away; a name this does not know — an
+// `extraThemes` entry whose plugin is absent — passes through untouched.
+function storedSelection() {
+  const stored = localStorageGetItem('themeName') ?? 'default'
+  const { themeName, mode } = resolveThemeSelection(stored)
+  const storedMode = localStorageGetItem('themeMode') as
+    | ThemeModeSelection
+    | undefined
+  return {
+    sessionThemeName: themeName,
+    sessionThemeMode: storedMode ?? mode ?? DEFAULT_MODE,
+  }
+}
 
 /**
  * #stateModel ThemeManagerSessionMixin
@@ -54,7 +65,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(() => ({
-      sessionThemeName: localStorageGetItem('themeName') ?? LIGHT_THEME,
+      ...storedSelection(),
       systemPrefersDark: prefersDarkColorScheme(),
     }))
     .views(s => {
@@ -69,35 +80,38 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         },
         /**
          * #getter
-         * What the user picked, as the Preferences picker shows it — a name
-         * in `allThemes()`, or `system`. A stored name whose theme is no
-         * longer registered reads as `default` without the stored value being
+         * Which palette is in effect. A stored name whose theme an admin has
+         * since dropped reads as `default` without the stored value being
          * touched, so it comes back if the plugin supplying it loads again.
          */
-        get selectedThemeName() {
-          const name = self.sessionThemeName
-          return name === SYSTEM_THEME || this.allThemes()[name]
-            ? name
-            : 'default'
+        get themeName() {
+          return resolveThemeName(this.allThemes(), self.sessionThemeName)
         },
         /**
          * #getter
-         * The theme in effect — `selectedThemeName`, with `system` resolved
-         * against the OS preference.
+         * Light, dark, or following the OS — the axis the palette is drawn
+         * along, and what the mode picker shows. `effectiveThemeMode` is the
+         * one to read for a colour decision.
          */
-        get themeName() {
-          const name = this.selectedThemeName
-          return name === SYSTEM_THEME
+        get themeMode(): ThemeModeSelection {
+          return self.sessionThemeMode
+        },
+        /**
+         * #getter
+         * Light or dark, with `system` resolved against the OS preference.
+         */
+        get effectiveThemeMode(): PaletteMode {
+          return this.themeMode === 'system'
             ? self.systemPrefersDark
-              ? DARK_THEME
-              : LIGHT_THEME
-            : name
+              ? 'dark'
+              : 'light'
+            : this.themeMode
         },
         /**
          * #getter
          * Whether what is drawn right now is dark. Read off the resolved
-         * palette, so an `extraThemes` entry declaring `mode: 'dark'` counts
-         * as dark alongside the two built-in dark presets.
+         * palette rather than the mode, so a palette pinned to one mode — an
+         * `extraThemes` entry declaring `mode: 'dark'` — answers for itself.
          */
         get themeIsDark() {
           return this.palette.mode === 'dark'
@@ -114,6 +128,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
             configTheme: getConf(self.jbrowse, 'theme'),
             extraThemes: getConf(self.jbrowse, 'extraThemes'),
             themeName: this.themeName,
+            mode: this.effectiveThemeMode,
           }
         },
         /**
@@ -187,9 +202,16 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * Pick a palette. A name from before light and dark were an axis sets
+       * the mode it spelled as well, so an old share link, a saved figure spec
+       * and `jbrowse-img --theme darkStock` all still mean what they said.
        */
       setThemeName(name: string) {
-        self.sessionThemeName = name
+        const { themeName, mode } = resolveThemeSelection(name)
+        self.sessionThemeName = themeName
+        if (mode) {
+          self.sessionThemeMode = mode
+        }
       },
       /**
        * #action
@@ -202,40 +224,26 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        * Leave `system` for the mode the OS is not asking for. The toolbar
        * shows its theme control only while the session follows the system, so
        * this is the one click out of a dark the OS handed someone who did not
-       * want it, and the control goes away with the following.
+       * want it, and the control goes away with the following. The palette is
+       * untouched: a reader on Minimal who does this keeps Minimal.
        */
       stopFollowingSystemTheme() {
-        self.sessionThemeName = self.themeIsDark ? LIGHT_THEME : DARK_THEME
+        self.sessionThemeMode = self.themeIsDark ? 'light' : 'dark'
       },
       /**
        * #action
-       * Point the session at light or dark, for a host that follows its own
-       * dark-mode state rather than offering JBrowse's theme menu. Satisfies
-       * `ThemeModeSession`, so `useSessionPalette` works against an app
-       * session and an embedded one alike.
+       * Draw the session light or dark, leaving the palette alone. `system`
+       * follows the OS preference. Satisfies `ThemeModeSession`, so
+       * `useSessionPalette` works against an app session and an embedded one
+       * alike, and a host that follows its own dark-mode state calls this.
        *
-       * Expressed as a write to the config `theme` slot plus a return to the
-       * `default` theme, not as `setThemeName('darkStock')`. Only the
-       * `default` theme merges `configTheme.palette` (see `resolvePalette`),
-       * so selecting a stock theme would discard whatever the host passed as
-       * `configuration.theme` — their brand `primary`, say — the first time
-       * their toggle fired. Merging at both levels for the same reason:
-       * `theme` is a frozen slot, and `mode` and `primary` are siblings under
-       * `palette`.
-       *
-       * One write, not two: `themeOptions` is derived from the same slot and
-       * is what ships to the RPC worker, so the labels baked into a rendered
-       * image follow the mode along with what React draws.
+       * `themeOptions` carries the mode to the RPC worker, so the labels baked
+       * into a rendered image follow it along with what React draws. That used
+       * to take a write into the config `theme` slot, because mode lived
+       * inside a palette and there was nowhere else to put it.
        */
-      setThemeMode(mode: 'light' | 'dark') {
-        const { jbrowse } = asSession(self)
-        const theme: { palette?: PaletteInput } =
-          getConf(jbrowse, 'theme') ?? {}
-        setConf(jbrowse, 'theme', {
-          ...theme,
-          palette: { ...theme.palette, mode },
-        })
-        self.sessionThemeName = 'default'
+      setThemeMode(mode: ThemeModeSelection) {
+        self.sessionThemeMode = mode
       },
     }))
     .actions(self => ({
@@ -253,6 +261,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
               // persist the raw selection, not the coerced themeName, so a
               // theme registered later isn't clobbered with 'default'
               localStorageSetItem('themeName', self.sessionThemeName)
+              localStorageSetItem('themeMode', self.sessionThemeMode)
             },
             { name: 'ThemeName' },
           ),

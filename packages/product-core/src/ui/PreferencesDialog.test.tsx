@@ -17,8 +17,10 @@ function stubSession(
 ): PreferencesDialogSession {
   return {
     allThemes: () => defaultThemes,
-    selectedThemeName: 'default',
+    themeName: 'default',
     setThemeName: jest.fn(),
+    themeMode: 'light' as const,
+    setThemeMode: jest.fn(),
     stickyViewHeaders: true,
     setStickyViewHeaders: jest.fn(),
     effectiveUseWorkspaces: false,

@@ -33,7 +33,6 @@ export type {
 export {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
-  SYSTEM_THEME,
   DrawerWidgetSessionMixin,
   MultipleViewsSessionMixin,
   PreferencesSessionMixin,

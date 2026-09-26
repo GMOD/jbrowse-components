@@ -913,29 +913,69 @@ const brandDefaults: PaletteInput = {
   framesCDS: defaultFramesCDS,
 }
 
+// Each palette states its colors once and, where a brand cannot survive the
+// flip, the `dark` delta. Stock needs none: measured, its dark half is the
+// light one with `mode: 'dark'` and nothing else, because the neutrals,
+// semantics and string colors already follow the mode. Minimal needs one
+// shade, grey[900] being too near the dark background to read as chrome.
 export const palettePresets = {
   default: { ...brandDefaults },
-  lightStock: { ...brandDefaults },
-  lightMinimal: {
+  stock: { ...brandDefaults },
+  minimal: {
     ...brandDefaults,
     primary: { main: grey[900] },
     secondary: { main: grey[800] },
     tertiary: { main: grey[900] },
-  },
-  // the dark presets change only `mode` on top of the brand colors, and the
-  // dark-tuned gridlines, hover, coverage and alignmentFill follow from it
-  darkMinimal: {
-    ...brandDefaults,
-    mode: 'dark',
-    primary: { main: grey[700] },
-    secondary: { main: grey[800] },
-    tertiary: { main: grey[900] },
-  },
-  darkStock: {
-    ...brandDefaults,
-    mode: 'dark',
+    dark: { primary: { main: grey[700] } },
   },
 } satisfies Record<string, PaletteInput>
+
+/**
+ * The theme names from before light and dark were an axis, as the palette and
+ * mode each one meant. A stored selection, a share link, an admin's
+ * `configuration.theme`, `jbrowse-img --theme` and a saved figure spec all
+ * carry these, so they keep resolving rather than falling back to the default.
+ */
+export const legacyThemeNames = {
+  lightStock: { themeName: 'stock', mode: 'light' },
+  darkStock: { themeName: 'stock', mode: 'dark' },
+  lightMinimal: { themeName: 'minimal', mode: 'light' },
+  darkMinimal: { themeName: 'minimal', mode: 'dark' },
+} as const satisfies Record<string, { themeName: string; mode: PaletteMode }>
+
+export type PaletteMode = 'light' | 'dark'
+export type LegacyThemeName = keyof typeof legacyThemeNames
+
+// indexed through hasOwn so the miss is a value rather than a lie the key cast
+// tells the checker
+function legacyEntry(name: string | undefined) {
+  return name !== undefined && Object.hasOwn(legacyThemeNames, name)
+    ? legacyThemeNames[name as LegacyThemeName]
+    : undefined
+}
+
+/**
+ * What a name and a mode mean together, with a name that predates the axis
+ * resolved to the pair it stood for. An explicit `mode` still wins — a user
+ * picking Dark over a stored `lightStock` gets dark stock, not light.
+ *
+ * `themes` is whatever map the caller looks names up in, so an admin's
+ * `extraThemes` entry taking one of the retired names wins over the alias it
+ * would otherwise shadow.
+ */
+export function resolveThemeSelection(
+  themeName?: string,
+  mode?: PaletteMode,
+  themes?: Record<string, unknown>,
+): { themeName: string; mode?: PaletteMode } {
+  if (themeName !== undefined && themes?.[themeName]) {
+    return { themeName, mode }
+  }
+  const legacy = legacyEntry(themeName)
+  return legacy
+    ? { themeName: legacy.themeName, mode: mode ?? legacy.mode }
+    : { themeName: themeName ?? 'default', mode }
+}
 
 /**
  * What `resolvePalette` reads. Structurally the minimum of the public
@@ -985,18 +1025,26 @@ function resolveFrames(
  * "Default (from config)" means. Do not "fix" that.
  */
 export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
-  const { configTheme, themeName = 'default', extraThemes } = args
+  const { configTheme, extraThemes } = args
   const presets: Record<string, PaletteInput> = {
     ...palettePresets,
     ...Object.fromEntries(
       Object.entries(extraThemes ?? {}).map(([k, v]) => [k, v.palette ?? {}]),
     ),
   }
+  const selection = resolveThemeSelection(args.themeName, args.mode, presets)
+  const themeName = selection.themeName
   const preset = presets[themeName] ?? presets.default ?? {}
   const declared: PaletteInput =
     themeName === 'default' ? { ...preset, ...configTheme?.palette } : preset
 
-  const mode = args.mode ?? declared.mode ?? 'light'
+  // A palette that declares a `mode` is pinned to it: an admin who registers a
+  // dark `extraThemes` entry picked its colours for dark, and the light half
+  // they never wrote is not JBrowse's to invent. A `mode` in the config `theme`
+  // slot is the opposite — the site's starting point for the one palette that
+  // merges it — so a reader's own pick wins over that.
+  const mode =
+    preset.mode ?? selection.mode ?? configTheme?.palette?.mode ?? 'light'
   const isDark = mode === 'dark'
   // the palette's own dark half, over the light one it is a delta against
   const input: PaletteInput = isDark

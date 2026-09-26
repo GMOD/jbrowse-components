@@ -1,10 +1,19 @@
 import { createTheme } from '@mui/material/styles'
 
 import { deepMerge } from '../util/deepMerge.ts'
-import { palettePresets, resolvePalette } from './palette.ts'
+import {
+  palettePresets,
+  resolvePalette,
+  resolveThemeSelection,
+} from './palette.ts'
 import { DEFAULT_FONT_SIZE, DEFAULT_SPACING } from './styleTheme.ts'
 
-import type { AlignmentFill, StringColors } from './palette.ts'
+import type {
+  AlignmentFill,
+  PaletteMode,
+  StringColors,
+  legacyThemeNames,
+} from './palette.ts'
 import type {
   PaletteColor,
   PaletteColorOptions,
@@ -121,32 +130,41 @@ export interface SerializableThemeArgs {
   configTheme?: ThemeOptions
   themeName?: string
   extraThemes?: ThemeMap
+  /** light or dark, whichever the named palette declares; see `PaletteArgs` */
+  mode?: PaletteMode
 }
 
-// The display names and MUI component overrides layered on top of each palette
-// preset. The colors come from palette.ts, so a preset's palette is stated once
-// and this map is the Material UI half of it.
+// The display names and MUI component overrides layered on top of each palette.
+// The colors come from palette.ts, so a palette is stated once and this map is
+// the Material UI half of it. Light and dark are not entries here — they are
+// `mode`, which every one of these resolves along.
 export const defaultThemes = {
   default: { palette: palettePresets.default, name: 'Default (from config)' },
-  lightStock: { palette: palettePresets.lightStock, name: 'Light (stock)' },
-  lightMinimal: {
-    name: 'Light (minimal)',
-    palette: palettePresets.lightMinimal,
-  },
-  darkMinimal: {
-    name: 'Dark (minimal)',
-    palette: palettePresets.darkMinimal,
-  },
-  darkStock: {
-    name: 'Dark (stock)',
-    palette: palettePresets.darkStock,
+  stock: {
+    name: 'Stock',
+    palette: palettePresets.stock,
     components: {
       // enableColorOnDark keeps the AppBar tinted with primary.main in dark
-      // mode (default MUI behavior is to flatten it to the paper color)
+      // mode (default MUI behavior is to flatten it to the paper color). MUI
+      // reads it only in dark mode, so it is inert on the light half.
       MuiAppBar: { defaultProps: { enableColorOnDark: true } },
     },
   },
+  minimal: {
+    name: 'Minimal',
+    palette: palettePresets.minimal,
+  },
 } satisfies ThemeMap
+
+/**
+ * Every theme name JBrowse answers to: the palettes above, plus the names from
+ * before light and dark were an axis. `jbrowse-img --theme` and the SVG export
+ * picker enumerate this, so a palette added or renamed fails their builds
+ * rather than leaving a name that silently resolves to the default.
+ */
+export type ThemeSelectionName =
+  | keyof typeof defaultThemes
+  | keyof typeof legacyThemeNames
 
 // The default primary (midnight) has poor contrast as a text/control color in
 // dark mode, so fall back to a text-like color there. The extra selectors let
@@ -369,6 +387,7 @@ export function createJBrowseThemeFromArgs(args: SerializableThemeArgs = {}) {
     args.configTheme,
     { ...defaultThemes, ...args.extraThemes },
     args.themeName,
+    args.mode,
   )
 }
 
@@ -380,6 +399,7 @@ function getThemeCacheKey(
   configTheme: ThemeOptions,
   selectedTheme: ThemeOptions | undefined,
   themeName: string,
+  mode: PaletteMode | undefined,
 ): string {
   // key on the single selected theme definition, not the whole themes map,
   // so configurable extraThemes that reuse a name still bust the cache.
@@ -389,6 +409,7 @@ function getThemeCacheKey(
       configTheme: themeName === 'default' ? configTheme : undefined,
       selectedTheme,
       themeName,
+      mode,
     },
     // a plugin-supplied theme can carry style-override callbacks, which
     // JSON.stringify drops, so two such themes would otherwise share a key
@@ -409,9 +430,22 @@ function getThemeCacheKey(
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
   themes: ThemeMap = defaultThemes,
-  themeName = 'default',
+  requestedName = 'default',
+  requestedMode?: PaletteMode,
 ) {
-  const cacheKey = getThemeCacheKey(configTheme, themes[themeName], themeName)
+  // one resolver with resolvePalette, so a retired name and an extraThemes
+  // entry shadowing one mean the same thing to the colors and to the chrome
+  const { themeName, mode } = resolveThemeSelection(
+    requestedName,
+    requestedMode,
+    themes,
+  )
+  const cacheKey = getThemeCacheKey(
+    configTheme,
+    themes[themeName],
+    themeName,
+    mode,
+  )
   const cached = themeCache.get(cacheKey)
   if (cached) {
     return cached
@@ -426,7 +460,12 @@ export function createJBrowseTheme(
   const theme = createTheme(
     createJBrowseBaseTheme({
       ...merged,
-      palette: resolvePalette({ configTheme, themeName, extraThemes: themes }),
+      palette: resolvePalette({
+        configTheme,
+        themeName,
+        mode,
+        extraThemes: themes,
+      }),
     }),
   )
 

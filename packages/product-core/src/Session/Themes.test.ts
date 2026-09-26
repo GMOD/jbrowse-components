@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { SYSTEM_THEME, ThemeManagerSessionMixin } from './Themes.ts'
+import { ThemeManagerSessionMixin } from './Themes.ts'
 
 const ConfigSchema = ConfigurationSchema('Root', {
   theme: { type: 'frozen', defaultValue: {} },
@@ -68,89 +68,142 @@ test('a fresh session is light on a dark OS', () => {
   installMatchMedia(true)
   const session = makeSession()
 
-  expect(session.selectedThemeName).toBe('default')
+  expect(session.themeName).toBe('default')
+  expect(session.themeMode).toBe('light')
   expect(session.themeIsDark).toBe(false)
 })
 
-test('the system selection follows the OS, and keeps following it', () => {
+test('the system mode follows the OS, and keeps following it', () => {
   const media = installMatchMedia(true)
   const session = makeSession()
-  session.setThemeName(SYSTEM_THEME)
+  session.setThemeMode('system')
 
-  expect(session.themeName).toBe('darkStock')
+  expect(session.effectiveThemeMode).toBe('dark')
   expect(session.themeIsDark).toBe(true)
 
   media.setMatches(false)
-  expect(session.themeName).toBe('default')
+  expect(session.effectiveThemeMode).toBe('light')
   expect(session.themeIsDark).toBe(false)
-  expect(session.selectedThemeName).toBe(SYSTEM_THEME)
+  expect(session.themeMode).toBe('system')
 })
 
-// The light stop is `default` rather than `lightStock` because `default` is the
-// one theme `resolvePalette` merges the config `theme` slot into, so a site's
-// brand survives a user who follows their OS.
-test("the light half carries the config theme's colors", () => {
+// The whole point of the axis: a mode is not a palette, so moving along one
+// leaves the other where it was.
+test('a mode change keeps the palette, and a palette change keeps the mode', () => {
+  installMatchMedia(false)
+  const session = makeSession()
+  session.setThemeName('minimal')
+  session.setThemeMode('dark')
+
+  expect(session.themeName).toBe('minimal')
+  expect(session.themeIsDark).toBe(true)
+  // minimal states one dark delta, a lighter primary than its light half
+  expect(session.palette.primary.main).toBe('#616161')
+
+  session.setThemeName('stock')
+  expect(session.themeMode).toBe('dark')
+  expect(session.palette.primary.main).toBe('#0D233F')
+})
+
+// `default` is the one palette that merges the config `theme` slot, and it now
+// does so in both modes — which is what the old `darkStock` could not do.
+test("a site's brand survives the dark half", () => {
   installMatchMedia(false)
   const session = makeSession({ theme: { palette: { primary: '#ff0000' } } })
-  session.setThemeName(SYSTEM_THEME)
-
-  expect(session.themeName).toBe('default')
   expect(session.palette.primary.main).toBe('#ff0000')
+
+  session.setThemeMode('dark')
+  expect(session.themeIsDark).toBe(true)
+  expect(session.palette.primary.main).toBe('#ff0000')
+  // and the rest of the palette went dark around it
+  expect(session.palette.background.paper).toBe('#121212')
 })
 
 test('leaving the following lands on the mode the OS was not asking for', () => {
   const media = installMatchMedia(true)
   const session = makeSession()
-  session.setThemeName(SYSTEM_THEME)
+  session.setThemeName('minimal')
+  session.setThemeMode('system')
 
   session.stopFollowingSystemTheme()
-  expect(session.selectedThemeName).toBe('default')
-  expect(session.themeIsDark).toBe(false)
+  expect(session.themeMode).toBe('light')
+  // the palette the reader picked is not collateral
+  expect(session.themeName).toBe('minimal')
 
   media.setMatches(false)
-  session.setThemeName(SYSTEM_THEME)
+  session.setThemeMode('system')
   session.stopFollowingSystemTheme()
-  expect(session.selectedThemeName).toBe('darkStock')
+  expect(session.themeMode).toBe('dark')
 })
 
 // An explicit pick has to survive the OS flipping under it, which is the whole
-// difference between picking a dark theme and following a dark system.
-test('an explicit pick stops following the OS', () => {
+// difference between picking dark and following a dark system.
+test('an explicit mode stops following the OS', () => {
   const media = installMatchMedia(false)
   const session = makeSession()
-  session.setThemeName('lightStock')
+  session.setThemeMode('light')
 
   media.setMatches(true)
-  expect(session.themeName).toBe('lightStock')
+  expect(session.effectiveThemeMode).toBe('light')
   expect(session.themeIsDark).toBe(false)
 })
 
-// `themeIsDark` reads the resolved palette, which covers the themes the two
-// halves of `system` never name.
+// `themeIsDark` reads the resolved palette, so a palette pinned to one mode
+// answers for itself rather than for the session's mode.
 test('an extra theme declaring dark mode reads as dark', () => {
   installMatchMedia(false)
-  const session = makeSession()
-  session.setThemeName('darkMinimal')
+  const session = makeSession({
+    extraThemes: { midnight: { name: 'M', palette: { mode: 'dark' } } },
+  })
+  session.setThemeName('midnight')
 
+  expect(session.themeMode).toBe('light')
   expect(session.themeIsDark).toBe(true)
 })
 
-test('without matchMedia the system selection is light', () => {
+test('without matchMedia the system mode is light', () => {
   const session = makeSession()
-  session.setThemeName(SYSTEM_THEME)
+  session.setThemeMode('system')
 
-  expect(session.themeName).toBe('default')
+  expect(session.effectiveThemeMode).toBe('light')
+})
+
+// The names from before the axis are what every stored selection, share link
+// and `jbrowse-img --theme` carries, and they have to keep meaning their pair.
+test.each([
+  ['darkStock', 'stock', 'dark'],
+  ['lightStock', 'stock', 'light'],
+  ['darkMinimal', 'minimal', 'dark'],
+  ['lightMinimal', 'minimal', 'light'],
+] as const)('%s still means %s + %s', (legacy, palette, mode) => {
+  installMatchMedia(false)
+  const session = makeSession()
+  session.setThemeName(legacy)
+
+  expect(session.themeName).toBe(palette)
+  expect(session.themeMode).toBe(mode)
+})
+
+test('a stored legacy name splits on the way in, and is stored split', () => {
+  localStorage.setItem('themeName', 'darkMinimal')
+  installMatchMedia(false)
+
+  const session = makeSession()
+  expect(session.themeName).toBe('minimal')
+  expect(session.themeMode).toBe('dark')
+  expect(localStorage.getItem('themeName')).toBe('minimal')
+  expect(localStorage.getItem('themeMode')).toBe('dark')
 })
 
 // A stored name whose plugin is absent has to come back rather than being
 // coerced away.
 test('a stored selection survives its theme being unregistered', () => {
   localStorage.setItem('themeName', 'someThemeFromAPlugin')
-  installMatchMedia(true)
+  installMatchMedia(false)
 
-  expect(makeSession().selectedThemeName).toBe('default')
+  expect(makeSession().themeName).toBe('default')
   expect(
     makeSession({ extraThemes: { someThemeFromAPlugin: { name: 'X' } } })
-      .selectedThemeName,
+      .themeName,
   ).toBe('someThemeFromAPlugin')
 })

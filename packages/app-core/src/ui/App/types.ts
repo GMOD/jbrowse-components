@@ -10,7 +10,7 @@ export { type Menu } from '../../menus.ts'
 // What the toolbar's theme control reads. Every product mounting this toolbar
 // composes ThemeManagerSessionMixin, so these are always there.
 export interface ThemeSwitchSession {
-  selectedThemeName: string
+  themeMode: 'light' | 'dark' | 'system'
   themeIsDark: boolean
   stopFollowingSystemTheme: () => void
 }

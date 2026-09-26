@@ -1,8 +1,10 @@
 import type { TrackConfigChange } from '@jbrowse/core/util'
 
 export interface ResettablePreferencesSession {
-  selectedThemeName?: string
+  themeName?: string
   setThemeName: (arg: string) => void
+  themeMode: 'light' | 'dark' | 'system'
+  setThemeMode: (arg: 'light' | 'dark' | 'system') => void
   stickyViewHeaders: boolean
   setStickyViewHeaders: (sticky: boolean) => void
   effectiveUseWorkspaces: boolean
@@ -28,11 +30,21 @@ const NON_MAP_PREFERENCES: NonMapPreference[] = [
   {
     head: 'theme',
     change: s =>
-      s.selectedThemeName && s.selectedThemeName !== 'default'
-        ? { path: ['theme'], from: 'default', to: s.selectedThemeName }
+      s.themeName && s.themeName !== 'default'
+        ? { path: ['theme'], from: 'default', to: s.themeName }
         : undefined,
     reset: s => {
       s.setThemeName('default')
+    },
+  },
+  {
+    head: 'themeMode',
+    change: s =>
+      s.themeMode === 'light'
+        ? undefined
+        : { path: ['themeMode'], from: 'light', to: s.themeMode },
+    reset: s => {
+      s.setThemeMode('light')
     },
   },
   {

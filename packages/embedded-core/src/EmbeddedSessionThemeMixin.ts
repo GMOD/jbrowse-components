@@ -1,4 +1,4 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
@@ -6,17 +6,21 @@ import { BaseSessionModel } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
-import type { PaletteInput } from '@jbrowse/core/ui/palette'
+import type { PaletteMode } from '@jbrowse/core/ui/palette'
 
 /**
  * #stateModel EmbeddedSessionThemeMixin
  * Theme getters shared by the single-view embedded sessions
  * (react-linear-genome-view, react-circular-genome-view). Embedded products
- * have no theme switching, so the active theme is always `default`; the config
- * `theme` slot still applies via `configTheme`.
+ * have no theme picker, so the palette is always `default` and the config
+ * `theme` slot supplies it; light or dark is the host's to drive, through
+ * `setThemeMode`.
  */
 export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
   return BaseSessionModel(pluginManager)
+    .volatile(() => ({
+      sessionThemeMode: undefined as PaletteMode | undefined,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -30,6 +34,7 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
         return {
           configTheme: getConf(self, 'theme'),
           themeName: 'default',
+          mode: self.sessionThemeMode,
         }
       },
       /**
@@ -83,26 +88,20 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * Switch the session to light or dark. `themeOptions` sends the `theme`
-       * slot to the renderer, so labels drawn in the worker follow it, and
-       * `palette` is derived from the same slot, so React-drawn elements
-       * follow it too. An embedder who sets only a React-side palette leaves
-       * the worker-drawn labels in the old mode.
+       * Switch the session to light or dark, leaving the host's configured
+       * colours alone. `themeOptions` carries the mode to the renderer, so
+       * labels drawn in the worker follow it, and `palette` is derived from
+       * the same args, so React-drawn elements follow it too. An embedder who
+       * sets only a React-side palette leaves the worker-drawn labels in the
+       * old mode.
        *
-       * Merges into the existing theme at both levels. `theme` is a frozen
-       * slot, so `setConf(session, 'theme', { palette: { mode } })` replaces
-       * every other key in it, discarding whatever the host passed as
-       * `createViewState`'s `configuration.theme` (a brand `primary`, say) the
-       * first time their dark-mode toggle fires. `resolvePalette` spreads
-       * `configTheme.palette` over the preset shallowly, so `mode` and
-       * `primary` are siblings and both levels have to be kept.
+       * This used to write `palette.mode` into the config `theme` slot, which
+       * meant merging at two levels to avoid discarding the brand the host had
+       * passed to `createViewState`. Mode is its own axis now, so there is
+       * nothing to merge and nothing to discard.
        */
-      setThemeMode(mode: 'light' | 'dark') {
-        const theme: { palette?: PaletteInput } = getConf(self, 'theme') ?? {}
-        setConf(self, 'theme', {
-          ...theme,
-          palette: { ...theme.palette, mode },
-        })
+      setThemeMode(mode: PaletteMode) {
+        self.sessionThemeMode = mode
       },
     }))
 }

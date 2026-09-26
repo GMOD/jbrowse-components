@@ -2,7 +2,7 @@ import { modeDescriptors, viewModes } from './modes.ts'
 
 import type { ViewMode } from './modes.ts'
 import type { AssertTrue, Covers } from './types.ts'
-import type { defaultThemes } from '@jbrowse/core/ui/theme'
+import type { ThemeSelectionName } from '@jbrowse/core/ui/theme'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 import type {
@@ -75,13 +75,16 @@ const syntenyColorByModes = [
   'dnds',
 ] as const satisfies readonly SyntenyColorField[]
 
-// The built-in theme names, pinned to core's own defaultThemes registry so a
-// theme added or renamed there fails the build here rather than leaving the CLI
-// silently rejecting (or offering) a theme that no longer matches.
-type ThemeName = keyof typeof defaultThemes
+// The theme names, pinned to core's own registry so a palette added or renamed
+// there fails the build here rather than leaving the CLI silently rejecting (or
+// offering) a name that no longer matches. Light and dark are `--mode`; the
+// four names that spelled a mode still resolve, for a script that passes one.
+type ThemeName = ThemeSelectionName
 
 export const themeNames = [
   'default',
+  'stock',
+  'minimal',
   'lightStock',
   'lightMinimal',
   'darkStock',

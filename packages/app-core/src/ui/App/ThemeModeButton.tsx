@@ -1,4 +1,3 @@
-import { SYSTEM_THEME } from '@jbrowse/product-core'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import { IconButton, Tooltip } from '@mui/material'
@@ -8,16 +7,16 @@ import type { ThemeSwitchSession } from './types.ts'
 
 /**
  * Which way the OS has pointed a session that follows it, and one click out.
- * A session on a named theme gets nothing, which is every session that has not
- * asked for this in Preferences, leaving the toolbar to say where a dark page
- * came from and to offer a light one no route into dark.
+ * A session on an explicit light or dark gets nothing, which is every session
+ * that has not asked for this in Preferences, leaving the toolbar to say where
+ * a dark page came from and to offer a light one no route into dark.
  */
 const ThemeModeButton = observer(function ThemeModeButton({
   session,
 }: {
   session: ThemeSwitchSession
 }) {
-  if (session.selectedThemeName !== SYSTEM_THEME) {
+  if (session.themeMode !== 'system') {
     return null
   }
   const dark = session.themeIsDark

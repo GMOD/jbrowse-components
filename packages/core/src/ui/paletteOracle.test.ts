@@ -10,7 +10,18 @@ import { createJBrowseThemeFromArgs, defaultThemes } from './theme.ts'
  *
  * Update with `-u` when a colour change is the point.
  */
-test.each(Object.keys(defaultThemes))('%s resolves the same colours', name => {
+// Named rather than read off `defaultThemes`, because the retired names are
+// exactly what a shrinking `defaultThemes` would stop covering — and a stored
+// selection, a share link and `jbrowse-img --theme` still carry them.
+const NAMES = [
+  ...Object.keys(defaultThemes),
+  'lightStock',
+  'darkStock',
+  'lightMinimal',
+  'darkMinimal',
+]
+
+test.each(NAMES)('%s resolves the same colours', name => {
   expect(resolvePalette({ themeName: name })).toMatchSnapshot()
 })
 
@@ -18,7 +29,10 @@ test.each(Object.keys(defaultThemes))('%s resolves the same colours', name => {
 // modes, so it needs its own rows.
 test.each([
   ['a config brand', { palette: { primary: { main: '#8b0000' } } }],
-  ['a config brand, dark', { palette: { primary: '#8b0000', mode: 'dark' } }],
+  [
+    'a config brand, dark',
+    { palette: { primary: { main: '#8b0000' }, mode: 'dark' } },
+  ],
   ['a bare mode', { palette: { mode: 'dark' } }],
   ['a config background', { palette: { background: { paper: '#fafafa' } } }],
 ] as const)('default + %s resolves the same colours', (_name, configTheme) => {
@@ -31,7 +45,7 @@ test.each([
 // `enableColorOnDark` today, so its AppBar keeps the brand where every other
 // dark theme flattens to the paper colour. Whether that stays true of a palette
 // drawn dark is a decision, and this is what makes it one.
-test.each(Object.keys(defaultThemes))('%s builds the same chrome', name => {
+test.each(NAMES)('%s builds the same chrome', name => {
   const theme = createJBrowseThemeFromArgs({ themeName: name })
   expect({
     mode: theme.palette.mode,
