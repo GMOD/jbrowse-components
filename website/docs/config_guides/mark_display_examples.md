@@ -10,9 +10,9 @@ guide_category: Track types
 Each section below is one complete track config for `LinearMarkDisplay`, the
 picture it draws over a hosted file, and a link that opens the same view live.
 The first ten read one file, UCSC's RepeatMasker Alu rows for hg38, whose
-`milliDiv` column is a copy's divergence from its consensus; the last two read
-a BED of read pairs and a set of copy-number BigWigs. Copy the config whose
-shape matches your file and change the field names.
+`milliDiv` column is a copy's divergence from its consensus; the last two read a
+BED of read pairs and a set of copy-number BigWigs. Copy the config whose shape
+matches your file and change the field names.
 [](/docs/config_guides/mark_display) explains each slot.
 
 ## Bars from a column
@@ -43,9 +43,10 @@ shape matches your file and change the field names.
 
 ## Points, coloured and shaped by a category
 
-`x2: "start"` stands each point at one position whatever the copy's length.
-The colour and the shape each take a categorical scale over `strand`, so the
-key carries a row per strand and a shape per strand.
+`x2: "start"` stands each point at one position whatever the copy's length. The
+colour and the shape each take a categorical scale over `strand`, whose values
+are `1` and `-1`, so `domain` names the levels and `labels` what the key calls
+them.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {
@@ -68,11 +69,17 @@ key carries a row per strand and a shape per strand.
           "encoding": {
             "x2": "start",
             "y": "milliDiv",
-            "color": { "field": "strand", "title": "Strand" },
+            "color": {
+              "field": "strand",
+              "domain": ["1", "-1"],
+              "labels": ["+", "-"],
+              "title": "Strand"
+            },
             "shape": {
               "field": "strand",
-              "domain": ["+", "-"],
+              "domain": ["1", "-1"],
               "range": ["circle", "triangle-down"],
+              "labels": ["+", "-"],
               "title": ""
             }
           }
@@ -230,7 +237,10 @@ The same bins, with `mean` over the column in place of the count.
           "mark": "bar",
           "transform": [
             { "type": "bin", "step": "auto" },
-            { "type": "aggregate", "ops": [{ "op": "mean", "field": "milliDiv" }] }
+            {
+              "type": "aggregate",
+              "ops": [{ "op": "mean", "field": "milliDiv" }]
+            }
           ],
           "encoding": { "color": "#7f7f7f" }
         }
@@ -265,7 +275,14 @@ draws the packing, coloured by strand.
         {
           "mark": "span",
           "transform": [{ "type": "pileup", "padding": 200 }],
-          "encoding": { "color": { "field": "strand", "title": "Strand" } }
+          "encoding": {
+            "color": {
+              "field": "strand",
+              "domain": ["1", "-1"],
+              "labels": ["+", "-"],
+              "title": "Strand"
+            }
+          }
         }
       ]
     }
@@ -301,7 +318,7 @@ chip. A `pileup` in the facet's own `transform` packs each section on its own.
 }
 ```
 
-<Figure src="/img/mark_display_examples/facet.png" caption="Plus-strand copies packed in one section and minus-strand copies in another, each under the chip naming its strand." />
+<Figure src="/img/mark_display_examples/facet.png" caption="Plus-strand copies packed in one section and minus-strand copies in another, each under a chip naming its strand, 1 or -1." />
 
 ## Labels
 
@@ -393,7 +410,9 @@ pair, stroked by its mapping quality.
       "marks": [
         {
           "mark": "link",
-          "transform": [{ "type": "filter", "expr": "jexl:feature.tlen < 20000" }],
+          "transform": [
+            { "type": "filter", "expr": "jexl:feature.tlen < 20000" }
+          ],
           "encoding": {
             "color": {
               "field": "score",
@@ -416,8 +435,8 @@ pair, stroked by its mapping quality.
 ## One row per file
 
 Over a multi-BigWig, `rows: "source"` gives each file a row on one shared axis,
-with the row labels, **Sort rows by value here** and
-**Cluster rows by similarity...** in the track menu.
+with the row labels, **Sort rows by value here** and **Cluster rows by
+similarity...** in the track menu.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr17:36,193,000-36,198,000
 {
@@ -442,7 +461,9 @@ with the row labels, **Sort rows by value here** and
       "displayId": "pur_cnv_rows-LinearMarkDisplay",
       "rows": "source",
       "scales": { "y": { "domainMin": 0, "domainMax": 10, "title": "Copies" } },
-      "marks": [{ "mark": "bar", "encoding": { "y": "score", "color": "#4575b4" } }]
+      "marks": [
+        { "mark": "bar", "encoding": { "y": "score", "color": "#4575b4" } }
+      ]
     }
   ]
 }
@@ -452,7 +473,7 @@ with the row labels, **Sort rows by value here** and
 
 ## More
 
-[](/docs/config_guides/mark_display) shows a density and the raw features in
-one track across zooms, a facet over a BAM's haplotype tag, and a density
-sidecar past the fetch budget; [](/docs/tutorials/alu_age) and
+[](/docs/config_guides/mark_display) shows a density and the raw features in one
+track across zooms, a facet over a BAM's haplotype tag, and a density sidecar
+past the fetch budget; [](/docs/tutorials/alu_age) and
 [](/docs/tutorials/read_marks) each take one file through a question.

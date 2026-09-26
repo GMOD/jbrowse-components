@@ -47,6 +47,7 @@ import {
 import { ldSpecs } from './specs/ld.ts'
 import { linkageGroupsSpecs } from './specs/linkage_groups.ts'
 import { mafSpecs } from './specs/maf.ts'
+import { markDisplayExampleSpecs } from './specs/mark_display_examples.ts'
 import { aluAgeSpecs, marksSpecs } from './specs/marks.ts'
 import { methylationSpecs } from './specs/methylation.ts'
 import { msaSpecs } from './specs/msa.ts'
@@ -107,6 +108,7 @@ export const specs: ScreenshotSpec[] = [
   ...marksSpecs,
   ...aluAgeSpecs,
   ...readMarksSpecs,
+  ...markDisplayExampleSpecs,
   ...msaSpecs,
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,

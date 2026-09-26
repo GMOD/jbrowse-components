@@ -812,8 +812,11 @@ density ring with the same `marks` entry. The ring is the canvas, so a `text`
 mark's labels stay on the linear track. A variant track keeps its chords unless
 the session names the mark display for it.
 
-## Tutorials
+## Examples and tutorials
 
+- [](/docs/config_guides/mark_display_examples) is one complete config per idea
+  over a hosted file, each with its picture and a live link: bars, points,
+  ramps, thresholds, bins, pileups, facets, labels, links and rows.
 - [](/docs/tutorials/alu_age) plots a BED column as bars coloured by another
   column, counts the rows per zoom-following bin and reads a density sidecar
   past the fetch budget.

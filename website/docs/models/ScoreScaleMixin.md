@@ -16,11 +16,10 @@ the setters that write it, so composing this is how a display satisfies
 ScoreScaleModel in `scoreMenuItems.ts` — the interface the shared
 Score menu, the scale and autoscale submenus and `SetMinMaxDialog` consume.
 
-What a display's scale offers follows what it draws, so the members below
-answer `undefined` where its factory call left them out: `autoscaleType`
-where the scale declares no `autoscale`, and `symlogConstant` wherever
-`symlog` is not among the scale types. `scaleTypeChoices` reads the declared
-enum back, which is what the scale-type radio offers.
+What a display's scale offers follows what it draws: `symlogConstant`
+answers `undefined` wherever `symlog` is not among the scale types, and
+`scaleTypeChoices` reads the declared enum back, which is what the
+scale-type radio offers.
 
 Deliberately just the scale and the guides it owns. Colors, `resolution`
 and the autoscale *computation* stay in `WiggleScoreConfigMixin` /
@@ -36,7 +35,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
 | <span id="getter-scaletypechoices">**scaleTypeChoices**</span><br><code>string[]</code> | The scale types this display's own enum admits, which is what the scale-type radio offers; a display with one draws no radio. | ScoreScaleMixin |
-| <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string &#124; undefined</code> | `undefined` on a display whose domain consults no autoscale mode. | ScoreScaleMixin |
+| <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
 | <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  | ScoreScaleMixin |
 | <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | ScoreScaleMixin |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. | ScoreScaleMixin |

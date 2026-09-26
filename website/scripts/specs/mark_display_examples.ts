@@ -45,11 +45,17 @@ const TRACKS = {
         encoding: {
           x2: 'start',
           y: 'milliDiv',
-          color: { field: 'strand', title: 'Strand' },
+          color: {
+            field: 'strand',
+            domain: ['1', '-1'],
+            labels: ['+', '-'],
+            title: 'Strand',
+          },
           shape: {
             field: 'strand',
-            domain: ['+', '-'],
+            domain: ['1', '-1'],
             range: ['circle', 'triangle-down'],
+            labels: ['+', '-'],
             title: '',
           },
         },
@@ -122,7 +128,14 @@ const TRACKS = {
       {
         mark: 'span',
         transform: [{ type: 'pileup', padding: 200 }],
-        encoding: { color: { field: 'strand', title: 'Strand' } },
+        encoding: {
+          color: {
+            field: 'strand',
+            domain: ['1', '-1'],
+            labels: ['+', '-'],
+            title: 'Strand',
+          },
+        },
       },
     ],
   }),

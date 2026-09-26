@@ -15,7 +15,7 @@ build its histogram; the other modes read the stats alone.
 
 ```js
 // type signature
-({…}: { stats: ScoreStats; autoscaleType: string | undefined; numStdDev: number; numQuantile?: number | undefined; spans: ScoreSpan[]; }) => [number, number]
+({…}: { stats: ScoreStats; autoscaleType: string; numStdDev: number; numQuantile?: number | undefined; spans: ScoreSpan[]; }) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -27,7 +27,7 @@ Computes a score domain from the visible feature arrays for the `local` /
 
 ```js
 // type signature
-(autoscaleType: string | undefined, summaryScoreMode: string, numStdDev: number, visibleEntries: {…}[], numQuantile?: number) => [...] | undefined
+(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: {…}[], numQuantile?: number) => [...] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -66,12 +66,11 @@ positive multiple gets exactly what it always got.
 ## domainFromStats
 
 Converts score stats into a `[min, max]` domain, applying std-dev expansion
-for the `localsd` autoscale type. An `undefined` mode is a display whose
-scale declares none, and takes the plain extremes.
+for the `localsd` autoscale type.
 
 ```js
 // type signature
-(stats: ScoreStats, autoscaleType: string | undefined, numStdDev: number) => [number, number]
+(stats: ScoreStats, autoscaleType: string, numStdDev: number) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
