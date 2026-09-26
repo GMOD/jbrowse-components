@@ -66,14 +66,11 @@ const AlignmentConnections = observer(function AlignmentConnections(
           // leading edge for a split junction, or the mate's 3' edge for a
           // pair. A discordant connection within one view dips below the
           // reads; across views the curve already spans the divider.
-          const y1 = getY(e1.level, c1)
-          const y2 = getY(e2.level, c2)
-          const level = levels[e1.level]!
           const path = bezierConnectorPath({
             x1: end1.x,
-            y1,
+            y1: getY(e1.level, c1),
             x2: end2.x,
-            y2,
+            y2: getY(e2.level, c2),
             s1,
             s2,
             leadingEnd2: isSplit,
@@ -82,20 +79,13 @@ const AlignmentConnections = observer(function AlignmentConnections(
             // A dip stays inside the panel it is drawn in: this view clips
             // nothing per level, so a deeper one would bleed over the
             // neighbouring panel's reads. The band is the pileup body below
-            // coverage and the room is what is left under the lower read —
-            // computeOverlayY clamps both ys to `yOffset + height`, so it is
-            // never negative. Only a same-contig connection has a span.
+            // coverage, and only a same-contig connection has a span.
             dipPx:
               e1.level === e2.level && abnormal
-                ? discordantDipPx({
-                    bandPx: level.height - level.coverageOffset,
-                    roomBelowPx:
-                      level.yOffset + level.height - Math.max(y1, y2),
-                    spanBp:
-                      e1.refName === e2.refName
-                        ? Math.abs(bp2 - bp1)
-                        : undefined,
-                  })
+                ? discordantDipPx(
+                    levels[e1.level]!.height - levels[e1.level]!.coverageOffset,
+                    e1.refName === e2.refName ? Math.abs(bp2 - bp1) : undefined,
+                  )
                 : undefined,
           })
           const hiddenNote = hiddenSegmentsBetween?.length

@@ -284,9 +284,8 @@ interface Opts {
   featureHeight: number
   featureSpacing: number
   pileupTopOffset: number
-  // The section's laid-out pileup band height, which scales a discordant
-  // connector's dip and bounds the room left below the reads it joins. A layout
-  // quantity on purpose: `clipBottom - clipTop`
+  // The section's laid-out pileup band height, which is how deep a discordant
+  // connector may dip. A layout quantity on purpose: `clipBottom - clipTop`
   // moves as the reader scrolls (bandScreenTop is sticky while the band bottom
   // clamps to the canvas), and keying depth on it would put the depth back on
   // the scroll position.
@@ -326,13 +325,11 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const rowH = featureHeight + featureSpacing
   const readCenterDy = featureHeight / 2
-  // Offset into the section's own band, so `pileupHeight` minus it is the room a
-  // dip has below the read — the same layout tier as the band, with no scroll in
-  // it. readScreenY projects it for drawing.
-  const rowOffset = (e: ReadEntry) =>
-    e.data.readYs[e.readIdx]! * rowH + readCenterDy
   const readScreenY = (e: ReadEntry) =>
-    rowOffset(e) + pileupTopOffset - scrollTop
+    e.data.readYs[e.readIdx]! * rowH +
+    pileupTopOffset -
+    scrollTop +
+    readCenterDy
 
   const result: PileupArc[] = []
 
@@ -382,16 +379,12 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           reversed2: !!r2.reversed,
           // The endpoint bps, not their screen xs, so one event holds its depth
           // while the reader zooms; no span at all for an interchromosomal pair.
-          // The room is measured below the LOWER read, which is the one the
-          // section's clip cuts first.
           dipPx: plain
             ? undefined
-            : discordantDipPx({
-                bandPx: pileupHeight,
-                roomBelowPx:
-                  pileupHeight - Math.max(rowOffset(e1), rowOffset(e2)),
-                spanBp: sameRef ? Math.abs(c.bp2 - c.bp1) : undefined,
-              }),
+            : discordantDipPx(
+                pileupHeight,
+                sameRef ? Math.abs(c.bp2 - c.bp1) : undefined,
+              ),
         })
     const stroke = rgb255(linkedReadPalette[linkedReadColorSlot(c.colorType)]!)
 
