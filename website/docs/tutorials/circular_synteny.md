@@ -2,48 +2,44 @@
 title: Synteny on a circle (human and mouse)
 sidebar_label: Synteny (circular, human and mouse)
 description:
-  Put two genomes on one circular view, draw a liftOver chain's blocks as
-  ribbons between them, add a gene density ring per genome, and check a ribbon
-  and a ring value against the files they came from
+  Put two genomes on one circular view, draw UCSC's liftOver chain between them
+  as ribbons straight from the copy jbrowse.org indexes, colour the ribbons by
+  chromosome, add a gene density ring per genome, and check a ribbon and a ring
+  value against the files they came from
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
 ---
 
-We lay the human and mouse chromosomes around one circle and draw every block of
-UCSC's hg38-to-mm39 liftOver chain as a ribbon between the stretch it covers in
+We lay the human and mouse chromosomes around one circle and draw UCSC's
+hg38-to-mm39 liftOver chain as a ribbon between the stretch each row covers in
 each genome, so where the autosomes have been shuffled and where the X has not
-is one picture. `autoDiagonalize` orders the mouse arc to follow the human one,
-a gene density ring per genome sits inside the ideogram, and the page ends by
-reading one ribbon and one ring value back out of the PIF and bigWig they came
-from. The circle is a circular genome view opened on two assemblies at once.
+is one picture. The chain comes straight from the indexed copy jbrowse.org
+keeps, `autoDiagonalize` orders the mouse arc to follow the human one, a gene
+density ring per genome sits inside the ideogram, and the page ends by reading
+one ribbon and one ring value back out of the PIF and bigWig they came from. The
+circle is a circular genome view opened on two assemblies at once.
 
 ## Prerequisites
 
-- nothing to install to read along: the config, the blocks and the density
-  bigWig are hosted, and every figure has a live link
 - a JBrowse to open them in ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
-- to build the files for another pair of genomes, `chain2paf`, htslib (`bgzip`,
+- to build the density ring for another pair of genomes, htslib (`bgzip`,
   `tabix`), `bedGraphToBigWig` and `bigWigToBedGraph` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), and `node` for
   the [JBrowse CLI](/docs/cli)
-
-`chain2paf` is a single binary from
-[its releases page](https://github.com/AndreaGuarracino/chain2paf/releases), and
-it is the one converter that turns a UCSC chain into a PAF row per chain with
-the CIGAR intact.
 
 ## Where the data comes from
 
 UCSC's hg38-to-mm39 liftOver chain (Kent et al. 2003), the RefSeq curated gene
 sets of both genomes from genomes.jbrowse.org's copies of the UCSC hubs, and the
-files the build script makes of them, rehosted so the figures open without the
-build.
+density bigWig the build script makes of them, rehosted so the figures open
+without the build.
 
 - the chain:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToMm39.over.chain.gz
-- the same chain as an indexed PAF, every row, which the last section queries:
+- the same chain as an indexed PAF, every row, which the ribbons draw from and
+  the last section queries:
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz
 - the hub configs the two assemblies are taken from, those of the
   [hg38](https://genomes.jbrowse.org/ucsc/hg38/) and
@@ -54,8 +50,6 @@ build.
   https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz
 - RefSeq curated genes, mm39:
   https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz
-- the chain cut to its blocks, as the PIF the ribbons draw from:
-  https://jbrowse.org/demos/circular_synteny/hg38ToMm39.blocks.pif.gz
 - both genomes' gene density in one bigWig, the ring:
   https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw
 - the finished config, both assemblies and the four tracks:
@@ -72,46 +66,35 @@ and the X chromosome has not, so a human autosome should fan out across several
 mouse chromosomes while the two X chromosomes hold one bundle between them. That
 expectation is the control the figures are read against.
 
-## Cutting the chain to its blocks
+## The chain as an indexed alignment
 
-A liftOver chain set holds a few hundred chains that cover the genome and tens
-of thousands of short ones, most of them repeats and gene copies, and the circle
-draws every row it is given. So the chain becomes a PAF, the PAF is cut to the
-rows of 100 kb and over, and those rows are indexed as a PIF without their
-CIGARs: a ribbon is drawn between a row's two spans and never reads the
-alignment inside, so dropping column 13 onward keeps the file small enough to
-fetch whole.
-
-<!-- from: scripts/build_circular_synteny.sh -->
-
-```bash
-# chain2paf writes one PAF row per chain, the genome the chain lifts TO as the
-# query and the chain's reference as the target
-gzip -dc hg38ToMm39.over.chain.gz > hg38ToMm39.over.chain
-chain2paf -i hg38ToMm39.over.chain > hg38ToMm39.paf
-# column 11 is the row's aligned length with its gaps; NF=12 drops the CIGAR
-awk -F'\t' -v OFS='\t' -v min=100000 '$11 >= min {NF=12; print}' hg38ToMm39.paf > hg38ToMm39.blocks.paf
-# --no-coarse: the coarse tier folds a CIGAR, and these rows carry none
-jbrowse make-pif hg38ToMm39.blocks.paf --out hg38ToMm39.blocks.pif.gz --no-coarse
-```
-
-The track names the file and its two assemblies, query first. A chain's query is
-the genome it lifts to, so for hg38ToMm39 that is mouse:
+jbrowse.org keeps every liftOver chain UCSC publishes as an indexed PAF, one row
+per chain, the same files the
+[vertebrates tutorial](/docs/tutorials/hg38_vertebrates_synteny) stacks under a
+locus. The track names that file and its two assemblies, query first. A chain's
+query is the genome it lifts to, so for hg38ToMm39 that is mouse:
 
 ```json addtrack
 {
   "type": "SyntenyTrack",
-  "trackId": "hg38ToMm39_blocks",
-  "name": "Synteny blocks",
+  "trackId": "hg38ToMm39_liftover",
+  "name": "hg38 to mm39 liftOver chain",
   "assemblyNames": ["mm39", "hg38"],
   "adapter": {
     "type": "PairwiseIndexedPAFAdapter",
-    "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.blocks.pif.gz",
+    "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz",
+    "csi": true,
     "queryAssembly": "mm39",
     "targetAssembly": "hg38"
   }
 }
 ```
+
+A liftOver chain set holds a few hundred chains that cover the genome and tens
+of thousands of short ones, most of them repeats and gene copies. The circle's
+**Min length** setting is what keeps those off the figure: the sessions below
+set `minAlignmentLength` to 100 kb, and the same control sits in the view's
+menu, so the cut can be moved without touching a file.
 
 ## The circle
 
@@ -132,6 +115,7 @@ same circle from the chain track; as a session it is:
         "type": "CircularView",
         "assembly": ["hg38", "mm39"],
         "autoDiagonalize": true,
+        "minAlignmentLength": 100000,
         "displayedRegionNames": [
           "chr1",
           "chr2",
@@ -155,7 +139,7 @@ same circle from the chain track; as a session it is:
           "chrX"
         ],
         "height": 780,
-        "tracks": ["hg38ToMm39_blocks"]
+        "tracks": ["hg38ToMm39_liftover"]
       }
     ]
   }
@@ -168,7 +152,7 @@ mouse chromosomes follow, and the view's title bar names the two in that order.
 Every ribbon is one flat translucent fill, and a reverse alignment reads as a
 twist between its two ends rather than as a second color.
 
-<Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver block as a ribbon between the two genomes. Each human autosome fans out to several mouse chromosomes; the two X arcs hold one bundle." />
+<Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver row of 100 kb and over as a ribbon between the two genomes. Each human autosome fans out to several mouse chromosomes; the two X arcs hold one bundle." />
 
 ## Ordering the second genome
 
@@ -191,6 +175,18 @@ round again, and the twists left on the figure are the inversions.
 progress bar and a cancel; re-running it on a circle that is already ordered
 moves nothing.
 
+## Colouring the ribbons by chromosome
+
+The flat fill shows the shape of the shuffle; a colour per chromosome shows
+where each piece went. **Color by... → Query** in the view's menu paints every
+ribbon in the ideogram colour of the human chromosome it leaves, so a human
+chromosome's pieces can be followed to each mouse chromosome that carries one,
+and a mouse chromosome's arc reads as the list of human chromosomes it was
+assembled from. As a session setting it is `"color": { "field": "query" }` on
+the view.
+
+<Figure src="/img/circular_synteny/color_by_chromosome.png" caption="The same circle with each ribbon in its human chromosome's colour. Most mouse chromosomes take pieces of two or three human ones; the X arcs exchange one colour." />
+
 ## The X chromosome as the control
 
 Three chromosomes of each genome make the control readable. The two autosomes
@@ -200,9 +196,10 @@ with nothing joining either X to an autosome.
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX in one half of the circle and the mouse three in the other, the mouse arc mirrored. The autosomes' ribbons cross between the genomes; the X ribbons stay between the two X arcs, and no ribbon leaves either X for an autosome." />
 
 The chain rows shorter than the cut are where the X does touch the autosomes:
-the full liftOver PIF holds a few hundred of them between human chrX and mouse
-autosomes, each a repeat or a retrocopy a few hundred bases long, and the cut at
-100 kb keeps them off the circle.
+the PIF holds a few hundred of them between human chrX and mouse autosomes, each
+a repeat or a retrocopy a few hundred bases long, and the length filter keeps
+them off the circle. Lowering **Min length** in the view's menu brings them
+back.
 
 ## Gene density as a ring
 
@@ -271,6 +268,7 @@ before the synteny track:
         "type": "CircularView",
         "assembly": ["hg38", "mm39"],
         "autoDiagonalize": true,
+        "minAlignmentLength": 100000,
         "displayedRegionNames": ["chr1", "chr2", "chrX"],
         "height": 780,
         "tracks": [
@@ -281,7 +279,7 @@ before the synteny track:
             "summaryScoreMode": "avg",
             "height": 40
           },
-          "hg38ToMm39_blocks"
+          "hg38ToMm39_liftover"
         ]
       }
     ]
@@ -301,15 +299,13 @@ alignment: its span in each genome and which way round the two read. The widest
 ribbon on the three-chromosome circle is the X block that runs reverse between
 the two genomes, which is why it twists.
 
-<Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle, filled grey. It crosses itself between the two X arcs, which is the reverse strand; the hover tooltip names its span in each genome." />
+<Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle, filled grey. It crosses itself between the two X arcs, which is the reverse strand; the tooltip names its span in each genome." />
 
-The tooltip's two loci are the row the PIF holds. `tabix` returns it from the
-blocks file at the human coordinate the tooltip starts at, and from the full
-liftOver PIF too, since the cut removed rows and changed none:
+The tooltip's two loci are the row the PIF holds. `tabix` returns it at the
+human coordinate the tooltip starts at:
 
 ```bash
 # the t prefix asks for the row in hg38 coordinates; q would ask in mm39's
-tabix https://jbrowse.org/demos/circular_synteny/hg38ToMm39.blocks.pif.gz tchrX:10447551-10447552
 tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz tchrX:10447551-10447552
 ```
 
@@ -334,9 +330,10 @@ dark chr19 ring are the two counts side by side.
 The script takes any UCSC pair by name, and the files it writes are what a
 reader's own pair has to satisfy:
 
-- an alignment as a PIF, sorted and tabix-indexed: a chain through `chain2paf`
-  as above, or a PAF straight from minimap2 or wfmash, through
-  `jbrowse make-pif`; whichever way, the synteny track's `assemblyNames` is
+- an alignment as a PIF, sorted and tabix-indexed. jbrowse.org's copy of a UCSC
+  liftOver chain opens as is, with `"csi": true` beside its URL; a pair with no
+  hosted chain goes through `jbrowse make-pif` over a PAF from minimap2, wfmash
+  or `chain2paf`. Whichever way, the synteny track's `assemblyNames` is
   `[query, target]`. The reorder needs nothing beyond that: it reads the same
   file
 - both assemblies declared in the config, from a hub entry as here or from
@@ -346,9 +343,10 @@ reader's own pair has to satisfy:
 
 ## Reproduce it end to end
 
-The script fetches the chain, both hub configs and both gene sets, converts and
-cuts the chain, builds the density bigWig and writes the config. `TARGET` and
-`QUERY` pick another UCSC pair, `MIN_BLOCK` moves the cut, and `BASE_URL` is the
+The script fetches both hub configs and both gene sets, builds the density
+bigWig and writes the config with the chain track pointing at jbrowse.org's
+copy. `TARGET` and `QUERY` pick another UCSC pair, `PIF` points the track at a
+chain indexed elsewhere, `MIN_LENGTH` moves the cut, and `BASE_URL` is the
 prefix the finished files will be served under; see
 [Prerequisites](#prerequisites).
 

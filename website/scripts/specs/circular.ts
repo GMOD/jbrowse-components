@@ -7,8 +7,9 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const DEMO = 'test_data/config_demo.json'
 
 // hg38 and mm39 on one circle, from scripts/build_circular_synteny.sh: the
-// UCSC hg38ToMm39 liftOver chain cut to its blocks of 100 kb and over, and a
-// RefSeq gene density bigWig per genome. Behind tutorials/circular_synteny.md.
+// UCSC hg38ToMm39 liftOver chain as jbrowse.org indexes it, with the view's
+// length filter keeping rows under 100 kb off the figure, and a RefSeq gene
+// density bigWig per genome. Behind tutorials/circular_synteny.md.
 const CIRCULAR_SYNTENY = encodeURIComponent(
   'https://jbrowse.org/demos/circular_synteny/config.json',
 )
@@ -16,7 +17,7 @@ const CHROMOSOMES = [
   ...Array.from({ length: 19 }, (_, i) => `chr${i + 1}`),
   'chrX',
 ]
-const BLOCKS = 'hg38ToMm39_blocks'
+const LIFTOVER = 'hg38ToMm39_liftover'
 // gene density as a heat strip: the average over each pixel's bins, so a
 // megabase-per-pixel ring reads genes per bin rather than the bin maximum.
 // Orange, so the ring and the steel-blue ribbons read as two things.
@@ -49,6 +50,7 @@ function circularSyntenyView(
         displayedRegionNames,
         height: 780,
         autoDiagonalize: true,
+        minAlignmentLength: 100000,
         tracks,
         ...extra,
       },
@@ -179,7 +181,20 @@ export const circularSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'circular_synteny/ribbons',
-    url: circularSyntenyView(CHROMOSOMES, [BLOCKS]),
+    url: circularSyntenyView(CHROMOSOMES, [LIFTOVER]),
+    ...circularSyntenyReady,
+  },
+
+  // The same circle with every ribbon in the colour of the human chromosome it
+  // leaves, which is the Circos convention: a human chromosome's ribbons can be
+  // followed to each mouse chromosome that carries part of it, and the X pair
+  // holds one colour.
+  {
+    mode: 'url',
+    name: 'circular_synteny/color_by_chromosome',
+    url: circularSyntenyView(CHROMOSOMES, [LIFTOVER], {
+      color: { field: 'query' },
+    }),
     ...circularSyntenyReady,
   },
 
@@ -188,7 +203,7 @@ export const circularSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'circular_synteny/rings',
-    url: circularSyntenyView(CHROMOSOMES, [DENSITY_RING, BLOCKS], {
+    url: circularSyntenyView(CHROMOSOMES, [DENSITY_RING, LIFTOVER], {
       showLegend: true,
     }),
     readySelector: displayPainted('circular-ring-canvas'),
@@ -204,9 +219,13 @@ export const circularSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'circular_synteny/x_control',
-    url: circularSyntenyView(['chr1', 'chr2', 'chrX'], [DENSITY_RING, BLOCKS], {
-      showLegend: true,
-    }),
+    url: circularSyntenyView(
+      ['chr1', 'chr2', 'chrX'],
+      [DENSITY_RING, LIFTOVER],
+      {
+        showLegend: true,
+      },
+    ),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
     viewportWidth: 1000,
@@ -218,9 +237,13 @@ export const circularSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'circular_synteny/ribbon_hover',
-    url: circularSyntenyView(['chr1', 'chr2', 'chrX'], [DENSITY_RING, BLOCKS], {
-      showLegend: true,
-    }),
+    url: circularSyntenyView(
+      ['chr1', 'chr2', 'chrX'],
+      [DENSITY_RING, LIFTOVER],
+      {
+        showLegend: true,
+      },
+    ),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 180000,
     actions: [

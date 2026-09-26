@@ -2,6 +2,7 @@
   "type": "CircularView",
   "assembly": ["hg38", "mm39"],
   "autoDiagonalize": true,
+  "minAlignmentLength": 100000,
   "displayedRegionNames": ["chr1", "chr2", "chrX"],
   "tracks": [
     {
@@ -11,6 +12,6 @@
       "summaryScoreMode": "avg",
       "height": 40
     },
-    "hg38ToMm39_blocks"
+    "hg38ToMm39_liftover"
   ]
 }
