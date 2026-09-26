@@ -193,8 +193,9 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   bool placed = inst.x2Region < u.regionCount;
   float x2Px = placed ? entryPx(inst.x2, u.regionTable[inst.x2Region]) : xPx;
 
-  float2 p;
-  float2 tang;
+  // Positive on the outer flank; the frame's y is negative upward.
+  float pad = side * hw;
+  float2 local;
   float2 origin;
   float legDir = 1.0;
   float legSide = 1.0;
@@ -203,8 +204,9 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   if (!placed) {
     kind = KIND_STEM;
     radii = float2(0.0, LINK_STEM_PX);
-    p = float2(0.0, -t * LINK_STEM_PX);
-    tang = float2(0.0, -1.0);
+    // The stem's tip is a round cap, so the quad runs one pad past it. Its foot
+    // stops at the baseline, where every dome's feet stop.
+    local = float2(pad, -t * (LINK_STEM_PX + hw));
     origin = float2(xPx, baseY);
   } else {
     float pairHalf = abs(x2Px - xPx) * 0.5;
@@ -217,28 +219,28 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
       kind = KIND_CIRCLE;
       float legSweep = legSweepAngle(radii.x, reach + strokeHalf + aaHalf);
       // Two legs, each built from ITS OWN foot outward with the half-angle
-      // identity, so a radius past 1e6 px cancels nothing; the frame's y is
-      // negative upward, canvas px.
+      // identity, so a radius past 1e6 px cancels nothing.
       float2 leg = wideCircleLeg(seg, LINK_CURVE_SEGMENTS, legSweep);
       float b = leg.y;
-      float sh = sin(b * 0.5);
-      p = float2(-2.0 * radii.x * sh * sh, -sin(b) * radii.x);
-      tang = float2(-sin(b), -cos(b));
+      float halfStep =
+        0.5 * wideCircleLegStep(seg, LINK_CURVE_SEGMENTS, legSweep);
+      local = wideCircleHullPoint(sin(b), sin(b * 0.5), cos(halfStep),
+                                  radii.x, pad);
+      local.y = -local.y;
       origin = float2(leg.x > 0.0 ? ends.y : ends.x, baseY);
       legDir = leg.x;
       legSide = legDir;
     } else {
       kind = KIND_ELLIPSE;
       float a = t * PI;
-      p = float2(cos(a) * radii.x, -sin(a) * radii.y);
-      tang = float2(-sin(a) * radii.x, -cos(a) * radii.y);
+      float halfStep = PI / (2.0 * float(LINK_CURVE_SEGMENTS));
+      local = ellipseHullPoint(cos(a), sin(a), cos(halfStep), sin(halfStep),
+                               radii.x, radii.y, pad);
+      local.y = -local.y;
       origin = float2((xPx + x2Px) * 0.5, baseY);
     }
   }
 
-  float tlen = length(tang);
-  float2 tn = (tlen > 0.001) ? tang / tlen : float2(1.0, 0.0);
-  float2 local = p + float2(-tn.y, tn.x) * hw * side;
   float2 screen = origin + float2(legDir * local.x, local.y);
 
   VsOut o;

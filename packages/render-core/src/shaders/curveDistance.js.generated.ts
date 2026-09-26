@@ -20,3 +20,72 @@ export function wideCircleLeg(seg: number, segments: number, legSweep: number): 
   }
   return [-1.0, (((((segments - seg) >>> 0)) / (((((segments - half) >>> 0) - 1) >>> 0))) * legSweep)]
 }
+
+export function wideCircleLegStep(seg: number, segments: number, legSweep: number): number {
+  let half = Math.trunc(segments / 2)
+  let _t0: number
+  if ((seg <= half)) {
+    _t0 = half
+  } else {
+    _t0 = ((((segments - half) >>> 0) - 1) >>> 0)
+  }
+  return (legSweep / (_t0))
+}
+
+export function ellipseHullPoint(cosA: number, sinA: number, cosHalf: number, sinHalf: number, rx: number, ry: number, padPx: number): [number, number] {
+  let px = (cosA * rx)
+  let py = (sinA * ry)
+  if ((padPx <= 0.0)) {
+    let d = -padPx
+    let gx = (ry * cosA)
+    let gy = (rx * sinA)
+    let glen = Math.sqrt(((gx * gx) + (gy * gy)))
+    let acrossX = ((ry * glen) < (d * rx))
+    let acrossY = ((rx * glen) < (d * ry))
+    let _t0: boolean
+    if (acrossX) {
+      _t0 = acrossY
+    } else {
+      _t0 = false
+    }
+    if (_t0) {
+      return [0.0, 0.0]
+    }
+    if (acrossX) {
+      let _t1 = (ry * ry)
+      return [(((((Math.sign(cosA)) | 0)) * Math.sqrt((_max((_t1 - (d * d)), 0.0) * _max(((rx * rx) - _t1), 0.0)))) / _max(ry, 9.99999997475242708e-07)), 0.0]
+    }
+    if (acrossY) {
+      let _t2 = (rx * rx)
+      return [0.0, (((((Math.sign(sinA)) | 0)) * Math.sqrt((_max((_t2 - (d * d)), 0.0) * _max(((ry * ry) - _t2), 0.0)))) / _max(rx, 9.99999997475242708e-07))]
+    }
+    let k = (d / _max(glen, 9.99999997475242708e-07))
+    return [(px - (gx * k)), (py - (gy * k))]
+  }
+  let _t3 = (cosA * cosHalf)
+  let _t4 = (sinA * sinHalf)
+  let ax = (ry * (_t3 + _t4))
+  let _t5 = (sinA * cosHalf)
+  let _t6 = (cosA * sinHalf)
+  let ay = (rx * (_t5 - _t6))
+  let bx = (ry * (_t3 - _t4))
+  let by = (rx * (_t5 + _t6))
+  let _t7 = _max(Math.sqrt(((ax * ax) + (ay * ay))), 9.99999968265522539e-21)
+  let _t8 = _max(Math.sqrt(((bx * bx) + (by * by))), 9.99999968265522539e-21)
+  let nx = ((ax / _t7) + (bx / _t8))
+  let ny = ((ay / _t7) + (by / _t8))
+  let m = ((2.0 * padPx) / _max(((nx * nx) + (ny * ny)), 0.00019999999494758))
+  return [((px / cosHalf) + (nx * m)), ((py / cosHalf) + (ny * m))]
+}
+
+export function wideCircleHullPoint(sinB: number, sinHalfB: number, cosHalf: number, radiusPx: number, padPx: number): [number, number] {
+  let sec: number
+  if ((padPx > 0.0)) {
+    sec = (1.0 / _max(cosHalf, 9.99999997475242708e-07))
+  } else {
+    sec = 1.0
+  }
+  let grow = ((radiusPx * (sec - 1.0)) + (sec * padPx))
+  let sh2 = (sinHalfB * sinHalfB)
+  return [((grow * (1.0 - (2.0 * sh2))) - ((2.0 * radiusPx) * sh2)), ((radiusPx + grow) * sinB)]
+}

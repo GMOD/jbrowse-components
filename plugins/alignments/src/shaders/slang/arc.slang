@@ -277,22 +277,19 @@ Curve arcCurve(Instance inst, ArcBandUniforms u, float strokeHalfPx) {
   return cv;
 }
 
-// One hull vertex: the spine point at t ∈ [0,1] pushed `side` × half-width
-// along its normal, given both in the frame the fragment measures distance in
-// and in band-local screen px. Uniform t is uniform in angle, which is
-// equal-arc-length on the circle and close enough on the ellipse for a hull.
-// The ellipse spends that angle on its whole half; a far circle's legs spend it
-// over `cv.legSweep` each, which is the part of them the band can show.
+// One hull vertex, in the frame the fragment measures distance in and in
+// band-local screen px. The step is uniform in the parametric angle: the
+// ellipse spends it on its whole half, a far circle's legs over `cv.legSweep`
+// each.
 //
 // `halfWidthPx` is the instance's own, not the uniform's: since coalescing,
 // each arc is drawn at the width its read support earns (see Instance).
 struct ArcVertex { float2 screen; float2 local; float legSide; };
 
 ArcVertex evalArcVertex(uint seg, float side, float halfWidthPx, Curve cv) {
-  float t = float(seg) / float(ARC_CURVE_SEGMENTS);
-  float hw = halfWidthPx + aaHalfPx(u.devicePixelRatio);
-  float2 p;
-  float2 tang;
+  // Positive on the outer flank, which mirroring the band swaps.
+  float pad = -side * cv.yDir * (halfWidthPx + aaHalfPx(u.devicePixelRatio));
+  float2 local;
   float2 origin;
   // Mirrors local x into screen x, so a far circle's two legs can share one
   // outward-positive frame.
@@ -308,25 +305,26 @@ ArcVertex evalArcVertex(uint seg, float side, float halfWidthPx, Curve cv) {
     // the same trap one level down, hence the half-angle identity.
     float2 leg = wideCircleLeg(seg, ARC_CURVE_SEGMENTS, cv.legSweep);
     float b = leg.y;
-    float sh = sin(b * 0.5);
-    p = float2(-2.0 * cv.radii.x * sh * sh, sin(b) * cv.radii.x * cv.yDir);
-    tang = float2(-sin(b), cos(b) * cv.yDir);
+    float halfStep =
+      0.5 * wideCircleLegStep(seg, ARC_CURVE_SEGMENTS, cv.legSweep);
+    local = wideCircleHullPoint(sin(b), sin(b * 0.5), cos(halfStep),
+                                cv.radii.x, pad);
+    local.y *= cv.yDir;
     origin = float2(leg.x > 0.0 ? cv.ends.y : cv.ends.x, 0.0);
     legDir = leg.x;
     // Constant within a leg, opposite between them — see VsOut.legSide.
     legSide = legDir;
   } else {
-    float a = t * PI;
-    p = float2(cos(a) * cv.radii.x, sin(a) * cv.radii.y * cv.yDir);
-    tang = float2(-sin(a) * cv.radii.x, cos(a) * cv.radii.y * cv.yDir);
+    float a = float(seg) / float(ARC_CURVE_SEGMENTS) * PI;
+    float halfStep = PI / (2.0 * float(ARC_CURVE_SEGMENTS));
+    local = ellipseHullPoint(cos(a), sin(a), cos(halfStep), sin(halfStep),
+                             cv.radii.x, cv.radii.y, pad);
+    local.y *= cv.yDir;
     origin = cv.c;
   }
 
-  float tlen = length(tang);
-  float2 tn = (tlen > 0.001) ? tang / tlen : float2(1.0, 0.0);
-
   ArcVertex av;
-  av.local = p + float2(-tn.y, tn.x) * hw * side;
+  av.local = local;
   av.screen = origin + float2(legDir * av.local.x, av.local.y);
   av.legSide = legSide;
   return av;

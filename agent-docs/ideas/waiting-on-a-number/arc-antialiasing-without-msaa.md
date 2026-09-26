@@ -1,6 +1,6 @@
 ---
 name: arc-antialiasing-without-msaa
-description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arc's stroke stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the arc band by at most one 8-bit level. The dome's FEET are the exception and were missed until 2026-09-25: the 64-chord hull sags inside the offset curve where the curvature radius falls under a pixel, so the strip's own silhouette carries up to alpha 0.83 there, which is what the capture's unexplained 54-pixel strip at the band anchor was. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is those feet, the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch — since 2026-09-05 derived from `//! coverage: analytic` on every registered pass, which flipped synteny and dotplot to 1 (cross-backend gate canvas2d vs WebGPU: 44 pairs, max 1.28%, targeted pairs ≤0.18%); `linkMark.slang` carries that directive over the same hull and so declares more than it holds.
+description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arc's stroke stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the arc band by at most one 8-bit level. The dome's FEET were the exception until 2026-09-25: the 64-chord hull sagged inside the offset curve where the curvature radius falls under a pixel, so the strip's own silhouette carried up to alpha 0.83 there, which is what the capture's unexplained 54-pixel strip at the band anchor was; the hull now circumscribes the outer offset and follows the inner one's fold, and `arcHull.test.ts` finds no inked point outside it. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch — since 2026-09-05 derived from `//! coverage: analytic` on every registered pass, which flipped synteny and dotplot to 1 (cross-backend gate canvas2d vs WebGPU: 44 pairs, max 1.28%, targeted pairs ≤0.18%); `linkMark.slang` carries that directive over the same hull, which holds it now that the feet are covered.
 ---
 
 # Antialiasing arcs without MSAA
@@ -18,8 +18,8 @@ canvas clamp is 316.5 MiB on its own. Nothing in the session counts any of it.
 The reason it exists, as far as anyone remembers, is that read-connection arcs
 looked pixelated.
 
-**The arc's stroke no longer depends on it; the dome's two feet still do.** This
-doc shows both, says what else depends on it, and ranks what to do.
+**The arc no longer depends on it, feet included.** This doc shows why, says
+what else depends on it, and ranks what to do.
 
 ## The short answer
 
@@ -62,7 +62,7 @@ ramp's reach and not a pixel more, which is deliberate (`segmentQuadLocal`'s own
 note) and which leaves the claim resting entirely on the geometry landing where
 the arithmetic says.
 
-**On the dome it does not, at the two feet.** The offset above is a distance
+**On the dome it did not, at the two feet, until 2026-09-25.** The offset above is a distance
 from the *curve*; the hull is a 64-chord polyline through points on that offset,
 and a chord sags inside the curve it spans by its own sagitta. `evalArcVertex`
 steps uniformly in the ellipse's parametric angle, which is not uniform in
@@ -97,10 +97,23 @@ its 54 above-threshold pixels sit "in a four-row strip at the band anchor, where
 a mat of very short arcs meets the baseline", which is the foot. Over the rest
 of the band, MSAA 4 and MSAA 1 differ by **at most one 8-bit level**.
 
-So the cheapest thing that lets us drop MSAA *for the arc's stroke* is nothing
-at all; it is already done. The feet are a hull question — `ARC_CURVE_SEGMENTS`
-and how it is spent, not the sample count — and the cost of dropping MSAA
-globally is paid by three other things, none of them curves.
+The feet were a hull question, not a sample-count one, and
+`curveDistance.slang`'s `ellipseHullPoint` closed it without more segments. The
+outer flank takes the intersection of the offset tangent lines either side of
+each vertex, so its chords circumscribe the offset rather than sag inside it;
+at dpr 2 and a 1px line the miter this costs runs 1.6 px past a 1266x25 dome's
+foot and 7.9 px past a 3000x8, shaded at alpha 0. The inner flank keeps the sampled offset point until
+the curve turns tighter than the pad and the offset folds across an axis, then
+moves to where the fold crosses it, `sqrt((ry²-d²)(rx²-ry²)) / ry` from the
+centre. That inner fold was a second hole the table above never measured —
+alpha up to 0.58 in the anchor row, just inside each foot. `arcHull.test.ts`
+samples every point within the pad of the curve and tests it against the strip's
+triangles rather than against the strip's edges, because the fold makes a strip
+whose edges cross ink its other triangles cover.
+
+So the cheapest thing that lets us drop MSAA *for the arc* is nothing at all;
+it is already done, and the cost of dropping MSAA globally is paid by three
+other things, none of them curves.
 
 ## What the tree actually does today
 
@@ -108,7 +121,7 @@ globally is paid by three other things, none of them curves.
 
 | piece | where | what it does |
 | --- | --- | --- |
-| hull | `arc.slang` `evalArcVertex`, `ARC_CURVE_SEGMENTS = 64` | triangle strip inflated ±(halfWidth + `aaHalfPx(dpr)`) along the curve normal — a cover everywhere the chord sagitta stays under the ramp, and the silhouette at the dome's feet, where it does not |
+| hull | `arc.slang` `evalArcVertex`, `ARC_CURVE_SEGMENTS = 64` | triangle strip padded by halfWidth + `aaHalfPx(dpr)` either side, through `ellipseHullPoint` / `wideCircleHullPoint` — a cover of every inked point, feet included |
 | distance | `sdEllipse` / `distToWideCirclePx` (`alignmentsUniforms.slang`) | exact closed-form distance to the half-ellipse (Inigo Quilez's quartic solve) or to the far pair's wide circle, in **CSS px** |
 | ramp | `edgeCoverage` → `aaRamp` (`antialias.slang`) | linear coverage over `aaPx(dpr)` = `1 / dpr` CSS px = one **device** pixel |
 | width floor | `arcStrokeHalfPx`, `arcBandUniforms.ts:89` | `max(readConnectionsLineWidth, 1.5 / dpr)` — no arc is ever thinner than 1.5 device px |
@@ -180,13 +193,14 @@ these are the rows that came out 0.
 hedge — the exception is a countable number of pixels and it says what a flip
 would cost:
 
-- **`arc` and `linkMark`, except at a clamped dome's two feet** — the hull table
-  in §"The short answer". Everywhere else on the dome the chord sagitta is under
-  the ramp; at the feet it is not, and the strip's outer polyline is the
-  silhouette carrying up to full ink. `linkMark.slang` is `arc.slang`'s
-  geometry, 64 segments and all, **and it declares `//! coverage: analytic`** —
-  so a mark display built only of link marks derives `sampleCount` 1 today and
-  loses those feet. That is the one wrong `analytic` in the tree.
+- **`arc` and `linkMark`, except where the band or row cuts the foot.** The
+  hull covers every inked point since 2026-09-25 (§"The short answer"), so what
+  is left is the horizontal cut at the anchor, `arcLine`'s band-cut case below
+  for `arc` and a fractional `baseY * dpr` for `linkMark`: a stroke's width of
+  foot, at most half a device row. `linkMark.slang` declares
+  `//! coverage: analytic` with that caveat; `arc.slang` does not declare it,
+  and would change no sample count if it did, since it shares its display with
+  the pileup's passes.
 - **`arcLine`, except at the two band cuts.** The tick's long sides substitute
   to 0; its ends are square-cut at the band's top and bottom and carry full ink
   there. Normally the `devBand` scissor takes them, but `devicePxBand` *rounds*
@@ -343,7 +357,8 @@ Differences between the 4x and 1x captures, over the whole 2560x1800 page:
   Those 54 sit in a four-row strip (device y 394-397) at the band anchor, where
   a mat of very short arcs meets the baseline — **which is the dome feet**, and
   they went unexplained here until the hull was substituted into the ramp on
-  2026-09-25 (§"The short answer"). Restricted to the arc band proper
+  2026-09-25 (§"The short answer"). The hull that closed them has not been
+  captured this way yet. Restricted to the arc band proper
   (device rect 110,375 1700x90 — the full sweep of a 1266-px-wide dome, both
   steep feet and the flat apex), **576 pixels differ and the maximum channel
   delta is 1**, i.e. resolve rounding. Total ink over the band is identical to
@@ -646,10 +661,9 @@ if someone looks at a Hi-C track at 1x and says it is fine.
 **Already built**, 2026-08-01, `ca6637afe4`. Listed so the next session does not
 propose it. If the arcs ever look pixelated again, the thing to check is
 `arcStrokeHalfPx`'s 1.5-device-px floor and whether the hull still contains the
-ink (`ARC_CURVE_SEGMENTS`, `legSweepAngle`), not the sample count. **It does
-not, at a clamped dome's feet** — that check was written here as a hypothetical
-and came back positive when someone finally ran it (§"The short answer"), and
-what it costs a flip is the row in the list above.
+ink (`arcHull.test.ts`), not the sample count. That check was written here as a
+hypothetical, came back positive at a clamped dome's feet when someone finally
+ran it, and was closed in the hull (§"The short answer").
 
 ### 4. Give the three remaining non-tiled hard-edged marks their own coverage
 

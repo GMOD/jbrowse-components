@@ -77,13 +77,10 @@ N=10, one at N=1000. A far circle's legs dodge that with `legSweepAngle`, which
 puts every segment inside the band, and dodge the float32 cancellation that
 reconstructing a huge `centre + cos(a)*r` runs into. Neither dodge is needed at 3.
 
-The hull was the other candidate limit and is not one. Reproducing the pass's
-triangle strip against `sdEllipse` over ry 4-114 and half-widths 0.5-2, the share
-of inked samples the 64 quads miss is flat from N=1 to N=40 — 12.2% to 14.2%,
-against a same-checker N=1 control, so the absolute figure is the checker's and
-only the flatness is the result. The aspect ratio a raised threshold creates is
-not what the tessellation is spent on. `ellipseDistance`'s own note already puts
-the solver past 88:1, which a 25 px band reaches at N=1.
+The hull was the other candidate limit and is not one: it covers every inked
+point at aspects from 1x100 to 3000x8 (`arcHull.test.ts`), so the aspect ratio a
+raised threshold creates costs it nothing. `ellipseDistance`'s own note already
+puts the solver past 88:1, which a 25 px band reaches at N=1.
 
 **The two tests that pin this derive their boundary from the constant** rather
 than writing it out (`arcRadiiParity.test.ts`, `arcHitTest.test.ts`), because what

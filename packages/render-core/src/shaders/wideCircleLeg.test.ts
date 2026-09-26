@@ -1,4 +1,7 @@
-import { wideCircleLeg } from './curveDistance.js.generated.ts'
+import {
+  wideCircleLeg,
+  wideCircleLegStep,
+} from './curveDistance.js.generated.ts'
 import { LINK_CURVE_SEGMENTS } from './linkMark.consts.generated.ts'
 
 const SWEEP = 0.3
@@ -58,3 +61,25 @@ test('each leg is monotonic from its foot, the left one mirrored', () => {
     expect(left[i]).toBeLessThan(left[i - 1]!)
   }
 })
+
+// The hull circumscribes each chord by half this step, so a step read off the
+// wrong leg leaves the other leg's chords sagging.
+test.each([LINK_CURVE_SEGMENTS, 8, 7, 4, 3])(
+  'wideCircleLegStep is the step of the leg a %i-segment strip puts seg on',
+  segments => {
+    for (let seg = 0; seg < segments; seg++) {
+      const [side, b] = wideCircleLeg(seg, segments, SWEEP)
+      const [nextSide, next] = wideCircleLeg(seg + 1, segments, SWEEP)
+      if (side === nextSide) {
+        expect(wideCircleLegStep(seg, segments, SWEEP)).toBeCloseTo(
+          Math.abs(next - b),
+          12,
+        )
+        expect(wideCircleLegStep(seg + 1, segments, SWEEP)).toBeCloseTo(
+          Math.abs(next - b),
+          12,
+        )
+      }
+    }
+  },
+)

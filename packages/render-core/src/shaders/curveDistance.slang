@@ -1,8 +1,13 @@
-// Exact distances to the two curves a stroked arc is measured against: an
+// Exact distances to the two curves a stroked arc is measured against - an
 // axis-aligned ellipse, and a circle whose radius dwarfs the band it is
-// clipped to. Shared by the alignments arc band and the link mark, which
-// draw the same half-ellipse and degenerate it to the same circle.
-//! js-export: distToWideCirclePx, wideCircleLeg
+// clipped to - and the hull vertices that have to clear them. Shared by the
+// alignments arc band and the link mark, which draw the same half-ellipse and
+// degenerate it to the same circle.
+//
+// The fragment ramps its alpha to zero at `halfWidth + aaHalfPx`, so the hull
+// has to cover everything nearer the curve than that. Both flanks of a hull
+// sampled from the offset curve fall short of it at a clamped dome's feet.
+//! js-export: distToWideCirclePx, wideCircleLeg, wideCircleLegStep, ellipseHullPoint, wideCircleHullPoint
 //! js-skip: nearCircleDistancePx — a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want.
 
 module curveDistance;
@@ -184,4 +189,75 @@ public float2 wideCircleLeg(uint seg, uint segments, float legSweep) {
   }
   return float2(-1.0,
                 float(segments - seg) / float(segments - half - 1u) * legSweep);
+}
+
+// The angle between neighbouring vertex pairs on `seg`'s leg, which is not the
+// same on both legs.
+public float wideCircleLegStep(uint seg, uint segments, float legSweep) {
+  uint half = segments / 2u;
+  return legSweep / float(seg <= half ? half : segments - half - 1u);
+}
+
+// One hull vertex at parametric angle `a` for a hull stepping `2 * halfStep`,
+// `padPx` from the half-ellipse: positive on the outer flank, negative on the
+// inner.
+//
+// Outside, the offset region is convex, so the vertex is where the offset
+// tangent lines at `a` +/- the half step meet: `p(a) * sec(halfStep)` plus the
+// miter `padPx * (n1 + n2) / (1 + n1 . n2)`. Chords through points on the
+// offset curve would sag inside it. The divisor's floor keeps a collapsed band
+// (ry 0, the foot's normals opposed) finite.
+//
+// Inside, a chord between offset points already stays clear of the ink, until
+// the curve turns tighter than the pad and the offset folds past an axis. A
+// folded vertex moves to where the fold crosses that axis, the one point there
+// exactly the pad from the curve.
+public float2 ellipseHullPoint(float cosA, float sinA, float cosHalf,
+                               float sinHalf, float rx, float ry, float padPx) {
+  float px = cosA * rx;
+  float py = sinA * ry;
+  if (padPx <= 0.0) {
+    float d = -padPx;
+    float gx = ry * cosA;
+    float gy = rx * sinA;
+    float glen = sqrt(gx * gx + gy * gy);
+    bool acrossX = ry * glen < d * rx;
+    bool acrossY = rx * glen < d * ry;
+    if (acrossX && acrossY) { return float2(0.0, 0.0); }
+    if (acrossX) {
+      float foldX = sqrt(max(ry * ry - d * d, 0.0) * max(rx * rx - ry * ry, 0.0));
+      return float2(sign(cosA) * foldX / max(ry, 1e-6), 0.0);
+    }
+    if (acrossY) {
+      float foldY = sqrt(max(rx * rx - d * d, 0.0) * max(ry * ry - rx * rx, 0.0));
+      return float2(0.0, sign(sinA) * foldY / max(rx, 1e-6));
+    }
+    float k = d / max(glen, 1e-6);
+    return float2(px - gx * k, py - gy * k);
+  }
+  float ax = ry * (cosA * cosHalf + sinA * sinHalf);
+  float ay = rx * (sinA * cosHalf - cosA * sinHalf);
+  float bx = ry * (cosA * cosHalf - sinA * sinHalf);
+  float by = rx * (sinA * cosHalf + cosA * sinHalf);
+  float al = max(sqrt(ax * ax + ay * ay), 1e-20);
+  float bl = max(sqrt(bx * bx + by * by), 1e-20);
+  float nx = ax / al + bx / bl;
+  float ny = ay / al + by / bl;
+  float m = 2.0 * padPx / max(nx * nx + ny * ny, 2e-4);
+  return float2(px / cosHalf + nx * m, py / cosHalf + ny * m);
+}
+
+// The same vertex for a far pair's leg, in the foot-relative frame
+// `distToWideCirclePx` measures in. A circle's normals are radial, so the outer
+// flank scales the offset radius by `sec(halfStep)` and the inner one takes the
+// offset point as it is. The vertex's standoff from the circle is carried as
+// `grow` rather than recovered from `r * cos(b) - r`, which cancels at the radii
+// far pairs reach.
+public float2 wideCircleHullPoint(float sinB, float sinHalfB, float cosHalf,
+                                  float radiusPx, float padPx) {
+  float sec = padPx > 0.0 ? 1.0 / max(cosHalf, 1e-6) : 1.0;
+  float grow = radiusPx * (sec - 1.0) + sec * padPx;
+  float sh2 = sinHalfB * sinHalfB;
+  return float2(grow * (1.0 - 2.0 * sh2) - 2.0 * radiusPx * sh2,
+                (radiusPx + grow) * sinB);
 }
