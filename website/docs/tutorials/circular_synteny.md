@@ -189,9 +189,10 @@ from one human chromosome is one colour, and one assembled from several is
 striped with them, so the mouse arc reads as the mouse karyotype in human
 pieces.
 
-Hovering a chromosome's band dims every ribbon that misses it, and the tooltip
-lists each chromosome aligned to it with the share of it that chromosome covers,
-so on a mouse chromosome it lists the colours its band is painted in.
+Hover mouse chr11's band on the circle opened above. Every ribbon that misses it
+dims, and the tooltip lists each chromosome aligned to it with the share of it
+that chromosome covers, which on a mouse chromosome are the colours its band is
+painted in.
 
 <Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon but its own, and the tooltip lists the human chromosomes it is assembled from, largest share first." />
 
