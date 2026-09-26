@@ -3,6 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { mateSlice } from '../mateBpAt.ts'
 import { composeAlignmentOps } from './composeAlignmentOps.ts'
 
+import type { ComposeCursors } from './composeAlignmentOps.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
@@ -86,6 +87,7 @@ export function composeLaneLinks({
   const upperSorted = [...upper].sort(byAnchor)
   const lowerSorted = [...lower].sort(byAnchor)
   const links: SimpleFeature[] = []
+  const cursors: ComposeCursors = new Map()
   let activeUpper: LanePlacementRecord[] = []
   let activeLower: LanePlacementRecord[] = []
 
@@ -93,7 +95,7 @@ export function composeLaneLinks({
     const s = Math.max(u.anchorStart, l.anchorStart)
     const e = Math.min(u.anchorEnd, l.anchorEnd)
     if (e - s >= minBp) {
-      const composed = composeAlignmentOps(u, l, s, e)
+      const composed = composeAlignmentOps(u, l, s, e, cursors)
       const upperSpan = composed
         ? { start: composed.upperStart, end: composed.upperEnd }
         : projectOntoLane(u, s, e)

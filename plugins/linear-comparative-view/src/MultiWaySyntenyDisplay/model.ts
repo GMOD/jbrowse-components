@@ -967,9 +967,9 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * whether every gutter joins its two lanes by their own alignment
-       * rather than one composed through a star's anchor, which carries no
-       * alignment to draw
+       * whether the source states a record for each adjacent pair directly,
+       * which is what decides whether asking it for one is worth a fetch: a
+       * star holds none, and its gutters are composed through its anchor
        */
       get adjacentLanesAlignDirectly(): boolean {
         return self.starAnchor === undefined

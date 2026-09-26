@@ -322,3 +322,44 @@ test('a gutter whose records state no alignment keeps the interpolated span', ()
   expect(link!.get('alignmentOps')).toBeUndefined()
   expect([link!.get('start'), link!.get('end')]).toEqual([1000, 1090])
 })
+
+// One lane left whole against another cut into many runs is the shape that made
+// composing quadratic: each stretch re-tested the wide record's CIGAR for a
+// coarse run and re-sought through it from the start. Counted rather than
+// timed, because the count separates the two by three orders of magnitude and a
+// loaded box cannot blur it — 500 runs read ~1.6k slots resumed against ~125k
+// restarted.
+test('composing one wide record against many split ones walks it once', () => {
+  const n = 500
+  let reads = 0
+  const wide = new Proxy(
+    ops(...Array.from({ length: n }, () => [50, CIGAR_EQ] as [number, number])),
+    {
+      get(target, prop) {
+        if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+          reads++
+        }
+        return Reflect.get(target, prop)
+      },
+    },
+  )
+  const upper = [record('u', [0, n * 50], ['B1', 0, n * 50], 1, 'chr1', wide)]
+  const lower: LanePlacementRecord[] = []
+  for (let k = 0; k < n; k++) {
+    const at = k * 50
+    lower.push(
+      record(
+        `l${k}`,
+        [at, at + 50],
+        ['C1', at, at + 50],
+        1,
+        'chr1',
+        ops([50, CIGAR_EQ]),
+      ),
+    )
+  }
+  const links = compose(upper, lower)
+  expect(links.length).toBe(n)
+  expect(links[n - 1]!.get('alignmentOps')).toBeDefined()
+  expect(reads).toBeLessThan(10_000)
+})

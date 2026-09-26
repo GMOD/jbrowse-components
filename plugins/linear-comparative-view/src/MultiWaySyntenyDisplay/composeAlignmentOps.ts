@@ -103,12 +103,63 @@ function push(out: number[], len: number, op: number) {
 }
 
 function hasRun(ops: Uint32Array) {
-  for (const packed of ops) {
-    if ((packed & 0xf) === CIGAR_RUN) {
+  for (let k = 0; k < ops.length; k++) {
+    if ((ops[k]! & 0xf) === CIGAR_RUN) {
       return true
     }
   }
   return false
+}
+
+/**
+ * Where each record's walk stopped, so the next stretch of the same record
+ * resumes instead of re-walking its ops from the start. One wide record against
+ * 20,000 split ones took 63 s without it, because every pair sought forward
+ * through the wide record's whole CIGAR; the sweep hands out stretches in anchor
+ * order, so resuming makes that one pass. A stretch that opens BEFORE where the
+ * cursor stopped rebuilds, which is correct and no slower than not caching.
+ */
+/**
+ * One entry per record, holding both answers that cost a pass over its ops: the
+ * `CIGAR_RUN` test, and how far the walk has got. Without it a record is
+ * re-tested and re-sought for every stretch it takes part in, so one lane left
+ * whole against another cut into 10,000 runs walked its CIGAR 20,000 times.
+ * The sweep hands out stretches in anchor order, so resuming makes that one
+ * pass; a stretch opening BEFORE where the cursor stopped rebuilds, which is
+ * correct and no slower than not caching at all.
+ */
+export type ComposeCursors = Map<LanePlacementRecord, RecordState>
+
+interface RecordState {
+  /** absent where the record states no usable alignment */
+  cursor?: Cursor
+  at: number
+}
+
+function stateFor(
+  record: LanePlacementRecord,
+  anchorStart: number,
+  cursors: ComposeCursors | undefined,
+): RecordState {
+  const held = cursors?.get(record)
+  if (held) {
+    if (!held.cursor) {
+      return held
+    }
+    if (held.at <= anchorStart) {
+      held.at = seek(held.cursor, held.at, anchorStart)
+      return held
+    }
+  }
+  const ops = record.feature.get('alignmentOps') as Uint32Array | undefined
+  const usable = ops && ops.length > 0 && !hasRun(ops)
+  const cursor = usable ? cursorAt(record, ops) : undefined
+  const state: RecordState = {
+    cursor,
+    at: cursor ? seek(cursor, record.feature.get('start'), anchorStart) : 0,
+  }
+  cursors?.set(record, state)
+  return state
 }
 
 export interface ComposedAlignment {
@@ -144,26 +195,17 @@ export function composeAlignmentOps(
   lower: LanePlacementRecord,
   anchorStart: number,
   anchorEnd: number,
+  cursors?: ComposeCursors,
 ): ComposedAlignment | undefined {
-  const uOps = upper.feature.get('alignmentOps') as Uint32Array | undefined
-  const lOps = lower.feature.get('alignmentOps') as Uint32Array | undefined
-  if (
-    !uOps ||
-    !lOps ||
-    uOps.length === 0 ||
-    lOps.length === 0 ||
-    hasRun(uOps) ||
-    hasRun(lOps)
-  ) {
-    return undefined
-  }
-  const u = cursorAt(upper, uOps)
-  const l = cursorAt(lower, lOps)
+  const uState = stateFor(upper, anchorStart, cursors)
+  const lState = stateFor(lower, anchorStart, cursors)
+  const u = uState.cursor
+  const l = lState.cursor
   if (!u || !l) {
     return undefined
   }
-  seek(u, upper.feature.get('start'), anchorStart)
-  seek(l, lower.feature.get('start'), anchorStart)
+  const uOps = u.ops
+  const lOps = l.ops
   const upperFrom = u.lane
   const lowerFrom = l.lane
 
@@ -217,6 +259,8 @@ export function composeAlignmentOps(
       l.left = l.k < lOps.length ? opAt(l).len : 0
     }
   }
+  uState.at = at
+  lState.at = at
   if (out.length === 0) {
     return undefined
   }
