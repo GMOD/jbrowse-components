@@ -92,6 +92,12 @@ const twoPi = 2 * Math.PI
 
 const DEFAULT_RIBBON_ALPHA = 0.25
 
+// a track is a synteny track here by what it draws: one ribbon display makes
+// it one for the reorder and for the colour settings alike
+function isRibbonDisplay(display: { type: string }) {
+  return display.type === 'ChordSyntenyDisplay'
+}
+
 // the figure never grows past this, so a zoomed-in circle stays a size the
 // browser can lay out
 const maximumRadiusPx = 5000
@@ -690,11 +696,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * the tracks drawing ribbons, which the view's colour settings paint
        */
       syntenyTracks(): ComparativeTrackModel[] {
-        return self.tracks.filter(track =>
-          track.displays.some(
-            (d: { type: string }) => d.type === 'ChordSyntenyDisplay',
-          ),
-        )
+        return self.tracks.filter(track => track.displays.some(isRibbonDisplay))
       },
       /**
        * #method
@@ -716,11 +718,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * its alignments from these
        */
       get chordSyntenyDisplays(): ChordSyntenyDisplaySelf[] {
-        return this.syntenyTracks().flatMap(track =>
-          track.displays.filter(
-            (d): d is ChordSyntenyDisplaySelf =>
-              d.type === 'ChordSyntenyDisplay',
-          ),
+        return self.tracks.flatMap(
+          track =>
+            track.displays.filter(isRibbonDisplay) as ChordSyntenyDisplaySelf[],
         )
       },
       /**

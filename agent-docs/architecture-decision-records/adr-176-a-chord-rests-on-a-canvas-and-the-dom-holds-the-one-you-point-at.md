@@ -101,10 +101,10 @@ shape and the export.**
   instead (`specs/sv.ts`, `examplesChecks.ts`,
   `probe-view-launch-surfaces.ts`, `CircularView.test.tsx`), and a figure's
   `anchor: { chord }` resolves through the model (`chordAnchor.ts`): the
-  display's `shapePathFor` gives the outline, `chordAt` says whether the
-  chord is what is on top there.
+  display's `shapePathFor` gives the outline, `chordAt` says whether that
+  chord is on top there.
 - A test that clicked a chord node calls the display's `clickFeature` with the
-  feature, which is what the view's routing does (`SVInspector.test.tsx`).
+  feature, the same call the view's routing makes (`SVInspector.test.tsx`).
 - The tutorial's pre-cut of the liftOver chain is no longer needed: the view's
   `minAlignmentLength` on the hosted un-cut PIF draws the same figure, and the
   rows the filter drops cost a fetch rather than a mount.

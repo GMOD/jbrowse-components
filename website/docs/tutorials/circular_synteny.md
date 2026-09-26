@@ -92,9 +92,9 @@ query is the genome it lifts to, so for hg38ToMm39 that is mouse:
 
 A liftOver chain set holds a few hundred chains that cover the genome and tens
 of thousands of short ones, most of them repeats and gene copies. The circle's
-**Min length** setting is what keeps those off the figure: the sessions below
-set `minAlignmentLength` to 100 kb, and the same control sits in the view's
-menu, so the cut can be moved without touching a file.
+**Min length** setting keeps those off the figure: the sessions below set
+`minAlignmentLength` to 100 kb, and the same control sits in the view's menu, so
+the cut can be moved without touching a file.
 
 ## The circle
 
