@@ -17,7 +17,9 @@ are `website/docs/user_guides/graph_genome_view.md`. The package, its bundle,
 its GitHub repo, its hosted prefix and the local checkout are all spelled
 `graphgenomeview**er**`; only `test_data/graphgenomeview/` drops the `er`.
 
-A graph opens as a track of the linear view. An `RgfaTabixAdapter` track lists
+A graph opens as a track of the linear view, and the plugin's
+`agent-docs/GRAPH_TRACK.md` records how it cuts and re-cuts; the standalone
+`GraphGenomeView` opens a whole GFA file. An `RgfaTabixAdapter` track lists
 `LinearGraphDisplay` first, so turning it on opens the graph, and its segments
 lane (`LinearBasicDisplay`) second; a gbz-base `SyntenyTrack` lists the graph
 after its lanes.

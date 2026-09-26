@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph pane follows the linear view and picks its coarse tier by zoom, lanes read from the graph draw the alignment the graph states between any two haplotypes with no aligner, one command builds a host's files and config, and the tutorials open on the hosted instance. Released - gbz-base 2.8.0, the plugin 3.1.0 on npm and the store, the portal, the demos, the figures. Left - the browse clip, whose node anchor misses after a re-cut, a docs deploy, and Colin's call on the anchored graph becoming a linear-view display.
+description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.x) and picks its coarse tier by zoom, lanes read from the graph draw the alignment the graph states between any two haplotypes with no aligner, one command builds a host's files and config, and the tutorials open on the hosted instance. Released - gbz-base 2.8.0, the plugin 3.1.0 on npm and the store, the portal, the demos, the figures. Left - the browse clip, whose node anchor misses after a re-cut, and a docs deploy.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -207,25 +207,15 @@ session's scratchpad. Two harness fixes came out of it: a hidden wait scopes
 caption (`data-tour-overlay`), which had been catching a click whose caption
 carried the item's words.
 
-**Open design call, Colin's (2026-09-26).** Two panes that move together read
-as disorienting. The anchored graph could be a display in the linear view,
-where scroll linkage is the platform's rather than a follow of ours, the tier
-is an ordinary zoom-level choice made with the view's bpPerPx, and the
-standalone GraphGenomeView keeps the layouts whose x is not reference bp
-(force, ordered, a popped bubble, a file import, a GBZ walk cut). The follow's
-refusal list already draws that line. What carries over unchanged: the cut and
-re-cut (`followCut`, `cutHolds`), the tier pick, the `coarse` slot, row order
-across a re-cut, selection by id, and the lane-pair route. What goes: the
-viewport owner, the two reactions, Pin/Follow and the toolbar status,
-`connectedViewId` for the anchored case. What moves: every `GraphGenomeView`
-launch in jb2hubs, the demos, ~30 figure specs and the tutorials.
+**The design call is taken: the graph is a track.** Plugin 4.0.x draws it as
+`LinearGraphDisplay` inside the linear view, which moves it like any other
+track, and the tutorials describe that route.
 
 **Still open, none blocking the above.** The segments lane in the linear view
 cannot pick a tier by zoom, because `RenderFeatureData` hands an adapter no
 bpPerPx, so a tier track stays a lane, and the browse page's chromosome step
-shows a following graph under a zoom-in message. The follow is off on a GBZ
-cut, so the browse page's KIV-2 walks still open as a second, static pane, and
-`hprc_v2_1_gbz_lanes` still names the curated eight. A lane pair cuts the
+shows the graph track under a zoom-in message. `hprc_v2_1_gbz_lanes` still
+names the curated eight. A lane pair cuts the
 window once per adjacent pair (N-1 cuts per stack, 0.3-1 s each warm on the
 hosted db); cutting once per stack is the speed lever. On the coarse tier the
 bubble labels overlap the backbone's length labels (`pggb_bubble_tier`). Six

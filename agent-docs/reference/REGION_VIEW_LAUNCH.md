@@ -1,23 +1,19 @@
 ---
 name: region-view-launch
-description: Launching another view type on a locus (synteny stack, graph subgraph) from a linear view. The shared convention, where the two launchers diverge, and what is still open. Read before adding a "open view X for this region" entry point.
+description: Launching another view type on a locus (a synteny stack) from a linear view. The shared convention, where the synteny launcher diverged from the graph plugin's retired one, and what is still open. Read before adding a "open view X for this region" entry point.
 kind: spec
 ---
 
 # Launching a view on a region
 
-Two launchers implement the same idea from opposite ends of the plugin
-boundary: **take a locus in a linear view, open a different kind of view on
-it, sourced from some track**.
+**Take a locus in a linear view, open a different kind of view on it, sourced
+from some track.** Linear synteny does this, in
+`plugins/linear-comparative-view/src/LaunchSyntenyView/`.
 
-- **Linear synteny** — in this repo,
-  `plugins/linear-comparative-view/src/LaunchSyntenyView/`.
-- **Graph genome** — external repo,
-  `~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/src/launchSubgraph/`.
-
-The graph one came first and is the reference implementation. The synteny one
-was written to match it deliberately rather than invent a second convention.
-Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
+The graph plugin had the first such launcher, and the synteny one was written to
+match it rather than invent a second convention. Since plugin 4.0.0 the graph is
+a track of the linear view (`LinearGraphDisplay`) and launches nothing; its
+column below is the record the synteny launcher was matched against.
 
 ## The convention
 
@@ -138,50 +134,20 @@ view resolve would align them and move the picker into the view.
 
 ## Open ideas, roughly by value
 
-**Pair the two launches on one selection — the data half is done.** An
-all-vs-all PAF and a pangenome graph are two representations of the same
-alignment, and both plugins extend `rubberBandLaunchMenuItems()`, so a view
-with `ecoli_ava` and a segments track open offers both from one drag. The
-hosted `jbrowse.org/demos/ecoli_pangenome/config.json` carried no rGFA track
-when this was first written; as of 2026-08-25 it carries
-`ecoli_minigraph_segments` and `ecoli_pggb_segments` beside `ecoli_ava` (curl
-it — it is hand-uploaded and never regenerated). `pangenome_ecoli.md` says so
-under "Browsing the whole graph by locus"; what is missing is a figure of the
-paired menu, which no spec films.
-
-**The graph's `connectedViewId` cannot name a synteny row.** A graph launched
-from a row's rubberband records the row's id, and the plugin's
-`linearViewTarget` / `graphViewHighlights` read `session.views` only — a row is
-not in it. Hover highlights still land (the row asks with its own id), but
-"Open in K12" from a node opens a new pane instead of scrolling the row.
-Cross-repo; the fix is a walk into `views[]` of any view in the session.
-
-**Drop the graph plugin's inline count-branching copy** in favor of
-`launchTargetsMenuItem`, now that the helper lives in `@jbrowse/core/ui` beside
-`pushLaunchViewMenuItem`. Cross-repo, so it lands behind a version bump — see
-`reference/PLUGIN_ABI_STABILITY.md`. Until then the graph offer is flat for a
-single dataset where the in-repo ones name it. That plugin has the unbounded
-list too (session-wide discovery) with no dialog to move it into, so the real
-question there is whether the launch should grow one.
-
-The other half of that old note is done: the LGV now collects rubberband offers
-itself through `rubberBandLaunchMenuItems()`, so plugins no longer each
-override `rubberBandMenuItems()` and fight over placement.
-
 **Give synteny a size guard.** A rubberband is bounded by the viewport, but the
 *visible region* entry is not — at whole-chromosome zoom the discovery RPC is a
 whole-genome `CoreGetFeatures` against an all-vs-all track. Measure before
-picking a cap; the graph plugin's pattern (disabled item carrying the size in
+picking a cap; the graph launcher's pattern (disabled item carrying the size in
 `disabledHelpText`, so the limit is read before clicking rather than notified
 after) is the one to copy. Note the repo-wide preference is helpText over
-`disabled` — the graph plugin argues the opposite for a hard cap, and that
+`disabled` — the graph plugin argued the opposite for a hard cap, and that
 argument only holds where there *is* a hard cap.
 
-**`connectedViewId` for synteny.** The graph plugin pairs launched↔source views
-for hover sync (`hoverSync/graphViewHighlights.ts`). A synteny stack launched
-from a locus could highlight back into the LGV it came from.
+**`connectedViewId` for synteny.** The graph plugin pairs a graph with its
+linear view for hover sync (`hoverSync/graphViewHighlights.ts`). A synteny stack
+launched from a locus could highlight back into the LGV it came from.
 
-**Synteny track menu entry.** The graph plugin offers "(this region)" from the
+**Synteny track menu entry.** The graph plugin offered "(this region)" from the
 graph track's own menu; `MultiWaySyntenyDisplay` has one, `LGVSyntenyDisplay`
 reaches the same dialog from a block's right-click instead.
 
@@ -189,7 +155,7 @@ reaches the same dialog from a block's right-click instead.
 because a session-wide list preselected the first dataset in config order. The
 objection was to the preselection, not to the offer: an entry that appears when
 no synteny track is open, with the dataset select empty and required, restores
-the "browsing genes, want to compare" route the graph launcher has without
+the "browsing genes, want to compare" route the graph launcher had without
 deciding a panel list the user cannot judge. A product call.
 
 **MAF rows as a synteny launch — shipped**, pairwise, as
@@ -284,12 +250,10 @@ has the design, including why the all-samples stack is not offered and why the
   tutorials, and `website/scripts/specs/graph-ecoli.ts`. The plugin's own
   `RGFA_GRAPH_HANDOFF.md` still tables them under
   `plugins/comparative-adapters/src/` and is stale on this point.
-- **Subgraphs are rGFA-only.** `RgfaTabixAdapter` declares `getSubgraph`;
-  `MinigraphBubbleAdapter` reads a summary index and cannot cut one. The graph
-  plugin's feature context menu handles this by falling back to *other* session
-  graph tracks — a bubble is the most natural thing to right-click and is
-  exactly the thing that can't serve the cut. Minigraph-Cactus: `sv.gfa` is
-  rGFA, plain `.gfa` is not; pggb/odgi needs `odgi extract`.
+- **A subgraph comes from an adapter that declares `getSubgraph`**:
+  `RgfaTabixAdapter` and `GbzBaseSyntenyAdapter`. `MinigraphBubbleAdapter`
+  reads a summary index and cannot cut one. Minigraph-Cactus: `sv.gfa` is rGFA,
+  plain `.gfa` is not; pggb/odgi needs `odgi extract`.
 - **Menu rows have stable testids**, built by `makeTestId` in
   `packages/core/src/ui/CascadingMenu.tsx`:
   `cascading-submenu-<label>` / `cascading-menuitem-<label>`, lowercased with
@@ -324,11 +288,10 @@ three of four strains have no alignment at all, so discovery correctly returned
 a single mate and the multi-panel launch degenerated to the pairwise case it was
 meant to contrast against.
 
-The graph launcher now has the same coverage from this repo, in
-`website/scripts/specs/graph-ecoli.ts`: `pangenome/rgfa_launch_menu` drives the track
-menu, and `pangenome/rgfa_segment_neighbourhood` drives the feature context menu
-and then the Color dropdown on the view it launched. Both assert nothing but a
-picture, so review them by eye after a regen. Three things they taught:
+The graph launcher had the same coverage from the figure specs in
+`website/scripts/specs/graph-ecoli.ts`, which assert nothing but a picture, so
+review them by eye after a regen. Three things they taught still hold for any
+graph figure:
 
 - **Pick the clicked feature from the index, not by eye.** Right-clicking a
   segment with no rank>0 neighbour cuts a neighbourhood that is a straight run of
@@ -347,21 +310,8 @@ picture, so review them by eye after a regen. Three things they taught:
   which cannot be told apart from a real change of that size — regenerate those
   with `--force`.
 
-**The figures can only cover what is published.** Both tutorials load the
-plugin from the plugin list's `latest/` url, and that bundle is code-split,
-so audit it by grepping the entry *and every chunk it references* (the
-color-scheme labels live in a chunk, not the entry):
-
-```bash
-curl -sL https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js \
-  | grep -c 'Graph genome view (visible region)'
-md5sum ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/dist/*.esm.js   # vs the hosted one
-```
-
-As of 2026-07-26 the hosted bundle carries all four launch labels, both halves of
-the hover sync, and the convention-6 fix (plugin `3146de4`, published by
-`jbrowse-plugin-graphgenomeviewer/scripts/betabuild.sh`, entry md5
-`0ce050e42b363d281fbc217f6afbab54`). The script
-ends by downloading what the CDN actually serves and diffing it against what it
-built, which is the check worth trusting — an S3 write alone left the edge
-serving the old entry point for 8+ hours once.
+**The figures can only cover what is published.** The tutorials load the plugin
+from the plugin list's `latest/` url, and that bundle is code-split, so audit it
+by grepping the entry *and every chunk it references* (the color-scheme labels
+live in a chunk, not the entry), and diff the entry's md5 against the local
+`dist/`.
