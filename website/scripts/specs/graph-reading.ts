@@ -1,12 +1,11 @@
-// The graph drawn as a graph, for the two "reading the shape" tutorials: HPRC
-// KIV-2 in pangenome_graph_reading and the mouse Nnt locus in pangenome_mouse. Every figure here is the force-directed layout,
-// because that is what the pages are about: the graph view showing what a line
-// cannot.
+// The graph drawn as a graph: HPRC KIV-2 on pangenome_hprc and the mouse Nnt
+// locus on pangenome_mouse. Every figure here is the force-directed layout.
 //
 // Kept apart from graph-hprc.ts and graph-mouse-cattle.ts for the reason those
 // two are apart: this module's subject is one plugin device across two species,
 // not one species' loci.
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { PORTAL_CONFIG } from './genomes_pangenome.ts'
 import {
   TOOLBAR_READY,
   local,
@@ -15,7 +14,6 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-const HPRC_CONFIG = local('test_data/graphgenomeview/hprc.json')
 const NONHUMAN_CONFIG = local(
   'test_data/graphgenomeview/pangenome_nonhuman.json',
 )
@@ -27,11 +25,11 @@ const WALK_READOUT = '[data-testid="graph-walk-readout"]'
 // HPRC, the LPA KIV-2 window
 // ---------------------------------------------------------------------------
 
-// The 130 kb window pangenome/hprc_lpa_kiv2 draws, which opens part 4. LPA's
+// The 130 kb window pangenome/hprc_lpa_kiv2 draws on pangenome_hprc. LPA's
 // own start is in frame so the gene lane labels it.
 const LPA_WINDOW = 'chr6:160,525,000-160,655,000'
-// The KIV-2 bubble's own interval, which the eight-haplotype GBZ cut was made
-// on, and the domain both the linear lane and the graph paint their ramp over.
+// The KIV-2 bubble's interval, which the gbz-base cut is made on, and the
+// domain both the linear lane and the graph paint their ramp over.
 const KIV2_BUBBLE_WINDOW = 'chr6:160,616,002-160,646,753'
 const KIV2_BUBBLE_REGION = {
   refName: 'chr6',
@@ -39,8 +37,18 @@ const KIV2_BUBBLE_REGION = {
   start: 160616002,
   end: 160646753,
 }
-const KIV2_GBZ_WALKS_GFA =
-  'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa'
+// The lanes the HPRC page config's gbz-base track names, which a cut launched
+// from a linear view that does not show the track is made for.
+const KIV2_HAPLOTYPES = [
+  'HG00097.1',
+  'HG00099.1',
+  'HG00128.1',
+  'HG00133.1',
+  'HG01109.1',
+  'HG01123.1',
+  'HG01960.1',
+  'HG02055.1',
+]
 
 function hg38GeneLane(height: number) {
   return {
@@ -73,10 +81,10 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
 function kiv2WalksGraphView() {
   return {
     type: 'GraphGenomeView',
-    displayName: 'KIV-2 from the GBZ, eight haplotypes',
-    gfaLocation: { uri: KIV2_GBZ_WALKS_GFA },
+    loadedTrackId: 'hprc_v2_1_gbz_lanes',
+    loadedRegion: KIV2_BUBBLE_REGION,
+    subgraphHaplotypes: KIV2_HAPLOTYPES,
     layoutMode: 'force',
-    referencePath: 'GRCh38',
     colorScheme: 'reference-position',
     colorDomain: KIV2_BUBBLE_REGION,
     // the private array copies are 11 kb to 105 kb of sequence each; at
@@ -114,7 +122,7 @@ const HG00133_ITEM = 'li[data-value^="HG00133"]'
 const kiv2WalksSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_kiv2_walks',
-  url: sessionSpec(HPRC_CONFIG, {
+  url: sessionSpec(PORTAL_CONFIG, {
     views: [kiv2WalksLinearView(), kiv2WalksGraphView()],
   }),
   readySelector: TOOLBAR_READY,
@@ -151,7 +159,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
 const kiv2WalkRowsSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_kiv2_walk_rows',
-  url: sessionSpec(HPRC_CONFIG, {
+  url: sessionSpec(PORTAL_CONFIG, {
     views: [
       {
         type: 'LinearGenomeView',

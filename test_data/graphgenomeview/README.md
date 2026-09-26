@@ -5,23 +5,15 @@ Backs the `pangenome/graph_rgfa` screenshot spec
 [jbrowse-plugin-graphgenomeviewer](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer)
 (view type `GraphGenomeView`) — not bundled in JBrowse Web.
 
-Six configs live here, data-free but for one gene slice:
+Four configs live here:
 
 - `config.json` — K12 only, the minimal graph fixture. It is also the start
   state of both E. coli paste tours (`pangenome/pggb_subgraph_launch` and
   `pangenome_cactus/subgraph_launch`), which add `ecoli_pggb_segments` and
-  `ecoli_cactus_segments` from their own page's fence, so it carries the same
-  constraint `hprc_tour.json` does below: **give it no `tracks`**. A tour
-  supplies the K12 gene lane as a session track instead.
+  `ecoli_cactus_segments` from their own page's fence, so **give it no
+  `tracks`**. A tour supplies the K12 gene lane as a session track instead.
 - `hprc.json` — hg38 plus the HPRC release 2 graph, bubble, allele and callset
   tracks.
-- `hprc_tour.json` — the same hg38 and the same plugin with **none** of those
-  tracks, which is the state a reader of `pangenome_hprc` is in before the page
-  adds its first one. `pangenome/hprc_end_to_end` films the track being added
-  from here through **Open track... → Add pangenome graph track**, the plugin's
-  own form, so the fixture carries no segments lane for the one the form adds to
-  stand beside. It is also the tour's live link, so a reader who watched the
-  route opens the session it started in and can walk it.
 - `ecoli_pangenome.json` — all five E. coli strains as assemblies, their gene
   tracks, the all-vs-all synteny track, and the rGFA segments track. This is the
   only fixture where a contributing assembly of the graph is also a loaded
@@ -30,18 +22,6 @@ Six configs live here, data-free but for one gene slice:
   of the strains that contribute to it. Derived from the hosted
   `demos/ecoli_pangenome/config.json` by keeping the assemblies, genes and
   `ecoli_pggb_ava`, and adding the plugin plus the rGFA track.
-- `hprc_haplotype.json` — hg38, its genes, the HPRC segments track, and one
-  contributing haplotype loaded as an assembly: NA20809 haplotype 2 from its
-  UCSC GenArk hub (GCA_044166615.1), as `NA20809.2` with the graph's `NA20809#2`
-  among its aliases. GenArk names the 2bit's sequences by GenBank accession,
-  which is how the graph names a haplotype's contigs too, so the node menu's
-  **Open in NA20809.2** resolves with nothing translated. Its gene lane is
-  `hprc_mhc_NA20809.2.genes.gff3.gz`, HPRC's CAT annotation of that haplotype
-  sliced to `CM094351.1:32,300,000-32,800,000` with the command the tutorial
-  prints (GenArk's own gene lanes are empty around the allele). Backs
-  `pangenome/hprc_haplotype_launch` and the `pangenome/hprc_out_to_haplotype`
-  tour; `hprc.json` deliberately does not carry the assembly, since the extra
-  `Open in` rows would change the node menu the MHC layout figure captures.
 
 The plugin bundle is served from jbrowse.org's plugin store and the GFA slices
 from `jbrowse.org/demos/ecoli_pangenome`, so no build output and no `ecoli_*`

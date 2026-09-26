@@ -50,9 +50,11 @@ JBrowse reads through small tabix projections of its graph that we host.
 - the config every launch on the HPRC page opens, which declares every release 2
   haplotype as an assembly with its CAT gene annotation:
   https://jbrowse.org/pangenome/hprc-grch38/config.json
-- the KIV-2 bubble cut from the base-level graph for GRCh38 and eight
-  haplotypes, with their walks:
-  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
+- the base-level graph as a gbz-base database, one walk per haplotype, read by
+  range request:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
+- our companion index naming that database's haplotypes:
+  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
 
 ## The HPRC page
 
@@ -196,15 +198,16 @@ record of who takes which loop.
 
 ## One haplotype's copies
 
-A **walk** is one haplotype's route through the graph, and the base-level graph
-keeps one per haplotype. We host the KIV-2 bubble cut from it for GRCh38 and
-eight haplotypes, walks included. Take **Add → Graph genome view** from the
-app's top menu, give its form the file's URL, and pick **Force-directed layout**
-again:
-
-```text
-https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
-```
+A **walk** is one haplotype's route through the graph. The release publishes its
+base-level graph, one walk per haplotype, as a gbz-base database that answers a
+window over HTTP, and the config the HPRC page opens reads it as a track. Type
+the array's own window, `chr6:160,616,002-160,646,753`, open the linear view's
+menu, take **Launch → Graph genome view (this region)**, and pick the gbz-base
+track, `HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)`,
+from the submenu. A second graph pane opens on the walks of GRCh38 and the eight
+haplotypes the track names, and the **Haplotypes** field under that pane's
+**View menu → Settings** cuts it again for any others. Pick **Force-directed
+layout** in the new pane.
 
 A node draws thicker the more of the nine walks carry it, Bandage's depth drawn
 as width, so the backbone every haplotype shares is the thick line and the
@@ -212,7 +215,7 @@ copies one haplotype alone carries are the thin loops. Each route over a
 kilobase carries a chip naming the haplotypes that take it, and with nine walks
 through one array the chips stack over the loops, so turn **View menu → Settings
 → Mark bubbles** off. The **Walk** dropdown in the toolbar names each haplotype
-in the file. Pick `HG00133`: its route keeps its ink while every other node and
+in the cut. Pick `HG00133`: its route keeps its ink while every other node and
 link fades, and a readout beside the legend gives the walk's length through the
 window against the reference walk.
 

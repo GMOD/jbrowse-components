@@ -739,10 +739,10 @@ segments track draws on the haplotype too once its `assemblyNames` list it.
 Sample+haplotype → GCA accession is `hprcSamples.json` in jb2hubs (haplotype 2
 of HG01433 is GCA_042027645.1). Measured on the hosted links index: HG01433.2
 is 42 of the donor link endpoints in the MHC class II window
-(chr6:32,500,000-32,560,000) against 9 for the next haplotype, and
-`pangenome/hprc_haplotype_launch` plus the `pangenome/hprc_out_to_haplotype`
-tour are the figure and the route, off
-`test_data/graphgenomeview/hprc_haplotype.json`.
+(chr6:32,500,000-32,560,000) against 9 for the next haplotype.
+`pangenome/hprc_haplotype_launch` and the `pangenome/hprc_browse` tour take the
+route on the HPRC page's own config, which declares all 464 haplotypes as
+chromosome-length assemblies aliased by their PanSN names.
 
 What stays true: minigraph credits an allele to its FIRST contributor, so which
 haplotype a window offers is build order, and a backbone-to-backbone deletion

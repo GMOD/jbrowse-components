@@ -56,10 +56,6 @@ https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86
    estimated 70-200 CPU-h and ~0.5 GB hosted.
 2. Build and host the panel all-vs-all for the `demos/hprc_multiway` eight and
    check it at the six loci.
-3. Rework the HPRC tutorials around click paths on a hosted instance, with one
-   "host your own pangenome" page for the prep. A read-only map found only
-   part 1 → part 2 is a real sequence; part 3 is three separable sections.
-   Retitling by topic without renaming files breaks no link.
 
 **Measured 2026-09-24** (scripts in `~/tutorial_spikes/lane_pairs/`:
 `pairbench.mjs`, `bubblebench.mjs`, `mm.sh`; captures under `captures/`):
