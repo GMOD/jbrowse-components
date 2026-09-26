@@ -12,13 +12,7 @@ export async function executeClusterScoreMatrix({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'MultiWiggleClusterScoreMatrix'>
 }) {
-  const matrix = await getScoreMatrix({
-    pluginManager,
-    args: {
-      ...args,
-      signal: args.signal,
-    },
-  })
+  const matrix = await getScoreMatrix({ pluginManager, args })
   return clusterMatrix({
     data: matrix,
     statusCallback: args.statusCallback,

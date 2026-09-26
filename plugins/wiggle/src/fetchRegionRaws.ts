@@ -1,5 +1,9 @@
-import { featuresToRaw } from './util.ts'
+import { createStatusFanOut } from '@jbrowse/core/util'
 
+import { isMultiSource } from './multiSourceAdapter.ts'
+import { featuresToRaw, groupFeaturesBySource } from './util.ts'
+
+import type { MultiSourceFetchOpts } from './multiSourceAdapter.ts'
 import type { RawFeatureArrays } from './util.ts'
 import type { WiggleAdapterOptions } from './wiggleAdapterOptions.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -30,14 +34,8 @@ function hasFeatureArrays(
 }
 
 // One RawFeatureArrays per region, aligned to input order. Adapters that
-// coalesce (BigWig) serve every region in a single pass, which is the whole
-// point of handing them all the regions at once: a collapsed-intron or
-// whole-genome view turns N R-tree traversals and N sets of range requests into
-// one. Adapters without the batch method fall back to the per-region loop, and
-// non-array adapters to plain features — no behavior change for either.
-//
-// Shared by the single-source RPC executor and MultiWiggleAdapter's per-subtrack
-// fan-out so the two can't drift on which fast path they take.
+// coalesce (BigWig) serve every region in a single pass; the others fall back
+// to a per-region loop, and non-array adapters to plain features.
 export function fetchRegionRaws(
   adapter: BaseFeatureDataAdapter,
   regions: Region[],
@@ -56,4 +54,40 @@ export function fetchRegionRaws(
               .then(features => featuresToRaw(features, opts.scoreField)),
           ),
         )
+}
+
+// Every source's arrays, `raws` aligned to `regions`, for the render fetch and
+// the clustering matrix alike. An adapter serving typed arrays carries one
+// unnamed signal; a plain feature adapter carrying several in one file
+// (bedMethyl, a bedGraph with a source column) is grouped on `source`, and a
+// source is listed once it appears in any region.
+export async function fetchSourceRaws(
+  adapter: BaseFeatureDataAdapter,
+  regions: Region[],
+  opts: MultiSourceFetchOpts,
+): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
+  if (isMultiSource(adapter)) {
+    return adapter.getMultiSourceFeatureArraysMulti(regions, opts)
+  }
+  if (hasFeatureArraysMulti(adapter) || hasFeatureArrays(adapter)) {
+    return [{ source: '', raws: await fetchRegionRaws(adapter, regions, opts) }]
+  }
+  const slot = createStatusFanOut(opts.statusCallback)
+  const groupsPerRegion = await Promise.all(
+    regions.map(async region =>
+      groupFeaturesBySource(
+        await adapter.getFeaturesArray(region, {
+          ...opts,
+          statusCallback: slot(),
+        }),
+      ),
+    ),
+  )
+  const sources = new Set(groupsPerRegion.flatMap(groups => [...groups.keys()]))
+  return [...sources].map(source => ({
+    source,
+    raws: groupsPerRegion.map(groups =>
+      featuresToRaw(groups.get(source) ?? [], opts.scoreField),
+    ),
+  }))
 }

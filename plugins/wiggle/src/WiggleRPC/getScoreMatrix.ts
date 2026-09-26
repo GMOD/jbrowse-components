@@ -1,5 +1,4 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { createStatusFanOut } from '@jbrowse/core/util'
 import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 import {
   binSpan,
@@ -7,112 +6,24 @@ import {
   columnSegments,
 } from '@jbrowse/tree-sidebar/binColumns'
 
-import { isMultiSource } from '../multiSourceAdapter.ts'
-import { groupFeaturesBySource } from '../util.ts'
+import { fetchSourceRaws } from '../fetchRegionRaws.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
-import type { Feature, Region } from '@jbrowse/core/util'
 import type { ColumnSegment } from '@jbrowse/tree-sidebar/binColumns'
-
-// What one source has in one region, in whichever form its adapter serves it:
-// typed arrays from a multi-source adapter, plain features from one carrying
-// several sources in a single file. Neither is converted into the other — a
-// conversion here would allocate a second copy of data already in memory — so
-// the binning below just takes whichever it was handed.
-type RegionValues = RawFeatureArrays | Feature[]
 
 function addValues(
   sums: Float64Array,
   counts: Int32Array,
   seg: ColumnSegment,
   invBpPerPx: number,
-  values: RegionValues,
+  { starts, ends, scores, count }: RawFeatureArrays,
 ) {
-  if (Array.isArray(values)) {
-    for (const feat of values) {
-      binSpan(
-        sums,
-        counts,
-        0,
-        seg,
-        invBpPerPx,
-        feat.get('start'),
-        feat.get('end'),
-        feat.get('score') ?? 0,
-      )
-    }
-  } else {
-    const { starts, ends, scores, count } = values
-    for (let i = 0; i < count; i++) {
-      binSpan(
-        sums,
-        counts,
-        0,
-        seg,
-        invBpPerPx,
-        starts[i]!,
-        ends[i]!,
-        scores[i]!,
-      )
-    }
+  for (let i = 0; i < count; i++) {
+    binSpan(sums, counts, 0, seg, invBpPerPx, starts[i]!, ends[i]!, scores[i]!)
   }
-}
-
-// Every source's values, keyed by source and indexed by region — one shape from
-// both fetch paths, so the binning loop reads them the same way and only the
-// fetch knows which adapter it was.
-type MatrixData = Map<string, RegionValues[]>
-
-async function fetchMatrixData(
-  dataAdapter: BaseFeatureDataAdapter,
-  regions: Region[],
-  args: GetScoreMatrixArgs & RpcCallContext,
-): Promise<MatrixData> {
-  // The same fast path the render RPC takes (see isMultiSource): typed arrays,
-  // every region in one call per subtrack, and no grouping pass. Clustering
-  // otherwise re-fetched what the display had just drawn down the slow route —
-  // one region at a time, a Feature object allocated per bin per subtrack, then
-  // a walk over all of them to rebuild the per-source split the adapter already
-  // knew.
-  if (isMultiSource(dataAdapter)) {
-    const perSource = await dataAdapter.getMultiSourceFeatureArraysMulti(
-      regions,
-      args,
-    )
-    return new Map(perSource.map(p => [p.source, p.raws]))
-  }
-
-  // An adapter carrying several sources in one file (bedMethyl, a bedGraph with
-  // a source column). Fetched together rather than one region at a time, with
-  // each region on its own status slot so the concurrent downloads aggregate
-  // into one bar instead of clobbering the shared field.
-  const slot = createStatusFanOut(args.statusCallback)
-  const featuresPerRegion = await Promise.all(
-    regions.map(region =>
-      dataAdapter.getFeaturesArray(region, {
-        ...args,
-        statusCallback: slot(),
-      }),
-    ),
-  )
-  // Grouped straight into the by-source shape. A source missing from a region
-  // leaves a hole rather than an empty array, which the binning loop skips.
-  const bySource: MatrixData = new Map()
-  for (const [i, features] of featuresPerRegion.entries()) {
-    for (const [name, group] of groupFeaturesBySource(features)) {
-      let perRegion = bySource.get(name)
-      if (!perRegion) {
-        perRegion = []
-        bySource.set(name, perRegion)
-      }
-      perRegion[i] = group
-    }
-  }
-  return bySource
 }
 
 // Payload plus call context rather than an `RpcExecuteArgs<'Key'>`, because
@@ -142,7 +53,12 @@ export async function getScoreMatrix({
     rows.set(name, new Float32Array(width))
   }
 
-  const valuesBySource = await fetchMatrixData(dataAdapter, regions, args)
+  const valuesBySource = new Map(
+    (await fetchSourceRaws(dataAdapter, regions, args)).map(p => [
+      p.source,
+      p.raws,
+    ]),
+  )
 
   // One sums and one counts array reused across sources, not one per row: each
   // row is averaged before the next starts, so only one of each is ever live.

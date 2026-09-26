@@ -51,6 +51,7 @@ export function clusterScoreMatrixArgs(
     regions,
     sources: model.clusterableSources,
     adapterConfig: model.adapterConfig,
+    scoreField: model.scoreField,
     bpPerPx: span / width / density,
   }
 }

@@ -1,36 +1,17 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { createStatusFanOut, updateStatus } from '@jbrowse/core/util'
+import { updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
-import { fetchRegionRaws } from '../fetchRegionRaws.ts'
+import { fetchSourceRaws } from '../fetchRegionRaws.ts'
 import { isMultiSource } from '../multiSourceAdapter.ts'
-import {
-  featuresToRaw,
-  groupFeaturesBySource,
-  processFeaturesFromArrays,
-} from '../util.ts'
+import { processFeaturesFromArrays } from '../util.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
-
-interface FetchOpts {
-  bpPerPx: number
-  resolution: number
-  sources?: SourceInfo[]
-  scoreField?: string
-  signal?: AbortSignal
-  // Reaches the per-subtrack adapters so a multiwiggle gets the same
-  // determinate byte progress a single-source wiggle does. The fan-out that
-  // keeps N concurrent subtracks from clobbering each other lives in the
-  // adapters (MultiWiggleAdapter, getFallbackSourceArrays below), not here —
-  // this executor doesn't know how many files there are.
-  statusCallback?: StatusCallback
-}
 
 // `primary` order first (the caller's stable list), then any sources present in
 // these regions that the caller didn't know about, appended in adapter order.
@@ -40,60 +21,6 @@ function unionSourcesByName(
 ): SourceInfo[] {
   const seen = new Set(primary.map(s => s.name))
   return [...primary, ...extra.filter(s => !seen.has(s.name))]
-}
-
-// An adapter that hands back typed arrays (BigWig, GCContent) carries one
-// signal and no source column, so grouping its features by `source` would walk
-// every feature to build the one bucket it already is — and would decline the
-// coalesced multi-region pass that is the whole point of handing an adapter
-// every region at once. The one source is unnamed, which is what the fallback
-// below calls a feature with no source too.
-function hasFeatureArrays(adapter: BaseFeatureDataAdapter) {
-  return 'getFeatureArraysMulti' in adapter || 'getFeatureArrays' in adapter
-}
-
-async function getSingleSourceArrays(
-  dataAdapter: BaseFeatureDataAdapter,
-  regions: Region[],
-  opts: FetchOpts,
-): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
-  return [
-    { source: '', raws: await fetchRegionRaws(dataAdapter, regions, opts) },
-  ]
-}
-
-// Plain feature adapter (e.g. BedTabixAdapter/BedGraphAdapter) used directly
-// inside a MultiQuantitativeTrack — the modkit bedMethyl use-case. Synthesize
-// per-source arrays by grouping features on their `source` field, mirroring the
-// pre-webgl renderMultiWiggle path. A source is listed once it appears in any
-// region, with empty arrays for the regions it's missing from.
-//
-// The regions download concurrently under one status field, so each gets its
-// own createStatusFanOut slot (see MultiWiggleAdapter for the same idiom).
-async function getFallbackSourceArrays(
-  dataAdapter: BaseFeatureDataAdapter,
-  regions: Region[],
-  opts: FetchOpts,
-): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
-  const slot = createStatusFanOut(opts.statusCallback)
-  const groupsPerRegion = await Promise.all(
-    regions.map(async region => {
-      const features = await dataAdapter.getFeaturesArray(region, {
-        ...opts,
-        statusCallback: slot(),
-      })
-      return groupFeaturesBySource(features)
-    }),
-  )
-  const sources = [
-    ...new Set(groupsPerRegion.flatMap(groups => [...groups.keys()])),
-  ]
-  return sources.map(source => ({
-    source,
-    raws: groupsPerRegion.map(groups =>
-      featuresToRaw(groups.get(source) ?? [], opts.scoreField),
-    ),
-  }))
 }
 
 interface ExecuteParams {
@@ -167,11 +94,7 @@ export async function executeRenderMultiWiggleData({
     statusCallback,
     () =>
       Promise.all([
-        isMulti
-          ? dataAdapter.getMultiSourceFeatureArraysMulti(regions, opts)
-          : hasFeatureArrays(dataAdapter)
-            ? getSingleSourceArrays(dataAdapter, regions, opts)
-            : getFallbackSourceArrays(dataAdapter, regions, opts),
+        fetchSourceRaws(dataAdapter, regions, opts),
         dataAdapter.getZoomRange(opts),
       ]),
   )

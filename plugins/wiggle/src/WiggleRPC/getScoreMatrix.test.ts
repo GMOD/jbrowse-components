@@ -37,16 +37,19 @@ function callArgs({
   regions,
   sources,
   bpPerPx,
+  scoreField,
 }: {
   regions: Region[]
   sources: string[]
   bpPerPx: number
+  scoreField?: string
 }) {
   return {
     sessionId: 'sid',
     adapterConfig,
     regions,
     bpPerPx,
+    scoreField,
     sources: sources.map(name => ({ name, source: name })),
   } satisfies GetScoreMatrixArgs & RpcCallContext
 }
@@ -58,6 +61,7 @@ async function run(opts: {
   regions: Region[]
   sources: string[]
   bpPerPx: number
+  scoreField?: string
 }) {
   const { features, regions } = opts
   const perRegion = Array.isArray(features[0]) ? features : [features]
@@ -121,6 +125,27 @@ describe('getScoreMatrix', () => {
     expect(rows.get('a')![0]).not.toBeCloseTo(2e7 / 101, 1)
   })
 
+  it('clusters on the field the plot draws', async () => {
+    const rows = await run({
+      features: [
+        new SimpleFeature({
+          uniqueId: 'a-0',
+          refName: 'chr1',
+          start: 0,
+          end: 100,
+          score: 1,
+          coverage: 30,
+          source: 'a',
+        }),
+      ],
+      regions: [region('chr1', 0, 100)],
+      sources: ['a'],
+      bpPerPx: 50,
+      scoreField: 'coverage',
+    })
+    expect(Array.from(rows.get('a')!)).toEqual([30, 30])
+  })
+
   it('leaves a source with no features an all-zero row', async () => {
     const rows = await run({
       features: [feat('a', 0, 100, 4)],
@@ -147,8 +172,8 @@ describe('getScoreMatrix', () => {
 
   it('clips a feature hanging off either end of its region', async () => {
     const rows = await run({
-      features: [feat('a', -40, 30, 9)],
-      regions: [region('chr1', 0, 50)],
+      features: [feat('a', 60, 130, 9)],
+      regions: [region('chr1', 100, 150)],
       sources: ['a'],
       bpPerPx: 10,
     })

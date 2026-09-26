@@ -7,7 +7,7 @@ import { createTestEnvironment } from './testEnv.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // The RenderMultiWiggleData RPC result for a region the adapter has no features
-// in: getFallbackSourceArrays groups zero features into zero source arrays and
+// in: fetchSourceRaws groups zero features into zero source arrays and
 // getSources(regions) finds no `source` values, so the executor returns an
 // empty sources list. This is exactly what a bedMethyl file returns for a
 // chromosome it doesn't cover. The RPC is batched (one call, all regions), so

@@ -1,4 +1,4 @@
-import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
 import type { GetScoreMatrixArgs } from './types.ts'
@@ -15,7 +15,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiWiggleGetScoreMatrix'> {
+export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithRenameRegions<'MultiWiggleGetScoreMatrix'> {
   name = 'MultiWiggleGetScoreMatrix' as const
 
   async execute(args: RpcExecuteArgs<'MultiWiggleGetScoreMatrix'>) {
