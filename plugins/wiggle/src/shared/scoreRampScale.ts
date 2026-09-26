@@ -1,5 +1,8 @@
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
-import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import {
+  denormalizeScore,
+  scaleTypeCode,
+} from '@jbrowse/render-core/scoreScale'
 import { resolveSymlogConstant } from '@jbrowse/wiggle-core'
 
 import { formatScore } from '../util.ts'
@@ -98,7 +101,10 @@ export function scoreRampScale(
     domain,
     stops: Array.from({ length: STEPS + 1 }, (_, i) => {
       const offset = i / STEPS
-      return { offset, color: colorAt(min + (max - min) * offset) }
+      return {
+        offset,
+        color: colorAt(denormalizeScore(offset, min, max, type, c)),
+      }
     }),
     format: formatScore,
   }

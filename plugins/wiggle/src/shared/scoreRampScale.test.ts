@@ -1,4 +1,8 @@
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+import {
+  SCALE_TYPE_LOG,
+  denormalizeScore,
+} from '@jbrowse/render-core/scoreScale'
 
 import {
   makeDensityLutFillFn,
@@ -70,7 +74,7 @@ function plotColorAt(model: ReturnType<typeof makeModel>, offset: number) {
     43,
     state.origin,
     state.symlogConstant,
-  )(min + (max - min) * offset)
+  )(denormalizeScore(offset, min, max, state.scaleType, state.symlogConstant))
 }
 
 test('the ramp is sampled with the constant the plot is painted with', () => {
@@ -113,7 +117,15 @@ test('named-ramp stops are the render LUT entries the plot paints', () => {
   for (const stop of bar) {
     expect([stop.offset, stop.color]).toEqual([
       stop.offset,
-      paint(DOMAIN[0] + (DOMAIN[1] - DOMAIN[0]) * stop.offset),
+      paint(
+        denormalizeScore(
+          stop.offset,
+          DOMAIN[0],
+          DOMAIN[1],
+          state.scaleType,
+          state.symlogConstant,
+        ),
+      ),
     ])
   }
   const last = 255 * 4
@@ -147,6 +159,24 @@ test('a CSS color the picker writes is parsed, not read as hex', () => {
     rampMid: undefined,
   })
   expect(scale.stops.at(-1)!.color).toBe('rgb(178,24,43)')
+})
+
+// The key stands in for the axis, so its middle is the plot's middle: under
+// log that is the geometric mean of the domain, not its arithmetic midpoint.
+test('a log key puts the geometric mean at its middle', () => {
+  const ramp = { ...RAMP, rampLut: rampLutOf({ scheme: 'viridis' }) }
+  const middle = scoreRampScale([1, 10_000], 'log', 1, ramp).stops.find(
+    s => s.offset === 0.5,
+  )!
+  const paint = makeDensityLutFillFn(
+    1,
+    10_000,
+    SCALE_TYPE_LOG,
+    ramp.rampLut,
+    undefined,
+  )
+  expect(middle.color).toBe(paint(100))
+  expect(middle.color).not.toBe(paint(5000))
 })
 
 test('the scale names its domain ends through the score formatter', () => {
