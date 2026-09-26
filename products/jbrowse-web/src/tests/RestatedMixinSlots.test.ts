@@ -12,7 +12,7 @@ import corePlugins from '../corePlugins.ts'
 // `LegendMixin`, `WiggleCommonMixin` and `WiggleScoreConfigMixin` each reach a
 // slot no shared field table can hold, because the composing schemas disagree
 // about the part that is genuinely per display — `showLegend`'s default,
-// `defaultRendering`'s enum, `size`'s point diameter. They agree about the
+// `mark`'s enum, `size`'s point diameter. They agree about the
 // TYPE, which is all the mixin's host cast needs, so each mixin restates that
 // much beside itself. This is the comparison that keeps the restatement
 // honest; it lives in jbrowse-web for the same reason as

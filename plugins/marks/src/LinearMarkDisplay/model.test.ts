@@ -210,6 +210,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
             domainMax: 1000,
             range: ['white', 'red'],
             reverse: false,
+            autoscale: 'local',
           },
         },
         lanes: ['row', 'color', 'index'],
@@ -830,7 +831,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { mark: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkColor takes value, field, scale, domain, domainMin, domainMax, range, labels, scheme, reverse, domainMid and title, not colour',
+    'MarkColor takes value, field, scale, domain, domainMin, domainMax, autoscale, numQuantile, range, labels, scheme, reverse, domainMid and title, not colour',
   )
   expect(() =>
     createTestEnvironment([

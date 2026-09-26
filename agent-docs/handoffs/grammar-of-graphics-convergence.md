@@ -135,7 +135,7 @@ under a name in `COLOR_SCHEMES`, and `rampLutOf` there bakes a declaration's LUT
 is the `HicColor` object (`scale: linear | log`, `scheme`, `reverse`), which
 retired `colorScheme` and `useLogScale`; its menu lists every scheme. LD paints
 R² through `reds` and D′ through `blues` and declares no colour slot, since nothing asks to pick an LD ramp. Hi-C's percentile domain
-is a domain rule of its own and stays the `useColorPercentile` slot.
+is `color.autoscale`, the rule every ramp and `scales.y` take (ADR-175).
 
 The ramps to add were picked from captures on a Hi-C locus and a compartment
 eigenvector (2026-09-23): `magma`, `inferno` and `cividis` beside viridis,

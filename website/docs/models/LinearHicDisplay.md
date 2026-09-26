@@ -86,12 +86,13 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-colorscheme">**colorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>"blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>"blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "reds" &#124; "viridis"</code></pre></dialog></span> |  | LinearHicDisplay |
 | <span id="getter-colorreverse">**colorReverse**</span><br><code>boolean</code> | `color.reverse`, or where unset whether the scheme runs dark at its low end. | LinearHicDisplay |
 | <span id="getter-colorramp">**colorRamp**</span><br><code>Uint8Array&lt;ArrayBufferLike&gt;</code> | The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the legend read this one table. | LinearHicDisplay |
-| <span id="getter-usecolorpercentile">**useColorPercentile**</span><br><code>boolean</code> |  | LinearHicDisplay |
+| <span id="getter-colorfollowspercentile">**colorFollowsPercentile**</span><br><code>boolean</code> | Whether an unset `color.domainMax` saturates at the counts' `numQuantile` percentile rather than their maximum. | LinearHicDisplay |
+| <span id="getter-colorquantile">**colorQuantile**</span><br><code>number</code> |  | LinearHicDisplay |
 | <span id="getter-showresolutioncontrols">**showResolutionControls**</span><br><code>boolean</code> |  | LinearHicDisplay |
 | <span id="getter-selectednormalization">**selectedNormalization**</span><br><code>string</code> |  | LinearHicDisplay |
 | <span id="getter-hasresolutions">**hasResolutions**</span><br><code>boolean</code> | Whether the binsize list has arrived; every resolution control gates on it. | LinearHicDisplay |
 | <span id="getter-activenormalization">**activeNormalization**</span><br><code>string</code> | The normalization to request: the selection where the file has it, else the next best it does. A getter, so a file lacking the selection never marks the track edited. | LinearHicDisplay |
-| <span id="getter-colordomain">**colorDomain**</span><br><code>[number, number]</code> | The domain the counts are coloured over. An unset `domainMax` follows the loaded counts: their 95th percentile under `useColorPercentile`, else their maximum. | LinearHicDisplay |
+| <span id="getter-colordomain">**colorDomain**</span><br><code>[number, number]</code> | The domain the counts are coloured over. An unset `domainMax` follows the loaded counts: their `numQuantile` percentile under `localpercentile`, else their maximum. | LinearHicDisplay |
 | <span id="getter-awaitingprerequisite">**awaitingPrerequisite**</span><br><code>boolean</code> | Retry is two-stage: the contact fetch declines until the header it needs lands, and the header's arrival wakes it. `infoFetchFailure.test.ts` pins it. | LinearHicDisplay |
 | <span id="getter-showresolutionbox">**showResolutionBox**</span><br><code>boolean</code> | Whether the resolution box is up; the chrome starts the key below it. | LinearHicDisplay |
 | <span id="getter-legendtop">**legendTop**</span><br><code>number</code> |  | LinearHicDisplay |
@@ -178,7 +179,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; }</code> | The settings that refetch. The binsize is zoom-derived, so it travels as its own argument. | LinearHicDisplay |
+| <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { normalization: string; numQuantile: number; }</code> | The settings that refetch. The binsize is zoom-derived, so it travels as its own argument. | LinearHicDisplay |
 | <span id="method-hittest">**hitTest**</span><br><code>(mouseX: number, mouseY: number) =&gt; HicContactItem &#124; undefined</code> | The contact under a display-px point, through the inverse of the transform the matrix was drawn with. | LinearHicDisplay |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearHicDisplay |
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  | LinearHicDisplay |
@@ -196,7 +197,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: HicRenderingBackend) =&gt; void</code> |  | LinearHicDisplay |
 | <span id="action-setcolorscale">**setColorScale**</span><br><code>(scale: "linear" &#124; "log") =&gt; void</code> |  | LinearHicDisplay |
-| <span id="action-setusecolorpercentile">**setUseColorPercentile**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearHicDisplay |
+| <span id="action-setcolorfollowspercentile">**setColorFollowsPercentile**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearHicDisplay |
 | <span id="action-setshowresolutioncontrols">**setShowResolutionControls**</span><br><code>(f: boolean) =&gt; void</code> |  | LinearHicDisplay |
 | <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "reds" &#124; "viridis") =&gt; void</code></pre></dialog></span> | The scheme, with `reverse` back to unset so it follows the scheme. | LinearHicDisplay |
 | <span id="action-setactivenormalization">**setActiveNormalization**</span><br><code>(f: string) =&gt; void</code> |  | LinearHicDisplay |

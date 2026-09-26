@@ -555,6 +555,18 @@ Keep the features a `jexl:` expression over `feature` admits.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+### finiteExtremes
+
+The least and greatest finite values of `values[0, count)`,
+`[Infinity, -Infinity]` where none is finite.
+
+```js
+// type signature
+(values: ArrayLike<number>, count: number) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/rampExtent.ts)
+
 ### FlattenStep
 
 Fan each feature out into one feature per element of an array-valued field —
@@ -1055,6 +1067,21 @@ holding no value (`[Infinity, -Infinity]`) spans [0, 1].
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
+### rampExtent
+
+What the open ends of a colour ramp follow over `values[0, count)`: their finite
+extremes under `local`, and under `localpercentile` the `quantile`-th percentile
+of each sign's magnitudes, anchored at 0 — the rule `scales.y.autoscale` names
+the same way, so one spike no longer takes the whole ramp.
+`[Infinity, -Infinity]` where nothing is finite.
+
+```js
+// type signature
+(values: ArrayLike<number>, count: number, autoscale?: "local" | "localpercentile", quantile?: number) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/rampExtent.ts)
+
 ### rampGapScales
 
 The rows a ramp's key lists beside its bar once a feature painted one: the
@@ -1280,6 +1307,20 @@ steps made. A second click aborts the first.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/selectEncodedFeature.ts)
+
+### selectNth
+
+The `k`th smallest of `a[0, n)`, permuting `a` in place. Exact, where a
+histogram collapses skewed contact counts into its bottom bucket, and O(n) where
+a sort of 4.5M counts measured ~1s. Median-of-three because Hi-C contacts arrive
+nearly sorted.
+
+```js
+// type signature
+(a: Float32Array<ArrayBufferLike>, n: number, k: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/rampExtent.ts)
 
 ### SessionPaletteProvider
 

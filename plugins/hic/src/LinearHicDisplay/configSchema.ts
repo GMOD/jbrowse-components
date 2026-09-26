@@ -52,15 +52,6 @@ const HicTrackConfigFactory = () => {
       /**
        * #slot
        */
-      useColorPercentile: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'with no color.domainMax, saturate at the 95th percentile of the loaded counts rather than their maximum',
-      },
-      /**
-       * #slot
-       */
       showResolutionControls: {
         type: 'boolean',
         defaultValue: false,
@@ -82,6 +73,12 @@ const HicTrackConfigFactory = () => {
        * #identifier
        */
       explicitIdentifier: 'displayId',
+      retired: {
+        // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
+        useColorPercentile: follows => ({
+          color: { autoscale: follows ? 'localpercentile' : 'local' },
+        }),
+      },
     },
   )
 }

@@ -229,6 +229,27 @@ test('a pinned ceiling keeps its value and the open floor follows the region', (
   expect(r.color[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
 })
 
+test('under localpercentile an open end stops short of a spike', () => {
+  const spiky = encodeFeatures(
+    [...Array.from({ length: 99 }, (_, i) => i + 1), 10000].map((score, i) =>
+      feature(i, { score }),
+    ),
+    {
+      color: {
+        field: 'score',
+        scale: 'linear',
+        range: ['black', 'white'],
+        autoscale: 'localpercentile',
+        numQuantile: 0.9,
+      },
+    },
+    ['color'],
+  )
+  expect(spiky.scale).toMatchObject({ domain: [0, 90], extent: [0, 90] })
+  expect(spiky.color[89]).toBe(cssColorToABGR('white'))
+  expect(spiky.color[99]).toBe(cssColorToABGR('white'))
+})
+
 test('an open end never crosses a pinned one', () => {
   const r = blackToWhite({ domainMin: 80 })
   expect(r.scale).toMatchObject({ domain: [80, 80] })

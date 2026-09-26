@@ -3633,6 +3633,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
               "type": "number"
             },
+            "autoscale": {
+              "description": "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0.",
+              "enum": [
+                "local",
+                "localpercentile"
+              ],
+              "default": "local"
+            },
+            "numQuantile": {
+              "description": "the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%.",
+              "type": "number",
+              "default": 0.99
+            },
             "title": {
               "description": "key title; unset follows field, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
@@ -4332,6 +4345,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
               "type": "number"
+            },
+            "autoscale": {
+              "description": "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0.",
+              "enum": [
+                "local",
+                "localpercentile"
+              ],
+              "default": "local"
+            },
+            "numQuantile": {
+              "description": "the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%.",
+              "type": "number",
+              "default": 0.99
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis.",
@@ -5044,6 +5070,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
               "type": "number"
+            },
+            "autoscale": {
+              "description": "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0.",
+              "enum": [
+                "local",
+                "localpercentile"
+              ],
+              "default": "local"
+            },
+            "numQuantile": {
+              "description": "the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%.",
+              "type": "number",
+              "default": 0.99
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its bins, or a linear scale's stops, evenly spaced; empty is the tag palette or viridis.",
@@ -7033,6 +7072,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domainMax": {
           "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
           "type": "number"
+        },
+        "autoscale": {
+          "description": "what an unset domainMax follows: localpercentile the counts' numQuantile percentile, local their maximum.",
+          "enum": [
+            "local",
+            "localpercentile"
+          ],
+          "default": "localpercentile"
+        },
+        "numQuantile": {
+          "description": "the percentile localpercentile saturates at.",
+          "type": "number",
+          "default": 0.95
         }
       },
       "patternProperties": {
@@ -7066,11 +7118,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "useColorPercentile": {
-          "description": "with no color.domainMax, saturate at the 95th percentile of the loaded counts rather than their maximum.",
-          "type": "boolean",
-          "default": true
-        },
         "showResolutionControls": {
           "description": "show the on-figure resolution dropdown in the overlay.",
           "type": "boolean",
@@ -7080,6 +7127,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has.",
           "$ref": "#/$defs/PlainString",
           "default": "KR"
+        },
+        "useColorPercentile": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -7384,6 +7435,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
               "type": "number"
+            },
+            "autoscale": {
+              "description": "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0.",
+              "enum": [
+                "local",
+                "localpercentile"
+              ],
+              "default": "local"
+            },
+            "numQuantile": {
+              "description": "the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%.",
+              "type": "number",
+              "default": 0.99
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
@@ -11247,14 +11311,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "resolutionBias": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
             },
-            "useColorPercentile": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/useColorPercentile"
-            },
             "showResolutionControls": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/showResolutionControls"
             },
             "selectedNormalization": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
+            },
+            "useColorPercentile": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/useColorPercentile"
             }
           },
           "patternProperties": {

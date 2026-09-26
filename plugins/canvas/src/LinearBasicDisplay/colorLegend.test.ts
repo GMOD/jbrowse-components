@@ -489,6 +489,33 @@ describe('derived color key', () => {
       expect(ramp?.kind === 'ramp' && ramp.stops).toHaveLength(8)
     })
 
+    it('under localpercentile weighs each painted box, so a lone spike stops short', () => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      setConf(display, 'color', {
+        field: 'score',
+        autoscale: 'localpercentile',
+        numQuantile: 0.9,
+      })
+      const values = ['1', '2', '10000']
+      display.setRpcData(
+        0,
+        {
+          ...paintedData(values, noSection, 'score'),
+          rectColorValues: Uint32Array.from([
+            ...Array.from({ length: 50 }, () => 1),
+            ...Array.from({ length: 49 }, () => 2),
+            3,
+          ]),
+        },
+        ctgA,
+      )
+      expect(display.colorScales[0]).toMatchObject({
+        kind: 'ramp',
+        domain: [0, 2],
+      })
+    })
+
     // The id is the legend's dismissal key and its React key prefix, and the
     // two displays composing the derivation ask for different ones — so it is
     // the caller's word, never the derivation's.

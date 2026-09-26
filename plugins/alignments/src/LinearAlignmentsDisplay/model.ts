@@ -105,6 +105,7 @@ import { getColorForModification } from '../util.ts'
 import {
   bakedColorScale,
   numericExtentAcrossGroups,
+  percentileExtentAcrossGroups,
 } from './bakedColorScale.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -1674,9 +1675,10 @@ export default function stateModelFactory(
           /**
            * #getter
            * The span of a linear colour field over the loaded reads, which a
-           * ramp's open ends stretch across. Undefined while `domainMin` and
-           * `domainMax` both pin the ramp or another scale paints, so a region
-           * arriving rebakes nothing then.
+           * ramp's open ends stretch across: their extremes, or under
+           * `localpercentile` each sign's `numQuantile` percentile. Undefined
+           * while `domainMin` and `domainMax` both pin the ramp or another
+           * scale paints, so a region arriving rebakes nothing then.
            */
           get bakedColorExtent(): NumericExtent | undefined {
             const encoding = self.colorEncoding
@@ -1684,7 +1686,14 @@ export default function stateModelFactory(
               encoding.scale === 'linear' &&
               (encoding.domainMin === undefined ||
                 encoding.domainMax === undefined)
-              ? this.tagValueExtent
+              ? encoding.autoscale === 'localpercentile' &&
+                self.colorBy.type === 'tag'
+                ? percentileExtentAcrossGroups(
+                    this.laidOutByGroupFramed,
+                    d => d.readTagValues,
+                    encoding.numQuantile,
+                  )
+                : this.tagValueExtent
               : undefined
           },
 

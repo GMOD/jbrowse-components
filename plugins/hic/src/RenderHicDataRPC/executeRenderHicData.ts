@@ -32,6 +32,7 @@ export async function executeRenderHicData({
     originBp,
     resolution,
     normalization,
+    numQuantile = 0.95,
     signal,
     statusCallback,
   } = args
@@ -97,14 +98,18 @@ export async function executeRenderHicData({
     },
   )
 
-  const { maxScore, percentile95 } = computeCountStats(instances, numContacts)
+  const { maxScore, quantileScore } = computeCountStats(
+    instances,
+    numContacts,
+    numQuantile,
+  )
 
   return rpcResult(
     {
       instances,
       numContacts,
       maxScore,
-      percentile95,
+      quantileScore,
       binWidth: w,
       originBp,
       resolution,

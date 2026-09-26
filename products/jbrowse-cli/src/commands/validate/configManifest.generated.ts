@@ -2982,6 +2982,14 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
+              "name": "autoscale",
+              "type": "RampAutoscale"
+            },
+            {
+              "name": "numQuantile",
+              "type": "number"
+            },
+            {
               "name": "title",
               "type": "(string | undefined)"
             }
@@ -3243,6 +3251,14 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             },
             {
+              "name": "autoscale",
+              "type": "RampAutoscale"
+            },
+            {
+              "name": "numQuantile",
+              "type": "number"
+            },
+            {
               "name": "title",
               "type": "(string | undefined)"
             }
@@ -3446,6 +3462,14 @@ export const configManifest: ConfigManifest = {
             {
               "name": "domainMax",
               "type": "(number | undefined)"
+            },
+            {
+              "name": "autoscale",
+              "type": "RampAutoscale"
+            },
+            {
+              "name": "numQuantile",
+              "type": "number"
             },
             {
               "name": "range",
@@ -3900,6 +3924,14 @@ export const configManifest: ConfigManifest = {
             {
               "name": "domainMax",
               "type": "(number | undefined)"
+            },
+            {
+              "name": "autoscale",
+              "type": "RampAutoscale"
+            },
+            {
+              "name": "numQuantile",
+              "type": "number"
             },
             {
               "name": "range",
@@ -4450,6 +4482,14 @@ export const configManifest: ConfigManifest = {
             {
               "name": "domainMax",
               "type": "(number | undefined)"
+            },
+            {
+              "name": "autoscale",
+              "type": "RampAutoscale"
+            },
+            {
+              "name": "numQuantile",
+              "type": "number"
             },
             {
               "name": "title",
@@ -5592,16 +5632,20 @@ export const configManifest: ConfigManifest = {
             {
               "name": "domainMax",
               "type": "(number | undefined)"
+            },
+            {
+              "name": "autoscale",
+              "type": "RampAutoscale"
+            },
+            {
+              "name": "numQuantile",
+              "type": "number"
             }
           ]
         },
         {
           "name": "resolutionBias",
           "type": "number"
-        },
-        {
-          "name": "useColorPercentile",
-          "type": "boolean"
         },
         {
           "name": "showResolutionControls",
@@ -5611,6 +5655,9 @@ export const configManifest: ConfigManifest = {
           "name": "selectedNormalization",
           "type": "string"
         }
+      ],
+      "legacyKeys": [
+        "useColorPercentile"
       ],
       "stateModelProps": [
         "id",
@@ -5866,6 +5913,14 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "domainMax",
                       "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "autoscale",
+                      "type": "RampAutoscale"
+                    },
+                    {
+                      "name": "numQuantile",
+                      "type": "number"
                     },
                     {
                       "name": "range",

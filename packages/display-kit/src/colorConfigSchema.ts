@@ -8,6 +8,10 @@ import {
 import { paletteFromSpec } from '@jbrowse/core/ui/colors'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import {
+  DEFAULT_RAMP_QUANTILE,
+  RAMP_AUTOSCALES,
+} from '@jbrowse/core/util/rampExtent'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -23,6 +27,7 @@ import type { ColorScaleName, FieldPresets } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
+import type { RampAutoscale } from '@jbrowse/core/util/rampExtent'
 
 export {
   CATEGORICAL_FIELD_PRESETS,
@@ -72,6 +77,8 @@ export interface ColorSetting {
   domainMin?: number | undefined
   domainMax?: number | undefined
   domainMid?: number | undefined
+  autoscale?: RampAutoscale
+  numQuantile?: number
   labels?: readonly string[]
   title?: string | undefined
 }
@@ -287,6 +294,29 @@ export const colorDomainEndsSlots = {
 } as const
 
 /**
+ * How a linear or log scale's open ends follow the loaded values, the rule
+ * `scales.y.autoscale` names alike: `local` spans their extremes, and
+ * `localpercentile` clips each sign's magnitudes at `numQuantile`, anchored
+ * at 0, so one spike does not wash the rest of the ramp out.
+ */
+export const colorAutoscaleSlots = {
+  autoscale: {
+    type: 'stringEnum',
+    model: types.enumeration('RampAutoscale', [...RAMP_AUTOSCALES]),
+    defaultValue: 'local',
+    description:
+      "what an open end of a linear or log scale follows: local the loaded values' extremes, localpercentile the numQuantile percentile of each sign, anchored at 0",
+  },
+  numQuantile: {
+    type: 'number',
+    defaultValue: DEFAULT_RAMP_QUANTILE,
+    description:
+      'the percentile localpercentile clips each sign at: 0.99 drops the outermost 1%',
+    advanced: true,
+  },
+} as const
+
+/**
  * The scales a display's colour object paints, read off its own slot, less
  * `none`, which the string form already is. What the Edit as JSON box offers
  * and holds a spec to.
@@ -371,6 +401,9 @@ export function colorEncodingOf<V extends string | undefined>(
         range: listed(color.range),
         scheme: color.scheme,
         reverse: color.reverse ?? false,
+        autoscale: color.autoscale,
+        numQuantile:
+          color.autoscale === 'localpercentile' ? color.numQuantile : undefined,
       }
   }
 }
@@ -568,6 +601,7 @@ export const colorConfigSchema = ConfigurationSchema(
     ...colorLabelsSlot,
     ...colorRampSlots,
     ...colorDomainEndsSlots,
+    ...colorAutoscaleSlots,
     ...colorTitleSlot,
   },
   colorChannelOptions('color', FEATURE_FIELD_PRESETS),

@@ -13,6 +13,8 @@ export interface RenderHicDataArgs {
   originBp: number
   resolution: number
   normalization: string
+  /** the percentile `quantileScore` answers, the colour's `numQuantile`; 0.95 unset */
+  numQuantile?: number
 }
 
 export interface HicContactItem {
@@ -58,11 +60,11 @@ export interface HicDataResult {
   instances: Float32Array
   numContacts: number
   /**
-   * Maximum and 95th percentile of the finite counts, so a NaN or Infinity
-   * bin cannot poison the colour domain. 0 for an empty matrix.
+   * Maximum and `numQuantile` percentile of the finite counts, so a NaN or
+   * Infinity bin cannot poison the colour domain. 0 for an empty matrix.
    */
   maxScore: number
-  percentile95: number
+  quantileScore: number
   /** one bin in pre-rotation units: `resolution / √2` */
   binWidth: number
   originBp: number

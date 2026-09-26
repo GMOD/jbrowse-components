@@ -6,6 +6,7 @@ import {
   rampDomain,
   stopsFromRampLut,
 } from '@jbrowse/core/util/colorRamp'
+import { rampExtent } from '@jbrowse/core/util/rampExtent'
 import {
   thresholdCuts,
   thresholdIndex,
@@ -171,6 +172,35 @@ export function bakedColorScale(
     domain,
     color: value => bakedValueColor(colorBy, value, refNamePosition),
   }
+}
+
+/**
+ * The span a ramp's open ends follow under `localpercentile`: the
+ * `numQuantile` percentile of each sign over every loaded read's value, so a
+ * read counts once per read rather than once per distinct value.
+ */
+export function percentileExtentAcrossGroups<D>(
+  byGroup: ReadonlyMap<string, ReadonlyMap<number, D>>,
+  pick: (data: D) => readonly string[] | undefined,
+  numQuantile: number | undefined,
+): NumericExtent | undefined {
+  const values: number[] = []
+  for (const map of byGroup.values()) {
+    for (const data of map.values()) {
+      for (const value of pick(data) ?? []) {
+        if (value !== '') {
+          values.push(Number(value))
+        }
+      }
+    }
+  }
+  const [min, max] = rampExtent(
+    values,
+    values.length,
+    'localpercentile',
+    numQuantile,
+  )
+  return min <= max ? [min, max] : undefined
 }
 
 /** The finite span of a per-read value over every loaded region of every lane. */

@@ -4,6 +4,7 @@ import {
   COLOR_SCALES,
   colorChannelOptions,
   colorChannelSlots,
+  colorAutoscaleSlots,
   colorDomainEndsSlots,
   colorDomainSlot,
   colorLabelsSlot,
@@ -109,6 +110,7 @@ export const markColorSchema = ConfigurationSchema(
         "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead",
     }),
     ...colorDomainEndsSlots,
+    ...colorAutoscaleSlots,
     ...colorRangeSlot({
       range:
         "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme",

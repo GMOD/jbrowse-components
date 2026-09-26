@@ -8,6 +8,7 @@
 
 import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
 import type { ColorSchemeName } from './colorSchemes.ts'
+import type { RampAutoscale } from './rampExtent.ts'
 
 /**
  * #api
@@ -71,6 +72,13 @@ export interface ContinuousRef {
   range?: string[]
   scheme?: ColorSchemeName
   reverse?: boolean
+  /**
+   * What an open end follows: the loaded values' extremes, or under
+   * `localpercentile` the `numQuantile`-th percentile of each sign's
+   * magnitudes, anchored at 0.
+   */
+  autoscale?: RampAutoscale
+  numQuantile?: number
 }
 
 /**

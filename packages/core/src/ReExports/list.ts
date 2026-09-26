@@ -339,6 +339,7 @@ export default [
   '@jbrowse/core/util/parseLineByLine',
   '@jbrowse/core/util/preloadComponent',
   '@jbrowse/core/util/progress',
+  '@jbrowse/core/util/rampExtent',
   '@jbrowse/core/util/range',
   '@jbrowse/core/util/renderToStaticMarkup',
   '@jbrowse/core/util/resolveRowHeight',

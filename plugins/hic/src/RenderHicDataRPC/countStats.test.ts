@@ -44,12 +44,13 @@ async function statsFor(counts: number[]) {
       originBp: 0,
       resolution: RES,
       normalization: 'KR',
+      numQuantile: 0.95,
     },
   })
-  const { maxScore, percentile95, numContacts } = (
+  const { maxScore, quantileScore, numContacts } = (
     res as unknown as { value: HicDataResult }
   ).value
-  return { maxScore, percentile95, numContacts }
+  return { maxScore, quantileScore, numContacts }
 }
 
 // 100 ascending counts, so the 95th percentile is a distinct, checkable value
@@ -58,16 +59,16 @@ const ASCENDING = Array.from({ length: 100 }, (_, i) => i + 1)
 
 describe('hic count statistics', () => {
   test('reads max and the 95th percentile off the sorted counts', async () => {
-    const { maxScore, percentile95 } = await statsFor(ASCENDING)
+    const { maxScore, quantileScore } = await statsFor(ASCENDING)
     expect(maxScore).toBe(100)
     // floor(0.95 * 99) = 94 -> the 95th of the ascending values
-    expect(percentile95).toBe(95)
+    expect(quantileScore).toBe(95)
   })
 
   test('an empty result scores zero rather than reading off an empty array', async () => {
     expect(await statsFor([])).toEqual({
       maxScore: 0,
-      percentile95: 0,
+      quantileScore: 0,
       numContacts: 0,
     })
   })
@@ -82,23 +83,23 @@ describe('hic count statistics', () => {
     ['Infinity', Number.POSITIVE_INFINITY],
     ['-Infinity', Number.NEGATIVE_INFINITY],
   ])('one %s count does not poison the color scale', async (_name, bad) => {
-    const { maxScore, percentile95, numContacts } = await statsFor([
+    const { maxScore, quantileScore, numContacts } = await statsFor([
       ...ASCENDING,
       bad,
     ])
     expect(maxScore).toBe(100)
-    expect(percentile95).toBe(95)
+    expect(quantileScore).toBe(95)
     // the bad contact is still drawn (as its own bin), only excluded from scoring
     expect(numContacts).toBe(101)
   })
 
   test('all-non-finite counts score zero, so colorScales reads empty', async () => {
-    const { maxScore, percentile95 } = await statsFor([
+    const { maxScore, quantileScore } = await statsFor([
       Number.NaN,
       Number.POSITIVE_INFINITY,
     ])
     expect(maxScore).toBe(0)
-    expect(percentile95).toBe(0)
+    expect(quantileScore).toBe(0)
   })
 })
 
@@ -120,12 +121,12 @@ function asInstances(counts: ArrayLike<number>) {
 function reference(counts: Float32Array) {
   const finite = counts.filter(c => Number.isFinite(c))
   if (finite.length === 0) {
-    return { maxScore: 0, percentile95: 0 }
+    return { maxScore: 0, quantileScore: 0 }
   }
   finite.sort()
   return {
     maxScore: finite[finite.length - 1]!,
-    percentile95: finite[Math.floor(0.95 * (finite.length - 1))]!,
+    quantileScore: finite[Math.floor(0.95 * (finite.length - 1))]!,
   }
 }
 
@@ -164,10 +165,12 @@ describe('computeCountStats matches a full sort', () => {
       for (let i = 0; i < n; i++) {
         counts[i] = gen(i, rnd)
       }
-      expect({ n, ...computeCountStats(asInstances(counts), n) }).toEqual({
-        n,
-        ...reference(counts),
-      })
+      expect({ n, ...computeCountStats(asInstances(counts), n, 0.95) }).toEqual(
+        {
+          n,
+          ...reference(counts),
+        },
+      )
     }
   })
 })
@@ -179,7 +182,7 @@ test('computeCountStats leaves its input untouched', () => {
   const instances = asInstances([5, 1, 9, 3, 7, 2])
   setInstancePosition(instances, 0, 11, 22)
   const before = [...instances]
-  computeCountStats(instances, 6)
+  computeCountStats(instances, 6, 0.95)
   expect([...instances]).toEqual(before)
 })
 
@@ -192,8 +195,12 @@ test('a pre-sorted million counts selects without quadratic blowup', () => {
     counts[i] = i
   }
   const t0 = Date.now()
-  const { maxScore, percentile95 } = computeCountStats(asInstances(counts), n)
+  const { maxScore, quantileScore } = computeCountStats(
+    asInstances(counts),
+    n,
+    0.95,
+  )
   expect(maxScore).toBe(n - 1)
-  expect(percentile95).toBe(Math.floor(0.95 * (n - 1)))
+  expect(quantileScore).toBe(Math.floor(0.95 * (n - 1)))
   expect(Date.now() - t0).toBeLessThan(2000)
 })

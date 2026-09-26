@@ -16,6 +16,7 @@ import Flatbush from './flatbush/index.ts'
 import { valueText } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
+import { finiteExtremes, rampExtent } from './rampExtent.ts'
 import { SHAPE_CODES, SHAPE_NAMES } from './shapeNames.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 import {
@@ -540,7 +541,12 @@ export function encodeFeatures<L extends LaneName>(
       ...(notNumberMet ? { notNumber: true } : {}),
     }
   } else if (rampEncoding && rampValues) {
-    const extent = finiteExtremes(rampValues, count)
+    const extent = rampExtent(
+      rampValues,
+      count,
+      rampEncoding.autoscale,
+      rampEncoding.numQuantile,
+    )
     const { domainMin, domainMax, domainMid, range, scheme, reverse } =
       rampEncoding
     const { domain, lut, colorOf } = continuousColorScale(rampEncoding, extent)
@@ -748,23 +754,6 @@ function keysAreNumeric(entries: readonly { value: string }[]) {
 
 // `[Infinity, -Infinity]` where no value is finite, which a union of regions'
 // extents passes over.
-function finiteExtremes(values: Float32Array, count: number): [number, number] {
-  let min = Infinity
-  let max = -Infinity
-  for (let i = 0; i < count; i++) {
-    const v = values[i]!
-    if (Number.isFinite(v)) {
-      if (v < min) {
-        min = v
-      }
-      if (v > max) {
-        max = v
-      }
-    }
-  }
-  return [min, max]
-}
-
 /**
  * #api
  * A CSS colour or `jexl:` colour expression as a per-feature packed ABGR —

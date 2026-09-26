@@ -12,7 +12,7 @@ const DATA: HicDataResult = {
   instances: new Float32Array(INSTANCE_STRIDE_WORDS),
   numContacts: 1,
   maxScore: 20,
-  percentile95: 15,
+  quantileScore: 15,
   binWidth: 4,
   originBp: 0,
   resolution: 1000,

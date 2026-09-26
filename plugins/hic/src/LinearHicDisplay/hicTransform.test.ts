@@ -56,7 +56,7 @@ function makeData(contacts: { bin1: number; bin2: number }[], span: number) {
     instances,
     numContacts: n,
     maxScore: n,
-    percentile95: n,
+    quantileScore: n,
     binWidth: W,
     originBp: 0,
     resolution: 1000,

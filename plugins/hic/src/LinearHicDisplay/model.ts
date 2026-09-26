@@ -176,10 +176,17 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * Whether an unset `color.domainMax` saturates at the counts'
+       * `numQuantile` percentile rather than their maximum.
        */
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
-      get useColorPercentile(): boolean {
-        return getConf(self, 'useColorPercentile')
+      get colorFollowsPercentile(): boolean {
+        return getConf(self, ['color', 'autoscale']) === 'localpercentile'
+      },
+      /**
+       * #getter
+       */
+      get colorQuantile(): number {
+        return getConf(self, ['color', 'numQuantile'])
       },
       /**
        * #getter
@@ -221,8 +228,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #getter
        * The domain the counts are coloured over. An unset `domainMax` follows
-       * the loaded counts: their 95th percentile under `useColorPercentile`,
-       * else their maximum.
+       * the loaded counts: their `numQuantile` percentile under
+       * `localpercentile`, else their maximum.
        */
       get colorDomain(): [number, number] {
         const data = self.rpcData
@@ -232,8 +239,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         ])
         const loadedMax = !data
           ? 0
-          : self.useColorPercentile
-            ? data.percentile95
+          : self.colorFollowsPercentile
+            ? data.quantileScore
             : data.maxScore
         return [
           getConf(self, ['color', 'domainMin']) ?? 0,
@@ -408,8 +415,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * The settings that refetch. The binsize is zoom-derived, so it travels
        * as its own argument.
        */
-      rpcProps(): { normalization: string } {
-        return { normalization: self.activeNormalization }
+      rpcProps(): { normalization: string; numQuantile: number } {
+        return {
+          normalization: self.activeNormalization,
+          numQuantile: self.colorQuantile,
+        }
       },
       /**
        * #method
@@ -449,8 +459,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setUseColorPercentile(f: boolean) {
-        setConf(self, 'useColorPercentile', f)
+      setColorFollowsPercentile(f: boolean) {
+        setConf(self, ['color', 'autoscale'], f ? 'localpercentile' : 'local')
       },
       /**
        * #action

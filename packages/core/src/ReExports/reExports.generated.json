@@ -3319,6 +3319,17 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/rampExtent": {
+      "package": "@jbrowse/core",
+      "names": [
+        "DEFAULT_RAMP_QUANTILE",
+        "RAMP_AUTOSCALES",
+        "finiteExtremes",
+        "rampExtent",
+        "selectNth"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/range": {
       "package": "@jbrowse/core",
       "names": [
@@ -3914,6 +3925,7 @@
         "FEATURE_FIELD_PRESETS",
         "IDENTITY_SCALE",
         "categoricalColorField",
+        "colorAutoscaleSlots",
         "colorChannelOptions",
         "colorChannelSlots",
         "colorConfigSchema",

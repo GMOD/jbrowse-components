@@ -23,7 +23,8 @@ const COLOR_SCHEME_OPTIONS = COLOR_SCHEMES.map(
 
 interface HicMenuSelf {
   colorScaleType: HicColorScale
-  useColorPercentile: boolean
+  colorFollowsPercentile: boolean
+  colorQuantile: number
   showLegend: boolean
   showResolutionControls: boolean
   squashToHeight: boolean
@@ -37,7 +38,7 @@ interface HicMenuSelf {
   effectiveResolution: number | undefined
   resolutionBias: number
   setColorScale: (scale: HicColorScale) => void
-  setUseColorPercentile: (f: boolean) => void
+  setColorFollowsPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setShowResolutionControls: (f: boolean) => void
   setSquashToHeight: (f: boolean) => void
@@ -104,18 +105,34 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
   ]
 }
 
+// 0.95 as the key reads it, "95th".
+function percentileName(quantile: number) {
+  const n = Math.round(quantile * 100)
+  const tens = n % 100
+  const suffix =
+    tens >= 11 && tens <= 13
+      ? 'th'
+      : n % 10 === 1
+        ? 'st'
+        : n % 10 === 2
+          ? 'nd'
+          : n % 10 === 3
+            ? 'rd'
+            : 'th'
+  return `${n}${suffix}`
+}
+
 function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
     toggleItem('Log scale', self.colorScaleType === 'log', log => {
       self.setColorScale(log ? 'log' : 'linear')
     }),
     toggleItem(
-      'Emphasize faint contacts (95th percentile)',
-      self.useColorPercentile,
-      self.setUseColorPercentile,
+      `Emphasize faint contacts (${percentileName(self.colorQuantile)} percentile)`,
+      self.colorFollowsPercentile,
+      self.setColorFollowsPercentile,
       {
-        helpText:
-          'Saturate the color scale at the 95th percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A color.domainMax in the config overrides both.',
+        helpText: `Saturate the color scale at the ${percentileName(self.colorQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A color.domainMax in the config overrides both.`,
       },
     ),
   ]

@@ -12,7 +12,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function baseSelf() {
   return {
     colorScaleType: 'linear' as const,
-    useColorPercentile: true,
+    colorFollowsPercentile: true,
+    colorQuantile: 0.95,
     showLegend: false,
     showResolutionControls: false,
     squashToHeight: false,
@@ -26,7 +27,7 @@ function baseSelf() {
     effectiveResolution: 25000 as number | undefined,
     resolutionBias: 0,
     setColorScale: jest.fn(),
-    setUseColorPercentile: jest.fn(),
+    setColorFollowsPercentile: jest.fn(),
     setShowLegend: jest.fn(),
     setShowResolutionControls: jest.fn(),
     setSquashToHeight: jest.fn(),

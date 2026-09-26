@@ -3,6 +3,7 @@ import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
+import { rampExtent } from '@jbrowse/core/util/rampExtent'
 import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 import {
   FEATURE_FIELD_PRESETS,
@@ -33,7 +34,11 @@ export interface FeatureColorHost {
   conf: { color: Instance<typeof colorConfigSchema> }
   rpcDataMap: ReadonlyMap<
     number,
-    { colorValues?: Pick<ColorValues, 'field' | 'values'> }
+    {
+      colorValues?: Pick<ColorValues, 'field' | 'values'>
+      /** each box's one-based index into `colorValues.values`, 0 unpainted */
+      rectColorValues?: Uint32Array
+    }
   >
 }
 
@@ -59,9 +64,24 @@ function colorSettingsOf({ conf: { color } }: FeatureColorHost): ColorSetting {
     domainMin: readConfObject(color, 'domainMin'),
     domainMax: readConfObject(color, 'domainMax'),
     domainMid: readConfObject(color, 'domainMid'),
+    autoscale: readConfObject(color, 'autoscale'),
+    numQuantile: readConfObject(color, 'numQuantile'),
     labels: readConfObject(color, 'labels'),
     title: readConfObject(color, 'title'),
   }
+}
+
+// Each painted box's value, the region's own boxes where it ships their
+// indices and its distinct values otherwise: what a percentile weighs, so a
+// value a thousand boxes paint counts a thousand times.
+function paintedValues(
+  { values }: Pick<ColorValues, 'values'>,
+  boxes: Uint32Array | undefined,
+) {
+  const numbers = values.map(numericText)
+  return boxes && boxes.length > 0
+    ? Array.from(boxes, i => (i > 0 ? numbers[i - 1]! : Number.NaN))
+    : numbers
 }
 
 /**
@@ -80,11 +100,18 @@ export function featureColorViews(self: FeatureColorHost) {
   const loaded = stableIdentityComputed(() => {
     const current = encoding.get()
     const field = typeof current === 'object' ? current.field : undefined
+    const percentile =
+      typeof current === 'object' &&
+      (current.scale === 'linear' || current.scale === 'log') &&
+      current.autoscale === 'localpercentile'
+        ? current
+        : undefined
     let min = Infinity
     let max = -Infinity
     let missing = false
     let notNumber = false
-    for (const { colorValues } of self.rpcDataMap.values()) {
+    const weighed: number[] = []
+    for (const { colorValues, rectColorValues } of self.rpcDataMap.values()) {
       if (colorValues && colorValues.field === field) {
         for (const text of colorValues.values) {
           const value = numericText(text)
@@ -97,9 +124,20 @@ export function featureColorViews(self: FeatureColorHost) {
             notNumber = true
           }
         }
+        if (percentile) {
+          weighed.push(...paintedValues(colorValues, rectColorValues))
+        }
       }
     }
-    return { extent: [min, max] as [number, number], missing, notNumber }
+    const extent: [number, number] = percentile
+      ? rampExtent(
+          weighed,
+          weighed.length,
+          'localpercentile',
+          percentile.numQuantile,
+        )
+      : [min, max]
+    return { extent, missing, notNumber }
   })
   return {
     /**
