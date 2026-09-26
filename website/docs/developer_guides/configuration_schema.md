@@ -200,7 +200,7 @@ from the base linear display schema:
    */
   baseConfiguration: baseLinearDisplayConfigSchema,
   explicitlyTyped: true,
-  preProcessSnapshot: refuseRetiredConfig,
+  retired,
 },
 ```
 

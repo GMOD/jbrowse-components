@@ -882,6 +882,7 @@
         "isConstantEntry",
         "isCsiLocation",
         "isSlotDefinitionEntry",
+        "liftRetiredSpellings",
         "makeSlotFacade",
         "mergeFormatCallbacks",
         "preProcessConfigSnapshot",
@@ -4438,7 +4439,7 @@
         "RETIRED_ROW_STATE_KEYS",
         "liftRetiredRowState",
         "moveDisplayDefaults",
-        "retiredSettings"
+        "refuseRetiredStateF"
       ],
       "worker": "real"
     },
