@@ -72,18 +72,17 @@ the fine segments track refuses with "Too many features", and the tier draws.
 
 <Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
-The portal's chr23 view also holds a graph under the lanes, cut from the same
-tier. The segments track names the tier in its adapter's `coarse` slot, and past
-that slot's handover the graph cuts one node per bubble with no limit on the
-span. The graph follows the linear view, and zoomed in below the handover it
-cuts the segments.
+The portal's chr23 view also holds the graph as a track under the lanes, cut
+from the same tier. The graph track names the tier in its adapter's `coarse`
+slot, and past that slot's handover it cuts one node per bubble with no limit on
+the span. It moves with the view like the lanes above it, and zoomed in below
+the handover it cuts the segments.
 
 :::note
 
 The bovine pangenome holds a dozen assemblies. Its cuts are chains with a few
-loops, which the anchored layout the graph opens in draws well. Check the node
-and edge counts in the graph pane's header before switching to the force layout,
-and use it where the bubbles lane reports a tangled window.
+loops, which the anchored layout the graph opens in draws well. Switch to the
+force layout where the bubbles lane reports a tangled window.
 
 :::
 
@@ -179,9 +178,9 @@ second alternate allele in a colour of its own:
 ```
 
 In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
-graph follows the view down to _HSPA1A_ and cuts the segments there. Turn on the
-callset and the allele inventory in the track selector; the figure shows them
-under the RefSeq genes.
+graph track cuts the segments around _HSPA1A_. Turn on the callset and the
+allele inventory in the track selector; the figure shows them under the RefSeq
+genes.
 
 <Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, and the allele inventory. Every row but the yak carries the insertion the inventory lists without carriers." src="/img/pangenome/bovine_bola.png" />
 
@@ -276,7 +275,7 @@ coordinates, and every downstream check passes on it.
 
 For a graph of your own with path lines and no rGFA tags, the one command walks
 the paths itself and writes a carriage tag, which rGFA has no field for; the
-graph view then shows which samples cross each node.
+graph track then shows which samples cross each node.
 
 The OMIA lane comes from OMIA's nightly database dump.
 [`build_omia_cattle_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_cattle_variants.sh)

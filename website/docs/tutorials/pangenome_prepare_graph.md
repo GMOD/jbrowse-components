@@ -136,7 +136,7 @@ itself never has to be served.
 
 The config's first track is the graph. Its `uri` is the prefix, from which the
 adapter resolves the segment and link pair, and `coarse` names the bubble tier
-beside it, which the graph pane cuts from instead once the window is wider than
+beside it, which the graph cuts from instead once the view is zoomed out past
 `aboveBpPerPx` bp per pixel. The script derives that handover from the graph's
 mean backbone segment: about 1,000 for HPRC, where a segment is 10 kb, and 1 for
 a pggb graph, where a segment is 17 bp.
@@ -173,7 +173,9 @@ assembly's name differs from it. The contig half of a PanSN name is ordinary
 refName aliasing your assembly already does, so an hg38 spelling chr6 as `6`
 needs nothing further.
 
-With the track showing, the segments tile the window and break where the graph
+The track draws either as its segments, one block each, or as the graph, and
+**Display types** in its track menu picks which. As segments, under **Display
+types → Feature display**, they tile the window and break where the graph
 branches.
 
 <Figure caption="The HPRC graph's segment index drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
@@ -182,18 +184,18 @@ The other three tracks the script writes read the files beside the pair: the
 bubbles as a feature lane and again as a curve of segments per bubble, and the
 allele inventory as an alignments track, whose CIGAR draws a 63 kb insertion at
 its real magnitude where a feature track would draw it one pixel wide. With all
-four showing, the graph track's menu **Launch → Graph genome view (this
-region)** opens the window as a graph under the linear view, anchored to its
-coordinates, and the graph follows the linear view from then on.
+four showing, **Display types → Graph** in the graph track's menu draws the
+window as a graph, anchored on the view's coordinates, and the graph moves with
+the view from then on.
 
-<Figure caption="The four tracks the command writes, over the C4 region on hg38: the graph track, the bubbles as a lane and as a curve, and the allele inventory, above the graph launched from the graph track's menu, anchored under the linear view and following it." src="/img/pangenome/host_your_own.png" />
+<Figure caption="The four tracks the command writes, over the C4 region on hg38: the bubbles as a lane and as a curve, the allele inventory, and the graph track at the bottom, drawn as a graph anchored on the view's coordinates." src="/img/pangenome/host_your_own.png" />
 
 ## Opening a node on the haplotype that contributed it
 
 An allele's rGFA name places it on the haplotype that contributed it, as in
 `NA20809#2#CM094351.1`, and the node's right-click menu offers **Open in** that
 haplotype when the session holds an assembly whose name or alias is its
-`sample#haplotype`. The launched view shows whatever the session annotates that
+`sample#haplotype`. The view it opens shows whatever the session annotates that
 assembly with. The config the HPRC page opens is the worked example: it declares
 each release 2 haplotype as its chromosome lengths alone, named `NA20809.2` with
 `NA20809#2` as an alias, beside that haplotype's CAT genes as a tabix-indexed

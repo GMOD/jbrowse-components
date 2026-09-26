@@ -54,10 +54,9 @@ genotypes of 100 of its samples (Dolzhenko et al. 2024):
 
 Open the session below on the hosted HPRC config. It opens _ABCA7_ with the
 RefSeq genes, the catalogue's own row for the VNTR as a session track, and
-PacBio's TRGT genotypes of the same samples, and under them a graph view cut
-from the release's gbz-base database over the same window for every haplotype
-the graph holds, drawn in **Walk rows** from the **Layout** dropdown with
-**Uniform** from the **Color** dropdown:
+PacBio's TRGT genotypes of the same samples, and under them the graph, cut from
+the release's gbz-base database over the same window for every haplotype the
+graph holds, drawn in the **Walk rows** layout with **Uniform** color:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {

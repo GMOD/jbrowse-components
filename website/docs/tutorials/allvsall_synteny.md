@@ -304,10 +304,11 @@ a block came from:
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base. The rest of that menu is the one from alignments tracks.
 
-The figure below adds a second pane, the same window in the pangenome graph,
-which [the next section](#the-same-gap-drawn-as-a-graph) picks up. The shaded
-band is K-12's phenylacetate (paa) operon: Sakai, CFT073 and IAI39 stop at its
-left edge where NCTC86 runs through.
+The figure below adds the pangenome graph as a track under the lanes, the same
+window drawn as a graph, which
+[the next section](#the-same-gap-drawn-as-a-graph) picks up. The shaded band is
+K-12's phenylacetate (paa) operon: Sakai, CFT073 and IAI39 stop at its left edge
+where NCTC86 runs through.
 
 <Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
@@ -364,14 +365,14 @@ by name in every lane.
 
 <Figure caption="The paa operon island on K-12 with a flank on each side. Graph depth drops from five genomes to two across the island and comes back after it. In the all-vs-all lanes below, each genome's island genes (feaR, tynA and the paa operon) are red: K-12 and NCTC86 carry them, while CFT073, Sakai and IAI39 annotate none and go straight from one flank to the other." src="/img/multiway_synteny/ecoli_island_lanes.png" />
 
-### The gap in the graph genome view {#the-same-gap-drawn-as-a-graph}
+### The gap in the graph {#the-same-gap-drawn-as-a-graph}
 
 Sequence absent from the alignment is absent from the PAF; in the graph the
 island is a segment, and each strain's walk goes through it or detours around
 it. The E. coli tutorials build that minigraph graph, and the
-[graph genome view](/docs/user_guides/graph_genome_view) plugin opens a window
-of it beside the alignment. The ringed segment, `s502`, is the long node
-carrying the island.
+[graph genome view](/docs/user_guides/graph_genome_view) plugin draws a window
+of it as a track beside the alignment. The ringed segment, `s502`, is the long
+node carrying the island.
 
 The lower band is blank across the island, which is a substitution: each strain
 carries a distinct island there, the phenylacetate operon and a prophage on

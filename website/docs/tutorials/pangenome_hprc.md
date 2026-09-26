@@ -2,9 +2,10 @@
 title: 'Pangenome (HPRC): browsing the graph'
 sidebar_label: Pangenome (HPRC 1, browsing)
 description:
-  Open HPRC release 2's pangenome graph from genomes.jbrowse.org, move it along
-  a chromosome from the linear view, follow one allele to the haplotype that
-  carries it, and read how many kringle copies eight haplotypes carry in LPA
+  Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of
+  the linear view, move it along a chromosome, follow one allele to the
+  haplotype that carries it, and read how many kringle copies eight haplotypes
+  carry in LPA
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
@@ -14,8 +15,8 @@ A pangenome graph records what a set of genomes share and where they diverge, so
 sequence that one person carries and the reference lacks is an object in the
 file. The Human Pangenome Reference Consortium's release 2 builds 464 human
 haplotypes into one such graph. We open it at the MHC class II locus from the
-consortium's page on genomes.jbrowse.org, where it draws under a linear view of
-GRCh38 and moves when that view moves. We then follow one allele back to the
+consortium's page on genomes.jbrowse.org, where it draws as a track of a linear
+view of GRCh38 and moves with the view. We then follow one allele back to the
 haplotype that carries it, and read how many copies of the LPA kringle repeat
 eight haplotypes carry. [Part 2](/docs/tutorials/pangenome_hprc_part2) reads who
 carries each allele across the release, and
@@ -68,12 +69,12 @@ minigraph merges their near-identical copies onto one path.
 <Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows open only the callset and the gene hub. The boxed link is the graph launch the next step takes." src="/img/pangenome/genomes_hprc_loci.png" />
 
 Press **graph** on the HLA / MHC row. JBrowse opens in a new tab on
-`chr6:32,510,001-32,600,000`, the MHC class II window, in two panels. The linear
-view above holds the RefSeq genes, the graph's bubbles, its allele inventory and
-its rGFA segments, one block per graph segment. The panel below draws the same
-window as a graph.
+`chr6:32,510,001-32,600,000`, the MHC class II window. The linear view holds the
+RefSeq genes, the graph's bubbles, its allele inventory and its rGFA segments,
+one block per graph segment, and under them the graph itself, a track that draws
+the same window as a graph.
 
-<Figure caption="The graph launch at MHC class II: RefSeq genes, bubbles, the allele inventory and the rGFA segments above, and the same window below as an anchored graph, its backbone under the linear view's coordinates, colored by reference position with alleles in charcoal." src="/img/pangenome/genomes_hprc_mhc_graph.png" />
+<Figure caption="The graph launch at MHC class II: RefSeq genes, bubbles, the allele inventory and the rGFA segments, and the graph track under them, anchored on the view's coordinates, colored by reference position with alleles in charcoal." src="/img/pangenome/genomes_hprc_mhc_graph.png" />
 
 ## Reading the cut
 
@@ -97,28 +98,27 @@ length and its rank, and rank 0 is the backbone. The hover also bands the node's
 interval across the lanes above, and hovering a block in the segments lane
 lights its node below.
 
-Color ties the two panels together as well. The graph opens colored by
+Color ties the graph to the lanes above it as well. The graph opens colored by
 **Reference position**, red at the start of the window to magenta at its end,
 and the segments lane above takes the same ramp. An allele sits on another
 assembly's sequence and has no GRCh38 position, so it draws in charcoal.
 
-The view draws the RefSeq genes onto the backbone too: exons as dark stretches
+The graph draws the RefSeq genes onto the backbone too: exons as dark stretches
 along the reference nodes that carry them, with each gene's name pinned under
-the backbone. **View menu → Settings** turns off either layer, **Genes on the
-backbone** or **Mark bubbles**.
+the backbone. **Genes on the backbone** and **Mark bubbles** in the graph
+track's menu turn off either layer.
 
-## The graph follows the linear view
+## The graph moves with the view
 
-Type the C4 window, `chr6:31,980,000-32,050,000`, into the linear view's
-location box and press Enter. The linear view moves half a megabase towards the
-centromere and the graph cuts the new window under it. Scrolling or zooming the
-linear view moves the graph with it, and the graph cuts again once the view
-leaves the window it last cut.
+Type the C4 window, `chr6:31,980,000-32,050,000`, into the location box and
+press Enter. The view moves half a megabase towards the centromere and the graph
+track cuts the new window. Scrolling or zooming moves the graph with the lanes
+above it, and the track cuts again once the view leaves the window it last cut.
 
-Now pick **Force-directed layout** from the graph's **Layout** dropdown. The
-force layout draws the graph by its shape, with no GRCh38 axis to line up with
-the view above, so the graph stops following and the toolbar says why. **Pin**
-in the same toolbar holds any layout where it is, and **Follow** hands it back.
+Now open the graph track's menu and pick **Layout → Force-directed layout**. The
+force layout draws the graph by its shape, with no GRCh38 axis, so it draws in
+coordinates of its own fitted to the track, and the menu gains **Zoom in**,
+**Zoom out** and **Zoom to fit** for it.
 
 <Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window, both colored by reference position. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
 
@@ -129,20 +129,19 @@ the arc itself.
 
 ## A chromosome and back
 
-Pick **Anchored** from the **Layout** dropdown again, and the graph follows once
-more. Type `chr6` into the location box. The segments track names a zoom,
-`aboveBpPerPx` in its `coarse` slot, past which the graph switches from its
-segments to its bubble tier: one node per bubble, with the invariant reference
-between bubbles as backbone, so the whole chromosome draws. The toolbar reads
-**Following the linear view, coarse tier**, and the lanes above show a zoom-in
-message at this width.
+Pick **Layout → Anchored** again, which puts the graph back on the view's
+coordinates. Type `chr6` into the location box. The graph track names a zoom,
+`aboveBpPerPx` in its adapter's `coarse` slot, past which it cuts its bubble
+tier instead of its segments: one node per bubble, with the invariant reference
+between bubbles as backbone, so the whole chromosome draws. The lanes above show
+a zoom-in message at this width.
 
 Type the MHC class II window, `chr6:32,510,001-32,600,000`, to come back. Past
 the same zoom the graph crosses back to the segments, and the class II cut
 returns. [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph)
 builds the tier and writes the `coarse` slot.
 
-<Video src="/media/pangenome/hprc_browse.mp4" caption="HPRC release 2 from the HPRC page: the HLA / MHC graph launch, the graph following the linear view to C4, out to the bubble tier across chromosome 6 and back to MHC class II, and one allele highlighted in hg38 and opened on the haplotype that contributed it." />
+<Video src="/media/pangenome/hprc_browse.mp4" caption="HPRC release 2 from the HPRC page: the HLA / MHC graph launch, the graph track moving with the view to C4, out to the bubble tier across chromosome 6 and back to MHC class II, and one allele highlighted in hg38 and opened on the haplotype that contributed it." />
 
 ## From an allele to its haplotype
 
@@ -168,9 +167,10 @@ haplotype's chromosome 6 as exactly as a backbone segment sits on GRCh38.
 
 The config the HPRC page opens declares each release 2 haplotype as an assembly,
 this one as `NA20809.2` with `NA20809#2` among its aliases, so the node's menu
-also offers **Open in NA20809.2**. Take it. A linear view of that haplotype's
-chromosome 6 opens under the graph, framed on the allele, with the haplotype's
-CAT gene annotation. Zoom that view out a few steps for the genes around it.
+also offers **Open in NA20809.2**. Take it. A second linear view opens below the
+first, on that haplotype's chromosome 6, framed on the allele, with the
+haplotype's CAT gene annotation. Zoom that view out a few steps for the genes
+around it.
 
 <Figure caption="The same launch in two frames. First, the MHC class II cut with the NA20809.2 allele ringed and its right-click menu open on Open in NA20809.2. Second, the view that entry opens: NA20809 haplotype 2's chromosome 6 with its CAT genes, which put HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 
@@ -181,51 +181,52 @@ and that haplotype's annotation has no _HLA-DRB5_ model at all.
 
 _LPA_ carries a tandem array of kringle IV type 2 (KIV-2) copies, and how many
 copies a haplotype carries is inversely related to its level of lipoprotein(a),
-a heritable risk factor for heart disease (Schmidt et al. 2016). Pick
-**Anchored** in the graph's **Layout** dropdown so it follows again, type the
-LPA window, `chr6:160,525,000-160,655,000`, into the location box, and then pick
-**Force-directed layout**. The array draws as a knot of loops, and the halo
-around it labels it a repeat array.
+a heritable risk factor for heart disease (Schmidt et al. 2016). Type the LPA
+window, `chr6:160,525,000-160,655,000`, into the location box, and pick **Layout
+→ Force-directed layout** from the graph track's menu. The array draws as a knot
+of loops, and the halo around it labels it a repeat array.
 
 <Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains, the HPRC bubbles and the rGFA segments above the force-directed graph. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 Every loop in the knot is a different number of copies. Click the array's label,
-the purple one on the knot: the view cuts the bubble's segments out and lays
-them out alone, with a button back to the window. A bubble inside the array
-carries a separate label to click in turn. The rGFA records which segments exist
-and how they link, and no haplotype walks through it, so this cut holds no
-record of who takes which loop.
+the purple one on the knot: the track lays the bubble's segments out alone, with
+a button back to the window. A bubble inside the array carries a separate label
+to click in turn. The rGFA records which segments exist and how they link, and
+no haplotype walks through it, so this cut holds no record of who takes which
+loop.
 
 ## One haplotype's copies
 
 A **walk** is one haplotype's route through the graph. The release publishes its
 base-level graph, one walk per haplotype, as a gbz-base database that answers a
-window over HTTP, and the config the HPRC page opens reads it as a track. Type
-the array's own window, `chr6:160,616,002-160,646,753`, open the linear view's
-menu, take **Launch → Graph genome view (this region)**, and pick the gbz-base
-track, `HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)`,
-from the submenu. A second graph pane opens on the walks of GRCh38 and the eight
-haplotypes the track names, and the **Haplotypes** field under that pane's
-**View menu → Settings** cuts it again for any others. Pick **Force-directed
-layout** in the new pane.
+window over HTTP, and the config the HPRC page opens reads it as a track,
+`HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)`. Type the
+array's own window, `chr6:160,616,002-160,646,753`, and turn that track on from
+the track selector. It draws one lane per haplotype, and **Display types →
+Graph** in its track menu draws the same track as a graph of their walks
+instead, cut from the database in a few seconds. The **Haplotypes** field in the
+track menu's **Settings** names the walks the cut holds beside GRCh38's; enter
+the eight lanes the track drew,
+`HG00097.1, HG00099.1, HG00128.1, HG00133.1, HG01109.1, HG01123.1, HG01960.1, HG02055.1`,
+and pick **Layout → Force-directed layout**.
 
 A node draws thicker the more of the nine walks carry it, Bandage's depth drawn
 as width, so the backbone every haplotype shares is the thick line and the
 copies one haplotype alone carries are the thin loops. Each route over a
 kilobase carries a chip naming the haplotypes that take it, and with nine walks
-through one array the chips stack over the loops, so turn **View menu → Settings
-→ Mark bubbles** off. The **Walk** dropdown in the toolbar names each haplotype
-in the cut. Pick `HG00133`: its route keeps its ink while every other node and
-link fades, and a readout beside the legend gives the walk's length through the
+through one array the chips stack over the loops, so untick **Mark bubbles** in
+the track menu. The same menu's **Walk** submenu names each haplotype in the
+cut. Pick `HG00133`: its route keeps its ink while every other node and link
+fades, and a readout beside the legend gives the walk's length through the
 window against the reference walk.
 
-<Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked in the Walk dropdown. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
+<Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
-Pick **Walk rows** in the **Layout** dropdown to read every haplotype at once,
-and **Uniform** from the **Color** dropdown so GRCh38's bar draws in the same
-blue. Each walk becomes a bar in that walk's bp, longest first, blue where
-GRCh38 carries the same sequence and purple where it does not, so the copies a
-haplotype adds read as the length of its purple stretch.
+Pick **Layout → Walk rows** to read every haplotype at once, and **Color →
+Uniform** so GRCh38's bar draws in the same blue. Each walk becomes a bar in
+that walk's bp, longest first, blue where GRCh38 carries the same sequence and
+purple where it does not, so the copies a haplotype adds read as the length of
+its purple stretch.
 
 <Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies GRCh38 does not carry, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 

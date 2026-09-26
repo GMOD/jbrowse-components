@@ -73,17 +73,16 @@ On the [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), the
 **Graph** line opens a whole chromosome and the **Loci** table the graph's most
 variable loci. Click **chr13** on the **Graph** line. JBrowse opens GRCm39's
 chromosome 13 with the genes, a curve of segments per bubble and the bubble tier
-as lanes, and under them the graph, cut from the same tier at one node per
-bubble. The graph follows the linear view, and zoomed in past the handover the
-segments track names, it cuts the segments.
+as lanes, and under them the graph track, cut from the same tier at one node per
+bubble. It moves with the view like the lanes above it, and zoomed in past the
+handover its adapter names, it cuts the segments.
 
 ## Nnt: a deletion that appears as an insertion
 
-Start at _Nnt_. Type `chr13:119,440,000-119,600,000`, and the graph follows the
-view down and cuts the segments there. Pick **Force-directed layout** from the
-**Layout** dropdown, which holds the graph at this cut, since the force drawing
-has no reference axis to follow. Turn on the bubbles and segments tracks in the
-track selector to read the window lane by lane, as the figure does.
+Start at _Nnt_. Type `chr13:119,440,000-119,600,000`, and the graph track cuts
+the segments there. Pick **Layout → Force-directed layout** from its track menu.
+Turn on the bubbles and segments tracks in the track selector to read the window
+lane by lane, as the figure does.
 
 C57BL/6J carries a well-known multi-exon deletion at _Nnt_ that abolishes the
 protein and makes B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the
@@ -107,8 +106,8 @@ curated list, and the rows above _Dock2_'s are bubbles hundreds of kilobases to
 megabases wide. _Dock2_'s row is the densest bubble that still fits in one cut,
 inside one intron at `chr11:34,516,044-34,560,497`. Click its **graph** link.
 The window opens with the genes, the bubbles, the allele inventory and the
-segments as lanes, and the graph following under them. Pick **Force-directed
-layout** from the **Layout** dropdown:
+segments as lanes, and the graph track under them. Pick **Layout →
+Force-directed layout** from its track menu:
 
 <Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane shows only intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and every charcoal stretch is sequence it lacks, so each loop is a place where other strains depart from the reference." src="/img/pangenome/mouse_dock2.png" />
 
@@ -130,9 +129,9 @@ its segment count and the span of its routes. A bubble that fills the whole
 drawing gets the label and no halo, because a halo around everything would mark
 nothing.
 
-The view pins Dock2 under the backbone, and no exon stretch appears anywhere in
-the cut. The gene track on the graph and the linear view above it both show that
-the cut is intron.
+The graph pins Dock2 under the backbone, and no exon stretch appears anywhere in
+the cut. The gene track drawn on the graph and the gene lane above it both show
+that the cut is intron.
 
 A superbubble is the index's name for a bubble too big to type. The label gives
 a segment count and a route range and no kind, since the row's numbers describe
@@ -140,16 +139,16 @@ the whole region at once.
 
 ## Open it, and open what is inside
 
-Click the label. The view cuts out the bubble's segments and lays out only
+Click the label. The track cuts out the bubble's segments and lays out only
 those. It then derives bubbles from the popped graph. A backbone node that no
 edge jumps over is a boundary, and whatever lies between two boundaries is a
 bubble. Each derived bubble gets a halo and a label, and one of them opens in
 turn.
 [Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#the-lpa-kringle-repeat)
-opens one such level under its linear view.
+opens one such level in the same track.
 
 Each level has a button that returns to the level above, so you climb back out
-in the order you descended. The view types the labels at each level the way the
+in the order you descended. The track types the labels at each level the way the
 index types a bubble. The type comes from the reference interval a bubble
 replaces and from the shortest and longest route through it. The layering gives
 those values for any anchored graph.
@@ -171,7 +170,7 @@ tabix https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed
 ```
 
 The label printed this same segment count and route span. No file holds the
-bubbles inside it. The view derives them from the popped graph's layering each
+bubbles inside it. The track derives them from the popped graph's layering each
 time the level opens, and discards them when the level closes.
 
 ## Build it yourself

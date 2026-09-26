@@ -421,10 +421,10 @@ and sorting the pileup.
 `.min` and `.zipcodes` built from it, so a second run refuses to start. `touch`
 the two derived files before re-mapping.
 
-## Opening the graph in the graph genome view
+## Drawing the graph as a graph {#opening-the-graph-in-the-graph-genome-view}
 
-JBrowse can also draw the graph as a graph, through the
-[graph genome view plugin](/docs/user_guides/graph_genome_view).
+JBrowse can also draw the graph as a graph, as a track of the linear view,
+through the [graph genome view plugin](/docs/user_guides/graph_genome_view).
 [Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
 covers installing the plugin and the one command that indexes a graph for it.
 
@@ -445,8 +445,8 @@ bash build_pangenome_graph.sh mc/ecoli.sv.gfa.gz ecoli_cactus_sv
 
 It writes the segments and links, the bubbles, a tier of one node per bubble,
 the allele inventory and `ecoli_cactus_sv.config.json`, whose graph track names
-the tier under `coarse`. Zoomed out past that track's handover, a following
-graph cuts the tier, so the whole K12 chromosome draws as a graph.
+the tier under `coarse`. Zoomed out past that track's handover, the graph track
+cuts the tier, so the whole K12 chromosome draws as a graph.
 
 The figures below draw the base-level graph, where every SNP is a bubble. The
 [build script](#reproduce-it-end-to-end) indexes it by walking its path lines,
@@ -477,27 +477,27 @@ shared prefix:
 }
 ```
 
-The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
-genome view (this region)** opens the window on screen as a graph under the
-linear view, which the graph then follows.
+The track draws on K12 either as its segments, one block each, or as the graph:
+**Display types → Graph** in its track menu draws the window on screen as a
+graph on K12's coordinates, and **Display types → Feature display** puts the
+segments back.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session, the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) run from the segments lane's menu, which opens the graph on K12's coordinates under the lane it follows and paints the lane in the graph's colors." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and the track switched to Display types → Graph, which draws the graph on K12's coordinates." />
 
-A kilobase or two is the width to open one at. Past the flagellar operon, K12
+A kilobase or two is the width to draw one at. Past the flagellar operon, K12
 carries an IS1 element the other four skip. Type `chr:1,978,100-1,979,700`, and
-the graph follows the view there. Pick **Force-directed layout** from the
-**Layout** dropdown to see the element's shape; the force drawing has no
-reference axis, so it holds the graph at this cut. A second copy of the segments
-track, colored by the `SM:Z:` carriage the walk recorded, shows which segments
-those are; the pggb page gives
+the graph track cuts that window. Pick **Layout → Force-directed layout** from
+its track menu to see the element's shape. A second copy of the segments track,
+colored by the `SM:Z:` carriage the walk recorded, shows which segments those
+are; the pggb page gives
 [that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane).
 
-<Figure caption="1.6 kb of K12 past flhD, as a linear view above and as a graph below, both reading the same two tabix indexes. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
+<Figure caption="1.6 kb of K12 past flhD, as lanes above and as the graph track below, both reading the same two tabix indexes. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
 The linear view and the graph both run the reference position ramp over the
 cut's region, so a color in the lane is that color in the graph. The other four
 strains' route is a link from the node before the IS1 element to the node after
-it. **Show deletion edges** in the view menu draws that link dashed, labelled
+it. **Show deletion edges** in the track menu draws that link dashed, labelled
 with the length of the node it skips; it carries no sequence, so its drawn
 length comes from the layout.
 

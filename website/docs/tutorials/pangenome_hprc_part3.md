@@ -122,13 +122,13 @@ gap, and the length of each lane carries the haplotype's copy count.
 
 <Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one of each span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, and the lane's length across the array carries the copy count; each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
-Walk rows draws that length as a bar. Open the linear view's menu, take **Launch
-→ Graph genome view (this region)**, and pick the gbz-base track,
-`HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)`, from the
-submenu. The view cuts the window from the database for the five lanes on screen
-and opens the cut under the linear view. Pick **Walk rows** from the graph's
-**Layout** dropdown and **Uniform** from its **Color** dropdown: each
-haplotype's walk becomes a bar in that walk's bp, longest first, and each
+Walk rows draws that length as a bar. Open the lanes' track menu and take
+**Display types → Graph**, which draws the same track as a graph cut from the
+database over the window. Enter the five lanes in the **Haplotypes** field of
+the track menu's **Settings**,
+`HG01361.1, HG00133.2, HG00133.1, NA18608.2, HG00232.1`, so the cut holds their
+walks beside GRCh38's. Then pick **Layout → Walk rows** and **Color → Uniform**:
+each haplotype's walk becomes a bar in that walk's bp, longest first, and each
 readout gives the walk's length and its excess over GRCh38's.
 
 <Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, blue where GRCh38 carries the same sequence and purple where it does not. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />

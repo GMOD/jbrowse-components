@@ -184,27 +184,25 @@ the curve, and the tier lane with one block per bubble.
 <Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three chr1 loci these pages open, then two lanes from one file. The blue curve is segments per bubble, how much the haplotypes disagree at each locus; the tier lane draws the same bubbles, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 Use the two granularities together: the tier to find an event, and the fine
-index to open it. Close the chromosome's graph pane from its title bar, type
-`chr6:31,500,001-33,500,000`, the whole MHC, and cut it from the tier lane's
-menu with **Launch → Graph genome view (this region)**. One node per bubble
-draws the two megabases. Press **Pin** in that graph's toolbar so it holds this
-cut. Hover the widest node in the middle for its span, and right-click it for
-**Open in hg38**, which puts the linear view on that bubble. Drag across the
-band of the ruler the bubble now fills and choose **Graph genome view (this
-selection)**; the submenu names the session's graph tracks, and the rGFA
-segments' entry opens the fine cut as a second pane under the pinned one.
+index to open it. Back in the tab the HLA / MHC **graph** link opened, type
+`chr6:31,500,001-33,500,000`, the whole MHC. At this width the view is past the
+graph track's handover, so the graph draws the two megabases one node per
+bubble. Hover the widest node in the middle for its span, and right-click it for
+**Open in hg38**, which puts the view on that bubble. Back under the handover,
+the graph track cuts the same span again from the fine index, one node per
+segment.
 
-<Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in the linear view, the fine segments lane drawing once the view lands on its span, and a drag across that span cut from the fine index into a second graph pane." />
+<Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in hg38, and once the view lands on its span, the fine segments lane drawing and the graph track cutting the same span from the fine index." />
 
 ## The allele inventory
 
 The bubbles report where the graph varies. The allele inventory reports what the
 variation is: one row per allele in the graph, anchored on GRCh38, derived from
-the graph's segment and link indexes. Back in the tab the HLA / MHC graph launch
-opened, the allele inventory lane packs the window's alleles into rows. It is an
-`AlignmentsTrack` over a BED: each row carries a `CIGAR` against the reference
-span it replaces (`2062M63348I`), the alignments display draws any row that has
-a CIGAR, and each insertion draws at its real magnitude.
+the graph's segment and link indexes. In the same tab, the allele inventory lane
+packs the window's alleles into rows. It is an `AlignmentsTrack` over a BED:
+each row carries a `CIGAR` against the reference span it replaces
+(`2062M63348I`), the alignments display draws any row that has a CIGAR, and each
+insertion draws at its real magnitude.
 
 The whole graph holds a few hundred thousand alleles, so a wide window is dense.
 The
@@ -214,8 +212,8 @@ that make a lane this size readable: `jexl:abs(feature.delta)>10000` for size,
 and `jexl:feature.nested==0` before reading lengths in bulk.
 
 Type the CFH cluster on chr1, `chr1:196,700,000-196,900,000`. One of the lane's
-rows there is the 84,684 bp deletion of _CFHR3_ and _CFHR1_, and the graph below
-follows to the same window, where the same deletion is an edge: under the
+rows there is the 84,684 bp deletion of _CFHR3_ and _CFHR1_, and the graph track
+below cuts the same window, where the same deletion is an edge: under the
 anchored layout its dashed arc spans exactly the bases it removes. The figure
 sets two haplotypes from the release's all-vs-GRCh38 alignment beside it, one
 that carries the deletion and one that does not.
@@ -242,7 +240,7 @@ jexl:(feature.INFO.LV[0]==0 || feature.start==32517421) && alleleLength(feature)
 ```
 
 Cluster it as above, hide the bubbles and the allele inventory from their track
-menus, pick **Force-directed layout** in the graph's **Layout** dropdown, and
+menus, pick **Layout → Force-directed layout** from the graph track's menu, and
 right-click the charcoal allele beside _HLA-DRB5_ for **Highlight in hg38**. The
 band crosses the genes, the segments lane and the genotype matrix in one column.
 The reference-position ramp gives the backbone at that position the same hue as
@@ -288,8 +286,8 @@ Two clustering runs order the rows: **Clustering → Cluster rows by genotype...
 on the callset, and **Clustering → Cluster rows by identity...** on the
 alignment, which computes over the window in view, since HPRC's file ships no
 guide tree; **Reset row order** puts back whatever the file supplied. The graph
-under all four is still pinned on MHC class II: pick **Anchored** and it follows
-to C4, then **Force-directed layout** to draw that cut by its shape.
+track under all four cut C4 when the view moved there, still in the
+force-directed layout.
 
 <Figure caption="C4 on one axis: the RefSeq genes, the rGFA segments, the callset's haplotypes clustered by genotype, a subtree of them as alignment rows clustered by identity, white where a haplotype has no aligned sequence, and the window as a force-directed graph. The band marks the pseudogene pair between C4A and C4B, and the haplotypes with no sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
 

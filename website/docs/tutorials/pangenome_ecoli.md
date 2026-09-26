@@ -695,12 +695,11 @@ path-guided stochastic gradient descent over the whole graph; the graph view's
 force-directed layout is Bandage's FMMM over one cut window, plus two anchored
 layouts.
 
-## Opening the graph in the graph genome view
+## Drawing the graph as a graph {#opening-the-graph-in-the-graph-genome-view}
 
-JBrowse can also draw the graph as a graph beside a linear view of the same
-window, through the
-[graph genome view plugin](/docs/user_guides/graph_genome_view). That guide
-covers the view and its layouts.
+JBrowse can also draw the graph as a graph, as a track of the linear view,
+through the [graph genome view plugin](/docs/user_guides/graph_genome_view).
+That guide covers the track and its layouts.
 [Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
 covers installing the plugin and the one command that indexes a graph for it,
 which this section runs on the base-level graph.
@@ -758,31 +757,27 @@ our hosted copy, where a local build has the `ecoli_pggb` prefix written above:
 A segment's name is its GFA id, and pggb cuts one every ~17 bp, so `showLabels`
 is off here and in the figures below.
 
-The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
-genome view (this region)** opens the window on screen as a graph under the
-linear view, with no `odgi` step. From then on the graph follows the linear
-view. Type a locus, search a gene or drag a zoom, and the graph moves with it,
-cutting the new window whenever the view leaves the last cut. Rubberbanding the
-ruler and picking **Graph genome view (this selection)** first moves the view to
-the dragged window. With the
+The track draws on K12 either as its segments, one block each, or as the graph:
+**Display types → Graph** in its track menu draws the window on screen as a
+graph on K12's coordinates, with no `odgi` step, and **Display types → Feature
+display** puts the segments back. Type a locus, search a gene or drag a zoom,
+and the graph moves with the view like any other track, cutting the new window
+whenever the view leaves the last cut. With the
 [all-vs-all alignment](/docs/tutorials/allvsall_synteny) open in the same view,
-that **Launch** submenu carries **Linear synteny view** beside it. Each view
-reaches the other again: a drag on any synteny row's scale bar raises the same
-**Launch** menu anchored on that strain, **Replace current view** there
-re-anchors the stack on it, the segments lane's track menu cuts the graph from
-inside the stack, and the
-[graph's own menu](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
-opens the strains as a stack.
+a drag across the ruler offers **Launch → Linear synteny view**, a stack of the
+strains over the dragged window, and a drag on any synteny row's scale bar
+raises the same **Launch** menu anchored on that strain, where **Replace current
+view** re-anchors the stack on it.
 
-<Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, three views: the Launch menu offering the graph beside the synteny stack, the stack anchored on K12 with the segments lane on its top row, that lane's track menu cutting the graph below, and a drag on the Sakai row re-anchoring the stack on Sakai in place." />
+<Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, a synteny stack: the Launch menu over a K12 window, the stack anchored on K12, and a drag on the Sakai row re-anchoring the stack on Sakai in place." />
 
-The clip below takes that from the beginning: a K12 session carrying the plugin
-and its gene track, the block above added through **Open track... → Add
-pangenome graph track**, and the graph cut from the window that leaves. The form
-takes the segments prefix and the track name, and leaves the `coarse` tier to
-the pasted config.
+The clip below takes the graph from the beginning: a K12 session carrying the
+plugin and its gene track, the graph track added through **Open track... → Add
+pangenome graph track**, and the graph it draws over the window that leaves. The
+form takes the segments prefix and the track name, and leaves the `coarse` tier
+to the pasted config.
 
-<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the track above added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the segments lane's menu cutting the graph below, laid out on K12's coordinates under the lane it follows. The graph's nodes are the blocks the lane above draws, and the cut paints that lane in the graph's colors." />
+<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a graph track: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the track switched to Display types → Graph, laid out on K12's coordinates. The graph's nodes are the blocks the segments lane draws." />
 
 In the force layout, a node's drawn length is proportional to its sequence by
 default, so one long arm can swallow the rest of the drawing. **Bubble spread →
@@ -809,9 +804,9 @@ the strains agree on and paints charcoal on the sites they differ at.
 
 The graph track names the tier under `coarse`, and `aboveBpPerPx` is the
 handover. Type `chr:1,250,000-1,350,000`, 100 kb around the IS5 element. The
-linear view is past one bp per pixel there, so the following graph cuts the
-tier. The segments lane refuses a window that wide, and the tier also loads as a
-lane of its own, which draws at any width:
+linear view is past one bp per pixel there, so the graph track cuts the tier.
+The segments lane refuses a window that wide, and the tier also loads as a lane
+of its own, which draws at any width:
 
 ```json addtrack
 {
@@ -836,27 +831,27 @@ lane of its own, which draws at any width:
 }
 ```
 
-<Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane above, and below it the graph, which the segments track cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane above, and below it the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Hover a node for the segments it collapsed, how many traversals cross it, and
 its shortest and longest allele. The tier finds an event and the segments open
-it. A tier node's **Open in K12** takes the linear view to the span it stands
-for, and the graph follows the view in and cuts the segments there.
+it. A tier node's **Open in K12** takes the view to the span it stands for, and
+the graph track cuts the segments there.
 
-<Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the segments: hovering the node marks the K12 span it stands for in the linear view above, and the node's Open in K12 entry moves the view to that span, where the segments lane draws and the graph, following the view, cuts the segments." />
+<Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the segments: hovering the node marks the K12 span it stands for in the lanes above, and the node's Open in K12 entry moves the view to that span, where the segments lane draws and the graph track cuts the segments." />
 
-Switching **Layout** to **Sample rows** gives each strain its own row. On this
-graph a row means carriage, since it names a path that walks the segment; on an
-rGFA it means build order, from minigraph's `SR`.
+**Layout → Sample rows** in the track menu gives each strain its own row. On
+this graph a row means carriage, since it names a path that walks the segment;
+on an rGFA it means build order, from minigraph's `SR`.
 
 This layout reads each segment individually, so it wants a few hundred bp. Type
-`chr:1,004,500-1,004,961`, and the graph follows the view down to it. A row's
-bar is drawn over the **reference it replaces**, never over its own sequence
-length, so the tooltip gives an insertion's length. That is why CFT073's row
-draws one long bar labelled `7 kb del` running off the left edge: its segment is
-75 bp on CFT073's own contig, and its two links land on `K12:1,004,667` inside
-the window and on `K12:997,574` 7.1 kb upstream. `pggb -V` writes the same event
-as one record at `chr:997,575` genotyped in CFT073 alone, and it is drawn again
+`chr:1,004,500-1,004,961`, and the graph track cuts that window. A row's bar is
+drawn over the **reference it replaces**, never over its own sequence length, so
+the tooltip gives an insertion's length. That is why CFT073's row draws one long
+bar labelled `7 kb del` running off the left edge: its segment is 75 bp on
+CFT073's own contig, and its two links land on `K12:1,004,667` inside the window
+and on `K12:997,574` 7.1 kb upstream. `pggb -V` writes the same event as one
+record at `chr:997,575` genotyped in CFT073 alone, and it is drawn again
 [below](#out-of-the-graph-into-the-strain) from CFT073's own coordinates.
 
 In **Sample rows** the top row is the K12 backbone, and below it each strain's
@@ -864,11 +859,12 @@ marks are the segments it takes instead, in the MAF's own row order.
 
 <Figure caption="460 bp at the ycbF/pyrD boundary in Sample rows, under the MAF lane. CFT073's row is the long bar running off the left edge, and its MAF row is empty over the same span." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
-The dropdown redraws the same nodes force-directed. The force drawing has no
-reference axis, so the graph stops following while it is up and the toolbar says
-so; switching back to **Sample rows** resumes the following:
+**Layout → Force-directed layout** redraws the same nodes by their shape. The
+force drawing has no reference axis, so it draws in coordinates of its own,
+fitted to the track, until **Layout → Sample rows** puts the nodes back on
+K12's:
 
-<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes extend from the backbone where the rows had flattened them." />
+<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the track menu's Layout submenu. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes extend from the backbone where the rows had flattened them." />
 
 #### Who carries a segment
 
@@ -930,8 +926,7 @@ The last color in the chain is the fallback: an rGFA has no tag column, so
 A segment the reference never visits sits on **its own carrier's coordinates**,
 so the graph can open the strain itself. Right-click the 75 bp CFT073 segment
 and pick **Open in CFT073**: it opens CFT073 at `1,048,515` with CFT073's gene
-track. The **Launch** cascade in the view menu is the whole-window version of
-the same thing.
+track.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, and the view its Open in entry adds: CFT073 in CFT073 coordinates, with its gene track already under it." />
 
@@ -944,8 +939,7 @@ straight into _pyrD_.
 
 The
 [graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
-covers the rest of that menu, including the synteny entry that opens every
-contributing strain at once.
+covers the rest of the node's menu.
 
 #### Limits of the locus index
 
@@ -959,8 +953,8 @@ Three limits on browsing a base-level graph by locus:
   prefer the SV-resolution minigraph graph for whole-genome browsing, as the
   [HPRC tutorial](/docs/tutorials/pangenome_hprc) does.
 - **A cut of segments covers a small window.** At 17 bp per segment, 3 kb is a
-  solid braid, and the view declines past its node budget; a wider window is the
-  tier's.
+  solid braid, and the track declines past its node budget; a wider window is
+  the tier's.
 
 A segment carried by several assemblies draws on one row, the first path that
 walks it; the rest are in the node popup under
@@ -972,7 +966,7 @@ puts one locus through both graphs.
 
 <Figure caption="One stretch of K12 at the colanic acid cluster through both graphs, each over the window it can draw. Left, the minigraph rGFA. Right, the pggb graph, with a node at every variant." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
 
-Both panes are colored by reference position over the same 28 kb. Browse the
+Both halves are colored by reference position over the same 28 kb. Browse the
 rGFA whole-genome, and open the pggb graph where you want every base.
 
 ### A window as a file
@@ -986,8 +980,8 @@ commands cut one:
 - `view -g` writes GFA
 
 `-E` is the aggressive option; `-c`/`-d` expand by a bounded number of steps or
-bp instead, the same bound the view's own **Graph context** setting applies when
-it cuts from an index:
+bp instead, the same bound the graph track's own **Graph context** setting
+applies when it cuts from an index:
 
 ```bash
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - \
