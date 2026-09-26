@@ -76,7 +76,13 @@ import { partnerShares } from '../chords/partnerShares.ts'
 import { samePointerTarget } from '../chords/shapes.ts'
 import { RingHost } from '../rings/ringHost.ts'
 import { circularLegendSpec } from './circularLegend.ts'
-import { elideRegions, elisionMask, fitLayout } from './fitLayout.ts'
+import {
+  elideRegions,
+  elisionMask,
+  fitLayout,
+  maxBpPerPxFor,
+  ringAt,
+} from './fitLayout.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
 import { ideogramGapPx, ideogramThicknessPx } from './rulerLabels.ts'
 import { calculateStaticSlices, gapUnitsAfter } from './slices.ts'
@@ -510,8 +516,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the circle that fills the box: its scale and radius, and the padding
-       * and spacing the view keeps at every zoom. A pure function of the
-       * regions and the box — see `fitLayout`
+       * the view keeps at every zoom. A pure function of the regions and the
+       * box — see `fitLayout`
        */
       get fitLayout(): FitLayout {
         return fitLayout({
@@ -535,12 +541,22 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * `spacingPx`, capped so the gaps take at most a quarter of the fitted
-       * ring: the SV inspector's circle otherwise drew its chromosomes as
-       * ticks with holes between them
+       * the ring at this zoom: its gaps' spacing and the radius that closes
+       * it — see `ringAt`
+       */
+      get ring() {
+        return ringAt(
+          this.totalBp / self.bpPerPx,
+          this.totalGapUnits,
+          self.spacingPx,
+        )
+      },
+      /**
+       * #getter
+       * `spacingPx`, capped so the gaps take at most a quarter of the ring
        */
       get effectiveSpacingPx() {
-        return this.fitLayout.spacingPx
+        return this.ring.spacingPx
       },
       /**
        * #getter
@@ -552,26 +568,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the radius the current box has room for, which `fitToWindow` sizes
-       * the circle to
        */
-      get fitRadiusPx() {
-        return this.fitLayout.radiusPx
+      get radiusPx() {
+        return this.ring.radiusPx
       },
       /**
        * #getter
        */
       get circumferencePx() {
-        return (
-          sum(this.elidedRegions.map(r => r.widthBp / self.bpPerPx)) +
-          this.totalGapUnits * this.effectiveSpacingPx
-        )
-      },
-      /**
-       * #getter
-       */
-      get radiusPx() {
-        return this.circumferencePx / twoPi
+        return twoPi * this.radiusPx
       },
       /**
        * #getter
@@ -599,8 +604,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get maxBpPerPx() {
-        const minCircumferencePx = twoPi * self.minimumRadiusPx
-        return this.totalBp / minCircumferencePx
+        return maxBpPerPxFor(this.totalBp, self.minimumRadiusPx)
       },
       /**
        * #getter

@@ -58,11 +58,14 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
     top: 0,
   },
+  // a label a zoom reveals can reach past the padding the fit left it, and
+  // runs on to the view's edge rather than stopping at the figure's
   circularSvg: {
     position: 'absolute',
     left: 0,
     top: 0,
     userSelect: 'none',
+    overflow: 'visible',
   },
   grab: {
     cursor: 'grab',

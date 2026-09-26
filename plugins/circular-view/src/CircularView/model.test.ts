@@ -307,6 +307,16 @@ describe('the fixed-pixel geometry gives way in a small box', () => {
     expect(gaps / small.circumferencePx).toBeLessThan(0.26)
   })
 
+  // the fit and the zoom-out clamp read one limit, and the gaps are the
+  // ones the drawn slices have, so a box too short for any circle draws the
+  // least one rather than the one its fit's spacing would have allowed
+  test('a box too short for a circle draws the least one', () => {
+    const short = createView({ regions: chromosomes, width: 800, height: 100 })
+    expect(short.bpPerPx).toBe(short.maxBpPerPx)
+    expect(short.radiusPx).toBeCloseTo(short.fitLayout.radiusPx, 9)
+    expect(short.radiusPx).toBeLessThan(short.minimumRadiusPx * 1.35)
+  })
+
   test('the slices are laid out on the gap the circumference charged for', () => {
     const small = createView({ regions: chromosomes, width: 475, height: 316 })
     const last = small.staticSlices.at(-1)!

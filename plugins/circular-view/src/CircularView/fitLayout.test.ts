@@ -1,4 +1,4 @@
-import { elideRegions, elisionMask, fitLayout } from './fitLayout.ts'
+import { elideRegions, elisionMask, fitLayout, ringAt } from './fitLayout.ts'
 import {
   assemblyBandPx,
   labelOffsetPx,
@@ -31,10 +31,9 @@ function input(regions: Region[], box = 800): FitInput {
 function drawn(fit: ReturnType<typeof fitLayout>, regions: Region[]) {
   const elided = elideRegions(regions, elisionMask(regions, fit.bpPerPx!, 6))
   const units = gapUnitsAfter(elided).reduce((a, b) => a + b, 0)
-  const ringPx =
-    elided.reduce((sum, r) => sum + r.widthBp / fit.bpPerPx!, 0) +
-    units * fit.spacingPx
-  return { elided, units, ringPx }
+  const basesPx = elided.reduce((sum, r) => sum + r.widthBp / fit.bpPerPx!, 0)
+  const { spacingPx } = ringAt(basesPx, units, 10)
+  return { elided, units, spacingPx, ringPx: basesPx + units * spacingPx }
 }
 
 const chromosomes = Array.from({ length: 24 }, (_, i) =>
