@@ -1314,9 +1314,9 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'SKBR3',
-    // taller viewport so both panels, the shortened variant lanes, and the
-    // connecting splines are fully captured
-    viewportHeight: 1000,
+    // Both panels, the shortened variant lanes and the connecting splines,
+    // with nothing under them: 1000 left 176 px of blank the run reported.
+    viewportHeight: 824,
     readyTimeout: 60000,
   },
 

@@ -94,7 +94,7 @@ const TRUTH_SET = TRUTH_SET_TRACK.trackId
 // shared round number.
 const MULTIHOP_HEIGHT = 1126
 // The chain half's three panels, each paying for a gene lane and a pileup.
-const MULTIHOP_CHAIN_HEIGHT = 1126
+const MULTIHOP_CHAIN_HEIGHT = 1188
 const MULTIHOP_WIDTH = 1000
 
 // Per PANEL, so worth four times what it reads as, which is why it was 45 and
@@ -272,7 +272,9 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
   // note above), then measured back down: at 855 the left half's own content
   // stopped 72 px short and the right half's ran 8 px past, so this is the
   // left half as it renders and the right half's rows are sized to meet it.
-  const HEIGHT = 785
+  //
+  // 785 until 2026-09-25, when the clipped-below report asked for 48 px more.
+  const HEIGHT = 833
   const WIDTH = 700
   // Both panels of the split view draw their reads the same way on purpose:
   // the comparison is between the two ENDS of one junction, so a difference in
@@ -772,7 +774,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/derivative_inserts',
-    viewportHeight: 1345,
+    viewportHeight: 1355,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK, TRUTH_SET_TRACK],
@@ -1160,10 +1162,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // quarter. Three columns is the shape the content already has -- menu,
     // dialog, result -- and it is the order the numbers on the frames read in.
     viewportWidth: 900,
-    // 612 is what the blank-below report asks for and it is wrong here: the
-    // blank it measures is the page under a CENTRED dialog, while the page
-    // itself is taller. All three frames take this one, since they share a row.
-    viewportHeight: 700,
+    // The blank-below report is wrong here -- the blank it measures is the page
+    // under a CENTRED dialog, while the page itself is taller -- so its 612 was
+    // ignored. The clipped-below report measures the page and is not wrong:
+    // 700 was cutting 70 px off the result frame, and 771 is that. All three
+    // frames take this one, since they share a row.
+    viewportHeight: 771,
     stageColumns: 3,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',

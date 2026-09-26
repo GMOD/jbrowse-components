@@ -1337,7 +1337,8 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
     readyText: 'HG008-T_PacBio',
     readyTimeout: 180000,
-    viewportHeight: 1000,
+    // 1000 left 56 px of blank under the lower panel's reads.
+    viewportHeight: 944,
   },
 
   // Five somatic SV callsets over one locus, with the depth that explains them.
