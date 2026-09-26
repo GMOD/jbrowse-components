@@ -274,9 +274,9 @@ describe('MockHal texture uploads', () => {
     const hal = new MockHal([twoSamplers])
 
     expect(() => {
-      hal.uploadTexture('point', texels, 1, 1, 'rowTabel')
+      hal.uploadTexture('point', texels, 1, 1, 'rowTables')
     }).toThrow(
-      "pass 'point' has no sampler 'rowTabel'; it samples 'colorRamp', 'rowTable'",
+      "pass 'point' has no sampler 'rowTables'; it samples 'colorRamp', 'rowTable'",
     )
     expect(hal.callsOf('uploadTexture')).toEqual([])
   })
