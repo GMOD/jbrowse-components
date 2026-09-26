@@ -275,10 +275,6 @@ describe('a jexl: colour field', () => {
   }, 60000)
 })
 
-// `marks`, and the `transform` steps under it, are lists of objects — which the
-// path grammar could not index, so the grammar's own settings were the one
-// thing only a raw-JSON modifier could write. A declared mark now reads the way
-// every other setting does.
 describe('a mark declared in paths', () => {
   const marksConfig = (...list: Record<string, unknown>[]) =>
     configWith({ type: 'LinearMarkDisplay', marks: list })
@@ -335,6 +331,32 @@ describe('a mark declared in paths', () => {
       ),
     )
     expect(written).toBe(stated)
+  }, 60000)
+
+  test('a JSON modifier states the list the config would', async () => {
+    const list = [
+      { mark: 'bar', encoding: { y: 'score' } },
+      { mark: 'point', encoding: { y: 'score', color: 'purple' } },
+    ]
+    const written = await exportTrack(configWith(basic), [
+      'display:marks',
+      JSON.stringify({ marks: list }),
+    ])
+    expect(written).toBe(await exportTrack(marksConfig(...list)))
+  }, 60000)
+
+  test('a path repaints one mark of a list the config declares', async () => {
+    const bar = { mark: 'bar', encoding: { y: 'score' } }
+    const point = (color: string) => ({
+      mark: 'point',
+      encoding: { y: 'score', color },
+    })
+    const declared = marksConfig(bar, point('purple'))
+    const repainted = await exportTrack(declared, [
+      'marks.1.encoding.color=red',
+    ])
+    expect(repainted).toBe(await exportTrack(marksConfig(bar, point('red'))))
+    expect(repainted).not.toBe(await exportTrack(declared))
   }, 60000)
 
   // the display's own rule list, reached through a path rather than JSON

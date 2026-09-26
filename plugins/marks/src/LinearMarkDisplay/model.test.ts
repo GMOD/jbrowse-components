@@ -2618,10 +2618,7 @@ test('a scan a newer one aborted answers with the newer one', async () => {
   expect(display.plotFieldsError).toBeUndefined()
 })
 
-// A headless export destroys its session the moment the SVG is out, and over a
-// slow source the scan lands after that. Resuming on a dead node read
-// `self.conf` as undefined and threw out of an async autorun body, which
-// nothing catches — jb2export wrote its image and then exited 1.
+// jb2export destroys its session once the SVG is out, before a slow scan lands
 test('a scan landing after the session is destroyed is dropped', async () => {
   let land: (fields: unknown) => void = () => {}
   const { createDisplay } = createTestEnvironment(

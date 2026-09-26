@@ -819,10 +819,9 @@ wants; a BigWig past its raw section answers a zoom level's mean as `score`,
 with `minScore` and `maxScore` beside it.
 
 A whole plot is a list of objects, so state it as one JSON modifier — the same
-shape the track's config or a session spec would carry. Past its raw section a
-BigWig answers each summary bin's mean as `score`, with `minScore` and
-`maxScore` beside it, so one file draws three marks in one plot: the mean as
-bars, and the least and greatest value of each bin as points.
+shape the track's config or a session spec would carry. Here one BigWig draws
+three marks in one plot: each bin's mean as bars, and its least and greatest
+value as points.
 
 ```bash
 jb2export --fasta ref.fa --bigwig conservation.bw display:marks height:300 \

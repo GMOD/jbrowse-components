@@ -1911,12 +1911,6 @@ export function stateModelFactory(
               const fields = await self
                 .ensurePlotFields()
                 .catch(() => undefined)
-              // The scan is an RPC, and a view can be torn down while one is in
-              // flight — a headless export destroys its session the moment the
-              // SVG is out, and over a slow source that lands first. Resuming
-              // on a dead node read `self.conf` as undefined and threw out of
-              // an async autorun body, which nothing catches: jb2export wrote
-              // its image and then exited 1.
               if (!isAlive(self) || !fields || self.conf.marks.length > 0) {
                 return
               }
