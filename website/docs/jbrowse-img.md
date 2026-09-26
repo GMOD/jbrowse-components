@@ -745,13 +745,13 @@ Available `baseColor:` fields:
 
 These share one display base, so every modifier below applies to both.
 
-| Modifier                                | Example                                        | Description                                                                                                                                                                                                       |
-| --------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `color:value`                           | `color:magenta`                                | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                        |
-| `color:attribute:name`                  | `color:attribute:type`                         | One stable color per distinct value of that feature attribute — the canvas analogue of an alignments `color:tag:XX`                                                                                               |
-| `group:field` or `group:attribute:name` | `group:strand`, `group:attribute:gene_biotype` | Stack the track into one labelled section per value: `strand`, an attribute, or a dotted path such as `INFO.SVTYPE`. The same modifier an alignments track takes, writing the same `facet` setting                |
-| `featureHeight:preset`                  | `featureHeight:compact`                        | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                               |
-| `heightMode:<fixed\|grow\|fit>[:N]`     | `heightMode:fit:200`                           | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
+| Modifier                                | Example                                        | Description                                                                                                                                                                                                                        |
+| --------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `color:value`                           | `color:magenta`                                | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                                         |
+| `color:attribute:name`                  | `color:attribute:type`                         | One stable color per distinct value of that feature attribute — the canvas analogue of an alignments `color:tag:XX`                                                                                                                |
+| `group:field` or `group:attribute:name` | `group:strand`, `group:attribute:gene_biotype` | Stack the track into one labelled section per value: `strand`, an attribute, or a dotted path such as `INFO.SVTYPE`. It writes the same `facet` setting an alignments track's `group:` does, where a field is named `tag:` instead |
+| `featureHeight:preset`                  | `featureHeight:compact`                        | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                                                |
+| `heightMode:<fixed\|grow\|fit>[:N]`     | `heightMode:fit:200`                           | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too                  |
 
 **BigWig tracks**
 
@@ -801,8 +801,10 @@ jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
 
 - `true` and `false` are booleans and a number is a number
 - a comma makes a list, and a trailing comma a list of one: `color.range=tan,`
-- a digit segment indexes a list: `color.range.1=red` changes the second entry
-  where `color.range=tan,teal` says what the whole range is
+- a digit segment indexes a list: `marks.0.mark=bar` writes the first mark and
+  `color.range.0=tan` the first colour of a range, where `color.range=tan,teal`
+  says what the whole range is. An index has to be one the list already reaches,
+  so fill `0` before `1`
 - a `jexl:` item keeps the commas inside its own brackets and quotes:
   `jexlFilters=jexl:get(feature,'score')>5,` is a list of one filter
 - a location keeps the commas grouping its digits:
@@ -818,9 +820,10 @@ draws the marks you declare instead of the glyphs its track type would: a list
 of bars, points, spans, text or links, each naming which feature fields feed
 which channel. It opens over a BAM, CRAM, VCF, GFF3, BED, BigBed, BigWig or
 MultiWiggle track — everything but `--hic` — so what differs between them is
-only which fields answer: a read's `score` is its MAPQ, a variant's is `QUAL`,
-and a BigWig past its raw section answers a zoom level's mean with `minScore`
-and `maxScore` beside it.
+only which fields answer. A read's `score` is its MAPQ; a variant carries its
+quality as `QUAL` and no `score` at all, so a mark over a VCF names the field it
+wants; a BigWig past its raw section answers a zoom level's mean as `score`,
+with `minScore` and `maxScore` beside it.
 
 The marks are a list, and a digit segment indexes one, so a whole figure is
 written in the same `path=value` grammar as any other setting. Score as a point
@@ -1137,10 +1140,14 @@ structural variants) as a circular ideogram with chords drawn between the two
 breakends of each rearrangement. It is single-assembly and shows the whole
 genome (no `--loc`); each track picks its chord display automatically.
 
-The tracks it draws are the ones the track flags and `--track` name, with the
-same display modifiers a linear render takes. Name them over a `--hub` or a
-large `--config`, whose hundreds of tracks would otherwise all be opened — which
-is what a run naming none still means.
+The tracks it draws are the ones the track flags and `--track` name. Name them
+over a `--hub` or a large `--config`, whose hundreds of tracks would otherwise
+all be opened — which is what a run naming none still means.
+
+Display modifiers do not apply here, and a run that passes one says so: the
+modifiers name slots on the LINEAR displays, and this view draws a variant track
+as chords instead. Settings for a circular view go in the config the track comes
+from, or in a `--spec`.
 
 ```bash
 jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out circular.svg
