@@ -11,6 +11,7 @@ export { type Menu } from '../../menus.ts'
 // composes ThemeManagerSessionMixin, so these are always there.
 export interface ThemeSwitchSession {
   themeMode: 'light' | 'dark' | 'system'
+  effectiveThemeMode: 'light' | 'dark'
   themeIsDark: boolean
   stopFollowingSystemTheme: () => void
 }

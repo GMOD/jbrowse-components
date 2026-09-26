@@ -294,7 +294,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
 
   // Dark theme, human demo (reviewer ask): hg38 PTEN locus via --hub — a clean
   // single-canonical-transcript gene (unlike TP53's isoform thicket) — a tall
-  // NCBI RefSeq gene track over phyloP conservation, rendered with darkStock.
+  // NCBI RefSeq gene track over phyloP conservation, stock palette drawn dark.
   cliSpec('dark_theme', [
     '--hub',
     'hg38',
@@ -307,7 +307,9 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--loc',
     'chr10:87,860,000-87,975,000',
     '--themeName',
-    'darkStock',
+    'stock',
+    '--themeMode',
+    'dark',
     '--width',
     '1200',
   ]),

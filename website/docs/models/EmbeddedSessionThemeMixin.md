@@ -8,8 +8,9 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 
 Theme getters shared by the single-view embedded sessions
 (react-linear-genome-view, react-circular-genome-view). Embedded products
-have no theme switching, so the active theme is always `default`; the config
-`theme` slot still applies via `configTheme`.
+have no theme picker, so the palette is always `default` and the config
+`theme` slot supplies it; light or dark is the host's to drive, through
+`setThemeMode`.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
@@ -30,6 +31,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="volatile-sessionthememode">**sessionThemeMode**</span><br><code>sessionThemeMode: undefined as PaletteMode &#124; undefined</code> |  | EmbeddedSessionThemeMixin |
 | <span id="volatile-selection">**selection**</span><br><code>selection: undefined as unknown</code> | <span data-pagefind-ignore>this is the globally "selected" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.</span> | [BaseSessionModel](../basesessionmodel#volatile-selection) |
 | <span id="volatile-hovered">**hovered**</span><br><code>hovered: undefined as unknown</code> | <span data-pagefind-ignore>this is the globally "hovered" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.</span> | [BaseSessionModel](../basesessionmodel#volatile-hovered) |
 | <span id="volatile-queueofdialogs">**queueOfDialogs**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>queueOfDialogs: [] as [DialogComponentType, Record&lt;string, unkn…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>queueOfDialogs: [] as [DialogComponentType, Record&lt;string, unknown&gt;][]</code></pre></dialog></span> |  | [BaseSessionModel](../basesessionmodel#volatile-queueofdialogs) |
@@ -75,7 +77,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-setthememode">**setThemeMode**</span><br><code>(mode: "dark" &#124; "light") =&gt; void</code> | Switch the session to light or dark. `themeOptions` sends the `theme` slot to the renderer, so labels drawn in the worker follow it, and `palette` is derived from the same slot, so React-drawn elements follow it too. An embedder who sets only a React-side palette leaves the worker-drawn labels in the old mode.<br><br>Merges into the existing theme at both levels. `theme` is a frozen slot, so `setConf(session, 'theme', { palette: { mode } })` replaces every other key in it, discarding whatever the host passed as `createViewState`'s `configuration.theme` (a brand `primary`, say) the first time their dark-mode toggle fires. `resolvePalette` spreads `configTheme.palette` over the preset shallowly, so `mode` and `primary` are siblings and both levels have to be kept. | EmbeddedSessionThemeMixin |
+| <span id="action-setthememode">**setThemeMode**</span><br><code>(mode: PaletteMode) =&gt; void</code> | Switch the session to light or dark, leaving the host's configured colours alone. `themeOptions` carries the mode to the renderer, so labels drawn in the worker follow it, and `palette` is derived from the same args, so React-drawn elements follow it too. An embedder who sets only a React-side palette leaves the worker-drawn labels in the old mode.<br><br>This used to write `palette.mode` into the config `theme` slot, which meant merging at two levels to avoid discarding the brand the host had passed to `createViewState`. Mode is its own axis now, so there is nothing to merge and nothing to discard. | EmbeddedSessionThemeMixin |
 | <span id="action-setselection">**setSelection**</span><br><code>(thing: unknown) =&gt; void</code> | <span data-pagefind-ignore>set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything<br><br>A feature is unwrapped on the way in, so app state never holds a jexlFeatureProxy. `isFeature` accepts a proxy, but on one `id` is a data field rather than the method the Feature type promises — every consumer doing `isFeature(selection) ? selection.id() : …` would throw.</span> | [BaseSessionModel](../basesessionmodel#action-setselection) |
 | <span id="action-clearselection">**clearSelection**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>clears the global selection</span> | [BaseSessionModel](../basesessionmodel#action-clearselection) |
 | <span id="action-sethovered">**setHovered**</span><br><code>(thing: unknown) =&gt; void</code> |  | [BaseSessionModel](../basesessionmodel#action-sethovered) |

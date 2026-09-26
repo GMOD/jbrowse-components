@@ -1884,11 +1884,13 @@
         "getContrastText",
         "getLuminance",
         "grey",
+        "legacyThemeNames",
         "lighten",
         "methylated5hmC",
         "methylated5mC",
         "palettePresets",
         "resolvePalette",
+        "resolveThemeSelection",
         "tagColorPalette",
         "unmethylated5mC",
         "utrDefaultColor"

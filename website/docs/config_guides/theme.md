@@ -8,9 +8,10 @@ guide_category: Appearance
 
 Set colors and sizing under a top-level `theme` in the
 [`configuration`](/docs/config/jbrowseconfiguration) section. JBrowse's palette
-has four customizable colors (`primary`, `secondary`, `tertiary`, `quaternary`);
-add `"mode": "dark"` inside a palette for dark mode. `configuration.preferences`
-sets the starting value of the settings users can toggle for themselves.
+has four customizable colors (`primary`, `secondary`, `tertiary`, `quaternary`),
+and a `dark` block for whatever a palette wants different when drawn dark.
+`configuration.preferences` sets the starting value of the settings users can
+toggle for themselves.
 
 ## Color
 
@@ -39,23 +40,23 @@ sets the starting value of the settings users can toggle for themselves.
 
 <Figure src="/img/customized_theme.png" caption="Example screenshot showing the customized theme"/>
 
-## Following the system
+## Light and dark
 
-The theme picker in Preferences lists "Follow system (light/dark)" alongside the
-named themes. Pick it and JBrowse takes its light or dark setting from the
-operating system, drawing the `default` theme in light and `Dark (stock)` in
-dark, so the colors you set under `theme` below survive the light half.
+A palette and its light/dark setting are two separate things in Preferences. The
+theme picker chooses colors — Default (from config), Stock, Minimal, or any
+`extraThemes` entry — and a second control chooses Light, Dark or Follow system.
+Moving one leaves the other alone, so a reader on Minimal who switches to dark
+gets dark Minimal, and the colors you set under `theme` above apply in both.
 
-A sun or moon then appears in the toolbar, naming the mode the system put you
-in; clicking it settles on the other one. Sessions start on `default` and show
-no such button, so a reader reaches dark by asking for it.
+Sessions start on Light, so a reader reaches dark by asking for it. Picking
+Follow system puts a sun or moon in the toolbar naming the mode the OS landed
+on; clicking it settles on the other one.
 
-## Extra themes and dark mode
-
-`extraThemes` entries show up in the Preferences dialog for the user to select.
-`"mode": "dark"` inside any palette switches it to
-[MUI's dark mode](https://mui.com/material-ui/customization/dark-mode/), on the
-top-level `theme` too:
+Most of a dark theme follows from the setting: the backgrounds, text, dividers,
+gridlines, coverage and hover colors all have dark values already. What does not
+survive the flip is a brand color — a deep navy that reads well on white is
+nearly invisible on a dark background — so a palette may state the slots it
+wants different when drawn dark:
 
 ```json
 {
@@ -64,9 +65,33 @@ top-level `theme` too:
       "myTheme": {
         "name": "My theme",
         "palette": {
-          "mode": "dark",
-          "primary": { "main": "#311b92" }
+          "primary": { "main": "#311b92" },
+          "dark": { "primary": { "main": "#9a86e0" } }
         }
+      }
+    }
+  }
+}
+```
+
+State `"mode": "dark"` in a palette instead and it is a dark-only theme: the
+light/dark control no longer applies to it, because the light colors were never
+written. In the top-level `theme` the same key is the instance's starting mode,
+which a reader's own choice overrides.
+
+## Extra themes
+
+`extraThemes` entries join Stock and Minimal in the Preferences theme picker,
+each with the same palette keys as the top-level `theme` above. `name` is the
+row the user sees:
+
+```json
+{
+  "configuration": {
+    "extraThemes": {
+      "myTheme": {
+        "name": "My theme",
+        "palette": { "primary": { "main": "#311b92" } }
       }
     }
   }

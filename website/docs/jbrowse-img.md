@@ -591,19 +591,19 @@ jb2export --hub hg38 \
 
 ### Themes
 
-`--themeName` selects a built-in theme: `default`, `lightStock`, `lightMinimal`,
-`darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names, use
-the keys above.)
+`--themeName` selects a palette — `default`, `stock` or `minimal` — and
+`--themeMode` draws it `light` or `dark`. The names from before those were
+separate — `darkStock`, `lightMinimal` and the rest — still work.
 
 <!-- jb2export: dark_theme -->
 
 ```bash
 jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:100 \
   --track hg38-phyloP100way height:140 --loc chr10:87,860,000-87,975,000 \
-  --themeName darkStock --width 1200 --out dark_theme.png
+  --themeName stock --themeMode dark --width 1200 --out dark_theme.png
 ```
 
-<Figure src="/img/jbrowse-img/dark_theme.png" caption="The hg38 PTEN locus: NCBI RefSeq genes over phyloP conservation, rendered with the darkStock theme" />
+<Figure src="/img/jbrowse-img/dark_theme.png" caption="The hg38 PTEN locus: NCBI RefSeq genes over phyloP conservation, rendered with the stock palette drawn dark" />
 
 ## Track modifiers
 
@@ -1430,7 +1430,8 @@ Options:
   --defaultSession  Use default session from config [default: false]
   --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands       Path to cytoband file for the assembly
-  --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --themeName       Palette for rendering: default, stock, or minimal
+  --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden
@@ -1479,7 +1480,8 @@ Options:
   --defaultSession      Use default session from config [default: false]
   --tracks              Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands           Path to cytoband file for the assembly
-  --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --themeName           Palette for rendering: default, stock, or minimal
+  --themeMode           Draw that palette light or dark
   --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines       Show genomic coordinate gridlines in the output [default: false]
   --trackLabels         Track label position: offset, overlapping, left, or hidden
@@ -1522,7 +1524,8 @@ Options:
   --defaultSession      Use default session from config [default: false]
   --tracks              Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands           Path to cytoband file for the assembly
-  --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --themeName           Palette for rendering: default, stock, or minimal
+  --themeMode           Draw that palette light or dark
   --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines       Show genomic coordinate gridlines in the output [default: false]
   --trackLabels         Track label position: offset, overlapping, left, or hidden
@@ -1569,7 +1572,8 @@ Options:
   --defaultSession  Use default session from config [default: false]
   --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands       Path to cytoband file for the assembly
-  --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --themeName       Palette for rendering: default, stock, or minimal
+  --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden
@@ -1598,7 +1602,8 @@ Options:
   --defaultSession  Use default session from config [default: false]
   --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands       Path to cytoband file for the assembly
-  --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --themeName       Palette for rendering: default, stock, or minimal
+  --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden
@@ -1635,7 +1640,8 @@ Options:
   --defaultSession  Use default session from config [default: false]
   --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --cytobands       Path to cytoband file for the assembly
-  --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --themeName       Palette for rendering: default, stock, or minimal
+  --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden

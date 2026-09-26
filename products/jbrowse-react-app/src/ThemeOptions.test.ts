@@ -44,42 +44,37 @@ function makeSession(theme?: unknown) {
   }
 }
 
-// `setThemeMode` is what a host following its own dark-mode state calls, and
-// the app session is the harder of the two products to get right: it themes by
-// *name*, and only the `default` theme merges the config `theme` slot (see
-// `resolvePalette`). Expressing the mode as `setThemeName('darkStock')` would
-// therefore drop the host's configured colors the first time their toggle
-// fired, with nothing to say so.
+// `setThemeMode` is what a host following its own dark-mode state calls. The
+// host's configured colors have to survive it, in both directions — they used
+// to be merged into by the write, back when a mode had nowhere to live but the
+// config `theme` slot.
 test('setThemeMode keeps the configured theme on an app session', () => {
   const session = makeSession(customTheme)
 
   session.setThemeMode('dark')
   expect(session.themeOptions.configTheme?.palette).toEqual({
     primary: { main: '#123456' },
-    mode: 'dark',
   })
   expect(session.themeName).toBe('default')
   expect(session.palette.mode).toBe('dark')
   expect(session.palette.primary.main).toBe('#123456')
 
-  // and back, without accumulating anything
   session.setThemeMode('light')
   expect(session.palette.mode).toBe('light')
   expect(session.palette.primary.main).toBe('#123456')
 })
 
-// A host that follows its own dark mode and a user who picked a theme from
-// JBrowse's menu are the same one slot seen twice, so the later write wins in
-// both directions.
-test('setThemeMode returns to the default theme from a named one', () => {
+// A host's dark-mode toggle and a user's theme pick move different things now,
+// so neither undoes the other.
+test('setThemeMode leaves the picked palette alone', () => {
   const session = makeSession()
 
-  session.setThemeName('darkMinimal')
-  expect(session.themeName).toBe('darkMinimal')
-
+  session.setThemeName('minimal')
   session.setThemeMode('dark')
-  expect(session.themeName).toBe('default')
+
+  expect(session.themeName).toBe('minimal')
   expect(session.palette.mode).toBe('dark')
+  expect(session.palette.primary.main).toBe('#616161')
 })
 
 // The SVG export's half of the same slot. Every view's `renderToSvg` asks the

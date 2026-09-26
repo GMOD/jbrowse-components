@@ -81,15 +81,19 @@ const syntenyColorByModes = [
 // four names that spelled a mode still resolve, for a script that passes one.
 type ThemeName = ThemeSelectionName
 
+export const paletteNames = ['default', 'stock', 'minimal'] as const
+
+// the retired names still render, for a script that passes one, but the help
+// offers the palettes and `--themeMode`
 export const themeNames = [
-  'default',
-  'stock',
-  'minimal',
+  ...paletteNames,
   'lightStock',
   'lightMinimal',
   'darkStock',
   'darkMinimal',
 ] as const satisfies readonly ThemeName[]
+
+export const themeModes = ['light', 'dark'] as const
 
 // Collected into one alias, and exported, because a type alias referenced
 // nowhere is a lint error — the same reason AssertSnapshotKeysExist is exported
@@ -163,7 +167,11 @@ const optionDefs: OptionDef[] = [
   { name: 'cytobands', description: 'Path to cytoband file for the assembly' },
   {
     name: 'themeName',
-    description: `Theme for rendering: ${orList(themeNames)}`,
+    description: `Palette for rendering: ${orList(paletteNames)}`,
+  },
+  {
+    name: 'themeMode',
+    description: 'Draw that palette light or dark',
   },
   {
     name: 'fontFamily',
@@ -463,6 +471,10 @@ export function getCigarMode(rest: Record<string, unknown>) {
 
 export function getThemeName(rest: Record<string, unknown>) {
   return getEnum(rest, 'themeName', themeNames)
+}
+
+export function getThemeMode(rest: Record<string, unknown>) {
+  return getEnum(rest, 'themeMode', themeModes)
 }
 
 export function getColorBy(rest: Record<string, unknown>) {

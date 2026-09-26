@@ -10,21 +10,27 @@ palette properties, set via the `configuration.theme` field. For an end-user
 walkthrough of colors, dark mode, the logo, and sizing, see the
 [Coloring/theming config guide](/docs/config_guides/theme).
 
-## Built-in themes
+## Built-in palettes
 
-Set `configuration.theme` to one of these names:
+- `default` - config-supplied colors merged with the stock defaults
+- `stock` - the stock JBrowse palette
+- `minimal` - greyscale chrome
 
-- `default` - uses config-supplied colors merged with stock defaults
-- `lightStock` - light mode with stock JBrowse palette
-- `lightMinimal` - light mode with greyscale chrome
-- `darkStock` - dark mode with stock palette
-- `darkMinimal` - dark mode with greyscale chrome
+Light and dark are not palettes but a mode each of these resolves along, so a
+palette states its colors once and, where a brand cannot survive the flip, a
+`dark` delta for the slots that change. `minimal` is the only built-in needing
+one, a lighter `primary`.
 
-A user selects any of these, or `system`, through the Preferences dialog. A
-session starts on `default`; `system` resolves to `default` or `darkStock`
-against `prefers-color-scheme`, and puts a sun/moon button in the toolbar. Read
-`session.themeName` for the theme in effect, `session.selectedThemeName` for
-what the user picked.
+A user picks a palette and a mode separately in the Preferences dialog. Read
+`session.themeName` for the palette, `session.themeMode` for the raw choice
+(`light`, `dark` or `system`) and `session.effectiveThemeMode` for that choice
+with `system` resolved against `prefers-color-scheme`. `session.themeIsDark`
+answers off the resolved palette, which is what a palette pinned to one mode
+needs. `setThemeMode` moves the mode without touching the palette.
+
+The names from before the axis — `lightStock`, `darkStock`, `lightMinimal`,
+`darkMinimal` — still resolve to the palette and mode they meant, wherever one
+is stored or passed.
 
 ## Custom palette properties
 

@@ -207,3 +207,30 @@ test('a stored selection survives its theme being unregistered', () => {
       .themeName,
   ).toBe('someThemeFromAPlugin')
 })
+
+// An SVG export is handed `getActiveThemeOptions` and nothing else, so if the
+// mode does not ride along there, a dark session exports a light figure and
+// nothing anywhere errors.
+test('an export carries the mode the session is drawn in', () => {
+  installMatchMedia(false)
+  const session = makeSession({ theme: { palette: { primary: '#ff0000' } } })
+  session.setThemeMode('dark')
+
+  expect(session.getActiveThemeOptions().palette.mode).toBe('dark')
+  expect(session.getActiveThemeOptions().palette.primary).toBe('#ff0000')
+  expect(session.getActiveThemeOptions('minimal').palette.mode).toBe('dark')
+
+  session.setThemeMode('light')
+  expect(session.getActiveThemeOptions().palette.mode).toBe('light')
+})
+
+// A name the export dialog stored before the axis names a mode of its own, and
+// it outranks the session's — the reader asked for that figure.
+test('an export named by a retired theme keeps that mode', () => {
+  installMatchMedia(false)
+  const session = makeSession()
+
+  const opts = session.getActiveThemeOptions('darkMinimal')
+  expect(opts.palette.mode).toBe('dark')
+  expect(session.themeMode).toBe('light')
+})

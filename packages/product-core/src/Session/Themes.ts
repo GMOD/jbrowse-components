@@ -179,13 +179,27 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * screen and export the stock `#0D233F`, while the export dialog named
          * the default theme. Every other named theme is a fixed preset that
          * ignores config.
+         *
+         * **The mode is spliced in here**, because a palette no longer carries
+         * one and this is the last point before the export leaves the session:
+         * every caller hands `renderSvg` these options and nothing else, so a
+         * figure exported from a dark session comes out dark. A palette pinned
+         * to its own mode, or a `name` from before the axis, states the mode
+         * itself and keeps it.
          */
         getActiveThemeOptions(name?: string) {
           const all = this.allThemes()
-          const themeName = resolveThemeName(all, name ?? this.themeName)
+          const selection = resolveThemeSelection(
+            name ?? this.themeName,
+            undefined,
+            all,
+          )
+          const themeName = resolveThemeName(all, selection.themeName)
           const theme = all[themeName]
+          const mode =
+            theme?.palette?.mode ?? selection.mode ?? this.effectiveThemeMode
           if (themeName !== 'default') {
-            return theme
+            return { ...theme, palette: { ...theme?.palette, mode } }
           }
           // shallow over the palette, which is how `resolvePalette` spreads the
           // same two — `mode` and `primary` are siblings there, so both levels
@@ -194,7 +208,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
           return {
             ...theme,
             ...configTheme,
-            palette: { ...theme?.palette, ...configTheme.palette },
+            palette: { ...theme?.palette, ...configTheme.palette, mode },
           }
         },
       }

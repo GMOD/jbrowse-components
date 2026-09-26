@@ -1,5 +1,5 @@
 import type { ViewMode } from './modes.ts'
-import type { themeNames } from './options.ts'
+import type { themeModes, themeNames } from './options.ts'
 import type { Entry } from './parseArgv.ts'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
@@ -46,6 +46,7 @@ export interface Opts {
   trackList?: Entry[]
   tracks?: string
   themeName?: (typeof themeNames)[number]
+  themeMode?: (typeof themeModes)[number]
   // Font family applied to the whole SVG root so every <text> (ruler, track
   // labels, and SvgCanvas feature labels) renders in one consistent font
   // instead of relying on each SVG viewer's default. Defaults to serif.

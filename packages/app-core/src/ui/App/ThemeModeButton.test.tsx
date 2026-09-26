@@ -22,6 +22,10 @@ const Session = types
       ]),
       'system',
     ),
+    effectiveThemeMode: types.optional(
+      types.enumeration<'light' | 'dark'>(['light', 'dark']),
+      'light',
+    ),
     themeIsDark: false,
   })
   .actions(self => ({
@@ -32,6 +36,7 @@ const Session = types
 
 function renderButton(snap: {
   themeMode?: 'light' | 'dark' | 'system'
+  effectiveThemeMode?: 'light' | 'dark'
   themeIsDark?: boolean
 }) {
   const session = Session.create(snap)
@@ -52,7 +57,10 @@ test('an explicit mode gets no control', () => {
 })
 
 test('following the system names the mode it landed in', () => {
-  const { getByTestId } = renderButton({ themeIsDark: true })
+  const { getByTestId } = renderButton({
+    themeIsDark: true,
+    effectiveThemeMode: 'dark',
+  })
 
   expect(getByTestId('theme-mode-button').getAttribute('aria-label')).toBe(
     'Following your system theme (dark)',
@@ -62,10 +70,23 @@ test('following the system names the mode it landed in', () => {
 test('a click leaves the following, taking the control with it', () => {
   const { getByTestId, queryByTestId, session } = renderButton({
     themeIsDark: true,
+    effectiveThemeMode: 'dark',
   })
 
   fireEvent.click(getByTestId('theme-mode-button'))
 
   expect(session.themeMode).toBe('light')
+  expect(queryByTestId('theme-mode-button')).toBeNull()
+})
+
+// A palette pinned to `mode: 'dark'` draws dark whatever the OS asks, so there
+// is no following to report and nothing a click could change.
+test('a palette pinned to its own mode gets no control', () => {
+  const { queryByTestId } = renderButton({
+    themeMode: 'system',
+    effectiveThemeMode: 'light',
+    themeIsDark: true,
+  })
+
   expect(queryByTestId('theme-mode-button')).toBeNull()
 })

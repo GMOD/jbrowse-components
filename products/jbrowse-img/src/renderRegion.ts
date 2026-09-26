@@ -845,6 +845,9 @@ export async function renderRegionReport(
   if (opts.themeName) {
     model.session.setThemeName(opts.themeName)
   }
+  if (opts.themeMode) {
+    model.session.setThemeMode(opts.themeMode)
+  }
   try {
     const rendered = await modeRenderers[mode]({
       model,

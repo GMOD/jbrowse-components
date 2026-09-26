@@ -16,10 +16,16 @@ const ThemeModeButton = observer(function ThemeModeButton({
 }: {
   session: ThemeSwitchSession
 }) {
-  if (session.themeMode !== 'system') {
+  const dark = session.themeIsDark
+  // A palette pinned to its own mode draws dark whatever the OS says, so the
+  // two disagree and the system is steering nothing to report. Everything else
+  // that hides this control is `themeMode`.
+  const followsSystem =
+    session.themeMode === 'system' &&
+    dark === (session.effectiveThemeMode === 'dark')
+  if (!followsSystem) {
     return null
   }
-  const dark = session.themeIsDark
   const Icon = dark ? DarkModeIcon : LightModeIcon
   const label = `Following your system theme (${dark ? 'dark' : 'light'})`
   return (

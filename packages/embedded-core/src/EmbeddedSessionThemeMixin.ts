@@ -74,6 +74,8 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
        * preset up in `allThemes()`.
        */
       getActiveThemeOptions(_name?: string) {
+        // the mode rides along, for the reason the comment below gives: these
+        // options are the whole of what the export path is handed
         // Its absence did not read as an unthemed export, it read as a *light*
         // one. Every view's export calls this optionally
         // (`session.getActiveThemeOptions?.(themeName)`), so a session without
@@ -82,7 +84,16 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
         // colors each display bakes into its own bodies, the background rect. A
         // host following its own dark mode got a light figure out of
         // `view.exportSvg()` with nothing anywhere saying why.
-        return this.themeOptions.configTheme
+        const configTheme = this.themeOptions.configTheme
+        return self.sessionThemeMode
+          ? {
+              ...configTheme,
+              palette: {
+                ...configTheme?.palette,
+                mode: self.sessionThemeMode,
+              },
+            }
+          : configTheme
       },
     }))
     .actions(self => ({

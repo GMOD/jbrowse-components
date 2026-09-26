@@ -19,6 +19,7 @@ function renderToolbar(menus: Menu[]) {
     menus: () => menus,
     renameCurrentSession: () => {},
     themeMode: 'light',
+    effectiveThemeMode: 'light',
     themeIsDark: false,
     stopFollowingSystemTheme: () => {},
   } as unknown as AppSession
