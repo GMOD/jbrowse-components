@@ -332,18 +332,19 @@ export function computeVisibleCoverageStats(
 
 /**
  * The depth domain the visible coverage autoscales to: at a `quantile` of 1
- * the extremes, below it that quantile of the covered bins' peaks, uncovered
- * bases counting for nothing, so one pile-up no longer flattens the band and
- * a sparse window does not clip to zero.
+ * the extremes, `stats`, below it that quantile of the covered bins' peaks,
+ * uncovered bases counting for nothing, so one pile-up no longer flattens the
+ * band and a sparse window does not clip to zero.
  */
-export function computeVisibleCoverageDomain(
-  entries: VisibleEntry<CoverageRegion>[],
-  quantile: number,
-): [number, number] | undefined {
-  const stats = computeVisibleCoverageStats(entries)
-  if (!stats) {
-    return undefined
-  }
+export function computeVisibleCoverageDomain({
+  stats,
+  quantile,
+  entries,
+}: {
+  stats: ScoreStats
+  quantile: number
+  entries: VisibleEntry<CoverageRegion>[]
+}): [number, number] {
   if (quantile >= 1) {
     return [stats.scoreMin, stats.scoreMax]
   }

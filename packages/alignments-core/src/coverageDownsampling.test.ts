@@ -15,6 +15,7 @@ import {
 } from './coverageDownsampling.ts'
 
 import type { CoverageRegion } from './coverageDownsampling.ts'
+import type { VisibleEntry } from '@jbrowse/wiggle-core'
 
 describe('computeCoverageTicks', () => {
   test('produces nice round tick values', () => {
@@ -264,18 +265,24 @@ describe('computeVisibleCoverageStats', () => {
 
   test('a domain quantile below 1 clips the peaks and anchors at 0', () => {
     const cov = perBpRegion([...new Array(99).fill(30), 1600], 100)
+    const domain = (
+      entries: VisibleEntry<CoverageRegion>[],
+      quantile: number,
+    ) =>
+      computeVisibleCoverageDomain({
+        stats: computeVisibleCoverageStats(entries)!,
+        quantile,
+        entries,
+      })
     const entries = [{ visStart: 100, visEnd: 200, data: cov }]
-    expect(computeVisibleCoverageDomain(entries, 1)).toEqual([30, 1600])
-    expect(computeVisibleCoverageDomain(entries, 0.99)).toEqual([0, 30])
+    expect(domain(entries, 1)).toEqual([30, 1600])
+    expect(domain(entries, 0.99)).toEqual([0, 30])
     const sparse = perBpRegion(
       [...new Array(995).fill(0), ...new Array(5).fill(30)],
       100,
     )
     expect(
-      computeVisibleCoverageDomain(
-        [{ visStart: 100, visEnd: 1100, data: sparse }],
-        0.99,
-      ),
+      domain([{ visStart: 100, visEnd: 1100, data: sparse }], 0.99),
     ).toEqual([0, 30])
   })
 

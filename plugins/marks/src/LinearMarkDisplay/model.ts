@@ -394,7 +394,6 @@ function layerSpans(
             endOffset: 0,
             low: y,
             high: y,
-            avg: y,
             visStart,
             visEnd,
             sortedBins: false,

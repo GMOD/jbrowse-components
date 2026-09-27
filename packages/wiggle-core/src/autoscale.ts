@@ -23,11 +23,10 @@ export interface ScoreStats {
 /**
  * #api
  * One block's worth of values to fold into a domain, whatever packed them: a
- * wiggle source's interleaved `featurePositions` and its three summary arrays,
- * or a mark layer's separate `x`/`x2` and its one `y` lane. `starts[i * stride]`
- * and `ends[i * stride + endOffset]` give instance `i`'s span; `low`, `high` and
- * `avg` give the two ends of its value and the one the mean is taken over, which
- * are the same array wherever the packer ships a single scalar.
+ * wiggle source's interleaved `featurePositions` and its summary arrays, or a
+ * mark layer's separate `x`/`x2` and its one `y` lane. `starts[i * stride]` and
+ * `ends[i * stride + endOffset]` give instance `i`'s span, and `low` and `high`
+ * the two ends of its value, one array where the packer ships a single scalar.
  */
 export interface ScoreSpan {
   count: number
@@ -37,7 +36,6 @@ export interface ScoreSpan {
   endOffset: number
   low: Float32Array
   high: Float32Array
-  avg: Float32Array
   visStart?: number
   visEnd?: number
   /**
@@ -70,7 +68,6 @@ export function datasetSpan(
     endOffset: 1,
     low: low(data),
     high: high(data),
-    avg: data.featureScores,
     visStart,
     visEnd,
     sortedBins: true,

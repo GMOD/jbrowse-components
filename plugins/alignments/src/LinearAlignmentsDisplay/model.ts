@@ -1015,12 +1015,13 @@ export default function stateModelFactory(
                       .filter(({ key }) => !hidden.has(key))
                       .map(({ data }) => data),
                   accumulate: entries => computeVisibleCoverageStats(entries),
-                  range: (_, entries) =>
+                  range: (stats, entries) =>
                     widenRangeToRules(
-                      computeVisibleCoverageDomain(
+                      computeVisibleCoverageDomain({
+                        stats,
+                        quantile: self.domainQuantile,
                         entries,
-                        self.domainQuantile,
-                      )!,
+                      }),
                       self.scoreRules.map(rule => rule.value),
                     ),
                 })
