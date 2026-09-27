@@ -4588,10 +4588,6 @@ export const configManifest: ConfigManifest = {
                   "type": "MarkType"
                 },
                 {
-                  "name": "size",
-                  "type": "(number | undefined)"
-                },
-                {
                   "name": "linkShape",
                   "type": "LinkShape"
                 },
@@ -4616,7 +4612,9 @@ export const configManifest: ConfigManifest = {
                           "type": "string"
                         }
                       ],
-                      "shorthand": "pos"
+                      "shorthand": {
+                        "string": "pos"
+                      }
                     },
                     {
                       "name": "y",
@@ -4696,7 +4694,9 @@ export const configManifest: ConfigManifest = {
                           "type": "(string | undefined)"
                         }
                       ],
-                      "shorthand": "value",
+                      "shorthand": {
+                        "string": "value"
+                      },
                       "fieldPresets": {
                         "score": {
                           "scale": "linear"
@@ -4748,7 +4748,9 @@ export const configManifest: ConfigManifest = {
                           "type": "(string | undefined)"
                         }
                       ],
-                      "shorthand": "value"
+                      "shorthand": {
+                        "string": "value"
+                      }
                     },
                     {
                       "name": "text",
@@ -4758,6 +4760,10 @@ export const configManifest: ConfigManifest = {
                       "name": "size",
                       "type": "MarkSizeConfigurationSchema",
                       "subSlots": [
+                        {
+                          "name": "value",
+                          "type": "(number | undefined)"
+                        },
                         {
                           "name": "field",
                           "type": "string"
@@ -4780,7 +4786,10 @@ export const configManifest: ConfigManifest = {
                           "liftsNumbers": true
                         }
                       ],
-                      "shorthand": "field"
+                      "shorthand": {
+                        "number": "value",
+                        "string": "field"
+                      }
                     }
                   ]
                 },
