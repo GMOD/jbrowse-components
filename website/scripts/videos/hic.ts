@@ -59,10 +59,9 @@ export const hicVideos: VideoSpec[] = [
     //    `resolutionBias: 1` on both matrices steps it back to the figure's 5 kb
     //    — the slot the page already sends a reader to for exactly this.
     //
-    // 1124 rather than the figure's 1100: the run reported 12px of app below
-    // the frame, which is the bottom matrix's own lower edge rather than
-    // anything the figure has to hold.
-    viewportHeight: 1124,
+    // The app stands at 1118px, and the caption chip's strip goes under it:
+    // the payoff is the K562 matrix's lower middle, where chr9 meets chr22.
+    viewportHeight: 1240,
     // `displaySettled`, not the figures' `displayPainted`: `drawn` flips on
     // first paint, which an empty canvas mid-fetch satisfies, and the opening
     // beat is ABOUT what is on the diagonal and what is not beside it.

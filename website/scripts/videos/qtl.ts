@@ -26,9 +26,9 @@ export const qtlVideos: VideoSpec[] = [
     goal: 'Sort 198 BXD mouse strains by genotype under the Tyrp1 peak',
     url: unsorted,
     // Nothing here adds a view or opens a drawer and the painting is a fixed
-    // 420, so the app's height does not move across the tour; the figure beside
-    // it captures the same two lanes at 840.
-    viewportHeight: 850,
+    // 420, so the app holds at 811px across the tour, with the caption chip's
+    // strip under it.
+    viewportHeight: 932,
     readySelector: displaySettled('multirow-display'),
     readyTimeout: 180000,
     steps: [

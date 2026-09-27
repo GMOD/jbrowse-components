@@ -194,7 +194,8 @@ export const pangenomeVideos: VideoSpec[] = [
       "A pggb graph from a K12 session that has none of it: add the page's track through the graph form, which opens as the graph of the window, then select the IS5 element on the scale bar and zoom to it, where the graph cuts again",
     goal: 'Load a pggb graph into a K12 session and read it at IS5',
     url: pggbTourStart,
-    viewportHeight: 1110,
+    // the graph form ends ~745px down the drawer, and the app stands at 621
+    viewportHeight: 780,
     readySelector: K12_GENES_READY,
     readyTimeout: 120000,
     steps: [
@@ -239,7 +240,8 @@ export const pangenomeVideos: VideoSpec[] = [
       "The Minigraph-Cactus graph into an empty K12 session: add the page's track through the graph form, which opens as the graph of the window, then select the IS1 element past flhD on the scale bar and zoom to it, where the graph cuts again",
     goal: 'Load a Minigraph-Cactus graph into K12 and read it at IS1',
     url: cactusTourStart,
-    viewportHeight: 1110,
+    // the graph form ends ~745px down the drawer, and the app stands at 621
+    viewportHeight: 780,
     readySelector: K12_GENES_READY,
     readyTimeout: 120000,
     steps: [

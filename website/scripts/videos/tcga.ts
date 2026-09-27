@@ -97,13 +97,11 @@ export const tcgaVideos: VideoSpec[] = [
       'Reshaping a gene to its exons: right-click CDH1 in the gene lane, Collapse introns, and the 979-tumor matrix redrawn over the coding sequence',
     goal: 'Reshape CDH1 to its coding exons so its mutations line up',
     url: tcgaMutationVideoFixtures.cdh1WholeTranscript,
-    // 779px of app at every frame the run measured — `Replace current view`
-    // reshapes in place rather than adding a view, so nothing here grows the way
-    // a launch does — and the frame is 60px taller than that ON PURPOSE. The
-    // collapse raises a snackbar the run's content report does not count, and it
-    // draws under the app's own bottom border; sized to the content it would land
-    // half outside the frame or over the last rows of the matrix.
-    viewportHeight: 840,
+    // 785px of app at every frame the run measured — `Replace current view`
+    // reshapes in place rather than adding a view — and the strip under it holds
+    // the caption chip and the collapse's snackbar, which the run's content
+    // report does not count, clear of the matrix's last rows.
+    viewportHeight: 906,
     // The matrix has to be carrying its 979 rows before the camera starts.
     readySelector: tcgaMutationVideoFixtures.matrixDone,
     readyTimeout: 300000,

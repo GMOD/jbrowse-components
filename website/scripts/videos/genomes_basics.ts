@@ -152,12 +152,11 @@ export const genomesBasicsVideos: VideoSpec[] = [
       'A UCSC track found and opened from the hg38 catalog: the track selector, phyloP typed into Filter tracks, the 100-way vertebrate alignment ticked under Comparative Genomics, and the conservation lane drawn under the TP53 transcript',
     goal: 'Find and add a conservation track from the hg38 catalog',
     url: geneTrackOnly,
-    // Sized to the END state, a 460px app with phyloP under the transcript,
-    // plus room for the caption chip, since that chip is fixed off the FRAME's bottom
-    // rather than the app's. The drawer is laid out to the window whatever is
-    // in it, so it takes the whole of this and reports its own height
-    // separately. Even, per the encode.
-    viewportHeight: 520,
+    // Sized to the END state, a 451px app with phyloP under the transcript,
+    // plus the caption chip's strip, since that chip is fixed off the FRAME's
+    // bottom rather than the app's. The drawer is laid out to the window
+    // whatever is in it, so it reports its own height separately.
+    viewportHeight: 572,
     readySelector: displayReady('hg38-ncbiRefSeq-LinearBasicDisplay'),
     readyTimeout: 180000,
     steps: [
