@@ -1034,11 +1034,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Depth has a floor of 0, so an unpinned bottom stays there whatever
-           * a rule below it asks for.
+           * Depth has a floor of 0 while the axis reaches it, so an unpinned
+           * bottom stays there whatever a rule below it asks for; with
+           * `scales.y.zero` off it spans the depths in view.
            */
           get defaultScoreDomain(): [number | undefined, number | undefined] {
-            return [0, undefined]
+            return [self.scaleZero ? 0 : undefined, undefined]
           },
 
           /**
