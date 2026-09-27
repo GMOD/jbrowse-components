@@ -10,11 +10,17 @@ const B = 'volvox_random'
 const C = 'volvox_ins'
 const STARTS = [100, 250, 400, 550, 700]
 
-function record(id: string, name: string, start: number, mateStart: number) {
+function record(
+  id: string,
+  name: string,
+  start: number,
+  mateStart: number,
+  refName = 'ctgA',
+) {
   return new SimpleFeature({
     uniqueId: id,
     name,
-    refName: 'ctgA',
+    refName,
     start,
     end: start + 60,
     strand: 1,
@@ -86,6 +92,24 @@ test('a slide draws through the lane map, then lands in the frozen frame once', 
   expect(display.laneMaps.size).toBe(0)
   expect(slipOf(display)).toEqual(before.map(d => d + 40))
   expect(display.laneDecisions.get(C)).toBe(display.frozenDecisions.get(C))
+})
+
+test('a slide moves the lane as drawn once its frozen pivot has left the view', async () => {
+  const display = await setup()
+  display.setLanesFrozen(true)
+  display.lgv.setDisplayedRegions([
+    { refName: 'ctgB', start: 0, end: 1000, assemblyName: A },
+  ])
+  display.setFeatures(
+    STARTS.map((s, i) => record(`b${i}`, `g${i}`, s, 40_000 + s, 'ctgB')),
+  )
+  const before = slipOf(display)
+  expect(before.length).toBeGreaterThan(0)
+
+  display.setLaneDragPx(C, 40)
+  display.endLaneDrag(C)
+  expect(slipOf(display)).toEqual(before.map(d => d + 40))
+  expect(display.frozenDecisions.get(C)!.pivotAnchor.refName).toBe('ctgB')
 })
 
 test('only a frozen mate lane is slidable, and only over its own rows', async () => {

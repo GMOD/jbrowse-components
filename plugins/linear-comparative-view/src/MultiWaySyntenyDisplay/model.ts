@@ -1799,9 +1799,9 @@ export function stateModelFactory(
         )
       }
       function nudgeLane(assemblyName: string, dxPx: number) {
-        const base =
-          self.frozenDecisions.get(assemblyName) ??
-          self.laneDecisions.get(assemblyName)
+        // what the lane draws: a frozen decision whose pivot left the
+        // displayed regions has given way to a live one
+        const base = self.laneDecisions.get(assemblyName)
         if (self.lanesFrozen && base && dxPx !== 0) {
           const nudged = nudgeDecision(
             base,
