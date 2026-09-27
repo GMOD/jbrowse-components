@@ -1161,14 +1161,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * What the axis is captioned with: `scales.y.title` where the config
-         * wrote one, and nothing otherwise, as a caption is optional
-         */
-        get axisTitle(): string {
-          return self.scaleTitle ?? ''
-        },
-        /**
-         * #getter
          * The one y scale the chrome draws the axis from — `scales.y` resolved:
          * its type, its domain autoscaled where it pins nothing, its title as
          * the caption and its rules. Every mark reads the same pair.
@@ -1205,7 +1197,7 @@ export function stateModelFactory(
               ...band,
               left: treeSidebarOffset(self),
               minimalTicks,
-              caption: this.axisTitle,
+              caption: self.scaleTitle,
               rules: self.scoreRules,
               grid: self.grid,
             },

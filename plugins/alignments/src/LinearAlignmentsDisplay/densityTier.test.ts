@@ -258,4 +258,5 @@ test('the coverage scale carries its title and grid, and no rules under the dens
     rules: [],
   })
   expect(display.scoreRules).toEqual([{ value: 30, label: 'diploid' }])
+  expect(display.scoreRulesDrawn).toBe(false)
 })

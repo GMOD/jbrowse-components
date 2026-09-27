@@ -135,10 +135,10 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * `scales.y.title` as written, `undefined` while unset.
+       * `scales.y.title`, `''` while unset
        */
-      get scaleTitle(): string | undefined {
-        return getConf(confNode(self), ['scales', 'y', 'title'])
+      get scaleTitle(): string {
+        return getConf(confNode(self), ['scales', 'y', 'title']) ?? ''
       },
       /**
        * #getter

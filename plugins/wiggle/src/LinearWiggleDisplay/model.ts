@@ -219,7 +219,7 @@ export default function stateModelFactory(
     )
     .views(self => ({
       // overrides WiggleScoreConfigMixin's `false` base, which is what its
-      // showCrossHatches / effectiveSummaryScoreMode getters key on
+      // effectiveSummaryScoreMode getter keys on
       get isDensityMode() {
         return self.renderingType === 'density'
       },
@@ -642,9 +642,9 @@ export default function stateModelFactory(
                   getRowTop(row, self.effectiveRowHeight),
                 ),
             left: treeSidebarOffset(self),
-            caption: self.scaleTitle ?? '',
+            caption: self.scaleTitle,
             rules: self.scoreRules,
-            grid: self.showCrossHatches,
+            grid: self.grid,
           },
         ]
       },
@@ -1088,9 +1088,7 @@ export default function stateModelFactory(
                 showRowLabelsMenuItem(self),
               ]),
           ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
-          // density maps score to color, so score-axis cross hatches are
-          // meaningless there (`showCrossHatches` enforces the same on the
-          // drawing side)
+          // density maps score to color, so it rules no band for hatches
           ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
         ]
         return [

@@ -917,7 +917,7 @@ describe('the y axis', () => {
   })
 
   // The coverage band's grid stays off the read cloud's TLEN band below it.
-  test('a scale rules hatches across its own bands only', async () => {
+  test("a scale's grid hatches only its own bands", async () => {
     const { container, findByTestId } = renderChrome(
       AxisModel.create({
         axes: [

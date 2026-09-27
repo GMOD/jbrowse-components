@@ -41,7 +41,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
 | <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
 | <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | `scales.y.autoscaleGroup`, `undefined` while it names none. | ScoreScaleMixin |
-| <span id="getter-scaletitle">**scaleTitle**</span><br><code>string &#124; undefined</code> | `scales.y.title` as written, `undefined` while unset. | ScoreScaleMixin |
+| <span id="getter-scaletitle">**scaleTitle**</span><br><code>string</code> | `scales.y.title`, `''` while unset | ScoreScaleMixin |
 | <span id="getter-grid">**grid**</span><br><code>boolean</code> | `scales.y.grid` | ScoreScaleMixin |
 | <span id="getter-minimalticks">**minimalTicks**</span><br><code>boolean</code> | `scales.y.minimalTicks` | ScoreScaleMixin |
 | <span id="getter-scorerulesdrawn">**scoreRulesDrawn**</span><br><code>boolean</code> | Whether this display draws `scales.y.rules`, which is whether the score menu offers the reference lines: a scale it places y through rules a band for them to cross, which a density plot's colour-mapped rows and a colour ramp do not. | ScoreScaleMixin |

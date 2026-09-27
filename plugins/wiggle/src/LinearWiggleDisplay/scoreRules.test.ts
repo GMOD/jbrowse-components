@@ -107,7 +107,7 @@ it('stops drawing rules in density mode', () => {
   expect(ruleMarksOf(display)).toHaveLength(2)
 
   // density spends color rather than height on the score, so there is no axis
-  // for a rule to sit on — the same reason showCrossHatches goes false here,
+  // for a rule to sit on — the same reason the grid draws nothing here,
   // and a dashed line with a "2 copies" caption over a color ramp reads as a
   // threshold in a picture that has none
   display.setRenderingType('density')

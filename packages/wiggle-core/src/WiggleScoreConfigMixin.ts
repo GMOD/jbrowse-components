@@ -58,15 +58,4 @@ export function WiggleScoreConfigMixin() {
         setConf(confNode(self), 'size', val)
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * Whether the score-axis cross hatches draw: `scales.y.grid`, never in
-       * density mode, which has no height axis to rule and no toggle in its
-       * menu.
-       */
-      get showCrossHatches() {
-        return self.grid && !self.isDensityMode
-      },
-    }))
 }

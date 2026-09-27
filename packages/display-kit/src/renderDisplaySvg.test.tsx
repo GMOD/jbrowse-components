@@ -184,6 +184,24 @@ describe('the y axis', () => {
     expect(container.querySelectorAll('line')).toHaveLength(0)
   })
 
+  // The coverage band's grid stays off the read cloud's TLEN band below it.
+  test("a scale's grid hatches only its own bands", async () => {
+    const lines = async (gridA: boolean, gridB: boolean) =>
+      (
+        await renderShell(
+          axisHost([
+            scale({ grid: gridA }),
+            scale({ grid: gridB, bandTops: [100] }),
+          ]),
+          [],
+        )
+      ).container.querySelectorAll('line').length
+    const none = await lines(false, false)
+    const one = await lines(true, false)
+    expect(one).toBeGreaterThan(none)
+    expect(await lines(true, true)).toBeGreaterThan(one)
+  })
+
   // Scrolled before the genome start, the content edge moves right and the
   // axis follows it.
   test('follows the content edge when scrolled before the genome start', async () => {

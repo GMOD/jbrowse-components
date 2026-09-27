@@ -52,15 +52,17 @@ it('scales a density domain to the averages it actually paints', () => {
 
 it('stops drawing cross hatches in density mode', () => {
   const display = makeDisplay()
+  const hatchedBands = () =>
+    display.axes.flatMap(axis => (axis.grid ? (axis.bandTops ?? [0]) : []))
   display.setGrid(true)
-  expect(display.showCrossHatches).toBe(true)
+  expect(hatchedBands().length).toBeGreaterThan(0)
 
   // the hatches rule a score axis density doesn't have, and the track menu
   // drops the toggle there — so leaving them drawn strands them on with no way
   // back off
   display.setRenderingType('density')
   expect(display.grid).toBe(true)
-  expect(display.showCrossHatches).toBe(false)
+  expect(hatchedBands()).toEqual([])
 })
 
 it("writes the plot type as the mark and the line's interpolation it draws", () => {

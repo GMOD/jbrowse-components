@@ -1021,7 +1021,9 @@ export default function stateModelFactory(
                         entries,
                         self.domainQuantile,
                       )!,
-                      self.scoreRules.map(rule => rule.value),
+                      self.scoreRules
+                        .map(rule => rule.value)
+                        .filter(value => value >= 0),
                     ),
                 })
           },
@@ -2983,6 +2985,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Overrides `ScoreScaleMixin`'s: `scales.y.rules` are depths, so the
+         * coverage band draws them except while the density tier's feature
+         * counts stand in.
+         */
+        get scoreRulesDrawn(): boolean {
+          return !self.coarseTierStandsIn
+        },
+
+        /**
+         * #getter
          * The scales the chrome places the axes from. Coverage rules one band
          * per section, on the right wherever the group label chips take the
          * left edge; the read cloud's insert-size scale rules the arc band of
@@ -3000,8 +3012,9 @@ export default function stateModelFactory(
               height: self.bandHeights.coverageHeight,
               ticks: self.coverageTicks,
               side: self.showsGroupLabels ? 'right' : 'left',
-              caption: self.scaleTitle ?? '',
-              rules: self.coarseTierStandsIn ? [] : self.scoreRules,
+              symlogConstant: self.symlogConstant,
+              caption: self.scaleTitle,
+              rules: this.scoreRulesDrawn ? self.scoreRules : [],
               grid: self.grid,
               bandTops: renderSections.map(section =>
                 bandScreenTop(section.coverageTop, scroll),
