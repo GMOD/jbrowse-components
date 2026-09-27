@@ -4357,6 +4357,26 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             },
             {
+              "name": "scheme",
+              "type": "(ColorScheme | undefined)"
+            },
+            {
+              "name": "reverse",
+              "type": "boolean"
+            },
+            {
+              "name": "domainMid",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMin",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
+            },
+            {
               "name": "labels",
               "type": "string[]"
             },

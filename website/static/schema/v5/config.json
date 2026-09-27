@@ -5349,11 +5349,43 @@
               ]
             },
             "range": {
-              "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name.",
+              "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/CssColor"
               }
+            },
+            "scheme": {
+              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange"
+              ]
+            },
+            "reverse": {
+              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "type": "boolean",
+              "default": false
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "type": "number"
+            },
+            "domainMin": {
+              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "type": "number"
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
@@ -16448,11 +16480,43 @@
               ]
             },
             "range": {
-              "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name.",
+              "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/CssColor"
               }
+            },
+            "scheme": {
+              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange"
+              ]
+            },
+            "reverse": {
+              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "type": "boolean",
+              "default": false
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "type": "number"
+            },
+            "domainMin": {
+              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "type": "number"
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
