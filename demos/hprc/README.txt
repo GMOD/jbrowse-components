@@ -10,8 +10,8 @@ other demos' files, which have their own provenance: hprc_cfhr_* is the CFH
 panel that build_hprc_cfhr_synteny.sh cuts, hprc_abca7_trgt.vcf.gz is PacBio's
 TRGT genotypes at the ABCA7 VNTR (Zenodo 8329210) that
 build_hprc_abca7_trgt.sh writes, hprc_curated_vntrs.bed is a hand-written
-repeat track (below), and hprc2_pclai_chr1.bed.gz is a chr1 slice nothing in
-the repo reads any more.
+repeat track and hprc_kiv2_copies.vcf its KIV-2 array's copies (both below),
+and hprc2_pclai_chr1.bed.gz is a chr1 slice nothing in the repo reads any more.
 
 Source
 ------
@@ -222,3 +222,17 @@ Curated VNTRs
   only where the session's repeat track has one, and walk rows tile by the
   unit. One row so far: the LPA KIV-2 array, chr6:160,616,003-160,646,753 with a
   5,548 bp kringle unit, bounded by the flanks copycount.mjs maps.
+
+  hprc_kiv2_copies.vcf states every copy of that array in GRCh38 and the eight
+  haplotypes of hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa, as one VCF 4.5
+  <CNV:TR> record: each allele's runs of one unit in RN/RUS/RUC/RB, each copy's
+  length in RUB, and a phased GT per sample, GRCh38 a sample of its own. The
+  graph plugin's scripts/tandem-repeat-vcf.mjs wrote it from that GFA and the
+  KIV-2 row above:
+
+    node scripts/tandem-repeat-vcf.mjs \
+      hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
+      --bed hprc_curated_vntrs.bed --name KIV-2 > hprc_kiv2_copies.vcf
+
+  At its 1% divergence the 138 copies form two units about 2.3% apart. Walk
+  rows paint each copy by its unit.
