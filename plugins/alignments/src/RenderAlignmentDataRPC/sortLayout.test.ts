@@ -681,9 +681,6 @@ describe('computeSortedLayout', () => {
   })
 
   test('tag sort (HP): reads without HP tag sort after tagged reads', () => {
-    // Missing tag coerces to Number('') = 0 in the numeric branch, so it
-    // ties with HP=0 rather than going last. This codifies current
-    // behavior — change this test if the tie-break rule changes.
     const data = makePileupData({
       regionStart: 0,
       sortPos: 500,
@@ -694,8 +691,25 @@ describe('computeSortedLayout', () => {
       ],
     })
     const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'HP'))
-    expect(readYs[0]).toBe(0)
+    expect([readYs[0], readYs[2], readYs[1]]).toEqual([0, 1, 2])
     assertNonOverlappingLayout(data, readYs)
+  })
+
+  // bowtie2's end-to-end AS is 0 at best and negative otherwise, so a missing
+  // value read as 0 outranked every imperfect read
+  test('tag sort (AS): an untagged read sorts below all-negative values', () => {
+    const data = makePileupData({
+      regionStart: 0,
+      sortPos: 500,
+      reads: [
+        { start: 400, end: 700, tagValue: '-12' },
+        { start: 420, end: 720 },
+        { start: 440, end: 740, tagValue: '0' },
+        { start: 460, end: 760, tagValue: '-3' },
+      ],
+    })
+    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'AS'))
+    expect([readYs[2], readYs[3], readYs[0], readYs[1]]).toEqual([0, 1, 2, 3])
   })
 
   test('tag sort (HP): non-overlapping read gap-fills around tag-sorted block', () => {

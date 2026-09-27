@@ -256,20 +256,22 @@ function sortOverlappingByIndex(
       (a, b) => readStrands[b]! - readStrands[a]! || canonical(a, b),
     )
   } else if (type === 'tag' && sortTagValues) {
-    // Numeric sort only when every present value parses as a number (empty/
-    // missing values coerce to 0 and don't force string mode). A single
+    // Numeric sort only when every present value parses as a number. A single
     // numeric-looking first value must not decide the mode for a column of
-    // string tags — that garbled string tags into NaN comparisons.
+    // string tags — that garbled string tags into NaN comparisons. A missing
+    // value sorts last in both modes: as 0 it outranked every negative score.
     const allNumeric = overlapping.every(i => {
       const v = sortTagValues[i]
       return v === undefined || v === '' || !Number.isNaN(Number(v))
     })
     if (allNumeric) {
-      overlapping.sort(
-        (a, b) =>
-          Number(sortTagValues[b] ?? 0) - Number(sortTagValues[a] ?? 0) ||
-          canonical(a, b),
-      )
+      const valueOf = (i: number) => {
+        const v = sortTagValues[i]
+        return v === undefined || v === ''
+          ? Number.NEGATIVE_INFINITY
+          : Number(v)
+      }
+      overlapping.sort((a, b) => valueOf(b) - valueOf(a) || canonical(a, b))
     } else {
       overlapping.sort(
         (a, b) =>
