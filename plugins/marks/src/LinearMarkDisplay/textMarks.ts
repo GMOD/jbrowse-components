@@ -1,6 +1,6 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { measureText } from '@jbrowse/core/util/measureText'
-import { TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
+import { TEXT_BASELINE_RATIO, cullOverlappingLabels } from '@jbrowse/display-ui'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { rowColor, rowSlot } from '@jbrowse/render-core/marks'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
@@ -162,47 +162,11 @@ export function placeTextMarks(
       }
     }
   }
-  return cullOverlaps(candidates, state.canvasWidth, state.canvasHeight)
-}
-
-// Left to right, keeping a label only where the plot holds its glyphs whole
-// and no kept label's halo meets them: a sweep over the kept labels still
-// reaching the current left edge, so a screen of labels costs a sort and a
-// short walk each.
-function cullOverlaps(
-  candidates: Candidate[],
-  canvasWidth: number,
-  canvasHeight: number,
-) {
-  candidates.sort(
-    (a, b) =>
-      a.left - b.left || a.markIndex - b.markIndex || a.instance - b.instance,
-  )
-  const gap = 2 * TEXT_HALO_PX
-  const kept: PlacedText[] = []
-  const active: Candidate[] = []
-  for (const c of candidates) {
-    if (
-      c.left < 0 ||
-      c.right > canvasWidth ||
-      c.top < 0 ||
-      c.bottom > canvasHeight
-    ) {
-      continue
-    }
-    let n = 0
-    for (const a of active) {
-      if (a.right + gap > c.left) {
-        active[n++] = a
-      }
-    }
-    active.length = n
-    if (active.some(a => a.top - gap < c.bottom && a.bottom + gap > c.top)) {
-      continue
-    }
-    active.push(c)
-    const { left, right, top, bottom, ...placed } = c
-    kept.push(placed)
-  }
-  return kept
+  return cullOverlappingLabels(
+    candidates,
+    state.canvasWidth,
+    state.canvasHeight,
+    TEXT_HALO_PX,
+    (a, b) => a.markIndex - b.markIndex || a.instance - b.instance,
+  ).map(({ left, right, top, bottom, ...placed }) => placed)
 }

@@ -5604,6 +5604,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": true
         },
+        "showGeneLabels": {
+          "description": "print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room.",
+          "type": "boolean",
+          "default": true
+        },
         "splitStrands": {
           "description": "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack.",
           "type": "boolean",
@@ -11381,6 +11386,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLaneTicks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
+            },
+            "showGeneLabels": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showGeneLabels"
             },
             "splitStrands": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/splitStrands"

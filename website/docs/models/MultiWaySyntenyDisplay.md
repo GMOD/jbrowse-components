@@ -106,6 +106,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-showlaneticks">**showLaneTicks**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-splitstrands">**splitStrands**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-showgenelabels">**showGeneLabels**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-genelabelpx">**geneLabelPx**</span><br><code>number</code> | the row under each lane's glyphs its gene names take | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorsettings">**geneColorSettings**</span><br><code>GeneColorSettings</code> | the `color` object and `utrColor` as written, neither evaluated | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorencoding">**geneColorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> | the gene `color` as it paints, through the one resolver every display's colour object goes through | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorfield">**geneColorField**</span><br><code>string</code> | the field the genes paint by, `''` while `color.value` paints | MultiWaySyntenyDisplay |
@@ -243,6 +245,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="method-holdsassembly">**holdsAssembly**</span><br><code>(assemblyName: string) =&gt; boolean</code> | whether the session holds a lane's genome under any spelling, which is what a navigation onto it needs and a lane drawn from a blocks table does not | MultiWaySyntenyDisplay |
 | <span id="method-lanelabel">**laneLabel**</span><br><code>(assemblyName: string) =&gt; string</code> | what a lane is called on screen: the display name the session gives a genome it holds, the way the assembly selector names it, else the label the source declares, else the name the placements carry | MultiWaySyntenyDisplay |
 | <span id="method-laneframeof">**laneFrameOf**</span><br><code>(decision: LaneDecision) =&gt; RowFrame &#124; undefined</code> | the frame a decision draws a lane in, against where the view draws its pivot now; undefined once the pivot is off the displayed regions | MultiWaySyntenyDisplay |
+| <span id="method-lanegenelabels">**laneGeneLabels**</span><br><code>(fontFamily: string) =&gt; PlacedLaneLabel[]</code> | the gene names each lane prints under its glyphs, placed and decimated, in the stack's px; none with `showGeneLabels` off | MultiWaySyntenyDisplay |
 | <span id="method-pickribbonat">**pickRibbonAt**</span><br><code>(x: number, y: number) =&gt; SyntenyPickResult &#124; undefined</code> | the ribbon under a container-relative point, topmost first | MultiWaySyntenyDisplay |
 | <span id="method-hittest">**hitTest**</span><br><code>(x: number, y: number) =&gt; HoverTarget &#124; undefined</code> | what sits under a container-relative point: the glyph or box of the one lane whose glyph row holds it, boxes before genes since that is the order they draw, then a ribbon through the pick engine | MultiWaySyntenyDisplay |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Show..., Color by..., Lanes and Level of detail, then under Launch the same multi-panel launch the view menu and the rubberband offer: every genome aligning to the visible window in a stacked linear synteny view, cut from this track's dataset | MultiWaySyntenyDisplay |
@@ -272,6 +275,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setshowlaneticks">**setShowLaneTicks**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setsplitstrands">**setSplitStrands**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setshowgenelabels">**setShowGeneLabels**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlodmode">**setLodMode**</span><br><code>(mode: LodMode) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-fliplane">**flipLane**</span><br><code>(assemblyName: string) =&gt; void</code> | mirror a lane against its current orientation, pinned to the contig it draws | MultiWaySyntenyDisplay |
 | <span id="action-unpinlaneflip">**unpinLaneFlip**</span><br><code>(assemblyName: string) =&gt; void</code> | let a flipped lane choose its orientation again | MultiWaySyntenyDisplay |

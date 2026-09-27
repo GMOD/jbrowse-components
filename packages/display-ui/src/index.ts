@@ -70,6 +70,8 @@ export {
   TEXT_BASELINE_RATIO,
   textHalo,
 } from './FloatingText.tsx'
+export { cullOverlappingLabels } from './cullOverlappingLabels.ts'
+export type { LabelBox } from './cullOverlappingLabels.ts'
 
 // The hover label every control in here used to delegate to the browser's
 // `title` attribute. The box it draws is `@jbrowse/core`'s `BaseTooltip`, the

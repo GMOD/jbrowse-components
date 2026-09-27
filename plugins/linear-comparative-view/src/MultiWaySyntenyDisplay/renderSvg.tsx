@@ -1,10 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgHaloText, TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { SvgLaneHeaders } from './components/SvgLaneHeaders.tsx'
+import { GENE_LABEL_FONT_PX, GENE_LABEL_HALO_PX } from './laneLabels.ts'
 import { MULTIWAY_MARKS, multiwayBlocks } from './multiwayMarks.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -29,7 +31,8 @@ function MultiWaySvgBody({
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<MultiWaySyntenyDisplayModel>) {
-  const palette = usePalette()
+  const { palette, typography } = useStyleTheme()
+  const { fontFamily } = typography
   const state = {
     ...model.renderState,
     canvasWidth,
@@ -59,6 +62,20 @@ function MultiWaySvgBody({
           width={canvasWidth}
           palette={palette}
         />
+        {model.laneGeneLabels(fontFamily).map(label => (
+          <SvgHaloText
+            key={label.key}
+            x={label.left}
+            y={label.top + GENE_LABEL_FONT_PX * TEXT_BASELINE_RATIO}
+            fontSize={GENE_LABEL_FONT_PX}
+            fontFamily={fontFamily}
+            fill={palette.text.primary}
+            halo={palette.background.paper}
+            haloWidth={GENE_LABEL_HALO_PX * 2}
+          >
+            {label.text}
+          </SvgHaloText>
+        ))}
       </g>
     </>
   )

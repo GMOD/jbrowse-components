@@ -70,6 +70,7 @@ import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
 import { laneHeaderRows } from './laneHeader.ts'
+import { placeLaneLabels } from './laneLabels.ts'
 import {
   laneMapAt,
   laneMotionEase,
@@ -87,7 +88,12 @@ import {
   withLaneHidden,
   withLaneShown,
 } from './laneSelection.ts'
-import { buildLanes, laneContentHeight, laneGeometry } from './laneStack.ts'
+import {
+  buildLanes,
+  geneLabelRowPx,
+  laneContentHeight,
+  laneGeometry,
+} from './laneStack.ts'
 import {
   clipGroupToAnchor,
   groupFeatures,
@@ -570,6 +576,12 @@ export function stateModelFactory(
         /**
          * #action
          */
+        setShowGeneLabels(flag: boolean) {
+          setConf(self, 'showGeneLabels', flag)
+        },
+        /**
+         * #action
+         */
         setLodMode(mode: LodMode) {
           setConf(self, 'lodMode', mode)
         },
@@ -782,6 +794,19 @@ export function stateModelFactory(
        */
       get splitStrands(): boolean {
         return getConf(self, 'splitStrands')
+      },
+      /**
+       * #getter
+       */
+      get showGeneLabels(): boolean {
+        return getConf(self, 'showGeneLabels')
+      },
+      /**
+       * #getter
+       * the row under each lane's glyphs its gene names take
+       */
+      get geneLabelPx() {
+        return geneLabelRowPx(getConf(self, 'showGeneLabels'))
       },
       /**
        * #getter
@@ -1407,7 +1432,11 @@ export function stateModelFactory(
        * viewport — what the scrollbar is sized against
        */
       get scrollContentHeight() {
-        return laneContentHeight(self.height, 1 + self.rowAssemblies.length)
+        return laneContentHeight(
+          self.height,
+          1 + self.rowAssemblies.length,
+          self.geneLabelPx,
+        )
       },
       /**
        * #getter
@@ -1831,6 +1860,7 @@ export function stateModelFactory(
           width: self.canvasWidth,
           height: self.height,
           splitStrands: self.splitStrands,
+          geneLabelPx: self.geneLabelPx,
           pastHalfway: self.laneMotionHalfway,
           labelOf: assemblyName => self.laneLabel(assemblyName),
         })
@@ -1983,6 +2013,7 @@ export function stateModelFactory(
               self.height,
               1 + self.rowAssemblies.length,
               self.splitStrands,
+              self.geneLabelPx,
             ).rows,
             width: self.canvasWidth,
             paper: bandGroundColor(),
@@ -2056,6 +2087,27 @@ export function stateModelFactory(
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       * the gene names each lane prints under its glyphs, placed and
+       * decimated, in the stack's px; none with `showGeneLabels` off
+       */
+      laneGeneLabels(fontFamily: string) {
+        const { lanes, glyphHeight } = self.laneStack
+        return self.showGeneLabels
+          ? placeLaneLabels({
+              lanes,
+              genesOf: assemblyName =>
+                self.laneGenes?.get(assemblyName)?.genes ?? [],
+              glyphHeight,
+              width: self.canvasWidth,
+              height: self.scrollContentHeight,
+              fontFamily,
+            })
+          : []
+      },
+    }))
     .views(self => ({
       /**
        * #getter

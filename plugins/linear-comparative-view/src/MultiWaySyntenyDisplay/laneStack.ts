@@ -1,5 +1,6 @@
 import { clamp } from '@jbrowse/core/util'
 
+import { GENE_LABEL_FONT_PX, GENE_LABEL_GAP_PX } from './laneLabels.ts'
 import { shownFrame } from './laneMotion.ts'
 import {
   frameReachPx,
@@ -24,14 +25,23 @@ const MAX_GLYPH_PX = 18
 // the viewport. build_ecoli_orthologs.sh derives its config height from it.
 export const MIN_LANE_PITCH = 22
 
+/** the row under a lane's glyphs its gene names take, 0 with names off */
+export function geneLabelRowPx(showGeneLabels: boolean) {
+  return showGeneLabels ? GENE_LABEL_FONT_PX + 2 * GENE_LABEL_GAP_PX : 0
+}
+
 /**
  * The stack's full drawn height: the track `height` while every lane keeps at
  * least MIN_LANE_PITCH of it, fixed-pitch — and taller than the track — below
  * that. A FLOOR, not a re-layout: at or above the floor the layout is exactly
  * the divide-the-height one.
  */
-export function laneContentHeight(height: number, rowCount: number) {
-  return Math.max(height, rowCount * MIN_LANE_PITCH)
+export function laneContentHeight(
+  height: number,
+  rowCount: number,
+  geneLabelPx = 0,
+) {
+  return Math.max(height, rowCount * (MIN_LANE_PITCH + geneLabelPx))
 }
 
 export interface LaneBand {
@@ -58,23 +68,29 @@ export function laneGeometry(
   height: number,
   rowCount: number,
   splitStrands = false,
+  geneLabelPx = 0,
 ): LaneGeometry {
-  const contentHeight = laneContentHeight(height, rowCount)
+  const contentHeight = laneContentHeight(height, rowCount, geneLabelPx)
   const glyphHeight = clamp(
-    contentHeight / rowCount - LABEL_HEIGHT - 6,
+    contentHeight / rowCount - LABEL_HEIGHT - geneLabelPx - 6,
     MIN_GLYPH_PX,
     splitStrands ? 2 * MAX_GLYPH_PX : MAX_GLYPH_PX,
   )
-  const usable = contentHeight - LABEL_HEIGHT - glyphHeight - 4
+  const usable = contentHeight - LABEL_HEIGHT - glyphHeight - geneLabelPx - 4
   const glyphTop = (row: number) =>
     LABEL_HEIGHT + (rowCount === 1 ? 0 : (row * usable) / (rowCount - 1))
   const bandStart = (row: number) =>
     row === 0
       ? 0
-      : (glyphTop(row - 1) + glyphHeight + glyphTop(row) - LABEL_HEIGHT) / 2
+      : (glyphTop(row - 1) +
+          glyphHeight +
+          geneLabelPx +
+          glyphTop(row) -
+          LABEL_HEIGHT) /
+        2
   return {
     glyphHeight,
-    bandHeight: LABEL_HEIGHT + glyphHeight,
+    bandHeight: LABEL_HEIGHT + glyphHeight + geneLabelPx,
     contentHeight,
     rows: Array.from({ length: rowCount }, (_, row) => ({
       glyphTop: glyphTop(row),
@@ -214,6 +230,8 @@ export interface BuildLanesOpts {
   width: number
   height: number
   splitStrands?: boolean
+  /** `geneLabelRowPx` — the row under each lane's glyphs its names take */
+  geneLabelPx?: number
   /** the moving lanes past their midpoint, which draw their new rows */
   pastHalfway?: ReadonlySet<string>
   labelOf?: (assemblyName: string) => string
@@ -250,6 +268,7 @@ export function buildLanes({
   width,
   height,
   splitStrands = false,
+  geneLabelPx = 0,
   pastHalfway = new Set(),
   labelOf = assemblyName => assemblyName,
 }: BuildLanesOpts): LaneStack {
@@ -257,6 +276,7 @@ export function buildLanes({
     height,
     assemblyNames.length,
     splitStrands,
+    geneLabelPx,
   )
   const reach: Span = [-width, 2 * width]
   return {

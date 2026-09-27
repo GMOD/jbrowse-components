@@ -9,6 +9,7 @@ import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import { MultiWayRenderer } from '../MultiWayRenderer.ts'
+import LaneGeneLabels from './LaneGeneLabels.tsx'
 import LaneHeaders from './LaneHeaders.tsx'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
@@ -49,6 +50,7 @@ const MultiWayBody = observer(function MultiWayBody({
             cursor: hoverTarget ? 'pointer' : undefined,
           }}
         />
+        <LaneGeneLabels model={model} />
         <LaneHeaders model={model} />
       </div>
       <ScrollChrome model={model} controlsId={canvasId} />

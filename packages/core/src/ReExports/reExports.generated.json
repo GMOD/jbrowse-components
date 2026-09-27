@@ -4656,6 +4656,7 @@
         "axisGutterWidth",
         "axisPlotBox",
         "clampStrokeInsideAxis",
+        "cullOverlappingLabels",
         "formatScore",
         "isLiveModel",
         "plainChromeOverlays",

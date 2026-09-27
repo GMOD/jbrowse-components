@@ -628,10 +628,9 @@ describe('the lane stack scrolls once lanes would crush', () => {
     const display = createDisplay()
     expect(display.scrollableHeight).toBe(0)
     stageManyMates(display)
-    expect(display.scrollContentHeight).toBe((MATES + 1) * MIN_LANE_PITCH)
-    expect(display.scrollableHeight).toBe(
-      (MATES + 1) * MIN_LANE_PITCH - display.height,
-    )
+    const pitch = MIN_LANE_PITCH + display.geneLabelPx
+    expect(display.scrollContentHeight).toBe((MATES + 1) * pitch)
+    expect(display.scrollableHeight).toBe((MATES + 1) * pitch - display.height)
   })
 
   test('setScrollTop clamps into the scrollable range', () => {

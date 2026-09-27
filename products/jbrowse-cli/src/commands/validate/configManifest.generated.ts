@@ -4291,6 +4291,10 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
+          "name": "showGeneLabels",
+          "type": "boolean"
+        },
+        {
           "name": "splitStrands",
           "type": "boolean"
         }

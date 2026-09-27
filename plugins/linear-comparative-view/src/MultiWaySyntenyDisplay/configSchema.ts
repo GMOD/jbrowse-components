@@ -179,6 +179,15 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
+      showGeneLabels: {
+        type: 'boolean',
+        description:
+          "print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room",
+        defaultValue: true,
+      },
+      /**
+       * #slot
+       */
       splitStrands: {
         type: 'boolean',
         description:
