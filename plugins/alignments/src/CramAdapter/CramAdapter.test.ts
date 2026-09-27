@@ -234,3 +234,25 @@ test('a read-group tag filter keeps only that group', async () => {
     group4.every(f => (f.get('tags') as Record<string, unknown>).RG === '4'),
   ).toBe(true)
 })
+
+// volvox-sorted.cram has no @RG header lines, so every read's group lookup
+// falls through to the tag block, where it found the same override again
+test('an RG tag filter on a CRAM with no read groups keeps no read', async () => {
+  const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+  const reads = await firstValueFrom(
+    adapter
+      .getFeatures(
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 20000 },
+        {
+          filterBy: {
+            flagInclude: 0,
+            flagExclude: 0,
+            tagFilters: [{ tag: 'RG', value: '4' }],
+          },
+        },
+      )
+      .pipe(toArray()),
+  )
+  expect(reads).toEqual([])
+})

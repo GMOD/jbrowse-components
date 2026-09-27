@@ -434,8 +434,9 @@ The four overrides, and the only four allowed:
   `origin = this.start` translation and calls
   `super.forEachMismatch(callback, MISMATCH_OPTS)`. Its signature has to stay
   compatible with `CramRecord.forEachMismatch(callback, opts?: MismatchOptions)`.
-- `getTag(name)` — the RG arm through `cramReadGroup(this.adapter.samHeader,
-  this)`, else `super.getTag(name)`.
+- `getTag(name)` — the RG arm answers the header's read group, falling back to
+  `super.getTag('RG')` (never `this.getTag`, which recursed), else
+  `super.getTag(name)`.
 - `tags` — splices the header's RG over `super.tags`. The base declares a
   getter/setter pair; a getter-only override makes assignment throw in strict
   mode, which is the behaviour this side wants.

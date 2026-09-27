@@ -10,7 +10,6 @@ import {
 import { packCigar } from './packCigar.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
-import type { ParsedSamHeader } from '../shared/util.ts'
 import type CramAdapter from './CramAdapter.ts'
 import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -26,18 +25,6 @@ const MISMATCH_OPTS: { start?: number; end?: number; origin: number } = {
   start: undefined,
   end: undefined,
   origin: 0,
-}
-
-// The one spelling of where a read's RG lives. The RG data series resolved
-// through the header wins; a conforming encoder writes nothing else, but a
-// nonconforming one can leave RG in the tag block with no @RG line, and
-// htslib-family tools still show it. The adapter's tag filter reads RG through
-// getTag, so the details panel and the filter cannot disagree about it.
-export function cramReadGroup(
-  samHeader: ParsedSamHeader | undefined,
-  record: CramRecord,
-) {
-  return samHeader?.readGroups[record.readGroupId] ?? record.getTag('RG')
 }
 
 /**
@@ -156,13 +143,15 @@ export default class CramSlightlyLazyFeature
    * for every unrelated tag on the read to answer for one. `@gmod/cram` measures
    * the targeted read at 3.8-7.8x the object's.
    *
-   * The `RG` arm defers to `cramReadGroup`, the same precedence `tags` above
-   * spells with its spread: the header's read group wins over any `RG` the tag
-   * block carries.
+   * `RG` takes the precedence `tags` above spells: the header's read group
+   * wins, and a nonconforming encoder's `RG` left in the tag block with no @RG
+   * line is the fallback, as htslib-family tools show it. The fallback is
+   * `super`'s — `this.getTag` is this method.
    */
   override getTag(tagName: string) {
     return tagName === 'RG'
-      ? cramReadGroup(this.adapter.samHeader, this)
+      ? (this.adapter.samHeader?.readGroups[this.readGroupId] ??
+          super.getTag('RG'))
       : super.getTag(tagName)
   }
 
