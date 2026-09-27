@@ -73,6 +73,7 @@ import {
   LINK_NO_REGION,
   RowKeys,
   inkOfInstances,
+  shiftInk,
   keySlot,
   pointInsetPx,
 } from '@jbrowse/render-core/marks'
@@ -1447,7 +1448,7 @@ export function stateModelFactory(
                 ? [{ mark, index: hit.instance }]
                 : undefined,
             [hit.regionIndex],
-          ).map(r => ({ ...r, top: r.top + top }))
+          ).map(r => shiftInk(r, 0, top))
           if (this.highlightStyle !== 'ring') {
             return boxes
           }

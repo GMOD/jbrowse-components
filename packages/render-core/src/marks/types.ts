@@ -136,6 +136,23 @@ export interface InkRect {
   top: number
   width: number
   height: number
+  /**
+   * The ink as a stroked path, for a shape whose box is mostly empty space (a
+   * link's curve): a highlight strokes it, clipped to the box.
+   */
+  stroke?: InkStroke
+}
+
+/**
+ * An SVG path `d` in canvas px, the width the shape strokes it at, and where
+ * the canvas origin sits in the frame the box is in, which `shiftInk` moves
+ * with the box.
+ */
+export interface InkStroke {
+  d: string
+  widthPx: number
+  originX: number
+  originY: number
 }
 
 /**
@@ -547,9 +564,7 @@ function bandIsOpen(strip: MarkBand) {
 function clipToBand(r: InkRect, strip: MarkBand): InkRect | undefined {
   const top = Math.max(r.top, strip.top)
   const bottom = Math.min(r.top + r.height, strip.top + strip.height)
-  return bottom > top
-    ? { left: r.left, top, width: r.width, height: bottom - top }
-    : undefined
+  return bottom > top ? { ...r, top, height: bottom - top } : undefined
 }
 
 const NOTHING = new ArrayBuffer(0)

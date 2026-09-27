@@ -3,6 +3,25 @@ import { canvasWideBlock } from '../renderBlock.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { InkRect, Mark, MarkFrame } from './types.ts'
 
+/** `r` moved by (`dx`, `dy`), its stroke with it. */
+export function shiftInk<R extends InkRect>(r: R, dx: number, dy: number): R {
+  const { stroke } = r
+  return {
+    ...r,
+    left: r.left + dx,
+    top: r.top + dy,
+    ...(stroke
+      ? {
+          stroke: {
+            ...stroke,
+            originX: stroke.originX + dx,
+            originY: stroke.originY + dy,
+          },
+        }
+      : {}),
+  }
+}
+
 /** One instance of one mark in a display's list, as a highlight names it. */
 export interface MarkInstance {
   mark: number
@@ -12,9 +31,7 @@ export interface MarkInstance {
 function clippedTo(r: InkRect, x0: number, x1: number): InkRect | undefined {
   const left = Math.max(r.left, x0)
   const right = Math.min(r.left + r.width, x1)
-  return right >= left
-    ? { left, top: r.top, width: right - left, height: r.height }
-    : undefined
+  return right >= left ? { ...r, left, width: right - left } : undefined
 }
 
 /**

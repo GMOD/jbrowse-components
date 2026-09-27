@@ -1,4 +1,4 @@
-import { inkOfInstances } from './markInk.ts'
+import { inkOfInstances, shiftInk } from './markInk.ts'
 import { spanMark } from './spanMark.ts'
 import { defineMark } from './types.ts'
 
@@ -105,4 +105,23 @@ test('the derived hit test answers the box, on top first', () => {
   expect(
     plain.hitNearest!(region, blocks[0]!, s, 75, 25, [2, 1, 0], 0.5),
   ).toBeUndefined()
+})
+
+test('shifting a rect moves its stroke s origin with it, and clipping keeps the stroke', () => {
+  const stroke = { d: 'M0 0L10 10', widthPx: 1, originX: 0, originY: 0 }
+  expect(
+    shiftInk({ left: 1, top: 2, width: 3, height: 4, stroke }, 5, 7),
+  ).toEqual({
+    left: 6,
+    top: 9,
+    width: 3,
+    height: 4,
+    stroke: { ...stroke, originX: 5, originY: 7 },
+  })
+  expect(shiftInk({ left: 1, top: 2, width: 3, height: 4 }, 5, 7)).toEqual({
+    left: 6,
+    top: 9,
+    width: 3,
+    height: 4,
+  })
 })

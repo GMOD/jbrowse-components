@@ -96,19 +96,53 @@ test('a dome is a half-ellipse from foot to foot, its apex the half-width clampe
   ])
   // 100 px wide: rx 50, ry 50, a semicircle inside the 100 px band, padded
   // by half the 2 px stroke on every side
-  expect(linkMark.ink!(c, block, frame, params, 0)).toEqual({
+  expect(linkMark.ink!(c, block, frame, params, 0)).toMatchObject({
     left: 99,
     top: 49,
     width: 102,
     height: 52,
   })
   // 400 px wide: rx 200, ry clamped to the band's 100
-  expect(linkMark.ink!(c, block, frame, params, 1)).toEqual({
+  expect(linkMark.ink!(c, block, frame, params, 1)).toMatchObject({
     left: 299,
     top: -1,
     width: 402,
     height: 102,
   })
+})
+
+// The highlight strokes the curve rather than shading its box, so the path
+// is the painter's own trace: one half-ellipse foot to foot, and for a far
+// pair two legs with no arc across the band.
+test('a link s ink carries its curve as a path', () => {
+  const dome = linkMark.ink!(
+    channels([{ x: 100, x2: 200 }]),
+    block,
+    frame,
+    params,
+    0,
+  )!
+  expect(dome.stroke).toEqual({
+    d: 'M100 100A50 50 0 0 1 200 100',
+    widthPx: 2,
+    originX: 0,
+    originY: 0,
+  })
+  const far = linkMark.ink!(
+    channels([{ x: 100, x2: 5000 + 7100, region: 1 }]),
+    block,
+    frame,
+    params,
+    0,
+  )!
+  const d = far.stroke!.d
+  expect(d.match(/M/g)).toHaveLength(2)
+  expect(d).not.toContain('A')
+  const ys = [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map(m =>
+    Number(m[2]),
+  )
+  expect(Math.min(...ys)).toBeGreaterThanOrEqual(far.top)
+  expect(Math.max(...ys)).toBeLessThanOrEqual(far.top + far.height)
 })
 
 test('an arc is a true semicircle that may leave the band', () => {
@@ -143,7 +177,7 @@ test('a valued link puts its apex at the value on the band scale', () => {
 test('a mate on another displayed region places through that region', () => {
   const c = channels([{ x: 900, x2: 5100, region: 1 }])
   // foot at px 900, mate at px 1100: a 200 px dome centred on the seam
-  expect(linkMark.ink!(c, block, frame, params, 0)).toEqual({
+  expect(linkMark.ink!(c, block, frame, params, 0)).toMatchObject({
     left: 899,
     top: -1,
     width: 202,
@@ -153,7 +187,7 @@ test('a mate on another displayed region places through that region', () => {
 
 test('a mate on no region draws a stem at the placed foot', () => {
   const c = channels([{ x: 500, x2: 42, region: LINK_NO_REGION }])
-  expect(linkMark.ink!(c, block, frame, params, 0)).toEqual({
+  expect(linkMark.ink!(c, block, frame, params, 0)).toMatchObject({
     left: 499,
     top: 100 - LINK_STEM_PX - 1,
     width: 2,
@@ -320,13 +354,13 @@ test('a line is a straight segment at the apex height, widened to its minimum un
     { y: true },
   )
   const line: LinkParams = { ...params, linkShape: 'line', valued: true }
-  expect(linkMark.ink!(c, block, frame, line, 0)).toEqual({
+  expect(linkMark.ink!(c, block, frame, line, 0)).toMatchObject({
     left: 99,
     top: 49,
     width: 202,
     height: 2,
   })
-  expect(linkMark.ink!(c, block, frame, line, 1)).toEqual({
+  expect(linkMark.ink!(c, block, frame, line, 1)).toMatchObject({
     left: 400 - LINK_LINE_MIN_PX / 2 - 1,
     top: -1,
     width: LINK_LINE_MIN_PX + 2,
@@ -348,7 +382,7 @@ test('a reversed scale hangs the curve from the top of a band placed by its offs
     rowOffsetPx: 20,
     rowHeight: 60,
   }
-  expect(linkMark.ink!(c, block, frame, down, 0)).toEqual({
+  expect(linkMark.ink!(c, block, frame, down, 0)).toMatchObject({
     left: 99,
     top: 19,
     width: 102,

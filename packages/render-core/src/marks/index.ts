@@ -1,7 +1,7 @@
 export { defineMark, withPassId } from './types.ts'
 export { paintMarkBlocks } from './markPaint.ts'
 export { planMarks } from './markPlan.ts'
-export { inkOfInstances } from './markInk.ts'
+export { inkOfInstances, shiftInk } from './markInk.ts'
 export { backToFront, nearestMarkHit, valueWindow } from './nearestMarkHit.ts'
 export { barMark } from './barMark.ts'
 export { pointMark } from './pointMark.ts'

@@ -505,10 +505,21 @@ function legPoints(g: LinkFrame, footX: number, legDir: number): LegPoint[] {
   return points
 }
 
-function tracePath(
-  ctx: Parameters<MarkShape<LinkChannels, LinkParams>['paintBlock']>[0],
-  g: LinkFrame,
-) {
+interface PathSink {
+  moveTo(x: number, y: number): void
+  lineTo(x: number, y: number): void
+  ellipse(
+    x: number,
+    y: number,
+    rx: number,
+    ry: number,
+    rotation: number,
+    startAngle: number,
+    endAngle: number,
+  ): void
+}
+
+function tracePath(ctx: PathSink, g: LinkFrame) {
   const { baseY } = g
   if (g.kind === KIND_STEM) {
     ctx.moveTo(g.xPx, baseY)
@@ -564,6 +575,34 @@ function footSegments(g: LinkFrame): FootSegment[] {
     segments.push({ from: g.x2Px, to: g.x2Px + g.foot2Dir * g.foot2Len, y })
   }
   return segments
+}
+
+const svgNumber = (n: number) => Math.round(n * 100) / 100
+
+// The curve and its feet as an SVG path, traced by the painter's own
+// `tracePath`. Every arc starts where the path already stands.
+function svgPathOf(g: LinkFrame) {
+  const parts: string[] = []
+  const point = (x: number, y: number) => `${svgNumber(x)} ${svgNumber(y)}`
+  tracePath(
+    {
+      moveTo: (x, y) => parts.push(`M${point(x, y)}`),
+      lineTo: (x, y) => parts.push(`L${point(x, y)}`),
+      ellipse: (cx, cy, rx, ry, _rotation, from, to) => {
+        const large = Math.abs(to - from) > Math.PI ? 1 : 0
+        const sweep = to > from ? 1 : 0
+        const end = point(cx + rx * Math.cos(to), cy + ry * Math.sin(to))
+        parts.push(
+          `A${svgNumber(rx)} ${svgNumber(ry)} 0 ${large} ${sweep} ${end}`,
+        )
+      },
+    },
+    g,
+  )
+  for (const { from, to, y } of footSegments(g)) {
+    parts.push(`M${point(from, y)}L${point(to, y)}`)
+  }
+  return parts.join('')
 }
 
 function footBox({ from, to, y }: FootSegment, half: number): InkRect {
@@ -820,13 +859,24 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
     ctx.setLineDash([])
   },
 
-  // The box the stroke lies in: the curve's extent padded by half the stroke,
-  // which is the highlight and what the sweep holds the painting to. The hit
-  // test below is the curve's own.
+  // The box the stroke lies in, the curve's extent padded by half the stroke,
+  // which the sweep holds the painting to; a highlight strokes the curve
+  // itself. The hit test below is the curve's own.
   ink(channels, block, frame, params, i) {
     const g = linkFrame(block, frame, params)
     placeLink(channels, g, i)
-    return inkBox(g)
+    const box = inkBox(g)
+    return (
+      box && {
+        ...box,
+        stroke: {
+          d: svgPathOf(g),
+          widthPx: g.strokePx,
+          originX: 0,
+          originY: 0,
+        },
+      }
+    )
   },
 
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {

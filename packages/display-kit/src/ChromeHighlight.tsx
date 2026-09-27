@@ -30,31 +30,70 @@ function hoverStyle(
   }
 }
 
+/** How a list's stroked ink reads: its colour, drawn this much wider than the ink. */
+interface StrokeStyle {
+  color: string
+  widenPx: number
+  dash?: string
+}
+
 function Boxes({
   rects,
   testid,
   styleOf,
+  strokeOf,
 }: {
   rects: HighlightRect[]
   testid: string
   styleOf: (r: HighlightRect) => CSSProperties
+  strokeOf: (r: HighlightRect) => StrokeStyle
 }) {
-  return rects.map((r, i) => (
-    <div
-      // eslint-disable-next-line @eslint-react/no-array-index-key -- geometry with no identity, rebuilt per hover
-      key={i}
-      data-testid={testid}
-      style={{
-        position: 'absolute',
-        pointerEvents: 'none',
-        left: r.left,
-        top: r.top,
-        width: r.width,
-        height: r.height,
-        ...styleOf(r),
-      }}
-    />
-  ))
+  return rects.map((r, i) => {
+    const box = {
+      position: 'absolute',
+      pointerEvents: 'none',
+      left: r.left,
+      top: r.top,
+      width: r.width,
+      height: r.height,
+    } as const
+    if (r.stroke) {
+      const { color, widenPx, dash } = strokeOf(r)
+      const pad = widenPx / 2
+      return (
+        <svg
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- geometry with no identity, rebuilt per hover
+          key={i}
+          data-testid={testid}
+          style={{
+            ...box,
+            left: r.left - pad,
+            top: r.top - pad,
+            width: r.width + 2 * pad,
+            height: r.height + 2 * pad,
+            overflow: 'hidden',
+          }}
+        >
+          <path
+            d={r.stroke.d}
+            transform={`translate(${r.stroke.originX - r.left + pad} ${r.stroke.originY - r.top + pad})`}
+            fill="none"
+            stroke={color}
+            strokeWidth={r.stroke.widthPx + widenPx}
+            strokeDasharray={dash}
+          />
+        </svg>
+      )
+    }
+    return (
+      <div
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- geometry with no identity, rebuilt per hover
+        key={i}
+        data-testid={testid}
+        style={{ ...box, ...styleOf(r) }}
+      />
+    )
+  })
 }
 
 /**
@@ -91,6 +130,7 @@ const ChromeHighlight = observer(function ChromeHighlight({
           borderRadius: 3,
           backgroundColor: alpha(palette.accent, 0.15),
         })}
+        strokeOf={() => ({ color: palette.accent, widenPx: 3, dash: '6 3' })}
       />
       <Boxes
         rects={pinnedInk}
@@ -100,6 +140,7 @@ const ChromeHighlight = observer(function ChromeHighlight({
           borderRadius: 3,
           backgroundColor: pinned.fill,
         })}
+        strokeOf={() => ({ color: pinned.border, widenPx: 4 })}
       />
       <Boxes
         rects={selectionInk}
@@ -108,11 +149,13 @@ const ChromeHighlight = observer(function ChromeHighlight({
           border: `2px solid ${palette.featureSelected}`,
           borderRadius: 3,
         })}
+        strokeOf={() => ({ color: palette.featureSelected, widenPx: 3 })}
       />
       <Boxes
         rects={hoverInk}
         testid="chrome-hover"
         styleOf={r => hoverStyle(palette, highlightStyle, r.strong)}
+        strokeOf={() => ({ color: palette.featureHoverStrong, widenPx: 3 })}
       />
     </>
   )

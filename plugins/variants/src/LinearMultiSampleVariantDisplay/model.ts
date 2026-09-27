@@ -23,7 +23,7 @@ import {
   spanRect,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
-import { inkOfInstances } from '@jbrowse/render-core/marks'
+import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import {
@@ -541,7 +541,7 @@ export function stateModelFactory(
               index => self.matrixRegions.get(index),
               self.renderState,
               () => [{ mark: 0, index: matrixCell.cellIndex }],
-            ).map(r => ({ ...r, left: r.left + left, top: r.top + top }))
+            ).map(r => shiftInk(r, left, top))
           }
           if (cell) {
             const region = self.renderBlocks.find(
