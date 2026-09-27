@@ -18,12 +18,12 @@ probes come from that review and nobody has re-measured them.
 1. **A marker for bars clipped at the top of an axis** (the bullet in
    scales-and-colour-keys). v4 drew a 2 px red `clipColor` strip on every
    clipped bar (`git show bafc8df5b4^:plugins/wiggle/src/drawXY.ts`), and
-   `bafc8df5b4` removed it with the canvas code. The coverage band now clips at
-   0.99 by default, so a collapsed-repeat pile-up reads as the axis maximum
-   with no sign of the clip. First step: capture a coverage band over a
-   collapsed repeat as now, with v4's strip, and with one alternative, locally,
-   and show Colin. About 1.5-2 days after that, across wiggle, alignments-core's
-   coverage bar and render-core's `bar`, on GPU, Canvas2D and SVG.
+   `bafc8df5b4` removed it with the canvas code. Colin chose the red strip over
+   a notch on 2026-09-27, from captures of ACTB's coverage band with its axis
+   pinned below the exon peaks. About 1.5-2 days, across wiggle,
+   alignments-core's coverage bar and render-core's `bar`, on GPU, Canvas2D and
+   SVG; the strip draws after the SNP, modification and interbase layers, as
+   v4's second pass did, or they paint over it.
 2. **Wiggle's xyplot and scatter onto render-core's `bar` and `point`.** Of the
    four blockers sized on 2026-09-26, the bin-midpoint one is gone (ADR-181
    centres a point), the interleaved positions live only in the payload
@@ -43,11 +43,9 @@ probes come from that review and nobody has re-measured them.
    `config_demo`'s dbsuper track; the dome across the ring's wrap point needs a
    call (chords on the circle, or no links on a ring), and the second needs
    `ink` to return several boxes.
-4. **The alignments read-colour key's title and labels**, in
-   scales-and-colour-keys, about a day; its direction is not yet put to Colin.
-5. **Link items 1 and 2 of review**: real in code, triggered by nothing in the
+4. **Link items 1 and 2 of review**: real in code, triggered by nothing in the
    repo, an hour or two each.
-6. **review's `domainQuantile` range check and the Clip outliers re-tick**,
+5. **review's `domainQuantile` range check and the Clip outliers re-tick**,
    under an hour each; nothing reaches either by default.
 
 ## Leftover of the domainQuantile call
