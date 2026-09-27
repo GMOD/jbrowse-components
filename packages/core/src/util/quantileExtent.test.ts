@@ -1,4 +1,4 @@
-import { quantileExtent, selectNth } from './quantileExtent.ts'
+import { quantileExtent, scaleExtent, selectNth } from './quantileExtent.ts'
 
 const spiky = Float32Array.from([
   ...Array.from({ length: 99 }, (_, i) => i + 1),
@@ -39,6 +39,15 @@ test('each sign clips on its own, so a sparse tail of the other keeps its end', 
   ]
   expect(quantileExtent(copyNumber, copyNumber.length, 0.99)).toEqual([-1, 0.5])
   expect(quantileExtent([], 0, 0.95)).toEqual([Infinity, -Infinity])
+})
+
+test('a log scale reads only the positive values, quantile and all', () => {
+  const values = [0, -3, 0.25, 2, 8, Number.NaN]
+  expect(scaleExtent(values, values.length, 'log')).toEqual([0.25, 8])
+  expect(scaleExtent(values, values.length, 'linear')).toEqual([-3, 8])
+  expect(scaleExtent([0, -1], 2, 'log')).toEqual([Infinity, -Infinity])
+  const logSpiky = Float32Array.from([0, 0, ...spiky])
+  expect(scaleExtent(logSpiky, logSpiky.length, 'log', 0.95)).toEqual([6, 95])
 })
 
 test('selectNth answers the kth smallest', () => {

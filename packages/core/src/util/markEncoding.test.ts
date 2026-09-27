@@ -969,6 +969,23 @@ test('size is a raw lane with a table, so every region strokes a value alike', (
   })
 })
 
+test('a log scale spans the positive values it met, so a 0 among them floors nothing at 1', () => {
+  const list = [0, 0.5, 4].map((score, i) => feature(i, { score }))
+  const size = encodeFeatures(
+    list,
+    { size: { field: 'score', scale: 'log' } },
+    ['size'],
+  )
+  expect(size.sizeScale).toMatchObject({ domain: [0.5, 4], extent: [0.5, 4] })
+  const color = encodeFeatures(
+    list,
+    { color: { field: 'score', scale: 'log' } },
+    ALL,
+    { jexl },
+  )
+  expect(color.scale).toMatchObject({ domain: [0.5, 4], extent: [0.5, 4] })
+})
+
 test('a bare field name is a linear size over the default range, and a number fills no lane', () => {
   const named = encodeFeatures(features, { size: 'score' }, ['size'])
   expect(named.sizeScale).toMatchObject({

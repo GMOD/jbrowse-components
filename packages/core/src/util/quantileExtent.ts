@@ -152,3 +152,30 @@ export function quantileExtent(
     np > 0 ? quantileOf(positive, np, q) : quantileOf(negative, nn, q)
   return [Math.min(low, high), high]
 }
+
+/**
+ * #api
+ * {@link quantileExtent} as a scale's open ends read it: over every finite
+ * value on a linear scale, and on a log scale over the positive ones, since a
+ * 0 or a negative met there would floor the domain at 1 and fold a domain
+ * below 1 flat. `[Infinity, -Infinity]` where the scale reads nothing.
+ */
+export function scaleExtent(
+  values: ArrayLike<number>,
+  count: number,
+  scale: string,
+  quantile = 1,
+): [number, number] {
+  if (scale !== 'log') {
+    return quantileExtent(values, count, quantile)
+  }
+  const positive = new Float32Array(count)
+  let np = 0
+  for (let i = 0; i < count; i++) {
+    const v = values[i]!
+    if (v > 0 && Number.isFinite(v)) {
+      positive[np++] = v
+    }
+  }
+  return quantileExtent(positive, np, quantile)
+}
