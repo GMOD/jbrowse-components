@@ -38,6 +38,7 @@ import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
+import type { NamedSpan } from './laneLabels.ts'
 import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
 import type { MultiWayGroup, Span } from './layoutMultiWay.ts'
 import type {
@@ -760,6 +761,8 @@ function laneReachPx(lane: Lane, width: number): Span {
 export interface LaneCells {
   glyphs: LaneGlyphData
   boxes: LaneGlyphData
+  /** each named box's gene and where it draws, for the lane's name row */
+  boxNames: NamedSpan[]
 }
 
 interface DrawnGene {
@@ -773,6 +776,7 @@ interface LaneBox {
   key: string
   group: MultiWayGroup
   span: Span
+  name?: string
 }
 
 /**
@@ -814,7 +818,7 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
           gene.cluster = key
         }
       } else if (isNamedRecord(group.feature)) {
-        boxes.push({ key, group, span: spans[i]! })
+        boxes.push({ key, group, span: spans[i]!, name: intervals[i]!.name })
       }
     })
   }
@@ -951,9 +955,18 @@ export function buildLaneCells({
     })
   }
 
-  for (const { key, group, span } of unclaimed) {
+  const boxNames: NamedSpan[] = []
+  for (const { key, group, span, name } of unclaimed) {
     const fill = colors.boxes.fill(group.feature, key)
     const [boxLeft, boxRight] = span[0] <= span[1] ? span : [span[1], span[0]]
+    if (name) {
+      boxNames.push({
+        id: `box:${key}:${boxLeft}`,
+        name,
+        left: boxLeft,
+        right: boxRight,
+      })
+    }
     boxes.rect(
       boxLeft,
       Math.max(boxLeft + 1, boxRight),
@@ -972,7 +985,7 @@ export function buildLaneCells({
       fill,
     })
   }
-  return { glyphs: glyphs.build(), boxes: boxes.build() }
+  return { glyphs: glyphs.build(), boxes: boxes.build(), boxNames }
 }
 
 /** the glyph hit under a render-origin px point, topmost first: boxes draw over genes */

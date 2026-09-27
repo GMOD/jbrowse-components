@@ -66,4 +66,19 @@ describe('placeLaneLabels', () => {
       [],
     )
   })
+
+  it('names a placement box standing in for a gene the lane lacks', () => {
+    const labels = placeLaneLabels({
+      lanes: [lane('a', 20)],
+      genesOf: () => [gene('G', 100, 200)],
+      boxesOf: () => [
+        { id: 'box:g', name: 'Potri.001G', left: 500, right: 600 },
+      ],
+      glyphHeight: 10,
+      width: 1000,
+      height: 200,
+      fontFamily: 'sans-serif',
+    })
+    expect(labels.map(l => l.text)).toEqual(['G', 'Potri.001G'])
+  })
 })

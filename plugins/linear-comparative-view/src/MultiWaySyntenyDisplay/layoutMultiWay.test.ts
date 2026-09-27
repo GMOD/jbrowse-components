@@ -358,6 +358,35 @@ test('the runs of one clipped record are sibling groups, weighed by the anchor b
   expect(groups.reduce((sum, g) => sum + g.weight, 0)).toBe(2000)
 })
 
+test('a run names its gene only while its placements name one', () => {
+  const pair = (uniqueId: string, mateStart: number, mateName: string) =>
+    pairFeature({
+      uniqueId,
+      name: 'g1',
+      start: 100,
+      end: 200,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: mateStart,
+        end: mateStart + 100,
+        name: mateName,
+      },
+    })
+  const groups = groupFeatures([
+    pair('a', 1000, 'Pp.A'),
+    pair('b', 1050, 'Pp.B'),
+    pair('c', 5000, 'Pp.C'),
+  ])
+  const frame = computeRowFrame(groups, 'peach', 10_000)!
+  expect(
+    groupRunSpansOnRow(groups[0]!, 'peach', frame, 1000).map(
+      r => r.interval.name,
+    ),
+  ).toEqual([undefined, 'Pp.C'])
+  expect(groups[0]!.anchor.name).toBe('g1')
+})
+
 test('a lane frame snaps to a multiple of the anchor span', () => {
   const groups = groupFeatures(features)
   const frame = computeRowFrame(groups, 'peach', 1000)!
@@ -1437,11 +1466,11 @@ describe('a grouped feature groups as its pairwise expansion', () => {
     expect(fromGrouped.map(g => g.key)).toEqual(['g0', 'g1'])
     const g1 = fromGrouped[1]!
     expect(g1.mates.get('peach')).toEqual([
-      { refName: 'Pp1', start: 1000, end: 1100, orientation: 1 },
-      { refName: 'Pp2', start: 5000, end: 5100, orientation: -1 },
+      { refName: 'Pp1', start: 1000, end: 1100, name: 'p1', orientation: 1 },
+      { refName: 'Pp2', start: 5000, end: 5100, name: 'p1b', orientation: -1 },
     ])
     expect(g1.mates.get('cacao')).toEqual([
-      { refName: 'Cc1', start: 9000, end: 9100, orientation: -1 },
+      { refName: 'Cc1', start: 9000, end: 9100, name: 'c1', orientation: -1 },
     ])
   })
 

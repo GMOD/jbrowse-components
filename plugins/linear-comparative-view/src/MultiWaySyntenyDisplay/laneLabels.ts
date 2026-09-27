@@ -26,7 +26,7 @@ interface Candidate extends PlacedLaneLabel {
 
 type LabelledLane = Pick<Lane, 'assemblyName' | 'glyphTop' | 'spanOf'>
 
-interface DrawnName {
+export interface NamedSpan {
   id: string
   name: string
   left: number
@@ -36,9 +36,10 @@ interface DrawnName {
 function drawnNames(
   lane: LabelledLane,
   genes: readonly LaneGene[],
+  boxes: readonly NamedSpan[],
   width: number,
 ) {
-  const out: DrawnName[] = []
+  const out = boxes.filter(b => b.right >= 0 && b.left <= width)
   for (const { feature } of genes) {
     const name = getFeatureName(feature)
     const span = lane.spanOf(
@@ -58,7 +59,8 @@ function drawnNames(
 }
 
 /**
- * Each lane's gene names, in the row under its glyphs, decimated the way the
+ * Each lane's gene names, in the row under its glyphs — its genes' own and
+ * those of the placement boxes standing in for genes its annotation lacks — decimated the way the
  * feature track decimates: a name is kept only where the gap between its
  * neighbours' edges holds it (`keepFeatureLabel`), and of the names left, one
  * meeting a kept name's halo is dropped (`cullOverlappingLabels`).
@@ -66,6 +68,7 @@ function drawnNames(
 export function placeLaneLabels({
   lanes,
   genesOf,
+  boxesOf = () => [],
   glyphHeight,
   width,
   height,
@@ -73,6 +76,7 @@ export function placeLaneLabels({
 }: {
   lanes: readonly LabelledLane[]
   genesOf: (assemblyName: string) => readonly LaneGene[]
+  boxesOf?: (assemblyName: string) => readonly NamedSpan[]
   glyphHeight: number
   width: number
   height: number
@@ -80,7 +84,12 @@ export function placeLaneLabels({
 }): PlacedLaneLabel[] {
   const candidates: Candidate[] = []
   for (const lane of lanes) {
-    const names = drawnNames(lane, genesOf(lane.assemblyName), width)
+    const names = drawnNames(
+      lane,
+      genesOf(lane.assemblyName),
+      boxesOf(lane.assemblyName),
+      width,
+    )
     const top = lane.glyphTop + glyphHeight + GENE_LABEL_GAP_PX
     names.forEach((n, i) => {
       const roomLeft = names[i - 1]?.right ?? -Infinity

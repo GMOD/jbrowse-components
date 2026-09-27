@@ -138,6 +138,7 @@ import type {
   LaneLinksFetchSpec,
   LaneRegion,
 } from './laneFetch.ts'
+import type { NamedSpan } from './laneLabels.ts'
 import type { LaneTransition } from './laneMotion.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
@@ -2028,6 +2029,7 @@ export function stateModelFactory(
         colors: LaneGlyphColors
         glyphs: MultiWayCell
         boxes: MultiWayCell
+        boxNames: NamedSpan[]
       }[] = []
       return {
         /**
@@ -2043,7 +2045,7 @@ export function stateModelFactory(
          * from keeps those cells, so another lane's gene commit re-uploads
          * nothing of it
          */
-        get laneGlyphCells() {
+        get laneCells() {
           const { laneGenes, laneGeneColors, boxColors } = self
           const { lanes, glyphHeight } = self.laneStack
           const ink = bandInk()
@@ -2064,7 +2066,7 @@ export function stateModelFactory(
             ) {
               return prev
             }
-            const { glyphs, boxes } = buildLaneCells({
+            const { glyphs, boxes, boxNames } = buildLaneCells({
               lane,
               genes: laneGenes?.get(lane.assemblyName)?.genes ?? [],
               glyphHeight,
@@ -2076,17 +2078,38 @@ export function stateModelFactory(
               colors,
               glyphs: { kind: 'glyphs', data: glyphs },
               boxes: { kind: 'glyphs', data: boxes },
+              boxNames,
             }
           })
-          const out = new Map<string, MultiWayCell>()
+          const cells = new Map<string, MultiWayCell>()
           held.forEach(({ glyphs, boxes }, row) => {
-            out.set(boxesKey(row), boxes)
-            out.set(glyphsKey(row), glyphs)
+            cells.set(boxesKey(row), boxes)
+            cells.set(glyphsKey(row), glyphs)
           })
-          return out
+          return {
+            cells,
+            boxNames: new Map(
+              held.map(({ lane, boxNames }) => [lane.assemblyName, boxNames]),
+            ),
+          }
         },
       }
     })
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get laneGlyphCells() {
+        return self.laneCells.cells
+      },
+      /**
+       * #getter
+       * per lane, the named placement boxes its cells drew
+       */
+      get laneBoxNames(): Map<string, NamedSpan[]> {
+        return self.laneCells.boxNames
+      },
+    }))
     .views(self => ({
       /**
        * #method
@@ -2095,11 +2118,13 @@ export function stateModelFactory(
        */
       laneGeneLabels(fontFamily: string) {
         const { lanes, glyphHeight } = self.laneStack
+        const boxNames = self.laneBoxNames
         return self.showGeneLabels
           ? placeLaneLabels({
               lanes,
               genesOf: assemblyName =>
                 self.laneGenes?.get(assemblyName)?.genes ?? [],
+              boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
               glyphHeight,
               width: self.canvasWidth,
               height: self.scrollContentHeight,

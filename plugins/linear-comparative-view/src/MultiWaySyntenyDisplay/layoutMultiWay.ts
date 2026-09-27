@@ -54,6 +54,8 @@ export interface MultiWayPlacement {
   refName: string
   start: number
   end: number
+  /** the gene the placement is, where the source names one */
+  name?: string
 }
 
 /**
@@ -121,6 +123,10 @@ function matesOf(feature: Feature): SyntenyGroupedMate[] {
       : [{ ...mate, orientation: feature.get('strand') === -1 ? -1 : 1 }]
 }
 
+function nameOf(value: unknown) {
+  return typeof value === 'string' && value ? value : undefined
+}
+
 // Name before syntenyId: an MCScan blocks adapter keeps the FIRST row naming a
 // gene pair, so one anchor gene surfaces under different row numbers on
 // different pairs while its name is one string everywhere.
@@ -148,7 +154,12 @@ export function groupFeatures(features: Feature[]) {
       const end = feature.get('end')
       group = {
         key,
-        anchor: { refName: feature.get('refName'), start, end },
+        anchor: {
+          refName: feature.get('refName'),
+          start,
+          end,
+          name: nameOf(feature.get('name')),
+        },
         mates: new Map(),
         feature,
         weight: voteEvidence(isNamedRecord(feature), Math.max(end - start, 1)),
@@ -168,6 +179,7 @@ export function groupFeatures(features: Feature[]) {
           refName: mate.refName,
           start: mate.start,
           end: mate.end,
+          name: nameOf(mate.name),
           orientation: mate.orientation < 0 ? -1 : 1,
         })
       }
@@ -396,6 +408,8 @@ interface PlacementRun {
   min: number
   max: number
   orientation: number
+  /** the one gene the run's placements name, if they name exactly one */
+  name?: string
 }
 
 // The group's placements on one row as maximal OVERLAPPING RUNS: two hits the
@@ -419,21 +433,33 @@ export function groupRunsOnRow(
     .sort((a, b) => a.start - b.start)
   // length-weighted within a run, so a fragment aligning the other way cannot
   // outvote the block it sits inside
-  const runs: { min: number; max: number; signed: number }[] = []
+  const runs: {
+    min: number
+    max: number
+    signed: number
+    names: Set<string | undefined>
+  }[] = []
   for (const p of placements) {
     const weight = p.orientation * Math.max(p.end - p.start, 1)
     const last = runs.at(-1)
     if (last && p.start <= last.max) {
       last.max = Math.max(last.max, p.end)
       last.signed += weight
+      last.names.add(p.name)
     } else {
-      runs.push({ min: p.start, max: p.end, signed: weight })
+      runs.push({
+        min: p.start,
+        max: p.end,
+        signed: weight,
+        names: new Set([p.name]),
+      })
     }
   }
-  return runs.map(({ min, max, signed }) => ({
+  return runs.map(({ min, max, signed, names }) => ({
     min,
     max,
     orientation: signed < 0 ? -1 : 1,
+    name: names.size === 1 ? [...names][0] : undefined,
   }))
 }
 
@@ -462,7 +488,12 @@ export function groupRunSpansOnRow(
     return {
       span: run.orientation < 0 ? ([b, a] as const) : ([a, b] as const),
       orientation: run.orientation,
-      interval: { refName: frame.refName, start: run.min, end: run.max },
+      interval: {
+        refName: frame.refName,
+        start: run.min,
+        end: run.max,
+        name: run.name,
+      },
     }
   })
 }
