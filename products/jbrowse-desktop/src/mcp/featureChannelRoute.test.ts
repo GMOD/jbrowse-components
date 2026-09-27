@@ -80,11 +80,11 @@ test('a feature track groups and colors through the two settings jb.help names, 
   const slots = jb.describeSlots(display.configuration)
   expect(slots.facet).toMatchObject({
     type: 'Facet',
-    shorthand: 'field',
+    shorthand: { string: 'field' },
     slots: { field: { type: 'featureField' }, domain: { type: 'stringArray' } },
   })
   expect(slots.color).toMatchObject({
     type: 'FeatureColor',
-    shorthand: 'value',
+    shorthand: { string: 'value' },
   })
 })

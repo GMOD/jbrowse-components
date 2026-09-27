@@ -3424,9 +3424,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             {
               "encoding": {
                 "color": "#a65628",
+                "size": 3,
               },
               "mark": "link",
-              "size": 3,
               "transform": [
                 {
                   "type": "mate",
@@ -3462,9 +3462,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             {
               "encoding": {
                 "color": "#a65628",
+                "size": 3,
               },
               "mark": "link",
-              "size": 3,
               "transform": [
                 {
                   "type": "mate",
