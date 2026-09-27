@@ -60,6 +60,7 @@ export const uiVideos: VideoSpec[] = [
       'A highlight from the rubberband to the return trip: drag the scalebar, Highlight region, open the list from the view menu, name the row, navigate away, and click the row to come back',
     goal: 'Highlight a span, name it, leave, and come back from the list',
     url: highlightSession,
+    endsInDrawer: true,
     // An LGV with one gene track, and a drawer that opens beside it rather than
     // under it, so the app holds at the 312px the run reports throughout, with
     // the caption chip's strip under it.
@@ -192,6 +193,7 @@ export const uiVideos: VideoSpec[] = [
       "Three sequence types for one volvox transcript: open the feature details, show the feature sequence, and take CDS, Protein and genomic-with-flanks from the panel's own dropdown",
     goal: "Show one transcript's sequence three ways: CDS, protein, genomic",
     url: sequencePanelSession,
+    endsInDrawer: true,
     // Sized to the PANEL, which is a drawer and therefore scrolls: the run
     // reports 506px of views beside it and 2437px of drawer content, and no
     // frame holds the second. 900 puts the dropdown and the first screenful of

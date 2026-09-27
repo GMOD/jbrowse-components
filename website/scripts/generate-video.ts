@@ -213,19 +213,44 @@ const holdMs = (step: VideoStep) =>
 // by zooming past a display's density gate, launching a track the session
 // lacks, or loading a file that fails. The run still reports success in every
 // case, because the app is doing what it should with what it was given.
-const CONFUSING_ON_CAMERA: [string, string][] = [
+// selector, what to call it, and whether its own text names it rather than the
+// alert or container around it
+type OnCameraCheck = [string, string, boolean?]
+
+const CONFUSING_ON_CAMERA: OnCameraCheck[] = [
   ['[data-display-phase="tooLarge"]', 'a "Too many features" banner'],
   ['[data-testid="snackbar-error"]', 'an error toast'],
   ['[data-testid="snackbar-warning"]', 'a warning toast'],
   ['[data-testid="reload_button"]', 'a track error'],
 ]
 
+// Fine mid-tour and wrong over the payoff, which is held over the result. A
+// radio row leaves its cascade standing, and a click that lands on a feature
+// opens its details, and the run passes both. Every menu and open select is a
+// MUI Menu, whose root exists only while it is open. Both are portalled to the
+// body, so their own text is what names them.
+const leftOpenAtPayoff = (spec: VideoSpec): OnCameraCheck[] => [
+  ['.MuiMenu-root', 'a menu left open', true],
+  ...(spec.endsInDrawer
+    ? []
+    : [
+        [
+          '[data-testid="drawer-widget"]',
+          'a drawer, on a tour that does not set endsInDrawer',
+          true,
+        ] satisfies OnCameraCheck,
+      ]),
+]
+
 // Named with the words on screen, since "a track error" alone sends the author
 // looking for which track. Shown means what waitHiddenByNodePolling in
 // actions.ts means by not hidden: styled visible, and not clipped away by an
 // `overflow: hidden` ancestor, which a view does to every block past its edge.
-async function confusingOnCamera(page: Page) {
-  return page.evaluate((checks: [string, string][]) => {
+async function confusingOnCamera(
+  page: Page,
+  checks: OnCameraCheck[] = CONFUSING_ON_CAMERA,
+) {
+  return page.evaluate((checks: OnCameraCheck[]) => {
     const shown = (node: Element) => {
       // ReplacedDisplay publishes `tooLarge` on a `display: contents` wrapper,
       // which has no box, and portals the banner over the track, so the
@@ -275,17 +300,23 @@ async function confusingOnCamera(page: Page) {
       }
       return true
     }
-    return checks.flatMap(([selector, what]) => {
+    return checks.flatMap(([selector, what, ownText]) => {
       const seen = [...document.querySelectorAll(selector)].find(shown)
       if (!seen) {
         return []
       }
-      const box =
-        seen.closest('[role="alert"], [role="status"]') ?? seen.parentElement
-      const words = box?.textContent.trim() || seen.outerHTML
+      const box = ownText
+        ? seen
+        : (seen.closest('[role="alert"], [role="status"]') ??
+          seen.parentElement)
+      // innerText, since a data grid in a drawer carries a <style> of its own
+      const words =
+        (box instanceof HTMLElement ? box.innerText : box?.textContent)
+          ?.replaceAll(/\s+/g, ' ')
+          .trim() || seen.outerHTML
       return [`${what} (${words.slice(0, 160)})`]
     })
-  }, CONFUSING_ON_CAMERA)
+  }, checks)
 }
 
 // A step, in whatever it gave the report to point at. `say` first because it is
@@ -579,6 +610,14 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       }
       for (const what of await confusingOnCamera(stage)) {
         confusing.push([describeStep(step), what])
+      }
+      if (i === payoff) {
+        for (const what of await confusingOnCamera(
+          stage,
+          leftOpenAtPayoff(spec),
+        )) {
+          confusing.push([describeStep(step), what])
+        }
       }
       tallest = Math.max(tallest, await contentHeight())
       drawer = Math.max(drawer, await drawerHeight())

@@ -168,7 +168,7 @@ export function printVideoSummary(failures: string[]) {
   const confusing = filmed.filter(tour => tour.confusing.length > 0)
   if (confusing.length > 0) {
     printReport(
-      `CONFUSING STATES ON CAMERA (${confusing.length}) — these FAIL the run: open the tour narrower, hide the lane, or fix the launch`,
+      `CONFUSING STATES ON CAMERA (${confusing.length}) — these FAIL the run: open the tour narrower, hide the lane, fix the launch, or close what the tour opened`,
       confusing.flatMap(({ name, confusing: seen }) =>
         seen.map(([label, what]) => `• ${name}: ${what} after ${label}`),
       ),

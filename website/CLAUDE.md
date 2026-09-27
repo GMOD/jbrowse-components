@@ -58,8 +58,9 @@ the tour was filmed in.
   `validateVideoSpecs` fails a spec that skips any of those, or that types a
   coordinate into the location box: search a gene name, or select the span on
   the scale bar (`zoomToSteps`). The film itself fails when a "Too many
-  features" banner, an error or warning toast, or a track error is on camera,
-  and the run's report names each.
+  features" banner, an error or warning toast, or a track error is on camera, or
+  when a menu is still open at the payoff, or a drawer on a tour that does not
+  set `endsInDrawer`; the run's report names each.
 - **Filming a route retires nothing.** The clip and the stills both stay, even
   where the still is a menu cascade over its own result and the clip performs
   exactly that. Retiring two of them for a clip was tried and reversed the same

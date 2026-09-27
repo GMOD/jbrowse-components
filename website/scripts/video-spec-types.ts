@@ -77,6 +77,9 @@ export interface VideoSpec {
   // spends the clip working out what it is for.
   goal: string
   steps: VideoStep[]
+  // The payoff is a drawer the tour opened: feature details, a highlight list.
+  // A drawer standing at the payoff fails the film otherwise.
+  endsInDrawer?: boolean
   // Still frame held after the last step, so the end state can be read before
   // the clip ends.
   tailMs?: number

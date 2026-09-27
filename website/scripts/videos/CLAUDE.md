@@ -5,17 +5,13 @@ it is embedded, framed, pushed and gated is in `website/CLAUDE.md` § Videos.
 Here: the things that go wrong inside a spec's `steps`, each of which cost a
 refilm and none of which the run reports.
 
-- **A radio menu item leaves its menu standing over the result it produced**,
-  and nothing in the run says so — the app is the right height and the frame
-  looks fine until you pull it with `ffmpeg -ss`. A `Display types` pick closes
-  the cascade (`keepMenuOpen: false`, because the rows above it belong to the
-  display being replaced); every other radio only writes a setting and stays up.
-  Two Escapes reach it while focus is still in the list, then
-  `waitForText hidden` on a row of each level says it happened. **Then blur**:
-  the menu icon keeps focus, so its "Track settings" tooltip outlives the menu,
-  and a `hover` elsewhere does not take a focus tooltip down — click
-  `[aria-label="JBrowse"]`, a bare `<g>` with no handler, which parks the cursor
-  clear of the tracks as well.
+- **A radio menu item leaves its menu standing over the result it produced.**
+  The film fails when one is still open at the payoff, but nothing says so while
+  it stands over the steps before it. A `Display types` pick closes the cascade
+  (`keepMenuOpen: false`, because the rows above it belong to the display being
+  replaced); every other radio only writes a setting and stays up.
+  `leaveMenu(row)` in `shared.ts` takes the whole cascade down and blurs the
+  menu icon, whose "Track settings" tooltip otherwise outlives the menu.
 - **Escape leaves ONE level per press, and only from the top of MUI's modal
   stack.** Two of them work on a two-level cascade because the second lands back
   in the root `Menu`, which is the focus trap it came from. At THREE levels —
@@ -228,10 +224,10 @@ refilm and none of which the run reports.
   clearer for it. A clip carries the route; the page carries the text the route
   produced.
 - **A menu path a page prints is a claim, and a `waitForText` is what checks
-  it.** Two of the first four page defects tours found were levels missing
-  from a cascade, and both showed up as a step dying by name rather than as
-  anything anyone read. Write the path the page prints, not the path you
-  verified in the source, and let the run disagree.
+  it.** Two of the first four page defects tours found were levels missing from
+  a cascade, and both showed up as a step dying by name rather than as anything
+  anyone read. Write the path the page prints, not the path you verified in the
+  source, and let the run disagree.
 - **Check whether the app already did the next step for you.** An action that
   writes one setting can nudge another (`setLinkedReads` sets `colorBy` on the
   way into chain mode), so a tour taking a page's bullets in order can film a
