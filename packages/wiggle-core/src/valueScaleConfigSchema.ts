@@ -69,9 +69,9 @@ export type ValueScaleRuleConfig = Instance<
  * left unset autoscales over the loaded regions.
  *
  * Two defaults come from the display rather than from the scale.
- * `domainQuantile` starts at `0.99` on the wiggle plot, clipping the outermost
- * 1% of each sign, and at `1`, the extremes, on the coverage band and the mark
- * display. `symlogConstant` starts at `0` on the wiggle family and the mark
+ * `domainQuantile` starts at `0.99` on the wiggle plot and the coverage band,
+ * clipping the outermost 1% of each sign, and at `1`, the extremes, on the mark
+ * display, where the outliers are often the subject. `symlogConstant` starts at `0` on the wiggle family and the mark
  * display and at `1` on the coverage band.
  *
  * Every scale carries the same guides: `rules`, reference lines at chosen

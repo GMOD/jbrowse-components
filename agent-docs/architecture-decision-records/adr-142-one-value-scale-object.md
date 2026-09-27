@@ -299,7 +299,7 @@ on the bars' baseline.
 | --- | --- | --- | --- |
 | `type` | `linear\|log\|symlog`, `linear` | same | same |
 | `domainMin`, `domainMax` | unset | unset, bottom floored at 0 | unset |
-| `domainQuantile` | 0.99 | 1 | 1 |
+| `domainQuantile` | 0.99 | 0.99 | 1 |
 | `symlogConstant` | 0 | 1 | 0 |
 | `autoscaleGroup`, `title` | unset | unset | unset |
 | `rules` | none | none | none |

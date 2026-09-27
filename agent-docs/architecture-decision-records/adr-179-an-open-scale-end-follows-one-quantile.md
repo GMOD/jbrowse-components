@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An unpinned end of a value scale or a colour ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of each sign's magnitudes anchored at 0, through one exact rule (`quantileExtent`, the nearest-rank quickselect Hi-C already used). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C colour at 0.95; everything else at 1. The Score menu's Autoscale type radio is a Clip outliers checkbox"
+summary: "An unpinned end of a value scale or a colour ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of each sign's magnitudes anchored at 0, through one exact rule (`quantileExtent`, the nearest-rank quickselect Hi-C already used). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C colour at 0.95; everything else at 1. Amended 2026-09-26: the coverage band starts at 0.99 too The Score menu's Autoscale type radio is a Clip outliers checkbox"
 ---
 
 # ADR-179: An open scale end follows one quantile
@@ -62,6 +62,16 @@ retired `useColorPercentile` checkbox lands on `domainQuantile`.
 menu offers **Clip outliers**, a checkbox that writes the display's declared
 quantile where that is below 1 and 0.99 otherwise, and 1 to turn it off;
 Hi-C's "Emphasize faint contacts" is the same checkbox under its own name.
+
+### Amended 2026-09-26: the coverage band starts at 0.99
+
+The coverage band had kept 1 because its old modes lifted there, not for a
+reason of its own, and it has the wiggle plot's failure: one collapsed-repeat
+pile-up sets the top and every other bar reads as flat. Its quantile runs over
+the covered bins' peaks, so a sparse window does not clip to nothing. The mark
+display, and Manhattan with it, keeps 1: a plot built on purpose is often
+about its outliers, a genome-wide hit or a high-QUAL call, and a point clipped
+to the top edge reads as a value sitting there. Colin agreed on 2026-09-26.
 
 ## Consequences
 

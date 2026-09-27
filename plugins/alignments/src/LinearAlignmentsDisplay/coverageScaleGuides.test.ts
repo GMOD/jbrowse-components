@@ -8,7 +8,7 @@ import {
   menuSubItems,
 } from './testUtils.ts'
 
-function coverageDisplay(depth: number) {
+function coverageDisplay(depth: number, pileUp = depth) {
   console.warn = jest.fn()
   const { baseSession, mount } = bootAlignmentsDisplay()
   const asm = {
@@ -47,8 +47,10 @@ function coverageDisplay(depth: number) {
           label: '',
           data: {
             ...makeEmptyPileupData(),
-            coverageDepths: new Float32Array(10_000).fill(depth),
-            coverageMaxDepth: depth,
+            coverageDepths: new Float32Array(10_000)
+              .fill(depth)
+              .fill(pileUp, 100, 104),
+            coverageMaxDepth: Math.max(depth, pileUp),
             coverageStartPos: 0,
           },
         },
@@ -104,4 +106,11 @@ test('the Coverage menu toggles the grid', () => {
     hatches.onClick()
   }
   expect(coverageAxis(display).grid).toBe(true)
+})
+
+test('one pile-up does not set the autoscaled top, unless the quantile is 1', () => {
+  const display = coverageDisplay(10, 1000)
+  expect(coverageAxis(display).domain[1]).toBeLessThan(100)
+  display.setDomainQuantile(1)
+  expect(coverageAxis(display).domain[1]).toBeGreaterThanOrEqual(1000)
 })
