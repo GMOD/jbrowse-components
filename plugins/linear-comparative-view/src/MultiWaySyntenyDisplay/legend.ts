@@ -75,6 +75,7 @@ export function laneFieldKey(
   hits: readonly GlyphHit[],
   span: Span,
   field: CategoricalField,
+  title = `Gene ${field.field}`,
 ): ColorScale[] {
   return derivedColorScale(
     [onScreen(hits, span)],
@@ -87,7 +88,7 @@ export function laneFieldKey(
       rowPaintsCandidateColor: () => true,
     }),
     { id: 'genes', field, maxItems: MAX_LEGEND_ENTRIES },
-  ).map(scale => ({ ...scale, title: `Gene ${field.field}` }))
+  ).map(scale => ({ ...scale, title }))
 }
 
 /**

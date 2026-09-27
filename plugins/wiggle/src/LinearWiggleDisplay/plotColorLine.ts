@@ -70,5 +70,7 @@ export function plotColorEdit(
         scale: 'threshold',
         ...(color.domain.length ? { domain: [...color.domain] } : {}),
         range: [below, above],
+        ...(color.labels?.length ? { labels: [...color.labels] } : {}),
+        ...(color.title === undefined ? {} : { title: color.title }),
       }
 }

@@ -4,7 +4,9 @@ import {
   colorChannelOptions,
   colorChannelSlots,
   colorDomainSlot,
+  colorLabelsSlot,
   colorRangeSlot,
+  colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
@@ -50,6 +52,8 @@ export const geneColorConfigSchema = ConfigurationSchema(
       range:
         'CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
     }),
+    ...colorLabelsSlot,
+    ...colorTitleSlot,
   },
   colorChannelOptions('color'),
 )

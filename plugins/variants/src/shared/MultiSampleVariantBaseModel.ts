@@ -27,6 +27,7 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
+  paintedColorEncoding,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -670,6 +671,8 @@ export default function MultiSampleVariantBaseModelF(
             scale: getConf(self, ['color', 'scale']),
             domain: getConf(self, ['color', 'domain']),
             range: getConf(self, ['color', 'range']),
+            labels: getConf(self, ['color', 'labels']),
+            title: getConf(self, ['color', 'title']),
           }
         },
         /**
@@ -1153,7 +1156,7 @@ export default function MultiSampleVariantBaseModelF(
             maxMissingnessFilter: self.maxMissingnessFilter,
             filters: self.filters,
             renderingMode: self.renderingMode,
-            color: self.colorEncoding,
+            color: paintedColorEncoding(self.colorEncoding),
             shadeByDosage: self.shadeByDosage,
           }
         },
@@ -1585,6 +1588,7 @@ export default function MultiSampleVariantBaseModelF(
             paintedDomain: self.paintedDomain,
             shadeByDosage: self.shadeByDosage,
             color: self.colorEncoding,
+            colorTitle: self.colorSetting.title,
             svTypeColors: self.svTypeColors,
             colorBy: self.rowColorField,
             sources: self.sources,

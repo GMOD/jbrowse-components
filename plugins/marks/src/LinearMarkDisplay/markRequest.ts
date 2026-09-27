@@ -4,7 +4,10 @@
  * a slot left at its default and one written at it are one fetch.
  */
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
-import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorEncodingOf,
+  paintedColorEncoding,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 import { binStepWidth } from './autoBin.ts'
 import { markShapeScale } from './configSchema.ts'
@@ -63,7 +66,7 @@ export function encodingOf(
     // between linear and log would refetch every region to no effect.
     y: reads('y') && y ? y : undefined,
     row: (reads('row') && row) || undefined,
-    color: colorEncodingOf(color),
+    color: paintedColorEncoding(colorEncodingOf(color)),
     ...(reads('shape') ? { shape: shapeEncoding } : {}),
     ...(reads('text') && text ? { text } : {}),
     ...(reads('size') && size.field !== ''

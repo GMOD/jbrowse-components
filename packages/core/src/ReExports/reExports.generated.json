@@ -3947,6 +3947,7 @@
         "featureColorEncoding",
         "identityKeyEntries",
         "normalizeChannel",
+        "paintedColorEncoding",
         "paintedScale",
         "pairedColorsOf",
         "presetOf",

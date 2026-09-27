@@ -239,6 +239,8 @@ export default function stateModelFactory(
           scheme: getConf(self, ['color', 'scheme']),
           reverse: getConf(self, ['color', 'reverse']),
           domainMid: getConf(self, ['color', 'domainMid']),
+          labels: getConf(self, ['color', 'labels']),
+          title: getConf(self, ['color', 'title']),
         }
       },
 
@@ -763,13 +765,14 @@ export default function stateModelFactory(
         }
         const { posColor, negColor, innerColors } = self.wiggleColor
         const colors = [negColor, ...innerColors, posColor]
+        const { labels = [], title } = self.colorSetting
         return {
           kind: 'categorical',
           id: 'threshold',
-          title: 'score',
-          entries: thresholdLabels(cuts).map((label, i) => ({
-            value: label,
-            label,
+          title: title ?? 'score',
+          entries: thresholdLabels(cuts).map((span, i) => ({
+            value: span,
+            label: labels[i] || span,
             color: colors[i]!,
           })),
         }
@@ -794,9 +797,13 @@ export default function stateModelFactory(
        * group or subtrack `focusLegendEntry` narrows to.
        */
       get colorScales(): ColorScale[] {
+        const { field, title } = self.colorSetting
         const scales: ColorScale[] = []
         if (self.scoreColorScale) {
-          scales.push(self.scoreColorScale)
+          scales.push({
+            ...self.scoreColorScale,
+            title: title ?? self.scoreColorScale.title,
+          })
         }
         if (self.thresholdColorScale) {
           scales.push(self.thresholdColorScale)
@@ -805,6 +812,7 @@ export default function stateModelFactory(
           scales.push({
             kind: 'categorical',
             id: 'sources',
+            ...(field === 'source' && title !== undefined ? { title } : {}),
             focusesRows: true,
             entries: self.legendItems.map(({ label, color }) => ({
               value: label,

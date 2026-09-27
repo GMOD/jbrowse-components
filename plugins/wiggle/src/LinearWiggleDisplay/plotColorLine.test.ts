@@ -199,6 +199,25 @@ describe('what a swatch writes', () => {
     expect(plotColorLine(display.wiggleColor).cut).toBe(3)
   })
 
+  it("keeps the key's title and labels", () => {
+    const display = makeDisplay({
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        domain: ['2'],
+        labels: ['loss', 'gain'],
+        title: 'log2 ratio',
+      },
+    })
+
+    expect(
+      plotColorEdit(display.colorSetting, {
+        above: '#b2182b',
+        below: '#2166ac',
+      }),
+    ).toMatchObject({ labels: ['loss', 'gain'], title: 'log2 ratio' })
+  })
+
   it('keeps a declared cut', () => {
     const display = makeDisplay({
       color: { field: 'score', scale: 'threshold', domain: ['2'] },

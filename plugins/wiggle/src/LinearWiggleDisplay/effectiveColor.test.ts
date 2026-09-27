@@ -111,6 +111,24 @@ test('categorical reads source alone, so over score it paints grey', () => {
   })
 })
 
+test("a threshold key takes color's title and a label per interval", () => {
+  const display = makeDisplay(['a'], true)
+  display.setColor({
+    field: 'score',
+    scale: 'threshold',
+    domain: ['2'],
+    range: ['#2166ac', '#b2182b'],
+    labels: ['loss'],
+    title: 'log2 ratio',
+  })
+  const key = display.colorScales.find(s => s.id === 'threshold')
+  expect(key?.title).toBe('log2 ratio')
+  expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
+    'loss',
+    '≥ 2',
+  ])
+})
+
 test('threshold reads score alone, so over source it paints grey and keys nothing', () => {
   const display = makeDisplay(['a'], true)
   display.setColor({ field: 'source', scale: 'threshold', domain: ['2'] })

@@ -202,6 +202,38 @@ describe('getVariantColorScales', () => {
     ])
   })
 
+  it('titles and names the impact key where color says so', () => {
+    const sections = getVariantColorScales({
+      ...inputs({
+        paintedDomain: ['MODIFIER', 'HIGH'],
+        shadeByDosage: false,
+        colorTitle: 'Effect',
+      }),
+      color: { ...IMPACT, domain: ['HIGH'], labels: ['Loss of function'] },
+      colorBy: '',
+      sources,
+    })
+    expect(sections[0]!.title).toBe('Effect')
+    expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
+      'Loss of function',
+      'MODIFIER',
+      'Homozygous reference',
+    ])
+  })
+
+  it('titles the genotype key, and an empty title draws none', () => {
+    const titleOf = (colorTitle: string | undefined) =>
+      getVariantColorScales({
+        ...inputs({ colorTitle }),
+        color: undefined,
+        colorBy: '',
+        sources,
+      })[0]!.title
+    expect(titleOf(undefined)).toBe('Genotypes')
+    expect(titleOf('Calls')).toBe('Calls')
+    expect(titleOf('')).toBe('')
+  })
+
   it('keys a record field by the values painted, the no-value row on the alt hue', () => {
     const [section] = getVariantColorScales({
       ...inputs({

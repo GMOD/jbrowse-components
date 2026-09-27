@@ -5514,6 +5514,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "items": {
                 "$ref": "#/$defs/CssColor"
               }
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {
@@ -6072,6 +6083,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "items": {
                 "$ref": "#/$defs/CssColor"
               }
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {
@@ -6424,6 +6446,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
               "type": "number"
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {

@@ -61,6 +61,31 @@ export interface VariantLegendInputs {
   // or SV classes.
   paintedDomain: readonly string[]
   shadeByDosage: boolean
+  // `color.title` as written: unset keeps the key's own heading, `''` draws none.
+  colorTitle?: string
+}
+
+function keyTitle({ colorTitle }: VariantLegendInputs, own: string) {
+  return colorTitle ?? own
+}
+
+// `color.labels` by the `domain` value each names, for the preset keys; a
+// record field's key takes them through its categorical field instead.
+function labelOf(
+  encoding: ColorEncoding | undefined,
+  own: (value: string) => string,
+) {
+  const names = new Map<string, string>()
+  if (typeof encoding === 'object' && encoding.scale === 'categorical') {
+    const { domain = [], labels = [] } = encoding
+    domain.forEach((value, i) => {
+      const label = labels[i]
+      if (label) {
+        names.set(String(value), label)
+      }
+    })
+  }
+  return (value: string) => names.get(value) ?? own(value)
 }
 
 // The absent-data categories, which every cell scale paints and none of them
@@ -235,7 +260,7 @@ function recordFieldScale(
   return {
     kind: 'categorical',
     id: 'recordField',
-    title: field.field,
+    title: keyTitle(inputs, field.field),
     entries: [
       ...rows,
       ...(shaded && rows.length > 0 ? [entry(DOSAGE_NOTE)] : []),
@@ -260,13 +285,13 @@ function getCellColorScale(
     return {
       kind: 'categorical',
       id: 'consequenceImpact',
-      title: 'Consequence impact',
+      title: keyTitle(inputs, 'Consequence impact'),
       entries: [
         ...domainEntries(
           [...IMPACT_TIERS.map(t => t.tier), UNANNOTATED_IMPACT],
           inputs,
           getImpactColor,
-          tier => tier,
+          labelOf(encoding, tier => tier),
         ),
         ...absentDataEntries(inputs),
       ],
@@ -277,13 +302,13 @@ function getCellColorScale(
     return {
       kind: 'categorical',
       id: 'svType',
-      title: 'SV type',
+      title: keyTitle(inputs, 'SV type'),
       entries: [
         ...domainEntries(
           Object.keys(colors),
           inputs,
           type => colors[type]!,
-          svTypeDisplayLabel,
+          labelOf(encoding, svTypeDisplayLabel),
         ),
         ...absentDataEntries(inputs),
       ],
@@ -293,7 +318,7 @@ function getCellColorScale(
     return {
       kind: 'categorical',
       id: 'phaseSet',
-      title: 'Phase set',
+      title: keyTitle(inputs, 'Phase set'),
       // No swatch list of the phase sets present: a PS id is an arbitrary
       // per-sample integer with unbounded cardinality in a viewport, so
       // enumerating them is noise that would also have to be truncated
@@ -317,7 +342,7 @@ function getCellColorScale(
   return {
     kind: 'categorical',
     id: 'genotypes',
-    title: 'Genotypes',
+    title: keyTitle(inputs, 'Genotypes'),
     entries: getGenotypeEntries(
       inputs,
       typeof encoding === 'string' ? encoding : undefined,

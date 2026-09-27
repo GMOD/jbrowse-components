@@ -14,6 +14,7 @@ import {
   colorRampSlots,
   colorRangeSlot,
   dealRowColors,
+  paintedColorEncoding,
 } from './colorConfigSchema.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -204,5 +205,26 @@ describe('dealRowColors', () => {
     expect(
       deal(['a', 'b', 'c', 'd', 'e', 'f'], { domain: [], range: ['r0'] }),
     ).toEqual({ a: 'r0', b: 'p0', c: 'p1', d: 'p2', e: 'p0', f: 'p1' })
+  })
+})
+
+describe('paintedColorEncoding', () => {
+  it('drops the key names and keeps what paints', () => {
+    expect(
+      paintedColorEncoding({
+        field: 'impact',
+        scale: 'categorical',
+        domain: ['HIGH'],
+        range: ['red'],
+        labels: ['Loss of function'],
+      }),
+    ).toEqual({
+      field: 'impact',
+      scale: 'categorical',
+      domain: ['HIGH'],
+      range: ['red'],
+    })
+    expect(paintedColorEncoding('red')).toBe('red')
+    expect(paintedColorEncoding(undefined)).toBeUndefined()
   })
 })

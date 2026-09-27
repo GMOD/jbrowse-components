@@ -111,6 +111,26 @@ test('a field keys the values on screen through the channel', () => {
   ).toEqual(['rbcL', 'psbA', NO_VALUE_LABEL])
 })
 
+test("color's title and labels head and name the field's key", () => {
+  const field = categoricalField('cluster', {
+    domain: ['rbcL'],
+    labels: ['RuBisCO'],
+  })
+  const [scale] = laneFieldKey(
+    [
+      hit('a', 100, 200, field.color('psbA'), 'x', 'psbA'),
+      hit('b', 300, 400, field.color('rbcL'), 'y', 'rbcL'),
+    ],
+    [0, 800],
+    field,
+    'Ortholog group',
+  )
+  expect(scale?.title).toBe('Ortholog group')
+  expect(
+    scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+  ).toEqual(['RuBisCO', 'psbA'])
+})
+
 test('the ribbon key is the strand pair, in two colors', () => {
   expect(ribbonColorKey('strand').map(i => i.label)).toEqual([
     'Same orientation as lane above',

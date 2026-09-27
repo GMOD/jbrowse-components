@@ -3,8 +3,10 @@ import {
   colorChannelOptions,
   colorChannelSlots,
   colorDomainSlot,
+  colorLabelsSlot,
   colorRampSlots,
   colorRangeSlot,
+  colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -104,6 +106,8 @@ export const wiggleColorSchema = ConfigurationSchema(
         "a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear scale's stops, evenly spaced, one colour meaning white to it",
     }),
     ...colorRampSlots,
+    ...colorLabelsSlot,
+    ...colorTitleSlot,
   },
   colorChannelOptions('color', WIGGLE_FIELD_PRESETS),
 )

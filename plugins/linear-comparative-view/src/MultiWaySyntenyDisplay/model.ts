@@ -855,6 +855,8 @@ export function stateModelFactory(
             scale: getConf(self, ['color', 'scale']),
             domain: getConf(self, ['color', 'domain']),
             range: getConf(self, ['color', 'range']),
+            labels: getConf(self, ['color', 'labels']),
+            title: getConf(self, ['color', 'title']),
           },
           utrColor: self.configuration.utrColor,
         }
@@ -2293,9 +2295,10 @@ export function stateModelFactory(
         })
         const onScreen: Span = [0, self.canvasWidth]
         const encoding = self.geneColorEncoding
+        const { title } = self.geneColorSettings.color
         const field = colorFieldOf(encoding)
         if (field) {
-          return laneFieldKey(hits, onScreen, field)
+          return laneFieldKey(hits, onScreen, field, title)
         }
         const items = isJexl(encoding) ? laneColorKey(hits, onScreen) : []
         return legendIsReadable(items, MAX_LEGEND_ENTRIES)
@@ -2303,7 +2306,7 @@ export function stateModelFactory(
               {
                 kind: 'categorical',
                 id: 'genes',
-                title: 'Gene colors',
+                title: title ?? 'Gene colors',
                 entries: items,
               },
             ]

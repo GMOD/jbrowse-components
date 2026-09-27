@@ -394,6 +394,20 @@ export function colorEncodingOf<V extends string | undefined>(
 }
 
 /**
+ * What a worker paints from: the encoding less the key's own names, so
+ * renaming a key entry refetches nothing.
+ */
+export function paintedColorEncoding(
+  encoding: ColorEncoding | undefined,
+): ColorEncoding | undefined {
+  if (typeof encoding !== 'object' || !('labels' in encoding)) {
+    return encoding
+  }
+  const { labels: _labels, ...painted } = encoding
+  return painted
+}
+
+/**
  * The rows an identity scale's key lists: each `domain` colour, named by its
  * `labels` entry. Only while each feature paints a colour of its own — `value`
  * unset, so a file's itemRgb, or a `jexl:` callback — since a constant paints
