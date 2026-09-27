@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), read downsampling for a force-loaded dense region, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`, why the pileup's low-frequency threshold wants a read-count floor rather than a depth ramp, and the RNA-seq splice follow-ups (splice-chain group-by, differential transcript usage, sashimi labels as a fraction).
+description: Pileup and coverage-band ideas — a read-count floor for the low-frequency threshold, strand-split allele bars, variant-to-variant navigation, a bedGraph export, read downsampling for a force-loaded region, whether per-record allocation is the CRAM lever, why lifting MAX_GROUPS needs a binned depth sweep, interning readTagValues, and the RNA-seq splice follow-ups (splice-chain group-by, differential transcript usage, sashimi labels as a fraction).
 ---
 
 # Alignments
@@ -78,24 +78,10 @@ track" reads as the whole file — say which one the menu item means in its labe
 **Typed-array refactor.** Worker return is flat parallel arrays — could regroup into
 sub-objects (mods, sashimi, coverage). Flat is simple but long; just an idea.
 
-**CRAM decode parallelism is not the lever; allocation might be.** `@gmod/cram`
-13.2.0 decodes slices on a worker pool, and nested inside our RPC worker that is
-worth 2.1–3.6x **on the decode alone** (its `docs/WORKERS.md`). End to end in a
-pan it measured ~1.1x on the deepest fixture and ~1.0 on typical ones, and the
-CPU profile says why. Profiling a 1000x-shortread CRAM render across every
-thread:
-
-| thread             | idle       |
-| ------------------ | ---------- |
-| main               | 68.9%      |
-| RPC worker         | 29.5% (+12% GC) |
-| slice worker (× 4) | 72.2% each |
-
-**The slice workers are starved, not saturated.** Nothing is CPU-bound, so
-adding decode throughput pushes on the end that is already waiting. The one
-large productive-but-wasteful cost is the RPC worker's **12% GC (724 ms)**.
-
-The hypothesis that number is consistent with — *not* a measured finding, and it
+**Per-record allocation may be the CRAM lever.** The slice workers are starved
+and the RPC worker spends 12% (724 ms) in GC on a 1000x short-read render
+([CRAM_STACK_INTEGRATION.md](../../reference/CRAM_STACK_INTEGRATION.md)
+§"Slice-decode parallelism is not the lever"). The hypothesis it is consistent with — *not* a measured finding, and it
 needs an allocation profile before anyone acts on it — is that we allocate one
 `CramSlightlyLazyFeature` per record (153,677 of them for that fixture) and then
 serialize the lot out of the worker. That is the same problem `@gmod/cram`
@@ -103,72 +89,6 @@ already solved *inside* itself with the read-feature arena and the tag/quality
 columns, stopping one layer short of us. If it holds, the fix is columnar all
 the way to the renderer rather than a wrapper per read, which is the same
 direction as the typed-array item above.
-
-**There is also a structural ceiling worth knowing before optimizing here.** The
-pool's win scales with how much one query decodes — 1.64x at 19 kb, 2.69x at
-100 kb, falling back to 1.87x at 250 kb as the host-side deserialize (serial)
-takes over. But a pileup is gated on estimated fetch bytes (5 MB for CRAM) and
-screen density, and 100 kb of that fixture is ~11.9 MB, so we refuse it with a
-force-load banner. The crossover is near 40 kb, which pins an interactive pileup
-to the shallow end of that curve permanently. The library's headline numbers are
-therefore not collectable by our pileup by construction — they are collectable by
-an export, a whole-region scan, or a force-load.
-
-**Color-by → coverage summarization.** The coverage track is already a decomposition
-engine, not a flat depth bar: `snpCoverage` partitions a column's depth by base,
-`modCoverage` by modification proportion, `interbaseCoverage` flags insertions/clips.
-`runCoveragePipeline.ts` is a list of "compute layer → pack → draw" steps and
-`modCoverage` (compute + packGpu + drawCanvas + `.slang`) is a complete template — so
-new decomposition modes are new modes on an existing scaffold, not a new subsystem.
-The input data (MAPQ, pair orientation/discordancy, tags, per-base quality) is mostly
-already extracted in the worker for the existing color-by features.
-
-Two distinct idioms — keep them separate:
-- **Stacked partition** (like snp/modCoverage): partition the bar. Fits HP-tag, MAPQ
-  bucket, strand, concordant/discordant.
-- **Continuous signal lane**: mean base quality, mean insert size, fraction-clipped.
-  These aren't partitions of depth — they belong in a thin signal lane (mean ± band),
-  not a stacked bar (which would mislead).
-
-**What makes a signal lane affordable is that it accumulates rather than emits.**
-`perBaseQuality` as a COLOUR mode emits one entry per aligned base of every read
-— `region span x depth`, measured at 30,565,003 entries and 2.0 GB on a 1 Mb
-pacbio pileup (`measurements/per-base-wall-bin.json`). The same input summed into
-a per-reference-position accumulator is two arrays over the region span, a
-running sum and a count: `O(span)`, independent of depth, and the shape
-`sweepDepths` and `downsampleStatsBins` already use for the depth axis. A mean
-never needs its samples kept, only added.
-
-That also says which quality a lane should carry. **MAPQ is free** — one value
-per read, already extracted, so a MAPQ lane needs no per-base walk at all. Mean
-BASE quality needs the CIGAR walk, and the walk is the cost, not the storage.
-The two answer different questions: MAPQ is whether the reads are in the right
-place, base quality is whether the letters are right.
-
-**Do not reach for `subPixelBinBp` to bound a lane.** Its own doc says so and
-this is the case it warns about: sampling one base per sub-pixel window suits a
-mark that already lost the sub-pixel race, and is wrong for anything painting a
-MEAN, which needs its whole sample. At 333 bp/px the rule picks a 128 bp window,
-which would average about 2.6 bases per pixel instead of 333 and turn a smooth
-quality ramp into noise.
-
-Highest scientific value (ranked): MAPQ/MAPQ0-fraction decomposition (instantly flags
-repetitive/CNV/segdup regions — bigly's spirit); discordancy (improper pairs — surfaces
-SV breakpoints far better than per-read coloring, where signal is diluted); HP-tag
-proportion (allelic balance, LOH, allele-specific patterns at a glance). Make
-coverage-summary-mode a setting that *defaults to following* color-by where a mapping
-exists, rather than welding them. Caveats: each mode is a compute+pack+draw+shader
-quadruple (maintenance); coverage meaning different things per mode needs a clear
-axis/legend that changes with it; per ADR-016 it belongs in the worker (mode changes
-infrequently, per-base pass is cheap → rpcProps). Start with MAPQ/discordancy as the
-proof point. Cross-ref [bigly](https://github.com/brentp/bigly).
-
-The SV survey of 2026-09-26 ranks the MAPQ-0 and discordant partitions as the
-cheapest copy-number evidence the tree can add without a caller. A depth step
-that is really a segmental duplication reads grey in the MAPQ-0 partition, and
-the repeat-mediated junctions of a Carvalho-type inverted triplication are
-exactly the ones a plain depth bar cannot tell from a copy step. Nothing here
-infers a copy number; the bar shows which reads the depth is made of.
 
 **Read downsampling for a force-loaded dense region.** The wide-zoom half of
 large-region viewing landed as the density tier (`bf66d4cbdf`,
@@ -185,56 +105,6 @@ threshold would skip the pileup and mismatch passes; `showPileup` hides the
 pileup on the main thread and never reaches the RPC, so the reads are fetched
 either way. And the byte gate would have to let that coverage-only fetch through,
 since it refuses on the reads' bytes.
-
-**SBX duplex reads — `yc`-tag / duplex-confidence coloring.** Roche's
-sequencing-by-expansion (SBX, AXELIOS platform; XOOS analysis tools) emits
-**duplex consensus reads** (SBX-D) that merge both strands (R1+R2) of one
-molecule. The `yc` aux tag encodes, per base, one of three confidence classes:
-**duplex-concordant** (both strands agree — high confidence), **duplex-discordant**
-(strands disagree, a mismatch/indel between R1 and R2 — low confidence), and
-**simplex tail** (only one strand covers — medium). Format is
-`{left_tail}{±}{duplex}{±}{right_tail}`: `+`/`-` mark the contributing strand,
-numbers are runs of concordant bases, letters are individual discordant positions
-(a lookup table maps each letter to the R1→R2 base pair). Example `4+13-3` = 4 R1
-tail bases, 13 concordant duplex bases, 3 R2 tail bases.
-
-Key architectural fact: the XOOS demux tool **also bakes the three classes into
-the QUAL string** as three fixed Phred values (concordant=Q39, discordant=Q5,
-simplex-tail=Q22). So our existing **Color by → Per-base quality** overlay
-(`features/perBaseQuality`, reads `NUMERIC_QUAL`) *already* renders the duplex
-structure on SBX-D data today — discordant bases show as low-quality streaks — just
-unlabeled and on a generic gradient. Incremental work is legibility, not plumbing.
-
-Proposed, ranked:
-- **A dedicated "SBX duplex" per-base color scheme.** `features/perBaseQuality`
-  and `features/perBaseLetter` are the exact template: an `extract.ts` that reads a
-  tag (`getTagAlt(feature, 'yc')`, same idiom as MM/ML) and walks
-  `forEachAlignedBaseInRegion(cigar, start, region, …)` to emit per-ref-base
-  entries, plus a GPU/canvas overlay over the `normal` body. Register in
-  `COLOR_SCHEMES` (`shared/colorSchemes.ts`) + the `ColorSchemeType` union
-  (`shared/types.ts`) — a compile error until classified with a shader path + menu
-  placement — and it appears in the Color-by menu with a legend (green concordant /
-  red discordant / grey simplex). **Open question first:** confirm whether aligned
-  SBX-D BAMs carry `yc` into the output or only the Q39/Q5/Q22 QUAL encoding; if the
-  latter, drive the scheme off QUAL bins instead of parsing `yc` (even simpler, no
-  new extract).
-- **Decode `yc` in the feature detail panel** (`AlignmentsFeatureDetail/tagInfo.ts`).
-  Today `yc` shows as a raw string; a small decoder renders "N concordant / M
-  discordant / tails R1=x R2=y" plus the discordant-position breakdown. Cheap,
-  self-contained.
-- **(Optional) Discordant positions as mismatch-style marks** — the low-confidence
-  calls a variant reviewer cares about, surfaced without switching schemes. Overlaps
-  the color scheme; only if per-base coloring proves too subtle at genome scale.
-
-Explicitly **not** in scope: R1/R2 reconstruction from `yc` — that's a
-data-processing concern for the caller/collapser (XOOS), not the browser; JBrowse's
-job is surfacing the confidence classes. Pairs naturally with the
-"Color-by → coverage summarization" concordant/discordant partition idea above.
-Example data: Roche's GIAB SBX-D BAMs (HG001/HG002) at `sequencing.roche.com/SBXdata`
-/ the XOOS `web.sbxdata.kamino.platform.navify.com` platform; the XOOS repo
-(`github.com/Roche-AXELIOS/XOOS`) ships the demux source but no small BAM fixtures,
-so a region-sliced GIAB BAM is the path to a test fixture. Docs:
-`roche-axelios.gitbook.io/xoos` (SBX-D read-interpretation + yc-tag guide).
 
 **Lifting `MAX_GROUPS` needs the depth sweep binned, not merely coalesced.** The
 cap and everything hanging off it — `capGroups`, `OVERFLOW_GROUP_KEY`,

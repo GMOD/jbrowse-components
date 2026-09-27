@@ -315,6 +315,38 @@ on `1000x.shortread.cram`, the same 153,677-record window as the BAM fixture:
   but is unplaced. Both collapse to the table's -1 slot; only one is a missing
   mate.
 
+## Slice-decode parallelism is not the lever
+
+`@gmod/cram`
+13.2.0 decodes slices on a worker pool, and nested inside our RPC worker that is
+worth 2.1–3.6x **on the decode alone** (its `docs/WORKERS.md`). End to end in a
+pan it measured ~1.1x on the deepest fixture and ~1.0 on typical ones, and the
+CPU profile says why. Profiling a 1000x-shortread CRAM render across every
+thread:
+
+| thread             | idle       |
+| ------------------ | ---------- |
+| main               | 68.9%      |
+| RPC worker         | 29.5% (+12% GC) |
+| slice worker (× 4) | 72.2% each |
+
+**The slice workers are starved, not saturated.** Nothing is CPU-bound, so
+adding decode throughput pushes on the end that is already waiting. The one
+large productive-but-wasteful cost is the RPC worker's **12% GC (724 ms)**.
+
+**There is also a structural ceiling worth knowing before optimizing here.** The
+pool's win scales with how much one query decodes — 1.64x at 19 kb, 2.69x at
+100 kb, falling back to 1.87x at 250 kb as the host-side deserialize (serial)
+takes over. But a pileup is gated on estimated fetch bytes (5 MB for CRAM) and
+screen density, and 100 kb of that fixture is ~11.9 MB, so we refuse it with a
+force-load banner. The crossover is near 40 kb, which pins an interactive pileup
+to the shallow end of that curve permanently. The library's headline numbers are
+therefore not collectable by our pileup by construction — they are collectable by
+an export, a whole-region scan, or a force-load.
+
+Whether allocation is the lever instead is parked in
+[ideas/collections/alignments.md](../ideas/collections/alignments.md).
+
 ## Things checked and found already integrated, or found not to transfer
 
 Stated so the next audit does not re-derive them.
