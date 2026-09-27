@@ -128,6 +128,7 @@ export interface ColorProblem {
     | 'threshold-range'
     | 'ramp-domain'
     | 'ramp-ends'
+    | 'ramp-quantile'
     | 'labels-domain'
   /** the slot to look at, relative to the colour object */
   slot: string
@@ -143,6 +144,7 @@ export interface ColorSlots {
   range?: readonly unknown[]
   domainMin?: number
   domainMax?: number
+  domainQuantile?: number
   labels?: readonly unknown[]
 }
 
@@ -215,6 +217,18 @@ export function colorProblems(
         slot: 'domainMax',
         message:
           'domainMax is below domainMin: the ramp spans the two either way, and reverse is what turns it round',
+      })
+    }
+    const { domainQuantile } = color
+    if (
+      domainQuantile !== undefined &&
+      !(domainQuantile >= 0.5 && domainQuantile <= 1)
+    ) {
+      problems.push({
+        rule: 'ramp-quantile',
+        slot: 'domainQuantile',
+        message:
+          'domainQuantile is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5',
       })
     }
   }

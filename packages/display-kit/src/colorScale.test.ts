@@ -96,6 +96,15 @@ test('a ramp reads no domain, and its ends in either order are named', () => {
   ).toEqual(['ramp-ends'])
 })
 
+test('a ramp quantile outside 0.5 to 1 is named, a percent among them', () => {
+  const quantile = (domainQuantile: number) =>
+    rules({ field: 'x', scale: 'linear', domainQuantile })
+  expect(quantile(99)).toEqual(['ramp-quantile'])
+  expect(quantile(0.2)).toEqual(['ramp-quantile'])
+  expect(quantile(0.99)).toEqual([])
+  expect(quantile(1)).toEqual([])
+})
+
 test('a notice line names the setting and the slot', () => {
   expect(
     colorNotices(

@@ -592,6 +592,9 @@ test('a ramp reads its ends, not a domain, and a span wants both ends pinned', (
   expect(found(ramp('bar', { domainMin: 10, domainMax: 0 }))).toEqual([
     'warning ramp-ends mark 0 encoding.color.domainMax',
   ])
+  expect(found(ramp('bar', { domainQuantile: 99 }))).toEqual([
+    'warning ramp-quantile mark 0 encoding.color.domainQuantile',
+  ])
   expect(found(ramp('span', { domainMin: 0 }))).toEqual([
     'warning unpinned-span-ramp mark 0 encoding.color.domainMax',
   ])
