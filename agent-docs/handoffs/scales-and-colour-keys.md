@@ -1,12 +1,16 @@
 ---
 name: scales-and-colour-keys
-description: "What the 2026-09-26 scales.y and colour-key round left open: the coverage figure reshoot, synteny colour range, the alignments read-colour key, and a marker for bars clipped at the top of an axis"
+description: "What the 2026-09-26 scales.y and colour-key round left open: the coverage and ADR-181 figure reshoots, synteny colour range, the alignments read-colour key, and a marker for bars clipped at the top of an axis"
 ---
 
 ## Open
 
 - **Reshoot figures with a coverage band.** The 0.99 default changes any
   window with a spike; nothing was reshot.
+- **Reshoot the ADR-181 figures**, where a point moved to the middle of its
+  extent or a lane became a rule: `mark_display_examples/points`,
+  `read_marks/insert_size`, `read_marks/chromosome` and
+  `dog10k-size-fst-scan-igf1`. ada refused ssh at the landing.
 - **Synteny and ribbon colours** have no `range`, `title` or `labels`
   (`SYNTENY_COLOR_SCALES = ['none']`). Adding `range` reaches
   `orderAttributeLabels` (which returns early on an empty `domain`), the
