@@ -87,15 +87,15 @@ const CEILINGS = [
     runtime: 5,
     types: 3,
   },
-  // 8 runtime / 8 type, and no headroom: `jbrowse validate` carries a copy of
-  // every file here (scripts/generateMarkRules.ts), so an edge added to the
-  // rule list is a file the CLI publishes. markSpecs.ts is the eighth: the
-  // rules read which channels a mark type takes from the same table the
-  // encoder does.
+  // No headroom: `jbrowse validate` carries a copy of every file here
+  // (scripts/generateMarkRules.ts), so an edge added to the rule list is a
+  // file the CLI publishes. markSpecs.ts holds which channels a mark type
+  // takes, the encoder's table, and stepChannels.ts which channels a step
+  // fills, the model's reading (ADR-173).
   {
     entry: 'plugins/marks/src/LinearMarkDisplay/markProblems.ts',
-    runtime: 8,
-    types: 8,
+    runtime: 9,
+    types: 9,
   },
 ]
 
