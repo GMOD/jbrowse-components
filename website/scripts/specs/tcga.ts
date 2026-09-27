@@ -1,6 +1,7 @@
 import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { kgUrl } from '../screenshot-spec-helpers.ts'
+import { pageTrack } from './pageTrack.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -16,93 +17,20 @@ const HG38_MAIN_CHROMS = [
   'X',
 ]
 
-// One row per TCGA-BRCA primary tumor (1104 of them), painted from the caller's
-// raw Segment_Mean on a diverging blue/red log2 scale. Built by
-// scripts/build_tcga_cohort_cnv.sh from GDC open-access Masked Copy Number
-// Segment files; see website/docs/tutorials/tcga_cohort_cnv.md.
-const TCGA_BRCA_CNV_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'tcga_brca_cnv',
-  name: 'TCGA-BRCA copy number (1104 primary tumors)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BedTabixAdapter',
-    bedGzLocation: {
-      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      indexType: 'TBI',
-      location: {
-        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz.tbi',
-        locationType: 'UriLocation',
-      },
-    },
-  },
-  displays: [
-    {
-      type: 'LinearMultiRowFeatureDisplay',
-      rows: 'sample',
-      color: {
-        field: 'segmean',
-        scale: 'threshold',
-        domain: ['-1', '-0.3', '0.3', '1'],
-        range: ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
-        labels: [
-          'Deep loss (log2 < -1)',
-          'Loss',
-          'Balanced',
-          'Gain',
-          'Amplification (log2 > 1)',
-        ],
-        title: 'Copy number (log2)',
-      },
-      // 0 = auto-fit: the display height divided across the rows, floored at
-      // 1px. At 1104 rows every tumor is a single pixel line, which is the point
-      rowHeight: 0,
-    },
-  ],
-}
+const CNV_DOC = 'tutorials/tcga_cohort_cnv.md'
 
-// The same 1104 tumors collapsed to per-100kb frequencies by
-// scripts/cnv_recurrence.py: two value columns, gain positive and loss negative.
-// BedGraphTabixAdapter emits one feature per value column, and the wiggle's
-// bicolor pivot at 0 splits them, so the single track draws gains up in red and
-// losses down in blue. The pinned domain holds the axis to the whole cohort
-// (+-100%) rather than autoscaling per view, so a bar's height means the same
-// fraction in every figure.
-const TCGA_BRCA_RECURRENCE_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: 'tcga_brca_cnv_recurrence',
-  name: 'TCGA-BRCA recurrence (% of 1104 tumors)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BedGraphTabixAdapter',
-    bedGraphGzLocation: {
-      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      indexType: 'TBI',
-      location: {
-        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz.tbi',
-        locationType: 'UriLocation',
-      },
-    },
-  },
-  displays: [
-    {
-      type: 'LinearWiggleDisplay',
-      height: 160,
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        range: ['#2166ac', '#b2182b'],
-      },
-      scales: { y: { domainMin: -100, domainMax: 100 } },
-    },
-  ],
-}
+// One row per TCGA-BRCA primary tumor (1104 of them), painted from the caller's
+// raw Segment_Mean, built by scripts/build_tcga_cohort_cnv.sh from GDC
+// open-access Masked Copy Number Segment files.
+const TCGA_BRCA_CNV_TRACK = pageTrack(CNV_DOC, 'tcga_brca_cnv')
+
+// The same 1104 tumors collapsed to per-100kb gain and loss frequencies by
+// scripts/cnv_recurrence.py, on the page's pinned +-100 axis so a bar's height
+// means the same fraction in every figure.
+const TCGA_BRCA_RECURRENCE_TRACK = pageTrack(
+  CNV_DOC,
+  'tcga_brca_cnv_recurrence',
+)
 
 // Eight equal rows share this, so a row is SUBTYPE_ROWS_HEIGHT/8 px tall and
 // SUBTYPE_ROW_PITCH is what the callouts below measure their dy against.
@@ -157,83 +85,15 @@ function subtypeCallout({
   ]
 }
 
-// The same tally as TCGA_BRCA_RECURRENCE_TRACK, run once per receptor subtype:
-// cnv_recurrence.py --groups gives each group its own gain and loss column,
-// BedGraphTabixAdapter reads every column past `end` as its own signal, and
-// a MultiQuantitativeTrack's xyplot default draws one row per signal. So the
-// eight rows come out of one 246KB file with no subadapter list.
-//
-// The columns are direction-major (four gains, then four losses), which is what
-// puts the rows a reader compares next to each other.
-//
-// Pinned rather than autoscaled, for the reason the pooled track is: autoscale
-// would give each row its own axis and make the subtypes look alike, which is
-// the one thing this figure exists to disprove.
-//
-// +-70 rather than the pooled track's +-100. Each row here carries one signed
-// direction, so it only ever fills the half of its axis on that side, and at
-// +-100 the tallest bar in the file (66.85%) reached under a third of its row.
-// 70 is the nearest round number above that maximum, so nothing clips and the
-// bars roughly double. All eight rows still share it, which is what keeps them
-// comparable.
-const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = {
-  type: 'MultiQuantitativeTrack',
-  trackId: 'tcga_brca_cnv_recurrence_by_subtype',
-  name: 'TCGA-BRCA recurrence by receptor subtype',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BedGraphTabixAdapter',
-    bedGraphGzLocation: {
-      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      indexType: 'TBI',
-      location: {
-        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz.tbi',
-        locationType: 'UriLocation',
-      },
-    },
-  },
-  // One row per subtype, gain above the line and loss below: the file's eight
-  // columns are "<subtype> gain" and "<subtype> loss", losses negative, so a
-  // formula reads the subtype off each column's name and `rows` splits on it.
-  displays: [
-    {
-      type: 'LinearMarkDisplay',
-      displayId: 'tcga_brca_cnv_recurrence_by_subtype-LinearMarkDisplay',
-      height: SUBTYPE_ROWS_HEIGHT,
-      transform: [
-        {
-          type: 'formula',
-          expr: "jexl:replace(replace(feature.source, ' gain', ''), ' loss', '')",
-          as: 'subtype',
-        },
-      ],
-      rows: {
-        field: 'subtype',
-        domain: ['HR+/HER2-', 'HER2+', 'triple-negative', 'unknown'],
-      },
-      scales: { y: { domainMin: -70, domainMax: 70, title: '% of tumors' } },
-      marks: [
-        {
-          mark: 'bar',
-          encoding: {
-            y: 'score',
-            color: {
-              field: 'score',
-              scale: 'threshold',
-              domain: [0],
-              range: ['#2166ac', '#b2182b'],
-              labels: ['loss', 'gain'],
-              title: 'Copy number call',
-            },
-          },
-        },
-      ],
-    },
-  ],
-}
+// The same tally as TCGA_BRCA_RECURRENCE_TRACK, run once per receptor subtype
+// into eight columns, drawn as one mirrored row per subtype. All eight rows
+// share a pinned +-70, the nearest round number above the tallest bar
+// (66.85%), since each row fills only its own sign's half and autoscale would
+// give each row its own axis and make the subtypes look alike.
+const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = pageTrack(
+  CNV_DOC,
+  'tcga_brca_cnv_recurrence_by_subtype',
+)
 
 // The tree sidebar only mounts once clustering has produced a hierarchy
 // (TreeSidebar returns null on `!hierarchy`), so waiting on its canvas gates the

@@ -5,6 +5,7 @@ import {
   lgvSession,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
+import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -42,41 +43,16 @@ const SV_MAP_TRACK =
   'ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf'
 const GENE_TRACK = 'ncbi_refseq_109_hg38_latest'
 
-const KIDD_LAB_BASE =
-  'https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR'
-
 // Six PUR individuals spanning the CCL3L1 ladder, measured over
-// chr17:36,193,000-36,198,000 at roughly 9, 7, 5, 4, 2 and 0 copies. Listed high
-// to low so the stacked plots read as a descending staircase. Six and not the
-// ten the ladder has room for: on a shared 0-10 axis, ten rows leave each plot
-// too short for the diploid baseline to be visibly below the plateau, which is
-// the whole thing this figure has to show.
-const LADDER_SAMPLES = [
-  'HG01177',
-  'HG01083',
-  'HG01070',
-  'HG01395',
-  'HG00731',
-  'HG00553',
-]
-
-const LADDER_TRACK = {
-  type: 'MultiQuantitativeTrack',
-  trackId: 'pur_cnv_ladder',
-  name: 'PUR copy number, six individuals',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'MultiWiggleAdapter',
-    subadapters: LADDER_SAMPLES.map(name => ({
-      type: 'BigWigAdapter',
-      name,
-      bigWigLocation: {
-        uri: `${KIDD_LAB_BASE}/${name}.qm2.CN.1k.bw`,
-        locationType: 'UriLocation',
-      },
-    })),
-  },
-}
+// chr17:36,193,000-36,198,000 at roughly 9, 7, 5, 4, 2 and 0 copies, listed
+// high to low so the stacked plots read as a descending staircase. Six and not
+// the ten the ladder has room for: on a shared 0-10 axis, ten rows leave each
+// plot too short for the diploid baseline to be visibly below the plateau.
+//
+// Step lines, the page's `mark`, rather than the xyplot this track type opens
+// with: a filled area over a flat integer plateau paints each row as a solid
+// bar whose only readable feature is its top edge.
+const LADDER_TRACK = pageTrack('tutorials/population_cnv.md', 'pur_cnv_ladder')
 
 // Copy number is an absolute quantity, so its scale is pinned rather than
 // autoscaled: nearly every bin of nearly every sample sits at the diploid
@@ -164,21 +140,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pur_cnv_ladder',
               type: 'LinearWiggleDisplay',
-              // LINE, not the xyplot this track type opens with (reviewer:
-              // "not interesting
-              // screenshot really, consider delete"). The claim is that the
-              // plateaus are flat, quantized and countable off the axis, and a
-              // filled area over a flat integer plateau paints each row as a
-              // solid bar whose only readable feature is its top edge. Six of
-              // those stacked is six blue slabs, which is what made a real
-              // result look like nothing. As step traces you read the level
-              // and where it steps. Same finding as cookbook_multiwig, which
-              // was rebuilt for it.
-              mark: 'line',
               height: 500,
-              scales: {
-                y: { domainMin: 0, domainMax: 10, title: 'Copy number' },
-              },
             },
           ],
         },

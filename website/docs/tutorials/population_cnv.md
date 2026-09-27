@@ -118,13 +118,37 @@ the axis as a copy count:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "MultiWiggleAdapter",
-    "bigWigs": [
-      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01177.qm2.CN.1k.bw",
-      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01083.qm2.CN.1k.bw",
-      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01070.qm2.CN.1k.bw",
-      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01395.qm2.CN.1k.bw",
-      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00731.qm2.CN.1k.bw",
-      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw"
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "HG01177",
+        "uri": "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01177.qm2.CN.1k.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "HG01083",
+        "uri": "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01083.qm2.CN.1k.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "HG01070",
+        "uri": "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01070.qm2.CN.1k.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "HG01395",
+        "uri": "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01395.qm2.CN.1k.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "HG00731",
+        "uri": "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00731.qm2.CN.1k.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "HG00553",
+        "uri": "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw"
+      }
     ]
   },
   "displayDefaults": {

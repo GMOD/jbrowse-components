@@ -9,6 +9,7 @@ import {
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
+import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -70,51 +71,15 @@ const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(c =>
   wgbsContextTrack(c),
 )
 
-function snrpnModkitSubadapter(hp: 'hp1' | 'hp2', color: string) {
-  const uri = `https://jbrowse.org/demos/methylation/HG002_SNRPN_${hp}.modkit.bed.gz`
-  return {
-    type: 'BedTabixAdapter',
-    name: hp === 'hp1' ? 'HP1' : 'HP2',
-    color,
-    bedGzLocation: { uri, locationType: 'UriLocation' },
-    index: {
-      location: { uri: `${uri}.tbi`, locationType: 'UriLocation' },
-      indexType: 'TBI',
-    },
-  }
-}
-
-// The two per-haplotype modkit bedMethyl files as ONE multi-wiggle track
-// (reviewer: "consider making the modkit a multi-wiggle"). config_demo.json
-// declares them as two separate MultiQuantitativeTracks, which is right for a
-// track list but wrong for this figure: two lanes, two headers, two independent
-// autoscales, and the comparison the figure exists to make happens across a
-// track boundary. Merged, the two haplotypes are two rows of one lane on one
-// pinned 0-100 axis.
-//
-// A MultiWiggleAdapter's subadapters do not have to be BigWigs — anything
-// quantitative works, and each subadapter's `name` becomes the row's source
-// label. That matters here because bedMethyl features carry a `source` of their
-// own (the modification code, from generateBedMethylFeature), so the row
-// identity has to come from the outer fan-out rather than from the file.
-//
-// The colours match the read lanes below: at this locus HP1 is the methylated
-// haplotype and its reads are red, HP2 the unmethylated one and its reads are
-// blue. That agreement is a property of this locus, not a rule — which is why
-// the row labels, not the colours, are what says which is which.
-const SNRPN_MODKIT_MULTI_TRACK = {
-  type: 'MultiQuantitativeTrack',
-  trackId: 'HG002_snrpn_modkit_multi',
-  name: 'HG002 5mC by haplotype (modkit)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'MultiWiggleAdapter',
-    subadapters: [
-      snrpnModkitSubadapter('hp1', '#d62728'),
-      snrpnModkitSubadapter('hp2', '#1f77b4'),
-    ],
-  },
-}
+// The two per-haplotype modkit bedMethyl files as one multi-wiggle track, two
+// rows of one lane on one pinned 0-100 axis, as the page configures it. Each
+// subadapter's `name` is its row's label, since a bedMethyl feature's own
+// `source` is the modification code. HP1's red and HP2's blue match the read
+// lanes below at this locus only; the row labels say which is which.
+const SNRPN_MODKIT_MULTI_TRACK = pageTrack(
+  'tutorials/methylation.md',
+  'HG002_snrpn_modkit_multi',
+)
 
 // The three lanes the WGBS pileup is read against, shared by the contexts
 // figure and by the tour that films one pileup cycling through the contexts:
@@ -670,11 +635,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
             {
               trackId: 'HG002_snrpn_modkit_multi',
               type: 'LinearWiggleDisplay',
-              mark: 'bar',
-              // one scale for both haplotypes, which is the point of merging
-              // them: a per-track autoscale would put each haplotype's own
-              // maximum at the top of its own lane
-              scales: { y: { domainMin: 0, domainMax: 100, title: '% 5mC' } },
               height: 170,
             },
             {

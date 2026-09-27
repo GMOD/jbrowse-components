@@ -1,5 +1,7 @@
 import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
+import { pageTrack } from './pageTrack.ts'
+
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The LD heatmap display's home-run result: the lactase-persistence sweep at
@@ -52,42 +54,10 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // mosquito panels, because there the presence and absence of the arrangement
 // *is* the result.
 const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/config.json')}`
-
 // LCT / MCM6 lactase-persistence locus. Recent positive selection swept a long
 // haplotype to high frequency in dairying populations, so a large block of SNPs
 // around LCT is inherited together — a long stretch of high r².
-const lctTrack = (name: string, height = 510) => ({
-  type: 'LDTrack',
-  trackId: 'kgp_lct_ld',
-  name,
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'PlinkLDTabixAdapter',
-    uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz',
-  },
-  displays: [
-    {
-      type: 'LDTrackDisplay',
-      showLDTriangle: true,
-      showLegend: true,
-      // No forceLoad and no MAF filter: both were settings of the in-browser
-      // estimator this file replaced. The 0.35 floor is now applied by
-      // build_lct_ld.sh when it picks the variants to correlate, so it is a
-      // property of the file rather than a control a reader can move.
-      // Cells sized by genomic distance, so the triangle shares the x axis of
-      // the gene lane and the ruler above it (review: "consider also using
-      // useGenomicPositions:true"). Off, x is SNP INDEX, and index density is
-      // not uniform across this window — the block occupied about two thirds of
-      // the frame while spanning about a quarter of the bp, which is why it
-      // read as running off the left edge no matter how far the window zoomed
-      // out. On, its edges land under the coordinates they are at.
-      variantLayout: 'genomic',
-      // The triangle is the whole figure here. The haploblock figure stacks it
-      // over an 800px matrix and passes less.
-      height,
-    },
-  ],
-})
+const LD_HUMAN_DOC = 'tutorials/ld_human.md'
 
 // Wider than the block, so it reads as a block rather than a wall of red.
 // build_lct_ld.sh prints mean r² against rs4988235 in 100 kb bins along the
@@ -181,99 +151,40 @@ const LCT_HIGHLIGHT = [
 // AgamP4, which sounds wrong but is safe for the arms: 2L/2R/3L/3R are
 // byte-identical between the two releases (verified by sequence comparison at
 // both 2La breakpoints and at Vgsc; AgamP4's changes were to unplaced
-// scaffolds). The hub names the arm chr2L and the .ld.gz names it 2L, which its
+// scaffolds). The hub names the arm chr2L and the .vcor.gz names it 2L, which its
 // chromAlias reconciles at query time. The LCT figures above need no such
 // reconciliation -- their callset and their hub are both chr-named.
 const ANOGAM3_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/anoGam3/config.json')}`
 
-const agLdTrack = (
-  trackId: string,
-  name: string,
-  file: string,
-  ldHeight: number,
-  squash: boolean,
-) => ({
-  type: 'LDTrack',
-  trackId,
-  name,
-  assemblyNames: ['anoGam3'],
-  adapter: {
-    type: 'PlinkLDTabixAdapter',
-    uri: `https://jbrowse.org/demos/popgen/${file}`,
-  },
-  displays: [
-    {
-      type: 'LDTrackDisplay',
-      ldMetric: 'r2',
-      // lay SNPs out at their real coordinates, not evenly spaced, so the
-      // block's edges land where the inversion's edges are
-      variantLayout: 'genomic',
-      showLegend: true,
-      // THE HEIGHT ARITHMETIC, because two rounds of review have now been about
-      // it. An unsquashed LD panel draws its triangle at natural aspect -- apex
-      // depth is half the drawn width -- and the display's own height clips
-      // whatever does not fit. Clipping the whole-arm triangle is right and unavoidable: at
-      // 49.4 Mb across ~1490 css px it would be 745 px deep, and the deep half
-      // is pairs 20 Mb apart. But 2La is 20,524,058-42,165,532, which draws 653
-      // px wide, so ITS apex is 327 px down: at 300 the block this figure
-      // exists to show was cut flat at the lane boundary, 27 px short of
-      // closing, and a truncated block reads as one that continues past the
-      // frame.
-      //
-      // `squashToHeight` fits that whole 745 px wedge into the lane instead, so
-      // it never cuts anything and the height becomes free -- at the cost of
-      // scaling 2La's apex by height/745.
-      //
-      // IT WAS RENDERED, at 240 on both panels, and it is WORSE ON MORE THAN
-      // THE ARITHMETIC, which is why it is a parameter here rather than a
-      // deleted line. The review asked for it ("we need to improve y-axis real
-      // estate here, including by 'squashing' the ld triangles") and the earlier
-      // round had only reasoned about it, so it was worth a capture. Two things
-      // the arithmetic did not predict:
-      //
-      // - the block stops being SOLID. Scaling y compresses each cell as well as
-      //   the wedge, so the 2La triangle came back as a pale hatched wedge --
-      //   individual cells resolvable, no filled mass -- where unsquashed it is
-      //   an unmistakable block of red. The figure's whole claim is that one
-      //   panel has a block in it and the other does not, and squashed, the
-      //   claim is a texture difference.
-      // - the empty corner is not reclaimed anyway. Squashing brings the
-      //   long-range pairs into frame, and they are white, so the lane is still
-      //   about half blank -- just blank with the block flattened above it.
-      //
-      // So this stays false for both panels, and the height saving is taken
-      // where a panel has no deep signal to lose instead. See the two call
-      // sites.
-      squashToHeight: squash,
-      height: ldHeight,
-    },
-  ],
-})
+// The page prints Cameroon's two tracks; Gabon's are the same with its own
+// files.
+type AgPopulation = 'CMgam' | 'GAgam'
+function agPageTrack(cameroonTrackId: string, pop: AgPopulation) {
+  const cameroon = pageTrack('tutorials/ld_mosquitoes.md', cameroonTrackId)
+  return JSON.parse(
+    JSON.stringify(cameroon)
+      .replaceAll('CMgam', pop)
+      .replaceAll('cmgam', pop.toLowerCase()),
+  ) as typeof cameroon
+}
 
-// The arrangement itself, one <INV> call per mosquito, as the per-sample
-// counterpart to the two LD panels. The LD figure shows a CONSEQUENCE of the
-// inversion (heterozygotes cannot recombine across it, so the span travels as
-// one block); this shows the structural variant those panels are about, and who
-// carries it.
+// THE HEIGHT ARITHMETIC. An unsquashed LD panel draws its triangle at natural
+// aspect, apex depth half the drawn width, and the display's height clips the
+// rest. The whole-arm triangle would be 745 px deep and clipping it is right,
+// but 2La draws 653 px wide, so ITS apex is 327 px down, and a lane shorter
+// than that cuts the block flat at its boundary, which reads as a block
+// continuing past the frame.
 //
-// WHAT IS INFERRED AND WHAT IS NOT. 2La is not a call this pipeline makes. It is
-// a cytologically defined arrangement whose breakpoints were cloned and
-// sequenced (Sharakhov et al. 2006, PNAS 103:6258-6262) and which has a
-// diagnostic PCR across the junctions, validated against polytene cytology on
-// 765 field specimens (White et al. 2007, Am J Trop Med Hyg 76:334-339). Only
-// each sample's karyotype is inferred, by scoring the published tag SNPs of Love
-// et al. 2019 (G3 9:3249-3262) - the in-silico method MalariaGEN ships for Ag3,
-// which that paper reports disagreeing with cytology on 5 of 345 Ag1000G
-// specimens. build_ag1000g_ld.sh prints the score histogram; the calls are only
-// worth drawing because it comes out trimodal with empty space between the
-// peaks, which is a property of the data rather than of the threshold.
-//
-// The per-population table the same script prints is the independent check on
-// the LD figure above: Cameroon segregates both arrangements and Gabon is
-// near-fixed for the standard one, which is what makes one panel a block and the
-// other a control. Neither number is restated in the prose - the script prints
-// them, and this figure shows them.
-const AG_POPGEN = 'https://jbrowse.org/demos/popgen'
+// `squashToHeight` was rendered at 240 on both panels and rejected: scaling y
+// compresses each cell, so the 2La block came back as a pale hatched wedge
+// rather than a solid one, and the long-range pairs it brings into frame are
+// white, so the lane stays half blank anyway. The saving is taken where a panel
+// has no deep signal to lose instead; see the two call sites.
+const agLdTrack = (pop: AgPopulation, name: string, height: number) => {
+  const track = agPageTrack('ag1000g_2l_cmgam', pop)
+  const [display] = track.displays as Record<string, unknown>[]
+  return { ...track, name, displays: [{ ...display, height }] }
+}
 
 // What the two blocks in the heatmaps are over, as two features in one lane, so
 // each block has a labelled extent above it drawn from published coordinates
@@ -319,78 +230,55 @@ const AG_LOCI_TRACK = {
   },
 }
 
+// The arrangement itself, one <INV> call per mosquito, as the per-sample
+// counterpart to the two LD panels. The LD figure shows a CONSEQUENCE of the
+// inversion (heterozygotes cannot recombine across it, so the span travels as
+// one block); this shows the structural variant those panels are about, and who
+// carries it.
+//
+// WHAT IS INFERRED AND WHAT IS NOT. 2La is not a call this pipeline makes. It is
+// a cytologically defined arrangement whose breakpoints were cloned and
+// sequenced (Sharakhov et al. 2006, PNAS 103:6258-6262) and which has a
+// diagnostic PCR across the junctions, validated against polytene cytology on
+// 765 field specimens (White et al. 2007, Am J Trop Med Hyg 76:334-339). Only
+// each sample's karyotype is inferred, by scoring the published tag SNPs of Love
+// et al. 2019 (G3 9:3249-3262) - the in-silico method MalariaGEN ships for Ag3,
+// which that paper reports disagreeing with cytology on 5 of 345 Ag1000G
+// specimens. build_ag1000g_ld.sh prints the score histogram; the calls are only
+// worth drawing because it comes out trimodal with empty space between the
+// peaks, which is a property of the data rather than of the threshold.
+//
+// The per-population table the same script prints is the independent check on
+// the LD figure above: Cameroon segregates both arrangements and Gabon is
+// near-fixed for the standard one, which is what makes one panel a block and the
+// other a control. Neither number is restated in the prose - the script prints
+// them, and this figure shows them.
+//
 // One track per population, not one track holding both. The display draws one
 // row per sample in the VCF and has no sample filter, so the file is the row set
 // — and at a 1px row the sidebar cannot render a text label, which leaves the
 // track header as the only place a population name can go. It also lets each
 // karyotype lane sit directly under its own LD panel in the combined figure.
+//
+// The lane height IS the row height: rows auto-fit `availableHeight / nrow`,
+// and the rows are grouped, so a run of one karyotype is a band tens of px deep
+// even at a pixel a row.
+//
+// THE LEGEND IS A HEIGHT FLOOR, which is why it is a parameter. It is clipped
+// to its own display's bounds and is nine rows tall (four genotype shades,
+// three karyotype classes, two headings), about 192 css px. The second lane
+// does not show it: its key is the one directly above it, minus the class that
+// population has no carriers of.
 const agKaryotypeTrack = (
-  pop: string,
+  pop: AgPopulation,
   name: string,
   height: number,
   showLegend: boolean,
-) => ({
-  type: 'VariantTrack',
-  trackId: `ag1000g_2la_karyotype_${pop.toLowerCase()}`,
-  name,
-  assemblyNames: ['anoGam3'],
-  adapter: {
-    type: 'VcfTabixAdapter',
-    uri: `${AG_POPGEN}/ag1000g_2La_${pop}.vcf.gz`,
-    samplesTsvLocation: { uri: `${AG_POPGEN}/ag1000g_2La_${pop}_samples.tsv` },
-  },
-  displays: [
-    {
-      // The regular multi-sample display, NOT the matrix. Matrix mode spaces one
-      // evenly sized column per variant, which discards the only spatial thing a
-      // single SV call has: its extent. Here each genotype draws at the call's
-      // true span, so the cells begin and end at the breakpoints.
-      type: 'LinearMultiSampleVariantDisplay',
-      // Within one population the karyotype is the only useful key. The domain
-      // is dosage order, which the figure's prose reads off the lane: the
-      // three classes come out as contiguous blocks, standard at the top and
-      // homozygous inverted at the bottom.
-      facet: {
-        field: 'karyotype',
-        domain: ['2L+a/2L+a', '2La/2L+a', '2La/2La'],
-      },
-      rowColor: 'karyotype',
-      // 'skip', the default: the display fills the whole lane with
-      // REFERENCE_COLOR in CSS and paints only ALT cells on top, so the lane is
-      // a solid grey field with the carriers' blocks on it (review: "it should
-      // use 'drawreferencealleles' as solid grey background"). 'draw' instead
-      // paints a grey cell per row at the call's span, and at these row heights
-      // the per-row gaps broke that field into a striped rectangle that read as
-      // a texture rather than as background.
-      referenceDrawingMode: 'skip',
-      // No color. The default alt shade is keyed to allele dosage
-      // (`getAltColorForDosage`), so a heterozygote paints lighter than a
-      // homozygote and the three classes read apart; an override flattens het and
-      // hom-alt to one flat color, which is what the first cut of this figure did
-      // and it threw the distinction away.
-      //
-      // No rowHeight here. It is a display *model* prop, not a config slot, so a
-      // track config carries it nowhere — the previous 891/207 lanes read as
-      // "297 x 3px" only because `height / nrow` happens to land on the same
-      // number. The lane height IS the row height: rows auto-fit
-      // `availableHeight / nrow`, so this is the one knob, and at 297px the
-      // Cameroon panel's 297 mosquitoes get a pixel each. The class boundaries
-      // survive that because rows are grouped — a 1px row is not readable on its
-      // own, but a contiguous run of one karyotype is a band tens of px deep.
-      //
-      // THE LEGEND IS A HEIGHT FLOOR, which is why it is a parameter. It is
-      // clipped to its own display's bounds and it is nine rows tall (four
-      // genotype shades, three karyotype classes, two headings) — measured off
-      // the capture at 192 css px, i.e. essentially the whole of a 200 px lane.
-      // So a lane showing it cannot go below ~200 whatever its row count wants,
-      // and a lane not showing it is bounded by its rows alone. The second lane
-      // does not show it: its key is identical to the one directly above it,
-      // minus the class that population has no carriers of.
-      showLegend,
-      height,
-    },
-  ],
-})
+) => {
+  const track = agPageTrack('ag1000g_2la_karyotype_cmgam', pop)
+  const [display] = track.displays as Record<string, unknown>[]
+  return { ...track, name, displays: [{ ...display, showLegend, height }] }
+}
 
 // The per-population point, shown rather than asserted, WITHOUT making a figure
 // out of human population differences. Both lanes are the same locus, window,
@@ -859,13 +747,7 @@ export const ldSpecs: ScreenshotSpec[] = [
         // block flat at its own boundary, which reads as a block continuing past
         // the frame. agLdTrack's comment carries the arithmetic and what a
         // squashed capture of this panel actually looked like.
-        agLdTrack(
-          'ag1000g_2l_cmgam',
-          'Cameroon, both arrangements segregating (r²)',
-          'ag1000g_2L_CMgam.ld.gz',
-          340,
-          false,
-        ),
+        agLdTrack('CMgam', 'Cameroon, both arrangements segregating (r²)', 340),
         // 297 and 69 mosquitoes (the script prints both), and neither lane is
         // sized off its row count any more (review: "if there is anyway to
         // improve y-screen-real estate might be worth it"). This lane used to
@@ -902,11 +784,9 @@ export const ldSpecs: ScreenshotSpec[] = [
         // span recombines freely" is a statement about the blank, so a reader has
         // no reason to read the shorter lane as a cropped one.
         agLdTrack(
-          'ag1000g_2l_gagam',
+          'GAgam',
           'Gabon, one arrangement in almost every mosquito (r²)',
-          'ag1000g_2L_GAgam.ld.gz',
           250,
-          false,
         ),
         // 200, and this one is bounded from BELOW rather than chosen. Gabon's
         // five heterozygotes are the last five of its 69 rows (the lane is
@@ -1094,35 +974,8 @@ export const ldSpecs: ScreenshotSpec[] = [
     name: 'ld/lct_haploblock',
     url: `${HG38_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
-        // The statistic, over the haplotypes it is computed from. 260, down
-        // from 360 and from the standalone figure's 510 (review: "reducing
-        // height of the lddisplay (not squash, but just cutting off some)").
-        // Cutting rather than squashing is what was asked for and it is also
-        // the right instrument here: the block draws 685 px wide over this
-        // window, so its apex is 343 px down, and 260 cuts the apex while
-        // leaving both EDGES -- which is what the figure reads the triangle
-        // for, since an edge is where the block stops and the matrix below has
-        // to stop at the same coordinate. Squashing would keep the apex and
-        // shrink the edges' slope instead, i.e. blur the one thing being
-        // compared across the two lanes.
-        lctTrack('LCT lactase-persistence LD, 1000G European panel (r²)', 260),
-        {
-          type: 'VariantTrack',
-          trackId: 'kgp_lct_haplotypes',
-          name: '1000 Genomes haplotypes across LCT (one row per haplotype)',
-          assemblyNames: ['hg38'],
-          adapter: {
-            type: 'VcfTabixAdapter',
-            uri: `${AG_POPGEN}/lct_1kg38_chr2_6pop.vcf.gz`,
-            // sample id -> population. It is hosted under genomes/hg19/ only
-            // because that is where it was first needed; the table is a sample
-            // attribute list and carries no coordinates, so the assembly it
-            // sits beside is irrelevant.
-            samplesTsvLocation: {
-              uri: 'https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz',
-            },
-          },
-        },
+        pageTrack(LD_HUMAN_DOC, 'kgp_lct_ld'),
+        pageTrack(LD_HUMAN_DOC, 'kgp_lct_haplotypes'),
       ],
       views: [
         {
@@ -1161,45 +1014,25 @@ export const ldSpecs: ScreenshotSpec[] = [
             // The triangle directly above the matrix, on one x axis: a column
             // of the matrix and a corner of the triangle are the same variant,
             // and the block's edges land at the same coordinates in both.
-            { trackId: 'kgp_lct_ld', type: 'LDTrackDisplay' },
+            //
+            // 260, cut rather than squashed: the block draws 685 px wide here,
+            // so its apex is 343 px down, and 260 cuts the apex while leaving
+            // both EDGES, which are what the matrix below has to stop at.
+            { trackId: 'kgp_lct_ld', type: 'LDTrackDisplay', height: 260 },
             {
               trackId: 'kgp_lct_haplotypes',
               type: 'LinearMultiSampleVariantDisplay',
-              variantLayout: 'columns',
-              // 520, down from 700 (review: "reducing height of the
-              // multisamplevariantdisplay"). 300 haplotype rows is 1.73 px a
-              // row, and what the lane is read for survives that: the readout
-              // is a HORIZONTAL texture -- one band decided the same way
-              // straight across the block against speckle everywhere else --
-              // and the cluster is ~124 of those rows, so it is still a 215 px
-              // slab. Per-row resolution would matter if a reader had to follow
-              // one haplotype, which is what the dendrogram gutter cannot
-              // support at any height this figure can afford anyway.
+              // 520 of the page's 700: 300 haplotype rows is 1.73 px a row, and
+              // the readout is a HORIZONTAL texture, one band decided the same
+              // way straight across the block, which a ~124-row cluster still
+              // draws as a 215 px slab.
               height: 520,
-              // The matrix reads every genotype in the window rather than
-              // sampling, and the 30x callset carries several times the
-              // variants the phase 3 cut did over this span, so the byte gate
-              // trips: without this the lane is a "Requested too much data ...
-              // FORCE LOAD" banner and the clustering never runs, which is what
-              // failed the first capture of this figure.
-              forceLoad: true,
               lineZoneHeight: 34,
-              // one row per haplotype rather than per sample. Phased is the
-              // point: a haplotype is what travels as one piece, and a diploid
-              // row would average a carrier chromosome with a non-carrier one.
-              renderingMode: 'phased',
               runClustering: true,
-              // The highlighted LCT/MCM6 stretch alone (review: "can cluster
-              // specifically over the highlighted region"), narrower than the
-              // r² block and than what is drawn — the dog10k-igf1-haplotype
-              // pattern. Clustering over the whole drawn window instead mixes
-              // in a megabase of unlinked sequence on each side, which is
-              // exactly the variation that does NOT travel with the haplotype.
+              // The highlighted LCT/MCM6 stretch alone, narrower than the r²
+              // block and than what is drawn: clustering over the whole window
+              // mixes in a megabase of unlinked sequence on each side.
               clusterRegion: 'chr2:135,787,850-135,876,467',
-              rowColor: 'population',
-              // the common, block-tagging variants. Unfiltered, this window is
-              // mostly rare variation and the slab is buried in speckle.
-              minorAlleleFrequencyFilter: 0.35,
             },
           ],
         },

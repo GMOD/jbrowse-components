@@ -1,5 +1,7 @@
 import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
+import { pageTrack } from './pageTrack.ts'
+
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The population_genomics tutorial's figure: the windowed Fst + nucleotide
@@ -22,16 +24,8 @@ const DM6_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/dm6/conf
 // so stacking them into one multi-wiggle (which shares a single y-domain across
 // its rows) would crush pi to a flat line. Separate tracks each auto-scale to
 // their own data, so both signals read.
-const FST_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: 'fst_in2lt',
-  name: 'Fst (In(2L)t vs standard)',
-  assemblyNames: ['dm6'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/demos/popgen/fst_In2Lt.bw',
-  },
-}
+const POPGEN_DOC = 'tutorials/population_genomics.md'
+const FST_TRACK = pageTrack(POPGEN_DOC, 'fst_in2lt')
 const PI_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'pi_all',
@@ -135,62 +129,12 @@ const SITES_TRACK = {
 // rows a reader cannot tell apart. Fst is the signal that reads; leave the
 // contrast to the prose rather than shipping a figure that shows nothing.
 
-// The same inversion as per-sample SV calls: one <INV> record spanning the
-// published breakpoints, genotyped across every karyotyped DGRP line. This is the
-// per-sample counterpart to the Fst scan — the scan says the arrangement is
-// differentiated, this says WHO carries it.
-//
-// LinearMultiSampleVariantDisplay, NOT the matrix display. Matrix mode evenly
-// spaces one column per variant, which is what you want for many SNPs and wrong
-// for a single call with real genomic extent: the column would carry no
-// positional meaning. This display draws each genotype at the call's true span,
-// so the carrier block starts and ends at the breakpoints and lines up under
-// the Fst plateau and the inversion-extent bar.
-//
-// The facet bands the rows so carriers and standard lines are contiguous (without
-// it the rows keep VCF column order); colorBy paints the sidebar strip. Both live
-// on the track's own displays array, not the view's tracks entry, or they'd be
-// dropped and the display would fall back to schema defaults.
-const IN2LT_SV_TRACK = {
-  type: 'VariantTrack',
-  trackId: 'dgrp_In2Lt_sv',
-  name: 'In(2L)t genotyped across DGRP lines',
-  assemblyNames: ['dm6'],
-  adapter: {
-    type: 'VcfTabixAdapter',
-    uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz',
-    samplesTsvLocation: {
-      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv',
-    },
-  },
-  displays: [
-    {
-      type: 'LinearMultiSampleVariantDisplay',
-      // The domain puts the 161 standard lines first and the 19 carriers last,
-      // which is the order the figure's prose reads off the lane. Sorted, the
-      // carriers would lead: 'In(2L)t' precedes 'Standard'.
-      facet: {
-        field: 'karyotype',
-        domain: ['Standard', 'In(2L)t'],
-      },
-      rowColor: 'karyotype',
-      // The carrier block has to out-contrast the hom-ref field, and by default
-      // it doesn't: hom-ref genotypes paint #CCCCCC, the same gray as an empty
-      // canvas, so the figure read as a blank track. color repaints only
-      // the alt-carrying cells, leaving ref/no-call alone — exactly the "who
-      // carries it" contrast this figure exists for.
-      color: '#d95f02',
-      // Pinned rather than fit-to-height: 19 carriers out of 180 lines is ~10%
-      // of the display whatever its height, and at the old 300px that was 30px
-      // holding 19 rows — 0.33px each, which aliased into a smear instead of
-      // rows. 2px/row keeps the carrier block thick enough to show individual
-      // lines without spending 480px of figure on the featureless hom-ref
-      // field. 360 = 180 * 2, so nothing scrolls out of the capture.
-      rowHeight: 2,
-      height: 360,
-    },
-  ],
-}
+// The DGRP In(2L)t genotypes, one row per line: the per-sample counterpart to
+// the Fst scan, which says the arrangement is differentiated where this says
+// WHO carries it. The multi-sample display draws each genotype at the call's
+// true span, so the carrier block starts and ends at the breakpoints under the
+// Fst plateau, which the matrix's evenly spaced columns would not.
+const IN2LT_SV_TRACK = pageTrack(POPGEN_DOC, 'dgrp_In2Lt_sv')
 
 export const popgenSpecs: ScreenshotSpec[] = [
   // Genome-wide (all six dm6 arms): the In(2L)t Fst track rises into a tall
@@ -468,6 +412,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
             {
               trackId: 'dgrp_In2Lt_sv',
               type: 'LinearMultiSampleVariantDisplay',
+              // 2 px a row: 19 carriers of 180 lines is ~10% of any height,
+              // and auto-fit rows under a pixel alias into a smear
+              rowHeight: 2,
+              height: 360,
             },
           ],
         },
