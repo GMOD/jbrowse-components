@@ -1,8 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { testAssembly } from '@jbrowse/display-test-utils'
+import { destroy } from '@jbrowse/mobx-state-tree'
 import { autorun, observable, runInAction, when } from 'mobx'
 
 import {
@@ -312,20 +313,33 @@ describe('the baseline', () => {
       expect(asked).not.toContain('hg002')
     })
 
-    test('a plugin describes the lanes whose genome the session lacks, in one batch, without adding them', async () => {
-      const asked: string[] = []
+    const HG002 = { name: 'hg002', displayName: 'HG002' }
+
+    async function describedDisplay(
+      opts: Parameters<typeof createDisplayWithSession>[0] = {},
+    ) {
+      const { display } = await framedDisplay('hg002', {
+        describeAssemblies: () => ({
+          hg002: {
+            assembly: HG002,
+            geneAdapter: { type: 'DescribedGenesAdapter' },
+          },
+        }),
+        ...opts,
+      })
+      await when(() => display.holdsAssembly('hg002'), { timeout: 5000 })
+      return display
+    }
+
+    test('a plugin describes the lanes whose genome the session lacks in one batch, and the lane is held as a temporary assembly', async () => {
       const batches: string[][] = []
       const rpcCalls: Record<string, unknown>[] = []
-      const { display } = await framedDisplay('hg002', {
-        assemblyOf: name => {
-          asked.push(name)
-          return testAssembly()
-        },
+      const display = await describedDisplay({
         describeAssemblies: names => {
           batches.push(names)
           return {
             hg002: {
-              displayName: 'HG002',
+              assembly: HG002,
               geneAdapter: { type: 'DescribedGenesAdapter' },
             },
           }
@@ -337,9 +351,9 @@ describe('the baseline', () => {
           return []
         },
       })
-      await when(() => display.laneLabel('hg002') === 'HG002', {
-        timeout: 5000,
-      })
+      const session = getSession(display)
+      expect(session.temporaryAssemblies).toEqual([HG002])
+      expect(display.laneLabel('hg002')).toBe('HG002')
       const described = () =>
         rpcCalls.find(
           args =>
@@ -350,10 +364,9 @@ describe('the baseline', () => {
         await new Promise(resolve => setTimeout(resolve, 10))
       }
       expect(described()?.regions).toEqual([
-        expect.objectContaining({ assemblyName: '', refName: 'ctgA' }),
+        expect.objectContaining({ assemblyName: 'hg002', refName: 'ctgA' }),
       ])
       expect(batches).toEqual([['hg002']])
-      expect(asked).not.toContain('hg002')
     })
 
     test('a description still out holds readiness, and one that lands after the deadline still labels the lane', async () => {
@@ -371,7 +384,7 @@ describe('the baseline', () => {
       expect(display.dataSuperseded).toBe(true)
       display.endDescribingLanes(['hg002'], {})
       expect(display.awaitingDependentData).toBe(false)
-      answer({ hg002: { displayName: 'HG002' } })
+      answer({ hg002: { assembly: HG002 } })
       await when(() => display.laneLabel('hg002') === 'HG002', {
         timeout: 5000,
       })
@@ -394,42 +407,62 @@ describe('the baseline', () => {
       expect(batches).toEqual([['hg002'], ['hg002']])
     })
 
-    test("a described lane's gene fetch names each sequence as its gene file does, through the description's aliases", async () => {
-      const rpcCalls: Record<string, unknown>[] = []
-      await framedDisplay('hg002', {
-        describeAssemblies: () => ({
-          hg002: {
-            geneAdapter: { type: 'DescribedGenesAdapter' },
-            refNameAliases: {
-              adapter: {
-                type: 'TestRefNameAliasAdapter',
-                rows: [{ refName: 'ctgA', aliases: ['contigA', 'A'] }],
-              },
-            },
-          },
-        }),
-        rpc: async (name, args) => {
-          if (name === 'CoreGetRefNames') {
-            return ['contigA', 'contigB']
-          }
-          if (name === 'CoreGetFeatures') {
-            rpcCalls.push(args)
-          }
-          return []
+    test('a lane a restored session holds only temporarily is described again, for its gene adapter', async () => {
+      const batches: string[][] = []
+      const { display, session } = createDisplayWithSession({
+        trackAssemblyNames: ['volvox', 'hg002'],
+        describeAssemblies: names => {
+          batches.push(names)
+          return {}
         },
       })
-      const described = () =>
-        rpcCalls.find(
-          args =>
-            (args.adapterConfig as { type?: string }).type ===
-            'DescribedGenesAdapter',
-        )
-      for (let i = 0; i < 400 && !described(); i++) {
-        await new Promise(resolve => setTimeout(resolve, 10))
-      }
-      expect(described()?.regions).toEqual([
-        expect.objectContaining({ assemblyName: '', refName: 'contigA' }),
+      session.addTemporaryAssembly(HG002)
+      await when(() => display.features !== undefined, { timeout: 5000 })
+      display.setFeatures([
+        new SimpleFeature({
+          uniqueId: 'g0',
+          name: 'g0',
+          refName: 'ctgA',
+          start: 50,
+          end: 110,
+          strand: 1,
+          mate: { assemblyName: 'hg002', refName: 'ctgA', start: 0, end: 60 },
+        }),
       ])
+      await when(() => batches.length === 1, { timeout: 5000 })
+      expect(batches).toEqual([['hg002']])
+    })
+
+    test('"Open in new view" hands the genome back, so its hub can connect it, and the display does not hold it again', async () => {
+      const display = await describedDisplay()
+      const session = getSession(display)
+      display.openInNewView('hg002', 'ctgA:1-100')
+      expect(session.temporaryAssemblies).toEqual([])
+      await new Promise(resolve => setTimeout(resolve, 50))
+      expect(session.temporaryAssemblies).toEqual([])
+      expect(display.holdsAssembly('hg002')).toBe(false)
+    })
+
+    test('a session torn down with the display in it goes quietly', async () => {
+      const display = await describedDisplay()
+      const session = getSession(display)
+      const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      expect(() => {
+        destroy(session)
+      }).not.toThrow()
+      expect(error).not.toHaveBeenCalled()
+      expect(warn).not.toHaveBeenCalled()
+      error.mockRestore()
+      warn.mockRestore()
+    })
+
+    test('the display gives its temporary assemblies back when it goes', async () => {
+      const display = await describedDisplay()
+      const session = getSession(display)
+      const track = display.lgv.tracks[0]!
+      display.lgv.hideTrack(track.configuration.trackId)
+      expect(session.temporaryAssemblies).toEqual([])
     })
 
     test('a genome still loading keeps the divider until its load redraws the lane', async () => {

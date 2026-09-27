@@ -232,20 +232,31 @@ on rank, which is what the slot is for. One `CoreGetFeatures` per lane over
 snapped to a power-of-two grid off the rung span — issued concurrently with
 per-lane staleness so a pan re-asks only the lanes whose grid cell moved
 (`installLaneFetch` in `MW/afterAttach.ts`). A lane gets one when the session
-holds its assembly, or when a plugin has described it (`laneGenesFetchSpecs`).
+holds its assembly (`laneGenesFetchSpecs`).
 
 **Lanes the session lacks.** A hub star's mates live in other hubs' configs.
 The display puts its drawn, unheld lanes to `Core-describeAssemblies` in one
 batch, each lane once (`lanesToDescribe`), and never calls
 `assemblyManager.get` for them: that fires `Core-handleUnrecognizedAssembly`
 per lane, and the Hubs plugin answers it by connecting each genome's whole
-config. A description's `displayName` labels the lane ahead of the source's
-declared label, and its `geneAdapter` stands in for a session track. The
-region goes to the RPC bound to no assembly, named as the gene file names it
-through the description's `refNameAliases` (`describedLaneRegions`); without
-them the source's spelling goes as is. Per-lane gene adapters written into the
-star config were declined for this point, which also serves stars no builder
-wrote.
+config. A description is the genome's assembly config and its gene adapter.
+The display holds the assembly as a temporary one while it draws the lane
+(`installLaneAssemblies`), so from then on the lane is held: its display name
+labels it, and every fetch renames through it like any assembly's, with
+`loadRefNameMap`'s `CoreGetRefNames` priming the adapter with the genome's
+sequence and building the name map from the file's own names through its
+aliases. **Nothing hands an adapter its sequence**: the display passes none
+through any RPC, and renaming keeps none a caller passes. The gene adapter
+stands in for a session track. Per-lane gene adapters written into the star
+config were declined for this point, which also serves stars no builder wrote.
+
+The display gives its temporary assemblies back when it goes, through the
+session it captured at attach, since a display is destroyed after its view
+has been detached. Another display still drawing that genome holds it again.
+"Open in new view" gives one back first, so the new view finds the genome
+unrecognized and its hub connects it as a session assembly with its tracks. A
+restored session brings the temporary assemblies back without their gene
+adapters, so a lane held only temporarily is described again.
 
 An answer still out holds readiness as an outstanding lane fetch does, until
 it lands or `DESCRIBE_DEADLINE_MS` passes; a later answer still labels the
@@ -255,11 +266,23 @@ Every demo star holds all its lanes, so nothing there reaches the point; hub
 stars and a lane picked past a GBZ's held haplotypes do. The Hubs plugin
 (jbrowse-plugin-hubs `describeAssemblies.ts`) answers from each genome's
 hosted config, `minimal.json` for a UCSC db and `config.json` for GenArk, with
-no connection: the assembly's `displayName` and `refNameAliases`, and the gene
-track jb2hubs' `defaultGeneTrackId` picks, its URIs made absolute. On hg38's
+no connection: the assembly as that config writes it, `baseUri` stamped beside
+each `uri`, since jb2hubs writes `chromSizes` and the alias file relative to
+the config, and the gene track jb2hubs' `defaultGeneTrackId` picks. On hg38's
 UCSC mates that track spells chromosomes as the liftOver chains do (`chr1`); a
 GenArk-backed db such as rn8 picks the GenArk `.bb`, spelled `NC_…`, which
 draws only through the aliases.
+
+**Lane layers.** `laneLayers` declares rows of data every lane draws between
+its header and its genes, each on one value scale shared by every lane
+(`laneLayerDomains`, clipped at the 99th percentile each side). A lane reads a
+layer from the `tracks` entry on its genome, else from the layer's `adapter`,
+a template of a type declaring `DERIVES_FROM_SEQUENCE` that the adapter cache
+keys per genome's sequence. A template reads a lane only while each region it
+asks for is under `LANE_TEMPLATE_MAX_BP`, since that region is the sequence it
+downloads; past it the band's title says to zoom in. An adapter type that
+computes from no sequence is no template, because every lane would read the
+one file at its own coordinates.
 
 **Lane links.** For a source whose features carry no `name` and whose header
 names no `anchorAssemblyName`, one `CoreGetFeatures` per *adjacent* lane pair

@@ -10,6 +10,24 @@ import type { BarChannels } from '@jbrowse/render-core/marks'
 
 export const LANE_LAYER_GAP_PX = 2
 
+/**
+ * The widest region a lane reads a template through its own genome's
+ * sequence for: 1.25 MB of 2bit, so a nine-lane star at the cap reads about
+ * what its nine gc5Base bigWigs do at TP53
+ */
+export const LANE_TEMPLATE_MAX_BP = 5_000_000
+
+/**
+ * what one lane reads a layer from: a track's adapter, or the layer's
+ * template read through the lane's own genome. `source` names it in a
+ * fetch key
+ */
+export interface LaneLayerSource {
+  source: string
+  adapterConfig: Record<string, unknown>
+  template: boolean
+}
+
 export interface LaneLayerFetchSpec extends LaneFetchSpec {
   assemblyName: string
   layer: number

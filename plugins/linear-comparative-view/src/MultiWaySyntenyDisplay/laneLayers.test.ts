@@ -1,6 +1,10 @@
+import { setConf } from '@jbrowse/core/configuration'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import { when } from 'mobx'
 
 import {
+  LANE_TEMPLATE_MAX_BP,
   barCellOf,
   barChannelsOf,
   laneLayerBlockSpan,
@@ -12,9 +16,9 @@ import {
 } from './laneLayers.ts'
 import { rowFrameX } from './layoutMultiWay.ts'
 import { drawnPx } from './multiwayRenderTypes.ts'
-import { createDisplay } from './testEnv.ts'
+import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
-import type { HeldLaneLayer } from './laneLayers.ts'
+import type { HeldLaneLayer, LaneLayerFetchSpec } from './laneLayers.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
 import type { LaneMap } from './multiwayRenderTypes.ts'
 import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
@@ -168,4 +172,128 @@ test('a commit drops held payloads its specs no longer name, so a region the vie
   display.setLaneLayerData(new Map(), undefined, new Set(['a\u00000\u00000']))
   expect([...display.laneLayerData!.keys()]).toEqual(['a\u00000\u00000'])
   expect(display.laneLayerData!.get('a\u00000\u00000')).toBe(kept)
+})
+
+describe('a template layer', () => {
+  async function templateDisplay(
+    adapter: Record<string, unknown>,
+    {
+      mate = 'volvox_random',
+      tracks = [],
+      ...opts
+    }: Parameters<typeof createDisplayWithSession>[0] & {
+      mate?: string
+      tracks?: string[]
+    } = {},
+  ) {
+    const { display } = createDisplayWithSession({
+      trackAssemblyNames: ['volvox', mate],
+      rpc: async name =>
+        name === 'CoreGetEncodedLayers' ? { layers: [] } : [],
+      ...opts,
+    })
+    setConf(display, 'laneLayers', [
+      {
+        name: 'GC',
+        adapter,
+        tracks,
+        marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+      },
+    ])
+    await when(() => display.features !== undefined, { timeout: 5000 })
+    display.setFeatures(
+      [0, 1, 2, 3].map(
+        i =>
+          new SimpleFeature({
+            uniqueId: `g${i}`,
+            name: `g${i}`,
+            refName: 'ctgA',
+            start: 50 + 100 * i,
+            end: 110 + 100 * i,
+            strand: 1,
+            mate: {
+              assemblyName: mate,
+              refName: 'ctgA',
+              start: 1600 + 100 * i,
+              end: 1660 + 100 * i,
+            },
+          }),
+      ),
+    )
+    await when(() => display.rowFrames.get(mate) !== undefined, {
+      timeout: 5000,
+    })
+    return display
+  }
+
+  const reads = (display: { laneLayersFetchSpecs: LaneLayerFetchSpec[] }) =>
+    display.laneLayersFetchSpecs.map(spec => ({
+      lane: spec.assemblyName,
+      type: spec.adapterConfig.type,
+      regionAssembly: spec.region.assemblyName,
+    }))
+
+  const GC = { type: 'TestSequenceScoreAdapter' }
+
+  test('every held lane reads it through its own genome', async () => {
+    const display = await templateDisplay(GC)
+    expect(reads(display)).toEqual([
+      {
+        lane: 'volvox',
+        type: 'TestSequenceScoreAdapter',
+        regionAssembly: 'volvox',
+      },
+      {
+        lane: 'volvox_random',
+        type: 'TestSequenceScoreAdapter',
+        regionAssembly: 'volvox_random',
+      },
+    ])
+  })
+
+  test('a lane its `tracks` names reads that track instead', async () => {
+    const display = await templateDisplay(GC, {
+      geneTracks: [
+        { trackId: 'volvox_genes', assemblyNames: ['volvox'] },
+        { trackId: 'random_scores', assemblyNames: ['volvox_random'] },
+      ],
+      tracks: ['random_scores'],
+    })
+    expect(reads(display).map(read => [read.lane, read.type])).toEqual([
+      ['volvox', 'TestSequenceScoreAdapter'],
+      ['volvox_random', 'Gff3TabixAdapter'],
+    ])
+  })
+
+  test('an adapter that computes from no sequence is read by no lane, since each would read the one file at its own coordinates', async () => {
+    const display = await templateDisplay({ type: 'Gff3TabixAdapter' })
+    expect(reads(display)).toEqual([])
+  })
+
+  test('a lane whose genome the session lacks reads it once its temporary assembly is held', async () => {
+    const display = await templateDisplay(GC, { mate: 'hg002' })
+    expect(reads(display).map(read => read.lane)).toEqual(['volvox'])
+    display.endDescribingLanes([], {
+      hg002: { assembly: { name: 'hg002' } },
+    })
+    await when(() => display.holdsAssembly('hg002'), { timeout: 5000 })
+    expect(reads(display).map(read => read.lane)).toEqual(['volvox', 'hg002'])
+  })
+
+  test('a lane wider than the cap is left out, and the title says to zoom in', async () => {
+    const display = await templateDisplay(GC)
+    expect(reads(display)).toHaveLength(2)
+    expect(display.laneLayerTitles[0]!.text).not.toMatch(/zoom in/)
+    display.lgv.setDisplayedRegions([
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 2 * LANE_TEMPLATE_MAX_BP,
+        assemblyName: 'volvox',
+      },
+    ])
+    display.lgv.showAllRegions()
+    expect(reads(display)).toEqual([])
+    expect(display.laneLayerTitles[0]!.text).toMatch(/ · zoom in$/)
+  })
 })

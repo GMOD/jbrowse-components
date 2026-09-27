@@ -23,6 +23,23 @@ import { markListSchema } from '@jbrowse/plugin-marks'
  *   ],
  * }
  * ```
+ *
+ * #example
+ * GC content computed from each genome's own sequence, one entry for every
+ * lane, a hub star's lanes on genomes the session lacks included:
+ * ```js
+ * {
+ *   type: 'MultiWaySyntenyDisplay',
+ *   displayId: 'hg38_liftOver_multiway-MultiWaySyntenyDisplay',
+ *   laneLayers: [
+ *     {
+ *       name: 'GC',
+ *       adapter: { type: 'GCContentAdapter', windowSize: 1000, windowDelta: 1000 },
+ *       marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export const laneLayerConfigSchema = ConfigurationSchema(
   'MultiWayLaneLayer',
@@ -43,6 +60,15 @@ export const laneLayerConfigSchema = ConfigurationSchema(
       defaultValue: [],
       description:
         "the trackId each lane draws the layer from, one per genome, matched to a lane by the track's assembly. A lane no entry names draws an empty band",
+    },
+    /**
+     * #slot adapter
+     */
+    adapter: {
+      type: 'maybeFrozen',
+      defaultValue: undefined,
+      description:
+        "an adapter computing from the sequence, such as `{ type: 'GCContentAdapter' }`, that every lane `tracks` names nothing for reads through its own genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title says to zoom in past that",
     },
     /**
      * #slot height

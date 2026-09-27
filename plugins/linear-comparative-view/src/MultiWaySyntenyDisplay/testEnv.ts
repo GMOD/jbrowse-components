@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/display-test-utils'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { observable } from 'mobx'
 
 import { NO_OPS } from './alignmentOps.ts'
 import { configSchemaFactory } from './configSchema.ts'
@@ -126,6 +127,11 @@ export function createDisplayWithSession({
       slots: {},
       capabilities: ['headerLanes', 'lanePairsOnAnchor'],
     },
+    // what a lane layer's template names: GC content's capability
+    TestSequenceScoreAdapter: {
+      slots: {},
+      capabilities: ['derivesFromSequence'],
+    },
   }
   for (const [name, { slots, capabilities }] of Object.entries(adapterSlots)) {
     pluginManager.addAdapterType(
@@ -206,6 +212,15 @@ export function createDisplayWithSession({
   pluginManager.createPluggableElements()
   pluginManager.configure()
 
+  // what `addTemporaryAssembly` holds, which `has` answers for as the real
+  // assembly manager does
+  const temporaryAssemblies = observable.array<{
+    name: string
+    displayName?: unknown
+  }>([], {
+    deep: false,
+  })
+
   const trackSchema = pluginManager.pluggableConfigSchemaType('track')
   const syntenyTrack = trackSchema.create(
     {
@@ -259,10 +274,17 @@ export function createDisplayWithSession({
         // fail on a TypeError a lane's own error handling then swallows
         waitForAssembly: () => Promise.resolve(testAssembly()),
         getCanonicalAssemblyName: (name: string) => assemblyAliases[name],
-        getDisplayName: (name: string) => assemblyOf(name).displayName || name,
+        getDisplayName: (name: string) => {
+          const temporary = temporaryAssemblies.find(a => a.name === name)
+          return temporary
+            ? String(temporary.displayName ?? name)
+            : assemblyOf(name).displayName || name
+        },
         // a multi-genome file's other samples are lanes the session cannot
         // navigate or fetch against
-        has: (name: string) => HELD_ASSEMBLIES.has(name),
+        has: (name: string) =>
+          HELD_ASSEMBLIES.has(name) ||
+          temporaryAssemblies.some(a => a.name === name),
         // a re-anchor is `navToLocString` on the hosting view, which asks
         // this to tell a refName from a locstring; always-true reads every
         // locstring as ambiguous
@@ -280,10 +302,20 @@ export function createDisplayWithSession({
         views: [] as { id: string }[],
         // what a lane's "Open" hop asked for, each view's type and init
         addedViews: [] as { type: string; init: Record<string, unknown> }[],
+        temporaryAssemblies,
       }))
       .actions(self => ({
         addView(type: string, init: Record<string, unknown>) {
           self.addedViews.push({ type, init })
+        },
+        addTemporaryAssembly(conf: Record<string, unknown>) {
+          self.temporaryAssemblies.push({ ...conf, name: String(conf.name) })
+        },
+        removeTemporaryAssembly(name: string) {
+          const conf = self.temporaryAssemblies.find(a => a.name === name)
+          if (conf) {
+            self.temporaryAssemblies.remove(conf)
+          }
         },
       })),
   )

@@ -1,12 +1,15 @@
-import { isRefNameAliasAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
-import { dedupe, getSession, isAbortException } from '@jbrowse/core/util'
+import {
+  dedupe,
+  getEnv,
+  getSession,
+  isAbortException,
+} from '@jbrowse/core/util'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { installAnimationDeadline } from '@jbrowse/display-kit/displayAutoruns'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
-import { addDisposer, getEnv, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   installClearHoverOnSurfaceMove,
   installLodTierInfoFetch,
@@ -15,21 +18,15 @@ import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { sameDecisions } from './laneDecision.ts'
-import { fileRefNameOf, specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
+import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 import { mergeContiguousRegions } from './layoutMultiWay.ts'
 
 import type { MultiWayFeatures } from './MultiWayGetFeatures.ts'
-import type {
-  LaneFetchSpec,
-  LaneGenesFetchSpec,
-  LaneRegion,
-} from './laneFetch.ts'
+import type { LaneFetchSpec, LaneRegion } from './laneFetch.ts'
 import type { HeldLaneLayer } from './laneLayers.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Alias } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
@@ -132,61 +129,6 @@ async function laneRegions(
     ...r,
     refName: assembly?.getCanonicalRefName2(r.refName) ?? r.refName,
   }))
-}
-
-/**
- * A described lane's regions, named as its gene file names them and bound to
- * no assembly, since the session holds none to rename them through
- */
-function describedLaneRegions(self: MultiWaySyntenyDisplayModel) {
-  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(self)
-  const loadAliasRows = async (snapshot: Record<string, unknown>) => {
-    const type = pluginManager.getAdapterType(String(snapshot.type))
-    const Adapter = await type.getAdapterClass()
-    const adapter = new Adapter(
-      type.configSchema.create(snapshot, { pluginManager }),
-      undefined,
-      pluginManager,
-    )
-    if (!isRefNameAliasAdapter(adapter)) {
-      throw new Error(`${type.name} reads no refName aliases`)
-    }
-    return adapter.getRefNameAliases({})
-  }
-  const aliasLoads = new Map<string, Promise<Alias[]>>()
-  const aliasRows = (snapshot: Record<string, unknown>) => {
-    const key = adapterConfigCacheKey(snapshot)
-    let load = aliasLoads.get(key)
-    if (!load) {
-      load = loadAliasRows(snapshot).catch((error: unknown) => {
-        aliasLoads.delete(key)
-        throw error
-      })
-      aliasLoads.set(key, load)
-    }
-    return load
-  }
-  return async (spec: LaneGenesFetchSpec, ctx: FetchContext) => {
-    const unbound = spec.regions.map(region => ({
-      ...region,
-      assemblyName: '',
-    }))
-    if (!spec.refNameAliases) {
-      return unbound
-    }
-    const [fileRefNames, aliases] = await Promise.all([
-      ctx.callRpc('CoreGetRefNames', { adapterConfig: spec.adapterConfig }),
-      aliasRows(spec.refNameAliases.adapter).catch((error: unknown) => {
-        console.error(error)
-        return []
-      }),
-    ])
-    const fileRefName = fileRefNameOf(fileRefNames, aliases)
-    return unbound.map(region => ({
-      ...region,
-      refName: fileRefName(region.refName),
-    }))
-  }
 }
 
 /**
@@ -344,12 +286,47 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
 }
 
 /**
+ * Holds each described genome as a temporary assembly, so its lane's fetches
+ * reach its sequence and aliases through renaming as a held lane's do, and
+ * puts one back that another display released while this one still draws it.
+ * Gives them back when the display goes, through the session captured here:
+ * a display is destroyed after its view is detached, when `getSession` no
+ * longer reaches one
+ */
+function installLaneAssemblies(self: MultiWaySyntenyDisplayModel) {
+  const session = getSession(self)
+  const held = new Set<string>()
+  addDisposer(
+    self,
+    autorun(
+      () => {
+        for (const [lane, assembly] of self.laneAssemblyConfs) {
+          const name = String(assembly.name)
+          if (!self.holdsAssembly(lane) && !self.holdsAssembly(name)) {
+            session.addTemporaryAssembly?.(assembly)
+          }
+          held.add(name)
+        }
+      },
+      { name: 'MultiWayLaneAssemblies' },
+    ),
+  )
+  addDisposer(self, () => {
+    if (isAlive(session)) {
+      for (const name of held) {
+        session.removeTemporaryAssembly?.(name)
+      }
+    }
+  })
+}
+
+/**
  * Puts the drawn lanes the session lacks to `Core-describeAssemblies`, each
  * lane once, in one batch per change to the drawn set. A reload asks again
  * about the lanes that got no description
  */
 function installLaneDescriptions(self: MultiWaySyntenyDisplayModel) {
-  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(self)
+  const { pluginManager } = getEnv(self)
   let reloads = self.reloadCounter
   addDisposer(
     self,
@@ -370,7 +347,7 @@ function installLaneDescriptions(self: MultiWaySyntenyDisplayModel) {
           // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: a plugin's reads before its first await belong to its answer, and the lanes to ask about are the trigger
           untracked(() =>
             pluginManager
-              /** #extensionPoint Core-describeAssemblies | async | Describe, in one batch, assemblies the session does not hold, without adding them. Each callback adds to the descriptions the one before it returned */
+              /** #extensionPoint Core-describeAssemblies | async | Describe, in one batch, assemblies the session does not hold: each one's assembly config and gene adapter, read without connecting anything. Each callback adds to the descriptions the one before it returned */
               .evaluateAsyncExtensionPoint(
                 'Core-describeAssemblies',
                 {},
@@ -419,6 +396,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     'MultiWayLaneMotionDeadline',
   )
   installLaneDescriptions(self)
+  installLaneAssemblies(self)
   // the header is also read for an untiered adapter that declares its lanes,
   // so the picker can offer the whole universe before any lane is placed
   installLodTierInfoFetch(self, {
@@ -432,7 +410,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
 
   // The second fetch: once the ortholog groups have settled into lane frames,
   // each lane's gene models out of that assembly's own gene track.
-  const describedRegions = describedLaneRegions(self)
   installLaneFetch(self, {
     name: 'MultiWayLaneGenes',
     fetchSpecs: () => self.laneGenesFetchSpecs,
@@ -440,9 +417,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: spec.adapterConfig,
-        regions: spec.held
-          ? await laneRegions(getSession(self), spec.lane, spec.regions)
-          : await describedRegions(spec, ctx),
+        regions: await laneRegions(getSession(self), spec.lane, spec.regions),
       })
       return { key: spec.key, genes: laneGeneFeatures(features) }
     },

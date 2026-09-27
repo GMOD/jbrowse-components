@@ -397,14 +397,15 @@ export type ViewSnapshotInput<N extends string> = N extends ViewTypeName
 
 /**
  * what a plugin knows of an assembly the session does not hold, answered
- * without adding it. `displayName` and `refNameAliases` read as an assembly
- * config's do; `refNameAliases` is what reconciles the gene file's sequence
- * names with the names a synteny source places the lane on
+ * without connecting anything: its assembly config as the config holding it
+ * writes it, a relative uri carrying the `baseUri` it resolves against, and
+ * the adapter of its gene track. A multi-way synteny display holds the
+ * assembly as a temporary one while it draws that genome's lane, so renaming
+ * reaches its sequence and aliases the way it reaches any assembly's
  */
 export interface AssemblyDescription {
-  displayName?: string
+  assembly?: Record<string, unknown>
   geneAdapter?: Record<string, unknown>
-  refNameAliases?: { adapter: Record<string, unknown> }
 }
 
 export interface ExtensionPointRegistry {

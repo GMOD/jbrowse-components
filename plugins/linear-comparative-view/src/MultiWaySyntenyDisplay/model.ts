@@ -4,14 +4,17 @@ import {
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
+import { DERIVES_FROM_SEQUENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
 import {
   animationAllowed,
   doesIntersect2,
+  getEnv,
   getPaletteHost,
   getSession,
+  isObject,
   isFeature,
   morphClockMs,
   openFeatureWidget,
@@ -37,7 +40,7 @@ import {
   colorFieldOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { markLayerRequest, stepChannels } from '@jbrowse/plugin-marks'
@@ -85,6 +88,7 @@ import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
 import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
+  LANE_TEMPLATE_MAX_BP,
   barCellOf,
   laneLayerBpPerPx,
   laneLayerDomains,
@@ -168,7 +172,11 @@ import type {
   LaneRegion,
 } from './laneFetch.ts'
 import type { GeneLabel, NamedSpan, PlacedLaneLabel } from './laneLabels.ts'
-import type { HeldLaneLayer, LaneLayerFetchSpec } from './laneLayers.ts'
+import type {
+  HeldLaneLayer,
+  LaneLayerFetchSpec,
+  LaneLayerSource,
+} from './laneLayers.ts'
 import type { LaneTransition } from './laneMotion.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
@@ -184,7 +192,6 @@ import type {
   RibbonRef,
 } from './multiwayRenderTypes.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -342,6 +349,12 @@ export function stateModelFactory(
        * holds readiness the way an outstanding lane fetch does
        */
       lanesBeingDescribed: new Set<string>(),
+      /**
+       * #volatile
+       * the described lanes "Open in new view" handed back to the session,
+       * whose temporary assembly this display no longer holds
+       */
+      releasedLanes: new Set<string>(),
       /**
        * #volatile
        * the anchor assembly under which a lane-gene commit has covered a MATE
@@ -996,9 +1009,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => {
-      const { jexl } = getEnv<{ pluginManager: PluginManager }>(
-        self,
-      ).pluginManager
+      const { jexl } = getEnv(self).pluginManager
       let boxes:
         | { features?: Feature[]; settings: string; colors: GeneColors }
         | undefined
@@ -1267,6 +1278,19 @@ export function stateModelFactory(
         return getSession(self).assemblyManager.has(assemblyName)
       },
       /**
+       * #method
+       * whether the session holds a lane's genome only as a temporary
+       * assembly, the way this display holds a described one
+       */
+      holdsTemporarily(assemblyName: string) {
+        const { assemblyManager, temporaryAssemblies = [] } = getSession(self)
+        const name =
+          assemblyManager.getCanonicalAssemblyName(assemblyName) ?? assemblyName
+        return temporaryAssemblies.some(
+          conf => (conf as { name?: unknown }).name === name,
+        )
+      },
+      /**
        * #getter
        * the labels the source's header gives its lanes, by lane key
        */
@@ -1288,9 +1312,8 @@ export function stateModelFactory(
       laneLabel(assemblyName: string) {
         return this.holdsAssembly(assemblyName)
           ? getSession(self).assemblyManager.getDisplayName(assemblyName)
-          : self.laneDescriptions.get(assemblyName)?.displayName ||
-              (this.declaredLaneLabels.get(self.laneKey(assemblyName)) ??
-                assemblyName)
+          : (this.declaredLaneLabels.get(self.laneKey(assemblyName)) ??
+              assemblyName)
       },
       /**
        * #getter
@@ -1361,13 +1384,33 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the drawn lanes whose genome the session does not hold and that
-       * `Core-describeAssemblies` has not been asked about
+       * the drawn lanes `Core-describeAssemblies` has not been asked about
+       * whose genome the session does not hold, or holds only as the
+       * temporary assembly a restored session brought back without its gene
+       * adapter
        */
       get lanesToDescribe(): string[] {
         return this.rowAssemblies.filter(
-          name => !this.holdsAssembly(name) && !self.describedLanes.has(name),
+          name =>
+            !self.describedLanes.has(name) &&
+            (!this.holdsAssembly(name) || this.holdsTemporarily(name)),
         )
+      },
+      /**
+       * #getter
+       * per described lane, the assembly config its description gave, which
+       * the session holds as a temporary assembly while this display draws
+       * the lane. Not a lane "Open in new view" handed back, so the genome's
+       * hub can connect it as a session assembly
+       */
+      get laneAssemblyConfs() {
+        const out = new Map<string, Record<string, unknown>>()
+        for (const [lane, { assembly }] of self.laneDescriptions) {
+          if (assembly && !self.releasedLanes.has(lane)) {
+            out.set(lane, assembly)
+          }
+        }
+        return out
       },
       /**
        * #getter
@@ -2066,8 +2109,9 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * what the lane-genes autorun fetches: one spec per lane with a gene
-       * track, over the quantized window each lane's frame slides in
+       * what the lane-genes autorun fetches: one spec per held lane with a
+       * gene track, over the quantized window each lane's frame slides in. A
+       * described lane is held once the session holds its temporary assembly
        */
       get laneGenesFetchSpecs(): LaneGenesFetchSpec[] {
         const view = self.lgv
@@ -2078,7 +2122,7 @@ export function stateModelFactory(
           const track = tracks.get(lane)
           const source = track
             ? (readConfObject(track, 'trackId') as string)
-            : `${self.holdsAssembly(lane) ? 'held' : 'described'}:${lane}`
+            : `description:${lane}`
           return `${source}@${regions.map(regionKey).join(',')}`
         }
         if (view.initialized) {
@@ -2092,22 +2136,17 @@ export function stateModelFactory(
               key: keyOf(self.anchorAssemblyName, regions),
               adapterConfig: anchorAdapter,
               regions,
-              held: true,
             })
           }
           for (const [assemblyName, frame] of self.rowFrames) {
             const adapter = adapters.get(assemblyName)
-            const held = self.holdsAssembly(assemblyName)
-            const description = self.laneDescriptions.get(assemblyName)
-            if (adapter && frame && (held || description)) {
+            if (adapter && frame && self.holdsAssembly(assemblyName)) {
               const regions = [{ assemblyName, ...laneFetchRegion(frame) }]
               specs.push({
                 lane: assemblyName,
                 key: keyOf(assemblyName, regions),
                 adapterConfig: adapter,
                 regions,
-                held,
-                refNameAliases: held ? undefined : description?.refNameAliases,
               })
             }
           }
@@ -2180,10 +2219,32 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * per lane layer, the track each lane draws it from: the layer's
-       * `tracks` entry whose assembly is the lane's
+       * per lane layer, the layer's `adapter` where its type computes from the
+       * sequence, else undefined
        */
-      get laneLayerTracks(): Map<string, AnyConfigurationModel>[] {
+      get laneLayerTemplates(): (Record<string, unknown> | undefined)[] {
+        const { pluginManager } = getEnv(self)
+        return self.configuration.laneLayers.map(layer => {
+          const adapter: unknown = layer.adapter
+          return isObject(adapter) &&
+            typeof adapter.type === 'string' &&
+            pluginManager.hasAdapterType(adapter.type) &&
+            pluginManager
+              .getAdapterType(adapter.type)
+              .adapterCapabilities.includes(DERIVES_FROM_SEQUENCE)
+            ? adapter
+            : undefined
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * per lane layer, what each lane reads it from: the layer's `tracks`
+       * entry whose assembly is the lane's, else its template, which a lane
+       * reads through its own genome
+       */
+      get laneLayerSources(): Map<string, LaneLayerSource>[] {
         const byId = new Map(
           allSessionTracks(getSession(self)).map(track => [
             readConfObject(track, 'trackId') as string,
@@ -2191,8 +2252,8 @@ export function stateModelFactory(
           ]),
         )
         const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
-        return self.configuration.laneLayers.map(layer => {
-          const out = new Map<string, AnyConfigurationModel>()
+        return self.configuration.laneLayers.map((layer, i) => {
+          const out = new Map<string, LaneLayerSource>()
           for (const trackId of layer.tracks) {
             const track = byId.get(trackId)
             const names = track
@@ -2204,7 +2265,24 @@ export function stateModelFactory(
                 !out.has(lane) &&
                 names.some(name => self.laneKey(name) === self.laneKey(lane))
               ) {
-                out.set(lane, track)
+                out.set(lane, {
+                  source: trackId,
+                  adapterConfig: readConfObject(track, 'adapter'),
+                  template: false,
+                })
+              }
+            }
+          }
+          const template = self.laneLayerTemplates[i]
+          if (template) {
+            const source = `adapter:${JSON.stringify(template)}`
+            for (const lane of lanes) {
+              if (!out.has(lane)) {
+                out.set(lane, {
+                  source,
+                  adapterConfig: template,
+                  template: true,
+                })
               }
             }
           }
@@ -2215,38 +2293,48 @@ export function stateModelFactory(
        * #getter
        * one spec per lane, layer and region the lane layers read: the
        * anchor's content blocks, and each held mate lane's quantized window,
-       * each at the lane's own zoom snapped to a power of two
+       * each at the lane's own zoom snapped to a power of two. A template
+       * reads a lane only while each of its regions is under
+       * `LANE_TEMPLATE_MAX_BP`, and `pastCap` says which layers left a lane
+       * out for it
        */
-      get laneLayersFetchSpecs(): LaneLayerFetchSpec[] {
+      get laneLayerReads() {
         const view = self.lgv
         const specs: LaneLayerFetchSpec[] = []
-        if (!view.initialized) {
-          return specs
-        }
         const layers = self.configuration.laneLayers
+        const pastCap = layers.map(() => false)
+        if (!view.initialized) {
+          return { specs, pastCap }
+        }
         const add = (
           layer: number,
           assemblyName: string,
           regions: LaneRegion[],
           lanePxBpPerPx: number,
         ) => {
-          const track = this.laneLayerTracks[layer]?.get(assemblyName)
-          if (!track) {
+          const from = this.laneLayerSources[layer]?.get(assemblyName)
+          if (!from) {
+            return
+          }
+          if (
+            from.template &&
+            regions.some(r => r.end - r.start > LANE_TEMPLATE_MAX_BP)
+          ) {
+            pastCap[layer] = true
             return
           }
           const bpPerPx = laneLayerBpPerPx(lanePxBpPerPx)
           const requests = layers[layer]!.marks.map(m =>
             markLayerRequest(m, stepChannels(m.transform), bpPerPx),
           )
-          const trackId = readConfObject(track, 'trackId') as string
           const signature = JSON.stringify(requests)
           regions.forEach((region, i) => {
             specs.push({
               lane: laneLayerSpecLane(assemblyName, layer, i),
-              key: `${trackId}@${regionKey(region)}@${bpPerPx}@${signature}`,
+              key: `${from.source}@${regionKey(region)}@${bpPerPx}@${signature}`,
               assemblyName,
               layer,
-              adapterConfig: readConfObject(track, 'adapter'),
+              adapterConfig: from.adapterConfig,
               region,
               bpPerPx,
               requests,
@@ -2269,7 +2357,13 @@ export function stateModelFactory(
             }
           }
         })
-        return specs
+        return { specs, pastCap }
+      },
+      /**
+       * #getter
+       */
+      get laneLayersFetchSpecs(): LaneLayerFetchSpec[] {
+        return this.laneLayerReads.specs
       },
       /**
        * #getter
@@ -2621,10 +2715,7 @@ export function stateModelFactory(
           return getFeatureName
         }
         try {
-          const read = fieldReader(
-            field,
-            getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
-          )
+          const read = fieldReader(field, getEnv(self).pluginManager.jexl)
           return feature => {
             try {
               return valueText(read(feature)) || undefined
@@ -2898,13 +2989,15 @@ export function stateModelFactory(
       /**
        * #getter
        * each lane layer's name and the domain every lane shares, placed once
-       * on the anchor lane's band
+       * on the anchor lane's band, and "zoom in" while a template leaves a
+       * lane out for its width
        */
       get laneLayerTitles() {
         const anchor = self.laneStack.lanes[0]
         const heights = self.laneLayerHeights
         const tops = anchor ? layerBandTops(anchor.layerTop, heights) : []
         const domains = self.laneLayerDomains
+        const { pastCap } = self.laneLayerReads
         return self.configuration.laneLayers.map((layer, i) => {
           const domain = domains[i]
           const range = domain
@@ -2912,7 +3005,7 @@ export function stateModelFactory(
             : ''
           return {
             key: String(i),
-            text: `${layer.name}${range}`,
+            text: `${layer.name}${range}${pastCap[i] ? ' · zoom in' : ''}`,
             top: tops[i]!,
           }
         })
@@ -3304,8 +3397,9 @@ export function stateModelFactory(
        * #getter
        * `FetchMixin`'s hook: the dependent fetches are part of loading until
        * they FIRST land on this anchor, so an export or a capture never lands
-       * between the
-       * ortholog fetch and the gene models that fill the lanes. Not for later
+       * between the ortholog fetch and the gene models and layers that fill
+       * the lanes. A description still out holds both, since the lane it
+       * describes has neither until its assembly is held. Not for later
        * refetches: those run over lanes that are already drawn, and holding the
        * phase at loading puts the striped scrim over them. A failed lane fetch
        * commits an empty result rather than hanging this (see afterAttach).
@@ -3318,19 +3412,20 @@ export function stateModelFactory(
        * amylase figure, 2026-09-02)
        */
       get awaitingDependentData(): boolean {
+        const anchor = self.anchorAssemblyName
         const genes = self.laneGenesFetchSpecs
+        const layers = self.laneLayersFetchSpecs
+        const describing = self.lanesBeingDescribed.size > 0
         return (
           (self.laneGenes === undefined && genes.length > 0) ||
-          (self.laneGenesCoverMatesFor !== self.anchorAssemblyName &&
-            specsCoverMate(genes, self.anchorAssemblyName)) ||
-          (self.laneLinksLandedFor !== self.anchorAssemblyName &&
+          (self.laneGenesCoverMatesFor !== anchor &&
+            (specsCoverMate(genes, anchor) || describing)) ||
+          (self.laneLinksLandedFor !== anchor &&
             self.laneLinksFetchSpecs.length > 0) ||
-          (self.laneGenesCoverMatesFor !== self.anchorAssemblyName &&
-            self.lanesBeingDescribed.size > 0) ||
-          (self.laneLayersLandedFor !== self.anchorAssemblyName &&
-            self.laneLayersFetchSpecs.some(
-              spec => spec.assemblyName !== self.anchorAssemblyName,
-            ))
+          (self.laneLayerData === undefined && layers.length > 0) ||
+          (self.laneLayersLandedFor !== anchor &&
+            (layers.some(spec => spec.assemblyName !== anchor) ||
+              (describing && self.laneLayerTemplates.some(Boolean))))
         )
       },
       /**
@@ -3375,10 +3470,17 @@ export function stateModelFactory(
        * this track along so the new view is the same stack anchored there,
        * and the gene track the lane draws — not every feature track the
        * genome has, which on a hub is dozens. Keyed on the display and the
-       * lane, so following one lane twice re-navigates the view
+       * lane, so following one lane twice re-navigates the view. A described
+       * lane's temporary assembly goes first, so the new view finds the
+       * genome unrecognized and its hub connects it, tracks and all
        */
       openInNewView(assemblyName: string, loc: string) {
         const session = getSession(self)
+        const described = self.laneAssemblyConfs.get(assemblyName)
+        if (described) {
+          self.releasedLanes = new Set([...self.releasedLanes, assemblyName])
+          session.removeTemporaryAssembly?.(String(described.name))
+        }
         const genes = self.laneGeneTracks.get(assemblyName)
         openAssemblyInLinearView({
           session,

@@ -1,7 +1,5 @@
 import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
-import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
-import type { Alias } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { LodTier } from '@jbrowse/synteny-core'
 
 export interface LaneRegion {
@@ -24,29 +22,6 @@ export interface LaneFetchSpec {
 export interface LaneGenesFetchSpec extends LaneFetchSpec {
   adapterConfig: Record<string, unknown>
   regions: LaneRegion[]
-  held: boolean
-  refNameAliases?: AssemblyDescription['refNameAliases']
-}
-
-/**
- * A described lane's name for each sequence in its gene file's own spelling:
- * the name itself where the file has it, else the file's member of the alias
- * row that holds it, else unchanged
- */
-export function fileRefNameOf(fileRefNames: string[], aliases: Alias[]) {
-  const inFile = new Set(fileRefNames)
-  const byName = new Map<string, string>()
-  for (const { refName, aliases: others } of aliases) {
-    const row = [refName, ...others]
-    const fileName = row.find(name => inFile.has(name))
-    if (fileName !== undefined) {
-      for (const name of row) {
-        byName.set(name, fileName)
-      }
-    }
-  }
-  return (refName: string) =>
-    inFile.has(refName) ? refName : (byName.get(refName) ?? refName)
 }
 
 /**

@@ -13,14 +13,15 @@ shared scale ([ADR-180](../architecture-decision-records/adr-180-a-multiway-lane
 1. **Template layers and genomes the session lacks.** A layer may name one
    `adapter` every lane reads through its own genome; core keys a
    `DERIVES_FROM_SEQUENCE` adapter per sequence (`e12f8ced81`), so it needs
-   no `adapterId`. A described lane needs
-   `AssemblyDescription.sequenceAdapter`, renaming that keeps a caller's
-   sequence for a region naming no assembly, `describedLaneRegions` passing
-   that sequence to its `CoreGetRefNames`, and readiness carrying the gene
-   stamp's three rules (anchor-only commits, outstanding descriptions, mate
-   specs). `hasAnnotation` stays off the layer sources so a layer never
-   rebuilds `laneStack`. A zoom cap per lane, since a template reads its
-   lane's whole fetch window of sequence.
+   no `adapterId`. **The sequence reaches that adapter only through an
+   assembly**: `loadRefNameMap`'s `CoreGetRefNames` primes it and
+   `renameRegionsIfNeeded` derives it for every fetch. Never pass
+   `sequenceAdapter` through an RPC by hand, `CoreGetRefNames` included, and
+   never let renaming keep a caller's (Colin, 2026-09-27). A held lane needs
+   nothing more. A described lane has no assembly, so it draws a template
+   only once its genome becomes one. `hasAnnotation` stays off the layer
+   sources so a layer never rebuilds `laneStack`. A zoom cap per lane, since
+   a template reads its lane's whole fetch window of sequence.
 2. **Hubs plugin and jb2hubs.** The description's sequence adapter carries
    `baseUri`, since jb2hubs writes a relative `chromSizes`. The star builder
    (`ucsc2jbrowse/src/multiwayStarTrack.ts`) writes a GC layer and grows its

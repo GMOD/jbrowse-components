@@ -4576,6 +4576,10 @@ export const configManifest: ConfigManifest = {
               "type": "string[]"
             },
             {
+              "name": "adapter",
+              "type": "(frozen | undefined)"
+            },
+            {
               "name": "height",
               "type": "number"
             },
