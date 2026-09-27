@@ -24,6 +24,8 @@ export interface PlacedLaneLabel {
   left: number
   top: number
   width: number
+  /** the lane's row, whose `LaneMap` a moving lane's names ride */
+  row: number
 }
 
 interface Candidate extends PlacedLaneLabel {
@@ -108,7 +110,7 @@ export function placeLaneLabels({
   fontFamily: string
 }): PlacedLaneLabel[] {
   const candidates: Candidate[] = []
-  for (const lane of lanes) {
+  for (const [row, lane] of lanes.entries()) {
     const names = drawnNames(
       lane,
       genesOf(lane.assemblyName),
@@ -137,6 +139,7 @@ export function placeLaneLabels({
           top,
           bottom: top + GENE_LABEL_FONT_PX,
           width: textWidth,
+          row,
         })
       }
     })
