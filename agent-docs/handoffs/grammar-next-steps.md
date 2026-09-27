@@ -19,8 +19,8 @@ probes come from that review and nobody has re-measured them.
 1. **Wiggle's xyplot and scatter onto render-core's `bar` and `point`**, parked
    on a call:
    [ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md).
-2. **[review](review.md)'s findings**, in this order: link items 3 and 4, link
-   items 1 and 2, then the two domainQuantile items. Each carries its size
+2. **[review](review.md)'s findings**, in this order: the two link items, then
+   the two domainQuantile items, which only a hand-written config reaches. Each carries its size
    there.
 
 ## Leftover of the domainQuantile call
