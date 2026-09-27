@@ -52,7 +52,7 @@ probes come from that review and nobody has re-measured them.
 2. **Wiggle's xyplot and scatter onto render-core's `bar` and `point`.** Of the
    four blockers sized on 2026-09-26, the bin-midpoint one is gone (ADR-181
    centres a point), the interleaved positions live only in the payload
-   (`plugins/wiggle/src/shared/util.ts`; the GPU record already matches
+   (`plugins/wiggle/src/util.ts`; the GPU record already matches
    `bar`'s x/x2), and the row's f32-against-u32 is about an hour. Still real:
    `markColor.slang` has no symlog, and wiggle holds one colour and one row per
    source where `bar` and `point` read both per instance. ADR-165 stage 2's row

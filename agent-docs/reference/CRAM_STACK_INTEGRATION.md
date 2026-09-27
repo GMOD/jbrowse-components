@@ -390,9 +390,9 @@ story), and all four are taken:
 `BamSlightlyLazyFeature` has. No explicit constructor: the implicit one forwards
 `(slice, index)`. `adapter` is a field the adapter's emit loop assigns
 (`record.adapter = this`, then `observer.next(record)`), exactly as
-`BamAdapter` does, and `shouldFilterRecord` keeps its `CramRecord` parameter and
-runs before that assignment, which is why `cramReadGroup` takes the header
-explicitly. `start`, `end` and `flags` are gone — the base answers identically,
+`BamAdapter` does. The shared `dropsRead` filter runs after that assignment, so
+an RG filter reads the read group through the adapter's header, as the details
+panel does. `start`, `end` and `flags` are gone — the base answers identically,
 `CramRecord.end` having had bam_endpos semantics since 13.4.3 — and `packCigar`
 takes `this`.
 
