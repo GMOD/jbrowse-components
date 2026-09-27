@@ -1,6 +1,6 @@
 ---
 name: grammar-next-steps
-description: What the grammar thread does next as of 2026-09-27 - wiggle onto the bar and point shapes (parked on a call in ideas/), then review.md's findings in a ranked order, and one leftover of the domainQuantile call. Read before picking up grammar work.
+description: What the grammar thread does next as of 2026-09-27 - wiggle onto the bar and point shapes (parked on a call in ideas/), and one leftover of the domainQuantile call. Read before picking up grammar work.
 ---
 
 # Grammar thread: next steps
@@ -19,9 +19,10 @@ probes come from that review and nobody has re-measured them.
 1. **Wiggle's xyplot and scatter onto render-core's `bar` and `point`**, parked
    on a call:
    [ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md).
-2. **[review](review.md)'s findings**, in this order: the two link items, then
-   the two domainQuantile items, which only a hand-written config reaches. Each carries its size
-   there.
+
+The 2026-09-25/26 reviews' findings all landed by 2026-09-27: the link
+mark's log floor, ring placement, hover box and alias-spelt pair, and
+domainQuantile's range check and Clip-outliers re-tick.
 
 ## Leftover of the domainQuantile call
 
