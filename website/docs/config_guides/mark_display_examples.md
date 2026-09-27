@@ -42,10 +42,9 @@ matches your file and change the field names.
 
 ## Points, coloured and shaped by a category
 
-`x2: "start"` stands each point at one position whatever the copy's length. The
-colour and the shape each take a categorical scale over `strand`, whose values
-are `1` and `-1`, so `domain` names the levels and `labels` what the key calls
-them.
+Each point stands at the middle of its copy. The colour and the shape each take
+a categorical scale over `strand`, whose values are `1` and `-1`, so `domain`
+names the levels and `labels` what the key calls them.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {
@@ -66,7 +65,6 @@ them.
           "mark": "point",
           "size": 8,
           "encoding": {
-            "x2": "start",
             "y": "milliDiv",
             "color": {
               "field": "strand",

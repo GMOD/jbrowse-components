@@ -2,8 +2,8 @@
 title: Mark display
 description:
   A grammar of graphics over a feature, alignments, variant or quantitative
-  track, where LinearMarkDisplay draws the bars, points, spans and labels its
-  config declares
+  track, where LinearMarkDisplay draws the bars, points, rules, spans and labels
+  its config declares
 guide_category: Track types
 ---
 
@@ -11,7 +11,7 @@ guide_category: Track types
 Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
 rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack`, a
 `VariantTrack`, a `QuantitativeTrack` or a `MultiQuantitativeTrack`, and draws a
-`bar`, `point`, `span`, `text` or `link` per `marks` entry, each with an
+`bar`, `point`, `rule`, `span`, `text` or `link` per `marks` entry, each with an
 `encoding` naming the fields that feed it, a `transform` list that can bin,
 count, pack or measure coverage, and a zoom range it draws in.
 
@@ -67,7 +67,8 @@ one.
 | Idea | ggplot2 | Vega-Lite, GenomeSpy | `LinearMarkDisplay` |
 | --- | --- | --- | --- |
 | a bar from a baseline to a value | `geom_col()` | `"mark": "bar"` | `"mark": "bar"`, the display's `origin` as the baseline |
-| a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `size` on the mark |
+| a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `size` on the mark, at the middle of `x` to `x2` |
+| a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `size` on the mark as its thickness |
 | a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
 | the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
 | a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
@@ -108,22 +109,22 @@ this display `encoding.row` is the band a feature stands in, the integer a
 positional channel is a bare field where Vega-Lite's carries a scale, because
 the y scale is the display's `scales.y` and every mark reads one axis. Stacked
 bars and an `opacity` channel have no row: a bar stands on its own from the
-baseline. A point's diameter is its mark's `size`, and a link's stroke is its
-`encoding.size`.
+baseline. A point's diameter and a rule's thickness are the mark's `size`, and a
+link's stroke is its `encoding.size`.
 
 ## The encoding
 
 Each mark's `encoding` maps feature fields to the channels its type reads:
 
-| Channel | Read by                | Value                                                                                                                                                                                                        |
-| ------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `x`     | every mark             | a field holding the left edge in bp; `start` by default                                                                                                                                                      |
-| `x2`    | every mark             | the right edge; `end` by default                                                                                                                                                                             |
-| `y`     | `bar`, `point`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand in the middle of its band |
-| `row`   | every mark             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
-| `color` | every mark             | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                                              |
-| `shape` | `point`                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
-| `text`  | `text`                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                            |
+| Channel | Read by                        | Value                                                                                                                                                                                                        |
+| ------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `x`     | every mark                     | a field holding the left edge in bp; `start` by default                                                                                                                                                      |
+| `x2`    | every mark                     | the right edge; `end` by default                                                                                                                                                                             |
+| `y`     | `bar`, `point`, `rule`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand in the middle of its band |
+| `row`   | every mark                     | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
+| `color` | every mark                     | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                                              |
+| `shape` | `point`                        | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
+| `text`  | `text`                         | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                            |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -322,10 +323,13 @@ points' colour a callback:
 ]
 ```
 
-A point's `size` is its diameter in px. A point whose `x` to `x2` is wider than
-its glyph draws as a bar of the glyph's height across that span, so a shape
-scale shows on a SNP and not on a wide deletion; `"x2": "start"` marks each
-feature at one position whatever its length.
+A point stands at the middle of its `x` to `x2`, `size` px across. A `rule` is
+the line from `x` to `x2` at `y`, `size` px thick, for a value that belongs to
+an interval — a window's Fst, a segment's copy number:
+
+```json
+{ "mark": "rule", "encoding": { "y": "score" }, "size": 3 }
+```
 
 A `span` has no `y`: it paints a band from `x` to `x2` in its colour, for an
 interval whose extent is the point. With no `row` every span shares one band;
@@ -503,8 +507,8 @@ the shared mechanism across all of them.
 
 ## Rows
 
-The display's `rows` gives each value of a field one row, for bar and point
-marks: over a multi-BigWig, whose features carry the file they came from in
+The display's `rows` gives each value of a field one row, for bar, point and
+rule marks: over a multi-BigWig, whose features carry the file they came from in
 `source`, it draws one xyplot per file, the value axis repeated on each row tall
 enough to hold it.
 
@@ -705,15 +709,15 @@ the banner appears unchanged.
 A `marks` list loads whenever its keys and value types are right, and the
 display draws what it can. Where two slots disagree, the track shows a warning
 chip in its corner naming the slot, and the mark when the slot is a mark's. A
-`bar` or `point` naming no `y` draws nothing, and the rest are these, each
-reported under its id:
+`bar`, `point` or `rule` naming no `y` draws nothing, and the rest are these,
+each reported under its id:
 
 <!-- MARK_RULES START -->
 
 <!-- prettier-ignore -->
 | Rule | Level | Reports |
 | --- | --- | --- |
-| `mark-without-value` | error | A bar or point naming no `y`, with no step before it writing one it reads by default. |
+| `mark-without-value` | error | A bar, point or rule naming no `y`, with no step before it writing one it reads by default. |
 | `empty-zoom-range` | error | A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. |
 | `step-expression` | error | A `filter` or `formula` whose `expr` is not a `jexl:` expression. |
 | `bin-width` | error | A `bin` whose `step` is neither `"auto"` nor a positive width. |
@@ -721,7 +725,7 @@ reported under its id:
 | `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span`. |
-| `unread-size` | warning | A `size` on a mark that draws no point and strokes no link. |
+| `unread-size` | warning | A `size` on a mark that draws no point or rule and strokes no link. |
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
 | `span-density-source` | warning | `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
@@ -732,7 +736,7 @@ reported under its id:
 | `labels-domain` | warning | A colour's `labels` naming values its `domain` does not list, or no categorical scale's. |
 | `unpinned-span-ramp` | warning | A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. |
 | `step-pair` | warning | A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. |
-| `value-beside-rows` | warning | A bar, point or text drawn beside a mark that stacks rows, standing in the first of them. |
+| `value-beside-rows` | warning | A mark other than a span drawn beside one that stacks rows, standing in the first of them. |
 | `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |
 | `cross-section-packing` | warning | A `pileup` in the display's `transform` under a `facet`, packing across every section. |
 | `second-density-mark` | warning | A second mark standing in for the density sidecar at a zoom where one already does. |
@@ -826,9 +830,9 @@ the session names the mark display for it.
 
 ## When a plugin is the next step
 
-A drawing that is not a bar, a point, a span or a label needs a **mark type** of
-its own: one shader, one painter and one hit test, declared as a mark over the
-same worker channels this display reads:
+A drawing that is not a bar, a point, a rule, a span or a label needs a **mark
+type** of its own: one shader, one painter and one hit test, declared as a mark
+over the same worker channels this display reads:
 [](/docs/developer_guides/creating_gpu_display) writes one. A display that lays
 features out its own way, or gives a channel a meaning the encoding cannot say —
 Manhattan's colour by LD to an index SNP — is the rung after that, and

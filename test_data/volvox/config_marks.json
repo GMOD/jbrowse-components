@@ -110,7 +110,6 @@
             {
               "mark": "point",
               "encoding": {
-                "x2": "start",
                 "y": "score",
                 "color": {
                   "field": "name",

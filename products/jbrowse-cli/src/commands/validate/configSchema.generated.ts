@@ -7786,10 +7786,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "mark": {
-          "description": "bar, point, span, text or link.",
+          "description": "bar, point, rule, span, text or link.",
           "enum": [
             "bar",
             "point",
+            "rule",
             "span",
             "text",
             "link"
@@ -7797,7 +7798,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "bar"
         },
         "size": {
-          "description": "point diameter or link stroke in px.",
+          "description": "point diameter, rule thickness or link stroke in px.",
           "type": "number",
           "default": 4
         },

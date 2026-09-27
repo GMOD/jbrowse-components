@@ -40,11 +40,11 @@ export type MarkProblemLevel = 'error' | 'warning'
  * refer to it by.
  */
 export const MARK_RULES = {
-  /** A bar or point naming no `y`, with no step before it writing one it reads by default. */
+  /** A bar, point or rule naming no `y`, with no step before it writing one it reads by default. */
   'mark-without-value': 'error',
   /** A channel the mark's type does not read, such as `y` on a `span`. */
   'unread-channel': 'warning',
-  /** A `size` on a mark that draws no point and strokes no link. */
+  /** A `size` on a mark that draws no point or rule and strokes no link. */
   'unread-size': 'warning',
   /** A `linkShape` on a mark that draws no link. */
   'unread-link-shape': 'warning',
@@ -78,7 +78,7 @@ export const MARK_RULES = {
   'step-field-expression': 'error',
   /** A `y` naming a field that no `aggregate` or `coverage` step before it writes. */
   'unwritten-y': 'error',
-  /** A bar, point or text drawn beside a mark that stacks rows, standing in the first of them. */
+  /** A mark other than a span drawn beside one that stacks rows, standing in the first of them. */
   'value-beside-rows': 'warning',
   /** Two `pileup` steps packing one plot, whose rows share numbers. */
   'two-packings': 'warning',

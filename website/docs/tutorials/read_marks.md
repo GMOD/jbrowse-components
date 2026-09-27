@@ -217,9 +217,9 @@ The BED holds 11,327 rows, small enough to fetch whole at any zoom. An insert
 size and a count per bin are two quantities, so they are two tracks over the one
 file:
 
-- **a `point` per pair**, `tlen` on y, coloured by `score`. `x2: start` draws
-  the pair at its leftmost read; a `filter` under 20 kb keeps the centromere's
-  megabase inserts off the axis.
+- **a `point` per pair** at the middle of its insert, `tlen` on y, coloured by
+  `score`; a `filter` under 20 kb keeps the centromere's megabase inserts off
+  the axis.
 - **a `bar` per bin** counting pairs of 2 to 10 kb, on an axis pinned at 60 so
   the centromere saturates and a deletion's ten to fifty stand up.
 
@@ -252,7 +252,6 @@ file:
             { "type": "filter", "expr": "jexl:feature.tlen < 20000" }
           ],
           "encoding": {
-            "x2": "start",
             "y": "tlen",
             "color": {
               "field": "score",

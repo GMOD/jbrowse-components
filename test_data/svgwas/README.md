@@ -2,8 +2,8 @@
 
 Structural-variant GWAS summary statistics for the JBrowse Manhattan display
 (`plugins/gwas`). Unlike SNP GWAS, each association covers a genomic **range**
-(deletions/duplications), which the `LinearManhattanDisplay` draws as a bar
-spanning start→end rather than a point.
+(deletions/duplications), which the demo config draws as a `rule` from start to
+end under a `point` at its middle.
 
 ## Source
 

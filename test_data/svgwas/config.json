@@ -55,6 +55,7 @@
           "displayId": "ukb_mcv_sv_gwas-LinearManhattanDisplay",
           "height": 250,
           "marks": [
+            { "mark": "rule", "size": 2, "encoding": { "y": "score" } },
             {
               "mark": "point",
               "encoding": {

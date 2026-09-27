@@ -1146,10 +1146,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_size_fst_igf1_20kb',
           type: 'LinearManhattanDisplay',
           height: FST_LANE_H,
-          // a hundred windows across this view rather than the ten the 200 kb
-          // lane drew, so the points come down from 9: at that size a hundred of
-          // them merge into a band and the sweep stops having edges
-          marks: [{ mark: 'point', encoding: { y: 'score' }, size: 6 }],
+          // a rule across each of a hundred windows, 6 px thick rather than
+          // 9: at 9 they merge into a band and the sweep stops having edges
+          marks: [{ mark: 'rule', encoding: { y: 'score' }, size: 6 }],
           ...FST_AXIS,
         },
       ],

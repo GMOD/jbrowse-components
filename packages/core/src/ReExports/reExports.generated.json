@@ -4955,6 +4955,7 @@
         "recordPath",
         "rowColor",
         "rowSlot",
+        "ruleMark",
         "spanMark",
         "valueWindow",
         "withPassId"
@@ -5382,7 +5383,6 @@
     "@jbrowse/render-core/shaders/pointMark": {
       "package": "@jbrowse/render-core",
       "names": [
-        "pointDrawsBar",
         "pointRowYPx",
         "pointYPx",
         "valueToYPxScaled"

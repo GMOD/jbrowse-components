@@ -219,11 +219,11 @@ would cost:
   `//! coverage: analytic` on the strength of the sloped edges; the exposure is
   two columns per run rather than per bin, which is why this is a footnote and
   `barMark`'s is not.
-- **`pointMark` (manhattan and the wiggle scatter), except in extent-bar mode.**
+- **`pointMark` (manhattan and the wiggle scatter), but not `ruleMark`.**
   The disc, diamond and triangle pad by their own miter reaches
   (`glyphExpand`, `pointGlyphPad.test.ts`) and substitute to 0. `SHAPE_BAR` —
-  taken whenever `pointDrawsBar`, i.e. a bin wider than its glyph — is
-  `coverage = 1.0` on an unpadded, unsnapped quad.
+  the rule, which draws through the same shader — is `coverage = 1.0` on an
+  unpadded, unsnapped quad.
 - **`chevron.slang`, except at its caps** — below, where the canvas glyph family
   is worked through.
 

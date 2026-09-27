@@ -69,7 +69,8 @@
       "displays": [
         {
           "displayId": "volvox_gwas_windows-LinearManhattanDisplay",
-          "type": "LinearManhattanDisplay"
+          "type": "LinearManhattanDisplay",
+          "marks": [{ "mark": "rule", "encoding": { "y": "score" } }]
         }
       ]
     }

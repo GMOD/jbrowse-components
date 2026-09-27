@@ -534,9 +534,8 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **Hi-C translocation** — GM12878 vs K562 BCR-ABL1, two windows (chr9 ABL1,
   chr22 BCR) in one LGV so JBrowse fetches the chr9×chr22 block: empty in a
   normal karyotype, solid in K562. Replaced an orphaned loops-arc config.
-- **SV-GWAS** — `plugins/gwas` extended so ranged SVs draw as a bar spanning
-  start→end at the score height while points stay discs. Glyph is chosen by
-  pixel span, not SV type.
+- **SV-GWAS** — a `rule` from start to end at the score height under a `point`
+  at its middle, shaped by SV type.
 - **Nextstrain examples** — reference sequence comes from Nextstrain's own
   `_root-sequence.json` sidecar where it exists (covid, ebola, rsv-a), else the
   GenBank `.gb` ORIGIN from the build repo (zika, measles). Zika is a

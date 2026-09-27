@@ -43,7 +43,6 @@ const TRACKS = {
         mark: 'point',
         size: 8,
         encoding: {
-          x2: 'start',
           y: 'milliDiv',
           color: {
             field: 'strand',

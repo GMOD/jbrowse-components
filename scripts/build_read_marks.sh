@@ -195,7 +195,6 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
           "mark": "point",
           "transform": [{ "type": "filter", "expr": "jexl:feature.tlen < 20000" }],
           "encoding": {
-            "x2": "start",
             "y": "tlen",
             "color": {
               "field": "score",

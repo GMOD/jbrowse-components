@@ -70,17 +70,19 @@ display. `channels` names which of the payload's arrays feed which lane, and
 `params` names which of the render state's values reach the uniforms. Both
 functions only select fields and compute nothing.
 
-Two shapes are shared. A display that draws with one of them writes no shader,
+Three shapes are shared. A display that draws with one of them writes no shader,
 no painter and no hit test:
 
 - **`spanMark`** — a coloured rectangle from `x` to `x2` on the band of `row`.
   Features laid into rows, MAF's alignment cells, anything that is a box on a
   row.
-- **`pointMark`** — a glyph (disc, triangle, diamond) at `x` on a linear
-  `domain` of `y`, widening to a bar where `x2 - x` is wider than the glyph. A
-  scatter plot, Manhattan's points, any datum placed by a value.
+- **`pointMark`** — a glyph (disc, triangle, diamond) at the middle of `x` to
+  `x2` on a `domain` of `y`. A scatter plot, Manhattan's points, any datum
+  placed by a value.
+- **`ruleMark`** — a line from `x` to `x2` at `y`, drawn through `pointMark`'s
+  shader. A value over a window or a segment.
 
-The mark display draws its `point` marks over `pointMark`
+The mark display draws its `point`, `rule` and `span` marks over these
 (`plugins/marks/src/LinearMarkDisplay/markList.ts`), and a Manhattan plot is one
 of them. The example's score box spans start to end and grows up from the bottom
 to its value. It is neither a row band nor a glyph, so the example writes a new

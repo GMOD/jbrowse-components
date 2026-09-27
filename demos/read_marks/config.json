@@ -155,7 +155,6 @@
                 }
               ],
               "encoding": {
-                "x2": "start",
                 "y": "tlen",
                 "color": {
                   "field": "score",

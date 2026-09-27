@@ -431,15 +431,16 @@ export const SCORE_MARKS = [
 ```
 
 The example's `scoreMark` is its own, because a box grown from the bottom to a
-value is neither of the shared shapes. Most displays are one of them, and name
-it in place of `scoreMark` with nothing else to write:
+value is none of the shared shapes. Most displays are one of them, and name it
+in place of `scoreMark` with nothing else to write:
 
 - **`spanMark`** — a coloured rectangle from `x` to `x2` on the band of `row`:
   features laid into rows, MAF's alignment cells, anything that is a box on a
   row.
-- **`pointMark`** — a glyph at `x` on a linear `domain` of `y`, widening to a
-  bar where `x2 - x` is wider than the glyph: a scatter plot, Manhattan's
-  points, any datum placed by a value.
+- **`pointMark`** — a glyph at the middle of `x` to `x2` on a `domain` of `y`: a
+  scatter plot, Manhattan's points, any datum placed by a value.
+- **`ruleMark`** — a line from `x` to `x2` at `y`: a value over a window or a
+  segment.
 
 The mark display's `point` case in
 `plugins/marks/src/LinearMarkDisplay/markList.ts` is the in-tree form:

@@ -720,7 +720,7 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 
 | | JBrowse marks | GenomeSpy v0.88 | Gosling 1.0.5 |
 | --- | --- | --- | --- |
-| Marks | bar, point, span, text, link | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
+| Marks | bar, point, rule, span, text, link | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
 | Channels | x, x2, y, row, color, shape, text, size (on a link) | adds y2, opacity, stroke, angle, tooltip | adds ye, opacity, stroke |
 | y scales | linear, log, symlog | 13 kinds, incl. symlog and sqrt | none on y |
 | Named colour ramps | 10 (`COLOR_SCHEMES`), incl. viridis and two diverging | the d3 set | — |
