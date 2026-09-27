@@ -111,8 +111,8 @@ Each walk's length comes from an assembly, and HiFi reads measure the same
 repeat independently. An intron of _ABCA7_ holds a VNTR tied to Alzheimer's
 disease risk (De Roeck et al. 2018), which PacBio genotyped from HiFi reads in
 100 HPRC samples. Open the session below: the genes, the catalogue's VNTR row
-and the TRGT genotypes, over the gbz-base graph track in **Walk rows** layout
-with **Uniform** color:
+and the TRGT genotypes, over the gbz-base graph track cut for every haplotype
+(an empty `subgraphHaplotypes`) in **Walk rows** layout with **Uniform** color:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -166,6 +166,8 @@ with **Uniform** color:
             "type": "LinearGraphDisplay",
             "layoutMode": "walkrows",
             "colorScheme": "uniform",
+            "subgraphHaplotypes": [],
+            "repeatTrackId": "hprc_abca7_trgt",
             "height": 600
           }
         ]
@@ -188,7 +190,7 @@ HiFi reads. We host its _ABCA7_ call as this track:
 {
   "type": "VariantTrack",
   "trackId": "hprc_abca7_trgt",
-  "name": "TRGT repeat genotypes at ABCA7, 100 HPRC samples",
+  "name": "TRGT repeat genotypes at ABCA7, 94 HPRC samples",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
@@ -211,17 +213,17 @@ bcftools index -t sample.sorted.vcf.gz
 trgt merge --vcf *.sorted.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
 ```
 
-With the TRGT track in the session, a **Repeat** dropdown appears beside
-**Walk**. Pick the _ABCA7_ record: the bars divide into motif-length units, each
-walk gets a black tick at the allele TRGT called for it (paired by length), and
-a readout turns red past 10% apart.
+The session names the TRGT track as its `repeatTrackId`, so a **Repeat** entry
+joins **Walk** in the track menu. Pick the _ABCA7_ record: the bars divide into
+motif-length units, each walk gets a black tick at the allele TRGT called for it
+(paired by length), and a readout turns red past 10% apart.
 
-<Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first, with the TRGT record picked in the Repeat dropdown, boxed. The catalogue lane marks the VNTR on GRCh38, whose walk is the short blue bar at the top. Each bar is tiled by the motif, and a black tick marks the allele TRGT called for that walk. A red readout is a walk far from its allele." src="/img/pangenome/hprc_abca7_repeat_units.png" />
+<Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first, with the TRGT record picked under Repeat. The catalogue lane marks the VNTR on GRCh38, whose walk is the short blue bar at the top. Each bar is tiled by the motif, and a black tick marks the allele TRGT called for that walk. A red readout is a walk far from its allele." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
 ## The samples where they disagree
 
-The session below shows seven samples' walks in pairs, longest first, named in
-`walkRowSamples`:
+The session below cuts seven samples, named in `subgraphHaplotypes`, and shows
+their walks in pairs in the order `walkRowSamples` lists them:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -270,6 +272,15 @@ The session below shows seven samples' walks in pairs, longest first, named in
             "colorScheme": "uniform",
             "repeatTrackId": "hprc_abca7_trgt",
             "repeatKey": "chr19:1049406-1050096",
+            "subgraphHaplotypes": [
+              "HG00099",
+              "HG03688",
+              "HG00741",
+              "HG02647",
+              "HG01943",
+              "HG02559",
+              "HG04199"
+            ],
             "walkRowSamples": [
               "HG00099",
               "HG03688",
@@ -291,8 +302,9 @@ The session below shows seven samples' walks in pairs, longest first, named in
 HG00099, HG03688 and HG00741 tick at the end of each bar: reads and assemblies
 agree. HG02647 and HG01943 turn red: TRGT calls each near-homozygous while the
 graph carries a haplotype neither call reaches (two, in HG01943). HG02559 and
-HG04199 carry a grey tick: no read spans HG02559's second allele, and HG04199's
-assembly does not span the repeat, so neither walk gets a verdict.
+HG04199 each carry a walk with no verdict: no read spans HG02559's second
+allele, so its tick is grey, and HG04199's assembly does not span the repeat, so
+its readout marks that walk partial.
 
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar carrying the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
 

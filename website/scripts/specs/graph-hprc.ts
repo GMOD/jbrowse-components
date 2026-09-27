@@ -551,6 +551,15 @@ const ABCA7_CONFIG = encodeURIComponent(
   'https://jbrowse.org/demos/hprc/config.json',
 )
 const ABCA7_REPEAT_KEY = 'chr19:1049406-1050096'
+const ABCA7_SAMPLES = [
+  'HG00099',
+  'HG03688',
+  'HG00741',
+  'HG02647',
+  'HG01943',
+  'HG02559',
+  'HG04199',
+]
 
 // The adotto catalogue's row for the VNTR (adotto_repeats.hg38.bed.gz,
 // chr19:1049407-1050096), the record TRGT genotyped. A FromConfigAdapter is
@@ -613,6 +622,7 @@ function abca7View({
       graphTrack('hprc_v2_1_gbz_lanes', {
         layoutMode: 'walkrows',
         colorScheme: 'uniform',
+        subgraphHaplotypes: [],
         repeatTrackId: 'hprc_abca7_trgt',
         repeatKey: ABCA7_REPEAT_KEY,
         paneHeight: 600,
@@ -1502,15 +1512,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             // and assemblies part, and two carrying a walk the view leaves
             // unscored: HG02559's second allele has no spanning read,
             // HG04199's second walk does not span the array
-            walkRowSamples: [
-              'HG00099',
-              'HG03688',
-              'HG00741',
-              'HG02647',
-              'HG01943',
-              'HG02559',
-              'HG04199',
-            ],
+            subgraphHaplotypes: ABCA7_SAMPLES,
+            walkRowSamples: ABCA7_SAMPLES,
             paneHeight: 360,
           },
         }),
