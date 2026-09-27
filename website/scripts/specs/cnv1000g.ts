@@ -80,8 +80,8 @@ const LADDER_TRACK = {
 
 // Copy number is an absolute quantity, so its scale is pinned rather than
 // autoscaled: nearly every bin of nearly every sample sits at the diploid
-// baseline, so localpercentile pins the top just above 2 and clamps the
-// amplifications the figure is about, and `local` re-scales on every navigation
+// baseline, so a domainQuantile clip pins the top just above 2 and clamps the
+// amplifications the figure is about, and autoscaling re-scales on every navigation
 // so a block means a different number in each window. Pinned, the color means a
 // copy number: white is two copies, red a gain, blue a loss, the same in every
 // window.

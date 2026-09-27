@@ -164,11 +164,9 @@ export function getNiceDomain({
   }
 
   if (scaleType === 'log') {
-    // d3 scaleLog is undefined at values <= 0, so autoscale (esp. localsd) or
-    // data that crosses zero (e.g. log-ratio bigwigs) would otherwise yield a
-    // domain that produces NaN ticks and a blank plot. Floor the domain to a
-    // positive, non-degenerate range so the axis renders its valid portion
-    // instead of silently disappearing.
+    // d3 scaleLog is undefined at values <= 0, so data crossing zero (a
+    // log-ratio bigwig) would yield NaN ticks and a blank plot; floor the
+    // domain to a positive, non-degenerate range instead.
     if (min <= 0) {
       min = max > 1 ? 1 : max > 0 ? max / 100 : 1
     }
