@@ -148,6 +148,7 @@ function geneLane(hap: 'MAT' | 'PAT', extra: Record<string, unknown> = {}) {
     // the two panels read as the same speckle rather than as each other's
     // negative. The eight labelled genes are where that comparison is legible.
     color: STRAND_COLOR,
+    showLegend: false,
     ...extra,
   }
 }
@@ -202,9 +203,9 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
 // which is the inversion stated a third way, beside the crossing ribbons and the
 // reversed name order.
 //
-// The strand colors **Color by... -> Strand** paints (`STRAND_PALETTE` in
-// plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts), written as the
-// cookbook's jexl recipe so the lanes draw no key over the ribbons.
+// What **Color by... -> Strand** writes, forward tomato and reverse
+// cornflowerblue, with `showLegend: false` beside it so the lanes draw no key
+// over the ribbons.
 //
 // It replaced a hand-rolled `strand==1?'#1f77b4':'#d62728'` -- the cookbook's
 // blue-forward pair, which is the INVERSE of both the built-in and the synteny
@@ -212,8 +213,7 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
 // '#00f'). Blue therefore meant "forward" in the gene lanes and "inverted" in
 // the ribbons of the same frame, three inches apart. Now one vocabulary paints
 // the whole figure: red forward, blue reverse.
-const STRAND_COLOR =
-  "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
+const STRAND_COLOR = { field: 'strand' }
 
 function landmarkLane(hap: 'MAT' | 'PAT') {
   return {
@@ -222,6 +222,7 @@ function landmarkLane(hap: 'MAT' | 'PAT') {
     geneGlyphMode: 'longestCoding',
     jexlFiltersSetting: [LANDMARK_FILTER],
     color: STRAND_COLOR,
+    showLegend: false,
     height: 60,
   }
 }

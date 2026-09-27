@@ -1424,7 +1424,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // 1,446-1,474 kb) with a depth-5 flank on each side, under the pggb
   // graph-depth wiggle. Each lane colors its own GFF's island genes (feaR,
   // feaB, tynA, paaZ-paaY) red by name, so presence is red in a lane and
-  // absence is none: CFT073, Sakai and IAI39 annotate none of them.
+  // absence is none: CFT073, Sakai and IAI39 annotate none of them. The name
+  // test is the colour's `field`, so the key names the two classes.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_island_lanes',
@@ -1453,9 +1454,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 type: 'MultiWaySyntenyDisplay',
                 domain: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'],
                 height: 340,
-                color:
-                  "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? '#d62728' : 'goldenrod'",
-                showLegend: false,
+                color: {
+                  field:
+                    "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? 'island' : 'other'",
+                  domain: ['island', 'other'],
+                  range: ['#d62728', 'goldenrod'],
+                  labels: ['feaR, tynA, paa operon', 'other genes'],
+                  title: 'K-12 island genes',
+                },
               },
             ],
           },
@@ -1465,18 +1471,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     viewportHeight: 700,
-    annotations: [
-      {
-        type: 'text',
-        text: 'island genes in red: K-12 and NCTC86 only',
-        fontSize: 18,
-        anchor: {
-          track: 'ecoli_pggb_depth',
-          locus: 'chr:1,460,000',
-          fracY: 0.35,
-        },
-      },
-    ],
   },
 
   // The deep-time case: the human HOXD cluster over four vertebrate lanes

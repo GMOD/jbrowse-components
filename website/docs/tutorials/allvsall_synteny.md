@@ -292,7 +292,9 @@ walks through the same reading for gene names. With no gene names:
 
 The pggb graph-depth wiggle above the lanes comes from the
 [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory).
-A jexl `color` paints the island's genes red by name in every lane.
+The lanes' `color` sorts each gene into the island or not by its name, a jexl
+expression in `field`, and paints the island red in every lane with a key naming
+both:
 
 ```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 {
@@ -310,8 +312,13 @@ A jexl `color` paints the island's genes red by name in every lane.
             "type": "MultiWaySyntenyDisplay",
             "domain": ["NCTC86", "CFT073", "Sakai", "IAI39"],
             "height": 340,
-            "color": "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? '#d62728' : 'goldenrod'",
-            "showLegend": false
+            "color": {
+              "field": "jexl:feature.name && (startsWith(feature.name,'paa') || startsWith(feature.name,'fea') || feature.name == 'tynA') ? 'island' : 'other'",
+              "domain": ["island", "other"],
+              "range": ["#d62728", "goldenrod"],
+              "labels": ["feaR, tynA, paa operon", "other genes"],
+              "title": "K-12 island genes"
+            }
           }
         ]
       }
