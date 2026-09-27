@@ -1,6 +1,6 @@
 ---
 name: grammar-one-spelling
-description: "One spelling per grammar concept, Colin's call of 2026-09-27. The scale-ends rule, encoding.size and the filter rename (jexlFilters is filter, every entry jexl:) landed; the strand vocabulary folded into the colour presets and a list of other double spellings remain. Read before touching filter, FieldPresets, categoricalField's VOCABULARIES or a shorthand."
+description: "One spelling per grammar concept, Colin's call of 2026-09-27. The scale-ends rule, encoding.size, the filter rename (jexlFilters is filter, every entry jexl:) and strand's vocabulary as a universal colour preset landed; a list of other double spellings remains, unruled. Read before touching filter, FieldPresets, UNIVERSAL_FIELD_PRESETS or a shorthand."
 ---
 
 # Grammar: one spelling per concept
@@ -14,7 +14,7 @@ calls; two landed and two remain.
 ## Landed
 
 - **One rule for a scale's ends** — `scaleEndProblems` in
-  `packages/display-kit/src/colorScale.ts`, rules `domain-ends` and
+  `packages/core/src/util/colorScale.ts`, rules `domain-ends` and
   `domain-quantile` (were `ramp-*`), read by colour ramps, `encoding.size`,
   `scales.y` (`ScoreScaleMixin.valueScaleNotices`, the mark rule list) and
   `jbrowse validate`. `markProblems` takes the plot as one object.
@@ -27,6 +27,13 @@ calls; two landed and two remain.
   override `filterSetting`, action `setFilter`; v4's `jexlFilters` and
   `jexlFiltersSetting` lift and prefix. Edit as JSON and `jb.help` spell it the
   same. ADR-155 §"Amended 2026-09-27".
+- **Strand's vocabulary is a universal colour preset** —
+  `UNIVERSAL_FIELD_PRESETS` in `colorScale.ts`, which moved into core so
+  `categoricalField` reads the same statement (`VOCABULARIES` is gone).
+  `presetOf` consults it under each display's own table, so `labels` with no
+  `domain` pairs with strand's order on every display and the notice counts
+  three. A categorical preset's `range` and `labels` fill only while `domain`
+  is unwritten, so a written order keeps each strand its own colour.
 
 ## Remaining, in order
 
@@ -39,22 +46,15 @@ calls; two landed and two remain.
    jb2hubs (`hubtools/src/featureDisplay.ts`) and protein3d
    (`proteinTrackSetup.ts`) still write `jexlFilters`, which v5 lifts; jb2hubs
    must keep it for older releases.
-2. **Strand's vocabulary into the colour presets.** `VOCABULARIES` in
-   `packages/core/src/util/categoricalField.ts` and `FieldPresets` are two homes
-   for "a field's own values"; the validator cannot see the first, so
-   `color: { field: 'strand', labels: [...] }` with no `domain` names nothing and
-   warns, while `range` pairs with strand's order. Fold them: move
-   `colorScale.ts` into core (still import-free — `scripts/generateMarkRules.ts`
-   copies it), give `FieldPreset` a `missing`, make strand a universal preset,
-   and pair `labels` with the same order `range` takes. The one-line pairing fix
-   in `categoricalField` cannot ship alone: the notice would still count zero.
-3. **Other double spellings the arbiter listed**, unruled: `rowColor`'s bare
+2. **Other double spellings the arbiter listed**, unruled: `rowColor`'s bare
    string is a field where every colour object's is its constant, and its
    `scale: 'none'` paints nothing; `scales.y.type` against `scale` on colour,
    shape and size; `rows.labels` a map where colour's is a list; three row
    colours on the multi-row feature display (`rowColor`, `color.field`,
    `rowGroups[].color`); wiggle's `origin` doubling as the threshold cut; the
-   wiggle display's own `mark`/`size` beside the mark display's.
+   wiggle display's own `mark`/`size` beside the mark display's. Found this
+   round: the mark display's `activeFilters` is a getter where the canvas and
+   multi-sample variant displays' is a method.
 
 ## Traps met
 

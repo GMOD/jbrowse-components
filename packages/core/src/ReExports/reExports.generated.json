@@ -2729,6 +2729,26 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/colorScale": {
+      "package": "@jbrowse/core",
+      "names": [
+        "CATEGORICAL_FIELD_PRESETS",
+        "COLOR_SCALES",
+        "FEATURE_FIELD_PRESETS",
+        "IDENTITY_SCALE",
+        "UNIVERSAL_FIELD_PRESETS",
+        "colorNotices",
+        "colorProblems",
+        "fieldScaleOf",
+        "noticeLines",
+        "paintedScale",
+        "presetOf",
+        "scaleEndProblems",
+        "universalPresetOf",
+        "withPreset"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/colorSchemes": {
       "package": "@jbrowse/core",
       "names": [
@@ -3962,24 +3982,6 @@
         "paintedScale",
         "pairedColorsOf",
         "presetOf",
-        "withPreset"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/colorScale": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "CATEGORICAL_FIELD_PRESETS",
-        "COLOR_SCALES",
-        "FEATURE_FIELD_PRESETS",
-        "IDENTITY_SCALE",
-        "colorNotices",
-        "colorProblems",
-        "fieldScaleOf",
-        "noticeLines",
-        "paintedScale",
-        "presetOf",
-        "scaleEndProblems",
         "withPreset"
       ],
       "worker": "real"

@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { FieldPresets } from '@jbrowse/display-kit/colorScale'
+import type { FieldPresets } from '@jbrowse/core/util/colorScale'
 
 /** The two things a quantitative display's colour can map. */
 export const WIGGLE_COLOR_FIELDS = ['score', 'source'] as const

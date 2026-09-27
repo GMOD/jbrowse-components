@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+import { colorNotices } from '@jbrowse/core/util/colorScale'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
@@ -14,7 +15,6 @@ import {
   featureColorEncoding,
   identityKeyEntries,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices } from '@jbrowse/display-kit/colorScale'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
 import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'

@@ -89,3 +89,17 @@ test('labels name their keys in order, an empty or missing one keeping the own n
     }).label('x'),
   ).toBe('x')
 })
+
+test("strand's labels pair with strand's own order while no domain is written", () => {
+  const strand = categoricalField('strand', { labels: ['Plus', 'Minus'] })
+  expect(strand.label('1')).toBe('Plus')
+  expect(strand.label('-1')).toBe('Minus')
+  expect(strand.label('0')).toBe('No strand')
+})
+
+test('a written domain keeps each strand its own colour', () => {
+  const own = categoricalField('strand')
+  const reordered = categoricalField('strand', { domain: ['-1', '1'] })
+  expect(reordered.color('-1')).toBe(own.color('-1'))
+  expect(reordered.label('-1')).toBe('Reverse strand')
+})

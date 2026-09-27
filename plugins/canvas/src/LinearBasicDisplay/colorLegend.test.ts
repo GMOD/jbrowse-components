@@ -418,10 +418,21 @@ describe('derived color key', () => {
   })
 
   it('notices labels past the domain, which name nothing', () => {
-    const display = coloredDisplay({ field: 'strand' })
-    setConf(display, ['color', 'labels'], ['Plus', 'Minus'])
+    const display = coloredDisplay({ field: 'biotype' })
+    setConf(display, ['color', 'labels'], ['Coding', 'Long'])
     expect(display.notices).toEqual([
       expect.stringMatching(/^color\.labels: .*2 labels name 0 values/),
+    ])
+  })
+
+  it("pairs strand's labels with strand's own order, as its range does", () => {
+    const display = coloredDisplay({ field: 'strand' })
+    setConf(display, ['color', 'labels'], ['Plus', 'Minus'])
+    display.setRpcData(0, paintedData(['1', '-1'], noSection, 'strand'), ctgA)
+    expect(display.notices).toEqual([])
+    expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
+      'Plus',
+      'Minus',
     ])
   })
 

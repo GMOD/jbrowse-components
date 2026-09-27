@@ -4,8 +4,8 @@ import {
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
+import { noticeLines, scaleEndProblems } from '@jbrowse/core/util/colorScale'
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
-import { noticeLines, scaleEndProblems } from '@jbrowse/display-kit/colorScale'
 import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'

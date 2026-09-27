@@ -33,8 +33,8 @@ CNV demo can flip to whatever reads best, with a good legend.
    the jexl preset (`LinearVariantDisplay/presetColor.ts`) for `svType`.
    `impact` gets at most a lazy arm; it costs 10-58 µs a record and never
    goes in `toJSON`.
-2. **The class vocabulary moves into core's `VOCABULARIES`**
-   (`packages/core/src/util/categoricalField.ts`), closed and with no `missing`
+2. **The class vocabulary moves into core's `UNIVERSAL_FIELD_PRESETS`**
+   (`packages/core/src/util/colorScale.ts`), closed and with no `missing`
    key, so each display keeps its own no-value colour. The multi-sample cells
    then paint through the generic field path, and `assignSvTypeColors` with
    its `svTypeColors` RPC plumbing goes. The "Other / mixed" key row can list

@@ -1,11 +1,11 @@
-import { isCssColor } from '@jbrowse/core/util/cssColorParse'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import {
   COLOR_SCALES,
   FEATURE_FIELD_PRESETS,
   fieldScaleOf,
-} from '@jbrowse/display-kit/colorScale'
+} from '@jbrowse/core/util/colorScale'
+import { isCssColor } from '@jbrowse/core/util/cssColorParse'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 
 import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_MARK_TYPE, SIZE_SCALES } from './markVocabulary.ts'

@@ -1,5 +1,6 @@
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+import { colorNotices } from '@jbrowse/core/util/colorScale'
 import {
   thresholdCuts,
   thresholdLabels,
@@ -8,7 +9,6 @@ import {
   colorEncodingOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices } from '@jbrowse/display-kit/colorScale'
 
 import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
 import { MAPQ_UNAVAILABLE } from './util.ts'
@@ -24,9 +24,9 @@ import type {
   ReadColorBy,
   ReadColorSchemeType,
 } from './types.ts'
+import type { FieldPresets } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
-import type { FieldPresets } from '@jbrowse/display-kit/colorScale'
 
 export const ALIGNMENTS_COLOR_SCALES = [
   'none',

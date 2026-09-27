@@ -7,10 +7,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { paletteFromSpec } from '@jbrowse/core/ui/colors'
 import { categoricalField, keyNames } from '@jbrowse/core/util/categoricalField'
-import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import { thresholdField } from '@jbrowse/core/util/thresholdScale'
-import { types } from '@jbrowse/mobx-state-tree'
-
 import {
   CATEGORICAL_FIELD_PRESETS,
   FEATURE_FIELD_PRESETS,
@@ -18,10 +14,17 @@ import {
   fieldScaleOf,
   paintedScale,
   withPreset,
-} from './colorScale.ts'
+} from '@jbrowse/core/util/colorScale'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import { thresholdField } from '@jbrowse/core/util/thresholdScale'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import type { ColorScaleName, ColorSlots, FieldPresets } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  ColorScaleName,
+  ColorSlots,
+  FieldPresets,
+} from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
@@ -33,8 +36,12 @@ export {
   paintedScale,
   presetOf,
   withPreset,
-} from './colorScale.ts'
-export type { ColorScaleName, FieldPreset, FieldPresets } from './colorScale.ts'
+} from '@jbrowse/core/util/colorScale'
+export type {
+  ColorScaleName,
+  FieldPreset,
+  FieldPresets,
+} from '@jbrowse/core/util/colorScale'
 
 /** The scales of a colour object whose field takes a range colour per value. */
 export const CATEGORICAL_COLOR_SCALES = ['none', 'categorical'] as const

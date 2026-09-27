@@ -3,9 +3,9 @@ import {
   NO_CATEGORY_COLOR,
 } from '@jbrowse/core/util/color'
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+import { colorNotices } from '@jbrowse/core/util/colorScale'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices } from '@jbrowse/display-kit/colorScale'
 import { MAX_WIGGLE_CUTS } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'

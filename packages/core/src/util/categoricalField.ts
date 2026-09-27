@@ -1,5 +1,6 @@
 import { categoricalColorScale } from '../ui/colors.ts'
 import { NO_CATEGORY_COLOR } from './color/index.ts'
+import { universalPresetOf } from './colorScale.ts'
 import { groupKeyComparator, valueText } from './groupKeys.ts'
 
 /** #api */
@@ -11,30 +12,6 @@ export const STRAND_FIELD = 'strand'
  * says why a mark is grey rather than listing a blank value.
  */
 export const NO_VALUE_LABEL = '(no value)'
-
-interface Vocabulary {
-  /** The key a feature carrying no value files under. */
-  missing: string
-  domain: readonly string[]
-  range: readonly string[]
-  labels: Readonly<Record<string, string>>
-}
-
-// A field whose values have names, an order and colors of their own, so
-// every channel reading it agrees without a config saying so. Red forward and
-// blue reverse is the vocabulary the synteny ribbons paint too.
-const VOCABULARIES: Readonly<Record<string, Vocabulary>> = {
-  [STRAND_FIELD]: {
-    missing: '0',
-    domain: ['1', '-1', '0'],
-    range: ['tomato', 'cornflowerblue', 'goldenrod'],
-    labels: {
-      '1': 'Forward strand',
-      '-1': 'Reverse strand',
-      '0': 'No strand',
-    },
-  },
-}
 
 /**
  * #api
@@ -100,14 +77,17 @@ export function categoricalField(
     labels?: readonly string[]
   } = {},
 ): CategoricalField {
-  const vocabulary = VOCABULARIES[field]
+  // a field with a vocabulary of its own reads it on every channel, a facet's
+  // sections as well as a colour's key
+  const vocabulary = universalPresetOf(field)
   const order = domain.length > 0 ? domain : (vocabulary?.domain ?? [])
   const [paired, colors] =
     range.length > 0 || !vocabulary
       ? [order, range]
       : [vocabulary.domain, vocabulary.range]
-  const declared = keyNames(domain, labels)
-  const named = (key: string) => declared.get(key) ?? vocabulary?.labels[key]
+  const declared = keyNames(order, labels)
+  const own = vocabulary && keyNames(vocabulary.domain, vocabulary.labels)
+  const named = (key: string) => declared.get(key) ?? own?.get(key)
   let colorOf: ((key: string) => string) | undefined
   return {
     field,

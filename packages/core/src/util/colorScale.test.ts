@@ -31,6 +31,29 @@ test('a preset fills the members a config leaves unwritten, an empty list among 
   ).toMatchObject({ domain: ['0.5'], range: ['a', 'b', 'c'] })
 })
 
+test("strand's universal preset sits under every display's own table", () => {
+  expect(
+    withPreset({ field: 'strand', labels: ['Plus', 'Minus'] }, {}),
+  ).toEqual({
+    field: 'strand',
+    labels: ['Plus', 'Minus'],
+    domain: ['1', '-1', '0'],
+    range: ['tomato', 'cornflowerblue', 'goldenrod'],
+  })
+  expect(
+    colorProblems({ field: 'strand', labels: ['Plus', 'Minus'] }, {}),
+  ).toEqual([])
+  const own = { strand: { scale: 'categorical' } } as const
+  expect(withPreset({ field: 'strand' }, own)).toEqual({ field: 'strand' })
+})
+
+test("a written domain takes none of a categorical preset's range or labels", () => {
+  expect(withPreset({ field: 'strand', domain: ['-1', '1'] }, {})).toEqual({
+    field: 'strand',
+    domain: ['-1', '1'],
+  })
+})
+
 test('a preset stays out of a colour painting through another scale, or none', () => {
   const linear = { field: 'ld', scale: 'linear', domain: [] }
   expect(withPreset(linear, LD)).toBe(linear)
