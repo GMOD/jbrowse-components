@@ -408,8 +408,8 @@ importers:
         specifier: workspace:^
         version: link:../add-track-core
       '@jbrowse/jexl':
-        specifier: ^5.0.2
-        version: 5.0.2
+        specifier: ^6.0.0
+        version: 6.0.0
       '@jbrowse/mobx-state-tree':
         specifier: ^6.6.1
         version: 6.6.1(mobx@7.0.5)
@@ -4920,8 +4920,8 @@ packages:
     resolution: {integrity: sha512-+Sg6GCR/wy1oSmQDFq4LQDAhm3ETKnorxN+y5nbLULOR3P0c14f2Wurzj3/xqPXtasLFfHd5iRFQ7AJt4KH2cw==}
     engines: {node: '>=8'}
 
-  '@jbrowse/jexl@5.0.2':
-    resolution: {integrity: sha512-csdUcqdwExcK0nBPmHVk7CTeLzHnv9oenkM86y53gu+tYx11n/nCuPzugfbEjIshuYc8sD51oA9/D43yWKht5g==}
+  '@jbrowse/jexl@6.0.0':
+    resolution: {integrity: sha512-xa7FmaP6bKX6Ij5Umq8fRVIJaHAh+T7t1cGnrBkSjzcxLfL6RK1itPIpEFc8+scz/AoQ87Q7jDiTfffDsyXHxg==}
 
   '@jbrowse/mobx-state-tree@6.6.1':
     resolution: {integrity: sha512-RJt59l6RxoydITi5OWLNdO6hw1IIBZP4RsAkvR7ShRA9KgvRaspchRpA4OyjiYcariF5v3DuK1kytB0SvQK6RA==}
@@ -13244,7 +13244,7 @@ snapshots:
 
   '@istanbuljs/schema@0.1.6': {}
 
-  '@jbrowse/jexl@5.0.2': {}
+  '@jbrowse/jexl@6.0.0': {}
 
   '@jbrowse/mobx-state-tree@6.6.1(mobx@7.0.5)':
     dependencies:
