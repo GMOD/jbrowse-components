@@ -1,7 +1,8 @@
-import { getFillProps } from '@jbrowse/core/util'
-import { bandInk, bandPalette } from '@jbrowse/synteny-core'
+import { SvgHaloText } from '@jbrowse/display-ui'
+import { bandGroundColor, bandInk, bandPalette } from '@jbrowse/synteny-core'
 
 import { LABEL_FONT_SIZE } from '../laneHeader.ts'
+import { GENE_LABEL_HALO_PX } from '../laneLabels.ts'
 
 import type { LaneHeaderRow } from '../laneHeader.ts'
 
@@ -16,32 +17,35 @@ import type { LaneHeaderRow } from '../laneHeader.ts'
 export function SvgLaneHeaders({
   rows,
   width,
+  fontFamily,
 }: {
   rows: LaneHeaderRow[]
   width: number
+  fontFamily: string
 }) {
+  const text = {
+    fontSize: LABEL_FONT_SIZE,
+    fontFamily,
+    halo: bandGroundColor(),
+    haloWidth: GENE_LABEL_HALO_PX * 2,
+  }
   return (
     <>
       {rows.map(row => (
         <g key={`header-${row.assemblyName}`}>
-          <text
-            x={2}
-            y={row.y}
-            fontSize={LABEL_FONT_SIZE}
-            {...getFillProps(bandInk().text)}
-          >
+          <SvgHaloText {...text} x={2} y={row.y} fill={bandInk().text}>
             {row.label}
-          </text>
+          </SvgHaloText>
           {row.scale ? (
-            <text
+            <SvgHaloText
+              {...text}
               x={width - 2}
               y={row.y}
-              fontSize={LABEL_FONT_SIZE}
-              textAnchor="end"
-              {...getFillProps(bandPalette.text.secondary)}
+              anchor="end"
+              fill={bandPalette.text.secondary}
             >
               {row.scale}
-            </text>
+            </SvgHaloText>
           ) : null}
         </g>
       ))}

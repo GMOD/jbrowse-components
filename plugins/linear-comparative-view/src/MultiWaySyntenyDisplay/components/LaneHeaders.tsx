@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { mergeDomain } from '@jbrowse/display-kit/groupByMenu'
-import { bandInk, bandPalette } from '@jbrowse/synteny-core'
+import { textHalo } from '@jbrowse/display-ui'
+import { bandGroundColor, bandInk, bandPalette } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
@@ -175,6 +176,7 @@ const LaneHeaders = observer(function LaneHeaders({
             alignItems: 'center',
             gap: 4,
             whiteSpace: 'nowrap',
+            textShadow: textHalo(bandGroundColor()),
           }}
         >
           <span

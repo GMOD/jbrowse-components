@@ -1,6 +1,8 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { SvgThemeProviders } from '@jbrowse/core/svg/SvgThemeProviders'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { withFreshSvgClipIds } from '@jbrowse/core/util/SvgCanvas'
+import { bandGroundColor, bandInk } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 import { renderToString } from 'react-dom/server'
 
@@ -134,4 +136,50 @@ test('the export prints the lane names, and none with names off', async () => {
   expect(renderToString(<svg>{await display.renderSvg()}</svg>)).not.toContain(
     'galF_mate',
   )
+})
+
+// The band keeps a light ground in every theme, so text on it takes the band's
+// ink and a band-ground halo where it crosses a ribbon end, whatever the
+// export's theme says text and paper are.
+test('the export draws lane headers and names in band ink over a band-ground halo, in a dark theme too', async () => {
+  const display = createDisplay()
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'r1',
+      name: 'galF',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 200,
+        name: 'galF_mate',
+      },
+    }),
+  ])
+  await when(() => display.svgReady, { timeout: 5000 })
+  display.setShowLegend(false)
+  const node = await display.renderSvg()
+  const svg = renderToString(
+    <SvgThemeProviders theme={{ palette: { mode: 'dark' } }}>
+      <svg>{node}</svg>
+    </SvgThemeProviders>,
+  )
+  const drawn = (text: string) =>
+    [...svg.matchAll(/<text([^>]*)>([^<]*)<\/text>/g)]
+      .filter(([, , body]) => body!.startsWith(text))
+      .map(([, attrs]) => ({
+        stroke: /stroke="([^"]*)"/.exec(attrs!)?.[1],
+        fill: /fill="([^"]*)"/.exec(attrs!)?.[1],
+      }))
+  for (const text of ['volvox_random', 'galF_mate']) {
+    expect(drawn(text)).toEqual([
+      { stroke: bandGroundColor(), fill: undefined },
+      { stroke: undefined, fill: bandInk().text },
+    ])
+  }
 })

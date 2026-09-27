@@ -66,7 +66,11 @@ function MultiWaySvgBody({
         }}
       />
       <g transform={`translate(0 ${-model.scrollTop})`}>
-        <SvgLaneHeaders rows={model.laneHeaderRows} width={canvasWidth} />
+        <SvgLaneHeaders
+          rows={model.laneHeaderRows}
+          width={canvasWidth}
+          fontFamily={fontFamily}
+        />
         {model.laneGeneLabels(fontFamily, new Set(), canvasWidth).map(label => (
           <SvgHaloText
             key={label.key}
