@@ -1660,6 +1660,40 @@ describe('a shorthand naming a number slot', () => {
   })
 })
 
+describe('a shorthand naming a number slot and a string slot', () => {
+  const Size = ConfigurationSchema(
+    'ShorthandSize',
+    {
+      value: { type: 'maybeNumber' },
+      field: { type: 'string', defaultValue: '' },
+    },
+    { shorthand: ['value', 'field'], closed: true },
+  )
+
+  test('lifts each bare form into the slot taking it', () => {
+    expect(getSnapshot(Size.create(3 as never))).toEqual({ value: 3 })
+    expect(getSnapshot(Size.create('score' as never))).toEqual({
+      field: 'score',
+    })
+    expect(preProcessConfigSnapshot(Size, 3)).toEqual({ value: 3 })
+  })
+
+  test('refuses two slots taking one bare form', () => {
+    expect(() =>
+      ConfigurationSchema(
+        'TwoStrings',
+        {
+          value: { type: 'string', defaultValue: '' },
+          field: { type: 'string', defaultValue: '' },
+        },
+        { shorthand: ['value', 'field'] },
+      ),
+    ).toThrow(
+      "TwoStrings's shorthand names value and field, which take the same bare form",
+    )
+  })
+})
+
 describe('a shorthand with companion slots', () => {
   const Color = ConfigurationSchema(
     'ShorthandWithColor',

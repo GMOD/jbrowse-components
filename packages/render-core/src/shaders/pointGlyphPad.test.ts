@@ -124,7 +124,7 @@ function sdfUnitPx(radiusPx: number, glyphScale = 1) {
   return radiusPx * glyphScale
 }
 
-// Sub-pixel radii are reachable: `marks.size` is an unfloored config number and
+// Sub-pixel radii are reachable: `encoding.size` is an unfloored config number and
 // pointMark.slang routes only GLYPH_DISC to the crisp-square fallback, so a
 // 0.8 px diamond or triangle arrives here at radius 0.4.
 const RADII_PX = [0.1, 0.4, 0.5, 1, 1.5, 4, 10]

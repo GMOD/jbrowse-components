@@ -1821,9 +1821,9 @@
           "marks": [
             {
               "mark": "link",
-              "size": 2,
               "encoding": {
-                "color": "#a65628"
+                "color": "#a65628",
+                "size": 2
               },
               "transform": [{ "type": "mate" }]
             }
@@ -2115,9 +2115,9 @@
           "marks": [
             {
               "mark": "link",
-              "size": 2,
               "encoding": {
-                "color": "#8b1a1a"
+                "color": "#8b1a1a",
+                "size": 2
               },
               "transform": [{ "type": "mate" }]
             }

@@ -1154,7 +1154,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           height: FST_LANE_H,
           // a rule across each of a hundred windows, 6 px thick rather than
           // 9: at 9 they merge into a band and the sweep stops having edges
-          marks: [{ mark: 'rule', encoding: { y: 'score' }, size: 6 }],
+          marks: [{ mark: 'rule', encoding: { y: 'score', size: 6 } }],
           ...FST_AXIS,
         },
       ],

@@ -37,7 +37,7 @@ export interface SchemaMetadata {
   options: {
     explicitlyTyped?: boolean
     explicitIdentifier?: string
-    shorthand?: string
+    shorthand?: string | readonly string[]
     closed?: boolean
     shorthandWith?: Record<string, unknown>
     preProcessSnapshot?: (snap: unknown) => unknown
@@ -120,8 +120,10 @@ export interface Deps {
   unionOf: (
     type: MstType,
   ) => { name: string; members: Record<string, MstType> } | undefined
-  /** The bare value a schema's `shorthand` lifts, as the config reader decides it. */
-  shorthandFormOf: (meta: SchemaMetadata) => 'string' | 'number' | undefined
+  /** The slot each bare form a schema's `shorthand` lifts into, as the config reader decides it. */
+  shorthandTargetsOf: (
+    meta: SchemaMetadata,
+  ) => Partial<Record<'string' | 'number', string>>
   /** The CSS named colors, as the painters' table spells them. */
   cssColorNames: readonly string[]
   isType: (thing: unknown) => boolean
@@ -607,7 +609,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       }
     }
     return {
-      bare: deps.shorthandFormOf(meta),
+      targets: deps.shorthandTargetsOf(meta),
       uri: lifts({ uri: 'probe' }),
     }
   }
@@ -637,8 +639,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   // A slot names a value when it holds a non-empty string, or the object its
   // string shorthand lifts into with that target slot non-empty.
   function namesAValue(sub: SchemaMetadata | undefined): JsonSchema {
-    const target =
-      sub && liftedForms(sub).bare === 'string' ? stringTarget(sub) : undefined
+    const target = sub && liftedForms(sub).targets.string
     return target
       ? {
           anyOf: [
@@ -760,22 +761,18 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       ...requirements(meta),
       ...(meta.options.closed ? { [CLOSED]: true } : {}),
     })
-    const target = slots[stringTarget(meta)]
     const base = defName ?? name
     // titled as its def is, since a key the object refuses is reported
     // against this branch rather than the union
-    const schema = forms.bare
-      ? {
-          anyOf: [
-            {
-              ...target,
-              type: forms.bare,
-              description: `Shorthand for \`{ "${stringTarget(meta)}": ...${companionText(meta)} }\`.`,
-            },
-            { title: base, ...object },
-          ],
-        }
-      : object
+    const bare = Object.entries(forms.targets).map(([form, slot]) => ({
+      ...slots[slot],
+      type: form,
+      description: `Shorthand for \`{ "${slot}": ...${companionText(meta)} }\`.`,
+    }))
+    const schema =
+      bare.length > 0
+        ? { anyOf: [...bare, { title: base, ...object }] }
+        : object
     const content = `${base}:${JSON.stringify(schema)}`
     let shared = sharedByContent.get(content)
     if (!shared) {
@@ -820,10 +817,6 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     return Object.entries(meta.options.shorthandWith ?? {})
       .map(([slot, value]) => `, "${slot}": ${JSON.stringify(value)}`)
       .join('')
-  }
-
-  function stringTarget(meta: SchemaMetadata) {
-    return meta.options.shorthand ?? 'value'
   }
 
   const LEGACY: JsonSchema = {

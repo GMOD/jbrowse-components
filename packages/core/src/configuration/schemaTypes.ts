@@ -21,6 +21,7 @@ import {
 } from './schemaRegistry.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
+import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -104,4 +105,56 @@ export function isConfigurationModel(
   thing: unknown,
 ): thing is AnyConfigurationModel {
   return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
+}
+
+const NUMBER_SLOT_TYPES = new Set(['number', 'integer', 'maybeNumber'])
+
+/** A bare value a schema's `shorthand` lifts. */
+export type ShorthandForm = 'string' | 'number'
+
+/**
+ * The slot a bare value of each form lifts into, off a `shorthand` option:
+ * each slot it names takes the form its own type holds, a number where it
+ * holds one (`rules: [7.3]`) and a string otherwise (`color: 'red'`), so a
+ * width naming `value` and `field` reads `size: 3` as the one and
+ * `size: 'score'` as the other.
+ */
+export function shorthandTargetsOf(
+  definition: Record<string, unknown>,
+  shorthand: string | readonly string[] | undefined,
+): Partial<Record<ShorthandForm, string>> {
+  const slots =
+    shorthand === undefined
+      ? []
+      : typeof shorthand === 'string'
+        ? [shorthand]
+        : shorthand
+  return Object.fromEntries(
+    slots.map(slot => {
+      const entry = definition[slot]
+      return [
+        isSlotDefinitionEntry(entry) && NUMBER_SLOT_TYPES.has(entry.type)
+          ? 'number'
+          : 'string',
+        slot,
+      ]
+    }),
+  )
+}
+
+/** The shorthand form of a bare value, or undefined for any other value. */
+export function bareFormOf(value: unknown): ShorthandForm | undefined {
+  return typeof value === 'string'
+    ? 'string'
+    : typeof value === 'number'
+      ? 'number'
+      : undefined
+}
+
+/** {@link shorthandTargetsOf} a registered schema. */
+export function shorthandTargets({
+  definition,
+  options,
+}: ConfigurationSchemaMetadata) {
+  return shorthandTargetsOf(definition, options.shorthand)
 }

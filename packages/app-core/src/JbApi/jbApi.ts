@@ -8,6 +8,7 @@ import {
   getConfigurationSchemaMetadata,
   isSlotDefinitionEntry,
   readConfObject,
+  shorthandTargets,
 } from '@jbrowse/core/configuration'
 import {
   releaseAdapterSession,
@@ -57,7 +58,10 @@ import {
 
 import type { ViewSpec } from '../SessionSpec/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  ShorthandForm,
+} from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import type {
   AbstractSessionModel,
@@ -1341,9 +1345,9 @@ interface SlotDescription {
   type: string
   description?: string
   defaultValue?: unknown
-  /** a nested object's own slots, and the slot its string shorthand lifts into */
+  /** a nested object's own slots, and the slot a bare string or number lifts into */
   slots?: Record<string, SlotDescription>
-  shorthand?: string
+  shorthand?: Partial<Record<ShorthandForm, string>>
   /** a list's entry: one object's slots, or under `oneOf` each `type` a union list takes */
   items?: SlotDescription
   oneOf?: Record<string, SlotDescription>
@@ -1352,11 +1356,11 @@ interface SlotDescription {
 function describeSchema(type: mst.IAnyType): SlotDescription | undefined {
   const meta = getConfigurationSchemaMetadata(type)
   if (meta) {
-    const { shorthand } = meta.options
+    const shorthand = shorthandTargets(meta)
     return {
       type: meta.name,
       slots: describeSlots(type),
-      ...(shorthand ? { shorthand } : {}),
+      ...(Object.keys(shorthand).length > 0 ? { shorthand } : {}),
     }
   }
   const bare = mst.unwrapType(type)

@@ -205,14 +205,20 @@ test('a text mark cannot draw the density sidecar, and an open ramp on it is nam
   ).toEqual([expect.stringMatching(/^a text's ramp resolves an open end/)])
 })
 
-test('a size on a mark that draws no shape waits unread', () => {
-  expect(found([{ mark: 'span', size: 8 }])).toEqual([
-    'warning unread-size mark 0 size',
+test('a size on a mark that draws no shape waits unread, and a point or a rule reads a number alone', () => {
+  expect(found([{ mark: 'span', encoding: { size: 8 } }])).toEqual([
+    'warning unread-size mark 0 encoding.size',
   ])
-  expect(found([{ mark: 'point', size: 8, encoding: { y: 'score' } }])).toEqual(
+  expect(found([{ mark: 'point', encoding: { y: 'score', size: 8 } }])).toEqual(
     [],
   )
-  expect(found([{ mark: 'link', size: 3 }])).toEqual([])
+  expect(found([{ mark: 'link', encoding: { size: 3 } }])).toEqual([])
+  expect(
+    found([{ mark: 'rule', encoding: { y: 'score', size: 'score' } }]),
+  ).toEqual(['warning unread-channel mark 0 encoding.size.field'])
+  expect(
+    found([{ mark: 'link', encoding: { size: { value: 3, field: 'score' } } }]),
+  ).toEqual([])
 })
 
 test('a linkShape on a mark that draws no link waits unread', () => {

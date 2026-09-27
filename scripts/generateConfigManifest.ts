@@ -75,7 +75,7 @@ import { JBrowseConfigF } from '@jbrowse/app-core'
 import {
   getConfigurationSchemaMetadata,
   getConfigurationSchemaUnion,
-  shorthandForm,
+  shorthandTargets,
 } from '@jbrowse/core/configuration'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { CSS_COLOR_NAMES } from '@jbrowse/core/util/color'
@@ -138,9 +138,11 @@ function slotsOf(type) {
   return Object.entries(model.properties).map(([name, prop]) => {
     const sub = isSubSchema(prop)
     const lifts = meta ? slotLifts(meta, name) : {}
-    const subOptions = sub
-      ? getConfigurationSchemaMetadata(modelOf(prop))?.options
+    const subMeta = sub
+      ? getConfigurationSchemaMetadata(modelOf(prop))
       : undefined
+    const subOptions = subMeta?.options
+    const targets = subMeta ? shorthandTargets(subMeta) : {}
     return {
       name,
       // MST's own name for the slot type. Verbose for unions, but it is the real
@@ -150,9 +152,10 @@ function slotsOf(type) {
       // track.displays[]); the validator recurses into these.
       subSlots: sub ? slotsOf(prop) : undefined,
       // What the schema lifts on the way in, which the validator applies to a
-      // file before its rules read it: a bare string into a sub-schema's
-      // shorthand slot or into a list of one, and numbers carried as strings.
-      shorthand: subOptions?.shorthand,
+      // file before its rules read it: a bare string or number into the
+      // sub-schema's shorthand slot taking it or a string into a list of one,
+      // and numbers carried as strings.
+      shorthand: Object.keys(targets).length > 0 ? targets : undefined,
       // a colour object's defaults by field, which the validator's colour
       // rules read the object with
       fieldPresets: subOptions?.fieldPresets,
@@ -611,7 +614,7 @@ const schema = buildConfigJsonSchema({
   },
   metadataOf: getConfigurationSchemaMetadata,
   unionOf: getConfigurationSchemaUnion,
-  shorthandFormOf: shorthandForm,
+  shorthandTargetsOf: shorthandTargets,
   cssColorNames: CSS_COLOR_NAMES,
   isType,
   isArrayType,

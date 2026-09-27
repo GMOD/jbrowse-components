@@ -135,8 +135,8 @@ describe('a marks list in a config file', () => {
         { mark: 'bar', encoding: { y: 'score', shape: 'triangle-down' } },
       ]),
     ).toEqual([`warning unread-channel ${DISPLAY}.marks[0].encoding.shape`])
-    expect(found([{ mark: 'span', size: 8 }])).toEqual([
-      `warning unread-size ${DISPLAY}.marks[0].size`,
+    expect(found([{ mark: 'span', encoding: { size: 8 } }])).toEqual([
+      `warning unread-size ${DISPLAY}.marks[0].encoding.size`,
     ])
     expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
       `warning unread-link-shape ${DISPLAY}.marks[0].linkShape`,
@@ -146,8 +146,10 @@ describe('a marks list in a config file', () => {
         {
           mark: 'link',
           linkShape: 'arc',
-          size: 3,
-          encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+          encoding: {
+            x2: { chrom: 'mate.refName', pos: 'mate.start' },
+            size: 3,
+          },
         },
       ]),
     ).toEqual([])

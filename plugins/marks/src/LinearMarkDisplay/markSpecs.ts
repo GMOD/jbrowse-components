@@ -36,6 +36,12 @@ export interface MarkSpec {
    * lane naming which.
    */
   readonly farFoot?: boolean
+  /**
+   * What `encoding.size` is to the mark: `constant` reads its number alone,
+   * a point's diameter or a rule's thickness; `channel` reads a field too,
+   * through the `size` lane. Absent, the mark draws no size.
+   */
+  readonly size?: 'constant' | 'channel'
 }
 
 /**
@@ -60,12 +66,14 @@ export const MARK_SPECS = {
     value: 'required',
     ramp: 'display',
     hit: true,
+    size: 'constant',
   },
   rule: {
     channels: ['y', 'row', 'color'],
     value: 'required',
     ramp: 'display',
     hit: true,
+    size: 'constant',
   },
   span: {
     channels: ['row', 'color'],
@@ -85,6 +93,7 @@ export const MARK_SPECS = {
     ramp: 'display',
     hit: true,
     farFoot: true,
+    size: 'channel',
   },
 } as const satisfies Record<MarkType, MarkSpec>
 

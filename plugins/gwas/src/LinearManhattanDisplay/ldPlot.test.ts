@@ -209,7 +209,7 @@ test.each([
 test('LD colouring leaves every other mark and member where it was', () => {
   const { display } = createTestEnvironment({
     marks: [
-      { mark: 'point', size: 6, encoding: { y: 'score', color: 'green' } },
+      { mark: 'point', encoding: { y: 'score', color: 'green', size: 6 } },
       {
         mark: 'text',
         transform: [{ type: 'filter', expr: 'jexl:feature.score > 8' }],
@@ -219,12 +219,13 @@ test('LD colouring leaves every other mark and member where it was', () => {
   display.setLdColoring(true)
   const [partners, index, labels] = marksOf(display)
   expect(partners).toMatchObject({
-    size: 6,
-    encoding: { color: { value: 'green', field: 'ld', scale: 'threshold' } },
+    encoding: {
+      color: { value: 'green', field: 'ld', scale: 'threshold' },
+      size: { value: 6 },
+    },
   })
   expect(index).toMatchObject({
-    size: 6,
-    encoding: { color: { value: LD_INDEX_COLOR } },
+    encoding: { color: { value: LD_INDEX_COLOR }, size: { value: 6 } },
   })
   expect(labels).toMatchObject({ mark: 'text' })
   expect(display.encodings[0]?.color).toMatchObject({ field: 'ld' })
@@ -234,8 +235,7 @@ test('LD colouring leaves every other mark and member where it was', () => {
   expect(marksOf(display)).toEqual([
     {
       mark: 'point',
-      size: 9,
-      encoding: { y: 'score', color: { value: 'green' } },
+      encoding: { y: 'score', color: { value: 'green' }, size: { value: 9 } },
     },
     {
       mark: 'text',
@@ -248,7 +248,11 @@ test('every index twin draws after the last partner, so the index is over every 
   const { display } = createTestEnvironment({
     marks: [
       { ...MANHATTAN_MARK, maxBpPerPx: 1000 },
-      { ...MANHATTAN_MARK, minBpPerPx: 1000, size: 2 },
+      {
+        ...MANHATTAN_MARK,
+        minBpPerPx: 1000,
+        encoding: { ...MANHATTAN_MARK.encoding, size: 2 },
+      },
     ],
   }).createDisplay()
   display.setLdColoring(true)

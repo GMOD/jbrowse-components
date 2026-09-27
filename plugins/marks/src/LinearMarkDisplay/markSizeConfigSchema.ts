@@ -6,12 +6,16 @@ import { SIZE_SCALES } from './markVocabulary.ts'
 /**
  * #config MarkSize
  * #category display
- * A link mark's stroke width as a channel: a feature field read through a
- * linear or log scale into a px range, so a score becomes a width the way a
- * ramp makes it a colour. Writing a field name directly on the encoding lands
- * in `field`, on a linear scale over the default range.
+ * A mark's size in px, as `color` is its colour: a point's diameter, a rule's
+ * thickness or a link's stroke. A number is the constant every instance
+ * takes, and lands in `value`; a string is a feature field, and lands in
+ * `field`, which a link reads through a linear or log scale into a px range,
+ * so a score becomes a width the way a ramp makes it a colour.
  *
  * #example
+ * ```js
+ * { mark: 'point', encoding: { y: 'score', size: 7 } }
+ * ```
  * ```js
  * {
  *   mark: 'link',
@@ -23,9 +27,20 @@ export const markSizeSchema = ConfigurationSchema(
   'MarkSize',
   {
     /**
+     * #slot value
+     * The px every instance takes: a point's diameter, a rule's thickness, a
+     * link's stroke where it reads no `field`. Unset is the mark's own, 4 for
+     * a point or a rule and 2 for a link. Writing `size: 7` lands here.
+     */
+    value: {
+      type: 'maybeNumber',
+      description: "px for every instance; unset is the mark's own",
+    },
+    /**
      * #slot field
-     * The feature field the width reads, or a jexl expression over
-     * `feature`. Empty draws every instance at the mark's own `size`.
+     * The feature field a link's width reads, or a jexl expression over
+     * `feature`. Empty draws every instance at `value`. Writing
+     * `size: "score"` lands here.
      */
     field: {
       type: 'featureField',
@@ -72,7 +87,7 @@ export const markSizeSchema = ConfigurationSchema(
     },
   },
   {
-    shorthand: 'field',
+    shorthand: ['value', 'field'],
     closed: true,
     // A range is written as numbers, the px it names; the slot holds them as
     // strings the way a threshold domain holds its cuts.

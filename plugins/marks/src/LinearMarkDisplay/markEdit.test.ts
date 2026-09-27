@@ -32,10 +32,11 @@ describe('editChannels', () => {
     expect(editChannels('bar')).toContain('y')
   })
 
-  it('offers a point its shape and a link its size, and neither the other', () => {
+  it('offers a point its shape and a link its size field, and a point its size number', () => {
     expect(editChannels('point')).toContain('shape')
-    expect(editChannels('point')).not.toContain('size')
+    expect(editChannels('point')).toContain('size')
     expect(editChannels('link')).toContain('size')
+    expect(editChannels('bar')).not.toContain('size')
     expect(editChannels('link')).not.toContain('shape')
   })
 })
@@ -212,6 +213,18 @@ describe('withChannel', () => {
     expect(
       withChannel({ mark: 'link' }, 'size', 'count', FIELDS).encoding,
     ).toEqual({ size: 'count' })
+  })
+
+  it('reads and writes a size typed as a number as the constant px', () => {
+    const point = withChannel({ mark: 'point' }, 'size', '7', FIELDS)
+    expect(point.encoding).toEqual({ size: 7 })
+    expect(channelEdit(point, 'size')).toEqual({ value: '7', beyond: false })
+    expect(
+      channelEdit(
+        { mark: 'link', encoding: { size: { value: 3, field: 'score' } } },
+        'size',
+      ),
+    ).toEqual({ value: 'score', beyond: false })
   })
 
   it('clears the channel on an empty value', () => {

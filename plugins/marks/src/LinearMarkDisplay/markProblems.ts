@@ -22,6 +22,7 @@ import {
 import { stepChannels } from './stepChannels.ts'
 
 import type { ColorSlots, ScaleEnds } from './markRuleFacts.ts'
+import type { MarkSpec } from './markSpecs.ts'
 import type {
   AggregateOpName,
   LinkShape,
@@ -44,9 +45,9 @@ export type MarkProblemLevel = 'error' | 'warning'
 export const MARK_RULES = {
   /** A bar, point or rule naming no `y`, with no step before it writing one it reads by default. */
   'mark-without-value': 'error',
-  /** A channel the mark's type does not read, such as `y` on a `span`. */
+  /** A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. */
   'unread-channel': 'warning',
-  /** A `size` on a mark that draws no point or rule and strokes no link. */
+  /** An `encoding.size` on a mark that draws no point or rule and strokes no link. */
   'unread-size': 'warning',
   /** A `linkShape` on a mark that draws no link. */
   'unread-link-shape': 'warning',
@@ -160,7 +161,6 @@ export interface ScalesSnapshot {
  */
 export type MarkSnapshot = {
   mark?: MarkType
-  size?: number
   linkShape?: LinkShape
   source?: MarkSourceName
   minBpPerPx?: number
@@ -173,7 +173,7 @@ export type MarkSnapshot = {
     color?: ColorSlots
     shape?: unknown
     text?: string
-    size?: string | ({ field?: string } & ScaleEnds)
+    size?: number | string | ({ value?: number; field?: string } & ScaleEnds)
   }
   transform?: StepSnapshot[]
 }
@@ -201,6 +201,16 @@ function rampColor(mark: MarkSnapshot) {
   const color = mark.encoding?.color ?? {}
   const painted = colorScaleOf(color)
   return painted === 'linear' || painted === 'log' ? color : undefined
+}
+
+type SizeSnapshot = NonNullable<NonNullable<MarkSnapshot['encoding']>['size']>
+
+function sizeFieldOf(size: SizeSnapshot | undefined) {
+  return typeof size === 'string'
+    ? size
+    : typeof size === 'object'
+      ? (size.field ?? '')
+      : ''
 }
 
 // A shape's labels name its domain values in order, as a colour's do, and a
@@ -467,7 +477,8 @@ function ownProblems(
       ),
     )
   }
-  const channels = new Set<string>(['x', 'x2', ...MARK_SPECS[type].channels])
+  const spec: MarkSpec = MARK_SPECS[type]
+  const channels = new Set<string>(['x', 'x2', 'size', ...spec.channels])
   for (const channel of Object.keys(mark.encoding ?? {})) {
     if (!channels.has(channel)) {
       problems.push(
@@ -479,17 +490,21 @@ function ownProblems(
       )
     }
   }
-  if (
-    mark.size !== undefined &&
-    type !== 'point' &&
-    type !== 'rule' &&
-    type !== 'link'
-  ) {
+  const size = mark.encoding?.size
+  if (size !== undefined && spec.size === undefined) {
     problems.push(
       found(
         'unread-size',
-        'size',
+        'encoding.size',
         `a ${type} draws no point or rule and strokes no link, so it reads no size`,
+      ),
+    )
+  } else if (spec.size === 'constant' && sizeFieldOf(size)) {
+    problems.push(
+      found(
+        'unread-channel',
+        'encoding.size.field',
+        `a ${type} reads its size as a number, and only a link maps a field to it`,
       ),
     )
   }
@@ -531,7 +546,6 @@ function ownProblems(
     )
   }
   problems.push(...shapeLabelProblems(mark.encoding?.shape))
-  const size = mark.encoding?.size
   if (typeof size === 'object') {
     for (const { rule, slot, message } of scaleEndProblems(size)) {
       problems.push(found(rule, `encoding.size.${slot}`, message))

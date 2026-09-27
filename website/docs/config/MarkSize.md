@@ -9,6 +9,10 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ## Example usage
 
 ```js
+{ mark: 'point', encoding: { y: 'score', size: 7 } }
+```
+
+```js
 {
   mark: 'link',
   encoding: { size: { field: 'score', scale: 'log', range: [1, 8] } },
@@ -17,10 +21,11 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-A link mark's stroke width as a channel: a feature field read through a
-linear or log scale into a px range, so a score becomes a width the way a
-ramp makes it a colour. Writing a field name directly on the encoding lands
-in `field`, on a linear scale over the default range.
+A mark's size in px, as `color` is its colour: a point's diameter, a rule's
+thickness or a link's stroke. A number is the constant every instance
+takes, and lands in `value`; a string is a feature field, and lands in
+`field`, which a link reads through a linear or log scale into a px range,
+so a score becomes a width the way a ramp makes it a colour.
 
 ## Config slots
 
@@ -29,7 +34,8 @@ These slots go on a display entry: `"displays": [{ "type": "MarkSize", ... }]`, 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field the width reads, or a jexl expression over `feature`. Empty draws every instance at the mark's own `size`. |
+| <span id="slot-value">**value**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The px every instance takes: a point's diameter, a rule's thickness, a link's stroke where it reads no `field`. Unset is the mark's own, 4 for a point or a rule and 2 for a link. Writing `size: 7` lands here. |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field a link's width reads, or a jexl expression over `feature`. Empty draws every instance at `value`. Writing `size: "score"` lands here. |
 | <span id="slot-scale">**scale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log) = <code>'linear'</code> | How the value becomes a width: `linear` or `log` between `domainMin` and `domainMax`. |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The value the thinnest width stands at; unset, the loaded regions' own least. |
 | <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The value the widest width stands at; unset, the loaded regions' own greatest. |

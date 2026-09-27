@@ -157,9 +157,9 @@ types**), and its point mark chooses what it reads:
   take, in the key and in the colors: the values it lists come first, in that
   order, and the rest follow sorted, and `range` hands them colors.
 
-The track menu's **Edit plot...** edits both, and the mark's `size` is the point
+The track menu's **Edit plot...** edits both, and `encoding.size` is the point
 diameter in px. A point stands at the middle of its window; `"mark": "rule"`
-draws the window across its extent, `size` px thick.
+draws the window across its extent, `encoding.size` px thick.
 
 ```json addtrack
 {

@@ -11,7 +11,7 @@ import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_MARK_TYPE, SIZE_SCALES } from './markVocabulary.ts'
 
 import type { MarkSnapshot } from './markProblems.ts'
-import type { MarkChannel } from './markSpecs.ts'
+import type { MarkChannel, MarkSpec } from './markSpecs.ts'
 import type { MarkType } from './markVocabulary.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 
@@ -32,7 +32,12 @@ const POSITIONAL: EditChannel[] = ['x', 'x2']
 
 /** Which channels a mark of this type reads, in the order a form shows them. */
 export function editChannels(type: MarkType): EditChannel[] {
-  return [...MARK_SPECS[type].channels, ...POSITIONAL]
+  const spec: MarkSpec = MARK_SPECS[type]
+  return [
+    ...spec.channels,
+    ...(spec.size === 'constant' ? (['size'] as const) : []),
+    ...POSITIONAL,
+  ]
 }
 
 export function markTypeOf(mark: DraftMark): MarkType {
@@ -129,8 +134,8 @@ function pickedValue(declared: Record<string, unknown>) {
   const { field, value } = declared
   return typeof field === 'string' && field !== ''
     ? field
-    : typeof value === 'string'
-      ? value
+    : typeof value === 'string' || typeof value === 'number'
+      ? String(value)
       : ''
 }
 
@@ -138,8 +143,8 @@ function editOf(declared: unknown): ChannelEdit {
   if (declared === undefined) {
     return UNSET
   }
-  if (typeof declared === 'string') {
-    return { value: declared, beyond: false }
+  if (typeof declared === 'string' || typeof declared === 'number') {
+    return { value: String(declared), beyond: false }
   }
   if (typeof declared !== 'object' || declared === null) {
     return { value: '', beyond: true }
@@ -388,9 +393,18 @@ export function withChannel(
           scale: implied ?? 'categorical',
         })
   }
+  if (channel === 'size' && implied === undefined && spellsNumber(value)) {
+    return { ...mark, encoding: { ...mark.encoding, size: Number(value) } }
+  }
   return channel === 'size' && held
-    ? writeChannel(mark, channel, { ...held, field: value })
+    ? writeChannel(mark, channel, { ...held, field: value, value: undefined })
     : { ...mark, encoding: { ...mark.encoding, [channel]: value } }
+}
+
+// A size typed as a number is the constant px, as a colour typed as a colour
+// is the constant colour.
+function spellsNumber(value: string) {
+  return value.trim() !== '' && Number.isFinite(Number(value))
 }
 
 /**

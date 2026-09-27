@@ -70,8 +70,9 @@ export {
   liftRetiredSpellings,
   preProcessConfigSnapshot,
   preProcessSnapshotWith,
-  shorthandForm,
 } from './snapshotPreprocess.ts'
+export { shorthandTargets, shorthandTargetsOf } from './schemaTypes.ts'
+export type { ShorthandForm } from './schemaTypes.ts'
 export { requirementProblems } from './requirements.ts'
 export type {
   ConfigurationSchemaRequirement,

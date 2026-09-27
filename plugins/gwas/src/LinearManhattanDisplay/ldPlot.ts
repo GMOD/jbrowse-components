@@ -194,6 +194,7 @@ function fieldOf(channel: unknown) {
 function withoutLdScales(mark: MarkSnapshot): MarkSnapshot {
   const { color, shape, size, ...encoding } = mark.encoding ?? {}
   const own = color?.value
+  const ownSize = typeof size === 'object' ? size.value : undefined
   return {
     ...mark,
     transform: mark.transform?.filter(s => !sameStep(LD_PARTNERS_FILTER)(s)),
@@ -203,7 +204,9 @@ function withoutLdScales(mark: MarkSnapshot): MarkSnapshot {
         ? color && { color }
         : own !== undefined && { color: { value: own } }),
       ...(!LD_FIELDS.has(fieldOf(shape)) && shape !== undefined && { shape }),
-      ...(!LD_FIELDS.has(fieldOf(size)) && size !== undefined && { size }),
+      ...(!LD_FIELDS.has(fieldOf(size))
+        ? size !== undefined && { size }
+        : ownSize !== undefined && { size: ownSize }),
     },
   }
 }

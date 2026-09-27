@@ -58,7 +58,12 @@ const EVERY_SPELLING: Record<string, unknown> = {
   marks: [
     {
       mark: 'point',
-      encoding: { y: 'score', color: 'red', shape: 'triangle-down' },
+      encoding: {
+        y: 'score',
+        color: 'red',
+        shape: 'triangle-down',
+        size: 7,
+      },
       transform: [{ type: 'coverage', as: 'depth' }],
     },
     {
@@ -79,10 +84,10 @@ const EVERY_SPELLING: Record<string, unknown> = {
     {
       mark: 'link',
       linkShape: 'arc',
-      size: 3,
       encoding: {
         x2: { chrom: 'mate.refName', pos: 'mate.start' },
         size: {
+          value: 3,
           field: 'score',
           scale: 'log',
           domainMin: 1,

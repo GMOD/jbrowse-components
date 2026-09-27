@@ -2989,7 +2989,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "score": {
               "scale": "linear"
@@ -3025,7 +3027,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "labels",
@@ -3186,7 +3190,9 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "clusterField",
@@ -3254,7 +3260,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "score": {
               "scale": "linear"
@@ -3286,7 +3294,9 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "rowHeight",
@@ -3334,7 +3344,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "showTree",
@@ -3483,7 +3495,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "strand": {
               "scale": "categorical",
@@ -3542,7 +3556,9 @@ export const configManifest: ConfigManifest = {
               "type": "(AlignmentsBaseColorScale | undefined)"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "modifications",
@@ -3566,7 +3582,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "collapseGroupRows",
@@ -3637,7 +3655,9 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
-                  "shorthand": "value"
+                  "shorthand": {
+                    "number": "value"
+                  }
                 }
               ]
             }
@@ -3732,7 +3752,9 @@ export const configManifest: ConfigManifest = {
               "type": "AlignmentsArcColorField"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "readConnections",
@@ -4009,7 +4031,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "strand": {
               "scale": "categorical",
@@ -4068,7 +4092,9 @@ export const configManifest: ConfigManifest = {
               "type": "(AlignmentsBaseColorScale | undefined)"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "modifications",
@@ -4092,7 +4118,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "collapseGroupRows",
@@ -4163,7 +4191,9 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
-                  "shorthand": "value"
+                  "shorthand": {
+                    "number": "value"
+                  }
                 }
               ]
             }
@@ -4258,7 +4288,9 @@ export const configManifest: ConfigManifest = {
               "type": "AlignmentsArcColorField"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "readConnections",
@@ -4370,7 +4402,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "*": {
               "scale": "categorical"
@@ -4443,7 +4477,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "*": {
               "scale": "categorical"
@@ -4660,7 +4696,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "score": {
               "scale": "linear"
@@ -4696,7 +4734,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "labels",
@@ -4877,7 +4917,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "*": {
               "scale": "categorical"
@@ -4922,7 +4964,9 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "facet",
@@ -4938,7 +4982,9 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "referenceDrawingMode",
@@ -5081,7 +5127,9 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "rowColor",
@@ -5105,7 +5153,9 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "height",
@@ -5157,7 +5207,9 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
-          "shorthand": "value",
+          "shorthand": {
+            "string": "value"
+          },
           "fieldPresets": {
             "source": {
               "scale": "categorical"
@@ -5256,7 +5308,9 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
-                  "shorthand": "value"
+                  "shorthand": {
+                    "number": "value"
+                  }
                 }
               ]
             }
@@ -5357,7 +5411,9 @@ export const configManifest: ConfigManifest = {
               "type": "MafColorField"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "y",
@@ -5433,7 +5489,9 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "showLegend",
@@ -5602,10 +5660,6 @@ export const configManifest: ConfigManifest = {
               "type": "MarkType"
             },
             {
-              "name": "size",
-              "type": "(number | undefined)"
-            },
-            {
               "name": "linkShape",
               "type": "LinkShape"
             },
@@ -5630,7 +5684,9 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
-                  "shorthand": "pos"
+                  "shorthand": {
+                    "string": "pos"
+                  }
                 },
                 {
                   "name": "y",
@@ -5710,7 +5766,9 @@ export const configManifest: ConfigManifest = {
                       "type": "(string | undefined)"
                     }
                   ],
-                  "shorthand": "value",
+                  "shorthand": {
+                    "string": "value"
+                  },
                   "fieldPresets": {
                     "score": {
                       "scale": "linear"
@@ -5762,7 +5820,9 @@ export const configManifest: ConfigManifest = {
                       "type": "(string | undefined)"
                     }
                   ],
-                  "shorthand": "value"
+                  "shorthand": {
+                    "string": "value"
+                  }
                 },
                 {
                   "name": "text",
@@ -5772,6 +5832,10 @@ export const configManifest: ConfigManifest = {
                   "name": "size",
                   "type": "MarkSizeConfigurationSchema",
                   "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(number | undefined)"
+                    },
                     {
                       "name": "field",
                       "type": "string"
@@ -5794,7 +5858,10 @@ export const configManifest: ConfigManifest = {
                       "liftsNumbers": true
                     }
                   ],
-                  "shorthand": "field"
+                  "shorthand": {
+                    "number": "value",
+                    "string": "field"
+                  }
                 }
               ]
             },
@@ -5838,7 +5905,9 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "rows",
@@ -5871,7 +5940,9 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "rowColor",
@@ -5895,7 +5966,9 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "showTree",
@@ -5978,7 +6051,9 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
-                  "shorthand": "value"
+                  "shorthand": {
+                    "number": "value"
+                  }
                 }
               ]
             }
@@ -6056,10 +6131,6 @@ export const configManifest: ConfigManifest = {
               "type": "MarkType"
             },
             {
-              "name": "size",
-              "type": "(number | undefined)"
-            },
-            {
               "name": "linkShape",
               "type": "LinkShape"
             },
@@ -6084,7 +6155,9 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
-                  "shorthand": "pos"
+                  "shorthand": {
+                    "string": "pos"
+                  }
                 },
                 {
                   "name": "y",
@@ -6164,7 +6237,9 @@ export const configManifest: ConfigManifest = {
                       "type": "(string | undefined)"
                     }
                   ],
-                  "shorthand": "value",
+                  "shorthand": {
+                    "string": "value"
+                  },
                   "fieldPresets": {
                     "score": {
                       "scale": "linear"
@@ -6216,7 +6291,9 @@ export const configManifest: ConfigManifest = {
                       "type": "(string | undefined)"
                     }
                   ],
-                  "shorthand": "value"
+                  "shorthand": {
+                    "string": "value"
+                  }
                 },
                 {
                   "name": "text",
@@ -6226,6 +6303,10 @@ export const configManifest: ConfigManifest = {
                   "name": "size",
                   "type": "MarkSizeConfigurationSchema",
                   "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(number | undefined)"
+                    },
                     {
                       "name": "field",
                       "type": "string"
@@ -6248,7 +6329,10 @@ export const configManifest: ConfigManifest = {
                       "liftsNumbers": true
                     }
                   ],
-                  "shorthand": "field"
+                  "shorthand": {
+                    "number": "value",
+                    "string": "field"
+                  }
                 }
               ]
             },
@@ -6292,7 +6376,9 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "rows",
@@ -6325,7 +6411,9 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "rowColor",
@@ -6349,7 +6437,9 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             }
           ],
-          "shorthand": "field"
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "showTree",
@@ -6432,7 +6522,9 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
-                  "shorthand": "value"
+                  "shorthand": {
+                    "number": "value"
+                  }
                 }
               ]
             }

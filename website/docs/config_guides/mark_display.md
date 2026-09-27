@@ -67,8 +67,8 @@ one.
 | Idea | ggplot2 | Vega-Lite, GenomeSpy | `LinearMarkDisplay` |
 | --- | --- | --- | --- |
 | a bar from a baseline to a value | `geom_col()` | `"mark": "bar"` | `"mark": "bar"`, the display's `origin` as the baseline |
-| a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `size` on the mark, at the middle of `x` to `x2` |
-| a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `size` on the mark as its thickness |
+| a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `encoding.size` a number, at the middle of `x` to `x2` |
+| a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `encoding.size` a number as its thickness |
 | a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
 | the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
 | a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
@@ -109,8 +109,9 @@ this display `encoding.row` is the band a feature stands in, the integer a
 positional channel is a bare field where Vega-Lite's carries a scale, because
 the y scale is the display's `scales.y` and every mark reads one axis. Stacked
 bars and an `opacity` channel have no row: a bar stands on its own from the
-baseline. A point's diameter and a rule's thickness are the mark's `size`, and a
-link's stroke is its `encoding.size`.
+baseline. A mark's size is `encoding.size`, as its colour is `encoding.color`: a
+number is a point's diameter, a rule's thickness or a link's stroke, and a field
+maps a link's width.
 
 ## The encoding
 
@@ -124,6 +125,7 @@ Each mark's `encoding` maps feature fields to the channels its type reads:
 | `row`   | every mark                     | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
 | `color` | every mark                     | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                                              |
 | `shape` | `point`                        | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
+| `size`  | `point`, `rule`, `link`        | a number of px, a point's diameter, a rule's thickness or a link's stroke; or, on a link, a field read through a linear or log scale into a range of px (below)                                              |
 | `text`  | `text`                         | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                            |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
@@ -323,12 +325,12 @@ points' colour a callback:
 ]
 ```
 
-A point stands at the middle of its `x` to `x2`, `size` px across. A `rule` is
-the line from `x` to `x2` at `y`, `size` px thick, for a value that belongs to
-an interval — a window's Fst, a segment's copy number:
+A point stands at the middle of its `x` to `x2`, `encoding.size` px across. A
+`rule` is the line from `x` to `x2` at `y`, `encoding.size` px thick, for a
+value that belongs to an interval — a window's Fst, a segment's copy number:
 
 ```json
-{ "mark": "rule", "encoding": { "y": "score" }, "size": 3 }
+{ "mark": "rule", "encoding": { "y": "score", "size": 3 } }
 ```
 
 A `span` has no `y`: it paints a band from `x` to `x2` in its colour, for an
@@ -382,9 +384,9 @@ labels. On the circular view the labels stand on the linear track only.
 ## Links
 
 A `link` mark draws a curve from `x` up and over to `x2`. Over a BED with
-start-end pairs that is the feature's own two ends, and `size` strokes each
-curve by a field through a linear or log scale into a range of pixels. Splice
-junctions from a STAR file, stroked by read support and labelled with it:
+start-end pairs that is the feature's own two ends, and `encoding.size` strokes
+each curve by a field through a linear or log scale into a range of pixels.
+Splice junctions from a STAR file, stroked by read support and labelled with it:
 
 ```json addtrack
 {
@@ -442,8 +444,7 @@ Write them out to say more — a colour by type, a stroke by score, a shape:
       "marks": [
         {
           "mark": "link",
-          "size": 2,
-          "encoding": { "color": { "field": "svType" } },
+          "encoding": { "color": { "field": "svType" }, "size": 2 },
           "transform": [{ "type": "mate" }]
         }
       ]
@@ -724,8 +725,8 @@ each reported under its id:
 | `op-field` | error | A `sum`, `mean`, `min` or `max` naming no `field`. |
 | `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
-| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span`. |
-| `unread-size` | warning | A `size` on a mark that draws no point or rule and strokes no link. |
+| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. |
+| `unread-size` | warning | An `encoding.size` on a mark that draws no point or rule and strokes no link. |
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
 | `span-density-source` | warning | `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's fifth mark is `link`, spelt as GenomeSpy spells it: a stroked curve from `x` to `x2`, where `x2` may be a locus on another sequence, `size` a channel through a linear or log scale, and a `mate` transform step reading a paired record's other end. Both feet place through a uniform table of the view's displayed regions and the link draws over the whole canvas rather than per block, each curve once, so it crosses regions holding neither foot and a pan writes one uniform. `@jbrowse/plugin-arc` and its two displays are deleted; their configs are rewritten in the mark spelling"
+summary: "The mark display's fifth mark is `link`, spelt as GenomeSpy spells it: a stroked curve from `x` to `x2`, where `x2` may be a locus on another sequence, `size` a channel through a linear or log scale, and a `mate` transform step reading a paired record's other end. Both feet place through a uniform table of the view's displayed regions and the link draws over the whole canvas rather than per block, each curve once, so it crosses regions holding neither foot and a pan writes one uniform. `@jbrowse/plugin-arc` and its two displays are deleted; their configs are rewritten in the mark spelling. Amended 2026-09-27: a constant size is `encoding.size` too, a bare number lifting into its `value`, which a point, a rule and a link read; the mark-level `size` is gone"
 ---
 
 # ADR-163: A link is a mark, and the arc plugin is gone
@@ -128,6 +128,20 @@ the alignments band hit and worked around with a view-space DOM overlay:
   consumers, in that order; the band's Y scale, apex clamp, palette and
   feet are policy that would feed the channels, and a chord needs the link
   to know it is under a polar stage.
+
+### Amended 2026-09-27: one spelling for a mark's size
+
+A mark's size had two homes: the constant on the mark (`size: 3`) and the
+mapping in `encoding.size`, whose bare string was the field, while `color` and
+`shape` carry both their constant and their mapping in `encoding`. Colin's
+steer was one spelling per concept. `encoding.size` is now the only one:
+`MarkSize` gains `value`, and its `shorthand` names `value` and `field`, so a
+bare number is the constant and a bare string the field — the schema option
+takes a list of slots, each lifting the bare form its own type holds. A point's
+diameter and a rule's thickness read `value`; a field on either is an
+`unread-channel`, since only the link reads the `size` lane, and a point sized
+by a field waits on a plot that asks for it. The mark display shipped only in
+v5 betas, so the mark-level `size` goes with no lift.
 
 ## Rejected alternatives
 

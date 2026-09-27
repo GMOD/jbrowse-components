@@ -2,6 +2,7 @@ import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
   isBareConfigurationSchemaType,
   isSlotDefinitionEntry,
+  shorthandTargets,
 } from './schemaTypes.ts'
 
 import type { ConfigurationSchemaDefinition } from './configurationSchema.ts'
@@ -118,14 +119,14 @@ function namesAValue(
       ? (snapshot as Record<string, unknown>)[head]
       : undefined
   const sub = subSchemaOf(memberOf(definition, head))
-  const shorthand = sub?.options.shorthand
+  const named = sub && shorthandTargets(sub).string
   return rest.length > 0
     ? sub !== undefined && namesAValue(sub.definition, value, rest)
     : typeof value === 'string'
       ? value !== ''
       : sub !== undefined &&
-        shorthand !== undefined &&
-        namesAValue(sub.definition, value, [shorthand])
+        named !== undefined &&
+        namesAValue(sub.definition, value, [named])
 }
 
 /**

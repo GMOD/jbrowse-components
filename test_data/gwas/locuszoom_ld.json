@@ -99,9 +99,9 @@
                   "title": "r² to index SNP",
                   "descending": true,
                   "missingLabel": "No LD data"
-                }
-              },
-              "size": 8
+                },
+                "size": 8
+              }
             },
             {
               "mark": "point",
@@ -117,9 +117,9 @@
                   "range": ["diamond"],
                   "labels": ["Index SNP"],
                   "title": ""
-                }
-              },
-              "size": 8
+                },
+                "size": 8
+              }
             }
           ]
         }

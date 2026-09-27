@@ -264,7 +264,7 @@ test("a text mark's values fold into the axis, and one naming no y asks for no y
 
 test('a text mark beside points keeps the points where they were', () => {
   const { createDisplay } = createTestEnvironment([
-    { mark: 'point', size: 6, encoding: { y: 'score' } },
+    { mark: 'point', encoding: { y: 'score', size: 6 } },
     { mark: 'text', encoding: { y: 'score', color: 'red' } },
   ])
   const { display } = createDisplay()
@@ -1826,7 +1826,7 @@ test('the hovered instance lights the box its mark painted, inset by the plot to
 // margin outside it, never smaller than 6 px across the radius.
 test('a hovered point lights as a ring around its glyph', () => {
   const { createDisplay } = createTestEnvironment([
-    { mark: 'point', size: 4, encoding: { y: 'score' } },
+    { mark: 'point', encoding: { y: 'score', size: 4 } },
   ])
   const { display } = createDisplay()
   const points = result([{ y: [5, 8] }])
@@ -2100,8 +2100,8 @@ test('a point-only axis is inset by the room the point draws in', () => {
 test("a point mark's size is its own, the axis insets by the largest, and the menu writes them all", () => {
   const { createDisplay } = createTestEnvironment([
     { mark: 'point', encoding: { y: 'score' } },
-    { mark: 'point', size: 10, encoding: { y: 'other' } },
-    { mark: 'bar', size: 9, encoding: { y: 'score' }, maxBpPerPx: 0.001 },
+    { mark: 'point', encoding: { y: 'other', size: 10 } },
+    { mark: 'bar', encoding: { y: 'score', size: 9 }, maxBpPerPx: 0.001 },
   ])
   const { display } = createDisplay()
   display.setRpcData(
@@ -2814,7 +2814,7 @@ test('a link mark sends its far foot as a locus, its size as a scale, and asks f
   // unwritten, a link strokes at its own 2 px rather than a point's diameter
   expect(display.markSizes).toEqual([2])
   const plain = createTestEnvironment([
-    { mark: 'link', encoding: { x2: 'mate.start' }, size: 3 },
+    { mark: 'link', encoding: { x2: 'mate.start', size: 3 } },
   ]).createDisplay().display
   expect(plain.rpcProps().layers[0]).toMatchObject({
     encoding: { x2: 'mate.start' },

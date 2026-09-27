@@ -63,9 +63,9 @@ names the levels and `labels` what the key calls them.
       "marks": [
         {
           "mark": "point",
-          "size": 8,
           "encoding": {
             "y": "milliDiv",
+            "size": 8,
             "color": {
               "field": "strand",
               "domain": ["1", "-1"],

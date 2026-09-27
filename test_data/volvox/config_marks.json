@@ -1021,7 +1021,6 @@
             },
             {
               "mark": "point",
-              "size": 28,
               "transform": [
                 {
                   "type": "filter",
@@ -1029,12 +1028,13 @@
                 }
               ],
               "encoding": {
-                "y": "score"
+                "y": "score",
+                "size": 28
               }
             },
             {
               "mark": "link",
-              "size": 6,
+              "encoding": { "size": 6 },
               "transform": [
                 {
                   "type": "filter",

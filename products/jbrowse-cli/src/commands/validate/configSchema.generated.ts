@@ -7366,6 +7366,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "MarkSize",
       "anyOf": [
         {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number"
+        },
+        {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "$ref": "#/$defs/FeatureField",
           "default": "",
@@ -7376,6 +7380,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
+            "value": {
+              "description": "px for every instance; unset is the mark's own.",
+              "type": "number"
+            },
             "field": {
               "description": "feature field, or jexl expression.",
               "$ref": "#/$defs/FeatureField",
@@ -7874,10 +7882,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "link"
           ],
           "default": "bar"
-        },
-        "size": {
-          "description": "point diameter, rule thickness or link stroke in px.",
-          "type": "number"
         },
         "linkShape": {
           "description": "dome, arc or line.",

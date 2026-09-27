@@ -274,7 +274,7 @@ no index, and serves it to a variant track:
       "marks": [
         {
           "mark": "link",
-          "size": 2,
+          "encoding": { "size": 2 },
           "transform": [{ "type": "mate" }]
         }
       ]

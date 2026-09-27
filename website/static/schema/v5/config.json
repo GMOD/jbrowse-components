@@ -6971,6 +6971,10 @@
       "title": "MarkSize",
       "anyOf": [
         {
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "type": "number"
+        },
+        {
           "description": "Shorthand for `{ \"field\": ... }`.",
           "$ref": "#/$defs/FeatureField",
           "default": "",
@@ -6981,6 +6985,10 @@
           "type": "object",
           "x-closed": true,
           "properties": {
+            "value": {
+              "description": "px for every instance; unset is the mark's own.",
+              "type": "number"
+            },
             "field": {
               "description": "feature field, or jexl expression.",
               "$ref": "#/$defs/FeatureField",
@@ -7439,10 +7447,6 @@
           "description": "bar, point, rule, span, text or link.",
           "enum": ["bar", "point", "rule", "span", "text", "link"],
           "default": "bar"
-        },
-        "size": {
-          "description": "point diameter, rule thickness or link stroke in px.",
-          "type": "number"
         },
         "linkShape": {
           "description": "dome, arc or line.",

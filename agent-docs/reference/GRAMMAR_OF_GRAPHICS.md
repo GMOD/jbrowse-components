@@ -703,11 +703,13 @@ the row axis in the vocabulary above, and none is a new channel.
   because shapes are compiled from hand-written Slang rather than generated
   from the encoding. That is ADR-095's trade, and it holds until a second
   in-tree consumer wants one; `opacity` also breaks the Canvas2D painters'
-  colour batching. `size` is a channel on the link alone
-  ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md));
-  a point's diameter and a rule's thickness are the mark's `size`, one
-  uniform, so a config spells a constant size on the mark and a mapped one in
-  `encoding`, where `color` and `shape` carry both.
+  colour batching. `encoding.size` carries a mark's size as `color` carries
+  its colour: a number is the constant, one uniform, a point's diameter, a
+  rule's thickness or a link's stroke, and a field maps a width through the
+  `size` lane on the link alone
+  ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)).
+  A point sized by a field waits on a plot that asks for it, since its lane
+  would need a shader variant to cost nothing unnamed.
 - **The coordinate stage is a resampling, and it reaches the displays that
   read the `RegionHost` contract.** A ring is the display's strip warped,
   which is exact in angle and minifies an inner ring by `inner / ruler`, and

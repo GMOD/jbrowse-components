@@ -232,9 +232,11 @@ const markEncodingSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.size
-     * For a link mark: a feature field read through a linear or log scale
-     * into a stroke width in px, `range` the px at each end of the domain.
-     * Empty strokes every link at the mark's own `size`.
+     * The mark's size in px: a number is a point's diameter, a rule's
+     * thickness or a link's stroke; a field, which a link alone reads, goes
+     * through a linear or log scale into a stroke width, `range` the px at
+     * each end of the domain. The track menu's Point size writes every point
+     * mark's number.
      */
     size: markSizeSchema,
   },
@@ -274,7 +276,7 @@ const markSchema = ConfigurationSchema(
      * #slot marks.mark
      * `bar` stands between `origin` and `y`; `point` is a shape at `y` over
      * the middle of `x` to `x2`; `rule` is a line across `x` to `x2` at `y`,
-     * `size` px thick; `span` is a band across the whole plot from `x` to
+     * `encoding.size` px thick; `span` is a band across the whole plot from `x` to
      * `x2`; `text` prints a field
      * over the middle of `x` to `x2`, just above `y` where it names one and in
      * the middle of its band otherwise, and a label that would overlap one
@@ -287,20 +289,6 @@ const markSchema = ConfigurationSchema(
       model: types.enumeration('MarkType', [...MARK_TYPES]),
       defaultValue: DEFAULT_MARK_TYPE,
       description: 'bar, point, rule, span, text or link',
-    },
-    /**
-     * #slot marks.size
-     * A point mark's diameter, a rule's thickness or a link's stroke width in
-     * px, the mark's own as a grammar's `size` is, so two marks may differ; a
-     * bar, span or text
-     * reads none, and a link whose `encoding.size` names a field reads that
-     * instead. Unwritten, a point is 4 px across, a rule 4 px thick and a
-     * link stroked at 2 px. The track menu's Point size writes it on every
-     * point mark.
-     */
-    size: {
-      type: 'maybeNumber',
-      description: 'point diameter, rule thickness or link stroke in px',
     },
     /**
      * #slot marks.linkShape

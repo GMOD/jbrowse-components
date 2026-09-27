@@ -1,7 +1,7 @@
 import { isJexl } from '../util/jexlStrings.ts'
 import { slotWriteRefusal } from './configurationSlot.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
-import { isConstantEntry, isSlotDefinitionEntry } from './schemaTypes.ts'
+import { bareFormOf, isConstantEntry, shorthandTargets } from './schemaTypes.ts'
 
 import type { RetiredSpelling } from './configurationSchema.ts'
 import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
@@ -55,25 +55,6 @@ function refuseCallbacks(
       }
     }
   }
-}
-
-const NUMBER_SLOT_TYPES = new Set(['number', 'integer', 'maybeNumber'])
-
-/**
- * The bare value a schema's `shorthand` lifts: a number where the slot it
- * names holds one (`rules: [7.3]`), a string otherwise (`color: 'red'`).
- */
-export function shorthandForm({
-  definition,
-  options,
-}: ConfigurationSchemaMetadata): 'string' | 'number' | undefined {
-  const { shorthand } = options
-  const entry = shorthand === undefined ? undefined : definition[shorthand]
-  return shorthand === undefined
-    ? undefined
-    : isSlotDefinitionEntry(entry) && NUMBER_SLOT_TYPES.has(entry.type)
-      ? 'number'
-      : 'string'
 }
 
 // ADR-146's reset, on the snapshot path: the member keeps its key, so a
@@ -180,7 +161,7 @@ export function applyRetiredSpellings(
 /**
  * What a schema does to every snapshot on its way in, whichever door it
  * arrives by (`create`, `applySnapshot`, `setSubschema`, a settings bag): a
- * bare string or number lifts into the declared `shorthand` slot, beside any
+ * bare string or number lifts into the `shorthand` slot taking its form, beside any
  * `shorthandWith` slots, and `null` into the empty object that clears it; a
  * `null` member reads as unset, except in a frozen-family slot, which stores
  * it; a `retired` spelling becomes the members that replaced it; a `closed`
@@ -193,13 +174,14 @@ export function preProcessSnapshotWith(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
 ): Record<string, unknown> {
-  const { shorthand, shorthandWith, closed, preProcessSnapshot } =
-    schema.options
+  const { shorthandWith, closed, preProcessSnapshot } = schema.options
+  const form = bareFormOf(snapshot)
+  const target = form && shorthandTargets(schema)[form]
   const lifted =
     snapshot === null
       ? {}
-      : shorthand !== undefined && typeof snapshot === shorthandForm(schema)
-        ? { ...shorthandWith, [shorthand]: snapshot }
+      : target !== undefined
+        ? { ...shorthandWith, [target]: snapshot }
         : nullMembersAsUnset(
             snapshot as Record<string, unknown>,
             schema.storesNull,

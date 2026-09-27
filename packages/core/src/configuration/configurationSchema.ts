@@ -20,6 +20,7 @@ import {
   isConfigurationSchemaType,
   isConstantEntry,
   isSlotDefinitionEntry,
+  shorthandTargetsOf,
 } from './schemaTypes.ts'
 import { preProcessSnapshotWith } from './snapshotPreprocess.ts'
 
@@ -95,11 +96,13 @@ export interface ConfigurationSchemaOptions<
   /**
    * The slot a bare string or number snapshot lifts into, as that slot's type
    * takes it, so `color: "red"` and `color: { value: "red" }` are one config,
-   * and `rules: [5]` is `rules: [{ value: 5 }]`. Applied before
+   * and `rules: [5]` is `rules: [{ value: 5 }]`; or two slots, one taking a
+   * number and one a string, so a width's `size: 3` is `{ value: 3 }` and
+   * `size: "score"` is `{ field: "score" }`. Applied before
    * `preProcessSnapshot`, on every path a snapshot arrives by; the JSON schema,
    * `describeSlots` and the config editor read it here.
    */
-  shorthand?: string
+  shorthand?: string | readonly string[]
   /**
    * Slots a bare value sets beside `shorthand`, for a schema whose defaults
    * would hide it: LGVSyntenyColor's `field` defaults to `strand`, so its
@@ -207,6 +210,29 @@ function mergeSchemaDefinition(
     }
   }
   return merged
+}
+
+// No two slots a shorthand names take the same bare form, since a bare value
+// lifts by its form alone. A name may be a key `preProcessSnapshot` expands
+// rather than a slot, as an assembly sidecar's `uri` is.
+function checkShorthand(
+  modelName: string,
+  definition: ConfigurationSchemaDefinition,
+  shorthand: string | readonly string[] | undefined,
+) {
+  const slots =
+    shorthand === undefined
+      ? []
+      : typeof shorthand === 'string'
+        ? [shorthand]
+        : shorthand
+  if (
+    Object.keys(shorthandTargetsOf(definition, shorthand)).length < slots.length
+  ) {
+    throw new Error(
+      `${modelName}'s shorthand names ${slots.join(' and ')}, which take the same bare form, so a bare value could not say which it means`,
+    )
+  }
 }
 
 function preprocessConfigurationSchemaArguments(
@@ -361,6 +387,7 @@ function makeConfigurationSchemaModel<
     }
   }
   checkRequirements(modelName, schemaDefinition, options.requires ?? [])
+  checkShorthand(modelName, schemaDefinition, options.shorthand)
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)

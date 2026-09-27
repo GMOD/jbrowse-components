@@ -267,12 +267,16 @@ function markConstantColor(mark: MarkConfig): number {
 }
 
 /**
- * A mark's `size` with its type's default where none is written: a point's
- * diameter, a rule's thickness, or the 2 px a link strokes at.
+ * A mark's `encoding.size` number with its type's default where none is
+ * written: a point's diameter, a rule's thickness, or the 2 px a link strokes
+ * at.
  */
-export function markSizeOf({ mark, size }: Pick<MarkConfig, 'mark' | 'size'>) {
+export function markSizeOf({
+  mark,
+  encoding,
+}: Pick<MarkConfig, 'mark' | 'encoding'>) {
   return (
-    size ??
+    encoding.size.value ??
     (mark === 'link' ? DEFAULT_LINK_STROKE_PX : DEFAULT_POINT_DIAMETER_PX)
   )
 }
@@ -608,8 +612,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each mark's `size` in px, its type's default where none is
-         * written, which a bar or span leaves unread.
+         * Each mark's `encoding.size` number in px, its type's default where
+         * none is written, which a bar or span leaves unread.
          */
         get markSizes(): number[] {
           return self.conf.marks.map(markSizeOf)
@@ -1909,13 +1913,13 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * Write every point mark's `size`; undefined returns each to the
-         * default.
+         * Write every point mark's `encoding.size` number; undefined returns
+         * each to the default.
          */
         setPointSize(val?: number) {
           for (const mark of self.conf.marks) {
             if (mark.mark === 'point') {
-              setConf(mark, 'size', val)
+              setConf(mark, ['encoding', 'size', 'value'], val)
             }
           }
         },
