@@ -124,6 +124,7 @@ typed, a slot can be edited graphically without an author writing any UI.
 | <code>color</code> | <code>CssColorType</code> | <code>string</code> | text field beside a swatch that opens a color picker |
 | <code>maybeColor</code> | <code>types.maybe(CssColorType)</code> | <code>string &#124; undefined</code> | text field beside a swatch that opens a color picker |
 | <code>colorArray</code> | <code>types.array(CssColorEntryType)</code> | <code>string[]</code> | a text field and color picker per entry, with add and delete |
+| <code>expressionArray</code> | <code>types.array(JexlExpressionString)</code> | <code>string[]</code> | "todolist" of text fields, each after a fixed `jexl:` |
 | <code>featureField</code> | <code>types.string</code> | <code>string</code> | single-line text field |
 | <code>fileLocation</code> | <code>FileLocation</code> | <code>FileLocation</code> | URL, local file path (desktop) or file blob (browser) |
 | <code>maybeFileLocation</code> | <code>MaybeFileLocation</code> | <code>FileLocation &#124; undefined</code> | URL, local file path (desktop) or file blob (browser) |

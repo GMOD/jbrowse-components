@@ -1,5 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { isJexl } from '../jexlStrings.ts'
+
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // #region regionModel
@@ -115,6 +117,15 @@ export const FileLocation = types.snapshotProcessor<
     }
   },
 })
+
+/** A `jexl:` expression; a bare string is refused rather than read as one. */
+export const JexlExpressionString = types.refinement(
+  'JexlExpression',
+  types.string,
+  isJexl,
+  value =>
+    `${JSON.stringify(value)} is not an expression: one is written with its prefix, as "jexl:get(feature,'score') > 10"`,
+)
 
 export { ElementId, createElementId } from './ElementId.ts'
 export { renameIds } from './renameIds.ts'

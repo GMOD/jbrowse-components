@@ -301,10 +301,10 @@ describe('validateConfig', () => {
     ])
   })
 
-  // `jexlFilters` sat on the shared base schema, so every linear display
+  // The filter slot sat on the shared base schema, so every linear display
   // published it and only three read it. An alignments track declaring one
   // validated, loaded, and filtered nothing.
-  it('reports jexlFilters on a display that reads no filters', () => {
+  it('reports filter on a display that reads no filters', () => {
     const onAlignments = baseConfig()
     onAlignments.tracks[0] = {
       ...onAlignments.tracks[0]!,
@@ -313,29 +313,39 @@ describe('validateConfig', () => {
         {
           type: 'LinearAlignmentsDisplay',
           displayId: 'd',
-          jexlFilters: ["get(feature,'flags')==99"],
+          filter: ["jexl:get(feature,'flags')==99"],
         },
       ],
     }
     expect(errorsOf(onAlignments).map(e => e.where)).toEqual([
-      'tracks[0].displays[0].jexlFilters',
+      'tracks[0].displays[0].filter',
     ])
 
-    const onBasic = baseConfig()
-    onBasic.tracks[0] = {
-      ...onBasic.tracks[0]!,
-      type: 'FeatureTrack',
-      adapter: { type: 'Gff3TabixAdapter', uri: 'g.gff.gz' },
-      // @ts-expect-error the base config's track carries no displays
-      displays: [
-        {
-          type: 'LinearBasicDisplay',
-          displayId: 'd',
-          jexlFilters: ["get(feature,'type')=='gene'"],
-        },
-      ],
+    const onBasic = (display: Record<string, unknown>) => {
+      const config = baseConfig()
+      config.tracks[0] = {
+        ...config.tracks[0]!,
+        type: 'FeatureTrack',
+        adapter: { type: 'Gff3TabixAdapter', uri: 'g.gff.gz' },
+        // @ts-expect-error the base config's track carries no displays
+        displays: [{ type: 'LinearBasicDisplay', displayId: 'd', ...display }],
+      }
+      return config
     }
-    expect(validateConfig(onBasic).problems).toEqual([])
+    expect(
+      validateConfig(onBasic({ filter: ["jexl:get(feature,'type')=='gene'"] }))
+        .problems,
+    ).toEqual([])
+    expect(
+      validateConfig(
+        onBasic({ jexlFilters: ["get(feature,'type')=='gene'"] }),
+      ).problems.map(p => [p.level, p.where]),
+    ).toEqual([['warning', 'tracks[0].displays[0].jexlFilters']])
+    expect(
+      errorsOf(onBasic({ filter: ["get(feature,'type')=='gene'"] })).map(
+        e => e.where,
+      ),
+    ).toEqual(['tracks[0].displays[0].filter[0]'])
   })
 
   it('reports a per-base layer naming none of its four variables', () => {

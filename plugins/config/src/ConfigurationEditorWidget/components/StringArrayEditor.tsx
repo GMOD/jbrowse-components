@@ -1,3 +1,4 @@
+import { JEXL_PREFIX } from '@jbrowse/core/util/jexlStrings'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
   FormHelperText,
@@ -12,18 +13,25 @@ import { observer } from 'mobx-react'
 
 import AddNewField from './AddNewField.tsx'
 
+interface ArraySlot {
+  name: string
+  value: string[]
+  set: (arg: string[]) => void
+  description: string
+}
+
 /** #slotEditor "todolist" of text fields, one per entry, with add and delete */
 const StringArrayEditor = observer(function StringArrayEditor({
   slot,
+  prefix = '',
 }: {
-  slot: {
-    name: string
-    value: string[]
-    set: (arg: string[]) => void
-    description: string
-  }
+  slot: ArraySlot
+  prefix?: string
 }) {
   const value = [...slot.value]
+  const startAdornment = prefix ? (
+    <InputAdornment position="start">{prefix}</InputAdornment>
+  ) : undefined
   return (
     <>
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
@@ -36,14 +44,17 @@ const StringArrayEditor = observer(function StringArrayEditor({
           <ListItem key={idx} disableGutters>
             <TextField
               fullWidth
-              value={val}
+              value={val.slice(prefix.length)}
               onChange={evt => {
                 slot.set(
-                  value.map((v, i) => (i === idx ? evt.target.value : v)),
+                  value.map((v, i) =>
+                    i === idx ? prefix + evt.target.value : v,
+                  ),
                 )
               }}
               slotProps={{
                 input: {
+                  startAdornment,
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -63,8 +74,9 @@ const StringArrayEditor = observer(function StringArrayEditor({
         <ListItem disableGutters>
           <AddNewField
             testid={`stringArrayAdd-${slot.name}`}
+            startAdornment={startAdornment}
             onAdd={val => {
-              slot.set([...value, val])
+              slot.set([...value, prefix + val])
             }}
           />
         </ListItem>
@@ -74,4 +86,16 @@ const StringArrayEditor = observer(function StringArrayEditor({
   )
 })
 
+// `jexl:` sits fixed in front of each entry, so no keystroke writes one the
+// slot refuses
+/** #slotEditor "todolist" of text fields, each after a fixed `jexl:` */
+const ExpressionArrayEditor = observer(function ExpressionArrayEditor({
+  slot,
+}: {
+  slot: ArraySlot
+}) {
+  return <StringArrayEditor slot={slot} prefix={JEXL_PREFIX} />
+})
+
+export { ExpressionArrayEditor }
 export default StringArrayEditor

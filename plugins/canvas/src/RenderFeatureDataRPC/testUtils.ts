@@ -57,7 +57,7 @@ export function mockDisplayConfig({
     subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
     impliedUTRs: true,
     mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
-    jexlFilters: [],
+    filter: [],
     hideSourceFeatures: true,
     // the `maybeColor` slots default to unset, as a real config does
     connectorColor: undefined,

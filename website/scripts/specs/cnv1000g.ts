@@ -217,14 +217,11 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           // rows survive it and the frame is pixel-identical — with a "One
           // isoform" chip added.
           //
-          // The config slot, not the `jexlFiltersSetting` override: a figure
+          // The config slot, not the `filterSetting` override: a figure
           // wants a track configured this way, and the override is the user's
           // own "Filter by...", which `featureNarrowings` counts and draws
-          // filter chrome for. The slot is deferred-evaluated and gets its
-          // prefix on read, so the expression is written bare here — a `jexl:`
-          // on it double-prefixes into an error banner reading "Token : (colon)
-          // unexpected in expression: jexl:".
-          jexlFilters: ["feature.type=='gene'"],
+          // filter chrome for.
+          filter: ["jexl:feature.type=='gene'"],
           height: 80,
         },
         { trackId: SV_MAP_TRACK, height: 90 },

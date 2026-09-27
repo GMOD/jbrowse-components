@@ -74,8 +74,8 @@ test('a channel left out stays out, and null is kept to clear one', () => {
 })
 
 test('a single filter reads as a list of one', () => {
-  expect(parse({ filter: "feature.type == 'gene'" })).toEqual({
-    filter: ["feature.type == 'gene'"],
+  expect(parse({ filter: "jexl:feature.type == 'gene'" })).toEqual({
+    filter: ["jexl:feature.type == 'gene'"],
   })
 })
 
@@ -119,7 +119,8 @@ test.each([
   ],
   [{ color: { field: 'x', range: 'red' } }, 'color.range is a list'],
   [{ color: { range: ['red'] } }, 'color is a CSS color'],
-  [{ filter: [1] }, 'filter is a jexl expression'],
+  [{ filter: [1] }, 'filter is a jexl: expression'],
+  [{ filter: ["feature.type == 'gene'"] }, 'filter is a jexl: expression'],
 ])('%j is refused: %s', (spec, message) => {
   expect(() => parse(spec)).toThrow(message)
 })
@@ -132,7 +133,7 @@ test('changes are what differs from the current channels', () => {
   const current = {
     facet: { field: 'strand' },
     color: null,
-    filter: ["feature.type == 'gene'"],
+    filter: ["jexl:feature.type == 'gene'"],
   }
   expect(
     channelSpecChanges(

@@ -244,6 +244,7 @@ export type ConfigurationSnapshot<SCHEMA> = SCHEMA extends undefined
  */
 interface SlotValueByType {
   stringArray: string[]
+  expressionArray: string[]
   stringArrayMap: Record<string, string[]>
   numberMap: Record<string, number>
   stringMap: Record<string, string>

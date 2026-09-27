@@ -3029,7 +3029,7 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
-          "jexlFilters": ["feature.start<8000"],
+          "filter": ["jexl:feature.start<8000"],
           "color": "jexl:feature.start>5000?'darkgreen':'red'"
         }
       ]

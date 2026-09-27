@@ -63,13 +63,13 @@ function fakeBuild(
         displays: types.array(pluggable('display')),
       }
     }
-    // `jexlFiltersSetting`'s spelling, on the model that really carries it. A
+    // `filterSetting`'s spelling, on the model that really carries it. A
     // union ORs its members' TypeFlags upward, so this answers `isArrayType`
     // while being a `Union` with no `getChildType` — a walk that trusts the
     // flags throws on every session that reaches one.
     return {
       id: types.identifier,
-      jexlFiltersSetting: types.maybe(types.array(types.string)),
+      filterSetting: types.maybe(types.array(types.string)),
     }
   }
   for (const [group, names] of Object.entries(groups)) {
@@ -302,7 +302,7 @@ test('walks past a maybe-wrapped array without mistaking it for a container', ()
       h: {
         id: 'h',
         type: 'HierarchicalTrackSelectorWidget',
-        jexlFiltersSetting: ['jexl:true'],
+        filterSetting: ['jexl:true'],
       },
     },
   }

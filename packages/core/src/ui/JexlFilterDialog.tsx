@@ -200,7 +200,7 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
       onSubmit={() => {
         // An emptied list is "show everything", which is NOT the same as
         // following the config slot, so it is set as an override too
-        model.setJexlFilters(
+        model.setFilter(
           tab === 'text' && textEdited
             ? textLines(text.value)
             : writeFilterRows(state),

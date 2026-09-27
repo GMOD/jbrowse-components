@@ -161,7 +161,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               // widest box in the lane labelled `id-NC_000913.3:1978503
               // ..1979270`. insB5 is that element's transposase and is named,
               // so nothing in the frame is lost with it gone.
-              jexlFiltersSetting: ["jexl:feature.type=='gene'"],
+              filterSetting: ["jexl:feature.type=='gene'"],
             },
             // The same segments again, colored by how many strains walk each.
             // Without it the frame shows a route past the long node and says

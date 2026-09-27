@@ -15,10 +15,10 @@ displayMode
 domain
 facet
 fadeThinAlignmentsMode
+filterSetting
 geneTrackId
 height
 hideUnlabelled
-jexlFiltersSetting
 lineWidth
 loadedRegion
 loadedTrackId

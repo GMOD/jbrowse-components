@@ -74,9 +74,8 @@ export interface DisplayConfig {
   subParts: string
   impliedUTRs: boolean
   mouseover: string
-  // The raw config slot omits the `jexl:` prefix and the runtime "Filter by..."
-  // override carries it; buildFeatureAdmission normalizes both.
-  jexlFilters: string[]
+  // the "Filter by..." list, `activeJexlFilters`, in place of the slot's own
+  filter: string[]
   // Not a jexl filter, so it never reaches the "Filter by..." dialog.
   hideSourceFeatures: boolean
   // `number | string` because the slot declares `contextVariable: ['feature']`
@@ -115,7 +114,7 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   subParts: true,
   impliedUTRs: true,
   mouseover: true,
-  jexlFilters: true,
+  filter: true,
   hideSourceFeatures: true,
   featureHeight: true,
   color: true,

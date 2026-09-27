@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
-import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import {
+  jexlFilterConfigSchemaFields,
+  retiredFilterSpelling,
+} from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -334,6 +337,7 @@ export default function configSchemaFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      retired: retiredFilterSpelling,
     },
   )
 }

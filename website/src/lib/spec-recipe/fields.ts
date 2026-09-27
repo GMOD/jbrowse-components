@@ -789,10 +789,9 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
 // a count when filters are active), and the multi-sample variant one. So unlike
 // most of this table the label does not vary; only which displays have it does.
 //
-// The two field names are one control. `jexlFilters` is the config-level slot
-// (stored unprefixed, `jexl:` added on read) and `jexlFiltersSetting` is the
-// session-level override the dialog actually writes, so a reader reproducing
-// either arrives through the same dialog.
+// The two field names are one control. `filter` is the config-level slot and
+// `filterSetting` is the session-level override the dialog actually writes, so
+// a reader reproducing either arrives through the same dialog.
 const FILTER_MENU_DISPLAYS = new Set([
   'LinearBasicDisplay',
   'LinearVariantDisplay',
@@ -1250,8 +1249,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   modifications: modificationsStep,
   rowColor: rowColorStep,
   facet: facetStep,
-  jexlFilters: filterStep,
-  jexlFiltersSetting: filterStep,
+  filter: filterStep,
+  filterSetting: filterStep,
   // These two are declared by LinearHicDisplay alone, so as with the
   // alignments-only fields the name settles the display and an unresolved entry
   // can still be answered.

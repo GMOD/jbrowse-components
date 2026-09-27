@@ -191,7 +191,7 @@ conservation track for canFam4.
 
 - `layout` HP indices are **0-based** on the wire (`<sample> HP0`/`HP1`, see
   `makeHaplotypeSources`). Using 1/2 renders every second row empty.
-- Neither `jexlFiltersSetting` nor `jexlFilters` has any effect on
+- Neither `filterSetting` nor `filter` has any effect on
   `LinearMultiRowFeatureDisplay` — the display reads no filters, and the config
   slot it used to publish is gone. A figure that wants a subset of painted rows
   needs a different track, not a filter.

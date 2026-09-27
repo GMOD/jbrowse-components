@@ -1,6 +1,5 @@
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { isGeneLikeType } from '@jbrowse/core/util'
-import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 
 import { featureType } from './util.ts'
 
@@ -10,7 +9,7 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export type AdmissionConfig = Pick<
   DisplayConfig,
-  'jexlFilters' | 'transcriptTypes' | 'containerTypes' | 'hideSourceFeatures'
+  'filter' | 'transcriptTypes' | 'containerTypes' | 'hideSourceFeatures'
 >
 
 // Core's gene-like rule keeps an Ensembl `ncRNA_gene` or a bare `tRNA`; the
@@ -29,9 +28,8 @@ export function geneTypeTest(
 }
 
 // The single place that decides which fetched features get laid out and drawn.
-// The `jexlFilters` slot stores expressions without the `jexl:` prefix, so this
-// adds it before compiling, and binds the worker's plugin jexl instance so a
-// filter can call a plugin-registered function.
+// It binds the worker's plugin jexl instance so a filter can call a
+// plugin-registered function.
 export function buildFeatureAdmission({
   config,
   jexl,
@@ -46,7 +44,7 @@ export function buildFeatureAdmission({
   hiddenFeatureIds?: string[]
 }) {
   const filterChain = new SerializableFilterChain({
-    filters: config.jexlFilters.map(ensureJexlPrefix),
+    filters: config.filter,
     jexl,
   })
 
@@ -69,7 +67,7 @@ export function buildFeatureAdmission({
   // sequence, so it draws as a bar across every window at every zoom. `gbkey=Src`
   // is a far tighter marker than type=region, so this leaves CpG islands and
   // centromeres alone and a file with no gbkey attribute passes untouched. A
-  // gate rather than a jexlFilters default, which would seed the "Filter by..."
+  // gate rather than a `filter` default, which would seed the "Filter by..."
   // dialog with an expression the user never wrote.
   const hideSource = config.hideSourceFeatures
 

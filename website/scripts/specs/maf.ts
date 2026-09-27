@@ -805,7 +805,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // Clustered, so the haplotypes carrying an allele gather into a
               // block instead of scattering over 464 rows. 464 rows in 240 px
               // is a texture either way; what clustering buys is that the
-              // texture has edges. No jexlFilters — see above.
+              // texture has edges. No filter — see above.
               trackId: 'hprc2_wave_grch38',
               type: 'LinearMultiSampleVariantDisplay',
               height: 240,

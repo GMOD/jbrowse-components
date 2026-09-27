@@ -21,7 +21,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | --- | --- | --- |
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a shape that is a name, a jexl expression or a categorical scale over the shape names, an integer `row`, a `text` lane of strings for the text mark, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
 | `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — run in order over a feature list, each step reading what the last answered |
-| `CoreGetEncodedLayers` | `packages/core/src/rpc/methods/CoreGetEncodedLayers.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
+| `CoreGetEncodedLayers` | `packages/core/src/rpc/methods/CoreGetEncodedLayers.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `filter` list as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
 | `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ mark, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry with a shape reading `layers[markIndex]` through a lens that checks its type's lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range, a `text` entry placed as DOM by `placeTextMarks` in the entry's stead, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
 **A positional channel is a field and the value scale is the plot's**, where
@@ -224,7 +224,7 @@ both ([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangem
 
 The request's shared `transform` runs first, then each layer's own, so a
 `marks` list can hold a binned count and the raw features over one fetch:
-the display's `jexlFilters` are the shared steps and a mark's `transform`
+the display's `filter` expressions are the shared steps and a mark's `transform`
 its own. With a zoom range on each — `minBpPerPx` on the density,
 `maxBpPerPx` on the features — one config is a multiscale picture, the
 declared form of GenomeSpy's `multiscale` layer and of `defineMark`'s

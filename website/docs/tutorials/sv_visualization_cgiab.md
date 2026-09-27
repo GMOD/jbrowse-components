@@ -654,7 +654,7 @@ significance, served by UCSC as a bigBed:
   },
   "displays": [{ "type": "LinearBasicDisplay", "displayMode": "compact" }],
   "displayDefaults": {
-    "jexlFilters": ["get(feature,'_varLen') < 50000"]
+    "filter": ["jexl:get(feature,'_varLen') < 50000"]
   }
 }
 ```

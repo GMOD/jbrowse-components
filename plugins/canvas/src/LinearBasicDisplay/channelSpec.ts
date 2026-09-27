@@ -1,8 +1,4 @@
-import {
-  ensureJexlPrefix,
-  isJexl,
-  stringToJexlExpression,
-} from '@jbrowse/core/util/jexlStrings'
+import { isJexl, stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { isIdentityColor } from '@jbrowse/display-kit/channelSpec'
 
 import type { FeatureFacet } from './facet.ts'
@@ -30,7 +26,7 @@ export const CHANNEL_SPEC_EXAMPLES = [
   },
   { spec: '{ "color": "#1f77b4" }', description: 'one color for everything' },
   {
-    spec: '{ "filter": ["feature.type == \'gene\'"] }',
+    spec: '{ "filter": ["jexl:feature.type == \'gene\'"] }',
     description: 'genes only',
   },
   {
@@ -51,9 +47,7 @@ export function facetOf(facet: FeatureFacet | undefined): ChannelSpec['facet'] {
 }
 
 export function filterOf(activeFilters: string[]) {
-  return activeFilters.length
-    ? activeFilters.map(f => f.replace(/^jexl:/, ''))
-    : null
+  return activeFilters.length ? activeFilters : null
 }
 
 export function channelSpecProblems(spec: ChannelSpec, jexl: JexlInstance) {
@@ -71,10 +65,7 @@ export function channelSpecProblems(spec: ChannelSpec, jexl: JexlInstance) {
           },
         ]
       : []),
-    ...(spec.filter ?? []).map(f => ({
-      channel: 'filter',
-      code: ensureJexlPrefix(f),
-    })),
+    ...(spec.filter ?? []).map(code => ({ channel: 'filter', code })),
   ]
   return expressions.flatMap(({ channel, code }) => {
     if (!isJexl(code)) {

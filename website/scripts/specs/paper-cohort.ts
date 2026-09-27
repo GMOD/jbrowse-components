@@ -100,7 +100,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             {
               trackId: HGSVC3_SV_TRACK.trackId,
               type: 'LinearVariantDisplay',
-              jexlFilters: ['alleleLength(feature)>=5000'],
+              filter: ['jexl:alleleLength(feature)>=5000'],
               displayMode: 'compact',
               height: 90,
             },

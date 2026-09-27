@@ -1,5 +1,4 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 import {
   RETIRED_ROW_STATE_KEYS,
@@ -33,17 +32,15 @@ export default function LinearMultiSampleVariantDisplayF(
       viewType: 'LinearGenomeView',
       ReactComponent: VariantDisplayComponent,
       // A v4 layout copied the colorBy palette into its rows, so its
-      // colours stay behind and the palette keeps painting them.
+      // colours stay behind and the palette keeps painting them. Its
+      // `jexlFilters` lands as the config's own retired spelling, which
+      // `retiredFilterSpelling` then renames and prefixes.
       retiredState: {
         keys: [...RETIRED_ROW_STATE_KEYS, 'jexlFilters'],
         lift: instance => ({
           ...liftRetiredRowState(instance, { colors: false }),
           ...(Array.isArray(instance.jexlFilters)
-            ? {
-                jexlFilters: (instance.jexlFilters as string[]).map(
-                  ensureJexlPrefix,
-                ),
-              }
+            ? { jexlFilters: instance.jexlFilters }
             : {}),
         }),
       },

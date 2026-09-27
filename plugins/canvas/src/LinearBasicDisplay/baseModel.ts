@@ -19,8 +19,10 @@ import {
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
+  FilterSetting,
   activeJexlFilters,
   configuredJexlFilters,
+  liftRetiredFilterSetting,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -241,57 +243,59 @@ export default function baseStateModelFactory(
       DensityBandMixin(),
       ContextMenuMixin<FeatureContextMenuInfo>(),
       HiddenGroupsMixin(),
-      types.model({
-        /**
-         * #property
-         */
-        configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * Runtime "Filter by..." override.
-         */
-        jexlFiltersSetting: types.maybe(types.array(types.string)),
-        /**
-         * #property
-         * Feature ids the user pinned to the top of the layout via the
-         * feature right-click menu.
-         */
-        pinnedFeatureIds: types.stripDefault(types.array(types.string), []),
-        /**
-         * #property
-         * "Show only these features": the collected set the user builds by
-         * ctrl+clicking features (or via the right-click menu).
-         */
-        soloFeatureIds: types.stripDefault(types.array(types.string), []),
-        /**
-         * #property
-         * Whether the collected soloFeatureIds set is actually isolating
-         * the view (worker drops non-members).
-         */
-        soloApplied: types.stripDefault(types.boolean, false),
-        /**
-         * #property
-         * "Hide this feature" exclusion set (inverse of solo): the worker
-         * drops these from layout/drawing.
-         */
-        hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
-        /**
-         * #property
-         * Genes the user opened from the isoform badge on their own label:
-         * these draw every isoform whatever `geneGlyphMode` or the fit
-         * ladder's isoform rung would otherwise collapse them to.
-         */
-        expandedGeneIds: types.stripDefault(types.array(types.string), []),
-        /**
-         * #property
-         * Declarative feature highlights, typically seeded by a text search
-         * (highlight the gene you searched for).
-         */
-        featureHighlights: types.stripDefault(
-          types.array(FeatureHighlightModel),
-          [],
-        ),
-      }),
+      types
+        .model({
+          /**
+           * #property
+           */
+          configuration: ConfigurationReference(configSchema),
+          /**
+           * #property
+           * Runtime "Filter by..." override.
+           */
+          filterSetting: FilterSetting,
+          /**
+           * #property
+           * Feature ids the user pinned to the top of the layout via the
+           * feature right-click menu.
+           */
+          pinnedFeatureIds: types.stripDefault(types.array(types.string), []),
+          /**
+           * #property
+           * "Show only these features": the collected set the user builds by
+           * ctrl+clicking features (or via the right-click menu).
+           */
+          soloFeatureIds: types.stripDefault(types.array(types.string), []),
+          /**
+           * #property
+           * Whether the collected soloFeatureIds set is actually isolating
+           * the view (worker drops non-members).
+           */
+          soloApplied: types.stripDefault(types.boolean, false),
+          /**
+           * #property
+           * "Hide this feature" exclusion set (inverse of solo): the worker
+           * drops these from layout/drawing.
+           */
+          hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
+          /**
+           * #property
+           * Genes the user opened from the isoform badge on their own label:
+           * these draw every isoform whatever `geneGlyphMode` or the fit
+           * ladder's isoform rung would otherwise collapse them to.
+           */
+          expandedGeneIds: types.stripDefault(types.array(types.string), []),
+          /**
+           * #property
+           * Declarative feature highlights, typically seeded by a text search
+           * (highlight the gene you searched for).
+           */
+          featureHighlights: types.stripDefault(
+            types.array(FeatureHighlightModel),
+            [],
+          ),
+        })
+        .preProcessSnapshot(liftRetiredFilterSetting),
     )
     .volatile(() => ({
       // #region volatile
@@ -342,8 +346,7 @@ export default function baseStateModelFactory(
 
       /**
        * #method
-       * What the `jexlFilters` config slot alone declares,
-       * `jexl:`-prefixed.
+       * What the `filter` config slot alone declares.
        */
       configuredFilters(): string[] {
         return configuredJexlFilters(self)
@@ -648,7 +651,7 @@ export default function baseStateModelFactory(
           displayConfig: {
             ...workerConfig,
             subfeatureLabels: self.effectiveSubfeatureLabels,
-            jexlFilters: self.activeFilters(),
+            filter: self.activeFilters(),
             // A facet other than strand needs a stamp per feature, so only
             // it joins the cache key: a strand facet never refetches.
             ...(self.facet === undefined || self.facet.field === STRAND_FIELD
@@ -1184,8 +1187,8 @@ export default function baseStateModelFactory(
          * Sets the runtime filter override (already-`jexl:`-prefixed
          * expressions).
          */
-        setJexlFilters(filters?: string[]) {
-          self.jexlFiltersSetting = cast(filters)
+        setFilter(filters?: string[]) {
+          self.filterSetting = cast(filters)
         },
 
         /**
@@ -1338,7 +1341,7 @@ export default function baseStateModelFactory(
        */
       featureNarrowings(): Reversibles {
         return {
-          jexlFilters: jexlFilterNarrowing(self),
+          filter: jexlFilterNarrowing(self),
           solo: {
             count: self.soloApplied ? 1 : 0,
             clear: () => {

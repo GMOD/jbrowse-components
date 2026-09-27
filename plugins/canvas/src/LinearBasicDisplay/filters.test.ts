@@ -19,7 +19,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // The view's display snapshot must set `configuration: '<displayId>'`, or the
 // configuration union falls to its inline branch and silently builds a
 // default config.
-function createDisplay(jexlFilters?: string[]) {
+function createDisplay(
+  filter?: string[],
+  displayConf: Record<string, unknown> = { filter },
+  instance: Record<string, unknown> = {},
+) {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory(pluginManager)
 
@@ -64,7 +68,9 @@ function createDisplay(jexlFilters?: string[]) {
       type: 'FeatureTrack',
       trackId: 'test_track',
       assemblyNames: ['volvox'],
-      displays: [{ type: 'LinearBasicDisplay', displayId: 'd1', jexlFilters }],
+      displays: [
+        { type: 'LinearBasicDisplay', displayId: 'd1', ...displayConf },
+      ],
     },
     { pluginManager },
   )
@@ -102,7 +108,9 @@ function createDisplay(jexlFilters?: string[]) {
         {
           type: 'FeatureTrack',
           configuration: 'test_track',
-          displays: [{ type: 'LinearBasicDisplay', configuration: 'd1' }],
+          displays: [
+            { type: 'LinearBasicDisplay', configuration: 'd1', ...instance },
+          ],
         },
       ],
     }),
@@ -115,11 +123,33 @@ function createDisplay(jexlFilters?: string[]) {
 }
 
 describe('canvas display runtime filters', () => {
-  it('activeFilters() prefixes the config jexlFilters slot when no override is set', () => {
-    const display = createDisplay([`get(feature,'type')=='gene'`])
+  it('activeFilters() is the config filter slot when no override is set', () => {
+    const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
     expect(display.activeFilters()).toEqual([
       `jexl:get(feature,'type')=='gene'`,
     ])
+  })
+
+  it("v4's unprefixed jexlFilters slot loads as a prefixed filter", () => {
+    const display = createDisplay(undefined, {
+      jexlFilters: [`get(feature,'type')=='gene'`],
+    })
+    expect(display.activeFilters()).toEqual([
+      `jexl:get(feature,'type')=='gene'`,
+    ])
+  })
+
+  it("a v4.3 session's jexlFiltersSetting loads as a prefixed filterSetting", () => {
+    const display = createDisplay(undefined, undefined, {
+      jexlFiltersSetting: [`get(feature,'score')>5`],
+    })
+    expect(display.filterSetting).toEqual([`jexl:get(feature,'score')>5`])
+  })
+
+  it('refuses a bare expression in the filter slot', () => {
+    expect(() => createDisplay([`get(feature,'type')=='gene'`])).toThrow(
+      /is not an expression/,
+    )
   })
 
   it('a track that declares no filters opens the dialog empty', () => {
@@ -127,60 +157,60 @@ describe('canvas display runtime filters', () => {
     expect(display.activeFilters()).toEqual([])
   })
 
-  it('the runtime override replaces (shadows) the config jexlFilters slot', () => {
-    const display = createDisplay([`get(feature,'type')=='gene'`])
-    display.setJexlFilters([`jexl:get(feature,'score')>5`])
+  it('the runtime override replaces (shadows) the config filter slot', () => {
+    const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
+    display.setFilter([`jexl:get(feature,'score')>5`])
     expect(display.activeFilters()).toEqual([`jexl:get(feature,'score')>5`])
   })
 
   it('an empty override means "no filters" (distinct from unset)', () => {
-    const display = createDisplay([`get(feature,'type')=='gene'`])
-    display.setJexlFilters([])
+    const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
+    display.setFilter([])
     expect(display.activeFilters()).toEqual([])
   })
 
   it('clearing the override (undefined) falls back to the config slot', () => {
-    const display = createDisplay([`get(feature,'type')=='gene'`])
-    display.setJexlFilters([`jexl:get(feature,'score')>5`])
-    display.setJexlFilters(undefined)
+    const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
+    display.setFilter([`jexl:get(feature,'score')>5`])
+    display.setFilter(undefined)
     expect(display.activeFilters()).toEqual([
       `jexl:get(feature,'type')=='gene'`,
     ])
   })
 
   it('does not count a runtime override equal to the config default', () => {
-    const display = createDisplay([`get(feature,'type')=='gene'`])
+    const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
     expect(activeCount(display.featureNarrowings())).toBe(0)
 
-    display.setJexlFilters(display.activeFilters())
+    display.setFilter(display.activeFilters())
     expect(activeCount(display.featureNarrowings())).toBe(0)
 
     const defaulted = createDisplay()
-    defaulted.setJexlFilters(defaulted.activeFilters())
+    defaulted.setFilter(defaulted.activeFilters())
     expect(activeCount(defaulted.featureNarrowings())).toBe(0)
   })
 
   it('counts an override that differs from the config default, either way', () => {
-    const narrower = createDisplay([`get(feature,'type')=='gene'`])
-    narrower.setJexlFilters([`jexl:get(feature,'score')>5`])
+    const narrower = createDisplay([`jexl:get(feature,'type')=='gene'`])
+    narrower.setFilter([`jexl:get(feature,'score')>5`])
     expect(activeCount(narrower.featureNarrowings())).toBe(1)
 
-    const widened = createDisplay([`get(feature,'type')=='gene'`])
-    widened.setJexlFilters([])
+    const widened = createDisplay([`jexl:get(feature,'type')=='gene'`])
+    widened.setFilter([])
     expect(activeCount(widened.featureNarrowings())).toBe(1)
 
     const empty = createDisplay([])
-    empty.setJexlFilters([])
+    empty.setFilter([])
     expect(activeCount(empty.featureNarrowings())).toBe(0)
   })
 
-  it('rpcProps().displayConfig.jexlFilters carries the effective filters', () => {
-    const display = createDisplay([`get(feature,'type')=='gene'`])
-    expect(display.rpcProps().displayConfig.jexlFilters).toEqual([
+  it('rpcProps().displayConfig.filter carries the effective filters', () => {
+    const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
+    expect(display.rpcProps().displayConfig.filter).toEqual([
       `jexl:get(feature,'type')=='gene'`,
     ])
-    display.setJexlFilters([`jexl:get(feature,'score')>5`])
-    expect(display.rpcProps().displayConfig.jexlFilters).toEqual([
+    display.setFilter([`jexl:get(feature,'score')>5`])
+    expect(display.rpcProps().displayConfig.filter).toEqual([
       `jexl:get(feature,'score')>5`,
     ])
   })

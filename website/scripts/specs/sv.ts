@@ -237,7 +237,7 @@ function maneGeneLane({
     lane: {
       trackId,
       type: 'LinearBasicDisplay',
-      jexlFiltersSetting: [`jexl:get(feature,'name')=='${accession}'`],
+      filterSetting: [`jexl:get(feature,'name')=='${accession}'`],
       forceLoad: true,
       height,
       ...(featureHighlights ? { featureHighlights } : {}),
@@ -1671,13 +1671,11 @@ export const svSpecs: ScreenshotSpec[] = [
             // deletion, and drawn unfiltered the lane is one bar edge to edge. A
             // red bar across the window would read as "pathogenic CNV here",
             // which is exactly the wrong answer. `_varLen` is the catalogue's
-            // own length field, off the bigBed autoSql. Bare expression: a
-            // canvas display's jexlFilters slot adds the `jexl:` prefix
-            // itself.
+            // own length field, off the bigBed autoSql.
             {
               trackId: CLINVAR_CNV_TRACK.trackId,
               type: 'LinearBasicDisplay',
-              jexlFilters: ["get(feature,'_varLen') < 50000"],
+              filter: ["jexl:get(feature,'_varLen') < 50000"],
               displayMode: 'compact',
               heightMode: 'grow',
             },

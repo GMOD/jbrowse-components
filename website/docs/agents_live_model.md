@@ -199,7 +199,7 @@ in order. An object replaces the setting whole and `null` clears it. A field is
 a feature attribute, a dotted path such as `INFO.SVTYPE`, or `strand`. An
 alignments track takes the same `facet`, its field a read dimension
 (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The filter is the runtime
-list, `display.setJexlFilters(["jexl:feature.type == 'gene'"])`, and
+list, `display.setFilter(["jexl:feature.type == 'gene'"])`, and
 `display.channelSpec` reads all three back.
 
 A plot of a track's features, written as ggplot2 writes one, is the

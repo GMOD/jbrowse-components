@@ -98,7 +98,7 @@ and a theme. Every recipe below changes one piece of it.
       "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.filtered.vcf.gz" },
       "displayDefaults": {
         "color": "jexl:feature.type=='SNV'?'green':'purple'",
-        "jexlFilters": ["feature.INFO.AF[0] > 0.05"]
+        "filter": ["jexl:feature.INFO.AF[0] > 0.05"]
       }
     }
   ],
@@ -252,8 +252,8 @@ session-wide form, and the About dialog.
 A feature track fits its height by default: a crowded window drops labels and
 then squeezes the rows rather than scrolling.
 [`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) `fixed`
-keeps every label and scrolls instead. `jexlFilters` draws only the features
-that pass every expression, on variant tracks too:
+keeps every label and scrolls instead. `filter` draws only the features that
+pass every `jexl:` expression, on variant tracks too:
 
 ```json addtrack
 {
@@ -264,9 +264,9 @@ that pass every expression, on variant tracks too:
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
   "displayDefaults": {
     "height": 200,
-    "jexlFilters": [
-      "feature.end - feature.start > 1000",
-      "feature.type == 'gene'"
+    "filter": [
+      "jexl:feature.end - feature.start > 1000",
+      "jexl:feature.type == 'gene'"
     ]
   }
 }
@@ -372,8 +372,8 @@ Past a handful of samples, generate `subadapters` from your samplesheet
 
 ## Variant tracks
 
-`color` and `jexlFilters` work as on a feature track, and VCF `INFO` fields are
-the usual thing to branch on:
+`color` and `filter` work as on a feature track, and VCF `INFO` fields are the
+usual thing to branch on:
 
 ```json addtrack
 {
@@ -384,7 +384,7 @@ the usual thing to branch on:
   "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.dup.vcf.gz" },
   "displayDefaults": {
     "color": "jexl:{DEL:'red',INS:'blue',DUP:'green',INV:'orange'}[feature.INFO.SVTYPE[0]] || 'gray'",
-    "jexlFilters": ["feature.INFO.AF[0] > 0.05"]
+    "filter": ["jexl:feature.INFO.AF[0] > 0.05"]
   }
 }
 ```

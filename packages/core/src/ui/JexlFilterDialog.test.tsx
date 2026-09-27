@@ -40,14 +40,14 @@ function setup(
       ),
       display: types
         .model('Display', {
-          jexlFiltersSetting: types.maybe(types.array(types.string)),
+          filterSetting: types.maybe(types.array(types.string)),
         })
         .views(() => ({
           configuredFilters: () => STORED,
         }))
         .actions(self => ({
-          setJexlFilters(filters?: string[]) {
-            self.jexlFiltersSetting = cast(filters)
+          setFilter(filters?: string[]) {
+            self.filterSetting = cast(filters)
           },
         })),
     })
@@ -84,7 +84,7 @@ test('shows a line as rows and writes an untouched one back unchanged', () => {
     screen.getByDisplayValue('feature.INFO.AC / feature.INFO.AN > 0.1'),
   ).toBeInTheDocument()
   apply()
-  expect(display.jexlFiltersSetting).toEqual(STORED)
+  expect(display.filterSetting).toEqual(STORED)
   expect(handleClose).toHaveBeenCalled()
 })
 
@@ -97,14 +97,14 @@ test('visiting a field without changing it leaves its line alone', () => {
   fireEvent.focus(value)
   fireEvent.blur(value)
   apply()
-  expect(display.jexlFiltersSetting).toEqual(STORED)
+  expect(display.filterSetting).toEqual(STORED)
 })
 
 test('editing a condition writes each condition of its line alone', () => {
   const { display } = setup()
   fireEvent.change(screen.getByDisplayValue('25'), { target: { value: '30' } })
   apply()
-  expect(display.jexlFiltersSetting).toEqual([
+  expect(display.filterSetting).toEqual([
     'jexl:feature.QUAL >= 30',
     "jexl:feature.FILTER == 'PASS'",
     STORED[1],
@@ -123,7 +123,7 @@ test('the Text tab edits every line as text, without the prefix', () => {
   expect(screen.getByText(/^Line 1:/)).toBeInTheDocument()
   fireEvent.change(box, { target: { value: 'feature.QUAL > 5\n\n' } })
   apply()
-  expect(display.jexlFiltersSetting).toEqual(['jexl:feature.QUAL > 5'])
+  expect(display.filterSetting).toEqual(['jexl:feature.QUAL > 5'])
 })
 
 test('waits for fields supplied as a promise', async () => {
@@ -155,10 +155,7 @@ test('a typed field takes a numeric operator and writes a number', () => {
     target: { value: '0.001' },
   })
   apply()
-  expect(display.jexlFiltersSetting).toEqual([
-    ...STORED,
-    'jexl:feature.AF >= 0.001',
-  ])
+  expect(display.filterSetting).toEqual([...STORED, 'jexl:feature.AF >= 0.001'])
 })
 
 test('the picker lists the columns the adapter describes', async () => {

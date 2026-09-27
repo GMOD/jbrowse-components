@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { MonospaceTextField, SubmitDialog } from '@jbrowse/core/ui'
-import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -23,7 +22,7 @@ export interface ChannelSpecHost {
   colorMembers: string[]
   applyDisplaySettings: (settings: Record<string, unknown>) => unknown
   /** Absent on a display with no runtime filter list, which then refuses one. */
-  setJexlFilters?: (filters?: string[]) => void
+  setFilter?: (filters?: string[]) => void
   /**
    * On a display with rows: the field and the order, written the way its own
    * reorder writes them, so the labels, the focus and a tree the order still
@@ -100,7 +99,7 @@ function apply(host: ChannelSpecHost, spec: ChannelSpec) {
     host.setRowsSpec?.(spec.rows ?? null)
   }
   if (spec.filter !== undefined) {
-    host.setJexlFilters?.(spec.filter?.map(ensureJexlPrefix) ?? [])
+    host.setFilter?.(spec.filter ?? [])
   }
 }
 

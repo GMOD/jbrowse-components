@@ -30,11 +30,11 @@ The `uri` shorthand resolves a sibling `.tbi`; add `"csi": true` for a `.csi`
 `color` takes a `jexl:` expression over the record. INFO fields parse as arrays,
 so `feature.INFO.SVTYPE[0]` is the first value; the
 [cookbook](/docs/cookbook#variant-tracks) has the SV-type lookup table and a
-`jexlFilters` example.
+`filter` example.
 
 ### Helper functions for jexl color expressions
 
-The variants plugin registers these for `color` and `jexlFilters`:
+The variants plugin registers these for `color` and `filter`:
 
 <!-- JEXL_CATEGORY variant-functions START -->
 

@@ -157,6 +157,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "pattern": "^jexl:",
       "description": "A jexl callback evaluated when the slot is read, e.g. \`jexl:get(feature, \\"score\\") > 10 ? \\"red\\" : \\"blue\\"\`. A slot takes one in place of a fixed value where its config docs list callback args."
     },
+    "JexlExpression": {
+      "type": "string",
+      "pattern": "^jexl:",
+      "description": "A jexl expression the display evaluates per feature, written with its prefix, e.g. \`jexl:get(feature, \\"score\\") > 10\`."
+    },
     "PlainString": {
       "type": "string",
       "not": {
@@ -3766,11 +3771,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+        "filter": {
+          "description": "jexl: expressions a feature must pass to be drawn.",
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/JexlExpression"
           }
         },
         "maxFeatureScreenDensity": {
@@ -3966,6 +3971,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -5895,11 +5904,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+        "filter": {
+          "description": "jexl: expressions a feature must pass to be drawn.",
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/JexlExpression"
           }
         },
         "maxFeatureScreenDensity": {
@@ -6003,6 +6012,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -6213,11 +6226,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 20
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+        "filter": {
+          "description": "jexl: expressions a feature must pass to be drawn.",
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/JexlExpression"
           }
         },
         "rowHeight": {
@@ -6327,6 +6340,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "none"
           ],
           "default": "auto"
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -8148,11 +8165,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": true
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+        "filter": {
+          "description": "jexl: expressions a feature must pass to be drawn.",
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/JexlExpression"
           }
         },
         "displayCrossHatches": {
@@ -8160,6 +8177,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -8280,11 +8301,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": true
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+        "filter": {
+          "description": "jexl: expressions a feature must pass to be drawn.",
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/$defs/JexlExpression"
           }
         },
         "displayCrossHatches": {
@@ -8292,6 +8313,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minimalTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -8742,16 +8767,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "jexlFilters": {
+            "filter": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/jexlFilters"
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/filter"
                 },
                 {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/filter"
                 },
                 {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
                 }
               ]
             },
@@ -8874,6 +8899,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
             },
             "renderer": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
@@ -9397,14 +9435,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+            "filter": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {
@@ -9747,16 +9788,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "jexlFilters": {
+            "filter": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/jexlFilters"
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/filter"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/jexlFilters"
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/filter"
                 },
                 {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
                 }
               ]
             },
@@ -9824,6 +9865,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
@@ -10380,6 +10434,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
+            "filter": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+            },
             "jexlFilters": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
@@ -10670,6 +10727,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
+            "filter": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
             "jexlFilters": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
@@ -11704,14 +11764,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showLegend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
             },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
+            "filter": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/filter"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {
@@ -14465,7 +14528,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearBasicDisplayState": {
       "type": "object",
       "properties": {
-        "jexlFiltersSetting": {
+        "filterSetting": {
           "type": "array",
           "items": {
             "type": "string"
@@ -15051,7 +15114,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearVariantDisplayState": {
       "type": "object",
       "properties": {
-        "jexlFiltersSetting": {
+        "filterSetting": {
           "type": "array",
           "items": {
             "type": "string"
@@ -15162,7 +15225,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
-        "jexlFiltersSetting": {
+        "filterSetting": {
           "type": "array",
           "items": {
             "type": "string"
@@ -15518,7 +15581,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
-        "jexlFiltersSetting": {
+        "filterSetting": {
           "type": "array",
           "items": {
             "type": "string"
@@ -15581,7 +15644,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
-        "jexlFiltersSetting": {
+        "filterSetting": {
           "type": "array",
           "items": {
             "type": "string"

@@ -92,7 +92,7 @@ export async function run(args?: string[]) {
     displayDefaults: {
       type: 'string',
       description:
-        'Inline JSON merged into the track displayDefaults (labels, mouseover, jexlFilters, etc.)',
+        'Inline JSON merged into the track displayDefaults (labels, mouseover, filter, etc.)',
     },
     multiwig: {
       type: 'string',
@@ -172,7 +172,7 @@ export async function run(args?: string[]) {
     'a jexl callback so nothing needs escaping, e.g. ' +
     '--color \'jexl:feature.strand==1?"blue":"red"\'. --displayDefaults takes ' +
     'inline JSON for any other appearance setting (labels, mouseover, ' +
-    'jexlFilters).\n\n' +
+    'filter).\n\n' +
     '--multiwig bundles several BigWigs into one MultiQuantitativeTrack, in ' +
     'place of the positional track argument: pass a comma-separated list of ' +
     'BigWig files/URLs, or a .json file with an array of BigWig locations or ' +

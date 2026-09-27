@@ -1154,7 +1154,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'hg38-clinvarMain',
               type: 'LinearBasicDisplay',
               height: 56,
-              jexlFiltersSetting: [
+              filterSetting: [
                 "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
               ],
             },

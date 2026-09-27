@@ -658,14 +658,9 @@ const PGGB_VARIANTS_SESSION_TRACK = {
 
 // The positional-variant track and the two structural-filter spellings that
 // used to live here went with `pangenome/pggb_spur_linear`, which was their only
-// consumer. Worth knowing if a variant lane comes back to this file: the two
-// spellings were NOT interchangeable. The matrix display's `jexlFilters` is a
-// model property feeding a SerializableFilterChain and needs the `jexl:` prefix
-// written out, while the canvas LinearVariantDisplay's slot adds the prefix
-// itself and a doubled one is a parse error -- which does not throw, it sits in
-// `loading` forever and reads as a slow fetch. The same VCF under a second
-// trackId was also deliberate, since a session spec naming one track twice keeps
-// only the LAST display.
+// consumer. Worth knowing if a variant lane comes back to this file: the same
+// VCF under a second trackId was deliberate, since a session spec naming one
+// track twice keeps only the LAST display.
 
 // `mafLane` is stated rather than derived from `layoutMode`, because the two
 // halves of pangenome/pggb_locus_sample_rows differ ONLY in layoutMode: a lane
@@ -1356,7 +1351,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: K12_IS_TRACK,
               type: 'LinearBasicDisplay',
-              jexlFilters: ["startsWith(get(feature,'name') || '','ins')"],
+              filter: ["jexl:startsWith(get(feature,'name') || '','ins')"],
               height: 50,
             },
             {

@@ -2908,8 +2908,8 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "jexlFilters",
-          "type": "string[]"
+          "name": "filter",
+          "type": "JexlExpression[]"
         },
         {
           "name": "maxFeatureScreenDensity",
@@ -3104,6 +3104,7 @@ export const configManifest: ConfigManifest = {
         "color3",
         "outline",
         "maxHeight",
+        "jexlFilters",
         "renderer",
         "showDescriptions"
       ],
@@ -3124,7 +3125,7 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "configuration",
-        "jexlFiltersSetting",
+        "filterSetting",
         "pinnedFeatureIds",
         "soloFeatureIds",
         "soloApplied",
@@ -4615,8 +4616,8 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "jexlFilters",
-          "type": "string[]"
+          "name": "filter",
+          "type": "JexlExpression[]"
         },
         {
           "name": "maxFeatureScreenDensity",
@@ -4759,6 +4760,7 @@ export const configManifest: ConfigManifest = {
         "color3",
         "outline",
         "maxHeight",
+        "jexlFilters",
         "renderer",
         "showDescriptions"
       ],
@@ -4776,7 +4778,7 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "configuration",
-        "jexlFiltersSetting",
+        "filterSetting",
         "pinnedFeatureIds",
         "soloFeatureIds",
         "soloApplied",
@@ -4820,8 +4822,8 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "jexlFilters",
-          "type": "string[]"
+          "name": "filter",
+          "type": "JexlExpression[]"
         },
         {
           "name": "rowHeight",
@@ -5007,6 +5009,9 @@ export const configManifest: ConfigManifest = {
           "type": "variantLaneLabels"
         }
       ],
+      "legacyKeys": [
+        "jexlFilters"
+      ],
       "aliases": [
         "MultiLinearVariantDisplay",
         "LinearVariantMatrixDisplay"
@@ -5018,7 +5023,7 @@ export const configManifest: ConfigManifest = {
         "clusterRegion",
         "sortRowsBy",
         "configuration",
-        "jexlFiltersSetting"
+        "filterSetting"
       ]
     },
     "LDTrackDisplay": {
@@ -6072,13 +6077,14 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "jexlFilters",
-          "type": "string[]"
+          "name": "filter",
+          "type": "JexlExpression[]"
         }
       ],
       "legacyKeys": [
         "displayCrossHatches",
-        "minimalTicks"
+        "minimalTicks",
+        "jexlFilters"
       ],
       "stateModelProps": [
         "id",
@@ -6087,7 +6093,7 @@ export const configManifest: ConfigManifest = {
         "clusterRegion",
         "sortRowsBy",
         "configuration",
-        "jexlFiltersSetting",
+        "filterSetting",
         "indexSnp",
         "indexSnpPinned"
       ]
@@ -6543,13 +6549,14 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "jexlFilters",
-          "type": "string[]"
+          "name": "filter",
+          "type": "JexlExpression[]"
         }
       ],
       "legacyKeys": [
         "displayCrossHatches",
-        "minimalTicks"
+        "minimalTicks",
+        "jexlFilters"
       ],
       "stateModelProps": [
         "id",
@@ -6558,7 +6565,7 @@ export const configManifest: ConfigManifest = {
         "clusterRegion",
         "sortRowsBy",
         "configuration",
-        "jexlFiltersSetting"
+        "filterSetting"
       ]
     }
   },

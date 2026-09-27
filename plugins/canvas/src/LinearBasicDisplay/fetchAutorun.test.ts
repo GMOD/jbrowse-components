@@ -953,7 +953,7 @@ describe('derived regionTooLarge', () => {
     const callCount = mockRpcCall.mock.calls.length
 
     mockRpcCall.mockResolvedValue(makeFeatureData())
-    setConf(display, 'jexlFilters', ["jexl:get(feature,'type')=='nothing'"])
+    setConf(display, 'filter', ["jexl:get(feature,'type')=='nothing'"])
     jest.advanceTimersByTime(2000)
     await jest.runAllTimersAsync()
 
@@ -1552,9 +1552,9 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'connectorColor',
     'containerTypes',
     'featureHeight',
+    'filter',
     'hideSourceFeatures',
     'impliedUTRs',
-    'jexlFilters',
     'labels',
     'mouseover',
     'subParts',

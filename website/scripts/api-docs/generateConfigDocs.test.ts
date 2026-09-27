@@ -16,8 +16,8 @@ const page = (...names: string[]) => new Set(names)
 const slot = (name: string, type = 'string'): ManifestSlot => ({ name, type })
 
 test('a slot with no row is named', () => {
-  expect(missingSlotNames(slot('jexlFilters'), page())).toEqual(['jexlFilters'])
-  expect(missingSlotNames(slot('jexlFilters'), page('jexlFilters'))).toEqual([])
+  expect(missingSlotNames(slot('filter'), page())).toEqual(['filter'])
+  expect(missingSlotNames(slot('filter'), page('filter'))).toEqual([])
 })
 
 test('the type discriminator is exempt', () => {

@@ -1,4 +1,5 @@
 import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { compareStructural } from 'mobx'
 
 import {
@@ -301,11 +302,10 @@ function parseFilter(value: unknown): ChannelSpec['filter'] {
     return null
   }
   const list = typeof value === 'string' ? [value] : value
-  if (
-    !Array.isArray(list) ||
-    !list.every(item => typeof item === 'string' && item.trim())
-  ) {
-    throw new Error('filter is a jexl expression, or a list of them')
+  if (!Array.isArray(list) || !list.every(item => isJexl(item))) {
+    throw new Error(
+      'filter is a jexl: expression, or a list of them, each written "jexl:…"',
+    )
   }
   return list.map(item => item.trim())
 }

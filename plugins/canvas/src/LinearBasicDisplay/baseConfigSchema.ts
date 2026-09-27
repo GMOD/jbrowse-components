@@ -4,7 +4,10 @@ import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
-import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import {
+  jexlFilterConfigSchemaFields,
+  retiredFilterSpelling,
+} from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -164,7 +167,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      retired: basicRetired,
+      retired: { ...basicRetired, ...retiredFilterSpelling },
       preProcessSnapshot: snap => migrateBasicConfigSnapshot(snap),
     },
   )

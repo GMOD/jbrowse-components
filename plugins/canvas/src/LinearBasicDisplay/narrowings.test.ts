@@ -13,7 +13,7 @@ describe('declared narrowings drive count and clear together', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
-    display.setJexlFilters([`jexl:get(feature,'score')>5`])
+    display.setFilter([`jexl:get(feature,'score')>5`])
     display.toggleSoloFeature('gene1')
     display.applySolo()
     display.hideFeature('gene2')

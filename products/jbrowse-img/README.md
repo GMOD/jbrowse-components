@@ -798,7 +798,7 @@ jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
   written from nothing reads better as one JSON modifier than as a path per
   member
 - a `jexl:` item keeps the commas inside its own brackets and quotes:
-  `jexlFilters=jexl:get(feature,'score')>5,` is a list of one filter
+  `filter=jexl:get(feature,'score')>5,` is a list of one filter
 - a location keeps the commas grouping its digits:
   `clusterRegion=chr2:135,787,850-135,876,467` is one region
 - a slot the display does not declare, or a key its object refuses, fails the

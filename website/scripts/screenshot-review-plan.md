@@ -555,7 +555,7 @@ a track's adapter, then verify the URL with `curl -sI`. Confirmed-good URLs:
 
 To add an out-of-config track, switch the spec from `lgvSession` to
 `sessionSpec` with `sessionTracks: [...]`. If an over-dense track needs
-thinning, use `jexlFiltersSetting: ["jexl:...", ...]` on its display snapshot
+thinning, use `filterSetting: ["jexl:...", ...]` on its display snapshot
 (ANDed).
 
 ## `hg002_haplotypes_location_markers`: the flat line is a location marker, and it is kept on purpose

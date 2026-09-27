@@ -442,7 +442,7 @@ export const hprcClusterFixtures = {
             trackId: 'hprc2_wave_grch38',
             type: 'LinearMultiSampleVariantDisplay',
             height: 340,
-            jexlFilters: SV_FILTER,
+            filter: SV_FILTER,
           },
         ],
       },
@@ -1035,7 +1035,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
                   // the lane the flag lives on, cut to the flagged bubbles so
                   // the one under the band is the subject rather than one row
                   // among the window's bubbles
-                  jexlFiltersSetting: ['jexl:feature.inversion'],
+                  filterSetting: ['jexl:feature.inversion'],
                   height: 60,
                 },
                 // Bounded where the other pages let it grow: this is the one
@@ -1332,7 +1332,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               // the lane is a texture either way, and the graph under it is
               // the half this figure is about
               height: 340,
-              jexlFilters: MHC_CALLSET_FILTER,
+              filter: MHC_CALLSET_FILTER,
               runClustering: true,
             },
             graphTrack(SEGMENTS_TRACK, {

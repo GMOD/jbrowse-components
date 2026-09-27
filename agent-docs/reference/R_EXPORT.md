@@ -298,7 +298,7 @@ browser draws as an empty panel; a facet over an empty window still dies,
 since `facet_wrap` refuses a frame with no rows. A step reading a column no
 stage produced is skipped and reported, the way a mark is. `filter` and `formula` carry a jexl
 callback and `flatten` and `mate` fan out structure a table does not hold, so
-each is reported in the header instead, as are `jexlFilters` and `rowColor`.
+each is reported in the header instead, as are `filter` and `rowColor`.
 
 `rows` draws as `facet_wrap`, one panel per value in `domain` order, and yields
 to a `facet` where both are set, as the display does. `scales.y.rules` are

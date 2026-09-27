@@ -27,7 +27,7 @@ test('facet and color are the two settings, read back as the dialog shows them',
       color: { field: 'subtrack', range: ['red'] },
     }),
   ).toMatchObject({ applied: ['facet', 'color'], failed: [] })
-  d.setJexlFilters(["jexl:feature.type == 'gene'"])
+  d.setFilter(["jexl:feature.type == 'gene'"])
   expect(d.facet).toEqual({
     field: 'subtrack',
     domain: ['key5', 'key2', 'key3'],
@@ -43,7 +43,7 @@ test('facet and color are the two settings, read back as the dialog shows them',
   expect(d.channelSpec).toEqual({
     facet: { field: 'subtrack', domain: ['key5', 'key2', 'key3'] },
     color: { field: 'subtrack', range: ['red'] },
-    filter: ["feature.type == 'gene'"],
+    filter: ["jexl:feature.type == 'gene'"],
   })
   expect(getConf(d, 'facet')).toEqual({
     field: 'subtrack',
@@ -124,7 +124,7 @@ test('an expression that does not compile is a problem, named by channel', () =>
   expect(
     d.channelSpecProblems({
       color: 'jexl:feature.type ==',
-      filter: ['feature.score >'],
+      filter: ['jexl:feature.score >'],
     }),
   ).toEqual([
     expect.stringMatching(/^color: /),
@@ -136,7 +136,7 @@ test('an expression that does not compile is a problem, named by channel', () =>
   expect(
     d.channelSpecProblems({
       color: { field: 'jexl:feature.type' },
-      filter: ['feature.score > 5'],
+      filter: ['jexl:feature.score > 5'],
     }),
   ).toEqual([])
 })

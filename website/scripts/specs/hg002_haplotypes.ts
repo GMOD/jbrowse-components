@@ -220,7 +220,7 @@ function landmarkLane(hap: 'MAT' | 'PAT') {
     trackId: `hg002_landmarks_${hap.toLowerCase()}`,
     type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
-    jexlFiltersSetting: [LANDMARK_FILTER],
+    filterSetting: [LANDMARK_FILTER],
     color: STRAND_COLOR,
     showLegend: false,
     height: 60,

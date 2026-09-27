@@ -11,12 +11,11 @@ import type { LinearMultiSampleVariantDisplayModel } from '../LinearMultiSampleV
 // failures were silent:
 //
 // - the multi-sample displays declared an MST property literally named
-//   `jexlFilters`, which shadowed the `jexlFilters` config slot they inherit
+//   `jexlFilters`, which shadowed the config slot of that name they inherited
 //   from `baseLinearDisplayConfigSchema`, so a track config declaring filters
 //   was read by nothing;
-// - they did not prefix, so a filter written the way the base slot documents
-//   (bare, because slot values are deferred-evaluation) reached
-//   `stringToJexlExpression` unprefixed, which throws.
+// - they did not prefix, so a bare filter reached `stringToJexlExpression`,
+//   which throws. The slot now refuses one.
 //
 // The LD display was the third participant until it stopped reading genotypes:
 // it draws a file of already-computed pairs and has no features to filter.
@@ -37,47 +36,42 @@ const CASES = [
 ] as const
 
 describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
-  it('applies the config slot, prefixing what it declares', () => {
+  it('applies the config slot', () => {
     const { display } = createDisplay()
     expect(display.activeFilters()).toEqual([])
 
-    // as the base slot documents it: no `jexl:`, because a stored prefix is
-    // what marks a slot value as a callback
-    setConf(display, 'jexlFilters', [
-      "get(feature,'end')-get(feature,'start')<50",
-    ])
-    expect(display.activeFilters()).toEqual([
-      "jexl:get(feature,'end')-get(feature,'start')<50",
-    ])
-  })
-
-  it('leaves an already-prefixed config value alone', () => {
-    const { display } = createDisplay()
-    setConf(display, 'jexlFilters', ["jexl:get(feature,'name')=='BRCA1'"])
+    setConf(display, 'filter', ["jexl:get(feature,'name')=='BRCA1'"])
     expect(display.activeFilters()).toEqual([
       "jexl:get(feature,'name')=='BRCA1'",
     ])
   })
 
+  it('refuses a bare expression', () => {
+    const { display } = createDisplay()
+    expect(() => {
+      setConf(display, 'filter', ["get(feature,'name')=='BRCA1'"])
+    }).toThrow(/is not an expression/)
+  })
+
   it('lets the runtime override replace the config tier, empty included', () => {
     const { display } = createDisplay()
-    setConf(display, 'jexlFilters', ["get(feature,'score')>10"])
+    setConf(display, 'filter', ["jexl:get(feature,'score')>10"])
 
-    display.setJexlFilters(["jexl:get(feature,'score')>99"])
+    display.setFilter(["jexl:get(feature,'score')>99"])
     expect(display.activeFilters()).toEqual(["jexl:get(feature,'score')>99"])
 
     // the case a one-tier design cannot express: clearing filters an admin
     // declared, without clearing the declaration
-    display.setJexlFilters([])
+    display.setFilter([])
     expect(display.activeFilters()).toEqual([])
 
-    display.setJexlFilters(undefined)
+    display.setFilter(undefined)
     expect(display.activeFilters()).toEqual(["jexl:get(feature,'score')>10"])
   })
 
   it('keeps the override off the config node', () => {
     const { display } = createDisplay()
-    display.setJexlFilters(["jexl:get(feature,'score')>99"])
-    expect(getConf(display, 'jexlFilters')).toEqual([])
+    display.setFilter(["jexl:get(feature,'score')>99"])
+    expect(getConf(display, 'filter')).toEqual([])
   })
 })

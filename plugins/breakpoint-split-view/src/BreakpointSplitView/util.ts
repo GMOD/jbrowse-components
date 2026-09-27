@@ -49,7 +49,7 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
   bezierArcScope?: 'all' | 'crossRegion' | 'none'
   /** the "Filter by..." contract, `JexlFilterSource`, on displays that have one */
   configuredFilters?: () => string[]
-  jexlFiltersSetting?: readonly string[]
+  filterSetting?: readonly string[]
   withFeatureById?: (
     featureId: string,
     onFeat: (feat: Feature) => void,
@@ -62,7 +62,7 @@ export function overlayJexlFilters(d: OverlayDisplayBase | undefined) {
   return d?.configuredFilters
     ? activeJexlFilters({
         configuredFilters: d.configuredFilters,
-        jexlFiltersSetting: d.jexlFiltersSetting,
+        filterSetting: d.filterSetting,
       })
     : []
 }

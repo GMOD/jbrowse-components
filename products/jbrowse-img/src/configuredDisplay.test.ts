@@ -239,12 +239,8 @@ describe('a jexl: value in a path write', () => {
   const nameIs = "jexl:get(feature,'name')=='EDEN.1'"
 
   test('keeps the commas of its own call, and a trailing comma makes a list of one', async () => {
-    const written = await exportTrack(configWith(basic), [
-      `jexlFilters=${nameIs},`,
-    ])
-    const stated = await exportTrack(
-      configWith({ ...basic, jexlFilters: [nameIs] }),
-    )
+    const written = await exportTrack(configWith(basic), [`filter=${nameIs},`])
+    const stated = await exportTrack(configWith({ ...basic, filter: [nameIs] }))
     expect(written).toBe(stated)
     expect(written).not.toContain('EDEN.2')
   }, 60000)

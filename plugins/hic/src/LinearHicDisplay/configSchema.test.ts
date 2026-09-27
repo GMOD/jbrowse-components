@@ -65,7 +65,7 @@ describe('config surface', () => {
   // gate — every one of these was a documented promise nothing kept.
   test.each([
     'mouseover',
-    'jexlFilters',
+    'filter',
     'maxFeatureScreenDensity',
     'fetchSizeLimit',
     'forceLoad',

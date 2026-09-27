@@ -16,8 +16,10 @@ import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
+  FilterSetting,
   activeJexlFilters,
   configuredJexlFilters,
+  liftRetiredFilterSetting,
 } from '@jbrowse/core/util/jexlFilters'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -320,22 +322,21 @@ export default function MultiSampleVariantBaseModelF(
         StoredHoverMixin<VariantHoverFields>(),
         TreeSidebarMixin<ProcessedSource>(),
         ContextMenuMixin<VariantContextMenuInfo>(),
-        types.model({
-          type: types.string,
-          configuration: ConfigurationReference(configSchema),
-          /**
-           * #property
-           * Runtime "Filter by..." override, already `jexl:`-prefixed. When set
-           * (even to an empty list) it replaces the `jexlFilters` config slot;
-           * when undefined the config default applies. See `JexlFilterModel`.
-           */
-          jexlFiltersSetting: types.stripDefault(
-            types.maybe(types.array(types.string)),
-            undefined,
-          ),
-          // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
-          // trigger a run whose output is that mixin's `rows`.
-        }),
+        types
+          .model({
+            type: types.string,
+            configuration: ConfigurationReference(configSchema),
+            /**
+             * #property
+             * Runtime "Filter by..." override. When set (even to an empty list)
+             * it replaces the `filter` config slot; when undefined the config
+             * default applies. See `JexlFilterModel`.
+             */
+            filterSetting: FilterSetting,
+            // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
+            // trigger a run whose output is that mixin's `rows`.
+          })
+          .preProcessSnapshot(liftRetiredFilterSetting),
       )
       .volatile(() => ({
         /**
@@ -420,7 +421,7 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #method
-         * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.
+         * What the `filter` config slot alone declares.
          * In its own block ahead of every reader so they reach it through
          * `self`, the arrangement `LinearBasicDisplay` uses for the same pair.
          */
@@ -715,8 +716,8 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #action
            */
-          setJexlFilters(f?: string[]) {
-            self.jexlFiltersSetting = cast(f)
+          setFilter(f?: string[]) {
+            self.filterSetting = cast(f)
           },
           /**
            * #action

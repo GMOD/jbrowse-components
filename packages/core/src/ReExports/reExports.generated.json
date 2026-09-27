@@ -3065,9 +3065,11 @@
     "@jbrowse/core/util/jexlFilters": {
       "package": "@jbrowse/core",
       "names": [
+        "FilterSetting",
         "activeJexlFilters",
         "configuredJexlFilters",
-        "jexlFilterNarrowing"
+        "jexlFilterNarrowing",
+        "liftRetiredFilterSetting"
       ],
       "worker": "real"
     },
@@ -3679,6 +3681,7 @@
         "ElementId",
         "FileHandleLocation",
         "FileLocation",
+        "JexlExpressionString",
         "LocalPathLocation",
         "NoAssemblyRegion",
         "Region",
@@ -4348,7 +4351,8 @@
     "@jbrowse/display-kit/jexlFilterConfigSchemaFields": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "jexlFilterConfigSchemaFields"
+        "jexlFilterConfigSchemaFields",
+        "retiredFilterSpelling"
       ],
       "worker": "real"
     },

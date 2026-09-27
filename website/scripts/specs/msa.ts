@@ -320,7 +320,7 @@ export const msaSpecs: ScreenshotSpec[] = [
               // `check-spec-recipes` can resolve which menu the filter below
               // lives in rather than reporting the field as unreachable.
               type: 'LinearBasicDisplay',
-              jexlFilters: ["jexl:get(feature,'uniProtId')=='Q9C000'"],
+              filter: ["jexl:get(feature,'uniProtId')=='Q9C000'"],
               height: 90,
             },
           ],

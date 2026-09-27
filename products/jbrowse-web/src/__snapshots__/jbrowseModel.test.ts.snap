@@ -3805,8 +3805,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "color": "jexl:feature.start>5000?'darkgreen':'red'",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
-          "jexlFilters": [
-            "feature.start<8000",
+          "filter": [
+            "jexl:feature.start<8000",
           ],
           "type": "LinearVariantDisplay",
         },

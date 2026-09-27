@@ -18,14 +18,14 @@ function setup() {
         displays: types.array(
           types
             .model('Display', {
-              jexlFiltersSetting: types.maybe(types.array(types.string)),
+              filterSetting: types.maybe(types.array(types.string)),
             })
             .views(() => ({
               configuredFilters: () => CONFIGURED,
             }))
             .actions(self => ({
-              setJexlFilters(filters?: string[]) {
-                self.jexlFiltersSetting = cast(filters)
+              setFilter(filters?: string[]) {
+                self.filterSetting = cast(filters)
               },
             })),
         ),
@@ -52,7 +52,7 @@ test('a number gets show, hide and at-least items', () => {
     'Show only INFO.DP ≥ 30',
   ])
   click(items[2])
-  expect(display.jexlFiltersSetting).toEqual([
+  expect(display.filterSetting).toEqual([
     ...CONFIGURED,
     'jexl:feature.INFO.DP >= 30',
   ])
@@ -63,7 +63,7 @@ test('hiding text writes != with the key quoted where it has to be', () => {
   const items = filterByValueItems(display, ['INFO', 'CLN-SIG'], "it's")
   expect(items).toHaveLength(2)
   click(items[1])
-  expect(display.jexlFiltersSetting).toEqual([
+  expect(display.filterSetting).toEqual([
     ...CONFIGURED,
     "jexl:feature.INFO['CLN-SIG'] != 'it\\'s'",
   ])
@@ -76,7 +76,7 @@ test('undo restores the filters as they were', () => {
   expect(message).toBe('Filter added')
   expect(action.name).toBe('Undo')
   action.onClick()
-  expect(display.jexlFiltersSetting).toBeUndefined()
+  expect(display.filterSetting).toBeUndefined()
 })
 
 test('offers nothing for a value that is not text or a number', () => {

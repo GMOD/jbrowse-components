@@ -15,7 +15,7 @@ export const VARIANT_CHANNEL_SPEC_EXAMPLES = [
   },
   { spec: '{ "facet": "FILTER" }', description: 'a section per FILTER value' },
   {
-    spec: '{ "filter": ["feature.QUAL > 30"] }',
+    spec: '{ "filter": ["jexl:feature.QUAL > 30"] }',
     description: 'site quality above 30',
   },
   {

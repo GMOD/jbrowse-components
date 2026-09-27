@@ -430,6 +430,8 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     switch (type) {
       case 'stringArray':
         return { type: 'array', items: { type: 'string' } }
+      case 'expressionArray':
+        return { type: 'array', items: ref('JexlExpression') }
       case 'colorArray':
         return { type: 'array', items: ref('CssColor') }
       case 'stringArrayMap':
@@ -886,6 +888,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     pattern: '^jexl:',
     description:
       'A jexl callback evaluated when the slot is read, e.g. `jexl:get(feature, "score") > 10 ? "red" : "blue"`. A slot takes one in place of a fixed value where its config docs list callback args.',
+  }
+  defs.JexlExpression = {
+    type: 'string',
+    pattern: '^jexl:',
+    description:
+      'A jexl expression the display evaluates per feature, written with its prefix, e.g. `jexl:get(feature, "score") > 10`.',
   }
   defs.PlainString = {
     type: 'string',

@@ -5,7 +5,10 @@ import {
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import {
+  jexlFilterConfigSchemaFields,
+  retiredFilterSpelling,
+} from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -427,7 +430,7 @@ export function configSchemaFactory() {
       /**
        * #slot transform
        * Steps over the region's features before the facet splits them and
-       * before any mark's own, after `jexlFilters`: where a field the facet
+       * before any mark's own, after `filter`: where a field the facet
        * reads is made, such as a formula lifting a read's tag.
        */
       transform: types.array(markTransformStep),
@@ -513,7 +516,7 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      retired: retiredAxisSpellings,
+      retired: { ...retiredAxisSpellings, ...retiredFilterSpelling },
       preProcessSnapshot: checkMarks,
     },
   )

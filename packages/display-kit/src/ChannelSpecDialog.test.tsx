@@ -24,7 +24,7 @@ function setup({
     colorScaleChoices: ['categorical'],
     colorMembers: ['value', 'field', 'scale', 'domain', 'range'],
     applyDisplaySettings: jest.fn(),
-    setJexlFilters: jest.fn(),
+    setFilter: jest.fn(),
   }
   const handleClose = jest.fn()
   const utils = render(
@@ -73,7 +73,7 @@ test('says what a spec changes, and hands the settings to the display and the fi
   type({
     facet: null,
     color: { field: 'gene_biotype' },
-    filter: ["feature.type == 'gene'"],
+    filter: ["jexl:feature.type == 'gene'"],
   })
   expect(getByText('Sets color, filter. Clears facet')).toBeInTheDocument()
   fireEvent.click(apply)
@@ -81,9 +81,7 @@ test('says what a spec changes, and hands the settings to the display and the fi
     facet: null,
     color: { field: 'gene_biotype' },
   })
-  expect(model.setJexlFilters).toHaveBeenCalledWith([
-    "jexl:feature.type == 'gene'",
-  ])
+  expect(model.setFilter).toHaveBeenCalledWith(["jexl:feature.type == 'gene'"])
   expect(handleClose).toHaveBeenCalled()
 })
 
@@ -92,7 +90,7 @@ test('a spec naming only a filter writes no setting', () => {
   type({ filter: null })
   fireEvent.click(apply)
   expect(model.applyDisplaySettings).not.toHaveBeenCalled()
-  expect(model.setJexlFilters).toHaveBeenCalledWith([])
+  expect(model.setFilter).toHaveBeenCalledWith([])
 })
 
 test('a facet with no domain over an ordered one says its sections sort', () => {
@@ -119,7 +117,7 @@ test('a spec the display refuses cannot be applied', () => {
   const { type, apply, getByText } = setup({
     problems: ['filter: bad expression'],
   })
-  type({ filter: 'x >' })
+  type({ filter: 'jexl:x >' })
   expect(apply).toBeDisabled()
   expect(getByText(/bad expression/)).toBeInTheDocument()
 })

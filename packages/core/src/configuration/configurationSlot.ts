@@ -2,7 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { isCssColor } from '../util/cssColorParse.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
-import { FileLocation } from '../util/types/mst.ts'
+import { FileLocation, JexlExpressionString } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
@@ -59,6 +59,10 @@ const MaybeFileLocation = types.snapshotProcessor(types.maybe(FileLocation), {
 // of.
 const slotTypes = {
   stringArray: { model: types.array(types.string), fallbackDefault: [] },
+  expressionArray: {
+    model: types.array(JexlExpressionString),
+    fallbackDefault: [],
+  },
   colorArray: { model: types.array(CssColorEntryType), fallbackDefault: [] },
   stringArrayMap: {
     model: types.map(types.array(types.string)),
@@ -194,9 +198,15 @@ function notACallbackSlot(value: unknown) {
 
 /** Why the slot `name`, of type `type`, refuses `value` on a write. */
 export function slotWriteRefusal(name: string, type: string, value: unknown) {
+  const bare =
+    type === 'expressionArray' && Array.isArray(value)
+      ? value.find(entry => !isJexl(entry))
+      : undefined
   return isJexl(value)
     ? `${name} takes no jexl: callback, and ${JSON.stringify(value)} is one: ${CALLBACK_SLOTS}`
-    : `${name} is a ${type} slot and cannot take ${JSON.stringify(value)}`
+    : bare !== undefined
+      ? `${name} takes jexl: expressions, and ${JSON.stringify(bare)} is not an expression: write it with its prefix, as "jexl:${String(bare)}"`
+      : `${name} is a ${type} slot and cannot take ${JSON.stringify(value)}`
 }
 
 function refusingCallbacks(model: IAnyType) {

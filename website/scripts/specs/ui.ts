@@ -299,7 +299,7 @@ export const chromhmmVideoFixtures = {
         trackId: 'ncbi_gff_hg19',
         type: 'LinearBasicDisplay',
         showLabels: 'name',
-        jexlFiltersSetting: ["jexl:feature.type!='pseudogene'"],
+        filterSetting: ["jexl:feature.type!='pseudogene'"],
         height: 120,
       },
       {
@@ -1277,7 +1277,7 @@ export const uiSpecs: ScreenshotSpec[] = [
                   // only a handful of junction breakends survive the filter, so
                   // keep the variant lane short
                   height: 90,
-                  jexlFiltersSetting: [
+                  filterSetting: [
                     "jexl:get(feature,'end')-get(feature,'start') < 100000",
                   ],
                 },
@@ -1293,7 +1293,7 @@ export const uiSpecs: ScreenshotSpec[] = [
                   trackId: 'breast_cancer_sniffles_hg19',
                   type: 'LinearVariantDisplay',
                   height: 90,
-                  jexlFiltersSetting: [
+                  filterSetting: [
                     "jexl:get(feature,'end')-get(feature,'start') < 100000",
                   ],
                 },
@@ -2290,7 +2290,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           trackId: 'ncbi_gff_hg19',
           type: 'LinearBasicDisplay',
           showLabels: 'name',
-          jexlFiltersSetting: ["jexl:feature.type!='pseudogene'"],
+          filterSetting: ["jexl:feature.type!='pseudogene'"],
           displayMode: 'compact',
           height: 80,
         },
@@ -2349,7 +2349,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           trackId: 'ncbi_gff_hg19',
           type: 'LinearBasicDisplay',
           showLabels: 'name',
-          jexlFiltersSetting: ["jexl:feature.type!='pseudogene'"],
+          filterSetting: ["jexl:feature.type!='pseudogene'"],
           height: 110,
         },
         {

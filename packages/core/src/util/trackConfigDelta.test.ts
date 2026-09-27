@@ -14,7 +14,7 @@ interface Cfg {
   trackId: string
   name?: string
   category?: string[]
-  jexlFilters?: string[]
+  filter?: string[]
   adapter?: {
     type: string
     vcfGzLocation: { locationType: string; uri: string }
@@ -98,12 +98,12 @@ test('value arrays are replaced wholesale, not element-merged', () => {
   const b: Cfg = {
     trackId: 't',
     displays: [],
-    jexlFilters: ['jexl:a', 'jexl:b'],
+    filter: ['jexl:a', 'jexl:b'],
   }
-  const e: Cfg = { trackId: 't', displays: [], jexlFilters: ['jexl:c'] }
+  const e: Cfg = { trackId: 't', displays: [], filter: ['jexl:c'] }
   const delta = diffTrackConfig(b, e)
-  expect(delta).toEqual({ trackId: 't', jexlFilters: ['jexl:c'] })
-  expect(asCfg(mergeTrackConfig(b, delta)).jexlFilters).toEqual(['jexl:c'])
+  expect(delta).toEqual({ trackId: 't', filter: ['jexl:c'] })
+  expect(asCfg(mergeTrackConfig(b, delta)).filter).toEqual(['jexl:c'])
 })
 
 test('editing one display leaves sibling displays following the base', () => {

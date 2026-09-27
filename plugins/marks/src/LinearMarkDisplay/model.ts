@@ -26,8 +26,10 @@ import {
   readFor,
 } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
+  FilterSetting,
   activeJexlFilters,
   configuredJexlFilters,
+  liftRetiredFilterSetting,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -467,20 +469,22 @@ export function stateModelFactory(
         StoredHoverMixin<MarkHitInfo>(sameMarkHit),
         HiddenGroupsMixin(),
         // #region configRef
-        types.model({
-          type: types.literal('LinearMarkDisplay'),
-          /**
-           * #property
-           */
-          configuration: ConfigurationReference(configSchema),
-          // #endregion
-          /**
-           * #property
-           * The "Filter by..." dialog's override of the `jexlFilters` slot,
-           * `jexl:`-prefixed; unset follows the config.
-           */
-          jexlFiltersSetting: types.maybe(types.array(types.string)),
-        }),
+        types
+          .model({
+            type: types.literal('LinearMarkDisplay'),
+            /**
+             * #property
+             */
+            configuration: ConfigurationReference(configSchema),
+            // #endregion
+            /**
+             * #property
+             * The "Filter by..." dialog's override of the `filter` slot; unset
+             * follows the config.
+             */
+            filterSetting: FilterSetting,
+          })
+          .preProcessSnapshot(liftRetiredFilterSetting),
       )
       .views(() => ({
         /**
@@ -721,7 +725,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * the `jexlFilters` slot, `jexl:`-prefixed
+         * the `filter` slot
          */
         get configuredFilters() {
           return () => configuredJexlFilters(self)
@@ -1822,8 +1826,8 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setJexlFilters(filters?: string[]) {
-          self.jexlFiltersSetting = cast(filters)
+        setFilter(filters?: string[]) {
+          self.filterSetting = cast(filters)
         },
         /**
          * #action
@@ -1963,7 +1967,7 @@ export function stateModelFactory(
               },
             }),
             ...filterMenuItems({
-              narrowings: { jexlFilters: jexlFilterNarrowing(self) },
+              narrowings: { filter: jexlFilterNarrowing(self) },
               onEdit: () => {
                 getDialogHost(self).queueDialog(handleClose => [
                   JexlFilterDialog,

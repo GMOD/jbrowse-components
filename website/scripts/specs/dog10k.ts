@@ -756,7 +756,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // cannot be genotyped), so it paints a yellow stripe hard against the
           // darkest blue and the pair reads as one striped block rather than as
           // one deletion. `start` is POS-1.
-          jexlFilters: ["jexl:get(feature,'start') == 25574004"],
+          filter: ["jexl:get(feature,'start') == 25574004"],
         },
       ],
     }),
@@ -1460,7 +1460,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // carries 38,261,650. Unfiltered, four anonymous columns put a full
           // wolf row beside the claim that no wolf carries the stop, which is the
           // counterexample reading. `start` is POS-1.
-          jexlFilters: ["jexl:get(feature,'start') == 38261634"],
+          filter: ["jexl:get(feature,'start') == 38261634"],
         },
       ],
     }),

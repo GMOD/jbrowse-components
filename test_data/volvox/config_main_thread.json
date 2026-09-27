@@ -180,7 +180,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "gff3tabix_genes_filtered-LinearBasicDisplay",
-          "jexlFilters": ["feature.type=='gene'"]
+          "filter": ["jexl:feature.type=='gene'"]
         }
       ]
     }

@@ -539,7 +539,7 @@ dialogs is an editor over the display's two settings and the filter override:
 refuses what a config file cannot hold, and a spec naming no field or colour
 besides; a `color` whose `scale` is `none` beside a field reads as its
 constant, since the dialog has no dormant-field spelling; the dialog hands `facet` and
-`color` to `applyDisplaySettings` and `filter` to `setJexlFilters`. The Group by dialog writes the same two settings
+`color` to `applyDisplaySettings` and `filter` to `setFilter`. The Group by dialog writes the same two settings
 through `setFacet` and `setColorScale` (`groupByChannelSpec`).
 
 **Every categorical channel reads its field through one object**,

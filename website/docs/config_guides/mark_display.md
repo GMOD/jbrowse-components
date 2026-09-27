@@ -90,7 +90,7 @@ one.
 | a horizontal line at a value | `geom_hline(yintercept)` | `"mark": "rule"` with a `datum` | `scales.y.rules` |
 | a histogram | `geom_histogram(binwidth)` | `{"bin": {"step"}}` then `{"aggregate": [{"op": "count"}]}` | `{"type": "bin", "step"}` then `{"type": "aggregate", "ops": [{"op": "count"}]}` |
 | a summary per bin | `stat_summary_bin(fun = mean)` | `bin` then `aggregate` with `"op": "mean"` | `bin` then `aggregate` with `"op": "mean"` |
-| keep some of the rows | `filter()` before the plot | `{"filter": …}` | `{"type": "filter", "expr": …}`, or the display's `jexlFilters` |
+| keep some of the rows | `filter()` before the plot | `{"filter": …}` | `{"type": "filter", "expr": …}`, or the display's `filter` |
 | one row per element of a list field | `tidyr::unnest()` | `{"flatten": [field]}` | `{"type": "flatten", "field"}` |
 | how many features overlap each position | | GenomeSpy `{"type": "coverage"}` | `{"type": "coverage"}` |
 | overlapping features stacked into rows | | GenomeSpy `{"type": "pileup", "as": "lane"}` | `{"type": "pileup"}`, read by the mark's `row` |
@@ -605,7 +605,7 @@ read answers. A mark whose `encoding.row` is empty reads the field the last
 `"encoding": {}` draws the packing. The plot takes as many bands as the highest
 row needs, so rows thin as depth grows and the track keeps its height.
 
-The display's `jexlFilters` run before every mark's own steps.
+The display's `filter` expressions run before every mark's own steps.
 
 ## A picture per zoom level
 

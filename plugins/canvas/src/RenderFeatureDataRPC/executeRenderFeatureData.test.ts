@@ -22,24 +22,11 @@ describe('buildFeatureAdmission', () => {
     expect(admit(feat('region'))).toBe(true)
   })
 
-  it('applies config jexlFilters (slot strings carry no jexl: prefix)', () => {
+  it('applies the filter list', () => {
     const admit = buildFeatureAdmission({
       jexl,
       config: mockDisplayConfig({
-        jexlFilters: [`get(feature,'type')=='gene'`],
-      }),
-    })
-    expect(admit(feat('gene'))).toBe(true)
-    expect(admit(feat('mRNA'))).toBe(false)
-  })
-
-  it('accepts already-prefixed filters (the runtime "Filter by..." form)', () => {
-    // The model's activeFilters() emits `jexl:`-prefixed expressions, which
-    // admission normalizes to the unprefixed config-slot form.
-    const admit = buildFeatureAdmission({
-      jexl,
-      config: mockDisplayConfig({
-        jexlFilters: [`jexl:get(feature,'type')=='gene'`],
+        filter: [`jexl:get(feature,'type')=='gene'`],
       }),
     })
     expect(admit(feat('gene'))).toBe(true)
@@ -50,7 +37,10 @@ describe('buildFeatureAdmission', () => {
     const admit = buildFeatureAdmission({
       jexl,
       config: mockDisplayConfig({
-        jexlFilters: [`get(feature,'type')=='gene'`, `get(feature,'score')>5`],
+        filter: [
+          `jexl:get(feature,'type')=='gene'`,
+          `jexl:get(feature,'score')>5`,
+        ],
       }),
     })
     expect(admit(feat('gene', { score: 10 }))).toBe(true)
@@ -58,10 +48,10 @@ describe('buildFeatureAdmission', () => {
   })
 
   it("hideSourceFeatures drops NCBI's gbkey=='Src' record and nothing else", () => {
-    // A gate rather than a jexl filter, so it applies with jexlFilters empty.
+    // A gate rather than a jexl filter, so it applies with filter empty.
     const admit = buildFeatureAdmission({
       jexl,
-      config: mockDisplayConfig({ jexlFilters: [] }),
+      config: mockDisplayConfig({ filter: [] }),
     })
     expect(admit(feat('region', { gbkey: 'Src' }))).toBe(false)
     expect(admit(feat('region', { gbkey: 'CpG_island' }))).toBe(true)
@@ -101,10 +91,10 @@ describe('buildFeatureAdmission', () => {
     expect(admit(feat('repeat_region'))).toBe(false)
   })
 
-  it('showOnlyGenes and jexlFilters both apply (admission is their AND)', () => {
+  it('showOnlyGenes and filter both apply (admission is their AND)', () => {
     const admit = buildFeatureAdmission({
       jexl,
-      config: mockDisplayConfig({ jexlFilters: [`get(feature,'score')>5`] }),
+      config: mockDisplayConfig({ filter: [`jexl:get(feature,'score')>5`] }),
       showOnlyGenes: true,
     })
     expect(admit(feat('gene', { score: 10 }))).toBe(true)

@@ -348,7 +348,7 @@ export function variantTrackMenuItems(
             self.setMaxMissingnessFilter(1)
           },
         },
-        jexlFilters: jexlFilterNarrowing(self),
+        filter: jexlFilterNarrowing(self),
       },
       onEdit: () => {
         getDialogHost(self).queueDialog(handleClose => [

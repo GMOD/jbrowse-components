@@ -1,8 +1,11 @@
 // own module, not the configuration barrel: that barrel re-exports modules
 // which import this one, and a value import back into it is the cycle shape
 // `openFeatureWidget` documents
+import { types } from '@jbrowse/mobx-state-tree'
+
 import { getConf } from '../configuration/getConf.ts'
 import { ensureJexlPrefix } from './jexlStrings.ts'
+import { JexlExpressionString } from './types/mst.ts'
 
 import type { Reversible } from '../ui/filterMenuItems.ts'
 
@@ -10,35 +13,24 @@ import type { Reversible } from '../ui/filterMenuItems.ts'
  * The two-tier feature-filter contract, shared by every display offering a
  * "Filter by..." row. Two tiers because the setting has two authors:
  *
- * - the **`jexlFilters` config slot**, which an admin declares in a track
- *   config. It stores expressions **unprefixed**, because config-slot values
- *   are deferred-evaluation and a stored `jexl:` is what marks a slot as a
- *   callback — so the prefix goes on at read time, in `configuredJexlFilters`.
- *   The slot is `jexlFilterConfigSchemaFields` in display-kit, spread by the
- *   canvas base display schema, the mark display schema and the shared
- *   multi-sample variant schema — the three whose models read it.
- * - the **`jexlFiltersSetting` display property**, which the dialog writes and
- *   which stores them already prefixed (the runtime convention). Set — *even to
- *   an empty list* — it replaces the config tier entirely, which is what makes
- *   "clear the filters an admin declared" expressible.
+ * - the **`filter` config slot**, which an admin declares in a track config:
+ *   `jexlFilterConfigSchemaFields` in display-kit, spread by the canvas base
+ *   display schema, the mark display schema and the shared multi-sample
+ *   variant schema — the three whose models read it.
+ * - the **`filterSetting` display property**, which the dialog writes. Set —
+ *   *even to an empty list* — it replaces the config tier entirely, which is
+ *   what makes "clear the filters an admin declared" expressible.
  *
- * Every display implemented one half of this and a different half each:
- * `LinearBasicDisplay` had both tiers, `LDDisplay` had the slot alone, and the
- * multi-sample variant displays had a property literally named `jexlFilters`
- * that shadowed the inherited slot, so a config filter on one of those tracks
- * was read by nothing and reported no error. Neither of the last two prefixed,
- * so a filter following the slot's own documented convention reached
- * `stringToJexlExpression` unprefixed and threw inside the worker.
+ * Both hold `jexl:` expressions and refuse a bare string.
  */
 export interface JexlFilterSource {
   /**
-   * The dialog's override, `jexl:`-prefixed. `undefined` means "follow the
-   * config slot"; an empty array means "the user cleared them".
+   * The dialog's override. `undefined` means "follow the config slot"; an
+   * empty array means "the user cleared them".
    */
-  jexlFiltersSetting?: readonly string[]
+  filterSetting?: readonly string[]
   /**
-   * The config tier, `jexl:`-prefixed — in practice
-   * `configuredJexlFilters(self)`. A member rather than a read this module does
+   * The config tier — in practice `configuredJexlFilters(self)`. A member rather than a read this module does
    * itself, so the two things that consume this contract off a **duck-typed**
    * model — LD's structural menu builder and its shape test — need no live
    * config node to answer a count with.
@@ -54,29 +46,43 @@ export interface JexlFilterSource {
  * cannot satisfy.
  */
 export interface JexlFilterModel extends JexlFilterSource {
-  setJexlFilters: (filters?: string[]) => void
+  setFilter: (filters?: string[]) => void
 }
 
+/** The `filterSetting` property, for a display model to declare. */
+export const FilterSetting = types.maybe(types.array(JexlExpressionString))
+
 /**
- * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed. The slot
- * stores them unprefixed and every runtime consumer wants them prefixed, so the
- * prefixing happens once, here — this is what a display's `configuredFilters`
- * member is.
+ * A snapshot's v4 `jexlFiltersSetting` as `filterSetting`, for the
+ * `preProcessSnapshot` of the model declaring {@link FilterSetting}.
  */
+export function liftRetiredFilterSetting<T>(snap: T): T {
+  if (!snap || typeof snap !== 'object' || !('jexlFiltersSetting' in snap)) {
+    return snap
+  }
+  const { jexlFiltersSetting, ...rest } = snap as Record<string, unknown>
+  return (
+    Array.isArray(jexlFiltersSetting) && !('filterSetting' in rest)
+      ? { ...rest, filterSetting: jexlFiltersSetting.map(ensureJexlPrefix) }
+      : rest
+  ) as T
+}
+
+/** What the `filter` config slot alone declares: a display's `configuredFilters`. */
 export function configuredJexlFilters(
   self: Parameters<typeof getConf>[0],
 ): string[] {
-  return getConf(self, 'jexlFilters').map(ensureJexlPrefix)
+  return getConf(self, 'filter')
 }
 
 /**
- * The filters actually applied, `jexl:`-prefixed — the single source of truth
+ * The filters actually applied — the single source of truth
  * for the worker (via `rpcProps`), for the "Filter by..." dialog (so config
  * filters show up and are editable), and for the narrowing count below.
  */
 export function activeJexlFilters(self: JexlFilterSource): string[] {
-  const { jexlFiltersSetting } = self
-  return jexlFiltersSetting ? [...jexlFiltersSetting] : self.configuredFilters()
+  const { filterSetting } = self
+  return filterSetting ? [...filterSetting] : self.configuredFilters()
 }
 
 /**
@@ -92,17 +98,17 @@ export function activeJexlFilters(self: JexlFilterSource): string[] {
  * restoring the config default, which the group clear already is.
  */
 export function jexlFilterNarrowing(self: JexlFilterModel): Reversible {
-  const override = self.jexlFiltersSetting
+  const override = self.filterSetting
   const configured = self.configuredFilters()
   return {
     count:
       override !== undefined &&
       (override.length !== configured.length ||
-        override.some((f, i) => ensureJexlPrefix(f) !== configured[i]))
+        override.some((f, i) => f !== configured[i]))
         ? 1
         : 0,
     clear: () => {
-      self.setJexlFilters(undefined)
+      self.setFilter(undefined)
     },
   }
 }

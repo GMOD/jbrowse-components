@@ -18,7 +18,7 @@ export function isJexlFilterDisplay(
   return (
     typeof thing === 'object' &&
     thing !== null &&
-    'setJexlFilters' in thing &&
+    'setFilter' in thing &&
     'configuredFilters' in thing
   )
 }
@@ -46,20 +46,17 @@ export function filterByValueItems(
   const shown =
     text.length > MAX_LABEL_VALUE ? `${text.slice(0, MAX_LABEL_VALUE)}…` : text
   const add = (op: '==' | '!=' | '>=') => () => {
-    const previous = display.jexlFiltersSetting
+    const previous = display.filterSetting
     const line = printCondition({
       subject: pathSubject('feature', path),
       op,
       value,
     })
-    display.setJexlFilters([
-      ...activeJexlFilters(display),
-      ensureJexlPrefix(line),
-    ])
+    display.setFilter([...activeJexlFilters(display), ensureJexlPrefix(line)])
     getNotificationSink(display).notify('Filter added', 'info', {
       name: 'Undo',
       onClick: () => {
-        display.setJexlFilters(previous && [...previous])
+        display.setFilter(previous && [...previous])
       },
     })
   }

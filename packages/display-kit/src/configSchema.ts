@@ -11,7 +11,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * Shared base config for linear displays — its slots (`height`,
  * `fetchSizeLimit`, `mouseover`) are common to all of them. The GPU stack's
  * `LinearCanvasBaseDisplay` config extends it, and third-party plugins extend
- * it too. `jexlFilters` is not here: it lives in
+ * it too. `filter` is not here: it lives in
  * `jexlFilterConfigSchemaFields`, which only the displays that read it spread.
  */
 

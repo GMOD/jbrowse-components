@@ -27,7 +27,7 @@
  *
  * `displays` is merged by `displayId` so an edit to one display doesn't pin the
  * others, and by `type` where the base has no display of that id. Nested config objects (e.g. `adapter`) recurse. Any other array (value
- * arrays like `jexlFilters`, `assemblyNames`) is replaced wholesale when changed.
+ * arrays like `filter`, `assemblyNames`) is replaced wholesale when changed.
  *
  * Subtlety worth not "optimizing": when the base has NO `displays` array but the
  * edited snapshot does (common — a track config that omits displays gets a stub
