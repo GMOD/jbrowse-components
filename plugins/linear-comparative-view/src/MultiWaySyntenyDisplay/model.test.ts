@@ -2018,11 +2018,12 @@ test('the fit sees a record cut to the viewport, the picture sees it whole', () 
   expect(display.lgv.settledDynamicBlocks.map(b => [b.start, b.end])).toEqual([
     [0, 800],
   ])
+  const feature = overhang
   expect(display.visibleGroups.map(g => g.mates.get('volvox_random'))).toEqual([
-    [{ refName: 'ctgB', start: 5000, end: 6000, orientation: 1 }],
+    [{ refName: 'ctgB', start: 5000, end: 6000, orientation: 1, feature }],
   ])
   expect(display.fitGroups.map(g => g.mates.get('volvox_random'))).toEqual([
-    [{ refName: 'ctgB', start: 5000, end: 5800, orientation: 1 }],
+    [{ refName: 'ctgB', start: 5000, end: 5800, orientation: 1, feature }],
   ])
   expect(display.fitGroups.map(g => g.anchor)).toEqual([
     { refName: 'ctgA', start: 0, end: 800 },

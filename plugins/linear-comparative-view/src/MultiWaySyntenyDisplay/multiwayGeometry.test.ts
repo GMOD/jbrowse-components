@@ -774,6 +774,74 @@ describe('the ribbons', () => {
     }
   })
 
+  // One gene named across two pair files folds into one group whose `feature`
+  // is whichever row arrived first; each gutter still paints, and opens, the
+  // row that placed its lower lane
+  test.each([
+    ['peach row first', true],
+    ['cacao row first', false],
+  ])(
+    'color by a per-pair column reads each gutter’s own pair row, %s',
+    (_, peachFirst) => {
+      const peachRow = new SimpleFeature({
+        ...pairFeature('g1', 100, 200).toJSON(),
+        group: 'P',
+      })
+      const cacaoRow = new SimpleFeature({
+        ...pairFeature('g1', 100, 200, {
+          mate: 'cacao',
+          mateRef: 'Tc1',
+        }).toJSON(),
+        group: 'C',
+      })
+      const s = stack({
+        features: peachFirst ? [peachRow, cacaoRow] : [cacaoRow, peachRow],
+        assemblyNames: ['grape', 'peach', 'cacao'],
+      })
+      const { cells, targets, records } = buildRibbonGeometry({
+        stack: s,
+        laneLinks: undefined,
+        ribbonColor: 'rgba(130,130,130,0.4)',
+        ribbonColorField: 'group',
+        attributeRanges: {
+          group: { labels: ['P', 'C'], colors: { P: '#f00', C: '#00f' } },
+        },
+        drawCurves: false,
+        bridgeSkippedLanes: false,
+      })
+      const alpha = Math.round(0.4 * 255)
+      const drawn = (key: string) => {
+        const data = ribbonData(cells, key)
+        expect(data.instanceCount).toBe(1)
+        return {
+          color: data.colors[0],
+          opens:
+            records.get(key)?.get(0) ??
+            targets[data.instanceFeatureIdx[0]!]!.feature,
+        }
+      }
+      expect(drawn('ribbons:0')).toEqual({
+        color: withAbgrAlpha(cssColorToABGR('#f00'), alpha),
+        opens: peachRow,
+      })
+      expect(drawn('ribbons:1')).toEqual({
+        color: withAbgrAlpha(cssColorToABGR('#00f'), alpha),
+        opens: cacaoRow,
+      })
+      expect(targets).toHaveLength(1)
+      const boxFeature = (row: number) =>
+        buildLaneCells({
+          lane: s.lanes[row]!,
+          genes: [],
+          glyphHeight: s.glyphHeight,
+          width: WIDTH,
+          colors,
+        }).boxes.hits[0]!.feature
+      expect(boxFeature(1)).toBe(peachRow)
+      expect(boxFeature(2)).toBe(cacaoRow)
+    },
+  )
+
   test('leave out a pair too thin to read on both ends', () => {
     const s = stack({ features: [pairFeature('g1', 100, 101)] })
     const { cells } = buildRibbonGeometry({

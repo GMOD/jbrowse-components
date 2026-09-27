@@ -1995,8 +1995,8 @@ export function stateModelFactory(
                 start: p.start,
                 end: p.end,
                 strand: p.orientation < 0 ? -1 : 1,
-                feature: group.feature,
-                ops: self.featureOps.get(group.feature.id()),
+                feature: p.feature,
+                ops: self.featureOps.get(p.feature.id()),
               }),
             ),
           )
@@ -2594,6 +2594,17 @@ export function stateModelFactory(
         }
         return out
       },
+      /**
+       * #getter
+       * `ribbonGeometry.records` under the pick's region keys
+       */
+      get ribbonRecords(): ReadonlyMap<number, ReadonlyMap<number, Feature>> {
+        const out = new Map<number, ReadonlyMap<number, Feature>>()
+        for (const [key, records] of self.ribbonGeometry.records) {
+          out.set(sharedBackendKey(key), records)
+        }
+        return out
+      },
     }))
     .views(self => ({
       /**
@@ -2687,9 +2698,13 @@ export function stateModelFactory(
         const targetIdx =
           hit &&
           self.ribbonRegions.get(hit.key)?.instanceFeatureIdx[hit.instanceIndex]
-        return targetIdx === undefined
-          ? undefined
-          : self.ribbonGeometry.targets[targetIdx]
+        const target =
+          targetIdx === undefined
+            ? undefined
+            : self.ribbonGeometry.targets[targetIdx]
+        const record =
+          hit && self.ribbonRecords.get(hit.key)?.get(hit.instanceIndex)
+        return target && record ? { ...target, feature: record } : target
       },
     }))
     .views(self => ({

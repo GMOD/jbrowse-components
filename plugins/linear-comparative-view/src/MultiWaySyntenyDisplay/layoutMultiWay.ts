@@ -69,6 +69,11 @@ export interface MultiWayPlacement {
  */
 export interface MatePlacement extends MultiWayPlacement {
   orientation: number
+  /**
+   * the record placing it — on a named source built from several pair files,
+   * that pair's own row rather than the group's `feature`
+   */
+  feature: Feature
 }
 
 export interface MultiWayGroup {
@@ -180,6 +185,7 @@ export function groupFeatures(features: Feature[]) {
           end: mate.end,
           name: nameOf(mate.name),
           orientation: mate.orientation < 0 ? -1 : 1,
+          feature,
         })
       }
     }
@@ -412,6 +418,8 @@ interface PlacementRun {
   orientation: number
   /** the one gene the run's placements name, if they name exactly one */
   name?: string
+  /** the record of the run's widest placement */
+  feature: Feature
 }
 
 // The group's placements on one row as maximal OVERLAPPING RUNS: two hits the
@@ -440,28 +448,34 @@ export function groupRunsOnRow(
     max: number
     signed: number
     names: Set<string | undefined>
+    widest: MatePlacement
   }[] = []
   for (const p of placements) {
-    const weight = p.orientation * Math.max(p.end - p.start, 1)
+    const length = Math.max(p.end - p.start, 1)
     const last = runs.at(-1)
     if (last && p.start <= last.max) {
       last.max = Math.max(last.max, p.end)
-      last.signed += weight
+      last.signed += p.orientation * length
       last.names.add(p.name)
+      if (length > last.widest.end - last.widest.start) {
+        last.widest = p
+      }
     } else {
       runs.push({
         min: p.start,
         max: p.end,
-        signed: weight,
+        signed: p.orientation * length,
         names: new Set([p.name]),
+        widest: p,
       })
     }
   }
-  return runs.map(({ min, max, signed, names }) => ({
+  return runs.map(({ min, max, signed, names, widest }) => ({
     min,
     max,
     orientation: signed < 0 ? -1 : 1,
     name: names.size === 1 ? [...names][0] : undefined,
+    feature: widest.feature,
   }))
 }
 
@@ -483,7 +497,12 @@ export function groupRunSpansOnRow(
   assemblyName: string,
   frame: RowFrame,
   width: number,
-): { span: Span; orientation: number; interval: MultiWayPlacement }[] {
+): {
+  span: Span
+  orientation: number
+  interval: MultiWayPlacement
+  feature: Feature
+}[] {
   // every run holds a placement the frame shows, so `frameSpan` always answers
   return groupRunsOnRow(group, assemblyName, frame).map(run => {
     const [a, b] = frameSpan(frame, run.min, run.max, width)!
@@ -496,6 +515,7 @@ export function groupRunSpansOnRow(
         end: run.max,
         name: run.name,
       },
+      feature: run.feature,
     }
   })
 }

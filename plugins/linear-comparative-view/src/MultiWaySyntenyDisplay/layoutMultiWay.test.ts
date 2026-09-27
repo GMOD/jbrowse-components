@@ -1490,7 +1490,10 @@ describe('a grouped feature groups as its pairwise expansion', () => {
     groups.map(({ key, anchor, mates, weight }) => ({
       key,
       anchor,
-      mates: [...mates],
+      mates: [...mates].map(([assemblyName, placements]) => [
+        assemblyName,
+        placements.map(({ feature: _, ...placement }) => placement),
+      ]),
       weight,
     }))
 
@@ -1500,12 +1503,50 @@ describe('a grouped feature groups as its pairwise expansion', () => {
     expect(comparable(fromGrouped)).toEqual(comparable(fromPairwise))
     expect(fromGrouped.map(g => g.key)).toEqual(['g0', 'g1'])
     const g1 = fromGrouped[1]!
+    const feature = groupedFeature
     expect(g1.mates.get('peach')).toEqual([
-      { refName: 'Pp1', start: 1000, end: 1100, name: 'p1', orientation: 1 },
-      { refName: 'Pp2', start: 5000, end: 5100, name: 'p1b', orientation: -1 },
+      {
+        refName: 'Pp1',
+        start: 1000,
+        end: 1100,
+        name: 'p1',
+        orientation: 1,
+        feature,
+      },
+      {
+        refName: 'Pp2',
+        start: 5000,
+        end: 5100,
+        name: 'p1b',
+        orientation: -1,
+        feature,
+      },
     ])
     expect(g1.mates.get('cacao')).toEqual([
-      { refName: 'Cc1', start: 9000, end: 9100, name: 'c1', orientation: -1 },
+      {
+        refName: 'Cc1',
+        start: 9000,
+        end: 9100,
+        name: 'c1',
+        orientation: -1,
+        feature,
+      },
+    ])
+  })
+
+  test('each pairwise placement keeps its own row, the grouped ones the one feature', () => {
+    const records = (groups: MultiWayGroup[]) =>
+      groups
+        .find(g => g.key === 'g1')!
+        .mates.get('peach')!
+        .map(p => p.feature)
+    expect(records(groupFeatures(expansion))).toEqual([
+      expansion[0],
+      expansion[3],
+    ])
+    expect(records(groupFeatures([groupedFeature]))).toEqual([
+      groupedFeature,
+      groupedFeature,
     ])
   })
 
@@ -1607,9 +1648,9 @@ describe('a lane fitted to one record clipped to the padded fetch region', () =>
     const tail = FETCHED.end - WINDOW.end
     const mateOf = (strand: number) => {
       const [group] = haplotype('hg002', 0, strand)
-      return clipGroupToAnchor(group!, WINDOW.start, WINDOW.end).mates.get(
-        'hg002',
-      )
+      return clipGroupToAnchor(group!, WINDOW.start, WINDOW.end)
+        .mates.get('hg002')!
+        .map(({ feature: _, ...placement }) => placement)
     }
     expect(mateOf(1)).toEqual([
       {

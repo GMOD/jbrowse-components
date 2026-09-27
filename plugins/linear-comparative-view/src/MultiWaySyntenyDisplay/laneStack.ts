@@ -15,6 +15,7 @@ import type {
   RowFrame,
   Span,
 } from './layoutMultiWay.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 const LABEL_HEIGHT = 12
 const MIN_GLYPH_PX = 5
@@ -194,6 +195,8 @@ export interface LaneGroup {
   orientations: number[]
   /** per span, the bp interval of the lane's own sequence it draws, unclipped */
   intervals: MultiWayPlacement[]
+  /** per span, the record placing it: the group's own on the anchor lane */
+  features: Feature[]
 }
 
 export interface LaneStack {
@@ -313,7 +316,14 @@ export function buildLanes({
         const anchorSpan = anchorSpans.get(group.key)
         const runs = isAnchor
           ? anchorSpan
-            ? [{ span: anchorSpan, orientation: 1, interval: group.anchor }]
+            ? [
+                {
+                  span: anchorSpan,
+                  orientation: 1,
+                  interval: group.anchor,
+                  feature: group.feature,
+                },
+              ]
             : []
           : frame
             ? groupRunSpansOnRow(group, assemblyName, frame, width)
@@ -324,6 +334,7 @@ export function buildLanes({
             spans: runs.map(run => run.span),
             orientations: runs.map(run => run.orientation),
             intervals: runs.map(run => run.interval),
+            features: runs.map(run => run.feature),
           })
         }
       }

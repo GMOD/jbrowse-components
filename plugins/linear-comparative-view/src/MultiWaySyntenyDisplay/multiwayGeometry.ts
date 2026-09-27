@@ -133,6 +133,12 @@ class RibbonBuilder {
   featureIdx: number[] = []
   lengths: number[] = []
   colors: number[] = []
+  /** by instance, the record it draws where that is not its group's `feature` */
+  records = new Map<number, Feature>()
+
+  get count() {
+    return this.bp1.length
+  }
 
   add(s1: Span, s2: Span, kind: number, featureIdx: number, color: number) {
     this.bp1.push(s1[0])
@@ -239,6 +245,11 @@ export interface RibbonGeometry {
   /** the target every ribbon of a group shares, so one hover lights the group in every gutter */
   groupTarget: Map<string, number>
   linkTarget: Map<string, number>
+  /**
+   * by gutter key and instance, the record a ribbon draws where that is not
+   * its group's `feature`, which a click opens in place of the target's
+   */
+  records: Map<string, ReadonlyMap<number, Feature>>
 }
 
 /** the 1-based feature id the passes compare for `ref`, or 0 for none */
@@ -436,6 +447,7 @@ export function buildRibbonGeometry({
   const targets: RibbonTarget[] = []
   const groupTarget = new Map<string, number>()
   const linkTarget = new Map<string, number>()
+  const records = new Map<string, ReadonlyMap<number, Feature>>()
   // One target per group, shared by every gutter — which is what lets one
   // hover light the whole chain, and also what stops the label naming a lane
   // PAIR. What it can name is the group's identity: its key and where the
@@ -483,21 +495,24 @@ export function buildRibbonGeometry({
         !bridged &&
         spans.length === 1 &&
         far.spans.length === 1
+      // a gutter draws the record that placed its lower lane
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
           if (wideEnough(s1, s2, upper, farLane)) {
+            const record = far.features[j]!
             const target = targetOfGroup(key, group)
             const fill = colorOf(
               orientations[i]! * far.orientations[j]!,
-              group.feature,
+              record,
             )
+            const first = builder.count
             const tiled =
               direct &&
               fill >>> 24 !== 0 &&
               addAlignmentDetail(
                 builder,
-                group.feature,
-                anchorOps.get(group.feature.id()),
+                record,
+                anchorOps.get(record.id()),
                 upper,
                 farLane,
                 target,
@@ -506,6 +521,11 @@ export function buildRibbonGeometry({
               )
             if (!tiled) {
               builder.add(s1, s2, KIND_BASE, target, fill)
+            }
+            if (record !== group.feature) {
+              for (let k = first; k < builder.count; k++) {
+                builder.records.set(k, record)
+              }
             }
           }
         })
@@ -572,6 +592,9 @@ export function buildRibbonGeometry({
     }
     const key = ribbonsKey(row)
     cells.set(key, ribbons.build())
+    if (ribbons.records.size > 0) {
+      records.set(key, ribbons.records)
+    }
     layers.push({
       kind: 'ribbons',
       key,
@@ -583,6 +606,9 @@ export function buildRibbonGeometry({
     for (const [toRow, builder] of bridges) {
       const bridgeKey = ribbonsKey(row, toRow)
       cells.set(bridgeKey, builder.build())
+      if (builder.records.size > 0) {
+        records.set(bridgeKey, builder.records)
+      }
       layers.push({
         kind: 'ribbons',
         key: bridgeKey,
@@ -593,7 +619,7 @@ export function buildRibbonGeometry({
       })
     }
   }
-  return { cells, layers, targets, groupTarget, linkTarget }
+  return { cells, layers, targets, groupTarget, linkTarget, records }
 }
 
 export interface TickGeometry {
@@ -796,9 +822,9 @@ interface DrawnGene {
 
 interface LaneBox {
   key: string
-  group: MultiWayGroup
   span: Span
   interval: MultiWayPlacement
+  feature: Feature
 }
 
 /**
@@ -829,7 +855,7 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
   )
   const widest = new Map<DrawnGene, number>()
   const boxes: LaneBox[] = []
-  for (const [key, { group, spans, intervals }] of lane.placements) {
+  for (const [key, { group, spans, intervals, features }] of lane.placements) {
     intervals.forEach(({ refName, start, end }, i) => {
       const genes = covering.get(lane.canon(refName))
       const cover = genes?.cover([start, end])
@@ -840,7 +866,12 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
           gene.cluster = key
         }
       } else if (isNamedRecord(group.feature)) {
-        boxes.push({ key, group, span: spans[i]!, interval: intervals[i]! })
+        boxes.push({
+          key,
+          span: spans[i]!,
+          interval: intervals[i]!,
+          feature: features[i]!,
+        })
       }
     })
   }
@@ -978,9 +1009,9 @@ export function buildLaneCells({
   }
 
   const boxNames: NamedSpan[] = []
-  for (const { key, group, span, interval } of unclaimed) {
+  for (const { key, span, interval, feature } of unclaimed) {
     const { name } = interval
-    const fill = colors.boxes.fill(group.feature, key)
+    const fill = colors.boxes.fill(feature, key)
     const [boxLeft, boxRight] = span[0] <= span[1] ? span : [span[1], span[0]]
     if (name) {
       boxNames.push({
@@ -1003,7 +1034,7 @@ export function buildLaneCells({
       x2: Math.max(boxLeft + 1, boxRight),
       y1: y,
       y2: y + glyphHeight,
-      feature: group.feature,
+      feature,
       groupKey: key,
       label: key,
       fill,
