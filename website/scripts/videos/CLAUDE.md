@@ -215,3 +215,25 @@ refilm and none of which the run reports.
   one after the repaint) and write the caption from those two pictures; where
   they are the same picture, move the tour to a window where the control bites,
   or cut the beat, as that tour did.
+- **Size a dialog-centred tour to the DIALOG.** The run's content report
+  measures app height only, so it will tell you to shrink a frame the dialog
+  needs. Pull a mid-clip frame with `ffmpeg -ss` and look.
+- **`cut: true` on a `type` step** is how a paste is filmed. Five URLs typed a
+  keystroke at a time read as 9.4s of nothing happening.
+- **Don't film a reader reading.** A tour that ends by scrolling a text panel to
+  the line that matters is filming the one thing a page does better: the fence
+  beside the clip is searchable, diffable and holds still.
+  `config/settings_to_json` spent three takes trying to land a 20-row JSON panel
+  on four keys before dropping the scroll entirely, and the clip got shorter and
+  clearer for it. A clip carries the route; the page carries the text the route
+  produced.
+- **A menu path a page prints is a claim, and a `waitForText` is what checks
+  it.** Two of the first four page defects tours found were levels missing
+  from a cascade, and both showed up as a step dying by name rather than as
+  anything anyone read. Write the path the page prints, not the path you
+  verified in the source, and let the run disagree.
+- **Check whether the app already did the next step for you.** An action that
+  writes one setting can nudge another (`setLinkedReads` sets `colorBy` on the
+  way into chain mode), so a tour taking a page's bullets in order can film a
+  click that changes nothing and report success. The frame to pull is the menu
+  BEFORE the click: a radio already filled in is the tell.

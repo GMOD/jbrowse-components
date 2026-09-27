@@ -1,6 +1,6 @@
 ---
 name: alignments
-description: Coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), read downsampling for a force-loaded dense region, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`, and why the pileup's low-frequency threshold wants a read-count floor rather than a depth ramp.
+description: Coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), read downsampling for a force-loaded dense region, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`, why the pileup's low-frequency threshold wants a read-count floor rather than a depth ramp, and the RNA-seq splice follow-ups (splice-chain group-by, differential transcript usage, sashimi labels as a fraction).
 ---
 
 # Alignments
@@ -293,3 +293,41 @@ That also kills the tempting corollary — that `mateRefName` could drop
 `workerExtracts` and become a tier-2 recolor instead of a refetch. It cannot: the
 worker still has to extract the value. The win here is payload and clone time
 only.
+
+## RNA-seq splice follow-ups
+
+The splice thread shipped the spliced-reads filter, spliced-first layout,
+splice-motif classification and the junction-BED tutorial section, and deferred
+these as one-liners with no reasoning; the first move under each is
+reconstructed, not decided.
+
+**Splice-chain group-by** — group reads by the ordered set of junctions they
+cross, so one row means one isoform's evidence. Closest to buildable of the
+five: the layout half already exists (spliced-first ordering puts those reads
+adjacent), and the key is the read's `N`-op list, which
+`features/gap/extract.ts` already walks once per read. What is missing is a
+user. A group-by nobody has asked for costs a settings row forever, so this
+waits on a feature request rather than on any code.
+
+**Differential transcript usage** — two ways in, and they are different
+products. A table join reads per-transcript counts from a spreadsheet and
+colours a transcript track from a column, which is the SV inspector's shape
+applied to gene models. A numeric ramp skips the table and colours from a score
+already on the feature. The join answers the real question and needs a whole
+UI; the ramp is cheap and answers a narrower one. Picking between them is the
+first move, and neither is started.
+
+**Sashimi labels as a fraction, with a depth-proof floor** — a junction arc
+carries its supporting read count today. A fraction of local depth is more
+honest (40 reads across a junction means different things at 50x and 5000x) but
+a ratio over a small denominator is noise, so it needs a floor below which the
+count is shown instead. Choosing the floor is the work, and it is a visual call
+as much as a numeric one.
+
+Two RNA-seq notes on items above. **Read downsampling** on a deep lane keeps
+the junction picture at a fraction of the rows, but a sampled pileup's apparent
+depth is wrong and nothing in the chrome says so — a chrome question before a
+fetch one. **First-of-pair auto-detect** already reads the aligner's
+`XS`/`TS`/`ts` through `getEffectiveStrand`; what is open is a read with none of
+them, which wants a comparison against annotated gene strand that a display
+cannot assume is loaded.

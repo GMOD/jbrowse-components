@@ -57,8 +57,7 @@ which is operating instructions rather than live state.
 
 Two of the four closed by moving nothing at all. `TUTORIAL_TOURS.md`'s three
 "nobody should re-derive this" facts were already in
-[ideas/collections/tutorial-tour-candidates.md](../ideas/collections/tutorial-tour-candidates.md) and
-[ideas/collections/tutorial-tours-from-scratch.md](../ideas/collections/tutorial-tours-from-scratch.md),
+[ideas/collections/tutorial-tours.md](../ideas/collections/tutorial-tours.md),
 and the state it carried was a coverage count its own text says to re-run rather
 than read. Check what a handoff duplicates before writing anything: the pointers
 it was built from usually absorbed its content while it sat.

@@ -1,6 +1,6 @@
 ---
-name: tutorial-tour-candidates
-description: Tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it, plus the thirteen untoured pages that should NOT get one and why. What is left to film is 14, 18 and 19. Read before writing a video spec for a tutorial.
+name: tutorial-tours
+description: Video tours worth filming — tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it; the thirteen untoured pages that should NOT get one; the tours that open on an app with no genome or no track; and the harness gaps behind both. Read before writing a video spec for a tutorial or proposing a tour for an entry-point page.
 audience: internal
 ---
 
@@ -133,46 +133,123 @@ reorderable just films the confusion.
   draw at all and whose still costs a 600s ready gate. Revisit with `--headed`
   if that pileup is ever cheap enough.
 
-## Traps, in the order they bit
-
-All of them cost a take or a debug cycle on 2026-08-21.
-
-- **Rebuild `@jbrowse/web` before any run.** The generator serves the BUILD's
-  assets, so a component edit made after the build is invisible and the failure
-  is a missing selector.
-- **Size a dialog-centred tour to the DIALOG.** The run's content report
-  measures app height only, so it will tell you to shrink a frame the dialog
-  needs. Pull a mid-clip frame with `ffmpeg -ss` and look.
-- **The clip's last STATE CHANGE has to be the payoff.** A `recorder.stop()`
-  timeout drops whatever ffmpeg had not flushed — twelve seconds of it on
-  `gnomad_filter`'s first take — and the run logs that on a line none of the
-  four report sections covers. Pull the POSTER and look at it, every time.
-- **`cut: true` on a `type` step** is how a paste is filmed. Five URLs typed a
-  keystroke at a time read as 9.4s of nothing happening.
-- **A re-frame needs `pnpm autogen`**, or the page reserves a box the wrong
-  shape. Two generators always refuse in a worktree (jbrowse-img, social card);
-  that is main's staleness, not yours.
-- **`pnpm figures:push --filter <name>`**, never bare, then commit `media.lock`.
-  A figure store with nothing on disk is skipped rather than emptied, which is
-  what makes a media-only push safe from a worktree that never pulled figures.
-- **Don't film a reader reading.** A tour that ends by scrolling a text panel to
-  the line that matters is filming the one thing a page does better: the fence
-  beside the clip is searchable, diffable and holds still.
-  `config/settings_to_json` spent three takes trying to land a 20-row JSON panel
-  on four keys before dropping the scroll entirely, and the clip got shorter and
-  clearer for it. A clip carries the route; the page carries the text the route
-  produced.
-- **A menu path a page prints is a claim, and a `waitForText` is what checks
-  it.** Two of the four page defects this thread has found were levels missing
-  from a cascade, and both showed up as a step dying by name rather than as
-  anything anyone read. Write the path the page prints, not the path you
-  verified in the source, and let the run disagree.
-- **Check whether the app already did the next step for you.** An action that
-  writes one setting can nudge another (`setLinkedReads` sets `colorBy` on the
-  way into chain mode), so a tour taking a page's bullets in order can film a
-  click that changes nothing and report success. The frame to pull is the menu
-  BEFORE the click: a radio already filled in is the tell.
-
 ## What is still missing from the harness
 
 In `tutorial-tours-from-scratch.md`, which is where the numbered gaps live.
+
+## Tours that start near scratch
+
+### What "from scratch" can mean, ranked by what the harness can drive
+
+| rank | starting point | drivable | cost |
+| --- | --- | --- | --- |
+| 1 | `url: ''`, no config at all | **no** | needs gap 1 below |
+| 2 | a config with **no assemblies** (`test_data/empty.json`) | yes | the tour adds a genome first |
+| 3 | an assembly, **zero tracks** (`test_data/hg38_only.json`) | yes | one remote fetch per track |
+| 4 | a config with `views: []`, the launcher panel | yes | none |
+| 5 | a view's empty import form | yes | none |
+| 6 | assembly plus one light track, subject data absent | yes | none |
+| 7 | JBrowse Desktop's start screen | **no** | see below |
+
+Rank 1 is one click away in the app and unreachable in the harness. The
+fresh-install banner's only affordance is
+`<a href="?config=test_data/volvox/config.json">`
+(`products/jbrowse-web/src/components/LoaderErrorBanner.tsx:25`), and that is a
+same-tab navigation, which gap 1 explains.
+
+**Desktop cannot be filmed with this harness**; an `x11grab` recorder over the
+Xvfb display the Selenium run already uses can, and
+[tutorial-corpus-audit](tutorial-corpus-audit.md) §2 has that route. Desktop figures come from a Selenium + Electron run over the
+packaged binary (`products/jbrowse-desktop/test/screenshots.ts`), whose only
+capture call is `driver.takeScreenshot()`; `scripts/generate-video.ts` drives a
+page in puppeteer Chrome and films with `page.screencast`. Electron's
+chromedriver does not expose the CDP-backed window commands
+(`reference/DESKTOP_SCREENSHOTS.md:208-210`), So `quickstart_desktop.md`, which carries
+the heaviest click-narration in the docs and is the page a tour would gut, is
+out of reach.
+
+**The honest conclusion**: from-scratch belongs on the entry-point pages and the
+zero-figure user guides, not on the dataset tutorials. A tutorial's data is
+remote and heavy; an `hprc_end_to_end` that also added its own assembly would be
+minutes of fetching under a cut.
+
+### The proposals
+
+**Tutorials come first, and they are the ranked list above.** That is Colin's
+standing preference. What stays here is the from-scratch analysis, the harness
+gaps, and the user-guide proposals for when the tutorial list is worked down.
+
+Ordered by (value to a reader) / (risk the harness chokes). Each names the prose
+it would let its page delete, since a tour that only adds is the weaker kind.
+
+5. **`ui/open_connection_hub`** — `user_guides/connections.md`, 105 lines and
+   **zero figures**. Opens on `hg38_only.json` (`"tracks": []`), so everything on
+   screen at the end came from the hub. Films the behaviour the page asserts and
+   cannot picture: expanding a category is what fetches.
+6. **`ui/spreadsheet_row_launch`** — `user_guides/spreadsheet_view.md`, 41 lines,
+   **zero figures**, two thirds bulleted clicks. Half the steps are already
+   proven in `videos/sv.ts`.
+7. **`synteny/launch_from_lgv`** — `user_guides/linear_synteny_view.md`. The
+   densest unfigured passage in the guides: a dataset field that refetches, a
+   panel list with arrows, and a neighbours rule that means nothing until the
+   list is on screen. `three_strain_import` films the *other* way into this view.
+8. **`ui/circular_chords`** — `user_guides/circular_view.md`. Three sequential
+   claims, one still: an empty ring, chords appearing when a track is ticked, and
+   a chord click opening a second view.
+9. **`ui/plugin_store_install`** — `user_guides/plugin_store.md`, 40 lines with
+   **no menu path anywhere on it**. The tour supplies the missing route and shows
+   the consequence: a menu that was not there a second earlier.
+
+### Machinery gaps
+
+1. **A same-tab navigation kills the overlay, silently.** `injectOverlay` runs
+   once before the first step (`generate-video.ts:353`); the re-inject exists
+   only on the `opensTab` branch (`:383-390`). Every overlay helper null-guards,
+   so after a navigation the clip keeps filming with no cursor and no captions
+   while the `.vtt` still ships every line, and no line of `video-report.ts` sees
+   it. **This is the whole distance between rank 2 and rank 1.** A
+   `navigates?: boolean` on `VideoStep` mirroring the `opensTab` branch fixes it.
+2. **`VideoSpec` has no `allowUnsettled` and no `expectedConsole`.**
+   `ScreenshotSpec` has both, and a no-config tour needs both.
+3. **`scrollTo` cannot scroll a drawer or a dialog.** `scrollPage` walks up from
+   `[data-testid^="view-container-"]` (`video-overlay.ts:214-239`), so on a tour
+   whose subject IS the drawer it scrolls the views instead. Blocks proposal 9;
+   today the only lever is a taller viewport.
+4. **`ResizeHandle` publishes no selector** (`packages/core/src/ui/ResizeHandle.tsx:69-87`)
+   — a bare `<div>` with emotion classes. A track-height drag is therefore
+   measured pixels, which is the one thing this corpus refuses, so
+   `config/settings_to_json` drops its drag. Two-line fix on the component.
+
+7) **The LGV import form's Open button has no testid**
+   (`ImportForm.tsx:196-203`), and `Open` is a prefix of `Open from a URL`,
+   `Open track...` and `Open file from URL or local computer`. `videos/sv.ts:200-209`
+   records what that cost once already.
+8) **Nothing pairs a typed URL with the page that prints it.**
+   `validateVideoSpecs` demands a `pastedTrackConfigs` entry only for a `type`
+   step whose value starts with `{`, and `check-paste-configs` compares against
+   `json*` fences only. The exposure is already live: `sv/inspector_route` types
+   a VCF URL against the one at `sv_inspector_view.md:44`, and a rehost moves one
+   and not the other. Extending the pair
+   to `{ video, doc, text }` needs no new mechanism.
+9) **There is no embedded mode for a tour.** `VideoSpec` carries a `url` and
+   nothing else, and `generate-video.ts` serves the jbrowse-web build
+   (`dev-harness.ts`, `jbrowseWebRoot`); the screenshot harness has had
+   `mode: 'embedded'` with a `viewState` prop all along
+   (`screenshot-embedded.ts`, which is how `embed_linear_genome_view/final` is
+   captured). So the two pages whose subject IS the embedded component are out
+   of reach and were ruled out on that in the 2026-08-21 re-survey:
+   `tutorials/embed_linear_genome_view.md`, and `scrna_pseudobulk.md`'s
+   UMAP-filters-the-rows link, which lives in the react-LGV examples site.
+   Neither is a tour worth building the mode FOR — recorded so the next survey
+   does not re-derive it.
+10) **A dialog's own scrollable field cannot be scrolled by the harness.** Gap 3
+    covers the drawer and the dialog as containers; this is one level in from
+    that. `config/settings_to_json` ends on a 20-row readable-JSON panel whose
+    keys are most of the way down an 80-line session, and the only lever is to
+    click into the textarea and `press` PageDown, which works because it is a
+    real caret rather than because anything supports it. A `scrollWithin`
+    naming a selector would cover both this and gap 3.
+
+No fixture is missing: `empty.json`, `hg38_only.json`, `volvoxhub/hub1/hub.txt`
+and the volvox bigwig/bed/index set all exist and are served by
+`createTestServer` beside the build.
