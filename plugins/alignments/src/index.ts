@@ -138,7 +138,10 @@ export type {
   BakedColorScale,
   NumericExtent,
 } from './LinearAlignmentsDisplay/bakedColorScale.ts'
-export type { AlignmentsColorSetting } from './shared/alignmentsColor.ts'
+export type {
+  AlignmentsColorSetting,
+  DeclaredReadLabels,
+} from './shared/alignmentsColor.ts'
 export type {
   ArcColorField,
   CategoryFilter,
