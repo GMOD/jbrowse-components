@@ -10,6 +10,7 @@ import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
 import {
   animationAllowed,
   doesIntersect2,
+  getPaletteHost,
   getSession,
   isFeature,
   morphClockMs,
@@ -2076,12 +2077,12 @@ export function stateModelFactory(
           : { cells: new Map(), layers: [] }
       },
       /**
-       * #getter
-       * the opaque bands under the mate lanes, off the lane geometry rather
-       * than the stack: the stack moves on every pan and settle, the bands
-       * only when a lane comes or goes, and an unchanged cell uploads nothing
+       * #method
+       * the opaque bands under the lanes on a page of ground `page`, off the
+       * lane geometry rather than the stack: the stack moves on every pan and
+       * settle, the bands only when a lane comes or goes
        */
-      get bandCell(): MultiWayCell {
+      bandCellOn(page: string): MultiWayCell {
         return {
           kind: 'glyphs',
           data: buildBandCell({
@@ -2094,8 +2095,17 @@ export function stateModelFactory(
             width: self.canvasWidth,
             paper: bandGroundColor(),
             stripe: bandInk().stripe,
+            page,
           }),
         }
+      },
+      /**
+       * #getter
+       * `bandCellOn` the session theme's paper, cached so an unchanged cell
+       * uploads nothing
+       */
+      get bandCell(): MultiWayCell {
+        return this.bandCellOn(getPaletteHost(self).palette.background.paper)
       },
     }))
     .views(self => {

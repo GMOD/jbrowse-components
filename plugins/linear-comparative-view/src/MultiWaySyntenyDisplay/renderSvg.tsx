@@ -4,9 +4,12 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgHaloText, TEXT_BASELINE_RATIO } from '@jbrowse/display-ui'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
+import { bandGroundColor, bandInk } from '@jbrowse/synteny-core'
 
 import { SvgLaneHeaders } from './components/SvgLaneHeaders.tsx'
 import { GENE_LABEL_FONT_PX, GENE_LABEL_HALO_PX } from './laneLabels.ts'
+import { BANDS_KEY } from './multiwayGeometry.ts'
 import { MULTIWAY_MARKS, multiwayBlocks } from './multiwayMarks.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -40,6 +43,12 @@ function MultiWaySvgBody({
     clickedFeatureId: 0,
     laneMaps: new Map(),
   }
+  // the bands on the export theme's page, which need not be the session's
+  const cells = new Map(model.renderCells)
+  cells.set(
+    sharedBackendKey(BANDS_KEY),
+    model.bandCellOn(palette.background.paper),
+  )
   return (
     <>
       <PaintLayer
@@ -50,18 +59,14 @@ function MultiWaySvgBody({
           paintMarkBlocks(
             ctx,
             MULTIWAY_MARKS,
-            model.renderCells,
+            cells,
             multiwayBlocks(state),
             state,
           )
         }}
       />
       <g transform={`translate(0 ${-model.scrollTop})`}>
-        <SvgLaneHeaders
-          rows={model.laneHeaderRows}
-          width={canvasWidth}
-          palette={palette}
-        />
+        <SvgLaneHeaders rows={model.laneHeaderRows} width={canvasWidth} />
         {model.laneGeneLabels(fontFamily, new Set(), canvasWidth).map(label => (
           <SvgHaloText
             key={label.key}
@@ -69,8 +74,8 @@ function MultiWaySvgBody({
             y={label.top + GENE_LABEL_FONT_PX * TEXT_BASELINE_RATIO}
             fontSize={GENE_LABEL_FONT_PX}
             fontFamily={fontFamily}
-            fill={palette.text.primary}
-            halo={palette.background.paper}
+            fill={bandInk().text}
+            halo={bandGroundColor()}
             haloWidth={GENE_LABEL_HALO_PX * 2}
           >
             {label.text}

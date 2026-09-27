@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { mergeDomain } from '@jbrowse/display-kit/groupByMenu'
+import { bandInk, bandPalette } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
@@ -179,7 +180,7 @@ const LaneHeaders = observer(function LaneHeaders({
           <span
             data-testid={`multiway-lane-label-${row.assemblyName}`}
             style={{
-              color: palette.text.primary,
+              color: bandInk().text,
               pointerEvents: 'all',
               cursor: row.isAnchor ? undefined : drag ? 'grabbing' : 'grab',
               userSelect: 'none',
@@ -207,7 +208,7 @@ const LaneHeaders = observer(function LaneHeaders({
             data-testid={`multiway-lane-menu-${row.assemblyName}`}
             style={{
               all: 'unset',
-              color: palette.text.secondary,
+              color: bandPalette.text.secondary,
               pointerEvents: 'all',
               cursor: 'pointer',
               flex: '0 0 auto',
@@ -224,7 +225,7 @@ const LaneHeaders = observer(function LaneHeaders({
           <span
             style={{
               marginLeft: 'auto',
-              color: palette.text.secondary,
+              color: bandPalette.text.secondary,
               flex: '0 0 auto',
             }}
           >

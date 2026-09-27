@@ -1,5 +1,6 @@
 import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { FloatingText } from '@jbrowse/display-ui'
+import { bandGroundColor, bandInk } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { GENE_LABEL_FONT_PX } from '../laneLabels.ts'
@@ -11,8 +12,7 @@ const LaneGeneLabels = observer(function LaneGeneLabels({
 }: {
   model: MultiWaySyntenyDisplayModel
 }) {
-  const { palette, typography } = useStyleTheme()
-  const { fontFamily } = typography
+  const { fontFamily } = useStyleTheme().typography
   const { scrollTop } = model
   return (
     <div
@@ -33,9 +33,9 @@ const LaneGeneLabels = observer(function LaneGeneLabels({
           data-testid="multiway-gene-label"
           x={label.left}
           y={label.top - scrollTop}
-          color={palette.text.primary}
+          color={bandInk().text}
           fontSize={GENE_LABEL_FONT_PX}
-          halo={palette.background.paper}
+          halo={bandGroundColor()}
           style={label.pinned ? { fontWeight: 'bold' } : undefined}
         >
           {label.text}

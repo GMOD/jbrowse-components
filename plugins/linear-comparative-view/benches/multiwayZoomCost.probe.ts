@@ -295,6 +295,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
       width: WIDTH,
       paper: '#fff',
       stripe: '#eee',
+      page: '#fff',
     })
   })
   const freshFills = () =>

@@ -1015,6 +1015,7 @@ test('a band covers each mate lane, striped on alternate rows', () => {
     width: WIDTH,
     paper: 'white',
     stripe: 'rgba(0,0,0,0.04)',
+    page: '#fff',
   })
   expect(bands.rectYs.length).toBe(3)
   expect([...bands.rectPositions]).toEqual([
@@ -1027,6 +1028,32 @@ test('a band covers each mate lane, striped on alternate rows', () => {
   ])
   expect(bands.rectYs[0]).toBe(s.lanes[1]!.bandStart)
   expect(bands.rectHeights[2]).toBe(s.lanes[2]!.bandEnd - s.lanes[2]!.bandStart)
+})
+
+// the anchor lane keeps the view's gridlines on a page already the band's
+// ground, and takes the ground on any other
+test('the anchor lane takes the band ground only off a page of it', () => {
+  const s = stack({ features: [pairFeature('g1', 100, 200)] })
+  const bandsOn = (page: string) =>
+    buildBandCell({
+      bands: s.lanes,
+      width: WIDTH,
+      paper: '#fff',
+      stripe: 'rgba(0,0,0,0.04)',
+      page,
+    })
+  expect([...bandsOn('white').rectYs]).toEqual([
+    s.lanes[1]!.bandStart,
+    s.lanes[1]!.bandStart,
+  ])
+  const dark = bandsOn('#121212')
+  expect([...dark.rectYs]).toEqual([
+    0,
+    s.lanes[1]!.bandStart,
+    s.lanes[1]!.bandStart,
+  ])
+  expect(dark.rectColors[0]).toBe(cssColorToABGR('#fff'))
+  expect(dark.rectHeights[0]).toBe(s.lanes[0]!.bandEnd)
 })
 
 describe('a lane cell', () => {

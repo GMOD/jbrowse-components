@@ -1,9 +1,9 @@
 import { getFillProps } from '@jbrowse/core/util'
+import { bandInk, bandPalette } from '@jbrowse/synteny-core'
 
 import { LABEL_FONT_SIZE } from '../laneHeader.ts'
 
 import type { LaneHeaderRow } from '../laneHeader.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
  * The lane headers as an exported figure wants them: the name and where the
@@ -16,11 +16,9 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 export function SvgLaneHeaders({
   rows,
   width,
-  palette,
 }: {
   rows: LaneHeaderRow[]
   width: number
-  palette: JBrowsePalette
 }) {
   return (
     <>
@@ -30,7 +28,7 @@ export function SvgLaneHeaders({
             x={2}
             y={row.y}
             fontSize={LABEL_FONT_SIZE}
-            {...getFillProps(palette.text.primary)}
+            {...getFillProps(bandInk().text)}
           >
             {row.label}
           </text>
@@ -40,7 +38,7 @@ export function SvgLaneHeaders({
               y={row.y}
               fontSize={LABEL_FONT_SIZE}
               textAnchor="end"
-              {...getFillProps(palette.text.secondary)}
+              {...getFillProps(bandPalette.text.secondary)}
             >
               {row.scale}
             </text>
