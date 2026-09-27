@@ -21,7 +21,7 @@ every highlight with a link back to it.
 
 <Figure caption="Drag across the top of an LGV and pick 'Highlight region.'" src="/img/highlight_list_create.png"/>
 
-<Video src="/media/ui/highlight_region.mp4" caption="A span of PTEN selected on the scalebar and highlighted, the highlight list opened from the view menu, the row named, and the view sent elsewhere on chr10 before the row's link brings it back to the highlighted span." />
+<Video src="/media/ui/highlight_region.mp4" caption="A span of PTEN selected on the scalebar and highlighted, the highlight list opened from the view menu, the row named, and a search for FAS taking the view along chr10 before the row's link brings it back to the highlighted span." />
 
 ## The highlight list
 

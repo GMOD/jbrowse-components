@@ -101,7 +101,7 @@ const pickContext = (label: string): VideoStep[] => [
   // pileup repainting, which is the whole claim three stacked panels cannot
   // make.
   { type: 'waitForAppSettled', timeout: 120000 },
-  { type: 'delay', ms: 3000 },
+  { type: 'delay', ms: 2500 },
 ]
 
 export const epigenomicsVideos: VideoSpec[] = [
@@ -125,6 +125,7 @@ export const epigenomicsVideos: VideoSpec[] = [
     name: 'epigenomics/bisulfite_contexts',
     description:
       'Cycling one Arabidopsis WGBS pileup through the plant cytosine contexts: Color by... to Bisulfite / EM-seq, then CHG and CHH over a gene body and an LTR element that answer differently',
+    goal: 'Recolor one plant WGBS pileup by each cytosine context in turn',
     url: cpgPileup,
     // genes + the repeat lane + the aggregate's three rows + one 200px pileup +
     // headers/ruler/overview. Nothing in the tour grows the app: a context is a
@@ -139,12 +140,19 @@ export const epigenomicsVideos: VideoSpec[] = [
       // coordinate chip from a chromosome the tour never visits. Moving off it
       // first is the whole of this step.
       { type: 'hover', selector: WORDMARK, hold: 0 },
-      // CpG, which is what the page's `addtrack` fence opens the track on: red
-      // over the gene body AND over the element on the right.
-      { type: 'delay', ms: 3000 },
+      // CpG, which the page's `addtrack` fence opens the track on
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'CpG: methylated, red, over the gene body and the LTR element',
+      },
       ...pickContext('CHG'),
       ...pickContext('CHH'),
-      { type: 'delay', ms: 2000 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Only the LTR stays red in CHG and CHH; the gene body is CpG only',
+      },
     ],
     tailMs: 4000,
   },
@@ -176,6 +184,7 @@ export const epigenomicsVideos: VideoSpec[] = [
     name: 'epigenomics/chromhmm_cluster',
     description:
       "Clustering the 127-epigenome ChromHMM track over HOXA: the rows in Roadmap's tissue order, the track menu's Clustering item, and the painting re-laid out under the dendrogram it produces",
+    goal: "Cluster 127 epigenomes' chromatin states over the HOXA genes",
     url: unclusteredHoxa,
     // The `chromhmm` figure's own 880, which tracks the display's 520 plus the
     // gene lane's 120: this tour opens on that figure's session and ends on that
@@ -195,14 +204,16 @@ export const epigenomicsVideos: VideoSpec[] = [
     readySelector: MULTIROW_READY,
     readyTimeout: 300000,
     steps: [
-      // The unclustered stack, held. This is the before, and a reader who has
-      // just scrolled past the clustered figure needs a moment to see that this
-      // is not it.
-      { type: 'delay', ms: 3000 },
+      { type: 'hover', selector: WORDMARK, hold: 0 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: "Rows in Roadmap's tissue order: a clean tissue stripe, no blocks",
+      },
       {
         type: 'click',
         selector: CHROMHMM_MENU,
-        say: 'Cluster the epigenomes by similarity',
+        say: 'Cluster the epigenomes by their chromatin states',
         hold: 1800,
       },
       { type: 'waitForText', text: 'Clustering' },
@@ -239,9 +250,11 @@ export const epigenomicsVideos: VideoSpec[] = [
       // The visible half of what the route produced: `TreeSidebar` mounts only
       // once the run has returned a hierarchy.
       { type: 'waitForSelector', selector: DENDROGRAM, timeout: 120000 },
-      // The blocks, the tree and the mixed stripe, held long enough to read
-      // against the gene lane above them.
-      { type: 'delay', ms: 4000 },
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'Clustered, the states form blocks and the tissue stripe mixes',
+      },
     ],
     tailMs: 4500,
   },

@@ -8,7 +8,7 @@ const POSITIONS = {
   's1+': [
     { x: 0, y: 0 },
     { x: 100, y: 0 },
-    { x: 200, y: 10 },
+    { x: 100, y: 10 },
   ],
 }
 
@@ -60,11 +60,30 @@ test('a standalone GraphGenomeView is its own pane', () => {
   expect(geometry(undefined, 's1')).toEqual({
     left: 15,
     top: 57,
-    width: 400,
+    width: 200,
     height: 10,
-    midX: 215,
+    midX: 120,
     midY: 57,
   })
+})
+
+// an anchored node is a two-point line, and its middle vertex was its left end,
+// where the app's hit test answers the neighbour it touches
+test('the point a click takes is halfway along the drawn line', () => {
+  canvasAt(element(document.body, 'view-container-g'), 50)
+  setSession([
+    {
+      id: 'g',
+      nodePositions: {
+        's2+': [
+          { x: 0, y: 20 },
+          { x: 100, y: 20 },
+        ],
+      },
+      ...TRANSFORM,
+    },
+  ])
+  expect(geometry(undefined, 's2')).toMatchObject({ midX: 115, midY: 77 })
 })
 
 test('a graph track resolves through its display, the first one by default', () => {

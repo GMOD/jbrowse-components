@@ -92,9 +92,11 @@ Two lanes above the graph track index the same graph on GRCh38:
 
 ## The graph moves with the view
 
-Type the C4 window, `chr6:31,980,000-32,050,000`, into the location box and
-press Enter. The graph track cuts the new window, and scrolling or zooming moves
-it with the lanes above.
+Search `C4A` in the location box. GRCh38 carries the gene on two alt contigs as
+well, so pick the chr6 hit, then zoom out twice to take in C4B. The graph track
+cuts each new window, and scrolling or zooming moves it with the lanes above.
+
+<Video src="/media/pangenome/hprc_follow_view.mp4" caption="C4A searched from the HLA / MHC launch: the chr6 hit taken from the picker, two zoom-outs to C4B, and the graph track re-cut at each step to the bubble whose alleles run from nothing to twice GRCh38's C4 module." />
 
 Open the graph track's menu and pick **Layout → Force-directed layout**, which
 draws the graph by its shape, in coordinates fitted to the track.
@@ -123,8 +125,6 @@ Back in the first tab, type the MHC class II window,
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
 tier and writes the `coarse` slot.
 
-<Video src="/media/pangenome/hprc_browse.mp4" caption="HPRC release 2 from the HPRC page: the HLA / MHC graph launch, the graph track moving with the view to C4, out to the bubble tier across chromosome 6 and back to MHC class II, and one allele highlighted in hg38 and opened on the haplotype that contributed it." />
-
 ## From an allele to its haplotype
 
 Back at MHC class II, find the allele under _HLA-DRB5_: a charcoal node in a
@@ -140,6 +140,8 @@ Left-click the same node. Its details give `contributingHaplotype`, `NA20809#2`,
 and the node's menu offers **Open in NA20809.2**. Take it. A second linear view
 opens below the first, on that haplotype's chromosome 6, framed on the allele
 with its CAT gene annotation. Zoom out a few steps for the genes around it.
+
+<Video src="/media/pangenome/hprc_browse.mp4" caption="The whole route from the HPRC page: the HLA / MHC graph launch, the allele under HLA-DRB5 hovered, and the same allele opened on NA20809 haplotype 2, whose genes around it include no HLA-DRB5." />
 
 <Figure caption="The same launch in two frames. First, the MHC class II cut with the NA20809.2 allele ringed and its right-click menu open on Open in NA20809.2. Second, the view that entry opens: NA20809 haplotype 2's chromosome 6 with its CAT genes, which put HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 

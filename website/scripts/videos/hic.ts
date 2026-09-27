@@ -29,6 +29,7 @@ export const hicVideos: VideoSpec[] = [
     name: 'hic/two_regions',
     description:
       "One chr9 window becomes two: the chr22 window typed into the location box beside it, and the wedge between each track's two triangles filling in K562 while it stays empty in GM12878",
+    goal: "Open two chromosomes side by side and find K562's BCR-ABL1 fusion",
     url: chr9Only,
     // The figure's own frame. Its tracks are the figure's tracks at the figure's
     // heights — a 68px gene lane over two 380px matrices — and the figure is
@@ -72,9 +73,11 @@ export const hicVideos: VideoSpec[] = [
     readyTimeout: 240000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // One region, held: each lane is a chromosome against itself, and there is
-      // nothing beside it. The state the section's claim is made against.
-      { type: 'delay', ms: 4000 },
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'One chr9 window: each Hi-C track is chr9 against itself',
+      },
       // The page's instruction, performed: "typing both into the location box
       // separated by a space". `clear: true` because the box already holds the
       // chr9 window, and held long enough afterwards to read both loci in it —
@@ -84,7 +87,7 @@ export const hicVideos: VideoSpec[] = [
         selector: LOCATION_BOX,
         value: junctionLoc,
         clear: true,
-        say: 'Both windows in the box, separated by a space',
+        say: "Enter ABL1's chr9 window and BCR's chr22 one, space-separated",
         hold: 1800,
       },
       // Cut on the PRESS, which is where the time goes: the run reported 11.3s
@@ -107,7 +110,7 @@ export const hicVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 5000,
-        say: 'chr9 against chr22',
+        say: 'Between the triangles, chr9 meets chr22 in K562 only: the fusion',
       },
     ],
     tailMs: 5000,

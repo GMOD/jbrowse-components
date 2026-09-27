@@ -10,18 +10,32 @@
  * generate-video before it films.
  */
 import {
+  MAX_GOAL_WORDS,
+  MAX_LINES,
   validatePastePages,
   validateVideoEmbeds,
   validateVideoSpecs,
   videoEmbedsIn,
 } from './video-spec-rules.ts'
+import { LOCATION_BOX } from './videos/shared.ts'
 
-import type { VideoSpec } from './video-spec-types.ts'
+import type { VideoSpec, VideoStep } from './video-spec-types.ts'
 
-const spec = (over: Partial<VideoSpec> = {}): VideoSpec => ({
+const PAYOFF: VideoStep = { type: 'delay', ms: 1, say: 'What the frame shows' }
+
+// A tour the story rules accept, with the steps under test ahead of its payoff.
+const spec = ({ steps = [], ...over }: Partial<VideoSpec> = {}): VideoSpec => ({
   name: 'topic/tour',
   url: '?config=x',
   description: 'A tour',
+  goal: 'Watch one thing happen',
+  ...over,
+  steps: [...steps, PAYOFF],
+})
+
+// The same, with nothing appended, for the rules about the payoff itself.
+const bare = (over: Partial<VideoSpec>): VideoSpec => ({
+  ...spec(),
   steps: [],
   ...over,
 })
@@ -111,6 +125,77 @@ test('a locus typed into the search box is not a pasted config', () => {
       }),
     ]),
   ).toBe('')
+})
+
+// ── the story a viewer follows ─────────────────────────────────────────────
+
+test('a tour with no goal', () => {
+  expect(problems([spec({ goal: ' ' })])).toMatch('no goal')
+})
+
+test('a goal too long to read before anything moves', () => {
+  const goal = Array.from({ length: MAX_GOAL_WORDS + 1 }, () => 'word').join(
+    ' ',
+  )
+  expect(problems([spec({ goal })])).toMatch(`keep it to ${MAX_GOAL_WORDS}`)
+})
+
+test('more lines than one route takes', () => {
+  const lines = Array.from({ length: MAX_LINES }, (_, i): VideoStep => ({
+    type: 'hover',
+    selector: '#x',
+    say: `Line ${i}`,
+  }))
+  expect(problems([spec({ steps: lines })])).toMatch('split the tour')
+  expect(problems([spec({ steps: lines.slice(1) })])).toBe('')
+})
+
+test('a tour whose last line goes up on a click', () => {
+  expect(
+    problems([
+      bare({ steps: [{ type: 'click', selector: '#go', say: 'Press go' }] }),
+    ]),
+  ).toMatch('end on the payoff')
+})
+
+test('a payoff line held before the last action', () => {
+  expect(
+    problems([bare({ steps: [PAYOFF, { type: 'click', selector: '#go' }] })]),
+  ).toMatch('end on the payoff')
+})
+
+test('parking the pointer after the payoff is not an action', () => {
+  expect(
+    problems([
+      bare({ steps: [PAYOFF, { type: 'hover', selector: '#wordmark' }] }),
+    ]),
+  ).toBe('')
+})
+
+test('a line on a step the camera is off for', () => {
+  expect(
+    problems([
+      spec({
+        steps: [
+          { type: 'waitForText', text: 'Done', cut: true, say: 'Unseen' },
+        ],
+      }),
+    ]),
+  ).toMatch('"Unseen" is on a `cut` step')
+})
+
+test('a coordinate typed into the location box', () => {
+  const typed = (value: string) =>
+    problems([
+      spec({ steps: [{ type: 'type', selector: LOCATION_BOX, value }] }),
+    ])
+  expect(typed('chr6:31,980,000-32,050,000')).toMatch(
+    'search a gene name, or select the span on the scale bar',
+  )
+  expect(typed('chr17:7,676,250')).toMatch('into the location box')
+  expect(typed('C4A')).toBe('')
+  // two windows side by side is the multi-region syntax, which no name spells
+  expect(typed('chr9:1-100 chr22:1-100')).toBe('')
 })
 
 // ── the doc side ───────────────────────────────────────────────────────────

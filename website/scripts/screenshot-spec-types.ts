@@ -61,6 +61,10 @@ export interface ScreenshotAction {
   // field that fills in a single frame is the one thing in a tour that no hand
   // could have done.
   typeDelayMs?: number
+  // for 'type': insert the whole value as one input event, the way a paste
+  // does. generate-video sets it for a URL or a config, which a reader pastes
+  // and a film typing it a character at a time turns into a flicker.
+  paste?: boolean
   // for 'drag': start/end points in viewport CSS px (used for rubberband drags).
   // 'click'/'rightclick'/'hover' also accept `from` alone, to act on a bare
   // viewport coordinate (canvas-drawn features have no DOM node to target).

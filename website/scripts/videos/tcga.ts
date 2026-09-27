@@ -20,6 +20,7 @@ export const tcgaVideos: VideoSpec[] = [
     name: 'tcga/cohort_cnv_clustering',
     description:
       "Sorting a TCGA-BRCA copy-number stack by profile: 1104 tumors in barcode order, the track menu's Clustering item, and the bands that come back",
+    goal: 'Cluster 1104 breast tumors by their copy number around ERBB2',
     url: tcgaVideoFixtures.unclusteredErbb2,
     // 906px of app at the first frame, the last and its tallest, per the run's
     // own content report, which is the whole clip: nothing here grows the app the
@@ -32,15 +33,16 @@ export const tcgaVideos: VideoSpec[] = [
     readyTimeout: 300000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // The holds are long by the pangenome tours' standard, and deliberately.
-      // This clip exists to be FOLLOWED, so each state has to stay up long
-      // enough to read: the track menu is a dozen items and the reader has to
-      // find one in it, where those tours only had to show that a cascade
-      // happened. At 700ms the open menu was on screen for about a second.
+      {
+        type: 'delay',
+        ms: 1500,
+        say: 'One row per tumor, in barcode order, which groups nothing',
+      },
+      // the track menu is a dozen items, so each level stays up to be found
       {
         type: 'click',
         selector: trackMenu(tcgaVideoFixtures.trackId),
-        say: 'Cluster the 1104 tumors by their profile',
+        say: 'Cluster the tumors by their profile from the track menu',
         hold: 1800,
       },
       { type: 'waitForText', text: 'Clustering' },
@@ -56,7 +58,11 @@ export const tcgaVideos: VideoSpec[] = [
         timeout: 300000,
         cut: true,
       },
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Clustered, the tumors amplified at ERBB2 gather into one red block',
+      },
     ],
     tailMs: 3500,
   },
@@ -78,6 +84,7 @@ export const tcgaVideos: VideoSpec[] = [
     name: 'tcga/mutations_collapse_introns',
     description:
       'Reshaping a gene to its exons: right-click CDH1 in the gene lane, Collapse introns, and the 979-tumor matrix redrawn over the coding sequence',
+    goal: 'Reshape CDH1 to its coding exons so its mutations line up',
     url: tcgaMutationVideoFixtures.cdh1WholeTranscript,
     // 779px of app at every frame the run measured — `Replace current view`
     // reshapes in place rather than adding a view, so nothing here grows the way
@@ -95,7 +102,7 @@ export const tcgaVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         text: tcgaMutationVideoFixtures.gene,
-        say: `Reshape ${tcgaMutationVideoFixtures.gene} to its coding exons`,
+        say: `Right-click ${tcgaMutationVideoFixtures.gene} and collapse its introns`,
         hold: 1800,
       },
       { type: 'waitForText', text: 'Collapse introns' },
@@ -120,7 +127,11 @@ export const tcgaVideos: VideoSpec[] = [
         selector: tcgaMutationVideoFixtures.matrixDone,
         timeout: 300000,
       },
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: "979 tumors over CDH1's exons alone; red marks high-impact mutations",
+      },
     ],
     tailMs: 3500,
   },

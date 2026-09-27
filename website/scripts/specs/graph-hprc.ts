@@ -544,10 +544,7 @@ const launchedZoomOut = (clicks: number): ScreenshotAction[] =>
 export const hprcVideoFixtures = {
   haplotype: HAPLOTYPE,
   haplotypeNode: HPRC_ALLELE,
-  haplotypeGenesDisplay: HAPLOTYPE_GENES_DISPLAY,
-  launchedZoomOut,
-  c4Window: C4_WINDOW,
-  mhcWindow: 'chr6:32,510,001-32,600,000',
+  launchedZoomOutButton: LAUNCHED_ZOOM_OUT,
 }
 
 const ABCA7_CONFIG = encodeURIComponent(

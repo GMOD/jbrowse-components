@@ -1,3 +1,5 @@
+import type { VideoStep } from '../video-spec-types.ts'
+
 // The selectors more than one tour drives. Same rule as
 // screenshot-spec-helpers.ts: nothing with a single consumer belongs here — it
 // goes next to the tour that uses it, and moves here when a second one turns up.
@@ -15,6 +17,27 @@ export const LOCATION_BOX = 'input[placeholder="Search for location"]'
 // drag's y here while its x still comes from the locus, so the tour says which
 // bases it selects instead of which pixels.
 export const RUBBERBAND = '[data-testid="rubberband_controls"]'
+
+// A selection on the scale bar and Zoom to region, for a tour narrowing a
+// linear view on a span no gene name reaches: the viewer watches the span being
+// chosen, where a typed coordinate is a run of digits. It also undoes a drawer,
+// since an LGV keeps its bp-per-pixel while a widget takes ~400 px off it.
+export function zoomToSteps(window: string, say?: string): VideoStep[] {
+  const [ref, range] = window.split(':')
+  const [start, end] = range!.split('-')
+  return [
+    {
+      type: 'drag',
+      fromAnchor: { locus: `${ref}:${start}`, band: RUBBERBAND },
+      toAnchor: { locus: `${ref}:${end}`, band: RUBBERBAND },
+      ...(say ? { say } : {}),
+      hold: 900,
+    },
+    { type: 'waitForText', text: 'Zoom to region' },
+    { type: 'click', text: 'Zoom to region' },
+    { type: 'waitForText', text: 'Zoom to region', hidden: true },
+  ]
+}
 
 // The track menu button for one track, which is where most routes start.
 export const trackMenu = (trackId: string) =>

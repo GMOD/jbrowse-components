@@ -210,15 +210,15 @@ const TRIO_GENE_LANE = {
 // the six phased rows to read as blocks rather than as individual columns.
 const TRIO_MATRIX_LOC = 'chr1:62,174,000-65,097,304'
 
-// Where the tour opens instead, at the left edge of that window. The default
-// display gates at one feature per pixel and this VCF carries every 1000
-// Genomes site, so over 2.9 Mb it draws "Too many features" rather than the
-// boxes trio-basic is of; 20 kb is a few hundred variants, which draws.
-const TRIO_DENSE_LOC = 'chr1:62,174,000-62,194,000'
+// Where the tour opens instead: the matrix window's centre, 1/128th as wide, so
+// seven zoom-outs land on the figures' window. The default display gates at one
+// feature per pixel and this VCF carries every 1000 Genomes site, so over 2.9
+// Mb it draws "Too many features"; 23 kb is a few hundred variants, which draws.
+const TRIO_DENSE_LOC = 'chr1:63,624,200-63,647,100'
 
 export const trioVideoFixtures = {
   vcfTrackId: TRIO_VCF_TRACK,
-  matrixLoc: TRIO_MATRIX_LOC,
+  zoomOutsToMatrix: 7,
   // The tour's opening state: the gene lane the figures carry, with the VCF in
   // the display it loads with, since the route being filmed is what gets from
   // that to the phased matrix.

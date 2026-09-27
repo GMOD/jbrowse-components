@@ -35,15 +35,11 @@ refilm and none of which the run reports.
   is a bare SVG `<g>`, so the step throws `node.click is not a function` after
   the load and every step before it. It is the right place to park the cursor
   and the wrong thing to dismiss a menu with.
-- **The camera opens with the pointer at the top middle of the frame**, which on
-  a full-width LGV is the overview's cytoband strip — and the view writes the
-  position under the pointer into its own title bar. So the opening frame of an
-  LGV tour carries a coordinate chip over the view title from wherever that
-  lands, which is a locus the tour never visits, and nothing in the run says so.
-  A first `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` moves
-  the real mouse off it, and the chip is gone by the time the tour's own first
-  step runs; `moveCursor` drives `page.mouse.move`, so the drawn cursor and the
-  hover states cannot disagree.
+- **The camera parks the pointer on the wordmark while the goal is read**,
+  because top centre is a full-width LGV's overview strip, and the view writes
+  the locus under the pointer into its own title bar and syncs a hover band into
+  a graph track below it. A page with no wordmark (a launcher on another site)
+  still gets top centre.
 - **A hold is where the pointer is, not where the click was.** The last click
   before a held end state leaves the pointer on whatever now occupies that spot,
   and a re-layout moves what that is: `Replace current view` sat where the
@@ -76,24 +72,24 @@ refilm and none of which the run reports.
   for, which is also where the `hold` belongs.
 - **One line per PHASE, not one per click.** A caption stays up until another
   step replaces it, so a cascade needs one line on its first step and silence
-  after it. The line is the route a reader cannot read off the frame --
-  `Add the graph track by pasting its config` over **File → Open track... → the
-  workflow select → Submit** -- and the labels themselves are already in the
-  frame, under a 40px cursor and a red ripple. Written a step at a time it comes
-  out as the menu item spelled twice: 100 of the corpus's 244 captions were once
-  the exact text of the row being clicked, and at 32px across the bottom centre
-  that reads as a billboard repeating the cursor. The line still has to be true
-  when the step STARTS, which an intent is and a result is not.
+  after it. The line says what the phase does and why, in plain words --
+  `Load the graph by URL from File, Open track` over **File → Open track... →
+  the workflow select → Submit** -- since the labels themselves are already in
+  the frame, under a 40px cursor and a red ripple. A line that is the menu item,
+  the typed value or a track's name tells the viewer nothing the frame does not.
 - **A `say` goes up when its step STARTS.** So a line describing what the step
-  produces is wrong for the whole time it runs — `hic/two_regions` said the
-  wedge was chr9 against chr22 over a box that still held one window. Name the
-  control, the value or the thing being pointed at; what it MEANS is the embed's
-  caption, which the reader reads at their own pace.
+  produces is wrong for the whole time it runs — `hic/two_regions` once said the
+  wedge was chr9 against chr22 over a box that still held one window. The
+  meaning goes on the PAYOFF: a `delay` after the result has drawn, whose line
+  says what the frame now shows, written from the frame itself.
 - **Nothing holds a `say` to a string the app draws.** `check-menu-labels` reads
-  the doc pages, not the specs, so a chip can name a control by its TESTID and
-  the run is happy: `ui/add_genome` put `Assembly name` over a field the form
-  labels `Genome name`. Read the label out of the frame, and where the step is a
-  `type`, say the value the way the location-box steps do.
+  the doc pages, not the specs, so a line can name a control by its TESTID and
+  the run is happy: `ui/add_genome` once put `Assembly name` over a field the
+  form labels `Genome name`. Read the label out of the frame.
+- **A gene search in GRCh38's MHC raises the results picker**, because the alt
+  contigs carry the same genes: C4A has three hits and HLA-DRB1 six, with the
+  primary chromosome's first. `pangenome/hprc_follow_view` films the pick, which
+  is what a reader meets too.
 - **A right-click anchored by locus lands on whatever the display DREW there**,
   which inside an alignment is often a CIGAR op rather than the feature. Over an
   indel wide enough to paint, the menu grows an "Open deletion details (N bp)"
@@ -122,22 +118,22 @@ refilm and none of which the run reports.
   a drawable one and waits on `displayReady(...)` carries on with the banner
   still on screen. What to wait on is the banner going away —
   `{ type: 'waitForText', text: 'Too many features', hidden: true }` — and the
-  display id after it, for the paint.
+  display id after it, for the paint. The film fails if a gated display is still
+  on camera after any step, which is what a zoom to a whole chromosome meets on
+  every gene lane.
 - **A highlight whose span becomes the window washes the whole frame.** The
   graph's `Highlight in <assembly>` writes a translucent band into the linear
   view, which reads well while the band is a slice of the window and edge to
   edge once the tour has navigated onto it. Where the point is only WHERE the
   thing is, a `hover` is free: hovering a node syncs the same interval into the
   view above for as long as the pointer is on it, and leaves nothing behind.
-- **A `graphNode` anchor on an anchored tier at chromosome scale lands on a
-  neighbour.** On the whole-chr6 bubble tier (170 Mb in 1900 px, so 90 kb per
-  pixel) the right-click anchored on `s101110` opened the menu of `s100702`, 2.6
-  Mb and 29 px away, and the debug screenshot's tooltip said so. A tier node
-  there is narrower than a pixel and the drawing gives it a floor, so the
-  resolved point and the app's own hit test disagree by the width of a node or
-  two. Cut the tier over a few megabases instead, where at 2 Mb the class II
-  bubble is sixty pixels wide, and leave the chromosome-scale picture to a
-  figure, which clicks nothing.
+- **A `graphNode` anchor resolves halfway along the node's drawn line.** It used
+  to take the middle VERTEX, which for an anchored node's two-point line is its
+  left end, where it meets its neighbour, and the app's hit test there answered
+  the neighbour: `pangenome/hprc_browse` opened a 1 kb node beside the 1.8 kb
+  allele it named. On a chromosome-scale tier a node is narrower than a pixel,
+  so a click there can still land on the next one; cut the tier over a few
+  megabases, and leave the chromosome-scale picture to a figure.
 - **A node's `Open in <assembly>` navigates the linear view its graph track is
   in rather than adding one**, when that view carries the assembly, so a tour
   built on it keeps the frame it opened at. That is what makes the

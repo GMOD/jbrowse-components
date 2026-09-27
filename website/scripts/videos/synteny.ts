@@ -151,6 +151,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/multiway_zoom_out',
     description:
       "The grape multi-way lanes at gene scale, a hovered ribbon reading one ortholog group down the stack, then three zoom-outs with every lane re-fitting its own frame to the anchor's widening window",
+    goal: 'Zoom a grape-anchored stack out from gene scale to block scale',
     url: multiwayLanes,
     // The app is the grape gene track over the 340px lane stack: the page's
     // own figures frame it at 680 and the run measured the app at 685, so 690
@@ -166,8 +167,11 @@ export const syntenyVideos: VideoSpec[] = [
       // park the pointer off the cytoband strip so the opening frame carries
       // no coordinate chip
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // the gene-level state, held: one ribbon per ortholog pair
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'Gene scale: one ribbon per ortholog pair between the lanes',
+      },
       // just below the anchor lane's glyph row, where the tandem-expansion
       // group's ribbon leaves it
       {
@@ -177,27 +181,27 @@ export const syntenyVideos: VideoSpec[] = [
           locus: multiwayHoverLocus,
           fracY: 0.11,
         },
-        say: 'Hover a ribbon',
+        say: 'Hover a ribbon to light its ortholog group down the stack',
         hold: 3000,
       },
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 800 },
       {
         type: 'click',
         selector: '[data-testid="zoom_out"]',
-        say: 'Zoom out',
+        say: "Zoom out; each lane re-fits its own window to the anchor's",
         hold: 600,
       },
       // on camera: the lanes re-fitting IS the payoff, and the app publishes
       // when the refetch behind it has settled
       { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 2200 },
+      { type: 'delay', ms: 1500 },
       {
         type: 'click',
         selector: '[data-testid="zoom_out"]',
         hold: 600,
       },
       { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 2200 },
+      { type: 'delay', ms: 1500 },
       {
         type: 'click',
         selector: '[data-testid="zoom_out"]',
@@ -206,9 +210,12 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'waitForAppSettled', timeout: 120000 },
       // off the zoom button, whose tooltip otherwise stands in the poster
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // the block-level state the page's first figure is of, held as the end
-      // state
-      { type: 'delay', ms: 3000 },
+      // the block-level state the page's first figure is of
+      {
+        type: 'delay',
+        ms: 3500,
+        say: "Block scale: each genome's copy of the grape block, lane by lane",
+      },
     ],
     tailMs: 4500,
   },
@@ -242,6 +249,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/multiway_launch_stack',
     description:
       "From the grasses lane track to the stacked view: the track menu's Launch → Linear synteny view (visible region) entry, the dialog offering a row per grass with each panel's span printed beside it, and Replace current view putting the stack in the lane view's place",
+    goal: 'Turn the grasses ortholog lanes into a stack, one panel per grass',
     url: grassesLanes,
     // Sized to the LAUNCHED STACK, the tallest of the three states and the
     // frame the poster comes from: the run measured the app at 665 on the
@@ -254,13 +262,16 @@ export const syntenyVideos: VideoSpec[] = [
     readyTimeout: 120000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // the lanes, held: one per grass under rice's own genes
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: "Rice's genes, with one ortholog lane per grass under them",
+      },
       {
         type: 'click',
         selector:
           '[data-testid="track_menu_icon"][data-trackid="grasses_orthogroups"]',
-        say: 'Launch a stacked view, one panel per grass',
+        say: 'From the track menu, launch a synteny view of this region',
         hold: 1400,
       },
       { type: 'waitForText', text: 'Launch' },
@@ -287,7 +298,11 @@ export const syntenyVideos: VideoSpec[] = [
       // long enough to read the order the dialog opens in and the span the
       // dialog prints beside each row, which is now the whole of what this
       // state has to say — it carries the beat the untick click used to
-      { type: 'delay', ms: 5200, say: 'One panel per grass' },
+      {
+        type: 'delay',
+        ms: 5200,
+        say: 'The dialog lists a panel per grass, with the span each opens at',
+      },
       {
         type: 'click',
         text: 'Replace current view',
@@ -300,7 +315,11 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 180000,
       },
       { type: 'waitForAppSettled', timeout: 180000 },
-      { type: 'delay', ms: 3000 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'The stack replaces the lanes: rice on top, each grass below it',
+      },
     ],
     tailMs: 4500,
   },
@@ -321,6 +340,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/three_strain_import',
     description:
       "Building the three-strain H. pylori stack from the import form: Manual, one genome per row, Add row for the third, each connector resolving its own alignment, Launch, a zoom in on each row, and a gene track from each row's own selector",
+    goal: 'Build a three-strain H. pylori synteny stack from the import form',
     url: emptySyntenyForm,
     // One frame serves three states and the tallest is the last: the run reports
     // the app at 289 on the opening form, 572 with the stack standing empty, and
@@ -337,7 +357,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Manual',
-        say: 'Build the stack a row at a time',
+        say: 'Choose Manual, then set a genome for each row',
         hold: 1500,
       },
       {
@@ -349,18 +369,23 @@ export const syntenyVideos: VideoSpec[] = [
       // row gets set rather than the tour pretending the form opens ready, and
       // row 2 goes first: setting row 1 to 26695 while row 2 still holds it
       // would ask the form to pair an assembly with itself.
-      { type: 'click', selector: assemblyRow(2), say: 'Row 2', hold: 900 },
+      { type: 'click', selector: assemblyRow(2), hold: 900 },
       { type: 'click', selector: option(strains.middle.label), hold: 1200 },
-      { type: 'click', selector: assemblyRow(1), say: 'Row 1', hold: 900 },
+      { type: 'click', selector: assemblyRow(1), hold: 900 },
       { type: 'click', selector: option(strains.top.label), hold: 1200 },
-      { type: 'click', text: 'Add row', say: 'Add row', hold: 1400 },
+      {
+        type: 'click',
+        text: 'Add row',
+        say: 'Add a third row for the third strain',
+        hold: 1400,
+      },
       // The new row's dropdown sits directly under the connector arrow Add row
       // put above it, and the cursor reaches it across that arrow, which raises
       // the arrow's tooltip over the dropdown -- so the click lands on the
       // tooltip. Escape dismisses it; nothing else is open to take the key.
       { type: 'press', key: 'Escape' },
       { type: 'delay', ms: 600 },
-      { type: 'click', selector: assemblyRow(3), say: 'Row 3', hold: 900 },
+      { type: 'click', selector: assemblyRow(3), hold: 900 },
       { type: 'click', selector: option(strains.bottom.label), hold: 1400 },
       // The two connectors, opened rather than set: each pair has exactly one
       // alignment here and the form has already chosen it, so what these clicks
@@ -369,13 +394,12 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: connector(1),
-        say: '26695 against CHC155',
+        say: 'Each arrow between rows has already found its alignment',
         hold: 2100,
       },
       {
         type: 'click',
         selector: connector(2),
-        say: 'CHC155 against J99',
         hold: 2100,
       },
       { type: 'click', text: 'Launch' },
@@ -390,7 +414,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: rowZoomIn(1),
-        say: 'Zoom each row in',
         hold: 600,
       },
       { type: 'click', selector: rowZoomIn(2), hold: 600 },
@@ -410,12 +433,12 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Open track selector',
+        say: "It opens empty; add each strain's genes from its own row",
         hold: 700,
       },
       {
         type: 'click',
         selector: geneTrack(strains.top.assembly),
-        say: `${strains.top.label} genes`,
         hold: 700,
       },
       {
@@ -426,7 +449,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: geneTrack(strains.middle.assembly),
-        say: `${strains.middle.label} genes`,
         hold: 600,
       },
       {
@@ -437,7 +459,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: geneTrack(strains.bottom.assembly),
-        say: `${strains.bottom.label} genes`,
         hold: 600,
       },
       {
@@ -457,7 +478,11 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 120000,
       },
       { type: 'waitForAppSettled' },
-      { type: 'delay', ms: 1500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Three strains stacked with their genes, alignments drawn between',
+      },
     ],
     tailMs: 4000,
   },
@@ -484,6 +509,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/hg002_dotplot_import',
     description:
       "One genome plotted against itself: Add, Dotplot view, Manual, the chromosome boxes a checkbox grows, a wildcard per haplotype, Launch, and Strand from the header's palette",
+    goal: "Plot one genome's two haplotypes against each other",
     url: noViews,
     // Sized to the FORM, which is the subject and the state the clip spends most
     // of its length in: `hg002_haplotypes_import_form` measures the Manual panel
@@ -500,7 +526,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Add',
-        say: 'Plot one genome against itself',
+        say: 'Open a dotplot view from the Add menu',
         hold: 900,
       },
       { type: 'waitForText', text: 'Dotplot view' },
@@ -511,11 +537,15 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'delay', ms: 2000 },
       { type: 'click', text: 'Manual', hold: 1600 },
       { type: 'waitForText', text: 'Select assemblies for dotplot view' },
-      { type: 'delay', ms: 2200, say: 'One assembly on both axes' },
+      {
+        type: 'delay',
+        ms: 2200,
+        say: 'In Manual, the one diploid assembly goes on both axes',
+      },
       {
         type: 'click',
         text: 'Plot only certain chromosomes',
-        say: 'Plot only certain chromosomes',
+        say: 'Limit each axis: maternal contigs across, paternal up',
         hold: 1600,
       },
       // The boxes arrive with the tick, so waiting on one is the check that the
@@ -525,14 +555,12 @@ export const syntenyVideos: VideoSpec[] = [
         type: 'type',
         selector: chromosomeBox('x'),
         value: maternalGlob,
-        say: `X axis: ${maternalGlob}`,
         hold: 1400,
       },
       {
         type: 'type',
         selector: chromosomeBox('y'),
         value: paternalGlob,
-        say: `Y axis: ${paternalGlob}`,
         hold: 2000,
       },
       { type: 'click', text: 'Launch' },
@@ -544,14 +572,14 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 300000,
         cut: true,
       },
-      // One black diagonal, which is the state the coloring is about.
-      { type: 'delay', ms: 3500 },
+      // one black diagonal, which is the state the coloring is about
+      { type: 'delay', ms: 3000 },
       // Short hold: the button's own tooltip opens under it, over the top of the
       // menu, until the cursor leaves for the row below.
       {
         type: 'click',
         selector: COLOR_BY_MENU,
-        say: 'Color the plot by strand',
+        say: 'Color the alignments by strand',
         hold: 500,
       },
       { type: 'waitForText', text: 'Strand' },
@@ -565,9 +593,13 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'press', key: 'Escape' },
       { type: 'waitForText', text: 'Mapping quality', hidden: true },
       { type: 'click', selector: '[aria-label="JBrowse"]' },
-      // Red collinear, blue inverted, and the two empty lanes chrX and chrY
-      // leave.
-      { type: 'delay', ms: 4000 },
+      // red collinear, blue inverted, and the two empty lanes chrX and chrY
+      // leave
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'Red runs the same way, blue is inverted: the haplotypes align end to end',
+      },
     ],
     tailMs: 4500,
   },
@@ -601,6 +633,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/hg002_follow_panels',
     description:
       "One genome's two haplotypes nearly lined up and then held there: the header's follow toggle putting the gene lanes into register, and the top panel dragged sideways with the bottom one keeping pace",
+    goal: "Hold one haplotype's panel on whatever the other panel shows",
     url: followScrollPanels,
     // Two lanes a panel rather than the follow figure's one, plus the caption
     // chip's strip under the app.
@@ -619,12 +652,12 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 5000,
-        say: 'Same coordinates typed into both panels: the genes sit 240 kb apart',
+        say: 'Both panels on the same coordinates, but the genes do not line up',
       },
       {
         type: 'click',
         selector: '[data-testid="follow-synteny-toggle"]',
-        say: 'Follow: the panel below is placed from the top one via the chain',
+        say: 'Turn on Follow: the lower panel is placed through the alignment',
         hold: 600,
       },
       // ON CAMERA: the follow's exact pass is an RPC per level off the anchor's
@@ -641,7 +674,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: 'The same genes now sit under each other, the markers upright',
+        say: 'The same genes now sit under each other',
       },
       // THE SCROLL. Three drags on the maternal panel's gene lane, each 800 kb
       // of the same collinear chain, each slow enough to watch the row below
@@ -653,13 +686,8 @@ export const syntenyVideos: VideoSpec[] = [
       // only at the width it was written at. They step forward with the window,
       // since a locus the pan has already carried off the frame resolves to a
       // point outside the viewport and fails the drag.
-      panMaternal(
-        '14,400,000',
-        '13,600,000',
-        'Drag the top panel: the one below keeps pace untouched',
-      ),
+      panMaternal('14,400,000', '13,600,000', 'Drag the top panel sideways'),
       panMaternal('15,200,000', '14,400,000'),
-      panMaternal('16,000,000', '15,200,000'),
       { type: 'waitForAppSettled', timeout: 120000 },
       // Ends on the followed pair 2.4 Mb along, which is the tallest state --
       // nothing in this tour grows the app -- so the poster is the state the
@@ -667,7 +695,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'The panel below was never touched',
+        say: 'The lower panel kept pace without being touched',
       },
     ],
     tailMs: 4500,
@@ -689,6 +717,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/dotplot_reorder',
     description:
       "Grape against peach as a dotplot, with grape's axis re-sorted on demand: the dotplot header's overflow menu, Re-order chromosomes, and the run that reads the .anchors pairs and reports what it moved",
+    goal: "Re-sort a grape-vs-peach dotplot's axis so the synteny runs diagonal",
     url: unorderedDotplot,
     // 768, which is what the hg002 dotplot tour above is framed at and for the
     // same arithmetic: a dotplot's height is fixed (defaultHeight 600, and a
@@ -713,13 +742,15 @@ export const syntenyVideos: VideoSpec[] = [
     readySelector: DOTPLOT_DRAWN,
     readyTimeout: 180000,
     steps: [
-      // The scattered state, held. It is the half of the comparison the page
-      // does not have.
-      { type: 'delay', ms: 3500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: "Grape's chromosomes in file order scatter the alignments",
+      },
       {
         type: 'click',
         selector: DOTPLOT_VIEW_MENU,
-        say: 'Re-order the vertical axis on demand',
+        say: 'Re-order chromosomes, from the view menu',
         hold: 1600,
       },
       { type: 'waitForText', text: 'Re-order chromosomes' },
@@ -736,7 +767,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: 'The vertical axis, against the fixed horizontal one',
+        say: "It sorts the vertical axis to follow peach's, fixed across",
       },
       { type: 'click', text: 'Start' },
       // ON CAMERA, deliberately, and this is the step where that is a choice.
@@ -772,8 +803,11 @@ export const syntenyVideos: VideoSpec[] = [
       // the before straight onto the after, which is the two-picture figure this
       // tour exists to replace.
       { type: 'waitForSelector', selector: DOTPLOT_DRAWN, timeout: 180000 },
-      // The reordered plot, which is the state the page's figure is of.
-      { type: 'delay', ms: 4000 },
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'Re-sorted, the grape-peach synteny runs down the diagonal',
+      },
     ],
     tailMs: 4500,
   },
@@ -810,6 +844,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/restack_around_locus',
     description:
       "Restacking the grape / peach / cacao view around one locus: drag the scale bar, Launch, Linear synteny view, move grape into the middle with the dialog's arrows, and replace the lane view with the three-row stack",
+    goal: 'Restack grape, peach and cacao around one locus, grape in the middle',
     url: restackLanes,
     // Sized to the DIALOG, which is the subject and the tallest of the three
     // states. `multiway_synteny/blocks_one_vs_all` measures the opening lane
@@ -835,7 +870,7 @@ export const syntenyVideos: VideoSpec[] = [
         type: 'drag',
         fromAnchor: { locus: restackSpan.start, band: RUBBERBAND },
         toAnchor: { locus: restackSpan.end, band: RUBBERBAND },
-        say: 'Drag across the scale bar',
+        say: 'Select the locus on the scale bar and launch a synteny view',
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
@@ -845,7 +880,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: LAUNCH_SYNTENY_VIEW,
-        say: 'Linear synteny view',
       },
       { type: 'waitForText', text: 'Panels, top to bottom' },
       // The arrows exist only once the worker has resolved a row per aligning
@@ -860,11 +894,15 @@ export const syntenyVideos: VideoSpec[] = [
       },
       // Long enough to read the order the dialog opens in, which is what the
       // click after it changes.
-      { type: 'delay', ms: 3000, say: 'The reference opens on top' },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'Grape, the reference, opens on top of the list',
+      },
       {
         type: 'click',
         selector: panelArrow(restackAnchor, 1, 'down'),
-        say: 'Move grape between peach and cacao',
+        say: 'Move it down, between peach and cacao, then replace the view',
         hold: 3000,
       },
       {
@@ -880,7 +918,11 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 180000,
       },
       { type: 'waitForAppSettled', timeout: 180000 },
-      { type: 'delay', ms: 3000 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Grape in the middle: each band now compares it with a neighbour',
+      },
     ],
     tailMs: 4500,
   },
@@ -916,6 +958,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/allvsall_launch_from_selection',
     description:
       "From one strain's lanes to the five-strain stack for one locus: drag the scale bar, Launch, Linear synteny view, move IAI39 up to sit under K-12 with the dialog's arrows, and replace the lane view with the stack",
+    goal: 'Stack five E. coli strains at one locus, in the order you choose',
     url: allVsAllLanes,
     // Sized to the DIALOG, which is the tallest of the three states and the
     // subject. MUI caps a dialog's paper at the viewport minus 64px, and
@@ -937,9 +980,11 @@ export const syntenyVideos: VideoSpec[] = [
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
     steps: [
-      // The lanes, held: one per strain, which is the reading this section is
-      // going FROM.
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'K-12, with one alignment lane per other strain',
+      },
       // Loci rather than pixels on both ends. The composite's own drag is a
       // measured pair (`launchFromSelectionParts`), which is correct only at the
       // width it was measured at; `allVsAllSpan` names the same span in bases,
@@ -949,7 +994,7 @@ export const syntenyVideos: VideoSpec[] = [
         type: 'drag',
         fromAnchor: { locus: allVsAllSpan.start, band: RUBBERBAND },
         toAnchor: { locus: allVsAllSpan.end, band: RUBBERBAND },
-        say: 'Drag across the scale bar',
+        say: 'Select the locus on the scale bar and launch a synteny view',
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
@@ -959,7 +1004,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: LAUNCH_SYNTENY_VIEW,
-        say: 'Linear synteny view',
       },
       { type: 'waitForText', text: 'Panels, top to bottom' },
       // The dialog opens on a spinner and the rows arrive from the worker, which
@@ -975,11 +1019,15 @@ export const syntenyVideos: VideoSpec[] = [
       },
       // Long enough to read the order the dialog opens in, and the line above
       // the list saying what the order decides.
-      { type: 'delay', ms: 3000, say: 'One panel per strain that aligns' },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'Ribbons join neighbouring rows only, so the order picks the pairs',
+      },
       {
         type: 'click',
         selector: panelArrow(allVsAllMoved, 5, 'up'),
-        say: `Move ${allVsAllMoved} up`,
+        say: `Move ${allVsAllMoved} up to sit under K-12`,
         hold: 1400,
       },
       {
@@ -1005,8 +1053,11 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 180000,
       },
       { type: 'waitForAppSettled', timeout: 180000 },
-      // The stack, with the row the arrows moved sitting under the anchor.
-      { type: 'delay', ms: 3500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: `${allVsAllMoved} under K-12, so the stack compares that pair directly`,
+      },
     ],
     tailMs: 4500,
   },
@@ -1044,6 +1095,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/liftover_launch',
     description:
       "From one UCSC chain block to a two-panel view: right-click the hg38 to hs1 liftOver track at TNNT3, read the launch dialog's framing options, and Replace current view putting the synteny view in the linear view's place",
+    goal: 'Open one hg38-to-hs1 chain block as a two-panel synteny view',
     url: liftoverLgv,
     // Sized to the LAUNCHED VIEW plus the caption chip's own strip. The run
     // reports the app at 405 on the linear view and 468 once the two panels are
@@ -1069,9 +1121,11 @@ export const syntenyVideos: VideoSpec[] = [
       // logo is a bare `<g>` with no handler, so this only takes the pointer off
       // it.
       { type: 'hover', selector: '[aria-label="JBrowse"]' },
-      // The linear reading the page's first section ends on: one feature per
-      // chain block, laid out in rows.
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'The liftOver chain at TNNT3, one feature per aligned block',
+      },
       // A locus and a depth rather than a measured pixel: the blocks are
       // canvas-drawn, so there is no node to target, and the chain-block canvas
       // fills the display's whole height -- a bare fracY lands under the rows
@@ -1085,7 +1139,7 @@ export const syntenyVideos: VideoSpec[] = [
           fracY: 0,
           dy: 8,
         },
-        say: 'Open this chain block as a two-panel view',
+        say: 'Right-click a block and launch a synteny view with hs1',
         hold: 1000,
       },
       // The launch item is appended a fetch after the menu opens: it needs the
@@ -1118,13 +1172,12 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'hover',
         text: 'Use CIGAR to map the current visible region to the target',
-        say: 'Use CIGAR to map the current visible region to the target',
+        say: 'Both options on: map this exact window, and keep its tracks',
         hold: 3000,
       },
       {
         type: 'hover',
         text: "Copy this view's tracks into its panel",
-        say: "Copy this view's tracks into its panel",
         hold: 2600,
       },
       {
@@ -1140,9 +1193,12 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 240000,
       },
       { type: 'waitForAppSettled', timeout: 240000 },
-      // The launched view: hg38 over hs1, the gene track carried into the panel
-      // for the assembly the launch came from and the other panel empty.
-      { type: 'delay', ms: 4000 },
+      // the gene track carried into hg38's panel; hs1's has none of its own
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'hg38 above hs1 at TNNT3, the ribbons tracing the rearrangement',
+      },
     ],
     tailMs: 4500,
   },
@@ -1168,6 +1224,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/ecoli_roundtrip',
     description:
       'One selection on K-12 and the stacks it launches: the stack anchored on K-12 with the segments lane on its top row, that lane redrawn as the graph, and a drag on the Sakai row re-anchoring the stack on Sakai',
+    goal: 'From one K-12 selection to a strain stack, its graph, and back',
     url: roundTripStart,
     // The frame of the clip on the page, which was filmed through the
     // standalone graph view; re-size it off the run's content report when
@@ -1180,7 +1237,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 2500,
-        say: 'K-12: one lane per strain, and the graph segments',
+        say: 'K-12, with one lane per strain and the graph segments',
       },
       {
         type: 'drag',
@@ -1192,7 +1249,7 @@ export const syntenyVideos: VideoSpec[] = [
           locus: allVsAllSpan.end,
           band: RUBBERBAND,
         },
-        say: 'Drag across the scale bar',
+        say: 'Select a span and launch a stack of the strains on it',
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
@@ -1201,7 +1258,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: LAUNCH_SYNTENY_VIEW,
-        say: 'Stack the strains on the selection',
       },
       { type: 'waitForText', text: 'Panels, top to bottom' },
       {
@@ -1209,7 +1265,7 @@ export const syntenyVideos: VideoSpec[] = [
         selector: panelArrow(allVsAllMoved, 5, 'up'),
         timeout: 180000,
       },
-      { type: 'delay', ms: 2500, say: 'One panel per strain that aligns' },
+      { type: 'delay', ms: 2500 },
       {
         type: 'click',
         text: 'Replace current view',
@@ -1220,16 +1276,12 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 180000,
       },
       { type: 'waitForAppSettled', timeout: 180000 },
-      {
-        type: 'delay',
-        ms: 3000,
-        say: 'The stack, anchored on K-12, with its lanes on the top row',
-      },
+      { type: 'delay', ms: 2500 },
       // The graph, from the segments lane the launch carried onto the K-12 row.
       {
         type: 'click',
         selector: trackMenu(segmentsTrackId),
-        say: 'Redraw the segments lane as the graph',
+        say: "Redraw the K-12 row's segments lane as the graph",
         hold: 700,
       },
       { type: 'waitForSelector', selector: DISPLAY_TYPES },
@@ -1239,7 +1291,7 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'waitForSelector', selector: GRAPH_DRAWN, timeout: 180000 },
       { type: 'waitForAppSettled', timeout: 180000 },
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'delay', ms: 3000, say: 'The graph, drawn inside the stack' },
+      { type: 'delay', ms: 3000 },
       // The re-anchor: a drag on the Sakai row's own ruler.
       {
         type: 'drag',
@@ -1255,7 +1307,7 @@ export const syntenyVideos: VideoSpec[] = [
           alignX: 'center',
           dx: 220,
         },
-        say: 'Drag on the Sakai row',
+        say: "Then select on Sakai's row to re-anchor the stack on Sakai",
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
@@ -1264,7 +1316,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: LAUNCH_SYNTENY_VIEW,
-        say: 'The same launch, from Sakai',
       },
       { type: 'waitForText', text: 'Sakai (your selection)' },
       {
@@ -1272,7 +1323,7 @@ export const syntenyVideos: VideoSpec[] = [
         selector: panelArrow(allVsAllMoved, 5, 'up'),
         timeout: 180000,
       },
-      { type: 'delay', ms: 2500, say: 'The same dialog, anchored on Sakai' },
+      { type: 'delay', ms: 2500 },
       {
         type: 'click',
         text: 'Replace current view',
@@ -1287,7 +1338,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'The stack re-anchored on Sakai',
+        say: 'The same stack, now anchored on Sakai',
       },
     ],
     tailMs: 4500,
@@ -1307,6 +1358,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/maf_row_synteny',
     description:
       "From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the NCTC86 entry opens",
+    goal: 'From a multiple alignment to a two-strain synteny view',
     url: mafRows,
     // The linear view plus the two-row view the launch adds below it. The frame
     // is sized to the end state and the run reports the app's own height there;
@@ -1317,7 +1369,11 @@ export const syntenyVideos: VideoSpec[] = [
     readyTimeout: 180000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'delay', ms: 2500, say: 'The alignment, one row per strain' },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'The pggb alignment as a MAF, one row per strain',
+      },
       {
         type: 'drag',
         fromAnchor: {
@@ -1332,18 +1388,18 @@ export const syntenyVideos: VideoSpec[] = [
           band: MAF_ROWS,
           fracY: 0.98,
         },
-        say: 'Drag across the rows',
+        say: 'Drag across the rows; the menu offers a view per strain',
         hold: 900,
       },
       { type: 'waitForText', text: 'Linear synteny view, K12 vs...' },
-      { type: 'delay', ms: 1800, say: 'One entry per strain the drag covers' },
+      { type: 'delay', ms: 1800 },
       {
         type: 'click',
         text: 'Linear synteny view, K12 vs...',
         hold: 1200,
       },
       { type: 'waitForSelector', selector: MAF_NCTC86_ENTRY },
-      { type: 'click', selector: MAF_NCTC86_ENTRY, say: 'NCTC86' },
+      { type: 'click', selector: MAF_NCTC86_ENTRY },
       {
         type: 'waitForSelector',
         selector: displayPainted('synteny_canvas'),
@@ -1372,7 +1428,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 4000,
-        say: 'K-12 over NCTC86, the ribbon cut from the columns',
+        say: "K-12 over NCTC86, the ribbons drawn from the alignment's columns",
       },
     ],
     tailMs: 4500,

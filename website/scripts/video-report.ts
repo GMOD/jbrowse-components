@@ -41,7 +41,13 @@ export interface FilmedTour {
   unpainted: string[]
   // steps that took long enough to be worth a `cut`, as [say-or-selector, ms]
   slowSteps: [string, number][]
+  // what was on camera that a viewer should not have to puzzle over, as
+  // [say-or-selector, what]
+  confusing: [string, string][]
 }
+
+// Past this a tour is several routes, and a viewer loses the one they came for.
+const LONG_TOUR_S = 45
 
 const filmed: FilmedTour[] = []
 
@@ -157,6 +163,22 @@ export function printVideoSummary(failures: string[]) {
           ([label, ms]) => `• ${name}: ${(ms / 1000).toFixed(1)}s on ${label}`,
         ),
       ),
+    )
+  }
+  const confusing = filmed.filter(tour => tour.confusing.length > 0)
+  if (confusing.length > 0) {
+    printReport(
+      `CONFUSING STATES ON CAMERA (${confusing.length}) — these FAIL the run: open the tour narrower, hide the lane, or fix the launch`,
+      confusing.flatMap(({ name, confusing: seen }) =>
+        seen.map(([label, what]) => `• ${name}: ${what} after ${label}`),
+      ),
+    )
+  }
+  const long = filmed.filter(tour => tour.seconds > LONG_TOUR_S)
+  if (long.length > 0) {
+    printReport(
+      `LONGER THAN ${LONG_TOUR_S}s (${long.length}) — split the tour, one route to a clip`,
+      long.map(({ name, seconds }) => `• ${name}: ${seconds.toFixed(0)}s`),
     )
   }
   console.log(

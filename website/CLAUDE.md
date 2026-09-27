@@ -52,6 +52,14 @@ the tour was filmed in.
 - **A video is for a ROUTE or a RE-LAYOUT**, and everything else is a figure. A
   still is searchable, diffable, annotatable and readable at a glance, and none
   of that survives being filmed.
+- **A viewer follows a tour with no page beside it**, so each one states its
+  `goal` before anything moves, narrates at most five phases in plain words, and
+  ends on a payoff line held over the result — one route per clip.
+  `validateVideoSpecs` fails a spec that skips any of those, or that types a
+  coordinate into the location box: search a gene name, or select the span on
+  the scale bar (`zoomToSteps`). The film itself fails when a "Too many
+  features" banner, an error or warning toast, or a track error is on camera,
+  and the run's report names each.
 - **Filming a route retires nothing.** The clip and the stills both stay, even
   where the still is a menu cascade over its own result and the clip performs
   exactly that. Retiring two of them for a clip was tried and reversed the same
@@ -121,6 +129,10 @@ the tour was filmed in.
   `STEPS FILMED WHILE NOTHING HAPPENED` (a wait that wants `cut: true`). None of
   them fails the run; a clip nothing diffs is one where a run is the only place
   a mistake is visible at all.
+- **The harness sets the pace.** A caption stays up for its reading time before
+  the next one may replace it, a typed value goes in at a typist's speed, and a
+  value past 32 characters is pasted behind a Ctrl V keycap. So a spec states
+  holds for what it shows, never for what it says.
 - **A step's `say` is a caption track, not just a chip.** `video-captions.ts`
   times the lines onto the clip and writes a `.vtt` beside the mp4;
   `videoCaptioned` in `liveLinks.generated.ts` is what makes remark-video hang a

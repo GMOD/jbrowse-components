@@ -106,6 +106,9 @@ const { values } = (() => {
         'keep-segments': { type: 'boolean', default: false },
         // the capture server's port, for a machine already running one
         port: { type: 'string' },
+        // film against the jbrowse-web build already on disk, for a batch
+        // re-filmed in several runs off one commit
+        'no-build': { type: 'boolean', default: false },
       },
     })
   } catch (e) {
@@ -164,19 +167,17 @@ const HOLD_MS = 900
 // a menu item teleport into a graph.
 const PRE_CUT_MS = 1200
 const TAIL_MS = 2500
-// What a line of caption is given to be read, per word, when it is longer than
-// a control's name. HOLD_MS reads a menu opening, which is what a step saying
-// `Submit` needs; a step saying `Cluster rows by similarity` is a sentence, and
-// the same beat leaves it on screen for less time than it takes to finish it.
-const SAY_MS_PER_WORD = 260
-// A typed value is filmed keystroke by keystroke, stretched to about this much
-// however long it is, so a locus and a URL both read as typing rather than one
-// arriving as a flicker and the other as a minute of it.
-const TYPING_BUDGET_MS = 1200
-const TYPING_MS_RANGE = { min: 12, max: 55 }
-// Past this a value is not typing, it is a paste — the pangenome tour's whole
-// track config is 2 KB, and a hand does not enter that a character at a time.
-const TYPING_MAX_CHARS = 160
+// How long a caption stays up before the next one may replace it: a beat to
+// notice it, then a word at a time. A line comes down only once it has been on
+// camera this long, so a phase whose clicks run quickly cannot wipe its own
+// explanation before it has been read.
+const READING_BASE_MS = 1000
+const READING_MS_PER_WORD = 320
+// A typed value is filmed at a typist's pace, so a gene name reads as a name
+// being entered. Past PASTE_OVER_CHARS it is a URL or a config, which a reader
+// pastes, and the film pastes it too.
+const TYPING_MS_PER_CHAR = 110
+const PASTE_OVER_CHARS = 32
 
 // Past this, a step the camera stayed on is a stretch of spinner in the finished
 // clip. Reported rather than cut automatically: which waits are worth watching
@@ -184,30 +185,96 @@ const TYPING_MAX_CHARS = 160
 // an automatic cut removed.
 const SLOW_STEP_MS = 6000
 
-function typeDelayMs(value: string) {
-  const { min, max } = TYPING_MS_RANGE
-  return value.length > TYPING_MAX_CHARS
-    ? 0
-    : Math.min(max, Math.max(min, Math.round(TYPING_BUDGET_MS / value.length)))
+function readingMs(line: string) {
+  const words = line.split(/\s+/).filter(Boolean).length
+  return words ? READING_BASE_MS + READING_MS_PER_WORD * words : 0
 }
+
+const pasted = (step: VideoStep) =>
+  step.type === 'type' && (step.value ?? '').length > PASTE_OVER_CHARS
 
 // A `type` step as it is filmed. Off camera — a `cut` step, or the boot of a
 // tour that follows a tab — the keystrokes are wall clock nobody watches, so
-// only the on-camera ones are animated.
+// only the on-camera ones are paced.
 function filmedAction(step: VideoStep) {
-  return step.type === 'type' && !step.cut && step.typeDelayMs === undefined
-    ? { ...step, typeDelayMs: typeDelayMs(step.value ?? '') }
-    : step
+  if (step.type !== 'type' || step.cut || step.typeDelayMs !== undefined) {
+    return step
+  }
+  return pasted(step)
+    ? { ...step, paste: true }
+    : { ...step, typeDelayMs: TYPING_MS_PER_CHAR }
 }
 
-// How long the finished frame is held. A step that says something holds for as
-// long as its line takes to read, unless the spec named a number itself.
-function holdMs(step: VideoStep) {
-  const say = step.say && !step.cut ? step.say.split(' ').length : 0
-  return (
-    step.hold ??
-    (UNHELD.has(step.type) ? 0 : Math.max(HOLD_MS, SAY_MS_PER_WORD * say))
-  )
+const holdMs = (step: VideoStep) =>
+  step.hold ?? (UNHELD.has(step.type) ? 0 : HOLD_MS)
+
+// What a viewer should never have to puzzle over, each of which a tour reaches
+// by zooming past a display's density gate, launching a track the session
+// lacks, or loading a file that fails. The run still reports success in every
+// case, because the app is doing what it should with what it was given.
+const CONFUSING_ON_CAMERA: [string, string][] = [
+  ['[data-display-phase="tooLarge"]', 'a "Too many features" banner'],
+  ['[data-testid="snackbar-error"]', 'an error toast'],
+  ['[data-testid="snackbar-warning"]', 'a warning toast'],
+  ['[data-testid="reload_button"]', 'a track error'],
+]
+
+// Named with the words on screen, since "a track error" alone sends the author
+// looking for which track. Shown means what waitHiddenByNodePolling in
+// actions.ts means by not hidden: styled visible, and not clipped away by an
+// `overflow: hidden` ancestor, which a view does to every block past its edge.
+async function confusingOnCamera(page: Page) {
+  return page.evaluate((checks: [string, string][]) => {
+    const shown = (el: Element) => {
+      const style = getComputedStyle(el)
+      const rect = el.getBoundingClientRect()
+      if (
+        style.display === 'none' ||
+        style.visibility === 'hidden' ||
+        Number(style.opacity) === 0 ||
+        rect.width === 0 ||
+        rect.height === 0 ||
+        rect.bottom <= 0 ||
+        rect.right <= 0 ||
+        rect.top >= window.innerHeight ||
+        rect.left >= window.innerWidth
+      ) {
+        return false
+      }
+      for (let up = el.parentElement; up; up = up.parentElement) {
+        const upStyle = getComputedStyle(up)
+        if (Number(upStyle.opacity) === 0) {
+          return false
+        }
+        if (
+          [upStyle.overflowX, upStyle.overflowY].some(
+            v => v === 'hidden' || v === 'clip',
+          )
+        ) {
+          const box = up.getBoundingClientRect()
+          if (
+            rect.right <= box.left ||
+            rect.left >= box.right ||
+            rect.bottom <= box.top ||
+            rect.top >= box.bottom
+          ) {
+            return false
+          }
+        }
+      }
+      return true
+    }
+    return checks.flatMap(([selector, what]) => {
+      const seen = [...document.querySelectorAll(selector)].find(shown)
+      if (!seen) {
+        return []
+      }
+      const box =
+        seen.closest('[role="alert"], [role="status"]') ?? seen.parentElement
+      const words = box?.textContent.trim() || seen.outerHTML
+      return [`${what} (${words.slice(0, 160)})`]
+    })
+  }, CONFUSING_ON_CAMERA)
 }
 
 // A step, in whatever it gave the report to point at. `say` first because it is
@@ -293,12 +360,10 @@ function camera(currentPage: () => Page, stem: string) {
 async function filmStep(
   page: Page,
   step: VideoStep,
-  captions: { say: (text: string, elapsed: number) => void },
-  elapsed: () => number,
+  show: (line: string) => Promise<void>,
 ) {
   if (step.say !== undefined) {
-    await setCaption(page, step.say)
-    captions.say(step.say, elapsed())
+    await show(step.say)
   }
   if (step.scrollTo !== undefined) {
     await scrollPage(page, step.scrollTo)
@@ -323,7 +388,11 @@ async function filmStep(
     if (step.type === 'press' && step.key) {
       await keyPress(page, step.key)
     }
-    await runAction(page, filmedAction(step))
+    const action = filmedAction(step)
+    if (action.paste) {
+      await keyPress(page, 'Ctrl V')
+    }
+    await runAction(page, action)
   }
   await delay(holdMs(step))
 }
@@ -406,12 +475,41 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
   // reader watches as a spinner. Named by what the step says or looks for, so
   // the report points at a line of the spec rather than at an index.
   const slowSteps: [string, number][] = []
+  // What the viewer should not have seen, as [step, what]. Collected rather
+  // than thrown at once, so the clip is still encoded to look at.
+  const confusing: [string, string][] = []
   const captions = captionTrack()
   const filmedMs = () => cam.filmed
+  // The line on screen, when it went up on the on-camera clock and how long it
+  // needs. Replacing it waits out the remainder, on camera, so the frame it
+  // explains is still there while it is read.
+  let line = { text: '', at: 0, needs: 0 }
+  const show = async (text: string) => {
+    const unread = line.needs - (cam.filmed - line.at)
+    if (unread > 0 && cam.recording) {
+      await delay(unread)
+    }
+    await setCaption(stage, text)
+    captions.say(text, filmedMs())
+    line = { text, at: cam.filmed, needs: readingMs(text) }
+  }
+  // Where the pointer waits while the goal is read. Top centre is a linear
+  // view's overview strip, which writes the locus under the pointer into the
+  // view's title bar and syncs a hover band into a graph track below it; the
+  // wordmark is a bare <g> with no handler.
+  const park = async () => {
+    const mark = await stage.$('[aria-label="JBrowse"]')
+    const box = await mark?.boundingBox()
+    await (box
+      ? moveCursor(stage, box.x + box.width / 2, box.y + box.height / 2)
+      : moveCursor(stage, width / 2, 90))
+  }
   await injectOverlay(stage)
-  await moveCursor(stage, width / 2, 90)
+  await park()
   await delay(500)
   try {
+    await cam.start()
+    await show(spec.goal)
     for (const step of spec.steps) {
       // ON-CAMERA ms, not wall clock. A step that takes the camera off — a
       // `cut`, an `opensTab` — spends most of its wall time off it, and
@@ -431,7 +529,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       // Armed before the click, since chrome can hand the target over before
       // the click's own promise settles.
       const tab = step.opensTab ? pendingTab(stage) : undefined
-      await filmStep(stage, step, captions, filmedMs)
+      await filmStep(stage, step, show)
       if (tab) {
         // The new tab loads off camera, the way a `cut` step's wait does: what
         // it opens with is a blank tab and then an app booting, and the reader
@@ -446,17 +544,25 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
         })
         await stage.bringToFront()
         await injectOverlay(stage)
-        await moveCursor(stage, width / 2, 90)
+        await setCaption(stage, line.text)
+        await park()
       }
       const took = cam.filmed - startedAt
       if (!step.cut && took > SLOW_STEP_MS) {
         slowSteps.push([describeStep(step), took])
+      }
+      for (const what of await confusingOnCamera(stage)) {
+        confusing.push([describeStep(step), what])
       }
       tallest = Math.max(tallest, await contentHeight())
       drawer = Math.max(drawer, await drawerHeight())
     }
     if (!cam.recording) {
       await cam.start()
+    }
+    const unread = line.needs - (cam.filmed - line.at)
+    if (unread > 0) {
+      await delay(unread)
     }
     await clearCaptionForTail(stage)
     captions.say('', filmedMs())
@@ -482,6 +588,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       // run the page is closed.
       unpainted: await unpaintedDisplays(stage),
       slowSteps,
+      confusing,
     }
   } catch (err) {
     // The frame the tour died on, which for a step that could not find its
@@ -625,11 +732,15 @@ async function main() {
     )
     return
   }
+  const tokens = parseFilterTokens(values.filter)
+  const selected = tokens.length
+    ? videoSpecs.filter(s => matchesFilterTokens(s.name, tokens, false))
+    : videoSpecs
   // Before anything is filmed: an odd viewport side fails the encode after the
-  // capture, and a duplicate name overwrites a published clip. Same check CI
-  // runs through check-video-specs.ts.
+  // capture, and a duplicate name overwrites a published clip. Over the tours
+  // about to be filmed; check-video-specs.ts runs them over the whole list.
   const specProblems = validateVideoSpecs(
-    videoSpecs,
+    selected,
     pastedTrackConfigs.map(pair => pair.video),
   )
   if (specProblems.length > 0) {
@@ -640,10 +751,6 @@ async function main() {
     )
     process.exit(1)
   }
-  const tokens = parseFilterTokens(values.filter)
-  const selected = tokens.length
-    ? videoSpecs.filter(s => matchesFilterTokens(s.name, tokens, false))
-    : videoSpecs
   if (values.list) {
     for (const spec of videoSpecs) {
       const { width, height } = videoFrame(spec)
@@ -672,7 +779,9 @@ async function main() {
     process.exit(1)
   }
 
-  buildJbrowseWeb()
+  if (!values['no-build']) {
+    buildJbrowseWeb()
+  }
 
   const failures: string[] = []
   await withHarness(
@@ -755,10 +864,19 @@ async function main() {
             content: filmed.content,
             unpainted: filmed.unpainted,
             slowSteps: filmed.slowSteps,
+            confusing: filmed.confusing,
             seconds: duration,
             mp4Bytes: fs.statSync(mp4).size,
             posterBytes: fs.statSync(jpg).size,
           })
+          if (filmed.confusing.length > 0) {
+            failures.push(spec.name)
+            log(
+              `${spec.name}: FAILED, filmed ${filmed.confusing
+                .map(([step, what]) => `${what} after "${step}"`)
+                .join('; ')}`,
+            )
+          }
         } catch (err: unknown) {
           failures.push(spec.name)
           log(`${spec.name}: FAILED${describeNetwork(net)}`)

@@ -23,6 +23,7 @@ export const qtlVideos: VideoSpec[] = [
     name: 'qtl/painting_sort',
     description:
       "Sorting the BXD haplotype painting by genotype at the Tyrp1 peak: the recombinant mosaic 198 strains load in, the painting's own right-click menu, and the B/D split the peak is a statement about",
+    goal: 'Sort 198 BXD mouse strains by genotype under the Tyrp1 peak',
     url: unsorted,
     // Nothing here adds a view or opens a drawer and the painting is a fixed
     // 420, so the app's height does not move across the tour; the figure beside
@@ -32,13 +33,15 @@ export const qtlVideos: VideoSpec[] = [
     readyTimeout: 180000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // The before, held. A reader who has already scrolled past the sorted
-      // figure needs a moment to register that these rows are not in that order.
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'Each strain is a mosaic of B and D blocks, in load order',
+      },
       {
         type: 'rightclick',
         anchor: { track: paintingTrackId, locus: peakLocus, fracY: 0.25 },
-        say: 'Sort the strains by genotype under the peak',
+        say: 'Right-click under the peak and sort the rows by genotype there',
         hold: 1600,
       },
       { type: 'waitForText', text: 'Sort rows by color here' },
@@ -53,7 +56,11 @@ export const qtlVideos: VideoSpec[] = [
         timeout: 180000,
         cut: true,
       },
-      { type: 'delay', ms: 3000 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Sorted, the strains split into B above D under the peak',
+      },
     ],
     tailMs: 3500,
   },

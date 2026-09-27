@@ -66,6 +66,7 @@ export const svVideos: VideoSpec[] = [
     name: 'sv/inspector_route',
     description:
       'The SV inspector from the Add menu to a filtered callset: launch the view, paste the SKBR3 VCF into the import form, pick the assembly, and watch the circular overview follow the table filter',
+    goal: 'Open a structural-variant callset in the SV inspector, then filter it',
     url: emptySession,
     // One frame holds the import form and the loaded pair alike; the run reports
     // the app at 588px once the table and the circle are standing.
@@ -77,7 +78,7 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Add',
-        say: 'Open the SV inspector on a callset of its own',
+        say: 'Launch the SV inspector from the Add menu',
         hold: 900,
       },
       { type: 'waitForText', text: 'SV inspector' },
@@ -86,13 +87,11 @@ export const svVideos: VideoSpec[] = [
       { type: 'delay', ms: 1200 },
       { type: 'click', selector: ASSEMBLY_SELECT, hold: 900 },
       { type: 'click', selector: assemblyOption(assembly), hold: 1400 },
-      // The page's own file. Typed rather than pasted, so the field is seen to
-      // be a URL field.
       {
         type: 'type',
         selector: '[data-testid="urlInput"]',
         value: callsetUrl,
-        say: 'The SKBR3 VCF, by URL',
+        say: "Paste the SKBR3 callset's URL and open it",
         hold: 1600,
       },
       // By its testid, not by its label: `::-p-text(Open)` matches the first
@@ -106,7 +105,11 @@ export const svVideos: VideoSpec[] = [
       },
       // A whole callset parsed and a genome's worth of chords drawn, off camera.
       { type: 'waitForText', text: 'CHROM', timeout: 180000, cut: true },
-      { type: 'delay', ms: 4000 },
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'A table of the calls, and their breakends drawn as chords',
+      },
       // The claim the page makes in one sentence and shows in two figures. The
       // Mate column carries the far end of each breakend, so a chromosome typed
       // here keeps every record that TOUCHES it, whichever end it is filed
@@ -119,10 +122,14 @@ export const svVideos: VideoSpec[] = [
         selector: 'input[placeholder^="Search"]',
         value: 'X',
         clear: true,
-        say: 'Filter the table to X, either end',
+        say: 'Filter the table to chromosome X',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 3500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Only the calls touching X stay, in the table and in the circle',
+      },
     ],
     tailMs: 4000,
   },
@@ -156,6 +163,7 @@ export const svVideos: VideoSpec[] = [
     name: 'sv/multisample_sort',
     description:
       'Two orders over the 1000 Genomes cohort at the RHD deletion: right-click the block for Sort rows by genotype here and the callset order resolves into three dosage bands, then Clustering, Cluster rows by genotype... and Run clustering re-key the same rows on the whole window and draw the tree they came out of',
+    goal: 'Order 3202 genomes by their genotype at the RHD deletion',
     url: unsortedRhdPanel,
     // SIZED TO THE FIGURE, which is the same four lanes: `multisv_rhd` measures
     // them at 1230 and every one carries an explicit height (290 matrix, 330
@@ -185,10 +193,11 @@ export const svVideos: VideoSpec[] = [
     readyTimeout: 300000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // The before, held. It is the frame the whole clip is measured against,
-      // and a reader who has scrolled past the banded figure needs a moment to
-      // register that these rows are not in that order.
-      { type: 'delay', ms: 3500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: '3202 samples in callset order, which groups nothing',
+      },
       // HGSV_1821's own span, so the click lands at the deletion's midpoint —
       // the same column `multisv_rhd` sorts on, named once in specs/ui.ts. The
       // sort keys on the variant UNDER the pointer (`contextMenuFeature`), so a
@@ -198,7 +207,7 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         anchor: { track: matrixTrackId, locus: deletionSpan, fracY: 0.5 },
-        say: 'Order the callset by genotype at the deletion',
+        say: 'Right-click the deletion and sort the rows by genotype there',
         hold: 1800,
       },
       { type: 'waitForText', text: SORT_BY_GENOTYPE },
@@ -214,14 +223,16 @@ export const svVideos: VideoSpec[] = [
       // hold is of. The wordmark is an svg with no handler, so parking there
       // takes both down and reaches nothing.
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // Three contiguous bands, held long enough to read against the depth lane
-      // under them, which is where the page sends the reader for the olive
-      // column.
-      { type: 'delay', ms: 4500 },
+      // three contiguous bands, read against the depth lane under them
+      {
+        type: 'delay',
+        ms: 4500,
+        say: 'Three bands: no deletion, one copy deleted, and both',
+      },
       {
         type: 'click',
         selector: trackMenu(matrixTrackId),
-        say: 'Re-key the same rows on the whole window',
+        say: 'Now cluster the same rows on the whole window instead',
         hold: 1800,
       },
       { type: 'waitForText', text: 'Clustering' },
@@ -260,9 +271,12 @@ export const svVideos: VideoSpec[] = [
         hidden: true,
         timeout: 60000,
       },
-      // The payoff frame, and a state no figure on the page carries: the tree in
-      // the gutter beside rows keyed on the whole window rather than on one call.
-      { type: 'delay', ms: 3500 },
+      // the tree beside rows keyed on the whole window, which no figure carries
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Clustered on every call in view, with the tree beside the rows',
+      },
     ],
     tailMs: 4000,
   },
@@ -293,6 +307,7 @@ export const svVideos: VideoSpec[] = [
     name: 'sv_cgiab/copy_number_layout',
     description:
       "HG008's tumor and normal coverage brought onto one axis: Score → Set min/max score... to pin the scale, then Plot type → Overlapping → Scatter, which redraws the two stacked rows as one band of points",
+    goal: "Put a tumor's coverage and its normal's on one axis to compare",
     url: cgiabVideoFixtures.coverageAsLoaded,
     // 406px of app at every frame the run measured — nothing here grows it,
     // since both routes rewrite settings on a lane that keeps its height — plus
@@ -314,13 +329,15 @@ export const svVideos: VideoSpec[] = [
     readyTimeout: 180000,
     steps: [
       { type: 'hover', selector: WORDMARK, hold: 0 },
-      // The state the track arrives in: one filled row per sample, each on its
-      // own autoscaled axis, which is the layout the rest of the tour undoes.
-      { type: 'delay', ms: 3000 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'Tumor and normal on stacked rows, each autoscaled on its own',
+      },
       {
         type: 'click',
         selector: cgiabCoverageMenu,
-        say: 'Pin the score axis by hand',
+        say: 'First pin the score axis to 0 to 3',
         hold: 1400,
       },
       { type: 'waitForSelector', selector: cascade('submenu', 'Score') },
@@ -343,13 +360,11 @@ export const svVideos: VideoSpec[] = [
         type: 'type',
         selector: 'input[placeholder="Enter min score"]',
         value: '0',
-        say: '0',
       },
       {
         type: 'type',
         selector: 'input[placeholder="Enter max score"]',
         value: '3',
-        say: '3',
       },
       { type: 'delay', ms: 1200 },
       // MUI uppercases the button in CSS, so the match is the string the DOM
@@ -362,12 +377,11 @@ export const svVideos: VideoSpec[] = [
       },
       { type: 'hover', selector: WORDMARK, hold: 0 },
       { type: 'waitForAppSettled', timeout: 120000 },
-      // The axis pinned, and still one of them per row.
-      { type: 'delay', ms: 3500 },
+      { type: 'delay', ms: 2500 },
       {
         type: 'click',
         selector: cgiabCoverageMenu,
-        say: 'Draw the two rows on one axis, as points',
+        say: 'Then overlay the two rows as points on one axis',
         hold: 1200,
       },
       { type: 'waitForSelector', selector: cascade('submenu', 'Plot type') },
@@ -397,9 +411,11 @@ export const svVideos: VideoSpec[] = [
       },
       ...leaveTheMenu,
       { type: 'waitForAppSettled', timeout: 120000 },
-      // The payoff, and the last state change in the clip: two samples as one
-      // band of points, normal flat and tumor stepping under it.
-      { type: 'delay', ms: 5000 },
+      {
+        type: 'delay',
+        ms: 5000,
+        say: 'On one axis the tumor rises above its normal on 5p and drops on 5q',
+      },
     ],
     tailMs: 4000,
   },

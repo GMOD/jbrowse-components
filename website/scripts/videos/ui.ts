@@ -51,6 +51,7 @@ export const uiVideos: VideoSpec[] = [
     name: 'ui/highlight_region',
     description:
       'A highlight from the rubberband to the return trip: drag the scalebar, Highlight region, open the list from the view menu, name the row, navigate away, and click the row to come back',
+    goal: 'Highlight a span, name it, leave, and come back from the list',
     url: highlightSession,
     // An LGV with one gene track, and a drawer that opens beside it rather than
     // under it, so the app holds at the 306px the run reports throughout — the
@@ -68,7 +69,7 @@ export const uiVideos: VideoSpec[] = [
         type: 'drag',
         fromAnchor: { locus: highlightSpan.start, band: RUBBERBAND },
         toAnchor: { locus: highlightSpan.end, band: RUBBERBAND },
-        say: 'Highlight the span on screen',
+        say: 'Select the start of PTEN on the scale bar and highlight it',
         hold: 600,
       },
       { type: 'waitForText', text: 'Highlight region' },
@@ -94,20 +95,16 @@ export const uiVideos: VideoSpec[] = [
         type: 'type',
         text: 'Add label...',
         value: "PTEN 5' end",
-        say: "PTEN 5' end",
         hold: 1200,
       },
       { type: 'press', key: 'Enter' },
       { type: 'delay', ms: 2000 },
-      // Leave, so the return has somewhere to return from. Typed into the
-      // search box the way a reader would rather than reloaded, and the
-      // band leaves the view with it.
       {
         type: 'type',
         selector: LOCATION_BOX,
         value: elsewhere,
         clear: true,
-        say: elsewhere,
+        say: `Search another gene, ${elsewhere}, to leave`,
       },
       { type: 'press', key: 'Enter' },
       { type: 'waitForAppSettled', timeout: 120000 },
@@ -117,9 +114,15 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: LOCATION_LINK_CELL,
-        say: 'Click the row to navigate back',
+        say: "Click the row's location to jump back",
       },
       { type: 'waitForAppSettled', timeout: 120000 },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'Back on PTEN, under the highlight you named',
+      },
     ],
     tailMs: 4000,
   },
@@ -139,6 +142,7 @@ export const uiVideos: VideoSpec[] = [
     name: 'ui/open_track_url',
     description:
       'Opening a track from a URL: File, Open track..., a bigwig url typed into the form, the adapter and name it resolves for itself, and the track drawing under the genes',
+    goal: 'Open a bigwig track from its URL',
     url: addTrackSession,
     // A gene lane, then a wiggle lane under it, with the form in a drawer beside
     // both. The run reports 306px of app before the track arrives and 445px
@@ -153,7 +157,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'File',
-        say: 'Open a track from a URL',
+        say: 'From File, Open track, then paste the file URL',
         hold: 900,
       },
       { type: 'waitForText', text: 'Open track...' },
@@ -164,7 +168,6 @@ export const uiVideos: VideoSpec[] = [
         type: 'type',
         selector: '[data-testid="urlInput"]',
         value: addTrackUrl,
-        say: 'Paste the bigwig URL',
         // long enough to see the second step appear under the field, which is
         // the form answering
         hold: 2200,
@@ -180,10 +183,15 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="addTrackNextButton"]',
-        say: 'The name and adapter the form resolved',
+        say: 'The form names the track and picks its adapter; Add',
       },
       { type: 'waitForAppSettled', timeout: 60000 },
-      { type: 'delay', ms: 2500 },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'The bigwig draws under the genes',
+      },
     ],
     tailMs: 3500,
   },
@@ -203,6 +211,7 @@ export const uiVideos: VideoSpec[] = [
     name: 'ui/feature_sequence_types',
     description:
       "Three sequence types for one volvox transcript: open the feature details, show the feature sequence, and take CDS, Protein and genomic-with-flanks from the panel's own dropdown",
+    goal: "Show one transcript's sequence three ways: CDS, protein, genomic",
     url: sequencePanelSession,
     // Sized to the PANEL, which is a drawer and therefore scrolls: the run
     // reports 506px of views beside it and 2437px of drawer content, and no
@@ -218,26 +227,37 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         anchor: sequencePanelGene,
-        say: 'Open the transcript details',
+        say: "Open a transcript's details and show its sequence",
         hold: 1400,
       },
       { type: 'waitForText', text: 'Show feature sequence' },
       { type: 'click', text: 'Show feature sequence', hold: 2200 },
       { type: 'click', selector: SEQUENCE_TYPE, hold: 1200 },
-      { type: 'click', selector: sequenceType('cds'), say: 'CDS', hold: 3000 },
+      {
+        type: 'click',
+        selector: sequenceType('cds'),
+        say: 'First the coding sequence alone',
+        hold: 3000,
+      },
       { type: 'click', selector: SEQUENCE_TYPE, hold: 900 },
       {
         type: 'click',
         selector: sequenceType('protein'),
-        say: 'Protein',
+        say: 'Then that sequence translated to protein',
         hold: 3000,
       },
       { type: 'click', selector: SEQUENCE_TYPE, hold: 900 },
       {
         type: 'click',
         selector: sequenceType('gene_updownstream'),
-        say: 'Genomic w/ full introns +/- up+down stream',
-        hold: 3500,
+        say: 'Then the whole genomic span, introns and flanks included',
+        hold: 3000,
+      },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'One dropdown, and the key under it marks each part of the span',
       },
     ],
     tailMs: 3500,
@@ -260,6 +280,7 @@ export const uiVideos: VideoSpec[] = [
     name: 'ui/sequence_search_motifs',
     description:
       "Three restriction enzymes scanned out of the reference: the view menu's Sequence search, the Motif list mode and the enzymes it comes prefilled with, then Launch one track per motif and a lane each",
+    goal: 'Scan the reference for restriction sites, one track per enzyme',
     url: motifSearchSession,
     // The dialog is the tallest state and the app never reaches it: the run
     // reports 223px of app at the first frame and 584px at the last, where the
@@ -275,7 +296,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="view_menu_icon"]',
-        say: 'Scan the reference itself for motifs',
+        say: 'Open Sequence search from the view menu',
         hold: 900,
       },
       { type: 'waitForText', text: 'Sequence search' },
@@ -283,7 +304,12 @@ export const uiVideos: VideoSpec[] = [
       // The dialog opens on Sequence pattern, so the toggle is a real move
       // rather than a formality.
       { type: 'waitForText', text: 'Motif list' },
-      { type: 'click', text: 'Motif list', say: 'Motif list', hold: 2600 },
+      {
+        type: 'click',
+        text: 'Motif list',
+        say: 'Its motif list comes prefilled with restriction enzymes',
+        hold: 2600,
+      },
       // Long enough to read that the panel came with the enzymes already in it.
       { type: 'delay', ms: 1500 },
       {
@@ -291,18 +317,18 @@ export const uiVideos: VideoSpec[] = [
         selector: 'textarea[rows="12"]',
         value: motifSearchList,
         clear: true,
-        say: 'Edit the list',
+        say: 'Keep three of them: EcoRI, BamHI and HindIII',
         hold: 2000,
       },
       // The two Launch buttons share a prefix, so this matches the whole string
       // or the click lands on the other one.
-      {
-        type: 'click',
-        text: 'Launch one track per motif',
-        say: 'Launch one track per motif',
-      },
+      { type: 'click', text: 'Launch one track per motif' },
       { type: 'waitForAppSettled', timeout: 60000, cut: true },
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: "A lane of each enzyme's cut sites, scanned from the genome itself",
+      },
     ],
     tailMs: 3500,
   },
@@ -323,6 +349,7 @@ export const uiVideos: VideoSpec[] = [
     name: 'ui/bulk_add_tracks',
     description:
       'Four volvox file URLs pasted in one box, scrambled and with an index between two data files, and the preview table typing each row and pairing the index with its own data file',
+    goal: 'Add four files at once, in any order, with one paste',
     url: addTrackSession,
     // The drawer holds the paste box, the assembly selector and a row per file,
     // and grows as the rows land. Sized to the drawer rather than the views.
@@ -335,7 +362,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'File',
-        say: 'Add four files in one go, in any order',
+        say: 'From File, Open track, choose Add multiple tracks at once',
         hold: 900,
       },
       { type: 'waitForText', text: 'Open track...' },
@@ -363,19 +390,23 @@ export const uiVideos: VideoSpec[] = [
       // the data file whose name it extends. The preview table builds from the
       // extensions alone with nothing fetched, so this is not gated on the
       // network.
-      { type: 'delay', ms: 3600 },
+      {
+        type: 'delay',
+        ms: 3600,
+        say: 'Each file is typed by its extension, and the index joins its file',
+      },
       // The assembly comes from the view the form was opened over, so there is
       // nothing to pick: the button counts what it kept and the index is not in
       // the count. The `say` is the button's own label rather than a line about
       // it — four URLs went in and the button reads three, which is the whole
       // point and is already on screen.
-      {
-        type: 'click',
-        text: 'Add 3 tracks',
-        say: 'Add 3 tracks',
-      },
+      { type: 'click', text: 'Add 3 tracks' },
       { type: 'waitForAppSettled', timeout: 120000, cut: true },
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'Three tracks from four URLs, drawn under the genes',
+      },
     ],
     tailMs: 3500,
   },
@@ -395,6 +426,7 @@ export const uiVideos: VideoSpec[] = [
     name: 'ui/add_genome',
     description:
       'A JBrowse with no genome gets one: Tools, Assembly manager, Add new assembly, three URLs into one box, and the adapter and the name the form works out for itself',
+    goal: 'Give a JBrowse with no genome one, from three URLs',
     url: emptyConfig,
     // The dialog is the tallest state and is centered over an app that is almost
     // nothing: the run reports 222px of app at its tallest, where the dialog
@@ -407,7 +439,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Tools',
-        say: 'Give a JBrowse with no genome one',
+        say: 'Open the assembly manager from Tools and add a genome',
         hold: 900,
       },
       { type: 'waitForText', text: 'Assembly manager' },
@@ -421,7 +453,7 @@ export const uiVideos: VideoSpec[] = [
         type: 'type',
         selector: '[data-testid="genome-urls"]',
         value: hg38GenomeUrls,
-        say: 'The FASTA and its two indexes',
+        say: 'Paste the URLs of the FASTA and its two indexes',
         hold: 1500,
       },
       // The form classifies what was pasted and fills the name in from it. That
@@ -434,7 +466,11 @@ export const uiVideos: VideoSpec[] = [
       },
       // `Genome name` is the field's rendered label; `assembly-name` is only its
       // testid, and nothing checks a `say` against a string the app draws.
-      { type: 'delay', ms: 3000, say: 'Genome name' },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'The form recognizes the files and names the genome itself',
+      },
       // It names it after the file, `hg38.prefix`. The field is editable, and
       // the rest of the quickstart calls the assembly `hg38`, so the tour
       // renames it rather than leaving the page and the film disagreeing.
@@ -443,12 +479,15 @@ export const uiVideos: VideoSpec[] = [
         selector: '[data-testid="assembly-name"]',
         value: 'hg38',
         clear: true,
-        say: 'hg38',
         hold: 1600,
       },
       { type: 'click', text: 'Submit' },
       { type: 'waitForAppSettled', timeout: 120000, cut: true },
-      { type: 'delay', ms: 3000 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'hg38 is in the assembly manager, ready to open in a view',
+      },
     ],
     tailMs: 4000,
   },
@@ -460,6 +499,7 @@ export const uiVideos: VideoSpec[] = [
     name: 'ui/gene_track_sections',
     description:
       'NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from the Group by dialog, protein_coding moved to the top from the Sections submenu, then Pin distinct colors giving every biotype its own color',
+    goal: 'Group genes into sections by biotype, reorder them, and color them',
     url: geneGroupingVideoFixtures.session,
     viewportHeight: 740,
     readySelector: '::-p-text(NCBI RefSeq)',
@@ -490,7 +530,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(geneGroupingVideoFixtures.trackId),
-        say: 'Reorder the sections from the track menu',
+        say: 'Move protein_coding to the top from the Sections menu',
         hold: 1000,
       },
       { type: 'waitForText', text: 'Sections' },
@@ -510,7 +550,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(geneGroupingVideoFixtures.trackId),
-        say: 'Give each biotype a color of its own',
+        say: 'Then give each biotype a color of its own',
         hold: 1000,
       },
       { type: 'waitForText', text: 'Color by...' },
@@ -521,7 +561,11 @@ export const uiVideos: VideoSpec[] = [
       { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'waitForText', text: 'Track settings', hidden: true },
       { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 3500 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'A section per biotype, protein_coding first, each in its own color',
+      },
     ],
     tailMs: 3000,
   },
@@ -537,6 +581,7 @@ export const uiVideos: VideoSpec[] = [
     name: 'ui/gene_track_channel_spec',
     description:
       'NCBI RefSeq genes on hg38 grouped by gene_biotype in a declared section order and colored by the same attribute in a declared color order, written as JSON from the Group by dialog',
+    goal: 'Write the same grouping as JSON, with a section and color order',
     url: geneGroupingVideoFixtures.channelSpecSession,
     viewportHeight: 740,
     readySelector: '::-p-text(NCBI RefSeq)',
@@ -547,7 +592,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(geneGroupingVideoFixtures.trackId),
-        say: 'Write the grouping as JSON from the Group by dialog',
+        say: 'Open Group by, then Edit as JSON',
         hold: 1000,
       },
       { type: 'waitForText', text: 'Group by...' },
@@ -567,7 +612,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: 'A facet and a color, each with its domain',
+        say: 'The facet and the color each carry a domain: the order to use',
       },
       // the caption chip sits over the dialog's buttons
       { type: 'click', text: 'Apply', say: '' },
@@ -577,7 +622,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'Sections and colors follow each domain',
+        say: "The sections and the colors now follow each domain's order",
       },
     ],
     tailMs: 3000,

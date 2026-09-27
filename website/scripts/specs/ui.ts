@@ -182,8 +182,9 @@ export const uiVideoFixtures = {
   }),
   // The span the tour rubberbands, inside the window above.
   highlightSpan: { start: 'chr10:89,620,000', end: 'chr10:89,650,000' },
-  // Somewhere else on chr10, so the return has somewhere to return from.
-  elsewhere: 'chr10:100,000,000-100,200,000',
+  // A gene a megabase along chr10, searched by name, so the return has
+  // somewhere to return from.
+  elsewhere: 'FAS',
   // A volvox window with one gene lane in it, and a file from the same test
   // data that the config does NOT already open, for the add-track tour: the
   // point of that tour is a track arriving, so it has to arrive.

@@ -128,18 +128,37 @@ export function nodeGeometryInPage(
   const scaleY = pane.scaleY ?? pane.scale ?? 1
   const tx = pane.translateX ?? 0
   const ty = pane.translateY ?? 0
-  const xs = pts.map(p => p.x * scaleX + tx)
-  const ys = pts.map(p => p.y * scaleY + ty)
+  const screen = pts.map(p => ({ x: p.x * scaleX + tx, y: p.y * scaleY + ty }))
+  const xs = screen.map(p => p.x)
+  const ys = screen.map(p => p.y)
   const left = Math.min(...xs)
   const top = Math.min(...ys)
-  const mid = pts[Math.floor((pts.length - 1) / 2)]!
+  // Halfway along the drawn line rather than its middle vertex: an anchored
+  // node is a two-point line, whose "middle" vertex is its left end, where it
+  // meets its neighbour, and the app's hit test there answers the neighbour.
+  const legs = screen
+    .slice(1)
+    .map((p, i) => Math.hypot(p.x - screen[i]!.x, p.y - screen[i]!.y))
+  let rest = legs.reduce((sum, leg) => sum + leg, 0) / 2
+  let mid = screen[0]!
+  for (const [i, leg] of legs.entries()) {
+    const from = screen[i]!
+    const to = screen[i + 1]!
+    if (rest <= leg) {
+      const t = leg > 0 ? rest / leg : 0
+      mid = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t }
+      break
+    }
+    rest -= leg
+    mid = to
+  }
   return {
     left: r.left + left,
     top: r.top + top,
     width: Math.max(...xs) - left,
     height: Math.max(...ys) - top,
-    midX: r.left + mid.x * scaleX + tx,
-    midY: r.top + mid.y * scaleY + ty,
+    midX: r.left + mid.x,
+    midY: r.top + mid.y,
   }
 }
 

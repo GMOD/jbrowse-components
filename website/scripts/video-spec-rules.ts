@@ -9,6 +9,8 @@
 //
 // Both entry points pass the real list: check-video-specs.ts in `pnpm
 // check-docs`, and generate-video before it films anything.
+import { LOCATION_BOX } from './videos/shared.ts'
+
 import type { VideoSpec } from './video-spec-types.ts'
 
 // What a spec that names no viewport is filmed at: a full-screen browser on a
@@ -110,6 +112,72 @@ export function validateVideoSpecs(
     if (pastes.length > 0 && !paired.has(spec.name)) {
       problems.push(
         `${spec.name}: types a config into the app but is not in pastedTrackConfigs, so nothing holds it to the fence its page prints`,
+      )
+    }
+    problems.push(...storyProblems(spec))
+  }
+  return problems
+}
+
+// What a viewer needs to follow a tour with no page beside it: what we are
+// about to do, a few phases in plain words, and what the result shows, held on
+// the result. Each rule is one way a tour was filmed that nobody could follow:
+// `pangenome/hprc_browse` ran twelve lines over seven routes in 82 seconds,
+// typed three coordinates, and ended on six zoom-out clicks with nothing said
+// about what they found.
+export const MAX_GOAL_WORDS = 14
+export const MAX_LINES = 5
+
+const ACTIONS = new Set(['click', 'rightclick', 'type', 'drag', 'press'])
+
+// `chr6:31,980,000-32,050,000`, a window read off a figure, which a viewer
+// cannot tell from any other run of digits. One token only: two windows
+// separated by a space is the multi-region syntax, which no gene name spells.
+const COORDINATES = /^[^\s:]+:[\d,.]+(-[\d,.]+)?$/
+
+function storyProblems(spec: VideoSpec) {
+  const problems: string[] = []
+  const at = spec.name
+  const goalWords = spec.goal.trim().split(/\s+/).filter(Boolean).length
+  if (goalWords === 0) {
+    problems.push(
+      `${at}: no goal — the line held over the opening frame is how a viewer knows what the clip is for`,
+    )
+  } else if (goalWords > MAX_GOAL_WORDS) {
+    problems.push(
+      `${at}: the goal is ${goalWords} words, and it has to be read before anything moves; keep it to ${MAX_GOAL_WORDS}`,
+    )
+  }
+  const said = spec.steps.flatMap((step, i) => (step.say ? [i] : []))
+  if (said.length > MAX_LINES) {
+    problems.push(
+      `${at}: ${said.length} lines is ${said.length} phases, past the ${MAX_LINES} one route takes; split the tour`,
+    )
+  }
+  const lastAction = spec.steps.findLastIndex(step => ACTIONS.has(step.type))
+  const payoff = said.at(-1)
+  if (
+    payoff === undefined ||
+    spec.steps[payoff]!.type !== 'delay' ||
+    payoff < lastAction
+  ) {
+    problems.push(
+      `${at}: end on the payoff — a \`delay\` after the last action, whose \`say\` names what the result shows`,
+    )
+  }
+  for (const step of spec.steps) {
+    if (step.say && step.cut) {
+      problems.push(
+        `${at}: "${step.say}" is on a \`cut\` step, which is off camera, so nobody sees it`,
+      )
+    }
+    if (
+      step.type === 'type' &&
+      step.selector === LOCATION_BOX &&
+      COORDINATES.test(step.value?.trim() ?? '')
+    ) {
+      problems.push(
+        `${at}: types "${step.value}" into the location box; search a gene name, or select the span on the scale bar, so the viewer sees where the view is going`,
       )
     }
   }

@@ -31,6 +31,7 @@ export const repeatVideos: VideoSpec[] = [
     name: 'repeats/painting_display_switch',
     description:
       "UCSC RepeatMasker from one packed lane to a labelled lane per repeat class: Display types, the multi-row painting, then Partition by repClass out of the columns the file's own features carry",
+    goal: 'Split one RepeatMasker lane into a lane per repeat class',
     url: twoDisplaySession,
     // The lanes are the tall state, at the 260 the session pins them to — the
     // same height multirow/display_types_rows captures its lanes at. The packed
@@ -41,13 +42,15 @@ export const repeatVideos: VideoSpec[] = [
     readyTimeout: 60000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // The packed lane, held: every class in one row, which is the state the
-      // page's top panel is of.
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'Every repeat in one packed lane, whatever its class',
+      },
       {
         type: 'click',
         selector: trackMenu(rmskTrackId),
-        say: 'Redraw the packed lane as a painting',
+        say: 'Redraw the lane as a painting, one row per repeat name',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Display types' },
@@ -57,13 +60,11 @@ export const repeatVideos: VideoSpec[] = [
       // The switch re-fetches through the multi-row RPC, which packs the
       // features into rows on the way back.
       { type: 'waitForAppSettled', timeout: 120000, cut: true },
-      // One row per repeat NAME, which is what the display type alone gives.
-      // Held, because the next pick is what a reader is here for.
       { type: 'delay', ms: 3000 },
       {
         type: 'click',
         selector: trackMenu(rmskTrackId),
-        say: 'Partition the rows by a column of the file',
+        say: "Then partition the rows by the file's own repClass column",
         hold: 1200,
       },
       { type: 'waitForText', text: 'Partition by...' },
@@ -75,7 +76,7 @@ export const repeatVideos: VideoSpec[] = [
         hold: 3000,
       },
       { type: 'waitForText', text: 'repClass' },
-      { type: 'click', text: 'repClass', say: 'repClass' },
+      { type: 'click', text: 'repClass' },
       { type: 'waitForAppSettled', timeout: 120000, cut: true },
       // A radio that only writes a setting keeps its menu up, and the menu
       // covers the lanes it just produced. Two levels to leave, and the waits
@@ -92,8 +93,11 @@ export const repeatVideos: VideoSpec[] = [
       // click does nothing else.
       { type: 'click', selector: '[aria-label="JBrowse"]' },
       { type: 'waitForText', text: 'Track settings', hidden: true },
-      // A labelled lane per class, discovered from the window.
-      { type: 'delay', ms: 4000 },
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'A labelled lane per class, LINE to SINE, found in the file itself',
+      },
     ],
     tailMs: 4500,
   },

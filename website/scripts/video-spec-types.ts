@@ -5,17 +5,14 @@
 import type { ScreenshotAction } from './screenshot-spec-types.ts'
 
 export interface VideoStep extends ScreenshotAction {
-  // One short line held across the frame's lower centre while this step plays,
-  // in the app's own words: a menu path, a control's label. It names what is
-  // being done, the way a diagram's labels name its nodes.
+  // One line across the frame's lower centre, from this step until the next
+  // line replaces it: what this phase of the tour does and why, in plain words.
+  // The frame already shows the labels being clicked, so a line that repeats
+  // one tells the viewer nothing; "Cluster the tumors by their profile" says
+  // what the three clicks under it are for.
   //
-  // The line sets the step's hold as well as its words: a sentence is held long
-  // enough to read, where a control's name is held for the beat a menu takes to
-  // open.
-  //
-  // Use it where the app does not say it itself. A click lands in a quarter of a
-  // second and a reader watching a cursor cross a toolbar has no way back to
-  // which item it took, where a still has the whole cascade on the page at once.
+  // The camera holds each line for as long as it takes to read before the next
+  // one replaces it, however quickly the steps under it run.
   say?: string
   // Scroll the page to this offset, filmed, before the step's own action runs.
   // 'bottom' goes as far as the document does.
@@ -74,6 +71,11 @@ export interface VideoSpec {
   // tour of genomes.jbrowse.org's own build is. readyText or readySelector is
   // then the whole positive signal, as for a screenshot spec's noSession.
   noSession?: boolean
+  // What the viewer is about to see, held over the opening frame before
+  // anything moves: "Follow one HLA allele to the haplotype that carries it".
+  // Without it a tour opens on a cursor heading for a menu, and the viewer
+  // spends the clip working out what it is for.
+  goal: string
   steps: VideoStep[]
   // Seconds into the finished clip to take the <video poster> from. Defaults to
   // the last frame, which is the state the tour ends in.

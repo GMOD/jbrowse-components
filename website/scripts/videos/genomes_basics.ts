@@ -56,6 +56,7 @@ export const genomesBasicsVideos: VideoSpec[] = [
     name: 'genomes_basics/gnomad_filter',
     description:
       'gnomAD v4.1.1 Exomes over TP53 cut down to its predicted loss-of-function records: Track menu, Filter by..., an annot is pLoF row filled in on the filter dialog, and the lane redrawing under it',
+    goal: 'Filter gnomAD over TP53 down to its loss-of-function variants',
     url: unfilteredGnomad,
     // Sized to the DIALOG, which the run's content report cannot see: it
     // measures the app, and the filter dialog is ~430px of centred dialog on
@@ -72,13 +73,15 @@ export const genomesBasicsVideos: VideoSpec[] = [
       // full-width LGV is the overview's cytoband strip, and the view writes
       // whatever is under it into its own title bar.
       { type: 'hover', selector: WORDMARK, hold: 0 },
-      // Every record the exome callset has over this window, in the colours the
-      // published file carries.
-      { type: 'delay', ms: 2500 },
+      {
+        type: 'delay',
+        ms: 2500,
+        say: 'Every gnomAD exome variant over TP53, colored by consequence',
+      },
       {
         type: 'click',
         selector: trackMenu(gnomadTrackId),
-        say: 'Keep only the predicted loss-of-function variants',
+        say: 'Filter the track from its menu: keep annot equal to pLoF',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Filter by...' },
@@ -91,7 +94,6 @@ export const genomesBasicsVideos: VideoSpec[] = [
         type: 'type',
         selector: filterField,
         value: plof.field,
-        say: `${plof.field} is ${plof.value}`,
       },
       { type: 'press', key: 'Tab' },
       { type: 'delay', ms: 600 },
@@ -113,7 +115,11 @@ export const genomesBasicsVideos: VideoSpec[] = [
       // The last state change in the clip, deliberately. Whatever the recorder
       // drops off the end holds this frame, and it is the frame the poster
       // comes from.
-      { type: 'delay', ms: 5000 },
+      {
+        type: 'delay',
+        ms: 5000,
+        say: 'Only the predicted loss-of-function variants remain, each labelled',
+      },
     ],
     tailMs: 3000,
   },
@@ -144,6 +150,7 @@ export const genomesBasicsVideos: VideoSpec[] = [
     name: 'genomes_basics/find_a_track',
     description:
       'A UCSC track found and opened from the hg38 catalog: the track selector, phyloP typed into Filter tracks, the 100-way vertebrate alignment ticked under Comparative Genomics, and the conservation lane drawn under the TP53 transcript',
+    goal: 'Find and add a conservation track from the hg38 catalog',
     url: geneTrackOnly,
     // Sized to the END state, a 460px app with phyloP under the transcript,
     // plus room for the caption chip, since that chip is fixed off the FRAME's bottom
@@ -161,7 +168,7 @@ export const genomesBasicsVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: OPEN_SELECTOR,
-        say: 'Find a conservation track in the hg38 catalog',
+        say: "Open the track selector: UCSC's whole hg38 catalog",
       },
       {
         type: 'waitForSelector',
@@ -170,12 +177,21 @@ export const genomesBasicsVideos: VideoSpec[] = [
       // The catalog as it arrives: UCSC's own categories, the whole hg38
       // trackDb behind them, and no way to guess which one holds conservation.
       { type: 'delay', ms: 2500 },
-      { type: 'type', text: 'Filter tracks', value: 'phyloP', say: 'phyloP' },
+      {
+        type: 'type',
+        text: 'Filter tracks',
+        value: 'phyloP',
+        say: 'Type phyloP to narrow it to the conservation tracks',
+      },
       { type: 'waitForText', text: phylopTrackName },
       // Every phyloP track UCSC publishes for hg38, in the one category, with
       // the names as the only thing telling them apart.
       { type: 'delay', ms: 2500 },
-      { type: 'click', text: phylopTrackName },
+      {
+        type: 'click',
+        text: phylopTrackName,
+        say: 'Tick the 100-way vertebrate one',
+      },
       {
         type: 'waitForSelector',
         selector: displayReady(`${phylopTrackId}-LinearWiggleDisplay`),
@@ -191,7 +207,11 @@ export const genomesBasicsVideos: VideoSpec[] = [
       // The toggle keeps focus and its title with it, so the cursor goes back
       // to the wordmark before the state the next section reads is held.
       { type: 'hover', selector: WORDMARK, hold: 0 },
-      { type: 'delay', ms: 4000 },
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'phyloP under TP53: the conservation peaks line up with its exons',
+      },
     ],
     tailMs: 4000,
   },

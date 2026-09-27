@@ -17,6 +17,7 @@ export const configVideos: VideoSpec[] = [
     name: 'config/settings_to_json',
     description:
       'Two settings clicked onto a volvox CRAM and the session they are named in: Color by... and Read connections, then Share and the readable session panel under its link',
+    goal: 'Set two read options, then read them back out of a share link',
     url: defaultsSession,
     // Sized to what overhangs the app, which the run's content report cannot
     // see and so asks for 404px back: the Read connections cascade's shadow
@@ -34,7 +35,7 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(trackId),
-        say: 'Two settings off one open menu',
+        say: 'From the track menu, color the reads by insert size and orientation',
         hold: 1200,
       },
       // Colour goes first: `setLinkedReads` nudges a colorBy still at `normal`
@@ -43,7 +44,6 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Color by...',
-        say: 'Color the reads by insert size and orientation',
         hold: 1000,
       },
       { type: 'waitForText', text: 'Paired end' },
@@ -55,7 +55,7 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Read connections',
-        say: 'Link each read to its mate',
+        say: 'Then link each read to its mate',
         hold: 1000,
       },
       {
@@ -83,7 +83,7 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="share-button"]',
-        say: 'Hand the session back with the settings readable',
+        say: 'Share the session, and show it as readable JSON',
         hold: 800,
       },
       { type: 'waitForText', text: 'Copy the URL below' },
@@ -102,7 +102,6 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Show readable JSON',
-        say: 'The session behind that link, readable',
         hold: 800,
       },
       // The end of the route: a readable session under the `share-<id>` link.
@@ -116,7 +115,11 @@ export const configVideos: VideoSpec[] = [
       // what a fence on the page is for, and this clip is for the route that
       // produces the text. `check-video-specs` pairs the two.
       { type: 'waitForText', text: 'Session JSON' },
-      { type: 'delay', ms: 3500 },
+      {
+        type: 'delay',
+        ms: 4000,
+        say: 'Both settings, spelled out in the session behind the link',
+      },
     ],
     tailMs: 3000,
   },

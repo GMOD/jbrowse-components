@@ -25,6 +25,7 @@ export const methylationVideos: VideoSpec[] = [
     name: 'methylation/group_by_hp',
     description:
       'Splitting the SNRPN pileup by haplotype: the track menu, the tag dialog scanning the reads for HP, and the interleaved mix resolving into one methylated band and one unmethylated',
+    goal: "Split SNRPN's reads by haplotype to see one copy methylated",
     url: ungrouped,
     // The grouped pileup stacks into three sections inside the track's own 320,
     // so the app's height does not move across the tour. 740 rather than the
@@ -35,13 +36,15 @@ export const methylationVideos: VideoSpec[] = [
     readyTimeout: 120000,
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // The before, held: an interleaved mix of methylated and unmethylated
-      // reads, which is the state the page says "does not show the answer".
-      { type: 'delay', ms: 3000 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: "Both haplotypes' reads interleave; red is a methylated CpG, blue is not",
+      },
       {
         type: 'click',
         selector: trackMenu(readsTrackId),
-        say: 'Group the pileup by the HP tag',
+        say: 'Group the reads by their HP haplotype tag',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Group by...' },
@@ -54,7 +57,6 @@ export const methylationVideos: VideoSpec[] = [
         type: 'type',
         selector: '[data-testid="group-tag-name-input"]',
         value: 'HP',
-        say: 'HP',
       },
       // The dialog's own answer, and the beat this tour exists to hold: the scan
       // runs over the reads in view and names the values it found, so a reader
@@ -78,7 +80,11 @@ export const methylationVideos: VideoSpec[] = [
         cut: true,
       },
       { type: 'waitForAppSettled' },
-      { type: 'delay', ms: 3000 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'HP 1 is methylated at the SNRPN promoter; HP 2 is not',
+      },
     ],
     tailMs: 4000,
   },
