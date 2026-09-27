@@ -1,6 +1,7 @@
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 
 import type { LaneFetchSpec, LaneRegion } from './laneFetch.ts'
+import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type {
   EncodedChannels,
   LayerRequest,
@@ -56,11 +57,46 @@ export function laneLayerSpecLane(
   return `${assemblyName}\u0000${layer}\u0000${region}`
 }
 
+/**
+ * A payload's bars with every value outside `domain` squished to the end it
+ * passed, so a bar the shared scale cannot hold stands full height rather than
+ * wearing the clip strip: the domain is clipped by design here, not by a reader
+ */
 export function barChannelsOf(
   channels: EncodedChannels,
+  [lo, hi]: [number, number],
 ): BarChannels | undefined {
   const { x, x2, y, color, colorValue, count } = channels
-  return y ? { x, x2, y, color, colorValue, count } : undefined
+  if (!y) {
+    return undefined
+  }
+  let squished: Float32Array | undefined
+  for (let i = 0; i < count; i++) {
+    const v = y[i]!
+    if (v < lo || v > hi) {
+      squished ??= y.slice(0, count)
+      squished[i] = v < lo ? lo : hi
+    }
+  }
+  return { x, x2, y: squished ?? y, color, colorValue, count }
+}
+
+const barCells = new WeakMap<
+  EncodedChannels,
+  { lo: number; hi: number; cell: MultiWayCell | undefined }
+>()
+
+/** `barChannelsOf` as a cell, one per payload and domain, so a settle re-uploads nothing */
+export function barCellOf(channels: EncodedChannels, domain: [number, number]) {
+  const [lo, hi] = domain
+  const held = barCells.get(channels)
+  if (held?.lo === lo && held.hi === hi) {
+    return held.cell
+  }
+  const data = barChannelsOf(channels, domain)
+  const cell: MultiWayCell | undefined = data && { kind: 'bars', data }
+  barCells.set(channels, { lo, hi, cell })
+  return cell
 }
 
 export const LANE_LAYER_DOMAIN_QUANTILE = 0.99
@@ -68,12 +104,13 @@ export const LANE_LAYER_DOMAIN_QUANTILE = 0.99
 /**
  * Each layer's value domain, one per layer and shared by every lane: what
  * every lane holds, each end clipped at the 99th percentile of its side, so a
- * genome reads against the others and no one lane's outliers set the scale
+ * genome reads against the others and no one lane's outliers set the scale.
+ * Undefined for a layer holding no values yet
  */
 export function laneLayerDomains(
   held: Iterable<HeldLaneLayer>,
   layerCount: number,
-): [number, number][] {
+): ([number, number] | undefined)[] {
   const values = Array.from({ length: layerCount }, () => [] as Float32Array[])
   for (const { layer, channels } of held) {
     for (const { y, count } of channels) {
@@ -94,7 +131,7 @@ export function laneLayerDomains(
       all.length,
       LANE_LAYER_DOMAIN_QUANTILE,
     )
-    return min <= max ? (min === max ? [min - 1, max + 1] : [min, max]) : [0, 1]
+    return min > max ? undefined : min === max ? [min - 1, max + 1] : [min, max]
   })
 }
 

@@ -85,7 +85,7 @@ import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
 import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
-  barChannelsOf,
+  barCellOf,
   laneLayerBpPerPx,
   laneLayerDomains,
   laneLayerOrigin,
@@ -557,8 +557,13 @@ export function stateModelFactory(
         setLaneLayerData(
           fetched: Map<string, HeldLaneLayer>,
           coversMatesFor: string | undefined,
+          current: ReadonlySet<string>,
         ) {
-          const held = new Map(self.laneLayerData)
+          const held = new Map(
+            [...(self.laneLayerData ?? [])].filter(([lane]) =>
+              current.has(lane),
+            ),
+          )
           for (const [lane, layer] of fetched) {
             held.set(lane, layer)
           }
@@ -2819,58 +2824,31 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * per lane layer, the value domain every lane shares
+       * each held lane-layer payload its lane still draws, with where: the
+       * lane's band for that layer, and the payload's region in the lane's
+       * own frame. A payload on a lane no longer drawn, or on a contig its lane
+       * has left, is not here
        */
-      get laneLayerDomains(): [number, number][] {
-        return laneLayerDomains(
-          self.laneLayerData?.values() ?? [],
-          self.configuration.laneLayers.length,
-        )
-      },
-      /**
-       * #getter
-       * each lane layer's name and the domain every lane shares, placed once
-       * on the anchor lane's band
-       */
-      get laneLayerTitles() {
-        const anchor = self.laneStack.lanes[0]
-        const heights = self.laneLayerHeights
-        const tops = anchor ? layerBandTops(anchor.layerTop, heights) : []
-        const domains = this.laneLayerDomains
-        return self.configuration.laneLayers.map((layer, i) => {
-          const [min, max] = domains[i]!
-          const range = self.laneLayerData
-            ? ` ${Number(min.toPrecision(3))}–${Number(max.toPrecision(3))}`
-            : ''
-          return {
-            key: String(i),
-            text: `${layer.name}${range}`,
-            top: tops[i]!,
-          }
-        })
-      },
-      /**
-       * #getter
-       * each held lane-layer payload that its lane still draws, as a bar
-       * cell per mark and the layer placing it: the lane's band for that
-       * layer, and the payload's region in the lane's own frame
-       */
-      get laneLayerCells() {
-        const cells = new Map<string, MultiWayCell>()
-        const layers: BarLayer[] = []
+      get laneLayerPlacements() {
         const view = self.lgv
         const { lanes } = self.laneStack
         const heights = self.laneLayerHeights
-        const domains = this.laneLayerDomains
         const rowOf = new Map(
           lanes.map((lane, row) => [lane.assemblyName, row]),
         )
+        const out: {
+          specLane: string
+          held: HeldLaneLayer
+          row: number
+          top: number
+          height: number
+          px: Span
+        }[] = []
         for (const [specLane, held] of self.laneLayerData ?? []) {
           const row = rowOf.get(held.assemblyName)
           const lane = row === undefined ? undefined : lanes[row]
           const height = heights[held.layer]
-          const domain = domains[held.layer]
-          if (!lane || row === undefined || height === undefined || !domain) {
+          if (!lane || row === undefined || height === undefined) {
             continue
           }
           const { refName, start, end } = held.region
@@ -2889,15 +2867,84 @@ export function stateModelFactory(
                   rowFrameX(lane.frame, end, self.canvasWidth),
                 ]
               : undefined
-          if (!px) {
+          if (px) {
+            out.push({
+              specLane,
+              held,
+              row,
+              top: layerBandTops(lane.layerTop, heights)[held.layer]!,
+              height,
+              px,
+            })
+          }
+        }
+        return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * per lane layer, the value domain every drawn lane shares; undefined
+       * for a layer no drawn lane holds values for yet
+       */
+      get laneLayerDomains() {
+        return laneLayerDomains(
+          self.laneLayerPlacements.map(placement => placement.held),
+          self.configuration.laneLayers.length,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * each lane layer's name and the domain every lane shares, placed once
+       * on the anchor lane's band
+       */
+      get laneLayerTitles() {
+        const anchor = self.laneStack.lanes[0]
+        const heights = self.laneLayerHeights
+        const tops = anchor ? layerBandTops(anchor.layerTop, heights) : []
+        const domains = self.laneLayerDomains
+        return self.configuration.laneLayers.map((layer, i) => {
+          const domain = domains[i]
+          const range = domain
+            ? ` ${Number(domain[0].toPrecision(3))}–${Number(domain[1].toPrecision(3))}`
+            : ''
+          return {
+            key: String(i),
+            text: `${layer.name}${range}`,
+            top: tops[i]!,
+          }
+        })
+      },
+      /**
+       * #getter
+       * a bar cell per mark of each drawn payload, and the layer placing it.
+       * A cell is the payload's own until the shared domain moves, so a
+       * settle re-uploads nothing
+       */
+      get laneLayerCells() {
+        const cells = new Map<string, MultiWayCell>()
+        const layers: BarLayer[] = []
+        const domains = self.laneLayerDomains
+        for (const {
+          specLane,
+          held,
+          row,
+          top,
+          height,
+          px,
+        } of self.laneLayerPlacements) {
+          const domain = domains[held.layer]
+          if (!domain) {
             continue
           }
-          const top = layerBandTops(lane.layerTop, heights)[held.layer]!
+          const { start, end } = held.region
           held.channels.forEach((channels, mark) => {
-            const bars = barChannelsOf(channels)
-            if (bars) {
+            const cell = barCellOf(channels, domain)
+            if (cell) {
               const key = `bars:${specLane}:${mark}`
-              cells.set(key, { kind: 'bars', data: bars })
+              cells.set(key, cell)
               layers.push({
                 kind: 'bars',
                 key,

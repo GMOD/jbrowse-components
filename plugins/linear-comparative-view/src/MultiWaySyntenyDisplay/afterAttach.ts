@@ -533,6 +533,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
         specs.some(spec => spec.assemblyName !== self.anchorAssemblyName)
           ? self.anchorAssemblyName
           : undefined,
+        new Set(specs.map(spec => spec.lane)),
       )
     },
   })

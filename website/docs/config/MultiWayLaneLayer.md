@@ -1,0 +1,43 @@
+---
+id: multiwaylanelayer
+title: MultiWayLaneLayer
+sidebar_label: Display -> MultiWayLaneLayer
+---
+
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneLayerConfigSchema.ts).
+
+## Example usage
+
+GC percent as bars above every lane's genes, from each genome's UCSC
+gc5Base bigWig added as a track:
+
+```js
+{
+  type: 'MultiWaySyntenyDisplay',
+  displayId: 'hg38_liftover_multiway-MultiWaySyntenyDisplay',
+  laneLayers: [
+    {
+      name: 'GC %',
+      tracks: ['hg38-gc5Base', 'panTro6-gc5Base', 'mm39-gc5Base'],
+      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+    },
+  ],
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
+One row of data drawn in every lane through that lane's own frame, from
+each genome's own track, on one value scale shared by every lane.
+
+## Config slots
+
+These slots go on a display entry: `"displays": [{ "type": "MultiWayLaneLayer", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+
+<!-- prettier-ignore -->
+| Slot | Description |
+| --- | --- |
+| <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what the layer's band is labelled |
+| <span id="slot-tracks">**tracks**</span><br>`stringArray` = <code>[]</code> | the trackId each lane draws the layer from, one per genome, matched to a lane by the track's assembly. A lane no entry names draws an empty band |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>24</code> | px of band the layer takes in each lane |
+| <span id="slot-marks">**marks**</span><br><code>markListSchema([{ mark: 'bar', encoding: { y: 'score' } }])</code> | The mark display's marks, drawn over each lane's features. A lane is drawn at up to 80 times the anchor's bp per px, so a `count` or `sum` over an `auto` bin covers more bp on a zoomed-out lane and reads denser under the shared scale; a mean such as a bigWig's `score` compares |

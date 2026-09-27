@@ -4564,6 +4564,247 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
+          "name": "laneLayers",
+          "type": "MultiWayLaneLayerConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "tracks",
+              "type": "string[]"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "marks",
+              "type": "MarkConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "mark",
+                  "type": "MarkType"
+                },
+                {
+                  "name": "size",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "linkShape",
+                  "type": "LinkShape"
+                },
+                {
+                  "name": "encoding",
+                  "type": "MarkEncodingConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "x",
+                      "type": "string"
+                    },
+                    {
+                      "name": "x2",
+                      "type": "MarkLocusConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "pos",
+                          "type": "string"
+                        },
+                        {
+                          "name": "chrom",
+                          "type": "string"
+                        }
+                      ],
+                      "shorthand": "pos"
+                    },
+                    {
+                      "name": "y",
+                      "type": "string"
+                    },
+                    {
+                      "name": "row",
+                      "type": "string"
+                    },
+                    {
+                      "name": "color",
+                      "type": "MarkColorConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "value",
+                          "type": "(JexlString | (CssColor | undefined))"
+                        },
+                        {
+                          "name": "field",
+                          "type": "string"
+                        },
+                        {
+                          "name": "scale",
+                          "type": "(MarkColorScale | undefined)"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainQuantile",
+                          "type": "number"
+                        },
+                        {
+                          "name": "range",
+                          "type": "CssColorEntry[]"
+                        },
+                        {
+                          "name": "labels",
+                          "type": "string[]"
+                        },
+                        {
+                          "name": "scheme",
+                          "type": "(ColorScheme | undefined)"
+                        },
+                        {
+                          "name": "reverse",
+                          "type": "boolean"
+                        },
+                        {
+                          "name": "domainMid",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "breaks",
+                          "type": "string[]"
+                        },
+                        {
+                          "name": "descending",
+                          "type": "boolean"
+                        },
+                        {
+                          "name": "missingLabel",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "shorthand": "value",
+                      "fieldPresets": {
+                        "score": {
+                          "scale": "linear"
+                        },
+                        "*": {
+                          "scale": "categorical"
+                        }
+                      }
+                    },
+                    {
+                      "name": "shape",
+                      "type": "MarkShapeConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "value",
+                          "type": "(JexlString | ShapeName)"
+                        },
+                        {
+                          "name": "field",
+                          "type": "string"
+                        },
+                        {
+                          "name": "scale",
+                          "type": "(MarkShapeScale | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "ShapeName[]"
+                        },
+                        {
+                          "name": "domain",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        },
+                        {
+                          "name": "title",
+                          "type": "(string | undefined)"
+                        },
+                        {
+                          "name": "labels",
+                          "type": "string[]"
+                        },
+                        {
+                          "name": "breaks",
+                          "type": "string[]"
+                        },
+                        {
+                          "name": "missingLabel",
+                          "type": "(string | undefined)"
+                        }
+                      ],
+                      "shorthand": "value"
+                    },
+                    {
+                      "name": "text",
+                      "type": "string"
+                    },
+                    {
+                      "name": "size",
+                      "type": "MarkSizeConfigurationSchema",
+                      "subSlots": [
+                        {
+                          "name": "field",
+                          "type": "string"
+                        },
+                        {
+                          "name": "scale",
+                          "type": "SizeScale"
+                        },
+                        {
+                          "name": "domainMin",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "domainMax",
+                          "type": "(number | undefined)"
+                        },
+                        {
+                          "name": "range",
+                          "type": "string[]",
+                          "liftsNumbers": true
+                        }
+                      ],
+                      "shorthand": "field"
+                    }
+                  ]
+                },
+                {
+                  "name": "transform",
+                  "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
+                },
+                {
+                  "name": "source",
+                  "type": "MarkSource"
+                },
+                {
+                  "name": "minBpPerPx",
+                  "type": "number"
+                },
+                {
+                  "name": "maxBpPerPx",
+                  "type": "number"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "splitStrands",
           "type": "boolean"
         }

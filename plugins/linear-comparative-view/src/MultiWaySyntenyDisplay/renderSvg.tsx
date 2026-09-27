@@ -85,6 +85,20 @@ function MultiWaySvgBody({
             {label.text}
           </SvgHaloText>
         ))}
+        {model.laneLayerTitles.map(title => (
+          <SvgHaloText
+            key={`layer-${title.key}`}
+            x={4}
+            y={title.top + GENE_LABEL_FONT_PX * TEXT_BASELINE_RATIO}
+            fontSize={GENE_LABEL_FONT_PX}
+            fontFamily={fontFamily}
+            fill={bandInk().text}
+            halo={bandGroundColor()}
+            haloWidth={GENE_LABEL_HALO_PX * 2}
+          >
+            {title.text}
+          </SvgHaloText>
+        ))}
       </g>
     </>
   )

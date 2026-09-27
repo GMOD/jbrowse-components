@@ -1,6 +1,8 @@
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
+  barCellOf,
+  barChannelsOf,
   laneLayerBlockSpan,
   laneLayerBpPerPx,
   laneLayerDomains,
@@ -10,6 +12,7 @@ import {
 } from './laneLayers.ts'
 import { rowFrameX } from './layoutMultiWay.ts'
 import { drawnPx } from './multiwayRenderTypes.ts'
+import { createDisplay } from './testEnv.ts'
 
 import type { HeldLaneLayer } from './laneLayers.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
@@ -108,11 +111,28 @@ describe('the shared domain', () => {
     ])
   })
 
-  test('is a unit span for a layer nothing has loaded, and widens a single value', () => {
-    expect(laneLayerDomains([held(0, [5, 5])], 2)).toEqual([
-      [4, 6],
-      [0, 1],
-    ])
+  test('is nothing for a layer nothing has loaded, and widens a single value', () => {
+    expect(laneLayerDomains([held(0, [5, 5])], 2)).toEqual([[4, 6], undefined])
+  })
+})
+
+describe('the bars a payload draws', () => {
+  test('squish a value past the shared domain to its end, so no bar wears the clip strip', () => {
+    const [channels] = held(0, [20, 45, 90]).channels
+    expect([...barChannelsOf(channels!, [30, 60])!.y]).toEqual([30, 45, 60])
+    expect(channels!.y).toEqual(new Float32Array([20, 45, 90]))
+  })
+
+  test('keep the payload own values where the domain holds them all', () => {
+    const [channels] = held(0, [40, 45]).channels
+    expect(barChannelsOf(channels!, [30, 60])!.y).toBe(channels!.y)
+  })
+
+  test('are one cell per payload and domain, so a settle uploads nothing', () => {
+    const [channels] = held(0, [40, 45]).channels
+    const cell = barCellOf(channels!, [30, 60])
+    expect(barCellOf(channels!, [30, 60])).toBe(cell)
+    expect(barCellOf(channels!, [30, 50])).not.toBe(cell)
   })
 
   test('a bar grows from zero where the domain holds it, else from the nearer end', () => {
@@ -132,4 +152,20 @@ test('a lane reads its layer at a power of two, so a resize inside one refetches
 test('bands stack from the lane layer top, a gap apart', () => {
   expect(layerBandTops(100, [24, 10])).toEqual([100, 126])
   expect(laneLayersPx([24, 10])).toBe(38)
+})
+
+test('a commit drops held payloads its specs no longer name, so a region the view left stops drawing', () => {
+  const display = createDisplay()
+  const kept = held(0, [40])
+  display.setLaneLayerData(
+    new Map([
+      ['a\u00000\u00000', kept],
+      ['a\u00000\u00001', held(0, [90])],
+    ]),
+    undefined,
+    new Set(['a\u00000\u00000', 'a\u00000\u00001']),
+  )
+  display.setLaneLayerData(new Map(), undefined, new Set(['a\u00000\u00000']))
+  expect([...display.laneLayerData!.keys()]).toEqual(['a\u00000\u00000'])
+  expect(display.laneLayerData!.get('a\u00000\u00000')).toBe(kept)
 })
