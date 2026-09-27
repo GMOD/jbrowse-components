@@ -4591,7 +4591,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // Which row is which genome. Anchored to each row's own caption chip,
       // the assembly name at the scalebar's left edge, scoped to the row by
       // `view`: the chip is the same testid on every row, and the two
-      // haplotype rows caption it with the same name.
+      // haplotype rows caption it with the same name. The pill hangs below
+      // the chip, in the row's empty track band, where beside it it covered
+      // the chromosome name the chip captions.
       ...(['HG008-T hap2', 'GRCh38 reference', 'HG008-T hap1'] as const).map(
         (text, row) => ({
           type: 'text' as const,
@@ -4600,8 +4602,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
           anchor: {
             selector: '[data-testid="refLabel-prefix"]',
             view: [0, row],
-            alignX: 'right' as const,
-            dx: 24,
+            alignX: 'left' as const,
+            alignY: 'bottom' as const,
+            dx: 4,
+            dy: 26,
           },
         }),
       ),
