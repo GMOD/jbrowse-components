@@ -212,6 +212,27 @@ The track loads over the two coverage tracks at _ATP5F1C_. satuRn used no
 genomic coordinates, so the coverage lanes are an independent check on the
 color.
 
+Each coverage lane scales to its own peak until they share an axis. **Score →
+Autoscale with other tracks...** on one lane, with the other ticked, gives both
+one axis that follows the view, so the two tissues compare by height. A config
+names the same group on each track:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "liver_plus",
+  "name": "Liver RNA-seq, + strand (ENCSR135IAL)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig"
+  },
+  "displayDefaults": {
+    "scales": { "y": { "autoscaleGroup": "coverage" } }
+  }
+}
+```
+
 <Figure caption="ATP5F1C on hg38. ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon, where the muscle lane is flat and the liver lane peaks." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 
 ## Reproduce it end to end

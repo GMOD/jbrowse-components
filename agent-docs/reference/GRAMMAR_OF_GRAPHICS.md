@@ -639,10 +639,10 @@ the row axis in the vocabulary above, and none is a new channel.
   (`packages/wiggle-core/src/autoscaleGroup.ts`). It unions the raw ranges,
   never the domains, so a pinned end stays the display's that pinned it and
   no display reads another's resolved scale; the density tier's count per bin
-  answers no range, since it is no depth a group could share. The tutorials
-  that pin a shared scale by hand (`dtu`, `hic_structural_variants`,
-  `sv_multisamples`) still do: the RHD figure pins 0–70 to clip spikes an
-  autoscale would reach.
+  answers no range, since it is no depth a group could share. The `dtu` and
+  `sv_multisamples` tutorials share their coverage axes through a group;
+  `hic_structural_variants` pins its eigenvectors by hand, because an axis
+  centred on 0 is a pin no group gives.
 - **Scale resolution across layers: y never resolves independently, a
   categorical colour shares by construction, a ramp does not share.** The
   display owns one y scale and every drawing mark folds into it, which is

@@ -116,10 +116,10 @@ reference. Two settings make them comparable:
 
 - Turn the pileup off from the track menu's **Show...** submenu, since at this
   width the coverage curve carries the comparison
-- Pin each lane's axis from **Score → Set min/max score...**, so the three lanes
-  share one scale
+- Put the three lanes on one axis from **Coverage → Autoscale with other
+  tracks...**, ticking the other two, so they compare by height
 
-<Figure caption="The RHD deletion across three genotypes, coverage pinned to one shared axis, the banded span RHD itself. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
+<Figure caption="The RHD deletion across three genotypes, coverage on one shared axis, the banded span RHD itself. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
 
 ## A closer look at the empty span
 

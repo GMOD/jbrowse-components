@@ -77,6 +77,13 @@
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/dtu/ENCFF007ZBY.muscle.plus.bigWig"
+      },
+      "displayDefaults": {
+        "scales": {
+          "y": {
+            "autoscaleGroup": "coverage"
+          }
+        }
       }
     },
     {
@@ -88,6 +95,13 @@
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/dtu/ENCFF518WGP.muscle.minus.bigWig"
+      },
+      "displayDefaults": {
+        "scales": {
+          "y": {
+            "autoscaleGroup": "coverage"
+          }
+        }
       }
     },
     {
@@ -99,6 +113,13 @@
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig"
+      },
+      "displayDefaults": {
+        "scales": {
+          "y": {
+            "autoscaleGroup": "coverage"
+          }
+        }
       }
     },
     {
@@ -110,6 +131,13 @@
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/dtu/ENCFF253OSP.liver.minus.bigWig"
+      },
+      "displayDefaults": {
+        "scales": {
+          "y": {
+            "autoscaleGroup": "coverage"
+          }
+        }
       }
     }
   ],

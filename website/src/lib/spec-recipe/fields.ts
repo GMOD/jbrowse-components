@@ -763,6 +763,12 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
           note: `Pins the score axis: ${ends.join(' and ')}. An end left blank autoscales.`,
         }
       : undefined,
+    typeof y.autoscaleGroup === 'string'
+      ? {
+          path: `${TRACK_MENU} → ${menu} → Autoscale with other tracks...`,
+          note: `Tick the tracks that share this axis, here every one in group "${y.autoscaleGroup}".`,
+        }
+      : undefined,
     typeof y.domainQuantile === 'number' && displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Score → Clip outliers (${y.domainQuantile < 1 ? 'checked' : 'unchecked'})`,

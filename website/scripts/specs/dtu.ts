@@ -27,15 +27,14 @@ const DTU_CONFIG = encodeURIComponent(
 // the box then lands on the exon at any width or zoom (see locusAnchor.ts).
 const CASSETTE_EXON = 'chr10:7,806,974-7,807,010'
 
-// Both coverage tracks are pinned to the same 0–16 scale so the two bands are
-// comparable by height and not just by shape. They are one donor each (the
-// statistic behind the colors uses all eight), which is why the track names
-// carry their ENCODE accessions.
+// The demo config puts the coverage tracks in one autoscale group, the route
+// the page gives, so the two bands compare by height. They are one donor each
+// (the statistic behind the colors uses all eight), which is why the track
+// names carry their ENCODE accessions.
 const coverage = (trackId: string) => ({
   trackId,
   type: 'LinearWiggleDisplay',
   height: 90,
-  scales: { y: { domainMin: 0, domainMax: 16 } },
 })
 
 // `grow`, not the demo config's pinned 285. The lane packs ten transcripts and

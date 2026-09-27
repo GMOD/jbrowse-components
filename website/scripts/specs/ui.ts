@@ -947,11 +947,11 @@ export const uiSpecs: ScreenshotSpec[] = [
   //
   // Two settings carry the figure. `showPileup: false` drops the stacked-read
   // band, because at 100kb a 30x pileup is a solid mass and the coverage curve
-  // is the whole subject here. And a pinned domain PINS all three rows to one
-  // 0-70 axis: left to autoscale each row fits its own maximum, which drew the
-  // three genotypes at almost the same height and destroyed the comparison the
-  // figure exists to make. A few spikes clip at 70; the ~35x baseline sitting at
-  // half height is what matters.
+  // is the whole subject here. And one autoscale group puts all three rows on
+  // one axis: left alone each row fits its own maximum, which drew the three
+  // genotypes at almost the same height and destroyed the comparison the figure
+  // exists to make. The band's 0.99 quantile keeps a few spikes from setting
+  // that axis.
   {
     mode: 'url',
     name: 'multisv_rhd_dosage',
@@ -1069,7 +1069,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               // being compared rather than off the bottom of the frame.
               height: 200,
               coverageHeight: 190,
-              scales: { y: { domainMin: 0, domainMax: 70 } },
+              scales: { y: { autoscaleGroup: 'depth' } },
             })),
           ],
         },
