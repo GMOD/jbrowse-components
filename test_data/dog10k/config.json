@@ -658,6 +658,12 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_wolfdog_ancestry-LinearMultiRowFeatureDisplay",
+          "color": {
+            "scale": "identity",
+            "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
+            "labels": ["Breed dog", "Gray wolf"],
+            "title": "Ancestry (FLARE)"
+          },
           "rows": "sample"
         }
       ]
@@ -676,6 +682,12 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_wolfdog_named-LinearMultiRowFeatureDisplay",
+          "color": {
+            "scale": "identity",
+            "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
+            "labels": ["Breed dog", "Gray wolf"],
+            "title": "Ancestry (FLARE)"
+          },
           "rows": {
             "field": "sample",
             "domain": [

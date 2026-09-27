@@ -206,7 +206,8 @@ called. The `#` header names them, so the track config needs no `columnNames`.
 
 `LinearMultiRowFeatureDisplay` draws one row per distinct value of `rows.field`,
 here `sample`, and `rows.domain` sets their order. A BED carrying `itemRgb` is
-painted with it automatically.
+painted with it automatically, and an identity `color` names those colours in
+the key, one `labels` entry per `domain` colour.
 
 ```json addtrack
 {
@@ -234,6 +235,12 @@ painted with it automatically.
           "German Shepherd hap1",
           "German Shepherd hap2"
         ]
+      },
+      "color": {
+        "scale": "identity",
+        "domain": ["rgb(0,114,178)", "rgb(230,159,0)"],
+        "labels": ["Breed dog", "Gray wolf"],
+        "title": "Ancestry (FLARE)"
       }
     }
   ]
