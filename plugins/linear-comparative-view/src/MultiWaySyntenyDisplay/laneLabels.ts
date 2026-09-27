@@ -10,17 +10,18 @@ export const GENE_LABEL_FONT_PX = 10
 export const GENE_LABEL_HALO_PX = 1
 export const GENE_LABEL_GAP_PX = 1
 
-// a bold name's advance over the regular widths `measureText` tabulates
 const BOLD_WIDTH = 1.1
+
+export interface GeneLabel {
+  name: string
+  width: number
+}
 
 export interface PlacedLaneLabel {
   key: string
   text: string
-  /** of the hovered or selected group, so kept first and drawn bold */
   pinned: boolean
-  /** the label's left edge, in the stack's px */
   left: number
-  /** the label box's top, in the stack's px */
   top: number
   width: number
 }
@@ -37,32 +38,41 @@ export interface NamedSpan {
   name: string
   left: number
   right: number
-  /** the group the gene carries, where one claims it */
   group?: string
+}
+
+interface DrawnName extends NamedSpan {
+  width: number
 }
 
 function drawnNames(
   lane: LabelledLane,
   genes: readonly LaneGene[],
   boxes: readonly NamedSpan[],
-  textOf: (feature: Feature) => string | undefined,
+  labelOf: (feature: Feature) => GeneLabel | undefined,
   groups: ReadonlyMap<string, string> | undefined,
   width: number,
+  fontFamily: string,
 ) {
-  const out = boxes.filter(b => b.right >= 0 && b.left <= width)
+  const out: DrawnName[] = boxes
+    .filter(b => b.right >= 0 && b.left <= width)
+    .map(b => ({
+      ...b,
+      width: measureText(b.name, GENE_LABEL_FONT_PX, fontFamily),
+    }))
   for (const { feature } of genes) {
-    const name = textOf(feature)
+    const label = labelOf(feature)
     const span = lane.spanOf(
       feature.get('refName'),
       feature.get('start'),
       feature.get('end'),
     )
-    if (name && span) {
+    if (label && span) {
       const left = Math.min(span[0], span[1])
       const right = Math.max(span[0], span[1])
       if (right >= 0 && left <= width) {
         const id = feature.id()
-        out.push({ id, name, left, right, group: groups?.get(id) })
+        out.push({ id, ...label, left, right, group: groups?.get(id) })
       }
     }
   }
@@ -70,19 +80,15 @@ function drawnNames(
 }
 
 /**
- * Each lane's gene names, in the row under its glyphs — its genes' own and
- * those of the placement boxes standing in for genes its annotation lacks —
- * decimated the way the feature track decimates: a name is kept only where the gap between its
- * neighbours' edges holds it (`keepFeatureLabel`), and of the names left, one
- * meeting a kept name's halo is dropped (`cullOverlappingLabels`). The names of
- * a pinned group — the hovered or selected one — skip the room test and are
- * placed first, so the group reads down the whole stack.
+ * Each lane's gene and placement-box names under its glyphs, decimated as the
+ * feature track decimates (`keepFeatureLabel`, then `cullOverlappingLabels`).
+ * A pinned group's names skip the room test and are placed first.
  */
 export function placeLaneLabels({
   lanes,
   genesOf,
   boxesOf = () => [],
-  textOf,
+  labelOf,
   groupsOf = () => undefined,
   pinnedGroups = new Set(),
   glyphHeight,
@@ -93,8 +99,7 @@ export function placeLaneLabels({
   lanes: readonly LabelledLane[]
   genesOf: (assemblyName: string) => readonly LaneGene[]
   boxesOf?: (assemblyName: string) => readonly NamedSpan[]
-  /** a gene's label, `geneTextOf` */
-  textOf: (feature: Feature) => string | undefined
+  labelOf: (feature: Feature) => GeneLabel | undefined
   groupsOf?: (assemblyName: string) => ReadonlyMap<string, string> | undefined
   pinnedGroups?: ReadonlySet<string>
   glyphHeight: number
@@ -108,18 +113,17 @@ export function placeLaneLabels({
       lane,
       genesOf(lane.assemblyName),
       boxesOf(lane.assemblyName),
-      textOf,
+      labelOf,
       groupsOf(lane.assemblyName),
       width,
+      fontFamily,
     )
     const top = lane.glyphTop + glyphHeight + GENE_LABEL_GAP_PX
     names.forEach((n, i) => {
       const roomLeft = names[i - 1]?.right ?? -Infinity
       const roomRight = names[i + 1]?.left ?? Infinity
       const pinned = n.group !== undefined && pinnedGroups.has(n.group)
-      const textWidth =
-        measureText(n.name, GENE_LABEL_FONT_PX, fontFamily) *
-        (pinned ? BOLD_WIDTH : 1)
+      const textWidth = n.width * (pinned ? BOLD_WIDTH : 1)
       if (
         keepFeatureLabel('fitWidth', roomRight - roomLeft, textWidth, pinned, 1)
       ) {

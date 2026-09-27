@@ -948,6 +948,20 @@ describe('a lane cell', () => {
     expect(boxes.hits).toEqual([])
   })
 
+  test('a named box keys its name by the gene it is, not where it draws', () => {
+    const s = stack({ features: [pairFeature('g2', 500, 600)] })
+    const { boxNames } = buildLaneCells({
+      lane: s.lanes[0]!,
+      genes: [],
+      glyphHeight: s.glyphHeight,
+      width: WIDTH,
+      colors,
+    })
+    expect(boxNames).toEqual([
+      { id: 'box:g2:chr1:500', name: 'g2', left: 400, right: 480, group: 'g2' },
+    ])
+  })
+
   test('draws the table’s own box, translucent and outlined, where no gene reaches', () => {
     const s = stack({
       features: [pairFeature('g1', 100, 200), pairFeature('g2', 500, 600)],

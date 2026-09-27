@@ -20,6 +20,7 @@ import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
+import { measureText } from '@jbrowse/core/util/measureText'
 import {
   allSessionTracks,
   getTrackAssemblyNames,
@@ -73,7 +74,7 @@ import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
 import { laneHeaderRows } from './laneHeader.ts'
-import { placeLaneLabels } from './laneLabels.ts'
+import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
   laneMapAt,
   laneMotionEase,
@@ -141,7 +142,7 @@ import type {
   LaneLinksFetchSpec,
   LaneRegion,
 } from './laneFetch.ts'
-import type { NamedSpan } from './laneLabels.ts'
+import type { GeneLabel, NamedSpan, PlacedLaneLabel } from './laneLabels.ts'
 import type { LaneTransition } from './laneMotion.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
@@ -2157,49 +2158,96 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * a gene's label under `text`
+       * a gene's label under `text`; one that does not compile falls back to
+       * the feature track's name-else-ID rather than taking the display down
        */
       get geneTextOf(): (feature: Feature) => string | undefined {
         const field = self.geneTextField
         if (!field) {
           return getFeatureName
         }
-        const read = fieldReader(
-          field,
-          getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
-        )
-        return feature => valueText(read(feature)) || undefined
+        try {
+          const read = fieldReader(
+            field,
+            getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
+          )
+          return feature => {
+            try {
+              return valueText(read(feature)) || undefined
+            } catch {
+              return undefined
+            }
+          }
+        } catch (e) {
+          console.error(e)
+          return getFeatureName
+        }
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       * the gene names each lane prints under its glyphs, placed and
-       * decimated, in the stack's px; none with `showGeneLabels` off
-       */
-      laneGeneLabels(
-        fontFamily: string,
-        pinnedGroups: ReadonlySet<string> = new Set(),
-      ) {
-        const { lanes, glyphHeight } = self.laneStack
-        const boxNames = self.laneBoxNames
-        return self.showGeneLabels
-          ? placeLaneLabels({
-              lanes,
-              genesOf: assemblyName =>
-                self.laneGenes?.get(assemblyName)?.genes ?? [],
-              boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
-              textOf: self.geneTextOf,
-              groupsOf: assemblyName => self.laneGeneGroups.get(assemblyName),
-              pinnedGroups,
-              glyphHeight,
-              width: self.canvasWidth,
-              height: self.scrollContentHeight,
-              fontFamily,
-            })
-          : []
-      },
-    }))
+    .views(self => {
+      let memo = {
+        text: getFeatureName,
+        fontFamily: '',
+        genes: undefined as unknown,
+        byId: new Map<string, GeneLabel | null>(),
+      }
+      return {
+        /**
+         * #method
+         * the gene names each lane prints under its glyphs, placed and
+         * decimated, in the stack's px; none with `showGeneLabels` off. Each
+         * gene's text and width are read once per lane fetch, so a pan only
+         * re-places them
+         */
+        laneGeneLabels(
+          fontFamily: string,
+          pinnedGroups: ReadonlySet<string> = new Set(),
+          width = self.canvasWidth,
+        ): PlacedLaneLabel[] {
+          if (!self.showGeneLabels) {
+            return []
+          }
+          const text = self.geneTextOf
+          const genes = self.laneGenes
+          if (
+            memo.text !== text ||
+            memo.fontFamily !== fontFamily ||
+            memo.genes !== genes
+          ) {
+            memo = { text, fontFamily, genes, byId: new Map() }
+          }
+          const { byId } = memo
+          const { lanes, glyphHeight } = self.laneStack
+          const boxNames = self.laneBoxNames
+          return placeLaneLabels({
+            lanes,
+            genesOf: assemblyName => genes?.get(assemblyName)?.genes ?? [],
+            boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
+            labelOf: feature => {
+              const id = feature.id()
+              let label = byId.get(id)
+              if (label === undefined) {
+                const name = text(feature)
+                label = name
+                  ? {
+                      name,
+                      width: measureText(name, GENE_LABEL_FONT_PX, fontFamily),
+                    }
+                  : null
+                byId.set(id, label)
+              }
+              return label ?? undefined
+            },
+            groupsOf: assemblyName => self.laneGeneGroups.get(assemblyName),
+            pinnedGroups,
+            glyphHeight,
+            width,
+            height: self.scrollContentHeight,
+            fontFamily,
+          })
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter

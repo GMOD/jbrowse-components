@@ -62,7 +62,7 @@ function MultiWaySvgBody({
           width={canvasWidth}
           palette={palette}
         />
-        {model.laneGeneLabels(fontFamily).map(label => (
+        {model.laneGeneLabels(fontFamily, new Set(), canvasWidth).map(label => (
           <SvgHaloText
             key={label.key}
             x={label.left}

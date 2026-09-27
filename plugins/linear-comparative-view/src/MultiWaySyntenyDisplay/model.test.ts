@@ -80,6 +80,23 @@ test('the text slot picks what a gene label prints, name-else-ID unset', () => {
   expect(display.geneTextOf(gene)).toBeUndefined()
 })
 
+test('a text expression that does not compile falls back to name-else-ID', () => {
+  const display = createDisplay()
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+  display.setGeneTextField("jexl:get(feature,'gene_name'")
+  const gene = new SimpleFeature({
+    uniqueId: 'u1',
+    refName: 'ctgA',
+    start: 0,
+    end: 10,
+    id: 'gene-1',
+  })
+  expect(display.geneTextOf(gene)).toBe('gene-1')
+  expect(() => display.laneGeneLabels('sans-serif')).not.toThrow()
+  expect(error).toHaveBeenCalled()
+  error.mockRestore()
+})
+
 test('the lane fetch is part of loading only until it first lands', () => {
   const display = createDisplay()
   // the harness mounts no canvas; the paint half of loading is the mixin's

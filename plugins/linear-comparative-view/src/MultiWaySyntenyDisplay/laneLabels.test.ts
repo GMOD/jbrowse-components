@@ -1,8 +1,18 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { measureText } from '@jbrowse/core/util/measureText'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
 
 import { LaneGene } from './geneGlyph.ts'
-import { placeLaneLabels } from './laneLabels.ts'
+import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
+
+import type { Feature } from '@jbrowse/core/util'
+
+function labelOf(feature: Feature) {
+  const name = getFeatureName(feature)
+  return name
+    ? { name, width: measureText(name, GENE_LABEL_FONT_PX, 'sans-serif') }
+    : undefined
+}
 
 function gene(name: string, start: number, end: number) {
   return new LaneGene(
@@ -23,7 +33,7 @@ function place(genes: Record<string, LaneGene[]>, lanes = [lane('a', 20)]) {
   return placeLaneLabels({
     lanes,
     genesOf: name => genes[name] ?? [],
-    textOf: getFeatureName,
+    labelOf,
     glyphHeight: 10,
     width: 1000,
     height: 200,
@@ -52,7 +62,7 @@ describe('placeLaneLabels', () => {
     const labels = placeLaneLabels({
       lanes: [lane('a', 20), lane('b', 60)],
       genesOf: () => [gene('G', 400, 500)],
-      textOf: getFeatureName,
+      labelOf,
       glyphHeight: 10,
       width: 1000,
       height: 200,
@@ -74,7 +84,7 @@ describe('placeLaneLabels', () => {
     const labels = placeLaneLabels({
       lanes: [lane('a', 20)],
       genesOf: () => [gene('G', 100, 200)],
-      textOf: getFeatureName,
+      labelOf,
       boxesOf: () => [
         { id: 'box:g', name: 'Potri.001G', left: 500, right: 600 },
       ],
@@ -95,7 +105,7 @@ describe('placeLaneLabels', () => {
     const labels = placeLaneLabels({
       lanes: [lane('a', 20)],
       genesOf: () => genes,
-      textOf: getFeatureName,
+      labelOf,
       groupsOf: () => new Map([['CROWDED', 'g1']]),
       pinnedGroups: new Set(['g1']),
       glyphHeight: 10,

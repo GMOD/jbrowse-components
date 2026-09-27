@@ -40,7 +40,11 @@ import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { NamedSpan } from './laneLabels.ts'
 import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
-import type { MultiWayGroup, Span } from './layoutMultiWay.ts'
+import type {
+  MultiWayGroup,
+  MultiWayPlacement,
+  Span,
+} from './layoutMultiWay.ts'
 import type {
   GlyphHit,
   LaneGlyphData,
@@ -761,9 +765,7 @@ function laneReachPx(lane: Lane, width: number): Span {
 export interface LaneCells {
   glyphs: LaneGlyphData
   boxes: LaneGlyphData
-  /** each named box's gene and where it draws, for the lane's name row */
   boxNames: NamedSpan[]
-  /** the group each drawn gene carries, by feature id */
   geneGroups: Map<string, string>
 }
 
@@ -778,7 +780,7 @@ interface LaneBox {
   key: string
   group: MultiWayGroup
   span: Span
-  name?: string
+  interval: MultiWayPlacement
 }
 
 /**
@@ -820,7 +822,7 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
           gene.cluster = key
         }
       } else if (isNamedRecord(group.feature)) {
-        boxes.push({ key, group, span: spans[i]!, name: intervals[i]!.name })
+        boxes.push({ key, group, span: spans[i]!, interval: intervals[i]! })
       }
     })
   }
@@ -958,12 +960,13 @@ export function buildLaneCells({
   }
 
   const boxNames: NamedSpan[] = []
-  for (const { key, group, span, name } of unclaimed) {
+  for (const { key, group, span, interval } of unclaimed) {
+    const { name } = interval
     const fill = colors.boxes.fill(group.feature, key)
     const [boxLeft, boxRight] = span[0] <= span[1] ? span : [span[1], span[0]]
     if (name) {
       boxNames.push({
-        id: `box:${key}:${boxLeft}`,
+        id: `box:${key}:${interval.refName}:${interval.start}`,
         name,
         group: key,
         left: boxLeft,
