@@ -1117,6 +1117,7 @@ export const GRAPH_LABELS: Record<string, string[]> = {
   'the settings dialog itself': [
     'Graph context',
     'Layout quality',
+    'Bubble spread',
     'Haplotypes',
     'Draw paths',
     'Reference path',

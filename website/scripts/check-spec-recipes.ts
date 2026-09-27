@@ -255,6 +255,9 @@ const authored = authoredText(
 const graphSegmentsUncheckable = !existsSync(graphSrc)
 const namesGraphView = (path: string) =>
   path.includes('Graph view') || path.includes('Graph genome view')
+// A graph track's settings sit under the core track menu, so its paths name
+// no graph view; its plugin-only rows are still known by label.
+const graphOnlyLabels = new Set(Object.values(GRAPH_LABELS).flat().map(norm))
 
 const unrendered = new Map<string, number>()
 const exemptionsUsed = new Set<string>()
@@ -270,7 +273,9 @@ for (const path of recipePaths) {
       exemptionsUsed.add(segment)
       continue
     }
-    if (!uncheckable && !repoLabels.has(norm(segment))) {
+    const graphOnly =
+      graphSegmentsUncheckable && graphOnlyLabels.has(norm(segment))
+    if (!uncheckable && !graphOnly && !repoLabels.has(norm(segment))) {
       unrendered.set(segment, (unrendered.get(segment) ?? 0) + 1)
     }
   }
