@@ -30,8 +30,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - [`gfatools`](https://github.com/lh3/gfatools) and GNU awk, for an rGFA
 - [`minigraph`](https://github.com/lh3/minigraph), for carriage
 - [`vg`](https://github.com/vgteam/vg) 1.69.0+,
-  [`gbz-base`](https://github.com/jltsiren/gbz-base) and `gbz-haplotype-index`
-  from [`@gmod/gbz-base`](https://github.com/GMOD/gbz-base-js), for the
+  [`gbz-base`](https://github.com/jltsiren/gbz-base) and
+  [`gbz-haplotype-index`](https://crates.io/crates/gbz-haplotype-index), for the
   haplotype-walk layer
 
 ## Where the data comes from
@@ -278,7 +278,8 @@ gbz-base construct --chains graph.chains graph.gbz
 
 `gbz-base` is `cargo install gbz-base`, writing `graph.gbz.db` beside the input.
 Then name the haplotypes: upstream reports `unknown#1`, `unknown#2` for the
-walks in a subgraph.
+walks in a subgraph. `cargo install gbz-haplotype-index` installs the tool that
+writes the names to a companion file.
 
 <!-- from: scripts/build_hprc_gbz_index.sh -->
 
@@ -287,15 +288,13 @@ walks in a subgraph.
 #   means a bigger file and faster haplotype lookup
 # --anchor-spacing: how often an anchor node is chosen on the reference path,
 #   letting a window walk only the chosen lanes
-# --output: writes a companion file, for a database you did not build yourself
 gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
-  --output graph.haplotype-index.db graph.gbz
+  graph.gbz graph.haplotype-index.db
 ```
 
 Over HPRC's 464 haplotypes that's a 7.9 GB companion, built in about 13 minutes
-on 24 cores. The sort holds every position in memory; on a 16-thread Intel Mac
-it aborts inside libmalloc's nano zone, fixed by `MallocNanoZone=0` or
-`--threads 8`.
+on 24 cores with a 12 GB memory peak. On a 16-thread Intel Mac the walk aborts
+inside libmalloc's nano zone, fixed by `MallocNanoZone=0` or `--threads 8`.
 
 The database and companion need URLs that serve range requests: the track's
 `uri` and `haplotypeIndexLocation`:
@@ -360,7 +359,7 @@ then
 and
 [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh),
 each runnable alone. The gbz-base companion has its own script, which downloads
-the 5.5 GB `.gbz`, builds `gbz-haplotype-index` from source and runs the command
+the 5.5 GB `.gbz`, installs `gbz-haplotype-index` and runs the command
 [above](#every-haplotypes-walk-a-gbz-base-database):
 
 ```bash
