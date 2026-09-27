@@ -41,6 +41,13 @@ export interface ScoreSpan {
   visStart?: number
   visEnd?: number
   /**
+   * Whether the instances are bins sorted by start that never overlap, as a
+   * wiggle source's are, so a binary search finds the window's. A mark
+   * layer's features overlap and arrive source after source or section after
+   * section, so each is tested against the window instead.
+   */
+  sortedBins: boolean
+  /**
    * Instance `i`'s row key, and 1 at each key that draws: an instance whose
    * key draws nothing, or lies past the end, folds into no domain. Absent,
    * every instance folds in.
@@ -66,6 +73,7 @@ export function datasetSpan(
     avg: data.featureScores,
     visStart,
     visEnd,
+    sortedBins: true,
   }
 }
 
@@ -135,23 +143,14 @@ function lowerBoundByStart(span: ScoreSpan, bp: number) {
 }
 
 /**
- * The half-open index range that can overlap `[visStart, visEnd)`.
- *
- * A fetch covers `bufferedVisibleRegions` — the viewport plus half a screen on
- * each side — so roughly half of what these passes walk is off-screen, and a
- * clipped domain walks it twice. Both bounds come from a binary search on the
- * sorted starts instead.
- *
- * The upper bound needs nothing but that sortedness: a feature starting at or
- * after `visEnd` cannot reach back into the window. The lower bound also leans
- * on wiggle features being non-overlapping bins — bigWig summary levels and
- * bedGraph both are — walking back over any run that does reach in. The callers
- * still test `overlaps` per feature inside the range, so a dataset that broke
- * that assumption could only lose a long early feature, never gain one.
+ * The half-open index range that can overlap `[visStart, visEnd)`. Over
+ * `sortedBins` a binary search bounds it, walking back over any bin that
+ * reaches into the window; any other span is walked whole, and every caller
+ * tests `overlaps` per instance inside the range.
  */
 function visibleIndexRange(span: ScoreSpan) {
-  const { visStart, visEnd, ends, stride, endOffset } = span
-  if (visStart === undefined || visEnd === undefined) {
+  const { visStart, visEnd, ends, stride, endOffset, sortedBins } = span
+  if (!sortedBins || visStart === undefined || visEnd === undefined) {
     return { from: 0, to: span.count }
   }
   const to = lowerBoundByStart(span, visEnd)

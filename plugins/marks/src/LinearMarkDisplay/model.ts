@@ -397,6 +397,7 @@ function layerSpans(
             avg: y,
             visStart,
             visEnd,
+            sortedBins: false,
             row: data.row,
             drawnKeys,
           },

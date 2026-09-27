@@ -404,6 +404,37 @@ test('the domain spans every valued layer and widens to the origin for a bar', (
   expect(display.renderState.domainY).toEqual([0, 20])
 })
 
+// A multi-BigWig's features arrive source after source, and a faceted layer's
+// section after section, so `x` is no sorted list a window can be searched in.
+test('the domain folds every instance in the window, whatever order x arrives in', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display, view } = createDisplay()
+  const x = [5000, 6000, 7000, 8000, 9000, 100, 1000, 2000, 3000, 4000]
+  const y = [50, 60, 70, 80, 90, 1, 2, 3, 4, 5]
+  display.setRpcData(
+    0,
+    {
+      layers: [
+        {
+          count: x.length,
+          skipped: 0,
+          x: Uint32Array.from(x),
+          x2: Uint32Array.from(x, v => v + 50),
+          y: Float32Array.from(y),
+          color: new Uint32Array(x.length),
+          featureIndex: Uint32Array.from(x, (_, i) => i),
+          ...extremes(y),
+        },
+      ],
+    },
+    REGION,
+  )
+  view.setNewView(5, 600)
+  expect(display.domain).toEqual([0, 60])
+})
+
 test("the display's y scale is the axis: its type and its pinned ends", () => {
   const { createDisplay } = createTestEnvironment(
     [{ mark: 'bar', encoding: { y: 'score' } }],
