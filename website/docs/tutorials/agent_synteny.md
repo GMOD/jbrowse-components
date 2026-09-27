@@ -9,9 +9,9 @@ guide_category: Tutorials
 tutorial_category: Automation
 ---
 
-Four requests typed at an AI agent are enough to align two fruit fly species
-that nobody has aligned to each other and inspect the result in JBrowse Desktop.
-Typed one at a time, they ask the agent to:
+Four requests to an AI agent align two fruit fly species nobody has compared,
+and inspect the result in JBrowse Desktop. Typed one at a time, they ask the
+agent to:
 
 - align the two genomes with minimap2 and open them side by side, genes and all
 - add a dotplot of the pair, restricted to the six chromosome arms
@@ -19,20 +19,14 @@ Typed one at a time, they ask the agent to:
   opposite directions
 - navigate the view to what it found
 
-The sections below cover what to ask for, what the agent does with it, and the
-three places it needs telling.
-
 ## Prerequisites
 
 - JBrowse Desktop, installed and running (see the
   [desktop quickstart](/docs/quickstart_desktop))
-- an MCP client with a shell of its own: Claude Code, or Claude Desktop, set up
-  as in [](/docs/agents)
-- [minimap2](https://github.com/lh3/minimap2), which the agent runs
-- `node`, for the [JBrowse CLI](/docs/cli), which the agent also runs
-
-The agent needs a shell because the alignment happens outside the browser. A
-client without one can still do everything after that step.
+- an MCP client with a shell of its own, for the alignment step: Claude Code, or
+  Claude Desktop, set up as in [](/docs/agents)
+- [minimap2](https://github.com/lh3/minimap2)
+- `node`, for the [JBrowse CLI](/docs/cli)
 
 ## Where the data comes from
 
@@ -40,7 +34,7 @@ Two GenArk assemblies and their genome hubs on genomes.jbrowse.org
 ([_D. simulans_](https://genomes.jbrowse.org/accession/GCF_016746395.2/),
 [_D. mauritiana_](https://genomes.jbrowse.org/accession/GCF_004382145.1/)). Each
 hub's config carries the 2bit sequence, a chromAlias file, an NCBI RefSeq gene
-track and a Trix text index, so neither assembly has to be described by hand.
+track and a Trix text index.
 
 - _D. simulans_ GCF_016746395.2 sequence:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz
@@ -54,33 +48,20 @@ track and a Trix text index, so neither assembly has to be described by hand.
   https://jbrowse.org/demos/fly_agent_synteny/sim_vs_mau.pif.gz beside the
   merged config at https://jbrowse.org/demos/fly_agent_synteny/config.json
 
-## Why this needs a shell
-
-_Drosophila simulans_ and _D. mauritiana_ are sister species, and both are
-already hosted, so a browser opens either genome with genes and a working search
-box on its own. Neither hosted config carries the other species: the only
-synteny track in each is a liftOver to dm6, the _D. melanogaster_ reference, so
-neither can show the two side by side by loading something. Somebody has to
-align the genomes first, and that is the part of the job an agent with a shell
-is for.
-
 ## What the agent is driving
 
-Connected to JBrowse Desktop, the agent gets four tools, and only one of them is
-interesting: `run_javascript` executes code against the live session, with a
-helper library called `jb` as its standard library. `open`, `screenshot` and
-`docs` cover the three things code inside the app cannot do. Everything below is
-the agent writing code against the session you are watching.
+Connected to JBrowse Desktop, the agent gets four tools, and only
+`run_javascript` matters here: it runs code against the session through a `jb`
+helper library, plus `open`, `screenshot` and `docs`.
 
-The setup is in [](/docs/agents). Once the client lists your recent sessions,
-the path works. Run the four requests below and the app moves under you like
-this, the captions being what the agent said as it went:
+Setup: [](/docs/agents). Run the four requests below and the app moves like
+this:
 
-<Video src="/media/mcp/agent_synteny_take1.mp4" caption="A Claude Code session driving JBrowse Desktop, filmed against the app window. The agent aligns the two genomes, merges the two hosted configs, builds the comparison and the dotplot, totals the alignment file and navigates to what it found." />
+<Video src="/media/mcp/agent_synteny_take1.mp4" caption="A Claude Code session driving JBrowse Desktop: the agent aligns the two genomes, builds the comparison and dotplot, and navigates to what it found." />
 
 ## Ask for the comparison
 
-The first request is the whole pipeline, in one sentence:
+The first request, in one sentence:
 
 ```text
 Align D. simulans GCF_016746395.2 against D. mauritiana GCF_004382145.1 with
@@ -99,19 +80,8 @@ The aligner it runs:
 minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-Whole genome against whole genome takes about seven minutes on 16 threads and 14
-GB of memory, and produces 6,663 alignment records.
-
-**A tool call exceeds its time budget here.** A `run_javascript` call has about
-two minutes before it answers with a timeout while the app carries on working,
-and the alignment is longer than that. An agent that puts the aligner in the
-background and polls it handles this; one that waits for it inside a single call
-reports a failure that did not happen. The phrase "in the background" in the
-request above tells the agent to do that.
-
-The alignment should finish before anything opens. Two genomes side by side with
-nothing between them look like the finished comparison, and an alignment that
-appears afterwards reads as a correction.
+A whole-genome alignment takes about seven minutes on 16 threads: past
+`run_javascript`'s two-minute timeout, hence the background request above.
 
 Indexing the PAF lets the browser read one region of it without parsing the
 whole file:
@@ -122,13 +92,10 @@ whole file:
 jbrowse make-pif sim_vs_mau.paf
 ```
 
-The config it builds is the two hosted ones merged, keeping each assembly's gene
-track and adding the alignment as a synteny track. Merging them is shorter than
-declaring the assemblies by hand and keeps the chromAlias file and the text
-index that were resolved already.
+The config merges the two hosted ones, keeping each gene track and adding the
+alignment as a synteny track.
 
-The one thing to check in what it wrote is the order of `assemblyNames` on the
-adapter:
+Check the order of `assemblyNames` on the adapter it wrote:
 
 ```json
 "adapter": {
@@ -138,9 +105,8 @@ adapter:
 }
 ```
 
-Query first, target second, matching the `minimap2` argument order. Reversed, no
-chromosome name resolves and the synteny band draws empty, which at whole-genome
-zoom looks much like a genome pair with little in common.
+Query first, target second, matching the `minimap2` argument order, or no
+chromosome name resolves and the synteny band draws empty.
 
 <Figure caption="Thirty kilobases of chr3R on both genomes: NCBI RefSeq on each row, the minimap2 alignment between them, colored red where the two run in the same direction. One block spans the window, and each gene meets its counterpart exon for exon." src="/img/agent_synteny/comparison_built.png" />
 
@@ -151,17 +117,14 @@ Add a dotplot of the same two assemblies underneath.
 ```
 
 _D. simulans_ and _D. mauritiana_ each carry a few hundred unplaced scaffolds,
-and a dotplot that draws them interleaves the axes with rows holding a handful
-of alignments each. Naming the arms gives one diagonal:
+which interleave the axes if drawn. Naming the arms gives one diagonal:
 
 ```text
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
-The alias names work because the merged config kept each assembly's chromAlias
-file. Ask it to quantify what restricting the axes drops before it applies the
-change. Set the coloring to strand while you are there, so a block that runs
-backwards draws in a different color, easier to see than a bend in the line:
+Ask it to quantify what restricting the axes drops. Set the coloring to strand:
+a reversed block then draws differently.
 
 <Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, and a short reverse segment in blue where chr2R begins." src="/img/agent_synteny/dotplot_arms.png" />
 
@@ -172,11 +135,9 @@ Where do the two genomes run in opposite directions? Answer from the
 alignment file, not from the dotplot, and show me the numbers.
 ```
 
-The last clause matters because a dotplot shows that two genomes are mostly
-colinear, but a reverse-strand block a few hundred kilobases wide is a few
-pixels at whole-genome zoom, and an agent asked to describe a picture will
-describe it. The same information is in the PAF as numbers. Aligned bases per
-arm, split by strand, at MAPQ 30 or better:
+A reverse-strand block a few hundred kilobases wide is a few pixels at
+whole-genome zoom. The same information is in the PAF as numbers: aligned bases
+per arm, split by strand, at MAPQ 30 or better:
 
 ```bash
 awk -F'\t' '
@@ -207,9 +168,8 @@ END {
 X    21.04 Mb aligned,  4.44% reverse
 ```
 
-Four arms carry essentially no reverse-strand alignment, as expected of two
-genomes assembled in the same orientation. Those four are the control for the
-other two: 2R and X sit more than an order of magnitude above them.
+Four arms carry essentially no reverse-strand alignment, the control for 2R and
+X, an order of magnitude above them.
 
 Grouping the reverse-strand blocks of 5 kb or more, and cutting a group wherever
 half a megabase passes with none, gives three regions:
@@ -220,14 +180,8 @@ X   sim 8,303,553 - 8,752,357  <->  mau 8,530,265 - 8,980,862   (0.45 Mb,  2 blo
 X   sim 21,441,285 - 22,026,996 <->  mau 21,459,277 - 22,872,816 (0.59 Mb, 12 blocks)
 ```
 
-The 2R region is the largest and the least tidy: 2.2 Mb at the centromere-
-proximal end of the arm, in 75 short blocks because the sequence there is
-repeat-rich. The two X regions are smaller and cleaner.
-
-Ask which grouping it used. "The largest inversion" depends on how far apart two
-blocks can be and still count as one region: at the half megabase above, 2R wins
-on size and block count, and grouped more tightly 2R splits into clusters whose
-largest is smaller than the X regions. Both answers are the same data.
+The 2R region is the largest and the least tidy; the two X regions are smaller
+and cleaner.
 
 ## Ask to be taken there
 
@@ -235,10 +189,8 @@ largest is smaller than the X regions. Both answers are the same data.
 Take the synteny view to the 2R region, with the gene tracks on.
 ```
 
-Simulans's row navigates to `chr2R:1-2,400,000` and mauritiana's row to
-`chr2R:500,000-3,800,000`, each moving separately. The ribbons cross in the
-middle of the band, and the genes on the two rows run in opposite directions
-through it.
+Simulans's row navigates to `chr2R:1-2,400,000`, mauritiana's to
+`chr2R:500,000-3,800,000`.
 
 <Figure caption="The 2R region on both rows with the gene tracks on. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
 
@@ -252,22 +204,18 @@ Then take it to the first of the two X regions, `chrX:8,100,000-8,950,000` over
 Three sentences, and each prevents a failure with no error message:
 
 - **Start long work in the background, and let it finish before opening
-  anything.** Otherwise a tool call times out over an aligner that is fine, and
-  the agent reports a failure that did not happen.
+  anything.** Otherwise a tool call times out and the agent reports a failure
+  that did not happen.
 - **Restrict the dotplot axes to the arms.** Otherwise a few hundred unplaced
   scaffolds interleave both axes.
 - **Answer counted from the alignment file.** Otherwise you get a description of
-  a dotplot, which cannot resolve the thing you asked about.
+  the dotplot, which answers nothing.
 
-Two more come up because the agent runs into them unprompted. Ask it to
-screenshot and read the image back after anything it builds: a wrong track id,
-an empty region and a dropped setting all render as a plausible browser with
-something missing. And ask it to say the numbers before it navigates, so what
-you are looking at is a claim you can check.
+Two more come up unprompted: screenshot what it builds, since a wrong track id
+or empty region still renders as a plausible browser, and say the numbers before
+it navigates, so what you see is a claim you can check.
 
 ## The same pipeline as a script
-
-For a reader who wants the files:
 
 ```bash
 curl -O https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_fly_agent_synteny.sh
