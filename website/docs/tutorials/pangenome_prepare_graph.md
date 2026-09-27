@@ -259,6 +259,8 @@ segment one haplotype carries to grey for the most widely carried:
 }
 ```
 
+<Figure caption="The carriage ramp on the E. coli pggb graph over an IS5 insertion in K12. The segment K12 alone walks is red; the segments all five strains share are grey." src="/img/pangenome/prepare_graph_carriage.png" links="Open this view=pangenome/prepare_graph_carriage" />
+
 Carriage is per haplotype (`HG002.1`); the sample alone merges a diploid's two
 copies.
 [Who carries each allele](/docs/tutorials/pangenome_hprc_carriers#carriage-at-the-graphs-own-granularity)

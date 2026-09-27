@@ -1604,6 +1604,53 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // pangenome_prepare_graph's carriage config, the ramp its Edit as JSON route
+  // writes, on the pggb graph over the IS5 insertion: the private segment at
+  // the red end, the core at the grey.
+  {
+    mode: 'url',
+    name: 'pangenome/prepare_graph_carriage',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        K12_GENES_SESSION_TRACK,
+        {
+          ...PGGB_CARRIAGE_SESSION_TRACK,
+          trackId: 'graph_carriage',
+          name: 'graph: carriage per segment',
+          displayDefaults: {
+            color: {
+              field: 'carriers',
+              scale: 'linear',
+              domainMin: 1,
+              range: ['#e31a1c', '#bdbdbd'],
+              title: 'Haplotypes carrying',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PGGB_LOCUS_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: 'graph_carriage',
+              type: 'LinearBasicDisplay',
+              displayMode: 'collapsed',
+              showLabels: 'none',
+              height: 110,
+            },
+          ],
+        },
+      ],
+    }),
+    readyTimeout: 120000,
+    viewportWidth: 1000,
+    viewportHeight: 420,
+    hideTooltip: true,
+  },
   // The same locus per strain, which is where a path GFA says something an rGFA
   // cannot. Sample rows put each segment on the row of the assembly its stable
   // name gives it; on an rGFA that name is whichever assembly minigraph
