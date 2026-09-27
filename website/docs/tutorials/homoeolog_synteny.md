@@ -187,8 +187,62 @@ so the two sides also differ in how the pairs were called.
 The [script](#reproduce-it-end-to-end) ends on the numbers behind the picture.
 
 The control is dS. Oat's A and D subgenomes descend from closely related diploid
-_Avena_ species and its C subgenome from a more distant one, so A-D pairs come
-out at a lower synonymous divergence than A-C or C-D.
+_Avena_ species and its C subgenome from a more distant one, so A-D pairs should
+come out at a lower synonymous divergence than A-C or C-D. The palette button's
+**Color by value → ds** paints each anchor by it; pinning the ramp's ends keeps
+a colour meaning one dS wherever the view goes:
+
+```json session config=https://jbrowse.org/demos/oat_homoeologs/config.json
+{
+  "defaultSession": {
+    "name": "Oat homoeologs by dS",
+    "views": [
+      {
+        "type": "DotplotView",
+        "views": [
+          {
+            "assembly": "oat",
+            "displayedRegionNames": [
+              "4A",
+              "4C",
+              "4D",
+              "5A",
+              "5C",
+              "5D",
+              "7A",
+              "7C",
+              "7D"
+            ]
+          },
+          {
+            "assembly": "oat",
+            "displayedRegionNames": [
+              "4A",
+              "4C",
+              "4D",
+              "5A",
+              "5C",
+              "5D",
+              "7A",
+              "7C",
+              "7D"
+            ]
+          }
+        ],
+        "tracks": ["oat_homoeologs"],
+        "color": {
+          "field": "ds",
+          "domainMin": 0,
+          "domainMax": 0.25,
+          "title": "dS"
+        }
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="The oat self-alignment over groups 4, 5 and 7, each anchor coloured by dS on a pinned ramp. The cells pairing an A chromosome with a D one sit lower on the ramp than those pairing either with C." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
 
 Almost every pair is blue, and `fisher_p` supports the great majority. A ratio
 over 1 between copies this recently separated rests on few substitutions, and

@@ -2519,6 +2519,45 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The page's control: the same oat plot coloured by dS. A and D descend from
+  // closely related diploids and C from a more distant one, so A-D anchors sit
+  // lower on the ramp than A-C and C-D (medians 0.07 against 0.12, off
+  // oat.homoeologs.blocks.gz through oat.bed.gz). Pinned 0 to 0.25, about
+  // every pair type's 90th percentile, so a cell's colour is a dS rather than a
+  // position among the values in view.
+  {
+    mode: 'url',
+    name: 'homoeolog_synteny/oat_ds',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/oat_homoeologs/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'DotplotView',
+            displayName: 'Oat self-alignment, dS',
+            views: [
+              { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
+              { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
+            ],
+            tracks: ['oat_homoeologs'],
+            color: {
+              field: 'ds',
+              domainMin: 0,
+              domainMax: 0.25,
+              title: 'dS',
+            },
+          },
+        ],
+      },
+    ),
+    readySelector: displayPainted('dotplot_webgl_canvas'),
+    readyTimeout: 300000,
+    viewportHeight: 767,
+    viewportWidth: 900,
+  },
+
   // The two hexaploid cereals side by side, which is the one framing that makes
   // either plot mean anything without knowing the genomes: wheat's subgenomes
   // step up the diagonal in near-collinear threes, oat's are scattered. Same
