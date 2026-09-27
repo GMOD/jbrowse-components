@@ -237,15 +237,23 @@ import json, sys
 path, out, by, clinical, project, groupby = sys.argv[1:7]
 cfg = json.load(open(path))
 
-# One row per tumor, colored by segment mean. The jexl and its legend are the
-# same pair the tutorial documents: the BED carries no itemRgb, so the color is
-# a threshold on the score rather than a column.
-SEGMEAN_COLOR = (
-    "jexl:feature.segmean<-1?'#2166ac'"
-    ":feature.segmean<-0.3?'#92c5de'"
-    ":feature.segmean<0.3?'#f7f7f7'"
-    ":feature.segmean<1?'#f4a582':'#b2182b'"
-)
+# One row per tumor, colored by segment mean through the threshold scale the
+# tutorial documents: the BED carries no itemRgb, so the cuts and their key
+# names live here.
+SEGMEAN_COLOR = {
+    'field': 'segmean',
+    'scale': 'threshold',
+    'domain': ['-1', '-0.3', '0.3', '1'],
+    'range': ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
+    'labels': [
+        'Deep loss (log2 < -1)',
+        'Loss',
+        'Balanced',
+        'Gain',
+        'Amplification (log2 > 1)',
+    ],
+    'title': 'Copy number (log2)',
+}
 cfg['tracks'] += [
     {
         'type': 'FeatureTrack',
@@ -263,13 +271,6 @@ cfg['tracks'] += [
             'displayId': f'{out}-LinearMultiRowFeatureDisplay',
             'rows': 'sample',
             'color': SEGMEAN_COLOR,
-            'legend': [
-                {'label': 'Deep loss (log2 < -1)', 'color': '#2166ac'},
-                {'label': 'Loss', 'color': '#92c5de'},
-                {'label': 'Balanced', 'color': '#f7f7f7'},
-                {'label': 'Gain', 'color': '#f4a582'},
-                {'label': 'Amplification (log2 > 1)', 'color': '#b2182b'},
-            ],
         }],
     },
     {

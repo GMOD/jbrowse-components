@@ -557,15 +557,17 @@ print('over the element the collection medians %.2f copies; %d of %d dogs '
       % (statistics.median(over), sum(v >= 2.5 for v in over), len(over),
          100 * sum(v >= 2.5 for v in over) / len(over)))
 
-# The display's `legend` config slot restates this palette, because BED9 carries
-# a color per feature and nothing to key a category off. Nothing checks the two
-# agree, and they have drifted before (the painting was recolored and the legend
-# was not), so print the block to paste rather than leaving it to be remembered.
+# The display's identity colour names this palette in its `domain` and `labels`,
+# because the BED carries a colour per feature and nothing to key a category
+# off. Nothing checks the two agree, and they have drifted before (the painting
+# was recoloured and the key was not), so print the block to paste rather than
+# leaving it to be remembered.
 print()
-print('legend slot for the copy-number displays, paste into the track config:')
-painted = {min(CN_CAP, r[3]) for r in rows}
-print(json.dumps([{'label': cn_label(cn), 'color': 'rgb(%s)' % cn_color(cn)}
-                  for cn in sorted(painted)], indent=2))
+print('color for the copy-number displays, paste into the track config:')
+painted = sorted({min(CN_CAP, r[3]) for r in rows})
+print(json.dumps({'scale': 'identity', 'title': 'Copy number',
+                  'domain': ['rgb(%s)' % cn_color(cn) for cn in painted],
+                  'labels': [cn_label(cn) for cn in painted]}, indent=2))
 PY
 
 bgzip -f dog10k_cyp1a2_cohort_cn.bed
@@ -712,4 +714,4 @@ echo "     $(pwd)/dog10k_cyp1a2_cohort_cn.bed.gz, one per canid in the callset,"
 echo "     $(pwd)/dog10k_cyp1a2_breed_cn.bed.gz, the named panel of that file,"
 echo "     $(pwd)/dog10k_cyp1a2_cpg.bed.gz, the CpG islands under the window."
 echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay, and"
-echo "check its legend and domain slots against the blocks printed above."
+echo "check its color and rows domain against the blocks printed above."

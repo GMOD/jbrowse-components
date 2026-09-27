@@ -374,7 +374,7 @@
             ]
           },
           "color": {
-            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "title": "Copy number",
             "scale": "identity",
             "domain": [
               "rgb(146,197,222)",
@@ -418,7 +418,7 @@
           "rows": "sample",
           "showLegend": false,
           "color": {
-            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "title": "Copy number",
             "scale": "identity",
             "domain": [
               "rgb(33,102,172)",
@@ -513,7 +513,7 @@
             ]
           },
           "color": {
-            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "title": "Copy number",
             "scale": "identity",
             "domain": [
               "rgb(146,197,222)",
@@ -558,7 +558,7 @@
           "rows": "sample",
           "showLegend": false,
           "color": {
-            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "title": "Copy number",
             "scale": "identity",
             "domain": [
               "rgb(146,197,222)",
@@ -620,7 +620,7 @@
             ]
           },
           "color": {
-            "value": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
+            "title": "Copy number",
             "scale": "identity",
             "domain": [
               "rgb(224,224,224)",

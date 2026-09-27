@@ -101,7 +101,7 @@ fi
 
 # ── Resolve labels, row order and state colors from those tables ─────────────
 # Writes labels.tsv (EID -> row label, in draw order) for the merge below, and
-# roworder.json / rowgroups.json / legend.json for the config at the end.
+# roworder.json / rowgroups.json / colors.tsv for the config at the end.
 EIDS="$EIDS" python3 - <<'PY'
 import collections
 import csv
@@ -220,10 +220,11 @@ tabix -f -p bed roadmap.multirow.bed.gz
 cp roadmap.multirow.bed.gz roadmap.multirow.bed.gz.tbi "$APP"/
 
 # ── config.json: hg19 + the multi-row Roadmap track ──────────────────────────
-# `legend` is filled in because the Roadmap state names are mnemonics
-# (`12_EnhBiv`, `14_ReprPCWk`) and the key the display derives from the colors
-# would show them as they are. Both it and domain are generated from the
-# tables above, so neither can drift from what the file holds.
+# The colour is an identity scale whose `labels` name the file's own itemRgb
+# colours, because the Roadmap state names are mnemonics (`12_EnhBiv`,
+# `14_ReprPCWk`) and the key would otherwise show them as they are. The colours,
+# the labels and the row domain are generated from the tables above, so none
+# can drift from what the file holds.
 python3 - <<'PY'
 import json
 from pathlib import Path
@@ -254,10 +255,12 @@ colors = dict(
 )
 missing = set(colors) - set(STATE_LABELS)
 assert not missing, f'no readable label for state {sorted(missing)}'
-legend = [
-    {'label': f'{n} {STATE_LABELS[n]}', 'color': f'rgb({colors[n]})'}
-    for n in sorted(colors, key=int)
-]
+states = sorted(colors, key=int)
+color = {
+    'scale': 'identity',
+    'domain': [f'rgb({colors[n]})' for n in states],
+    'labels': [f'{n} {STATE_LABELS[n]}' for n in states],
+}
 row_order = json.loads(Path('roworder.json').read_text())
 row_groups = json.loads(Path('rowgroups.json').read_text())
 
@@ -298,7 +301,7 @@ config = {
                     'type': 'LinearMultiRowFeatureDisplay',
                     'displayId': 'roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay',
                     'rows': {'field': 'cellType', 'domain': row_order},
-                    'legend': legend,
+                    'color': color,
                     'rowGroups': row_groups,
                     'height': 700,
                 }
@@ -311,17 +314,15 @@ config = {
             {
                 'id': 'roadmap_chromhmm_lgv',
                 'type': 'LinearGenomeView',
-                'init': {
-                    'assembly': 'hg19',
-                    'loc': 'chr7:26,550,000-27,800,000',
-                    'tracks': ['roadmap_chromhmm_multirow_hg19'],
-                },
+                'assembly': 'hg19',
+                'loc': 'chr7:26,550,000-27,800,000',
+                'tracks': ['roadmap_chromhmm_multirow_hg19'],
             }
         ],
     },
 }
 Path('jbrowse2/config.json').write_text(json.dumps(config, indent=2))
-print(f'wrote jbrowse2/config.json with {len(row_order)} rows and {len(legend)} legend entries')
+print(f'wrote jbrowse2/config.json with {len(row_order)} rows and {len(states)} named colours')
 PY
 
 echo

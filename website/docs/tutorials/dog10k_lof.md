@@ -214,6 +214,62 @@ validates it against the 15 CRAMs the Dog10K share publishes: over the shared
 windows the two agree at r = 0.92 with no bias. That painting is in the config
 as `dog10k_cyp1a2_cn`.
 
+The painting is a BED with the colour in its itemRgb column, a `sample` column
+and the rounded call in `copyNumber`. A multi-row track gives each sample a row,
+and an identity colour names the colours the file already carries, so the key
+reads as copy number:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "dog10k_cyp1a2_cohort_cn",
+  "name": "CYP1A2 copy number, every canid",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "dog10k_cyp1a2_cohort_cn.bed.gz",
+    "disableGeneHeuristic": true,
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "score",
+      "strand",
+      "thickStart",
+      "thickEnd",
+      "itemRgb",
+      "sample",
+      "copyNumber"
+    ]
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "rows": "sample",
+      "color": {
+        "scale": "identity",
+        "title": "Copy number",
+        "domain": [
+          "rgb(33,102,172)",
+          "rgb(146,197,222)",
+          "rgb(224,224,224)",
+          "rgb(244,165,130)",
+          "rgb(214,96,77)",
+          "rgb(178,24,43)",
+          "rgb(103,0,31)"
+        ],
+        "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4", "CN 5", "CN 6+"]
+      }
+    }
+  ]
+}
+```
+
+The build script prints this `color` block from the palette it painted with, so
+paste it rather than retyping the colours. For named animals in a chosen order,
+`rows` takes `{ "field": "sample", "domain": [...] }` with the row names listed.
+
 Two lanes read below, each window colored by its rounded call with grey being
 two copies: named animals above, then all 1,987 canids clustered on their
 profiles.

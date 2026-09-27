@@ -249,15 +249,16 @@ rows = paint(panel, 'dog10k_slc28a3_breed_cn.bed')
 print('%d painted segments across the %d animals of the panel'
       % (len(rows), len(order)))
 
-# Nothing checks that a display's legend still matches what the painting uses,
-# and the two have drifted before, so print the blocks to paste rather than
-# leaving them to be remembered.
+# Nothing checks that a display's colour key still matches what the painting
+# uses, and the two have drifted before, so print the blocks to paste rather
+# than leaving them to be remembered.
 print()
-print('legend slot for the copy-number displays:')
-painted = {min(CN_CAP, r[2]) for r in rows}
-print(json.dumps([{'label': cn_label(cn), 'color': 'rgb(%s)' % cn_color(cn)}
-                  for cn in sorted(painted)], indent=2))
-print('domain slot for the panel display:')
+print('color for the copy-number displays:')
+painted = sorted({min(CN_CAP, r[2]) for r in rows})
+print(json.dumps({'scale': 'identity', 'title': 'Copy number',
+                  'domain': ['rgb(%s)' % cn_color(cn) for cn in painted],
+                  'labels': [cn_label(cn) for cn in painted]}, indent=2))
+print('rows domain for the panel display:')
 print(json.dumps(order, indent=2))
 PY
 
@@ -270,7 +271,7 @@ echo
 echo "Wrote $(pwd)/dog10k_slc28a3_cohort_cn.bed.gz, one row per canid, and"
 echo "     $(pwd)/dog10k_slc28a3_breed_cn.bed.gz, the named panel of that file."
 echo "Load each as a BedTabixAdapter under a LinearMultiRowFeatureDisplay, and"
-echo "check its legend and domain slots against the blocks printed above."
+echo "check its color and rows domain against the blocks printed above."
 echo "Route 2 follows, and needs the reference and the SRA runs."
 
 # ── Route 2: six panel dogs, from their reads ───────────────────────────────
