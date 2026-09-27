@@ -5,6 +5,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { mergeDomain } from '@jbrowse/display-kit/groupByMenu'
 import { textHalo } from '@jbrowse/display-ui'
 import { bandGroundColor, bandInk, bandPalette } from '@jbrowse/synteny-core'
+import AcUnitIcon from '@mui/icons-material/AcUnit'
 import { observer } from 'mobx-react'
 
 import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
@@ -54,7 +55,11 @@ const LaneHeaders = observer(function LaneHeaders({
 }) {
   const palette = usePalette()
   const { lanes } = model.laneStack
-  const { canvasWidth: width, laneHeaderRows: rows } = model
+  const {
+    canvasWidth: width,
+    laneHeaderRows: rows,
+    frozenDecisions: frozen,
+  } = model
   const [drag, setDrag] = useState<LaneDrag>()
   const [dragY, setDragY] = useState<number>()
   const [menu, setMenu] = useState<LaneMenu>()
@@ -204,6 +209,18 @@ const LaneHeaders = observer(function LaneHeaders({
           >
             {row.label}
           </span>
+          {frozen.has(row.assemblyName) ? (
+            <AcUnitIcon
+              data-testid={`multiway-lane-frozen-${row.assemblyName}`}
+              titleAccess="Frozen: drag or side-scroll the lane to slide it"
+              style={{
+                fontSize: LABEL_FONT_SIZE,
+                color: bandPalette.text.secondary,
+                pointerEvents: 'all',
+                flex: '0 0 auto',
+              }}
+            />
+          ) : null}
           <button
             type="button"
             aria-label={`${row.assemblyName} lane options`}

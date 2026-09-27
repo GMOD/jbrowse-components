@@ -75,7 +75,11 @@ import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { geneColors } from './geneColor.ts'
 import { annotationRank } from './laneAnnotation.ts'
-import { frameFromDecision } from './laneDecision.ts'
+import {
+  decideLaneFrames,
+  frameFromDecision,
+  nudgeDecision,
+} from './laneDecision.ts'
 import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
 import { laneHeaderRows } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
@@ -139,7 +143,12 @@ import type { AxisPlacement } from './anchorAxis.ts'
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { GeneColorSettings, GeneColors } from './geneColor.ts'
-import type { AnchorCoord, LaneDecision, LaneFlipPin } from './laneDecision.ts'
+import type {
+  AnchorCoord,
+  FrozenLanes,
+  LaneDecision,
+  LaneFlipPin,
+} from './laneDecision.ts'
 import type {
   HeldLaneGenes,
   HeldLaneLinks,
@@ -258,6 +267,13 @@ export function stateModelFactory(
          * this picture, which a shared session carries
          */
         laneFilter: types.frozen<LaneFilter | undefined>(),
+        /**
+         * #property
+         * the lanes the reader froze, and where a drag or a side-scroll then
+         * slid each; see `lanesFrozen`. Session state beside `laneFilter`, so
+         * a shared session or an export draws the lanes where they were put
+         */
+        frozenLanes: types.frozen<FrozenLanes | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -399,6 +415,12 @@ export function stateModelFactory(
        * the moving lanes past their midpoint; see `lanesPastHalfway`
        */
       laneMotionHalfway: new Set<string>() as ReadonlySet<string>,
+      /**
+       * #volatile
+       * by lane, how far a drag or a side-scroll in progress has slid it, drawn
+       * through its `LaneMap` and written into its frozen decision on release
+       */
+      laneDragPx: new Map<string, number>() as ReadonlyMap<string, number>,
     }))
     .actions(self => {
       function ribbonColorSetting(): SyntenyColorSnapshot {
@@ -514,20 +536,6 @@ export function stateModelFactory(
           }
           self.laneLinks = held
           self.laneLinksLandedFor = anchor
-        },
-        /**
-         * #action
-         * pin a lane onto one of its contigs, or `undefined` to let it choose
-         * again. A fresh map, so the decision autorun sees the write
-         */
-        pinLaneContig(assemblyName: string, refName: string | undefined) {
-          const pins = new Map(self.pinnedLaneContigs)
-          if (refName === undefined) {
-            pins.delete(assemblyName)
-          } else {
-            pins.set(assemblyName, refName)
-          }
-          self.pinnedLaneContigs = pins
         },
         /**
          * #action
@@ -1087,41 +1095,6 @@ export function stateModelFactory(
         )
       },
     }))
-    .actions(self => {
-      function setFlipPins(pins: ReadonlyMap<string, LaneFlipPin>) {
-        self.laneFlipPinsByAnchor = new Map(self.laneFlipPinsByAnchor).set(
-          self.laneKey(self.anchorAssemblyName),
-          pins,
-        )
-      }
-      return {
-        /**
-         * #action
-         * mirror a lane against its current orientation, pinned to the contig
-         * it draws
-         */
-        flipLane(assemblyName: string) {
-          const decision = self.laneDecisions.get(assemblyName)
-          if (decision) {
-            setFlipPins(
-              new Map(self.pinnedLaneFlips).set(assemblyName, {
-                refName: decision.refName,
-                flipped: !decision.flipped,
-              }),
-            )
-          }
-        },
-        /**
-         * #action
-         * let a flipped lane choose its orientation again
-         */
-        unpinLaneFlip(assemblyName: string) {
-          const pins = new Map(self.pinnedLaneFlips)
-          pins.delete(assemblyName)
-          setFlipPins(pins)
-        },
-      }
-    })
     .views(self => ({
       /**
        * #getter
@@ -1737,7 +1710,230 @@ export function stateModelFactory(
         }
         return out
       },
+      /**
+       * #getter
+       * the reader froze the lanes on the anchor the view is on: each frozen
+       * lane keeps its map from the anchor's bp to its own, so it pans and
+       * zooms with the anchor and re-chooses nothing, and a drag or a
+       * side-scroll on a mate lane slides that lane alone
+       */
+      get lanesFrozen(): boolean {
+        const frozen = self.frozenLanes
+        return (
+          frozen !== undefined &&
+          self.laneKey(frozen.anchor) === self.laneKey(self.anchorAssemblyName)
+        )
+      },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * the frozen lanes' decisions on this anchor, empty while nothing is
+       * frozen here
+       */
+      get frozenDecisions(): ReadonlyMap<string, LaneDecision> {
+        return new Map(
+          self.lanesFrozen ? Object.entries(self.frozenLanes!.decisions) : [],
+        )
+      },
+      /**
+       * #method
+       * every mate lane's decision against the view as it is now, in the px
+       * space anchored at `origin`: `previous` holds each live lane's
+       * incumbent, and a lane in `frozen` keeps its own
+       */
+      laneDecisionsAt(
+        origin: number,
+        previous: ReadonlyMap<string, LaneDecision | undefined>,
+        frozen: ReadonlyMap<string, LaneDecision>,
+      ) {
+        const view = self.lgv
+        const { anchorAbsX } = self
+        return decideLaneFrames({
+          groups: self.fitGroups,
+          assemblyNames: self.rowAssemblies,
+          anchorX: new Map(
+            [...anchorAbsX].map(([key, { x }]) => [key, x - origin]),
+          ),
+          anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,
+          pxOfAnchor: coord => {
+            const px = view.bpToPx(coord)
+            return px && px.offsetPx - origin
+          },
+          unitBp: self.visibleBpSpan,
+          width: self.canvasWidth,
+          anchorReversed: self.anchorReversed,
+          previous,
+          frozen,
+          pinned: self.pinnedLaneContigs,
+          pinnedFlips: self.pinnedLaneFlips,
+        })
+      },
+    }))
+    .actions(self => {
+      function setFrozenDecision(
+        assemblyName: string,
+        decision: LaneDecision | undefined,
+      ) {
+        const decisions = Object.fromEntries(self.frozenDecisions)
+        if (decision) {
+          decisions[assemblyName] = decision
+        } else {
+          delete decisions[assemblyName]
+        }
+        self.frozenLanes = { anchor: self.anchorAssemblyName, decisions }
+      }
+      function setLaneDragPx(assemblyName: string, dxPx: number | undefined) {
+        const next = new Map(self.laneDragPx)
+        if (dxPx === undefined) {
+          next.delete(assemblyName)
+        } else {
+          next.set(assemblyName, dxPx)
+        }
+        self.laneDragPx = next
+      }
+      function setFlipPins(pins: ReadonlyMap<string, LaneFlipPin>) {
+        self.laneFlipPinsByAnchor = new Map(self.laneFlipPinsByAnchor).set(
+          self.laneKey(self.anchorAssemblyName),
+          pins,
+        )
+      }
+      function nudgeLane(assemblyName: string, dxPx: number) {
+        const base =
+          self.frozenDecisions.get(assemblyName) ??
+          self.laneDecisions.get(assemblyName)
+        if (self.lanesFrozen && base && dxPx !== 0) {
+          const nudged = nudgeDecision(
+            base,
+            dxPx,
+            (base.rung * self.visibleBpSpan) / self.canvasWidth,
+            self.anchorReversed,
+          )
+          setFrozenDecision(assemblyName, nudged)
+          // the object the decision autorun will find frozen, so the lane
+          // repacks here, once, rather than a frame late
+          self.laneDecisions = new Map(self.laneDecisions).set(
+            assemblyName,
+            nudged,
+          )
+        }
+      }
+      /**
+       * a frozen lane decided afresh against the window it shows now, the
+       * lanes above it as they draw, and frozen again where it lands
+       */
+      function realign(assemblyName: string) {
+        if (self.lanesFrozen) {
+          const previous = new Map(self.laneDecisions)
+          previous.delete(assemblyName)
+          const frozen = new Map(self.frozenDecisions)
+          frozen.delete(assemblyName)
+          setFrozenDecision(
+            assemblyName,
+            self
+              .laneDecisionsAt(self.lgv.offsetPx, previous, frozen)
+              .get(assemblyName),
+          )
+        }
+      }
+      return {
+        /**
+         * #action
+         * freeze every lane that has a frame where it draws now, or let them
+         * all choose again
+         */
+        setLanesFrozen(flag: boolean) {
+          self.frozenLanes = flag
+            ? {
+                anchor: self.anchorAssemblyName,
+                decisions: Object.fromEntries(
+                  [...self.laneDecisions].filter(
+                    (entry): entry is [string, LaneDecision] => !!entry[1],
+                  ),
+                ),
+              }
+            : undefined
+          self.laneDragPx = new Map()
+        },
+        /**
+         * #action
+         * a frozen lane re-fitted to what the window shows now, and frozen there
+         */
+        realignLane(assemblyName: string) {
+          realign(assemblyName)
+        },
+        /**
+         * #action
+         * slide a mate lane `dxPx` screen px while the lanes are frozen, which
+         * freezes it there too
+         */
+        nudgeLane(assemblyName: string, dxPx: number) {
+          nudgeLane(assemblyName, dxPx)
+        },
+        /**
+         * #action
+         * how far a drag or side-scroll in progress has slid a lane, drawn
+         * without repacking it
+         */
+        setLaneDragPx(assemblyName: string, dxPx: number) {
+          setLaneDragPx(assemblyName, dxPx)
+        },
+        /**
+         * #action
+         * the drag or side-scroll's slide written into the lane's frozen
+         * decision
+         */
+        endLaneDrag(assemblyName: string) {
+          const dxPx = self.laneDragPx.get(assemblyName)
+          setLaneDragPx(assemblyName, undefined)
+          if (dxPx !== undefined) {
+            nudgeLane(assemblyName, dxPx)
+          }
+        },
+        /**
+         * #action
+         * pin a lane onto one of its contigs, or `undefined` to let it choose
+         * again. A fresh map, so the decision autorun sees the write
+         */
+        pinLaneContig(assemblyName: string, refName: string | undefined) {
+          const pins = new Map(self.pinnedLaneContigs)
+          if (refName === undefined) {
+            pins.delete(assemblyName)
+          } else {
+            pins.set(assemblyName, refName)
+          }
+          self.pinnedLaneContigs = pins
+          realign(assemblyName)
+        },
+        /**
+         * #action
+         * mirror a lane against its current orientation, pinned to the contig
+         * it draws
+         */
+        flipLane(assemblyName: string) {
+          const decision = self.laneDecisions.get(assemblyName)
+          if (decision) {
+            setFlipPins(
+              new Map(self.pinnedLaneFlips).set(assemblyName, {
+                refName: decision.refName,
+                flipped: !decision.flipped,
+              }),
+            )
+            realign(assemblyName)
+          }
+        },
+        /**
+         * #action
+         * let a flipped lane choose its orientation again
+         */
+        unpinLaneFlip(assemblyName: string) {
+          const pins = new Map(self.pinnedLaneFlips)
+          pins.delete(assemblyName)
+          setFlipPins(pins)
+          realign(assemblyName)
+        },
+      }
+    })
     .actions(self => {
       // replaced only when its membership changes, so what reads it recomputes
       // once per move rather than once per frame
@@ -1969,24 +2165,30 @@ export function stateModelFactory(
        * #getter
        * by lane row, where each moving lane draws its cells at the frame
        * loop's clock: both frames re-derived against the live view, so a pan
-       * or zoom mid-flight composes with the move
+       * or zoom mid-flight composes with the move. A lane being slid by hand
+       * draws that far over, on top of any move
        */
       get laneMaps(): ReadonlyMap<number, LaneMap> {
         const out = new Map<number, LaneMap>()
-        if (self.laneTransitions.size > 0) {
+        if (self.laneTransitions.size > 0 || self.laneDragPx.size > 0) {
           const nowMs = self.laneMotionClockMs
           self.laneStack.lanes.forEach(({ assemblyName, frame }, row) => {
             const motion = self.laneTransitions.get(assemblyName)
-            if (motion && frame?.morphFrom) {
-              out.set(
-                row,
-                laneMapAt(
-                  frame.morphFrom,
-                  frame,
-                  laneMotionEase(motion, nowMs),
-                  self.canvasWidth,
-                ),
-              )
+            const moving =
+              motion && frame?.morphFrom
+                ? laneMapAt(
+                    frame.morphFrom,
+                    frame,
+                    laneMotionEase(motion, nowMs),
+                    self.canvasWidth,
+                  )
+                : undefined
+            const dx = self.laneDragPx.get(assemblyName) ?? 0
+            if (moving || dx !== 0) {
+              out.set(row, {
+                scale: moving?.scale ?? 1,
+                offset: (moving?.offset ?? 0) + dx,
+              })
             }
           })
         }
@@ -2715,6 +2917,25 @@ export function stateModelFactory(
       }
     })
     .views(self => ({
+      /**
+       * #method
+       * the mate lane a drag or side-scroll at container-relative `y` slides:
+       * one with a frame whose header, genes or names are there, while the
+       * lanes are frozen. A gutter is left to pan the view
+       */
+      slidableLaneAt(y: number): string | undefined {
+        const oy = y + self.scrollTop
+        const { lanes, glyphHeight } = self.laneStack
+        const lane = self.lanesFrozen
+          ? lanes.find(
+              lane =>
+                !lane.isAnchor &&
+                oy >= lane.bandTop &&
+                oy <= lane.glyphTop + glyphHeight + self.geneLabelPx,
+            )
+          : undefined
+        return lane?.frame ? lane.assemblyName : undefined
+      },
       /**
        * #method
        * what sits under a container-relative point: the glyph or box of the

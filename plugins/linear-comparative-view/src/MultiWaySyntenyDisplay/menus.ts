@@ -45,6 +45,8 @@ export interface LaneHeaderModel {
   pinLaneContig: (assemblyName: string, refName: string | undefined) => void
   flipLane: (assemblyName: string) => void
   unpinLaneFlip: (assemblyName: string) => void
+  lanesFrozen: boolean
+  realignLane: (assemblyName: string) => void
 }
 
 export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
@@ -79,6 +81,7 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   geneColorDomain: readonly string[]
   pinnedGeneColorDomain: readonly string[]
   pinGeneColorDomain: () => void
+  setLanesFrozen: (flag: boolean) => void
 }
 
 /**
@@ -139,6 +142,18 @@ export function laneHeaderMenuItems(
       : []),
     ...laneContigMenuItems(model, lane),
     ...laneFlipMenuItems(model, lane),
+    ...(model.lanesFrozen
+      ? [
+          {
+            label: 'Re-align lane',
+            helpText:
+              'Fit this frozen lane to what the anchor shows now, and keep it frozen there.',
+            onClick: () => {
+              model.realignLane(name)
+            },
+          },
+        ]
+      : []),
   ]
 }
 
@@ -340,6 +355,10 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
         model.setDomain([])
       },
     },
+    toggleItem('Freeze lanes', model.lanesFrozen, model.setLanesFrozen, {
+      helpText:
+        'Keep every lane where it is as you pan and zoom, instead of re-fitting it to each new window. While frozen, drag or side-scroll a lane to slide it.',
+    }),
     ...withSubHeader(
       'Lane menus',
       model.laneStack.lanes.map(lane => ({

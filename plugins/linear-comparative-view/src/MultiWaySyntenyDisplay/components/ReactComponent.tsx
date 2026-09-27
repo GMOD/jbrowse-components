@@ -11,6 +11,7 @@ import { observer } from 'mobx-react'
 import { MultiWayRenderer } from '../MultiWayRenderer.ts'
 import LaneGeneLabels from './LaneGeneLabels.tsx'
 import LaneHeaders from './LaneHeaders.tsx'
+import { useLaneSlide } from './useLaneSlide.ts'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
@@ -26,17 +27,19 @@ const MultiWayBody = observer(function MultiWayBody({
   canvasRef: (node: HTMLCanvasElement | null) => void
   mouseTracker: MouseTracker
 }) {
-  const { canvasWidth: width, height, hoverTarget } = model
+  const { canvasWidth: width, height, hoverTarget, lanesFrozen } = model
   const canvasId = useId()
   const [panel, setPanel] = useState<HTMLDivElement | null>(null)
 
   usePanelVirtualScroll(panel, model, model.lgv.scrollZoom)
+  const slideLane = useLaneSlide(model, panel)
 
   return (
     <>
       <div
         ref={setPanel}
         style={{ position: 'absolute', top: 0, left: 0, width, height }}
+        onPointerDown={slideLane}
       >
         <canvas
           id={canvasId}
@@ -47,7 +50,7 @@ const MultiWayBody = observer(function MultiWayBody({
             position: 'absolute',
             left: 0,
             top: 0,
-            cursor: hoverTarget ? 'pointer' : undefined,
+            cursor: hoverTarget ? 'pointer' : lanesFrozen ? 'grab' : undefined,
           }}
         />
         <LaneGeneLabels model={model} />

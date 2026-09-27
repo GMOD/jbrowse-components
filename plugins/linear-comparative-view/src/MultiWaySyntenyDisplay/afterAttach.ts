@@ -13,7 +13,7 @@ import {
 import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
-import { decideLaneFrames, sameDecisions } from './laneDecision.ts'
+import { sameDecisions } from './laneDecision.ts'
 import { fileRefNameOf, specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 import { mergeContiguousRegions } from './layoutMultiWay.ts'
@@ -318,30 +318,16 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
         if (!view.initialized) {
           return
         }
-        const { anchorAbsX, fitGroups, rowAssemblies } = self
         // eslint-disable-next-line no-restricted-syntax -- SELF-WRITE for the decisions this body writes back; EFFECT INPUT for the offset, which every px below is relative to and which cancels out of the decision — it only stamps the space the frames are laid out against, and tracking it would re-decide on every pan
         const { origin, previous } = untracked(() => ({
           origin: view.offsetPx,
           previous: self.laneDecisions,
         }))
-        const next = decideLaneFrames({
-          groups: fitGroups,
-          assemblyNames: rowAssemblies,
-          anchorX: new Map(
-            [...anchorAbsX].map(([key, { x }]) => [key, x - origin]),
-          ),
-          anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,
-          pxOfAnchor: coord => {
-            const px = view.bpToPx(coord)
-            return px && px.offsetPx - origin
-          },
-          unitBp: self.visibleBpSpan,
-          width: self.canvasWidth,
-          anchorReversed: self.anchorReversed,
+        const next = self.laneDecisionsAt(
+          origin,
           previous,
-          pinned: self.pinnedLaneContigs,
-          pinnedFlips: self.pinnedLaneFlips,
-        })
+          self.frozenDecisions,
+        )
         if (
           // eslint-disable-next-line no-restricted-syntax -- SELF-WRITE: setLaneFrames writes it
           origin !== untracked(() => self.renderOriginPx) ||

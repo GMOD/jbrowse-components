@@ -4,6 +4,7 @@ import {
   computeRowFrame,
   decideLaneFrames,
   frameFromDecision,
+  nudgeDecision,
   pickRung,
 } from './laneDecision.ts'
 import { groupFeatures, rowFrameX } from './layoutMultiWay.ts'
@@ -48,6 +49,7 @@ function decide(
     pinnedFlips,
     anchorReversed = false,
     panBp = 0,
+    frozen,
   }: {
     assemblyNames?: string[]
     previous?: Map<string, LaneDecision | undefined>
@@ -55,6 +57,7 @@ function decide(
     pinnedFlips?: Map<string, LaneFlipPin>
     anchorReversed?: boolean
     panBp?: number
+    frozen?: Map<string, LaneDecision>
   } = {},
 ) {
   const pxOf = (bp: number) =>
@@ -76,6 +79,7 @@ function decide(
     previous,
     pinned,
     pinnedFlips,
+    frozen,
   })
 }
 
@@ -893,5 +897,87 @@ describe('a star of pairwise records', () => {
     const decisions = decide(groups, { assemblyNames: ['cacao', 'peach'] })
     expect(decisions.get('peach')!.flipped).toBe(true)
     expect(decide(groups).get('peach')!.flipped).toBe(true)
+  })
+})
+
+describe('a frozen lane', () => {
+  const decision = settle(collinear)
+  const frameOf = (d: LaneDecision, anchorReversed = false) =>
+    frameFromDecision(
+      d,
+      anchorReversed
+        ? WIDTH - px(d.pivotAnchor.coord)
+        : px(d.pivotAnchor.coord),
+      SPAN_BP,
+      WIDTH,
+      anchorReversed,
+    )
+
+  test('keeps its decision whatever the window now places', () => {
+    const moved = groupFeatures(
+      [100, 300, 500, 700].map((start, i) =>
+        pair(`m${i}`, `g${i}`, start, { start: 700_000 + start }),
+      ),
+    )
+    expect(decide(moved).get('peach')!.pivotLaneBp).not.toBeCloseTo(
+      decision.pivotLaneBp,
+    )
+    expect(
+      decide(moved, { frozen: new Map([['peach', decision]]) }).get('peach'),
+    ).toBe(decision)
+  })
+
+  test('is what the lane below lines up on', () => {
+    const cacao = [100, 300, 500, 700].map(
+      (start, i) =>
+        new SimpleFeature({
+          uniqueId: `c${i}`,
+          refName: 'chr1',
+          start,
+          end: start + 60,
+          strand: 1,
+          name: `g${i}`,
+          assemblyName: 'anchor',
+          mate: {
+            assemblyName: 'cacao',
+            refName: 'Tc1',
+            start: 900_000 + start,
+            end: 900_060 + start,
+          },
+        }),
+    )
+    const groups = groupFeatures([
+      ...[100, 300, 500, 700].map((start, i) =>
+        pair(`${i}`, `g${i}`, start, { start: 500_000 + start }),
+      ),
+      ...cacao,
+    ])
+    const assemblyNames = ['peach', 'cacao']
+    const first = decide(groups, { assemblyNames })
+    const slid = nudgeDecision(first.get('peach')!, 100, SPAN_BP / WIDTH, false)
+    const next = decide(groups, {
+      assemblyNames,
+      frozen: new Map([['peach', slid]]),
+    })
+    expect(next.get('peach')).toBe(slid)
+    const bp = 900_330
+    expect(
+      rowFrameX(frameOf(next.get('cacao')!), bp, WIDTH) -
+        rowFrameX(frameOf(first.get('cacao')!), bp, WIDTH),
+    ).toBeCloseTo(100, 0)
+  })
+
+  test('a nudge moves the content the way the drag went, mirrored or not', () => {
+    for (const anchorReversed of [false, true]) {
+      for (const flipped of [false, true]) {
+        const d = { ...decision, flipped }
+        const nudged = nudgeDecision(d, 40, SPAN_BP / WIDTH, anchorReversed)
+        const bp = d.pivotLaneBp + 100
+        expect(
+          rowFrameX(frameOf(nudged, anchorReversed), bp, WIDTH) -
+            rowFrameX(frameOf(d, anchorReversed), bp, WIDTH),
+        ).toBeCloseTo(40)
+      }
+    }
   })
 })

@@ -60,11 +60,13 @@ function headerModel({
   pinned,
   flipPinned,
   canReanchor = true,
+  lanesFrozen = false,
 }: {
   held?: boolean
   pinned?: string
   flipPinned?: string
   canReanchor?: boolean
+  lanesFrozen?: boolean
 } = {}) {
   const calls: string[] = []
   const model = {
@@ -101,6 +103,10 @@ function headerModel({
     },
     unpinLaneFlip: (name: string) => {
       calls.push(`unflip ${name}`)
+    },
+    lanesFrozen,
+    realignLane: (name: string) => {
+      calls.push(`realign ${name}`)
     },
   }
   return { model, calls }
@@ -176,6 +182,9 @@ function trackModel({
     pinnedGeneColorDomain: ['psbA'],
     pinGeneColorDomain: () => {
       calls.push('pin gene colors')
+    },
+    setLanesFrozen: (flag: boolean) => {
+      calls.push(`freeze ${flag}`)
     },
   }
   return { model, calls }
@@ -295,17 +304,34 @@ test('Lanes lists each lane under its own header menu', () => {
   expect(labelsOf(lanes)).toEqual([
     'Choose lanes...',
     'Reset lane order',
+    'Freeze lanes',
     'Lane menus',
     'grape',
     'peach',
   ])
   expect(disabledOf(lanes)[1]).toBe(true)
-  expect(labelsOf(subMenuOf(lanes[3]))).toEqual(
+  expect(labelsOf(subMenuOf(lanes[4]))).toEqual(
     labelsOf(laneHeaderMenuItems(model, grape)),
   )
-  expect(labelsOf(subMenuOf(lanes[4]))).toEqual(
+  expect(labelsOf(subMenuOf(lanes[5]))).toEqual(
     labelsOf(laneHeaderMenuItems(model, peach)),
   )
+})
+
+test('Freeze lanes toggles, and a frozen lane offers Re-align lane', () => {
+  const { model, calls } = trackModel()
+  const freeze = lanesMenuItem(model).subMenu.find(
+    item => 'label' in item && item.label === 'Freeze lanes',
+  )
+  click(freeze)
+  expect(calls).toEqual(['freeze true'])
+  expect(labelsOf(laneHeaderMenuItems(model, peach))).not.toContain(
+    'Re-align lane',
+  )
+  const frozen = headerModel({ lanesFrozen: true })
+  const items = laneHeaderMenuItems(frozen.model, peach)
+  click(items.find(item => 'label' in item && item.label === 'Re-align lane'))
+  expect(frozen.calls).toEqual(['realign peach'])
 })
 
 test('the picker is offered once there are lanes to choose among, and a choice offers its undo', () => {

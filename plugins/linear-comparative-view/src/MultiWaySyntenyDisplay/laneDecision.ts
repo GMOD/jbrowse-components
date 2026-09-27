@@ -55,6 +55,35 @@ export interface LaneFlipPin {
   flipped: boolean
 }
 
+/**
+ * The decisions the reader froze the lanes at, against `anchor`'s coordinates.
+ * A frozen lane keeps its map from the anchor's bp to its own, so it pans and
+ * zooms with the anchor and never re-chooses its contig, orientation, rung or
+ * offset
+ */
+export interface FrozenLanes {
+  anchor: string
+  decisions: Record<string, LaneDecision>
+}
+
+/**
+ * `d` with its content moved `dxPx` screen px right, at the lane's bp per px
+ * `bpPerPx`. The pivot's anchor coordinate stays put and the lane's bp under it
+ * moves, the other way on a lane drawn mirrored
+ */
+export function nudgeDecision(
+  d: LaneDecision,
+  dxPx: number,
+  bpPerPx: number,
+  anchorReversed: boolean,
+): LaneDecision {
+  const mirrored = d.flipped !== anchorReversed
+  return {
+    ...d,
+    pivotLaneBp: d.pivotLaneBp + (mirrored ? 1 : -1) * dxPx * bpPerPx,
+  }
+}
+
 // The scales a lane's frame is allowed to sit at, as multiples of the anchor's
 // visible span. Fitting a lane exactly to its placements gives it an arbitrary
 // bp/px that also MOVES: one more ortholog entering the window re-fits the
@@ -536,6 +565,9 @@ export interface DecideLaneFramesOpts {
   // the contig the reader pinned each lane onto, which outranks its vote
   pinned?: ReadonlyMap<string, string>
   pinnedFlips?: ReadonlyMap<string, LaneFlipPin>
+  // the lanes the reader froze, each kept as it is wherever its pivot is on
+  // the view's displayed regions
+  frozen?: ReadonlyMap<string, LaneDecision>
 }
 
 function sameDecision(a: LaneDecision, b: LaneDecision) {
@@ -578,10 +610,31 @@ export function decideLaneFrames({
   previous,
   pinned,
   pinnedFlips,
+  frozen,
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
   let upperX = anchorX
   for (const [i, assemblyName] of assemblyNames.entries()) {
+    const kept = frozen?.get(assemblyName)
+    const keptPx = kept && pxOfAnchor(kept.pivotAnchor)
+    if (kept && keptPx !== undefined && unitBp > 0 && width > 0) {
+      out.set(assemblyName, kept)
+      if (i + 1 < assemblyNames.length) {
+        const frame = frameFromDecision(
+          kept,
+          keptPx,
+          unitBp,
+          width,
+          anchorReversed,
+        )
+        upperX = lanePlacementXs(
+          lanePlacements(groups, assemblyName, frame),
+          frame,
+          width,
+        )
+      }
+      continue
+    }
     const prev = previous.get(assemblyName)
     const fit = fitLane(
       groups,
