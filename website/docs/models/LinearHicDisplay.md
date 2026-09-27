@@ -88,6 +88,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-colorramp">**colorRamp**</span><br><code>Uint8Array&lt;ArrayBufferLike&gt;</code> | The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the legend read this one table. | LinearHicDisplay |
 | <span id="getter-colorquantile">**colorQuantile**</span><br><code>number</code> | `color.domainQuantile`: the quantile of the loaded counts an unset `domainMax` follows, their maximum at 1. | LinearHicDisplay |
 | <span id="getter-colorfollowspercentile">**colorFollowsPercentile**</span><br><code>boolean</code> | Whether an unset `color.domainMax` saturates at `colorQuantile` rather than the counts' maximum. | LinearHicDisplay |
+| <span id="getter-saturationquantile">**saturationQuantile**</span><br><code>number</code> | The quantile "Emphasize faint contacts" saturates at: `colorQuantile` while it clips, else the one ticking it writes. The worker computes this one whichever is drawn, so the toggle refetches nothing. | LinearHicDisplay |
 | <span id="getter-showresolutioncontrols">**showResolutionControls**</span><br><code>boolean</code> |  | LinearHicDisplay |
 | <span id="getter-selectednormalization">**selectedNormalization**</span><br><code>string</code> |  | LinearHicDisplay |
 | <span id="getter-hasresolutions">**hasResolutions**</span><br><code>boolean</code> | Whether the binsize list has arrived; every resolution control gates on it. | LinearHicDisplay |

@@ -6,7 +6,7 @@ sidebar_label: Mixin -> ScoreScaleMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
 
-#crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+#crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
 
 The value scale of every quantitative display: wiggle, the alignments
 coverage band and the mark display, Manhattan among them, each declare
@@ -15,11 +15,6 @@ ScoreAxisMixin's three overridable members off that object and adds
 the setters that write it, so composing this is how a display satisfies
 ScoreScaleModel in `scoreMenuItems.ts` — the interface the shared
 Score menu, the scale and autoscale submenus and `SetMinMaxDialog` consume.
-
-What a display's scale offers follows what it draws: `symlogConstant`
-answers `undefined` wherever `symlog` is not among the scale types, and
-`scaleTypeChoices` reads the declared enum back, which is what the
-scale-type radio offers.
 
 Deliberately just the scale and the guides it owns. Colors, `resolution`
 and the autoscale *computation* stay in `WiggleScoreConfigMixin` /
@@ -34,7 +29,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
-| <span id="getter-scaletypechoices">**scaleTypeChoices**</span><br><code>string[]</code> | The scale types this display's own enum admits, which is what the scale-type radio offers; a display with one draws no radio. | ScoreScaleMixin |
 | <span id="getter-domainquantile">**domainQuantile**</span><br><code>number</code> | `scales.y.domainQuantile`: what an unpinned end follows, 1 the extremes and below it that quantile of each sign. | ScoreScaleMixin |
 | <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | The quantile "Clip outliers" clips at: the scale's own default where that is below 1, else 0.99. | ScoreScaleMixin |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. | ScoreScaleMixin |

@@ -198,11 +198,10 @@ differently, and the alignments coverage band does.
 ### ScoreSpan
 
 One block's worth of values to fold into a domain, whatever packed them: a
-wiggle source's interleaved `featurePositions` and its three summary arrays, or
-a mark layer's separate `x`/`x2` and its one `y` lane. `starts[i * stride]` and
-`ends[i * stride + endOffset]` give instance `i`'s span; `low`, `high` and `avg`
-give the two ends of its value and the one the mean is taken over, which are the
-same array wherever the packer ships a single scalar.
+wiggle source's interleaved `featurePositions` and its summary arrays, or a mark
+layer's separate `x`/`x2` and its one `y` lane. `starts[i * stride]` and
+`ends[i * stride + endOffset]` give instance `i`'s span, and `low` and `high`
+the two ends of its value, one array where the packer ships a single scalar.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 

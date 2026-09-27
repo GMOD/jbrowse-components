@@ -265,6 +265,18 @@ lands before React re-renders.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
 
+### clipQuantileOf
+
+The quantile a clip toggle writes: a scale's declared default where that clips,
+below 1, else DEFAULT_CLIP_QUANTILE.
+
+```js
+// type signature
+(declaredDefault: unknown) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
+
 ### COLOR_SCHEMES
 
 The named ramps a continuous colour scale's `scheme` takes, each one a stop
@@ -1058,6 +1070,19 @@ anchored at 0, so one spike takes neither the axis nor the ramp.
 ```js
 // type signature
 (values: ArrayLike<number>, count: number, quantile?: number) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
+
+### quantileOf
+
+The nearest-rank `quantile` of `a[0, n)`: the smallest value at least that share
+of them sit at or below, so a handful of values clips at their maximum. Permutes
+`a`; 0 where `n` is.
+
+```js
+// type signature
+(a: Float32Array<ArrayBufferLike>, n: number, quantile: number) => number
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)

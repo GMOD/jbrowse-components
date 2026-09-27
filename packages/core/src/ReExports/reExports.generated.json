@@ -3323,8 +3323,10 @@
       "package": "@jbrowse/core",
       "names": [
         "DEFAULT_CLIP_QUANTILE",
+        "clipQuantileOf",
         "finiteExtremes",
         "quantileExtent",
+        "quantileOf",
         "selectNth"
       ],
       "worker": "real"
