@@ -81,10 +81,12 @@ test('the walk finds the channel objects', () => {
     expect.arrayContaining([
       'Facet',
       'FeatureColor',
-      'ManhattanColor',
       'MarkColor',
       'MarkShape',
+      'MultiWayGeneColor',
       'RibbonColor',
+      'VariantCellColor',
+      'WiggleColor',
     ]),
   )
 })
