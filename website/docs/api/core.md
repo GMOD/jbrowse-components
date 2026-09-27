@@ -839,6 +839,20 @@ everywhere.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
+## scaleExtent
+
+quantileExtent as a scale's open ends read it: over every finite
+value on a linear scale, and on a log scale over the positive ones, since a
+0 or a negative met there would floor the domain at 1 and fold a domain
+below 1 flat. `[Infinity, -Infinity]` where the scale reads nothing.
+
+```js
+// type signature
+(values: ArrayLike<number>, count: number, scale: string, quantile?: number) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
+
 ## ScaleTable
 
 The table behind a channel a key is drawn from: a colour's, whose `kind`

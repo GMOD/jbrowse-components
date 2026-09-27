@@ -13,6 +13,13 @@ the base instead.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-unclippedquantile">**unclippedQuantile**</span><br><code>unclippedQuantile: undefined as number &#124; undefined</code> |  | [ScoreScaleMixin](../scorescalemixin#volatile-unclippedquantile) |
+
 ## Getters
 
 <!-- prettier-ignore -->
@@ -25,7 +32,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
 | <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | <span data-pagefind-ignore>`scales.y.zero`: whether an autoscaled linear or symlog axis reaches 0.</span> | [ScoreScaleMixin](../scorescalemixin#getter-scalezero) |
 | <span id="getter-domainquantile">**domainQuantile**</span><br><code>number</code> | <span data-pagefind-ignore>`scales.y.domainQuantile`: what an unpinned end follows, 1 the extremes and below it that quantile of each sign.</span> | [ScoreScaleMixin](../scorescalemixin#getter-domainquantile) |
-| <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | <span data-pagefind-ignore>The quantile "Clip outliers" clips at: the scale's own default where that is below 1, else 0.99.</span> | [ScoreScaleMixin](../scorescalemixin#getter-clipquantile) |
+| <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | <span data-pagefind-ignore>The quantile "Clip outliers" clips at: the one an untick this session wrote over, else the scale's own default where that is below 1, else 0.99.</span> | [ScoreScaleMixin](../scorescalemixin#getter-clipquantile) |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | <span data-pagefind-ignore>Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known.</span> | [ScoreScaleMixin](../scorescalemixin#getter-symlogconstant) |
 | <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The lower bound the config pins, `undefined` where it pins none.</span> | [ScoreScaleMixin](../scorescalemixin#getter-manualminscore) |
 | <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | <span data-pagefind-ignore>The upper bound the config pins, `undefined` where it pins none.</span> | [ScoreScaleMixin](../scorescalemixin#getter-manualmaxscore) |

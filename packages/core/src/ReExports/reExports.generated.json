@@ -3327,6 +3327,7 @@
         "finiteExtremes",
         "quantileExtent",
         "quantileOf",
+        "scaleExtent",
         "selectNth"
       ],
       "worker": "real"

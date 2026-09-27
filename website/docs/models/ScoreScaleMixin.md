@@ -23,6 +23,13 @@ none of the rest.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-unclippedquantile">**unclippedQuantile**</span><br><code>unclippedQuantile: undefined as number &#124; undefined</code> |  |
+
 ## Getters
 
 <!-- prettier-ignore -->
@@ -31,7 +38,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | ScoreScaleMixin |
 | <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | `scales.y.zero`: whether an autoscaled linear or symlog axis reaches 0. | ScoreScaleMixin |
 | <span id="getter-domainquantile">**domainQuantile**</span><br><code>number</code> | `scales.y.domainQuantile`: what an unpinned end follows, 1 the extremes and below it that quantile of each sign. | ScoreScaleMixin |
-| <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | The quantile "Clip outliers" clips at: the scale's own default where that is below 1, else 0.99. | ScoreScaleMixin |
+| <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | The quantile "Clip outliers" clips at: the one an untick this session wrote over, else the scale's own default where that is below 1, else 0.99. | ScoreScaleMixin |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. | ScoreScaleMixin |
 | <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
 | <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
