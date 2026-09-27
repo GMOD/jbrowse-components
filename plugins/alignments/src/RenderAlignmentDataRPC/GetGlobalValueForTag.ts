@@ -3,6 +3,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 
 import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
+import { filterChainFeatures } from './filterChainFeatures.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -76,7 +77,13 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
       // statusCallback as well as the signal: this reads every feature of every
       // visible region to enumerate a tag's values, the longest thing the
       // group-by-tag dialog does.
-      const features = await dataAdapter.getFeaturesArray(region, fetchOpts)
+      // The adapter applies the flag, name and tag filters; the proper-pair,
+      // singleton and split filters need whole chains, so they run here as
+      // they do in the render fetch.
+      const features = filterChainFeatures(
+        await dataAdapter.getFeaturesArray(region, fetchOpts),
+        filterBy,
+      )
       for (const feature of features) {
         // The same extractor the render path keys on, so a field-backed tag (no
         // `tags` object) is discovered here too — re-spelling its source order
