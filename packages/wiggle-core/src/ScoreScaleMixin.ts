@@ -3,9 +3,8 @@ import {
   getSlotDefinition,
   readConfObject,
   setConf,
-  slotChoices,
 } from '@jbrowse/core/configuration'
-import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
+import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
@@ -38,7 +37,7 @@ const confNode = (self: object) => self as ScoreScaleHost
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleTypeChoices` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
  * The value scale of every quantitative display: wiggle, the alignments
  * coverage band and the mark display, Manhattan among them, each declare
@@ -47,11 +46,6 @@ const confNode = (self: object) => self as ScoreScaleHost
  * the setters that write it, so composing this is how a display satisfies
  * {@link ScoreScaleModel} in `scoreMenuItems.ts` — the interface the shared
  * Score menu, the scale and autoscale submenus and `SetMinMaxDialog` consume.
- *
- * What a display's scale offers follows what it draws: `symlogConstant`
- * answers `undefined` wherever `symlog` is not among the scale types, and
- * `scaleTypeChoices` reads the declared enum back, which is what the
- * scale-type radio offers.
  *
  * Deliberately just the scale and the guides it owns. Colors, `resolution`
  * and the autoscale *computation* stay in `WiggleScoreConfigMixin` /
@@ -69,18 +63,6 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * The scale types this display's own enum admits, which is what the
-       * scale-type radio offers; a display with one draws no radio.
-       */
-      get scaleTypeChoices(): string[] {
-        return (
-          slotChoices(
-            getSlotDefinition(confNode(self).configuration.scales.y, 'type'),
-          ) ?? []
-        )
-      },
-      /**
-       * #getter
        * `scales.y.domainQuantile`: what an unpinned end follows, 1 the
        * extremes and below it that quantile of each sign.
        */
@@ -93,13 +75,12 @@ export function ScoreScaleMixin() {
        * that is below 1, else 0.99.
        */
       get clipQuantile(): number {
-        const declared = getSlotDefinition(
-          confNode(self).configuration.scales.y,
-          'domainQuantile',
-        ).defaultValue
-        return typeof declared === 'number' && declared < 1
-          ? declared
-          : DEFAULT_CLIP_QUANTILE
+        return clipQuantileOf(
+          getSlotDefinition(
+            confNode(self).configuration.scales.y,
+            'domainQuantile',
+          ).defaultValue,
+        )
       },
       /**
        * #getter

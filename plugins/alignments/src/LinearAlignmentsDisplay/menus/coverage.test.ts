@@ -10,13 +10,12 @@ import { getCoverageMenuItem } from './coverage.ts'
 function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
   return getCoverageMenuItem({
     showCoverage,
-    coverageDomain: undefined,
+    autoscaledDomain: undefined,
     coverageSnpMinFrequency,
     setCoverageSnpMinFrequency: () => {},
     grid: false,
     setGrid: () => {},
     scaleType: 'linear',
-    scaleTypeChoices: ['linear', 'log', 'symlog'],
     domainQuantile: 1,
     clipQuantile: 0.99,
     manualMinScore: undefined,

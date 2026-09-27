@@ -3,7 +3,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-import { makeScoreSubMenu } from './scoreMenuItems.ts'
+import { makeClipOutliersItem, makeScoreSubMenu } from './scoreMenuItems.ts'
 import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
 
 import type { ScoreScaleModel } from './scoreMenuItems.ts'
@@ -18,13 +18,13 @@ import type { ValueScale } from '@jbrowse/display-ui'
 function makeSelf(over: Partial<ScoreScaleModel> = {}) {
   const self = {
     scaleType: 'linear',
-    scaleTypeChoices: ['linear', 'log', 'symlog'],
     domainQuantile: 1,
     clipQuantile: 0.99,
     manualMinScore: undefined,
     manualMaxScore: undefined,
     minScoreBound: undefined,
     maxScoreBound: undefined,
+    autoscaledDomain: undefined,
     setScaleType: () => {},
     setDomainQuantile: () => {},
     setMinScore: () => {},
@@ -43,25 +43,13 @@ function labels(item: MenuItem) {
   return sub.map(i => ('label' in i ? i.label : ''))
 }
 
-// The radios are no longer opted out of by the caller: each one derives from
-// what the display's own `scales.y` declares.
-describe('makeScoreSubMenu derives its radios from the scale', () => {
-  it('offers scale type and autoscale where the scale declares both', () => {
+describe('makeScoreSubMenu', () => {
+  it('offers the scale type, Clip outliers and the range', () => {
     expect(labels(makeScoreSubMenu(makeSelf()))).toEqual([
       'Scale type',
       'Clip outliers',
       'Set min/max score...',
     ])
-  })
-
-  it('names exactly the scale types the display admits', () => {
-    const item = makeScoreSubMenu(makeSelf({ scaleTypeChoices: ['linear'] }))
-    expect(labels(item)).toEqual(['Clip outliers', 'Set min/max score...'])
-    expect(
-      labels(
-        makeScoreSubMenu(makeSelf({ scaleTypeChoices: ['linear', 'log'] })),
-      ),
-    ).toEqual(['Scale type', 'Clip outliers', 'Set min/max score...'])
   })
 
   it('still captions itself with the pinned pair', () => {
@@ -71,11 +59,25 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
           makeSelf({
             manualMinScore: 2,
             minScoreBound: 2,
-            scaleTypeChoices: ['linear'],
           }),
         ),
       ),
-    ).toEqual(['Clip outliers', 'Set min/max score (2 – auto)...'])
+    ).toEqual([
+      'Scale type',
+      'Clip outliers',
+      'Set min/max score (2 – auto)...',
+    ])
+  })
+
+  it('names the percentile Clip outliers clips at, the one in force first', () => {
+    const helpOf = (over: Partial<ScoreScaleModel>) => {
+      const item = makeClipOutliersItem(makeSelf(over))
+      return 'helpText' in item ? item.helpText : undefined
+    }
+    expect(helpOf({ domainQuantile: 0.95 })).toContain('95th percentile')
+    expect(helpOf({ domainQuantile: 1, clipQuantile: 0.99 })).toContain(
+      '99th percentile',
+    )
   })
 })
 

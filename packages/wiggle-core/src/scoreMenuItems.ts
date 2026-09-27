@@ -9,6 +9,7 @@ import { getDialogHost } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
 import { autoscaleGroupMembers, autoscalePeers } from './autoscaleGroup.ts'
+import { VALUE_SCALE_TYPES } from './valueScaleConfigSchema.ts'
 
 import type { AutoscalePeer } from './autoscaleGroup.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -33,7 +34,6 @@ const SetScoreRulesDialog = lazy(() => import('./SetScoreRulesDialog.tsx'))
 // `ScoreAxisMixin`.
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
-  scaleTypeChoices: string[]
   domainQuantile: number
   clipQuantile: number
   manualMinScore: number | undefined
@@ -41,6 +41,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   minScoreBound: number | undefined
   maxScoreBound: number | undefined
   hasManualScoreBounds: boolean
+  autoscaledDomain: [number, number] | undefined
   setScaleType: (v: string) => void
   setMinScore: (n?: number) => void
   setMaxScore: (n?: number) => void
@@ -55,25 +56,22 @@ export interface ScoreRulesModel {
   setScoreRules: (rules: ValueScaleRule[]) => void
 }
 
-const SCALE_TYPE_LABELS: Record<string, string> = {
+const SCALE_TYPE_LABELS: Record<(typeof VALUE_SCALE_TYPES)[number], string> = {
   linear: 'Linear scale',
   log: 'Log scale',
   symlog: 'Symlog scale (allows zero)',
 }
 
-// The radio offers exactly what the display's own `scales.y.type` enum admits,
-// read back through `scaleTypeChoices`, since a value outside it is refused.
 export function makeScaleTypeSubMenu(self: {
   scaleType: string
-  scaleTypeChoices: string[]
   setScaleType: (v: string) => void
 }): MenuItem {
   return {
     label: 'Scale type',
     subMenu: radioItems(
-      self.scaleTypeChoices.map(value => ({
+      VALUE_SCALE_TYPES.map(value => ({
         value,
-        label: SCALE_TYPE_LABELS[value] ?? value,
+        label: SCALE_TYPE_LABELS[value],
       })),
       self.scaleType,
       v => {
@@ -93,7 +91,9 @@ export function makeClipOutliersItem(self: {
   clipQuantile: number
   setDomainQuantile: (quantile: number) => void
 }): MenuItem {
-  const percent = Math.round(self.clipQuantile * 100)
+  const clipsAt =
+    self.domainQuantile < 1 ? self.domainQuantile : self.clipQuantile
+  const percent = Math.round(clipsAt * 100)
   return toggleItem(
     CLIP_OUTLIERS_LABEL,
     self.domainQuantile < 1,
@@ -106,25 +106,12 @@ export function makeClipOutliersItem(self: {
   )
 }
 
-// Showing the range in the label is how the menu says a fixed bound is in force
-// — otherwise an autoscale-type radio still reads as checked while a manual
-// bound silently overrides it. So it is the PINNED pair that is shown, with
-// `auto` for the end nobody pinned. A display overriding `defaultScoreDomain`
-// resolves both ends to numbers with nothing configured: asking the resolved
-// pair captioned every GC content track "(0 – 1)", and once one end was really
-// set it printed the other end's default beside it, in the one place the user
-// looks to find out what they have pinned.
-//
-// The drawn domain rides along so the dialog can offer "Use current range",
-// which freezes the axis where it is drawn: never the resolved `*Bound` pair,
-// which on an autoscaled track is `undefined` at both ends and would pin
-// nothing. Each display names its own domain (`coverageDomain` on the
-// alignments band), so the caller hands it in.
-export function makeSetMinMaxScoreItem(
-  self: ScoreScaleModel,
-  domain?: [number, number],
-): MenuItem {
-  const { manualMinScore, manualMaxScore } = self
+// The label shows the PINNED pair, `auto` for an end nobody pinned: the
+// resolved pair captioned every GC content track "(0 – 1)" off its default
+// domain. "Use current range" copies `autoscaledDomain`, undefined while the
+// alignments density tier's features per bin stand in for depth.
+export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
+  const { manualMinScore, manualMaxScore, autoscaledDomain: domain } = self
   return {
     label: self.hasManualScoreBounds
       ? `Set min/max score (${manualMinScore ?? 'auto'} – ${manualMaxScore ?? 'auto'})...`
@@ -151,14 +138,8 @@ export function makeCrossHatchItem(self: {
 // capability-driven: `leadingItems` lets wiggle prepend its Resolution/Summary
 // submenus, `trailingItems` appends what belongs after the range controls rather
 // than before them (the alignments band's allele-fraction floor).
-//
-// The scale-type radio appears where the display's own `scales.y` enum holds
-// more than one type; Clip outliers is on every value scale.
 export interface ScoreSubMenuOptions {
   label?: string
-  // The domain drawn right now, which the min/max dialog's "Use current range"
-  // button copies into the slots; undefined before it resolves.
-  domain?: [number, number]
   leadingItems?: MenuItem[]
   trailingItems?: MenuItem[]
   // Greys the whole submenu out — for a display whose band can be hidden, where
@@ -234,7 +215,6 @@ export function makeScoreSubMenu(
 ): MenuItem {
   const {
     label = 'Score',
-    domain,
     leadingItems = [],
     trailingItems = [],
     disabled,
@@ -247,9 +227,9 @@ export function makeScoreSubMenu(
     disabledHelpText,
     subMenu: [
       ...leadingItems,
-      ...(self.scaleTypeChoices.length > 1 ? [makeScaleTypeSubMenu(self)] : []),
+      makeScaleTypeSubMenu(self),
       makeClipOutliersItem(self),
-      makeSetMinMaxScoreItem(self, domain),
+      makeSetMinMaxScoreItem(self),
       ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
       ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),
       ...trailingItems,

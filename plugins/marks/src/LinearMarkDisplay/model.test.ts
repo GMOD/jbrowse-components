@@ -494,7 +494,6 @@ test('the score menu offers the scale-type radio and Clip outliers', () => {
     { mark: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
-  expect(display.scaleTypeChoices).toEqual(['linear', 'log', 'symlog'])
   const score = display
     .trackMenuItems()
     .find(item => 'subMenu' in item && item.label === 'Score')!

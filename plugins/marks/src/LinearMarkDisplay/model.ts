@@ -1915,7 +1915,7 @@ export function stateModelFactory(
                 self.openMarkPlotDialog()
               },
             },
-            makeScoreSubMenu(self, { domain: self.domain }),
+            makeScoreSubMenu(self),
             ...makePointSizeSubMenu({
               label: 'Point size',
               applies: self.hasPointMark,

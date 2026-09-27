@@ -3,7 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const VALUE_SCALE_TYPES = ['linear', 'log', 'symlog'] as const
+export const VALUE_SCALE_TYPES = ['linear', 'log', 'symlog'] as const
 
 export interface ValueScaleOptions {
   /** `domainQuantile`'s default: 1 follows the extremes, 0.99 clips the outermost 1% */

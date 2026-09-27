@@ -262,4 +262,7 @@ test('the density tier draws its own counts scale under the unit-free guides', (
   expect(display.coverageDepthDomain![1]).toBeGreaterThanOrEqual(4000)
   expect(display.scoreRules).toEqual([{ value: 30, label: 'diploid' }])
   expect(display.scoreRulesDrawn).toBe(false)
+  // What Set min/max's "Use current range" copies: a count pinned as depth
+  // would misscale the band once zoomed back in.
+  expect(display.autoscaledDomain).toBeUndefined()
 })
