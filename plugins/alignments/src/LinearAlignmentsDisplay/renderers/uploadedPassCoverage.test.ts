@@ -135,12 +135,15 @@ function uploadedPasses() {
   )
 }
 
+// The clip strip draws off the depth bars' buffer and uploads none of its own.
+const OWN_BUFFER_MARKS = ALIGNMENTS_COVERAGE_MARKS.filter(m => !m.bufferOf)
+
 describe('every drawn pass is also uploaded', () => {
   it('the fixture actually populates every pass', () => {
     // Guards the guard: if a future field rename empties an array, the
     // assertions below would pass vacuously by uploading nothing at all.
     expect(uploadedPasses().size).toBe(
-      PILEUP_PASSES.length + ALIGNMENTS_COVERAGE_MARKS.length,
+      PILEUP_PASSES.length + OWN_BUFFER_MARKS.length,
     )
   })
 
@@ -154,9 +157,9 @@ describe('every drawn pass is also uploaded', () => {
     }
   })
 
-  it('every coverage-band mark gets a buffer', () => {
+  it('every coverage-band mark with a buffer of its own gets one', () => {
     const uploaded = uploadedPasses()
-    for (const { pass } of ALIGNMENTS_COVERAGE_MARKS) {
+    for (const { pass } of OWN_BUFFER_MARKS) {
       expect({ layer: pass.id, uploaded: uploaded.has(pass.id) }).toEqual({
         layer: pass.id,
         uploaded: true,

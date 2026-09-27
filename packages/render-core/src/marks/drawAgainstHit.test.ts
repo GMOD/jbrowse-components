@@ -6,7 +6,7 @@ import {
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
-import { sweepMarkAgainstHit } from './drawAgainstHit.ts'
+import { recordingContext, sweepMarkAgainstHit } from './drawAgainstHit.ts'
 import {
   LINK_ELSEWHERE,
   LINK_NO_REGION,
@@ -308,6 +308,18 @@ const barsInside: BarChannels = {
   y: Float32Array.from([0.8, -0.4, 0.5, 0.05, -0.9]),
 }
 
+// One bar at a time, for a batch that paints more rects than it has bars: a
+// bar the domain cut paints its clip strip too, inside its own box.
+function sliceOneBar(c: BarChannels, i: number): BarChannels {
+  return {
+    x: c.x.subarray(i, i + 1),
+    x2: c.x2.subarray(i, i + 1),
+    y: c.y.subarray(i, i + 1),
+    color: c.color!.subarray(i, i + 1),
+    count: 1,
+  }
+}
+
 describe('bar: every drawn rect answers its own hit, in both orientations', () => {
   test.each<[string, BarParams, BarChannels]>([
     [
@@ -352,11 +364,56 @@ describe('bar: every drawn rect answers its own hit, in both orientations', () =
           channels,
           { ...block, reversed },
           { canvasWidth: 60, canvasHeight: 100 },
-          { maxDistSq: Number.MIN_VALUE },
+          { maxDistSq: Number.MIN_VALUE, sliceOne: sliceOneBar },
         ),
       ).toEqual([])
     }
   })
+})
+
+// A bar past either end of the domain is clamped to the band edge and wears
+// the clip strip there (ADR-183); a bar the domain holds paints one rect. A
+// bar cut to no height, its origin on the same edge, paints only the strip,
+// which is then its ink.
+test('bar: the clip strip marks the cut edge, after every bar', () => {
+  const cut: BarChannels = {
+    x: Uint32Array.from([10, 30, 50]),
+    x2: Uint32Array.from([20, 40, 60]),
+    y: Float32Array.from([5, 12, -3]),
+    color: Uint32Array.from([RED, RED, RED]),
+    count: 3,
+  }
+  const params: BarParams = {
+    domain: [0, 10],
+    origin: 0,
+    minWidthPx: 2,
+    seamPx: 0,
+  }
+  const mark = defineMark({
+    shape: barMark,
+    channels: (c: BarChannels) => c,
+    params: () => params,
+  })
+  const { ctx, calls } = recordingContext()
+  mark.paintBlock(ctx, cut, block, { canvasWidth: 60, canvasHeight: 100 })
+  expect(calls.map(r => [r.y, r.h])).toEqual([
+    [50, 50],
+    [0, 100],
+    [0, 2],
+    [98, 2],
+  ])
+  expect(
+    mark.ink!(cut, block, { canvasWidth: 60, canvasHeight: 100 }, 2),
+  ).toEqual(expect.objectContaining({ top: 98, height: 2 }))
+  expect(
+    sweepMarkAgainstHit(
+      mark,
+      cut,
+      block,
+      { canvasWidth: 60, canvasHeight: 100 },
+      { maxDistSq: Number.MIN_VALUE, sliceOne: sliceOneBar },
+    ),
+  ).toEqual([])
 })
 
 // Rows: the same bars and rules banded three ways, each band the value

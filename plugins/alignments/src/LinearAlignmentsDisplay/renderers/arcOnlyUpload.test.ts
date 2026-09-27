@@ -197,7 +197,10 @@ describe('a new layout run still rebuilds the whole region', () => {
     expect(new Set(uploadedPasses(hal))).toEqual(
       new Set([
         ...PILEUP_PASSES.map(pass => pass.id),
-        ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass.id),
+        // the clip strip draws off the depth bars' buffer and uploads none
+        ...ALIGNMENTS_COVERAGE_MARKS.filter(m => !m.bufferOf).map(
+          m => m.pass.id,
+        ),
         ...ARC_PASS_IDS,
       ]),
     )

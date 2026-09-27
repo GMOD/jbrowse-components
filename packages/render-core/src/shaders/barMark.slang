@@ -31,11 +31,14 @@
 import antialias;
 import hpmath;
 import colorPack;
+import clipStrip;
 import markColor;
 import rowTable;
 import valueScale;
 
-public static const uint VERTS_PER_INSTANCE = 6u;
+// Two quads: the bar, then its clip strip, which every vertex of a bar the
+// domain did not cut sends off clip.
+public static const uint VERTS_PER_INSTANCE = 12u;
 
 struct BarMarkInstance {
   uint  x     : ATTR0;
@@ -117,11 +120,31 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
 
   float bandTop = rowBandTopPx(u.rowOffsetPx, u.rowHeight, place.slot);
+  float padPx = barAaPx();
+
+  if (vid >= 6u) {
+    // The clip strip: CLIP_STRIP_PX across the band edge that cut the bar,
+    // antialiased at its two horizontal cuts as the bar is.
+    int side = clipSide(inst.y, u.domainMin, u.domainMax, u.valueScaleType);
+    if (side == 0) {
+      o.position = float4(2.0, 2.0, 0.0, 1.0);
+      o.color = float4(0.0);
+      o.barInkPx = float2(0.0);
+      return o;
+    }
+    float stripTop = side > 0 ? bandTop : bandTop + u.rowBandPx - CLIP_STRIP_PX;
+    float stripBot = stripTop + CLIP_STRIP_PX;
+    float sy = lerp(stripBot + padPx, stripTop - padPx, q.y);
+    o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(sy, u.canvasHeight), 0.0, 1.0);
+    o.color = float4(unpackRGBA(CLIP_STRIP_COLOR).rgb, 1.0);
+    o.barInkPx = float2(sy - stripTop, sy - stripBot);
+    return o;
+  }
+
   float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
   float originY = bandTop + u.originYPx;
   float topPx = min(valueY, originY);
   float botPx = max(valueY, originY);
-  float padPx = barAaPx();
   float vy = lerp(botPx + padPx, topPx - padPx, q.y);
 
   o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);

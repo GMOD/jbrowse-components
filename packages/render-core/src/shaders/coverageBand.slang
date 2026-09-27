@@ -110,6 +110,16 @@ public struct CoverageVsOut {
   public float4 color    : COLOR0;
 };
 
+// One depth bar. `relDepth` is depths[bin] / regionMaxDepth, the same packing
+// the SNP and modification segments carry (see coverageSnp.slang);
+// covNormalizeDepth recovers the raw depth from it. The bin spans `u.binSize`
+// bp: 1 for per-bp coverage, wider once the producer downsamples. The bar pass
+// and the clip-strip pass both read this buffer.
+public struct CoverageBarInstance {
+  public uint  position : ATTR0;
+  public float relDepth : ATTR1;
+};
+
 // Send a vertex off clip, for an instance a gate dropped. Dropping the whole
 // instance rather than shrinking its segment is what leaves the rest of the
 // stack where it was. `spanMark` spells its hidden row the same way: a real

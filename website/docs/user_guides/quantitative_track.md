@@ -37,7 +37,10 @@ The Y-axis range follows the region in view, and this checkbox (the display's
 slot) decides whether one anomalous position may take the whole axis. Ticked,
 the default, each sign is clipped at the 99th percentile of what is in view;
 unticked, the axis runs to the plain min and max. A config takes any quantile,
-`0.95` for a harder clip.
+`0.95` for a harder clip. A bar the clip cut wears a 2 px red strip across the
+edge that cut it, on this plot, the alignments coverage band and a bar plot
+alike, so a collapsed repeat's pile-up does not read as one more bar touching
+the top.
 
 ### Start axis at 0
 

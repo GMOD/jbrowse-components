@@ -196,7 +196,7 @@ function paintOne(mark: (typeof FIVE)[number], s = state()) {
   return ink
 }
 
-test('the five layers are the band order, and the fourth list leaves out the modification slices', () => {
+test('the six layers are the band order, and the second list leaves out the modification slices', () => {
   expect(FIVE.map(m => m.pass.id)).toEqual(COVERAGE_BAND_LAYER_ORDER)
   expect(FOUR.map(m => m.pass.id)).toEqual(
     COVERAGE_BAND_LAYER_ORDER.filter(id => id !== 'modCov'),
@@ -205,18 +205,30 @@ test('the five layers are the band order, and the fourth list leaves out the mod
 
 test('the band stages one uniform write per block, not one per layer', () => {
   const hal = render(FIVE)
-  // The five layers read `writeBandUniforms` through one `params` lens, so the
-  // four after the first draw off the slot the first staged.
+  // The six layers read `writeBandUniforms` through one `params` lens, so the
+  // five after the first draw off the slot the first staged.
   expect(hal.getUniformWritesF32()).toHaveLength(1)
-  expect(hal.draws().map(d => d.uniformWrite)).toEqual([0, 0, 0, 0, 0])
+  expect(hal.draws().map(d => d.uniformWrite)).toEqual([0, 0, 0, 0, 0, 0])
 })
 
+// The domain max under the one bin's depth, so the clip strip has a bar to mark.
 test('every layer paints, and no two paint the same ink', () => {
-  const signatures = FIVE.map(m => paintOne(m).join('|'))
-  for (const s of signatures) {
-    expect(s).not.toBe('')
+  const s = state({ domainMax: 20 })
+  const signatures = FIVE.map(m => paintOne(m, s).join('|'))
+  for (const sig of signatures) {
+    expect(sig).not.toBe('')
   }
   expect(new Set(signatures).size).toBe(FIVE.length)
+})
+
+test('the clip strip marks only a bar the domain cut, and draws last', () => {
+  const strip = FIVE.at(-1)!
+  expect(strip.pass.id).toBe('clipStrip')
+  expect(paintOne(strip)).toEqual([])
+  const ink = paintOne(strip, state({ domainMax: 20 }))
+  expect(ink).toHaveLength(1)
+  // 2 px down from the band's top inset, the bar's top once it is clamped.
+  expect(ink[0]).toMatch(/^rect \d+(\.\d+)? 5 \d+(\.\d+)? 2$/)
 })
 
 test('the GPU draws every layer in order off the one uniform struct', () => {
@@ -248,6 +260,7 @@ test('an unresolved domain draws only the indicator triangles on both backends',
     false,
     false,
     true,
+    false,
   ])
 })
 
@@ -257,11 +270,12 @@ test('interbase off drops the histogram and its triangles on both backends', () 
     render(FIVE, s)
       .draws()
       .map(d => d.passId),
-  ).toEqual(['coverage', 'snpCov', 'modCov'])
+  ).toEqual(['coverage', 'snpCov', 'modCov', 'clipStrip'])
   expect(FIVE.map(m => paintOne(m, s).length > 0)).toEqual([
     true,
     true,
     true,
+    false,
     false,
     false,
   ])

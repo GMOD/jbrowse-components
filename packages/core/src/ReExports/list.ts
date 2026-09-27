@@ -512,6 +512,8 @@ export default [
   '@jbrowse/render-core/shaders/barMarkIface',
   '@jbrowse/render-core/shaders/capsule',
   '@jbrowse/render-core/shaders/capsuleConsts',
+  '@jbrowse/render-core/shaders/clipStrip',
+  '@jbrowse/render-core/shaders/clipStripConsts',
   '@jbrowse/render-core/shaders/colorRampLut',
   '@jbrowse/render-core/shaders/coverageBar',
   '@jbrowse/render-core/shaders/coverageIndicator',

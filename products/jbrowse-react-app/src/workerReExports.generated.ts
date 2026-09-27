@@ -110,31 +110,33 @@ import * as m123 from '@jbrowse/render-core/shaders/antialias'
 import * as m124 from '@jbrowse/render-core/shaders/barMarkIface'
 import * as m125 from '@jbrowse/render-core/shaders/capsule'
 import * as m126 from '@jbrowse/render-core/shaders/capsuleConsts'
-import * as m127 from '@jbrowse/render-core/shaders/colorRampLut'
-import * as m128 from '@jbrowse/render-core/shaders/coverageBar'
-import * as m129 from '@jbrowse/render-core/shaders/coverageIndicator'
-import * as m130 from '@jbrowse/render-core/shaders/coverageInterbase'
-import * as m131 from '@jbrowse/render-core/shaders/coverageMod'
-import * as m132 from '@jbrowse/render-core/shaders/coverageSnp'
-import * as m133 from '@jbrowse/render-core/shaders/curveDistance'
-import * as m134 from '@jbrowse/render-core/shaders/hpmath'
-import * as m135 from '@jbrowse/render-core/shaders/linkMark'
-import * as m136 from '@jbrowse/render-core/shaders/linkMarkConsts'
-import * as m137 from '@jbrowse/render-core/shaders/markColorConsts'
-import * as m138 from '@jbrowse/render-core/shaders/pointGlyph'
-import * as m139 from '@jbrowse/render-core/shaders/pointGlyphConsts'
-import * as m140 from '@jbrowse/render-core/shaders/pointMark'
-import * as m141 from '@jbrowse/render-core/shaders/pointMarkConsts'
-import * as m142 from '@jbrowse/render-core/shaders/pointMarkIface'
-import * as m143 from '@jbrowse/render-core/shaders/rowRect'
-import * as m144 from '@jbrowse/render-core/shaders/rowRectConsts'
-import * as m145 from '@jbrowse/render-core/shaders/scoreScale'
-import * as m146 from '@jbrowse/render-core/shaders/spanMarkIface'
-import * as m147 from '@jbrowse/render-core/sharedBackendKey'
-import * as m148 from '@jbrowse/render-core/slangPass'
-import * as m149 from '@jbrowse/render-core/useGraphicsCapabilities'
-import * as m150 from '@jbrowse/render-core/useRenderingBackend'
-import * as m151 from '@jbrowse/render-core/useTabVisibilityRerender'
+import * as m127 from '@jbrowse/render-core/shaders/clipStrip'
+import * as m128 from '@jbrowse/render-core/shaders/clipStripConsts'
+import * as m129 from '@jbrowse/render-core/shaders/colorRampLut'
+import * as m130 from '@jbrowse/render-core/shaders/coverageBar'
+import * as m131 from '@jbrowse/render-core/shaders/coverageIndicator'
+import * as m132 from '@jbrowse/render-core/shaders/coverageInterbase'
+import * as m133 from '@jbrowse/render-core/shaders/coverageMod'
+import * as m134 from '@jbrowse/render-core/shaders/coverageSnp'
+import * as m135 from '@jbrowse/render-core/shaders/curveDistance'
+import * as m136 from '@jbrowse/render-core/shaders/hpmath'
+import * as m137 from '@jbrowse/render-core/shaders/linkMark'
+import * as m138 from '@jbrowse/render-core/shaders/linkMarkConsts'
+import * as m139 from '@jbrowse/render-core/shaders/markColorConsts'
+import * as m140 from '@jbrowse/render-core/shaders/pointGlyph'
+import * as m141 from '@jbrowse/render-core/shaders/pointGlyphConsts'
+import * as m142 from '@jbrowse/render-core/shaders/pointMark'
+import * as m143 from '@jbrowse/render-core/shaders/pointMarkConsts'
+import * as m144 from '@jbrowse/render-core/shaders/pointMarkIface'
+import * as m145 from '@jbrowse/render-core/shaders/rowRect'
+import * as m146 from '@jbrowse/render-core/shaders/rowRectConsts'
+import * as m147 from '@jbrowse/render-core/shaders/scoreScale'
+import * as m148 from '@jbrowse/render-core/shaders/spanMarkIface'
+import * as m149 from '@jbrowse/render-core/sharedBackendKey'
+import * as m150 from '@jbrowse/render-core/slangPass'
+import * as m151 from '@jbrowse/render-core/useGraphicsCapabilities'
+import * as m152 from '@jbrowse/render-core/useRenderingBackend'
+import * as m153 from '@jbrowse/render-core/useTabVisibilityRerender'
 
 const libs: Record<string, unknown> = {
   ...coreLibs,
@@ -265,31 +267,33 @@ const libs: Record<string, unknown> = {
   '@jbrowse/render-core/shaders/barMarkIface': m124,
   '@jbrowse/render-core/shaders/capsule': m125,
   '@jbrowse/render-core/shaders/capsuleConsts': m126,
-  '@jbrowse/render-core/shaders/colorRampLut': m127,
-  '@jbrowse/render-core/shaders/coverageBar': m128,
-  '@jbrowse/render-core/shaders/coverageIndicator': m129,
-  '@jbrowse/render-core/shaders/coverageInterbase': m130,
-  '@jbrowse/render-core/shaders/coverageMod': m131,
-  '@jbrowse/render-core/shaders/coverageSnp': m132,
-  '@jbrowse/render-core/shaders/curveDistance': m133,
-  '@jbrowse/render-core/shaders/hpmath': m134,
-  '@jbrowse/render-core/shaders/linkMark': m135,
-  '@jbrowse/render-core/shaders/linkMarkConsts': m136,
-  '@jbrowse/render-core/shaders/markColorConsts': m137,
-  '@jbrowse/render-core/shaders/pointGlyph': m138,
-  '@jbrowse/render-core/shaders/pointGlyphConsts': m139,
-  '@jbrowse/render-core/shaders/pointMark': m140,
-  '@jbrowse/render-core/shaders/pointMarkConsts': m141,
-  '@jbrowse/render-core/shaders/pointMarkIface': m142,
-  '@jbrowse/render-core/shaders/rowRect': m143,
-  '@jbrowse/render-core/shaders/rowRectConsts': m144,
-  '@jbrowse/render-core/shaders/scoreScale': m145,
-  '@jbrowse/render-core/shaders/spanMarkIface': m146,
-  '@jbrowse/render-core/sharedBackendKey': m147,
-  '@jbrowse/render-core/slangPass': m148,
-  '@jbrowse/render-core/useGraphicsCapabilities': m149,
-  '@jbrowse/render-core/useRenderingBackend': m150,
-  '@jbrowse/render-core/useTabVisibilityRerender': m151,
+  '@jbrowse/render-core/shaders/clipStrip': m127,
+  '@jbrowse/render-core/shaders/clipStripConsts': m128,
+  '@jbrowse/render-core/shaders/colorRampLut': m129,
+  '@jbrowse/render-core/shaders/coverageBar': m130,
+  '@jbrowse/render-core/shaders/coverageIndicator': m131,
+  '@jbrowse/render-core/shaders/coverageInterbase': m132,
+  '@jbrowse/render-core/shaders/coverageMod': m133,
+  '@jbrowse/render-core/shaders/coverageSnp': m134,
+  '@jbrowse/render-core/shaders/curveDistance': m135,
+  '@jbrowse/render-core/shaders/hpmath': m136,
+  '@jbrowse/render-core/shaders/linkMark': m137,
+  '@jbrowse/render-core/shaders/linkMarkConsts': m138,
+  '@jbrowse/render-core/shaders/markColorConsts': m139,
+  '@jbrowse/render-core/shaders/pointGlyph': m140,
+  '@jbrowse/render-core/shaders/pointGlyphConsts': m141,
+  '@jbrowse/render-core/shaders/pointMark': m142,
+  '@jbrowse/render-core/shaders/pointMarkConsts': m143,
+  '@jbrowse/render-core/shaders/pointMarkIface': m144,
+  '@jbrowse/render-core/shaders/rowRect': m145,
+  '@jbrowse/render-core/shaders/rowRectConsts': m146,
+  '@jbrowse/render-core/shaders/scoreScale': m147,
+  '@jbrowse/render-core/shaders/spanMarkIface': m148,
+  '@jbrowse/render-core/sharedBackendKey': m149,
+  '@jbrowse/render-core/slangPass': m150,
+  '@jbrowse/render-core/useGraphicsCapabilities': m151,
+  '@jbrowse/render-core/useRenderingBackend': m152,
+  '@jbrowse/render-core/useTabVisibilityRerender': m153,
 }
 
 export default libs

@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 43 shaders with entry points. 126 functions
-are inside the emitter's subset, of which **97 are exported**.
+Scanned 44 shaders with entry points. 127 functions
+are inside the emitter's subset, of which **98 are exported**.
 
 ## Candidates
 
@@ -98,6 +98,7 @@ noticing in a diff.
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'RowRectUniforms' is outside the supported scalar subset | 1 | `rowRectClipPos` |
+| type 'WiggleFillInstance' is outside the supported scalar subset | 1 | `clipStripVertex` |
 | vec2<f32> built from 1 component(s) (only the two-scalar form is supported, not a splat or a copy) is outside the supported scalar subset | 1 | `polarPoint` |
 
 ## Exported, but nothing imports it

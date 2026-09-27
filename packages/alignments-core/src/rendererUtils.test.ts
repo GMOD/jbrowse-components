@@ -1,8 +1,13 @@
+import { abgrToCssRgba } from '@jbrowse/render-core/marks/colorFill'
+import { CLIP_STRIP_COLOR } from '@jbrowse/render-core/shaders/clipStripConsts'
+import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core'
+
 import { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 import { packCoverageBinsForGpu } from './coverageGpuPacking.ts'
 import { INDICATOR_TRIANGLE_HW } from './labelConstants.ts'
 import {
   drawCoverageBins,
+  drawCoverageClipStrips,
   drawIndicators,
   drawInterbaseSegments,
   drawModCovSegments,
@@ -98,6 +103,34 @@ describe('clipKindColor', () => {
   it('falls back to the insertion color, as the shader does', () => {
     expect(clipKindColor(0, colors)).toBe('purple')
     expect(clipKindColor(9, colors)).toBe('purple')
+  })
+})
+
+describe('drawCoverageClipStrips', () => {
+  it('marks only the bins over the domain max, across the bar top', () => {
+    const { ctx, calls } = makeCtx()
+    drawCoverageClipStrips(
+      ctx,
+      packCoverageBinsForGpu(new Float32Array([4, 20, 8]), 20, 100, 3),
+      {
+        domainMin: 0,
+        domainMax: 10,
+        scaleType: SCALE_TYPE_LINEAR,
+        regionMaxDepth: 20,
+      },
+      50,
+      (bp: number) => (bp - 100) * 10,
+      200,
+      1,
+    )
+    const rects = calls.filter(c => c.method === 'fillRect')
+    expect(rects).toHaveLength(1)
+    const [x, y, w, h] = rects[0]!.args as number[]
+    // the second bin's span, 2 px down from the band's 5 px top inset
+    expect([x, y, w, h]).toEqual([10, 5, 10, 2])
+    expect(calls.find(c => c.method === 'fillStyle')!.args).toEqual([
+      abgrToCssRgba(CLIP_STRIP_COLOR),
+    ])
   })
 })
 

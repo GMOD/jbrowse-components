@@ -28,9 +28,11 @@ import colorRampLut;
 import pointGlyph;
 import scoreScale;
 import wiggleCommon;
+import clipStrip;
 
-
-public static const uint VERTS_PER_INSTANCE = 6u;
+// Two quads: the bar or point, then its clip strip, which every vertex of a
+// bar the domain did not cut sends off clip.
+public static const uint VERTS_PER_INSTANCE = 12u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 [[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
@@ -48,6 +50,8 @@ struct VsOut {
   // -of-two-ramps form is written up.
   float2 barInkPx : TEXCOORD1;
   nointerpolation float rampT : COLOR1;
+  // 1 on the clip strip, whose colour is its own rather than the ramp's.
+  nointerpolation float strip : COLOR2;
 };
 
 // Which glyph the pass draws follows entirely from uniforms, so both stages
@@ -69,6 +73,36 @@ bool drawsBar() {
   return u.renderingType == RENDERING_TYPE_XYPLOT;
 }
 
+// The strip quad: CLIP_STRIP_PX of red across the row edge that cut the bar,
+// antialiased at its two horizontal cuts the way the bar is. A point, or a bar
+// inside the domain, has none, and its six vertices go off clip.
+VsOut clipStripVertex(WiggleFillInstance inst, uint vid, float sx1, float sx2,
+                      float rowTop, float rowHeight, float pxToClip) {
+  VsOut o;
+  o.localPos = float2(0.0, 0.0);
+  o.rampT = 0.0;
+  o.strip = 1.0;
+  int side = drawsBar()
+    ? clipSide(inst.score, u.domainYMin, u.domainYMax, u.scaleType)
+    : 0;
+  if (side == 0) {
+    o.position = float4(2.0, 2.0, 0.0, 1.0);
+    o.color = float4(0.0);
+    o.barInkPx = float2(0.0, 0.0);
+    return o;
+  }
+  float topPx = side > 0 ? rowTop : rowTop + rowHeight - CLIP_STRIP_PX;
+  float botPx = topPx + CLIP_STRIP_PX;
+  float2 q = quadLocal(vid);
+  float padPx = aaPx(u.devicePixelRatio);
+  float vy = lerp(botPx + padPx, topPx - padPx, q.y);
+  float x2 = extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, u.viewportWidth);
+  o.position = float4(lerp(sx1, x2, q.x), 1.0 - vy * pxToClip, 0.0, 1.0);
+  o.color = float4(unpackRGBA(CLIP_STRIP_COLOR).rgb, 1.0);
+  o.barInkPx = float2(vy - topPx, vy - botPx);
+  return o;
+}
+
 [shader("vertex")]
 VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startEnd.x, u);
@@ -77,6 +111,10 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   float rowHeight = u.canvasHeight / u.numRows;
   float rowTop = inst.rowIndex * rowHeight;
   float pxToClip = 2.0 / u.canvasHeight;
+
+  if (vid >= 6u) {
+    return clipStripVertex(inst, vid, sx1, sx2, rowTop, rowHeight, pxToClip);
+  }
 
   float sx;
   float sy;
@@ -136,6 +174,7 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.localPos = localPos;
   o.barInkPx = barInkPx;
+  o.strip = 0.0;
   o.rampT = u.rampLut == 1
     ? rampMidT(
         normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant),
@@ -148,7 +187,8 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
 float4 fs_main(VsOut fragIn) : SV_Target {
   float4 color = fragIn.color;
   if (u.rampLut == 1) {
-    color = rampColor(colorRamp, fragIn.rampT);
+    float4 ramped = rampColor(colorRamp, fragIn.rampT);
+    color = fragIn.strip > 0.5 ? fragIn.color : ramped;
   }
   float4 outColor;
   if (drawsDisc()) {

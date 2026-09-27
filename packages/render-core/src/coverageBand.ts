@@ -1,4 +1,5 @@
 import * as coverageBarShader from './shaders/coverageBar.generated.ts'
+import * as coverageClipShader from './shaders/coverageClip.generated.ts'
 import * as coverageIndicatorShader from './shaders/coverageIndicator.generated.ts'
 import * as coverageInterbaseShader from './shaders/coverageInterbase.generated.ts'
 import * as coverageModShader from './shaders/coverageMod.generated.ts'
@@ -26,7 +27,7 @@ export interface CoverageBandModBuffer {
 /**
  * One draw layer of the coverage band, and the id of the GPU pass that draws it.
  *
- * The band is the same five marks wherever it appears — a display either has a
+ * The band is the same six marks wherever it appears — a display either has a
  * layer's data or does not, and no display reorders them.
  */
 export type CoverageLayerId =
@@ -35,6 +36,7 @@ export type CoverageLayerId =
   | 'modCov'
   | 'interbase'
   | 'indicator'
+  | 'clipStrip'
 
 /**
  * The band's z-order, back to front: the depth bars, the SNP slices stacked
@@ -57,6 +59,7 @@ export const COVERAGE_BAND_LAYER_ORDER: readonly CoverageLayerId[] = [
   'modCov',
   'interbase',
   'indicator',
+  'clipStrip',
 ]
 
 /**
@@ -86,6 +89,18 @@ export const COVERAGE_BAR_PASS: InstancePass<
   Pick<CoverageBandBuffers, 'coveragePackedBuffer'>
 > = {
   ...slangPass({ id: 'coverage', mod: coverageBarShader }),
+  pack: data => data.coveragePackedBuffer,
+}
+
+/**
+ * The clip strips over the depth bars the domain cut, off the bar pass's own
+ * buffer and last in the order, since every layer between stacks inside the
+ * bar and would paint over a strip drawn with it.
+ */
+export const COVERAGE_CLIP_PASS: InstancePass<
+  Pick<CoverageBandBuffers, 'coveragePackedBuffer'>
+> = {
+  ...slangPass({ id: 'clipStrip', mod: coverageClipShader }),
   pack: data => data.coveragePackedBuffer,
 }
 

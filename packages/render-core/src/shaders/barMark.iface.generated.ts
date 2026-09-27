@@ -11,7 +11,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
   { index: 5, kind: 'sampler', name: 'rowTable', stages: ['vertex'] },
 ]
 
-export const VERTS_PER_INSTANCE = 6
+export const VERTS_PER_INSTANCE = 12
 
 export const UNIFORMS_SIZE_BYTES = 96
 

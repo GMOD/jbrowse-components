@@ -11,6 +11,11 @@ import {
   spanLeft,
   withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
+import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
+import {
+  CLIP_STRIP_COLOR,
+  CLIP_STRIP_PX,
+} from '@jbrowse/render-core/shaders/clipStripConsts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -147,6 +152,7 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
   }
   const toX = makeBpMapper(block)
   const n = source.numFeatures
+  let clipped = false
   for (let i = 0; i < n; i++) {
     if (rampFill) {
       ctx.fillStyle = rampFill(scores[i]!)
@@ -159,7 +165,8 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
     }
     const x1 = toX(positions[i * 2]!)
     const x2 = toX(positions[i * 2 + 1]!)
-    const scoreY = scoreToY(scores[i]!) + rowTop
+    const score = scores[i]!
+    const scoreY = scoreToY(score) + rowTop
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + CANVAS_SEAM_PX)
     // bar grows from the score baseline (originY) up or down to the score
     ctx.fillRect(
@@ -168,6 +175,24 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
       w,
       Math.abs(originY - scoreY),
     )
+    clipped ||= clipSide(score, domainY[0], domainY[1], scaleType) !== 0
+  }
+  if (!clipped) {
+    return
+  }
+  // The strips go on after every bar, as the shader's second quad does, so a
+  // neighbour widened to the min-width floor cannot paint over one.
+  setAbgrFill(ctx, CLIP_STRIP_COLOR)
+  for (let i = 0; i < n; i++) {
+    const side = clipSide(scores[i]!, domainY[0], domainY[1], scaleType)
+    if (side === 0) {
+      continue
+    }
+    const x1 = toX(positions[i * 2]!)
+    const x2 = toX(positions[i * 2 + 1]!)
+    const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + CANVAS_SEAM_PX)
+    const top = side > 0 ? rowTop : rowTop + rowHeight - CLIP_STRIP_PX
+    ctx.fillRect(spanLeft(x1, x2, w), top, w, CLIP_STRIP_PX)
   }
 }
 

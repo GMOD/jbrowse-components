@@ -146,6 +146,29 @@ describe('the wiggle painters', () => {
     innerColors: [],
   }
 
+  // A bar the domain cut wears the clip strip on the row edge that cut it
+  // (ADR-183), after every bar; a log axis has no bottom to cut.
+  test('an xyplot bar past the domain wears the clip strip', () => {
+    const { ctx, fillRectCalls } = createMockCanvas()
+    const source = makeSource([5, 12, -3], [0, 300, 600], [300, 600, 900])
+    paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], defaultState)
+    expect(fillRectCalls.slice(3).map(([, y, , h]) => [y, h])).toEqual([
+      [0, 2],
+      [198, 2],
+    ])
+
+    const log = createMockCanvas()
+    paintWiggle(
+      log.ctx,
+      new Map([[0, [makeSource([0.5, 200], [0, 500], [500, 1000])]]]),
+      [defaultBlock],
+      { ...defaultState, domainY: [1, 100], scaleType: SCALE_TYPE_LOG },
+    )
+    expect(log.fillRectCalls.slice(2).map(([, y, , h]) => [y, h])).toEqual([
+      [0, 2],
+    ])
+  })
+
   test('draws XY plot rectangles', () => {
     const { ctx, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {

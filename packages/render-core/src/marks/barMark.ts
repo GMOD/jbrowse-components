@@ -1,6 +1,11 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { getDpr, makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
 import * as shader from '../shaders/barMark.generated.ts'
+import {
+  CLIP_STRIP_COLOR,
+  CLIP_STRIP_PX,
+} from '../shaders/clipStrip.generated.ts'
+import { clipSide } from '../shaders/clipStrip.js.generated.ts'
 import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
@@ -70,6 +75,19 @@ function originYPx(
   return valueToYPxScaled(params.origin, domainMin, domainMax, band, st, c)
 }
 
+// The x span one instance paints, floored at `minWidthPx` off its start edge.
+function barSpan(
+  bpToPx: (bp: number) => number,
+  x: number,
+  x2: number,
+  params: BarParams,
+) {
+  const xa = bpToPx(x)
+  const xb = bpToPx(x2)
+  const width = Math.max(params.minWidthPx, Math.abs(xb - xa))
+  return { left: spanLeft(xa, xb, width), width }
+}
+
 // The rect one instance paints, in the frame's CSS px, or undefined for a bar
 // with no height — which draws nothing and so cannot be hovered.
 function barRect(
@@ -83,18 +101,39 @@ function barRect(
   yScale: YScale,
 ) {
   const { valueScaleType: st, valueSymlogConstant: c } = yScale
-  const xa = bpToPx(x)
-  const xb = bpToPx(x2)
-  const width = Math.max(params.minWidthPx, Math.abs(xb - xa))
+  const { left, width } = barSpan(bpToPx, x, x2, params)
   const [domainMin, domainMax] = params.domain
   const valueY =
     bandTop + valueToYPxScaled(y, domainMin, domainMax, band, st, c)
   const originY = bandTop + originYPx(params, band, yScale)
   const top = Math.min(valueY, originY)
   const height = Math.abs(valueY - originY)
-  return height === 0
-    ? undefined
-    : { left: spanLeft(xa, xb, width), top, width, height }
+  return height === 0 ? undefined : { left, top, width, height }
+}
+
+// The clip strip's rect, or undefined for a bar the domain holds (ADR-183).
+function stripRect(
+  bpToPx: (bp: number) => number,
+  x: number,
+  x2: number,
+  y: number,
+  bandTop: number,
+  band: number,
+  params: BarParams,
+  yScale: YScale,
+) {
+  const [domainMin, domainMax] = params.domain
+  const side = clipSide(y, domainMin, domainMax, yScale.valueScaleType)
+  if (side === 0) {
+    return undefined
+  }
+  const { left, width } = barSpan(bpToPx, x, x2, params)
+  return {
+    left,
+    top: side > 0 ? bandTop : bandTop + band - CLIP_STRIP_PX,
+    width,
+    height: CLIP_STRIP_PX,
+  }
 }
 
 export const barMark: MarkShape<BarChannels, BarParams> = {
@@ -139,6 +178,8 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     const setFill = makeAbgrFill(ctx)
     const yScale = valueScaleUniforms(params)
     const table = params.rowTable
+    const [domainMin, domainMax] = params.domain
+    let clipped = false
     for (let i = 0; i < count; i++) {
       const slot = rowSlot(row, i, table)
       if (slot === undefined) {
@@ -150,6 +191,34 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
         setFill(rowColor(color[i]!, row, i, table))
         ctx.fillRect(r.left, r.top, r.width + params.seamPx, r.height)
       }
+      clipped ||=
+        clipSide(y[i]!, domainMin, domainMax, yScale.valueScaleType) !== 0
+    }
+    if (!clipped) {
+      return
+    }
+    // The strips go on after every bar, as the shader's second quad does, so
+    // a neighbour widened to the min-width floor cannot paint over one.
+    setFill(CLIP_STRIP_COLOR)
+    for (let i = 0; i < count; i++) {
+      const slot = rowSlot(row, i, table)
+      if (slot === undefined) {
+        continue
+      }
+      const { top, band } = barBand(params, frame.canvasHeight, slot)
+      const s = stripRect(
+        bpToPx,
+        x[i]!,
+        x2[i]!,
+        y[i]!,
+        top,
+        band,
+        params,
+        yScale,
+      )
+      if (s) {
+        ctx.fillRect(s.left, s.top, s.width + params.seamPx, s.height)
+      }
     }
   },
 
@@ -159,16 +228,14 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     if (slot === undefined) {
       return undefined
     }
+    // A bar cut to no height, its origin on the edge that cut it, paints only
+    // its strip, which is then what answers a hover.
     const { top, band } = barBand(params, frame.canvasHeight, slot)
-    return barRect(
-      makeBpMapper(block),
-      x[i]!,
-      x2[i]!,
-      y[i]!,
-      top,
-      band,
-      params,
-      valueScaleUniforms(params),
+    const bpToPx = makeBpMapper(block)
+    const yScale = valueScaleUniforms(params)
+    return (
+      barRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale) ??
+      stripRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale)
     )
   },
 

@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import {
   COVERAGE_BAR_PASS,
+  COVERAGE_CLIP_PASS,
   COVERAGE_INDICATOR_PASS,
   COVERAGE_INTERBASE_PASS,
   COVERAGE_MOD_PASS,
@@ -34,6 +35,7 @@ import {
 } from './labelConstants.ts'
 import {
   drawCoverageBins,
+  drawCoverageClipStrips,
   drawIndicators,
   drawInterbaseSegments,
   drawModCovSegments,
@@ -262,6 +264,23 @@ export const coverageBarShape = layerShape(
       p.regionMaxDepth,
       p.height,
       abgrToCssRgba(p.colors.coverage),
+      bpToX,
+      viewWidth,
+      p.coverageBinSize,
+      CANVAS_SEAM_PX,
+    )
+  },
+)
+
+export const coverageClipShape = layerShape(
+  COVERAGE_CLIP_PASS,
+  onDepthAxis,
+  (ctx, c, bpToX, viewWidth, p) => {
+    drawCoverageClipStrips(
+      ctx,
+      c.coveragePackedBuffer,
+      p,
+      p.height,
       bpToX,
       viewWidth,
       p.coverageBinSize,
@@ -556,8 +575,14 @@ export function coverageBandMarks<TRegion, TState extends MarkFrame>(
 ): Mark<TRegion, TState>[] {
   const { channels, state, band } = spec
   const params = (s: TState, r: TRegion) => bandParams(state(s), channels(r))
+  const coverage = defineMark({
+    shape: coverageBarShape,
+    channels,
+    params,
+    band,
+  })
   return orderCoverageBandLayers<Mark<TRegion, TState>>({
-    coverage: defineMark({ shape: coverageBarShape, channels, params, band }),
+    coverage,
     snpCov: defineMark({ shape: coverageSnpShape, channels, params, band }),
     modCov: spec.modCov
       ? defineMark({
@@ -578,6 +603,13 @@ export function coverageBandMarks<TRegion, TState extends MarkFrame>(
       channels,
       params,
       band,
+    }),
+    clipStrip: defineMark({
+      shape: coverageClipShape,
+      channels,
+      params,
+      band,
+      bufferOf: coverage,
     }),
   })
 }

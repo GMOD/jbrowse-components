@@ -128,12 +128,13 @@ describe('the MAF coverage band on the rows canvas', () => {
   const hal = render(BAND)
   const draws = hal.draws()
 
-  test('draws the four shared band passes, in paint order, then the rows mark', () => {
+  test('draws the five shared band passes, in paint order, then the rows mark', () => {
     expect(draws.map(d => d.passId)).toEqual([
       'coverage',
       'snpCov',
       'interbase',
       'indicator',
+      'clipStrip',
       'span',
     ])
   })

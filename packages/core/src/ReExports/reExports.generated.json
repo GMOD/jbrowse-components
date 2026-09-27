@@ -4823,6 +4823,7 @@
         "COVERAGE_BAND_LAYER_ORDER",
         "COVERAGE_BAND_UNIFORMS_SIZE_BYTES",
         "COVERAGE_BAR_PASS",
+        "COVERAGE_CLIP_PASS",
         "COVERAGE_INDICATOR_PASS",
         "COVERAGE_INTERBASE_PASS",
         "COVERAGE_MOD_PASS",
@@ -5153,6 +5154,21 @@
       "package": "@jbrowse/render-core",
       "names": [
         "CAPSULE_MIN_LEN_PX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/clipStrip": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "clipSide"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/clipStripConsts": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "CLIP_STRIP_COLOR",
+        "CLIP_STRIP_PX"
       ],
       "worker": "real"
     },

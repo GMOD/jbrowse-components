@@ -9,7 +9,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
   { index: 3, kind: 'sampler', name: 'colorRamp', stages: ['fragment'] },
 ]
 
-export const VERTS_PER_INSTANCE = 6
+export const VERTS_PER_INSTANCE = 12
 
 export const UNIFORMS_SIZE_BYTES = 224
 

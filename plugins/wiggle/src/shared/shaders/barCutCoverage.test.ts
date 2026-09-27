@@ -246,7 +246,7 @@ describe('xyplot bar cut coverage', () => {
   })
 
   test('the quad modelled here is the one the shader draws', () => {
-    expect(VERTS_PER_INSTANCE).toBe(6)
+    expect(VERTS_PER_INSTANCE).toBe(12)
   })
 
   test('the ramp is one output pixel wide at any dpr', () => {

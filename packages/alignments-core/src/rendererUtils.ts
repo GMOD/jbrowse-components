@@ -1,4 +1,9 @@
 import { setAbgrFill } from '@jbrowse/core/util/colorBits'
+import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
+import {
+  CLIP_STRIP_COLOR,
+  CLIP_STRIP_PX,
+} from '@jbrowse/render-core/shaders/clipStripConsts'
 
 import { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 import {
@@ -48,6 +53,7 @@ import {
 
 import type { SnpBaseColors } from './labelConstants.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 interface InterbaseDrawColors {
   insertion: string
@@ -252,6 +258,59 @@ export function drawCoverageBins(
     // fills whose antialiased coverage of one pixel sums to 1 composite to
     // 1-(1-a)(1-b) < 1, i.e. a visible seam.
     fillSpanRect(ctx, px, px2, barTop, bottom - barTop, widthCompensation)
+  }
+}
+
+/**
+ * The clip strips over the depth bars: `CLIP_STRIP_PX` of red across the top
+ * of every bar whose depth the domain cut, read off the same buffer as
+ * `drawCoverageBins`. `coverageClip.slang` is the GPU twin; both draw after
+ * the layers stacked inside the bar.
+ */
+export function drawCoverageClipStrips(
+  ctx: Ctx,
+  buffer: ArrayBuffer,
+  scale: {
+    domainMin: number
+    domainMax: number
+    scaleType: ScaleTypeCode
+    regionMaxDepth: number
+  },
+  coverageHeight: number,
+  bpToX: (bp: number) => number,
+  viewWidth: number,
+  binSize: number,
+  widthCompensation = 0,
+) {
+  const binCount = buffer.byteLength / COVERAGE_STRIDE_BYTES
+  if (binCount === 0) {
+    return
+  }
+  const { effectiveH, bottom } = coverageLayout(coverageHeight)
+  const top = bottom - effectiveH
+  const u32 = new Uint32Array(buffer)
+  const f32 = new Float32Array(buffer)
+  const { domainMin, domainMax, scaleType, regionMaxDepth } = scale
+  let filled = false
+  for (let i = 0; i < binCount; i++) {
+    const off = i * COVERAGE_STRIDE
+    const raw = f32[off + COVERAGE_F32.relDepth]! * regionMaxDepth
+    if (clipSide(raw, domainMin, domainMax, scaleType) !== 1) {
+      continue
+    }
+    const pos = u32[off + COVERAGE_U32.position]!
+    const pxA = bpToX(pos)
+    const pxB = bpToX(pos + binSize)
+    const px = Math.min(pxA, pxB)
+    const px2 = Math.max(pxA, pxB)
+    if (px > viewWidth || px2 < 0) {
+      continue
+    }
+    if (!filled) {
+      setAbgrFill(ctx, CLIP_STRIP_COLOR)
+      filled = true
+    }
+    fillSpanRect(ctx, px, px2, top, CLIP_STRIP_PX, widthCompensation)
   }
 }
 
