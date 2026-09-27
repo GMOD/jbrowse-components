@@ -46,9 +46,9 @@
 // the fix for the failure is the fix for the bug.
 import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 
-import { isFile } from './check-utils.ts'
+import { isFile, walkFiles } from './check-utils.ts'
 import { readManifest, repoRoot } from './figure-paths.ts'
 import { figureName, hashBuffer } from './figure-store.ts'
 
@@ -257,31 +257,21 @@ function check(): string[] {
 const AGENT_DOCS = join(repoRoot, 'agent-docs')
 const STAMP = 'diagram-source-sha256'
 
-// Repo-relative paths of every `*.dot` under an `agent-docs/**/diagrams/` dir.
-function agentSources(dir = AGENT_DOCS): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const path = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      return agentSources(path)
-    }
-    return entry.name.endsWith('.dot') && dir.endsWith('/diagrams')
-      ? [relative(repoRoot, path)]
-      : []
-  })
+// Repo-relative paths of every `*<ext>` under an `agent-docs/**/diagrams/` dir.
+function agentDiagramFiles(ext: string) {
+  return walkFiles(AGENT_DOCS, name => name.endsWith(ext))
+    .filter(path => dirname(path).endsWith('/diagrams'))
+    .map(path => relative(repoRoot, path))
 }
+
+const agentSources = () => agentDiagramFiles('.dot')
 
 const agentFigureFor = (source: string) => source.replace(/\.dot$/, '.svg')
 
 // The markdown that could embed one. Every doc under agent-docs, so a diagram
 // may be read by a doc in a sibling directory.
-function agentDocFiles(dir = AGENT_DOCS): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const path = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      return agentDocFiles(path)
-    }
-    return entry.name.endsWith('.md') ? [path] : []
-  })
+function agentDocFiles(): string[] {
+  return walkFiles(AGENT_DOCS, name => name.endsWith('.md'))
 }
 
 // The stamp makes the same skip available here, with no lock to consult: an
@@ -347,21 +337,9 @@ function checkAgentDiagrams(): string[] {
 // A committed SVG whose source is gone is a picture nothing can regenerate.
 function checkOrphanedFigures(): string[] {
   const rendered = new Set(agentSources().map(agentFigureFor))
-  return agentDiagramFigures()
+  return agentDiagramFiles('.svg')
     .filter(f => !rendered.has(f))
     .map(f => `${f}: no .dot source — delete it, or restore the source`)
-}
-
-function agentDiagramFigures(dir = AGENT_DOCS): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const path = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      return agentDiagramFigures(path)
-    }
-    return entry.name.endsWith('.svg') && dir.endsWith('/diagrams')
-      ? [relative(repoRoot, path)]
-      : []
-  })
 }
 
 if (process.argv.includes('--check')) {

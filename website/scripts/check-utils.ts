@@ -20,7 +20,9 @@ import { docsDir, repoRoot } from './paths.ts'
 export const check = process.argv.includes('--check')
 
 // Recursively collect absolute paths of files under `dir` whose basename passes
-// `match`, skipping any directory named in `skipDirs`.
+// `match`, skipping any directory named in `skipDirs` and every hidden one. The
+// site's own content glob skips hidden directories too, and an agent worktree
+// nested under `.claude/worktrees/` is a whole second copy of the docs.
 export function walkFiles(
   dir: string,
   match: (name: string) => boolean,
@@ -29,7 +31,9 @@ export function walkFiles(
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
     const full = join(dir, entry.name)
     if (entry.isDirectory()) {
-      return skipDirs.has(entry.name) ? [] : walkFiles(full, match, skipDirs)
+      return skipDirs.has(entry.name) || entry.name.startsWith('.')
+        ? []
+        : walkFiles(full, match, skipDirs)
     }
     return match(entry.name) ? [full] : []
   })
