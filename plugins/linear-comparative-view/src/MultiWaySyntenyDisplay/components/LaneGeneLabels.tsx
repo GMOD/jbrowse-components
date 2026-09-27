@@ -25,7 +25,6 @@ const LaneGeneLabels = observer(function LaneGeneLabels({
         height: model.height,
         overflow: 'hidden',
         pointerEvents: 'none',
-        fontFamily,
       }}
     >
       {model.laneGeneLabels(fontFamily, model.pinnedLabelGroups).map(label => (
