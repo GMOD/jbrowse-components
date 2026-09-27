@@ -903,7 +903,7 @@ const modifiers: Record<string, Modifier> = {
   scaletype: {
     on: ['wiggle', 'alignments'],
     apply: (r, v) => {
-      valueScaleOf(r).type = parseStr('scaletype', v, 'linear or log')
+      valueScaleOf(r).type = parseStr('scaletype', v, 'linear, log or symlog')
     },
   },
   crosshatch: {

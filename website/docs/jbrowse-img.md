@@ -466,12 +466,12 @@ jb2export --loc all --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 <Figure src="/img/jbrowse-img/skbr3_cov.png" caption="SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions" />
 
-The score scaling can also autoscale: here to "localsd" (mean plus/minus three
-standard deviations) on a linear scale:
+The axis clips outliers by default, following the 99th percentile of what is in
+view; `scales.y.domainQuantile=1` follows the extremes instead:
 
 ```bash
 jb2export --loc all \
-  --bigwig coverage.bw autoscale:localsd fill:false resolution:superfine height:400 color:purple \
+  --bigwig coverage.bw scales.y.domainQuantile=1 fill:false resolution:superfine height:400 color:purple \
   --assembly hg19 \
   --config data/config.json
 ```
@@ -761,9 +761,8 @@ figure wants. The rest are BigWig-only and warn on any other track type.
 
 | Modifier                 | Example                | Description                                               |
 | ------------------------ | ---------------------- | --------------------------------------------------------- |
-| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `localsd`, `localpercentile`)    |
 | `minmax:min:max`         | `minmax:0:100`         | Manual score range                                        |
-| `scaletype:type`         | `scaletype:log`        | Scale type (`linear` or `log`)                            |
+| `scaletype:type`         | `scaletype:log`        | Scale type (`linear`, `log` or `symlog`)                  |
 | `fill:true\|false`       | `fill:false`           | Fill under curve                                          |
 | `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                         |
 | `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier)  |
