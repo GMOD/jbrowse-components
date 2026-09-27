@@ -5,7 +5,8 @@ import { parseArgs } from './args.ts'
 import { captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
 import { listHubAssemblies, listHubTracks, trackName } from './hub.ts'
-import { jbrowseUrl } from './url.ts'
+import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
+import { version } from './version.ts'
 
 import type { ParsedArgs } from './args.ts'
 
@@ -27,7 +28,7 @@ WHAT TO SHOW
   --spec <json|path|->  a session spec, for several views or per-display settings
   --session <path|->    a session saved with File → Export session
   --instance <url>      JBrowse Web deployment to drive
-                        (default https://jbrowse.org/code/jb2/latest/)
+                        (default ${PUBLIC_INSTANCE})
 
 THE IMAGE
   --out, -o <file>      .png, .jpg or .webp to write (required unless using a
@@ -138,9 +139,6 @@ async function main() {
     return
   }
   if (args.version) {
-    const { version } = JSON.parse(
-      readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
-    ) as { version: string }
     console.log(version)
     return
   }

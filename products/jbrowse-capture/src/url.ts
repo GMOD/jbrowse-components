@@ -1,7 +1,10 @@
 import { hubUrl } from './hub.ts'
 import { savedSessionParam, sessionSpecParam } from './session.ts'
+import { version } from './version.ts'
 
-export const PUBLIC_INSTANCE = 'https://jbrowse.org/code/jb2/latest/'
+// the release this package shipped with; `latest/` trails a major behind
+// during a beta
+export const PUBLIC_INSTANCE = `https://jbrowse.org/code/jb2/v${version}/`
 
 /**
  * The instance as the page that loads it sees it: a directory given without

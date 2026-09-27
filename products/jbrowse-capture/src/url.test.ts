@@ -1,4 +1,4 @@
-import { jbrowseUrl } from './url.ts'
+import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 
 const spec = {
   views: [
@@ -53,7 +53,7 @@ test('a hub becomes its genomes.jbrowse.org config URL and names the assembly', 
     'https://jbrowse.org/ucsc/hg38/config.json',
   )
   expect(params(url).get('assembly')).toBe('hg38')
-  expect(url.startsWith('https://jbrowse.org/code/jb2/latest/#')).toBe(true)
+  expect(url.startsWith(`${PUBLIC_INSTANCE}#`)).toBe(true)
 })
 
 test('tracks join into one comma-separated parameter', () => {
@@ -95,7 +95,7 @@ test('instance selects the deployment', () => {
 })
 
 test('no config and no session yields the bare instance', () => {
-  expect(jbrowseUrl({})).toBe('https://jbrowse.org/code/jb2/latest/')
+  expect(jbrowseUrl({})).toBe(PUBLIC_INSTANCE)
 })
 
 test.each([
