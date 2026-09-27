@@ -1287,6 +1287,51 @@ describe('computeArcsFromPileupData', () => {
     expect(result.arcs[0]!.colorType).toBe(1)
   })
 
+  // Each region's fetch samples its own band, and the read fill classifies
+  // against it; the arc took whichever region's band came first in the map
+  test('an arc classifies against the band of the region its pair came from', () => {
+    const pairIn = (start: number, upper: number) =>
+      makePileupData({
+        readPositions: new Uint32Array([start, start + 100]),
+        readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+        readStrands: new Int8Array([1]),
+        readInsertSizes: new Float32Array([1000]),
+        readPairOrientations: new Uint8Array([1]),
+        ...namesToBlock([`read${start}`]),
+        ...nextRefsToTable(['chr1']),
+        readNextPositions: new Uint32Array([start + 900]),
+        insertSizeStats: { upper, lower: 100 },
+      })
+    const regions = [
+      { refName: 'chr1', start: 0, end: 2000, displayedRegionIndex: 0 },
+      { refName: 'chr1', start: 5000, end: 7000, displayedRegionIndex: 1 },
+    ]
+    const colorOf = (rpcDataMap: Map<number, PileupDataResult>) =>
+      computeArcsFromPileupData(rpcDataMap, regions, {
+        colorField: 'insertSize',
+        drawInter: false,
+        drawLongRange: true,
+      }).arcs.find(a => a.p1.bp >= 5000)!.colorType
+    const wide = pairIn(0, 1500)
+    const narrow = pairIn(5000, 500)
+    expect(
+      colorOf(
+        new Map([
+          [0, wide],
+          [1, narrow],
+        ]),
+      ),
+    ).toBe(1)
+    expect(
+      colorOf(
+        new Map([
+          [1, narrow],
+          [0, wide],
+        ]),
+      ),
+    ).toBe(1)
+  })
+
   test('very-long-range pairs are plain arcs (no bp-based line conversion)', () => {
     const data = makePileupData({
       readPositions: new Uint32Array([0, 100]),

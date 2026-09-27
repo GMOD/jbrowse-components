@@ -192,14 +192,12 @@ function collectArcInputs(
   return { pendingArcs, hasPaired, stats }
 }
 
-// Everything that decides an arc's COLOR but belongs to the whole fetched read
-// set rather than to one group. Pooled for the same reason the worker pools
-// `insertSizeStats` and the model maxes `arcsYDomainBp` across groups: a
-// per-group scale paints the same pair long-insert in one stacked section and
-// normal in the next, and `hasPaired` switches whole lanes between the
-// pair-orientation and split-junction branches of `getArcColorType`. `stats` is
-// already the worker's pooled band, so pooling it here is just picking the one
-// value every group carries.
+// What belongs to the whole fetched read set rather than to one group, pooled
+// for the reason the model maxes `arcsYDomainBp` across groups: `hasPaired`
+// switches whole lanes between the pair-orientation and split-junction branches
+// of `getArcColorType`. `stats` sizes only the interchromosomal clustering
+// window; an arc's insert class reads its own region's band (`arc.stats`),
+// since each region's fetch samples one and the reads are filled by it.
 interface ArcScale {
   hasPaired: boolean
   stats: InsertSizeBand | undefined
@@ -240,7 +238,7 @@ function poolArcScale(inputs: ArcScale[]): ArcScale {
 // which is what `groupArcsByRef` and `arcTouchesRegion` both rely on.
 function resolveArcs(
   pendingArcs: PendingArc[],
-  { hasPaired, stats }: ArcScale,
+  { hasPaired }: ArcScale,
   settings: ArcSettings,
   regions: ArcRegions,
   { clusterOf, sizeOf }: InterchromClusters,
@@ -592,7 +590,7 @@ function resolveArcs(
     if (
       cloud &&
       !arc.isSplit &&
-      isConcordantFRPair(arc.pairOrientationNum, arc.tlen, stats)
+      isConcordantFRPair(arc.pairOrientationNum, arc.tlen, arc.stats)
     ) {
       continue
     }
@@ -605,12 +603,7 @@ function resolveArcs(
     // endpoints (the link mark), and zooming out to show the whole span restores
     // the rounded arc. (drawLongRange only gates connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
-    const colorType = getArcColorType({
-      arc,
-      colorField,
-      hasPaired,
-      stats,
-    })
+    const colorType = getArcColorType({ arc, colorField, hasPaired })
     // The user's own suppression of the ordinary case, and the reason it is a
     // setting where the cloud's is not: in ARC mode the concordant domes are the
     // context a discordant pair is read against, so on shallow data they earn

@@ -166,9 +166,8 @@ export function getArcColorType(args: {
   arc: PendingArc
   colorField: ArcColorField
   hasPaired: boolean
-  stats: InsertSizeBand | undefined
 }) {
-  const { arc, colorField, hasPaired, stats } = args
+  const { arc, colorField, hasPaired } = args
 
   // A split-read junction carries no pair semantics (no template length, no
   // pair orientation), so it colors by its own segment strands — opposite
@@ -199,7 +198,7 @@ export function getArcColorType(args: {
   // was `absrad >= longRangeThreshold`, a median+MAD outlier cut over the arcs
   // IN VIEW, so an arc's color depended on what else was on screen and changed
   // as you panned.
-  const insert = insertSizeColor(arc.tlen, stats)
+  const insert = insertSizeColor(arc.tlen, arc.stats)
   switch (colorField) {
     case 'insertSize':
       return insert

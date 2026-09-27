@@ -44,10 +44,10 @@ function arcCategory(
         tlen,
         // carried for the concordant-arc filter, which colouring never consults
         flags: 0,
+        stats,
       },
       colorField,
       hasPaired: true,
-      stats,
     }),
     colorField,
   )

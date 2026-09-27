@@ -1963,11 +1963,11 @@ export default function stateModelFactory(
            * skips the per-read region scan entirely.
            *
            * `computeArcsByGroup` owns the whole fan-out rather than a loop here,
-           * because the arc COLOR scale (`poolArcScale`: the insert-size band, and
-           * whether the read set is paired at all) describes the fetch, not a lane
-           * — the same rule the worker follows for `insertSizeStats` and this model
-           * follows for `arcsYDomainBp`. Computing it needs every group's arcs in
-           * hand, which a per-group loop can't provide.
+           * because the pooled arc scale (`poolArcScale`: whether the read set is
+           * paired at all, and the fragment-length clustering window) describes
+           * the fetch, not a lane — the rule this model follows for
+           * `arcsYDomainBp`. Computing it needs every group's arcs in hand, which
+           * a per-group loop can't provide.
            *
            * Hidden lanes never reach it, because `rawDataByGroup` has already
            * dropped them. They must be skipped, not just left unread: the

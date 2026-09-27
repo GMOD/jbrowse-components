@@ -1,4 +1,5 @@
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
+import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ArcColorField } from '../../shared/types.ts'
 
 // The shared vocabulary of the arc pass: the region lists it runs against, the
@@ -264,6 +265,10 @@ export interface PairedPendingArc extends PendingArcEndpoints {
   // to carry: a junction between two segments of one read has no pair to call
   // proper, which is the same reason `tlen` and the orientation live here.
   flags: number
+  // The insert-size band of the region `tlen` came from, which is the band
+  // the read under the arc is filled by. Each region's fetch samples its own,
+  // so one pooled band coloured an arc by whichever region loaded first.
+  stats: InsertSizeBand | undefined
 }
 
 export type PendingArc = SplitPendingArc | PairedPendingArc

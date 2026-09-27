@@ -205,6 +205,7 @@ async function main() {
       pairOrientationNum: 0,
       tlen: r.template_length,
       flags: r.flags,
+      stats: undefined,
     })
   }
   console.log(

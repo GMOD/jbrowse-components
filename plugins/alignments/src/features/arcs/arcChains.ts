@@ -365,6 +365,7 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
     // two. Taking it off `e1` instead would read a supplementary's flags where
     // the other two read a primary's.
     flags: flagsOf(src),
+    stats: src.data.insertSizeStats,
   }
 }
 
@@ -440,6 +441,7 @@ export function offScreenMateArcs(
       pairOrientationNum: data.readPairOrientations[readIdx]!,
       tlen: data.readInsertSizes[readIdx]!,
       flags: flagsOf(entry),
+      stats: data.insertSizeStats,
       isSplit: false,
     },
   ]
