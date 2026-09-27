@@ -85,13 +85,7 @@ Files
                                              GRCh38 and CHM13, so a window for
                                              a chosen set of lanes walks those
                                              haplotypes from the anchor before
-                                             it. This is the one the configs
-                                             and tutorials load.
-
-  hprc-v2.1-mc-grch38.haplotype-index.db     the earlier companion (6.99 GB),
-                                             same map without the anchors,
-                                             hosted unchanged for anything
-                                             pinned to it
+                                             it.
 
   hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
                                              the KIV-2 bubble
