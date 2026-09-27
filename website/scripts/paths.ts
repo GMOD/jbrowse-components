@@ -2,7 +2,7 @@
 // re-derive for itself. Node-only, and now free of `import.meta` (see the walk
 // below), which is what made it safe to import from the bundled `src/` side as
 // well as from scripts/.
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 
 // The workspace root, found by walking up from the process's working directory
@@ -103,11 +103,25 @@ function findPrimaryRepoRoot() {
 export const primaryRepoRoot = findPrimaryRepoRoot()
 
 // A JBrowse plugin developed in its own repo, checked out beside this one. The
-// two readers are `check-menu-labels` (its `src/`, for the labels the docs name)
-// and `specs/graph-fixtures.ts` (its `dist/`, under GRAPH_PLUGIN_LOCAL), so the
-// `jb2plugins` directory and the `jbrowse-plugin-` prefix are written once.
+// readers are the label checks (its source, below) and `specs/graph-fixtures.ts`
+// (its `dist/`, under GRAPH_PLUGIN_LOCAL), so the `jb2plugins` directory and the
+// `jbrowse-plugin-` prefix are written once.
 export function pluginCheckout(name: string) {
   return join(primaryRepoRoot, '..', 'jb2plugins', `jbrowse-plugin-${name}`)
+}
+
+// A plugin's `src/` plus each workspace package's, since a plugin that splits
+// into `packages/*` renders labels from both: graphgenomeviewer's layout and
+// colour names moved into `packages/core`.
+export function pluginSourceDirs(name: string) {
+  const checkout = pluginCheckout(name)
+  const packages = join(checkout, 'packages')
+  return [
+    join(checkout, 'src'),
+    ...(existsSync(packages) ? readdirSync(packages).toSorted() : [])
+      .map(pkg => join(packages, pkg, 'src'))
+      .filter(dir => existsSync(dir)),
+  ]
 }
 
 // The React library a plugin wraps, checked out beside this repo rather than

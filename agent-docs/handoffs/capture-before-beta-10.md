@@ -17,9 +17,6 @@ there, so no browser-test call site changed. `waitForAppReady` is gone:
 
 - **Publish beta.10.** beta.9 on npm still shoots LGV error banners and
   defaults to `jb2/latest/` (4.3.0).
-- **`pnpm autogen` refuses on "spec recipe unmapped list"** (41 unmapped
-  fields) in the tree this landed on. Nothing in capture feeds it; check
-  whether main is red there before blaming a capture change.
 - **JBrowseR and jbrowse-anywidget** import capture's source from the sibling
   checkout (commits `5b0731c`, `ff23cb2` in those repos, unpushed). Their
   nightly render jobs now fail when UCSC's `hgdownload` stalls, which it did

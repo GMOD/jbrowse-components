@@ -21,7 +21,7 @@ import { check } from './check-utils.ts'
 import { dropExemptionLines } from './dropExemptionLines.ts'
 import { hostedReferences } from './hosted-references.ts'
 import { norm, sourceLabels } from './menu-label-corpus.ts'
-import { pluginCheckout, repoRoot } from './paths.ts'
+import { pluginSourceDirs, repoRoot } from './paths.ts'
 import {
   PATH_PROSE,
   PATH_ROOTS,
@@ -205,11 +205,14 @@ for (const [field, count] of unmapped) {
   console.log(`  ${String(count).padStart(3)}  ${field}`)
 }
 
-const graphSrc = join(pluginCheckout('graphgenomeviewer'), 'src')
+const graphDirs = pluginSourceDirs('graphgenomeviewer')
+const [graphSrc] = graphDirs
 if (existsSync(graphSrc)) {
-  const rendered = new Set([...sourceLabels([graphSrc])].map(norm))
+  const rendered = new Set([...sourceLabels(graphDirs)].map(norm))
   if (rendered.size === 0) {
-    console.error(`  ${graphSrc} exists but yields no label literals.`)
+    console.error(
+      `  ${graphDirs.join(', ')} exist but yield no label literals.`,
+    )
     process.exit(1)
   }
   const missing = Object.entries(GRAPH_LABELS).flatMap(([control, labels]) =>
@@ -238,7 +241,7 @@ const repoLabels = new Set(
     ...sourceLabels(
       ['plugins', 'products', 'packages'].map(dir => join(repoRoot, dir)),
     ),
-    ...(existsSync(graphSrc) ? sourceLabels([graphSrc]) : []),
+    ...(existsSync(graphSrc) ? sourceLabels(graphDirs) : []),
   ].map(norm),
 )
 const authored = authoredText(

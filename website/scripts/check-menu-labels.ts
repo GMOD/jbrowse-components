@@ -48,7 +48,7 @@ import {
   docRelative,
   docsDir,
   libraryCheckout,
-  pluginCheckout,
+  pluginSourceDirs,
   repoRoot,
 } from './paths.ts'
 
@@ -76,40 +76,40 @@ const SUPPRESS = '<!-- menu-path-ok -->'
 // silently stops applying to anything, and the page it now names — none — goes
 // unchecked forever. Same reason spec-recipe-unmapped.txt is a checked-in list
 // of names rather than a count.
-const PLUGIN_SRC = (name: string) => join(pluginCheckout(name), 'src')
 const LIBRARY_SRC = (name: string, ...rest: string[]) =>
   join(libraryCheckout(name), ...rest)
+const GRAPH_SRC = pluginSourceDirs('graphgenomeviewer')
 
 // A page can name labels from more than one plugin — the proteins page walks
 // one right-click menu that protein3d and msaview each contribute a launcher
 // to — so this maps a page to every checkout its labels live in, and a page is
 // checked against the union.
 const EXTERNAL_PLUGIN_PAGES = new Map([
-  // Not PLUGIN_SRC: the AlphaGenome plugin is a package inside the repo that
-  // also serves jbrowse.org/demos/jb2alphagenome, so it is checked out beside
-  // this one under its own name and its source sits a directory down. The two
-  // `jb2plugins/jbrowse-plugin-alphagenome*` clones are a different repo
-  // holding the code this one superseded, and PLUGIN_SRC resolved to one of
-  // them -- which yields labels, so the assertion below passed while reading a
-  // menu item this project has not shipped since the extraction.
+  // Not pluginSourceDirs: the AlphaGenome plugin is a package inside the repo
+  // that also serves jbrowse.org/demos/jb2alphagenome, so it is checked out
+  // beside this one under its own name and its source sits a directory down.
+  // The two `jb2plugins/jbrowse-plugin-alphagenome*` clones are a different repo
+  // holding the code this one superseded, and the plugin lookup resolved to one
+  // of them -- which yields labels, so the assertion below passed while reading
+  // a menu item this project has not shipped since the extraction.
   [
     'tutorials/alphagenome.md',
     [LIBRARY_SRC('alphagenome_browser', 'plugin', 'src')],
   ],
-  ['user_guides/graph_genome_view.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_ecoli.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_hprc.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_hprc_carriers.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_hprc_haplotypes.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_hprc_repeats.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_cactus.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_mouse.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_prepare_graph.md', [PLUGIN_SRC('graphgenomeviewer')]],
+  ['user_guides/graph_genome_view.md', GRAPH_SRC],
+  ['tutorials/pangenome_ecoli.md', GRAPH_SRC],
+  ['tutorials/pangenome_hprc.md', GRAPH_SRC],
+  ['tutorials/pangenome_hprc_carriers.md', GRAPH_SRC],
+  ['tutorials/pangenome_hprc_haplotypes.md', GRAPH_SRC],
+  ['tutorials/pangenome_hprc_repeats.md', GRAPH_SRC],
+  ['tutorials/pangenome_cactus.md', GRAPH_SRC],
+  ['tutorials/pangenome_mouse.md', GRAPH_SRC],
+  ['tutorials/pangenome_prepare_graph.md', GRAPH_SRC],
   [
     'tutorials/genomes_proteins.md',
     [
-      PLUGIN_SRC('protein3d'),
-      PLUGIN_SRC('msaview'),
+      ...pluginSourceDirs('protein3d'),
+      ...pluginSourceDirs('msaview'),
       LIBRARY_SRC('react-msaview', 'packages', 'lib', 'src'),
     ],
   ],
@@ -170,6 +170,12 @@ for (const root of new Set([...EXTERNAL_PLUGIN_PAGES.values()].flat())) {
   }
   externalLabels.set(root, new Set([...REPO_LABELS, ...[...found].map(norm)]))
 }
+// Every named checkout has to be here, not just one: a page whose labels come
+// from two plugins and can only see one would report the other's as renames.
+const labelsUnder = (roots: string[]) =>
+  roots.every(root => externalLabels.has(root))
+    ? new Set(roots.flatMap(root => [...externalLabels.get(root)!]))
+    : undefined
 
 const seenPages = new Set<string>()
 for (const file of docFiles(docsDir)) {
@@ -179,20 +185,13 @@ for (const file of docFiles(docsDir)) {
     continue
   }
   const external = EXTERNAL_PLUGIN_PAGES.get(rel)
-  // Every named checkout has to be here, not just one: a page whose labels come
-  // from two plugins and can only see one would report the other's as renames.
-  const missingRoots = external?.filter(root => !externalLabels.has(root))
-  const normSet =
-    external === undefined
-      ? REPO_LABELS
-      : missingRoots?.length === 0
-        ? new Set(external.flatMap(root => [...externalLabels.get(root)!]))
-        : undefined
+  const normSet = external === undefined ? REPO_LABELS : labelsUnder(external)
   if (normSet === undefined) {
     // The checkout this page's labels live in is not here. Skipped rather than
     // passed, and counted, because a check that quietly covers less than it did
     // yesterday is the failure mode this whole file exists to avoid.
-    skippedPages.push(`${rel} (needs ${missingRoots?.join(', ')})`)
+    const missing = external?.filter(root => !externalLabels.has(root))
+    skippedPages.push(`${rel} (needs ${missing?.join(', ')})`)
     continue
   }
   const resolves = (segment: string) => {
@@ -287,7 +286,7 @@ for (const label of Object.values(DESKTOP_UI_LABELS)) {
 // The graph form's labels live in the plugin checkout, so they are held
 // against it, and go unchecked where it is not on disk, the same as the pages
 // that name its menus.
-const graphLabels = externalLabels.get(PLUGIN_SRC('graphgenomeviewer'))
+const graphLabels = labelsUnder(GRAPH_SRC)
 if (graphLabels) {
   for (const label of Object.values(GRAPH_FORM_LABELS)) {
     if (!graphLabels.has(norm(label))) {
