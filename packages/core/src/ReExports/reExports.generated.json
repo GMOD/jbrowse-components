@@ -967,6 +967,7 @@
     "@jbrowse/core/data_adapters/dataAdapterCache": {
       "package": "@jbrowse/core",
       "names": [
+        "DERIVES_FROM_SEQUENCE",
         "adapterConfigCacheKey",
         "clearAdapterCache",
         "freeAdapterResources",
