@@ -239,17 +239,14 @@ function sortOverlappingByIndex(
   overlapping: number[],
   data: WorkerPileupData,
   sortedBy: SortedBy,
-  sortTagValues: string[] | undefined,
   keyMap: { map: Map<number, number>; desc: boolean } | undefined,
 ) {
   const { type } = sortedBy
-  const { readPositions, readKeys } = data
+  const { readPositions, readKeys, sortTagValues } = data
   const canonical = (a: number, b: number) =>
     compareReadsCanonically(readPositions, readKeys, a, b)
   if (keyMap) {
     sortByMapWithUnknownsLast(overlapping, keyMap.map, keyMap.desc, data)
-  } else if (type === 'position') {
-    overlapping.sort(canonical)
   } else if (type === 'strand') {
     const { readStrands } = data
     overlapping.sort(
@@ -280,10 +277,9 @@ function sortOverlappingByIndex(
       )
     }
   } else {
-    // Unrecognized sort type (a legacy or misspelled `sortedBy.type`, which is
-    // a bare string). Falling through used to leave the reads in arrival order;
-    // sort canonically so an unknown type degrades to a deterministic layout
-    // rather than an unstable one.
+    // 'position', and any unrecognized type (a legacy or misspelled
+    // `sortedBy.type`, which is a bare string): canonically, so an unknown type
+    // degrades to a deterministic layout rather than an unstable one.
     overlapping.sort(canonical)
   }
 }
@@ -307,11 +303,7 @@ function sortOverlappingByIndex(
  * Shared by both layout paths for the same reason `sortForRegions` is: the two
  * spelled the span test separately, and a rule spelled twice is one that drifts.
  */
-function partitionBySort(
-  data: WorkerPileupData,
-  sortedBy: SortedBy,
-  sortTagValues: string[] | undefined,
-) {
+function partitionBySort(data: WorkerPileupData, sortedBy: SortedBy) {
   const { type, pos: sortPos } = sortedBy
   const { readPositions } = data
   const keyMap = buildSortKeyMap(data, type, sortPos)
@@ -326,7 +318,7 @@ function partitionBySort(
       rest.push(i)
     }
   }
-  sortOverlappingByIndex(ranked, data, sortedBy, sortTagValues, keyMap)
+  sortOverlappingByIndex(ranked, data, sortedBy, keyMap)
   return { ranked, rest }
 }
 
@@ -532,7 +524,7 @@ function buildLargeFirstOrder(
 function partitionStartSorted(
   data: WorkerPileupData,
   order: number[] | undefined,
-  expansions: Map<number, { start: number; end: number }> | undefined,
+  ext: ReadExtents | undefined,
   maxRows: number,
   readYs: Uint16Array,
 ): { maxY: number; truncated: boolean } | null {
@@ -547,15 +539,12 @@ function partitionStartSorted(
   let prevStart = Number.NEGATIVE_INFINITY
   for (let k = 0; k < n; k++) {
     const i = order ? order[k]! : k
-    const exp = expansions?.get(i)
-    const rs = readPositions[i * 2]!
-    const start = exp ? Math.min(rs, exp.start) : rs
+    const start = ext ? ext.starts[i]! : readPositions[i * 2]!
     if (start < prevStart) {
       return null
     }
     prevStart = start
-    const re = readPositions[i * 2 + 1]!
-    const paddedEnd = (exp ? Math.max(re, exp.end) : re) + 2
+    const paddedEnd = (ext ? ext.ends[i]! : readPositions[i * 2 + 1]!) + 2
 
     // release every row whose last interval ends at/before this read's start
     while (active.size > 0 && active.peekKey() <= start) {
@@ -622,7 +611,7 @@ export function computeLayout(
           : buildCanonicalOrder(data, numReads)
 
   if (layoutOrder === 'position' && numReads >= LAYOUT_HEAP_MIN_READS) {
-    const fast = partitionStartSorted(data, order, expansions, maxRows, readYs)
+    const fast = partitionStartSorted(data, order, ext, maxRows, readYs)
     if (fast) {
       return { readYs, maxY: fast.maxY, truncated: fast.truncated }
     }
@@ -667,7 +656,6 @@ export function computeSortedLayout(
   const { ranked: overlapping, rest: nonOverlapping } = partitionBySort(
     data,
     sortedBy,
-    data.sortTagValues,
   )
   // The gap-filling reads are placed after the sorted ones, and first-fit is
   // order-sensitive, so they need a canonical order for the same reason.
@@ -899,7 +887,7 @@ export function computeMultiRegionLayout({
       // `rest` is dropped: this path already holds every read in dedup order
       // (`orderedIds`, deduplicated across regions), so it only needs to know
       // which reads the sort ranks and in what order.
-      const { ranked } = partitionBySort(sData, activeSort, sData.sortTagValues)
+      const { ranked } = partitionBySort(sData, activeSort)
       // Sorted overlapping reads first (each gets its own row — they all collide
       // at sortPos), then the rest in dedup order fills gaps around them.
       const overlappingIds = ranked.map(i => sData.readKeys[i]!)
