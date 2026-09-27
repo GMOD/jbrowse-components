@@ -113,6 +113,62 @@ test('the search box on a followed row takes it before the navigation lands', as
   expect(view.followAnchorIndex).toBe(2)
 })
 
+// The header search box and its results navigate by `navToLocations`, which
+// is also the tail every `navToLocString` reaches for after an await. Held as
+// the tail, a search on a followed row landed and the follow put the row back.
+test("the search box's own route on a followed row takes it", async () => {
+  const view = await openStack()
+  await view.views[2]!.navToLocations(
+    [{ refName: 'ctgA', start: 100, end: 200 }],
+    'volvox2',
+  )
+  expect(view.followAnchorIndex).toBe(2)
+})
+
+test("a held navigation's tail is not a gesture, on its own row only", async () => {
+  const view = await openStack()
+  const held = view.holdFollowAnchor(() =>
+    view.views[1]!.navToLocString('ctgA:100-200'),
+  )
+  await view.views[2]!.navToLocations(
+    [{ refName: 'ctgA', start: 300, end: 400 }],
+    'volvox2',
+  )
+  expect(view.followAnchorIndex).toBe(2)
+  await held
+  expect(view.followAnchorIndex).toBe(2)
+
+  view.setFollowAnchorIndex(0)
+  await view.holdFollowAnchor(() =>
+    view.views[2]!.navToLocString('ctgA:500-600'),
+  )
+  expect(view.followAnchorIndex).toBe(0)
+})
+
+// The ruler label's region edits replaced the regions and then re-centred, and
+// the re-centre, the one gesture-named step, is skipped where the edit dropped
+// the region the row was centred on. The follow put the dropped region back.
+test('a ruler region edit on a followed row takes it', async () => {
+  const view = await openStack()
+  const row = view.views[2]!
+  const halves = [0, 8000].map(start => ({
+    assemblyName: 'volvox2',
+    refName: 'ctgA',
+    start,
+    end: start + 8000,
+  }))
+  view.holdFollowAnchor(() => {
+    row.setDisplayedRegions(halves)
+  })
+  expect(view.followAnchorIndex).toBe(0)
+  row.editDisplayedRegions({
+    regions: [halves[1]!],
+    newIndexOf: i => (i === 0 ? -1 : i - 1),
+  })
+  expect(view.followAnchorIndex).toBe(2)
+  expect(row.displayedRegions).toEqual([halves[1]])
+})
+
 test("the anchor row's own gesture changes nothing", async () => {
   const view = await openStack()
   view.views[0]!.horizontalScroll(40)

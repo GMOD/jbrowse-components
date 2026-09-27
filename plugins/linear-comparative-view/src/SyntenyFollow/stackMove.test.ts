@@ -73,18 +73,27 @@ describe('takeFollowAnchor', () => {
     expect(h.followAnchorIndex).toBe(1)
   })
 
-  // a removal renumbers the rows, so the original `row` stops naming ours
-  it('still releases after a removal renumbered the anchored row', () => {
-    const h = host(true, 0, 3)
-    const anchor = takeFollowAnchor(h, 2)
-    expect(h.followAnchorIndex).toBe(2)
+  // a removal renumbers the rows, so neither index the take saw still names
+  // its row
+  it('still releases after a removal renumbered both rows', () => {
+    const h = host(true, 1, 4)
+    const anchor = takeFollowAnchor(h, 3)
+    expect(h.followAnchorIndex).toBe(3)
 
     h.removeRow(0)
-    expect(h.followAnchorIndex).toBe(1)
-    expect(h.views[1]!.name).toBe('row2')
+    expect(h.followAnchorIndex).toBe(2)
+    expect(h.views[2]!.name).toBe('row3')
 
     anchor.release()
-    expect(h.followAnchorIndex).toBe(0)
+    expect(h.views[h.followAnchorIndex]!.name).toBe('row1')
+  })
+
+  it('releases nothing once the row it would go back to is gone', () => {
+    const h = host(true, 0, 3)
+    const anchor = takeFollowAnchor(h, 2)
+    h.removeRow(0)
+    anchor.release()
+    expect(h.views[h.followAnchorIndex]!.name).toBe('row2')
   })
 
   it('releases nothing once the anchored row is gone', () => {

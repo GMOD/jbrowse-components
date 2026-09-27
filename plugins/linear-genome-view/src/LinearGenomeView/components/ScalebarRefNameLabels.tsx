@@ -10,7 +10,6 @@ import {
   REF_NAME_LABEL_FONT_SIZE,
   regionMoveActions,
   regionRunBounds,
-  setDisplayedRegionsKeepingCenter,
   withRegionMoved,
   withRegionRemoved,
   withRegionReversed,
@@ -219,8 +218,7 @@ const RefNameMenu = observer(function RefNameMenu({
                   ? 'Show only this region'
                   : `Show only ${refName}`,
                 onClick: () => {
-                  setDisplayedRegionsKeepingCenter(
-                    model,
+                  model.editDisplayedRegions(
                     withRegionsKept(displayedRegions, idx, lastIdx),
                   )
                 },
@@ -279,8 +277,7 @@ const RefNameMenu = observer(function RefNameMenu({
                   {
                     label: 'Reverse region',
                     onClick: () => {
-                      setDisplayedRegionsKeepingCenter(
-                        model,
+                      model.editDisplayedRegions(
                         withRegionReversed(displayedRegions, idx),
                       )
                     },
@@ -289,8 +286,7 @@ const RefNameMenu = observer(function RefNameMenu({
                     ({ label, to }) => ({
                       label,
                       onClick: () => {
-                        setDisplayedRegionsKeepingCenter(
-                          model,
+                        model.editDisplayedRegions(
                           withRegionMoved(displayedRegions, idx, to),
                         )
                       },
@@ -301,8 +297,7 @@ const RefNameMenu = observer(function RefNameMenu({
                         {
                           label: 'Remove this region from view',
                           onClick: () => {
-                            setDisplayedRegionsKeepingCenter(
-                              model,
+                            model.editDisplayedRegions(
                               withRegionRemoved(displayedRegions, idx),
                             )
                           },

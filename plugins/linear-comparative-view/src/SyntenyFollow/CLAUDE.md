@@ -130,9 +130,9 @@ through to rung 2 inherits the block pick, the CIGAR map, the settled resolve,
 into a union ten times the size — where a trim would add one.
 
 **Coverage cannot decide this alone, and that is measured too.** An honest
-whole-genome overview on the same data covers **26–40%** of what it places,
-below anything that would catch the straddle above. What separates them is
-structural: an overview's windows are WHOLE contigs, a straddle's are cut on
+whole-genome overview on the same data covers as little as **22%** of what it
+places, below anything that would catch the straddle above. What separates them
+is structural: an overview's windows are WHOLE contigs, a straddle's are cut on
 both sides of a junction, so `partialShare` gates the coverage test and the
 overview never reaches it. The tolerance in that test is load-bearing — block
 edges come off pixels, so five of eight contigs on a `showAllRegions` panel
@@ -157,9 +157,9 @@ across every contig between the two answers until the settle refused and put it
 back. The settle inherits that answer as its previous one.
 
 **And it is measured over a window set, so it dies with one.** `planSpread` runs
-only past two windows, so below that nothing rewrites the decision and a refusal
-outlives the anchor zooming into one contig: `followReport.partial` went on
-naming a region the anchor no longer spans, ahead of `approximate` in
+only on two windows or more, so below that nothing rewrites the decision and a
+refusal outlives the anchor zooming into one contig: `followReport.partial` went
+on naming a region the anchor no longer spans, ahead of `approximate` in
 `followToggleTitle`, which is to say it was the sentence the reader got.
 `planLevel` clears the decision where the rung is out of reach, which drops the
 stale incumbent and the hysteresis band with it — the band is for a user panning
@@ -172,17 +172,17 @@ widest window — which is what the settle keeps too, since `decideSpread` picks
 `onto` by pixel and an incumbent no window reaches cannot hold it — so the
 decision is still the settle's and only the window carrying it out is current.
 
-**`partial` is the third field of the header's `FollowReport`**, on the terms
-the other two keep: written in `planLevel`, read only by the header. A row that
-is not showing everything the anchor aligns to has to say so, or the demotion is
-a silent loss. It carries **both region names, not a boolean**, and that is what
-makes the refused answer reachable: scrolling the anchor onto the other region
-makes it the widest window, so the rows follow it — an ordinary navigation of
-the row the reader is already driving, needing no button, no anchor take and no
-undo. The only thing they cannot do is guess the region is there. A control that
-navigated for them would be one, since it would move a row the follow moves and
-owe the whole `showOffscreenMateContig` dance. `followDebug` prints the whole
-decision per settle under `localStorage.debugSyntenyFollow`, and
+**`partial` is a field of the header's `FollowReport`**, on the terms the others
+keep: written in `planLevel`, read only by the header. A row that is not showing
+everything the anchor aligns to has to say so, or the demotion is a silent loss.
+It carries **both region names, not a boolean**, and that is what makes the
+refused answer reachable: scrolling the anchor onto the other region makes it
+the widest window, so the rows follow it — an ordinary navigation of the row the
+reader is already driving, needing no button, no anchor take and no undo. The
+only thing they cannot do is guess the region is there. A control that navigated
+for them would be one, since it would move a row the follow moves and owe the
+whole `showOffscreenMateContig` dance. `followDebug` prints the whole decision
+per settle under `localStorage.debugSyntenyFollow`, and
 `browser-tests/follow-spread-probe.ts` drives a live session with it.
 
 **Both halves of that sentence are only true while the panel it describes is on
@@ -285,16 +285,17 @@ window like any other: the same size as the two that mapped, so
 `MIN_SHARE_OF_WIDEST` keeps every one, and each maps somewhere of its own at the
 next level. The union there widens to reach those, the level beyond inherits the
 wider set, and it compounds — a two-contig answer left the far row of a
-three-row stack on the whole genome. `installSyntenyFollow.test.ts` measures it
-as nine chromosomes against the three the carry keeps.
+three-row stack on the whole genome. `installSyntenyFollow.test.ts` holds the
+far row to the three chromosomes the carry keeps, where reading the filler
+reached a ninth.
 
 The carry is **not filtered against what the moving row can show**,
 deliberately: the fetch keeps a block only when both ends are in view, so a
 carried window on a contig the row is not displaying has nothing loaded under it
 and maps to nothing. And a carried row's blocks are not read AT ALL, which is
 the frame pass's own untracked-read rule arrived at from the other side — what
-re-asserts a hand-nudged interior row is the level's fetch key, which names both
-rows, exactly as it is for rung 3's moving row.
+re-asserts a hand-nudged interior row is the level that moves it, which reads
+its coarse blocks on every rung.
 
 The mechanism, stated without the genomics:
 `agent-docs/mechanisms/carry-the-decision-not-the-rendered-state.md`.
@@ -374,13 +375,13 @@ it.
   ways and reads neither. A row this pass did **not** write stays tracked, since
   then its window is a real input.
 
-The exact pass reads the moving row on purpose (`alreadyShowing`), inverting
-that rule: the dependency is what re-asserts the follow over a row the user
-nudged by hand. It therefore re-enters on its own navigation — one settle wakes
-it three times, and two things make that converge: `alreadyShowing` compares
-against where the row actually is, with a tolerance; and the per-level answer
-promise is shared by key, so all three ride one `SyntenyResolveMatchingRegion`.
-The integration suite asserts that count.
+The exact pass reads the moving row on purpose, inverting that rule: `planLevel`
+reads its coarse blocks, and that dependency is what re-asserts the follow over
+a row the user nudged by hand. It therefore re-enters on its own navigation —
+one settle wakes it three times, and two things make that converge:
+`alreadyShowing` compares against where the row actually is, with a tolerance;
+and the per-level answer promise is shared by key, so all three ride one
+`SyntenyResolveMatchingRegion`. The integration suite asserts that count.
 
 ## A gesture on a followed row takes the anchor
 
@@ -404,14 +405,24 @@ a search box — so every placement runs inside the host's `holdFollowAnchor`
 action, which makes them NESTED actions the middleware never sees. The explicit
 moves take the same route through `FollowAnchorTake.hold`: a band move anchors
 the row it does not navigate, and the navigation of the row it does would
-otherwise take the anchor straight back. Neither `showRegions` nor
-`navToLocations` is in the set, since `navToLocString` reaches for them after an
-await, as fresh roots, on the follow's own behalf; nor `horizontallyFlip`, since
-a hand flip of a followed row is meant to stand. The view-wide zooms
-(`squareView`, `showAllRegionsAcrossRows`, the stack's rubber-band "Zoom to
-region(s)") nest the rows' zooms under the stack's own actions, and
-`centerStackOnFeature` holds its two navigations the same way and hands the
-anchor to the first row that moved, the feature's own unless its `navTo` threw.
+otherwise take the anchor straight back.
+
+**A held navigation's tail is told apart by the row it lands on.**
+`navToLocString` reaches for `navToLocations` and then `showRegions` after an
+await, as fresh roots, and the header search box navigates by `navToLocations`
+directly, so the name alone cannot say whose it is. The middleware records the
+rows a `holdFollowAnchor` touches and, where the hold hands back a promise,
+treats a gesture on one of those rows as the held navigation's own until the
+promise settles. A search on any other row takes the anchor. `showRegions` stays
+held, since only a tail reaches it as a root; so does `horizontallyFlip`, since
+a hand flip of a followed row is meant to stand. The ruler label's region edits
+are one action, `editDisplayedRegions`, because their re-centre, the only
+gesture-named step, is skipped when the edit drops the region the row was
+centred on. The view-wide zooms (`squareView`, `showAllRegionsAcrossRows`, the
+stack's rubber-band "Zoom to region(s)") nest the rows' zooms under the stack's
+own actions, and `centerStackOnFeature` holds its two navigations the same way
+and hands the anchor to the first row that moved, the feature's own unless its
+`navTo` threw.
 
 **The set is a list of names, so a contract test holds it against the view.**
 Every navigation-shaped action the row actually has must be in `ROW_GESTURES` or
@@ -561,16 +572,15 @@ It stays a **separate settle-only scan** and is not folded into
 `followWindowsMapping`'s loop, which now visits the same blocks and computes the
 same overlap. The two run on different clocks, so the fold moves work from the
 rare caller into the per-frame one — costed at +15ms/s to save 7ms/s and
-declined, along with why a `mixed` anchor is declined rather than resolved to
-one of its regions.
+declined.
 
 **Applied once per key, not once per settle.** `orientedKey` is whatever placed
 the row — the block id, or the contig the envelope answered on — the wanted
-orientation, and the anchor's own orientation; the same key does not flip again.
-That is what lets a reader flip a followed row by hand without the row's Flip
-item taking the anchor: their flip disagrees with the key's answer and stands
-until the decision changes. The wanted state is relative — a reversed anchor
-inside an inverted block wants a forward mate.
+orientation, and the staying row's orientation, the anchor's one level out; the
+same key does not flip again. That is what lets a reader flip a followed row by
+hand without the row's Flip item taking the anchor: their flip disagrees with
+the key's answer and stands until the decision changes. The wanted state is
+relative — a reversed anchor inside an inverted block wants a forward mate.
 
 **The checkbox is read in `planLevel`, unconditionally, or it is not a
 dependency of the pass at all.** `orient` runs past the autorun's first `await`

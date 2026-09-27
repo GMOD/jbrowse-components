@@ -502,6 +502,58 @@ describe('a window wider than the block it is placed by', () => {
   })
 })
 
+// The contig vote's incumbent is where the last settle placed the row, so a
+// row that held over an unaligned window chooses the next window's contig
+// afresh rather than on the say of the block it held past.
+test('a row that held over an unaligned window keeps no incumbent', async () => {
+  const blocks = [
+    { refName: 'chr1', start: 0, end: 300_000 },
+    { refName: 'chr1', start: 500_000, end: 800_000 },
+    { refName: 'chr1', start: 800_000, end: 1_000_000 },
+    { refName: 'chr1', start: 450_000, end: 500_000 },
+  ]
+  const mates = [
+    ['chr5', 0, 300_000],
+    ['chr6', 0, 300_000],
+    ['chr5', 500_000, 700_000],
+    ['chr5', 400_000, 450_000],
+  ] as const
+  const answerAfter = async (walk: [number, number][]) => {
+    const { rows, host } = twoRows([
+      display(
+        blocks.map((block, i) => ({
+          ...block,
+          mateRefName: mates[i]![0],
+          mateStart: mates[i]![1],
+          mateEnd: mates[i]![2],
+        })),
+      ),
+    ])
+    installSyntenyFollow(host)
+    for (const [start, end] of walk) {
+      place(rows[0]!, start, end)
+      await new Promise(resolve => setTimeout(resolve, 0))
+    }
+    return { shown: shown(rows[1]!), unaligned: host.followReport.unaligned }
+  }
+  const fresh = await answerAfter([[450_000, 1_000_000]])
+  expect(fresh.shown).toContain('chr6')
+  const held = await answerAfter([
+    [50_000, 250_000],
+    [320_000, 440_000],
+  ])
+  expect(held.unaligned).toBe(true)
+  expect(
+    (
+      await answerAfter([
+        [50_000, 250_000],
+        [320_000, 440_000],
+        [450_000, 1_000_000],
+      ])
+    ).shown,
+  ).toEqual(fresh.shown)
+})
+
 describe('a whole-genome row zoomed by hand', () => {
   async function wholeGenome() {
     const { rows, host } = twoRows([

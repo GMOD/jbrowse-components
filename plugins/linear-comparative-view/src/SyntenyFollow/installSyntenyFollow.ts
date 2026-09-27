@@ -57,9 +57,9 @@ export interface SyntenyFollowHost extends FollowAnchorHost {
   views: readonly { displayedRegions: readonly unknown[]; bpPerPx: number }[]
 }
 
-// The root actions a person's own gesture on a row produces.
-// `gestureTakesAnchor.integration.test.ts` holds this set and the next against
-// the view's action list.
+// The root actions a person's own gesture on a row produces: the search box
+// navigates by `navToLocations`. `gestureTakesAnchor.integration.test.ts`
+// holds this set and the next against the view's action list.
 export const ROW_GESTURES = new Set([
   'horizontalScroll',
   'zoomTo',
@@ -72,7 +72,10 @@ export const ROW_GESTURES = new Set([
   'flyToCenter',
   'flyToFit',
   'navToLocString',
+  'navToLocations',
+  'navToLocation',
   'navigateNewestHighlight',
+  'editDisplayedRegions',
   'showAllRegions',
   'showAllRegionsInAssembly',
   'fitAllRegions',
@@ -82,8 +85,6 @@ export const ROW_GESTURES = new Set([
 // as fresh roots, the primitives the follow writes through, the stack's zoom
 // ceiling, and `horizontallyFlip`, since a hand flip of a followed row stands.
 export const ROW_NAVIGATIONS_HELD = new Set([
-  'navToLocations',
-  'navToLocation',
   'navToMultiple',
   'showRegions',
   'setWindow',
@@ -108,7 +109,7 @@ interface FollowWork {
   movingMinWidthBp: number
   // read in the plan, so the checkbox wakes the pass
   matchOrientation: boolean
-  anchorOrientation: RegionsOrientation
+  stayingOrientation: RegionsOrientation
   seq: number
   generation: number
 }
@@ -159,14 +160,59 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   const spreadFloor = () =>
     self.sameScale ? self.views[self.followAnchorIndex]?.bpPerPx : undefined
 
+  // The rows a held navigation is still landing on, with how many: its tail
+  // arrives after an await as fresh root actions under gesture names
+  // (`navToLocString` ends in `navToLocations`), and only this tells that tail
+  // from the reader searching the same row
+  const landing = new Map<unknown, number>()
+  let holding: Set<unknown> | undefined
+
+  function heldUntilSettled(rows: Set<unknown>, result: unknown) {
+    if (rows.size > 0 && result instanceof Promise) {
+      for (const row of rows) {
+        landing.set(row, (landing.get(row) ?? 0) + 1)
+      }
+      const settle = () => {
+        for (const row of rows) {
+          const count = landing.get(row)! - 1
+          if (count > 0) {
+            landing.set(row, count)
+          } else {
+            landing.delete(row)
+          }
+        }
+      }
+      void result.then(settle, settle)
+    }
+    return result
+  }
+
   addDisposer(
     self,
     addMiddleware(self, (call, next) => {
-      if (
+      if (call.type === 'action' && call.name === 'holdFollowAnchor') {
+        const outer = holding
+        const rows = new Set<unknown>()
+        holding = rows
+        try {
+          next(call, result => heldUntilSettled(rows, result))
+        } finally {
+          holding = outer
+        }
+        return
+      }
+      const gesture =
         call.type === 'action' &&
         call.id === call.rootId &&
         ROW_GESTURES.has(call.name)
-      ) {
+      // eslint-disable-next-line no-restricted-syntax -- effect input: which row an action is on, read where an autorun may be the caller
+      const isRow =
+        (holding || gesture) &&
+        untracked(() => self.views.includes(call.context))
+      if (holding && isRow) {
+        holding.add(call.context)
+      }
+      if (gesture && isRow && !landing.has(call.context)) {
         // untracked, since the follow's own root actions come through here from
         // inside its autoruns; a row showing nothing yet is being initialized
         // eslint-disable-next-line no-restricted-syntax -- effect input: a gesture's row, read where an autorun may be the caller
@@ -193,7 +239,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     staying,
     movingMinWidthBp,
     matchOrientation,
-    anchorOrientation,
+    stayingOrientation,
     seq,
     generation,
   }: FollowWork) {
@@ -265,7 +311,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       }
     }
     // after the navigation, whose locstring fallback lands the row forward
-    orient(state, step, matchOrientation, anchorOrientation, movingView)
+    orient(state, step, matchOrientation, stayingOrientation, movingView)
   }
 
   // Rung 3's placement: one `moveTo` across the union, leaving the row's regions
@@ -306,7 +352,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     state: FollowLevelState,
     step: FollowStep,
     matchOrientation: boolean,
-    anchorOrientation: RegionsOrientation,
+    stayingOrientation: RegionsOrientation,
     movingView: LinearGenomeViewModel,
   ) {
     if (!matchOrientation) {
@@ -318,19 +364,19 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       return
     }
     const decision = step.envelope?.refName ?? step.feat.id
-    const key = `${decision}|${step.wantReversed}|${anchorOrientation}`
+    const key = `${decision}|${step.wantReversed}|${stayingOrientation}`
     if (key === state.orientedKey) {
       return
     }
     const movingOrientation = movingView.displayedRegionsOrientation
     // not recorded, so a row that stops being mixed is decided then
-    if (anchorOrientation === 'mixed' || movingOrientation === 'mixed') {
+    if (stayingOrientation === 'mixed' || movingOrientation === 'mixed') {
       return
     }
     state.orientedKey = key
-    const anchorReversed = anchorOrientation === 'reversed'
+    const stayingReversed = stayingOrientation === 'reversed'
     const movingReversed = movingOrientation === 'reversed'
-    if (movingReversed !== (anchorReversed !== step.wantReversed)) {
+    if (movingReversed !== (stayingReversed !== step.wantReversed)) {
       movingView.horizontallyFlip()
     }
   }
@@ -527,6 +573,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         : 'HOLD',
       target: state.pick?.target,
     })
+    // a level still fetching has no answer yet rather than no answer
+    const unaligned =
+      !step && level.linearSyntenyDisplays.some(d => d.featureData)
+    // the row holds, and the frame pass with it
+    if (unaligned) {
+      state.pick = undefined
+    }
     return {
       placement: step && {
         kind: 'resolve',
@@ -536,12 +589,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         staying: carried ? undefined : { view: stayingView, windows },
         movingMinWidthBp: movingView.minBpPerPx * movingView.width,
         matchOrientation,
-        anchorOrientation: stayingView.displayedRegionsOrientation,
+        stayingOrientation: stayingView.displayedRegionsOrientation,
         seq,
         generation: levelStates.generation,
       },
-      // a level still fetching has no answer yet rather than no answer
-      unaligned: !step && level.linearSyntenyDisplays.some(d => d.featureData),
+      unaligned,
       approximate:
         !!step &&
         (!step.windowInsideFeat ||

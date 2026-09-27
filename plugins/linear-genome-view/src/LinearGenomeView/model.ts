@@ -98,6 +98,7 @@ import {
   labelFitsInBlock,
   makeBlockTicks,
   runRefNameLabelPx,
+  setDisplayedRegionsKeepingCenter,
   tickLabelWidth,
 } from './util.ts'
 
@@ -111,6 +112,7 @@ import type {
   ViewTrackLabelMode,
   VolatileGuide,
 } from './types.ts'
+import type { RegionEdit } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -3173,6 +3175,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.displayedRegions.length > 0
           ? this.pxToBp(self.width / 2)
           : undefined
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * a region edit from the ruler's menu as one action, which a synteny
+       * stack's follow reads as the reader's gesture on this row; see
+       * `setDisplayedRegionsKeepingCenter`
+       */
+      editDisplayedRegions(edit: RegionEdit) {
+        setDisplayedRegionsKeepingCenter(self, edit)
       },
     }))
     .views(self => ({
