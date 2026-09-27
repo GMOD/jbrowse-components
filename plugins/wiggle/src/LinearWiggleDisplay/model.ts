@@ -10,6 +10,7 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { set1 } from '@jbrowse/core/ui/colors'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
+import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
 import LegendMixin, {
@@ -765,14 +766,16 @@ export default function stateModelFactory(
         }
         const { posColor, negColor, innerColors } = self.wiggleColor
         const colors = [negColor, ...innerColors, posColor]
-        const { labels = [], title } = self.colorSetting
+        const { labels, title } = self.colorSetting
+        const spans = thresholdLabels(cuts)
+        const names = keyNames(spans, labels)
         return {
           kind: 'categorical',
           id: 'threshold',
           title: title ?? 'score',
-          entries: thresholdLabels(cuts).map((span, i) => ({
+          entries: spans.map((span, i) => ({
             value: span,
-            label: labels[i] || span,
+            label: names.get(span) ?? span,
             color: colors[i]!,
           })),
         }

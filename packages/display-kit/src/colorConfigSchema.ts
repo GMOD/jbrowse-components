@@ -6,7 +6,7 @@ import {
   slotChoices,
 } from '@jbrowse/core/configuration'
 import { paletteFromSpec } from '@jbrowse/core/ui/colors'
-import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { categoricalField, keyNames } from '@jbrowse/core/util/categoricalField'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -421,14 +421,18 @@ export function identityKeyEntries({
   domain,
   labels = [],
 }: ColorSetting) {
-  return scale === IDENTITY_SCALE &&
-    (value === undefined || isCallbackValue(value))
-    ? domain.map((color, i) => ({
-        value: color,
-        label: labels[i] ?? color,
-        color,
-      }))
-    : []
+  if (
+    scale !== IDENTITY_SCALE ||
+    (value !== undefined && !isCallbackValue(value))
+  ) {
+    return []
+  }
+  const names = keyNames(domain, labels)
+  return domain.map(color => ({
+    value: color,
+    label: names.get(color) ?? color,
+    color,
+  }))
 }
 
 /** What a FeatureColor paints, each field through its preset where `scale` is unset. */

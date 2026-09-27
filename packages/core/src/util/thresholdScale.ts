@@ -1,5 +1,5 @@
 import { categoricalPalette } from '../ui/colors.ts'
-import { NO_VALUE_LABEL } from './categoricalField.ts'
+import { NO_VALUE_LABEL, keyNames } from './categoricalField.ts'
 import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { groupKeyComparator, valueText } from './groupKeys.ts'
 import { numericValue } from './numericValue.ts'
@@ -183,9 +183,7 @@ export function thresholdField(
 ): CategoricalField {
   const cuts = thresholdCuts(domain)
   const labels = thresholdLabels(cuts)
-  const named = new Map(
-    names.flatMap((name, i) => (i < labels.length ? [[labels[i]!, name]] : [])),
-  )
+  const named = keyNames(labels, names)
   const palette = thresholdPalette(labels.length, range)
   const colorOf = new Map(labels.map((label, i) => [label, palette[i]!]))
   return {

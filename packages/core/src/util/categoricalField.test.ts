@@ -1,4 +1,8 @@
-import { NO_VALUE_LABEL, categoricalField } from './categoricalField.ts'
+import {
+  NO_VALUE_LABEL,
+  categoricalField,
+  keyNames,
+} from './categoricalField.ts'
 import { NO_CATEGORY_COLOR } from './color/index.ts'
 
 test('a value files under its string, a list joined, and nothing under the empty key', () => {
@@ -67,4 +71,21 @@ test("a key's colour depends on the key and the declaration alone", () => {
   const b = categoricalField('biotype', { domain: ['x'] })
   expect(a.color('y')).toBe(b.color('y'))
   expect(a.color('x')).not.toBe(a.color('y'))
+})
+
+// A config writes labels to rename some entries of a key, not all: an empty one
+// is a placeholder that leaves its entry named as the data names it.
+test('labels name their keys in order, an empty or missing one keeping the own name', () => {
+  const names = keyNames(['a', 'b', 'c', 'a'], ['A', '', 'C', 'again'])
+  expect([...names]).toEqual([
+    ['a', 'A'],
+    ['c', 'C'],
+  ])
+  expect(keyNames([1, -1], ['Forward']).get('1')).toBe('Forward')
+  expect(
+    categoricalField('group', {
+      domain: ['x', 'y'],
+      labels: ['', 'Why'],
+    }).label('x'),
+  ).toBe('x')
 })

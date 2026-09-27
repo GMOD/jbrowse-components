@@ -1,4 +1,4 @@
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+import { NO_VALUE_LABEL, keyNames } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
@@ -48,12 +48,7 @@ function labelChips(
   categorical: CategoricalMode,
   names: readonly string[] = [],
 ): ColorChip[] {
-  const named = new Map(
-    categorical.domain.flatMap((value, i) => {
-      const name = names[i]
-      return name ? [[value, name] as const] : []
-    }),
-  )
+  const named = keyNames(categorical.domain, names)
   const rows = new Map<number, { color: string; values: string[] }>()
   for (const label of categorical.labels) {
     const color = categoricalColor(categorical, label)

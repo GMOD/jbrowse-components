@@ -63,6 +63,28 @@ export interface CategoricalField {
 
 /**
  * #api
+ * What a key names each of `keys`, from a colour object's `labels`: one each in
+ * order, an empty or missing entry leaving that key its own name. Every key
+ * that takes `labels` reads them through this, so a config means one thing by
+ * them everywhere.
+ */
+export function keyNames(
+  keys: readonly unknown[],
+  labels: readonly string[] = [],
+): ReadonlyMap<string, string> {
+  const names = new Map<string, string>()
+  keys.forEach((key, i) => {
+    const name = labels[i]
+    const text = String(key)
+    if (name && !names.has(text)) {
+      names.set(text, name)
+    }
+  })
+  return names
+}
+
+/**
+ * #api
  * `labels` names the `domain`'s values in a key, one each in order, where a
  * config spells them for a reader rather than as the data does.
  */
@@ -84,11 +106,7 @@ export function categoricalField(
     range.length > 0 || !vocabulary
       ? [order, range]
       : [vocabulary.domain, vocabulary.range]
-  const declared = new Map(
-    labels.flatMap((label, i) =>
-      i < domain.length ? [[domain[i]!, label]] : [],
-    ),
-  )
+  const declared = keyNames(domain, labels)
   const named = (key: string) => declared.get(key) ?? vocabulary?.labels[key]
   let colorOf: ((key: string) => string) | undefined
   return {

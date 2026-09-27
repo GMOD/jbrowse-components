@@ -1,4 +1,4 @@
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+import { NO_VALUE_LABEL, keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -75,17 +75,11 @@ function labelOf(
   encoding: ColorEncoding | undefined,
   own: (value: string) => string,
 ) {
-  const names = new Map<string, string>()
-  if (typeof encoding === 'object' && encoding.scale === 'categorical') {
-    const { domain = [], labels = [] } = encoding
-    domain.forEach((value, i) => {
-      const label = labels[i]
-      if (label) {
-        names.set(String(value), label)
-      }
-    })
-  }
-  return (value: string) => names.get(value) ?? own(value)
+  const names =
+    typeof encoding === 'object' && encoding.scale === 'categorical'
+      ? keyNames(encoding.domain ?? [], encoding.labels)
+      : undefined
+  return (value: string) => names?.get(value) ?? own(value)
 }
 
 // The absent-data categories, which every cell scale paints and none of them
