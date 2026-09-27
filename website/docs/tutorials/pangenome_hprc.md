@@ -75,13 +75,17 @@ Press **graph** on the HLA / MHC row. JBrowse opens on
 
 ## Reading the cut
 
-The graph opens anchored, every x a GRCh38 coordinate: the **backbone** is
-GRCh38's path along the top row, a **bubble** is where haplotypes disagree, an
-**allele** is a haplotype's own stretch of sequence hanging in a lower row, and
-a deletion draws as an **edge**, a dashed jump skipping what it removes. Each
-lower row is one **rank**; hover a node for its length and rank. It is colored
-by **Reference position**, red to magenta across the window, and an allele has
-none, so it draws in charcoal.
+The graph opens anchored, every x a GRCh38 coordinate:
+
+- the **backbone** is GRCh38's path, along the top row
+- a **bubble** is a place where haplotypes disagree
+- an **allele** is sequence a haplotype carries in place of the reference, a
+  node in a lower row
+- an **edge** is a deletion, a dashed jump over the segments it skips
+
+Hover a node for its length and **rank**, the lower row it sits in. Nodes are
+colored by reference position, red to magenta; an allele has none, so it draws
+in charcoal.
 
 ## The graph moves with the view
 
