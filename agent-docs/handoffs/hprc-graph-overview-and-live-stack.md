@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.7, released and in the store), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. The demo and portal carry a curated VNTR track, the portal configs are uploaded, and the graph figures are reshot. Left - a plugin release holding the pane-key fix but not main's GraphTrack-only change, the anchored KIV-2 cut that never lands, a GSTT1 section, and a docs deploy.
+description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.7, released and in the store), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. The demo and portal carry a curated VNTR track, the portal configs are uploaded, and the graph figures are reshot. Left - 4.0.8 is on npm but must stay out of the store until the hosted FeatureTrack graph configs move to GraphTrack, the anchored KIV-2 cut that never lands, a GSTT1 section, and a docs deploy.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -220,12 +220,13 @@ figures and 7 clips reshot on ada and in the stores. The plugin's
   writes flat props with `paneHeight` as the track's `height`, the anchor
   reads a flat display, and 21 specs grew their viewport because a track is
   now the height it states rather than shrinking to its rows.
-- On plugin main, unreleased: `f00ebc9` declares a `pane` prop, so a 4.0
-  `pane: {...}` link no longer raises core's unknown-key snackbar (live on
-  4.0.7), and the legend measures nothing after its track closes. Main also
-  holds `82b2ead`, which registers the graph display for GraphTrack alone.
-  Every hosted graph track is a FeatureTrack, so releasing main before those
-  configs move would drop the graph from all of them.
+- Plugin 4.0.8 is on npm and NOT in the store: it carries `f00ebc9` (a
+  declared `pane` prop, so a 4.0 `pane: {...}` link stops raising core's
+  unknown-key snackbar, which 4.0.7 shows) and `82b2ead`, which registers the
+  graph display for GraphTrack alone. Every hosted graph track is a
+  FeatureTrack, so promoting 4.0.8 would drop the graph from all of them.
+  jbrowse-plugin-list pins 4.0.7 in plugins.json; leave the pin until the
+  configs move.
 - The anchored cut of the KIV-2 window (the portal's LPA card, `auto`
   layout) sits on "Fetching subgraph" past three minutes, on 4.0.6 as on
   4.0.7; the force layout's window-only cut lands quickly. One hop through a
