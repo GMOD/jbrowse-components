@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.x), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. In flight - a plugin branch composing the pane into the display to fix the track's error, phase, height, re-cut and abort bugs (plugin agent-docs/HANDOFF_track_refactor.md). Left - that branch, a release, the portal upload, a GSTT1 section, and a docs deploy.
+description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.x), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. The plugin's track refactor (the pane composed into the display, fixing its error, phase, height, re-cut and abort bugs) is on plugin main, unreleased (plugin agent-docs/HANDOFF_track_refactor.md). Left - a release and what it changes here, the portal upload, a GSTT1 section, and a docs deploy.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -210,16 +210,16 @@ figures and 7 clips reshot on ada and in the stores. The plugin's
   print over the backbone lengths, `pggb_bubble_tier`), and
   `scripts/preview-candidate.mjs` shoots any hosted session against a local
   `dist/`.
-- On plugin branch `graph-track-hardening` (worktree
-  `~/src/jb2plugins/ggv-track`), unlanded, last commit WIP: the pane becomes a
-  mixin the display and the standalone view compose, which fixes a blank track
-  on a failed cut, a missing display phase, the height ratchet, a red flash on
-  every re-cut and a fetch never aborted. The plugin's
-  `agent-docs/HANDOFF_track_refactor.md` is the state, the remaining steps and
-  what a release of it changes here and in jb2hubs.
-- Plugin CI has been red since 4.0.0 on six `test/launchAndHover` e2e tests
-  that click the retired launch items; the branch's handoff says how to
-  rewrite them.
+- Landed on plugin main, unreleased: the pane is a mixin the display and the
+  standalone view compose, which fixes a blank track on a failed cut, a
+  missing display phase, the height ratchet, a red flash on every re-cut and a
+  fetch never aborted. A bubble is a repeat array only where the session's
+  repeat track has one, so GSTT1's insertion no longer reads as one. The
+  plugin's `agent-docs/HANDOFF_track_refactor.md` says what a release changes
+  here and in jb2hubs: flat track entries in `graph-fixtures.ts` and
+  `pangenomeLinks.ts`, reshot figures, and a curated VNTR track on the HPRC
+  demo if KIV-2 is to keep its repeat-array label.
+- Plugin CI is green again: `test/launchAndHover` drives the track.
 - Core `b05ac725c4`: a display type declares `adapterCapabilities` and the
   track config fills it in only where the adapter has them. The plugin
   declares `['getSubgraph']` once core past 5.0.0-beta.9 is on npm; then
