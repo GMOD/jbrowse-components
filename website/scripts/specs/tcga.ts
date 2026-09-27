@@ -393,7 +393,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // tall enough for the whole 760px stack below the 120px frequency track:
     // the review's "the heatmap is sliced at the bottom edge" was this figure's
     // 900px viewport cutting the last ~60 rows
-    viewportHeight: 1120,
+    viewportHeight: 1132,
     // 1104 rows floored to 1px: sub-pixel row-boundary jitter between runs, so
     // the gate sits above the default
     diffThreshold: 0.02,

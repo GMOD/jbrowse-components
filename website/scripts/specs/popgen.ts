@@ -451,6 +451,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('variant-display'),
     readyText: IN2LT_SV_TRACK.name as string,
     readyTimeout: 120000,
-    viewportHeight: 1180,
+    viewportHeight: 1194,
   },
 ]

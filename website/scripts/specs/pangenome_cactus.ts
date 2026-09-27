@@ -169,8 +169,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               displayMode: 'collapsed',
               // the lane itself is one row; the height is what the five-entry
-              // legend needs, and at 40 it drew two of them
-              height: 90,
+              // legend needs
+              height: 150,
               ...CARRIAGE_DISPLAY,
             },
             graphTrack(MC_SEGMENTS_TRACK, {
@@ -190,7 +190,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 760,
+    viewportHeight: 1100,
     hideTooltip: true,
     // The dashed edge is one link with no bases; its bow is the force layout's
     // spring, so it reads as the biggest thing in the frame unless named.
