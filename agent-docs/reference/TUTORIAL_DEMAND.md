@@ -1,6 +1,6 @@
 ---
 name: tutorial-demand
-description: What people ask about on GitHub, tallied by topic from discussion and issue titles (pulled 2026-07-26), and what it says about which tutorials to write — annotation loading and gene search lead, embedding is answered, and a zero means no baseline rather than no demand. Read before ranking a tutorial idea by demand.
+description: What people ask about on GitHub, tallied by topic from issue and discussion titles (2026-07-26), and what it says about which tutorials to write. Read before ranking a tutorial idea by demand.
 audience: internal
 kind: measurement
 ---
