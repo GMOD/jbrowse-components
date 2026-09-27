@@ -1,6 +1,6 @@
 ---
 name: scales-and-colour-keys
-description: "What the 2026-09-26 scales.y and colour-key round left open: synteny range on ramps, a context submenu shut by the read's late rows, and the coverage and wiggle figures the clip strip (ADR-183) changes"
+description: "What the 2026-09-26 scales.y and colour-key round left open: a context submenu shut by the read's late rows, and the coverage and wiggle figures the clip strip (ADR-183) changes. Synteny's continuous ramps went to ideas/ready."
 ---
 
 ## Open
@@ -8,16 +8,6 @@ description: "What the 2026-09-26 scales.y and colour-key round left open: synte
 - **Reshoot the coverage and wiggle figures with a cut bar.** The clip strip
   (ADR-183) marks every bin the 0.99 quantile cut, so any figure with a spike
   in view gained a red strip on it; nothing was reshot, ada being down.
-- **Synteny ramps take no `range`, `scheme` or pinned ends.** `SyntenyColor`
-  and `RibbonColor` declare none of them, the three presets carry fixed stops
-  and domains (`continuousRampConfig` in
-  `packages/synteny-core/src/colorRamps.ts`), and a numeric column is viridis
-  over the span seen. The route a 2026-09-27 review sized at about a day: the
-  shared `colorRampSlots` and `colorDomainEndsSlots`, the presets as
-  `FieldPresets`, and `resolveContinuousMode` building its stops and domain
-  with core's ramp helpers, while the accumulated span stays view-level. It
-  reaches the linear synteny view, the dotplot, the circular chords and the
-  multi-way display.
 - **A context submenu opened before the read's own rows arrive is shut.**
   `alignments_sort_by_base` captured "SNP/Mismatch" closed until its spec
   waited for the app to settle after the right-click. A user who hovers the

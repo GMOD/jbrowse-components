@@ -1,6 +1,6 @@
 ---
 name: capture-before-beta-10
-description: '@jbrowse/capture had two review passes on 2026-09-27 ahead of beta.10; what is left is publishing it and a few calls. Read before changing capture''s published surface or the JBrowseR / jbrowse-anywidget harnesses.'
+description: "@jbrowse/capture had two review passes on 2026-09-27 ahead of beta.10; what is left is publishing it and a few calls. Read before changing capture's published surface or the JBrowseR / jbrowse-anywidget harnesses."
 ---
 
 # @jbrowse/capture before beta.10
