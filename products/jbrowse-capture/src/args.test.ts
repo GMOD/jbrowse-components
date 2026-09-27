@@ -89,13 +89,6 @@ test('a zero or negative timeout is an error', () => {
   )
 })
 
-test('settle takes zero but not a negative pause', () => {
-  expect(parseArgs(['--settle', '0']).settle).toBe(0)
-  expect(() => parseArgs(['--settle=-1'])).toThrow(
-    '--settle needs a number of milliseconds that is zero or more, got "-1"',
-  )
-})
-
 test('a bare positional is an error', () => {
   expect(() => parseArgs(['hg38'])).toThrow("Unexpected argument 'hg38'")
 })

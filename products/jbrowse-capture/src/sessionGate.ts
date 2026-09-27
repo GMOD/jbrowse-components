@@ -115,17 +115,20 @@ export interface DisplayState {
 
 /**
  * Displays that are not showing their data. `pending`: unpainted, canceled,
- * or failed to render, each failing a capture — `loading` is still fetching,
+ * or showing an error, each failing a capture — `loading` is still fetching,
  * `error` and `renderError` show a banner, `canceled` lasts until Retry, and
  * `ready` is a display that says it finished without painting. `tooLarge`:
  * showing "too much data", which is the app working as designed. Serialized
  * into the page.
+ *
+ * `error` is selected by phase as well as by paint: an LGV display that failed
+ * its fetch counts as painted, so its banner publishes `drawn="true"`.
  */
 export function displayCensusInPage() {
   const pending: DisplayState[] = []
   const tooLarge: DisplayState[] = []
   for (const el of document.querySelectorAll<HTMLElement>(
-    '[data-display-drawn="false"], [data-display-phase="canceled"], [data-display-phase="renderError"], [data-display-phase="tooLarge"]',
+    '[data-display-drawn="false"], [data-display-phase="error"], [data-display-phase="canceled"], [data-display-phase="renderError"], [data-display-phase="tooLarge"]',
   )) {
     const phase = el.dataset.displayPhase
     ;(phase === 'tooLarge' ? tooLarge : pending).push({

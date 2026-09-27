@@ -38,7 +38,7 @@ test('a timeout names each unpainted display and its own phase', async () => {
       timeout: 100,
     }),
   ).rejects.toThrow(
-    '2 display(s) had not painted: pileup-display (reads-x) is loading; maf-display is ready',
+    '2 display(s) were not showing their data: pileup-display (reads-x) is loading; maf-display is ready',
   )
 })
 

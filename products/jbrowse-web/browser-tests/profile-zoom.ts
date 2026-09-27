@@ -576,7 +576,8 @@ async function main() {
     // Short: this session's LinearSyntenyDisplay never leaves `loading`, so the
     // gate cannot pass and a long timeout is two dead minutes per run. The
     // displays that matter are drawn well inside this.
-    await waitForJBrowseReady(page, { timeout: READY_MS, settleMs: 1500 })
+    await waitForJBrowseReady(page, { timeout: READY_MS })
+    await delay(1500)
   } catch (e) {
     console.log(`ready gate did not pass, profiling anyway: ${e}`)
     console.log(

@@ -100,7 +100,7 @@ async function describeDisplaysNow(page: Page) {
     const { pending, tooLarge } = await page.evaluate(displayCensusInPage)
     const found = [
       pending.length
-        ? `${pending.length} display(s) had not painted: ${describeDisplays(pending)}`
+        ? `${pending.length} display(s) were not showing their data: ${describeDisplays(pending)}`
         : undefined,
       tooLarge.length
         ? `${tooLarge.length} display(s) show "too much data" in place of their features: ${describeDisplays(tooLarge)}`

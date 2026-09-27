@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEOUT, delay } from './poll.ts'
+import { DEFAULT_TIMEOUT } from './poll.ts'
 import {
   describeDisplays,
   displayCensusInPage,
@@ -12,8 +12,6 @@ import type { Page } from 'puppeteer'
 export interface ReadyOptions extends SessionExpectations {
   /** Budget for each wait stage. */
   timeout?: number
-  /** Pause after every stage reports done, before the census and the shot. */
-  settleMs?: number
   /**
    * Return the report instead of throwing when a stage times out or a display
    * is not showing its data.
@@ -22,7 +20,7 @@ export interface ReadyOptions extends SessionExpectations {
 }
 
 export interface ReadyReport {
-  /** Displays unpainted, canceled or failed to render, each with its phase. */
+  /** Displays unpainted, canceled or showing an error, each with its phase. */
   pending: DisplayState[]
   /** Displays showing "too much data" in place of their features. Not a failure. */
   tooLarge: DisplayState[]
@@ -50,7 +48,6 @@ export async function waitForFrame(
   page: Page,
   {
     timeout = DEFAULT_TIMEOUT,
-    settleMs = 0,
     allowUnsettled = false,
   }: Omit<ReadyOptions, keyof SessionExpectations> = {},
 ): Promise<ReadyReport> {
@@ -60,15 +57,17 @@ export async function waitForFrame(
   }
   const timedOut = unsettled.length > 0
 
-  if (settleMs > 0) {
-    await delay(settleMs)
-  }
-
-  // taken after the settle, so the throw and the report describe the captured
-  // frame
   const { pending, tooLarge } = await page.evaluate(displayCensusInPage)
+  const failed = pending.filter(
+    d => d.phase === 'error' || d.phase === 'renderError',
+  )
   const canceled = pending.filter(d => d.phase === 'canceled')
-  const unpainted = pending.filter(d => d.phase !== 'canceled')
+  const unpainted = pending.filter(
+    d => !failed.includes(d) && !canceled.includes(d),
+  )
+  if (failed.length > 0) {
+    unsettled.push(`display(s) showing an error: ${describeDisplays(failed)}`)
+  }
   if (unpainted.length > 0) {
     unsettled.push(`display(s) never painted: ${describeDisplays(unpainted)}`)
   }

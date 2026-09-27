@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url'
 
 import {
   BASE_CHROME_ARGS,
+  delay,
   findChromeExecutable,
   sessionSpecQuery,
   waitForJBrowseReady,
@@ -199,8 +200,8 @@ async function runArm(page: Page, label: string, withMultiway: boolean) {
       ? ['GCF_030704535.1-ncbiRefSeq', 'grape_peach_cacao_blocks']
       : ['GCF_030704535.1-ncbiRefSeq'],
     timeout: 120000,
-    settleMs: 1500,
   })
+  await delay(1500)
 
   const shape = await page.evaluate(() => {
     const el = document.querySelector(

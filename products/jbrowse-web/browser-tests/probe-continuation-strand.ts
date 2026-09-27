@@ -28,6 +28,7 @@ import { parseArgs } from 'node:util'
 
 import {
   BASE_CHROME_ARGS,
+  delay,
   encodeSessionSpec,
   isBrowserConsoleNoise,
   waitForJBrowseReady,
@@ -189,9 +190,9 @@ async function renderOn(backend: Backend, port: number, headless: boolean) {
     const ready = await waitForJBrowseReady(page, {
       assembly: 'volvox',
       trackIds: [TRACK],
-      settleMs: 2000,
       allowUnsettled: true,
     })
+    await delay(2000)
     const evidence = await readEvidence(page)
     evidence.browser = await browser.version()
     const rendered = evidence.displayCanvases.some(k =>

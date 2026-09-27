@@ -17,7 +17,6 @@ export interface ParsedArgs {
   height?: number
   scale?: number
   timeout?: number
-  settle?: number
   fullPage: boolean
   headed: boolean
   verbose: boolean
@@ -44,7 +43,6 @@ const OPTIONS = {
   height: { type: 'string' },
   scale: { type: 'string' },
   timeout: { type: 'string' },
-  settle: { type: 'string' },
   fullPage: { type: 'boolean', default: false },
   headed: { type: 'boolean', default: false },
   verbose: { type: 'boolean', default: false },
@@ -91,16 +89,6 @@ function positive(name: string, raw: string | undefined) {
   return n
 }
 
-function milliseconds(name: string, raw: string | undefined) {
-  const n = finite(name, raw)
-  if (n !== undefined && n < 0) {
-    throw new Error(
-      `--${name} needs a number of milliseconds that is zero or more, got "${raw}"`,
-    )
-  }
-  return n
-}
-
 /**
  * Parse a `jb2capture` command line. Strict: an unknown flag, a flag the
  * command does not use, and a bare word anywhere but after `list` are errors
@@ -127,7 +115,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
       }
     }
   }
-  const { track, width, height, scale, timeout, settle, ...rest } = values
+  const { track, width, height, scale, timeout, ...rest } = values
   return {
     ...rest,
     command,
@@ -137,7 +125,6 @@ export function parseArgs(argv: string[]): ParsedArgs {
     height: positive('height', height),
     scale: positive('scale', scale),
     timeout: positive('timeout', timeout),
-    settle: milliseconds('settle', settle),
     positionals,
   }
 }

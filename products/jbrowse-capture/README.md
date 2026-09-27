@@ -54,11 +54,10 @@ decides the answer:
    layouts (`data-display-animating="true"`), neither of which the marker can
    see.
 
-Then one negative gate, which is meaningful only after those two and answers
-what they do not — the marker is about WORK, and a display whose fetch failed is
-not working, so it reads `ready` over an error banner. `data-display-drawn` is
-the stricter question, and the census of what is still unpainted goes in the
-error.
+Then one check on what the frame shows, which the marker does not answer. The
+marker is about WORK, so it reads `ready` over a display whose fetch failed or
+that the user canceled. Capture names every display that is unpainted, canceled
+or showing an error banner, and fails.
 
 **The instance has to be JBrowse v5 or later**, the first release to publish the
 marker. Capture reads the instance's `version.txt` before launching a browser
@@ -133,13 +132,11 @@ Three fields on a successful capture:
 
 - **`unsettled`** — stages that hit their timeout. Empty unless you asked to
   proceed anyway.
-- **`pending`** — displays still reporting unpainted when the shutter fired,
-  each with its own phase: `loading` is a slow fetch, `error` a banner, `ready`
-  a display claiming it finished without drawing. Read after `settle`, not
-  before it, so the frame it describes is the frame that was captured; a display
-  that finished during the settle is not in it, and no longer fails the run
-  either. Whatever is left lands in `unsettled` too, as does a display whose
-  renderer failed (`renderError`).
+- **`pending`** — displays not showing their data when the shutter fired, each
+  with its own phase: `loading` is a slow fetch, `error` and `renderError` a
+  banner, `canceled` a user's stop, and `ready` a display claiming it finished
+  without drawing. Each one lands in `unsettled` too, so a capture returns them
+  only under `allowUnsettled`.
 - **`tooLarge`** — displays showing "Requested too much data" instead of their
   features, because the region is wider than the track fetches without being
   asked. The capture still succeeds, since that is the app working as designed,

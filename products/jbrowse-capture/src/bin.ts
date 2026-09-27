@@ -40,7 +40,6 @@ THE IMAGE
 
 WAITING
   --timeout <ms>        budget per wait stage (default 60000)
-  --settle <ms>         extra pause before the census and the shot (default 0)
   --allowUnsettled      write the image anyway when a stage times out
 
   A stage that times out fails the run rather than writing a half-drawn frame.
@@ -165,7 +164,6 @@ async function main() {
     fullPage: args.fullPage,
     headless: !args.headed,
     timeout: args.timeout,
-    settleMs: args.settle,
     allowUnsettled: args.allowUnsettled,
     onConsole: args.verbose
       ? text => {

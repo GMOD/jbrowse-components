@@ -114,23 +114,33 @@ test('a loading display the marker cannot see keeps the chain waiting', async ()
   expect(report.unsettled).toEqual(['the app never held itself ready'])
 }, 15000)
 
-// A display in a terminal phase is not coming back, and the two comparative
-// canvases hold `drawn=false` open through `error` on purpose, so the chain
-// fails at once with the phase that says a longer timeout is not the fix. The
-// marker reads `ready` over an error banner, which is a correct answer to a
-// different question than a capture is asking.
-test('an errored display is named unsettled instead of burning the timeout', async () => {
-  app(
-    'ready',
-    `<div data-testid="pileup" data-display-drawn="false"
-          data-display-phase="error"></div>`,
-  )
-  const start = Date.now()
-  await expect(
-    waitForJBrowseReady(fakePage(), { timeout: 30000 }),
-  ).rejects.toThrow(/^display\(s\) never painted: pileup is error\. No timeout/)
-  expect(Date.now() - start).toBeLessThan(10000)
-}, 15000)
+// A display in a terminal phase is not coming back, so the chain fails at once
+// with the phase that says a longer timeout is not the fix. The marker reads
+// `ready` over an error banner, which is a correct answer to a different
+// question than a capture is asking. An LGV display that failed its fetch
+// counts as painted, and the two comparative canvases hold `drawn=false` open
+// through `error` on purpose, so both spellings reach the census.
+test.each([
+  ['an LGV display', 'true'],
+  ['a comparative canvas', 'false'],
+])(
+  '%s showing an error is named unsettled instead of burning the timeout',
+  async (_name, drawn) => {
+    app(
+      'ready',
+      `<div data-testid="pileup" data-display-drawn="${drawn}"
+            data-display-phase="error"></div>`,
+    )
+    const start = Date.now()
+    await expect(
+      waitForJBrowseReady(fakePage(), { timeout: 30000 }),
+    ).rejects.toThrow(
+      /^display\(s\) showing an error: pileup is error\. No timeout/,
+    )
+    expect(Date.now() - start).toBeLessThan(10000)
+  },
+  15000,
+)
 
 // The marker reads `ready` over a cancel, which is finished work; the capture
 // still refuses to commit a picture of the Retry overlay.
@@ -148,26 +158,6 @@ test('a canceled display fails the chain at once rather than timing out', async 
   )
   expect(Date.now() - start).toBeLessThan(10000)
 }, 15000)
-
-test('a display that paints during settleMs is not reported as never painted', async () => {
-  app(
-    'ready',
-    `<div data-testid="pileup" data-display-drawn="false"
-          data-display-phase="ready"></div>`,
-  )
-  // after waitForAppSettled's 1s hold, so the flip lands inside the settle
-  setTimeout(() => {
-    document.querySelector<HTMLElement>(
-      '[data-testid="pileup"]',
-    )!.dataset.displayDrawn = 'true'
-  }, 2000)
-  const report = await waitForJBrowseReady(fakePage(), {
-    settleMs: 3000,
-    timeout: 10000,
-  })
-  expect(report.pending).toEqual([])
-  expect(report.unsettled).toEqual([])
-}, 30000)
 
 // "Too much data" is the app declining a wide region as designed, so the
 // capture goes ahead, and says which displays show the banner.
@@ -194,7 +184,7 @@ test('a display whose renderer failed fails the chain', async () => {
   await expect(
     waitForJBrowseReady(fakePage(), { timeout: 10000 }),
   ).rejects.toThrow(
-    /^display\(s\) never painted: hg38-genes is renderError\. No timeout/,
+    /^display\(s\) showing an error: hg38-genes is renderError\. No timeout/,
   )
 }, 20000)
 
