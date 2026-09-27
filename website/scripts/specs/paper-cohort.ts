@@ -72,7 +72,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('variant-display'),
     readyTimeout: 300000,
     viewportWidth: WIDTH,
-    viewportHeight: 820,
+    viewportHeight: 830,
     hideTooltip: true,
     actions: [
       {
