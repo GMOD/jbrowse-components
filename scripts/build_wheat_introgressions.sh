@@ -61,7 +61,7 @@ while IFS=$'\t' read -r name fasta gff prefix; do
       bgzip >"$name.genes.gff3.gz.part"
     mv "$name.genes.gff3.gz.part" "$name.genes.gff3.gz"
     # a wheat chromosome runs past the 512 Mb a .tbi can address
-    tabix -C -p gff "$name.genes.gff3.gz"
+    tabix -f -C -p gff "$name.genes.gff3.gz"
   fi
 done <<<"$MANIFEST"
 rm -f ./*.fa.gz.fai ./*.fa.gz.gzi
