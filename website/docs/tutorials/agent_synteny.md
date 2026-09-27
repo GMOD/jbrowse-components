@@ -9,11 +9,18 @@ guide_category: Tutorials
 tutorial_category: Automation
 ---
 
-Four sentences typed at an AI agent are enough to align two fruit fly species
-that nobody has aligned to each other, build the comparison in JBrowse Desktop,
-and answer where the two genomes run in opposite directions by totalling up the
-alignment file rather than describing the picture. The sections below cover what
-to ask for, what the agent does with it, and the two places it needs telling.
+Four requests typed at an AI agent are enough to align two fruit fly species
+that nobody has aligned to each other and inspect the result in JBrowse Desktop.
+Typed one at a time, they ask the agent to:
+
+- align the two genomes with minimap2 and open them side by side, genes and all
+- add a dotplot of the pair, restricted to the six chromosome arms
+- count alignment blocks by strand, to find where the two genomes run in
+  opposite directions
+- navigate the view to what it found
+
+The sections below cover what to ask for, what the agent does with it, and the
+three places it needs telling.
 
 ## Prerequisites
 
@@ -49,14 +56,13 @@ track and a Trix text index, so neither assembly has to be described by hand.
 
 ## Why this needs a shell
 
-_Drosophila simulans_ and _D. mauritiana_ are sister species. Both are already
-hosted, so a browser opens either one on its own with genes and a working search
-box. Neither config has the other species: the only synteny track in each is a
-liftOver to dm6, the _D. melanogaster_ reference.
-
-Neither hosted config can answer "show me these two side by side" by loading
-something. Somebody has to align the genomes first, and that is the part of the
-job an agent with a shell is for.
+_Drosophila simulans_ and _D. mauritiana_ are sister species, and both are
+already hosted, so a browser opens either genome with genes and a working search
+box on its own. Neither hosted config carries the other species: the only
+synteny track in each is a liftOver to dm6, the _D. melanogaster_ reference, so
+neither can show the two side by side by loading something. Somebody has to
+align the genomes first, and that is the part of the job an agent with a shell
+is for.
 
 ## What the agent is driving
 
@@ -96,19 +102,19 @@ minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 Whole genome against whole genome takes about seven minutes on 16 threads and 14
 GB of memory, and produces 6,663 alignment records.
 
-**This is where a tool call exceeds its time budget.** A `run_javascript` call
-has about two minutes before it answers with a timeout while the app carries on
-working, and the alignment is longer than that. An agent that puts the aligner
-in the background and polls it handles this; one that waits for it inside a
-single call reports a failure that did not happen. The phrase "in the
-background" in the request above tells the agent to do that.
+**A tool call exceeds its time budget here.** A `run_javascript` call has about
+two minutes before it answers with a timeout while the app carries on working,
+and the alignment is longer than that. An agent that puts the aligner in the
+background and polls it handles this; one that waits for it inside a single call
+reports a failure that did not happen. The phrase "in the background" in the
+request above tells the agent to do that.
 
 The alignment should finish before anything opens. Two genomes side by side with
 nothing between them look like the finished comparison, and an alignment that
 appears afterwards reads as a correction.
 
-Indexing the PAF lets the browser read a region out of it instead of parsing all
-of it:
+Indexing the PAF lets the browser read one region of it without parsing the
+whole file:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
@@ -153,9 +159,9 @@ Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
 The alias names work because the merged config kept each assembly's chromAlias
-file. Ask it to quantify what restricting the axes drops, not just apply the
+file. Ask it to quantify what restricting the axes drops before it applies the
 change. Set the coloring to strand while you are there, so a block that runs
-backwards is a different color rather than a bend in a black line:
+backwards draws in a different color, easier to see than a bend in the line:
 
 <Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, and a short reverse segment in blue where chr2R begins." src="/img/agent_synteny/dotplot_arms.png" />
 
@@ -229,14 +235,15 @@ largest is smaller than the X regions. Both answers are the same data.
 Take the synteny view to the 2R region, with the gene tracks on.
 ```
 
-The two rows navigate separately, to `chr2R:1-2,400,000` on simulans over
-`chr2R:500,000-3,800,000` on mauritiana. The ribbons cross in the middle of the
-band, and the genes on the two rows run in opposite directions through it.
+Simulans's row navigates to `chr2R:1-2,400,000` and mauritiana's row to
+`chr2R:500,000-3,800,000`, each moving separately. The ribbons cross in the
+middle of the band, and the genes on the two rows run in opposite directions
+through it.
 
 <Figure caption="The 2R region on both rows with the gene tracks on. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
 
 Then take it to the first of the two X regions, `chrX:8,100,000-8,950,000` over
-`chrX:8,330,000-9,180,000`, which is where the same event reads cleanly:
+`chrX:8,330,000-9,180,000`, where the same event reads cleanly:
 
 <Figure caption="The X region at the same settings. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
 
@@ -249,7 +256,7 @@ Three sentences, and each prevents a failure with no error message:
   the agent reports a failure that did not happen.
 - **Restrict the dotplot axes to the arms.** Otherwise a few hundred unplaced
   scaffolds interleave both axes.
-- **Answer from the file, not the picture.** Otherwise you get a description of
+- **Answer counted from the alignment file.** Otherwise you get a description of
   a dotplot, which cannot resolve the thing you asked about.
 
 Two more come up because the agent runs into them unprompted. Ask it to

@@ -10,7 +10,12 @@ tutorial_category: Population genomics
 
 We look at linkage disequilibrium around the lactase gene, where selection for
 lactase persistence left one long block of correlated variants. PLINK correlates
-the phased genotypes and JBrowse draws the triangle from its output.
+the phased genotypes and JBrowse draws the triangle from its output. With that
+view we:
+
+- read the block's edges against Fst and a genetic map
+- compare the swept population's triangle against the pooled release
+- cluster a haplotype matrix into the block the triangle draws
 
 ## Prerequisites
 
@@ -92,12 +97,10 @@ What each setting does:
 - [`variantLayout`](/docs/config/ldtrackdisplay/#slot-variantlayout) sizes each
   cell by genomic distance, so the block's edges land under their coordinates
 - [`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) picks which of the
-  file's columns to draw. This table has both r² and D', so either reads; a file
-  without a `DP` column disables the D' row rather than drawing zeros
+  file's columns to draw. This table has both r² and D'
 
-The allele-frequency floor is not a display setting here. It is applied when the
-variants are picked for correlation, so it is a property of the file. That is
-also why the two cohorts below are a fair comparison.
+The allele-frequency floor is a property of the file: it was applied before
+correlation, so the two cohorts below are directly comparable.
 
 The block is a selective sweep. The allele that keeps lactase switched on into
 adulthood, `rs4988235`, rose in frequency and carried its neighbouring variants
@@ -115,9 +118,10 @@ two files give two different triangles.
 <!-- from: scripts/build_lct_ld.sh -->
 
 ```bash
-# -r is a range request, so 3.4 Mb costs 3.4 Mb and not the 2.5 GB chromosome.
-# -S is one sample name per line; -e drops the symbolic SV records, which are
-# spans rather than the allele indicators the display correlates.
+# -r is a range request, so 3.4 Mb costs 3.4 Mb, not the 2.5 GB chromosome.
+# -S is one sample name per line.
+# -e drops symbolic SV records: they are spans, and the display correlates
+# allele indicators.
 bcftools view -r chr2:133800000-137200000 -S unrelated.samples \
   -e 'ALT[0]~"<"' -Oz -o pooled.vcf.gz \
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
@@ -140,25 +144,24 @@ variants cost n(n-1)/2 of them.
 <!-- from: scripts/build_lct_ld.sh -->
 
 ```bash
-# 0.35 is high for a MAF floor and deliberately so: it keeps the variants that
-# tag the block rather than every rare one riding on it. Frequency is measured
-# in THIS file's samples, so each cohort keeps its own set.
+# 0.35 is a high MAF floor, to keep the variants that tag the block.
+# Frequency is measured in this file's samples, so the two cohorts keep
+# different sets.
 plink2 --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
   --set-missing-var-ids @:# --maf 0.35 --chr chr2 --write-snplist --out sel
 
-# dprime adds D' beside r², which is the display's other metric.
-# --ld-window-r2 0 keeps the uncorrelated pairs, so white cells are drawn as
-# white rather than left absent, and the two window flags have to be raised
-# together. The defaults cut off after 10 variants or 1 Mb, whichever comes
-# first, which would clip this block at both.
+# dprime adds D' beside r2, the display's other metric.
+# --ld-window-r2 0 draws every pair, including the uncorrelated ones, as white
+# cells.
+# --ld-window and --ld-window-kb both have to be raised: the defaults stop
+# after 10 variants or 1 Mb, which clips this block.
 plink --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
   --set-missing-var-ids @:# --extract sel.snplist \
   --r2 dprime --ld-window 999999 --ld-window-kb 4000 --ld-window-r2 0 \
   --out lct_1kg38_chr2_eur
 
 # tabix needs real tabs and a commented header. plink pads its columns with
-# spaces to align them, which is not the same thing, so squeeze the runs to
-# tabs and mark the header before indexing.
+# spaces, so squeeze the runs to tabs and mark the header first.
 awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' \
   lct_1kg38_chr2_eur.ld | bgzip > lct_1kg38_chr2_eur.ld.gz
 tabix -s 1 -b 2 -e 2 -f lct_1kg38_chr2_eur.ld.gz
@@ -173,16 +176,17 @@ out as a bigWig for a
 <!-- from: scripts/build_lct_fst_scan.sh -->
 
 ```bash
-# plink2 takes the two panels as one categorical phenotype rather than as two
-# sample lists, and wants FID beside IID: a #IID-only header is refused as "No
-# entries correspond to loaded sample IDs" even when every ID matches
+# plink2 takes the two panels as one categorical phenotype, and wants FID
+# beside IID: a #IID-only header is refused with "No entries correspond to
+# loaded sample IDs" even when every ID matches.
 { printf '#FID\tIID\tPOP\n'
   awk '{print $1"\t"$1"\tPANEL"}' panel.samples
   awk '{print $1"\t"$1"\tREST"}' rest.samples; } > fst_pops.txt
 
-# method=wc is Weir and Cockerham; plink2 defaults to Hudson, which is a
-# different number. report-variants is per variant rather than windowed, and
-# --output-chr chrM keeps CHROM spelled chr2 rather than plink2's bare 2
+# method=wc is Weir and Cockerham; plink2 defaults to Hudson, a different
+# number.
+# report-variants scores each variant separately.
+# --output-chr chrM spells the chromosome chr2, matching the file.
 plink2 --vcf pooled.vcf.gz --double-id --output-chr chrM --pheno fst_pops.txt \
   --fst POP method=wc report-variants vcols=chrom,pos,fst --out fst_site
 
@@ -202,13 +206,12 @@ The lower frame is all block, so the lanes around it carry the comparison:
 - **Fst, top.** Fst scores how differently two sets of samples carry a variant.
   Widened well past the block, the most differentiated sites in the span are the
   ones inside it. It is scored per variant, since a sweep differentiates the
-  variants on its own haplotype and leaves the rest of a bin on the background
+  variants on the swept haplotype and leaves the rest of a bin on the background
 - **Genetic map.** The block fills the span where the deCODE map
   ([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) reads
   flat, with a recombination hotspot at each end. The map counts crossovers in
-  sequenced families, so it carries no LD of its own; the HapMap and 1000
-  Genomes maps in the same hub are estimated from LD and cannot check a triangle
-  independently
+  sequenced families, so it carries no LD; the HapMap and 1000 Genomes maps in
+  the same hub are estimated from LD and cannot check a triangle independently
 - **The two triangles.** The haplotype swept in Europe. Pooling that panel with
   populations it never reached makes every pair of variants look less correlated
   than it is inside either group, which shows as the paler, patchier upper
@@ -315,8 +318,8 @@ bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
 ## A bigger span
 
 [](/docs/tutorials/ld_mosquitoes) draws the same track type over a 22 Mb
-inversion, where the variants have to be thinned to a grid before they are
-correlated rather than only filtered by frequency.
+inversion, where the variants are thinned to a grid on top of the frequency
+filter before they are correlated.
 
 ## See also
 
@@ -340,7 +343,7 @@ correlated rather than only filtered by frequency.
 [^plink19]:
     The two are separate programs, not versions to choose between, and this page
     uses each where it is the simpler one. plink2 gained `--r2-phased`, which
-    writes the same table as a `.vcor` under column names of its own, in the a6
+    writes the same table as a `.vcor` under different column names, in the a6
     alphas; on an earlier plink2 the flag is simply absent, which is why the r²
     step here is PLINK 1.9's. JBrowse's
     [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads either
