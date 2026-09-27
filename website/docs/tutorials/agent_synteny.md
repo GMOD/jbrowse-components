@@ -54,8 +54,8 @@ Connected to JBrowse Desktop, the agent gets four tools, and only
 `run_javascript` matters here: it runs code against the session through a `jb`
 helper library, plus `open`, `screenshot` and `docs`.
 
-Setup: [](/docs/agents). Run the four requests below and the app moves like
-this:
+Set up the client as in [](/docs/agents), then run the four requests below. The
+app moves like this:
 
 <Video src="/media/mcp/agent_synteny_take1.mp4" caption="A Claude Code session driving JBrowse Desktop: the agent aligns the two genomes, builds the comparison and dotplot, and navigates to what it found." />
 
@@ -168,8 +168,8 @@ END {
 X    21.04 Mb aligned,  4.44% reverse
 ```
 
-Four arms carry essentially no reverse-strand alignment, the control for 2R and
-X, an order of magnitude above them.
+Four arms carry essentially no reverse-strand alignment, and they are the
+control: 2R and X sit an order of magnitude above them.
 
 Grouping the reverse-strand blocks of 5 kb or more, and cutting a group wherever
 half a megabase passes with none, gives three regions:
