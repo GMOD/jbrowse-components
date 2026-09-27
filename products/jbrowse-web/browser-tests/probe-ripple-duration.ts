@@ -21,7 +21,7 @@ const encodeSessionSpec = (o: object) =>
   encodeURIComponent(`spec-${JSON.stringify(o)}`)
 
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
-const BUTTON = 'button[value="scrollZoom"]'
+const BUTTON = 'button[value="track_select"]'
 
 const spec = {
   views: [

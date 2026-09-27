@@ -32,7 +32,7 @@ test('an unmeasured header keeps everything', () => {
 
 test('a header wide enough for the whole row sheds nothing', () => {
   expect(shed(1388)).toEqual([])
-  expect(shed(785)).toEqual([])
+  expect(shed(790)).toEqual([])
 })
 
 // The bug the ask replaced a constant to fix: a row sized against the box's
@@ -45,14 +45,14 @@ test('a longer locstring sheds the row earlier', () => {
     'trackSelectorIndent',
     'panButtonSpacing',
   ])
-  // the empty box, whose ask is its floor, back at the 780px the constant drew
+  // the empty box, whose ask is its floor, back at the 785px the constant drew
   // every threshold from
-  expect(shed(780, { searchBoxPx: 189 })).toEqual([])
-  expect(shed(779, { searchBoxPx: 189 })).toEqual(['trackSelectorIndent'])
+  expect(shed(785, { searchBoxPx: 189 })).toEqual([])
+  expect(shed(784, { searchBoxPx: 189 })).toEqual(['trackSelectorIndent'])
 })
 
 test('each piece goes at the width where the row stops holding it', () => {
-  expect(shed(784)).toEqual(['trackSelectorIndent'])
+  expect(shed(789)).toEqual(['trackSelectorIndent'])
   // the header of a 700px window
   expect(shed(688)).toEqual(['trackSelectorIndent', 'panButtonSpacing'])
   expect(shed(588)).toEqual([
@@ -73,8 +73,8 @@ test('each piece goes at the width where the row stops holding it', () => {
 // row, and it is the search box that would otherwise pay for it — so every
 // threshold moves out by the button's width while it is there.
 test('the clear-highlights button sheds the row 35px earlier', () => {
-  expect(shed(819)).toEqual([])
-  expect(shed(819, { clearHighlight: true })).toEqual(['trackSelectorIndent'])
+  expect(shed(824)).toEqual([])
+  expect(shed(824, { clearHighlight: true })).toEqual(['trackSelectorIndent'])
   expect(shed(600)).toEqual([
     'trackSelectorIndent',
     'panButtonSpacing',
@@ -114,9 +114,9 @@ test('shedding only ever grows as the header narrows', () => {
 })
 
 test("an embedded view's menu button sheds the row 44px earlier", () => {
-  expect(shed(785)).toEqual([])
-  expect(shed(813, { viewMenu: true })).toEqual(['trackSelectorIndent'])
-  expect(shed(829, { viewMenu: true })).toEqual([])
+  expect(shed(790)).toEqual([])
+  expect(shed(833, { viewMenu: true })).toEqual(['trackSelectorIndent'])
+  expect(shed(834, { viewMenu: true })).toEqual([])
 })
 
 // A phone's header has no pan buttons or scroll-zoom toggle, so the room they

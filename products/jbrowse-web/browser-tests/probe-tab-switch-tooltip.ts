@@ -47,7 +47,7 @@ const spec = {
 
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
 
-const BUTTON = 'button[value="scrollZoom"]'
+const BUTTON = '[data-testid="scroll-zoom-toggle"]'
 
 async function snapshot(page: Page, when: string) {
   const s = await page.evaluate(sel => {
@@ -130,7 +130,7 @@ async function main() {
         type,
         e => {
           const el = e.target instanceof Element ? e.target : undefined
-          const onButton = !!el?.closest('button[value="scrollZoom"]')
+          const onButton = !!el?.closest('[data-testid="scroll-zoom-toggle"]')
           if (
             type === 'mousemove' ||
             (!onButton && type !== 'visibilitychange' && type !== 'focus')
@@ -158,7 +158,7 @@ async function main() {
     })
 
     const observe = () => {
-      const btn = document.querySelector('button[value="scrollZoom"]')
+      const btn = document.querySelector('[data-testid="scroll-zoom-toggle"]')
       const root = btn?.querySelector('.MuiTouchRipple-root')
       if (!root) {
         setTimeout(observe, 500)

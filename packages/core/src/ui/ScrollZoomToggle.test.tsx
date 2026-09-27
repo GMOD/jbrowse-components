@@ -1,12 +1,8 @@
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 import { observable } from 'mobx'
 
 import ScrollZoomToggle from './ScrollZoomToggle.tsx'
 
-// The ring that says where the preference lives. It is the only durable answer
-// to "what did I just turn on, and where do I turn it off" — every other
-// surface that writes this (the prompt at the cursor, a view menu, the
-// Preferences dialog) is somewhere else on the screen and then goes away.
 function makeModel(scrollZoom: boolean) {
   return observable({
     scrollZoom,
@@ -16,12 +12,31 @@ function makeModel(scrollZoom: boolean) {
   })
 }
 
-test('a button nobody has touched draws no ring', () => {
+test('the labelled form is a checkbox that flips the preference', () => {
+  const model = makeModel(false)
+  const { getByRole } = render(<ScrollZoomToggle model={model} />)
+  const box = getByRole('checkbox', { name: 'Zoom on scroll' })
+  expect((box as HTMLInputElement).checked).toBe(false)
+  fireEvent.click(box)
+  expect(model.scrollZoom).toBe(true)
+  expect((box as HTMLInputElement).checked).toBe(true)
+})
+
+test('the icon-only form is a pressed button named by its tooltip', () => {
+  const model = makeModel(true)
+  const { getByRole } = render(<ScrollZoomToggle model={model} iconOnly />)
+  const button = getByRole('button', { name: /mouse wheel zooms/ })
+  expect(button.getAttribute('aria-pressed')).toBe('true')
+  fireEvent.click(button)
+  expect(model.scrollZoom).toBe(false)
+})
+
+test('a control nobody has touched draws no ring', () => {
   const { queryByTestId } = render(<ScrollZoomToggle model={makeModel(true)} />)
   expect(queryByTestId('scroll-zoom-pulse')).toBe(null)
 })
 
-test('a change made elsewhere rings the button, and each one restarts it', () => {
+test('a change made elsewhere rings the control, and each one restarts it', () => {
   const model = makeModel(false)
   const { queryByTestId } = render(<ScrollZoomToggle model={model} />)
   act(() => {
@@ -32,6 +47,5 @@ test('a change made elsewhere rings the button, and each one restarts it', () =>
   act(() => {
     model.setScrollZoom(false)
   })
-  // a fresh element, because a class alone would not replay the animation
   expect(queryByTestId('scroll-zoom-pulse')).not.toBe(first)
 })

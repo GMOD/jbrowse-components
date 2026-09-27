@@ -1,10 +1,10 @@
 // Widths measured against a built jbrowse-web at the default theme and root
 // font size — `products/jbrowse-web/browser-tests/probe-lgv-header-fit.ts`
-// prints the row piece by piece. It spends 591px on everything that is not the
-// search box (47 track selector, 114 scroll-zoom toggle, 156 pan buttons, 50 bp
+// prints the row piece by piece. It spends 596px on everything that is not the
+// search box (47 track selector, 119 scroll-zoom checkbox, 156 pan buttons, 50 bp
 // readout, 192 zoom controls, 32 of flex gap). What the box itself asks for is
 // the caller's, because it follows the locstring rather than being a constant.
-const ROW_WITHOUT_SEARCH_PX = 591
+const ROW_WITHOUT_SEARCH_PX = 596
 
 // The one piece of the row that comes and goes on its own. A text search that
 // lands on a feature raises it — the same flow that was just using the search
@@ -17,9 +17,9 @@ const CLEAR_HIGHLIGHT_PX = 35
 const VIEW_MENU_PX = 44
 
 // A touch device drops the scroll-zoom toggle, which has no wheel to
-// govern, and the pan buttons, which a swipe replaces: 114 + 156, and the flex
+// govern, and the pan buttons, which a swipe replaces: 119 + 156, and the flex
 // gaps of the three items.
-const TOUCH_ABSENT_PX = 282
+const TOUCH_ABSENT_PX = 287
 const TOUCH_ABSENT = new Set(['panButtonSpacing', 'scrollZoomLabel'])
 
 // What the header gives up as its window narrows, cheapest first, with the
@@ -30,7 +30,7 @@ const TOUCH_ABSENT = new Set(['panButtonSpacing', 'scrollZoomLabel'])
 const SHEDDABLE = [
   ['trackSelectorIndent', 16],
   ['panButtonSpacing', 100],
-  ['scrollZoomLabel', 83],
+  ['scrollZoomLabel', 88],
   ['zoomSlider', 100],
   ['regionWidth', 54],
 ] as const

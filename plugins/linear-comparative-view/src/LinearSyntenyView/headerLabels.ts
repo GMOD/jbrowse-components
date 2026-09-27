@@ -6,9 +6,9 @@
 // gap after each of them.
 const ICON_ROW_PX = 210
 
-// What the two words add: 83 for 'Zoom on scroll' — the same number
+// What the two words add: 88 for 'Zoom on scroll' — the same number
 // LinearGenomeView's headerFit sheds it against — and 39 for 'Follow'.
-const LABELS_PX = 122
+const LABELS_PX = 127
 
 // One row's locate control: a ~180px search box, the assembly name and bp
 // readout beside it, and the 12px gap to the next row's. Counted for the last

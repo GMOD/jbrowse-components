@@ -45,13 +45,17 @@ async function main() {
   const page = await browser.newPage()
   const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=${encodeURIComponent(`spec-${JSON.stringify(spec)}`)}&sessionName=Gutter`
   await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 })
-  await page.waitForSelector('button[value="scrollZoom"]', { timeout: 90000 })
+  await page.waitForSelector('[data-testid="scroll-zoom-toggle"]', {
+    timeout: 90000,
+  })
   await delay(12000)
 
   // turn scroll-to-zoom on through its own control, and hold on to the element
   // that actually scrolls (an app-level div — the document itself does not)
   await page.evaluate(() => {
-    document.querySelector<HTMLElement>('button[value="scrollZoom"]')!.click()
+    document
+      .querySelector<HTMLElement>('[data-testid="scroll-zoom-toggle"]')!
+      .click()
     ;(window as any).scroller = (() => {
       const el = document.querySelector('[data-testid="tracksContainer"]')
       for (let n = el?.parentElement; n; n = n.parentElement) {

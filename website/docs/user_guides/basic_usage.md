@@ -32,12 +32,12 @@ Keyboard shortcuts, with the view focused:
 - `Ctrl`/`Cmd` + `↓`: zoom out
 - `Ctrl`/`Cmd` + `←` / `→`: pan left/right
 
-The scroll-to-zoom toggle in the LGV header makes the bare mouse wheel zoom
-wherever the pointer is over the tracks. To scroll the page while it is on, put
-the pointer on the view header or use the scrollbar. `Shift`+wheel stays
+The **Zoom on scroll** checkbox in the LGV header makes the bare mouse wheel
+zoom wherever the pointer is over the tracks. To scroll the page while it is on,
+put the pointer on the view header or use the scrollbar. `Shift`+wheel stays
 horizontal scrolling.
 
-<Figure caption="The scroll-to-zoom toggle in the LGV header. With it on, the wheel zooms wherever it is over the tracks, and the header the toggle sits in still scrolls the page." src="/img/scroll_zoom_toggle.png" />
+<Figure caption="The Zoom on scroll checkbox in the LGV header. With it on, the wheel zooms wherever it is over the tracks, and the header still scrolls the page." src="/img/scroll_zoom_toggle.png" />
 
 ### Reordering tracks
 

@@ -90,7 +90,7 @@ async function settleFrame() {
 // `browser-tests/probe-scroll-gutter.ts` drives.
 function parts(container: HTMLElement) {
   const tracks = container.querySelector('[data-testid="tracksContainer"]')!
-  const header = container.querySelector('button[value="scrollZoom"]')!
+  const header = container.querySelector('[data-testid="scroll-zoom-toggle"]')!
   return { tracks, header }
 }
 

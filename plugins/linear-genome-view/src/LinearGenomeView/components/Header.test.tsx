@@ -84,7 +84,9 @@ test('a mouse gets the pan buttons and the scroll-zoom toggle', async () => {
   installPointer(false)
   const { getByLabelText, container } = await renderHeader()
   expect(getByLabelText('Pan left')).toBeTruthy()
-  expect(container.querySelector('button[value="scrollZoom"]')).toBeTruthy()
+  expect(
+    container.querySelector('[data-testid="scroll-zoom-toggle"]'),
+  ).toBeTruthy()
 })
 
 // A swipe pans, and there is no wheel for the toggle to govern
@@ -92,5 +94,7 @@ test('a touch device gets neither', async () => {
   installPointer(true)
   const { queryByLabelText, container } = await renderHeader()
   expect(queryByLabelText('Pan left')).toBeNull()
-  expect(container.querySelector('button[value="scrollZoom"]')).toBeNull()
+  expect(
+    container.querySelector('[data-testid="scroll-zoom-toggle"]'),
+  ).toBeNull()
 })

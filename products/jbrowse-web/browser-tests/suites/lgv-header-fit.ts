@@ -95,7 +95,7 @@ function readRow(page: Page) {
         input.clientWidth - px(cs.paddingLeft) - px(cs.paddingRight),
       ),
       hasScrollZoomLabel: !!document
-        .querySelector('button[value="scrollZoom"]')
+        .querySelector('[data-testid="scroll-zoom-toggle"]')
         ?.textContent.trim(),
       hasSlider: !!bar.querySelector('.MuiSlider-root'),
       hasRegionWidth: !!bar.querySelector(

@@ -1411,7 +1411,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         tailDx: 3,
       }),
       ...toolbarCallout({
-        selector: 'button[value="scrollZoom"]',
+        selector: '[data-testid="scroll-zoom-toggle"]',
         text: 'Scroll-to-zoom toggle',
         pillDx: 125,
         tailDx: 144,
@@ -1462,7 +1462,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         anchor: {
-          selector: 'button[value="scrollZoom"]',
+          selector: '[data-testid="scroll-zoom-toggle"]',
         },
       },
       {
@@ -1470,7 +1470,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         text: 'The scroll wheel zooms instead of scrolling the page',
         leader: true,
         anchor: {
-          selector: 'button[value="scrollZoom"]',
+          selector: '[data-testid="scroll-zoom-toggle"]',
           alignY: 'bottom',
         },
         dx: 40,
