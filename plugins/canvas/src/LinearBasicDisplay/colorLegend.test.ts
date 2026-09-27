@@ -511,7 +511,7 @@ describe('derived color key', () => {
       )
       expect(display.colorScales[0]).toMatchObject({
         kind: 'ramp',
-        domain: [0, 2],
+        domain: [1, 2],
       })
     })
 

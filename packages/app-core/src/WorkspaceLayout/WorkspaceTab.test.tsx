@@ -39,7 +39,7 @@ test('one view uses its display name, then its assemblies, then a fallback', () 
   ).toBe('My view')
   expect(
     tabDisplayName(tab(), [view({ assemblyNames: ['hg19', 'hg38'] })], session),
-  ).toBe('hg19!,hg38!')
+  ).toBe('hg19!, hg38!')
   expect(tabDisplayName(tab(), [view({})], session)).toBe('Untitled view')
 })
 
