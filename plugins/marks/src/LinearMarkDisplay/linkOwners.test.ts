@@ -63,6 +63,24 @@ test('the two halves pair through the assembly aliases', () => {
   expect([lane(out, 0), lane(out, 1)]).toEqual([[1], [LINK_ELSEWHERE]])
 })
 
+test('a pair spelt through an alias inside one region draws once', () => {
+  const out = createLinkOwners()(
+    new Map([
+      [
+        0,
+        payload([
+          { x: 100, x2: 200, ref: 'chrA', region: 0 },
+          { x: 200, x2: 100, ref: 'ctgA', region: 0 },
+          { x: 300, x2: 400, ref: 'ctgA', region: 0 },
+        ]),
+      ],
+    ]),
+    [A],
+    canonical,
+  )
+  expect(lane(out, 0)).toEqual([0, LINK_ELSEWHERE, 0])
+})
+
 test('a record with no partner draws whole from its own region, the far one loaded or not', () => {
   const out = createLinkOwners()(
     new Map([

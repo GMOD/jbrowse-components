@@ -46,10 +46,13 @@ function sameIndices(a: readonly number[], b: readonly number[] | undefined) {
 /**
  * Each link drawn once over the loaded regions. The copies of one curve — a
  * pair whose two ends both have records, or one record fetched into two
- * regions — share their two feet, unordered, and all but one region's are
- * set to {@link LINK_ELSEWHERE}: the lowest region holding its own foot, else
- * the lowest region. A region whose hidden set did not move keeps its payload,
- * so a fetch elsewhere uploads nothing here.
+ * regions — share their two feet, unordered, and all but one are set to
+ * {@link LINK_ELSEWHERE}: the first in the lowest region holding its own
+ * foot, else in the lowest region. The feet read through the assembly's
+ * aliases, so a pair whose ALT spells its own CHROM another way, which the
+ * worker's mate step cannot fold, folds here inside one region as it does
+ * across two. A region whose hidden set did not move keeps its payload, so a
+ * fetch elsewhere uploads nothing here.
  */
 export function createLinkOwners() {
   const cache = new Map<
@@ -73,7 +76,10 @@ export function createLinkOwners() {
     }
     const n = regions.length
     const keysOf = new Map<number, (string[] | undefined)[]>()
-    const rankOf = new Map<string, number>()
+    const ownerOf = new Map<
+      string,
+      { rank: number; index: number; i: number }
+    >()
     for (const [index, data] of mated) {
       const region = regions[index]
       if (!region) {
@@ -87,9 +93,9 @@ export function createLinkOwners() {
             const holds = x >= region.start && x < region.end
             const rank = holds ? index : index + n
             const key = `${li}#${keys[i]}`
-            const had = rankOf.get(key)
-            if (had === undefined || rank < had) {
-              rankOf.set(key, rank)
+            const had = ownerOf.get(key)
+            if (had === undefined || rank < had.rank) {
+              ownerOf.set(key, { rank, index, i })
             }
           }
         }
@@ -108,8 +114,8 @@ export function createLinkOwners() {
         const list: number[] = []
         if (keys) {
           for (let i = 0; i < keys.length; i++) {
-            const rank = rankOf.get(`${li}#${keys[i]}`)!
-            if ((rank >= n ? rank - n : rank) !== index) {
+            const owner = ownerOf.get(`${li}#${keys[i]}`)!
+            if (owner.index !== index || owner.i !== i) {
               list.push(i)
             }
           }
