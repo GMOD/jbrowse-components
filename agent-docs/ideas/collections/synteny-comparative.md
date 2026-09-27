@@ -1,6 +1,6 @@
 ---
 name: synteny-comparative
-description: `syntenyGroupId`, PIF limits, block-level chaining, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
+description: `syntenyGroupId`, PIF limits, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
 ---
 
 # Synteny / comparative
@@ -35,7 +35,9 @@ triplication in the grape/peach/cacao demo, where one grape chromosome maps to ~
   Wormald 1994) for the no-pinned-focus case, and/or an optional simulated-annealing
   polish on the true crossing count (AccuSyn) seeded from the barycenter layout.
 
-Why deferred, not done: it **changes documented tie-breaking semantics**, not just adds.
+[ADR-034](../../architecture-decision-records/adr-034-dotplot-diagonalize-stays-single-axis.md)
+rejected both-axis seriation; this stays single-axis and changes only how one axis is
+ordered. Why deferred, not done: it **changes documented tie-breaking semantics**, not just adds.
 The `base-count tie` test in `diagonalize.test.ts` pins `[qY, qX, qZ]` (a tied qX snapped
 to the alphabetically first of the tied refs); a barycenter places qX at the centroid of
 both refs → `[qY, qZ, qX]`. The determinism invariant (result independent of input order) still holds, but the
@@ -91,7 +93,8 @@ shared block/anchor id anywhere in `comparative-adapters` or `synteny-core` (PAF
 without touching the pairwise geometry the linear layout needs anyway: consistent color per
 block across every row it touches (`color: { field: 'group' }`, hash the id in `syntenyColors.ts`,
 main-thread recolor with no RPC), hover-one-highlight-the-block across rows, and "present in
-all N" filtering. MCScan `.anchors` and MAF already carry block structure to populate it; PAF
+all N" filtering. MultiWaySyntenyDisplay, which groups on gene name with `syntenyId` as the
+nameless fallback, would be its third consumer. MCScan `.anchors` and MAF already carry block structure to populate it; PAF
 (independent lines) leaves it undefined. This is the cheap 80% and is consistent with "don't
 make N-way blocks the primitive" above — it's an identity *overlay*, not a new render unit.
 
@@ -107,8 +110,8 @@ Encouragingly the geometry is already generic over an arbitrary view *pair* —
 `views[level+1]` in `LinearSyntenyDisplay/afterAttach.ts` and the `connectedViews` getter). So
 non-adjacent ribbons are a level-model + z-ordering change, not a geometry rewrite — but a
 separate, larger step. The id is the prerequisite, not the whole feature. Start with MCScan
-(already block-structured) for populating the field. See "Block-level synteny data"
-below.
+(already block-structured) for populating the field. See [block-level-synteny-from-external-tools](../ready/block-level-synteny-from-external-tools.md)
+
 
 **PIF / tabix indexing weaknesses + improvements** (the all-vs-all adapter now
 ships in two forms: in-memory `MultiGenomePAFAdapter` and tabix-indexed
@@ -192,7 +195,7 @@ all-vs-all file reaches the cap rather than speculatively.
 
 Surveyed `~/src/vendor/{ntSynt-viz,plotsr,SVbyEye,SafFire,jupiterplot}` against the
 current stack. The overriding conclusion is that **the render/model/color surface is
-already comprehensive** — `SyntenyColorBy` covers `default·strand·query·target·
+already comprehensive** — the `color` object (ADR-139) covers `default·strand·query·target·
 reference·identity·mappingQuality·dnds`, plus `opacityByIdentity`,
 `fadeThinAlignments`, N-way stacked views, `color: { field: 'reference' }` chromosome-painting,
 and `MultiGenomePAFAdapter`. So the remaining wins are **leaf parsers that map a popular
@@ -225,14 +228,6 @@ template: "one file backs N-1 pairwise tracks, no renderer change").
   fade — a discrete-bin mode is a possible legend-friendlier variant, but continuous is
   arguably better and this would add a knob, so likely YAGNI.
 
-### Synteny shaders: what's deliberately NOT unified
-
-**Do NOT unify further.** The *vertex* stages stay separate on purpose: straight is one quad
-(6 verts), curve tessellates 8 segments × 6 with Newton-inverted `t` + bezier-bulge padding —
-genuinely different geometry, and the file split is what keeps `isCurve` branches out of the
-hot path (see the header comment in `syntenyTypes.slang`). Merging them would reintroduce the
-branch the split exists to avoid.
-
 ### Polyploidy-aware many-to-many synteny
 
 Whole-genome synteny between species with an ancestral WGD / paleopolyploidy (grape's
@@ -248,94 +243,6 @@ not noise — e.g. a shared hue per source-block family, an explicit "paralog fa
 or a summary "×3" annotation on the region. Complements the barycenter/layer-sweep note above
 (which cuts *transitive* crossings but can't remove genuine many-to-many ones), and would let
 a caption/legend say "crossings here are the grape triplication" instead of looking broken.
-
-### Block-level synteny data: importing / generating from external tools
-
-A coarse LOD *tier* (Route B's tiering architecture) ships —
-[SYNTENY_LOD.md](../../reference/SYNTENY_LOD.md) — and true cross-row block
-**chaining** (Route B's algorithm) does not.
-
-**Important:** the coarse tier is a per-row *strip + split* pass, the opposite of the
-block *merge* below. It coarsens each alignment individually; it does **not**
-collapse runs of separate collinear alignments into blocks. The hairball's
-structural cause (many separate small alignments) is untouched — only per-ribbon
-CIGAR detail is dropped at overview. Route B's chaining is still the open work.
-
-#### The problem this addresses
-
-Whole-genome synteny overviews render as a *hairball*: thousands of raw
-minimap2 local alignments, each drawn as a ribbon, crisscrossing. We've
-attenuated the **visual** symptom in the renderer (per-ribbon width-proportional
-fade in the GPU fill shader + Canvas2D; sub-pixel decision keyed on
-*perpendicular* width so steep diagonals stroke a clean 1px centerline), but the
-structural cause is the *input*: we draw raw alignments, while the tools that
-produce elegant plots (plotsr, ntSynt-viz, circos) draw **detected synteny
-blocks** — a handful of large, classified regions collapsed by an upstream
-analysis step before those tools ever drew a pixel. The renderer fade softens
-the hairball for free but cannot truly declutter an all-to-all tangle of many
-*separate* small alignments; that needs blocks. The two compose.
-
-#### Tool landscape (get this right before picking a route)
-
-| Tool | What it is | Input | Cross-species? | Notes |
-| --- | --- | --- | --- | --- |
-| **plotsr** | plotter only | SyRI output | no | block detection is SyRI's, not plotsr's |
-| **SyRI** | block + rearrangement caller | whole-genome aln (minimap2/MUMmer SAM/BAM/PAF/delta) | **no** — same-species/strain | assumes near-complete, chromosome-level, ~1:1 collinear alignment; finds longest syntenic path then classifies residue. Degrades on fragmented/divergent/many-to-many. |
-| **ntSynt** | multi-genome synteny blocks | **FASTA genomes** (minimizer graphs, ntHash/ntJoin lineage) | **yes** — designed for it | robust to divergence + rearrangement. Does **not** consume a PAF — it replaces minimap2. Snakemake/C++/Python pipeline. Output = block TSV. ntSynt-viz draws ribbons from it. |
-| **MCScan / MCScanX / DAGchainer** | gene-anchor collinearity | anchor pairs (homology/BLAST) | yes (anchor-based) | we already have an MCScan adapter (block-level). Plant/WGD heritage. |
-| **(generic) PAF collinear chaining** | chain/merge alignments into blocks | minimap2 PAF | yes | the stage every tool above runs internally; implementable directly. |
-
-Key correction to the intuition that "we could import from SyRI/plotsr": **SyRI
-is same-species** — don't anchor cross-species work on it. **ntSynt is the
-cross-species reference**, but its input is FASTA, not PAF, so it's a *replace
-minimap2* path, not an *import-our-PAF* path.
-
-#### Three routes to block-level pif
-
-- **Route A — adopt a tool's block output (preprocessing).** Run ntSynt
-  (cross-species) or MCScan as an external step; write a small block-import
-  adapter reading its block TSV → pif. Highest-quality blocks, no algorithm to
-  maintain; but external pipeline (not in-browser), ntSynt is a heavy
-  Snakemake/C++/Python dependency, another format to parse.
-- **Route B — own PAF collinear chaining (recommended first step).** The
-  operation we literally want — "collapse a minimap2 PAF into block-level pif" —
-  is collinear chaining, the internal stage of every tool above: sort by target;
-  chain alignments whose query/target coords advance monotonically on a
-  consistent strand within gap tolerances; emit one block per chain; break on
-  strand flip / large gap / target jump. DAGchainer-style DP or greedy
-  diagonal-merge. Organism-agnostic, **no new dependency**, consumes the PAF we
-  already produce, slots in as `make-pif --blocks` (or `--merge`). We own the
-  algorithm; pure-PAF chaining won't match ntSynt on the hardest divergent cases
-  (acceptable — use Route A there).
-- **Route C — reimplement ntSynt's minimizer-graph algorithm. Don't.**
-  Substantial, and re-derives a maintained tool. Shell out (Route A) if that
-  specific quality is needed.
-
-#### Architecture: blocks are a zoom *tier*, not a replacement
-
-Block data should **not** replace raw alignments — it's a coarser LOD tier:
-whole-genome / coarse `coarseBpPerPx` serves **block** pif; zoomed in serves
-**raw** minimap2 pif (full CIGAR detail). This is our existing multi-tier format
-pattern, and the legitimate home for the adapter-level `lodMode` already plumbed
-RFC→RPC. `lodMode` selects the tier; it is **distinct** from the renderer fade
-(deliberately kept `lodMode`-independent). Blocks kill the structural hairball at
-overview; perpendicular fade keeps whatever raw alignments still render at
-intermediate zooms honest.
-
-#### Recommendation & open questions
-
-Route B first — a `make-pif --blocks` collinear-chaining pass emitting a
-block-level pif tier (no dependency, uses current data, fits `lodMode` tiering;
-A/B against raw alignments on grape/peach and hs1/mm39). ntSynt as the quality
-reference (and a Route-A importer later) for hard cross-species cases. Skip
-SyRI/plotsr for cross-species (a SyRI importer could still be a nice
-same-species/strain feature — separate, narrower). Open: chaining parameters
-(max gap, diagonal tolerance, min block length) exposed vs pixel/data-derived;
-where chaining runs (`make-pif` CLI precompute vs live worker pass — CLI matches
-the multi-tier-on-disk model); block-pif schema (reuse `de:f:` identity? carry a
-member count / syntenic-vs-inverted classification for coloring?); classify
-rearrangements like SyRI or emit collinear blocks + strand only; and multi-genome
-(>2) blocks (ntSynt's strength) vs today's pairwise pif container.
 
 ### Canvas2D fades a curved sub-pixel ribbon by one number
 

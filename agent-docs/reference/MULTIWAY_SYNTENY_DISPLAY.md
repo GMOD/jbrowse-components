@@ -188,9 +188,7 @@ and the drawn frame is derived from it against the live view on every pan
 half a span either side (`frameReach`), the margin a pan translates into view
 before the lanes re-lay out, while its placements stay filtered at the frame
 edge (`groupRunsOnRow`). This machinery is
-measured (the stability table under
-[../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md)
-§"Lane stability, measured") and is the
+measured (§6.2) and is the
 best-engineered part of the display; nothing here recommends touching it.
 
 **Transitions.** A settle that re-decides a lane onto the contig it already
@@ -388,17 +386,14 @@ does not know lanes exist. Concretely:
   frame, which is how a second row arrives: gene names are the first extra
   layer, on by default (`showGeneLabels`, placed by `laneGeneLabels`), and add
   a 12 px row to each lane's band.
-- No per-lane navigation or zoom, by design: "Per-lane pan/zoom stays
-  deliberately absent: the lanes re-fit to the anchor's viewport by design, and
-  the launch above is the route to a lane you drive yourself" (design record
-  §"Lane scale legibility, and what is still open on it").
+- No per-lane navigation or zoom, by design: the lanes re-fit to the anchor's
+  viewport, and the launch below is the route to a lane you drive yourself.
 - One contig per lane (`pickContig`, `MW/laneDecision.ts`); a second copy
   is named in the header and reachable by pin, never drawn beside the first
   (design record §"Multi-copy lanes").
 - Self-comparison lanes are dropped (`rowAssemblies` removes mates whose
   assembly is the anchor's).
-- The SVG export is the viewport at the current `scrollTop` (design record
-  §"Lane scale legibility, and what is still open on it"), so a 44-lane figure
+- The SVG export is the viewport at the current `scrollTop`, so a 44-lane figure
   is a screenshot of a scrolled canvas, not the stack.
 - Height is divided until `MIN_LANE_PITCH = 22` px, then fixed and scrolled
   (`laneContentHeight`); at the floor the glyph row is
@@ -446,11 +441,9 @@ negative (each lane draws its own cluster and no ribbon). The adapter loads
   seriation design is written but not built
   ([../ideas/waiting-on-a-call/ordering-synteny-lanes-by-similarity.md](../ideas/waiting-on-a-call/ordering-synteny-lanes-by-similarity.md)).
 - *44 lane-gene RPCs per settle* (one tabix query per lane; the per-lane
-  staleness gate reduces a pan to the lanes whose grid cell moved, design record
-  §"Genome scale over an alignment-level source"). Fine at 44, and the reason
+  staleness gate reduces a pan to the lanes whose grid cell moved). Fine at 44, and the reason
   the cost is linear in lanes.
-- *No hiding of empty lanes automatically* (Hide lane is manual, design
-  record §"Lane scale legibility, and what is still open on it").
+- *No hiding of empty lanes automatically* (Hide lane is manual).
 
 **A user who wants more than one row per genome.** Nothing in-display. The
 options are: open a lane in its own LGV (unsynchronised; the multiway track
@@ -608,8 +601,7 @@ sub-linear.
   neither cost was measured.
 - `decideLaneFrames`: per lane, `fitLane` scans every group and
   `orientationVote` sorts the shared set: O(N × G log G). Measured at 7 lanes
-  and 660 groups: 12.7 ms of MobX per zoom step packing the cells (design record
-  §"The backend landed 2026-08-27"); glyph cells 34 ms at 5,009 on-canvas genes
+  and 660 groups: 12.7 ms of MobX per zoom step packing the cells (§6.5); glyph cells 34 ms at 5,009 on-canvas genes
   (`JC/plugins/linear-comparative-view/benches/multiwayZoomCost.probe.ts:19-25`).
   Linear extrapolation to 464 lanes at the same group count is ~0.8 s per
   settle, before rendering.
@@ -688,8 +680,7 @@ maps an anchor sub-interval into a lane by the record's overall ratio. The tests
 pinned the
 interpolation as specified (`MW/composeLaneLinks.test.ts`) and nothing measured
 either against a CIGAR oracle. The design record chose the affine placement
-("per-base alignment lanes … the wrong one to bolt onto this display",
-§"Per-base alignment lanes") for rendering reasons; the consequence that
+for rendering reasons (per-base lanes came later, §6.1); the consequence that
 *placements* — not per-base marks — were wrong by up to the largest interior
 indel was stated nowhere, and the hg38 tutorial presented the artefact as
 biology.
@@ -905,3 +896,216 @@ them against each other. For this display the difference is invisible where the
 CIGAR is dropped after the clip, but it decides the clipped extents where a
 record straddles the window edge, and the gap split (§4.1) is the first consumer
 of the CIGAR's interior.
+
+## 6. Measured and settled
+
+What the design record's readings measured or decided, moved here once they
+stopped being open.
+
+### 6.1 Per-base alignment lanes
+
+The ops pack on the main thread, where the frames already live
+(`addAlignmentDetail`), so a lane needs no worker-side frame. Mismatches sharing
+a pixel join into one mark, so a gutter emits at most one per pixel of its width
+whatever the CIGAR states, the bound `visitCigarRenderedSegments` already gave
+the indels. A gutter the file never states is composed from the two records it
+sits between (`composeAlignmentOps`), so a star of pairwise alignments draws
+every gutter and not just its anchor's.
+
+### 6.2 Lane stability, measured
+
+On the deployed `demos/grape_peach_cacao` — a 2Mb window walked across
+grape chr1 in 100kb steps, 259 steps, every lane read out of `decideLaneFrames`
+itself with the previous step's decision carried in. A CHANGE IS NOT A FLICKER,
+so a lane moving from one syntenic block to the next and staying is counted
+apart from one that leaves an answer and comes back within a fifth of a window.
+
+<!-- BEGIN GENERATED MEASUREMENT multiway-lane-stability -->
+
+_Generated by `pnpm autogen` — edit the source, not this block._
+
+| lane        | contigs seen | contig chg | contig osc | drawn flip chg | drawn flip osc | fallback flip chg | fallback flip osc | empty steps | crossed steps | rung chg | rung osc | slip steps | median slip px | max slip px |
+| ----------- | -----------: | ---------: | ---------: | -------------: | -------------: | ----------------: | ----------------: | ----------: | ------------: | -------: | -------: | ---------: | -------------: | ----------: |
+| peach       |            2 |          3 |          0 |              5 |              0 |                10 |                 2 |          33 |            20 |        8 |        1 |         23 |            315 |       4,684 |
+| citrus      |            3 |          8 |          0 |              7 |              0 |                13 |                 3 |          33 |             2 |        2 |        0 |         21 |            146 |         607 |
+| cacao       |            2 |          4 |          0 |             12 |              3 |                17 |                 2 |          33 |            16 |       14 |        0 |         63 |             64 |         438 |
+| poplar      |            5 |          8 |          0 |              7 |              1 |                14 |                 3 |          33 |            13 |        4 |        0 |         38 |             64 |       3,610 |
+| tomato      |            4 |          8 |          0 |              9 |              1 |                12 |                 3 |          33 |            35 |        7 |        0 |         27 |            121 |         849 |
+| arabidopsis |            4 |          8 |          0 |              9 |              3 |                15 |                 5 |          34 |            30 |        2 |        0 |         40 |             69 |      12,760 |
+
+<!-- END GENERATED MEASUREMENT multiway-lane-stability -->
+
+That is the 2026-09-24 run of the vote that ships: every pair of shared runs
+weighed by the product of group weights, read against the lane above, or
+against the anchor where the lane above shares fewer than three groups.
+`crossed steps` counts the steps a lane is drawn with more than half its
+ribbon pairs to the lane above crossing, read off the drawn frames rather than
+any vote, so a rule that holds a lane the wrong way round shows there however
+rarely it flips. On 2026-09-21, before the anchor fallback, the same probe with
+the vote patched measured three alternatives, lanes in the table's order:
+
+- each run against its neighbour, weighed by the lighter run, the rule before
+  2026-09-06: drawn flip changes 3, 4, 5, 7, 8 and 2, no oscillation, crossed
+  steps 37, 50, 27, 41, 84 and 55;
+- the heaviest collinear chain each way, less its heaviest run: changes 3, 5,
+  8, 7, 12 and 9, oscillations 0, 0, 1, 1, 1 and 1, crossed 36, 29, 37, 22, 70
+  and 39;
+- the shipped rule voting against the anchor rather than the lane above:
+  changes 5, 7, 10, 5, 7 and 8, oscillations 0, 0, 1, 1, 0 and 0, crossed 20,
+  4, 16, 23, 46 and 51.
+
+No alternative crosses less on any lane. The neighbour rule flipped less
+because it held lanes the wrong way round, so its 2026-09-02 table is not a bar
+to return to, and the 2026-09-06 change was not a regression.
+
+What the shipped rule does cost is its oscillations, and since lane motion
+landed (`MW/laneMotion.ts`) each is a fold out and back rather than two snaps.
+In the 2026-09-21 walk, seven of the nine start or end within a step of the
+lane above flipping, five of them in one stretch of six steps. A lane votes
+against the lane above, so an upper lane's flip inverts the vote of every lane
+below that shares its groups, and they follow it out and back. Only two, both
+cacao's, are a lane's own near-tie with nothing above it moving. Voting
+against the anchor cuts the cascade to two oscillations and pays in the lower
+lanes: poplar draws 10 more steps crossed, tomato 11 and arabidopsis 24. A
+crossed lane stays wrong for as long as it is held, while an oscillation is one
+fold out and back, so the lane-above vote stays.
+
+The anchor fallback landed 2026-09-24. A lane sharing fewer than three groups
+with the lane above had taken the unweighted anchor-order sum and no alignment
+at all. Against the 2026-09-21 run it cut drawn flip changes from 56 to 49 and
+slip steps from 272 to 212 over the six lanes, and cacao's largest slip from
+24,234 px to 438, for three more crossed steps and one more oscillation on
+arabidopsis and a 12,760 px slip there. On a pairwise star it is the whole vote
+below the top lane, and the 17p table below says what that changed.
+
+The `fallback` columns are what the anchor-order sum alone would do, kept as
+the control. The stateless version of the same
+walk had 1 to 7 flip oscillations per lane and 10 to 21 flip changes, and
+arabidopsis changed contig 12 times with 3 of them oscillations. `empty` is
+windows where the lane places nothing at all, the same 33 for every lane, and
+no rule can fill them. `slip` is how far a lane's content moved on screen
+beyond the anchor's own pan, counted only on one contig, orientation and rung:
+a held lane slips 0, and each re-alignment is one slip. The medians are the
+ordinary re-alignment; the maxima are the kept cluster hopping to another
+paleo-block on the same contig, which is a relocation the way a contig change
+is.
+
+### 6.3 What the vote reaches on a pairwise source
+
+The 17p figure (`multiway_synteny/hg38_vertebrates_17p_break`,
+hg38 chr17:15,200,014-16,400,014 over eight liftOver PIFs) draws each lane
+forward or [rev]. `multiwayOrientation17p.probe.ts` reads the same window through the
+same adapter with the display's fetch options and runs `decideLaneFrames`
+with no incumbent, which is the figure's own state, and puts beside each
+lane's answer the anchor bp of its placements on the drawn contig by record
+strand:
+
+<!-- BEGIN GENERATED MEASUREMENT multiway-17p-orientation -->
+
+_Generated by `pnpm autogen` — edit the source, not this block._
+
+| lane     | contig | drawn   | fallback | votes against | shared groups | all-pairs bwd | neighbour bwd |      + bp |      - bp | majority |
+| -------- | ------ | ------- | -------- | ------------- | ------------: | ------------: | ------------: | --------: | --------: | -------- |
+| calJac4  | chr5   | forward | [rev]    | lane above    |            46 |         0.019 |         0.688 |   582,085 |   597,199 | - 0.506  |
+| panTro6  | chr17  | [rev]   | [rev]    | anchor        |             6 |         0.912 |         0.795 |    27,123 | 1,168,258 | - 0.977  |
+| gorGor6  | chr5   | [rev]   | [rev]    | anchor        |             1 |      abstains |      abstains |         0 |   644,668 | - 1.000  |
+| ponAbe3  | chr17  | forward | forward  | anchor        |            14 |         0.061 |         0.184 | 1,147,002 |    22,332 | + 0.981  |
+| rheMac10 | chr16  | forward | forward  | anchor        |            14 |         0.099 |         0.281 |   583,055 |   593,900 | - 0.505  |
+| canFam6  | chr5   | forward | [rev]    | anchor        |            12 |         0.119 |         0.960 |   527,509 |   576,664 | - 0.522  |
+| bosTau9  | chr19  | forward | [rev]    | anchor        |            13 |         0.164 |         0.561 |   480,205 |   523,228 | - 0.521  |
+| mm39     | chr11  | [rev]   | forward  | anchor        |            19 |         0.812 |         0.294 |   440,288 |   487,063 | - 0.525  |
+
+<!-- END GENERATED MEASUREMENT multiway-17p-orientation -->
+
+A pairwise record is a group with one mate, so below the top lane a lane
+shares no group with the lane above, and until 2026-09-24 every such lane took
+the unweighted anchor-order fallback: seven of the eight marks. Three of those
+ran against the lane's own weighted order. canFam6 and bosTau9 drew [rev] with
+0.119 and 0.164 of their paired evidence backwards, and mm39 drew forward with
+0.812. Voting against the anchor draws all three the way their blocks run and
+moves no other lane. gorGor6 places one group, so its vote abstains and the
+fallback still decides it.
+
+The strand columns do not decide a lane. The flip mirrors a lane so its blocks
+read in the anchor's order, and block order and record strand part ways
+wherever a region was rearranged: mm39 runs 0.812 backwards in order on a
+0.525 strand majority. Five of the eight lanes sit within three points of even
+on strand.
+
+### 6.4 A broken hold re-aligns
+
+When a hold breaks — the lane's content has
+moved to another block, or 10% of it has left the frame — the lane jumps to its
+re-alignment in one step (peach +388 px, tomato −2859 px across one drag), and
+the obvious fix is to slide only as far as restores coverage. Built and walked
+across grape chr1 with the stability probe, the least slide leaves a placement's
+centre exactly on the frame edge; the next pan pushes it out by the pan step and
+the least slide brings it back by exactly that step, so the lane pins to that
+placement and stops panning with the anchor — the slip histogram's median was
+the pan step itself, on 145 of 226 steps against 29 for re-alignment, and the
+two rules travelled the same total distance (peach 14,714 px against 14,829).
+The travel is fixed by the data; the rule only chooses between rare
+re-alignments and pinned creeping, and re-alignment stays. What did land from
+that pass is the pivot carrying across a rung change: a zoom is a scale about
+the pivot and not a relocation, so a rung change re-aligns only when the
+rescaled frame no longer shows the content.
+
+### 6.5 The next render lever is the cell rebuild
+
+A zoom step is
+2.0 ms of React and 12.7 ms of MobX packing the cells, so if a lever is wanted
+it is that rebuild.
+
+### 6.6 What this shares with SyntenyFollow
+
+Both answer
+"given the pairwise alignments under a window of genome A, where in genome B
+does that window correspond, and which way round" — `SyntenyFollow` as a
+navigation of a real LGV panel (bp regions, `moveTo`, CIGAR-exact through
+`cigarMapSpan`), this display as a lane-local affine frame at a fixed viewport.
+The shapes do not unify: a `RowFrame` is one linear ramp over one refName, a
+followed row is a `displayedRegions` layout, and multiway has no navigation to
+perform. No function is duplicated between them today. The genuine near-twin in
+this neighborhood pairs SyntenyFollow with the LAUNCH instead —
+`interpolateFollowSpan` and the CIGAR-less branch of `resolvePanel`'s
+`resolveSpans` are the same clamp-to-block interpolation with the same
+reverse-strand walk from `mate.end`.
+
+Two things did cross, and the first was a bug. `followAnchorWindows` weighs a
+contig by SCREEN PX and `resolvePanel` by ANCHOR bp, while `computeRowFrame`
+counted placements — so a cluster of short repeat hits could put a lane on a
+different contig from the panel launched off the same data. It weighs anchor bp
+now, the same axis as `resolvePanel`, and a test over a fixture where the anchor
+and mate axes disagree pins the two to one answer. The second is a discipline:
+`followWindowMapping`'s resolve refuses to extrapolate past its outermost block,
+because "a scale measured elsewhere would invent a correspondence" — which is
+what `rowFrameX` does freely, and why `frameSpan` now clips rather than tests.
+
+The anchor lane took a third pass on 2026-08-26 for the same reason and the
+opposite failure. `bpToPx` neither clips nor extrapolates: it answers `undefined`
+for a coord outside every displayed region, so an interval straddling one lost
+BOTH ends and was dropped whole — the group vanished from `anchorSpans` and so
+from `anchorAbsX`, the seed every lane below lines up on, while the mate lanes
+went on drawing its placement. That is only visible where `displayedRegions` is
+a slice of a contig rather than the whole thing, which is the shape a launched
+panel, a bookmarked region and a synteny row all have. `axisSpan` is the
+ordered-pair counterpart to `frameSpan`, built on core's
+`clipToDisplayedRegions` — the same primitive `getLayoutHighlightCoords` was
+written off, exported because its own min/width return loses the order a ribbon
+endpoint needs.
+
+What would transfer next is rung 3: `followSpreadSpans` and `spanBounds` place a
+row on the UNION of what several contigs map to, which is the machinery the
+parked multi-copy lanes (lane-per-region) need. `spanBounds` itself is offset
+space over `displayedRegions` and a `RowFrame` lane cannot consume it, so what
+actually moves is the union-of-spans idea plus `spreadDecision`'s coverage and
+`partialShare` gating — the hard-won part, and the reason to build lane-per-
+region on the follow side's concepts rather than a second time here.
+
+### 6.7 What not to reopen
+
+The 2026-09-06 reading ends with a list of what it found
+sound and would not have anyone reopen: the lane decision and its hysteresis;
+the cell/layer renderer and its parity tests; the gene glyph parity with the
+canvas track; the per-lane staleness on the dependent fetches; the lane picker
+at its current scale; and the E. coli and primate demos as they stand.
