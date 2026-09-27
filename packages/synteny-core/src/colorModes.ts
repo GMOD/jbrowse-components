@@ -38,7 +38,7 @@ export const COLOR_MODES: ColorModeEntry[] = [
     kind: 'structural',
     label: 'Strand',
     helpText:
-      'Forward and reverse alignments in different colors, so a twisted ribbon reads as an inversion.',
+      'Forward and reverse alignments in two colors, so an inversion shows as the other color.',
     surfaceHelpText: {
       lanes:
         "Each ribbon by the record's strand against the lane above, so a lane drawn flipped still shows its inversions.",

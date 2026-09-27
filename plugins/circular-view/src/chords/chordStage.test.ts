@@ -159,8 +159,9 @@ test('a ribbon into an elided slice still has width', () => {
 
 // The strand lives in the order the mate's span is walked and nowhere else: a
 // forward alignment pairs the two spans start to start, so its boundary walks
-// the mate from its last base back and its two curves do not cross; a reverse
-// one pairs the span's start with the mate's end and takes the twist.
+// the mate from its last base back; a reverse one pairs the span's start with
+// the mate's end. Which of them twists depends on whether the mate's arc is
+// mirrored, so these pin the walk order.
 describe('the strand', () => {
   const lanes = ribbonLanes([
     ['chr1', 1000, 3000, 'chr3', 1000, 2000, 1],
@@ -173,7 +174,7 @@ describe('the strand', () => {
     expect(fwd.m1).toBeGreaterThan(fwd.m2)
   })
 
-  test('a reverse alignment twists, walking the mate low to high', () => {
+  test('a reverse alignment walks the mate low to high', () => {
     expect(rev.m1).toBeLessThan(rev.m2)
   })
 

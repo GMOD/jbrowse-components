@@ -152,10 +152,11 @@ export interface ChordLanes {
  * Where ribbon `i`'s boundary goes: along its span, across to the mate, along
  * the mate's span, and back. The strand is in that order and nowhere else. A
  * forward alignment pairs the two spans start to start, so the mate's span is
- * walked from its last base back to its first and the two curves do not cross;
- * a reverse one pairs the span's start with the mate's end and takes the twist
- * that is how an inversion reads on a circle. Both are statements about genomic
- * ends, which is why a mirrored slice needs nothing here.
+ * walked from its last base back to its first; a reverse one pairs the span's
+ * start with the mate's end. Which of the two twists depends on the arcs:
+ * across a mirrored arc the reverse ribbon does, and across two arcs running
+ * the same way the forward one does. Both are statements about genomic ends,
+ * which is why a mirrored slice needs nothing here.
  */
 export function ribbonAnglesAt(
   lanes: RibbonLanes,
