@@ -1,5 +1,3 @@
-import { waitForFrame } from '@jbrowse/capture'
-
 import type { Page } from 'puppeteer'
 
 // Per-page assertions for examples-site smoke runs — the `check` hook of
@@ -149,17 +147,25 @@ function ringInk(selector: string) {
   )
 }
 
+// Two frames let the scroll's IntersectionObserver callback land, and the
+// canvas it re-draws; three equal reads 250ms apart then call it settled.
 async function settledRingInk(page: Page, index: number) {
-  let last = -1
+  await page.evaluate(
+    () =>
+      new Promise(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve))
+      }),
+  )
+  const reads: number[] = []
   for (let tries = 0; tries < 20; tries++) {
-    const ink = (await page.evaluate(ringInk, RING_SELECTOR))[index]!
-    if (ink === last) {
-      return ink
+    reads.push((await page.evaluate(ringInk, RING_SELECTOR))[index]!)
+    const [a, b, c] = reads.slice(-3)
+    if (reads.length >= 3 && a === b && b === c) {
+      break
     }
-    last = ink
     await new Promise(resolve => setTimeout(resolve, 250))
   }
-  return last
+  return reads.at(-1)!
 }
 
 /**
@@ -168,24 +174,11 @@ async function settledRingInk(page: Page, index: number) {
  * passes a ring that drew nothing, which is how the gene density rings drew an
  * empty band against a bigWig spelling its contigs `hg38.chr1`. A ring below
  * the fold is read again once scrolled into view, since a canvas that stopped
- * drawing off screen once reported ready over its first region alone. Reloads
- * first and reads at the moment a capture would: the smoke's height check
- * resizes the viewport, which repaints every canvas and hides that. A backstop
- * only, since a backend that starts after the data lands paints it all at once
- * anyway; `offscreenTargetRelease.test.ts` is what pins the rule.
+ * drawing off screen once reported ready over its first region alone. A
+ * backstop only: a backend that starts after the data lands paints it all at
+ * once anyway, so `offscreenTargetRelease.test.ts` is what pins the rule.
  */
 export async function checkRingsPainted(page: Page): Promise<string[]> {
-  await page.evaluate(() => {
-    window.scrollTo(0, 0)
-  })
-  await page.reload({ waitUntil: 'domcontentloaded' })
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-app-phase]').length ===
-      document.querySelectorAll('.demo').length,
-    { timeout: 60000 },
-  )
-  await waitForFrame(page, { timeout: 60000, allowUnsettled: true })
   const before = await page.evaluate(ringInk, RING_SELECTOR)
   if (!before.length) {
     return ['no ring canvas rendered']

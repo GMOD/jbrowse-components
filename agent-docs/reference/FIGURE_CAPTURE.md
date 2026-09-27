@@ -292,14 +292,12 @@ at all — a menu, widget, or import-form figure — passes it at once. A spec's
 ### A canvas below the fold still draws new data
 
 `RenderLifecycleMixin` skips a pan or zoom redraw while a canvas is off screen,
-and draws every upload wherever the canvas is. Until 2026-09-26 it skipped every
-draw after the first, and a fetch commits one region at a time, so a display
-below the fold drew its first region and reported `data-display-drawn="true"`
-over a picture missing the rest. A circular ring below the fold held 4,570 inked
-px against 18,622 once scrolled to. A full-page capture hid the gap, since
-resizing the viewport repaints every canvas. `checkRingsPainted` in
-`@jbrowse/browser-test-utils` reads each ring before and after scrolling to it,
-and `offscreenTargetRelease.test.ts` pins the rule.
+and draws every upload wherever the canvas is. A fetch commits one region at a
+time, so a rule that skipped every draw after the first would leave a display
+below the fold showing its first region alone under `data-display-drawn="true"`.
+`offscreenTargetRelease.test.ts` pins the rule, and `checkRingsPainted` in
+`@jbrowse/browser-test-utils` backs it up by reading each circular ring before
+and after scrolling to it.
 
 
 ## A lost WebGL context commits a blank canvas, and the run says nothing
