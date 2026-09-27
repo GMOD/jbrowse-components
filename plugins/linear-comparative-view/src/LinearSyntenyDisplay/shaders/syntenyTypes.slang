@@ -47,7 +47,7 @@ public struct Instance {
   public uint  color             : ATTR4;
   public float featureId         : ATTR5;
   public float alignmentLength   : ATTR6;
-  // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyColors.ts).
+  // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyKinds.ts).
   // The fill fragment uses it only for shading: CIGAR indel tiles get the white
   // pre-blend in shadeFill and skip the density width-fade in fillFs. The
   // coverage/AA path is identical to BASE (smooth analytic bezier edge), so
@@ -55,7 +55,7 @@ public struct Instance {
   public float kind              : ATTR7;
 };
 
-// First CIGAR kind, and the source of truth for the boundary: syntenyColors.ts
+// First CIGAR kind, and the source of truth for the boundary: syntenyKinds.ts
 // derives `KIND_CIGAR_MATCH` from this via `//! export-consts`, and numbers the
 // CIGAR kinds contiguously above it. Emitted kinds are KIND_BASE (0),
 // KIND_MARKER (2), and the per-CIGAR indel tiles I/D/N (4/5/6) — the boundary

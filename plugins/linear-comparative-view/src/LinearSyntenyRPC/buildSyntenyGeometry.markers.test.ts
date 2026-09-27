@@ -6,7 +6,7 @@ import {
   buildSyntenyGeometry,
   markerGridPitch,
 } from './buildSyntenyGeometry.ts'
-import { KIND_BASE, KIND_MARKER } from './syntenyColors.ts'
+import { KIND_BASE, KIND_MARKER } from './syntenyKinds.ts'
 import { viewportWindow } from './testUtils.ts'
 
 // Everything here runs at bpPerPx=1 with viewOff=0 on both axes, so cumBp,

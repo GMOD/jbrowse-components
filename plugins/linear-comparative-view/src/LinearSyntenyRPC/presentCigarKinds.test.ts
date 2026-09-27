@@ -7,7 +7,7 @@ import {
   KIND_CIGAR_I,
   KIND_CIGAR_N,
   KIND_MARKER,
-} from './syntenyColors.ts'
+} from './syntenyKinds.ts'
 
 test('no indel ops when geometry is all base/marker (whole-genome zoom)', () => {
   const kinds = new Uint8Array([KIND_BASE, KIND_BASE, KIND_MARKER])

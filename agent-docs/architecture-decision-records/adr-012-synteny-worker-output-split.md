@@ -157,7 +157,7 @@ and `self.instanceData` cannot be passed directly to a renderer.
 - `plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts`
   (`computedColors`, `renderInstanceData`)
 - `plugins/linear-comparative-view/src/LinearSyntenyDisplay/instanceInterleave.ts`
-- `plugins/linear-comparative-view/src/LinearSyntenyRPC/syntenyColors.ts`
+- `plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyColors.ts`
   (`computeSyntenyColors`)
 - ADR-005 (shader codegen) for why touching `featureId` attribute type is
   expensive.

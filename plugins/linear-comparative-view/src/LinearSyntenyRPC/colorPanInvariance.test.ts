@@ -6,8 +6,8 @@ import {
   widenAttributeRanges,
 } from '@jbrowse/synteny-core'
 
+import { computeSyntenyColors } from '../LinearSyntenyDisplay/syntenyColors.ts'
 import { executeSyntenyFeaturesAndPositions } from './executeSyntenyFeaturesAndPositions.ts'
-import { computeSyntenyColors } from './syntenyColors.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'

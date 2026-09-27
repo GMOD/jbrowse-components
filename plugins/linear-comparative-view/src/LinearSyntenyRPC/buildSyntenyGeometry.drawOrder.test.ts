@@ -1,7 +1,7 @@
 import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
-import { KIND_MARKER } from './syntenyColors.ts'
+import { KIND_MARKER } from './syntenyKinds.ts'
 import { viewportWindow } from './testUtils.ts'
 
 const packed = (len: number, op: number) => (len << 4) | op

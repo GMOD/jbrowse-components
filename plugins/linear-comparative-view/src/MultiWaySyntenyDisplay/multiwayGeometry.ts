@@ -24,7 +24,7 @@ import {
   KIND_BASE,
   KIND_BASE_TILE,
   KIND_MARKER,
-} from '../LinearSyntenyRPC/syntenyColors.ts'
+} from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
 import {

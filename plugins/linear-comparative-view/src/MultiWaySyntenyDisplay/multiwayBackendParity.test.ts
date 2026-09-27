@@ -6,7 +6,7 @@ import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import { rectShader as featureGlyphShader } from '../../../canvas/src/LinearBasicDisplay/passes/index.ts'
 import { UNIFORM_OFFSET_F32 as SYNTENY_U } from '../LinearSyntenyDisplay/shaders/syntenyFillStraight.generated.ts'
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
-import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { MULTIWAY_MARKS, multiwayBlocks } from './multiwayMarks.ts'
 import {
   MULTIWAY_OVERDRAW_PX,

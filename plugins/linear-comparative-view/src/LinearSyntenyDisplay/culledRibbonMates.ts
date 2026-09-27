@@ -1,4 +1,4 @@
-import { paintsFeatureColor } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { paintsFeatureColor } from '../LinearSyntenyRPC/syntenyKinds.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {

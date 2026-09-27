@@ -6,7 +6,7 @@ import {
   KIND_CIGAR_MATCH,
   KIND_CIGAR_N,
   KIND_MARKER,
-} from '../LinearSyntenyRPC/syntenyColors.ts'
+} from '../LinearSyntenyRPC/syntenyKinds.ts'
 import {
   fillShade,
   hoverDarken,

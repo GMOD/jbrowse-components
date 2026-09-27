@@ -1,7 +1,7 @@
 import { createCanvas } from 'canvas'
 
 import { buildSyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import { KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { KIND_MARKER } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { viewportWindow } from '../LinearSyntenyRPC/testUtils.ts'
 import { drawSyntenyTrack } from './drawSyntenyTrack.ts'
 

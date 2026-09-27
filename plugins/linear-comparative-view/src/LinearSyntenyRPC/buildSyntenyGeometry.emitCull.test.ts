@@ -1,7 +1,7 @@
 import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
-import { KIND_BASE, KIND_CIGAR_D, KIND_MARKER } from './syntenyColors.ts'
+import { KIND_BASE, KIND_CIGAR_D, KIND_MARKER } from './syntenyKinds.ts'
 
 import type { CumBpSpan } from '@jbrowse/synteny-core'
 

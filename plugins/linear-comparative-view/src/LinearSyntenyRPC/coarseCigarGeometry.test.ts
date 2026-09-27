@@ -2,7 +2,7 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { executeSyntenyFeaturesAndPositions } from './executeSyntenyFeaturesAndPositions.ts'
-import { KIND_BASE, KIND_CIGAR_D, KIND_MARKER } from './syntenyColors.ts'
+import { KIND_BASE, KIND_CIGAR_D, KIND_MARKER } from './syntenyKinds.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'

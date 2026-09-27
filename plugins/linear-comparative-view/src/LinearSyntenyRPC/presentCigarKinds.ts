@@ -1,6 +1,6 @@
 import { CIGAR_OP_D, CIGAR_OP_I, CIGAR_OP_N } from '@jbrowse/synteny-core'
 
-import { KIND_CIGAR_D, KIND_CIGAR_I, KIND_CIGAR_N } from './syntenyColors.ts'
+import { KIND_CIGAR_D, KIND_CIGAR_I, KIND_CIGAR_N } from './syntenyKinds.ts'
 
 import type { CigarOpMask } from '@jbrowse/synteny-core'
 

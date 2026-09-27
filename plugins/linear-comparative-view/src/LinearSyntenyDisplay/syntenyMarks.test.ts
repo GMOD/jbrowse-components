@@ -9,7 +9,7 @@ import {
   KIND_BASE,
   KIND_CIGAR_I,
   KIND_MARKER,
-} from '../LinearSyntenyRPC/syntenyColors.ts'
+} from '../LinearSyntenyRPC/syntenyKinds.ts'
 import {
   INSTANCE_STRIDE_BYTES,
   UNIFORM_OFFSET_F32 as U,

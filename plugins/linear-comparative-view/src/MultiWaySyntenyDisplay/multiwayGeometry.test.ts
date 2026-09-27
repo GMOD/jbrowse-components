@@ -18,7 +18,7 @@ import {
   KIND_BASE,
   KIND_BASE_TILE,
   KIND_MARKER,
-} from '../LinearSyntenyRPC/syntenyColors.ts'
+} from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { LaneGene } from './geneGlyph.ts'

@@ -228,7 +228,7 @@ the part a scanner cannot know and the part that says whether the bar was met.
 | `variant.slang` | `snapCellEdgePx`, `snappedCellWidthPx` | `snapVariantCellX.ts` — the half-canvas-offset pixel snap, which is parity rather than an approximation to `Math.round` only because someone worked the clip-space algebra out by hand |
 | `overlap.slang` | `overlapAlpha` | `features/overlap/drawCanvas.ts` — the constants were already shared; the `smoothstep` between them was hand-written |
 | `continuation.slang` | `markerDirection`, `strandMatchesEdge` | `Canvas2DFeatureRenderer` — edge-marker sign arithmetic, "kept in agreement by eye" |
-| `syntenyTypes.slang` | `KIND_CIGAR_MIN`, `KIND_MARKER` via `export-consts` | `syntenyColors.ts` — the CIGAR kinds now number themselves off the shader's boundary, so staying contiguous above it is structural |
+| `syntenyTypes.slang` | `KIND_CIGAR_MIN`, `KIND_MARKER` via `export-consts` | `syntenyKinds.ts` — the CIGAR kinds now number themselves off the shader's boundary, so staying contiguous above it is structural |
 | `mismatch.slang` | `qualityFade` | `features/mismatch/drawCanvas.ts` — "Mirrors the GPU mismatch.slang path"; the whole `mismatchAlpha` setting is this one three-way conditional, and it was stated twice |
 | `wiggle.slang` | `densityGradientT` | `getDensityColor.ts` — the density ramp position, carrying a `max(maxDist, 0.0001)` floor that cannot fire, kept only so the two backends read identically |
 | `manhattan.slang` | `scoreToYPx` | `manhattanRenderingBackendTypes.ts` — Manhattan's whole Y mapping, read by the Canvas2D draw *and* the hover hit test |

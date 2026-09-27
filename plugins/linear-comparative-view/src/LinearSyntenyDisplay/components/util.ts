@@ -5,7 +5,7 @@ import {
   KIND_CIGAR_D,
   KIND_CIGAR_I,
   KIND_CIGAR_N,
-} from '../../LinearSyntenyRPC/syntenyColors.ts'
+} from '../../LinearSyntenyRPC/syntenyKinds.ts'
 
 import type { SyntenyGeometry } from '../../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { FeatPos } from '../model.ts'

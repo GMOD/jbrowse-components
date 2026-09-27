@@ -2,15 +2,15 @@ import { category10 } from '@jbrowse/core/ui/colors'
 import { abgrAlpha, abgrRed } from '@jbrowse/core/util/colorBits'
 import { colorSchemes, isInstanceInvisible } from '@jbrowse/synteny-core'
 
-import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import {
   KIND_BASE,
   KIND_CIGAR_D,
   KIND_CIGAR_I,
   KIND_CIGAR_N,
   KIND_MARKER,
-  computeSyntenyColors,
-} from './syntenyColors.ts'
+} from '../LinearSyntenyRPC/syntenyKinds.ts'
+import { computeSyntenyColors } from './syntenyColors.ts'
+import { packSyntenyFeatureData } from './testUtils.ts'
 
 // what `Assembly.getRefNamePosition` answers, for a fixed chromosome order
 function positionIn(order: readonly string[]) {

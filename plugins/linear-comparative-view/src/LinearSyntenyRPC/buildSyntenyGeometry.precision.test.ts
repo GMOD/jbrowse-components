@@ -1,5 +1,5 @@
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
-import { KIND_BASE, KIND_MARKER } from './syntenyColors.ts'
+import { KIND_BASE, KIND_MARKER } from './syntenyKinds.ts'
 import { viewportWindow } from './testUtils.ts'
 
 // Corners are stored WINDOW-RELATIVE (cumBp minus a per-axis fetch base) as a

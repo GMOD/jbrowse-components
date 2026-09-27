@@ -18,7 +18,7 @@ import {
   KIND_CIGAR_I,
   KIND_CIGAR_N,
   KIND_MARKER,
-} from './syntenyColors.ts'
+} from './syntenyKinds.ts'
 
 import type { CumBpSpan } from '@jbrowse/synteny-core'
 
@@ -46,7 +46,7 @@ export interface SyntenyGeometry {
   base1: number
   // Per-instance descriptors driving main-thread color recomputation on
   // colorBy change. `kinds` is one of the `KIND_*` constants from
-  // syntenyColors.ts; `instanceFeatureIdx` is the parent feature index in
+  // syntenyKinds.ts; `instanceFeatureIdx` is the parent feature index in
   // SyntenyFeatureData (strands/refNames/...). Picking IDs are derived as
   // `instanceFeatureIdx[i] + 1` at interleave time (0 reserved for "no hit").
   kinds: Uint8Array

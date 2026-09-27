@@ -16,7 +16,7 @@ import {
 } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
 
-import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'

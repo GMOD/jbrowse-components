@@ -1,4 +1,4 @@
-import { KIND_BASE, KIND_MARKER } from '../../LinearSyntenyRPC/syntenyColors.ts'
+import { KIND_BASE, KIND_MARKER } from '../../LinearSyntenyRPC/syntenyKinds.ts'
 // Two things isCulled and fillEdges dropped, each because the value it guarded
 // against is unreachable. Both are algebra over the generated scalars, so a
 // shader edit that breaks the premise fails here rather than at a pixel.

@@ -4,7 +4,7 @@ import {
   KIND_BASE,
   KIND_CIGAR_I,
   KIND_MARKER,
-} from '../LinearSyntenyRPC/syntenyColors.ts'
+} from '../LinearSyntenyRPC/syntenyKinds.ts'
 import {
   SYNTENY_INSTANCE_CACHE,
   interleaveInstances,

@@ -1,7 +1,7 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { observable, when } from 'mobx'
 
-import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { packSyntenyFeatureData } from './testUtils.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'

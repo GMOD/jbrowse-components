@@ -1,7 +1,7 @@
 import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from '../../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import { KIND_BASE } from '../../LinearSyntenyRPC/syntenyColors.ts'
+import { KIND_BASE } from '../../LinearSyntenyRPC/syntenyKinds.ts'
 import { viewportWindow } from '../../LinearSyntenyRPC/testUtils.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './util.ts'
 

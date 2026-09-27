@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { executeSyntenyFeaturesAndPositions } from './executeSyntenyFeaturesAndPositions.ts'
-import { KIND_BASE, KIND_CIGAR_D } from './syntenyColors.ts'
+import { KIND_BASE, KIND_CIGAR_D } from './syntenyKinds.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'

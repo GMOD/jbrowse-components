@@ -6,7 +6,7 @@ import {
   KIND_BASE_TILE,
   KIND_CIGAR_D,
   KIND_MARKER,
-} from './syntenyColors.ts'
+} from './syntenyKinds.ts'
 import { viewportWindow } from './testUtils.ts'
 
 // One feature, CIGAR M50 D50 M50 at bpPerPx=1. The deletion consumes the top

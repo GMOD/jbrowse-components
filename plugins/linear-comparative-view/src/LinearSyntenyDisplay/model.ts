@@ -28,10 +28,10 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
-import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
 import { culledRibbonMateData } from './culledRibbonMates.ts'
+import { computeSyntenyColors } from './syntenyColors.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'

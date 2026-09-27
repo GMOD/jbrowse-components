@@ -1,6 +1,6 @@
 import { WIDTH_FADE_FLOOR } from '@jbrowse/synteny-core'
 
-import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { thinWidthFade } from './shaders/syntenyTypes.js.generated.ts'
 
 // The circular view fades its ribbons to the floor synteny-core holds, and this
