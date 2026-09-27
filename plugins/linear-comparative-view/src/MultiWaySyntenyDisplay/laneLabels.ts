@@ -1,6 +1,6 @@
 import { measureText } from '@jbrowse/core/util/measureText'
 import { cullOverlappingLabels } from '@jbrowse/display-ui'
-import { keepFeatureLabel } from '@jbrowse/plugin-canvas'
+import { getFeatureName, keepFeatureLabel } from '@jbrowse/plugin-canvas'
 
 import type { LaneGene } from './geneGlyph.ts'
 import type { Lane } from './laneStack.ts'
@@ -40,13 +40,13 @@ function drawnNames(
 ) {
   const out: DrawnName[] = []
   for (const { feature } of genes) {
-    const name: unknown = feature.get('name')
+    const name = getFeatureName(feature)
     const span = lane.spanOf(
       feature.get('refName'),
       feature.get('start'),
       feature.get('end'),
     )
-    if (typeof name === 'string' && name && span) {
+    if (name && span) {
       const left = Math.min(span[0], span[1])
       const right = Math.max(span[0], span[1])
       if (right >= 0 && left <= width) {

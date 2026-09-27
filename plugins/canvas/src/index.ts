@@ -101,6 +101,7 @@ export type { GroupByScanOptions } from './LinearBasicDisplay/scanGroupByCandida
 // gene glyphs under its own axis.
 export { featureGlyphMarks } from './LinearBasicDisplay/marks/featureGlyphMarks.ts'
 export { keepFeatureLabel } from './LinearBasicDisplay/labelReservation.ts'
+export { getFeatureName } from './RenderFeatureDataRPC/labelUtils.ts'
 export { MAX_VISIBLE_CHEVRONS_PER_LINE } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
 // The gene glyph's shape rules, for a display outside this plugin drawing these
 // glyphs through the passes above.
