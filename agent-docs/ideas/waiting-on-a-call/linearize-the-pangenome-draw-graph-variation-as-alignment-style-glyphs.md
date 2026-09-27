@@ -5,6 +5,10 @@ description: The graph drawn in a LINEAR view the way plugins/alignments draws r
 
 # Linearize the pangenome: draw graph variation as alignment-style glyphs
 
+Moved to waiting-on-a-call/ on 2026-09-27: it contradicts
+[PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md)'s "no linearized
+deletion track … do not rebuild it", so building it needs that reversed first.
+
 Moved out of [TODO.md](../../TODO.md) on 2026-08-26. The data side is worked out
 and the design survives its own counter-arguments, but standing up a new lane is
 multi-session work nobody has committed to.

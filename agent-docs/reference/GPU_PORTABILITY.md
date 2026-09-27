@@ -237,7 +237,7 @@ already being logged to the capability object the stack-trace dialog copies, so
 a report from a machine we cannot see arrives with its budget attached. That is
 a UI-visible change and a product decision, which is why this doc proposes it
 rather than the tree already doing it; it is parked in
-[../ideas/waiting-on-a-call/gpu-limits-in-bug-reports.md](../ideas/waiting-on-a-call/gpu-limits-in-bug-reports.md).
+[../ideas/ready/gpu-limits-in-bug-reports.md](../ideas/ready/gpu-limits-in-bug-reports.md).
 
 Until then, the honest statement for any GPU number in this repo is the one its
 provenance line already makes — one machine, named — and the floors above are

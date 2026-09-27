@@ -27,8 +27,8 @@ The two line renderings read different neighbours: the step line the previous
 and next scores, the center line the previous bin's span and score. Sharing one
 44-byte record carrying both cost an FST scan's raw section at 1000 sources
 586MiB, against 426MiB (step) and 480MiB (center) split.
-`ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md`
-has the measurements.
+`ideas/ready/wiggle-instance-records-carry-per-row-constants.md` has the
+measurements.
 
 `wiggleBand.slang` fills a line plot's whiskers band on a 44-byte record. **The
 GPU draws it after the lines with `blend: behind`**, because the interpolated
@@ -221,8 +221,8 @@ switching to density would re-download every region.
 the worker ships one set of score arrays and the main thread colours each
 instance by its side of the cut, so moving the cut re-encodes and refetches
 nothing. ADR-016, which put the split in the worker, is superseded;
-`ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md`
-§4 has what the split cost.
+`ideas/ready/wiggle-instance-records-carry-per-row-constants.md` §4 has what the
+split cost.
 
 ## A band splits into solid layers only when the bars nest
 

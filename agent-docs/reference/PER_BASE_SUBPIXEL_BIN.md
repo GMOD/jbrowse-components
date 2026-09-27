@@ -268,7 +268,7 @@ holds its 365ms clone measurement.
   declined — over a 16-512 bp window the honest blend is one mud colour — so a
   zoom threshold answers the first and a per-instance span the bin wide answers
   the second, neither built:
-  [ideas/ready/per-base-wall-at-wide-zoom.md](../ideas/ready/per-base-wall-at-wide-zoom.md).
+  [ideas/waiting-on-a-call/per-base-wall-at-wide-zoom.md](../ideas/waiting-on-a-call/per-base-wall-at-wide-zoom.md).
 - ~~**No cross-backend test covers a per-base mode at any zoom.**~~ Answered on
   2026-08-27 and **closed rather than fixed**: two scenes were added, both failed
   on their first run against a disagreement that predates the bin, and the scenes

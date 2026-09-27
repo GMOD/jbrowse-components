@@ -26,7 +26,7 @@ and the row's f32-against-u32 is about an hour.
 
 Whether a layer may carry a per-source constant, or wiggle fills constant
 arrays at pack time. A bench decides the cost of the second.
-[wiggle-instance-records-carry-per-row-constants](../waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md)
+[wiggle-instance-records-carry-per-row-constants](../ready/wiggle-instance-records-carry-per-row-constants.md)
 measures the same per-row constants.
 
 ## First step once answered

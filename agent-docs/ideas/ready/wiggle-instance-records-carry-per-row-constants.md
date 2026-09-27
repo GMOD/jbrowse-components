@@ -5,6 +5,9 @@ description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buff
 
 # Wiggle instance records carry per-row constants
 
+Moved to ready/ on 2026-09-27: the second texture binding it waited on landed
+in `55fff2c934`.
+
 A 2026-09-17 investigation into the memory and encode time of wiggle's GPU
 instance buffers, measured on branch `wiggle-buffer-investigation`. The starting
 question was whether strictly positive wiggles pay for the pivot/bicolor

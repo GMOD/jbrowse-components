@@ -11,7 +11,7 @@ supply, and the dataset is the tumor the `cancer_sv` tutorial already teaches.
 | Parked item | What it needs | Where COLO829 supplies it |
 | --- | --- | --- |
 | `BEID`/`ASMID` tiebreak in `walkBreakendChain.ts`, synthetic test only | a GRIDSS or Esvee callset with assembly ids | GRIDSS on COLO829T is Hartwig's own benchmark run |
-| [linx-chains-in-the-breakend-walk](../waiting-on-a-call/linx-chains-in-the-breakend-walk.md) and the LINX row of [route-as-a-launch-input](../waiting-on-a-call/route-as-a-launch-input.md) | a `links.tsv` with ordered, oriented segments | LINX on the same run |
+| [linx-chains-in-the-breakend-walk](../waiting-on-a-call/linx-chains-in-the-breakend-walk.md) and the LINX row of [route-as-a-launch-input](../ready/route-as-a-launch-input.md) | a `links.tsv` with ordered, oriented segments | LINX on the same run |
 | a copy-number lane under the der(3) figure | segmented copy number with integer calls | PURPLE's `purple.cnv.somatic.tsv` |
 
 Agreement between LINX's chain and the reads-derived der(3) would be a fourth

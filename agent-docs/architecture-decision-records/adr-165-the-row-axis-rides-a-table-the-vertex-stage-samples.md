@@ -13,7 +13,7 @@ multi-row feature display driving it. Applies rule 3 of
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) §"Four rules for
 how far to take it" — generality resolves before the loop, and a domain rides a uniform — to the
 row axis, and closes §3 of
-[wiggle-instance-records-carry-per-row-constants](../ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md)
+[wiggle-instance-records-carry-per-row-constants](../ideas/ready/wiggle-instance-records-carry-per-row-constants.md)
 for the span pass. Builds on ADR-113 (a span's colour is packed in the worker)
 and ADR-157/160 (the rows and their colours are one config object each).
 

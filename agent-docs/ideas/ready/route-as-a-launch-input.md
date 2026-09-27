@@ -68,7 +68,7 @@ The picture states copy number and orientation without any further
 computation. A segment the route visits twice draws two ribbons onto one
 reference stretch, which is the "each molecule crosses this stretch twice"
 callout of the der(3) figure. An inverted segment draws a crossed ribbon, which
-[straighten-an-inversion-by-reversing-its-span](straighten-an-inversion-by-reversing-its-span.md)
+[straighten-an-inversion-by-reversing-its-span](../waiting-on-a-call/straighten-an-inversion-by-reversing-its-span.md)
 untangles. A copy-number bigWig under both axes puts the caller's depth step
 beside the ribbon that explains it.
 

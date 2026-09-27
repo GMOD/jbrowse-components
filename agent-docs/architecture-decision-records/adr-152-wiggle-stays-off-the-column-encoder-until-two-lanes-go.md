@@ -190,7 +190,7 @@ with `y2` are on, on four conditions the numbers name:
   index directly instead. Four of the eight bytes.
 - **A constant colour has to ride as a scalar, not a lane.** The other four, and
   the same conclusion
-  [wiggle-instance-records-carry-per-row-constants](../ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md)
+  [wiggle-instance-records-carry-per-row-constants](../ideas/ready/wiggle-instance-records-carry-per-row-constants.md)
   reached from the GPU side in its §3: a per-row colour table shrinks every
   record and turns a recolour into one small upload. Met from the encoder side
   it also shrinks the payload the worker ships and `rpcDataMap` retains.

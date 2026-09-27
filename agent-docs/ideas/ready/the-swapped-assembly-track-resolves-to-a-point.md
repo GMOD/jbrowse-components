@@ -5,6 +5,10 @@ description: the follow's hang is fixed, but on a PAF whose rows and adapter dis
 
 # The swapped-assembly track resolves to a point
 
+Moved to ready/ on 2026-09-27: the first move is building a fixture that
+differs in one variable, not taking a number, and `SyntenyFollow/` never reads
+`swappedAssembliesWarning`, so the follow is a small real bug on such a track.
+
 Moved out of [TODO.md](../../TODO.md) on 2026-08-26, when the backlog was cut to
 what v5.0.0 turns on. The hang is fixed and the remaining state is honest: the
 follow is safe on a swapped track and useless on one, and the two fixtures

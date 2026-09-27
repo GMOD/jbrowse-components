@@ -13,7 +13,7 @@ and `WiggleFeatureArrays` carries no `pos*`/`neg*` arrays. The General rule
 below is unchanged, and this decision's own rule is what named the exit —
 `origin` is a uniform, and both line shaders already coloured by side off it.
 The measurements are in
-`ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md` §4: the split cost
+`ideas/ready/wiggle-instance-records-carry-per-row-constants.md` §4: the split cost
 the worker 57-85ms per region at 1000 signed sources and doubled what a region
 shipped (+51 MiB) and retained (+33 MiB), for a partition every other summary
 mode already re-derived main-thread.

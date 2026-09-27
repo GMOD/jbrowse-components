@@ -145,6 +145,17 @@ manager, so a view's `chr1` reaches a file indexed as `1` as a contig it lacks
 (CLAUDE.md §Names: resolve a name before it crosses to a side that cannot).
 The wiring that hands `assembleRScript` its regions owes that translation.
 
+## Not the render IR's third consumer
+
+The exporter writes idiomatic R — `geom_rect`/`geom_segment` over a data frame
+with ggplot2's own scales and themes — so ggplot2 makes its own calls on
+snapping, min widths, alpha ramps and antialiasing, the layer ADR-051 keeps
+per-backend in-tree too. What it shares with the GPU and Canvas2D backends is
+upstream of rendering: the worker output and the semantic decisions, already
+stated once in the RPC payloads and the `//! js-export` layer. So its parity
+bar is the top tier of SHADER_JS_CODEGEN.md §"What actually has to agree", and
+a re-proposal of a draw-level IR cannot cite R export as its pull.
+
 ## Parity facts
 
 Each of these cost a wrong figure to find.

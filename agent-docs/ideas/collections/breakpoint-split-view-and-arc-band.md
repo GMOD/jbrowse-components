@@ -72,7 +72,7 @@ Not the deferred
 [straighten-an-inversion-by-reversing-its-span](../waiting-on-a-call/straighten-an-inversion-by-reversing-its-span.md),
 which is the synteny view splitting one region in three; this flips one whole
 panel, splits nothing and leaves the follow's fallback navigation alone.
-[route-as-a-launch-input](../waiting-on-a-call/route-as-a-launch-input.md)
+[route-as-a-launch-input](../ready/route-as-a-launch-input.md)
 draws an inverted segment as a reversed panel, so this is the first piece of
 that work. Waits on a call on the default; flip at launch is the
 recommendation, since the picture is wrong without it and the Flip entry

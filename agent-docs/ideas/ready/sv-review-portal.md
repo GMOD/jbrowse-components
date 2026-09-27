@@ -74,7 +74,7 @@ one and a portal cannot render one.
 The piece to build is that launch: a `LinearSyntenyView` named by a track, a
 record name and a locus to find the record at. The SV inspector's row menu, the
 portal's allele row and an agent all take it from there.
-[route-as-a-launch-input](../waiting-on-a-call/route-as-a-launch-input.md) stays the answer for a
+[route-as-a-launch-input](../ready/route-as-a-launch-input.md) stays the answer for a
 structure with no sequence behind it: a LINX derivative chromosome, a gGnome
 walk, a GATK-SV `CPX_INTERVALS`.
 

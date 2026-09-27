@@ -1,9 +1,13 @@
 ---
 name: credential-aware-chunk-cache
-description: The chunk cache keys on URL alone, so two tracks on one URL behind different internet accounts share chunks and one of them plans the fetch — bytes fetched under A's token are served to B, and a credential change is invisible for the 15-minute idle window. Where the identity would have to go, and why it is now a decision about a published @gmod package.
+description: The chunk cache keys on URL alone, so two tracks on one URL behind different internet accounts share chunks and one of them plans the fetch — bytes fetched under A's token are served to B, and a credential change is invisible for the 15-minute idle window. Where the identity would have to go; keying it in JBrowse needs no package change.
 ---
 
 # The chunk cache does not know whose credentials fetched a chunk
+
+Moved to ready/ on 2026-09-27: `@gmod/range-cache-filehandle` 1.4.0 exports
+`CachedFilehandle`, so keying by identity in JBrowse (the second option below)
+needs no package change.
 
 `InternetAccountModel.openLocation` hands each handle its own fetcher:
 

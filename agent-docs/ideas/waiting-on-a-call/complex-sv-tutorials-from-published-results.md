@@ -39,7 +39,7 @@ and RR pairs the `sv_multisamples` tutorial's SV-channels figure already shows.
 Smaller than the MECP2 case and needs no offline tool, so it is the cheaper
 first cut: read the caller's structure off the record, then check each junction
 against the reads. It is also the concrete consumer for
-[route-as-a-launch-input](route-as-a-launch-input.md), which would draw the
+[route-as-a-launch-input](../ready/route-as-a-launch-input.md), which would draw the
 record's own layout rather than asking the reader to hold it in their head.
 
 ## Before starting either

@@ -37,7 +37,7 @@ derivative axis, a split view per segment — shipped and was removed
 ([ADR-137](../../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)):
 it proposed routes at ordinary loci and took copy counts from read edges. An
 allele is drawn only when a tool outside JBrowse built it
-([route-as-a-launch-input](route-as-a-launch-input.md)).
+([route-as-a-launch-input](../ready/route-as-a-launch-input.md)).
 
 **What the fusion contig is built from** is settled in both directions. Offline,
 `scripts/sv_multihop.py derive` polishes the spanning reads into a consensus and

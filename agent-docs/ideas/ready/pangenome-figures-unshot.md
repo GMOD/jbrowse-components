@@ -5,6 +5,8 @@ description: SMN1/SMN2, drawn orientation, the 240 kb GRCh38 lacks, allele frequ
 
 # Pangenome graph figures not yet shot
 
+Moved to ready/ on 2026-09-27: nothing below waits on anyone outside the repo.
+
 In the order worth shooting them. Every file, locus and measured cost is in
 [reference/PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md) — the bubble scan,
 the release-2 files, and why CHM13 is the only donor worth loading.

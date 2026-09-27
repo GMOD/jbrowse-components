@@ -73,4 +73,4 @@ walk before the behaviour is described in a tutorial.
 JBrowse draws an allele only when a tool outside it built one
 ([ADR-137](../../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)),
 so a LINX chain is a route input
-([route-as-a-launch-input](route-as-a-launch-input.md)) as well as a walk hint.
+([route-as-a-launch-input](../ready/route-as-a-launch-input.md)) as well as a walk hint.
