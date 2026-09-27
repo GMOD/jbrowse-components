@@ -334,11 +334,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         const widened = self
           .loadedAttributeRanges()
           .reduce(widenAttributeRanges, self.seenAttributeRanges)
-        return orderAttributeLabels(
-          widened,
-          this.colorDomain,
-          this.colorRange,
-        )
+        return orderAttributeLabels(widened, this.colorDomain, this.colorRange)
       },
       /**
        * #getter
