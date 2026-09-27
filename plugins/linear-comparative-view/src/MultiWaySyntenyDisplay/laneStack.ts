@@ -20,6 +20,11 @@ import type { Feature } from '@jbrowse/core/util'
 const LABEL_HEIGHT = 12
 const MIN_GLYPH_PX = 5
 const MAX_GLYPH_PX = 18
+export const STRAND_GAP_PX = 2
+// two strand rows of a compact feature track's gene height: doubling the
+// unsplit cap instead took the gutters' height and flattened every ribbon
+const MAX_SPLIT_GLYPH_PX = 2 * 10 + STRAND_GAP_PX
+const MIN_SPLIT_GLYPH_PX = 2 * MIN_GLYPH_PX + STRAND_GAP_PX
 
 // A lane pitch below this is an unreadable crush, so the stack stops dividing
 // the track height and lays out at this fixed pitch instead, scrolling inside
@@ -57,6 +62,8 @@ export interface LaneGeometry {
   bandHeight: number
   /** `laneContentHeight` — what the rows tile and a scroll can reach */
   contentHeight: number
+  /** whether the genes draw in two strand rows: asked for, and room for both */
+  strandRows: boolean
   rows: LaneBand[]
 }
 
@@ -64,7 +71,8 @@ export interface LaneGeometry {
 // `laneContentHeight(height, rowCount)` px tall. The bands TILE — a lane owns
 // half the gutter on each side — so the view's gridlines, true on the anchor
 // lane and a lie on every other one, are covered everywhere below the anchor
-// rather than standing in the gaps.
+// rather than standing in the gaps. A lane too short for two strand rows of
+// `MIN_GLYPH_PX` draws one, which is every lane of a stack at the pitch floor
 export function laneGeometry(
   height: number,
   rowCount: number,
@@ -72,10 +80,12 @@ export function laneGeometry(
   geneLabelPx = 0,
 ): LaneGeometry {
   const contentHeight = laneContentHeight(height, rowCount, geneLabelPx)
+  const room = contentHeight / rowCount - LABEL_HEIGHT - geneLabelPx - 6
+  const strandRows = splitStrands && room >= MIN_SPLIT_GLYPH_PX
   const glyphHeight = clamp(
-    contentHeight / rowCount - LABEL_HEIGHT - geneLabelPx - 6,
+    room,
     MIN_GLYPH_PX,
-    splitStrands ? 2 * MAX_GLYPH_PX : MAX_GLYPH_PX,
+    strandRows ? MAX_SPLIT_GLYPH_PX : MAX_GLYPH_PX,
   )
   const usable = contentHeight - LABEL_HEIGHT - glyphHeight - geneLabelPx - 4
   const glyphTop = (row: number) =>
@@ -93,6 +103,7 @@ export function laneGeometry(
     glyphHeight,
     bandHeight: LABEL_HEIGHT + glyphHeight + geneLabelPx,
     contentHeight,
+    strandRows,
     rows: Array.from({ length: rowCount }, (_, row) => ({
       glyphTop: glyphTop(row),
       bandTop: glyphTop(row) - LABEL_HEIGHT,
@@ -275,7 +286,7 @@ export function buildLanes({
   pastHalfway = new Set(),
   labelOf = assemblyName => assemblyName,
 }: BuildLanesOpts): LaneStack {
-  const { glyphHeight, bandHeight, rows } = laneGeometry(
+  const { glyphHeight, bandHeight, strandRows, rows } = laneGeometry(
     height,
     assemblyNames.length,
     splitStrands,
@@ -370,7 +381,7 @@ export function buildLanes({
                 clip,
               )
             : [clip],
-        strandRows: !splitStrands
+        strandRows: !strandRows
           ? undefined
           : frame &&
               shownFrame(frame, pastHalfway.has(assemblyName)).flipped !==

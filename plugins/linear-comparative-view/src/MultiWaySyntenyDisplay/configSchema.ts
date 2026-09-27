@@ -202,8 +202,8 @@ export function configSchemaFactory() {
       splitStrands: {
         type: 'boolean',
         description:
-          "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack",
-        defaultValue: false,
+          "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack. A lane too short for two rows draws one",
+        defaultValue: true,
       },
       /**
        * #slot

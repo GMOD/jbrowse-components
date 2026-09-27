@@ -495,13 +495,23 @@ describe('lane geometry', () => {
   // and a lie on every other one — at the anchor. A band covering only its own
   // header and glyphs left them standing in the gutters, which is most of the
   // ink in a tall track.
-  test('split strands, the glyph row doubles its cap so each strand keeps the gene height', () => {
-    const one = laneGeometry(240, 4)
-    const split = laneGeometry(240, 4, true)
-    expect(split.glyphHeight).toBe(2 * one.glyphHeight)
-    expect(laneGeometry(10 * MIN_LANE_PITCH, 10, true).glyphHeight).toBe(
+  test('split strands, two compact gene rows that leave the gutter its height', () => {
+    const one = laneGeometry(600, 9, false, 12)
+    const split = laneGeometry(600, 9, true, 12)
+    expect(split.strandRows).toBe(true)
+    expect(split.glyphHeight).toBe(22)
+    const gutter = ({ rows, glyphHeight }: typeof one) =>
+      rows[1]!.glyphTop - rows[0]!.glyphTop - glyphHeight - 12 - 12
+    expect(gutter(split)).toBeGreaterThan(0.8 * gutter(one))
+  })
+
+  test('split strands, a lane at the pitch floor draws one row', () => {
+    const floor = laneGeometry(10 * MIN_LANE_PITCH, 10, true)
+    expect(floor.strandRows).toBe(false)
+    expect(floor.glyphHeight).toBe(
       laneGeometry(10 * MIN_LANE_PITCH, 10).glyphHeight,
     )
+    expect(laneGeometry(240, 4).strandRows).toBe(false)
   })
 
   test('the bands below the anchor tile without gaps', () => {

@@ -31,6 +31,7 @@ import {
 } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
+import { STRAND_GAP_PX } from './laneStack.ts'
 import {
   frameMagnification,
   frameReachPx,
@@ -893,9 +894,6 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
   }
   return boxes
 }
-
-// the line shows between a lane's two strand rows
-const STRAND_GAP_PX = 2
 
 /**
  * Where a gene sits on its lane: the whole glyph row, or with the strands split
