@@ -2074,6 +2074,126 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
+  {
+    mode: 'url',
+    name: 'multiway_synteny/zz_17p_c2d',
+    url:
+      sessionSpec(
+        encodeURIComponent(
+          'https://jbrowse.org/demos/hg38_vertebrates/config.json',
+        ),
+        {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              loc: 'chr17:15,200,000-16,400,000',
+              tracks: [
+                'hg38-ncbiRefSeq',
+                {
+                  trackId: 'hg38_liftover_multiway',
+                  type: 'MultiWaySyntenyDisplay',
+                  height: 600,
+                },
+              ],
+            },
+          ],
+        },
+      ) + '&renderer=canvas2d',
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 1000,
+  },
+  {
+    mode: 'url',
+    name: 'multiway_synteny/zz_17p_c2d_flat',
+    url:
+      sessionSpec(
+        encodeURIComponent(
+          'https://jbrowse.org/demos/hg38_vertebrates/config.json',
+        ),
+        {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              loc: 'chr17:15,200,000-16,400,000',
+              tracks: [
+                'hg38-ncbiRefSeq',
+                {
+                  trackId: 'hg38_liftover_multiway',
+                  type: 'MultiWaySyntenyDisplay',
+                  height: 600,
+                },
+              ],
+            },
+          ],
+        },
+      ) + '&renderer=canvas2d&flattenRibbons=1',
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 1000,
+  },
+  {
+    mode: 'url',
+    name: 'multiway_synteny/zz_primate_c2d',
+    url:
+      sessionSpec(
+        encodeURIComponent(
+          'https://jbrowse.org/demos/primate_orthologs/config.json',
+        ),
+        {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              loc: 'chr17:34,000,000-38,000,000',
+              tracks: [
+                {
+                  trackId: 'primate_orthologs',
+                  type: 'MultiWaySyntenyDisplay',
+                  ribbonColor: { field: 'strand' },
+                  height: 620,
+                },
+              ],
+            },
+          ],
+        },
+      ) + '&renderer=canvas2d',
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 1000,
+  },
+  {
+    mode: 'url',
+    name: 'multiway_synteny/zz_primate_c2d_flat',
+    url:
+      sessionSpec(
+        encodeURIComponent(
+          'https://jbrowse.org/demos/primate_orthologs/config.json',
+        ),
+        {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              loc: 'chr17:34,000,000-38,000,000',
+              tracks: [
+                {
+                  trackId: 'primate_orthologs',
+                  type: 'MultiWaySyntenyDisplay',
+                  ribbonColor: { field: 'strand' },
+                  height: 620,
+                },
+              ],
+            },
+          ],
+        },
+      ) + '&renderer=canvas2d&flattenRibbons=1',
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 1000,
+  },
   // The same window under `Color by... → Strand`, which the page describes and
   // no figure held. The claim is that the color and the crossing are different
   // statements: a lane drawn flipped runs its ribbons straight on screen while
