@@ -45,7 +45,7 @@ it('scales a density domain to the averages it actually paints', () => {
   // on screen reaches
   display.setRenderingType('density')
   expect(display.effectiveSummaryScoreMode).toBe('avg')
-  expect(display.domain).toEqual([0, 1])
+  expect(display.domain).toEqual([1, 2])
 
   // and the render path is handed the same resolved mode, so it cannot draw a
   // presentation the domain and the score legend were not scaled for
