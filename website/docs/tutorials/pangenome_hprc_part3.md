@@ -27,7 +27,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ## Prerequisites
 
 - for [Reproduce it end to end](#reproduce-it-end-to-end): `samtools` built with
-  libcurl, [`minimap2`](https://github.com/lh3/minimap2) and Node.js for `npx`
+  libcurl, [`minimap2`](https://github.com/lh3/minimap2), Node.js for `npx`,
+  `python3`, and the [JBrowse CLI](/docs/cli) for `make-pif`
 
 ## Where the data comes from
 
@@ -179,6 +180,37 @@ bash build_amylase_haplotypes.sh
 ```
 
 <Figure caption="One haplotype of each common amylase structure from the offline script, one AMY1 copy at the top to seven at the bottom, each under its gene track and aligned to the row under it by minimap2, colored by strand. The two three-copy rows align straight through; one copy to three and three to five each open a wedge over the genes only the longer row carries." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+
+## Whole genomes from a GFA
+
+Any GFA with walks converts to PAF against its reference walk, one record per
+stretch of shared nodes, for a whole-genome synteny view.
+
+Convert the walks you want:
+
+<!-- from: scripts/build_hprc_multiway_synteny.sh -->
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/gfa_to_pairwise_paf.py
+# --contig-lengths: each assembly's .fai, since walks omit contig lengths
+gzip -dc graph.gfa.gz | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \
+  --queries HG01109#1,HG00099#1 --contig-lengths contigs.fai > graph.paf
+```
+
+Index the PAF for JBrowse:
+
+<!-- from: scripts/build_hprc_multiway_synteny.sh -->
+
+```bash
+jbrowse make-pif graph.paf --csi --out graph.pif.gz
+```
+
+The HPRC build, eight haplotypes from the 63 GB release graph:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_multiway_synteny.sh
+bash build_hprc_multiway_synteny.sh
+```
 
 To host your own graph, see
 [hosting your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database).
