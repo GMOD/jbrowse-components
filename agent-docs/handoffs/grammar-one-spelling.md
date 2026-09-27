@@ -35,6 +35,10 @@ calls; two landed and two remain.
   three. A categorical preset's `range` and `labels` fill only while `domain`
   is unwritten, so a written order keeps each strand its own colour.
 
+- **A bare string in a mark's `encoding` is a field**, `color` and `shape`
+  included; a constant is `{ value }`, and `field-spells-constant` reports a
+  field that spells a colour or a shape name. ADR-159 §"Amended 2026-09-27".
+
 ## Remaining, in order
 
 1. **Left from the filter ruling, deliberately.** The ruling also moved a mark
@@ -49,7 +53,7 @@ calls; two landed and two remain.
 2. **The other double spellings are ruled** (2026-09-27, against Vega-Lite,
    ggplot2 and GenomeSpy): `rowColor`'s bare string, `scales.y.type` beside
    `color.scale`, `rows.labels` as a map, wiggle's `origin` and its `mark`/`size`
-   all stay, for the reasons in `reference/GRAMMAR_OF_GRAPHICS.md` §"Spelling,
+   stay, for the reasons in `reference/GRAMMAR_OF_GRAPHICS.md` §"Spelling,
    checked 2026-09-27". The mark display's `activeFilters` is a method, as on
    the other two. `rowGroups[].color` goes, but only as step 4 of
    [one-row-model](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md),
