@@ -1,5 +1,4 @@
 import { waitForJBrowseReady } from './ready.ts'
-import { waitForDisplaysDone } from './waits.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -72,7 +71,7 @@ test('a ready app with nothing pending settles clean', async () => {
 // The gate is the only check that the data asked for is the data on screen, and
 // the only place a mistyped trackId fails at all — everything below it is
 // satisfied by a browser that loaded and drew nothing.
-test('a trackId that never opens fails the gate, not the paint wait', async () => {
+test('a trackId that never opens fails the gate, not the settle wait', async () => {
   app('ready')
   await expect(
     waitForJBrowseReady(fakePage(), { trackIds: ['typo'], timeout: 300 }),
@@ -100,44 +99,37 @@ test('an app that never goes ready reports the stage and the census', async () =
   expect(report.pending).toEqual([{ name: 'pileup', phase: 'loading' }])
 }, 15000)
 
-// A display in a terminal phase is not coming back, and the two comparative
-// canvases hold `drawn=false` open through `error` on purpose. Waiting on the
-// attribute alone spent the whole timeout on an answer the census already had.
-test('a pending display that has errored ends the paint wait at once', async () => {
-  document.body.innerHTML = `
-    <div data-testid="pileup" data-display-drawn="false"
-         data-display-phase="error"></div>`
-  const start = Date.now()
-  await expect(
-    waitForDisplaysDone(fakePage(), { timeout: 2000 }),
-  ).resolves.toBe(true)
-  expect(Date.now() - start).toBeLessThan(500)
-})
-
-test.each([
-  ['still loading', 'data-display-phase="loading"'],
-  ['publishing no phase at all', ''],
-])('a pending display %s keeps the paint wait going', async (_name, attr) => {
-  document.body.innerHTML = `
-    <div data-testid="pileup" data-display-drawn="false" ${attr}></div>`
-  await expect(waitForDisplaysDone(fakePage(), { timeout: 100 })).resolves.toBe(
-    false,
+// The marker only sees the displays its view walk finds, so a display still
+// loading in a view that declares no `ownTracks` holds the chain on its own.
+test('a loading display the marker cannot see keeps the chain waiting', async () => {
+  app(
+    'ready',
+    `<div data-testid="pileup" data-display-drawn="true"
+          data-display-phase="loading"></div>`,
   )
-})
+  const report = await waitForJBrowseReady(fakePage(), {
+    allowUnsettled: true,
+    timeout: 1500,
+  })
+  expect(report.unsettled).toEqual(['the app never held itself ready'])
+}, 15000)
 
-// ...and the census the early return is traded for: the chain still fails, with
-// the phase that says a longer timeout is not the fix. The marker reads `ready`
-// over an error banner, which is a correct answer to a different question than
-// a capture is asking.
+// A display in a terminal phase is not coming back, and the two comparative
+// canvases hold `drawn=false` open through `error` on purpose, so the chain
+// fails at once with the phase that says a longer timeout is not the fix. The
+// marker reads `ready` over an error banner, which is a correct answer to a
+// different question than a capture is asking.
 test('an errored display is named unsettled instead of burning the timeout', async () => {
   app(
     'ready',
     `<div data-testid="pileup" data-display-drawn="false"
           data-display-phase="error"></div>`,
   )
+  const start = Date.now()
   await expect(
     waitForJBrowseReady(fakePage(), { timeout: 30000 }),
   ).rejects.toThrow(/^display\(s\) never painted: pileup is error\. No timeout/)
+  expect(Date.now() - start).toBeLessThan(10000)
 }, 15000)
 
 // The marker reads `ready` over a cancel, which is finished work; the capture

@@ -137,7 +137,7 @@ const HOOKS: Hook[] = [
     name: 'rendersCanvas',
     owner: 'packages/render-core/src/RenderLifecycleMixin.ts',
     ifNotOverridden:
-      '`!fetchInert` on both LGV foundations, so a placeholder declared through that hook already stops `painted` waiting; the raw `true` reaches only a display composing `RenderLifecycleMixin` outside them, where `painted` waits on a canvas that is never mounted and every `waitForDisplaysDone` on the page burns its timeout',
+      '`!fetchInert` on both LGV foundations, so a placeholder declared through that hook already stops `painted` waiting; the raw `true` reaches only a display composing `RenderLifecycleMixin` outside them, where `painted` waits on a canvas that is never mounted and every capture wait on the page burns its timeout',
   },
   {
     name: 'paintInert',

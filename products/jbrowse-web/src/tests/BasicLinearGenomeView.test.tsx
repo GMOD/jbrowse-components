@@ -181,7 +181,7 @@ test('opens reference sequence track and expects zoom in message', async () => {
   // what makes `painted` (and so `data-display-drawn`) report finished rather
   // than pending forever. Waiting on mere presence here was the assertion that
   // the old, wrong answer was in place; `PENDING_DISPLAYS` keys on the same
-  // signal, so every `waitForDisplaysDone` on a page showing this track used to
+  // signal, so every capture wait on a page showing this track used to
   // time out.
   await findDisplayPainted('sequence-display', delay)
   await findAllByText('Zoom in to see sequence')

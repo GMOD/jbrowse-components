@@ -107,11 +107,11 @@ function viewLoading(view: AbstractViewModel) {
  * fetch failed or that the user stopped — correctly, since nothing is still
  * working, and a user's cancel is durable until Retry. A capture wants more than
  * that: it wants a picture, and neither banner is one. The capture census after
- * this is what draws that line: `waitForDisplaysDone` keys on the
- * `data-display-drawn` the two comparative canvases publish from their stricter
- * `settled` gate (see `comparativeReadiness` in `@jbrowse/synteny-core`, which
- * holds both answers and says why an error separates them), and the census
- * names every `data-display-phase="canceled"`.
+ * this is what draws that line: it names every `data-display-drawn="false"`,
+ * which the two comparative canvases publish from their stricter `settled` gate
+ * (see `comparativeReadiness` in `@jbrowse/synteny-core`, which holds both
+ * answers and says why an error separates them), and every
+ * `data-display-phase="canceled"`.
  */
 const AppReadyMarker = observer(function AppReadyMarker({
   session,

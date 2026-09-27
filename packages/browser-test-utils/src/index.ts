@@ -17,7 +17,6 @@ export {
   waitForAppReady,
   waitForAppSettled,
   waitForDisplayPhases,
-  waitForDisplaysDone,
   waitForFrame,
   waitForJBrowseReady,
   waitForLoadingComplete,

@@ -237,16 +237,16 @@ was under load (concurrent builds).
 
 ### Why it happens
 
-The generator's readiness waits (`waitForLoadingComplete`, `waitForDisplaysDone`)
-key off the display's own "ready" signals — the loading overlay clearing and the
-`<testid>-done` suffix, both driven by `canvasDrawn`. **`canvasDrawn` can flip on
-an empty first paint**, before the feature data has been fetched and drawn. Under
+The generator's readiness waits at the time keyed off the display's own "ready"
+signals — the loading overlay clearing and the `<testid>-done` suffix, both
+driven by `canvasDrawn`. **`canvasDrawn` can flip on an empty first paint**,
+before the feature data has been fetched and drawn. Under
 a slow first fetch (the first RPC on a session lazily boots the web worker; a
 heavy config or a loaded machine makes that boot slow), the display briefly reads
 as "ready" with nothing painted, and a fixed `settleMs` can elapse inside that
-window — so the capture lands on an empty frame. `waitForDisplaysDone` also
-swallows its own timeout, so a genuinely-never-finished render commits empty
-rather than failing loudly.
+window — so the capture lands on an empty frame. That paint wait also swallowed
+its own timeout, so a genuinely-never-finished render committed empty rather
+than failing loudly.
 
 Two red flags this matches (both already called out in
 `website/CLAUDE.md`): a capture gated on a **fixed `settleMs`**, and a `readyText`
@@ -276,17 +276,16 @@ The obvious signal, `displayPainted('<name>-display')`, does **not** work
 through a `readySelector` (which uses puppeteer `waitForSelector({visible:true})`):
 the GPU displays paint into a `position:absolute` canvas, so the DisplayChrome
 element collapses to **height 0** and never passes the visibility check (it
-`EXISTS` but is not `VISIBLE`). The generator's own `waitForDisplaysDone` gets
-away with it because it queries by **existence** (`querySelectorAll`, now on
-`[data-display-drawn="false"]`), not visibility — but it's an early (`canvasDrawn`) signal
-and swallows timeouts, so it isn't a reliable capture gate on its own. Pick a
+`EXISTS` but is not `VISIBLE`). The generator's own waits get away with it
+because they query by **existence** (`querySelector`), not visibility. Pick a
 data-derived, actually-drawn element (legend, a rendered label) for
 `readySelector`.
 
-The generator's paint wait runs after `[data-app-phase="ready"]` has held, is
-bounded by the spec's `readyTimeout`, and fails the spec over a display still
-unpainted at the end (capture's `waitForFrame`). A page with no canvas display
-at all — a menu, widget, or import-form figure — passes it at once. A spec's
+The generator waits for `[data-app-phase="ready"]` to hold, which already
+covers every display's fetch and first paint, bounded by the spec's
+`readyTimeout`, and then fails the spec over any display still unpainted
+(capture's `waitForFrame`). A page with no canvas display at all — a menu,
+widget, or import-form figure — passes that check at once. A spec's
 `settleMs` is unread.
 
 ### A canvas below the fold still draws new data

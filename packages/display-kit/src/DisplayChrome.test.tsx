@@ -319,7 +319,7 @@ test('a canceled phase keeps the scrim, now offering Retry', async () => {
 // `PENDING_DISPLAYS` (@jbrowse/browser-test-utils) selects on, and a display
 // that deliberately paints no canvas — sequence past base resolution, LD with
 // the triangle off — can never flip `canvasDrawn`. Read off the raw flag it
-// published `"false"` forever, so every `waitForDisplaysDone` on the page burned
+// published `"false"` forever, so every capture wait on the page burned
 // its full timeout, silently (that wait swallows its own). `painted` is the
 // getter both states answer.
 test('a display that renders no canvas reports drawn, not pending', async () => {

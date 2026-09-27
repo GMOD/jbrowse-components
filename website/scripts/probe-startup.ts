@@ -6,7 +6,6 @@
 import {
   delay,
   waitForDisplayPhases,
-  waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
@@ -242,7 +241,6 @@ await withHarness(
     const toView = Date.now() - t0
     await waitForLoadingComplete(page, { timeout: 60000 })
     await waitForDisplayPhases(page, { timeout: 60000 })
-    await waitForDisplaysDone(page, { timeout: 60000 })
     await waitForQuiescent(page, { timeout: 60000 })
     await delay(500)
     const probe = await page.evaluate(

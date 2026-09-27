@@ -77,7 +77,7 @@ export type DisplayStatusChromeBaseProps = {
    * static placeholder instead of a canvas never mounts one, so `canvasDrawn`
    * cannot flip and `data-display-drawn` reported `"false"` for the display's
    * whole life. `PENDING_DISPLAYS` selects on that attribute, so a zoomed-out
-   * reference sequence track timed out every `waitForDisplaysDone` on the page.
+   * reference sequence track timed out every capture wait on the page.
    * See `RenderLifecycleMixin.painted`.
    */
   drawn: boolean

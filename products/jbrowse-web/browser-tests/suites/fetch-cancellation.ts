@@ -1,8 +1,4 @@
-import {
-  delay,
-  waitForDisplaysDone,
-  waitForViewPhases,
-} from '@jbrowse/browser-test-utils'
+import { delay, waitForViewPhases } from '@jbrowse/browser-test-utils'
 
 import { navigateWithSessionSpec } from '../helpers.ts'
 
@@ -191,7 +187,6 @@ async function loadUltradeep(page: Page) {
   await waitForViewPhases(page, { timeout: 120000 })
   await page.waitForSelector('[data-display-phase]', { timeout: 120000 })
   await waitForNoLoadingDisplay(page)
-  await waitForDisplaysDone(page, { timeout: 120000 })
   const phases = await displayPhases(page)
   if (!phases.includes('ready')) {
     throw new Error(

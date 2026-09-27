@@ -4,7 +4,7 @@ import {
   displayCensusInPage,
   waitForSession,
 } from './sessionGate.ts'
-import { waitForAppSettled, waitForDisplaysDone } from './waits.ts'
+import { waitForAppSettled } from './waits.ts'
 
 import type { DisplayState, SessionExpectations } from './sessionGate.ts'
 import type { Page } from 'puppeteer'
@@ -55,12 +55,8 @@ export async function waitForFrame(
   }: Omit<ReadyOptions, keyof SessionExpectations> = {},
 ): Promise<ReadyReport> {
   const unsettled: string[] = []
-  // the paint wait is skipped once the marker timed out, so a stuck page costs
-  // one timeout rather than two
   if (!(await waitForAppSettled(page, { timeout }))) {
     unsettled.push('the app never held itself ready')
-  } else if (!(await waitForDisplaysDone(page, { timeout }))) {
-    unsettled.push('a display never reported its first paint')
   }
   const timedOut = unsettled.length > 0
 

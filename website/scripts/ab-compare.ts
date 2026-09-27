@@ -16,7 +16,6 @@ import {
   findChromeExecutable,
   delay,
   waitForDisplayPhases,
-  waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
@@ -91,7 +90,6 @@ async function once(
   const toViewMs = Date.now() - t0
   await waitForLoadingComplete(page, { timeout: 60000 })
   await waitForDisplayPhases(page, { timeout: 60000 })
-  await waitForDisplaysDone(page, { timeout: 60000 })
   await waitForQuiescent(page, { timeout: 60000 })
   const toSettledMs = Date.now() - t0
   const probe = await page.evaluate(

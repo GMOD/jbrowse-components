@@ -253,7 +253,7 @@ test('canvasDrawn resets to false when directly cleared (clearAllRpcData contrac
 // triangle off, sequence past base resolution) never calls `canvasRef`, so no
 // backend is built and `canvasDrawn` can never flip. Read off the raw flag, its
 // `data-display-drawn` stayed `"false"` for the display's whole life and every
-// `waitForDisplaysDone` on the page timed out silently.
+// capture wait on the page timed out silently.
 const NoCanvasModel = types.compose(
   'NoCanvasModel',
   RenderLifecycleMixin(),
@@ -276,7 +276,7 @@ test('painted reports true for a display that renders no canvas', () => {
 // error bar is an overlay, not a subtree replacement), so `canvasDrawn` never
 // flips and `data-display-drawn` published `"false"` for the rest of the
 // session — which is what `PENDING_DISPLAYS` selects on, so one broken track URL
-// made every `waitForDisplaysDone` on the page burn its full timeout, silently.
+// made every capture wait on the page burn its full timeout, silently.
 // Both LGV fetch families fill this hook with `!!error`.
 const InertModel = types.compose(
   'InertModel',

@@ -30,6 +30,9 @@ export const ANIMATING_DISPLAYS = '[data-display-animating="true"]'
 /** Displays that have not yet drawn anything. */
 export const PENDING_DISPLAYS = '[data-display-drawn="false"]'
 
+/** A display still fetching or waiting on its first paint. */
+const LOADING_DISPLAYS = '[data-display-phase="loading"]'
+
 const VIEW_COMPONENT_PENDING = '[data-view-component-pending]'
 
 // longer than the ~600ms FetchVisibleRegions debounce, so the gap between one
@@ -40,7 +43,7 @@ const APP_SETTLED_HOLD_MS = 1000
 export const BUSY_SELECTOR = [
   LOADING_OVERLAY,
   '[data-busy="true"]',
-  '[data-display-phase="loading"]',
+  LOADING_DISPLAYS,
   '[data-view-phase="loading"]',
   ANIMATING_DISPLAYS,
 ].join(', ')
@@ -134,29 +137,6 @@ export async function waitForSelectorAttributed(
   }
 }
 
-/**
- * Wait until no unpainted display could still paint: each is in a finished
- * phase, or there are none. False on timeout. Only meaningful once the views
- * have mounted.
- */
-export function waitForDisplaysDone(
-  page: Page,
-  { timeout = 30000 }: WaitOptions = {},
-) {
-  return settled(
-    page.waitForFunction(
-      (selector: string) =>
-        [...document.querySelectorAll<HTMLElement>(selector)].every(
-          el =>
-            el.dataset.displayPhase !== undefined &&
-            el.dataset.displayPhase !== 'loading',
-        ),
-      { timeout, polling: 'mutation' },
-      PENDING_DISPLAYS,
-    ),
-  )
-}
-
 /** Wait until no display is fetching. False on timeout. */
 export function waitForDisplayPhases(
   page: Page,
@@ -164,8 +144,9 @@ export function waitForDisplayPhases(
 ) {
   return settled(
     page.waitForFunction(
-      () => document.querySelector('[data-display-phase="loading"]') === null,
+      (selector: string) => document.querySelector(selector) === null,
       { timeout, polling: 'mutation' },
+      LOADING_DISPLAYS,
     ),
   )
 }
@@ -200,9 +181,13 @@ export function waitForAppReady(
 
 /**
  * Wait until every app on the page has read ready, with no view component
- * loading and no display animating, for an unbroken `holdMs`. False on timeout. Throws on a
- * page that publishes no `[data-app-phase]`, where nothing positive exists to
- * wait for.
+ * loading and no display loading or animating, for an unbroken `holdMs`. False
+ * on timeout. Throws on a page that publishes no `[data-app-phase]`, where
+ * nothing positive exists to wait for.
+ *
+ * The marker already reads `loading` over a display that is fetching or has not
+ * painted, but only over the displays its view walk finds. The display check
+ * covers a plugin view that does not declare its `ownTracks`.
  */
 export async function waitForAppSettled(
   page: Page,
@@ -226,14 +211,13 @@ export async function waitForAppSettled(
     () =>
       page
         .evaluate(
-          (ready, loading, pending, animating) =>
+          (ready, ...busy) =>
             document.querySelector(ready) !== null &&
-            document.querySelector(loading) === null &&
-            document.querySelector(pending) === null &&
-            document.querySelector(animating) === null,
+            busy.every(selector => document.querySelector(selector) === null),
           APP_READY,
           APP_LOADING,
           VIEW_COMPONENT_PENDING,
+          LOADING_DISPLAYS,
           ANIMATING_DISPLAYS,
         )
         .catch(() => false),

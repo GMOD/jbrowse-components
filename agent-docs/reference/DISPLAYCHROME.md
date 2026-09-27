@@ -701,7 +701,7 @@ raw flag can never flip:
 
 Either way the failure is the same and it is invisible: `PENDING_DISPLAYS`
 selects `[data-display-drawn="false"]`, so a zoomed-out reference sequence track
-— or one broken track URL — made every `waitForDisplaysDone` on the page burn
+— or one broken track URL — made every capture wait on the page burn
 its full timeout, and that wait swallows its own. Same shape as `fetchInert` on
 the comparative side, same fix: one name the display publishes and every
 consumer reads. A display with no `RenderLifecycleMixin` declares its own

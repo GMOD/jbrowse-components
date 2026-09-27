@@ -21,7 +21,6 @@ export {
   waitForAppReady,
   waitForAppSettled,
   waitForDisplayPhases,
-  waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
   waitForSelectorAttributed,

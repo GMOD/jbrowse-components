@@ -242,7 +242,7 @@ export function RenderLifecycleMixin() {
        * while the fourth, `data-display-drawn`, went on publishing `"false"`
        * forever off the raw flag. That attribute is what `PENDING_DISPLAYS`
        * (`@jbrowse/browser-test-utils`) selects on, so a zoomed-out reference
-       * sequence track made every `waitForDisplaysDone` on the page run to its
+       * sequence track made every capture wait on the page run to its
        * full timeout, and that wait swallows its own timeout without reporting
        * it. `fetchInert` on the comparative side has the same problem: the
        * forgotten reader is the one outside the display, so the display has to

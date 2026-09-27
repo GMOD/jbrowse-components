@@ -27,7 +27,6 @@ import {
   waitForAppReady,
   waitForAppSettled,
   waitForDisplayPhases,
-  waitForDisplaysDone,
   waitForSession,
   waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
@@ -356,9 +355,8 @@ async function settle(page: Page, c: ViewCase) {
   await waitForViewPhases(page, { timeout: TIMEOUT })
   await page.waitForSelector(c.contentSelector, { timeout: TIMEOUT })
   const phases = await waitForDisplayPhases(page, { timeout: TIMEOUT })
-  const drawn = await waitForDisplaysDone(page, { timeout: TIMEOUT })
   const held = await waitForAppSettled(page, { timeout: TIMEOUT })
-  return { ms: Date.now() - t0, phases, drawn, held }
+  return { ms: Date.now() - t0, phases, held }
 }
 
 interface Result {

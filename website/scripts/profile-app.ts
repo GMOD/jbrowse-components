@@ -12,7 +12,6 @@ import path from 'node:path'
 import {
   delay,
   waitForDisplayPhases,
-  waitForDisplaysDone,
   waitForLoadingComplete,
   waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
@@ -226,7 +225,6 @@ async function loadApp(page: Page, url: string) {
   const tView = Date.now() - t0
   await waitForLoadingComplete(page, { timeout: 45000 })
   await waitForDisplayPhases(page, { timeout: 120000 })
-  await waitForDisplaysDone(page, { timeout: 120000 })
   await waitForQuiescent(page, { timeout: 45000 })
   return { toViewMs: tView, toSettledMs: Date.now() - t0 }
 }

@@ -4,8 +4,8 @@ afterEach(() => {
   document.body.replaceChildren()
 })
 
-// What a timed-out capture says. The stage name alone names the QUESTION — "a
-// display never reported its first paint" — and reads identically however it was
+// What a timed-out capture says. The stage name alone names the QUESTION — "the
+// app never held itself ready" — and reads identically however it was
 // caused, which is the whole reason a timeout was unattributable. The phase each
 // unpainted display publishes is the answer.
 

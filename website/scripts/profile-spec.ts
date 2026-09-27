@@ -14,7 +14,6 @@ import path from 'node:path'
 
 import {
   waitForDisplayPhases,
-  waitForDisplaysDone,
   waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 
@@ -193,9 +192,7 @@ await withHarness(
     await waitForViewPhases(page, { timeout })
     mark('view initialized (assembly loaded, navigated)')
     await waitForDisplayPhases(page, { timeout })
-    mark('no display still loading (fetch + parse done)')
-    await waitForDisplaysDone(page, { timeout })
-    mark('all displays painted')
+    mark('no display still loading (fetched, parsed and painted)')
     if (spec.readySelector) {
       await awaitReadySelector(page, spec, timeout)
       mark(`readySelector ${spec.readySelector}`)

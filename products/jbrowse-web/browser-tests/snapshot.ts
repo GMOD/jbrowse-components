@@ -6,7 +6,6 @@ import {
   describeDisplays,
   displayCensusInPage,
   waitForDisplayPhases,
-  waitForDisplaysDone,
   waitForSelectorAttributed,
 } from '@jbrowse/browser-test-utils'
 
@@ -228,24 +227,19 @@ async function waitForLoadingOverlayGone(page: Page, timeout: number) {
   }
 }
 
-// Everything a capture has to wait on, in the order the signals actually settle.
-// Three waits, because each is blind to what the next one sees:
+// Everything a capture has to wait on, in the order the signals actually settle:
 //
 //   1. the loading overlay is down          — the view has data to draw
-//   2. no display is in its `loading` phase — every display's fetch is finished
-//   3. every display has reported canvasDrawn — and has painted that data
-//   4. no display is animating              — every morph has landed
+//   2. no display is in its `loading` phase — every fetch is finished and painted
+//   3. no display is animating              — every morph has landed
 //
-// (2) and (3) are the pair that was missing, and their order is the point.
-// `waitForDisplaysDone` keys on canvasDrawn, which is FIRST paint and flips on a
-// partially-filled canvas while later blocks are still fetching; `waitForDisplayPhases`
-// reads DisplayChrome's own `data-display-phase`, so "nothing is loading" is a
-// direct read rather than an inference. Capturing on (3) alone is how a
-// cross-backend pair ends up with one backend at full width and the other
-// painted only part-way across — the exact shape of the 2026-08-04
-// targeted_alignments-bam gate failure.
+// (2) reads `data-display-phase`, which stays `loading` through the fetch and
+// until first paint. A wait on first paint instead ends on a partially-filled
+// canvas while later blocks are still fetching, which is how a cross-backend
+// pair ends up with one backend at full width and the other painted only
+// part-way across — the 2026-08-04 targeted_alignments-bam gate failure.
 //
-// All four are best-effort: a timeout proceeds to the capture, because the
+// All three are best-effort: a timeout proceeds to the capture, because the
 // pixel comparison (and `assertNonBlank`) is the real assertion and a loud
 // wrong image beats an opaque wait error.
 //
@@ -261,7 +255,6 @@ async function waitForLoadingOverlayGone(page: Page, timeout: number) {
 async function waitForCaptureSettled(page: Page) {
   await waitForLoadingOverlayGone(page, 30000)
   await waitForDisplayPhases(page, { timeout: 30000 })
-  await waitForDisplaysDone(page, { timeout: 30000 })
   await waitForMorphIdle(page)
 
   // Report-only, and re-read from the DOM here rather than off handles the waits
