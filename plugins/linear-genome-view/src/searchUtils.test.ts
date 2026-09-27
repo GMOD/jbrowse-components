@@ -5,6 +5,7 @@ import {
   checkRef,
   distinctDestinations,
   fetchResults,
+  hitTrackToShow,
   nameNotFound,
   splitLast,
 } from './searchUtils.ts'
@@ -383,6 +384,28 @@ describe('distinctDestinations', () => {
         new BaseResult({ label: 'EDEN.1' }),
       ]),
     ).toBeUndefined()
+  })
+})
+
+describe('hitTrackToShow', () => {
+  const session = {
+    getTrackById: (trackId: string) => (trackId === 'genes' ? {} : undefined),
+  } as unknown as AbstractSessionModel
+  const hit = (trackId?: string) =>
+    new BaseResult({ label: 'C4A', locString: 'ctgA:1049..9000', trackId })
+
+  it('shows the track the hit was indexed from', () => {
+    expect(hitTrackToShow(hit('genes'), session)).toBe('genes')
+  })
+
+  // a shared names index built for another config: navigating is right, and
+  // launching the track it names raised "Could not resolve identifier"
+  it('shows nothing for a track this session does not have', () => {
+    expect(hitTrackToShow(hit('hg38-ncbiRefSeqGff'), session)).toBeUndefined()
+  })
+
+  it('shows nothing for a hit carrying no track', () => {
+    expect(hitTrackToShow(hit(), session)).toBeUndefined()
   })
 })
 

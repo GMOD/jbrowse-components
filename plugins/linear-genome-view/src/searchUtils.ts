@@ -191,6 +191,19 @@ export async function showSearchResults({
 // padding gets that instead.
 const SEARCH_HIT_GROW = 0.2
 
+// The track to show beside a hit: the one its index came from, when this
+// session has it. A shared index names tracks of whichever config it was built
+// for — the UCSC hg38 names index says `hg38-ncbiRefSeqGff`, which the HPRC
+// pangenome config reuses without carrying — and launching a track the session
+// lacks turned every gene search there into a "Could not resolve identifier"
+// error over a view that had navigated fine.
+export function hitTrackToShow(result: BaseResult, session: TrackCatalog) {
+  const trackId = result.getTrackId()
+  return trackId !== undefined && session.getTrackById(trackId)
+    ? trackId
+    : undefined
+}
+
 // A hit lands with the track its index came from shown, which is what a name
 // typed into the search box wants. A session spec that named its own tracks
 // passes false: it asked for those tracks, and a hosted config's full RefSeq
@@ -212,7 +225,6 @@ export async function navToOption({
   // but carries no coordinates; treat that as "no location" and fall back to
   // the label rather than forwarding '' into an empty, view-blanking parse
   const location = option.getLocation() || option.getLabel()
-  const trackId = option.getTrackId()
   const session = getSession(model)
   const { assemblyManager } = session
   await model.navToLocations(
@@ -222,7 +234,8 @@ export async function navToOption({
     assemblyName,
     grow ?? SEARCH_HIT_GROW,
   )
-  if (showHitTrack && trackId && isAlive(model)) {
+  const trackId = showHitTrack ? hitTrackToShow(option, session) : undefined
+  if (trackId && isAlive(model)) {
     await model.launchTrack(trackId)
   }
 
