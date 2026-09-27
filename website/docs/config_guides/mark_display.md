@@ -734,7 +734,7 @@ each reported under its id:
 | `ramp-domain` | warning | A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. |
 | `ramp-ends` | warning | A colour ramp's `domainMax` below its `domainMin`. |
 | `ramp-quantile` | warning | A colour ramp's `domainQuantile` outside 0.5 to 1, a percent among them. |
-| `labels-domain` | warning | A colour's `labels` naming values its `domain` does not list, or no categorical scale's. |
+| `labels-domain` | warning | A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
 | `unpinned-span-ramp` | warning | A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. |
 | `step-pair` | warning | A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. |
 | `value-beside-rows` | warning | A mark other than a span drawn beside one that stacks rows, standing in the first of them. |

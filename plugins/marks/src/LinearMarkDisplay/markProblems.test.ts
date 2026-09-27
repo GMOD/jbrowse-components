@@ -574,6 +574,22 @@ test('labels name the domain values of a categorical colour', () => {
   ])
 })
 
+test('labels name the domain values of a shape, and a constant shape names none', () => {
+  const shaped = (shape: unknown) => [
+    { mark: 'point', encoding: { y: 'score', shape } },
+  ]
+  expect(
+    found(shaped({ field: 'type', domain: ['a'], labels: ['A'] })),
+  ).toEqual([])
+  expect(found(shaped({ field: 'type', labels: ['A'] }))).toEqual([
+    'warning labels-domain mark 0 encoding.shape.labels',
+  ])
+  expect(found(shaped({ value: 'diamond', labels: ['A'] }))).toEqual([
+    'warning labels-domain mark 0 encoding.shape.labels',
+  ])
+  expect(found(shaped('diamond'))).toEqual([])
+})
+
 test('a ramp reads its ends, not a domain, and a span wants both ends pinned', () => {
   const ramp = (mark: string, color: Record<string, unknown>) => [
     {

@@ -63,7 +63,7 @@ export const MARK_RULES = {
   'ramp-ends': 'warning',
   /** A colour ramp's `domainQuantile` outside 0.5 to 1, a percent among them. */
   'ramp-quantile': 'warning',
-  /** A colour's `labels` naming values its `domain` does not list, or no categorical scale's. */
+  /** A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
   'labels-domain': 'warning',
   /** A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. */
   'unpinned-span-ramp': 'warning',
@@ -195,6 +195,28 @@ function rampColor(mark: MarkSnapshot) {
   const color = mark.encoding?.color ?? {}
   const painted = colorScaleOf(color)
   return painted === 'linear' || painted === 'log' ? color : undefined
+}
+
+// A shape's labels name its domain values in order, as a colour's do, and a
+// constant shape names none.
+function shapeLabelProblems(shape: unknown): OwnProblem[] {
+  if (typeof shape !== 'object' || shape === null) {
+    return []
+  }
+  const { field = '', scale, domain = [], labels = [] } = shape as ColorSlots
+  const named =
+    paintedScale({ scale, field }, 'categorical') === 'categorical'
+      ? domain.length
+      : 0
+  return labels.length > named
+    ? [
+        found(
+          'labels-domain',
+          'encoding.shape.labels',
+          `labels names one domain value each, and ${labels.length} ${labels.length === 1 ? 'label names' : 'labels name'} ${named}: a label past them names nothing`,
+        ),
+      ]
+    : []
 }
 
 function drawsDensity(mark: MarkSnapshot) {
@@ -502,6 +524,7 @@ function ownProblems(
       ),
     )
   }
+  problems.push(...shapeLabelProblems(mark.encoding?.shape))
   const ramp = rampColor(mark)
   if (ramp) {
     const { domainMin, domainMax } = ramp
