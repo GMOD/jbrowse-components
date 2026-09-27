@@ -25,10 +25,10 @@ menu item without touching the layout at all.
 
 ## A ribbon joins adjacent lanes, so this is seriation
 
-`alignFrameTo`'s comment already states the structural fact for a different
-purpose: "a ribbon only ever joins ADJACENT lanes". That makes lane order decide
-**which pairs are drawn at all**, not just how the stack reads — the display
-fetches links per adjacent pair, so reordering changes the data on screen.
+`rowAssembliesOf`'s comment states the structural fact: "a ribbon connects
+ADJACENT lanes only". That makes lane order decide **which pairs are drawn at
+all**, not just how the stack reads — the display fetches links per adjacent
+pair, so reordering changes the data on screen.
 
 The objective is therefore to maximize the total similarity of the N-1 adjacent
 pairs along the stack: a maximum Hamiltonian path over the similarity graph,

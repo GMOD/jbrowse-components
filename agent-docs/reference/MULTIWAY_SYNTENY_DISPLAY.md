@@ -43,8 +43,8 @@ Re-checked against the code and every tutorial the display appears in.
   help text and `multiwayGeometry.ts` now all say the record's strand and not
   the drawn twist; the four tutorials that stated the crossing were corrected
   on 2026-09-07.
-- **4.3**, densest-first rewarding fragmentation. `rowAssembliesOf` weights by
-  `placements.length * group.weight`.
+- **4.3**, densest-first rewarding fragmentation. `rowAssembliesOf` ranks a
+  lane by the group weight on its heaviest contig.
 - **4.4**, the star launch. `lanePanelsForRegion` seeds the dialog's panels from
   the display's own lanes, the header's anchor rides along as `starAnchor`, two
   mates take the anchor between them, and a star with more offers **Repeat
@@ -90,6 +90,14 @@ Re-checked against the code and every tutorial the display appears in.
   votes and aligns against the anchor, which on a star is every lane below the
   first (the 17p and stability records under the ideas file); and the picker
   greys only a lane the window was asked for and placed nothing.
+- **The 2026-09-27 placement pass.** A rung covers a fit up to 10% wider than
+  itself (`RUNG_TOLERANCE`), so the liftOver lanes that overran the TNNT3 and
+  TP53 windows by 1.6-7.5% draw at 1× rather than 1.5×. The alignment shift is
+  unclamped (`alignFrameTo`), so a lane lines its homologs up under the
+  anchor's even where that leaves part of its fit off an edge or starts its
+  frame below zero; the header, ticks and gene fetch stop at zero. The hold
+  compares against what a fresh alignment would show, and the lane order ranks
+  each lane by its heaviest contig (§4.3).
 
 Still open, and carried in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md):
@@ -150,7 +158,8 @@ every anchor span of a group against every mate span. A mate's
 strand. `weight` is anchor bp for a nameless record and one per gene for a named
 one (`voteEvidence`).
 
-**Lanes.** `rowAssembliesOf` orders mate assemblies by summed group weight over
+**Lanes.** `rowAssembliesOf` orders mate assemblies by the summed group weight
+on each lane's heaviest contig — the evidence `pickContig` votes with — over
 the whole fetched block set, then pins `domain`; the model's `rowAssemblies`
 keeps the lanes `laneUniverse` marks `drawn`, compared on canonical names
 (`laneKey`).
@@ -168,16 +177,18 @@ declares `adapterCapabilities: ['headerLanes']` (`adapterDeclaresLanes`;
 once per settled block set: contig by `preferIncumbent` with a 1.5× switch
 margin (`JC/plugins/linear-comparative-view/src/syntenyHysteresis.ts`), extent
 by `keepNearMedian` (`OUTLIER_REACH = 1.5` window spans), rung off
-`SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]` with an 0.85 shrink room
-(`pickRung`), orientation by a 0.9 deadband over ≥5 shared groups against the
-lane *above* (`orientationVote`, `decideOrientation`), offset by the
-weighted-median displacement to the lane above clamped to the rung's slack
-(`alignFrameTo`) — both read against the anchor instead where the lane above
-shares fewer than three groups, which on a pairwise star is every lane below
-the first — and a placement hold while the frame still shows 90% of the
-placed weight (`HOLD_COVERAGE`). Two reader pins from the lane header menu
-outrank the vote: a contig pin (`pinnedLaneContigs`) while the window places
-anything on that contig, and a flip pin (`pinnedLaneFlips`, against the anchor's
+`SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]` with a 10% tolerance
+(`RUNG_TOLERANCE`) and an 0.85 shrink room floored at 1 (`pickRung`),
+orientation by a 0.9 deadband over ≥5 shared groups against the lane *above*
+(`orientationVote`, `decideOrientation`), offset by the weighted-median
+displacement to the lane above, unclamped, so part of the fit can fall past an
+edge and a frame can start below zero (`alignFrameTo`) — both read against the
+anchor instead where the lane above shares fewer than three groups, which on a
+pairwise star is every lane below the first — and a placement hold while the
+frame still shows 90% of the placed weight a fresh alignment would
+(`HOLD_COVERAGE`). Two reader pins from the lane header menu outrank the vote:
+a contig pin (`pinnedLaneContigs`) while the window places anything on that
+contig, and a flip pin (`pinnedLaneFlips`, against the anchor's
 order) while the lane draws the contig it was set on. A lapsed or released pin
 leaves no incumbent, so the lane decides fresh. Flip pins are held per anchor
 (`laneFlipPinsByAnchor`), so another anchor reads none of them and a return to
@@ -559,7 +570,7 @@ so an eight-mate launch is eight 40 px bands.
 | **State** | the `domain` slot, and `laneFilter` and `lodMode`, on one display; features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`LinearSyntenyView`'s `levels` and `reconcileLevels`; `LinearSyntenyViewHelper`); every row's tracks persist |
 | **Fetches** | 1 star fetch (+ N children inside the adapter) + N lane-gene RPCs + (N-1) link RPCs for nameless non-star sources and `lanePairsOnAnchor` adapters | N-1 synteny fetches (one per level, each its own display) + each row's own track fetches; each level refetches independently on its own pair of viewports |
 | **Performance** | One canvas, ~10 GPU draw calls per lane (§3), 22 px per lane floor | N LGV React trees and rulers, a synteny canvas per level; rows are ≥ ruler height each, so 8 rows fill a screen and 44 do not fit |
-| **Correctness** | Lane frames are affine fits (§4.1); composed links interpolate; ordering by placement count (§4.3) | CIGAR-exact ribbons and per-base detail on each level; but for a star only levels touching the anchor draw, and a level with an unstated pair is either blank (MultiPairwise) or an error (MultiGenome) |
+| **Correctness** | Lane frames are affine fits (§4.1); composed links interpolate; ordering by the heaviest contig's weight (§4.3) | CIGAR-exact ribbons and per-base detail on each level; but for a star only levels touching the anchor draw, and a level with an unstated pair is either blank (MultiPairwise) or an error (MultiGenome) |
 | **Scale** | linear in N, readable to ~50 with scrolling | usable to ~5 rows; the design record calls a cohort "a multiple alignment rather than a stack of pairwise bands" (`comparative-adapters/src/util.ts:255-263`) |
 
 The "harder to control" the maintainer names is real and has a specific shape:
@@ -714,6 +725,13 @@ carriers sorted to the top by construction and the reader was told they were
 records) is the right quantity and was sitting on every group; the sort weights
 by it now.
 
+Summed over every contig, it still rewarded a lane for scattering. At TNNT3
+(hg38 chr11:1,822,680-2,024,156, the liftOver star) platypus scored 317k from
+96 placements on ten contigs while the one contig its lane draws held four
+groups, 15% of the window, and it sat 17th of 26 above baboon. A lane draws one
+contig, so the sort now takes the heaviest contig's weight, the quantity
+`pickContig` votes with.
+
 ### 4.4 The launched stack from a star — fixed
 
 §2.2 records the route as it stood: `buildSyntenyViewSpec` put the same track on
@@ -752,8 +770,8 @@ no 2^32 issue.
 
 ### 4.10 The lane sort is exact, and its tie-break is file order
 
-`rowAssembliesOf` sorts lanes by summed weight and tie-breaks on `appearance`,
-the first-seen index over the anchor-sorted groups. The weights are integers —
+`rowAssembliesOf` sorts lanes by their heaviest contig's summed weight and
+tie-breaks on `appearance`, the first-seen index over the anchor-sorted groups. The weights are integers —
 one per gene, or anchor bp for an alignment — so the sort is exact and
 independent of accumulation order: given the same feature list the lane order
 is fully determined.
@@ -761,9 +779,11 @@ is fully determined.
 At the HPRC CFH window the tie-break decides everything. The four non-carrier
 haplotypes tie at exactly 300,000 anchor bp and the four carriers at exactly
 215,316, the 84,684 bp the CFHR3/CFHR1 deletion removes, so within each group
-the stack is simply PIF file order. `MultiGenomeIndexedPAFAdapter` sorts its
-concurrent reads by `fileOffset` precisely so that order is reproducible, and a
-single-region fetch is therefore deterministic.
+the stack is simply PIF file order. Both were measured when the sort summed
+every contig; a haplotype placing the window on one contig scores the same
+under either rule. `MultiGenomeIndexedPAFAdapter` sorts its concurrent reads by
+`fileOffset` precisely so that order is reproducible, and a single-region fetch
+is therefore deterministic.
 
 The exposure was `ComparativeAdapterBase.getFeaturesInMultipleRegions`, which
 `merge`d the per-region streams: on a multi-region view the arrival order varies
@@ -782,12 +802,11 @@ the same way against `05ec50660e` — it drew the marmoset lane `[rev]` at
 fixed it.
 
 The whole-chromosome figure is `multiway_synteny/hprc_chr12_whole` because chr1
-drew lanes that looked like haplotypes missing 1q, for two reasons that are both
-correct output. HG00099, HG00128 and HG01109 assembled chr1 as two scaffolds
-split at the centromere, and a lane draws one contig. HG00097 and HG02055
-assembled it over `RUNG_TOLERANCE` longer than hg38's, so `pickRung` frames them
-at `1.5×` and a third of the lane is blank. Every haplotype's chr12 is one
-contig within the tolerance.
+drew lanes that looked like haplotypes missing 1q. HG00099, HG00128 and HG01109
+assembled chr1 as two scaffolds split at the centromere, and a lane draws one
+contig. HG00097 and HG02055 assembled it longer than hg38's, and under the 1%
+`RUNG_TOLERANCE` of the time `pickRung` framed them at `1.5×` with a third of
+the lane blank. Every haplotype's chr12 is one contig within that tolerance.
 
 ### 4.11 A long `alsoOn` overflowed an exported figure — fixed
 
@@ -1034,8 +1053,8 @@ on strand.
 
 ### 6.4 A broken hold re-aligns
 
-When a hold breaks — the lane's content has
-moved to another block, or 10% of it has left the frame — the lane jumps to its
+When a hold breaks — the lane's content has moved to another block, or the
+frame shows under 90% of what a fresh alignment would — the lane jumps to its
 re-alignment in one step (peach +388 px, tomato −2859 px across one drag), and
 the obvious fix is to slide only as far as restores coverage. Built and walked
 across grape chr1 with the stability probe, the least slide leaves a placement's

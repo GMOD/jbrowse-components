@@ -232,13 +232,15 @@ is one block running against its neighbours.
 Each lane is one genome in its own coordinates, fitted to wherever its alignment
 places the anchor window, so the number at a lane's right edge is the span that
 lane shows and the multiple after it is how much wider than the anchor window
-that is: how much of that genome the lane had to open up to hold everything the
-window placed in it, rounded to one of a few fixed steps. Ribbons join a lane to
-the lane directly above it, and where a source holds no alignment between two
-mates, as this star does not, the ribbon between them is composed through the
-anchor. Hovering a ribbon lights the same alignment in every lane it reaches;
-dragging a lane's label reorders the stack; the header menu on a lane re-anchors
-the view on that genome or opens it in a view of its own.
+that is: how much of that genome the lane had to open up to hold what the window
+placed in it, rounded to one of a few fixed steps. A lane placing up to a tenth
+more than a step stays on that step, and the extra runs off its edges the way
+the anchor's own neighbours run off the window. Ribbons join a lane to the lane
+directly above it, and where a source holds no alignment between two mates, as
+this star does not, the ribbon between them is composed through the anchor.
+Hovering a ribbon lights the same alignment in every lane it reaches; dragging a
+lane's label reorders the stack; the header menu on a lane re-anchors the view
+on that genome or opens it in a view of its own.
 
 ## Reproduce it end to end
 
