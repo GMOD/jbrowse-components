@@ -374,36 +374,36 @@ const STAR_LINK = 'a[href*="_liftOver_multiway"]'
 
 // The session STAR_LINK carries (starUrl in jb2hubs
 // website/src/components/multiSyntenyDrilldown.ts): one lane per gene-page row
-// the star holds, 34 px each so no lane scrolls. Re-copy it when that page
-// changes its rows.
+// the star holds, nearest hg38 first and pinned in that order by `domain`, 34 px
+// each so no lane scrolls. Re-copy it when that page changes its rows.
 function tnnt3StarSession() {
   const lanes = [
-    'GCF_004115215.2',
-    'echTel2',
-    'loxAfr3',
-    'triMan1',
-    'dasNov3',
-    'galVar1',
-    'GCF_000955945.1',
-    'chlSab2',
-    'GCF_037993035.2',
-    'rheMac10',
-    'GCF_000956065.1',
-    'GCF_008728515.1',
-    'rhiRox1',
     'GCF_029281585.2',
     'panPan3',
     'panTro6',
     'ponAbe3',
     'nomLeu3',
+    'rhiRox1',
+    'GCF_008728515.1',
+    'GCF_000956065.1',
+    'rheMac10',
+    'GCF_037993035.2',
+    'chlSab2',
+    'GCF_000955945.1',
     'GCF_049354715.1',
     'GCF_040939455.1',
     'otoGar3',
+    'galVar1',
     'GCA_033439345.1',
     'GCF_964237555.1',
     'ochPri3',
     'hetGla2',
     'cavPor3',
+    'dasNov3',
+    'triMan1',
+    'loxAfr3',
+    'echTel2',
+    'GCF_004115215.2',
   ]
   return sessionSpec(
     encodeURIComponent('https://jbrowse.org/ucsc/hg38/config-staging.json'),
@@ -418,6 +418,7 @@ function tnnt3StarSession() {
               trackId: 'hg38_liftOver_multiway',
               type: 'MultiWaySyntenyDisplay',
               laneFilter: { only: lanes },
+              domain: lanes,
               height: (lanes.length + 1) * 34,
             },
           ],
