@@ -102,6 +102,10 @@ export interface SmokeOptions {
   // Keep the predicate narrow enough to name the URL: a filter matching "404"
   // anywhere would hide the ordinary broken-link regression it looks like.
   allowedConsoleError?: (text: string, slug: string) => boolean
+  // The readiness report's line for that same failure, e.g. the display the
+  // broken URL leaves in error. Match the whole line: it lists every failed
+  // display, so a second one changes it.
+  allowedUnsettled?: (text: string, slug: string) => boolean
   // progress sink (e.g. console.log from a CLI wrapper); defaults to a no-op so
   // the library stays console-free
   log?: (message: string) => void
@@ -125,6 +129,7 @@ export async function smokeExamplesSite({
   check,
   recordFromLoad,
   allowedConsoleError = () => false,
+  allowedUnsettled = () => false,
   log = () => {},
 }: SmokeOptions): Promise<number> {
   const server = http.createServer((req, res) => {
@@ -253,7 +258,11 @@ export async function smokeExamplesSite({
         timeout: FRAME_TIMEOUT_MS,
         allowUnsettled: true,
       })
-      errors.push(...unsettled.map(u => `not ready for capture: ${u}`))
+      errors.push(
+        ...unsettled
+          .filter(u => !allowedUnsettled(u, slug))
+          .map(u => `not ready for capture: ${u}`),
+      )
     } else {
       await new Promise(r => setTimeout(r, settleMs))
     }

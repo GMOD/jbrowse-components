@@ -1102,6 +1102,10 @@ const failures = await smokeExamplesSite({
   allowedConsoleError: (text, slug) =>
     (slug === 'loading-and-errors' && text.includes('does-not-exist.2bit')) ||
     (slug === 'removing-material-ui' && text.includes('does-not-exist.bw')),
+  allowedUnsettled: (text, slug) =>
+    slug === 'removing-material-ui' &&
+    text ===
+      'display(s) showing an error: wiggle-display (hg38_broken-LinearWiggleDisplay) is error',
   //
   // The census runs before the click: opening one of those bottom-right menus
   // mounts a Material popover, which would land in the count. It runs twice,
