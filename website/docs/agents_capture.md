@@ -89,7 +89,6 @@ For one display rather than the whole app:
 - **In a container**, pass `--no-sandbox`; `@jbrowse/capture` already does.
 - **A retina image** is `--scale 2`, the default. Drop it to 1 for a screenshot
   you only intend to read.
-- **A slow remote file** outlives the loading overlay. Raise `--timeout`, and
-  `--settle` for the last repaint.
+- **A slow remote file** outlives the default budget. Raise `--timeout`.
 - **Read the image you produced.** An empty track is obvious in a picture and
   invisible in an exit code.

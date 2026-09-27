@@ -59,10 +59,10 @@ rest.
 `@jbrowse/img` needs none — it renders server-side, and a config using
 `localPath` locations makes a figure out of files on disk with nothing served.
 
-`@jbrowse/capture` drives the **public** build at
-`jbrowse.org/code/jb2/latest/`, so a config and its data must be URLs that page
-may fetch; a path on disk is not one. For local data, serve the app and the data
-from one directory and point capture at it:
+`@jbrowse/capture` drives the **public** build of its own release,
+`jbrowse.org/code/jb2/v<version>/`, so a config and its data must be URLs that
+page may fetch; a path on disk is not one. For local data, serve the app and the
+data from one directory and point capture at it:
 
 ```bash
 jbrowse create jbrowse2
@@ -159,7 +159,8 @@ await browser.close()
 ```
 
 `waitForJBrowseReady(page)` is the wait alone, for a page you navigated
-yourself.
+yourself. For a page of your own that embeds a JBrowse component, open it in
+`launchBrowser()` and wait with the same call.
 
 **A stage that times out throws** rather than handing back a half-drawn frame,
 naming which gate it was. Pass `allowUnsettled` / `--allowUnsettled` if you
@@ -179,7 +180,7 @@ no failure but is not the picture either.
 - In a container, pass `--no-sandbox` (the library already does).
 - `--scale 2` is the default and is what a figure wants; `--scale 1` for a
   screenshot you only intend to read.
-- Raise `--timeout` for a slow remote file, `--settle` for the last repaint.
+- Raise `--timeout` for a slow remote file.
 - Downscale before reading a large PNG:
   `convert out.png -resize 1400x /tmp/shot.png`.
 
