@@ -6,6 +6,7 @@ import {
   decideLaneFrames,
   frameFromDecision,
 } from './laneDecision.ts'
+import { laneRegion } from './laneHeader.ts'
 import {
   clipGroupToAnchor,
   frameReach,
@@ -745,35 +746,31 @@ test('a lane slides to line its orthologs up with the lane above', () => {
   expect(Math.max(...offsets)).toBeLessThanOrEqual(8)
 })
 
-test('the aligned frame still covers the placements it was fitted to', () => {
-  const groups = groupFeatures([
-    pairFeature({
-      uniqueId: '1',
-      name: 'g1',
-      start: 900,
-      end: 960,
-      mate: {
-        assemblyName: 'peach',
-        refName: 'Pp1',
-        start: 500000,
-        end: 500060,
-        name: 'p1',
-      },
-    }),
-    pairFeature({
-      uniqueId: '2',
-      name: 'g2',
-      start: 940,
-      end: 1000,
-      mate: {
-        assemblyName: 'peach',
-        refName: 'Pp1',
-        start: 500700,
-        end: 500760,
-        name: 'p2',
-      },
-    }),
-  ])
+// Aligned on the median, a lane whose sequence runs longer than the anchor's
+// leaves the far end of its fit off the frame's edge rather than slanting
+// every ribbon to keep it on
+test('the aligned frame lines up the median placement even past its fit', () => {
+  const groups = groupFeatures(
+    [
+      [100, 500_000],
+      [500, 500_400],
+      [900, 500_900],
+    ].map(([start, mateStart], i) =>
+      pairFeature({
+        uniqueId: `${i}`,
+        name: `g${i}`,
+        start: start!,
+        end: start! + 60,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: mateStart!,
+          end: mateStart! + 60,
+          name: `p${i}`,
+        },
+      }),
+    ),
+  )
   const frame = alignRowFrames(
     groups,
     ['peach'],
@@ -781,8 +778,9 @@ test('the aligned frame still covers the placements it was fitted to', () => {
     1000,
     800,
   ).get('peach')!
-  expect(frame.min).toBeLessThanOrEqual(500000)
-  expect(frame.max).toBeGreaterThanOrEqual(500760)
+  expect(rowFrameX(frame, 500_030, 800)).toBeCloseTo(anchorSeedX(130, 800))
+  expect(rowFrameX(frame, 500_430, 800)).toBeCloseTo(anchorSeedX(530, 800))
+  expect(frame.max).toBeLessThan(frame.fitMax)
 })
 
 // The center snap can move a frame by half a grid step, which is more than the
@@ -908,10 +906,10 @@ test('the lane fetch window covers every position the frame can slide to', () =>
   }
 })
 
-// The ladder rounds a lane's span UP and then snaps its center to an eighth of
-// that span, and both moves push `min` down. Near a contig start that took it
-// below zero: the lane header printed `Pp1:-139` and `frameTickXs` walked from
-// a negative bp, so the lane stated a coordinate its contig does not have.
+// A frame centred on a fit near a contig start reaches below zero, where the
+// lane draws blank the way the anchor's window does past a chromosome end.
+// What the lane states and asks for stops at zero: the header's region
+// (`laneRegion`), the ticks and the gene fetch.
 describe('a lane frame near a contig start', () => {
   function nearZeroGroups(start: number) {
     return groupFeatures([
@@ -945,11 +943,18 @@ describe('a lane frame near a contig start', () => {
   }
 
   test.each([0, 60, 100, 500, 5000])(
-    'stays at or above zero with placements from %ibp',
+    'centres on its placements from %ibp and states no negative coordinate',
     start => {
       const frame = computeRowFrame(nearZeroGroups(start), 'peach', 1000)!
-      expect(frame.min).toBeGreaterThanOrEqual(0)
+      expect((frame.min + frame.max) / 2).toBeCloseTo(start + 300)
       expect(frame.fitMin).toBeGreaterThanOrEqual(0)
+      expect(laneRegion({ frame, canon: ref => ref })!.start).toBe(
+        Math.max(0, Math.round(frame.min)),
+      )
+      expect(laneFetchRegion(frame).start).toBeGreaterThanOrEqual(0)
+      for (const x of frameTickXs(frame, 200, 800)) {
+        expect(x).toBeGreaterThanOrEqual(rowFrameX(frame, 0, 800))
+      }
     },
   )
 
@@ -957,12 +962,6 @@ describe('a lane frame near a contig start', () => {
     const away = computeRowFrame(nearZeroGroups(50_000), 'peach', 1000)!
     const atZero = computeRowFrame(nearZeroGroups(0), 'peach', 1000)!
     expect(atZero.max - atZero.min).toBeCloseTo(away.max - away.min, 6)
-  })
-
-  test('still covers the placements it was fitted to', () => {
-    const frame = computeRowFrame(nearZeroGroups(0), 'peach', 1000)!
-    expect(frame.min).toBe(0)
-    expect(frame.max).toBeGreaterThanOrEqual(600)
   })
 })
 
@@ -1175,13 +1174,10 @@ describe('a group placed twice on one lane', () => {
   })
 })
 
-// The fit-side guard is `snapFrameToLadder`'s; this is the other half. The
-// alignment shift is clamped to the slack the rung left over the fitted extent,
-// which for a lane whose placements fill a fraction of its rung is most of the
-// span — so a lane that fits near a contig start could be slid back below zero
-// after being placed, and the header printed a coordinate the contig does not
-// have.
-test('the alignment shift cannot slide a lane below zero', () => {
+// The alignment shift is unclamped, so a lane whose contig starts inside the
+// anchor window slides below zero to put its genes under their homologs, and
+// the fetch still asks for nothing there
+test('the alignment shift slides a lane below zero to line it up', () => {
   const groups = groupFeatures([
     pairFeature({
       uniqueId: '1',
@@ -1211,8 +1207,6 @@ test('the alignment shift cannot slide a lane below zero', () => {
     }),
   ])
   const width = 800
-  // the anchor draws this pair at the RIGHT of the canvas while the lane fits
-  // them at its left, so the offset pass wants to slide the lane left
   const frame = alignRowFrames(
     groups,
     ['peach'],
@@ -1220,8 +1214,9 @@ test('the alignment shift cannot slide a lane below zero', () => {
     1000,
     width,
   ).get('peach')!
-  expect(frame.min).toBeGreaterThanOrEqual(0)
-  expect(frame.max).toBeGreaterThanOrEqual(frame.fitMax)
+  expect(frame.min).toBeLessThan(0)
+  expect(rowFrameX(frame, 550, width)).toBeCloseTo(anchorSeedX(950, width))
+  expect(laneFetchRegion(frame).start).toBe(0)
 })
 
 // `rowFrameX` extrapolates, so an unclipped endpoint sweeps a ribbon across the page

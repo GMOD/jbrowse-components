@@ -1,5 +1,3 @@
-import { clamp } from '@jbrowse/core/util'
-
 import {
   OUTLIER_REACH,
   keepNearMedian,
@@ -65,7 +63,9 @@ export interface LaneFlipPin {
 export const SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]
 
 // a lane drops to a lower rung only once its fit leaves this much of that rung
-// unused, so a fit hovering at a rung boundary does not rescale on every step
+// unused, so a fit hovering at a rung boundary does not rescale on every step.
+// Floored at 1, the least a need can be, or a lane at 1.5 could never return
+// to 1
 const SHRINK_ROOM = 0.85
 const MIN_SHARED_FOR_ORIENTATION = 3
 // the groups a lane's mirror vote has to be measured over, since three genes
@@ -89,24 +89,23 @@ const ALSO_ON_SHARE = 0.2
 // the reader cannot act on anyway. The rest are counted in the header rather
 // than dropped silently, so the caption never reads as the whole list.
 const ALSO_ON_MAX = 3
-// a lane keeps its placement while its frame still shows this much of the
-// placed weight: content that came in with the anchor is drawn where it
-// arrived, and the lane re-aligns only once what it should show has left it
+// a lane keeps its placement while its frame still shows this share of what a
+// fresh alignment would: content that came in with the anchor is drawn where it
+// arrived, and the lane re-aligns only once what it should show has left it.
+// Relative, since a lane aligned on its median can overhang its frame from the
+// start and would otherwise re-decide on every pan
 const HOLD_COVERAGE = 0.9
 
 function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
-// A rung covers a fit it is within this much of. The ladder's bottom step is
-// 50% wide, so with no tolerance at all a lane whose own sequence runs a
-// fraction of a percent longer than the anchor's window buys half a window of
-// blank lane to show the difference in — one HPRC haplotype at the CFH cluster
-// has a 541bp insertion in 260kb, and sat at 1.5x for it. What the frame then
-// leaves out is TOLERANCE of the fit however far out the lane is drawn, and the
-// frame is that fit's own rung over the same width, so the cost is a fixed few
-// px at either edge of the lane whatever the rung — against half of it empty.
-const RUNG_TOLERANCE = 0.01
+// A rung covers a fit up to a tenth wider than itself, the overrun falling off
+// the lane's edges the way the anchor window cuts its own neighbours. Rung 1.5
+// leaves a third of the lane blank, too much to pay for the few percent more
+// sequence a mammal's liftOver places over a human window (up to 7.5% at
+// TNNT3)
+const RUNG_TOLERANCE = 0.1
 
 const rungCovers = (rung: number, need: number) =>
   rung * (1 + RUNG_TOLERANCE) >= need
@@ -117,7 +116,9 @@ export function pickRung(need: number, incumbent?: number) {
     return up
   }
   const below = SCALE_LADDER.filter(r => r < incumbent).at(-1)
-  return below !== undefined && need <= below * SHRINK_ROOM ? up : incumbent
+  return below !== undefined && need <= Math.max(below * SHRINK_ROOM, 1)
+    ? up
+    : incumbent
 }
 
 function pickContig(
@@ -272,7 +273,7 @@ function fitLane(
   const rung =
     unitBp > 0 ? pickRung(Math.max(hi - lo, unitBp) / unitBp, held?.rung) : 0
   const span = unitBp > 0 ? rung * unitBp : hi - lo
-  const min = Math.max(0, (lo + hi) / 2 - span / 2)
+  const min = (lo + hi) / 2 - span / 2
   return {
     rung,
     pinned: contig.refName === pinned,
@@ -442,7 +443,9 @@ function decideOrientation(
 }
 
 // the frame slid so its shared groups sit under the lane above's, by the
-// weighted median displacement, as far as the rung's room over the fit allows
+// weighted median displacement. Unclamped: a fit wider than its rung, or a
+// contig starting inside the window, leaves part of the fit off an edge or
+// blank lane past the contig's end, and the homologs still line up
 function alignFrameTo(
   upperX: Map<string, number>,
   lane: LanePlacement[],
@@ -458,25 +461,22 @@ function alignFrameTo(
   if (!samples.length) {
     return frame
   }
-  const span = frame.max - frame.min
-  const shift = clamp(
-    ((frame.flipped ? 1 : -1) * weightedMedian(samples) * span) / width,
-    Math.max(Math.min(0, frame.fitMax - frame.max), -frame.min),
-    Math.max(0, frame.fitMin - frame.min),
-  )
+  const shift =
+    ((frame.flipped ? 1 : -1) *
+      weightedMedian(samples) *
+      (frame.max - frame.min)) /
+    width
   return { ...frame, min: frame.min + shift, max: frame.max + shift }
 }
 
-function coverageOf(placements: LanePlacement[], min: number, max: number) {
+function weightInside(placements: LanePlacement[], frame: RowFrame) {
   let inside = 0
-  let total = 0
   for (const p of placements) {
-    total += p.weight
-    if (p.center >= min && p.center <= max) {
+    if (p.center >= frame.min && p.center <= frame.max) {
       inside += p.weight
     }
   }
-  return total > 0 ? inside / total : 0
+  return inside
 }
 
 function laneBpAt(frame: RowFrame, px: number, width: number) {
@@ -657,7 +657,8 @@ export function decideLaneFrames({
         anchorReversed,
       )
       if (
-        coverageOf(placements, heldFrame.min, heldFrame.max) >= HOLD_COVERAGE
+        weightInside(placements, heldFrame) >=
+        HOLD_COVERAGE * weightInside(placements, aligned)
       ) {
         decision = sameDecision(held, carried) ? held : carried
       }

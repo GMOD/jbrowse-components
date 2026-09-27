@@ -91,10 +91,9 @@ export interface RowFrame {
   min: number
   max: number
   flipped: boolean
-  // the extent the frame was fitted to, before the ladder rounded its span up.
-  // The frame may slide anywhere that still covers this, and that difference is
-  // the freedom `decideLaneFrames` works in — nil, and the extent a hair wider
-  // than the frame, where `RUNG_TOLERANCE` called a rung close enough
+  // the extent the frame was fitted to, before the ladder rounded its span.
+  // The alignment slides the frame off its centre, so part of this can fall
+  // past either edge
   fitMin: number
   fitMax: number
   // the lane's other contigs explaining a comparable share of the anchor
@@ -498,11 +497,9 @@ export function groupRunSpansOnRow(
   })
 }
 
-// Every bp position a lane's frame can occupy. The frame covers [fitMin,
-// fitMax] and its span is fixed by the ladder rung, so the alignment shift can
-// only slide it inside this window — which makes the window itself independent
-// of both the shift and the viewport width. A frame `RUNG_TOLERANCE` narrower
-// than its own fit cannot slide at all, and this collapses onto it.
+// The frame joined with every position its span can take while covering
+// [fitMin, fitMax], so an alignment shift inside that range leaves the fetch
+// where it was, whatever the viewport width
 export function laneFetchWindow(frame: RowFrame) {
   const span = frame.max - frame.min
   return {
@@ -511,9 +508,10 @@ export function laneFetchWindow(frame: RowFrame) {
   }
 }
 
-// The region a lane's dependent fetches ask for: the window the frame can slide
-// in plus the half screen `frameReach` draws either side of it, widened to a
-// power-of-two grid so a sub-grid pan reuses the last fetch.
+// The region a lane's dependent fetches ask for: `laneFetchWindow` plus the
+// half screen `frameReach` draws either side of it, widened to a power-of-two
+// grid so a sub-grid pan reuses the last fetch, and never below 0, which a
+// lane whose contig starts inside the window draws as blank.
 // Keyed on the window rather than the frame because the frame moves with the
 // alignment shift and with the viewport width, and a lane must not refetch its
 // annotation because the browser window was resized.

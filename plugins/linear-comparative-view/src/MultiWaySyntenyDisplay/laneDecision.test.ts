@@ -47,15 +47,18 @@ function decide(
     pinned,
     pinnedFlips,
     anchorReversed = false,
+    panBp = 0,
   }: {
     assemblyNames?: string[]
     previous?: Map<string, LaneDecision | undefined>
     pinned?: Map<string, string>
     pinnedFlips?: Map<string, LaneFlipPin>
     anchorReversed?: boolean
+    panBp?: number
   } = {},
 ) {
-  const pxOf = (bp: number) => (anchorReversed ? WIDTH - px(bp) : px(bp))
+  const pxOf = (bp: number) =>
+    anchorReversed ? WIDTH - px(bp - panBp) : px(bp - panBp)
   return decideLaneFrames({
     groups,
     assemblyNames,
@@ -148,31 +151,36 @@ describe('a settled lane under the view transform', () => {
 describe('the ladder rung', () => {
   test('rounds a fresh fit up', () => {
     expect(pickRung(1.2)).toBe(1.5)
-    expect(pickRung(1.6)).toBe(2)
+    expect(pickRung(1.7)).toBe(2)
     expect(pickRung(100)).toBe(100)
   })
   test('grows when the fit no longer fits', () => {
-    expect(pickRung(1.6, 1.5)).toBe(2)
+    expect(pickRung(1.7, 1.5)).toBe(2)
   })
-  test('holds a rung the fit still nearly fills', () => {
-    expect(pickRung(1, 1.5)).toBe(1.5)
+  test('holds a rung until the one below has clear room', () => {
+    expect(pickRung(1.05, 1.5)).toBe(1.5)
     expect(pickRung(1.4, 2)).toBe(2)
   })
   test('drops only once a lower rung has clear room', () => {
     expect(pickRung(1, 2)).toBe(1)
     expect(pickRung(1.3, 3)).toBe(1.5)
   })
+  // a need is never under 1, so SHRINK_ROOM's 0.85 alone never let a lane
+  // back down from 1.5
+  test('drops to 1x once the fit fits the window', () => {
+    expect(pickRung(1, 1.5)).toBe(1)
+  })
 
-  // The step from 1 to 1.5 is half a window wide, so a fit that overruns a rung
-  // by a fraction of a percent must not buy the whole step. HG00133 at the HPRC
-  // CFH cluster is the case: 260,607bp of its own sequence against the
-  // 260,066bp window, a 541bp insertion, and it drew at 1.5x with 130kb of the
-  // lane blank.
-  test('a fit a fraction of a percent over a rung still sits on that rung', () => {
+  // Rung 1.5 leaves a third of the lane blank. HG00133 at the HPRC CFH cluster
+  // overruns the window by 0.2%, a 541 bp insertion in 260 kb; the primate
+  // liftOver lanes at TNNT3 by 1.6-7.5%. Gibbon's 28% still buys the step.
+  test('a fit up to a tenth over a rung still sits on that rung', () => {
     expect(pickRung(260_607 / 260_066)).toBe(1)
-    expect(pickRung(1.05)).toBe(1.5)
-    expect(pickRung(2.01)).toBe(2)
-    expect(pickRung(2.1)).toBe(3)
+    expect(pickRung(1.04)).toBe(1)
+    expect(pickRung(1.075)).toBe(1)
+    expect(pickRung(1.278)).toBe(1.5)
+    expect(pickRung(2.19)).toBe(2)
+    expect(pickRung(2.25)).toBe(3)
   })
 
   // what the tolerance costs, stated: the lane is the window and the overrun
@@ -223,6 +231,26 @@ describe('the ladder rung', () => {
     ])
     const frame = computeRowFrame(exact, 'peach', SPAN_BP)!
     expect(frame.max - frame.min).toBe(SPAN_BP)
+  })
+
+  test('a lane 4% longer than the window sits at 1x', () => {
+    const longer = groupFeatures([
+      new SimpleFeature({
+        uniqueId: 'whole-window',
+        refName: 'chr1',
+        start: 0,
+        end: SPAN_BP,
+        strand: 1,
+        assemblyName: 'anchor',
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 500_000,
+          end: 500_000 + 1.04 * SPAN_BP,
+        },
+      }),
+    ])
+    expect(settle(longer).rung).toBe(1)
   })
 })
 
@@ -575,7 +603,7 @@ describe('the placement', () => {
   })
 
   test('a zoom that changes the rung keeps the pivot while the frame still shows the content', () => {
-    // ten collinear genes: at a 900 bp window the fit needs rung 1.5, and
+    // ten collinear genes: at an 850 bp window the fit needs rung 1.5, and
     // the frame pinned at the old pivot still covers every one of them
     const dense = groupFeatures(
       Array.from({ length: 10 }, (_, i) =>
@@ -583,7 +611,7 @@ describe('the placement', () => {
       ),
     )
     const wide = settle(dense)
-    const zoomedPx = (bp: number) => (bp / 900) * WIDTH
+    const zoomedPx = (bp: number) => (bp / 850) * WIDTH
     const zoomed = decideLaneFrames({
       groups: dense,
       assemblyNames: ['peach'],
@@ -595,7 +623,7 @@ describe('the placement', () => {
         coord: (g.anchor.start + g.anchor.end) / 2,
       }),
       pxOfAnchor: c => zoomedPx(c.coord),
-      unitBp: 900,
+      unitBp: 850,
       width: WIDTH,
       previous: new Map([['peach', wide]]),
     }).get('peach')!
@@ -620,6 +648,61 @@ function frameOf(decision: LaneDecision, anchorReversed = false) {
     anchorReversed,
   )
 }
+
+// The alignment slides a lane by the weighted-median displacement of its
+// placements from the anchor's, however much of the fit that leaves off an
+// edge. Clamped to keep the fit inside the frame, a 1x lane whose fit was
+// about the window had no room to move, and its ribbons slanted by the whole
+// skew: 60-150 px of 1288 across the TNNT3 primates.
+describe('a lane aligned past its fit', () => {
+  const anchors = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+  // a 150 bp insertion on the lane after its third gene
+  const inserted = groupFeatures(
+    anchors.map((start, i) =>
+      pair(`${i}`, `g${i}`, start, {
+        start: 500_000 + start + (start > 300 ? 150 : 0),
+      }),
+    ),
+  )
+  const mateMid = (start: number) => 500_030 + start + (start > 300 ? 150 : 0)
+
+  test('puts its median at zero offset, the minority off by the insertion', () => {
+    const decision = settle(inserted)
+    expect(decision.rung).toBe(1)
+    const frame = frameOf(decision)
+    for (const start of anchors) {
+      expect(rowFrameX(frame, mateMid(start), WIDTH)).toBeCloseTo(
+        start > 300 ? px(start + 30) : px(start + 30 - 150),
+      )
+    }
+    expect(frame.min).toBeGreaterThan(decision.fitMin)
+  })
+
+  // the fresh alignment leaves the lane's first gene outside the frame, under
+  // 90% of the lane's weight from the start; measured against all of it, the
+  // hold would fail on every pan and hop the pivot to whichever gene sat
+  // nearest the middle
+  test('holds its decision across a pan', () => {
+    const first = decide(inserted)
+    const panned = decide(inserted, { previous: first, panBp: 90 })
+    expect(panned.get('peach')).toBe(first.get('peach'))
+  })
+
+  test('starts below zero where its contig starts inside the window', () => {
+    const startsMidWindow = groupFeatures(
+      anchors
+        .filter(start => start >= 500)
+        .map((start, i) =>
+          pair(`${i}`, `g${i}`, start, { start: start - 480 }),
+        ),
+    )
+    const frame = frameOf(settle(startsMidWindow))
+    expect(frame.min).toBeCloseTo(-480)
+    for (const start of anchors.filter(start => start >= 500)) {
+      expect(rowFrameX(frame, start - 450, WIDTH)).toBeCloseTo(px(start + 30))
+    }
+  })
+})
 
 // A group the lane places twice was one sample over the two copies' bounding
 // box, weighted by its width: two copies 300 bp apart in a 1000 bp frame
