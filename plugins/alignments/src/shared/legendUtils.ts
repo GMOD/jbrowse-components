@@ -387,8 +387,8 @@ const CATEGORY_LABELS: Partial<Record<ReadColorCategory, string>> =
 // framing: the raw table says "Forward strand", and a framed swatch is not about
 // the read's own strand, so a consumer that skips the overrides tells the user
 // the one thing the legend was just fixed for saying. The read hover is the
-// caller that made this matter; the arc hover has no framing to apply and passes
-// nothing.
+// caller that made this matter; the arc hover goes through
+// `arcColorCategoryLabel`, the arc key's wording.
 export function readColorCategoryLabel(
   category: ReadColorCategory,
   overrides: Partial<Record<ReadColorCategory, string>> = {},
@@ -713,6 +713,30 @@ function getOverlapLegendItem(
   }
 }
 
+// The arcs' wording of the shared table: a curve is drawn for split reads of
+// either kind, so it names the junction, not a paired-end read.
+function arcLabelOverrides(
+  interchromFromMatePair: boolean,
+): Partial<Record<SwatchCategory, string>> {
+  return interchromFromMatePair
+    ? { ...SPLIT_JUNCTION_LABELS, interchrom: undefined }
+    : SPLIT_JUNCTION_LABELS
+}
+
+/**
+ * The name one arc colour bucket goes by, in the arc key's wording, so an arc
+ * hover and the swatch it sends the reader to say the same thing.
+ */
+export function arcColorCategoryLabel(
+  category: ReadColorCategory,
+  interchromFromMatePair: boolean,
+) {
+  return readColorCategoryLabel(
+    category,
+    arcLabelOverrides(interchromFromMatePair),
+  )
+}
+
 /**
  * The complete key for the paired-end arc / read-cloud colors.
  * `getAlignmentsColorScales` merges it with the read key where they share a
@@ -727,9 +751,7 @@ export function getArcLegendItems(
   return bucketItems(
     presentCategories,
     palette,
-    interchromFromMatePair
-      ? { ...SPLIT_JUNCTION_LABELS, interchrom: undefined }
-      : SPLIT_JUNCTION_LABELS,
+    arcLabelOverrides(interchromFromMatePair),
   )
 }
 

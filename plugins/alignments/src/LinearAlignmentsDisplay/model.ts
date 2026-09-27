@@ -94,6 +94,7 @@ import {
   LEGEND_MAX_WIDTH,
   colorRampScales,
   getAlignmentsColorScales,
+  arcColorCategoryLabel,
   getArcLegendItems,
   getReadDisplayLegendItems,
   readCategoryLabelOverrides,
@@ -2588,6 +2589,16 @@ export default function stateModelFactory(
             self.framesChainStrand,
           )
           return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
+        },
+        /**
+         * #getter
+         * Names one arc color bucket for the hover in the arc key's wording,
+         * so the tooltip and the swatch it sends the reader to agree.
+         */
+        get arcCategoryLabel() {
+          const { interchromFromMatePair } = self.arcsResult
+          return (c: ReadColorCategory) =>
+            arcColorCategoryLabel(c, interchromFromMatePair)
         },
       }))
       .views(self => ({

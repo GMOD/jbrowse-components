@@ -6,7 +6,6 @@ import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
-import { readColorCategoryLabel } from '../../shared/legendUtils.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 import {
   openCigarWidget,
@@ -207,7 +206,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           : formatArcTooltip(
               hit,
               refName,
-              readColorCategoryLabel(
+              model.arcCategoryLabel(
                 arcSlotCategory(hit.colorType, model.arcColorField),
               ),
               hit.endRefName,

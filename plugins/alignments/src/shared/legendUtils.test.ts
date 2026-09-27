@@ -13,6 +13,7 @@ import { qualityRampCss } from '../features/perBaseQuality/colors.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
+  arcColorCategoryLabel,
   bakedRampScale,
   colorRampScales,
   getAlignmentsColorScales,
@@ -829,6 +830,27 @@ describe('getArcLegendItems', () => {
       ).map(i => i.label)
     expect(labels(false)).toEqual(['Split alignment (interchromosomal)'])
     expect(labels(true)).toEqual(['Inter-chromosomal'])
+  })
+
+  // The arc hover names the bucket under the cursor; it has to say what the
+  // swatch the reader looks up says, which the read table's wording did not.
+  test('an arc hover names each bucket as the arc key does', () => {
+    const buckets: ReadColorCategory[] = [
+      'splitInversion',
+      'splitDeletion',
+      'interchrom',
+      'longInsert',
+      'pairRL',
+    ]
+    for (const fromMatePair of [false, true]) {
+      expect(buckets.map(c => arcColorCategoryLabel(c, fromMatePair))).toEqual(
+        buckets.map(
+          c =>
+            getArcLegendItems(new Set([c]), makeTestPalette(), fromMatePair)[0]!
+              .label,
+        ),
+      )
+    }
   })
 
   // Short insert used to be the one bucket the reads and the arcs painted in
