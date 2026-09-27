@@ -251,40 +251,42 @@ export function groupSpansLanes(group: MultiWayGroup) {
 
 // Mate assemblies densest-first over the anchor-sorted groups: a ribbon
 // connects ADJACENT lanes only, so a near-empty lane sitting mid-stack cuts the
-// chains of every denser lane below it. Density is the summed group weight of
-// a lane's placements — one per gene on a named table, anchor bp on an
-// alignment source — so a haplotype whose one alignment runs through the
-// window outranks one whose alignment breaks into two shorter records, where a
-// count of placements had put the broken one on top. Weighed over the whole
-// fetched block set rather than the viewport, so the order holds still across
-// the pans that keep one fetch. `preferred` (the display's domain) pins the
-// lanes it names to the top, in its order — joined on `keyOf`, the canonical
-// name, because a session spec spells an assembly the way the session does
-// while a placement spells it the way the table's BED did.
+// chains of every denser lane below it. A lane's density is its heaviest
+// contig's evidence, what `pickContig` votes with — one per gene on a named
+// table, anchor bp on an alignment — since a lane draws one contig, and a
+// genome scattering the window over ten scaffolds is as sparse as the one it
+// shows. Weighed over the whole fetched block set rather than the viewport, so
+// the order holds still across the pans that keep one fetch. `preferred` (the
+// display's domain) pins the lanes it names to the top, in its order — joined
+// on `keyOf`, the canonical name, because a session spec spells an assembly
+// the way the session does while a placement spells it the way the table's BED
+// did.
 export function rowAssembliesOf(
   groups: MultiWayGroup[],
   preferred: string[],
   keyOf: (assemblyName: string) => string = name => name,
 ) {
-  const appearance = new Map<string, number>()
-  const placedWeight = new Map<string, number>()
+  const evidence = new Map<string, Map<string, number>>()
   for (const group of groups) {
     for (const [assemblyName, placements] of group.mates) {
-      if (!appearance.has(assemblyName)) {
-        appearance.set(assemblyName, appearance.size)
+      let byContig = evidence.get(assemblyName)
+      if (!byContig) {
+        byContig = new Map()
+        evidence.set(assemblyName, byContig)
       }
-      placedWeight.set(
-        assemblyName,
-        (placedWeight.get(assemblyName) ?? 0) +
-          placements.length * group.weight,
-      )
+      for (const p of placements) {
+        byContig.set(p.refName, (byContig.get(p.refName) ?? 0) + group.weight)
+      }
     }
   }
-  const present = [...appearance.keys()].sort(
-    (a, b) =>
-      placedWeight.get(b)! - placedWeight.get(a)! ||
-      appearance.get(a)! - appearance.get(b)!,
-  )
+  const present = [...evidence]
+    .map(([assemblyName, byContig], appearance) => ({
+      assemblyName,
+      appearance,
+      density: Math.max(0, ...byContig.values()),
+    }))
+    .sort((a, b) => b.density - a.density || a.appearance - b.appearance)
+    .map(lane => lane.assemblyName)
   const byKey = new Map<string, string[]>()
   for (const assemblyName of present) {
     const key = keyOf(assemblyName)

@@ -325,6 +325,42 @@ test('a lane placing two short alignment records sorts below one placing a singl
   expect(rowAssembliesOf(groups, [])).toEqual(['whole', 'broken'])
 })
 
+// A lane draws one contig. Platypus at TNNT3 places 96 records over ten
+// contigs and the one its lane draws holds four, and summed over every contig
+// it ranked above baboon, whose one contig holds the window.
+test('a lane scattered over many contigs sorts by the one it draws', () => {
+  const record = (
+    uniqueId: string,
+    start: number,
+    mate: { assemblyName: string; refName: string; start: number },
+  ) =>
+    pairFeature({
+      uniqueId,
+      start,
+      end: start + 100,
+      mate: { ...mate, end: mate.start + 100 },
+    })
+  const scattered = Array.from({ length: 10 }, (_, contig) =>
+    Array.from({ length: 3 }, (_, i) =>
+      record(`platypus-${contig}-${i}`, 3000 * contig + 1000 * i, {
+        assemblyName: 'platypus',
+        refName: `scaffold_${contig}`,
+        start: 1000 * i,
+      }),
+    ),
+  ).flat()
+  const dense = Array.from({ length: 8 }, (_, i) =>
+    record(`baboon-${i}`, 500 + 3000 * i, {
+      assemblyName: 'baboon',
+      refName: 'chr14',
+      start: 500 + 3000 * i,
+    }),
+  )
+  const groups = groupFeatures([...scattered, ...dense])
+  expect(rowAssembliesOf(groups, [])).toEqual(['baboon', 'platypus'])
+  expect(rowAssembliesOf(groups, ['platypus'])).toEqual(['platypus', 'baboon'])
+})
+
 // The clip cuts a record at every large indel into runs numbered after the
 // window on both ids, so each run is its own group with its own anchor and
 // mate intervals — the shape every ribbon and composed link reads — and the
