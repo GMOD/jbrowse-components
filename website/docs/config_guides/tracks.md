@@ -140,7 +140,7 @@ The display types, grouped by the track type they attach to:
 | Track type | Display types |
 | --- | --- |
 | [](/docs/config/alignmentstrack) | [](/docs/config/linearalignmentsdisplay)<br/>[](/docs/config/linearmarkdisplay) |
-| [](/docs/config/featuretrack) | [](/docs/config/linearbasicdisplay)<br/>[](/docs/config/linearmanhattandisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearmultirowfeaturedisplay)<br/>[](/docs/config/linearscoredisplay) |
+| [](/docs/config/featuretrack) | [](/docs/config/linearbasicdisplay)<br/>[](/docs/config/linearmanhattandisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearmultirowfeaturedisplay)<br/>[](/docs/config/linearscoredisplay)<br/>[](/docs/config/linearwiggledisplay) |
 | [](/docs/config/gccontenttrack) | [](/docs/config/linearwiggledisplay) |
 | [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) |
 | [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) |

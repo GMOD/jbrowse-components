@@ -667,7 +667,7 @@ exports[`every registered schema slot default 1`] = `
     "showGeneLabels": "boolean = true",
     "showLaneTicks": "boolean = true",
     "showLegend": "boolean = true",
-    "splitStrands": "boolean = false",
+    "splitStrands": "boolean = true",
     "text": "featureField = """,
     "utrColor": "color = "#357089"",
   },

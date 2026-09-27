@@ -71,6 +71,7 @@ Every FeatureTrack has a unique `trackId`, a required top-level field that ident
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay) ([state model](../../models/linearmarkdisplay))
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay) ([state model](../../models/linearmultirowfeaturedisplay))
 - **Display:** [LinearScoreDisplay](../linearscoredisplay) ([state model](../../models/linearscoredisplay))
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay) ([state model](../../models/linearwiggledisplay))
 - **Adapter:** [BedAdapter](../bedadapter)
 - **Adapter:** [BedTabixAdapter](../bedtabixadapter)
 - **Adapter:** [BigBedAdapter](../bigbedadapter)

@@ -38,11 +38,14 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
           ),
         // The quantitative track types draw the same picture; they differ in
         // adapter shorthand, add-track workflow and, for GC content, the
-        // adapter that computes the signal.
+        // adapter that computes the signal. `FeatureTrack` alongside them is
+        // the same reason LinearManhattanDisplay lists it: a track whose
+        // adapter carries a numeric field can plot it here too.
         trackType: [
           'QuantitativeTrack',
           'MultiQuantitativeTrack',
           'GCContentTrack',
+          'FeatureTrack',
         ],
         viewType: 'LinearGenomeView',
         ReactComponent,

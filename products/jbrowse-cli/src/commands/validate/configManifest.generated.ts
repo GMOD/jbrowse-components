@@ -1786,6 +1786,7 @@ export const configManifest: ConfigManifest = {
       "displayTypes": [
         "LinearBasicDisplay",
         "LinearMultiRowFeatureDisplay",
+        "LinearWiggleDisplay",
         "LinearManhattanDisplay",
         "LinearMarkDisplay"
       ]

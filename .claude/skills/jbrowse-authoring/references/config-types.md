@@ -18,7 +18,7 @@ inference.
 
 - [FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack.md) —
   displays: LinearBasicDisplay, LinearMultiRowFeatureDisplay,
-  LinearManhattanDisplay, LinearMarkDisplay
+  LinearWiggleDisplay, LinearManhattanDisplay, LinearMarkDisplay
 - [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
   displays: LinearAlignmentsDisplay, LinearMarkDisplay
 - [ReferenceSequenceTrack](https://jbrowse.org/jb2/docs/config/referencesequencetrack.md)

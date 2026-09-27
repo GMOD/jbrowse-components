@@ -60,6 +60,7 @@ sequence changes.
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots
 

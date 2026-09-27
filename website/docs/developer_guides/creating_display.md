@@ -33,6 +33,7 @@ past `LinearGenomeView`:
 |  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmultirowfeaturedisplay) | LinearGenomeView |
 |  | [](/docs/config/linearscoredisplay) | LinearGenomeView |
+|  | [](/docs/config/linearwiggledisplay) | LinearGenomeView |
 | [](/docs/config/gccontenttrack) | [](/docs/config/linearwiggledisplay) | LinearGenomeView |
 | [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) | LinearGenomeView |
 | [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) | LinearGenomeView |

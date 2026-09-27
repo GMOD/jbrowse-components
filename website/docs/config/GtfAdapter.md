@@ -46,6 +46,7 @@ into memory, so prefer the GtfTabixAdapter for large files.
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots
 

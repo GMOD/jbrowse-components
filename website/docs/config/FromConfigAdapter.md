@@ -36,6 +36,7 @@ small feature sets added via a URL or session spec
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots
 

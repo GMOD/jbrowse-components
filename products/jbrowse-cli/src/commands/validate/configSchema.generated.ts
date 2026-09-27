@@ -8712,6 +8712,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/height"
                 },
                 {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/height"
+                },
+                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/height"
                 },
                 {
@@ -8792,6 +8795,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showLegend"
                 },
                 {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showLegend"
+                },
+                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
                 },
                 {
@@ -8815,6 +8821,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
                 }
               ]
             },
@@ -8925,6 +8934,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rows"
                 },
                 {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
+                },
+                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rows"
                 },
                 {
@@ -8944,6 +8956,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowColor"
                 },
                 {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
+                },
+                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowColor"
                 },
                 {
@@ -8958,7 +8973,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
             },
             "showRowSeparators": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowSeparators"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowSeparators"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+                }
+              ]
             },
             "colorRowLabels": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/colorRowLabels"
@@ -8970,6 +8992,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "anyOf": [
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
                 },
                 {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showTree"
@@ -8985,6 +9010,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showBranchLength"
                 },
                 {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+                },
+                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showBranchLength"
                 },
                 {
@@ -8996,6 +9024,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "anyOf": [
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
                 },
                 {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showRowLabels"
@@ -9011,12 +9042,94 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/treeAreaWidth"
                 },
                 {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+                },
+                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
                 }
               ]
+            },
+            "mark": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mark"
+            },
+            "interpolate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
+            },
+            "scoreField": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
+            },
+            "resolution": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
+            },
+            "origin": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/origin"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/origin"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+                }
+              ]
+            },
+            "size": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
+            },
+            "maxGapMultiple": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
+            },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            },
+            "displayCrossHatches": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+                }
+              ]
+            },
+            "minimalTicks": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+                }
+              ]
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
             "marks": {
               "anyOf": [
@@ -9038,26 +9151,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scales": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
-                }
-              ]
-            },
-            "origin": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/origin"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
-                }
-              ]
-            },
             "minWidthPx": {
               "anyOf": [
                 {
@@ -9065,26 +9158,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-                }
-              ]
-            },
-            "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
-            },
-            "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
                 }
               ]
             }

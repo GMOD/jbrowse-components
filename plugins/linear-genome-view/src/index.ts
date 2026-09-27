@@ -143,6 +143,9 @@ export type { HighlightRegion } from './LinearGenomeView/model.ts'
 // split view, the two synteny displays and the react-linear-genome-view model
 // all serialize it.
 export type { RegionsOrientation } from './LinearGenomeView/util.ts'
+// Same reason again, for the `editDisplayedRegions` action's parameter: every
+// display whose base track composes this view's type has to name it too.
+export type { RegionEdit } from './LinearGenomeView/util.ts'
 // The scalebar's grid, published because it is a contract other views draw
 // against rather than an internal of this one: the synteny view's location
 // markers continue this ruler down through the ribbons, and pin their pitch AND
