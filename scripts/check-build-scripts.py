@@ -151,7 +151,13 @@ for f in scripts:
     listed = set()
     for arr in re.findall(r"^HELPERS=\((.*?)\)", src, re.S | re.M):
         listed.update(arr.split())
-    for used in sorted(set(re.findall(r'\$(?:SCRIPT_DIR|HERE)/([\w.-]+)', src))):
+    dir_vars = {"SCRIPT_DIR", "HERE"} | {
+        m.group(1)
+        for m in re.finditer(r'^\s*(\w+)=(.*dirname\s+"?\$0.*)$', src, re.M)
+        if ".." not in m.group(2)
+    }
+    dir_ref = r"\$\{?(?:" + "|".join(sorted(dir_vars)) + r")\}?/([\w.-]+)"
+    for used in sorted(set(re.findall(dir_ref, src))):
         if used not in listed:
             print(f"FAIL unlisted helper in {f}: `{used}` is run from the "
                   f"script's own dir but missing from HELPERS")

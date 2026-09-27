@@ -95,7 +95,7 @@ trap 'rm -rf "$TMP"' EXIT
 # bubble` line, in the same order for every sample, so the reference's line N and
 # a sample's line N describe the same bubble and FNR joins them.
 for fa in "$@"; do
-  minigraph -cxasm --call -t"$(nproc)" "$GFA" "$fa" > "$TMP/$(sample_name "$fa").call.bed"
+  minigraph -cxasm --call -t"$(getconf _NPROCESSORS_ONLN)" "$GFA" "$fa" > "$TMP/$(sample_name "$fa").call.bed"
 done
 
 # The last field of a call line is

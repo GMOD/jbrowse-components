@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# TRGT's genotypes for 100 HPRC samples at the ABCA7 intronic VNTR, written as
-# a VCF in TRGT's own format for the pangenome_graph_walk_rows tutorial. The
-# calls come from PacBio's published TRGTdb (Zenodo 8329210); nothing here
-# re-genotypes anything.
+# TRGT's genotypes at the ABCA7 intronic VNTR, written as a VCF in TRGT's own
+# format for the pangenome_hprc_repeats tutorial. The calls come from PacBio's
+# published TRGTdb of 100 HPRC samples (Zenodo 8329210), 94 of which have a call
+# at this locus; nothing here re-genotypes anything.
 #
 # Requires: curl, tar, duckdb, python3, bgzip, tabix
 # Usage:    bash scripts/build_hprc_abca7_trgt.sh [outdir]
@@ -19,16 +19,18 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 if [ ! -d hprc_100.tdb ]; then
-  curl -sL -o adotto_hprc.tdb.tar \
+  curl -fsSL -C - -o adotto_hprc.tdb.tar.part \
     https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar
-  tar xf adotto_hprc.tdb.tar
-  rm adotto_hprc.tdb.tar
+  rm -rf tdb.part && mkdir tdb.part
+  tar xf adotto_hprc.tdb.tar.part -C tdb.part
+  mv tdb.part/hprc_100.tdb hprc_100.tdb
+  rm -rf tdb.part adotto_hprc.tdb.tar.part
 fi
 
-curl -s "https://api.genome.ucsc.edu/getData/sequence?genome=hg38;chrom=$CHROM;start=$((START - 1));end=$END" \
+curl -fsS "https://api.genome.ucsc.edu/getData/sequence?genome=hg38;chrom=$CHROM;start=$((START - 1));end=$END" \
   >ref.json
 
-curl -sL https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz |
+curl -fsSL https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz |
   gzip -dc | awk -v c=$CHROM -v s=$START '$1 == c && $2 == s { print $4 }' \
   >catalogue.txt
 

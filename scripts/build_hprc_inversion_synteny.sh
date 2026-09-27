@@ -94,11 +94,13 @@ if [ -f inv_window_all_haplotypes.paf ]; then
   echo "== reusing inv_window_all_haplotypes.paf"
 else
   echo "== streaming $PAF, keeping GRCh38#0#chr1:$SLICE_START-$SLICE_END"
+  # A .part the guard above cannot mistake for a finished stream.
   curl -fsS "$PAF" \
     | gzip -dc \
     | awk -F'\t' -v s="$SLICE_START" -v e="$SLICE_END" \
         '$6=="GRCh38#0#chr1" && $8 < e && $9 > s' \
-    > inv_window_all_haplotypes.paf
+    > inv_window_all_haplotypes.paf.part
+  mv inv_window_all_haplotypes.paf.part inv_window_all_haplotypes.paf
 fi
 echo "   $(wc -l < inv_window_all_haplotypes.paf) records"
 

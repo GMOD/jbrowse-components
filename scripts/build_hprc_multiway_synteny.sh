@@ -40,10 +40,10 @@
 # Usage:    bash scripts/build_hprc_multiway_synteny.sh [outdir]
 #           SOURCE=taf JOBS=8 CAT_JOBS=4 bash scripts/build_hprc_multiway_synteny.sh
 #           GFA=/data/hprc-v2.1-mc-grch38.gfa.gz bash scripts/build_hprc_multiway_synteny.sh
-#           UPLOAD=1 bash scripts/build_hprc_multiway_synteny.sh   # sync the new
+#           UPLOAD=1 bash scripts/build_hprc_multiway_synteny.sh   # copy the
 #             PIF and chrom.sizes to s3://jbrowse.org/demos/hprc_multiway/,
-#             never overwriting an object already there; config.json goes
-#             through scripts/deploy-demo.sh from the checked-in demos/ copy
+#             skipping any key already there; config.json and the READMEs go
+#             through scripts/deploy-demo.sh from the checked-in demos/ copies
 #
 # Measured 2026-09-05 on 16 cores. gfa: the 63 GB GFA downloads in 38 min
 # (27 MB/s) and the converter streams its 376 GB of text in 1665 s (226 MB/s,
@@ -78,6 +78,11 @@ JOBS="${JOBS:-6}"
 CAT_JOBS="${CAT_JOBS:-4}"
 MAX_GAP="${MAX_GAP:-10000}"
 SCRIPTS=$(cd "$(dirname "$0")" && pwd)
+HELPERS=(gfa_to_pairwise_paf.py maf_to_pairwise_paf.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPTS/$h" ] || curl -fsSL -o "$SCRIPTS/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 export TMPDIR="${TMPDIR:-$PWD/tmp}"
@@ -448,14 +453,19 @@ EOF
   done
 } > "$README"
 
-# Only objects that are not there yet: --size-only skips every key whose size
-# already matches, and nothing but the PIF and the chrom.sizes is included, so
-# an existing build, the annotations and config.json are never touched.
+# The bucket has no versioning, so a key that exists is left alone; the READMEs
+# and config.json go through scripts/deploy-demo.sh from their demos/ copies.
 if [ "${UPLOAD:-}" = 1 ]; then
   echo "== uploading new objects to s3://jbrowse.org/demos/hprc_multiway/"
-  aws s3 sync --size-only --no-progress --exclude '*' \
-    --include "$PIF" --include "$PIF.csi" --include "*.$SIZES" --include "$README" \
-    . s3://jbrowse.org/demos/hprc_multiway/
+  for f in "$PIF" "$PIF.csi" ./*."$SIZES"; do
+    key="demos/hprc_multiway/${f#./}"
+    if aws s3api head-object --bucket jbrowse.org --key "$key" >/dev/null 2>&1; then
+      echo "   $key exists, left alone"
+    else
+      aws s3 cp --no-progress "$f" "s3://jbrowse.org/$key"
+    fi
+  done
+  echo "   copy $README into demos/hprc_multiway/ and deploy it with scripts/deploy-demo.sh"
 fi
 
 echo

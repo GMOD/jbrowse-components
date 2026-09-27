@@ -112,9 +112,9 @@ while IFS=$'\t' read -r name _; do
     #   from its mismatches
     # asm20 tolerates the divergence between paralogous amylase copies, so a
     #   chain can run through the array instead of stopping at it
-    minimap2 -c --eqx -x asm20 "$name.fa" "$prev.fa" 2>/dev/null |
-      # the primary chain of each pair; the secondary ones are paralogous
-      # copies aligning to each other
+    # --secondary=no keeps the primary chain of each pair; the secondary ones
+    #   are paralogous copies aligning to each other
+    minimap2 -c --eqx -x asm20 --secondary=no "$name.fa" "$prev.fa" 2>/dev/null |
       awk -F'\t' '$11>=5000 && /tp:A:P/' >>adjacent.regions.paf
   fi
   prev="$name"

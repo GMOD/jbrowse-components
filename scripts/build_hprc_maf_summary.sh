@@ -81,11 +81,13 @@ if [ ! -s "$raw" ]; then
     bgzip -dc 2>/dev/null |
     awk 'seen||/^a/{seen=1;print}' |
     maf2bed "$ref" --summary "$raw.tmp" > /dev/null 2>"$work/maf2bed.err"
-  # the validity check: DATA rows, not file non-emptiness
-  if [ -s "$raw.tmp" ] && [ "$(tail -n +2 "$raw.tmp" | wc -l)" -gt 0 ]; then
+  read_status=${PIPESTATUS[0]}
+  # a read that died part way still leaves data rows, so both have to hold
+  if [ "$read_status" -eq 0 ] && [ -s "$raw.tmp" ] &&
+    [ "$(tail -n +2 "$raw.tmp" | wc -l)" -gt 0 ]; then
     mv "$raw.tmp" "$raw"
   else
-    echo "FAILED: $(head -c 400 "$work/maf2bed.err")" >&2
+    echo "FAILED (read exited $read_status): $(head -c 400 "$work/maf2bed.err")" >&2
     exit 1
   fi
 fi

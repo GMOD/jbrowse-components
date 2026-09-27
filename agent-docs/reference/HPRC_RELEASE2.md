@@ -334,8 +334,8 @@ because minigraph-cactus clipped the telomeres out of the walks.
 
 **Hosting.** The GFA build goes up beside the others as
 `hprc_multiway_gfa.pif.gz{,.csi}`, `<sample>.<hap>.gfa.chrom.sizes` and
-`README_gfa.txt` (`UPLOAD=1`, an `aws s3 sync --size-only` limited to those
-names, so nothing already there is touched). `demos/hprc_multiway/config.json`
+`README_gfa.txt`. `UPLOAD=1` copies the data files and skips any key already
+there; the README goes through `deploy-demo.sh` from `demos/hprc_multiway/`. `demos/hprc_multiway/config.json`
 serves the GFA build — `hprc_multiway_gfa.pif.gz` and eight
 `<sample>.<hap>.gfa.chrom.sizes` — and the TAF-route files stay hosted beside
 it.
