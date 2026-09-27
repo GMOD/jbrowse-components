@@ -14,7 +14,6 @@
 
 import { decodeSpecUrl } from '../src/lib/spec-recipe/decode.ts'
 
-import type { SpecTrack } from '../src/lib/spec-recipe/decode.ts'
 import type {
   Annotation,
   ScreenshotAction,
