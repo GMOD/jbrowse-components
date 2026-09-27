@@ -124,7 +124,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * #getter
        * every held record's two ends on the circle's unrolled axis, by the
        * record's place in `features`: its own start, and its mate's position
-       * where it names one, else its own end
+       * where it names one, else its own end. `junction` is the two ends
+       * unordered, which a breakend pair's two records share.
        */
       get chordFeet() {
         const features = self.features ?? []
@@ -135,6 +136,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           xGaps: new Uint32Array(n),
           x2Gaps: new Uint32Array(n),
           placed: new Uint8Array(n),
+          junction: new Array<string>(n),
           index: new Map<Feature, number>(),
         }
         const sliceOf = (refName: string) => self.axisSlice(undefined, refName)
@@ -151,6 +153,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             feet.x2[i] = axisX(endBlock, endPosition)
             feet.xGaps[i] = start.gaps
             feet.x2Gaps[i] = endBlock.gaps
+            const own = `${start.index}:${feature.get('start')}`
+            const far = `${endBlock.index}:${endPosition}`
+            feet.junction[i] = own < far ? `${own}|${far}` : `${far}|${own}`
           }
         })
         return feet
@@ -170,6 +175,36 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
+       * the drawn records a chord stands for, one per junction: the first
+       * record of a breakend pair draws it, and `laneOfId` sends both records'
+       * ids to that lane
+       */
+      get chordPicks() {
+        const feet = this.chordFeet
+        const picked: number[] = []
+        const features: Feature[] = []
+        const laneOfId = new Map<string, number>()
+        const laneOfJunction = new Map<string, number>()
+        for (const feature of self.drawnFeatures ?? []) {
+          const i = feet.index.get(feature)
+          if (i === undefined || !feet.placed[i]) {
+            continue
+          }
+          const junction = feet.junction[i]!
+          const lane = laneOfJunction.get(junction)
+          if (lane === undefined) {
+            laneOfJunction.set(junction, picked.length)
+            laneOfId.set(feature.id(), picked.length)
+            picked.push(i)
+            features.push(feature)
+          } else {
+            laneOfId.set(feature.id(), lane)
+          }
+        }
+        return { picked, features, laneOfId }
+      },
+      /**
+       * #getter
        * the drawn records as the chord mark's lanes, each in its colour with
        * the alpha the SV inspector's dimming leaves it
        */
@@ -178,15 +213,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         const strokes = this.chordStrokes
         const highlighted = self.highlightedFeatureIdSet
         const packed = new Map<string, number>()
-        const picked: number[] = []
-        const features: Feature[] = []
-        for (const feature of self.drawnFeatures ?? []) {
-          const i = feet.index.get(feature)
-          if (i !== undefined && feet.placed[i]) {
-            picked.push(i)
-            features.push(feature)
-          }
-        }
+        const { picked, features } = this.chordPicks
         const n = picked.length
         const lanes: ChordLanes = {
           x: new Float32Array(n),
@@ -232,7 +259,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * each drawn record's place in the lanes, by id
        */
       get laneIndexById() {
-        return new Map(this.chordLanes.features.map((f, i) => [f.id(), i]))
+        return this.chordPicks.laneOfId
       },
       /**
        * #method

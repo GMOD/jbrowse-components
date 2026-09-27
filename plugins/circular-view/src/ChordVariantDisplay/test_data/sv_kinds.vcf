@@ -1,0 +1,30 @@
+##fileformat=VCFv4.3
+##contig=<ID=ctgA,length=16000>
+##contig=<ID=ctgB,length=8000>
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="SV type">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End">
+##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Length">
+##INFO=<ID=MATEID,Number=.,Type=String,Description="Mate">
+##INFO=<ID=CHR2,Number=1,Type=String,Description="Mate contig">
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=INV,Description="Inversion">
+##ALT=<ID=DUP:TANDEM,Description="Tandem duplication">
+##ALT=<ID=CNV,Description="Copy number variant">
+##ALT=<ID=TRA,Description="Translocation">
+##ALT=<ID=INS,Description="Insertion">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+ctgA	1001	bnd_a	N	N[ctgB:2001[	.	PASS	SVTYPE=BND;MATEID=bnd_b
+ctgA	3001	bnd_c	N	[ctgB:4001[N	.	PASS	SVTYPE=BND
+ctgA	3501	bnd_d	N	N]ctgB:4501]	.	PASS	SVTYPE=BND
+ctgA	5001	del	N	<DEL>	.	PASS	SVTYPE=DEL;END=6000;SVLEN=-999
+ctgA	6501	del_me	N	<DEL:ME:ALU>	.	PASS	SVTYPE=DEL;END=6800
+ctgA	7001	inv	N	<INV>	.	PASS	SVTYPE=INV;END=8000
+ctgA	8501	dup	N	<DUP:TANDEM>	.	PASS	SVTYPE=DUP;END=9000
+ctgA	9101	cnv	N	<CNV>	.	PASS	SVTYPE=CNV;END=9500
+ctgA	10001	del_svlen	N	<DEL>	.	PASS	SVTYPE=DEL;SVLEN=-500
+ctgA	11001	del_seq	AAAAAAAAAAAAAAAAAAAA	A	.	PASS	.
+ctgA	12001	tra	N	<TRA>	.	PASS	SVTYPE=TRA;CHR2=ctgB;END=6001
+ctgA	13001	ins	N	<INS>	.	PASS	SVTYPE=INS;END=13001;SVLEN=300
+ctgA	14001	single	N	N.	.	PASS	SVTYPE=BND
+ctgA	15001	snv	A	G	.	PASS	.
+ctgB	2001	bnd_b	N	]ctgA:1001]N	.	PASS	SVTYPE=BND;MATEID=bnd_a
