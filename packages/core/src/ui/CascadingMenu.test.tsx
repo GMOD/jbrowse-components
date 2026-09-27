@@ -416,9 +416,30 @@ describe('CascadingMenu submenu hover intent', () => {
   it('closes once the pointer settles on a sibling row', () => {
     const { getByText, getByTestId } = renderMenu(items)
     fireEvent.mouseOver(getByText('Colors'))
-    fireEvent.mouseOver(getByText('Beta'))
+    fireEvent.mouseOver(getByText('Beta'), { clientX: 0, clientY: 40 })
     settle()
     expect(expandedIn(getByTestId)('colors')).toBe('false')
+  })
+
+  // A menu that grows a fetch later shifts its rows, or MUI shifts the whole
+  // paper back into the viewport, and the row now under the resting pointer
+  // gets a mouseenter at the pointer's last position. The layout moved, not
+  // the pointer, so the panel stays; the same row entered by a real move,
+  // whose coordinates differ, closes it as before.
+  it('keeps the panel when a row slides under a resting pointer', () => {
+    const { getByText, getByTestId } = renderMenu(items)
+    const expanded = expandedIn(getByTestId)
+    fireEvent.mouseOver(getByText('Colors'), { clientX: 30, clientY: 10 })
+    fireEvent.mouseMove(document, { clientX: 32, clientY: 12 })
+    fireEvent.mouseOver(getByText('Beta'), { clientX: 32, clientY: 12 })
+    settle()
+    expect(expanded('colors')).toBe('true')
+    fireEvent.mouseOver(getByText('Shapes'), { clientX: 32, clientY: 12 })
+    settle()
+    expect([expanded('colors'), expanded('shapes')]).toEqual(['true', 'false'])
+    fireEvent.mouseOver(getByText('Beta'), { clientX: 32, clientY: 40 })
+    settle()
+    expect(expanded('colors')).toBe('false')
   })
 
   // The panel is the destination, so arriving there is what proves the rows
@@ -453,7 +474,7 @@ describe('CascadingMenu submenu hover intent', () => {
     const { getByText, getByTestId } = renderMenu(items)
     const expanded = expandedIn(getByTestId)
     fireEvent.mouseOver(getByText('Colors'))
-    fireEvent.mouseOver(getByText('Shapes'))
+    fireEvent.mouseOver(getByText('Shapes'), { clientX: 0, clientY: 90 })
     expect([expanded('colors'), expanded('shapes')]).toEqual(['true', 'false'])
     settle()
     expect([expanded('colors'), expanded('shapes')]).toEqual(['false', 'true'])

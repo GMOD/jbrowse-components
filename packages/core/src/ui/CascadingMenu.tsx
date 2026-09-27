@@ -140,6 +140,11 @@ function createSubmenuHover(setOpenSubmenu: (key: string | undefined) => void) {
   const panelRef: React.RefObject<HTMLElement | null> = { current: null }
   // where the pointer was when the open panel opened — the cone's tip
   let apex: AimPoint | undefined
+  // where the pointer last was while a panel is up. A row that slides under a
+  // resting pointer — the menu grew a fetch later and MUI moved it back into
+  // the viewport, or rows landed above — gets a mouseenter at that same point,
+  // and it is the layout that moved, not the pointer, so it is no hover.
+  let lastPoint: AimPoint | undefined
   let pending:
     | {
         key: string | undefined
@@ -158,9 +163,16 @@ function createSubmenuHover(setOpenSubmenu: (key: string | undefined) => void) {
   const commit = (key: string | undefined, point?: AimPoint) => {
     cancelPending()
     apex = key === undefined ? undefined : point
+    lastPoint = point
     openKey = key
     setOpenSubmenu(key)
   }
+
+  const restingUnderOpenPanel = (point: AimPoint) =>
+    openKey !== undefined &&
+    lastPoint !== undefined &&
+    point.x === lastPoint.x &&
+    point.y === lastPoint.y
 
   // 'unmeasured' is its own answer, not a lenient 'inside': a cone pointing at
   // nothing would call every row crossed a veer-off, and a move handler that
@@ -194,6 +206,8 @@ function createSubmenuHover(setOpenSubmenu: (key: string | undefined) => void) {
   const hoverSubmenu = (key: string | undefined, point: AimPoint) => {
     if (key === openKey) {
       cancelPending()
+    } else if (restingUnderOpenPanel(point)) {
+      return
     } else if (openKey === undefined || aimAt(point) === 'outside') {
       // nothing to protect, or a pointer that was never heading for the open
       // panel: either way there is nothing to wait for
@@ -218,6 +232,7 @@ function createSubmenuHover(setOpenSubmenu: (key: string | undefined) => void) {
     // the cone without ever crossing into another row, by turning around inside
     // the one it is already on.
     onPointerMove: (event: MouseEvent) => {
+      lastPoint = { x: event.clientX, y: event.clientY }
       const deferred = pending
       if (!deferred) {
         return
