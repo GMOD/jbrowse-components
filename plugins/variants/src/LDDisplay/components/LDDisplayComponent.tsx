@@ -153,14 +153,14 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
 }: {
   model: LDDisplayModel
 }) {
-  const { canvasWidth: width, height } = model
+  const { canvasWidth: width } = model
 
   return (
     <DisplayChrome
       model={model}
       factory={LDRenderer}
       testid="ld-display"
-      style={{ width, height, overflow: 'hidden' }}
+      style={{ width, overflow: 'hidden' }}
       onClick={event => {
         // Click a cell to make its row SNP focal, empty space to clear.
         // Hit-tested from the click, since the hover can be a frame stale.

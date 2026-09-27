@@ -131,7 +131,6 @@ const FeatureComponent = observer(function FeatureComponent({
       factory={createCanvasFeatureBackend}
       testid="feature-display"
       className={classes.root}
-      style={{ height: model.height }}
     >
       {({ canvasRef, mouseTracker }) => (
         <>

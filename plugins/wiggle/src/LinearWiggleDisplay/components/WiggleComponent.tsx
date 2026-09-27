@@ -77,7 +77,6 @@ const WiggleComponent = observer(function WiggleComponent({
       testid="wiggle-display"
       style={{
         width: totalWidth,
-        height,
         whiteSpace: 'nowrap',
         textAlign: 'left',
       }}

@@ -26,7 +26,6 @@ const useStyles = makeStyles()({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     width: '100%',
-    minHeight: '100%',
   },
 })
 

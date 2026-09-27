@@ -129,7 +129,7 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
       model={model}
       factory={HicRenderer}
       testid="hic-display"
-      style={{ cursor: 'crosshair', width, height, overflow: 'hidden' }}
+      style={{ cursor: 'crosshair', width, overflow: 'hidden' }}
     >
       {({ canvasRef, mouseTracker }) => (
         <>

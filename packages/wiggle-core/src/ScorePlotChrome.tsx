@@ -94,7 +94,7 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
       model={model}
       factory={factory}
       testid={testid}
-      style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}
+      style={{ width, whiteSpace: 'nowrap', textAlign: 'left' }}
       onPointerPosition={state => {
         model.setHoveredFeature(state ? hitAt(state.x, state.y) : undefined)
       }}

@@ -20,7 +20,7 @@ import type { ComponentPropsWithRef, MouseEventHandler, ReactNode } from 'react'
 // The model contract is the *union of what the sub-overlays read*, composed
 // directly from each overlay's own model prop type so it can't drift: add or
 // remove a field an overlay reads and this updates with no edit here — plus the
-// one field this component reads for itself, spelled out separately for that
+// fields this component reads for itself, spelled out separately for that
 // reason. `configuration.displayId` is the same structural shape the repo-wide
 // display check uses (see configurationSchema.ts), so every concrete display
 // satisfies it already.
@@ -29,6 +29,7 @@ export type StatusChromeModel = DisplayErrorBarModel &
   DisplayLoadingOverlayModel &
   DisplayBackgroundProgressModel & {
     configuration: { displayId: string }
+    height: number
   }
 
 // Everything the status chrome is, minus the rendering backend: the phase
@@ -182,12 +183,11 @@ export default function DisplayStatusChromeBase({
       // Only the pointers that happened over this element, so a portalled
       // overlay's events are not answered as canvas hits -- see `overChrome`.
       {...overChrome(divProps)}
-      // The chrome owns the positioning context: the loading scrim and error
-      // bar below are position:absolute children, so the container must be the
-      // containing block. Centralized here so no caller has to remember it (and
-      // so the ones that didn't — hic, ld — stop leaking their overlays to an
-      // ancestor). Caller `style` still wins if it overrides `position`.
-      style={{ position: 'relative', ...style }}
+      // The chrome owns the box: it is the containing block for the absolutely
+      // positioned overlays and guides, and a display's content is absolutely
+      // positioned too, so without the height the container collapses and
+      // takes no pointer events. Caller `style` still wins.
+      style={{ position: 'relative', height: model.height, ...style }}
       // Stable for the display's whole life — the display TYPE, shared by every
       // instance of it. It used to gain a `-done` suffix on first paint, which
       // made it the only mutating testid in the tree and gave readiness two

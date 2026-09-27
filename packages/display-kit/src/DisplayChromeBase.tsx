@@ -35,7 +35,6 @@ import type { ComponentPropsWithRef, ReactNode } from 'react'
 // live on `RenderLifecycleModel`, always intersected in below.)
 export type ChromeModel = {
   displayPhase: DisplayPhase
-  height: number
   // `painted`, never the raw `canvasDrawn`: a display deliberately showing a
   // static placeholder instead of a canvas (sequence zoomed out, LD with the
   // triangle off) has finished, and the raw flag can never say so. See

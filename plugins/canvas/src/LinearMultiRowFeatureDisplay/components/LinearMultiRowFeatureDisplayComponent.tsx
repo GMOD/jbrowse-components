@@ -131,9 +131,6 @@ const LinearMultiRowFeatureDisplayComponent = observer(
         model={model}
         factory={createMultiRowBackend}
         testid="multirow-display"
-        // its content is all absolutely positioned, so without a height the
-        // container collapses and receives no pointer events at all
-        style={{ height: model.height }}
         onPointerPosition={state => {
           model.setHoveredFeature(
             state ? model.featureAt(state.x, state.y) : undefined,

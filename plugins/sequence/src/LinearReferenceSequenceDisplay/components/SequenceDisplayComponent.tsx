@@ -67,13 +67,12 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
 }: {
   model: LinearReferenceSequenceDisplayModel
 }) {
-  const { height } = model
   return (
     <DisplayChrome
       model={model}
       factory={SequenceRenderer}
       testid="sequence-display"
-      style={{ width: '100%', height }}
+      style={{ width: '100%' }}
     >
       {({ canvasRef, mouseTracker }) => (
         <>

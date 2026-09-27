@@ -68,7 +68,7 @@ const VariantMatrixDisplayComponent = observer(
     model: LinearMultiSampleVariantDisplayModel
   }) {
     const { model } = props
-    const { rowsTopOffset, height } = model
+    const { rowsTopOffset } = model
     const canvasId = useId()
     // the rows panel, so a wheel over the dendrogram beside the matrix is theirs
     const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
@@ -78,7 +78,6 @@ const VariantMatrixDisplayComponent = observer(
         model={model}
         factory={createVariantMatrixBackend}
         testid="variant-matrix-display"
-        style={{ height }}
         // One pointer source for the whole display: the hover, the tooltip,
         // the crosshairs and the highlighted connector all come off the
         // chrome's single measurement, in one frame. `columnGeometry.left` is

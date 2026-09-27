@@ -151,6 +151,27 @@ test('ready phase shows the canvas with no banners; the testid does NOT change o
 // Background work (clustering) reports through the same status channel as a
 // fetch, but has no fetch behind it, so the phase stays `ready` and the scrim
 // never comes up. The corner chip is what makes it visible.
+test('the container takes the model height, and a caller style still wins', async () => {
+  const model = TestChromeModel.create({})
+  const { findByTestId, rerender } = render(
+    <DisplayChrome model={model} factory={stubFactory} testid="probe-display">
+      {() => null}
+    </DisplayChrome>,
+  )
+  expect((await findByTestId('probe-display')).style.height).toBe('100px')
+  rerender(
+    <DisplayChrome
+      model={model}
+      factory={stubFactory}
+      testid="probe-display"
+      style={{ height: 40 }}
+    >
+      {() => null}
+    </DisplayChrome>,
+  )
+  expect((await findByTestId('probe-display')).style.height).toBe('40px')
+})
+
 test('a status set while ready shows the corner chip, not the scrim', async () => {
   const model = TestChromeModel.create({})
   act(() => {

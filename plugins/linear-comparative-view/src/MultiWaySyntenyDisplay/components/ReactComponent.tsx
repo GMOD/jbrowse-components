@@ -73,7 +73,7 @@ const MultiWaySyntenyReactComponent = observer(
   }: {
     model: MultiWaySyntenyDisplayModel
   }) {
-    const { canvasWidth: width, height } = model
+    const { canvasWidth: width } = model
     // a pan ends with a click on whatever the drag stopped over; only a press
     // that stayed put opens what it pressed
     const pressX = useRef<number | undefined>(undefined)
@@ -82,7 +82,7 @@ const MultiWaySyntenyReactComponent = observer(
         model={model}
         factory={MultiWayRenderer}
         testid="multiway-synteny-display"
-        style={{ width, height, overflow: 'hidden' }}
+        style={{ width, overflow: 'hidden' }}
         onPointerPosition={state => {
           model.setPointer(state)
         }}

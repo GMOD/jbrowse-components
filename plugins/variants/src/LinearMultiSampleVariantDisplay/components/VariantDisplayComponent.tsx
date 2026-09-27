@@ -42,7 +42,6 @@ const GenomicPositionsDisplay = observer(
         model={model}
         factory={createVariantBackend}
         testid="variant-display"
-        style={{ height: model.height }}
         // One pointer source for the whole display: the hover, the tooltip and
         // the crosshairs come off the chrome's single measurement, in one
         // frame. Which surface the pointer is over is the same y test
