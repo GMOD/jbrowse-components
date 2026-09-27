@@ -7,11 +7,14 @@
 // 'puppeteer-core'` before reaching a single assertion, and the rules below —
 // the one thing here worth testing — were untestable for that reason alone. The
 // types module carries only type-only imports, so this file has no runtime
-// dependency at all.
+// dependency beyond the pure session-spec decoder.
 //
 // Both entry points still pass the real list: check-specs.ts in `pnpm
 // check-docs`, and generate-screenshots before it renders anything.
 
+import { decodeSpecUrl } from '../src/lib/spec-recipe/decode.ts'
+
+import type { SpecTrack } from '../src/lib/spec-recipe/decode.ts'
 import type {
   Annotation,
   ScreenshotAction,
@@ -126,6 +129,37 @@ export function validateSpecs(list: ScreenshotSpec[]) {
         if (stage.readySelector && !stage.url) {
           problems.push(
             `${spec.name} stage ${s}: readySelector without url — only a stage that navigates is readied`,
+          )
+        }
+      }
+    }
+  }
+  return problems
+}
+
+// A session track whose trackId the spec's config already defines is dropped:
+// `addSessionTrackConf` dedupes on the id, so the figure draws the config's
+// track and the spec's copy is text that reads as the figure's config and
+// configures nothing. `configTrackIds` answers undefined for a config it
+// cannot read.
+export function shadowedSessionTracks(
+  list: ScreenshotSpec[],
+  configTrackIds: (config: string) => ReadonlySet<string> | undefined,
+) {
+  const problems: string[] = []
+  for (const spec of list) {
+    const urls =
+      spec.mode === 'url'
+        ? [spec.url, ...(spec.stages ?? []).map(stage => stage.url)]
+        : []
+    for (const url of urls) {
+      const decoded = url ? decodeSpecUrl(url) : undefined
+      const ids = decoded ? configTrackIds(decoded.config) : undefined
+      const tracks = decoded?.spec.sessionTracks ?? []
+      for (const { trackId } of tracks) {
+        if (ids?.has(trackId)) {
+          problems.push(
+            `${spec.name}: session track "${trackId}" is already in ${decoded!.config}, so the config's copy draws and this one is dropped`,
           )
         }
       }

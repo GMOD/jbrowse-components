@@ -2051,7 +2051,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/rgfa_paa_bubble',
     url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
-      sessionTracks: [ECOLI_SEGMENTS_SESSION_TRACK],
       views: [
         {
           type: 'LinearSyntenyView',

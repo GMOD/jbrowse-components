@@ -31,33 +31,6 @@ const SYRI_ACCESSIONS = ['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha']
 const SYRI_TYPES = ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP']
 const AMYLASE_HG38 = 'chr1:103,520,894-103,832,637'
 
-// HG008-T v3.2 T2T assembly vs GRCh38 synteny as a session track, shared by the
-// sv_cgiab dotplot and synteny figures. Overriding with PairwiseIndexedPAFAdapter
-// keeps the PIF q/t refName prefixes mapped. Referenced as a const so both
-// figures encode byte-identically. Needs the v3.2 PIF uploaded to
-// jbrowse.org/demos/cgiab and the HG008T_v3.2 assembly in the hosted config.
-export const CGIAB_ASM_PIF_TRACK = {
-  type: 'SyntenyTrack',
-  trackId: 'HG008T_v3.2_pif',
-  name: 'HG008T v3.2',
-  assemblyNames: ['HG008T_v3.2', 'GRCh38_GIABv3'],
-  adapter: {
-    type: 'PairwiseIndexedPAFAdapter',
-    assemblyNames: ['HG008T_v3.2', 'GRCh38_GIABv3'],
-    pifGzLocation: {
-      uri: 'https://jbrowse.org/demos/cgiab/HG008T_v3.2.pif.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      indexType: 'TBI',
-      location: {
-        uri: 'https://jbrowse.org/demos/cgiab/HG008T_v3.2.pif.gz.tbi',
-        locationType: 'UriLocation',
-      },
-    },
-  },
-}
-
 // Three H. pylori strains stacked top-to-bottom, with a synteny track between
 // each adjacent pair and a gene annotation track on each genome, used by the
 // synteny_visualization.md tutorial.
@@ -4434,7 +4407,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/dotplot_haplotypes',
     url: cgiabUrl({
-      sessionTracks: [CGIAB_ASM_PIF_TRACK],
       views: (['hap1', 'hap2'] as const).map(hap => ({
         type: 'DotplotView',
         displayName: `HG008-T v3.2 ${hap} vs GRCh38`,
@@ -4530,7 +4502,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // sv_cgiab/translocation_breakpoint_split, which opens on those two
     // coordinates in the reads.
     url: cgiabUrl({
-      sessionTracks: [CGIAB_ASM_PIF_TRACK],
       views: [
         {
           type: 'LinearSyntenyView',

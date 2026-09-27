@@ -54,7 +54,7 @@ const webRoot = path.join(repoRoot, 'products', 'jbrowse-web')
 // (scripts/deploy-demo.sh publishes it), so this cannot go stale the way a
 // fetched cache would, and it keeps the network out of a question that should be
 // answerable offline.
-function localConfigPath(
+export function localConfigPath(
   config: string,
 ): { root: string; rel: string } | undefined {
   const demo = /^https?:\/\/jbrowse\.org\/demos\/([^/]+)\/config\.json$/.exec(

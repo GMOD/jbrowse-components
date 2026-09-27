@@ -11,15 +11,34 @@
 //
 //   node website/scripts/check-specs.ts
 
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { reportProblems } from './check-utils.ts'
+import { localConfigPath } from './screenshot-impact.ts'
 import {
   countDetachableLabels,
   countRawCallouts,
+  shadowedSessionTracks,
   validateSpecs,
 } from './screenshot-spec-rules.ts'
 import { specs } from './screenshot-specs.ts'
 
-const problems = validateSpecs(specs)
+function configTrackIds(config: string) {
+  const local = localConfigPath(config)
+  if (!local) {
+    return undefined
+  }
+  const { tracks = [] } = JSON.parse(
+    readFileSync(join(local.root, local.rel), 'utf8'),
+  ) as { tracks?: { trackId: string }[] }
+  return new Set(tracks.map(t => t.trackId))
+}
+
+const problems = [
+  ...validateSpecs(specs),
+  ...shadowedSessionTracks(specs, configTrackIds),
+]
 
 // The raw-pixel ratchet, alongside them: a callout or a click that names a
 // viewport coordinate instead of the thing it is aiming at. It cannot fail on

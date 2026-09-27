@@ -1,6 +1,7 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -62,69 +63,29 @@ const INVERSION_RANGE = '5,250,000-14,250,000'
 const INVERSION_WINDOW_MAT = `chr8_MATERNAL:${INVERSION_RANGE}`
 const INVERSION_WINDOW_PAT = `chr8_PATERNAL:${INVERSION_RANGE}`
 
-// GENES, WHICH THE DEMO CONFIG DOES NOT CARRY (review, on both figures: "if
-// possible, show gene tracks too. not sure if available, but would be cool").
-// They are available, from the Q100 project's own S3 beside the assembly, and
-// they need no rehosting: the JHU Liftoff v0.6 annotation ships one bgzipped
-// GFF per haplotype with a `.tbi`, contig names that already match
-// (`chr8_MATERNAL`), a `gene_name` attribute, and `Access-Control-Allow-Origin:
-// *` on ranged reads. Session tracks rather than config tracks, so nothing has
-// to be deployed to jbrowse.org/demos/hg002/config.json for a figure to use
-// them.
+// THE GENES ARE v1.1 COORDINATES ON A v1.2 ASSEMBLY; no v1.2 gene annotation
+// is published. Measured off `hg002v1.1_to_hg002v1.2.chain.gz`, the shift on
+// chr8 is 1-3 bp across both windows here, a third of a pixel at the
+// base-level figure.
 //
-// THEY ARE v1.1 COORDINATES ON A v1.2 ASSEMBLY, which is worth knowing and is
-// why the track names say v1.1. There is no v1.2 gene annotation published --
-// the annotation directory has v1.2 hetsites, microsatellites and chains and
-// no genes. What the version gap costs was measured off the published
-// `hg002v1.1_to_hg002v1.2.chain.gz` (47 chains, one per contig, no
-// rearrangement in any of them): summing dq-dt along each chain, the largest
-// cumulative shift anywhere in the genome is 6,115 bp on chr6_MATERNAL and
-// every other contig is under 70 bp. On chr8 it is 1-3 bp across both windows
-// here, which is a third of a pixel at the base-level figure and invisible at
-// the 9 Mb one. A proper lift would need the GFF re-emitted and hosted; at this
-// magnitude that buys nothing these two figures can show.
-const GENE_TRACK_BASE =
-  'https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1'
+// The page's maternal gene track, which the demo config also carries, and the
+// paternal one the page says to make from it: the same config with PAT in the
+// name and URL.
+function pageGeneTrack(hap: 'MAT' | 'PAT') {
+  const genes = pageTrack('tutorials/hg002_haplotypes.md', 'hg002_genes_mat')
+  return JSON.parse(
+    JSON.stringify(genes).replaceAll('MAT', hap),
+  ) as typeof genes
+}
 
-function geneTrack(hap: 'MAT' | 'PAT', kind: 'genes' | 'landmarks' = 'genes') {
-  const uri = `${GENE_TRACK_BASE}.${hap}.loff.v0.6.gff.gz`
+// The page's "second track over the same GFF": the gene track under its own
+// trackId, whose name carries the colour key, so the figure needs no overlay to
+// say what red and blue mean; see STRAND_COLOR.
+function landmarkTrack(hap: 'MAT' | 'PAT') {
   return {
-    type: 'FeatureTrack',
-    trackId: `hg002_${kind}_${hap.toLowerCase()}`,
-    // the landmark lane's name carries its colour key, so the figure needs no
-    // overlay to say what red and blue mean; see STRAND_COLOR
-    name:
-      kind === 'landmarks'
-        ? `Landmark genes (${hap}), forward red / reverse blue`
-        : `Genes (JHU Liftoff v0.6, HG002 v1.1 ${hap})`,
-    assemblyNames: ['hg002v1.2'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      gffGzLocation: { uri, locationType: 'UriLocation' },
-      index: {
-        location: { uri: `${uri}.tbi`, locationType: 'UriLocation' },
-        indexType: 'TBI',
-      },
-    },
-    // LABEL FROM `gene_name`, NOT FROM THE ID. The Liftoff GFF carries no
-    // `Name`, so the default `name || id` falls through to the assembly's own
-    // ordinal identifier and the lane draws `hg002_chr8_maternal_195` where the
-    // gene is ENPP7P1 -- true, and useless as a label. `gene_name` is on every
-    // gene record (the README's own ID scheme keeps the HUGO symbol in it).
-    //
-    // It goes on the TRACK's display config rather than as an inline key on the
-    // session spec's `tracks` entry: `labels` is a sub-schema, not a slot, so
-    // the `setSlot` pass that folds inline keys onto the display would skip it
-    // silently.
-    displays: [
-      {
-        type: 'LinearBasicDisplay',
-        displayId: `hg002_${kind}_${hap.toLowerCase()}-LinearBasicDisplay`,
-        labels: {
-          name: "jexl:get(feature,'gene_name') || get(feature,'name') || get(feature,'id')",
-        },
-      },
-    ],
+    ...pageGeneTrack(hap),
+    trackId: `hg002_landmarks_${hap.toLowerCase()}`,
+    name: `Landmark genes (${hap}), forward red / reverse blue`,
   }
 }
 
@@ -295,12 +256,7 @@ function haplotypeSession(
   viewProps: Record<string, unknown> = {},
 ) {
   return sessionSpec(HG002_CONFIG, {
-    sessionTracks: [
-      geneTrack('MAT'),
-      geneTrack('PAT'),
-      geneTrack('MAT', 'landmarks'),
-      geneTrack('PAT', 'landmarks'),
-    ],
+    sessionTracks: [landmarkTrack('MAT'), landmarkTrack('PAT')],
     views: [
       {
         type: 'LinearSyntenyView',
