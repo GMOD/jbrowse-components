@@ -79,7 +79,9 @@ export function hpyloriSyntenyWithGenes({
     // knows which display a `color` expression belongs to if the spec says
     type: 'LinearBasicDisplay',
     showOnlyGenes: true,
-    ...(geneColor ? { color: geneColor } : {}),
+    // no key: each gene already prints its symbol, and a key per panel lists a
+    // different subset and covers the genes at the right edge
+    ...(geneColor ? { color: geneColor, showLegend: false } : {}),
   })
   return hpyloriUrl({
     views: [

@@ -391,10 +391,13 @@ const BENCHMARK_CNV_COLOR = {
   labels: ['CN 0', 'CN 1', 'CN 2', 'CN 3', 'CN 4+'],
   title: 'Copy number',
 }
+// 120 px holds the key's title and its five intervals; shorter, the lane
+// clips CN 4+ and more off the bottom of its key.
 const benchmarkCnvLane = (trackId = 'hg008_cnv_calls') => ({
   trackId,
   type: 'LinearBasicDisplay',
   color: BENCHMARK_CNV_COLOR,
+  height: 120,
 })
 
 // The SKBR3 Sniffles translocation calls, which is the file
@@ -2293,7 +2296,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 140 } },
               height: 110,
             },
-            { ...benchmarkCnvLane(), height: 70 },
+            benchmarkCnvLane(),
             { trackId: 'hg008t_nygc_cnv', height: 70 },
             { trackId: 'hg008t_dragen_cnv', height: 70 },
             {
