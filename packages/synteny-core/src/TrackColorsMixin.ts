@@ -15,9 +15,13 @@ import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
 import type { SyntenyColorSurface } from './colorModes.ts'
 import type { AttributeRange } from './colorRamps.ts'
-import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
+import type {
+  SyntenyColorConfigModel,
+  SyntenyColorSnapshot,
+} from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
 
@@ -183,7 +187,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        */
       seenAttributeRanges: {} as Record<string, AttributeRange>,
     }))
-    .views(() => ({
+    .views(self => ({
       /**
        * #method
        * The tracks that can take a palette slot, in paint order. Overridden by
@@ -256,6 +260,14 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       offersReferenceColor(): boolean {
         return false
       },
+      /**
+       * #getter
+       * The `color` node under its schema's own type, which `stripDefault`'s
+       * wrapper hides from `readConfObject`'s slot-name checking.
+       */
+      get colorConfig(): Instance<SyntenyColorConfigModel> {
+        return self.color
+      },
     }))
     .views(self => ({
       /**
@@ -264,13 +276,13 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        */
       get colorSetting(): SyntenyColorSnapshot {
         return {
-          value: readConfObject(self.color, 'value'),
-          field: readConfObject(self.color, 'field'),
-          scale: readConfObject(self.color, 'scale'),
-          domain: readConfObject(self.color, 'domain'),
-          range: readConfObject(self.color, 'range'),
-          labels: readConfObject(self.color, 'labels'),
-          title: readConfObject(self.color, 'title'),
+          value: readConfObject(self.colorConfig, 'value'),
+          field: readConfObject(self.colorConfig, 'field'),
+          scale: readConfObject(self.colorConfig, 'scale'),
+          domain: readConfObject(self.colorConfig, 'domain'),
+          range: readConfObject(self.colorConfig, 'range'),
+          labels: readConfObject(self.colorConfig, 'labels'),
+          title: readConfObject(self.colorConfig, 'title'),
         }
       },
       /**
@@ -287,14 +299,14 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * own slot, so a key-only edit (`title`, `labels`) recolours nothing.
        */
       get colorDomain(): readonly string[] {
-        return readConfObject(self.color, 'domain') ?? []
+        return readConfObject(self.colorConfig, 'domain')
       },
       /**
        * #getter
        * `color.range`, the colours a text column's labels take in domain order
        */
       get colorRange(): readonly string[] {
-        return readConfObject(self.color, 'range') ?? []
+        return readConfObject(self.colorConfig, 'range')
       },
       /**
        * #getter

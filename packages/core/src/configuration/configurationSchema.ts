@@ -503,11 +503,13 @@ export interface ConfigurationSchemaType<
    * so admit every name. Slots come from the definition — the identifier and
    * an `explicitlyTyped` schema's `type` ride in as two of them — and the brand
    * names this schema, which is what `ConfigurationSchemaForModel` infers back
-   * out.
+   * out. `TypeWithoutSTN` too, since a wrapper — `types.optional`,
+   * `types.stripDefault` — builds its instance from that one.
    */
   readonly Type: ConfigNodeProps<DEFINITION> &
     ConfigNodeActions &
     ConfigNodeBrand<this>
+  readonly TypeWithoutSTN: ConfigNodeProps<DEFINITION> & ConfigNodeActions
 }
 
 type RequirementPath<D> = {
