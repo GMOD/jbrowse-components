@@ -104,6 +104,16 @@ describe('the Y morph autorun decides for itself', () => {
     }
   })
 
+  // each morph frame is an upload, and off screen every upload draws
+  it('snaps instead off screen', () => {
+    const env = setUp()
+    env.display.setOffScreen(true)
+    const { moved } = zoomTo(env, 4)
+
+    expect(moved.length).toBeGreaterThan(0)
+    expect(env.display.morphFromTops).toBeUndefined()
+  })
+
   it('starts nothing when a relayout moves no row', () => {
     const env = setUp()
 

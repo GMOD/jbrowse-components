@@ -46,6 +46,7 @@ export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
   displayMode: DisplayMode
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
+  offScreen: boolean
   beginYMorph: (fromTops: Map<string, number>, fromMaxY: number) => void
   endAnimation: () => void
 }
@@ -191,7 +192,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       // morphFromTops/morphProgress/morphFromMaxY advance every rAF frame —
       // read untracked so the morph clock can't re-trigger this layout autorun.
       // eslint-disable-next-line no-restricted-syntax -- self-write: the morph clock is this layout's own effect
-      const { fromTops, fromMaxY } = untracked(() => {
+      const { fromTops, fromMaxY, offScreen } = untracked(() => {
         // A morph still in flight means a non-debounced second layout change
         // interrupted it; re-seed from the live displayed positions and hold
         // the taller of the two heights.
@@ -202,13 +203,16 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
             self.morphEased,
           ),
           fromMaxY: Math.max(maxBottom(from), self.morphFromMaxY),
+          offScreen: self.offScreen,
         }
       })
       // No scroll clamp here: `TrackHeightClampScroll` already pulls the
       // offset back, bounded by the on-screen `scrollableHeight`, where a
       // clamp written here could only see the buffered pack.
+      // off screen, every morph frame would be an upload the canvas draws
       if (
         scaleUnchanged &&
+        !offScreen &&
         animationAllowed(getSession(self).animationMode) &&
         canMorph(fromTops, current)
       ) {
