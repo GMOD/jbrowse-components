@@ -10,7 +10,12 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 
 import { paintColors } from '../../../../packages/render-core/src/marks/markRamp.ts'
-import { buildMarkLegend, categoryLabel, markColorScales } from './legend.ts'
+import {
+  buildMarkLegend,
+  categoryLabel,
+  markColorScales,
+  shapeLabel,
+} from './legend.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -594,6 +599,30 @@ test('a key lists the values its breaks name, highest first where it descends, a
       ),
     ),
   ).toEqual([['index', 'partner', 'unjoined']])
+})
+
+test('a hover names the no-value row as the key does', () => {
+  const untested = () => ({ missingLabel: 'untested' })
+  const r2: ColorScaleTable = { ...thresholdTable(), missing: true }
+  expect(
+    categoryLabel(
+      buildMarkLegend([region(r2)], undefined, untested)[0],
+      NO_VALUE_ABGR,
+    ),
+  ).toBe('untested')
+  expect(
+    categoryLabel(
+      buildMarkLegend([region(table(['a', '']))], undefined, untested)[0],
+      0xff000001,
+    ),
+  ).toBe('untested')
+  const roles = shapeRegion([
+    ['index', 'diamond'],
+    ['', 'circle'],
+  ])
+  expect(
+    shapeLabel(buildMarkLegend([roles], undefined, untested)[0], 'circle'),
+  ).toBe('untested')
 })
 
 test('a categorical colour key lists its breaks in their order', () => {

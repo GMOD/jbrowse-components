@@ -498,6 +498,21 @@ export function shapeSection(sections: MarkLegendSection[], markIndex: number) {
   )
 }
 
+// A value as a hover names it: as the key row does, the no-value row under
+// `missingLabel` where written.
+function keyLabel(
+  scale: { field: string; domain: string[] },
+  key: MarkKeySetting,
+) {
+  const { label } = categoricalField(scale.field, {
+    domain: scale.domain,
+    labels: key.labels,
+  })
+  const { missingLabel } = key
+  return (value: string) =>
+    value === '' && missingLabel !== undefined ? missingLabel : label(value)
+}
+
 /**
  * The categories a shape names in a shape key, each as the key names it:
  * three shapes over any number of values, so a shape the range handed out
@@ -512,13 +527,10 @@ export function shapeLabel(
     return undefined
   }
   const { scale, key } = section
-  const field = categoricalField(scale.field, {
-    domain: scale.domain,
-    labels: key.labels,
-  })
+  const label = keyLabel(scale, key)
   const values = scale.entries
     .filter(e => e.shape === shape)
-    .map(e => field.label(e.value))
+    .map(e => label(e.value))
   return values.length > 0 ? values.join(', ') : undefined
 }
 
@@ -538,20 +550,14 @@ export function categoryLabel(
   }
   const { scale, key } = section
   if (scale.kind === 'threshold') {
-    return thresholdKeyEntries(
-      scale.domain,
-      scale.range,
-      scale,
-      key.labels,
-    ).find(e => cssColorToABGR(e.color) === color)?.label
+    return thresholdRows(scale, key).find(
+      e => e.color !== undefined && cssColorToABGR(e.color) === color,
+    )?.label
   }
   if (scale.kind !== 'categorical') {
     return undefined
   }
-  const { label } = categoricalField(scale.field, {
-    domain: scale.domain,
-    labels: key.labels,
-  })
+  const label = keyLabel(scale, key)
   const values = scale.entries
     .filter(e => e.color === color)
     .map(e => label(e.value))
