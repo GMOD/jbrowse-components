@@ -36,6 +36,7 @@ import {
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
 import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { NamedSpan } from './laneLabels.ts'
@@ -284,13 +285,13 @@ export function mismatchColor(field: string) {
 function addAlignmentDetail(
   builder: RibbonBuilder,
   feature: Feature,
+  ops: Uint32Array | undefined,
   upper: Lane,
   lower: Lane,
   featureIdx: number,
   fill: number,
   mismatch: number,
 ) {
-  const ops = feature.get('alignmentOps') as Uint32Array | undefined
   const mate = feature.get('mate') as LinkMate | undefined
   if (
     ops &&
@@ -392,6 +393,7 @@ function addAlignmentDetail(
  */
 export function buildRibbonGeometry({
   stack,
+  anchorOps = new Map(),
   laneLinks,
   ribbonColor,
   ribbonColorField = '',
@@ -401,8 +403,8 @@ export function buildRibbonGeometry({
   bridgeSkippedLanes,
 }: {
   stack: LaneStack
-  /** per `upper|lower` pair, the direct records fetched for it */
-  laneLinks: ReadonlyMap<string, { links: Feature[] }> | undefined
+  anchorOps?: AlignmentOpsById
+  laneLinks: ReadonlyMap<string, LaneLinks> | undefined
   ribbonColor: string
   ribbonColorField?: string
   /** what the ramp and label modes paint from; see the model's `ribbonAttributeRanges` */
@@ -490,6 +492,7 @@ export function buildRibbonGeometry({
               addAlignmentDetail(
                 builder,
                 group.feature,
+                anchorOps.get(group.feature.id()),
                 upper,
                 farLane,
                 target,
@@ -503,10 +506,11 @@ export function buildRibbonGeometry({
         })
       })
     }
-    for (const link of row > 0
-      ? (laneLinks?.get(`${upper.assemblyName}|${lower.assemblyName}`)?.links ??
-        [])
-      : []) {
+    const pairLinks =
+      row > 0
+        ? laneLinks?.get(`${upper.assemblyName}|${lower.assemblyName}`)
+        : undefined
+    for (const link of pairLinks?.links ?? []) {
       const mate = link.get('mate') as {
         refName: string
         start: number
@@ -546,7 +550,16 @@ export function buildRibbonGeometry({
         const fill = colorOf(link.get('strand') === -1 ? -1 : 1, link)
         const tiled =
           fill >>> 24 !== 0 &&
-          addAlignmentDetail(ribbons, link, upper, lower, idx, fill, mismatch)
+          addAlignmentDetail(
+            ribbons,
+            link,
+            pairLinks?.ops.get(link.id()),
+            upper,
+            lower,
+            idx,
+            fill,
+            mismatch,
+          )
         if (!tiled) {
           ribbons.add(s1, ordered, KIND_BASE, idx, fill)
         }

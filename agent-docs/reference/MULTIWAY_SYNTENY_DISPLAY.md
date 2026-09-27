@@ -122,10 +122,13 @@ sketched in the plugin's vision documents.
 ### 1.1 The data model
 
 **One fetch.** `fetchPhases` in `MW/afterAttach.ts` issues one
-`CoreGetFeatures` over the anchor's merged static blocks with
+`MultiWayGetFeatures` over the anchor's merged static blocks with
 `opts: { mateShape: 'grouped', lodMode: lodTier, clipToRegion: true, splitAtGapBp }`
 and no `targetAssemblyName`, so the adapter answers with every pair anchored on
-the queried assembly. The lane selection reaches the fetch as `haplotypes` only
+the queried assembly. That RPC is `CoreGetFeatures` with each piece's packed
+alignment ops lifted out of the feature and returned beside it by id, so the
+features the display holds are plain data: a details panel freezes and a
+session stringifies what it is handed, and neither can hold a typed array. The lane selection reaches the fetch as `haplotypes` only
 for an adapter that declares its lanes (`fetchLaneSelection`), since that is the
 only kind that can answer for a subset more cheaply than for all of them;
 everywhere else `laneSelection` filters `rowAssemblies` locally. Before a

@@ -13,6 +13,7 @@ import { declaredLanesOf } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
 
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { NO_OPS } from './alignmentOps.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
@@ -178,7 +179,9 @@ test('a re-anchor waits for its lane links again', () => {
   }
   const land = () => {
     const [spec] = display.laneLinksFetchSpecs
-    display.setLaneLinks(new Map([[spec!.lane, { key: spec!.key, links: [] }]]))
+    display.setLaneLinks(
+      new Map([[spec!.lane, { key: spec!.key, links: [], ops: NO_OPS }]]),
+    )
   }
 
   onto('volvox', ['volvox_random', 'volvox_ins'])
@@ -920,10 +923,10 @@ describe('the level-of-detail tier', () => {
         targetAssemblyName?: string
         clipToRegion?: boolean
       }
-    await until(() => calls.some(c => c.name === 'CoreGetFeatures'))
-    expect(opts(calls.find(c => c.name === 'CoreGetFeatures')!).lodMode).toBe(
-      'coarse',
-    )
+    await until(() => calls.some(c => c.name === 'MultiWayGetFeatures'))
+    expect(
+      opts(calls.find(c => c.name === 'MultiWayGetFeatures')!).lodMode,
+    ).toBe('coarse')
     await when(() => display.lodTierInfo !== undefined, { timeout: 5000 })
     expect(calls.filter(c => c.name === 'CoreGetInfo')).toHaveLength(1)
 
@@ -944,7 +947,7 @@ describe('the level-of-detail tier', () => {
     const linkCall = () =>
       calls.find(
         c =>
-          c.name === 'CoreGetFeatures' &&
+          c.name === 'MultiWayGetFeatures' &&
           opts(c).targetAssemblyName === 'volvox_ins',
       )
     await until(() => linkCall() !== undefined)
@@ -970,15 +973,13 @@ describe('the level-of-detail tier', () => {
       [0, 800],
       [800, 1000],
     ])
-    await until(() => calls.some(c => c.name === 'CoreGetFeatures'))
-    const { args } = calls.find(c => c.name === 'CoreGetFeatures')!
+    await until(() => calls.some(c => c.name === 'MultiWayGetFeatures'))
+    const { args } = calls.find(c => c.name === 'MultiWayGetFeatures')!
     expect(args.opts).toEqual({
       mateShape: 'grouped',
       lodMode: 'fine',
       clipToRegion: true,
       splitAtGapBp: 10000,
-      // a header naming no star anchor: every gutter is a direct pair
-      keepAlignment: true,
     })
     expect(args.regions).toEqual([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
@@ -1253,7 +1254,14 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
 
     display.setLaneLinks(
       new Map([
-        [pair, { key: display.laneLinksFetchSpecs[0]!.key, links: [] }],
+        [
+          pair,
+          {
+            key: display.laneLinksFetchSpecs[0]!.key,
+            links: [],
+            ops: NO_OPS,
+          },
+        ],
       ]),
     )
     const composed = display.pairLinks.get(pair)!.links
@@ -1314,11 +1322,16 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
         end: 1250,
       },
     })
-    display.setLaneLinks(new Map([[pair, { key: 'k', links: [direct] }]]))
+    display.setLaneLinks(
+      new Map([[pair, { key: 'k', links: [direct], ops: NO_OPS }]]),
+    )
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
   })
 
-  const readOnAnchor = async (answer: SimpleFeature[]) => {
+  const readOnAnchor = async (
+    answer: SimpleFeature[],
+    ops: ReadonlyMap<string, Uint32Array> = NO_OPS,
+  ) => {
     const calls: { name: string; args: Record<string, unknown> }[] = []
     const opts = (call: { args: Record<string, unknown> }) =>
       (call.args.opts ?? {}) as Record<string, unknown>
@@ -1332,7 +1345,7 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
           ? { hasCoarseTier: false, anchorAssemblyName: 'volvox', lanes: [] }
           : opts({ args }).queryAssemblyName === undefined
             ? []
-            : answer
+            : { features: answer, ops }
       },
     })
     await when(
@@ -1344,7 +1357,7 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     const pairCall = () =>
       calls.find(
         c =>
-          c.name === 'CoreGetFeatures' &&
+          c.name === 'MultiWayGetFeatures' &&
           opts(c).queryAssemblyName !== undefined,
       )
     return { display, pairCall, opts }
@@ -1368,7 +1381,6 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
       queryAssemblyName: 'volvox_random',
       targetAssemblyName: 'volvox_ins',
       clipToRegion: true,
-      keepAlignment: true,
     })
   })
 
@@ -1385,9 +1397,11 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
         start: 1150,
         end: 1230,
       },
-      alignmentOps: Uint32Array.from(parseCigar2('40=20D40=')),
     })
-    const { display } = await readOnAnchor([direct])
+    const { display } = await readOnAnchor(
+      [direct],
+      new Map([['direct', Uint32Array.from(parseCigar2('40=20D40='))]]),
+    )
     expect(
       display.pairLinks.get(pair)!.links[0]!.get('composedThrough'),
     ).toBeDefined()

@@ -29,7 +29,7 @@ function rec(
   laneRef: string,
   laneStart: number,
   laneEnd: number,
-  alignmentOps: Uint32Array,
+  ops: Uint32Array,
   opts: { strand?: 1 | -1; anchorStart?: number; anchorEnd?: number } = {},
 ): LanePlacementRecord {
   const { strand = 1, anchorStart = 100, anchorEnd = 200 } = opts
@@ -41,13 +41,13 @@ function rec(
     start: laneStart,
     end: laneEnd,
     strand,
+    ops,
     feature: new SimpleFeature({
       uniqueId: id,
       refName: 'chr1',
       start: anchorStart,
       end: anchorEnd,
       strand,
-      alignmentOps,
       mate: { refName: laneRef, start: laneStart, end: laneEnd },
     }),
   }

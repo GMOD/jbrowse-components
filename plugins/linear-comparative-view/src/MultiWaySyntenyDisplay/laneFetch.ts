@@ -1,7 +1,7 @@
+import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
 import type { Alias } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
 import type { LodTier } from '@jbrowse/synteny-core'
 
 export interface LaneRegion {
@@ -77,9 +77,8 @@ export interface HeldLaneGenes {
   genes: LaneGene[]
 }
 
-export interface HeldLaneLinks {
+export interface HeldLaneLinks extends LaneLinks {
   key: string
-  links: Feature[]
 }
 
 /**

@@ -3,6 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { mateSlice } from '../mateBpAt.ts'
 import { composeAlignmentOps } from './composeAlignmentOps.ts'
 
+import type { LaneLinks } from './alignmentOps.ts'
 import type { ComposeCursors } from './composeAlignmentOps.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -20,6 +21,7 @@ export interface LanePlacementRecord {
   end: number
   strand: 1 | -1
   feature: Feature
+  ops?: Uint32Array
 }
 
 export interface ComposeLaneLinksOpts {
@@ -69,7 +71,7 @@ function stillOpen(active: LanePlacementRecord[], next: LanePlacementRecord) {
  * in the upper lane, `mate` in the lower, `strand` the product of the two
  * orientations. Where both records carry their own alignment the two are
  * stepped through together (`composeAlignmentOps`), which places the stretch
- * exactly and hands the link the `alignmentOps` a direct pair carries, so the
+ * exactly and hands the link the ops a direct pair carries, so the
  * gutter draws the same indels and mismatches; otherwise the stretch is mapped
  * by linear interpolation within each record.
  *
@@ -83,10 +85,11 @@ export function composeLaneLinks({
   upperAssemblyName,
   lowerAssemblyName,
   minBp = 1,
-}: ComposeLaneLinksOpts) {
+}: ComposeLaneLinksOpts): LaneLinks {
   const upperSorted = [...upper].sort(byAnchor)
   const lowerSorted = [...lower].sort(byAnchor)
   const links: SimpleFeature[] = []
+  const ops = new Map<string, Uint32Array>()
   const cursors: ComposeCursors = new Map()
   let activeUpper: LanePlacementRecord[] = []
   let activeLower: LanePlacementRecord[] = []
@@ -102,9 +105,13 @@ export function composeLaneLinks({
       const lowerSpan = composed
         ? { start: composed.lowerStart, end: composed.lowerEnd }
         : projectOntoLane(l, s, e)
+      const uniqueId = `composed:${u.feature.id()}@${u.start}-${u.end}|${l.feature.id()}@${l.start}-${l.end}|${u.anchorRefName}:${s}-${e}`
+      if (composed) {
+        ops.set(uniqueId, composed.ops)
+      }
       links.push(
         new SimpleFeature({
-          uniqueId: `composed:${u.feature.id()}@${u.start}-${u.end}|${l.feature.id()}@${l.start}-${l.end}|${u.anchorRefName}:${s}-${e}`,
+          uniqueId,
           assemblyName: upperAssemblyName,
           refName: u.refName,
           start: upperSpan.start,
@@ -112,7 +119,6 @@ export function composeLaneLinks({
           strand: u.strand * l.strand,
           type: 'match',
           composedThrough: { refName: u.anchorRefName, start: s, end: e },
-          ...(composed ? { alignmentOps: composed.ops } : {}),
           mate: {
             assemblyName: lowerAssemblyName,
             refName: l.refName,
@@ -145,5 +151,5 @@ export function composeLaneLinks({
       j++
     }
   }
-  return links
+  return { links, ops }
 }

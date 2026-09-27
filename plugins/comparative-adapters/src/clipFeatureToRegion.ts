@@ -154,7 +154,9 @@ function clippedFeature(
  * gap-free run of its alignment. A piece keeps every field of the record
  * except the alignment strings, which are what made the whole record
  * expensive to ship; `keepAlignment` hands back the piece's own stretch of
- * them as packed ops in `alignmentOps`.
+ * them as packed ops in `alignmentOps`, which only the multi-way display's
+ * `MultiWayGetFeatures` reads and lifts out before the feature leaves the
+ * worker.
  *
  * A piece the window cuts names the window in its ids, so the pieces one
  * record leaves in two regions stay two features. A record or run the window

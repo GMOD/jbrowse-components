@@ -151,7 +151,7 @@ function stateFor(
       return held
     }
   }
-  const ops = record.feature.get('alignmentOps') as Uint32Array | undefined
+  const { ops } = record
   const usable = ops && ops.length > 0 && !hasRun(ops)
   const cursor = usable ? cursorAt(record, ops) : undefined
   const state: RecordState = {

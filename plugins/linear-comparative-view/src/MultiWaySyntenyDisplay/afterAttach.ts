@@ -18,6 +18,7 @@ import { fileRefNameOf, specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 import { mergeContiguousRegions } from './layoutMultiWay.ts'
 
+import type { MultiWayFeatures } from './MultiWayGetFeatures.ts'
 import type {
   LaneFetchSpec,
   LaneGenesFetchSpec,
@@ -27,7 +28,7 @@ import type { FetchRegion } from './layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Alias } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import type { LodTier } from '@jbrowse/synteny-core'
@@ -62,7 +63,7 @@ export const SPLIT_AT_GAP_BP = 10_000
 
 function fetchPhases(
   self: MultiWaySyntenyDisplayModel,
-): GlobalFetchPhases<MultiWayFetchArgs, Feature[]> {
+): GlobalFetchPhases<MultiWayFetchArgs, MultiWayFeatures> {
   return {
     prepare: () => {
       const regions = mergeContiguousRegions(
@@ -87,7 +88,8 @@ function fetchPhases(
     // cuts each alignment record to the window on both axes before it crosses
     // the RPC: a lane fitted to whole liftOver chains sat at 80x the window.
     // `splitAtGapBp` cuts it again at every large indel, one placement per run,
-    // and `keepAlignment` keeps each run's own ops, which every gutter draws:
+    // and `MultiWayGetFeatures` hands each run's own ops back beside it, which
+    // every gutter draws:
     // the anchor's from the record itself, a lower one's composed from the two
     // records it sits between (`composeAlignmentOps`).
     // `haplotypes` is the lane selection where the source can cut on it, and it
@@ -96,24 +98,22 @@ function fetchPhases(
     // without this the window comes back whole and the stack throws away the
     // rest. Captured in `prepare` with the tier, so a landing is labelled with
     // the selection it was asked for and not a live re-read at commit
-    run: async ({ regions, lodTier, haplotypes }, ctx) =>
-      dedupe(
-        await ctx.callRpc('CoreGetFeatures', {
-          regions,
-          adapterConfig: self.adapterConfig,
-          opts: {
-            mateShape: 'grouped',
-            lodMode: lodTier,
-            clipToRegion: true,
-            splitAtGapBp: SPLIT_AT_GAP_BP,
-            keepAlignment: true,
-            ...(haplotypes === undefined ? {} : { haplotypes }),
-          },
-        }),
-        r => r.id(),
-      ),
-    commit: (features, { anchor, haplotypes }) => {
-      self.setFeatures(features, anchor, haplotypes)
+    run: async ({ regions, lodTier, haplotypes }, ctx) => {
+      const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
+        regions,
+        adapterConfig: self.adapterConfig,
+        opts: {
+          mateShape: 'grouped',
+          lodMode: lodTier,
+          clipToRegion: true,
+          splitAtGapBp: SPLIT_AT_GAP_BP,
+          ...(haplotypes === undefined ? {} : { haplotypes }),
+        },
+      })
+      return { features: dedupe(features, r => r.id()), ops }
+    },
+    commit: ({ features, ops }, { anchor, haplotypes }) => {
+      self.setFeatures(features, anchor, haplotypes, ops)
     },
   }
 }
@@ -482,27 +482,29 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchSpecs: () => self.laneLinksFetchSpecs,
     held: () => self.laneLinks,
     fetchOne: async (spec, ctx) => {
-      const links = await ctx.callRpc('CoreGetFeatures', {
-        adapterConfig: self.adapterConfig,
-        regions: spec.onAnchor
-          ? spec.regions
-          : await laneRegions(
-              getSession(self),
-              spec.upperAssembly,
-              spec.regions,
-            ),
-        opts: {
-          ...(spec.onAnchor ? { queryAssemblyName: spec.upperAssembly } : {}),
-          targetAssemblyName: spec.lowerAssembly,
-          lodMode: spec.lodTier,
-          clipToRegion: true,
-          splitAtGapBp: SPLIT_AT_GAP_BP,
-          keepAlignment: true,
+      const { features: links, ops } = await ctx.callRpc(
+        'MultiWayGetFeatures',
+        {
+          adapterConfig: self.adapterConfig,
+          regions: spec.onAnchor
+            ? spec.regions
+            : await laneRegions(
+                getSession(self),
+                spec.upperAssembly,
+                spec.regions,
+              ),
+          opts: {
+            ...(spec.onAnchor ? { queryAssemblyName: spec.upperAssembly } : {}),
+            targetAssemblyName: spec.lowerAssembly,
+            lodMode: spec.lodTier,
+            clipToRegion: true,
+            splitAtGapBp: SPLIT_AT_GAP_BP,
+          },
         },
-      })
-      return { key: spec.key, links }
+      )
+      return { key: spec.key, links, ops }
     },
-    empty: spec => ({ key: spec.key, links: [] }),
+    empty: spec => ({ key: spec.key, links: [], ops: new Map() }),
     commit: links => {
       self.setLaneLinks(links)
     },

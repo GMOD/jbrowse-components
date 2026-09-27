@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
+import { NO_OPS } from './alignmentOps.ts'
 import { outlineKey } from './multiwayGeometry.ts'
 import { createDisplay } from './testEnv.ts'
 
@@ -55,7 +56,9 @@ async function stackedDisplay(links: Feature[]) {
     ...orthologFeatures('g2', 400, 500),
     ...orthologFeatures('g3', 700, 800),
   ])
-  display.setLaneLinks(new Map([[LINK_PAIR, { key: 'window-1', links }]]))
+  display.setLaneLinks(
+    new Map([[LINK_PAIR, { key: 'window-1', links, ops: NO_OPS }]]),
+  )
   return display
 }
 
@@ -95,6 +98,7 @@ test('a lane-links commit drops a direct-link hover rather than moving it', asyn
         LINK_PAIR,
         {
           key: 'window-2',
+          ops: NO_OPS,
           links: [
             link('L0', 10, 60),
             link('L1', 110, 210),

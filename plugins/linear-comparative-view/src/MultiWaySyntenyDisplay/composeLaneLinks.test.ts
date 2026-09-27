@@ -18,7 +18,7 @@ function record(
   lane: [string, number, number],
   strand: 1 | -1 = 1,
   anchorRefName = 'chr1',
-  alignmentOps?: Uint32Array,
+  ops?: Uint32Array,
 ): LanePlacementRecord {
   return {
     anchorRefName,
@@ -28,13 +28,13 @@ function record(
     start: lane[1],
     end: lane[2],
     strand,
+    ops,
     feature: new SimpleFeature({
       uniqueId: id,
       refName: anchorRefName,
       start: anchor[0],
       end: anchor[1],
       strand,
-      ...(alignmentOps ? { alignmentOps } : {}),
       mate: { refName: lane[0], start: lane[1], end: lane[2] },
     }),
   }
@@ -44,7 +44,7 @@ function ops(...pairs: [number, number][]) {
   return Uint32Array.from(pairs.map(([len, op]) => (len << 4) | op))
 }
 
-function compose(
+function composeWithOps(
   upper: LanePlacementRecord[],
   lower: LanePlacementRecord[],
   minBp?: number,
@@ -56,6 +56,14 @@ function compose(
     lowerAssemblyName: 'genomeC',
     minBp,
   })
+}
+
+function compose(
+  upper: LanePlacementRecord[],
+  lower: LanePlacementRecord[],
+  minBp?: number,
+) {
+  return composeWithOps(upper, lower, minBp).links
 }
 
 function shape(link: { get: (k: string) => unknown }) {
@@ -300,8 +308,9 @@ test('a gutter a star never states carries the alignment composed through it', (
     'chr1',
     ops([100, CIGAR_EQ]),
   )
-  const [link] = compose([upper], [lower])
-  const packed = link!.get('alignmentOps') as Uint32Array
+  const composed = composeWithOps([upper], [lower])
+  const [link] = composed.links
+  const packed = composed.ops.get(link!.id())!
   expect([...packed].map(v => [v >>> 4, v & 0xf])).toEqual([
     [40, CIGAR_EQ],
     [10, CIGAR_I],
@@ -315,11 +324,13 @@ test('a gutter a star never states carries the alignment composed through it', (
 })
 
 test('a gutter whose records state no alignment keeps the interpolated span', () => {
-  const [link] = compose(
+  const composed = composeWithOps(
     [record('u', [100, 200], ['Pp1', 1000, 1090])],
     [record('l', [100, 200], ['Tc1', 5000, 5100])],
   )
-  expect(link!.get('alignmentOps')).toBeUndefined()
+  const [link] = composed.links
+  expect(composed.ops.size).toBe(0)
+  expect(link!.toJSON()).not.toHaveProperty('alignmentOps')
   expect([link!.get('start'), link!.get('end')]).toEqual([1000, 1090])
 })
 
@@ -358,8 +369,8 @@ test('composing one wide record against many split ones walks it once', () => {
       ),
     )
   }
-  const links = compose(upper, lower)
+  const { links, ops: composedOps } = composeWithOps(upper, lower)
   expect(links.length).toBe(n)
-  expect(links[n - 1]!.get('alignmentOps')).toBeDefined()
+  expect(composedOps.get(links[n - 1]!.id())).toBeDefined()
   expect(reads).toBeLessThan(10_000)
 })

@@ -66,6 +66,7 @@ import {
 import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.ts'
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
+import { NO_OPS } from './alignmentOps.ts'
 import { axisPlacement, axisSpan, displayedRegionSpans } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
@@ -130,6 +131,7 @@ import {
 
 import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
 import type { AxisPlacement } from './anchorAxis.ts'
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
@@ -260,7 +262,12 @@ export function stateModelFactory(
        * the ortholog fetch's answer beside the anchor assembly it asked for
        */
       fetchedFeatures: undefined as
-        | { anchor: string; features: Feature[]; lanes?: string[] }
+        | {
+            anchor: string
+            features: Feature[]
+            ops: AlignmentOpsById
+            lanes?: string[]
+          }
         | undefined,
       /**
        * #volatile
@@ -415,8 +422,9 @@ export function stateModelFactory(
           features: Feature[],
           anchor: string = containingLgv(self).assemblyNames[0]!,
           lanes?: string[],
+          ops: AlignmentOpsById = NO_OPS,
         ) {
-          self.fetchedFeatures = { anchor, features, lanes }
+          self.fetchedFeatures = { anchor, features, ops, lanes }
           observeRibbonFeatures(features)
         },
         /**
@@ -643,6 +651,14 @@ export function stateModelFactory(
           )
           ? held.features
           : undefined
+      },
+      /**
+       * #getter
+       * each fetched alignment piece's own ops, by feature id, beside
+       * `features`
+       */
+      get featureOps(): AlignmentOpsById {
+        return (this.features && self.fetchedFeatures?.ops) ?? NO_OPS
       },
       /**
        * #getter
@@ -1943,8 +1959,8 @@ export function stateModelFactory(
        * record per placement either lane makes. Off the fetched sets and the
        * session's assemblies, never the frames, so a settle recomposes nothing
        */
-      get pairLinks(): ReadonlyMap<string, { links: Feature[] }> {
-        const out = new Map<string, { links: Feature[] }>()
+      get pairLinks(): ReadonlyMap<string, LaneLinks> {
+        const out = new Map<string, LaneLinks>()
         const rows = self.rowAssemblies
         const placementsOn = (assemblyName: string) =>
           self.groups.flatMap(group =>
@@ -1958,6 +1974,7 @@ export function stateModelFactory(
                 end: p.end,
                 strand: p.orientation < 0 ? -1 : 1,
                 feature: group.feature,
+                ops: self.featureOps.get(group.feature.id()),
               }),
             ),
           )
@@ -1975,14 +1992,15 @@ export function stateModelFactory(
               !self.holdsAssembly(upper) ||
               !self.holdsAssembly(lower))
           ) {
-            out.set(pair, {
-              links: composeLaneLinks({
+            out.set(
+              pair,
+              composeLaneLinks({
                 upper: placementsOn(upper),
                 lower: placementsOn(lower),
                 upperAssemblyName: upper,
                 lowerAssemblyName: lower,
               }),
-            })
+            )
           }
         }
         return out
@@ -1997,6 +2015,7 @@ export function stateModelFactory(
       get ribbonGeometry() {
         return buildRibbonGeometry({
           stack: self.laneStack,
+          anchorOps: self.featureOps,
           laneLinks: self.pairLinks,
           ribbonColor: self.ribbonColor,
           ribbonColorField: self.ribbonColorField,

@@ -19,6 +19,7 @@ import {
   KIND_BASE_TILE,
   KIND_MARKER,
 } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { NO_OPS } from './alignmentOps.ts'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { buildLanes } from './laneStack.ts'
@@ -317,7 +318,7 @@ describe('the ribbons', () => {
     })
     const { cells, layers } = buildRibbonGeometry({
       stack: s,
-      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      laneLinks: new Map([['peach|cacao', { links: [link], ops: NO_OPS }]]),
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: true,
@@ -345,11 +346,20 @@ describe('the ribbons', () => {
       strand: 1,
       assemblyName: 'peach',
       mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 1580 },
-      alignmentOps: ops([40, CIGAR_M], [20, CIGAR_D], [40, CIGAR_M]),
     })
     const { cells } = buildRibbonGeometry({
       stack: s,
-      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      laneLinks: new Map([
+        [
+          'peach|cacao',
+          {
+            links: [link],
+            ops: new Map([
+              ['link', ops([40, CIGAR_M], [20, CIGAR_D], [40, CIGAR_M])],
+            ]),
+          },
+        ],
+      ]),
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: false,
@@ -378,11 +388,20 @@ describe('the ribbons', () => {
       strand: 1,
       assemblyName: 'peach',
       mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 1600 },
-      alignmentOps: ops([50, CIGAR_EQ], [1, CIGAR_X], [49, CIGAR_EQ]),
     })
     const { cells } = buildRibbonGeometry({
       stack: s,
-      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      laneLinks: new Map([
+        [
+          'peach|cacao',
+          {
+            links: [link],
+            ops: new Map([
+              ['link', ops([50, CIGAR_EQ], [1, CIGAR_X], [49, CIGAR_EQ])],
+            ]),
+          },
+        ],
+      ]),
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: false,
@@ -428,14 +447,23 @@ describe('the ribbons', () => {
       strand: 1,
       assemblyName: 'peach',
       mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 3500 },
-      alignmentOps: ops(...cluster, [979, CIGAR_EQ], ...cluster, [
-        979,
-        CIGAR_EQ,
-      ]),
     })
     const { cells } = buildRibbonGeometry({
       stack: s,
-      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      laneLinks: new Map([
+        [
+          'peach|cacao',
+          {
+            links: [link],
+            ops: new Map([
+              [
+                'link',
+                ops(...cluster, [979, CIGAR_EQ], ...cluster, [979, CIGAR_EQ]),
+              ],
+            ]),
+          },
+        ],
+      ]),
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: false,
@@ -468,10 +496,12 @@ describe('the ribbons', () => {
       strand: -1,
       assemblyName: 'grape',
       mate: { assemblyName: 'peach', refName: 'Pp1', start: 1100, end: 1220 },
-      alignmentOps: ops([50, CIGAR_M], [20, CIGAR_I], [50, CIGAR_M]),
     })
     const { cells } = buildRibbonGeometry({
       stack: stack({ features: [record] }),
+      anchorOps: new Map([
+        ['r1', ops([50, CIGAR_M], [20, CIGAR_I], [50, CIGAR_M])],
+      ]),
       laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
@@ -697,7 +727,7 @@ describe('the ribbons', () => {
     })
     const { cells, targets } = buildRibbonGeometry({
       stack: s,
-      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      laneLinks: new Map([['peach|cacao', { links: [link], ops: NO_OPS }]]),
       ribbonColor: 'grey',
       drawCurves: true,
       bridgeSkippedLanes: false,
@@ -722,15 +752,18 @@ describe('the ribbons', () => {
       ],
       assemblyNames: ['grape', 'peach', 'cacao'],
     })
-    const [composed] = composeLaneLinks({
+    const { links } = composeLaneLinks({
       upper: [placement('Pp1', 1500, 1600)],
       lower: [placement('Tc1', 1500, 1600)],
       upperAssemblyName: 'peach',
       lowerAssemblyName: 'cacao',
     })
+    const [composed] = links
     const { targets } = buildRibbonGeometry({
       stack: s,
-      laneLinks: new Map([['peach|cacao', { links: [composed!] }]]),
+      laneLinks: new Map([
+        ['peach|cacao', { links: [composed!], ops: NO_OPS }],
+      ]),
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: false,

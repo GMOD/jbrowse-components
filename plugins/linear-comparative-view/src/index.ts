@@ -13,6 +13,7 @@ import SyntenyGetCigarMap from './LinearSyntenyRPC/SyntenyGetCigarMap.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
 import SyntenyResolveMatchingRegion from './LinearSyntenyRPC/SyntenyResolveMatchingRegion.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
+import MultiWayGetFeatures from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
 import MultiWaySyntenyDisplayF from './MultiWaySyntenyDisplay/index.ts'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
 
@@ -62,6 +63,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     pluginManager.addRpcMethod(() => new DiagonalizeSyntenyRpc(pluginManager))
     pluginManager.addRpcMethod(() => new SyntenyDiscoverMates(pluginManager))
     pluginManager.addRpcMethod(() => new SyntenyGetCigarMap(pluginManager))
+    pluginManager.addRpcMethod(() => new MultiWayGetFeatures(pluginManager))
     pluginManager.addRpcMethod(
       () => new SyntenyResolveMatchingRegion(pluginManager),
     )

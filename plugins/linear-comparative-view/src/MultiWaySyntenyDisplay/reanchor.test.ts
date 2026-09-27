@@ -203,7 +203,7 @@ test('a fetch landing after the navigation is labelled with the anchor it asked 
     trackAssemblyNames: [A, B, C],
     geneTracks: [],
     rpc: name =>
-      name === 'CoreGetFeatures'
+      name === 'MultiWayGetFeatures'
         ? new Promise(resolve => landings.push(resolve))
         : Promise.resolve([]),
   })

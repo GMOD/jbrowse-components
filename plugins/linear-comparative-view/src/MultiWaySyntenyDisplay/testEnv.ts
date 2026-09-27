@@ -15,6 +15,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
+import { NO_OPS } from './alignmentOps.ts'
 import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
 
@@ -244,7 +245,12 @@ export function createDisplayWithSession({
           _sessionId: string,
           functionName: string,
           args: Record<string, unknown>,
-        ) => rpc(functionName, args),
+        ) =>
+          rpc(functionName, args).then(answer =>
+            functionName === 'MultiWayGetFeatures' && Array.isArray(answer)
+              ? { features: answer, ops: NO_OPS }
+              : answer,
+          ),
       },
       assemblyManager: {
         get: assemblyOf,
