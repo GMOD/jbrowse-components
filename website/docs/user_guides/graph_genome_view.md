@@ -537,7 +537,7 @@ draws the graph, around segment `s1277` of the
 different colorings for different questions: stable rank shows _whose_ sequence
 an arm is, and the reference-position ramp shows _where_ each segment sits.
 
-<Figure caption="The round trip between the two views. Left: the graph at K12's tRNA cluster with the CFT073 entry boxed, above the view that entry opens. Right: segment s1277 in the segments lane, above the graph track's cut of its neighbourhood." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
+<Figure caption="The round trip between the two views. Left: the graph at K12's tRNA cluster with the CFT073 entry boxed, above the view that entry opens. Right: the segments lane's track menu with Display types → Graph boxed, above the force-directed graph the lane turns into." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
 
 ## Which strain takes which path
 
