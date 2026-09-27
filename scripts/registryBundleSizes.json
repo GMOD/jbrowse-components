@@ -1,17 +1,17 @@
 {
   "main": {
-    "bytes": 7559886,
+    "bytes": 7560740,
     "uiBytes": 2240811,
     "modules": 2020
   },
   "worker": {
-    "bytes": 5034737,
+    "bytes": 5035591,
     "uiBytes": 471958,
     "modules": 1178
   },
-  "mainKb": 7383,
+  "mainKb": 7384,
   "mainUiKb": 2188,
-  "workerKb": 4917,
+  "workerKb": 4918,
   "workerUiKb": 461,
   "uiSavedKb": 1727
 }
