@@ -277,9 +277,9 @@ bgzip -f Alu.young_share.bed
 tabix -f -p bed Alu.young_share.bed.gz
 ```
 
-Each column is one mark track. A jexl colour paints the two directions apart,
-and both tracks pin the same `scales.y`, so the strand lane's flatness reads
-against the young share's swing.
+The young share is one mark track on a symmetric pinned axis, coloured by a
+threshold at 0 so the key names the two directions. **Edit plot...** in the
+track menu sets the same cut, colours and key names on a track already open.
 
 ```json addtrack
 {
@@ -307,7 +307,14 @@ against the young share's swing.
           "mark": "bar",
           "encoding": {
             "y": "youngLog2",
-            "color": "jexl:feature.youngLog2 > 0 ? '#d73027' : '#4575b4'"
+            "color": {
+              "field": "youngLog2",
+              "scale": "threshold",
+              "domain": [0],
+              "range": ["#4575b4", "#d73027"],
+              "labels": ["below the genome-wide share", "above it"],
+              "title": "AluY share"
+            }
           }
         }
       ]

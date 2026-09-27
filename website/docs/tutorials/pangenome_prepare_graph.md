@@ -232,7 +232,10 @@ haplotype.
 With a **plain GFA**, the path walk that built the index recorded who visits
 each segment, as an `SM:Z:` tag: it reaches the node panel as `carriedBy` and a
 track as `feature.samples`/`feature.carriers`, so the graph track can be colored
-by carriage:
+by carriage. **Color by... → Attribute...** with `carriers` gives each count a
+colour of its own and a key. Past a handful of haplotypes a ramp reads better,
+and **Edit as JSON...** in the same dialog takes one, here from red for a
+segment one haplotype carries to grey for the most widely carried:
 
 ```json addtrack
 {
@@ -245,7 +248,13 @@ by carriage:
     "uri": "graph"
   },
   "displayDefaults": {
-    "color": "jexl:feature.carriers>3 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
+    "color": {
+      "field": "carriers",
+      "scale": "linear",
+      "domainMin": 1,
+      "range": ["#e31a1c", "#bdbdbd"],
+      "title": "Haplotypes carrying"
+    }
   }
 }
 ```

@@ -174,13 +174,14 @@ building one from a URL.
 In bacteria the gene symbol is effectively the ortholog id, since NCBI reuses
 standardized symbols across strains. On each gene track, pick **Color by... →
 Attribute...** from the track menu and enter `gene`. Every distinct value gets
-its own deterministic color, so an ortholog carries one color down all three
-panels. Features with no value are grey; most genes here carry only a locus tag.
+its own color from one palette, chosen from the value itself, so an ortholog
+carries one color down all three panels. Features with no value are grey; most
+genes here carry only a locus tag.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
-The dialog writes a display color expression, one line of config on the hub's
-gene track:
+The dialog writes the field into the display's `color`, one line of config on
+the hub's gene track:
 
 ```json addtrack
 {
@@ -200,7 +201,7 @@ gene track:
   },
   "displayDefaults": {
     "showOnlyGenes": true,
-    "color": "jexl:randomColor(get(feature,'gene'))"
+    "color": { "field": "gene" }
   }
 }
 ```

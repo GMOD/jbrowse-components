@@ -220,9 +220,9 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
 JSON
 jb add-track-json track.json --out "$APP" --update
 
-# Two tracks over the per-megabase BED, one column each, on one fixed axis so
-# the strand lane's flatness reads against the young share's swing. Bars grow
-# from zero, red above and blue below.
+# Two tracks over the per-megabase BED, one column each, on one fixed axis.
+# Bars grow from zero, coloured by a threshold at 0 whose key names the two
+# directions.
 for lane in young:youngLog2 strand:strandLog2; do
   kind=${lane%%:*}
   field=${lane#*:}
@@ -246,7 +246,14 @@ for lane in young:youngLog2 strand:strandLog2; do
           "mark": "bar",
           "encoding": {
             "y": "@FIELD@",
-            "color": "jexl:feature.@FIELD@ > 0 ? '#d73027' : '#4575b4'"
+            "color": {
+              "field": "@FIELD@",
+              "scale": "threshold",
+              "domain": [0],
+              "range": ["#4575b4", "#d73027"],
+              "labels": ["below expected", "above expected"],
+              "title": "@FAMILY@ @KIND@ share"
+            }
           }
         }
       ]

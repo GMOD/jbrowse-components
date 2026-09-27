@@ -243,9 +243,9 @@ awk -F'\t' -v OFS='\t' '
 ' 3-filt/portcullis_filtered.pass.junctions.tab > junctions.bed
 ```
 
-The track is a feature track with the arc display picked, and the extra columns
-named so a color callback can read them. This is the STAR file, colored by its
-annotated flag; the same shape reads `canonical_ss` off the portcullis one:
+The track is a feature track drawn as a mark display, with the extra columns
+named so a colour can read them. This is the STAR file, coloured by its
+annotated flag:
 
 ```json addtrack
 {
@@ -271,15 +271,20 @@ annotated flag; the same shape reads `canonical_ss` off the portcullis one:
     {
       "type": "LinearMarkDisplay",
       "displayId": "star_junctions-LinearMarkDisplay",
-      "transform": [
-        { "type": "filter", "expr": "jexl:get(feature,'score')>=3" }
-      ],
+      "transform": [{ "type": "filter", "expr": "jexl:feature.score >= 3" }],
       "marks": [
         {
           "mark": "link",
           "encoding": {
             "size": { "field": "score", "scale": "log", "range": [1, 8] },
-            "color": "jexl:get(feature,'annotated')=='1'?'#377eb8':'#e41a1c'"
+            "color": {
+              "field": "annotated",
+              "scale": "categorical",
+              "domain": ["1", "0"],
+              "range": ["#377eb8", "#e41a1c"],
+              "labels": ["annotated", "novel"],
+              "title": "STAR junction"
+            }
           }
         },
         { "mark": "text", "encoding": { "text": "score" }, "maxBpPerPx": 50 }
@@ -292,8 +297,13 @@ annotated flag; the same shape reads `canonical_ss` off the portcullis one:
 Each junction is a `link` from its start to its end, stroked by its score
 through a log scale, with a `text` mark printing the score over it; the `filter`
 step is the same read-support floor the sashimi menu offers, applied to the
-file's whole-library counts. The extra columns arrive as text, so the colour
-callback compares against `'1'` rather than `1`.
+file's whole-library counts. The colour names each value of `annotated` in the
+key, and lists them as strings because the extra columns arrive as text.
+
+For the portcullis file, the colour's `field` is `canonical_ss`, its `domain`
+`["C", "S", "N"]`, and its `labels` canonical, semi-canonical and non-canonical,
+with a third colour in `range`. **Edit plot...** in the track menu edits the
+same marks, colours and filter on a track already open.
 
 A per-transcript result, such as a differential transcript usage test, goes into
 the gene track's GFF3 instead, and

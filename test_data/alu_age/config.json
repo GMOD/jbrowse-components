@@ -130,7 +130,14 @@
               "mark": "bar",
               "encoding": {
                 "y": "youngLog2",
-                "color": "jexl:feature.youngLog2 > 0 ? '#d73027' : '#4575b4'"
+                "color": {
+                  "field": "youngLog2",
+                  "scale": "threshold",
+                  "domain": [0],
+                  "range": ["#4575b4", "#d73027"],
+                  "labels": ["below the genome-wide share", "above it"],
+                  "title": "AluY share"
+                }
               }
             }
           ]
@@ -162,7 +169,14 @@
               "mark": "bar",
               "encoding": {
                 "y": "strandLog2",
-                "color": "jexl:feature.strandLog2 > 0 ? '#d73027' : '#4575b4'"
+                "color": {
+                  "field": "strandLog2",
+                  "scale": "threshold",
+                  "domain": [0],
+                  "range": ["#4575b4", "#d73027"],
+                  "labels": ["below a half", "above it"],
+                  "title": "Plus-strand share"
+                }
               }
             }
           ]

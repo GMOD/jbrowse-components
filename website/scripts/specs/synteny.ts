@@ -63,14 +63,13 @@ export const CGIAB_ASM_PIF_TRACK = {
 // synteny_visualization.md tutorial.
 //
 // `geneColor` is the display's `color` slot, written on all three gene tracks at
-// once: the "Color by attribute" dialog produces
-// `jexl:randomColor(get(feature,'<attr>'))`, and in bacteria the `gene`
-// attribute is the ortholog id, so the same symbol takes the same color in every
-// panel. Omitted by default, which encodes byte-identically to the version
-// without the parameter.
+// once: the "Color by attribute" dialog writes `{ field: '<attr>' }`, and in
+// bacteria the `gene` attribute is the ortholog id, so the same symbol takes the
+// same color in every panel. Omitted by default, which encodes byte-identically
+// to the version without the parameter.
 export function hpyloriSyntenyWithGenes({
   geneColor,
-}: { geneColor?: string } = {}) {
+}: { geneColor?: { field: string } } = {}) {
   // showOnlyGenes collapses each locus to its gene glyph (no CDS/mRNA
   // sub-features), so the lane reads as a tidy row of genes rather than nested
   // boxes
@@ -4740,24 +4739,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // genes carry no `gene` attribute at all, only a locus tag, so every one of
   // them came out the same color and read as a large named group.
   //
-  // It used to carry a hand-written `? … : 'rgb(175,175,175)'` else-branch.
-  // The grey moved into `randomColor`, where a missing value now returns a
-  // neutral instead of throwing on `undefined.length`; see its docstring.
-  //
-  // The colored genes stay on `randomColor` rather than a curated rainbow, for
-  // the same reason. Review: "ideally we get a better palette, pulling from good
-  // color set rather than like random rgb" — answered in `randomColor` itself
-  // rather than here. It places its hues in OKLCH at a fixed lightness and
-  // chroma instead of raw HSL, so every value comes out equally light and
-  // equally colorful, which is the property a curated categorical palette
-  // actually has. It stays a hash rather than a list of N because it has no
-  // allocator: see its docstring.
+  // The color is what the dialog writes, `{ field: 'gene' }`: each symbol
+  // hashes into the curated categorical palette, so it keeps one color down all
+  // three panels.
   {
     mode: 'url',
     name: 'sv_synteny/ortholog_colors',
-    url: hpyloriSyntenyWithGenes({
-      geneColor: "jexl:randomColor(get(feature,'gene'))",
-    }),
+    url: hpyloriSyntenyWithGenes({ geneColor: { field: 'gene' } }),
     readyText: 'NC_018939v1',
     readyTimeout: 60000,
     // the default 800 clips the bottom strain's gene labels

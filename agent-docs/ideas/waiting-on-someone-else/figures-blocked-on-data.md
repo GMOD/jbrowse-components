@@ -1,6 +1,6 @@
 ---
 name: figures-blocked-on-data
-description: Figures nobody can shoot until someone builds, hosts or pays for the data behind them — the junction BED the RNA-seq tutorial section names and nothing hosts, four parked on a cost or a call Colin has not made (wheat Compara, the ortholog palette, a per-level dotplot scale, the wolf-ancestry sweep), and the cancer SV datasets worth shooting plus the three dead ends recorded so nobody re-checks them.
+description: Figures nobody can shoot until someone builds, hosts or pays for the data behind them — the junction BED the RNA-seq tutorial section names and nothing hosts, three parked on a cost or a call Colin has not made (wheat Compara, a per-level dotplot scale, the wolf-ancestry sweep), and the cancer SV datasets worth shooting plus the three dead ends recorded so nobody re-checks them.
 ---
 
 # Figures blocked on data, a cost or a call
@@ -33,8 +33,8 @@ Once it is hosted the figure is ordinary: a spec in `website/scripts/specs/`,
 
 ## Parked on a cost or a decision
 
-Four items surfaced and then left, each because the next move is expensive or
-is not the implementer's to make. The first three came out of the screenshot
+Three items surfaced and then left, each because the next move is expensive or
+is not the implementer's to make. The first two came out of the screenshot
 review, the last out of the 2026-08 tutorial-focus pass.
 
 - **Wheat homoeologs are Compara-derived and Colin does not want that.**
@@ -45,10 +45,6 @@ review, the last out of the 2026-08 tutorial-focus pass.
   ortholog table. Rebuilding wheat the oat way means a *hexaploid* DIAMOND
   self-alignment and a demo-bucket upload. That cost has never been measured,
   which is the first move.
-- **`sv_synteny/ortholog_colors` wants a curated palette**, which means changing
-  core `randomColor` (`packages/core/src/util/color/`, exposed as a jexl
-  function) rather than the spec. Awaiting the word, because that function's
-  output is baked into every config using it.
 - **"Consistent genomic scale per level" across a dotplot set** — the obvious
   lever doesn't work. `squareView()` averages `bpPerPx`, so on the wheat/oat
   pair the hexaploid overflows while the diploid leaves whitespace, and
