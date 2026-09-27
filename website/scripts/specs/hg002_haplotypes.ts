@@ -606,9 +606,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
         geneLane('PAT', { showLabels: 'none', height: 60 }),
       ],
     ),
-    // 838: the two landmark lanes are +120 over the old 640, and the run's own
-    // below-the-fold report asked for the remaining 78
-    viewportHeight: 838,
+    viewportHeight: 850,
   },
   {
     ...CAPTURE,
@@ -617,7 +615,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     // 640 until the two gene lanes came out, then measured back to where the
     // app frame ends. The right-click that used to open a context menu into
     // this height is gone; the header toggle needs none.
-    viewportHeight: 445,
+    viewportHeight: 454,
     // 2x2 rather than a column of four (review). Four 445px frames stacked is
     // most of a page of the same app chrome four times, and the pairs that want
     // comparing are adjacent either way: (1) beside (2) is before and after the

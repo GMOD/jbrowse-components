@@ -119,7 +119,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     readySelector: CLUSTERED_READY,
     readyTimeout: 300000,
     viewportWidth: WIDTH,
-    viewportHeight: 700,
+    viewportHeight: 712,
     diffThreshold: 0.02,
   },
   {

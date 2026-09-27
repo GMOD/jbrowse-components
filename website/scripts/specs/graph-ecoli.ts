@@ -1648,7 +1648,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     viewportWidth: 1000,
-    viewportHeight: 420,
+    viewportHeight: 432,
     hideTooltip: true,
   },
   // The same locus per strain, which is where a path GFA says something an rGFA

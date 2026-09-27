@@ -1472,7 +1472,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    viewportHeight: 700,
+    viewportHeight: 712,
   },
 
   // The deep-time case: the human HOXD cluster over four vertebrate lanes

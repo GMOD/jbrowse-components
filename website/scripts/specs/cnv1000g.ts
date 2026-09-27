@@ -291,7 +291,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     }),
     readySelector: CLUSTERED_READY,
     readyTimeout: 300000,
-    viewportHeight: 960,
+    viewportHeight: 972,
     // 2504 rows floored to 1px: sub-pixel row-boundary jitter between runs
     diffThreshold: 0.02,
     // WHAT THE BLOCK IS (review: "add red text annotation box about what this

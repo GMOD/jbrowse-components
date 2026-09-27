@@ -1640,7 +1640,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     // gene track, the CpG lane, the 380px panel and the 300px collection lane,
     // their headers, and the copy-number key
-    viewportHeight: 1140,
+    viewportHeight: 1162,
   },
 
   // The IGF1 body-size haplotype, drawn as a clustered genotype matrix over 167
