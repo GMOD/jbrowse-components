@@ -81,7 +81,6 @@ import {
   isBakedScheme,
 } from '../shared/alignmentsColor.ts'
 import {
-  COLOR_SCHEMES,
   paintsEveryBase,
   paintsModifications,
   workerColorBy,
@@ -206,7 +205,6 @@ import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
   BaseLayer,
-  ColorSchemeType,
   FilterBy,
   GroupBy,
   ReadColorBy,
@@ -268,16 +266,6 @@ export interface HoverCoverageBand {
   topOffset: number
   coverageHeight: number
 }
-
-// Color schemes that only carry meaning for paired-end data. Toggling "view as
-// pairs" auto-switches between plain and pairing coloring for these, but leaves
-// an explicit non-pairing choice (tag, methylation, base quality, ...) alone.
-// Derived from the `pairedOnly` flag in the shared COLOR_SCHEMES registry.
-const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
-  Object.values(COLOR_SCHEMES)
-    .filter(s => s.pairedOnly)
-    .map(s => s.type),
-)
 
 // One identity for "no lane sizes itself", so `groupHeightOverrides` doesn't
 // hand the layout a fresh map per evaluation.
@@ -3915,25 +3903,20 @@ export default function stateModelFactory(
             }
             self.scrollTop = 0
             clearMouseoverState()
-            const currentType = self.colorBy.type
-            if (mode === 'off') {
-              if (PAIRING_COLOR_SCHEMES.has(currentType)) {
-                setConf(
-                  self,
-                  'color',
-                  colorSnapshotFor({ type: 'normal' }, self.writtenColor),
-                )
-              }
-            } else if (currentType === 'normal' && !self.baseLayer) {
-              // The plain default becomes the SV-signal fill; a plain fill
-              // under a per-base layer is the backdrop its marks read against.
+            // The toggle swaps the plain fill and the SV-signal fill, and
+            // touches no other colour: a first-of-pair strand picked for an
+            // RNA-seq pileup survives a trip through pairs. A plain fill under
+            // a per-base layer is the backdrop its marks read against, so
+            // neither direction swaps there.
+            const [from, to] =
+              mode === 'off'
+                ? (['insertSizeAndOrientation', 'normal'] as const)
+                : (['normal', 'insertSizeAndOrientation'] as const)
+            if (self.colorBy.type === from && !self.baseLayer) {
               setConf(
                 self,
                 'color',
-                colorSnapshotFor(
-                  { type: 'insertSizeAndOrientation' },
-                  self.writtenColor,
-                ),
+                colorSnapshotFor({ type: to }, self.writtenColor),
               )
             }
             // No explicit invalidation here: `linkedReads` is an `rpcProps()`

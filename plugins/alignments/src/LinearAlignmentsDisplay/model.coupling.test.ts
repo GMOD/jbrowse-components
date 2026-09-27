@@ -235,7 +235,7 @@ describe('setLinkedReads color scheme preservation', () => {
     expect(display.colorBy.tag).toBe('HP')
   })
 
-  test('leaving pairs reverts a pairing-specific scheme to normal', () => {
+  test('leaving pairs swaps the SV-signal fill back to normal', () => {
     const display = createDisplay()
     display.setLinkedReads('normal')
     expect(display.colorBy.type).toBe('insertSizeAndOrientation')
@@ -243,6 +243,17 @@ describe('setLinkedReads color scheme preservation', () => {
     display.setLinkedReads('off')
     expect(display.linkedReads).toBe('off')
     expect(display.colorBy.type).toBe('normal')
+  })
+
+  // A first-of-pair strand fill is the usual stranded RNA-seq pileup, picked
+  // with pairs off; a trip through pairs used to reset it to normal
+  test('a trip through pairs keeps any other paired-end fill', () => {
+    const display = createDisplay()
+    display.setColorBy({ type: 'firstOfPairStrand' })
+
+    display.setLinkedReads('normal')
+    display.setLinkedReads('off')
+    expect(display.colorBy.type).toBe('firstOfPairStrand')
   })
 
   test('leaving pairs preserves an explicit non-pairing color scheme', () => {

@@ -28,11 +28,6 @@ export interface ColorSchemeDef {
   // hard-code the same membership for its own classification, and no longer
   // classifies at all.
   mateAware?: boolean
-  // Meaningful only for paired-end data, so toggling "view as pairs" auto-
-  // switches these on/off (see PAIRING_COLOR_SCHEMES in the model). Broader than
-  // mateAware: first-of-pair strand is paired-only but reads only its own flags,
-  // so it is pairedOnly but NOT mateAware.
-  pairedOnly?: boolean
   // The worker emits one entry per ALIGNED BASE of every read for this scheme,
   // rather than one per event: the two walls this pipeline paints. Every other
   // scheme's worker output is sparse in the reads' bases, so these are the only
@@ -94,20 +89,17 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     shaderScheme: 'insertSize',
     menu: { kind: 'radio', label: 'Insert size', group: 'pairedEnd' },
     mateAware: true,
-    pairedOnly: true,
   },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
     shaderScheme: 'firstOfPairStrand',
     menu: { kind: 'radio', label: 'First of pair strand', group: 'pairedEnd' },
-    pairedOnly: true,
   },
   pairOrientation: {
     type: 'pairOrientation',
     shaderScheme: 'pairOrientation',
     menu: { kind: 'radio', label: 'Pair orientation', group: 'pairedEnd' },
     mateAware: true,
-    pairedOnly: true,
   },
   insertSizeAndOrientation: {
     type: 'insertSizeAndOrientation',
@@ -118,7 +110,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
       group: 'pairedEnd',
     },
     mateAware: true,
-    pairedOnly: true,
   },
   tag: {
     type: 'tag',
@@ -136,9 +127,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   // In the 'pairedEnd' group because on a BAM the name it paints is the MATE's
   // reference (`getMateRefName` reads `next_ref`), which makes it the standard
   // translocation view: reads whose mate landed on another chromosome each take
-  // that chromosome's color. Not `pairedOnly` — that flag resets a scheme when
-  // "view as pairs" is switched off, and this is an explicit categorical choice
-  // like `tag`, which draws on an ordinary pileup too.
+  // that chromosome's color.
   //
   // LGVSyntenyDisplay spells its own label for it ("Query name"): a PAF block
   // has no mate, and on a BAM "query name" means QNAME, i.e. the read name —
