@@ -27,6 +27,9 @@ compares, each already carrying UCSC's pairwise liftOver chains to the others.
 - Human (hs1, T2T-CHM13): https://jbrowse.org/ucsc/hs1/config.json
 - Chimp (panTro6), for [Trying other pairs](#trying-other-pairs):
   https://jbrowse.org/ucsc/panTro6/config.json
+- hg38's staging config, which adds the multi-way track for
+  [Many genomes at once](#many-genomes-at-once):
+  https://jbrowse.org/ucsc/hg38/config-staging.json
 
 ## The hosted configs
 
@@ -123,6 +126,38 @@ To start from a gene, the site's
 [ortholog search](https://genomes.jbrowse.org/orthologs) lists a symbol's NCBI
 orthologs among the hosted genomes, with a synteny view per row where an
 alignment exists.
+
+## Many genomes at once
+
+A liftOver track pairs hg38 with one other genome. hg38's staging config adds
+one track over all of hg38's liftOver chains, **hg38 vs 240 genomes (liftOver,
+multi-way)**, which draws hg38 on top and a lane per genome below it, each lane
+with that genome's own gene models. The track is on
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) only until
+JBrowse 5 ships, since no released JBrowse has the display it opens in.
+
+The way into the multi-way track starts from a gene. Open
+[the TNNT3 gene page](https://staging.genomes.jbrowse.org/gene/?gene=TNNT3) and
+scroll to **Conserved gene order**, which draws the genes around _TNNT3_ in the
+80 species nearest human. **☰ Multi-way synteny lanes** at the top of that
+figure opens the track over the same hg38 window, with a lane for each of those
+species the track holds.
+
+<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page on staging.genomes.jbrowse.org at its Conserved gene order section, with the Multi-way synteny lanes link boxed." />
+
+26 of the 80 species get a lane, since the track holds only genomes UCSC
+publishes a liftOver chain to. Where a row's own assembly has no chain, its lane
+is the newest build of that species that does. **[rev]** after a lane's
+coordinates marks a genome drawn reversed so that it reads in hg38's
+orientation.
+
+<Figure src="/img/genomes_synteny/star_lanes.png" caption="The view the link opens: hg38 at TNNT3 over 26 genomes. In every lane that names them, the genes around TNNT3 read in hg38's order, SYT8 to MRPL23; the platypus lane spreads over ten sequences and names none of them." />
+
+Each lane reads the same chain file as that genome's pairwise liftOver track, so
+the one view holds what 26 synteny views would. The ribbons between two lanes
+below hg38 pass through hg38, since each chain aligns its genome to hg38 alone.
+[Reading the stack](/docs/tutorials/hg38_vertebrates_synteny#reading-the-stack)
+covers the lane labels, the ribbons and the lane menus.
 
 ## See also
 

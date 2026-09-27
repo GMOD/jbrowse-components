@@ -369,6 +369,64 @@ const TNNT3_FRAME = {
   readyTimeout: 120000,
 }
 
+const TNNT3_GENE_PAGE = 'https://staging.genomes.jbrowse.org/gene/?gene=TNNT3'
+const STAR_LINK = 'a[href*="_liftOver_multiway"]'
+
+// The session STAR_LINK carries (starUrl in jb2hubs
+// website/src/components/multiSyntenyDrilldown.ts): one lane per gene-page row
+// the star holds, 34 px each so no lane scrolls. Re-copy it when that page
+// changes its rows.
+function tnnt3StarSession() {
+  const lanes = [
+    'GCF_004115215.2',
+    'echTel2',
+    'loxAfr3',
+    'triMan1',
+    'dasNov3',
+    'galVar1',
+    'GCF_000955945.1',
+    'chlSab2',
+    'GCF_037993035.2',
+    'rheMac10',
+    'GCF_000956065.1',
+    'GCF_008728515.1',
+    'rhiRox1',
+    'GCF_029281585.2',
+    'panPan3',
+    'panTro6',
+    'ponAbe3',
+    'nomLeu3',
+    'GCF_049354715.1',
+    'GCF_040939455.1',
+    'otoGar3',
+    'GCA_033439345.1',
+    'GCF_964237555.1',
+    'ochPri3',
+    'hetGla2',
+    'cavPor3',
+  ]
+  return sessionSpec(
+    encodeURIComponent('https://jbrowse.org/ucsc/hg38/config-staging.json'),
+    {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'NC_000011.10:1822626-2024102',
+          tracks: [
+            {
+              trackId: 'hg38_liftOver_multiway',
+              type: 'MultiWaySyntenyDisplay',
+              laneFilter: { only: lanes },
+              height: (lanes.length + 1) * 34,
+            },
+          ],
+        },
+      ],
+    },
+  )
+}
+
 // The two files one MCScan run writes, each drawn on its own and stacked into
 // one figure. Same window and same view settings in both parts, so the only
 // variable is which file the adapter is reading: `.anchors` puts a ribbon on
@@ -4279,6 +4337,50 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ],
+  },
+
+  // The staging gene page's link into hg38's multi-way star, which production
+  // gates off until a released host carries MultiWaySyntenyDisplay
+  // (`features.multiwayStar` in jb2hubs). The ortholog table re-sorts while
+  // "Working out which species" shows, moving the link down the page.
+  {
+    mode: 'url',
+    name: 'genomes_synteny/star_link',
+    noSession: true,
+    url: TNNT3_GENE_PAGE,
+    readySelector: STAR_LINK,
+    readyTimeout: 90000,
+    viewportWidth: 1100,
+    viewportHeight: 760,
+    liveLabel: 'Open the TNNT3 gene page',
+    diffThreshold: 0.02,
+    actions: [
+      {
+        type: 'waitForText',
+        text: 'Working out which species',
+        hidden: true,
+        timeout: 90000,
+      },
+      { type: 'hover', selector: STAR_LINK },
+      { type: 'delay', ms: 500 },
+    ],
+    annotations: [
+      {
+        type: 'box',
+        anchor: { selector: STAR_LINK },
+        strokeWidth: 3,
+      },
+    ],
+  },
+
+  {
+    mode: 'url',
+    name: 'genomes_synteny/star_lanes',
+    url: tnnt3StarSession(),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportWidth: 1300,
+    viewportHeight: 1140,
   },
 
   // Both haplotypes of HG008T v3.2 against GRCh38, one dotplot each, tiled
