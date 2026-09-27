@@ -1,14 +1,4 @@
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_S,
-  CIGAR_X,
-  SAM_FLAG_SECOND_IN_PAIR,
-  refWindowToRead,
-} from '@jbrowse/cigar-utils'
+import { SAM_FLAG_SECOND_IN_PAIR, refWindowToRead } from '@jbrowse/cigar-utils'
 import {
   methylated5hmC,
   methylated5mC,
@@ -33,7 +23,10 @@ import {
 } from '../../shared/types.ts'
 import { getFlags } from '../../shared/util.ts'
 import { getColorForModification } from '../../util.ts'
-import { packedCigarOps } from '../alignedBaseWalk.ts'
+import {
+  forEachAlignedBaseInRegion,
+  packedCigarOps,
+} from '../alignedBaseWalk.ts'
 
 import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
@@ -348,58 +341,45 @@ export function extractBisulfite(
   const unmethRead = flip ? 'A' : 'T'
   const methStrand = isReverse ? -1 : 1
   const refLen = regionSequence.length
-  const { start: regionStart, end: regionEnd } = region
 
-  let readPos = 0
-  let refPos = 0
-  for (let i = 0, l = cigarOps.length; i < l; i++) {
-    const packed = cigarOps[i]!
-    const len = packed >> 4
-    const op = packed & 0xf
-    if (op === CIGAR_S || op === CIGAR_I) {
-      readPos += len
-    } else if (op === CIGAR_D || op === CIGAR_N) {
-      refPos += len
-    } else if (op === CIGAR_M || op === CIGAR_X || op === CIGAR_EQ) {
-      for (let j = 0; j < len; j++) {
-        const genomicPos = featureStart + refPos + j
-        const ri = genomicPos - regionSequenceStart
-        if (
-          ri >= 0 &&
-          ri < refLen &&
-          regionSequence[ri] === wantRef &&
-          genomicPos >= regionStart &&
-          genomicPos < regionEnd &&
-          matchesCytosineContext(regionSequence, ri, flip, context)
-        ) {
-          const readBase = seq[readPos + j]?.toUpperCase()
-          const methylated = readBase === methRead
-          const unmethylated = readBase === unmethRead
-          if (methylated || unmethylated) {
-            callCounts.set(genomicPos, (callCounts.get(genomicPos) ?? 0) + 1)
-          }
-          // Single-color mode (twoColor false) draws only the methylated
-          // (protected) sites and leaves the unmethylated ones blank, like
-          // IGV's non-2-color bisulfite view.
-          if (methylated || (unmethylated && twoColor)) {
-            // Bisulfite is a binary call (converted vs protected), not a
-            // likelihood — full confidence either way. Methylated paints the
-            // 5mC color, unmethylated the no-mod color.
-            modificationsData.push({
-              readIndex,
-              position: genomicPos,
-              base: 'C',
-              modType: 'm',
-              strand: methStrand,
-              color: methylated ? ABGR_5MC_METHYLATED : ABGR_UNMODIFIED,
-              prob: 1,
-              noMod: !methylated,
-            })
-          }
+  forEachAlignedBaseInRegion(
+    cigarOps,
+    featureStart,
+    region,
+    1,
+    (genomicPos, queryOffset) => {
+      const ri = genomicPos - regionSequenceStart
+      if (
+        ri >= 0 &&
+        ri < refLen &&
+        regionSequence[ri] === wantRef &&
+        matchesCytosineContext(regionSequence, ri, flip, context)
+      ) {
+        const readBase = seq[queryOffset]?.toUpperCase()
+        const methylated = readBase === methRead
+        const unmethylated = readBase === unmethRead
+        if (methylated || unmethylated) {
+          callCounts.set(genomicPos, (callCounts.get(genomicPos) ?? 0) + 1)
+        }
+        // Single-color mode (twoColor false) draws only the methylated
+        // (protected) sites and leaves the unmethylated ones blank, like
+        // IGV's non-2-color bisulfite view.
+        if (methylated || (unmethylated && twoColor)) {
+          // Bisulfite is a binary call (converted vs protected), not a
+          // likelihood — full confidence either way. Methylated paints the
+          // 5mC color, unmethylated the no-mod color.
+          modificationsData.push({
+            readIndex,
+            position: genomicPos,
+            base: 'C',
+            modType: 'm',
+            strand: methStrand,
+            color: methylated ? ABGR_5MC_METHYLATED : ABGR_UNMODIFIED,
+            prob: 1,
+            noMod: !methylated,
+          })
         }
       }
-      readPos += len
-      refPos += len
-    }
-  }
+    },
+  )
 }
