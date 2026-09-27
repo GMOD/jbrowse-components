@@ -5,10 +5,11 @@ import { cellMark } from './cellMark.ts'
 import { GLSL_FRAGMENT } from './shaders/variant.glsl.generated.ts'
 import {
   drawnCellHeightPx,
+  inversionTipPx,
   snappedCellWidthPx,
 } from './shaders/variant.js.generated.ts'
 import { WGSL_SOURCE } from './shaders/variant.wgsl.generated.ts'
-import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
+import { SHAPE_RECT, SHAPE_TRI_LEFT, drawVariantShape } from './variantShape.ts'
 
 import type { CellChannels } from './cellMark.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -98,4 +99,32 @@ test('the Canvas2D twin paints a floored inversion in the cell colour, at the ce
     [2, 2],
     [2, 2],
   ])
+})
+
+// The point is as long as the cell is tall, so a wide cell is a bar with a
+// pointed end and a 2 px row draws solid past its first 2 px. A point spanning
+// the whole width drew an 11 Mb inversion in 2 px rows as a sliver whose
+// antialiased edges read as a fade across the chromosome arm.
+test('the Canvas2D twin caps the inversion point at the cell height', () => {
+  const path: string[] = []
+  const ctx = {
+    fillRect: () => {},
+    beginPath: () => {},
+    moveTo: (x: number, y: number) => path.push(`M${x},${y}`),
+    lineTo: (x: number, y: number) => path.push(`L${x},${y}`),
+    fill: () => {},
+  }
+  drawVariantShape(ctx, SHAPE_TRI_LEFT, 100, 10, 900, 2)
+  expect(path).toEqual([
+    'M1000,10',
+    'L102,10',
+    'L100,11',
+    'L102,12',
+    'L1000,12',
+  ])
+  path.length = 0
+  drawVariantShape(ctx, SHAPE_TRI_LEFT, 0, 0, 4, 8)
+  expect(path).toEqual(['M4,0', 'L4,0', 'L0,4', 'L4,8', 'L4,8'])
+  expect(inversionTipPx(900, 2)).toBe(2)
+  expect(inversionTipPx(4, 8)).toBe(4)
 })

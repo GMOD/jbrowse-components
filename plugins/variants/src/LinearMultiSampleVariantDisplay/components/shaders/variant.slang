@@ -1,10 +1,10 @@
 // Multi-variant display — one instance per variant cell. Emits a
 // bounding-box quad; the fragment shader uses an SDF to carve the inversion
-// triangle glyph out of the quad when shapeType != RECT.
+// glyph, a bar pointed at its left end, out of the quad when shapeType != RECT.
 //! targets: wgsl, glsl
 //! blend: premultiplied
 //! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT
-//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx
+//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionTipPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
 import antialias;
@@ -82,6 +82,20 @@ float snappedCellLeftPx(float x1Px, float x2Px, float widthPx) {
   return x2Px < x1Px ? startPx - widthPx : startPx;
 }
 
+// How far the inversion glyph's point reaches into the cell: the cell's own
+// height, so the tip keeps one angle whatever the cell's width, and the rest
+// of a wide cell is solid. A tip spanning the whole width drew an 11 Mb
+// inversion in 2 px rows as a 900 px sliver whose antialiased edges read as a
+// fade from white at one breakpoint to full colour at the other
+// (popgen/in2lt_inversion). A cell no wider than it is tall is the same
+// triangle it was.
+//
+// `//! js-export`ed: the Canvas2D twin and the SVG export trace the same
+// outline.
+float inversionTipPx(float widthPx, float heightPx) {
+  return min(widthPx, heightPx);
+}
+
 struct CellInstance {
   uint2 startEnd  : ATTR0;
   uint  row       : ATTR1;
@@ -112,9 +126,10 @@ struct VsOut {
   float2 localPx  : COLOR1;
   nointerpolation float2 sizePx    : COLOR2;
   nointerpolation uint   shapeType : COLOR3;
-  // Precomputed hypotenuse term for the triangle SDF — avoids a per-fragment
-  // sqrt. hypRight = sqrt(h*h*0.25 + w*w).
-  nointerpolation float  hypRight  : COLOR4;
+  // The tip's length and the hypotenuse term of its two sloped edges,
+  // precomputed so the fragment stage takes no sqrt.
+  nointerpolation float  tipPx     : COLOR4;
+  nointerpolation float  hypTip    : COLOR5;
 };
 
 [shader("vertex")]
@@ -156,29 +171,34 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   o.localPx = float2(lx * wPx, (1.0 - ly) * hPx);
   o.sizePx = float2(wPx, hPx);
   o.shapeType = inst.shapeType;
-  o.hypRight = sqrt(hPx * hPx * 0.25 + wPx * wPx);
+  o.tipPx = inversionTipPx(wPx, hPx);
+  o.hypTip = sqrt(hPx * hPx * 0.25 + o.tipPx * o.tipPx);
   return o;
 }
 
-float triSdfRight(float2 p, float w, float h, float hyp) {
-  float dLeft = p.x;
-  float dTop = (-0.5 * h * p.x + w * p.y) / hyp;
-  float dBot = (-0.5 * h * p.x - w * (p.y - h)) / hyp;
-  return min(min(dLeft, dTop), dBot);
+// Inside-positive distance to the inversion glyph: a bar whose left end comes
+// to a point at mid-height, the point `tip` px long. `p` is the fragment in
+// cell px from the cell's top-left. The two sloped edges run from the apex
+// (0, h/2) to (tip, 0) and (tip, h); past the tip the bar's top and bottom
+// edges take over.
+float inversionSdf(float2 p, float w, float h, float tip, float hyp) {
+  float fromTip = tip - p.x;
+  float dTop = (-0.5 * h * fromTip + tip * p.y) / hyp;
+  float dBot = (-0.5 * h * fromTip - tip * (p.y - h)) / hyp;
+  float dBar = min(min(w - p.x, p.y), h - p.y);
+  return min(min(dTop, dBot), dBar);
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float alpha = fragIn.color.a;
 
-  // Any non-rect cell is an inversion, drawn as a left-pointing triangle via a
-  // mirrored right-triangle SDF. Tested as "not RECT" rather than "== TRI_LEFT"
-  // so a third shape added to the vocabulary above draws SOMETHING here rather
-  // than silently falling back to a plain box.
+  // Any non-rect cell is an inversion, drawn as a left-pointing bar via its
+  // SDF. Tested as "not RECT" rather than "== TRI_LEFT" so a third shape added
+  // to the vocabulary above draws SOMETHING here rather than silently falling
+  // back to a plain box.
   if (fragIn.shapeType != SHAPE_RECT) {
-    float w = fragIn.sizePx.x;
-    float h = fragIn.sizePx.y;
-    float d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h, fragIn.hypRight);
+    float d = inversionSdf(fragIn.localPx, fragIn.sizePx.x, fragIn.sizePx.y, fragIn.tipPx, fragIn.hypTip);
     // No whole-mark size fade here: both cell sides floor at 2px, so one is a
     // constant dim on the inversion alone (inversionGlyphInk.test.ts).
     alpha *= edgeCoverage(d, u.devicePixelRatio);

@@ -7,6 +7,7 @@ import {
   SHAPE_RECT,
   SHAPE_TRI_LEFT,
 } from './shaders/variant.consts.generated.ts'
+import { inversionTipPx } from './shaders/variant.js.generated.ts'
 
 export { SHAPE_RECT, SHAPE_TRI_LEFT }
 
@@ -24,9 +25,10 @@ interface ShapePath {
 
 // Draws one variant glyph into `ctx`. Shape 0 is a plain rect — SNPs,
 // insertions, and every ordinary genotype cell. SHAPE_TRI_LEFT is an inversion,
-// drawn as a left-pointing triangle; an inversion is symmetric (either inverted
-// or not, no meaningful left/right orientation, and VCF never sets a strand on
-// variant records) so it needs a single glyph.
+// a bar pointed at its left end, the point as long as the cell is tall
+// (`inversionTipPx`, shared with the shader); an inversion is symmetric (either
+// inverted or not, no meaningful left/right orientation, and VCF never sets a
+// strand on variant records) so it needs a single glyph.
 export function drawVariantShape(
   ctx: ShapePath,
   shape: number,
@@ -38,9 +40,12 @@ export function drawVariantShape(
   if (shape === SHAPE_RECT) {
     ctx.fillRect(x, y, w, h)
   } else {
+    const tip = inversionTipPx(w, h)
     ctx.beginPath()
     ctx.moveTo(x + w, y)
+    ctx.lineTo(x + tip, y)
     ctx.lineTo(x, y + h / 2)
+    ctx.lineTo(x + tip, y + h)
     ctx.lineTo(x + w, y + h)
     ctx.closePath?.()
     ctx.fill()

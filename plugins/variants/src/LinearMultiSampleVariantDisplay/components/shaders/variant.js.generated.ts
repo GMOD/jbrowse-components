@@ -8,6 +8,10 @@ function _max(a: number, b: number) {
   return b > a || Number.isNaN(a) ? b : a
 }
 
+function _min(a: number, b: number) {
+  return b < a || Number.isNaN(a) ? b : a
+}
+
 function snapCellEdgePx(xPx: number): number {
   return Math.floor((xPx + 0.5))
 }
@@ -29,4 +33,8 @@ export function snappedCellLeftPx(x1Px: number, x2Px: number, widthPx: number): 
 
 export function drawnCellHeightPx(rowHeight: number): number {
   return _max(rowHeight, 2.0)
+}
+
+export function inversionTipPx(widthPx: number, heightPx: number): number {
+  return _min(widthPx, heightPx)
 }
