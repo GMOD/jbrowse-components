@@ -217,18 +217,21 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
     [bovineOmia, bovineVariantLane(220)],
     540,
   ),
+  // 260, not the 220 the other loci take: these two windows hold other-alt
+  // and no-call cells, so their key runs two rows longer and lost yak off the
+  // lane's bottom edge at 220.
   bovineLocusSpec(
     'pangenome/bovine_kit',
     'chr6:70,080,000-70,180,000',
-    [bovineGenes, bovineVariantLane(220)],
-    560,
+    [bovineGenes, bovineVariantLane(260)],
+    600,
   ),
   {
     ...bovineLocusSpec(
       'pangenome/bovine_tas2r46',
       'chr5:98,575,000-98,615,000',
-      [bovineGenes, bovineVariantLane(220)],
-      560,
+      [bovineGenes, bovineVariantLane(260)],
+      600,
     ),
     annotations: [
       {
