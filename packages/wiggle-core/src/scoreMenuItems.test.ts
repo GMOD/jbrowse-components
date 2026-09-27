@@ -145,6 +145,17 @@ function makePinnedDomainDisplay() {
     .create({ configuration: {} })
 }
 
+test('Clip outliers re-ticks at the quantile its untick wrote over, not the default', () => {
+  const display = makePinnedDomainDisplay()
+  display.setDomainQuantile(0.95)
+  const clip = () => makeClipOutliersItem(display)
+  clip().onClick()
+  expect(display.domainQuantile).toBe(1)
+  expect(clip().helpText).toContain('95th percentile')
+  clip().onClick()
+  expect(display.domainQuantile).toBe(0.95)
+})
+
 describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
   it('captions nothing while neither bound is set', () => {
     const display = makePinnedDomainDisplay()

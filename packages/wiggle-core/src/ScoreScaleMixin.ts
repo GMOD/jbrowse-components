@@ -54,6 +54,9 @@ const confNode = (self: object) => self as ScoreScaleHost
  */
 export function ScoreScaleMixin() {
   return ScoreAxisMixin()
+    .volatile(() => ({
+      unclippedQuantile: undefined as number | undefined,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -79,15 +82,19 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * The quantile "Clip outliers" clips at: the scale's own default where
-       * that is below 1, else 0.99.
+       * The quantile "Clip outliers" clips at: the one an untick this session
+       * wrote over, else the scale's own default where that is below 1, else
+       * 0.99.
        */
       get clipQuantile(): number {
-        return clipQuantileOf(
-          getSlotDefinition(
-            confNode(self).configuration.scales.y,
-            'domainQuantile',
-          ).defaultValue,
+        return (
+          self.unclippedQuantile ??
+          clipQuantileOf(
+            getSlotDefinition(
+              confNode(self).configuration.scales.y,
+              'domainQuantile',
+            ).defaultValue,
+          )
         )
       },
       /**
@@ -188,6 +195,9 @@ export function ScoreScaleMixin() {
        * #action
        */
       setDomainQuantile(quantile: number) {
+        if (!(quantile < 1) && self.domainQuantile < 1) {
+          self.unclippedQuantile = self.domainQuantile
+        }
         setConf(confNode(self), ['scales', 'y', 'domainQuantile'], quantile)
       },
       /**

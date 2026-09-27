@@ -92,7 +92,7 @@ export function makeClipOutliersItem(self: {
   domainQuantile: number
   clipQuantile: number
   setDomainQuantile: (quantile: number) => void
-}): MenuItem {
+}): CheckboxMenuItem {
   const clipsAt =
     self.domainQuantile < 1 ? self.domainQuantile : self.clipQuantile
   const percent = Math.round(clipsAt * 100)
