@@ -2,8 +2,9 @@
 export { aggregateFieldName } from './aggregateFieldName.ts'
 export { isJexl } from './jexlStrings.ts'
 export {
-  CATEGORICAL_FIELD_PRESETS,
+  FEATURE_FIELD_PRESETS,
   colorProblems,
+  fieldScaleOf,
   paintedScale,
 } from './colorScale.ts'
 export type { ColorSlots } from './colorScale.ts'

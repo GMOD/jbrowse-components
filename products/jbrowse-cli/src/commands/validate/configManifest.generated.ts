@@ -5653,6 +5653,9 @@ export const configManifest: ConfigManifest = {
                   ],
                   "shorthand": "value",
                   "fieldPresets": {
+                    "score": {
+                      "scale": "linear"
+                    },
                     "*": {
                       "scale": "categorical"
                     }
@@ -6104,6 +6107,9 @@ export const configManifest: ConfigManifest = {
                   ],
                   "shorthand": "value",
                   "fieldPresets": {
+                    "score": {
+                      "scale": "linear"
+                    },
                     "*": {
                       "scale": "categorical"
                     }

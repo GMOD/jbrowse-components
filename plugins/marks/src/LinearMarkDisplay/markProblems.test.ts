@@ -598,6 +598,9 @@ test('a ramp reads its ends, not a domain, and a span wants both ends pinned', (
   expect(found(ramp('span', {}))).toEqual([
     'warning unpinned-span-ramp mark 0 encoding.color.domainMin',
   ])
+  expect(
+    found([{ mark: 'span', encoding: { color: { field: 'score' } } }]),
+  ).toEqual(['warning unpinned-span-ramp mark 0 encoding.color.domainMin'])
   expect(found(ramp('span', { domainMin: 0, domainMax: 10 }))).toEqual([])
 })
 
@@ -609,7 +612,7 @@ test('a range under an unset scale is categorical, whatever it lists', () => {
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'score', range: ['white', 'red'], domain: ['0'] },
+        color: { field: 'svtype', range: ['white', 'red'], domain: ['0'] },
       },
     },
   ]

@@ -1,7 +1,11 @@
 import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
-import { COLOR_SCALES } from '@jbrowse/display-kit/colorScale'
+import {
+  COLOR_SCALES,
+  FEATURE_FIELD_PRESETS,
+  fieldScaleOf,
+} from '@jbrowse/display-kit/colorScale'
 
 import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_MARK_TYPE, SIZE_SCALES } from './markVocabulary.ts'
@@ -164,11 +168,15 @@ function channelObject(mark: DraftMark, channel: EditChannel) {
   return objectOf(mark.encoding?.[channel])
 }
 
-/** The scale a channel's field reads through where the declaration names none. */
-const PRESET_SCALES: Partial<Record<EditChannel, string>> = {
-  color: 'categorical',
-  shape: 'categorical',
-  size: 'linear',
+// The scale a channel's field reads through where the declaration names none.
+function presetScale(channel: EditChannel, field: string) {
+  return channel === 'color'
+    ? fieldScaleOf(FEATURE_FIELD_PRESETS, field)
+    : channel === 'shape'
+      ? 'categorical'
+      : channel === 'size'
+        ? 'linear'
+        : ''
 }
 
 /**
@@ -192,11 +200,12 @@ function channelField(mark: DraftMark, channel: EditChannel): string {
  * where the channel names no field, since a constant reads through none.
  */
 export function channelScale(mark: DraftMark, channel: EditChannel): string {
-  if (channelEdit(mark, channel).beyond || !channelField(mark, channel)) {
+  const field = channelField(mark, channel)
+  if (channelEdit(mark, channel).beyond || !field) {
     return ''
   }
   const scale = channelObject(mark, channel)?.scale
-  return typeof scale === 'string' ? scale : (PRESET_SCALES[channel] ?? '')
+  return typeof scale === 'string' ? scale : presetScale(channel, field)
 }
 
 /** What one scale member says, as a control holds it: text, never a number. */

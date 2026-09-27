@@ -1,8 +1,9 @@
 import { AUTO_BIN } from './autoBin.ts'
 import {
-  CATEGORICAL_FIELD_PRESETS,
+  FEATURE_FIELD_PRESETS,
   aggregateFieldName,
   colorProblems,
+  fieldScaleOf,
   isJexl,
   paintedScale,
 } from './markRuleFacts.ts'
@@ -181,12 +182,16 @@ function stepsOf(mark: MarkSnapshot) {
   return mark.transform ?? []
 }
 
+function colorScaleOf({ scale, field = '' }: ColorSlots) {
+  return paintedScale(
+    { scale, field },
+    fieldScaleOf(FEATURE_FIELD_PRESETS, field),
+  )
+}
+
 function rampColor(mark: MarkSnapshot) {
   const color = mark.encoding?.color ?? {}
-  const painted = paintedScale(
-    { scale: color.scale, field: color.field ?? '' },
-    'categorical',
-  )
+  const painted = colorScaleOf(color)
   return painted === 'linear' || painted === 'log' ? color : undefined
 }
 
@@ -479,15 +484,12 @@ function ownProblems(
   const color = mark.encoding?.color ?? {}
   for (const { rule, slot, message } of colorProblems(
     color,
-    CATEGORICAL_FIELD_PRESETS,
+    FEATURE_FIELD_PRESETS,
   )) {
     problems.push(found(rule, `encoding.color.${slot}`, message))
   }
   if (
-    paintedScale(
-      { scale: color.scale, field: color.field ?? '' },
-      'categorical',
-    ) === 'threshold' &&
+    colorScaleOf(color) === 'threshold' &&
     (color.domain ?? []).length === 0
   ) {
     problems.push(

@@ -46,7 +46,11 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  FEATURE_FIELD_PRESETS,
+  featureColorEncoding,
+  withPreset,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -250,7 +254,7 @@ function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
 // The one colour a mark paints every instance: the default blue where none
 // is written, and none under a jexl callback or a scale.
 function constantColorOf(mark: MarkConfig): string | undefined {
-  const encoding = colorEncodingOf(mark.encoding.color)
+  const encoding = featureColorEncoding(mark.encoding.color)
   return encoding === undefined
     ? DEFAULT_MARK_COLOR
     : typeof encoding === 'string' && !isJexl(encoding)
@@ -285,8 +289,10 @@ function keySettingOf(
     return {}
   }
   if (channel === 'color') {
-    const { title, labels, breaks, descending, missingLabel } =
-      mark.encoding.color
+    const { title, labels, breaks, descending, missingLabel } = withPreset(
+      mark.encoding.color,
+      FEATURE_FIELD_PRESETS,
+    )
     return {
       title,
       labels: [...labels],
@@ -571,7 +577,8 @@ export function stateModelFactory(
           const { marks } = self.conf
           return this.markEntries.map((entry, i) => ({
             ...entry,
-            ownColor: colorEncodingOf(marks[i]!.encoding.color) !== undefined,
+            ownColor:
+              featureColorEncoding(marks[i]!.encoding.color) !== undefined,
           }))
         },
         /**

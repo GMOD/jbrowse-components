@@ -315,6 +315,12 @@ describe('the scale beside a field', () => {
     ).toBe('')
   })
 
+  it('shows the scale an unscaled field paints through: score a ramp', () => {
+    const unscaled = (field: string) => ({ encoding: { color: { field } } })
+    expect(channelScale(unscaled('score'), 'color')).toBe('linear')
+    expect(channelScale(unscaled('svtype'), 'color')).toBe('categorical')
+  })
+
   it('reads a member as text, and an unset one as empty', () => {
     expect(scaleMember(ramp, 'color', 'scheme')).toBe('viridis')
     expect(scaleMember(ramp, 'color', 'domainMin')).toBe('')

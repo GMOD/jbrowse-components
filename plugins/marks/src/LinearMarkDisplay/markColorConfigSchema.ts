@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   COLOR_SCALES,
+  FEATURE_FIELD_PRESETS,
   colorChannelOptions,
   colorChannelSlots,
   colorDomainQuantileSlot,
@@ -103,7 +104,7 @@ export const markColorSchema = ConfigurationSchema(
       field:
         'the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in',
       scale:
-        'how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset beside a field, it is categorical',
+        'how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field',
     }),
     ...colorDomainSlot({
       domain:
@@ -149,5 +150,5 @@ export const markColorSchema = ConfigurationSchema(
       description: 'key row for a feature with no value',
     },
   },
-  colorChannelOptions('color'),
+  colorChannelOptions('color', FEATURE_FIELD_PRESETS),
 )

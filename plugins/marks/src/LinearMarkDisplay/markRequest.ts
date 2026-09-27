@@ -6,7 +6,7 @@
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import {
-  colorEncodingOf,
+  featureColorEncoding,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -67,7 +67,8 @@ export function encodingOf(
     // between linear and log would refetch every region to no effect.
     y: reads('y') && y ? y : undefined,
     row: (reads('row') && row) || undefined,
-    color: paintedColorEncoding(colorEncodingOf(color)) ?? DEFAULT_MARK_COLOR,
+    color:
+      paintedColorEncoding(featureColorEncoding(color)) ?? DEFAULT_MARK_COLOR,
     ...(reads('shape') ? { shape: shapeEncoding } : {}),
     ...(reads('text') && text ? { text } : {}),
     ...(reads('size') && size.field !== ''

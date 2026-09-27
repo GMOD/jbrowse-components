@@ -3960,6 +3960,7 @@
       "names": [
         "CATEGORICAL_FIELD_PRESETS",
         "COLOR_SCALES",
+        "FEATURE_FIELD_PRESETS",
         "IDENTITY_SCALE",
         "colorNotices",
         "colorProblems",

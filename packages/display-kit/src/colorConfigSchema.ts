@@ -13,6 +13,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   CATEGORICAL_FIELD_PRESETS,
+  FEATURE_FIELD_PRESETS,
   IDENTITY_SCALE,
   fieldScaleOf,
   paintedScale,
@@ -27,6 +28,7 @@ import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 export {
   CATEGORICAL_FIELD_PRESETS,
   COLOR_SCALES,
+  FEATURE_FIELD_PRESETS,
   IDENTITY_SCALE,
   paintedScale,
   presetOf,
@@ -50,12 +52,6 @@ export const FEATURE_COLOR_SCALES = [
   'log',
   IDENTITY_SCALE,
 ] as const
-
-/** What a FeatureColor field paints through while `scale` is unset. */
-export const FEATURE_FIELD_PRESETS = {
-  score: { scale: 'linear' },
-  '*': { scale: 'categorical' },
-} as const satisfies FieldPresets
 
 /**
  * A colour object as written: the members every one declares, and the ones a

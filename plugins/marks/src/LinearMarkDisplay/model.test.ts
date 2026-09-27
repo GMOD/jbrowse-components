@@ -2574,7 +2574,7 @@ test('nothing declared draws nothing, and the default rule is a bar of score', (
   expect(display.rpcProps().layers[0]!.encoding.y).toBe('score')
 })
 
-test('a color or shape naming a field and no scale reads it categorically, a range beside it or not', () => {
+test('a color or shape naming a field other than score and no scale reads it categorically, a range beside it or not', () => {
   const { createDisplay } = createTestEnvironment([
     {
       mark: 'point',
@@ -2588,7 +2588,7 @@ test('a color or shape naming a field and no scale reads it categorically, a ran
       mark: 'bar',
       encoding: {
         y: 'score',
-        color: { field: 'score', range: ['white', 'red'] },
+        color: { field: 'svlen', range: ['white', 'red'] },
       },
     },
   ])
@@ -2602,7 +2602,7 @@ test('a color or shape naming a field and no scale reads it categorically, a ran
     scale: 'categorical',
   })
   expect(display.encodings[1]!.color).toMatchObject({
-    field: 'score',
+    field: 'svlen',
     scale: 'categorical',
     range: ['white', 'red'],
   })
@@ -3074,6 +3074,16 @@ test('a colour s labels name its key rows and its hover without crossing the wir
     'Loss',
     'Gain',
   ])
+})
+
+test('a colour on score paints a ramp, as the feature display s does', () => {
+  const { display } = createTestEnvironment([
+    { mark: 'point', encoding: { y: 'score', color: { field: 'score' } } },
+    { mark: 'point', encoding: { y: 'score', color: { field: 'svtype' } } },
+  ]).createDisplay()
+  expect(
+    display.encodings.map(e => (e.color as { scale: string }).scale),
+  ).toEqual(['linear', 'categorical'])
 })
 
 test('a shape key draws its glyphs in the default blue where no colour is written', () => {

@@ -55,6 +55,15 @@ export const CATEGORICAL_FIELD_PRESETS = {
   '*': CATEGORICAL_PRESET,
 } as const satisfies FieldPresets
 
+/**
+ * What a feature's field paints through while `scale` is unset: `score` a
+ * ramp, any other field categories.
+ */
+export const FEATURE_FIELD_PRESETS = {
+  score: { scale: 'linear' },
+  '*': CATEGORICAL_PRESET,
+} as const satisfies FieldPresets
+
 /** A field's preset under `presets`: its own, else `*`'s, else categorical. */
 export function presetOf<S extends string>(
   presets: FieldPresets<S>,
