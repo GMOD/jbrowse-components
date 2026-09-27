@@ -7,7 +7,7 @@
 # to type, the menu path to take, the config to paste or the command to run.
 tutorials/allvsall_synteny.md 1
 tutorials/alphagenome.md 1
-tutorials/analyze_trio.md 3
+tutorials/analyze_trio.md 2
 tutorials/bxd_qtl.md 3
 tutorials/cancer_sv.md 3
 tutorials/circular_synteny.md 2

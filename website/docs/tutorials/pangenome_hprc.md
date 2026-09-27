@@ -92,7 +92,7 @@ Two lanes above the graph track index the same graph on GRCh38:
 
 ## The graph moves with the view
 
-Search `C4A` in the location box. GRCh38 carries the gene on two alt contigs as
+Type `C4A` in the location box. GRCh38 carries the gene on two alt contigs as
 well, so pick the chr6 hit, then zoom out twice to take in _C4B_. The graph
 track cuts each new window, and scrolling or zooming moves it with the lanes
 above.
