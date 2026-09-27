@@ -61,7 +61,7 @@ export const hicVideos: VideoSpec[] = [
     //
     // The app stands at 1118px, and the caption chip's strip goes under it:
     // the payoff is the K562 matrix's lower middle, where chr9 meets chr22.
-    viewportHeight: 1240,
+    viewportHeight: 1238,
     // `displaySettled`, not the figures' `displayPainted`: `drawn` flips on
     // first paint, which an empty canvas mid-fetch satisfies, and the opening
     // beat is ABOUT what is on the diagonal and what is not beside it.

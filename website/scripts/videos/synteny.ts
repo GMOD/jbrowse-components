@@ -148,7 +148,7 @@ export const syntenyVideos: VideoSpec[] = [
     url: multiwayLanes,
     // The app is the grape gene track over the 340px lane stack, 691px as the
     // run measured it, with the caption chip's strip under it.
-    viewportHeight: 812,
+    viewportHeight: 810,
     // phase ready covers the dependent per-lane gene fetch too, so the camera
     // opens on lanes carrying their gene models rather than on boxes about to
     // be replaced

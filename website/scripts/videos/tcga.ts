@@ -101,7 +101,7 @@ export const tcgaVideos: VideoSpec[] = [
     // reshapes in place rather than adding a view — and the strip under it holds
     // the caption chip and the collapse's snackbar, which the run's content
     // report does not count, clear of the matrix's last rows.
-    viewportHeight: 906,
+    viewportHeight: 904,
     // The matrix has to be carrying its 979 rows before the camera starts.
     readySelector: tcgaMutationVideoFixtures.matrixDone,
     readyTimeout: 300000,

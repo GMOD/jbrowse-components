@@ -28,7 +28,7 @@ export const qtlVideos: VideoSpec[] = [
     // Nothing here adds a view or opens a drawer and the painting is a fixed
     // 420, so the app holds at 811px across the tour, with the caption chip's
     // strip under it.
-    viewportHeight: 932,
+    viewportHeight: 930,
     readySelector: displaySettled('multirow-display'),
     readyTimeout: 180000,
     steps: [
