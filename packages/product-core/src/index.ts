@@ -85,6 +85,7 @@ export type {
   SessionWithThemesType,
   SessionWithTracks,
   SessionWithTracksType,
+  ThemeModeSelection,
 } from './Session/index.ts'
 
 export {

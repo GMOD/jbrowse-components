@@ -49,6 +49,17 @@ export {
 export { type RingCell } from './rings/ringMarks.ts'
 export { renderToSvg } from './CircularView/svgcomponents/SVGCircularView.tsx'
 export type { CircularViewCommands } from './CircularView/types.ts'
+export type { FitLayout } from './CircularView/fitLayout.ts'
+export type { ChordCell, ChordLayerFrame } from './chords/chordMarks.ts'
+export type { ChordBackend, ChordPassView } from './chords/chordPass.ts'
+export type { AxisSlice, ChordAxis } from './chords/chordStage.ts'
+export type { PaintRun } from './chords/ideogramPaint.ts'
+export type { PartnerShare } from './chords/partnerShares.ts'
+export type {
+  ChordHit,
+  ChordLayerDisplay,
+  PointerTarget,
+} from './chords/shapes.ts'
 
 // Carries this module's extension-point declaration into the emitted `.d.ts`;
 // `scripts/check-extension-point-reachability.ts` is the gate, and its header
