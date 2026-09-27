@@ -1,6 +1,9 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { extractFeatureArrays } from './extractFeatureArrays.ts'
+import {
+  MOD_TYPE_SAMPLE_READS,
+  extractFeatureArrays,
+} from './extractFeatureArrays.ts'
 
 import type { ReadColorBy } from './types.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
@@ -211,5 +214,45 @@ describe('an intron that only touches a region edge', () => {
     ['the acceptor exon', 1200, 1400],
   ])('is still extracted in %s', (_, start, end) => {
     expect(skipsIn(start, end)).toMatchObject([{ start: 200, end: 1200 }])
+  })
+})
+
+// A pileup not coloured by modifications reads MM off a sample of its reads,
+// since the menu wants only which types exist; the layer reads every read
+describe('modification type detection', () => {
+  const reads = (n: number, mmAt: number) =>
+    Array.from(
+      { length: n },
+      (_, i) =>
+        new SimpleFeature({
+          uniqueId: `r${i}`,
+          refName: 'ctgA',
+          start: 100 + i,
+          end: 200 + i,
+          strand: 1,
+          CIGAR: '100M',
+          tags: i === mmAt ? { MM: 'C+m,0;' } : {},
+        }),
+    )
+  const detected = (
+    features: Feature[],
+    baseLayer?: { type: 'modifications' },
+  ) =>
+    extractFeatureArrays(features, buildFeatureData, {
+      colorBy: { type: 'normal' },
+      baseLayer,
+      showSoftClipping: false,
+      region,
+      perBaseBinBp: 1,
+    }).detectedModifications
+
+  test('a type within the sample is found in any colour mode', () => {
+    expect([...detected(reads(10, 3))]).toEqual(['m'])
+  })
+
+  test('outside the layer, reads past the sample are not scanned', () => {
+    const past = reads(MOD_TYPE_SAMPLE_READS + 1, MOD_TYPE_SAMPLE_READS)
+    expect([...detected(past)]).toEqual([])
+    expect([...detected(past, { type: 'modifications' })]).toEqual(['m'])
   })
 })

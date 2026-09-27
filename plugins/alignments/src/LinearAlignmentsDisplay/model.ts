@@ -586,7 +586,10 @@ export default function stateModelFactory(
           /**
            * #getter
            * Modification type code -> painted color, for every type the reads of
-           * the LOADED regions declare. This is what the data CONTAINS; what is
+           * the LOADED regions declare — outside the modifications layer, the
+           * first `MOD_TYPE_SAMPLE_READS` of each fetch, which is enough for the
+           * menu to know a modBAM when it sees one. This is what the data
+           * CONTAINS; what is
            * actually drawn is filtered separately by isModificationTypeVisible
            * and by `presentModifications`, so don't rename this back to
            * "visible".
@@ -637,9 +640,9 @@ export default function stateModelFactory(
            * "Loading modifications..." while the replacing fetch was in flight.
            * Reading the data is what the flag was always trying to say.
            *
-           * The header parse is ungated (`extractModifications` reads MM headers
-           * for every read whatever the scheme, and only mark PLACEMENT is
-           * scheme-gated), so arrival of any fetch really does settle this.
+           * The header parse runs in every scheme (over a sample of each fetch
+           * outside the modifications layer), so arrival of any fetch really
+           * does settle this.
            */
           get modificationsReady() {
             return self.rpcDataMap.size > 0

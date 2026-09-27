@@ -57,6 +57,13 @@ interface ExtractOpts {
   regionSequenceStart?: number
 }
 
+// Outside the modifications layer the MM tag answers one question, which types
+// the reads carry, for the Color by menu, and a sample answers it: finding the
+// tag is a walk of the read's whole tag block, 26 ms against a 279 ms BAM
+// decode over 153,677 short reads that carry none. The layer itself scans
+// every read, so its type list is whole.
+export const MOD_TYPE_SAMPLE_READS = 1000
+
 export function extractFeatureArrays<T extends FeatureData>(
   featuresArray: Feature[],
   buildFeatureData: (feature: Feature) => T,
@@ -126,6 +133,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   // `getMateRefName` reads — a synteny block's `mate`, a BAM read's `next_ref`
   // — which is uncolored rather than a hash of the empty string.
   const isMateRefNameMode = colorBy?.type === 'mateRefName'
+  const paintsModificationMarks = baseLayer?.type === 'modifications'
   const sortTagValues: string[] | undefined = sortTag ? [] : undefined
 
   // readIndex is the feature's position here; it equals its index in the
@@ -210,17 +218,20 @@ export function extractFeatureArrays<T extends FeatureData>(
       )
     }
 
-    const modData = extractModifications(
-      feature,
-      readIndex,
-      featureStart,
-      strand,
-      region,
-      baseLayer,
-      detectedModifications,
-      seenModTypes,
-      modifications,
-    )
+    const modData =
+      paintsModificationMarks || readIndex < MOD_TYPE_SAMPLE_READS
+        ? extractModifications(
+            feature,
+            readIndex,
+            featureStart,
+            strand,
+            region,
+            baseLayer,
+            detectedModifications,
+            seenModTypes,
+            modifications,
+          )
+        : undefined
 
     if (isFillUnmarkedMode(baseLayer) && modData) {
       extractMethylation(
