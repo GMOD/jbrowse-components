@@ -292,7 +292,7 @@ describe('computeLayout', () => {
   })
 })
 
-describe('computeLayout largeFeaturesFirst', () => {
+describe("computeLayout layoutOrder 'length'", () => {
   // A small read starts before a large one that overlaps it. Default (genomic
   // start) order puts the small read in row 0 and the large one in row 1;
   // largest-first flips that so the wide feature takes the lowest row.
@@ -313,7 +313,7 @@ describe('computeLayout largeFeaturesFirst', () => {
   })
 
   test('largest-first places the wide read in the lowest row', () => {
-    const { readYs, maxY } = computeLayout(data(), false, undefined, true)
+    const { readYs, maxY } = computeLayout(data(), false, undefined, 'length')
     expect(readYs[1]).toBe(0) // large
     expect(readYs[0]).toBe(1) // small
     expect(maxY).toBe(2)
@@ -330,7 +330,7 @@ describe('computeLayout largeFeaturesFirst', () => {
         { start: 150, end: 200 }, // id2 small, past the wide read's end
       ],
     })
-    const { readYs, maxY } = computeLayout(d, false, undefined, true)
+    const { readYs, maxY } = computeLayout(d, false, undefined, 'length')
     expect(readYs[1]).toBe(0) // wide read first, row 0
     expect(readYs[2]).toBe(0) // non-overlapping small fills row 0 gap
     expect(readYs[0]).toBe(1) // overlapping small stacks above
@@ -338,7 +338,7 @@ describe('computeLayout largeFeaturesFirst', () => {
   })
 })
 
-describe('computeLayout splicedReadsFirst', () => {
+describe("computeLayout layoutOrder 'spliced'", () => {
   // An unspliced read starts before a spliced one that overlaps it. Start order
   // puts the unspliced read in row 0; spliced-first gives that row to the
   // spliced read and stacks the unspliced one above.
@@ -358,20 +358,14 @@ describe('computeLayout splicedReadsFirst', () => {
   })
 
   test('spliced-first gives the spliced read the lowest row', () => {
-    const { readYs, maxY } = computeLayout(
-      data(),
-      false,
-      undefined,
-      false,
-      true,
-    )
+    const { readYs, maxY } = computeLayout(data(), false, undefined, 'spliced')
     expect([...readYs]).toEqual([1, 0, 0])
     expect(maxY).toBe(2)
   })
 
-  test('wins over largeFeaturesFirst when both are set', () => {
-    // The unspliced read is the wider one here, so largest-first alone would
-    // put it in row 0.
+  test('orders differently from length where the spliced read is narrow', () => {
+    // The unspliced read is the wider one here, so largest-first puts it in
+    // row 0.
     const d = makePileupData({
       regionStart: 0,
       reads: [
@@ -379,8 +373,10 @@ describe('computeLayout splicedReadsFirst', () => {
         { start: 10, end: 100, skips: [[40, 80]] }, // id1 spliced, narrow
       ],
     })
-    expect([...computeLayout(d, false, undefined, true).readYs]).toEqual([0, 1])
-    expect([...computeLayout(d, false, undefined, true, true).readYs]).toEqual([
+    expect([...computeLayout(d, false, undefined, 'length').readYs]).toEqual([
+      0, 1,
+    ])
+    expect([...computeLayout(d, false, undefined, 'spliced').readYs]).toEqual([
       1, 0,
     ])
   })
@@ -1056,7 +1052,7 @@ describe('computeMultiRegionLayout', () => {
     expect(rowMap.get('zClip')).toBeLessThan(rowMap.get('bThrough')!)
   })
 
-  test('largeFeaturesFirst orders by unioned extent across regions', () => {
+  test("layoutOrder 'length' orders by unioned extent across regions", () => {
     // A wide boundary-spanning read (id0, present in both regions) plus a small
     // read in region 0 that starts earlier. Largest-first must place the wide
     // read's row below the small one despite the small one's earlier start.
@@ -1076,13 +1072,13 @@ describe('computeMultiRegionLayout', () => {
         [0, r1],
         [1, r2],
       ],
-      largeFeaturesFirst: true,
+      layoutOrder: 'length',
     })
     expect(rowMap.get('id0')).toBe(0)
     expect(rowMap.get('id1')).toBe(1)
   })
 
-  test("splicedReadsFirst partitions on any region's copy of the read", () => {
+  test("layoutOrder 'spliced' partitions on any region's copy of the read", () => {
     // id0 spans both regions and only region 1's copy carries the skip; it
     // still takes the lowest row over the earlier unspliced id1.
     const r1 = makePileupData({
@@ -1101,15 +1097,15 @@ describe('computeMultiRegionLayout', () => {
         [0, r1],
         [1, r2],
       ],
-      splicedReadsFirst: true,
+      layoutOrder: 'spliced',
     })
     expect(rowMap.get('id0')).toBe(0)
     expect(rowMap.get('id1')).toBe(1)
   })
 
-  test('an active position sort wins over largeFeaturesFirst', () => {
-    // Both flags set: the basePair sort at 250 orders the overlapping reads,
-    // largeFeaturesFirst is ignored (see buildLaidOutPileupMap precedence).
+  test("an active position sort wins over layoutOrder 'length'", () => {
+    // Both set: the basePair sort at 250 orders the overlapping reads, and the
+    // layout order is ignored (see buildLaidOutPileupMap precedence).
     const exon = makePileupData({
       regionStart: 200,
       sortPos: 250,
@@ -1127,7 +1123,7 @@ describe('computeMultiRegionLayout', () => {
         pos: 250,
         refName: 'chr1',
       },
-      largeFeaturesFirst: true,
+      layoutOrder: 'length',
     })
     // ascending base order A < C < T — the wide 'T' read still sorts last,
     // proving the position sort took precedence over extent order.
@@ -1370,7 +1366,7 @@ describe('layout is independent of read arrival order', () => {
 
   it('largest-features-first is order-independent', () => {
     const layout = (d: WorkerPileupData) =>
-      computeLayout(d, false, Number.POSITIVE_INFINITY, true).readYs
+      computeLayout(d, false, Number.POSITIVE_INFINITY, 'length').readYs
     expect(rowsByOriginalIndex(reversed, layout)).toEqual(
       rowsByOriginalIndex(identity, layout),
     )

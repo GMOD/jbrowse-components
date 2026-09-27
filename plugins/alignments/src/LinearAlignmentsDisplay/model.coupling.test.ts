@@ -497,7 +497,7 @@ describe('sortedBy refName normalization', () => {
   })
 })
 
-// Chain layout is handed neither `sortedBy` nor `largeFeaturesFirst` — its rows
+// Chain layout is handed neither `sortedBy` nor `layoutOrder` — its rows
 // are chains — so every ordering control has to curate itself out the way
 // `canCollapseGroupRows` already does, or a sort is a silent no-op (and a tag
 // sort refetches the region for values nothing reads).

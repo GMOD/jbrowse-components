@@ -7,6 +7,7 @@ import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeCon
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
+import { LAYOUT_ORDERS } from '../shared/types.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
 import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
@@ -275,26 +276,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * Lay out the widest features in the lowest pileup rows instead of by
-       * genomic start, so large alignments cluster at the top rather than
-       * interleaving with small ones. Off by default; LGVSyntenyDisplay turns
-       * it on. Ignored while an explicit `sortedBy` position sort is active.
+       * The row order where no `sortedBy` sort applies. `length` puts the
+       * widest features in the lowest rows, so large alignments cluster at the
+       * top rather than interleaving with small ones (LGVSyntenyDisplay's
+       * default); `spliced` does the same for reads whose CIGAR carries a skip,
+       * for RNA-seq.
        */
-      largeFeaturesFirst: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Lay out large features first, in the lowest pileup rows',
-      },
-      /**
-       * #slot
-       * The other layout-order flag, for RNA-seq: reads whose CIGAR carries a
-       * skip take the lowest rows. Ignored while a `sortedBy` position sort is
-       * active; wins over `largeFeaturesFirst` if both are set.
-       */
-      splicedReadsFirst: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Lay out spliced reads first, in the lowest pileup rows',
+      layoutOrder: {
+        type: 'stringEnum',
+        model: types.enumeration('LayoutOrder', [...LAYOUT_ORDERS]),
+        defaultValue: 'position',
+        description:
+          'Pileup row order where no sort applies: by start (position), widest first (length), or spliced reads first (spliced)',
       },
       /**
        * #slot

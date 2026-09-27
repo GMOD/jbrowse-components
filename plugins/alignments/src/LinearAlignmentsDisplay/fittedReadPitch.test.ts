@@ -23,8 +23,7 @@ function context(groups: { key: string; rows: number }[]): GroupLayoutContext {
     isChainMode: false,
     sortedBy: undefined,
     showSoftClipping: false,
-    largeFeaturesFirst: false,
-    splicedReadsFirst: false,
+    layoutOrder: 'position' as const,
     regions: new Map([[0, { refName: 'ctgA', start: 0, end: 1000 }]]),
     collapseGroupRows: false,
   }

@@ -23,7 +23,12 @@ import type {
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { GroupConnectors } from '../features/linkedReads/computeOverlay.ts'
-import type { ColorBy, ColorSchemeType, SortedBy } from '../shared/types.ts'
+import type {
+  ColorBy,
+  ColorSchemeType,
+  LayoutOrder,
+  SortedBy,
+} from '../shared/types.ts'
 import type { BakedColorScale } from './bakedColorScale.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 import type { GroupId } from './groupedDataMaps.ts'
@@ -141,8 +146,7 @@ export interface GroupLayoutContext {
   isChainMode: boolean
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
-  largeFeaturesFirst: boolean
-  splicedReadsFirst: boolean
+  layoutOrder: LayoutOrder
   // Region bounds by displayed-region index, so multi-region layout can locate
   // the sort position's region and detect the single-refName case.
   regions: ReadonlyMap<number, RegionBounds>
@@ -196,8 +200,7 @@ function layoutOneGroup(
         showSoftClipping: ctx.showSoftClipping,
         regions: ctx.regions,
         rowCap: cap,
-        largeFeaturesFirst: ctx.largeFeaturesFirst,
-        splicedReadsFirst: ctx.splicedReadsFirst,
+        layoutOrder: ctx.layoutOrder,
       })
 }
 
@@ -444,8 +447,7 @@ export function layoutGroupRowCounts(
               showSoftClipping: ctx.showSoftClipping,
               regions: ctx.regions,
               rowCap: ceilingCap(maxRows),
-              largeFeaturesFirst: ctx.largeFeaturesFirst,
-              splicedReadsFirst: ctx.splicedReadsFirst,
+              layoutOrder: ctx.layoutOrder,
             }),
     )
   }

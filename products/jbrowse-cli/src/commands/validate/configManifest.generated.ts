@@ -3660,12 +3660,8 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         },
         {
-          "name": "largeFeaturesFirst",
-          "type": "boolean"
-        },
-        {
-          "name": "splicedReadsFirst",
-          "type": "boolean"
+          "name": "layoutOrder",
+          "type": "LayoutOrder"
         },
         {
           "name": "showOutline",
@@ -4190,12 +4186,8 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         },
         {
-          "name": "largeFeaturesFirst",
-          "type": "boolean"
-        },
-        {
-          "name": "splicedReadsFirst",
-          "type": "boolean"
+          "name": "layoutOrder",
+          "type": "LayoutOrder"
         },
         {
           "name": "showOutline",

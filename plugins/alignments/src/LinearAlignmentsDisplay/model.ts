@@ -207,6 +207,7 @@ import type {
   BaseLayer,
   FilterBy,
   GroupBy,
+  LayoutOrder,
   ReadColorBy,
   SortedBy,
   TagColorScale,
@@ -225,7 +226,6 @@ import type {
   SashimiArcsMode,
 } from './constants.ts'
 import type { AlignmentLane } from './lanes.ts'
-import type { LayoutOrder } from './menus/sortGroup.ts'
 import type { QualitySpan } from './qualitySpans.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type {
@@ -850,7 +850,7 @@ export default function stateModelFactory(
            * with the condition that produced them.
            *
            * There has to be a pileup to order, and chain layout is handed neither
-           * `sortedBy` nor `largeFeaturesFirst` (`buildLaidOutChainMap` takes
+           * `sortedBy` nor `layoutOrder` (`buildLaidOutChainMap` takes
            * neither) because its rows are chains, ordered by chain distance.
            * Without this a chain-mode sort was a silent no-op, and the tag mode
            * additionally refetched the region to extract `sortTagValues` (it is in
@@ -1683,8 +1683,7 @@ export default function stateModelFactory(
               isChainMode: self.isChainMode,
               sortedBy: this.sortedBy,
               showSoftClipping: self.showSoftClipping,
-              largeFeaturesFirst: self.largeFeaturesFirst,
-              splicedReadsFirst: self.splicedReadsFirst,
+              layoutOrder: self.layoutOrder,
               regions: self.loadedRegions,
               collapseGroupRows: this.collapseGroupRows,
             }
@@ -3347,8 +3346,7 @@ export default function stateModelFactory(
           }
         }
         function setSortSlot(sortedBy: SortedBy) {
-          setConf(self, 'largeFeaturesFirst', false)
-          setConf(self, 'splicedReadsFirst', false)
+          setConf(self, 'layoutOrder', 'position')
           setConf(self, 'sortedBy', sortedBy)
         }
         return {
@@ -3528,21 +3526,18 @@ export default function stateModelFactory(
           /**
            * #action
            * Commit a sort, the one place the `sortedBy` slot is written. It
-           * also drops the layout-order flags, since a sort and those flags are
-           * one radio group and exactly one holds state.
+           * also resets `layoutOrder`, since the two are one radio group and
+           * exactly one holds state.
            */
           setSortedByAtPosition: setSortSlot,
 
           /**
            * #action
-           * The three orderings that are not a `sortedBy` slot, written
-           * together: they are one radio group, and a caller spelling the two
-           * flags plus the clear itself can leave the pileup holding two
-           * orderings at once.
+           * The orderings that are not a `sortedBy` column sort, and the
+           * clear of that sort, which the radio group needs together.
            */
           setLayoutOrder(order: LayoutOrder) {
-            setConf(self, 'largeFeaturesFirst', order === 'length')
-            setConf(self, 'splicedReadsFirst', order === 'spliced')
+            setConf(self, 'layoutOrder', order)
             setConf(self, 'sortedBy', null)
           },
 

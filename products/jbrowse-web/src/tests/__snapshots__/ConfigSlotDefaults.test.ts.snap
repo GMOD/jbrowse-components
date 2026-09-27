@@ -391,7 +391,7 @@ exports[`every registered schema slot default 1`] = `
     "heightMode": "stringEnum = "fixed" of ["fixed","grow","fit"]",
     "hideNonCanonicalJunctions": "boolean = false",
     "hideSelfAlignments": "boolean = false",
-    "largeFeaturesFirst": "boolean = true",
+    "layoutOrder": "stringEnum = "length" of ["position","length","spliced"]",
     "linkedReads": "stringEnum = "off" of ["off","normal"]",
     "lodMode": "stringEnum = "auto" of ["auto","fine","coarse"]",
     "maxHeight": "number = 6000",
@@ -418,7 +418,6 @@ exports[`every registered schema slot default 1`] = `
     "showSashimiLabels": "boolean = false",
     "showSoftClipping": "boolean = false",
     "sortedBy": "maybeFrozen = undefined",
-    "splicedReadsFirst": "boolean = false",
   },
   "display: LinearAlignmentsDisplay": {
     "collapseGroupRows": "boolean = false",
@@ -439,7 +438,7 @@ exports[`every registered schema slot default 1`] = `
     "height": "number = 250",
     "heightMode": "stringEnum = "fixed" of ["fixed","grow","fit"]",
     "hideNonCanonicalJunctions": "boolean = false",
-    "largeFeaturesFirst": "boolean = false",
+    "layoutOrder": "stringEnum = "position" of ["position","length","spliced"]",
     "linkedReads": "stringEnum = "off" of ["off","normal"]",
     "maxHeight": "number = 6000",
     "minInterchromSupport": "number = 2",
@@ -465,7 +464,6 @@ exports[`every registered schema slot default 1`] = `
     "showSashimiLabels": "boolean = false",
     "showSoftClipping": "boolean = false",
     "sortedBy": "maybeFrozen = undefined",
-    "splicedReadsFirst": "boolean = false",
   },
   "display: LinearBasicDisplay": {
     "canonicalTranscriptField": "string = "tag"",

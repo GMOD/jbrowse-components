@@ -298,7 +298,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             }),
             // No base pair / tag: a PAF block has no per-base sequence to sort a
             // column by, and no SAM tags. 'Longest features first' is the
-            // largeFeaturesFirst layout flag, folded in as a peer radio because
+            // `layoutOrder` length, folded in as a peer radio because
             // it competes with a real sort for the same ordering.
             getSortByMenuItem(self, {
               noun: self.featureNoun,

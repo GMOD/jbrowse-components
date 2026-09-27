@@ -4715,15 +4715,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/JexlString"
           }
         },
-        "largeFeaturesFirst": {
-          "description": "Lay out large features first, in the lowest pileup rows.",
-          "type": "boolean",
-          "default": false
-        },
-        "splicedReadsFirst": {
-          "description": "Lay out spliced reads first, in the lowest pileup rows.",
-          "type": "boolean",
-          "default": false
+        "layoutOrder": {
+          "description": "Pileup row order where no sort applies: by start (position), widest first (length), or spliced reads first (spliced).",
+          "enum": [
+            "position",
+            "length",
+            "spliced"
+          ],
+          "default": "position"
         },
         "showOutline": {
           "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
@@ -5303,15 +5302,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/JexlString"
           }
         },
-        "largeFeaturesFirst": {
-          "description": "Lay out large features first, in the lowest pileup rows.",
-          "type": "boolean",
-          "default": true
-        },
-        "splicedReadsFirst": {
-          "description": "Lay out spliced reads first, in the lowest pileup rows.",
-          "type": "boolean",
-          "default": false
+        "layoutOrder": {
+          "description": "Row order where no sort applies: by start (position), widest first (length), or spliced first (spliced).",
+          "enum": [
+            "position",
+            "length",
+            "spliced"
+          ],
+          "default": "length"
         },
         "showOutline": {
           "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
@@ -9287,11 +9285,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "sortedBy": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sortedBy"
             },
-            "largeFeaturesFirst": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/largeFeaturesFirst"
-            },
-            "splicedReadsFirst": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/splicedReadsFirst"
+            "layoutOrder": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/layoutOrder"
             },
             "showOutline": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showOutline"
@@ -11416,11 +11411,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "sortedBy": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sortedBy"
             },
-            "largeFeaturesFirst": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/largeFeaturesFirst"
-            },
-            "splicedReadsFirst": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/splicedReadsFirst"
+            "layoutOrder": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/layoutOrder"
             },
             "showOutline": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOutline"

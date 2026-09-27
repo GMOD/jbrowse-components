@@ -1461,17 +1461,17 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  // A peer radio of `sortedBy`'s own modes in the same group (menus/sortGroup.ts),
-  // so it reads as a Sort by... row rather than a checkbox. Only `true` names a
-  // path: false is the group sitting on some other radio, which whichever field
-  // holds that ordering describes.
-  splicedReadsFirst: (value, { displayType }) =>
-    value === true && isAlignmentsOnlyField(displayType)
+  // Peer radios of `sortedBy`'s own modes in the same group (menus/sortGroup.ts),
+  // so each reads as a Sort by... row rather than a setting of its own.
+  layoutOrder: (value, { displayType }) =>
+    value === 'spliced' && isAlignmentsOnlyField(displayType)
       ? {
           path: `${TRACK_MENU} → Sort by... → Spliced reads first`,
           note: 'Gives every read whose CIGAR carries a skip the lowest rows, so the junction-spanning reads sit together at the top of a deep pileup. One ordering at a time: this and the sort modes are one radio group.',
         }
-      : undefined,
+      : value === 'length' && isAlignmentsOnlyField(displayType)
+        ? { path: `${TRACK_MENU} → Sort by... → Longest reads first` }
+        : undefined,
   showLegend: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&

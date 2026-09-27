@@ -132,7 +132,8 @@ export type {
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
 export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
-export type { LayoutOrder } from './LinearAlignmentsDisplay/menus/sortGroup.ts'
+export { LAYOUT_ORDERS } from './shared/types.ts'
+export type { LayoutOrder } from './shared/types.ts'
 export type { CoverageRegionFields } from './features/coverage/types.ts'
 export type {
   BakedColorScale,

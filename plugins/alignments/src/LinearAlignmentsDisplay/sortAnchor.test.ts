@@ -85,8 +85,8 @@ test('a region starting at zero is unaffected', () => {
   expect(display.sortedBy?.pos).toBe(400)
 })
 
-// `setSortedByAtPosition` drops the layout-order flags, since a sort and those flags are
-// peer radios. The old no-center-line fallback wrote `{pos: -1, refName: ''}`
+// `setSortedByAtPosition` resets `layoutOrder`, since a sort and the layout
+// order are peer radios. The old no-center-line fallback wrote `{pos: -1, refName: ''}`
 // AFTER that drop — a slot no layout can use (`sortForRegions` matches no
 // region named '', and nothing ranks at -1), so picking a strand sort out of
 // range threw away an active ordering and replaced it with nothing.
@@ -98,30 +98,24 @@ test('a sort with no center line warns and leaves the ordering alone', () => {
   display.setSortedBy('strand')
 
   expect(display.sortedBy).toBeUndefined()
-  expect(display.largeFeaturesFirst).toBe(true)
+  expect(display.layoutOrder).toBe('length')
   expect(getSession(display).notify).toHaveBeenCalledWith(
     expect.stringContaining('Cannot sort'),
     'warning',
   )
 })
 
-// One radio group, one write. The three non-slot orderings are mutually
-// exclusive, so each is stated as the whole answer rather than leaving a caller
-// to spell two flags plus a clear and get one of them wrong.
-test.each([
-  ['position', false, false],
-  ['length', true, false],
-  ['spliced', false, true],
-] as const)(
-  'setLayoutOrder(%s) writes both flags and drops the sort',
-  (order, large, spliced) => {
+// One radio group: a layout order is written with the clear of the sort, so a
+// caller cannot leave the pileup holding two orderings at once.
+test.each(['position', 'length', 'spliced'] as const)(
+  'setLayoutOrder(%s) writes the order and drops the sort',
+  order => {
     const { display } = createDisplay({ start: 0, end: 50_000 })
     display.setSortedBy('basePair')
 
     display.setLayoutOrder(order)
 
-    expect(display.largeFeaturesFirst).toBe(large)
-    expect(display.splicedReadsFirst).toBe(spliced)
+    expect(display.layoutOrder).toBe(order)
     expect(display.sortedBy).toBeUndefined()
   },
 )

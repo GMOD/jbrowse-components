@@ -1,20 +1,15 @@
 import { getSortByMenuItem } from './sortGroup.ts'
 
-import type { SortedBy } from '../../shared/types.ts'
+import type { LayoutOrder, SortedBy } from '../../shared/types.ts'
 
 // A stub of the slice of the display model the sort menu reads/writes. The menu
-// coordinates two config slots (`sortedBy` and `largeFeaturesFirst`) so the
-// pileup never holds two orderings at once; these tests pin that coordination
-// and the derived `checked` state without spinning up a real view.
-function makeModel(init?: {
-  sortedBy?: SortedBy
-  largeFeaturesFirst?: boolean
-  splicedReadsFirst?: boolean
-}) {
+// coordinates two config slots (`sortedBy` and `layoutOrder`) so the pileup
+// never holds two orderings at once; these tests pin that coordination and the
+// derived `checked` state without spinning up a real view.
+function makeModel(init?: { sortedBy?: SortedBy; layoutOrder?: LayoutOrder }) {
   return {
     sortedBy: init?.sortedBy,
-    largeFeaturesFirst: init?.largeFeaturesFirst ?? false,
-    splicedReadsFirst: init?.splicedReadsFirst ?? false,
+    layoutOrder: init?.layoutOrder ?? 'position',
     setSortedBy: jest.fn(),
     setLayoutOrder: jest.fn(),
   }
@@ -53,25 +48,15 @@ function checkedLabel(model: ReturnType<typeof makeModel>) {
 }
 
 describe('sort menu radio selection', () => {
-  test('default (no sort, no largeFeaturesFirst) selects Start location', () => {
+  test('default (no sort, position order) selects Start location', () => {
     expect(checkedLabel(makeModel())).toEqual(['Start location'])
   })
 
-  test('largeFeaturesFirst selects Longest reads first, not Start location', () => {
-    expect(checkedLabel(makeModel({ largeFeaturesFirst: true }))).toEqual([
-      'Longest reads first',
-    ])
-  })
-
-  test('splicedReadsFirst selects Spliced reads first, and wins over largeFeaturesFirst', () => {
-    expect(checkedLabel(makeModel({ splicedReadsFirst: true }))).toEqual([
-      'Spliced reads first',
-    ])
-    expect(
-      checkedLabel(
-        makeModel({ splicedReadsFirst: true, largeFeaturesFirst: true }),
-      ),
-    ).toEqual(['Spliced reads first'])
+  test.each([
+    ['length', 'Longest reads first'],
+    ['spliced', 'Spliced reads first'],
+  ] as const)('layoutOrder %s selects "%s"', (layoutOrder, label) => {
+    expect(checkedLabel(makeModel({ layoutOrder }))).toEqual([label])
   })
 
   test.each([
@@ -101,8 +86,8 @@ describe('sort menu radio selection', () => {
   test('exactly one radio is ever checked', () => {
     for (const model of [
       makeModel(),
-      makeModel({ largeFeaturesFirst: true }),
-      makeModel({ splicedReadsFirst: true }),
+      makeModel({ layoutOrder: 'length' }),
+      makeModel({ layoutOrder: 'spliced' }),
       makeModel({ sortedBy: sorted('strand') }),
       makeModel({ sortedBy: sorted('basePair') }),
       makeModel({ sortedBy: sorted('tag') }),
@@ -146,7 +131,7 @@ describe('curated modes', () => {
   )
 
   test('still tracks the checked mode', () => {
-    const item = getSortByMenuItem(makeModel({ largeFeaturesFirst: true }), {
+    const item = getSortByMenuItem(makeModel({ layoutOrder: 'length' }), {
       ...opts,
       modes: [...opts.modes],
     })
@@ -162,26 +147,23 @@ describe('sort menu keeps the two ordering slots mutually exclusive', () => {
     ['Longest reads first', 'length'],
     ['Spliced reads first', 'spliced'],
   ])('%s is one setLayoutOrder(%s) write', (label, order) => {
-    const model = makeModel({ largeFeaturesFirst: true })
+    const model = makeModel({ layoutOrder: 'length' })
     radio(model, label).onClick()
     expect(model.setLayoutOrder).toHaveBeenCalledWith(order)
     expect(model.setSortedBy).not.toHaveBeenCalled()
   })
 
-  // The sort radios delegate the mutual exclusion to setSortedByAtPosition, which drops
-  // largeFeaturesFirst only as it writes the slot. Clearing it here instead would
+  // The sort radios delegate the mutual exclusion to setSortedByAtPosition, which resets
+  // layoutOrder only as it writes the slot. Clearing it here instead would
   // wipe the current ordering even when the sort never lands (no valid center
   // line), leaving every radio unchecked.
   test.each([
     ['Read strand', 'strand'],
     ['Base pair', 'basePair'],
-  ])(
-    '%s sets the sort without pre-clearing largeFeaturesFirst',
-    (label, type) => {
-      const model = makeModel({ largeFeaturesFirst: true })
-      radio(model, label).onClick()
-      expect(model.setSortedBy).toHaveBeenCalledWith(type)
-      expect(model.setLayoutOrder).not.toHaveBeenCalled()
-    },
-  )
+  ])('%s sets the sort without pre-clearing layoutOrder', (label, type) => {
+    const model = makeModel({ layoutOrder: 'length' })
+    radio(model, label).onClick()
+    expect(model.setSortedBy).toHaveBeenCalledWith(type)
+    expect(model.setLayoutOrder).not.toHaveBeenCalled()
+  })
 })

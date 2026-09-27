@@ -24,6 +24,7 @@ import type {
   ColorSchemeType,
   FilterBy,
   GroupBy,
+  LayoutOrder,
   ModificationColorBy,
   ReadColorBy,
 } from '../shared/types.ts'
@@ -337,21 +338,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * Lay out the widest features in the lowest pileup rows (main-thread
-     * tier-2 relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it
-     * on. Ignored while an explicit `sortedBy` position sort is active.
+     * The row order where no `sortedBy` sort applies (a tier-2 relayout).
      */
-    get largeFeaturesFirst(): boolean {
-      return getConf(self, 'largeFeaturesFirst')
-    },
-    /**
-     * #getter
-     * Lay out reads whose CIGAR carries a skip in the lowest pileup rows
-     * (tier-2 relayout). Ignored while an explicit `sortedBy` position
-     * sort is active.
-     */
-    get splicedReadsFirst(): boolean {
-      return getConf(self, 'splicedReadsFirst')
+    get layoutOrder(): LayoutOrder {
+      return getConf(self, 'layoutOrder')
     },
     /**
      * #getter

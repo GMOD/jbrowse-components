@@ -13,7 +13,7 @@ import {
 import { isInterbaseType } from '../../shared/types.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
 
-import type { GroupBy, SortedBy } from '../../shared/types.ts'
+import type { GroupBy, LayoutOrder, SortedBy } from '../../shared/types.ts'
 import type { GroupByDialogModel } from '../dialogs/GroupByDialog.tsx'
 import type { RadioMenuItem } from '@jbrowse/core/ui'
 
@@ -23,20 +23,19 @@ const GroupByDialog = lazy(() => import('../dialogs/GroupByDialog.tsx'))
 interface SortByModel {
   sortedBy?: SortedBy
   setSortedBy: (type: string, tag?: string) => void
-  largeFeaturesFirst: boolean
-  splicedReadsFirst: boolean
+  layoutOrder: LayoutOrder
   setLayoutOrder: (order: LayoutOrder) => void
 }
 
 // One ordering at a time, so a single radio group. Most modes write a `sortedBy`
-// type; "Longest reads first" and "Spliced reads first" are the
-// `largeFeaturesFirst` / `splicedReadsFirst` layout flags, folded in as peer
-// radios because they compete for the same ordering. "Start location" is the
-// unsorted default, so it doubles as the reset — no separate "Clear".
+// type; "Start location", "Longest reads first" and "Spliced reads first" are
+// the `layoutOrder` slot, folded in as peer radios because they compete for the
+// same ordering. "Start location" is the unsorted default, so it doubles as the
+// reset — no separate "Clear".
 //
-// The three non-slot orderings go through `setLayoutOrder`, one write for the
-// whole radio group. `setSortedByAtPosition` drops both flags as it writes `sortedBy`, so
-// a sort that never lands (no valid center line, a cancelled tag dialog) leaves
+// Those three go through `setLayoutOrder`, which also clears the sort.
+// `setSortedByAtPosition` resets `layoutOrder` as it writes `sortedBy`, so a
+// sort that never lands (no valid center line, a cancelled tag dialog) leaves
 // the ordering alone instead of unchecking every radio.
 //
 // Strand / base pair / tag anchor on the center-line column, which `setSortedBy`
@@ -50,10 +49,6 @@ interface SortByModel {
 // ("Longest reads first"); rows that lead with it capitalize through
 // `capitalizeFirst`.
 
-// The orderings held as layout flags rather than a `sortedBy` slot, and so the
-// argument `setLayoutOrder` takes.
-export type LayoutOrder = 'position' | 'length' | 'spliced'
-
 export type SortMode = LayoutOrder | 'strand' | 'basePair' | 'tag'
 
 const ALL_SORT_MODES: SortMode[] = [
@@ -65,16 +60,10 @@ const ALL_SORT_MODES: SortMode[] = [
   'tag',
 ]
 
-// Spliced-first outranks largest-first in the layout too, so a config setting
-// both reads as the one that takes effect.
 function getSortMode(model: SortByModel): SortMode {
   const type = model.sortedBy?.type
   return type === undefined
-    ? model.splicedReadsFirst
-      ? 'spliced'
-      : model.largeFeaturesFirst
-        ? 'length'
-        : 'position'
+    ? model.layoutOrder
     : type === 'strand' || type === 'tag'
       ? type
       : type === 'basePair' || isInterbaseType(type)

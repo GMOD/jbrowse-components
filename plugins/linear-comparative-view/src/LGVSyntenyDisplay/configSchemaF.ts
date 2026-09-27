@@ -1,7 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
+import {
+  LAYOUT_ORDERS,
+  linearAlignmentsDisplayConfigSchemaFactory,
+} from '@jbrowse/plugin-alignments'
 
 import { getMate } from '../syntenyMate.ts'
 import { lgvSyntenyColorConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
@@ -134,12 +137,14 @@ function configSchemaF(pluginManager: PluginManager) {
        * #slot
        * Synteny lays large alignments out first so big syntenic blocks cluster
        * at the top instead of interleaving with small ones; overrides the base
-       * alignments display's `largeFeaturesFirst` default of `false`.
+       * alignments display's `position` default.
        */
-      largeFeaturesFirst: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Lay out large features first, in the lowest pileup rows',
+      layoutOrder: {
+        type: 'stringEnum',
+        model: types.enumeration('LayoutOrder', [...LAYOUT_ORDERS]),
+        defaultValue: 'length',
+        description:
+          'Row order where no sort applies: by start (position), widest first (length), or spliced first (spliced)',
       },
     },
     {
