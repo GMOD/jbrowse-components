@@ -44,6 +44,20 @@ it('colors the line and its caption together', () => {
   expect(svg).toContain('2 copies')
 })
 
+// A rule at the axis maximum sits on the band's top edge, where a caption
+// above it is clipped by the lane: pggb's "all five strains" at depth 5.
+it('captions a rule at the top edge below its line', () => {
+  const textY = (y: number, offsetY?: number) =>
+    Number(
+      /<text[^>]*y="([\d.]+)"/.exec(
+        render([{ value: 5, label: 'max', y }], offsetY),
+      )![1],
+    )
+  expect(textY(40)).toBe(38)
+  expect(textY(1)).toBe(13)
+  expect(textY(1, 50)).toBe(63)
+})
+
 it('draws no caption for an unlabelled rule', () => {
   expect(render([{ value: 30, y: 10 }])).not.toContain('<text')
 })

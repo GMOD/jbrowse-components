@@ -13,6 +13,17 @@ export interface ScoreRuleMark {
   color?: string
 }
 
+const LABEL_FONT_SIZE = 10
+const LABEL_GAP = 2
+
+// Above its line, unless the band's top edge leaves the label no room: a rule
+// at the top of the axis, like a pinned maximum, captions itself below.
+function labelY(y: number, offsetY: number) {
+  return y >= LABEL_FONT_SIZE + LABEL_GAP
+    ? offsetY + y - LABEL_GAP
+    : offsetY + y + LABEL_FONT_SIZE + LABEL_GAP
+}
+
 // Bare marks, no wrapping <svg>, so the on-screen overlay and the SVG export
 // draw the same elements from the same y. Same split as CrossHatchLines.
 export function ScoreRuleLines({
@@ -54,9 +65,9 @@ export function ScoreRuleLines({
               // labels already are
               <text
                 x={width - 4}
-                y={lineY - 2}
+                y={labelY(y, offsetY)}
                 textAnchor="end"
-                fontSize={10}
+                fontSize={LABEL_FONT_SIZE}
                 // full alpha, unlike the line: 0.9 is there to let the rule
                 // recede into the plot, and a caption that has to be read wants
                 // the opposite
