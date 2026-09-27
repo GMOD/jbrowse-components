@@ -98,11 +98,3 @@ how to do it themselves, as a menu path or a config they can paste.
   sessions instead.
 - **A synteny colour takes no `scale: "linear"`.** Its scale enum is `none`, and
   a numeric column is a ramp already; `domainMin` and `domainMax` still pin it.
-
-## Cleanup
-
-- **The circle-strand agent's worktree,**
-  `.claude/worktrees/agent-acd8d7e4cf3f7545d` on branch
-  `worktree-agent-acd8d7e4cf3f7545d`. Its one commit was cherry-picked into
-  this branch. After this lands, `git -C <that worktree> rebase main` drops the
-  duplicate, and then `git worktree remove` and `git branch -d` both succeed.
