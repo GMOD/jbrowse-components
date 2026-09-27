@@ -388,8 +388,6 @@ ratio, and the balanced baseline sits above zero.
 }
 ```
 
-On a track already open, **Score → Set min/max score...** pins the same range.
-
 ### Wakhan: copy number per parental haplotype
 
 `HG008_HiFi_HiC_copynumbers_segments.bed` is long format, one row per haplotype,
@@ -518,9 +516,6 @@ keeps the fetch on raw per-site values at these figures' zoom levels:
   }
 }
 ```
-
-**Resolution → Finer** in the track menu is the same fix interactively, whenever
-a scatter track paints as a filled band.
 
 ### Subclonal copy number
 

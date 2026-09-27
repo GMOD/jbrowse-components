@@ -189,8 +189,8 @@ The [script](#reproduce-it-end-to-end) ends on the numbers behind the picture.
 The control is dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs should
 come out at a lower synonymous divergence than A-C or C-D. The palette button's
-**Color by value → ds** paints each anchor by it; pinning the ramp's ends keeps
-a colour meaning one dS wherever the view goes:
+**Color by value → ds** <!-- menu-path-ok --> paints each anchor by it; pinning
+the ramp's ends keeps a colour meaning one dS wherever the view goes:
 
 ```json session config=https://jbrowse.org/demos/oat_homoeologs/config.json
 {
