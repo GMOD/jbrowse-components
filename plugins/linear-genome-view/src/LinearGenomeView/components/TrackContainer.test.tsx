@@ -103,13 +103,14 @@ function hoverBackgrounds(el: Element) {
   for (const sheet of document.styleSheets) {
     for (const rule of sheet.cssRules) {
       if (
-        'selectorText' in rule &&
-        'style' in rule &&
-        (rule as CSSStyleRule).selectorText.includes(':hover') &&
-        selectors.some(s => (rule as CSSStyleRule).selectorText.includes(s)) &&
-        (rule as CSSStyleRule).style.background
+        rule instanceof CSSStyleRule &&
+        rule.selectorText.includes(':hover') &&
+        selectors.some(s => rule.selectorText.includes(s))
       ) {
-        out.push((rule as CSSStyleRule).style.background)
+        const bg = rule.style.getPropertyValue('background-color')
+        if (bg) {
+          out.push(bg)
+        }
       }
     }
   }
