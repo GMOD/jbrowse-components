@@ -25,10 +25,20 @@ from the consortium's page on genomes.jbrowse.org at the MHC class II locus. We:
 [Browsing the graph](/docs/tutorials/pangenome_hprc) traces that allele to the
 one haplotype the graph credits it to.
 
+:::caution Experimental
+
+The graph view is a beta plugin, and the HPRC page lives on
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/)
+until JBrowse 5 ships. We welcome your [feedback](/contact).
+
+:::
+
 ## Prerequisites
 
 - the GraphGenomeView plugin, which the HPRC page's graph launches load; both
   callsets are a URL any JBrowse reads with no plugin
+- for [Reproduce it end to end](#reproduce-it-end-to-end):
+  [minigraph](https://github.com/lh3/minigraph)
 
 ## Where the data comes from
 
@@ -55,14 +65,14 @@ reads the bubble projections from our host.
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and
 press **variants** on the HLA / MHC row. JBrowse opens on the MHC class II
 window, `chr6:32,510,001-32,600,000`, with the release's decomposed callset as a
-matrix of haplotypes. Indexed alongside the 2.3 GB VCF, the track is this
+matrix of haplotypes. To open the same 2.3 GB VCF in your own JBrowse, add this
 config:
 
 ```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "hprc2_wave_grch38",
-  "name": "HPRC2 pangenome",
+  "name": "HPRC2 pangenome callset (464 haplotypes)",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
@@ -79,7 +89,7 @@ config:
 
 `renderingMode: "phased"` splits each sample into its two haplotypes, one row
 each. The launch filters the fully decomposed VCF to the structural tier; open
-the track menu's **Edit filters** to read it:
+**Filter by... → Edit filters...** in the track menu to read it:
 
 ```text
 jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50
@@ -103,8 +113,9 @@ length, the callset who carries it.
 
 Press **graph** on the same HLA / MHC row for the graph track under the genes,
 the bubbles and the allele inventory. Turn on **HPRC2 pangenome callset (464
-haplotypes)** from the track selector and filter it as before, admitting the
-_HLA-DRB5_ deletion by position since vcfwave nests it one level down:
+haplotypes)** from the track selector and give it this filter from **Filter
+by... → Edit filters...**, which admits the _HLA-DRB5_ deletion by position
+since vcfwave nests it one level down:
 
 ```text
 jexl:(feature.INFO.LV[0]==0 || feature.start==32517421) && alleleLength(feature)>=50
@@ -114,7 +125,7 @@ Cluster it, hide the bubbles and the allele inventory, pick **Layout →
 Force-directed layout**, and right-click the charcoal allele beside _HLA-DRB5_
 for **Highlight in hg38**.
 
-<Figure caption="One window, both products. The band is the HLA-DRB5 deletion site from the callset, over every haplotype clustered by genotype: grey where a haplotype matches the reference, teal where it carries the alt allele, magenta for another alt. Below, the force-directed graph, where an arrow runs from the band to the same deletion as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products. The band is the HLA-DRB5 deletion site from the callset, over every haplotype clustered by genotype: grey where a haplotype matches the reference, blue where it carries the alt allele, red for another alt. Below, the force-directed graph, where an arrow runs from the band to the same deletion as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Carriage at the graph's own granularity
 
@@ -143,9 +154,13 @@ to the same session:
 }
 ```
 
-Apply the [same `LV==0` filter](#the-variant-callset) from **Edit filters**, and
-the lane cuts to the tier the graph's bubbles hold, matched to a bubble by
-interval.
+Its records are undecomposed, one per snarl, so size alone cuts the lane to the
+tier the graph's bubbles hold. Enter this from **Filter by... → Edit
+filters...**:
+
+```text
+jexl:alleleLength(feature)>=50
+```
 
 ## The alignment underneath both {#the-alignment-underneath-both}
 
@@ -167,14 +182,17 @@ that makes a locus one ranged read:
 }
 ```
 
-The `uri` shorthand resolves the sibling `.tai`. Release 2.0 publishes the same
-alignment as a 5.9 GB TAF, read by `BgzipTaffyAdapter` with the same shorthand:
-a quarter of the bytes per locus, but an earlier build with more underalignment
+The `uri` shorthand resolves the sibling `.tai`. Release 2.0 publishes an
+earlier build of the alignment as a 5.9 GB TAF, read by `BgzipTaffyAdapter` with
+the same shorthand: a quarter of the bytes per locus, with more underalignment
 and unpatched centromeres.
 
 Type the C4 window, `chr6:31,980,000-32,050,000`, and show three lanes over the
-graph track: the genes, the filtered callset and this alignment. A row that
-drops out belongs to a haplotype that does not carry that segment.
+graph track: the genes, the callset and this alignment. Clear the callset's
+filters from **Filter by... → Clear all filters**, since both clauses blank the
+lane here: the structural tier at C4 is nearly empty, and every record across
+_CYP21A1P_ and _TNXA_ nests under one top-level bubble. A row that drops out of
+the alignment belongs to a haplotype that does not carry that segment.
 
 Order the rows with **Clustering → Cluster rows by genotype...** on the callset
 and **Clustering → Cluster rows by identity...** on the alignment (computed over
@@ -199,13 +217,10 @@ jexl:feature.inversion
 Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus. The lane's one flagged
 bubble cannot distinguish a polymorphic inversion from an inverted paralog in a
 segmental duplication, and the graph draws its breakpoints as two deletion arcs
-since its edges carry no orientation. The alignments settle it: the figure below
-comes from
-[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
-under [Reproduce it end to end](#reproduce-it-end-to-end), which classifies
-every haplotype at the bubble from HPRC's all-vs-GRCh38 PAF and slices out a
-carrier and a non-carrier, each with its CAT annotation. The hg38 row between
-them agrees with the non-carrier.
+since its edges carry no orientation. The alignments settle it. The figure below
+slices a carrier and a non-carrier out of HPRC's all-vs-GRCh38 PAF, each with
+its CAT annotation ([Reproduce it end to end](#reproduce-it-end-to-end) builds
+it), and the hg38 row between them agrees with the non-carrier.
 
 <Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E, in opposite orders on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
 
@@ -225,13 +240,13 @@ We do not rebuild carriage here, since HPRC publishes it as
 
 ```bash
 # --call asks, at every bubble, which path this assembly takes through the graph
-minigraph -cxasm --call -t"$(nproc)" graph.gfa assembly.fa > sample.call.bed
+minigraph -cxasm --call -t"$(getconf _NPROCESSORS_ONLN)" graph.gfa assembly.fa > sample.call.bed
 ```
 
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
 wraps that call in the per-sample loop and the join, and
-[the same page](/docs/tutorials/pangenome_prepare_graph#who-carries-what) walks
-through the script.
+[hosting your own graph](/docs/tutorials/pangenome_prepare_graph#who-carries-what)
+walks through the script.
 
 A separate script builds the [inversion figure](#inversions) from release 2's
 published all-vs-GRCh38 PAF:
@@ -250,6 +265,7 @@ length and the CAT genes.
 
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
+- [](/docs/tutorials/pangenome_hprc_repeats)
 - [](/docs/tutorials/pangenome_chrm)
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/user_guides/graph_genome_view)

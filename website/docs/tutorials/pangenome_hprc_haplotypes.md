@@ -20,7 +20,9 @@ graph to show where neighbouring lanes match. With that view we:
 
 :::caution Experimental
 
-The graph view is a beta plugin. We welcome your [feedback](/contact).
+The graph view is a beta plugin, and the HPRC page lives on
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/)
+until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 :::
 
@@ -62,7 +64,7 @@ press **Draw these lanes**.
 Press **haplotypes** on the AMY1 row and choose `HG01361.1`, `HG00133.2`,
 `HG00133.1`, `NA18608.2` and `HG00232.1`. A longer lane carries more copies.
 
-<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one of each span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, and the lane's length across the array carries the copy count; each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, each from a different span class, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, and the lane's length across the array carries the copy count; each band draws the extra copies of the longer lane as a gap." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
 To read the lengths, take **Display types → Graph**, enter the five names in
 **Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →
@@ -75,14 +77,14 @@ Uniform**.
 Yilmaz et al. (2024) name each structure by its _AMY1_ count. Our five
 haplotypes land on H1a, H2A0, H3r, H5 and H7:
 
-| Span against GRCh38's | Haplotypes | _AMY1_ copies | Structure |
-| --------------------- | ---------- | ------------- | --------- |
-| 94 kb shorter         | 53         | 1             | H1a       |
-| 72 kb shorter         | 11         | 2, no _AMY2A_ | H2A0      |
-| the same              | 232        | 3             | H3r       |
-| 94 kb longer          | 79         | 5             | H5        |
-| 188 kb longer         | 22         | 7             | H7        |
-| 282 kb longer         | 5          | 9             | H9        |
+| Span against GRCh38's | HPRC haplotypes | _AMY1_ copies | Structure |
+| --------------------- | --------------- | ------------- | --------- |
+| 94 kb shorter         | 53              | 1             | H1a       |
+| 72 kb shorter         | 11              | 2, no _AMY2A_ | H2A0      |
+| the same              | 232             | 3             | H3r       |
+| 94 kb longer          | 79              | 5             | H5        |
+| 188 kb longer         | 22              | 7             | H7        |
+| 282 kb longer         | 5               | 9             | H9        |
 
 ## Reproduce it end to end
 
@@ -120,7 +122,9 @@ Align two haplotypes to draw them as synteny:
 <!-- from: scripts/build_amylase_haplotypes.sh -->
 
 ```bash
-minimap2 -c --eqx -x asm20 HG00232.1.fa NA18608.2.fa > adjacent.paf
+# --secondary=no keeps the primary chain; the secondary ones are paralogous
+# copies aligning to each other
+minimap2 -c --eqx -x asm20 --secondary=no HG00232.1.fa NA18608.2.fa > adjacent.paf
 ```
 
 The whole build:

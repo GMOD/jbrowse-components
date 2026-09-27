@@ -61,7 +61,7 @@ Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc). Each
 row of its **Loci** table ends in launches: **graph**, **variants**,
 **haplotypes** and **gene hub**.
 
-<Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows open only the callset and the gene hub. The boxed link is the graph launch the next step takes." src="/img/pangenome/genomes_hprc_loci.png" />
+<Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows have no graph launch. The boxed link is the graph launch the next step takes." src="/img/pangenome/genomes_hprc_loci.png" />
 
 Press **graph** on the HLA / MHC row. JBrowse opens on
 `chr6:32,510,001-32,600,000`, the MHC class II window.
@@ -105,8 +105,7 @@ draws the graph by its shape, in coordinates fitted to the track.
 <Figure caption="The C4 locus cut as a force-directed graph, the bottom track under the hg38 genes for the same window, colored by reference position. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
 
 The arc in the labelled bubble is the edge: a haplotype with one fewer C4 copy
-takes it straight past GRCh38's, and the renderer labels the arc with the bp it
-removes.
+takes it straight past GRCh38's.
 
 ## A whole chromosome, one node per bubble {#a-chromosome-and-back}
 
@@ -121,7 +120,7 @@ each locus. Press **chr1** there.
 
 <Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three chr1 loci the HPRC pages open, then two lanes from one file. The blue curve is segments per bubble, how much the haplotypes disagree at each locus; the tier lane draws the same bubbles, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
-Back in the first tab, type the MHC class II window,
+Back in the HLA / MHC graph tab, type the MHC class II window,
 `chr6:32,510,001-32,600,000`, to cross back to segments.
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
 tier and writes the `coarse` slot.

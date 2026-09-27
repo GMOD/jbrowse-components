@@ -22,8 +22,10 @@ repeat at its full length. We read two repeats off it, one bar per haplotype:
 
 :::caution Experimental
 
-The graph view is a beta plugin, and walk rows is its newest layout. We welcome
-your [feedback](/contact).
+The graph view is a beta plugin, and walk rows is its newest layout. The HPRC
+page lives on
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/)
+until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 :::
 
@@ -33,6 +35,10 @@ your [feedback](/contact).
   config the sessions below open already load;
   [hosting your own graph](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
   loads it into your own JBrowse
+- for your own samples: [TRGT](https://github.com/PacificBiosciences/trgt) and
+  `bcftools`
+- for [Reproduce it end to end](#reproduce-it-end-to-end):
+  [DuckDB](https://duckdb.org)
 
 ## Where the data comes from
 
@@ -198,8 +204,11 @@ TRGT writes the same fields for your own samples, one VCF each, joined by
 # one run per sample: HiFi reads aligned to GRCh38, and the repeat catalogue
 trgt genotype --genome GRCh38.fa --reads sample.bam \
   --repeats adotto_repeats.hg38.bed --output-prefix sample
-# one multi-sample VCF, which the steps below read unchanged
-trgt merge --vcf *.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
+# genotype writes its VCF unsorted, and merge reads sorted, indexed input
+bcftools sort -Oz -o sample.sorted.vcf.gz sample.vcf.gz
+bcftools index -t sample.sorted.vcf.gz
+# one multi-sample VCF, which JBrowse reads unchanged
+trgt merge --vcf *.sorted.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
 ```
 
 With the TRGT track in the session, a **Repeat** dropdown appears beside
@@ -322,6 +331,7 @@ _ABCA7_ record with every sample's genotype.
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
+- [](/docs/tutorials/pangenome_hprc_carriers)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 
 ## References
