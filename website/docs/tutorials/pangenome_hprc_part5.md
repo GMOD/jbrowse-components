@@ -10,13 +10,9 @@ tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
 ---
 
-A tandem repeat can be many times longer in one person than in the reference,
-and the long alleles are the ones association studies care about. An intron of
-_ABCA7_ holds a variable number tandem repeat whose expansions were tied to
-Alzheimer's disease risk (De Roeck et al. 2018), and genotyping it from reads
-needs reads that span the whole allele, which gets harder the longer the allele
-is. We draw the repeat once per haplotype from the Human Pangenome Reference
-Consortium's release 2 graph, where each haplotype is an assembled sequence. We:
+An intron of _ABCA7_ holds a variable number tandem repeat tied to Alzheimer's
+disease risk (De Roeck et al. 2018). We draw it once per haplotype from HPRC
+release 2's graph. We:
 
 - set PacBio's TRGT genotypes, called from HiFi reads of the same samples, on
   the same bars
@@ -55,11 +51,9 @@ genotypes of 100 of its samples (Dolzhenko et al. 2024):
 
 ## Every haplotype's walk through the repeat
 
-Open the session below on the hosted HPRC config. It opens _ABCA7_ with the
-RefSeq genes, the catalogue's own row for the VNTR as a session track, and
-PacBio's TRGT genotypes of the same samples, and under them the graph, cut from
-the release's gbz-base database over the same window for every haplotype the
-graph holds, drawn in the **Walk rows** layout with **Uniform** color:
+Open the session below: the genes, the catalogue's VNTR row and PacBio's TRGT
+genotypes, over the graph cut from the gbz-base database in **Walk rows** layout
+with **Uniform** color:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -128,19 +122,14 @@ graph holds, drawn in the **Walk rows** layout with **Uniform** color:
 }
 ```
 
-Each row is one haplotype's walk between the reference nodes flanking the
-window, drawn on its own bp axis: blue where GRCh38 carries the same sequence,
-purple where it does not. GRCh38's own walk is the short bar at the top, the
-span the catalogue lane marks.
+Each row is one haplotype's walk between the flanking reference nodes, blue
+where it matches GRCh38 and purple where it does not; GRCh38's own walk is the
+short bar at the top.
 
 ## TRGT's calls on the same bars
 
 [TRGT](https://github.com/PacificBiosciences/trgt) genotypes tandem repeats from
-HiFi reads against a catalogue of repeat loci, and writes a VCF whose `MOTIFS`
-field gives each locus its repeat unit and whose `AL` field gives each sample's
-two allele lengths. PacBio published TRGT's calls for 100 HPRC samples over the
-Genome in a Bottle repeat catalogue, and we host the record for the _ABCA7_
-locus as a VCF in TRGT's own format. The session's TRGT lane is this config:
+HiFi reads. We host its _ABCA7_ call for 100 HPRC samples as this track:
 
 ```json addtrack
 {
@@ -155,9 +144,8 @@ locus as a VCF in TRGT's own format. The session's TRGT lane is this config:
 }
 ```
 
-Its one record spans `chr19:1,049,408-1,050,096` and names a 51 bp motif. TRGT
-writes the same fields for your own samples, one VCF each, which `trgt merge`
-joins:
+TRGT writes the same fields for your own samples, one VCF each, joined by
+`trgt merge`:
 
 ```bash
 # one run per sample: HiFi reads aligned to GRCh38, and the repeat catalogue
@@ -168,22 +156,16 @@ trgt merge --vcf *.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf
 ```
 
 With the TRGT track in the session, a **Repeat** dropdown appears beside
-**Walk**. Pick the _ABCA7_ record. The bars now start and end at the record's
-flanks and are divided into motif-length units, and each readout gives its copy
-count. The record also carries each sample's genotype, so each walk gets a black
-tick at the allele TRGT called for it. A VCF lists a sample's alleles in the
-genotype's order, which is the genotyper's own and says nothing about which
-assembled haplotype is which, so the walks and the alleles are paired by length.
-A readout turns red where its walk and its allele are more than 10% apart.
+**Walk**. Pick the _ABCA7_ record: the bars divide into motif-length units, each
+walk gets a black tick at the allele TRGT called for it (paired by length), and
+a readout turns red past 10% apart.
 
 <Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first, with the TRGT record picked in the Repeat dropdown, boxed. The catalogue lane marks the VNTR on GRCh38, whose walk is the short blue bar at the top. Each bar is tiled by the motif, and a black tick marks the allele TRGT called for that walk. A red readout is a walk far from its allele." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
 ## The samples where they disagree
 
-The rows run longest first, so a sample's two haplotypes land far apart. The
-session below keeps the whole cut and shows seven samples' walks in pairs, named
-in `walkRowSamples`: three where the calls land on both walks, two where reads
-and assemblies part, and two carrying a walk the view declines to score.
+The session below shows seven samples' walks in pairs, longest first, named in
+`walkRowSamples`:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -256,32 +238,19 @@ and assemblies part, and two carrying a walk the view declines to score.
 }
 ```
 
-HG00099, HG03688 and HG00741 carry a tick at the end of each bar: reads and
-assemblies agree on both haplotypes in each, one sample with its two alleles far
-apart, one with both long, and one with both short.
-
-HG02647 and HG01943 are where reads and assemblies part. TRGT called each of
-them close to homozygous, with reads spanning both alleles, and the graph
-carries a haplotype neither call reaches (in HG01943 it carries two), so those
-readouts turn red.
-
-The last two samples each carry a walk the view leaves unscored, because one
-side of that comparison is not a measurement. No read spanned HG02559's second
-allele, so TRGT reported the first one twice; the copy lands on the sample's
-long walk as a grey tick and says nothing about it. HG04199's second walk is
-partial, since that assembly does not span the repeat, and TRGT's long allele
-sits far past where the bar stops, so here it is the graph that may be missing
-an allele.
+HG00099, HG03688 and HG00741 tick at the end of each bar: reads and assemblies
+agree. HG02647 and HG01943 turn red: TRGT calls each near-homozygous while the
+graph carries a haplotype neither call reaches (two, in HG01943). HG02559 and
+HG04199 carry a grey tick: no read spans HG02559's second allele, and HG04199's
+assembly does not span the repeat, so neither walk gets a verdict.
 
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar carrying the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
 ## Check it against TRGT's genotypes
 
-Click the TRGT record in the linear view. Its sample table gives each sample's
-`AL`, the allele lengths the ticks are drawn from, and `SD`, the reads spanning
-each allele. HG02559's second allele has no spanning read at all, so its tick is
-grey: TRGT's second call copies the first, and the walk it landed on takes no
-verdict.
+Click the TRGT record: its sample table gives `AL`, the allele lengths behind
+each tick, and `SD`, the reads spanning each allele. HG02559's second allele has
+none, which is why its tick is grey.
 
 ## Reproduce it end to end
 
@@ -290,8 +259,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_hprc_abca7_trgt.sh       # writes ./hprc_abca7_trgt_build/
 ```
 
-The TRGTdb is a directory of Parquet tables, one per sample beside a table of
-loci and one of alleles, so DuckDB reads a locus's calls straight out of it:
+The TRGTdb is a directory of Parquet tables, and DuckDB reads a locus's calls
+straight out of it:
 
 <!-- from: scripts/build_hprc_abca7_trgt.sh -->
 
@@ -306,8 +275,8 @@ duckdb -json -c "
 ```
 
 [`build_hprc_abca7_trgt.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_abca7_trgt.sh)
-downloads PacBio's TRGT database (1.1 GB) and the repeat catalogue, and writes
-the _ABCA7_ record with every sample's genotype.
+downloads PacBio's TRGT database and the repeat catalogue, and writes the
+_ABCA7_ record with every sample's genotype.
 
 ## See also
 
@@ -324,6 +293,4 @@ the _ABCA7_ record with every sample's genotype.
   https://doi.org/10.1038/s41587-023-02057-3
 - TRGT repeat catalogues and HPRC genotypes, Zenodo.
   https://doi.org/10.5281/zenodo.8329210
-- Liao WW, Asri M, Ebler J, et al. A draft human pangenome reference. Nature.
-  2023;617(7960):312-324. https://doi.org/10.1038/s41586-023-05896-x
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)
