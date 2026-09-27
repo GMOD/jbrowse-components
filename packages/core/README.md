@@ -844,6 +844,19 @@ tests both cases.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
 
+### isBreakend
+
+Breakend notation, without parsing it: bracket forms (`G[chr2:100[`), single
+breakends (`.A` / `G.`), and the symbolic-mate form (`G<DEL>`, an angle bracket
+past position 0; a leading `<` is a plain symbolic allele).
+
+```js
+// type signature
+(alt: string) => boolean
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
 ### isMissing
 
 Whether a field holds no value at all, as against text that fails to parse:
@@ -887,7 +900,7 @@ for the target, so it names no side.
 
 ```js
 // type signature
-(feature: Feature, alt?: string | undefined) => { own: JunctionEnd; mate: JunctionEnd; } | undefined
+(feature: Feature, alt?: string | undefined, alleleIndex?: number | undefined) => { own: JunctionEnd; mate: JunctionEnd; } | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -987,9 +1000,9 @@ One feature per other end a record states: the `mate` a paired adapter fills in
 symbolic allele's `END` on `CHR2` or its own sequence. Each answer carries
 `mate` (`refName`, `start`, `end`, 0-based and half-open, and the far end's
 `mateDirection`), its own end's `mateDirection`, the `alt` it came from and
-`svtype`, the record's `INFO.SVTYPE` or the allele's kind. A record naming no
-other end drops out, and two records or alleles stating one pair of ends answer
-once.
+`svType`, the structural class the allele states (`svClassOfAlt`). A record
+naming no other end drops out, and two records or alleles stating one pair of
+ends answer once.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -1058,11 +1071,13 @@ every comparison against it declines.
 ### parseSvAlt
 
 Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
-Returns undefined when no mate coordinate info is found.
+Returns undefined when no mate coordinate info is found. `alleleIndex` is the
+alt's place in `ALT`, which a record repeating one symbolic allele with several
+lengths needs; it defaults to the first place `alt` appears.
 
 ```js
 // type signature
-(feature: Feature, alt?: string | undefined) => { mateRefName: string; matePos: number; mateDirection?: number | undefined; joinDirection?: number | undefined; } | undefined
+(feature: Feature, alt?: string | undefined, alleleIndex?: number) => {…} | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1552,15 +1567,69 @@ into the color string.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
-### svTypeOfAlt
+### SV_CLASSES
 
-The structural variant type an ALT allele spells: a symbolic allele's name
-(`<DEL>` and `<DUP:TANDEM>` give `DEL` and `DUP`), `BND` for a breakend, else
-undefined.
+The structural-variant classes, in key order. `OTHER` is a token no class names,
+or a record whose alleles disagree.
 
 ```js
 // type signature
-(alt: string | undefined) => string | undefined
+readonly[('DEL', 'DUP', 'INS', 'INV', 'CNV', 'TR', 'BND', 'CPX', 'OTHER')]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
+### SV_MIN_LENGTH
+
+The conventional size floor for calling a sequence indel structural.
+
+```js
+// type signature
+50
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
+### svClassOf
+
+The structural-variant class of a VCF record as a whole: the one class its
+alleles state, CNV where they are losses and gains of one segment, OTHER where
+they otherwise disagree, and `''` for a record with no structural allele.
+
+```js
+// type signature
+(feature: Feature) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
+### svClassOfAlt
+
+The structural-variant class one ALT allele states, `''` for one that is not
+structural. A symbolic allele's own id wins. Otherwise VCF 4.4's `EVENTTYPE`
+does; then a breakend is the class its `SVTYPE` declares where that says more
+than BND, and a sequence allele is an insertion or deletion by its length
+against REF, else its `SVTYPE`'s class.
+
+```js
+// type signature
+(alt: string, { ref, info, alleleIndex, }?: { ref?: string | undefined; info?: Record<string, unknown> | undefined; alleleIndex?: number | undefined; }) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
+### svClassOfToken
+
+The class a symbolic allele id, `SVTYPE` or `EVENTTYPE` names. A subtype folds
+into its first level (`DEL:ME:ALU` is DEL, `DUP:TANDEM` DUP), except the tandem
+repeats VCF 4.4 spells `CNV:TR` and ExpansionHunter `STRn`, and the inverted
+duplication `INV:DUP`. 1000 Genomes' `CNn` counts one haplotype's copies, so
+none is a deletion and two or more a duplication. `''` for an empty or missing
+token.
+
+```js
+// type signature
+(raw: string) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)

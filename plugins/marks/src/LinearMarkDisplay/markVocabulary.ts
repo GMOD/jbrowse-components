@@ -47,7 +47,7 @@ export const MATE_FIELDS = [
   'mate.mateDirection',
   'mateDirection',
   'alt',
-  'svtype',
+  'svType',
 ] as const
 
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const

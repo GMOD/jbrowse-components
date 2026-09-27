@@ -1,5 +1,6 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { svClassOf } from '@jbrowse/core/util/svAlt'
 import { colorFieldOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { ALT_HUE } from './cellFill.ts'
@@ -9,11 +10,7 @@ import {
   getVariantImpactColor,
   getVariantImpactDomain,
 } from './variantConsequence.ts'
-import {
-  NON_SV_TYPE,
-  SV_TYPE_FIELD,
-  getVariantSvType,
-} from './variantSvType.ts'
+import { NON_SV_TYPE, SV_TYPE_FIELD } from './variantSvType.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -58,7 +55,7 @@ export function recordKeyColor(
 }
 
 function svTypeDomain(feature: Feature) {
-  return getVariantSvType(feature) || NON_SV_TYPE
+  return svClassOf(feature) || NON_SV_TYPE
 }
 
 /**

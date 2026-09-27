@@ -77,7 +77,7 @@ one.
 | a colour ramp over a number | `scale_fill_viridis_c()`, `scale_fill_gradientn(colours)` | `"type": "quantitative"`, `"scale": {"scheme"}` | `"scale": "linear"` with `scheme` or `range` |
 | the ramp's middle stop at a value | `scale_fill_gradient2(midpoint)` | `"scale": {"domainMid"}` | `domainMid` on the colour |
 | a colour per interval of a number | `cut()` into `scale_fill_manual(values)` | `"scale": {"type": "threshold", "domain", "range"}` | `"scale": "threshold"`, `domain` holding the cuts |
-| a shape per category | `aes(shape = svtype)` | `"shape": {"field": "svtype"}` | `"shape": {"field": "svtype", "scale": "categorical"}` |
+| a shape per category | `aes(shape = svType)` | `"shape": {"field": "svType"}` | `"shape": {"field": "svType", "scale": "categorical"}` |
 | a log axis | `scale_y_log10()` | `"y": {"scale": {"type": "log"}}` | `"scales": {"y": {"type": "log"}}` |
 | a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"scales": {"y": {"type": "symlog", "symlogConstant"}}` |
 | fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `scales.y` |
@@ -279,7 +279,7 @@ names the grey row for features with nothing in the field.
 ## Shape scales
 
 A scale belongs to a channel, not only to colour. `shape` takes the same
-categorical form — `{ "field": "svtype", "scale": "categorical" }` — with
+categorical form — `{ "field": "svType", "scale": "categorical" }` — with
 `range` listing the shapes to hand out as a colour scale's lists colours
 (`circle`, `triangle-down`, `diamond` in that order when left off) and `domain`
 the values in legend order. The legend then carries a second key whose swatches
@@ -292,7 +292,7 @@ are the shapes themselves:
     "y": "score",
     "color": { "field": "strand", "scale": "categorical" },
     "shape": {
-      "field": "svtype",
+      "field": "svType",
       "scale": "categorical",
       "domain": ["INS", "DEL"],
       "range": ["triangle-down", "diamond"]
@@ -417,7 +417,7 @@ junctions from a STAR file, stroked by read support and labelled with it:
 A paired record names its other end elsewhere: a BEDPE or STAR-Fusion adapter
 fills a `mate` field, and a VCF states each end in an `ALT`. The `mate` step
 reads either into `mate.refName`, `mate.start` and `mate.end`, one feature per
-end, with `svtype` beside them; `x2` then names those as a locus, so a mate on
+end, with `svType` beside them; `x2` then names those as a locus, so a mate on
 another chromosome draws wherever the view shows it.
 
 **A track whose records name a mate draws the links with nothing configured**:
@@ -443,7 +443,7 @@ Write them out to say more — a colour by type, a stroke by score, a shape:
         {
           "mark": "link",
           "size": 2,
-          "encoding": { "color": { "field": "svtype" } },
+          "encoding": { "color": { "field": "svType" } },
           "transform": [{ "type": "mate" }]
         }
       ]

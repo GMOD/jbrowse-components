@@ -3450,14 +3450,19 @@
     "@jbrowse/core/util/svAlt": {
       "package": "@jbrowse/core",
       "names": [
+        "SV_CLASSES",
+        "SV_MIN_LENGTH",
         "SV_SYMBOLIC_ALLELES",
         "breakendKeepsDirections",
         "getBreakendMateLocString",
+        "isBreakend",
         "junctionEnds",
         "parseSvAlt",
         "readTranslocationMate",
         "safeParseBreakend",
-        "svTypeOfAlt"
+        "svClassOf",
+        "svClassOfAlt",
+        "svClassOfToken"
       ],
       "worker": "real"
     },

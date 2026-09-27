@@ -1,4 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
+import { svClassOf } from '@jbrowse/core/util/svAlt'
 
 import LDDisplayF from './LDDisplay/index.ts'
 import LDTrackF from './LDTrack/index.ts'
@@ -30,10 +31,7 @@ import {
   getVariantImpact,
   getVariantImpactColor,
 } from './shared/variantConsequence.ts'
-import {
-  getVariantSvType,
-  getVariantSvTypeColor,
-} from './shared/variantSvType.ts'
+import { getVariantSvTypeColor } from './shared/variantSvType.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -101,7 +99,7 @@ export default class VariantsPlugin extends Plugin {
     // transliterate through plain member access, and these are the derived
     // quantities that have no field to read.
     /** #jexlFunction Variant functions | svType(feature) == 'DEL' | SV class, read off a symbolic ALT before falling back to INFO/SVTYPE (bcftools INFO/SVTYPE) */
-    jexl.addFunction('svType', getVariantSvType)
+    jexl.addFunction('svType', svClassOf)
     /** #jexlFunction Variant functions | nAlt(feature) == 1 | ALT alleles the record declares, i.e. biallelic-only (bcftools N_ALT) */
     jexl.addFunction('nAlt', getAltAlleleCount)
     /** #jexlFunction Variant functions | genotypeCount(feature, 'het') > 0 | samples in a genotype class — ref, alt, hom, het or mis (bcftools N_PASS(GT="het")) */
@@ -117,9 +115,7 @@ export { default as VcfFeature } from './VcfFeature/index.ts'
 export {
   PREDEFINED_SV_TYPES,
   getSvTypeColor,
-  getVariantSvType,
   svTypeDisplayLabel,
-  svTypeFromToken,
 } from './shared/variantSvType.ts'
 
 export type { LinearVariantDisplayModel } from './LinearVariantDisplay/model.ts'

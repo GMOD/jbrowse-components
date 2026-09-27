@@ -1,5 +1,6 @@
 import { colord } from '@jbrowse/core/util/colord'
-import { getSvTypeColor, getVariantSvType } from '@jbrowse/plugin-variants'
+import { svClassOf } from '@jbrowse/core/util/svAlt'
+import { getSvTypeColor } from '@jbrowse/plugin-variants'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -18,5 +19,5 @@ export function chordColorForType(type: string) {
 }
 
 export function svChordColor(feature: Feature) {
-  return chordColorForType(getVariantSvType(feature))
+  return chordColorForType(svClassOf(feature))
 }

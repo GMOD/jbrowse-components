@@ -1,5 +1,10 @@
 import SimpleFeature from './simpleFeature.ts'
-import { junctionEnds } from './svAlt.ts'
+import {
+  junctionEnds,
+  svClassOf,
+  svClassOfAlt,
+  svClassOfToken,
+} from './svAlt.ts'
 
 function vcf(alts: string[], info: Record<string, unknown[]> = {}) {
   return new SimpleFeature({
@@ -112,4 +117,107 @@ test('a strand on one end only names no side, and the blocks face each other', (
 test('a record naming no other end has none', () => {
   expect(junctionEnds(vcf(['A']))).toBeUndefined()
   expect(junctionEnds(paired({}))).toBeUndefined()
+})
+
+describe('svClassOfToken', () => {
+  test.each([
+    ['DEL:ME:ALU', 'DEL'],
+    ['dup:tandem', 'DUP'],
+    ['INS:ME', 'INS'],
+    ['CNV:TR', 'TR'],
+    ['STR12', 'TR'],
+    ['VNTR', 'TR'],
+    ['TRA', 'BND'],
+    ['CTX', 'BND'],
+    ['INVDUP', 'CPX'],
+    ['INV:DUP', 'CPX'],
+    ['CHROMOTHRIPSIS', 'CPX'],
+    ['CN0', 'DEL'],
+    ['CN1', 'CNV'],
+    ['CN3', 'DUP'],
+    ['DUP/INS', 'OTHER'],
+    ['.', ''],
+  ])('%s is %s', (token, cls) => {
+    expect(svClassOfToken(token)).toBe(cls)
+  })
+})
+
+describe('svClassOfAlt', () => {
+  test('a symbolic allele names its own class over SVTYPE', () => {
+    expect(svClassOfAlt('<DEL>', { info: { SVTYPE: ['DUP'] } })).toBe('DEL')
+  })
+  test('a breakend takes the event its record declares', () => {
+    expect(svClassOfAlt('N[chr2:100[', { info: { SVTYPE: ['DEL'] } })).toBe(
+      'DEL',
+    )
+    expect(svClassOfAlt('N[chr2:100[', { info: { SVTYPE: ['BND'] } })).toBe(
+      'BND',
+    )
+    expect(
+      svClassOfAlt('N[chr2:100[', {
+        info: { EVENTTYPE: ['INV'], SVTYPE: ['BND'] },
+      }),
+    ).toBe('INV')
+  })
+  test('a sequence allele is structural by its length against REF', () => {
+    expect(svClassOfAlt('A'.repeat(60), { ref: 'A' })).toBe('INS')
+    expect(svClassOfAlt('A', { ref: 'A'.repeat(60) })).toBe('DEL')
+    expect(svClassOfAlt('T', { ref: 'A' })).toBe('')
+  })
+  test('the allele its caller names reads its own entry of a per-allele field', () => {
+    const info = { EVENTTYPE: ['DEL', 'INV'] }
+    expect(svClassOfAlt('N[chr2:100[', { info, alleleIndex: 1 })).toBe('INV')
+  })
+  test('an allele standing for any other names nothing', () => {
+    expect(svClassOfAlt('<NON_REF>')).toBe('')
+  })
+})
+
+describe('svClassOf', () => {
+  const record = (ALT: string[], INFO: Record<string, unknown[]> = {}) =>
+    new SimpleFeature({
+      uniqueId: 'r',
+      refName: 'chr1',
+      start: 0,
+      end: 1,
+      ALT,
+      INFO,
+      REF: 'A',
+    })
+  test('losses and gains of one segment are a copy-number variant', () => {
+    expect(svClassOf(record(['<DEL>', '<DUP>']))).toBe('CNV')
+    expect(svClassOf(record(['<CN0>', '<CN2>']))).toBe('CNV')
+  })
+  test('alleles that otherwise disagree are other', () => {
+    expect(svClassOf(record(['<DEL>', '<INV>']))).toBe('OTHER')
+  })
+  test('a record with no allele reads its SVTYPE', () => {
+    expect(svClassOf(record([], { SVTYPE: ['INV'] }))).toBe('INV')
+  })
+  test('a small variant is not structural', () => {
+    expect(svClassOf(record(['T']))).toBe('')
+    expect(svClassOf(record([`A${'C'.repeat(48)}`]))).toBe('')
+  })
+  test('a sequence allele takes its SVTYPE where its length says nothing', () => {
+    const noRef = new SimpleFeature({
+      uniqueId: 'r',
+      refName: 'chr1',
+      start: 0,
+      end: 1,
+      ALT: ['ACGT'],
+      INFO: { SVTYPE: ['DEL'] },
+    })
+    expect(svClassOf(noRef)).toBe('DEL')
+  })
+  // a decomposed pangenome callset spells its SVs as plain sequence alleles
+  // with no symbolic ALT and no SVTYPE
+  test('two SV-sized insertions are one insertion', () => {
+    expect(
+      svClassOf(record([`A${'C'.repeat(60)}`, `A${'G'.repeat(60)}`])),
+    ).toBe('INS')
+  })
+  test('an allele standing for any other leaves the record its others', () => {
+    expect(svClassOf(record(['<NON_REF>']))).toBe('')
+    expect(svClassOf(record(['<DEL>', '<*>']))).toBe('DEL')
+  })
 })

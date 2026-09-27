@@ -1,4 +1,5 @@
 import { getBpDisplayStr, max, toLocale } from '@jbrowse/core/util'
+import { isBreakend } from '@jbrowse/core/util/svAlt'
 
 import { GENOTYPE_SPLITTER as genotypeDelimRegex } from '../shared/constants.ts'
 
@@ -29,21 +30,6 @@ function firstNumericInfo(
 ) {
   const value = info?.[key]
   return Array.isArray(value) ? parseFiniteNumber(value[0]) : undefined
-}
-
-// Breakend notation, without parsing it: bracket forms (`G[chr2:100[`), single
-// breakends (`.A` / `G.`), and the symbolic-mate form (`G<DEL>`, angle bracket
-// past position 0 — a leading `<` is a plain symbolic allele instead). The one
-// definition of the predicate; `svTypeFromAlt` and `getSOTerm` both read it, so
-// a breakend can't be one thing to the SO term and another to the SV color.
-export function isBreakend(alt: string) {
-  return (
-    alt.includes('[') ||
-    alt.includes(']') ||
-    alt.startsWith('.') ||
-    alt.endsWith('.') ||
-    alt.lastIndexOf('<') > 0
-  )
 }
 
 function isSymbolic(alt: string) {

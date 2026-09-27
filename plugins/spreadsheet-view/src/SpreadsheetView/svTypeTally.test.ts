@@ -43,7 +43,7 @@ test('a class folds its spellings together', () => {
       ],
       FIELD,
     ),
-  ).toEqual([{ type: 'BND', label: 'Breakend', count: 3 }])
+  ).toEqual([{ type: 'BND', label: 'Breakend / translocation', count: 3 }])
 })
 
 test('classes come back in canonical order, not arrival order', () => {
@@ -66,7 +66,7 @@ test('a sheet with no SVTYPE column is classed from the ALT', () => {
 test('a row with no parsed feature is classed from its token', () => {
   const rows = [{ id: 0, 'INFO.SVTYPE': 'TRA' }] as unknown as GridRow[]
   expect(tallySvTypes(rows, FIELD)).toEqual([
-    { type: 'BND', label: 'Breakend', count: 1 },
+    { type: 'BND', label: 'Breakend / translocation', count: 1 },
   ])
 })
 

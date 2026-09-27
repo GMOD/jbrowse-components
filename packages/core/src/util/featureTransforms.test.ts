@@ -696,7 +696,7 @@ test('mate answers one feature per breakend ALT, with the mate locus 0-based and
     [{ type: 'mate' }],
   )
   expect(out.map(f => f.id())).toEqual(['sv999#0', 'sv999#1'])
-  expect(rows(out, 'start', 'alt', 'svtype', 'mateDirection')).toEqual([
+  expect(rows(out, 'start', 'alt', 'svType', 'mateDirection')).toEqual([
     [999, 'N[ctgB:2000[', 'BND', -1],
     [999, ']ctgA:5000]N', 'BND', 1],
   ])
@@ -727,9 +727,9 @@ test('mate reads a symbolic allele off END and CHR2, and names its kind where IN
     ],
     [{ type: 'mate' }],
   )
-  expect(rows(out, 'start', 'svtype', 'mateDirection')).toEqual([
+  expect(rows(out, 'start', 'svType', 'mateDirection')).toEqual([
     [100, 'DEL', -1],
-    [500, 'TRA', 0],
+    [500, 'BND', 0],
     [700, 'DUP', 1],
   ])
   expect(out.map(f => f.get('mate'))).toEqual([
@@ -738,6 +738,23 @@ test('mate reads a symbolic allele off END and CHR2, and names its kind where IN
     { refName: 'ctgA', start: 899, end: 900, mateDirection: -1 },
   ])
   expect(out.map(f => f.id())).toEqual(['sv100', 'sv500', 'sv700'])
+})
+
+// a breakend's ALT says only that it is one; the class the record declares
+// is the event, and each allele of a record keeps its own
+test('mate names each link the class its allele states', () => {
+  const out = runTransforms(
+    [
+      sv(100, ['N[ctgA:500['], { SVTYPE: ['DEL'] }),
+      sv(700, ['<DEL>', '<DUP>'], { SVLEN: [100, 200] }),
+    ],
+    [{ type: 'mate' }],
+  )
+  expect(rows(out, 'start', 'svType')).toEqual([
+    [100, 'DEL'],
+    [700, 'DEL'],
+    [700, 'DUP'],
+  ])
 })
 
 test('mate passes a paired record through on its own mate, and drops a record naming no other end', () => {
@@ -757,7 +774,7 @@ test('mate passes a paired record through on its own mate, and drops a record na
     end: 40,
     mateDirection: 0,
   })
-  expect(rows(out, 'mateDirection', 'score', 'alt', 'svtype')).toEqual([
+  expect(rows(out, 'mateDirection', 'score', 'alt', 'svType')).toEqual([
     [-1, 7, undefined, undefined],
   ])
 })

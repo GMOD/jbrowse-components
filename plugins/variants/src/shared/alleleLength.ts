@@ -1,4 +1,6 @@
-import { isBreakend, parseFiniteNumber } from '../VcfFeature/util.ts'
+import { isBreakend } from '@jbrowse/core/util/svAlt'
+
+import { parseFiniteNumber } from '../VcfFeature/util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -29,7 +31,7 @@ function symbolicInsertionBp(feature: Feature, altIndex: number) {
 // measuring it reported a 14 bp insertion on every BND record — a phantom
 // "Insertion: 14bp" tooltip row, a cell widened toward an insertion marker, and
 // a `jexl:alleleLength(feature) >= 50` filter selecting on the length of a
-// contig name. `isBreakend` is the same predicate `svTypeFromAlt` and `getSOTerm`
+// contig name. `isBreakend` is the same predicate `svClassOfAlt` and `getSOTerm`
 // use, so a breakend cannot be one thing to the SO term and another here.
 //
 // The exception among symbolic ALTs is `<INS>`, whose span `getEnd` pins at

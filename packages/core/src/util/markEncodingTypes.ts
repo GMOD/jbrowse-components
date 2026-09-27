@@ -520,8 +520,8 @@ export interface PileupStep {
  * breakend's mate or a symbolic allele's `END` on `CHR2` or its own
  * sequence. Each answer carries `mate` (`refName`, `start`, `end`, 0-based
  * and half-open, and the far end's `mateDirection`), its own end's
- * `mateDirection`, the `alt` it came from and `svtype`, the record's
- * `INFO.SVTYPE` or the allele's kind. A record naming no other end drops
+ * `mateDirection`, the `alt` it came from and `svType`, the structural
+ * class the allele states (`svClassOfAlt`). A record naming no other end drops
  * out, and two records or alleles stating one pair of ends answer once.
  */
 export interface MateStep {

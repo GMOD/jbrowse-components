@@ -1,15 +1,14 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { svClassOf, svClassOfToken } from '@jbrowse/core/util/svAlt'
 import {
   PREDEFINED_SV_TYPES,
-  getVariantSvType,
   svTypeDisplayLabel,
-  svTypeFromToken,
 } from '@jbrowse/plugin-variants'
 
 import type { GridRow } from './SpreadsheetModel.tsx'
 
 export interface SvTypeTally {
-  /** the canonical class: DEL, DUP, INS, INV, CNV, BND, a CN state, MIXED */
+  /** the class `svClassOf` names */
   type: string
   /** how a reader sees it named — "Deletion", "Breakend" */
   label: string
@@ -18,17 +17,15 @@ export interface SvTypeTally {
 
 /**
  * A row's SV class, or undefined for a record that is not a structural variant.
- * The ALT decides where it can, since it distinguishes what SVTYPE folds
- * together (a `<CN3>` keeps its copy number). A row carrying the declared type
- * and no parsed record — one restored from an older session — is classed from
- * the `field` column's token.
+ * A row carrying the declared type and no parsed record — one restored from an
+ * older session — is classed from the `field` column's token.
  */
 export function rowSvType(row: GridRow, field?: string) {
   const raw = field ? row[field] : undefined
   return (
     (row.feature
-      ? getVariantSvType(new SimpleFeature(row.feature))
-      : svTypeFromToken(typeof raw === 'string' ? raw : '')) || undefined
+      ? svClassOf(new SimpleFeature(row.feature))
+      : svClassOfToken(typeof raw === 'string' ? raw : '')) || undefined
   )
 }
 

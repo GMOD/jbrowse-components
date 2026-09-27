@@ -158,19 +158,179 @@ export function breakendKeepsDirections(bnd: Breakend) {
 
 /**
  * #api
- * The structural variant type an ALT allele spells: a symbolic allele's name
- * (`<DEL>` and `<DUP:TANDEM>` give `DEL` and `DUP`), `BND` for a breakend,
- * else undefined.
+ * Breakend notation, without parsing it: bracket forms (`G[chr2:100[`), single
+ * breakends (`.A` / `G.`), and the symbolic-mate form (`G<DEL>`, an angle
+ * bracket past position 0; a leading `<` is a plain symbolic allele).
  */
-export function svTypeOfAlt(alt: string | undefined) {
-  if (alt === undefined) {
-    return undefined
+export function isBreakend(alt: string) {
+  return (
+    alt.includes('[') ||
+    alt.includes(']') ||
+    alt.startsWith('.') ||
+    alt.endsWith('.') ||
+    alt.lastIndexOf('<') > 0
+  )
+}
+
+/**
+ * #api
+ * The structural-variant classes, in key order. `OTHER` is a token no class
+ * names, or a record whose alleles disagree.
+ */
+export const SV_CLASSES = [
+  'DEL',
+  'DUP',
+  'INS',
+  'INV',
+  'CNV',
+  'TR',
+  'BND',
+  'CPX',
+  'OTHER',
+] as const
+
+/**
+ * #api
+ * The conventional size floor for calling a sequence indel structural.
+ */
+export const SV_MIN_LENGTH = 50
+
+const CLASS_OF_TOKEN: Readonly<Record<string, string>> = {
+  DEL: 'DEL',
+  DUP: 'DUP',
+  INS: 'INS',
+  INV: 'INV',
+  CNV: 'CNV',
+  TR: 'TR',
+  VNTR: 'TR',
+  BND: 'BND',
+  TRA: 'BND',
+  CTX: 'BND',
+  CPX: 'CPX',
+  INVDUP: 'CPX',
+  CHROMOTHRIPSIS: 'CPX',
+  CHROMOPLEXY: 'CPX',
+  BFB: 'CPX',
+  DOUBLEMINUTE: 'CPX',
+}
+
+// gVCF's `<NON_REF>` and bcftools mpileup's `<*>` stand for whatever allele
+// the caller did not name, not for a structure.
+const ANY_OTHER_ALLELE = new Set(['<NON_REF>', '<*>'])
+
+/**
+ * #api
+ * The class a symbolic allele id, `SVTYPE` or `EVENTTYPE` names. A subtype folds
+ * into its first level (`DEL:ME:ALU` is DEL, `DUP:TANDEM` DUP), except the
+ * tandem repeats VCF 4.4 spells `CNV:TR` and ExpansionHunter `STRn`, and the
+ * inverted duplication `INV:DUP`. 1000 Genomes' `CNn` counts one haplotype's
+ * copies, so none is a deletion and two or more a duplication. `''` for an
+ * empty or missing token.
+ */
+export function svClassOfToken(raw: string) {
+  const token = raw.trim().toUpperCase()
+  if (token === '' || token === '.') {
+    return ''
   }
-  if (alt.startsWith('<')) {
-    const close = alt.search(/[:>]/)
-    return close > 1 ? alt.slice(1, close) : undefined
+  if (token === 'CNV:TR') {
+    return 'TR'
   }
-  return safeParseBreakend(alt) ? 'BND' : undefined
+  if (token === 'INV:DUP') {
+    return 'CPX'
+  }
+  const first = token.split(':')[0]!
+  const copies = /^CN(\d+)$/.exec(first)
+  if (copies) {
+    const n = Number(copies[1])
+    return n === 0 ? 'DEL' : n === 1 ? 'CNV' : 'DUP'
+  }
+  return /^STR\d*$/.test(first) ? 'TR' : (CLASS_OF_TOKEN[first] ?? 'OTHER')
+}
+
+// an INFO token one allele states: its own entry of a Number=A field, or the
+// one entry a record-wide field has
+function alleleToken(
+  info: Record<string, unknown> | undefined,
+  key: string,
+  alleleIndex: number,
+) {
+  const value = info?.[key]
+  const list = Array.isArray(value) ? value : [value]
+  const token = list.length === 1 ? list[0] : list[alleleIndex]
+  return typeof token === 'string' ? token : ''
+}
+
+/**
+ * #api
+ * The structural-variant class one ALT allele states, `''` for one that is not
+ * structural. A symbolic allele's own id wins. Otherwise VCF 4.4's `EVENTTYPE`
+ * does; then a breakend is the class its `SVTYPE` declares where that says more
+ * than BND, and a sequence allele is an insertion or deletion by its length
+ * against REF, else its `SVTYPE`'s class.
+ */
+export function svClassOfAlt(
+  alt: string,
+  {
+    ref,
+    info,
+    alleleIndex = 0,
+  }: {
+    ref?: string
+    info?: Record<string, unknown>
+    alleleIndex?: number
+  } = {},
+) {
+  if (ANY_OTHER_ALLELE.has(alt)) {
+    return ''
+  }
+  if (alt.startsWith('<') && alt.endsWith('>')) {
+    return svClassOfToken(alt.slice(1, -1))
+  }
+  const event = svClassOfToken(alleleToken(info, 'EVENTTYPE', alleleIndex))
+  if (event) {
+    return event
+  }
+  const declared = svClassOfToken(alleleToken(info, 'SVTYPE', alleleIndex))
+  if (isBreakend(alt)) {
+    return declared && declared !== 'BND' && declared !== 'OTHER'
+      ? declared
+      : 'BND'
+  }
+  const diff = alt.length - (ref?.length ?? alt.length)
+  return diff >= SV_MIN_LENGTH
+    ? 'INS'
+    : diff <= -SV_MIN_LENGTH
+      ? 'DEL'
+      : declared
+}
+
+/**
+ * #api
+ * The structural-variant class of a VCF record as a whole: the one class its
+ * alleles state, CNV where they are losses and gains of one segment, OTHER
+ * where they otherwise disagree, and `''` for a record with no structural
+ * allele.
+ */
+export function svClassOf(feature: Feature) {
+  const alts = feature.get('ALT') as string[] | undefined
+  const ref = feature.get('REF') as string | undefined
+  const info = feature.get('INFO') as Record<string, unknown> | undefined
+  if (!alts?.length) {
+    return svClassOfToken(alleleToken(info, 'SVTYPE', 0))
+  }
+  const classes = new Set<string>()
+  for (const [alleleIndex, alt] of alts.entries()) {
+    const found = svClassOfAlt(alt, { ref, info, alleleIndex })
+    if (found) {
+      classes.add(found)
+    }
+  }
+  const [only, ...rest] = classes
+  return rest.length === 0
+    ? (only ?? '')
+    : [...classes].every(c => c === 'DEL' || c === 'DUP' || c === 'CNV')
+      ? 'CNV'
+      : 'OTHER'
 }
 
 // Read the mate destination from a VCF translocation INFO record. CHR2/END

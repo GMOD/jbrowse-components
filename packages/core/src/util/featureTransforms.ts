@@ -4,7 +4,7 @@ import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
-import { junctionEnds, svTypeOfAlt } from './svAlt.ts'
+import { junctionEnds, svClassOfAlt, svClassOfToken } from './svAlt.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
@@ -263,14 +263,24 @@ function mateFields(
   alt: string | undefined,
   mate: MateEnd,
   ownDirection: number,
+  alleleIndex = 0,
 ) {
-  const info = f.get('INFO') as Record<string, unknown[]> | undefined
-  const svtype = info?.SVTYPE?.[0] ?? svTypeOfAlt(alt)
+  const info = f.get('INFO') as Record<string, unknown> | undefined
+  const svType =
+    alt === undefined
+      ? svClassOfToken(
+          String((info?.SVTYPE as unknown[] | undefined)?.[0] ?? ''),
+        )
+      : svClassOfAlt(alt, {
+          ref: f.get('REF') as string | undefined,
+          info,
+          alleleIndex,
+        })
   return {
     mate,
     mateDirection: ownDirection,
     ...(alt === undefined ? {} : { alt }),
-    ...(svtype === undefined ? {} : { svtype }),
+    ...(svType ? { svType } : {}),
   }
 }
 
@@ -336,7 +346,7 @@ function mates(features: readonly Feature[]) {
       admit(
         f,
         mate,
-        mateFields(f, alt, mate, ends.own.keeps),
+        mateFields(f, alt, mate, ends.own.keeps, i),
         alts.length > 1 ? `${f.id()}#${i}` : undefined,
       )
     }

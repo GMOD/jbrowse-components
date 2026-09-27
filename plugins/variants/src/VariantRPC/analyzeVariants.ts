@@ -1,3 +1,5 @@
+import { svClassOf } from '@jbrowse/core/util/svAlt'
+
 import {
   alleleBucketCounts,
   calculateAlleleCounts,
@@ -12,11 +14,7 @@ import {
   summarizeAlleleCounts,
 } from '../shared/minorAlleleFrequencyUtils.ts'
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
-import {
-  NON_SV_TYPE,
-  assignSvTypeColors,
-  getVariantSvType,
-} from '../shared/variantSvType.ts'
+import { NON_SV_TYPE, assignSvTypeColors } from '../shared/variantSvType.ts'
 
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { SampleInfo } from '../shared/types.ts'
@@ -489,7 +487,7 @@ export function analyzeVariants({
       ) {
         hasPhaseSet = true
       }
-      const svType = getVariantSvType(feature)
+      const svType = svClassOf(feature)
       svTypes.add(svType || NON_SV_TYPE)
       hasSvType ||= !!svType
     } else if (codes) {
