@@ -1,16 +1,12 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { CappedPath, getDpr, makeBpMapper } from '../canvas2dUtils.ts'
 import * as shader from '../shaders/pointMark.generated.ts'
-import {
-  pointDrawsBar,
-  pointRowYPx,
-  pointYPx,
-} from '../shaders/pointMark.js.generated.ts'
+import { pointRowYPx, pointYPx } from '../shaders/pointMark.js.generated.ts'
 import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
-import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
+import { inkAtPoint, nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
 import {
@@ -23,18 +19,16 @@ import {
 } from './rowLane.ts'
 import { valueScaleUniforms } from './valueScale.ts'
 
+import type { BlockClipResult } from '../blockClipUtils.ts'
+import type { RenderBlock } from '../renderBlock.ts'
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
-import type { MarkRamp, MarkShape } from './types.ts'
+import type { MarkFrame, MarkRamp, MarkShape } from './types.ts'
 import type { MarkValueScale } from './valueScale.ts'
 
 /**
- * The `point` shape's channels: a glyph per instance at `x`, on the `y` scale,
- * widening to a bar where `x2 - x` is wider than the glyph.
- *
- * `x2` is a channel rather than an option because the widening is per instance:
- * one array holds SNPs (`x2 === x + 1`) and structural variants together, and
- * the shader, the painter and the hit test all take the same branch off it.
+ * The `point` shape's channels: a glyph per instance at the centre of
+ * `x`..`x2`, on the `y` scale.
  */
 export interface PointChannels extends ColorChannel, RowChannel {
   x: Uint32Array
@@ -44,17 +38,57 @@ export interface PointChannels extends ColorChannel, RowChannel {
   count: number
 }
 
-export interface PointParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a point whose colour is a ramp. */
+/** What the point and rule shapes share: a value scale, rows and a ramp. */
+export interface ValuedMarkParams extends RowParams, MarkValueScale {
+  /** The quantitative colour scale, for a mark whose colour is a ramp. */
   ramp?: MarkRamp
-  /** Glyph diameter in CSS px. */
-  diameterPx: number
   /**
-   * How far inside the plot the value range ends, so a point at a domain
+   * How far inside the plot the value range ends, so a mark at a domain
    * endpoint draws whole — `glyphPaint`'s `pointInsetPx`, and the same number
    * the display's axis takes as its offset. Absent centres it on the edge.
    */
   insetPx?: number
+}
+
+export interface PointParams extends ValuedMarkParams {
+  /** Glyph diameter in CSS px. */
+  diameterPx: number
+}
+
+/**
+ * The point shader's uniforms, which the rule shape draws through too:
+ * `radiusPx` is half a glyph or half a rule's thickness.
+ */
+export function writePointUniforms(
+  scratch: ArrayBuffer,
+  clip: BlockClipResult,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: ValuedMarkParams,
+  shape: { radiusPx: number; rule: boolean; minWidthPx: number },
+) {
+  shader.writeUniforms(scratch, {
+    bpRangeX: bpRangeXTuple(clip, block.reversed),
+    canvasHeight: frame.canvasHeight,
+    domainMin: params.domain[0],
+    domainMax: params.domain[1],
+    ...valueScaleUniforms(params),
+    ...rampUniforms(params.ramp),
+    zero: 0,
+    // viewportWidth and radiusPx stay in CSS units to match canvasHeight:
+    // mixing a DPR-scaled radius with a CSS-scaled height draws vertically
+    // stretched ellipses on hi-DPI.
+    viewportWidth: clip.scissorW,
+    radiusPx: shape.radiusPx,
+    rowHeight: bandHeightPx(params, frame.canvasHeight),
+    rowOffsetPx: params.rowOffsetPx ?? 0,
+    reverse: params.reverse ? 1 : 0,
+    insetPx: params.insetPx ?? 0,
+    devicePixelRatio: getDpr(),
+    rowTableKeys: rowTableKeys(params),
+    rule: shape.rule ? 1 : 0,
+    minWidthPx: shape.minWidthPx,
+  })
 }
 
 export const pointMark: MarkShape<PointChannels, PointParams> = {
@@ -69,25 +103,10 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   },
 
   writeUniforms(scratch, clip, block, frame, params) {
-    shader.writeUniforms(scratch, {
-      bpRangeX: bpRangeXTuple(clip, block.reversed),
-      canvasHeight: frame.canvasHeight,
-      domainMin: params.domain[0],
-      domainMax: params.domain[1],
-      ...valueScaleUniforms(params),
-      ...rampUniforms(params.ramp),
-      zero: 0,
-      // viewportWidth and radiusPx stay in CSS units to match canvasHeight:
-      // mixing a DPR-scaled radius with a CSS-scaled height draws vertically
-      // stretched ellipses on hi-DPI.
-      viewportWidth: clip.scissorW,
+    writePointUniforms(scratch, clip, block, frame, params, {
       radiusPx: params.diameterPx / 2,
-      rowHeight: bandHeightPx(params, frame.canvasHeight),
-      rowOffsetPx: params.rowOffsetPx ?? 0,
-      reverse: params.reverse ? 1 : 0,
-      insetPx: params.insetPx ?? 0,
-      devicePixelRatio: getDpr(),
-      rowTableKeys: rowTableKeys(params),
+      rule: false,
+      minWidthPx: 0,
     })
   },
 
@@ -107,7 +126,6 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       rowTable: table,
     } = params
     const reverse = params.reverse ? 1 : 0
-    const r = diameterPx / 2
     const band = bandHeightPx(params, frame.canvasHeight)
     const domainMin = domain[0]
     const domainMax = domain[1]
@@ -130,26 +148,24 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
         ctx.fillStyle = abgrToCssRgba(abgr)
       }
       path.add()
-      const xStart = bpToPx(x[i]!)
-      const xEnd = bpToPx(x2[i]!)
       const yPx = pointRowYPx(
         rowBandTopPx(top, band, slot),
         band,
         reverse,
         pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),
       )
-      const widthPx = Math.abs(xEnd - xStart)
-      if (pointDrawsBar(widthPx, r)) {
-        ctx.rect(Math.min(xStart, xEnd), yPx - r, widthPx, diameterPx)
-      } else {
-        appendGlyph(ctx, glyph[i]!, xStart, yPx, diameterPx)
-      }
+      appendGlyph(
+        ctx,
+        glyph[i]!,
+        (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2,
+        yPx,
+        diameterPx,
+      )
     }
     path.flush()
   },
 
-  // A bar is the rect the painter fills, unpadded on every side; a glyph is
-  // the box `appendGlyph` paints inside.
+  // The box `appendGlyph` paints inside.
   ink(channels, block, frame, params, i) {
     const { x, x2, y, glyph, row } = channels
     const slot = rowSlot(row, i, params.rowTable)
@@ -158,9 +174,6 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     }
     const { diameterPx, domain, insetPx = 0 } = params
     const bpToPx = makeBpMapper(block)
-    const xStart = bpToPx(x[i]!)
-    const xEnd = bpToPx(x2[i]!)
-    const r = diameterPx / 2
     const band = bandHeightPx(params, frame.canvasHeight)
     const { valueScaleType: st, valueSymlogConstant: c } =
       valueScaleUniforms(params)
@@ -170,22 +183,21 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       params.reverse ? 1 : 0,
       pointYPx(y[i]!, domain[0], domain[1], band, st, insetPx, c),
     )
-    const lo = Math.min(xStart, xEnd)
-    const hi = Math.max(xStart, xEnd)
-    return pointDrawsBar(hi - lo, r)
-      ? { left: lo, top: cy - r, width: hi - lo, height: diameterPx }
-      : glyphBox(glyph[i]!, xStart, cy, diameterPx)
+    return glyphBox(
+      glyph[i]!,
+      (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2,
+      cy,
+      diameterPx,
+    )
   },
 
-  // Its own rather than the one `ink` implies, for the glyph: a dense plot
-  // stacks glyphs whose boxes all contain the cursor at distance 0, and the
-  // one under the cursor is the nearest CENTRE, which no box can say. A bar
-  // is grabbed anywhere inside the rect it fills, as the derived test would.
+  // Its own rather than the one `ink` implies: a dense plot stacks glyphs
+  // whose boxes all contain the cursor at distance 0, and the one under the
+  // cursor is the nearest CENTRE, which no box can say.
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
     const { x, x2, y, row } = channels
     const bpToPx = makeBpMapper(block)
     const {
-      diameterPx,
       domain,
       insetPx = 0,
       rowOffsetPx: top = 0,
@@ -202,19 +214,13 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       if (slot === undefined) {
         return undefined
       }
-      const xStart = bpToPx(x[i]!)
-      const xEnd = bpToPx(x2[i]!)
       const cy = pointRowYPx(
         rowBandTopPx(top, band, slot),
         band,
         reverse,
         pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),
       )
-      const lo = Math.min(xStart, xEnd)
-      const hi = Math.max(xStart, xEnd)
-      return pointDrawsBar(hi - lo, diameterPx / 2)
-        ? inkOnRect(xPx, yPx, lo, cy - diameterPx / 2, hi - lo, diameterPx)
-        : inkAtPoint(xPx, yPx, xStart, cy)
+      return inkAtPoint(xPx, yPx, (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2, cy)
     })
   },
 

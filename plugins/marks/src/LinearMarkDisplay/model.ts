@@ -408,9 +408,9 @@ function layerSpans(
 /**
  * #stateModel LinearMarkDisplay
  * #displayFoundation MultiRegionDisplayMixin
- * A display declared in config: a list of bar, point and span marks, each
- * with an encoding from feature fields to channels, drawn in order over one
- * score axis from one worker fetch per region.
+ * A display declared in config: a list of marks, each with an encoding from
+ * feature fields to channels, drawn in order over one score axis from one
+ * worker fetch per region.
  */
 export function stateModelFactory(
   pluginManager: PluginManager,
@@ -1153,21 +1153,25 @@ export function stateModelFactory(
         /**
          * #getter
          * The px the y scale stands in from both ends of its band, one number
-         * for the axis and every mark: point room where only points draw, and
-         * none beside a bar, whose top edge is its datum and wants the plot box
-         * itself. A text mark labels what is drawn and moves nothing.
+         * for the axis and every mark: room for the largest glyph or half the
+         * thickest rule where only those draw, and none beside a bar, whose
+         * top edge is its datum and wants the plot box itself. A text mark
+         * labels what is drawn and moves nothing.
          */
         get valueInsetPx(): number {
-          const points = self.drawingMarkIndices.filter(
-            i => self.markTypes[i] === 'point',
-          )
-          return points.length > 0 &&
-            self.drawingMarkIndices.every(i => {
-              const type = self.markTypes[i]
-              return type === 'point' || type === 'text'
-            })
-            ? pointInsetPx(Math.max(...points.map(i => self.markSizes[i]!)))
-            : 0
+          let inset = 0
+          for (const i of self.drawingMarkIndices) {
+            const type = self.markTypes[i]
+            const size = self.markSizes[i]!
+            if (type === 'point') {
+              inset = Math.max(inset, pointInsetPx(size))
+            } else if (type === 'rule') {
+              inset = Math.max(inset, size / 2)
+            } else if (type !== 'text') {
+              return 0
+            }
+          }
+          return inset
         },
         /**
          * #getter
@@ -1380,14 +1384,15 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * A ring around a point, since a wash over a 4 px glyph is invisible
-         * and every hue may be the colour scale's; a shade over anything else.
+         * A ring around a point or a rule, since a wash over 4 px of ink is
+         * invisible and every hue may be the colour scale's; a shade over
+         * anything else.
          */
         get highlightStyle(): HighlightStyle {
-          const hit = this.highlightedHit
-          return hit && self.markTypes[hit.markIndex] === 'point'
-            ? 'ring'
-            : 'shade'
+          const type = this.highlightedHit
+            ? self.markTypes[this.highlightedHit.markIndex]
+            : undefined
+          return type === 'point' || type === 'rule' ? 'ring' : 'shade'
         },
         /**
          * #getter

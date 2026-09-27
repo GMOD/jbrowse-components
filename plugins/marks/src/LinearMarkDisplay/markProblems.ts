@@ -453,12 +453,17 @@ function ownProblems(
       )
     }
   }
-  if (mark.size !== undefined && type !== 'point' && type !== 'link') {
+  if (
+    mark.size !== undefined &&
+    type !== 'point' &&
+    type !== 'rule' &&
+    type !== 'link'
+  ) {
     problems.push(
       found(
         'unread-size',
         'size',
-        `a ${type} draws no point and strokes no link, so it reads no size`,
+        `a ${type} draws no point or rule and strokes no link, so it reads no size`,
       ),
     )
   }

@@ -5,6 +5,7 @@ export { inkOfInstances } from './markInk.ts'
 export { backToFront, nearestMarkHit, valueWindow } from './nearestMarkHit.ts'
 export { barMark } from './barMark.ts'
 export { pointMark } from './pointMark.ts'
+export { ruleMark } from './ruleMark.ts'
 export { spanMark } from './spanMark.ts'
 export {
   linkFeet,
@@ -47,6 +48,7 @@ export type {
 } from './types.ts'
 export type { BarChannels, BarParams } from './barMark.ts'
 export type { PointChannels, PointParams } from './pointMark.ts'
+export type { RuleChannels, RuleParams } from './ruleMark.ts'
 export type { SpanChannels, SpanParams } from './spanMark.ts'
 export type {
   LinkChannels,

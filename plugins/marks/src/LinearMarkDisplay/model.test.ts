@@ -980,9 +980,9 @@ test('a channel the mark does not read is named, and the rest still draws', () =
 test('a mark type the display does not draw is named as the problem, not the channels it carries', () => {
   expect(() =>
     createTestEnvironment([
-      { mark: 'rule', encoding: { y: 'score' } },
+      { mark: 'area', encoding: { y: 'score' } },
     ]).createDisplay(),
-  ).toThrow(/marks.0.mark is "rule", and a mark is one of bar, point, span/)
+  ).toThrow(/marks.0.mark is "area", and a mark is one of bar, point, rule/)
 })
 
 test('a mistyped key on a mark, a step or an op is refused where the config is read', () => {

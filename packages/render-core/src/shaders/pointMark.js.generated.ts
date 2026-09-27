@@ -97,7 +97,3 @@ export function pointRowYPx(bandTop: number, h: number, reverse: number, valueYP
   }
   return (bandTop + _t0)
 }
-
-export function pointDrawsBar(spanPx: number, radiusPx: number): boolean {
-  return (spanPx > (radiusPx * 2.0))
-}

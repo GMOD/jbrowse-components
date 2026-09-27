@@ -1,17 +1,17 @@
-// The `point` mark shape: one glyph per instance, placed at a genomic x and at
-// a y read off a per-instance value through `valueScale`. The glyph
-// channel picks between a disc, an inverted triangle and a diamond, and an
-// instance whose x..x2 extent is wider than the glyph draws as a horizontal bar
-// instead — the shape's own answer to "this datum has extent".
+// The `point` and `rule` shapes, at a y read off a per-instance value through
+// `valueScale`. A point is one glyph at the centre of its x..x2 extent, the
+// glyph channel picking a disc, an inverted triangle, a diamond or a square. A
+// rule (`u.rule`) is a bar across the extent, `2 * radiusPx` thick and at least
+// `minWidthPx` wide.
 //
-// All four are a 6-vertex quad; the fragment shader carves the shape.
+// Each is a 6-vertex quad; the fragment shader carves the glyph.
 //
 // `row` is read through the bound row table, as `spanMark` reads it: a key
 // resolved to its band and colour, or dropped off clip space where the table
 // hides it. A pass binding no table (`rowTableKeys` −1) draws `row` as the band.
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, TRIANGLE_MITER_REACHES, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND, GLYPH_SQUARE
-//! js-export: valueToYPxScaled, pointDrawsBar, pointYPx, pointRowYPx
+//! js-export: valueToYPxScaled, pointYPx, pointRowYPx
 // `valueScale`'s twin is lifted here, once, for the bar shape too.
 
 import antialias;
@@ -63,6 +63,8 @@ struct Uniforms {
   // Read by the glyph pad alone; every other length in this block is CSS px.
   float  devicePixelRatio;
   int    rowTableKeys;
+  int    rule;
+  float  minWidthPx;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 [[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
@@ -72,25 +74,12 @@ float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
 
-// Whether an instance draws as an extent bar rather than a glyph: its span has
-// to beat the glyph it would otherwise be, so a datum wider than its own marker
-// stops pretending to be a point.
-//
-// `//! js-export`ed because this one decision is read in three places — the
-// vertex branch below, the painter's rect-vs-glyph fork and the hit test's
-// rect-vs-centre fork — and a display whose hit test took the other branch from
-// the draw would grab a bar at its midpoint. `rectDrawsOutline` and `arrowDraws`
-// are the same lift for the same reason.
-bool pointDrawsBar(float spanPx, float radiusPx) {
-  return spanPx > radiusPx * 2.0;
-}
-
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   float2 localPos : TEXCOORD0;
   // Shape discriminator passed to the fragment shader: 0 = disc, 1 = diamond,
-  // 2 = inverted triangle, 3 = solid bar.
+  // 2 = inverted triangle, 3 = solid fill.
   nointerpolation float shape : TEXCOORD1;
 };
 
@@ -100,8 +89,7 @@ struct VsOut {
 static const float SHAPE_DISC = 0.0;
 static const float SHAPE_DIAMOND = 1.0;
 static const float SHAPE_TRI = 2.0;
-// >2.5 in the fragment shader = flat solid fill (extent bar, or the tiny
-// square below).
+// >2.5 in the fragment shader = flat solid fill (a rule, or the tiny square).
 static const float SHAPE_BAR = 3.0;
 // 1/sqrt(5): normalizes the two slanted edges of the inverted triangle so the
 // edge functions read as true perpendicular distances for antialiasing.
@@ -165,26 +153,12 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   float yPx = pointRowYPx(rowBandTopPx(u.rowOffsetPx, u.rowHeight, place.slot), u.rowHeight, u.reverse, pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx, u.valueSymlogConstant));
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
-  // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).
-  // abs() because reversal is baked into bpRangeX (negated length), so
-  // endClipX < startClipX on reversed regions — matches wiggle.slang.
-  float spanPx = clipLenToPx(abs(endClipX - startClipX), u.viewportWidth);
-  bool isBar = pointDrawsBar(spanPx, u.radiusPx);
-
   o.color = place.color;
-  if (isBar) {
-    // Horizontal bar from x→x2, height 2*radiusPx px, centered on the value.
-    //
-    // NO SEAM PAD, and this reverses a deliberate one: `c7ff9d459d` kept the
-    // 1 px overdraw on the claim that abutting bars leave hairline gaps without
-    // it (the claim is that commit's, not the ADR-098 document's).
-    // Measured against a fixture built to test that (38 of 39 boundaries on a
-    // shared pixel row), padded and unpadded have the same interior gap
-    // columns — none opens. A hairline at a fractional `fillRect` edge is a
-    // Canvas2D problem and takes a Canvas2D pad; see `spanMark`'s `seamPx`.
-    float x = xZero ? min(startClipX, endClipX) : max(startClipX, endClipX);
-    float halfBandPx = u.radiusPx;
-    float y = centerClipY + pxToClipLen(local.y * halfBandPx, u.canvasHeight);
+  float centerClipX = (startClipX + endClipX) * 0.5;
+  if (u.rule != 0) {
+    float farClipX = extendToMinWidthX(startClipX, endClipX, u.minWidthPx, u.viewportWidth);
+    float x = xZero ? min(startClipX, farClipX) : max(startClipX, farClipX);
+    float y = centerClipY + pxToClipLen(local.y * u.radiusPx, u.canvasHeight);
     o.position = float4(x, y, 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
@@ -192,7 +166,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
     // tiny disc: pixel-snapped crisp filled square (no AA disc). The triangle
     // and the diamond keep their distinct marker even when small.
     float diamPx = u.radiusPx * 2.0;
-    o.position = crispSquareCornerClip(startClipX, yPx, diamPx, q,
+    o.position = crispSquareCornerClip(centerClipX, yPx, diamPx, q,
                                        u.viewportWidth, u.canvasHeight);
     o.localPos = local;
     o.shape = SHAPE_BAR;
@@ -205,7 +179,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
     float halfPx = unitPx * expand;
     float dx = pxToClipLen(local.x * halfPx, u.viewportWidth);
     float dy = pxToClipLen(local.y * halfPx, u.canvasHeight);
-    o.position = float4(startClipX + dx, centerClipY + dy, 0.0, 1.0);
+    o.position = float4(centerClipX + dx, centerClipY + dy, 0.0, 1.0);
     o.localPos = local * expand;
     o.shape = inst.glyph == GLYPH_TRIANGLE ? SHAPE_TRI
             : (inst.glyph == GLYPH_DIAMOND ? SHAPE_DIAMOND : SHAPE_DISC);

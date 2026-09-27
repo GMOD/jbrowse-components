@@ -273,8 +273,10 @@ const markSchema = ConfigurationSchema(
   {
     /**
      * #slot marks.mark
-     * `bar` stands between `origin` and `y`; `point` is a shape at `y`; `span`
-     * is a band across the whole plot from `x` to `x2`; `text` prints a field
+     * `bar` stands between `origin` and `y`; `point` is a shape at `y` over
+     * the middle of `x` to `x2`; `rule` is a line across `x` to `x2` at `y`,
+     * `size` px thick; `span` is a band across the whole plot from `x` to
+     * `x2`; `text` prints a field
      * over the middle of `x` to `x2`, just above `y` where it names one and in
      * the middle of its band otherwise, and a label that would overlap one
      * already placed to its left is left out; `link` is a curve from `x` up
@@ -285,12 +287,13 @@ const markSchema = ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('MarkType', [...MARK_TYPES]),
       defaultValue: DEFAULT_MARK_TYPE,
-      description: 'bar, point, span, text or link',
+      description: 'bar, point, rule, span, text or link',
     },
     /**
      * #slot marks.size
-     * A point mark's diameter or a link's stroke width in px, the mark's own
-     * as a grammar's `size` is, so two marks may differ; a bar, span or text
+     * A point mark's diameter, a rule's thickness or a link's stroke width in
+     * px, the mark's own as a grammar's `size` is, so two marks may differ; a
+     * bar, span or text
      * reads none, and a link whose `encoding.size` names a field reads that
      * instead. Unwritten, a link strokes at 2 px. The track menu's Point
      * size writes it on every point mark.
@@ -298,7 +301,7 @@ const markSchema = ConfigurationSchema(
     size: {
       type: 'number',
       defaultValue: DEFAULT_POINT_DIAMETER_PX,
-      description: 'point diameter or link stroke in px',
+      description: 'point diameter, rule thickness or link stroke in px',
     },
     /**
      * #slot marks.linkShape

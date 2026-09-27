@@ -4,6 +4,7 @@ import {
   defineMark,
   linkMark,
   pointMark,
+  ruleMark,
   spanMark,
   withPassId,
 } from '@jbrowse/render-core/marks'
@@ -43,6 +44,7 @@ type ChannelLane = Exclude<LaneName, 'index'> | 'x2Region'
 const MARK_VALUE_LANES = {
   bar: ['y'],
   point: ['y', 'glyph'],
+  rule: ['y'],
   span: ['row', 'color'],
   link: ['x2Region'],
 } as const satisfies Record<Exclude<MarkType, 'text'>, readonly ChannelLane[]>
@@ -98,7 +100,7 @@ export interface MarkRenderState extends MarkFrame {
   bpPerPx: number
   origin: number
   minWidthPx: number
-  /** Mark `i`'s `size`: a point's diameter or a link's stroke in px. */
+  /** Mark `i`'s `size`: a point's diameter, a rule's thickness or a link's stroke in px. */
   markSizes: number[]
   /** Mark `i`'s size scale, where its `encoding.size` names a field. */
   sizeScales: (LinkSizeScale | undefined)[]
@@ -268,6 +270,26 @@ function shapeMark(entry: MarkEntry, i: number) {
           symlogConstant: s.symlogConstantY,
           ramp: s.colorRamps[i],
           diameterPx: s.markSizes[i]!,
+          insetPx: s.valueInsetPx,
+          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowTable: s.rowTable,
+        }),
+        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
+        enabled,
+      })
+    }
+    case 'rule': {
+      return defineMark({
+        shape: withPassId(ruleMark, id),
+        channels: (d: MarkRegionData) =>
+          withLanes(d.layers[i], MARK_VALUE_LANES.rule),
+        params: (s: MarkRenderState) => ({
+          domain: s.domainY,
+          scaleType: s.scaleTypeY,
+          symlogConstant: s.symlogConstantY,
+          ramp: s.colorRamps[i],
+          sizePx: s.markSizes[i]!,
+          minWidthPx: s.minWidthPx,
           insetPx: s.valueInsetPx,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           rowTable: s.rowTable,

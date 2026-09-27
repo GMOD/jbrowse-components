@@ -16,12 +16,14 @@ import {
 import { inkHitNearest } from './markHit.ts'
 import { pointMark } from './pointMark.ts'
 import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
+import { ruleMark } from './ruleMark.ts'
 import { spanMark } from './spanMark.ts'
 import { defineMark } from './types.ts'
 
 import type { BarChannels, BarParams } from './barMark.ts'
 import type { LinkChannels, LinkParams } from './linkMark.ts'
 import type { PointChannels, PointParams } from './pointMark.ts'
+import type { RuleChannels, RuleParams } from './ruleMark.ts'
 import type { SpanChannels, SpanParams } from './spanMark.ts'
 import type { MarkShape } from './types.ts'
 
@@ -191,38 +193,36 @@ describe('containment: a rule in place of the painted box', () => {
   })
 })
 
-// Bars, which are a rect on both sides — so this arm gets the containment
-// claim, as span's does, and sweeps at containment only. The glyph arm below is
-// the one that needs `sliceOne`.
-const points: PointChannels = {
-  x: Uint32Array.from([10, 40, 70]),
-  x2: Uint32Array.from([30, 60, 95]),
-  y: Float32Array.from([0.2, 0.5, 0.8]),
-  color: Uint32Array.from([RED, BLUE, RED]),
-  glyph: Uint8Array.from([0, 0, 0]),
-  count: 3,
+// A rule is a rect, so this arm gets the containment claim, as span's does.
+// The 1 bp rule takes the min-width floor.
+const rules: RuleChannels = {
+  x: Uint32Array.from([10, 40, 70, 97]),
+  x2: Uint32Array.from([30, 60, 95, 98]),
+  y: Float32Array.from([0.2, 0.5, 0.8, 0.35]),
+  color: Uint32Array.from([RED, BLUE, RED, BLUE]),
+  count: 4,
 }
 
-const pointParams: PointParams = { domain: [0, 1], diameterPx: 6 }
+const ruleParams: RuleParams = { domain: [0, 1], sizePx: 6, minWidthPx: 2 }
 
 // A constant far from d3's default 1, so a painter and a hit test reading two
 // different ones place the same value pixels apart.
 const SYMLOG = { scaleType: 'symlog', symlogConstant: 0.05 } as const
 
-test.each<[string, Partial<PointParams>]>([
+test.each<[string, Partial<RuleParams>]>([
   ['linear', {}],
   ['symlog', SYMLOG],
   ['reversed below an offset', { reverse: true, rowOffsetPx: 12 }],
-])('point: every drawn bar answers its own hit, %s', (_label, scale) => {
+])('rule: every drawn rule answers its own hit, %s', (_label, scale) => {
   for (const reversed of [false, true]) {
     expect(
       sweepMarkAgainstHit(
         defineMark({
-          shape: pointMark,
-          channels: (c: PointChannels) => c,
-          params: () => ({ ...pointParams, ...scale }),
+          shape: ruleMark,
+          channels: (c: RuleChannels) => c,
+          params: () => ({ ...ruleParams, ...scale }),
         }),
-        points,
+        rules,
         { ...block, reversed },
         { canvasWidth: 60, canvasHeight: 100 },
         { maxDistSq: Number.MIN_VALUE },
@@ -231,17 +231,15 @@ test.each<[string, Partial<PointParams>]>([
   }
 })
 
-// Every glyph kind at 1bp, which at this zoom is half a pixel and so well under
-// `pointDrawsBar`'s threshold — the branch Manhattan actually draws, and the one
-// `findManhattanHit` picks through. The painter batches a colour run into one
-// path, so nothing here is attributable positionally and the whole arm rests on
-// `sliceOne`.
+// Every glyph kind, one of them over 20 bp, which stands at its centre. The
+// painter batches a colour run into one path, so nothing here is attributable
+// positionally and the whole arm rests on `sliceOne`.
 //
 // Two diameters: 2 takes `appendGlyph`'s crisp-square branch
 // (SMALL_POINT_MAX_DIAMETER is 3) and 6 its disc, and the square is the one that
 // SNAPS, so its box is not centred on the bp the hit test measures from.
 const glyphs: PointChannels = {
-  x: Uint32Array.from([12, 38, 64, 88, 50]),
+  x: Uint32Array.from([12, 38, 64, 68, 50]),
   x2: Uint32Array.from([13, 39, 65, 89, 51]),
   y: Float32Array.from([0.15, 0.4, 0.65, 0.9, 0.3]),
   color: Uint32Array.from([RED, RED, BLUE, BLUE, RED]),
@@ -361,9 +359,9 @@ describe('bar: every drawn rect answers its own hit, in both orientations', () =
   })
 })
 
-// Rows: the same bars and points banded three ways, each band the value
+// Rows: the same bars and rules banded three ways, each band the value
 // scale's own, so a hit in a band answers the instance in that band.
-test('bar and point: rows band the plot and a hit lands in its own band', () => {
+test('bar and rule: rows band the plot and a hit lands in its own band', () => {
   const rows = Uint32Array.from([0, 1, 2, 1, 0])
   for (const reversed of [false, true]) {
     expect(
@@ -388,11 +386,11 @@ test('bar and point: rows band the plot and a hit lands in its own band', () => 
     expect(
       sweepMarkAgainstHit(
         defineMark({
-          shape: pointMark,
-          channels: (c: PointChannels) => c,
-          params: () => ({ ...pointParams, rowHeight: 40 }),
+          shape: ruleMark,
+          channels: (c: RuleChannels) => c,
+          params: () => ({ ...ruleParams, rowHeight: 40 }),
         }),
-        { ...points, row: Uint32Array.from([0, 1, 2]) },
+        { ...rules, row: Uint32Array.from([0, 1, 2, 1]) },
         { ...block, reversed },
         { canvasWidth: 60, canvasHeight: 120 },
         { maxDistSq: Number.MIN_VALUE },

@@ -31,7 +31,7 @@ const right = {
 function points(bp: number[], value: number[]): PointChannels {
   return {
     x: Uint32Array.from(bp),
-    x2: Uint32Array.from(bp.map(v => v + 1)),
+    x2: Uint32Array.from(bp),
     y: Float32Array.from(value),
     glyph: new Uint8Array(bp.length),
     color: new Uint32Array(bp.length),

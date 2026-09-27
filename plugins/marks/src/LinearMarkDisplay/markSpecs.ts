@@ -61,6 +61,12 @@ export const MARK_SPECS = {
     ramp: 'display',
     hit: true,
   },
+  rule: {
+    channels: ['y', 'row', 'color'],
+    value: 'required',
+    ramp: 'display',
+    hit: true,
+  },
   span: {
     channels: ['row', 'color'],
     value: 'none',

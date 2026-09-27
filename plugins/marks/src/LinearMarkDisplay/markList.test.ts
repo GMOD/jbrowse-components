@@ -117,6 +117,29 @@ test('mark i reads layers[i], and every mark gets its own pass id', () => {
   expect(marks[2]!.pass.pack(data).byteLength).toBeGreaterThan(0)
 })
 
+test('a rule draws through the point shader as a rule, its size the thickness', () => {
+  const [rule] = buildMarkList(entries('rule'))
+  expect(rule!.pass.id).toBe('rule#0')
+  const hal = new MockHal([rule!.pass])
+  const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
+    x: 1,
+    y: 1,
+  })!
+  rule!.drawRegion(
+    hal,
+    new ArrayBuffer(rule!.pass.uniformByteSize),
+    block,
+    clip,
+    { layers: [layer([100], [5], [RED], { glyph: undefined })] },
+    { ...state, markSizes: [6] },
+    0,
+  )
+  expect(hal.getLastUniformsI32()![pointShader.UNIFORM_OFFSET_I32.rule]).toBe(1)
+  const f32 = hal.getLastUniformsF32()!
+  expect(f32[pointShader.UNIFORM_OFFSET_F32.radiusPx]).toBe(3)
+  expect(f32[pointShader.UNIFORM_OFFSET_F32.minWidthPx]).toBe(1)
+})
+
 test('a text mark takes no place in the list, and the marks after it keep their own index', () => {
   const marks = buildMarkList(entries('bar', 'text', 'span'))
   expect(marks.map(m => [m.pass.id, m.markIndex])).toEqual([
