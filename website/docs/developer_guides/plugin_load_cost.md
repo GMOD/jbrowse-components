@@ -41,10 +41,10 @@ Register the component with `lazy()` for the same reason.
 
 The cost of the thunk is that `session.addView('MyView')` refuses a type whose
 model has not loaded, and says so. Use
-[`launchView`](/docs/models/AbstractSessionModel), which loads the model and
-then adds the view; your plugin's own menu items and extension points should
-call it too. JBrowse preloads the types a session snapshot names before it
-applies one, so a saved session opens normally.
+[`launchView`](/docs/models/multipleviewssessionmixin#action-launchview), which
+loads the model and then adds the view; your plugin's own menu items and
+extension points should call it too. JBrowse preloads the types a session
+snapshot names before it applies one, so a saved session opens normally.
 
 Registration itself stays eager, and so does the config schema — the config
 editor and the track union need it before any model exists.
