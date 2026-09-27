@@ -5751,6 +5751,872 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MarkLocus": {
+      "title": "MarkLocus",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"pos\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "end",
+          "type": "string"
+        },
+        {
+          "title": "MarkLocus",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "pos": {
+              "description": "position field.",
+              "$ref": "#/$defs/FeatureField",
+              "default": "end"
+            },
+            "chrom": {
+              "description": "sequence field; empty is the feature’s own.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MarkColor": {
+      "title": "MarkColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "title": "MarkColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "CSS colour or jexl callback; unset is the default blue.",
+              "$ref": "#/$defs/CssColorOrJexl"
+            },
+            "field": {
+              "description": "the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
+              "enum": [
+                "none",
+                "categorical",
+                "linear",
+                "log",
+                "threshold"
+              ]
+            },
+            "domain": {
+              "description": "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "domainMin": {
+              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "type": "number"
+            },
+            "domainQuantile": {
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
+              "type": "number",
+              "default": 1
+            },
+            "range": {
+              "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "scheme": {
+              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange"
+              ]
+            },
+            "reverse": {
+              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "type": "boolean",
+              "default": false
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "type": "number"
+            },
+            "title": {
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
+            },
+            "breaks": {
+              "description": "values the key lists; empty lists every value met.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "descending": {
+              "description": "threshold key lists the highest interval first.",
+              "type": "boolean",
+              "default": false
+            },
+            "missingLabel": {
+              "description": "key row for a feature with no value.",
+              "$ref": "#/$defs/PlainString"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MarkShape": {
+      "title": "MarkShape",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "title": "MarkShape",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "circle, triangle-down, diamond or jexl callback.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "circle",
+                    "triangle-down",
+                    "diamond"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "circle"
+            },
+            "field": {
+              "description": "feature field, or jexl expression.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "none or categorical; unset follows field.",
+              "enum": [
+                "none",
+                "categorical"
+              ]
+            },
+            "range": {
+              "description": "shape names, in order.",
+              "type": "array",
+              "items": {
+                "enum": [
+                  "circle",
+                  "triangle-down",
+                  "diamond"
+                ]
+              }
+            },
+            "domain": {
+              "description": "category order.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "title": {
+              "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
+            },
+            "labels": {
+              "description": "key names for the domain values, in order.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "breaks": {
+              "description": "values the key lists; empty lists every value met.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "missingLabel": {
+              "description": "key row for a feature with no value.",
+              "$ref": "#/$defs/PlainString"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MarkSize": {
+      "title": "MarkSize",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number"
+        },
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "title": "MarkSize",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "px for every instance; unset is the mark's own.",
+              "type": "number"
+            },
+            "field": {
+              "description": "feature field, or jexl expression.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "linear or log.",
+              "enum": [
+                "linear",
+                "log"
+              ],
+              "default": "linear"
+            },
+            "domainMin": {
+              "description": "value at the thinnest width; unset follows the regions.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "value at the widest width; unset follows the regions.",
+              "type": "number"
+            },
+            "range": {
+              "description": "px at each end of the domain.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MarkEncoding": {
+      "title": "MarkEncoding",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "x": {
+          "description": "left edge field.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "start"
+        },
+        "x2": {
+          "$ref": "#/$defs/MarkLocus"
+        },
+        "y": {
+          "description": "value field, or jexl expression; empty follows a step.",
+          "$ref": "#/$defs/FeatureField",
+          "default": ""
+        },
+        "row": {
+          "description": "band field; empty follows a pileup step.",
+          "$ref": "#/$defs/FeatureField",
+          "default": ""
+        },
+        "color": {
+          "$ref": "#/$defs/MarkColor"
+        },
+        "shape": {
+          "$ref": "#/$defs/MarkShape"
+        },
+        "text": {
+          "description": "text field, or jexl expression.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "name"
+        },
+        "size": {
+          "$ref": "#/$defs/MarkSize"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.filter": {
+      "title": "MarkTransform.filter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "filter"
+        },
+        "expr": {
+          "description": "jexl callback over feature.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.formula": {
+      "title": "MarkTransform.formula",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "formula"
+        },
+        "expr": {
+          "description": "jexl callback over feature.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
+        },
+        "as": {
+          "description": "output field.",
+          "$ref": "#/$defs/PlainString",
+          "default": "value"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.bin": {
+      "title": "MarkTransform.bin",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "bin"
+        },
+        "step": {
+          "description": "bin width in bp, or \\"auto\\" to follow the zoom.",
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "auto"
+            }
+          ],
+          "default": 10000
+        },
+        "field": {
+          "description": "field placing a feature in a bin.",
+          "$ref": "#/$defs/PlainString",
+          "default": "start"
+        },
+        "as": {
+          "description": "the bin's start and end fields.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "start",
+            "end"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkAggregateOp": {
+      "title": "MarkAggregateOp",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "op": {
+          "description": "count, sum, mean, min or max.",
+          "enum": [
+            "count",
+            "sum",
+            "mean",
+            "min",
+            "max"
+          ],
+          "default": "count"
+        },
+        "field": {
+          "description": "field the op reads.",
+          "$ref": "#/$defs/PlainString",
+          "default": ""
+        },
+        "as": {
+          "description": "output field.",
+          "$ref": "#/$defs/PlainString",
+          "default": ""
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.aggregate": {
+      "title": "MarkTransform.aggregate",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "aggregate"
+        },
+        "groupby": {
+          "description": "grouping fields; empty follows a preceding bin.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ops": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MarkAggregateOp"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.coverage": {
+      "title": "MarkTransform.coverage",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "coverage"
+        },
+        "as": {
+          "description": "depth field.",
+          "$ref": "#/$defs/PlainString",
+          "default": "coverage"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.flatten": {
+      "title": "MarkTransform.flatten",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "flatten"
+        },
+        "field": {
+          "description": "array field fanned out.",
+          "$ref": "#/$defs/PlainString",
+          "default": "subfeatures"
+        },
+        "index": {
+          "description": "field for the element's position.",
+          "$ref": "#/$defs/PlainString",
+          "default": ""
+        },
+        "keepEmpty": {
+          "description": "keep a feature whose array field is empty.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.pileup": {
+      "title": "MarkTransform.pileup",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "pileup"
+        },
+        "as": {
+          "description": "row field.",
+          "$ref": "#/$defs/PlainString",
+          "default": "row"
+        },
+        "fields": {
+          "description": "start and end fields of the packed interval.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "start",
+            "end"
+          ]
+        },
+        "padding": {
+          "description": "bp between two features on one row.",
+          "type": "number",
+          "default": 0
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform.mate": {
+      "title": "MarkTransform.mate",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "mate"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkTransform": {
+      "title": "MarkTransform",
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "filter",
+            "formula",
+            "bin",
+            "aggregate",
+            "coverage",
+            "flatten",
+            "pileup",
+            "mate"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "filter"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.filter"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "formula"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.formula"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "bin"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.bin"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "aggregate"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.aggregate"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "coverage"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.coverage"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "flatten"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.flatten"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "pileup"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.pileup"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "mate"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.mate"
+          }
+        }
+      ]
+    },
+    "Mark": {
+      "title": "Mark",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "mark": {
+          "description": "bar, point, rule, span, text or link.",
+          "enum": [
+            "bar",
+            "point",
+            "rule",
+            "span",
+            "text",
+            "link"
+          ],
+          "default": "bar"
+        },
+        "linkShape": {
+          "description": "dome, arc or line.",
+          "enum": [
+            "dome",
+            "arc",
+            "line"
+          ],
+          "default": "dome"
+        },
+        "encoding": {
+          "$ref": "#/$defs/MarkEncoding"
+        },
+        "transform": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MarkTransform"
+          }
+        },
+        "source": {
+          "description": "features, or density past the fetch budget.",
+          "enum": [
+            "features",
+            "density"
+          ],
+          "default": "features"
+        },
+        "minBpPerPx": {
+          "description": "draw only at or above this bp/px.",
+          "type": "number",
+          "default": 0
+        },
+        "maxBpPerPx": {
+          "description": "draw only below this bp/px.",
+          "type": "number",
+          "default": 0
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MultiWayLaneLayer": {
+      "title": "MultiWayLaneLayer",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "name": {
+          "description": "what the layer's band is labelled.",
+          "$ref": "#/$defs/PlainString",
+          "default": ""
+        },
+        "tracks": {
+          "description": "the trackId each lane draws the layer from, one per genome, matched to a lane by the track's assembly. A lane no entry names draws an empty band.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "adapter": {
+          "description": "an adapter computing from the sequence, such as \`{ type: 'GCContentAdapter' }\`, that every lane \`tracks\` names nothing for reads through its own genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title says to zoom in past that. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
+        },
+        "height": {
+          "description": "px of band the layer takes in each lane.",
+          "type": "number",
+          "default": 24
+        },
+        "marks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Mark"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MultiWaySyntenyDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5842,6 +6708,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room.",
           "type": "boolean",
           "default": true
+        },
+        "laneLayers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MultiWayLaneLayer"
+          }
         },
         "splitStrands": {
           "description": "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack. A lane too short for two rows draws one.",
@@ -7184,832 +8056,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "unevaluatedProperties": false
-    },
-    "MarkLocus": {
-      "title": "MarkLocus",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"pos\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "end",
-          "type": "string"
-        },
-        {
-          "title": "MarkLocus",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "pos": {
-              "description": "position field.",
-              "$ref": "#/$defs/FeatureField",
-              "default": "end"
-            },
-            "chrom": {
-              "description": "sequence field; empty is the feature’s own.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "MarkColor": {
-      "title": "MarkColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "",
-          "type": "string"
-        },
-        {
-          "title": "MarkColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "CSS colour or jexl callback; unset is the default blue.",
-              "$ref": "#/$defs/CssColorOrJexl"
-            },
-            "field": {
-              "description": "the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            },
-            "scale": {
-              "description": "how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
-              "enum": [
-                "none",
-                "categorical",
-                "linear",
-                "log",
-                "threshold"
-              ]
-            },
-            "domain": {
-              "description": "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                }
-              ]
-            },
-            "domainMin": {
-              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
-            },
-            "domainMax": {
-              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
-            },
-            "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
-              "type": "number",
-              "default": 1
-            },
-            "range": {
-              "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColor"
-              }
-            },
-            "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "scheme": {
-              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange"
-              ]
-            },
-            "reverse": {
-              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "type": "boolean",
-              "default": false
-            },
-            "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
-            },
-            "title": {
-              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
-            },
-            "breaks": {
-              "description": "values the key lists; empty lists every value met.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "descending": {
-              "description": "threshold key lists the highest interval first.",
-              "type": "boolean",
-              "default": false
-            },
-            "missingLabel": {
-              "description": "key row for a feature with no value.",
-              "$ref": "#/$defs/PlainString"
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "MarkShape": {
-      "title": "MarkShape",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "",
-          "type": "string"
-        },
-        {
-          "title": "MarkShape",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "circle, triangle-down, diamond or jexl callback.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "circle",
-                    "triangle-down",
-                    "diamond"
-                  ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ],
-              "default": "circle"
-            },
-            "field": {
-              "description": "feature field, or jexl expression.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            },
-            "scale": {
-              "description": "none or categorical; unset follows field.",
-              "enum": [
-                "none",
-                "categorical"
-              ]
-            },
-            "range": {
-              "description": "shape names, in order.",
-              "type": "array",
-              "items": {
-                "enum": [
-                  "circle",
-                  "triangle-down",
-                  "diamond"
-                ]
-              }
-            },
-            "domain": {
-              "description": "category order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                }
-              ]
-            },
-            "title": {
-              "description": "key title; unset follows field, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
-            },
-            "labels": {
-              "description": "key names for the domain values, in order.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "breaks": {
-              "description": "values the key lists; empty lists every value met.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "missingLabel": {
-              "description": "key row for a feature with no value.",
-              "$ref": "#/$defs/PlainString"
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "MarkSize": {
-      "title": "MarkSize",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "type": "number"
-        },
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "",
-          "type": "string"
-        },
-        {
-          "title": "MarkSize",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "px for every instance; unset is the mark's own.",
-              "type": "number"
-            },
-            "field": {
-              "description": "feature field, or jexl expression.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            },
-            "scale": {
-              "description": "linear or log.",
-              "enum": [
-                "linear",
-                "log"
-              ],
-              "default": "linear"
-            },
-            "domainMin": {
-              "description": "value at the thinnest width; unset follows the regions.",
-              "type": "number"
-            },
-            "domainMax": {
-              "description": "value at the widest width; unset follows the regions.",
-              "type": "number"
-            },
-            "range": {
-              "description": "px at each end of the domain.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "MarkEncoding": {
-      "title": "MarkEncoding",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "x": {
-          "description": "left edge field.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "start"
-        },
-        "x2": {
-          "$ref": "#/$defs/MarkLocus"
-        },
-        "y": {
-          "description": "value field, or jexl expression; empty follows a step.",
-          "$ref": "#/$defs/FeatureField",
-          "default": ""
-        },
-        "row": {
-          "description": "band field; empty follows a pileup step.",
-          "$ref": "#/$defs/FeatureField",
-          "default": ""
-        },
-        "color": {
-          "$ref": "#/$defs/MarkColor"
-        },
-        "shape": {
-          "$ref": "#/$defs/MarkShape"
-        },
-        "text": {
-          "description": "text field, or jexl expression.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "name"
-        },
-        "size": {
-          "$ref": "#/$defs/MarkSize"
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform.filter": {
-      "title": "MarkTransform.filter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "const": "filter"
-        },
-        "expr": {
-          "description": "jexl callback over feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform.formula": {
-      "title": "MarkTransform.formula",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "const": "formula"
-        },
-        "expr": {
-          "description": "jexl callback over feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
-        },
-        "as": {
-          "description": "output field.",
-          "$ref": "#/$defs/PlainString",
-          "default": "value"
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform.bin": {
-      "title": "MarkTransform.bin",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "const": "bin"
-        },
-        "step": {
-          "description": "bin width in bp, or \\"auto\\" to follow the zoom.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "const": "auto"
-            }
-          ],
-          "default": 10000
-        },
-        "field": {
-          "description": "field placing a feature in a bin.",
-          "$ref": "#/$defs/PlainString",
-          "default": "start"
-        },
-        "as": {
-          "description": "the bin's start and end fields.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "start",
-            "end"
-          ]
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkAggregateOp": {
-      "title": "MarkAggregateOp",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "op": {
-          "description": "count, sum, mean, min or max.",
-          "enum": [
-            "count",
-            "sum",
-            "mean",
-            "min",
-            "max"
-          ],
-          "default": "count"
-        },
-        "field": {
-          "description": "field the op reads.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
-        },
-        "as": {
-          "description": "output field.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform.aggregate": {
-      "title": "MarkTransform.aggregate",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "const": "aggregate"
-        },
-        "groupby": {
-          "description": "grouping fields; empty follows a preceding bin.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "ops": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MarkAggregateOp"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform.coverage": {
-      "title": "MarkTransform.coverage",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "const": "coverage"
-        },
-        "as": {
-          "description": "depth field.",
-          "$ref": "#/$defs/PlainString",
-          "default": "coverage"
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform.flatten": {
-      "title": "MarkTransform.flatten",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "const": "flatten"
-        },
-        "field": {
-          "description": "array field fanned out.",
-          "$ref": "#/$defs/PlainString",
-          "default": "subfeatures"
-        },
-        "index": {
-          "description": "field for the element's position.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
-        },
-        "keepEmpty": {
-          "description": "keep a feature whose array field is empty.",
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform.pileup": {
-      "title": "MarkTransform.pileup",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "const": "pileup"
-        },
-        "as": {
-          "description": "row field.",
-          "$ref": "#/$defs/PlainString",
-          "default": "row"
-        },
-        "fields": {
-          "description": "start and end fields of the packed interval.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "start",
-            "end"
-          ]
-        },
-        "padding": {
-          "description": "bp between two features on one row.",
-          "type": "number",
-          "default": 0
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform.mate": {
-      "title": "MarkTransform.mate",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "type": {
-          "const": "mate"
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "MarkTransform": {
-      "title": "MarkTransform",
-      "type": "object",
-      "properties": {
-        "type": {
-          "enum": [
-            "filter",
-            "formula",
-            "bin",
-            "aggregate",
-            "coverage",
-            "flatten",
-            "pileup",
-            "mate"
-          ]
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "allOf": [
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "filter"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/MarkTransform.filter"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "formula"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/MarkTransform.formula"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "bin"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/MarkTransform.bin"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "aggregate"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/MarkTransform.aggregate"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "coverage"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/MarkTransform.coverage"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "flatten"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/MarkTransform.flatten"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "pileup"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/MarkTransform.pileup"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "mate"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/MarkTransform.mate"
-          }
-        }
-      ]
-    },
-    "Mark": {
-      "title": "Mark",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "mark": {
-          "description": "bar, point, rule, span, text or link.",
-          "enum": [
-            "bar",
-            "point",
-            "rule",
-            "span",
-            "text",
-            "link"
-          ],
-          "default": "bar"
-        },
-        "linkShape": {
-          "description": "dome, arc or line.",
-          "enum": [
-            "dome",
-            "arc",
-            "line"
-          ],
-          "default": "dome"
-        },
-        "encoding": {
-          "$ref": "#/$defs/MarkEncoding"
-        },
-        "transform": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MarkTransform"
-          }
-        },
-        "source": {
-          "description": "features, or density past the fetch budget.",
-          "enum": [
-            "features",
-            "density"
-          ],
-          "default": "features"
-        },
-        "minBpPerPx": {
-          "description": "draw only at or above this bp/px.",
-          "type": "number",
-          "default": 0
-        },
-        "maxBpPerPx": {
-          "description": "draw only below this bp/px.",
-          "type": "number",
-          "default": 0
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
     },
     "MarkFacet": {
       "title": "MarkFacet",
@@ -11740,6 +11786,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showGeneLabels": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showGeneLabels"
+            },
+            "laneLayers": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneLayers"
             },
             "splitStrands": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/splitStrands"
