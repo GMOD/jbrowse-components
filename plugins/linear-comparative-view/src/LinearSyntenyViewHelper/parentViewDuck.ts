@@ -4,6 +4,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   AttributeRange,
   ComparativeSurface,
+  DeclaredRamp,
   LodMode,
 } from '@jbrowse/synteny-core'
 
@@ -72,6 +73,7 @@ export interface ParentViewDuck extends FollowAnchorHost {
   observeAttributeRanges: (ranges: Record<string, AttributeRange>) => void
   colorField: string
   colorValue: string | undefined
+  colorRamp: DeclaredRamp
   hideUnlabelled: boolean
   // a track's slot in the view's palette, keyed by trackId
   trackColorFor: (trackId: string) => string

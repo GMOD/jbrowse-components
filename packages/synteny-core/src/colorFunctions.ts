@@ -10,6 +10,7 @@ import {
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import {
   rampNorm,
@@ -22,6 +23,7 @@ import type {
   AttributeRange,
   CategoricalMode,
   ContinuousMode,
+  DeclaredRamp,
 } from './colorRamps.ts'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 
@@ -206,7 +208,8 @@ export function makeContinuousColorFunction(
     // an already-`| 0`'d int: an index past the LUT, or a negative one, reads
     // `undefined`, which a Uint32Array store writes as 0, a transparent black
     // feature, silently.
-    const norm = Math.max(0, Math.min(255, rampNorm(mode, value) * 255))
+    const t = rampMidT(rampNorm(mode, value), mode.midNorm ?? 0.5)
+    const norm = Math.max(0, Math.min(255, t * 255))
     return lut[(norm + 0.5) | 0]!
   }
 }
@@ -281,6 +284,7 @@ export function createComparativeColorFunction({
   nameColor,
   attributeRanges,
   hideUnlabelled = false,
+  ramp,
 }: {
   field: string
   data: ColorFunctionInputs
@@ -306,6 +310,8 @@ export function createComparativeColorFunction({
   // a text column's unlabelled rows drawn at zero alpha, so a categorical mode
   // shows only the rows that carry a label
   hideUnlabelled?: boolean
+  // the ramp `color` declares over a preset's or a column's own
+  ramp?: DeclaredRamp
 }): (index: number) => number {
   switch (field) {
     case '':
@@ -335,7 +341,7 @@ export function createComparativeColorFunction({
   }
   // Every ramp in one arm, preset or column, so the switch above does not
   // grow per measurement.
-  const continuous = resolveContinuousMode(field, attributeRanges)
+  const continuous = resolveContinuousMode(field, attributeRanges, ramp)
   if (continuous) {
     return makeContinuousColorFunction(continuous, data.attributes)
   }

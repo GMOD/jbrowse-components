@@ -612,6 +612,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           attributeRanges: this.view.attributeRanges,
           hideUnlabelled: this.view.hideUnlabelled,
           hiddenFeatures: this.hiddenFeatureIdx,
+          ramp: this.view.colorRamp,
         })
       },
       /**

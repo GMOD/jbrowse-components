@@ -167,6 +167,15 @@ test('a measurement keys the ramp it paints, and nothing where no ribbon carries
   ])
 })
 
+test("the ribbons' declared ramp keys its pinned end", () => {
+  const [scale] = ribbonColorScales(
+    'identity',
+    { identity: { min: 0.5, max: 1 } },
+    { ramp: { domainMin: 0.9 } },
+  )
+  expect(scale!.kind === 'ramp' && scale!.domain).toEqual([0.9, 1])
+})
+
 // A pair with no number paints the no-value grey beside a ramp, and a pair
 // with no label keeps the slot color among the labels; each row names the
 // color its pairs paint.

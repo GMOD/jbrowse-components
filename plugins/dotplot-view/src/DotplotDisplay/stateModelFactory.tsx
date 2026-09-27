@@ -184,6 +184,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               namePosition: this.paintedRefNamePosition,
               attributeRanges: this.view.attributeRanges,
               hideUnlabelled: this.view.hideUnlabelled,
+              ramp: this.view.colorRamp,
             })
           : undefined
       },

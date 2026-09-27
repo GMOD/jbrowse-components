@@ -4,13 +4,18 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
+import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { bandGroundColor } from './bandGround.ts'
 import { categoricalColor } from './colorFunctions.ts'
 import { resolveCategoricalMode, resolveContinuousMode } from './colorRamps.ts'
 import { colorSchemes, legendChipColor } from './colorUtils.ts'
 
-import type { AttributeRange, CategoricalMode } from './colorRamps.ts'
+import type {
+  AttributeRange,
+  CategoricalMode,
+  DeclaredRamp,
+} from './colorRamps.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 
@@ -21,9 +26,12 @@ export interface GradientStop {
 
 // Sample a ramp at 9 stops, from the same stops the renderer bakes, so the two
 // can't disagree.
-function rampStops(stops: readonly ColorRampStop[]): GradientStop[] {
+function rampStops(
+  stops: readonly ColorRampStop[],
+  midNorm = 0.5,
+): GradientStop[] {
   return Array.from({ length: 9 }, (_, i) => {
-    const [r, g, b] = sampleColorRamp(stops, i / 8)
+    const [r, g, b] = sampleColorRamp(stops, rampMidT(i / 8, midNorm))
     return { offset: i / 8, color: `rgb(${r},${g},${b})` }
   })
 }
@@ -174,6 +182,7 @@ export function getColorBySwatch(
     hideUnlabelled = false,
     missingColor,
     labels,
+    ramp,
   }: {
     pointBased?: boolean
     cigarOps?: CigarOpMask
@@ -192,6 +201,8 @@ export function getColorBySwatch(
     missingColor?: string
     // `color.labels`: what a text column's key names each domain label
     labels?: readonly string[]
+    // the ramp `color` declares over a preset's or a column's own
+    ramp?: DeclaredRamp
   } = {},
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
@@ -232,11 +243,11 @@ export function getColorBySwatch(
   // the one spec the renderer paints from, so a new measurement needs no arm
   // here. For the diverging preset the pivot is the ramp's own pale middle,
   // which is what the end labels alone cannot say.
-  const continuous = resolveContinuousMode(field, attributeRanges)
+  const continuous = resolveContinuousMode(field, attributeRanges, ramp)
   if (continuous) {
     return {
       kind: 'ramp',
-      stops: rampStops(continuous.stops),
+      stops: rampStops(continuous.stops, continuous.midNorm),
       domain: [continuous.minValue ?? 0, continuous.maxValue],
       minLabel: continuous.minLabel,
       maxLabel: continuous.maxLabel,

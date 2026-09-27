@@ -86,7 +86,7 @@ test('color round-trips a session spec and refuses a stray key', async () => {
   await expect(
     open({ views: ROWS, color: { fields: 'strand' } }),
   ).rejects.toThrow(
-    'SyntenyColor takes value, field, scale, domain, range, labels and title, not fields',
+    'SyntenyColor takes value, field, scale, domain, range, scheme, reverse, domainMid, domainMin, domainMax, labels and title, not fields',
   )
 })
 

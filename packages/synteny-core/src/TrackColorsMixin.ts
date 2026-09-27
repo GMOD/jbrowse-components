@@ -14,7 +14,7 @@ import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
 import type { SyntenyColorSurface } from './colorModes.ts'
-import type { AttributeRange } from './colorRamps.ts'
+import type { AttributeRange, DeclaredRamp } from './colorRamps.ts'
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -152,7 +152,8 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
        * a measurement (`identity`, `mapq`, `dnds`) or a column the
        * tracks declare, with `domain` ordering a text column's labels,
-       * `range` colouring them and `labels` naming them in the key; a
+       * `range` colouring them and `labels` naming them in the key, and
+       * `range` or `scheme`, `reverse` and pinned ends reshaping a ramp; a
        * colour string paints every alignment. Unset, the view's default
        * paints: `query` on the circular view, the default scheme elsewhere.
        */
@@ -269,8 +270,25 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
           scale: readConfObject(self.color, 'scale'),
           domain: readConfObject(self.color, 'domain'),
           range: readConfObject(self.color, 'range'),
+          ...this.colorRamp,
           labels: readConfObject(self.color, 'labels'),
           title: readConfObject(self.color, 'title'),
+        }
+      },
+      /**
+       * #getter
+       * The ramp `color` declares over a preset's or a column's own: `range`
+       * or `scheme` for its stops, `reverse`, and its pinned ends and middle.
+       * Read off its own slots, so a key-only edit repaints no ramp.
+       */
+      get colorRamp(): DeclaredRamp {
+        return {
+          range: readConfObject(self.color, 'range'),
+          scheme: readConfObject(self.color, 'scheme'),
+          reverse: readConfObject(self.color, 'reverse'),
+          domainMin: readConfObject(self.color, 'domainMin'),
+          domainMax: readConfObject(self.color, 'domainMax'),
+          domainMid: readConfObject(self.color, 'domainMid'),
         }
       },
       /**
@@ -438,6 +456,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
           hideUnlabelled: self.hideUnlabelled,
           labels,
           title,
+          ramp: self.colorRamp,
         }).map(scale =>
           scale.kind === 'categorical' &&
           scale.id === field &&

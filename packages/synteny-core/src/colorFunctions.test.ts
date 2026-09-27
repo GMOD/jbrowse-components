@@ -10,6 +10,7 @@ import {
   paletteColorAt,
   refNamePositionFor,
 } from './colorFunctions.ts'
+import { getColorBySwatch } from './colorLegend.ts'
 
 import type { ColorFunctionInputs, RefNamePosition } from './colorFunctions.ts'
 
@@ -306,4 +307,31 @@ test('refNamePositionFor reads query off the first assembly and target off the s
   expect(at('strand', ['hg38', 'mm10'])).toBeUndefined()
   expect(at('target', ['hg38', undefined])).toBeUndefined()
   expect(at('query', ['unloaded', 'mm10'])).toBeUndefined()
+})
+
+// A value's colour on the ribbons and the key's stop at its place on the bar
+// are the same colour, through a middle `domainMid` moved off the centre.
+test('a declared ramp paints what its key shows', () => {
+  const ramp = { domainMax: 4, domainMid: 1 }
+  const values = [0, 0.5, 1, 2, 4]
+  const paint = createComparativeColorFunction({
+    field: 'dnds',
+    data: inputs({ attributes: { dnds: new Float32Array(values) } }),
+    trackColor: 'black',
+    defaultColor: DEFAULT_RIBBON_COLOR,
+    attributeRanges: {},
+    ramp,
+  })
+  const swatch = getColorBySwatch('dnds', { ramp })
+  if (swatch?.kind !== 'ramp') {
+    throw new Error('dnds keys as a ramp')
+  }
+  const rgb = (css: string) => css.match(/\d+/g)!.slice(0, 3).map(Number)
+  for (const [i, value] of values.entries()) {
+    const stop = swatch.stops.find(s => s.offset === value / 4)!
+    const painted = rgb(abgrToCssRgba(paint(i)))
+    for (const [c, channel] of rgb(stop.color).entries()) {
+      expect(Math.abs(painted[c]! - channel)).toBeLessThanOrEqual(3)
+    }
+  }
 })

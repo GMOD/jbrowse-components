@@ -221,6 +221,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
             : undefined,
           attributeRanges: view.attributeRanges,
           hideUnlabelled: view.hideUnlabelled,
+          ramp: view.colorRamp,
         })
         return new Map(features.map((f, i) => [f.id(), color(i)]))
       },

@@ -1,7 +1,13 @@
-import { VIRIDIS_STOPS, colorRampStops } from '@jbrowse/core/util/colorRamp'
+import {
+  VIRIDIS_STOPS,
+  colorRampStops,
+  rampDomain,
+} from '@jbrowse/core/util/colorRamp'
+import { rampMidNorm } from '@jbrowse/core/util/markEncoding'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
 
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
 // The continuous "color by" ramps of the synteny, dotplot and multi-way views,
 // which bake these stops into one LUT per ramp and sample it per feature. The
@@ -48,8 +54,26 @@ export interface ContinuousMode {
   /** domain bottom; 0 unless the mode says otherwise */
   minValue?: number
   maxValue: number
+  /** where the ramp's middle stop sits in the normalized domain (`rampMidT`) */
+  midNorm?: number
   minLabel: string
   maxLabel: string
+  /** how an end names a value it did not start with; the plain number unset */
+  format?: (value: number) => string
+}
+
+/**
+ * The ramp a `color` object declares: `range`'s stops or a named `scheme` in
+ * place of the field's own, turned round under `reverse`, with each pinned
+ * end and the middle's value.
+ */
+export interface DeclaredRamp {
+  range?: readonly string[]
+  scheme?: ColorSchemeName
+  reverse?: boolean
+  domainMin?: number
+  domainMax?: number
+  domainMid?: number
 }
 
 // The preset fields. Each carries domain knowledge a column name cannot: that
@@ -66,6 +90,7 @@ export const continuousRampConfig: Record<
     maxValue: 1,
     minLabel: '0%',
     maxLabel: '100%',
+    format: value => `${formatScore(value * 100)}%`,
   },
   mapq: {
     attribute: 'mappingQual',
@@ -163,21 +188,73 @@ export function resolveCategoricalMode(
  * How a numeric field paints: a preset's fixed ramp, or a viridis ramp over
  * the observed span of a declared column, labelled with the actual numbers —
  * a RELATIVE scale, the honest reading when nothing declares what the
- * column's range is supposed to be. Undefined for a text column and the
- * constant. A structural field (strand, query, track, ...) is the caller's
- * to dispatch before asking here.
+ * column's range is supposed to be — each under what `ramp` declares.
+ * Undefined for a text column and the constant. A structural field (strand,
+ * query, track, ...) is the caller's to dispatch before asking here.
  */
 export function resolveContinuousMode(
   field: string,
   ranges?: Record<string, AttributeRange>,
+  ramp: DeclaredRamp = {},
 ): ContinuousMode | undefined {
-  if (!field) {
-    return undefined
+  const mode = field
+    ? (presetRamp(field) ?? columnRamp(field, ranges))
+    : undefined
+  return mode && withDeclaredRamp(mode, ramp, ranges?.[mode.attribute])
+}
+
+// The stops a declaration names, else the field's own, then `reverse`; each
+// pinned end over the field's domain (`rampDomain` keeps an open end from
+// crossing a pinned one); and an end that moved relabelled, `≥`/`≤` where the
+// values seen run past it.
+function withDeclaredRamp(
+  mode: ContinuousMode,
+  ramp: DeclaredRamp,
+  observed: AttributeRange | undefined,
+): ContinuousMode {
+  const { range, scheme, reverse, domainMin, domainMax, domainMid } = ramp
+  const named = range?.length || scheme
+  if (
+    !named &&
+    !reverse &&
+    domainMin === undefined &&
+    domainMax === undefined &&
+    domainMid === undefined
+  ) {
+    return mode
   }
-  const preset = presetRamp(field)
-  if (preset) {
-    return preset
+  const stops = named ? colorRampStops({ range, scheme }) : mode.stops
+  const own: [number, number] = [mode.minValue ?? 0, mode.maxValue]
+  const [minValue, maxValue] = rampDomain(domainMin, domainMax, own)
+  const span = observed && !isAttributeLabels(observed) ? observed : undefined
+  const format = mode.format ?? formatScore
+  const relabel = (value: number, past: boolean | undefined, sign: string) =>
+    `${past ? sign : ''}${format(value)}`
+  return {
+    ...mode,
+    stops: reverse ? stops.toReversed() : stops,
+    minValue,
+    maxValue,
+    midNorm:
+      domainMid === undefined
+        ? undefined
+        : rampMidNorm('linear', [minValue, maxValue], domainMid),
+    minLabel:
+      minValue === own[0]
+        ? mode.minLabel
+        : relabel(minValue, span && span.min < minValue, '≤'),
+    maxLabel:
+      maxValue === own[1]
+        ? mode.maxLabel
+        : relabel(maxValue, span && span.max > maxValue, '≥'),
   }
+}
+
+// A numeric column's viridis over the span seen, or undefined for text.
+function columnRamp(
+  field: string,
+  ranges: Record<string, AttributeRange> | undefined,
+): ContinuousMode | undefined {
   const range = ranges?.[field]
   if (range && isAttributeLabels(range)) {
     return undefined

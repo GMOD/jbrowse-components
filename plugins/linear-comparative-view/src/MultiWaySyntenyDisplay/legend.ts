@@ -15,7 +15,7 @@ import type { Span } from './layoutMultiWay.ts'
 import type { GlyphHit } from './multiwayRenderTypes.ts'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
-import type { AttributeRange } from '@jbrowse/synteny-core'
+import type { AttributeRange, DeclaredRamp } from '@jbrowse/synteny-core'
 
 function onScreen(hits: readonly GlyphHit[], [from, to]: Span) {
   return hits.filter(
@@ -159,13 +159,21 @@ export function ribbonColorScales(
   {
     domain,
     title,
+    ramp: declared,
     ...keyOptions
-  }: RibbonKeyOptions & { domain?: string[]; title?: string } = {},
+  }: RibbonKeyOptions & {
+    domain?: string[]
+    title?: string
+    ramp?: DeclaredRamp
+  } = {},
 ): ColorScale[] {
-  const continuous = resolveContinuousMode(field, attributeRanges)
+  const continuous = resolveContinuousMode(field, attributeRanges, declared)
   if (continuous && continuous.attribute in attributeRanges) {
     const label = colorByShortLabel(field)
-    const [ramp, ...noValue] = colorByScales(field, { attributeRanges })
+    const [ramp, ...noValue] = colorByScales(field, {
+      attributeRanges,
+      ramp: declared,
+    })
     return [
       {
         ...ramp!,

@@ -174,6 +174,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   AttributeRange,
   DeclaredLane,
+  DeclaredRamp,
   LodMode,
   SyntenyColorSnapshot,
 } from '@jbrowse/synteny-core'
@@ -783,6 +784,20 @@ export function stateModelFactory(
        */
       get ribbonColorDomain(): string[] {
         return getConf(self, ['ribbonColor', 'domain'])
+      },
+      /**
+       * #getter
+       * the ramp `ribbonColor` declares over a preset's or a column's own
+       */
+      get ribbonRamp(): DeclaredRamp {
+        return {
+          range: getConf(self, ['ribbonColor', 'range']),
+          scheme: getConf(self, ['ribbonColor', 'scheme']),
+          reverse: getConf(self, ['ribbonColor', 'reverse']),
+          domainMin: getConf(self, ['ribbonColor', 'domainMin']),
+          domainMax: getConf(self, ['ribbonColor', 'domainMax']),
+          domainMid: getConf(self, ['ribbonColor', 'domainMid']),
+        }
       },
       /**
        * #getter
@@ -2028,6 +2043,7 @@ export function stateModelFactory(
           ribbonColorField: self.ribbonColorField,
           attributeRanges: self.ribbonAttributeRanges,
           hideUnlabelled: self.hideUnlabelled,
+          ramp: self.ribbonRamp,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
         })
@@ -2385,6 +2401,7 @@ export function stateModelFactory(
               slotColor: self.ribbonColor,
               labels: getConf(self, ['ribbonColor', 'labels']),
               title: getConf(self, ['ribbonColor', 'title']),
+              ramp: self.ribbonRamp,
             },
           ),
         ]

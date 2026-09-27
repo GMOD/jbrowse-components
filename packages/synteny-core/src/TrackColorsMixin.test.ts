@@ -340,8 +340,22 @@ describe('the color object', () => {
 
   it('refuses a key the object does not declare', () => {
     expect(() => view({ fields: 'strand' })).toThrow(
-      'SyntenyColor takes value, field, scale, domain, range, labels and title, not fields',
+      'SyntenyColor takes value, field, scale, domain, range, scheme, reverse, domainMid, domainMin, domainMax, labels and title, not fields',
     )
+  })
+
+  it('keys a declared ramp, keeps it through a domain edit, and drops it on a new field', () => {
+    const v = view({ field: 'identity', scheme: 'magma', domainMin: 0.9 })
+    expect(v.colorRamp).toMatchObject({ scheme: 'magma', domainMin: 0.9 })
+    const [ramp] = v.colorScales
+    expect(ramp?.kind === 'ramp' && ramp.domain).toEqual([0.9, 1])
+    v.setColorDomain(['a'])
+    expect(getSnapshot(v).color).toMatchObject({
+      scheme: 'magma',
+      domainMin: 0.9,
+    })
+    v.setColorField('mapq')
+    expect(getSnapshot(v).color).toEqual({ field: 'mapq' })
   })
 
   it('clears on null and on omission', () => {

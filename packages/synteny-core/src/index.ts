@@ -217,6 +217,7 @@ export type {
   AttributeSpan,
   CategoricalMode,
   ContinuousMode,
+  DeclaredRamp,
 } from './colorRamps.ts'
 export {
   DEFAULT_RIBBON_COLOR,

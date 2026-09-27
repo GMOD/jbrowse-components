@@ -55,7 +55,7 @@ import type {
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { AttributeRange } from '@jbrowse/synteny-core'
+import type { AttributeRange, DeclaredRamp } from '@jbrowse/synteny-core'
 
 // ribbons narrower than this on both ends are clutter at alignment-record
 // density; the boxes they connect are still drawn in the lanes
@@ -180,6 +180,7 @@ function ribbonColorer(
   slotColor: number,
   attributeRanges: Record<string, AttributeRange>,
   hideUnlabelled: boolean,
+  ramp?: DeclaredRamp,
 ) {
   const alpha = slotColor >>> 24
   if (field === 'strand') {
@@ -193,7 +194,7 @@ function ribbonColorer(
     )
     return (strand: number) => (strand < 0 ? neg : pos)
   }
-  const continuous = resolveContinuousMode(field, attributeRanges)
+  const continuous = resolveContinuousMode(field, attributeRanges, ramp)
   if (continuous) {
     const value = new Float32Array(1)
     const ramp = makeContinuousColorFunction(continuous, {
@@ -399,6 +400,7 @@ export function buildRibbonGeometry({
   ribbonColorField = '',
   attributeRanges = {},
   hideUnlabelled = false,
+  ramp,
   drawCurves,
   bridgeSkippedLanes,
 }: {
@@ -410,6 +412,8 @@ export function buildRibbonGeometry({
   /** what the ramp and label modes paint from; see the model's `ribbonAttributeRanges` */
   attributeRanges?: Record<string, AttributeRange>
   hideUnlabelled?: boolean
+  /** the ramp `ribbonColor` declares */
+  ramp?: DeclaredRamp
   drawCurves: boolean
   /**
    * join a group across a lane that does not place it, to the next lane down
@@ -424,6 +428,7 @@ export function buildRibbonGeometry({
     color,
     attributeRanges,
     hideUnlabelled,
+    ramp,
   )
   const mismatch = mismatchColor(ribbonColorField)
   const cells = new Map<string, MultiWayCell>()

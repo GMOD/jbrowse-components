@@ -6,7 +6,11 @@ import {
 
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { AttributeRange, RefNamePosition } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  DeclaredRamp,
+  RefNamePosition,
+} from '@jbrowse/synteny-core'
 
 // The color function itself is `createComparativeColorFunction` in
 // synteny-core — the palette, the chromosome-order laps, the ramp LUTs and the
@@ -31,6 +35,7 @@ export function createDotplotColorFunction(
   namePosition?: RefNamePosition,
   hideUnlabelled?: boolean,
   valueColor?: string,
+  ramp?: DeclaredRamp,
 ) {
   return createComparativeColorFunction({
     field,
@@ -39,6 +44,7 @@ export function createDotplotColorFunction(
     namePosition,
     attributeRanges,
     hideUnlabelled,
+    ramp,
     defaultColor:
       valueColor === undefined ? POINT_COLOR : cssColorToABGR(valueColor),
   })
@@ -59,6 +65,7 @@ export function computeDotplotColors({
   namePosition,
   attributeRanges,
   hideUnlabelled,
+  ramp,
 }: {
   instanceData: DotplotInstanceData
   rpcData: DotplotRpcData
@@ -75,6 +82,8 @@ export function computeDotplotColors({
   // fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
   hideUnlabelled?: boolean
+  // the ramp the view's `color` declares
+  ramp?: DeclaredRamp
 }) {
   const { instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createDotplotColorFunction(
@@ -85,6 +94,7 @@ export function computeDotplotColors({
     namePosition,
     hideUnlabelled,
     valueColor,
+    ramp,
   )
   const out = new Uint32Array(instanceCount)
   for (let i = 0; i < instanceCount; i++) {

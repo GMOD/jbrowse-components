@@ -1,3 +1,4 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { WIDTH_FADE_FLOOR } from '@jbrowse/synteny-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
@@ -144,6 +145,26 @@ describe('the thin fade', () => {
     expect(circle.chordThinFadeFloor).toBe(1)
   }, 40000)
 })
+
+// The chords and the key read one declared ramp: identity 0.5 sits on the
+// pinned bottom, so it takes the range's first colour, and the key's bar
+// starts there.
+test('a declared ramp reaches the chords and the key', async () => {
+  const { circle, display } = await launch({
+    color: {
+      field: 'identity',
+      domainMin: 0.5,
+      range: ['#ff0000', '#0000ff'],
+    },
+  })
+  expect(display.ribbonLanes.color[0]! & 0xffffff).toBe(
+    cssColorToABGR('#ff0000') & 0xffffff,
+  )
+  const bar = circle.legendSpec.sections
+    .flatMap(s => s.items)
+    .find(item => item.gradient)
+  expect(bar?.gradient).toMatchObject({ minLabel: '50%', maxLabel: '100%' })
+}, 40000)
 
 test('the identity fade reaches the ribbon’s alpha', async () => {
   const { circle, display } = await launch({})

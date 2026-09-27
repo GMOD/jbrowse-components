@@ -2,8 +2,10 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   colorChannelOptions,
   colorChannelSlots,
+  colorDomainEndsSlots,
   colorDomainSlot,
   colorLabelsSlot,
+  colorRampSlots,
   colorRangeSlot,
   colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -60,8 +62,10 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     }),
     ...colorRangeSlot({
       range:
-        "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name",
+        "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own",
     }),
+    ...colorRampSlots,
+    ...colorDomainEndsSlots,
     ...colorLabelsSlot,
     ...colorTitleSlot,
   },

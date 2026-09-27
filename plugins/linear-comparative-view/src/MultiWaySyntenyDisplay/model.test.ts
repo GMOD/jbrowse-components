@@ -1951,7 +1951,7 @@ test('a ribbonColor field is a preset or a column, scale none parks it, and a pa
       palette: ['red'],
     }),
   ).toThrow(
-    'RibbonColor takes value, field, scale, domain, range, labels and title, not palette',
+    'RibbonColor takes value, field, scale, domain, range, scheme, reverse, domainMid, domainMin, domainMax, labels and title, not palette',
   )
   for (const field of ['strand', 'identity', 'mapq', 'dnds']) {
     display.configuration.setSubschema('ribbonColor', { field })

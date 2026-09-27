@@ -1,4 +1,4 @@
-import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+import { colorRampStops, sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 
 import {
   DNDS_MAX,
@@ -125,4 +125,74 @@ test('a prototype member is a column, not a preset', () => {
   })
   expect(mode?.attribute).toBe('toString')
   expect(mode?.maxValue).toBe(8)
+})
+
+describe('a declared ramp', () => {
+  test('nothing declared hands back the field its own ramp', () => {
+    expect(resolveContinuousMode('identity', {}, {})).toBe(
+      continuousRampConfig.identity,
+    )
+  })
+
+  test("a scheme or range replaces a preset's stops, and reverse turns them round", () => {
+    expect(
+      resolveContinuousMode('mapq', {}, { scheme: 'magma' })!.stops,
+    ).toEqual(colorRampStops({ scheme: 'magma' }))
+    expect(
+      resolveContinuousMode(
+        'dn',
+        { dn: { min: 0, max: 4 } },
+        { range: ['#000000', '#ffffff'] },
+      )!.stops,
+    ).toEqual([
+      [0, 0, 0, 255],
+      [255, 255, 255, 255],
+    ])
+    expect(resolveContinuousMode('dnds', {}, { reverse: true })!.stops).toEqual(
+      continuousRampConfig.dnds.stops.toReversed(),
+    )
+  })
+
+  test("a pinned end moves the domain and names itself in the preset's format", () => {
+    const identity = resolveContinuousMode('identity', {}, { domainMin: 0.9 })!
+    expect([identity.minValue, identity.maxValue]).toEqual([0.9, 1])
+    expect([identity.minLabel, identity.maxLabel]).toEqual(['90%', '100%'])
+    expect(rampNorm(identity, 0.95)).toBeCloseTo(0.5)
+  })
+
+  test('an end pinned inside the values seen reads as at or beyond it', () => {
+    const narrow = resolveContinuousMode(
+      'dn',
+      { dn: { min: 0, max: 40 } },
+      { domainMax: 10 },
+    )!
+    expect([narrow.minValue, narrow.maxValue]).toEqual([0, 10])
+    expect([narrow.minLabel, narrow.maxLabel]).toEqual(['0', '≥10'])
+    const wide = resolveContinuousMode(
+      'dn',
+      { dn: { min: 0, max: 4 } },
+      { domainMax: 10 },
+    )!
+    expect(wide.maxLabel).toBe('10')
+  })
+
+  test('domainMid places the middle stop', () => {
+    expect(
+      resolveContinuousMode('dnds', {}, { domainMax: 4, domainMid: 1 })!
+        .midNorm,
+    ).toBeCloseTo(0.25)
+    expect(
+      resolveContinuousMode('dnds', {}, { domainMax: 4 })!.midNorm,
+    ).toBeUndefined()
+  })
+
+  test('a text column takes no ramp', () => {
+    expect(
+      resolveContinuousMode(
+        'group',
+        { group: { labels: ['a'], colors: {} } },
+        { scheme: 'magma' },
+      ),
+    ).toBeUndefined()
+  })
 })

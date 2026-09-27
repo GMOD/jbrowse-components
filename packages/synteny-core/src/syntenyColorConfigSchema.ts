@@ -2,11 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   colorChannelOptions,
   colorChannelSlots,
+  colorDomainEndsSlots,
   colorDomainSlot,
   colorLabelsSlot,
+  colorRampSlots,
   colorRangeSlot,
   colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
+
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
 /**
  * `scale` on a synteny colour object is the set/map switch alone: a field's
@@ -37,6 +41,11 @@ export interface SyntenyColorSnapshot {
   scale?: SyntenyColorScale
   domain?: readonly string[]
   range?: readonly string[]
+  scheme?: ColorSchemeName
+  reverse?: boolean
+  domainMin?: number
+  domainMax?: number
+  domainMid?: number
   labels?: readonly string[]
   title?: string
 }
@@ -57,6 +66,9 @@ export interface SyntenyColorSnapshot {
  * ```
  * ```js
  * { type: 'DotplotView', color: { field: 'query' } }
+ * ```
+ * ```js
+ * { type: 'LinearSyntenyView', color: { field: 'identity', scheme: 'magma', domainMin: 0.9 } }
  * ```
  * ```js
  * {
@@ -101,8 +113,10 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
     }),
     ...colorRangeSlot({
       range:
-        "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name",
+        "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own",
     }),
+    ...colorRampSlots,
+    ...colorDomainEndsSlots,
     ...colorLabelsSlot,
     ...colorTitleSlot,
   },
