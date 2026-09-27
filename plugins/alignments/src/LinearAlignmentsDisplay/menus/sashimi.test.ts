@@ -7,6 +7,7 @@ import type { SashimiArcsMode } from '../constants.ts'
 
 function makeModel() {
   return {
+    showCoverage: true,
     showSashimiArcs: false,
     setShowSashimiArcs(v: boolean) {
       this.showSashimiArcs = v
@@ -36,6 +37,16 @@ describe('sashimi menu', () => {
   test('only the toggle shows until sashimi arcs are on', () => {
     const model = makeModel()
     expect(labels(model)).toEqual(['Show sashimi arcs'])
+  })
+
+  test('with coverage off the toggle greys out and names the switch', () => {
+    const model = makeModel()
+    model.showCoverage = false
+    const [toggle] = resolveSubMenu(getSashimiMenuItem(model))
+    expect(toggle).toMatchObject({
+      disabled: true,
+      disabledHelpText: expect.stringContaining('Show coverage'),
+    })
   })
 
   test('labels, placement, and the two filters appear when arcs are on', () => {

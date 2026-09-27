@@ -14,6 +14,7 @@ const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
 ]
 
 interface SashimiModel {
+  showCoverage: boolean
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
   showSashimiLabels: boolean
@@ -48,11 +49,26 @@ interface SashimiModel {
 // them on — the user guide's sashimi section, the arc's own tooltip and its
 // detail panel, all of which can name the motif THIS junction has. A tooltip
 // repeating that in the abstract is a fourth copy that goes stale first.
+//
+// The arcs draw only in the coverage band, so with it off the toggle greys out
+// and names that switch, as the interbase row does, rather than turning the
+// band back on when ticked.
 export function getSashimiMenuItem(model: SashimiModel) {
   const subMenu: MenuItem[] = [
-    toggleItem('Show sashimi arcs', model.showSashimiArcs, show => {
-      model.setShowSashimiArcs(show)
-    }),
+    toggleItem(
+      'Show sashimi arcs',
+      model.showSashimiArcs,
+      show => {
+        model.setShowSashimiArcs(show)
+      },
+      model.showCoverage
+        ? undefined
+        : {
+            disabled: true,
+            disabledHelpText:
+              'Sashimi arcs are drawn in the coverage band — turn on "Show coverage" first',
+          },
+    ),
     ...(model.showSashimiArcs
       ? [
           toggleItem('Show labels', model.showSashimiLabels, show => {

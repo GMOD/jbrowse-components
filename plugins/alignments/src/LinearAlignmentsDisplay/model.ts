@@ -3346,15 +3346,6 @@ export default function stateModelFactory(
             self.highlightedChainReadIds = []
           }
         }
-        function setShowSashimiArcs(show: boolean) {
-          setConf(self, 'showSashimiArcs', show)
-          if (show) {
-            setConf(self, 'showCoverage', true)
-          }
-        }
-        function setShowCoverage(show: boolean) {
-          setConf(self, 'showCoverage', show)
-        }
         function setSortSlot(sortedBy: SortedBy) {
           setConf(self, 'largeFeaturesFirst', false)
           setConf(self, 'splicedReadsFirst', false)
@@ -3697,18 +3688,20 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Writes this slot alone. The arcs draw only with the coverage band
+           * (`showSashimiArcs`), and the menu greys the row out without it
+           * rather than turning the band back on behind the user's back.
            */
-          setShowSashimiArcs,
+          setShowSashimiArcs(show: boolean) {
+            setConf(self, 'showSashimiArcs', show)
+          },
 
           /**
            * #action
-           * The other half of the sashimi/coverage tie. Without it, hiding
-           * coverage left "Show sashimi arcs" ticked over a display drawing none
-           * — and the worker skips the junction scan entirely when the band is
-           * off (`runCoveragePipeline`), so the arcs the checkbox advertised had
-           * no data behind them either.
            */
-          setShowCoverage,
+          setShowCoverage(show: boolean) {
+            setConf(self, 'showCoverage', show)
+          },
 
           /**
            * #action

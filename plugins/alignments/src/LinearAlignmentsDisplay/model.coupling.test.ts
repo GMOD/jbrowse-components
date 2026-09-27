@@ -115,19 +115,18 @@ function createDisplay({ withRegions = false } = {}) {
 }
 
 describe('alignments display cross-feature coupling', () => {
-  // Sashimi only draws over the coverage band, so enabling it must enable
-  // coverage or the toggle silently does nothing.
-  test('setShowSashimiArcs turns on coverage when enabled', () => {
+  // The menu greys the toggle out while the band is off, so the action writes
+  // its own slot and never turns coverage back on
+  test('setShowSashimiArcs leaves coverage alone', () => {
     const display = createDisplay()
-    display.setShowSashimiArcs(false)
     display.setShowCoverage(false)
 
     display.setShowSashimiArcs(true)
-    expect(display.showSashimiArcs).toBe(true)
-    expect(display.showCoverage).toBe(true)
-
-    display.setShowSashimiArcs(false)
+    expect(display.showCoverage).toBe(false)
     expect(display.showSashimiArcs).toBe(false)
+
+    display.setShowCoverage(true)
+    expect(display.showSashimiArcs).toBe(true)
   })
 
   // Sashimi draws only over the coverage band, so with the band off the arcs are

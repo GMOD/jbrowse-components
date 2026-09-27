@@ -491,7 +491,9 @@ export async function executeRenderAlignmentData({
   // Splice motifs need the reference under every junction. A spliced read is
   // the one signal that this is RNA-seq, so a DNA-seq fetch never reads
   // sequence here; bisulfite already fetched the same span, so reuse it.
+  // Junctions are part of the coverage band, so nothing reads it without one.
   if (
+    showCoverage &&
     regionSequence === undefined &&
     sequenceAdapter &&
     extractions.some(e => e.gaps.some(g => g.type === 'skip'))
