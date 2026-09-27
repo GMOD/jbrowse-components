@@ -407,6 +407,11 @@ export function stateModelFactory(
           scale: getConf(self, ['ribbonColor', 'scale']),
           domain: getConf(self, ['ribbonColor', 'domain']),
           range: getConf(self, ['ribbonColor', 'range']),
+          scheme: getConf(self, ['ribbonColor', 'scheme']),
+          reverse: getConf(self, ['ribbonColor', 'reverse']),
+          domainMin: getConf(self, ['ribbonColor', 'domainMin']),
+          domainMax: getConf(self, ['ribbonColor', 'domainMax']),
+          domainMid: getConf(self, ['ribbonColor', 'domainMid']),
           labels: getConf(self, ['ribbonColor', 'labels']),
           title: getConf(self, ['ribbonColor', 'title']),
         }
@@ -2397,13 +2402,7 @@ export function stateModelFactory(
        * key lists spends its own range color
        */
       pinGeneColorDomain() {
-        const { value, field, range } = self.geneColorSettings.color
-        setConf(self, 'color', {
-          ...(value === undefined ? {} : { value }),
-          field,
-          domain: self.pinnedGeneColorDomain,
-          range: [...range],
-        })
+        setConf(self, ['color', 'domain'], [...self.pinnedGeneColorDomain])
       },
     }))
     .views(self => ({

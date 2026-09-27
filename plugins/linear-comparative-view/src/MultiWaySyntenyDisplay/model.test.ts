@@ -425,9 +425,39 @@ test('Pin distinct colors writes the keyed values into the domain', () => {
     namedGene('g2', 'atpB', 400, 600),
   ])
   display.setGeneColorBy('name')
+  setConf(display, ['color', 'labels'], ['ATP synthase A'])
+  setConf(display, ['color', 'title'], 'My genes')
   expect(display.pinnedGeneColorDomain).toEqual(['atpA', 'atpB'])
   display.pinGeneColorDomain()
   expect(display.geneColorDomain).toEqual(['atpA', 'atpB'])
+  expect(display.geneColorSettings.color).toMatchObject({
+    labels: ['ATP synthase A'],
+    title: 'My genes',
+  })
+})
+
+test('a ribbon colour pick keeps the ramp the config declares', () => {
+  const display = createDisplay()
+  setConf(display, 'ribbonColor', {
+    field: 'identity',
+    scheme: 'magma',
+    reverse: true,
+    domainMin: 90,
+    domainMax: 100,
+    domainMid: 95,
+  })
+  const ramp = {
+    scheme: 'magma',
+    reverse: true,
+    domainMin: 90,
+    domainMax: 100,
+    domainMid: 95,
+  }
+  display.setRibbonColorField('identity')
+  expect(display.ribbonRamp).toMatchObject(ramp)
+  display.setRibbonColorField('')
+  display.setRibbonColorField('identity')
+  expect(display.ribbonRamp).toMatchObject(ramp)
 })
 
 // The ribbons are the other color vocabulary, and only `strand` gives it rows:
