@@ -126,8 +126,6 @@ references the columns barely move.
 
 ## What the lanes are
 
-<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four lanes and one read per row. Almost every read is dark blue, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
-
 The lanes are independent of each other:
 
 - **Umap k100 multi-read mappability** is computed from the reference alone. For
@@ -141,7 +139,9 @@ The lanes are independent of each other:
   **Minimum** takes the worst position in the bin and sits on the floor across
   the block, stepping up at the same coordinate as the MAPQ 0 to MAPQ 60
   transition and the gnomAD coverage step. Past about a kilobase per pixel even
-  **Minimum** saturates low, so this lane belongs in the narrower frame.
+  **Minimum** saturates low, so this lane belongs in the narrower frame. Pinned
+  at 0 to 1 with **Score → Set min/max score...**, the lane keeps its full
+  range, so the collapse reads as a drop to the floor.
 - **gnomAD v3 mean genome coverage** is the outcome of that annotation on real
   data, averaged over tens of thousands of sequenced genomes. gnomAD drops
   non-uniquely-placed reads before computing it, so wherever the lane above is
@@ -152,6 +152,8 @@ The lanes are independent of each other:
 - The **GIAB low-mappability + segdup lane** in the wide panel is a published
   opinion of the same sequence, drawn by a project that had to decide where its
   benchmark regions stop.
+
+<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four lanes and one read per row. Almost every read is dark blue, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
 
 Everything on this page except the read track comes out of the hosted hg38
 config at [genomes.jbrowse.org](https://genomes.jbrowse.org): find them in the
@@ -193,9 +195,8 @@ The same three tracks and a control work anywhere in hg38:
 - Open the hosted hg38 config and turn on **Umap M100**, **gnomAD v3 Genome
   Coverage - Mean Coverage**, and the **GIAB Problematic Regions** and
   **Problematic Regions** annotation tracks.
-- On **Umap M100**, set **Score → Set min/max score...** to 0 and 1, and **Score
-  → Summary score mode → Minimum**, so a zoomed-out bin draws its worst position
-  and a low-mappability block sits on the floor.
+- On **Umap M100**, pin the axis at 0 to 1 and draw each bin's minimum, as
+  [the lanes](#what-the-lanes-are) are set.
 - Add your reads and set **Color by...** → **Mapping quality** from the track
   menu. Turn on **Show legend** in the same menu.
 - Take a second window of the same width, from the same sample, outside every

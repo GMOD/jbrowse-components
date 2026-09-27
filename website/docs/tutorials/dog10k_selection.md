@@ -98,7 +98,8 @@ slots.
 ```
 
 Opening the assembly with no location shows all of its regions at once, so the
-display lays the autosomes out side by side.
+display lays the autosomes out side by side. The red line is a reference line on
+the axis; **Score → Reference lines...** adds one to a track already open.
 
 Rerunning the same script over one region rebins it, which is the lower half of
 the figure below: the same panel and the same estimator at 20 kb over two
@@ -119,10 +120,9 @@ makes the _IGF1_ peak a single bar.
 Fst has no p-value, so the threshold is a
 [reference line](/docs/config/valuescale/#slot-scalesyrules) at a quantile of
 the scan's own windows: the dashed line is the 99.9th percentile, printed by the
-build script alongside the ranked windows, and **Score → Reference lines...**
-adds one to a track already open. It is a property of these windows at this
-size, so rebinning the scan means taking it again. The tallest labelled peak, on
-chr10, is _HMGA2_, one of the six variants
+build script alongside the ranked windows. It is a property of these windows at
+this size, so rebinning the scan means taking it again. The tallest labelled
+peak, on chr10, is _HMGA2_, one of the six variants
 [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to about half
 the size variation across breeds.
 

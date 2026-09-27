@@ -142,8 +142,7 @@ computed in the browser, one band methylated over the island and the other not.
 
 We'll load the two per-haplotype bedMethyl files above the reads as one track,
 each file a row, so the summary and its source share the view. Pinning the axis
-at 0 to 100 keeps an unmethylated row flat rather than autoscaled to its own
-maximum:
+at 0 to 100 puts both rows on one scale, so an unmethylated row stays flat:
 
 ```json addtrack
 {

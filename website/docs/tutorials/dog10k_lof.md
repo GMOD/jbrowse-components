@@ -266,9 +266,9 @@ reads as copy number:
 }
 ```
 
-The build script prints this `color` block from the palette it painted with, so
-paste it rather than retyping the colours. For named animals in a chosen order,
-`rows` takes `{ "field": "sample", "domain": [...] }` with the row names listed.
+The build script prints this `color` block from the palette it painted with,
+ready to paste. For named animals in a chosen order, `rows` takes
+`{ "field": "sample", "domain": [...] }` with the row names listed.
 
 Two lanes read below, each window colored by its rounded call with grey being
 two copies: named animals above, then all 1,987 canids clustered on their
