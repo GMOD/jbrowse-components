@@ -413,7 +413,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     part({
       name: 'pangenome/hprc_mhc_layout_force',
       layoutMode: 'force',
-      viewportHeight: 600,
+      viewportHeight: 750,
       // Below the 600 ceiling: the force drawing here is tall and narrow, a
       // chain that turns down the pane and ends in a 9.4 kb loop, so it would
       // take the whole ceiling. Lower, the drawing fits smaller and the node
@@ -446,7 +446,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     part({
       name: 'pangenome/hprc_mhc_layout_anchored',
       layoutMode: 'auto',
-      viewportHeight: 600,
+      viewportHeight: 640,
     }),
   ]
 }
@@ -1061,7 +1061,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     allowUnsettled: true,
     viewportWidth: 1000,
-    viewportHeight: 900,
+    viewportHeight: 940,
     hideTooltip: true,
   },
   // CFHR3/CFHR1: the deletion figure, and the locus this spec file used to say
@@ -1208,7 +1208,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     allowUnsettled: true,
     viewportWidth: 1000,
-    viewportHeight: 1060,
+    viewportHeight: 1080,
     hideTooltip: true,
     // What the reader is looking at, named on the rows themselves (review: "can
     // red boxes and text annotation be added"). The box wraps the two genes the
@@ -1529,7 +1529,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 180000,
     viewportWidth: 1000,
-    viewportHeight: 1030,
+    viewportHeight: 1170,
     hideTooltip: true,
     annotations: [
       // s343607+ is HG02391#2's 68 kb segment inside the array bubble, the
@@ -1798,7 +1798,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 1005,
+    viewportHeight: 1065,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
@@ -1832,7 +1832,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 685,
+    viewportHeight: 745,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
@@ -1912,7 +1912,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 520,
+    viewportHeight: 630,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },

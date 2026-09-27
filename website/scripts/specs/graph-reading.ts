@@ -192,7 +192,7 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
   readySelector: GRAPH_DRAWN,
   readyTimeout: 240000,
   viewportWidth: 1400,
-  viewportHeight: 670,
+  viewportHeight: 740,
   hideTooltip: true,
   actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   annotations: [
@@ -263,7 +263,7 @@ const nntHalosSpec: ScreenshotSpec = {
   readySelector: GRAPH_DRAWN,
   readyTimeout: 300000,
   viewportWidth: 1400,
-  viewportHeight: 680,
+  viewportHeight: 830,
   hideTooltip: true,
   annotations: [
     {

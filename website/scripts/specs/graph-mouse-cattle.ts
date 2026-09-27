@@ -122,7 +122,7 @@ const dock2Spec: ScreenshotSpec = {
   viewportWidth: 1400,
   // A force layout of this cut needs the room: the panel's point is its
   // topology, and the graph track takes up to 600 px.
-  viewportHeight: 1080,
+  viewportHeight: 1150,
   hideTooltip: true,
   annotations: [
     {

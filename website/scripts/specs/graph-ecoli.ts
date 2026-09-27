@@ -1163,7 +1163,7 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
     viewportWidth: 750,
     // the gene lane over a force drawing that can reach the 600 px ceiling;
     // re-measure at the reshoot
-    viewportHeight: 900,
+    viewportHeight: 940,
     hideTooltip: true,
     annotations: [
       {
@@ -1366,10 +1366,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               height: 50,
               color: referencePositionColor(PGGB_TIER_REGION),
             },
-            {
-              ...pggbTierCut,
-              pane: { ...pggbTierCut.pane, geneTrackId: 'K12_genes' },
-            },
+            { ...pggbTierCut, geneTrackId: 'K12_genes' },
           ],
         },
       ],
@@ -1378,7 +1375,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1000,
     // re-measure at the reshoot
-    viewportHeight: 530,
+    viewportHeight: 700,
     hideTooltip: true,
     // Charcoal in a tier is a bubble ON K12's coordinates, not an allele off
     // them: `bubbles_to_tier_bed.py` ranks every bubble 1 and every invariant
@@ -1458,7 +1455,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1100,
     // re-measure at the reshoot
-    viewportHeight: 1100,
+    viewportHeight: 1180,
     hideTooltip: true,
     actions: [
       // The node menu is flat — `Node details` then one `Open in <assembly> —
@@ -1647,7 +1644,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1000,
     // re-measure at the reshoot
-    viewportHeight: 700,
+    viewportHeight: 1120,
     hideTooltip: true,
     // The bar's own anchor is its polyline midpoint, thousands of px off the
     // left edge, so the pointer goes in from the graph's second row label,
@@ -1935,7 +1932,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     // re-measure at the reshoot
-    viewportHeight: 610,
+    viewportHeight: 1090,
     hideTooltip: true,
     // THE STORY IS ONE BUBBLE READ IN BOTH PANELS (review: "what is the
     // 'story'?"). s1278 is 5.8 kb of K12 and s2272 is CFT073's 8.6 kb allele
@@ -2128,7 +2125,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // FOLD rather than guessed, and it follows `paneHeight` above rather than
     // driving it: the pane is the graph's, so shortening the capture alone
     // clips the bubble instead of scaling it.
-    viewportHeight: 1160,
+    viewportHeight: 1190,
     hideTooltip: true,
     // One ring in each half, on the same segment (review: "we may want to circle
     // entries in the lineargenomeview/linearsyntenyview and the correspondence
@@ -2232,7 +2229,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     // enough for the linear view plus the open track menu
-    viewportHeight: 630,
+    viewportHeight: 670,
     hideTooltip: true,
     actions: [
       trackMenuIcon(ECOLI_SEGMENTS_TRACK),
@@ -2243,7 +2240,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       {
         // the gene lane over a force drawing at the display's 300 px default;
         // re-measure at the reshoot
-        viewportHeight: 640,
+        viewportHeight: 680,
         closeMenusAfter: true,
         actions: [
           {
@@ -2493,7 +2490,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // same 1000 px would have cost the gene lane its labels, which the caption
     // reads the cluster's names out of
     viewportWidth: 1400,
-    viewportHeight: 582,
+    viewportHeight: 612,
     hideTooltip: true,
     annotations: [
       {
@@ -2551,11 +2548,11 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_VIEW_READY,
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 360,
+    viewportHeight: 580,
     hideTooltip: true,
     stages: [
       {
-        viewportHeight: 360,
+        viewportHeight: 580,
         actions: [
           {
             type: 'click',
@@ -2587,7 +2584,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         // Reloaded at its own height, since the synteny click launched nothing
         // at the first frame's height (below ~430)
         url: LAUNCH_OUT_URL,
-        viewportHeight: 710,
+        viewportHeight: 930,
         actions: [
           {
             type: 'click',

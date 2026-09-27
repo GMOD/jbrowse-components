@@ -74,7 +74,7 @@ const deletionMatrixSpec: ScreenshotSpec = {
   }),
   readyText: 'chrM',
   readyTimeout: 120000,
-  viewportHeight: 860,
+  viewportHeight: 890,
 }
 
 // The whole chromosome clustered by genotype, rows colored by the branch of
