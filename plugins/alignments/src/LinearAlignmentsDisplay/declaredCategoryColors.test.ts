@@ -1,11 +1,14 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
-import { buildArcColorPalette } from '../shaders/palettes.ts'
+import {
+  buildArcColorPalette,
+  buildLinkedReadColorPalette,
+} from '../shaders/palettes.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../shaders/slang/read.iface.generated.ts'
 import {
   alignmentsColorEncoding,
   alignmentsColorNotices,
-  declaredReadCategoryColors,
+  writtenReadCategoryColors,
 } from '../shared/alignmentsColor.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
@@ -40,9 +43,11 @@ const UNSET: AlignmentsColorSetting = {
 }
 
 function paletteFor(color: Partial<AlignmentsColorSetting>) {
+  const setting = { ...UNSET, ...color }
   return buildColorPaletteFromPalette(resolvePalette({}), {
-    declared: declaredReadCategoryColors(
-      alignmentsColorEncoding({ ...UNSET, ...color }),
+    declared: writtenReadCategoryColors(
+      setting.value,
+      alignmentsColorEncoding(setting),
     ),
   })
 }
@@ -197,4 +202,49 @@ test('nothing declared, or a range over an open field, leaves the defaults', () 
   expect(
     paletteFor({ field: 'tags.HP', range: ['#ff0000'] }).readCategoryColors,
   ).toEqual(DEFAULT.readCategoryColors)
+})
+
+describe('color.value fills the reads no field colours', () => {
+  const STEEL = 'rgb(70,130,180)'
+  const neutral = categorySwatchColor('pairLR', DEFAULT)
+
+  test('the plain read, a tag scheme before its bake, and a read with no value', () => {
+    const palette = paletteFor({ value: 'steelblue', field: 'tags.HP' })
+    expect(uniformColor(palette, 'plain')).toBe(STEEL)
+    expect(uniformColor(palette, 'tag')).toBe(STEEL)
+    expect(everyPathPaints(palette, 'noTagValue')).toEqual(
+      new Array(3).fill(STEEL),
+    )
+  })
+
+  test('arcs, connection curves and the other neutral buckets keep the theme', () => {
+    const palette = paletteFor({ value: 'steelblue' })
+    for (const category of [
+      'pairLR',
+      'nonSplit',
+      'normalInsert',
+      'mapqUnavailable',
+    ] as const) {
+      expect([category, everyPathPaints(palette, category)]).toEqual([
+        category,
+        new Array(3).fill(neutral),
+      ])
+    }
+    for (const field of ['insertSize', 'pairOrientation'] as const) {
+      expect(rgb255(buildArcColorPalette(palette, field)[0]!)).toBe(neutral)
+    }
+    const curves = buildLinkedReadColorPalette(palette)
+    expect([rgb255(curves[0]!), rgb255(curves[1]!)]).toEqual([neutral, neutral])
+  })
+
+  test("a declared '' level colours the no-value read over value", () => {
+    const palette = paletteFor({
+      value: 'steelblue',
+      field: 'tags.HP',
+      domain: [''],
+      range: ['#1b9e77'],
+    })
+    expect(categorySwatchColor('noTagValue', palette)).toBe('rgb(27,158,119)')
+    expect(uniformColor(palette, 'plain')).toBe(STEEL)
+  })
 })

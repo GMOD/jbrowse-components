@@ -76,7 +76,7 @@ import {
   BASE_COLOR_FIELDS,
   colorFieldOf,
   colorSnapshotFor,
-  declaredReadCategoryColors,
+  writtenReadCategoryColors,
   declaredReadLabels,
   isBakedScheme,
 } from '../shared/alignmentsColor.ts'
@@ -1204,14 +1204,15 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * The read palette over `theme`: `color.value` over the neutral
-           * entry, and the category colours `color` declares. SVG export
-           * passes its own theme.
+           * The read palette over `theme`, with the category colours
+           * `color` sets. SVG export passes its own theme.
            */
           colorPaletteIn(theme: JBrowsePalette): ColorPalette {
             return buildColorPaletteFromPalette(theme, {
-              value: self.colorSetting.value,
-              declared: declaredReadCategoryColors(self.colorEncoding),
+              declared: writtenReadCategoryColors(
+                self.colorSetting.value,
+                self.colorEncoding,
+              ),
             })
           },
 

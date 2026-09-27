@@ -686,11 +686,11 @@ function getOverlapLegendItem(
       label: 'Pair/chain reads overlap here',
     }
   }
-  const [r, g, b] = palette.colorPairLR
+  const [r, g, b] = palette.readCategoryColors.plain
   const [tintR, tintG, tintB] = palette.colorOverlapTint
   return {
     swatches: [
-      { color: rgb255(palette.colorPairLR) },
+      { color: rgb255(palette.readCategoryColors.plain) },
       {
         color: rgb255([
           r + (tintR - r) * OVERLAP_ALPHA,
@@ -990,7 +990,7 @@ function baseLayerLegend({
     return baseQualityUnavailable
       ? [
           {
-            color: rgb255(palette.colorPairLR),
+            color: rgb255(palette.readCategoryColors.plain),
             label: 'Base quality unavailable',
           },
         ]
@@ -1021,7 +1021,7 @@ function schemeLegend({
   sectionOrder,
   labels,
 }: SchemeLegendArgs): LegendItem[] {
-  // The normal scheme paints every read one flat color ('plain' → colorPairLR),
+  // The normal scheme paints every read one flat color ('plain'),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
   // legend would be empty and "Show legend" would render nothing.
   //
@@ -1039,7 +1039,7 @@ function schemeLegend({
       ? []
       : [
           {
-            color: rgb255(palette.colorPairLR),
+            color: rgb255(palette.readCategoryColors.plain),
             label: baseLayer ? 'Read' : 'Reads',
           },
         ]

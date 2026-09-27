@@ -1,6 +1,8 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 
+import { buildColorPaletteFromPalette } from '../../LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
 import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import * as packedColorQuad from '../../shaders/slang/packedColorQuad.generated.ts'
 import { PER_BASE_QUALITY_MARK } from './mark.ts'
@@ -30,11 +32,16 @@ const DATA: PerBaseQualityUploadData = {
   perBaseQualScores: new Uint8Array([0, 20, 40, 255]),
 }
 
+// A plain fill apart from the theme's neutral, as `color.value` writes one, so
+// a painter reading the neutral cannot pass for one reading the plain fill.
 const STATE = makeTestRenderState({
   showPerBaseQuality: true,
   featureHeight: FEATURE_HEIGHT,
   featureSpacing: 0,
   canvasHeight: 500,
+  colors: buildColorPaletteFromPalette(resolvePalette({}), {
+    declared: { plain: [1, 0, 0] },
+  }),
 })
 
 function block(reversed: boolean): RenderBlock {
@@ -74,7 +81,7 @@ function painted(reversed: boolean) {
 // A cell packed 0 takes the plain read fill in the shader.
 function shaderCss(packedColor: number) {
   return packedColor === 0
-    ? normalizedRgbToCss(STATE.colors.colorPairLR)
+    ? normalizedRgbToCss(STATE.colors.readCategoryColors.plain)
     : abgrToCssRgba(packedColor)
 }
 

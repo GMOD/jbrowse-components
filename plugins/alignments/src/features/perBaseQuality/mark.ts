@@ -75,7 +75,9 @@ export const PER_BASE_QUALITY_MARK = defineMark({
     // faded table is unreachable.
     paint: state => ({
       rule: Paint.palette,
-      opaqueCss: qualityPaintCss(normalizedRgbToCss(state.colors.colorPairLR)),
+      opaqueCss: qualityPaintCss(
+        normalizedRgbToCss(state.colors.readCategoryColors.plain),
+      ),
       fadedCss: [],
     }),
   }),

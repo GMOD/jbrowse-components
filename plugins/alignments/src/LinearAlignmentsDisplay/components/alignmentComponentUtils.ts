@@ -59,10 +59,8 @@ const INDICATOR_DARK_LIGHTEN = 0.45
 export function buildColorPaletteFromPalette(
   palette: JBrowsePalette,
   {
-    value,
     declared,
   }: {
-    value?: string
     declared?: Partial<Record<ReadColorCategory, RGBColor>>
   } = {},
 ): ColorPalette {
@@ -76,7 +74,7 @@ export function buildColorPaletteFromPalette(
     colorRevStrand: toRgb(colorRevStrand),
     // pair colors flow through palette.alignmentFill so user theme overrides
     // render and dark mode dims pairLR (see darkPalette in theme.ts)
-    colorPairLR: toRgb(value || palette.alignmentFill.pairLR),
+    colorPairLR: toRgb(palette.alignmentFill.pairLR),
     colorPairRL: toRgb(palette.alignmentFill.pairRL),
     colorPairRR: toRgb(palette.alignmentFill.pairRR),
     colorPairLL: toRgb(palette.alignmentFill.pairLL),

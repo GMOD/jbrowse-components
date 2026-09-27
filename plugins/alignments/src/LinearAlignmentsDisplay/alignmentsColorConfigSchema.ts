@@ -61,8 +61,9 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
     /**
      * #slot value
      * The fill of every read while no field paints, and of a read carrying no
-     * value under a tag or attribute. Writing `color: "steelblue"` lands here.
-     * Unset, the theme's read colour.
+     * value under a tag or attribute, or no mate under `mateRefName`. Arcs and
+     * pair orientations keep the theme's colours. Writing `color: "steelblue"`
+     * lands here. Unset, the theme's read colour.
      */
     value: {
       type: 'maybeColor',

@@ -325,6 +325,28 @@ function declaredLevels(
   }
 }
 
+const VALUE_FILLED: readonly ReadColorCategory[] = [
+  'plain',
+  'tag',
+  'noTagValue',
+]
+
+/**
+ * The read category colours the `color` object sets over the palette's:
+ * `value` fills a read no field colours and one its tag or mate scheme found
+ * no value for, and `declaredReadCategoryColors` goes over that.
+ */
+export function writtenReadCategoryColors(
+  value: string | undefined,
+  encoding: AlignmentsColorEncoding,
+): Partial<Record<ReadColorCategory, RGBColor>> {
+  const fill = value ? cssColorToNormalizedRgb(value) : undefined
+  return {
+    ...(fill ? Object.fromEntries(VALUE_FILLED.map(c => [c, fill])) : {}),
+    ...declaredReadCategoryColors(encoding),
+  }
+}
+
 /**
  * The read category colours the `color` object declares, over the palette's
  * defaults: `range[i]` colours the i-th of `declaredLevels`. A level left out
