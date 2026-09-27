@@ -202,7 +202,7 @@ export function SvgYAxis({
   view: { offsetPx: number }
   width: number
 }) {
-  const { axes, height, showCrossHatches } = model
+  const { axes, height } = model
   const contentLeft = Math.max(-view.offsetPx, 0)
   return (
     <>
@@ -221,7 +221,7 @@ export function SvgYAxis({
           <Fragment key={i}>
             {bandTops.map(top => (
               <Fragment key={top}>
-                {showCrossHatches && fits ? (
+                {axis.grid && fits ? (
                   <CrossHatchLines
                     ticks={axis.ticks}
                     width={width}

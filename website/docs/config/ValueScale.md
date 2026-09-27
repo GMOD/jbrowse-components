@@ -68,12 +68,11 @@ Two defaults come from the display rather than from the scale.
 display. `symlogConstant` starts at `0` on the wiggle family and the mark
 display and at `1` on the coverage band.
 
-The wiggle family and the mark display also carry
-`rules`, reference lines at chosen values, `grid`, a line at every tick,
-and `minimalTicks`; the mark display adds `title`, the caption beside the
-axis. A rule naming no `color` draws in the one
-colour the chrome rules every plot in, so a red line is a claim its author
-makes rather than a meaning a display assigns.
+Every scale carries the same guides: `rules`, reference lines at chosen
+values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
+caption beside the axis. A rule naming no `color` draws in the one colour
+the chrome rules every plot in, so a red line is a claim its author makes
+rather than a meaning a display assigns.
 
 ## Config slots
 

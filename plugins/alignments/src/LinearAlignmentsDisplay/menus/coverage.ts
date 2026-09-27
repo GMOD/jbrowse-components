@@ -1,5 +1,5 @@
 import { radioItems } from '@jbrowse/core/ui/menuItems'
-import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
+import { makeCrossHatchItem, makeScoreSubMenu } from '@jbrowse/wiggle-core'
 
 import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 
@@ -8,6 +8,8 @@ interface CoverageModel extends ScoreScaleModel {
   coverageDomain: [number, number] | undefined
   coverageSnpMinFrequency: number
   setCoverageSnpMinFrequency: (fraction: number) => void
+  grid: boolean
+  setGrid: (grid: boolean) => void
 }
 
 // Fractions rather than a free-entry dialog: the useful settings are an order
@@ -60,6 +62,7 @@ export function getCoverageMenuItem(model: CoverageModel) {
     // floor the band carries a permanent rainbow — the pileup fades those
     // through `featureFrequencyThreshold` and the band applied nothing.
     trailingItems: [
+      makeCrossHatchItem(model),
       {
         label: 'Color SNPs above...',
         subMenu: radioItems(

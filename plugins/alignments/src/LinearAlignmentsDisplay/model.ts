@@ -56,6 +56,7 @@ import {
   getNiceDomain,
   resolveSymlogConstant,
   visibleStatsRange,
+  widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, compareStructural, observable } from 'mobx'
@@ -1015,7 +1016,13 @@ export default function stateModelFactory(
                       .map(({ data }) => data),
                   accumulate: entries => computeVisibleCoverageStats(entries),
                   range: (_, entries) =>
-                    computeVisibleCoverageDomain(entries, self.domainQuantile)!,
+                    widenRangeToRules(
+                      computeVisibleCoverageDomain(
+                        entries,
+                        self.domainQuantile,
+                      )!,
+                      self.scoreRules.map(rule => rule.value),
+                    ),
                 })
           },
 
@@ -1073,6 +1080,7 @@ export default function stateModelFactory(
                   this.bandHeights.coverageHeight,
                   self.scaleType,
                   self.symlogConstant,
+                  self.minimalTicks,
                 )
               : undefined
           },
@@ -2992,6 +3000,9 @@ export default function stateModelFactory(
               height: self.bandHeights.coverageHeight,
               ticks: self.coverageTicks,
               side: self.showsGroupLabels ? 'right' : 'left',
+              caption: self.scaleTitle ?? '',
+              rules: self.coarseTierStandsIn ? [] : self.scoreRules,
+              grid: self.grid,
               bandTops: renderSections.map(section =>
                 bandScreenTop(section.coverageTop, scroll),
               ),

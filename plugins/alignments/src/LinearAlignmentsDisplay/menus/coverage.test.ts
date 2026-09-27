@@ -13,6 +13,8 @@ function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
     coverageDomain: undefined,
     coverageSnpMinFrequency,
     setCoverageSnpMinFrequency: () => {},
+    grid: false,
+    setGrid: () => {},
     scaleType: 'linear',
     scaleTypeChoices: ['linear', 'log', 'symlog'],
     domainQuantile: 1,

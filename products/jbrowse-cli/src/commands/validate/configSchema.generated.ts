@@ -4421,6 +4421,41 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "ValueScaleRule": {
+      "title": "ValueScaleRule",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number",
+          "default": 0
+        },
+        {
+          "title": "ValueScaleRule",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "the value the rule is drawn at.",
+              "type": "number",
+              "default": 0
+            },
+            "color": {
+              "description": "line and label colour; unset is the chrome’s own.",
+              "$ref": "#/$defs/CssColor"
+            },
+            "label": {
+              "description": "text at the rule's right-hand end.",
+              "$ref": "#/$defs/PlainString",
+              "default": ""
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "ValueScale": {
       "title": "ValueScale",
       "type": "object",
@@ -4456,6 +4491,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%.",
           "type": "number",
           "default": 1
+        },
+        "grid": {
+          "description": "rule the plot at the tick positions.",
+          "type": "boolean",
+          "default": false
+        },
+        "minimalTicks": {
+          "description": "label only the ends of the axis.",
+          "type": "boolean",
+          "default": false
+        },
+        "title": {
+          "description": "axis caption; unset draws none.",
+          "$ref": "#/$defs/PlainString"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ValueScaleRule"
+          }
         }
       },
       "patternProperties": {
@@ -6373,41 +6428,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "ValueScaleRule": {
-      "title": "ValueScaleRule",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "type": "number",
-          "default": 0
-        },
-        {
-          "title": "ValueScaleRule",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "the value the rule is drawn at.",
-              "type": "number",
-              "default": 0
-            },
-            "color": {
-              "description": "line and label colour; unset is the chrome’s own.",
-              "$ref": "#/$defs/CssColor"
-            },
-            "label": {
-              "description": "text at the rule's right-hand end.",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "ValueScale2": {
       "title": "ValueScale2",
       "type": "object",
@@ -6453,6 +6473,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "label only the ends of the axis.",
           "type": "boolean",
           "default": false
+        },
+        "title": {
+          "description": "axis caption; unset draws none.",
+          "$ref": "#/$defs/PlainString"
         },
         "rules": {
           "type": "array",

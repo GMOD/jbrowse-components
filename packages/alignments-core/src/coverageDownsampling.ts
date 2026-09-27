@@ -195,6 +195,7 @@ export function computeCoverageTicks(
   coverageHeight: number,
   scaleType = 'linear',
   symlogConstant = 0,
+  minimalTicks = false,
 ): YScaleTicks {
   // The box the coverage marks are drawn in, not a second spelling of it: the
   // bars measure up from `bottom` over `effectiveH` (rendererUtils, and the
@@ -224,9 +225,11 @@ export function computeCoverageTicks(
   // leaves nothing to ladder between; one tick at the top is the honest axis for
   // a band where every bar is flat.
   const values =
-    max > baseline
-      ? coverageTickValues(baseline, max, coverageHeight, scaleType)
-      : [max]
+    max <= baseline
+      ? [max]
+      : minimalTicks
+        ? [baseline, max]
+        : coverageTickValues(baseline, max, coverageHeight, scaleType)
 
   return {
     items: values.map(value => ({ value, y: yOf(value) })),

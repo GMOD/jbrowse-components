@@ -16,8 +16,6 @@ export interface AxisHost extends IStateTreeNode {
   axes: YAxis[]
   height: number
   canvasWidthPx: number
-  /** Whether guide lines are ruled across the plot at each tick. */
-  showCrossHatches?: boolean
 }
 
 /** The bands of an axis on screen, the ones scrolled off the display dropped. */

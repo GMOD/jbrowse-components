@@ -880,7 +880,6 @@ describe('the y axis', () => {
   }
   const AxisModel = TestChromeModel.props({
     axes: types.frozen<YAxis[]>([]),
-    showCrossHatches: false,
   }).views(() => ({
     get canvasWidthPx() {
       return 400
@@ -900,7 +899,7 @@ describe('the y axis', () => {
 
   test('a declared scale places the axis in the left gutter and, when shown, the hatches', async () => {
     const { container, findByTestId } = renderChrome(
-      AxisModel.create({ axes: [scale()], showCrossHatches: true }),
+      AxisModel.create({ axes: [scale({ grid: true })] }),
     )
     await findByTestId('probe-canvas')
     expect(labelsOf(container)).toEqual(['0', '10'])
@@ -912,11 +911,24 @@ describe('the y axis', () => {
   })
 
   test('no declared scale draws no axis', async () => {
-    const { container, findByTestId } = renderChrome(
-      AxisModel.create({ showCrossHatches: true }),
-    )
+    const { container, findByTestId } = renderChrome(AxisModel.create())
     await findByTestId('probe-canvas')
     expect(container.querySelectorAll('svg')).toHaveLength(0)
+  })
+
+  // The coverage band's grid stays off the read cloud's TLEN band below it.
+  test('a scale rules hatches across its own bands only', async () => {
+    const { container, findByTestId } = renderChrome(
+      AxisModel.create({
+        axes: [
+          scale({ height: 40, grid: true }),
+          scale({ height: 40, bandTops: [50] }),
+        ],
+      }),
+    )
+    await findByTestId('probe-canvas')
+    const fullWidth = overlays(container).filter(s => s.width === '400px')
+    expect(fullWidth).toHaveLength(1)
   })
 
   // A grouped alignments track repeats its coverage band per group; the one
@@ -960,8 +972,7 @@ describe('the y axis', () => {
   test('a scale too short for an axis is captioned, hatches and all', async () => {
     const { container, findByTestId } = renderChrome(
       AxisModel.create({
-        axes: [scale({ height: 20, bandTops: [0, 20, 40] })],
-        showCrossHatches: true,
+        axes: [scale({ height: 20, bandTops: [0, 20, 40], grid: true })],
       }),
     )
     await findByTestId('probe-canvas')

@@ -642,7 +642,9 @@ export default function stateModelFactory(
                   getRowTop(row, self.effectiveRowHeight),
                 ),
             left: treeSidebarOffset(self),
+            caption: self.scaleTitle ?? '',
             rules: self.scoreRules,
+            grid: self.showCrossHatches,
           },
         ]
       },

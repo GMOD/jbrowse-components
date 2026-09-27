@@ -176,3 +176,11 @@ it('rules every row of a faceted track, in the row its ticks were built in', () 
   expect(yBottom).toBeLessThanOrEqual(axis!.height)
   expect(ruleMarksOf(display)[0]!.y).toBeCloseTo((yTop + yBottom) / 2, 6)
 })
+
+it('captions the axis with scales.y.title and grids it with scales.y.grid', () => {
+  const display = makeDisplay([])
+  expect(display.axes[0]).toMatchObject({ caption: '', grid: false })
+  setConf(display, ['scales', 'y', 'title'], 'log2 ratio')
+  setConf(display, ['scales', 'y', 'grid'], true)
+  expect(display.axes[0]).toMatchObject({ caption: 'log2 ratio', grid: true })
+})

@@ -141,11 +141,11 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
 })
 
 // The reference lines are a member of the scale, so the one menu that writes
-// the scale offers them, and only where the display's scale declares `rules`
-// and a scale it draws rules a band for them to cross.
+// the scale offers them, and only where a scale it draws rules a band for them
+// to cross.
 describe('the reference lines row', () => {
   const ruledSchema = ConfigurationSchema('TestRuledDisplay', {
-    scales: scalesSchema(valueScaleSchema({ types: ['linear'], rules: true })),
+    scales: scalesSchema(valueScaleSchema({ types: ['linear'] })),
   })
   const ruled = (bandTops?: number[]) =>
     types
@@ -169,7 +169,7 @@ describe('the reference lines row', () => {
     )
   })
 
-  it('is absent where the scale declares no rules', () => {
+  it('is absent where the display draws no scale', () => {
     expect(labels(makeScoreSubMenu(makePinnedDomainDisplay()))).not.toContain(
       'Reference lines...',
     )

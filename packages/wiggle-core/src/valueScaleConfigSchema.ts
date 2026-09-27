@@ -10,14 +10,6 @@ export interface ValueScaleOptions {
   domainQuantile?: number
   /** `symlogConstant`'s default, where `types` holds `symlog` */
   symlogConstant?: number
-  /** the display draws `rules` and widens its domain to them */
-  rules?: boolean
-  /** the display captions its axis with `title` */
-  title?: boolean
-  /** the display rules its plot at the ticks where `grid` says */
-  grid?: boolean
-  /** the display labels only the axis ends where `minimalTicks` says */
-  minimalTicks?: boolean
 }
 
 function valueScaleRuleSchema() {
@@ -82,12 +74,11 @@ export type ValueScaleRuleConfig = Instance<
  * display. `symlogConstant` starts at `0` on the wiggle family and the mark
  * display and at `1` on the coverage band.
  *
- * The wiggle family and the mark display also carry
- * `rules`, reference lines at chosen values, `grid`, a line at every tick,
- * and `minimalTicks`; the mark display adds `title`, the caption beside the
- * axis. A rule naming no `color` draws in the one
- * colour the chrome rules every plot in, so a red line is a claim its author
- * makes rather than a meaning a display assigns.
+ * Every scale carries the same guides: `rules`, reference lines at chosen
+ * values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
+ * caption beside the axis. A rule naming no `color` draws in the one colour
+ * the chrome rules every plot in, so a red line is a claim its author makes
+ * rather than a meaning a display assigns.
  *
  * #example
  * A log axis floored at 1:
@@ -137,10 +128,6 @@ export function valueScaleSchema({
   types: scaleTypes,
   domainQuantile = 1,
   symlogConstant = 0,
-  rules,
-  title = false,
-  grid = false,
-  minimalTicks = false,
 }: ValueScaleOptions) {
   return ConfigurationSchema(
     'ValueScale',
@@ -226,64 +213,48 @@ export function valueScaleSchema({
         description:
           'the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%',
       },
-      ...(grid
-        ? {
-            /**
-             * #slot scales.y.grid
-             * Rule the plot across at every tick, ggplot2's panel grid and
-             * Vega-Lite's `axis.grid`. The score menu's "Show cross hatches"
-             * toggles it.
-             */
-            grid: {
-              type: 'boolean',
-              defaultValue: false,
-              description: 'rule the plot at the tick positions',
-            },
-          }
-        : {}),
-      ...(minimalTicks
-        ? {
-            /**
-             * #slot scales.y.minimalTicks
-             * Label only the two ends of the axis.
-             */
-            minimalTicks: {
-              type: 'boolean',
-              defaultValue: false,
-              description: 'label only the ends of the axis',
-              advanced: true,
-            },
-          }
-        : {}),
-      ...(title
-        ? {
-            /**
-             * #slot scales.y.title
-             * The caption beside the axis, naming what it measures, drawn
-             * once however many bands the scale rules and at every zoom.
-             * Optional, as JBrowse's other captions are: unset, `""` or
-             * `null`, the axis has none; some text is that text.
-             */
-            title: {
-              type: 'maybeString',
-              description: 'axis caption; unset draws none',
-            },
-          }
-        : {}),
-      ...(rules
-        ? {
-            /**
-             * #slot scales.y.rules
-             * Horizontal reference lines at chosen values, across every band
-             * the scale rules: a significance threshold, a zero line, an
-             * allele-frequency cut. Each is `{ value, color, label }`, or a
-             * bare number for a plain line. An autoscaled end widens to keep
-             * every rule on the axis; a pinned `domainMin` or `domainMax`
-             * that excludes a rule drops it.
-             */
-            rules: types.array(valueScaleRuleSchema()),
-          }
-        : {}),
+      /**
+       * #slot scales.y.grid
+       * Rule the plot across at every tick, ggplot2's panel grid and
+       * Vega-Lite's `axis.grid`. The score menu's "Show cross hatches"
+       * toggles it.
+       */
+      grid: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'rule the plot at the tick positions',
+      },
+      /**
+       * #slot scales.y.minimalTicks
+       * Label only the two ends of the axis.
+       */
+      minimalTicks: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'label only the ends of the axis',
+        advanced: true,
+      },
+      /**
+       * #slot scales.y.title
+       * The caption beside the axis, naming what it measures, drawn
+       * once however many bands the scale rules and at every zoom.
+       * Optional, as JBrowse's other captions are: unset, `""` or
+       * `null`, the axis has none; some text is that text.
+       */
+      title: {
+        type: 'maybeString',
+        description: 'axis caption; unset draws none',
+      },
+      /**
+       * #slot scales.y.rules
+       * Horizontal reference lines at chosen values, across every band
+       * the scale rules: a significance threshold, a zero line, an
+       * allele-frequency cut. Each is `{ value, color, label }`, or a
+       * bare number for a plain line. An autoscaled end widens to keep
+       * every rule on the axis; a pinned `domainMin` or `domainMax`
+       * that excludes a rule drops it.
+       */
+      rules: types.array(valueScaleRuleSchema()),
     },
     { closed: true },
   )

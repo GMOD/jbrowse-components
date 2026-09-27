@@ -32,6 +32,11 @@ describe('computeCoverageTicks', () => {
     expect(small.items[1]!.value).toBe(50)
   })
 
+  test('minimalTicks labels only the two ends at any height', () => {
+    const result = computeCoverageTicks([0, 100], 150, 'linear', 0, true)
+    expect(result.items.map(t => t.value)).toEqual([0, 100])
+  })
+
   test('tall height uses nice step (more ticks than short)', () => {
     const small = computeCoverageTicks([0, 50], 50)
     const large = computeCoverageTicks([0, 50], 150)

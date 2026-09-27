@@ -582,14 +582,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `scales.y.grid`: nothing here spends colour on the score instead of
-         * height, so the axis is always there to rule.
-         */
-        get showCrossHatches(): boolean {
-          return self.grid
-        },
-        /**
-         * #getter
          * Each mark's `size`: a point's diameter in px, which a bar or
          * span leaves unread.
          */
@@ -1215,6 +1207,7 @@ export function stateModelFactory(
               minimalTicks,
               caption: this.axisTitle,
               rules: self.scoreRules,
+              grid: self.grid,
             },
           ]
         },

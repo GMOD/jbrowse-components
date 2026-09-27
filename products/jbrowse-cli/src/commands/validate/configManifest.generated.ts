@@ -3562,6 +3562,37 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainQuantile",
                   "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                },
+                {
+                  "name": "minimalTicks",
+                  "type": "boolean"
+                },
+                {
+                  "name": "title",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "number"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "label",
+                      "type": "string"
+                    }
+                  ],
+                  "shorthand": "value"
                 }
               ]
             }
@@ -4016,6 +4047,37 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainQuantile",
                   "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                },
+                {
+                  "name": "minimalTicks",
+                  "type": "boolean"
+                },
+                {
+                  "name": "title",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "number"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "label",
+                      "type": "string"
+                    }
+                  ],
+                  "shorthand": "value"
                 }
               ]
             }
@@ -5025,6 +5087,10 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "minimalTicks",
                   "type": "boolean"
+                },
+                {
+                  "name": "title",
+                  "type": "(string | undefined)"
                 },
                 {
                   "name": "rules",

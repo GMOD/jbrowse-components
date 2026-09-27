@@ -134,17 +134,13 @@ describe('the y axis', () => {
     ticks,
     ...over,
   })
-  function axisHost(
-    axes: YAxis[],
-    { showCrossHatches = false, offsetPx = 0 } = {},
-  ) {
+  function axisHost(axes: YAxis[], { offsetPx = 0 } = {}) {
     const view = TestView.create({ display: {} })
     view.setOffsetPx(offsetPx)
     return Object.create(view.display, {
       error: { value: undefined },
       axes: { value: axes },
       canvasWidthPx: { value: 806 },
-      showCrossHatches: { value: showCrossHatches },
     }) as TestDisplayModel
   }
   const labelsOf = (container: HTMLElement) =>
@@ -171,7 +167,7 @@ describe('the y axis', () => {
 
   test('a declared scale places the axis in the margin at the content edge, with hatches when shown', async () => {
     const { container } = await renderShell(
-      axisHost([scale()], { showCrossHatches: true }),
+      axisHost([scale({ grid: true })]),
       [],
     )
     expect(labelsOf(container)).toEqual(['0', '10'])
@@ -183,10 +179,7 @@ describe('the y axis', () => {
   })
 
   test('no declared scale draws no axis', async () => {
-    const { container } = await renderShell(
-      axisHost([], { showCrossHatches: true }),
-      [],
-    )
+    const { container } = await renderShell(axisHost([]), [])
     expect(container.querySelectorAll('text')).toHaveLength(0)
     expect(container.querySelectorAll('line')).toHaveLength(0)
   })

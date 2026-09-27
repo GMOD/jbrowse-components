@@ -239,3 +239,23 @@ describe('the band fetches nothing where the gate is not blocking', () => {
     expect(display.fetchSuspended).toBe(false)
   })
 })
+
+// The bins count features rather than reads, so a depth rule stays off their axis.
+test('the coverage scale carries its title and grid, and no rules under the density tier', () => {
+  const { display } = refusedDisplay({ withSource: true })
+  setConf(display, ['scales', 'y'], {
+    title: 'depth',
+    grid: true,
+    rules: [{ value: 30, label: 'diploid' }],
+  })
+  display.setCoarseTier(
+    [{ displayedRegionIndex: 0, payload: bins([0], [100_000], [4000]) }],
+    { regions: [], key: 'test-key' },
+  )
+  expect(display.valueScales[0]).toMatchObject({
+    caption: 'depth',
+    grid: true,
+    rules: [],
+  })
+  expect(display.scoreRules).toEqual([{ value: 30, label: 'diploid' }])
+})

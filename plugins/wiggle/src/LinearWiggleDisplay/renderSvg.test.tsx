@@ -61,7 +61,7 @@ const ticks = {
 // The one scale the rows share, as `ScoreScaleMixin` resolves it off the
 // model's `valueScales`: a band per row, past the dendrogram where one shows,
 // and no band at all for density rows in their own colours.
-function axes({ left = 0, density = false } = {}) {
+function axes({ left = 0, density = false, grid = false } = {}) {
   return [
     {
       domain: [0, 10] as [number, number],
@@ -71,6 +71,7 @@ function axes({ left = 0, density = false } = {}) {
       ticks,
       bandTops: density ? [] : [0, 50],
       left,
+      grid,
     },
   ]
 }
@@ -175,7 +176,6 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     canvasWidthPx: 800,
     showRowSeparators: false,
     showRowLabels: true,
-    showCrossHatches: false,
     ...overrides,
   }
 }
@@ -333,7 +333,7 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
   it('carries the row separators and cross hatches into the export', async () => {
     const html = render(
       await renderSvg(
-        makeModel({ showRowSeparators: true, showCrossHatches: true }),
+        makeModel({ showRowSeparators: true, axes: axes({ grid: true }) }),
       ),
     )
     expect(html).toContain('stroke="rgb(200,200,200)"')

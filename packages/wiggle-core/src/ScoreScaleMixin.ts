@@ -135,47 +135,42 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * `scales.y.title` as written, `undefined` while unset or on a display
-       * whose scale declares no title.
+       * `scales.y.title` as written, `undefined` while unset.
        */
       get scaleTitle(): string | undefined {
         return getConf(confNode(self), ['scales', 'y', 'title'])
       },
       /**
        * #getter
-       * `scales.y.grid`, false on a display whose scale declares none.
+       * `scales.y.grid`
        */
       get grid(): boolean {
-        return getConf(confNode(self), ['scales', 'y', 'grid']) ?? false
+        return getConf(confNode(self), ['scales', 'y', 'grid'])
       },
       /**
        * #getter
-       * `scales.y.minimalTicks`, false on a display whose scale declares none.
+       * `scales.y.minimalTicks`
        */
       get minimalTicks(): boolean {
-        return getConf(confNode(self), ['scales', 'y', 'minimalTicks']) ?? false
+        return getConf(confNode(self), ['scales', 'y', 'minimalTicks'])
       },
       /**
        * #getter
        * Whether this display draws `scales.y.rules`, which is whether the
-       * score menu offers the reference lines: its scale declares them, and
-       * a scale it places y through rules a band for them to cross, which a
-       * density plot's colour-mapped rows and a colour ramp do not.
+       * score menu offers the reference lines: a scale it places y through
+       * rules a band for them to cross, which a density plot's colour-mapped
+       * rows and a colour ramp do not.
        */
       get scoreRulesDrawn(): boolean {
-        return (
-          confNode(self).configuration.scales.y.rules !== undefined &&
-          self.valueScales.some(rulesABand)
-        )
+        return self.valueScales.some(rulesABand)
       },
       /**
        * #getter
        * `scales.y.rules`, read off the live nodes: a snapshot strips a slot at
-       * its default, and a rule at 0 is one. Empty on a display whose scale
-       * declares no rules.
+       * its default, and a rule at 0 is one.
        */
       get scoreRules(): ValueScaleRule[] {
-        const { rules = [] } = confNode(self).configuration.scales.y
+        const { rules } = confNode(self).configuration.scales.y
         return rules.map((rule: ValueScaleRuleConfig) => {
           const label = readConfObject(rule, 'label')
           const color = readConfObject(rule, 'color')

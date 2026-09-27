@@ -31,7 +31,7 @@ const ChromeYAxis = observer(function ChromeYAxis({
 }: {
   model: AxisHost
 }) {
-  const { axes, height, canvasWidthPx: width, showCrossHatches } = model
+  const { axes, height, canvasWidthPx: width } = model
   if (axes.length === 0) {
     return null
   }
@@ -45,7 +45,7 @@ const ChromeYAxis = observer(function ChromeYAxis({
         return (
           // eslint-disable-next-line @eslint-react/no-array-index-key -- the scales are declared in a fixed order
           <Fragment key={i}>
-            {showCrossHatches && fits ? (
+            {axis.grid && fits ? (
               <CrossHatches
                 ticks={axis.ticks}
                 width={width}

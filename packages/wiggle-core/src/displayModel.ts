@@ -51,8 +51,4 @@ export interface WiggleGpuDisplayModel<
   // caller and a real value from another.
   zoomCanReleaseGate: boolean
   forceLoad: () => void
-  // the resolved "do the hatches draw" getter, never the raw
-  // `scales.y.grid` setting — density mode has no score axis for them to
-  // rule and drops the track-menu toggle
-  showCrossHatches: boolean
 }

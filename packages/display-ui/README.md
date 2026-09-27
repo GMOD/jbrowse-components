@@ -451,8 +451,8 @@ panels leave clear for a gutter: `right` where a group label chip takes the
 left, `left: n` where a dendrogram takes the first `n` px. `caption` is what the
 scale measures (`TLEN`), as a colour scale's `field` is; the chrome draws it
 once for the scale, beside the bands on screen, however many it rules. `rules`
-are the reference lines the scale declares, which the chrome draws across every
-band.
+are the reference lines the scale declares and `grid` a line at every tick, both
+drawn across every band.
 
 A member describes the scale or the band it rules, never the axis — not an
 orientation, a form, a gutter width or a font. The chrome reads a member to keep

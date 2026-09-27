@@ -17,9 +17,6 @@ export function wiggleValueScale() {
     valueScaleSchema({
       types: ['linear', 'log', 'symlog'],
       domainQuantile: DEFAULT_CLIP_QUANTILE,
-      rules: true,
-      grid: true,
-      minimalTicks: true,
     }),
   )
 }

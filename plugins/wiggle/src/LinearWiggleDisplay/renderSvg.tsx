@@ -59,7 +59,6 @@ export interface RenderSvgModel extends LgvSvgExportable {
   // read by the shell's axes
   axes: YAxis[]
   canvasWidthPx: number
-  showCrossHatches: boolean
 
   // read by WiggleRowSeparators
   showRowSeparators: boolean
