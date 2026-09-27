@@ -78,7 +78,7 @@ test.each([
 
 test('a graph adapter walks the plugin form instead of the paste box', () => {
   const config = {
-    type: 'FeatureTrack',
+    type: 'GraphTrack',
     trackId: 'hprc_minigraph_segments',
     name: 'HPRC release 2 graph (rGFA segments)',
     assemblyNames: ['hg38'],

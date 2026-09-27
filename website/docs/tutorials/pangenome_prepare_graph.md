@@ -126,7 +126,7 @@ bubble tier the graph cuts to past `aboveBpPerPx` bp per pixel.
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "hprc_graph",
   "name": "hprc graph",
   "assemblyNames": ["hg38"],
@@ -302,7 +302,7 @@ The database and companion need URLs that serve range requests: the track's
 
 ```json addtrack
 {
-  "type": "SyntenyTrack",
+  "type": "GraphTrack",
   "trackId": "my_graph_lanes",
   "name": "My graph: haplotypes vs the reference, read from the graph",
   "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],

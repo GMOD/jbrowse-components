@@ -455,7 +455,7 @@ shared prefix:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_cactus_segments",
   "name": "MC graph: segments (whole graph, by locus)",
   "assemblyNames": ["K12"],

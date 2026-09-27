@@ -703,7 +703,7 @@ cp ecoli_minigraph.segs.bed.gz ecoli_minigraph.segs.bed.gz.tbi \
    ecoli_minigraph.links.bed.gz ecoli_minigraph.links.bed.gz.tbi "$APP/"
 cat > rgfa_track.json <<'JSON'
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_minigraph_segments",
   "name": "minigraph graph: rGFA segments (browsable by locus)",
   "assemblyNames": ["K12"],
@@ -822,7 +822,7 @@ cp ecoli_pggb.segs.bed.gz ecoli_pggb.segs.bed.gz.tbi \
    ecoli_pggb.links.bed.gz ecoli_pggb.links.bed.gz.tbi "$APP/"
 cat > pggb_segments_track.json <<'JSON'
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_pggb_segments",
   "name": "pggb graph segments (whole graph, by locus)",
   "assemblyNames": ["K12"],

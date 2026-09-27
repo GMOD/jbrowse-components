@@ -159,7 +159,7 @@
       ]
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "hprc_minigraph_segments",
       "name": "HPRC release 2 graph (rGFA segments)",
       "assemblyNames": ["hg38", "hs1"],

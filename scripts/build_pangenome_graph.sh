@@ -147,7 +147,7 @@ pansn = {'assemblyNameToPanSN': {assembly: sample}} if sample and sample != asse
 
 tracks = [
     {
-        'type': 'FeatureTrack',
+        'type': 'GraphTrack',
         'trackId': f'{stem}_graph',
         'name': f'{base} graph',
         'assemblyNames': [assembly],

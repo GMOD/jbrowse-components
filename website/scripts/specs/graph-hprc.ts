@@ -464,7 +464,7 @@ export const hprcClusterFixtures = {
 // which is what makes a whole chromosome drawable at all: 474 nodes for chr1
 // against ~751k segments in the graph.
 const HPRC_TIER_SESSION_TRACK = {
-  type: 'FeatureTrack',
+  type: 'GraphTrack',
   trackId: 'hprc_tier',
   name: 'HPRC release 2 graph: bubble tier (one node per bubble)',
   assemblyNames: ['hg38'],

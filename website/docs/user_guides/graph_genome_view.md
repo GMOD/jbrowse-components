@@ -101,8 +101,8 @@ layout here, was built for assembly graphs. Use Bandage for one.
 
 ## Route 1: a graph track, browsable by locus
 
-Once indexed, the graph loads as an ordinary `FeatureTrack` that draws whatever
-window is on screen as a graph.
+Once indexed, the graph loads as a `GraphTrack` that draws whatever window is on
+screen as a graph.
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
 builds the index, the format decides which route it takes, and every step after
 that is the same. It needs `bgzip`, `tabix` and `python3`, plus
@@ -152,7 +152,7 @@ One adapter reads all four, and `<prefix>.config.json` carries the track:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_minigraph_segments",
   "name": "minigraph graph: rGFA segments",
   "assemblyNames": ["K12"],
@@ -422,7 +422,7 @@ figures above are cut from:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_minigraph_segments",
   "name": "minigraph graph: rGFA segments",
   "assemblyNames": ["K12"],

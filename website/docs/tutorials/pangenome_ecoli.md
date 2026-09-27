@@ -577,7 +577,7 @@ uses `ecoli_pggb` instead:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_pggb_segments",
   "name": "pggb graph segments (whole graph, by locus)",
   "assemblyNames": ["K12"],
@@ -637,7 +637,7 @@ any width:
 
 ```json addtrack
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_pggb_tier50",
   "name": "pggb graph bubbles (coarse tier, one node per bubble)",
   "assemblyNames": ["K12"],

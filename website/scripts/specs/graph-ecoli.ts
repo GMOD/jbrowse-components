@@ -58,7 +58,7 @@ const RANK_COLOR_DEFAULTS = {
 // plugin, so a figure that renders this track at all is also evidence the plugin
 // loaded.
 const ECOLI_SEGMENTS_SESSION_TRACK = {
-  type: 'FeatureTrack',
+  type: 'GraphTrack',
   trackId: ECOLI_SEGMENTS_TRACK,
   name: 'minigraph graph segments (rGFA)',
   assemblyNames: ['K12'],
@@ -121,7 +121,7 @@ const PGGB_NODES_SESSION_TRACK = {
 // minigraph graph is a handful.
 const PGGB_SEGMENTS_TRACK = 'ecoli_pggb_segments'
 const PGGB_SEGMENTS_SESSION_TRACK = {
-  type: 'FeatureTrack',
+  type: 'GraphTrack',
   trackId: PGGB_SEGMENTS_TRACK,
   name: 'pggb graph segments (whole graph, by locus)',
   assemblyNames: ['K12'],
@@ -227,7 +227,7 @@ const PGGB_TIER_IS5_NODE = '79945@1299497'
 // the only thing left in 50 kb. 50 keeps every indel and absorbs the
 // single-base alternatives into backbone, which is the cut a reader wants.
 const PGGB_TIER_SESSION_TRACK = {
-  type: 'FeatureTrack',
+  type: 'GraphTrack',
   trackId: PGGB_TIER_TRACK,
   name: 'pggb graph bubbles (coarse tier, one node per bubble)',
   assemblyNames: ['K12'],
@@ -1213,7 +1213,7 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
 // reads four files off one prefix, so `Add a track from file or URL` has no
 // extension to guess from and pasting the config is the route.
 export const PGGB_SEGMENTS_TRACK_JSON = `{
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_pggb_segments",
   "name": "pggb graph segments (whole graph, by locus)",
   "assemblyNames": ["K12"],

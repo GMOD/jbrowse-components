@@ -140,7 +140,7 @@ def graph_tracks(names):
         return []
     tracks = [
         {
-            'type': 'FeatureTrack',
+            'type': 'GraphTrack',
             'trackId': 'arabidopsis_minigraph_segments',
             'name': '1001G+ minigraph pangenome (rGFA segments)',
             'assemblyNames': ['TAIR10'],
@@ -149,7 +149,7 @@ def graph_tracks(names):
             'displays': graph_displays('arabidopsis_minigraph_segments'),
         },
         {
-            'type': 'FeatureTrack',
+            'type': 'GraphTrack',
             'trackId': 'arabidopsis_minigraph_tier',
             'name': '1001G+ minigraph pangenome: bubble tier (one node per bubble)',
             'assemblyNames': ['TAIR10'],

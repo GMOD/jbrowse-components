@@ -493,7 +493,7 @@ cp ecoli_cactus.segs.bed.gz ecoli_cactus.segs.bed.gz.tbi \
    ecoli_cactus.links.bed.gz ecoli_cactus.links.bed.gz.tbi "$APP/"
 cat > segments_track.json <<'JSON'
 {
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_cactus_segments",
   "name": "MC graph: segments (whole graph, by locus)",
   "assemblyNames": ["K12"],

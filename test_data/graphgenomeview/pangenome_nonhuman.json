@@ -60,7 +60,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "mouse_minigraph_segments",
       "name": "Mouse strain pangenome (rGFA segments)",
       "assemblyNames": ["mm39"],
@@ -90,7 +90,7 @@
       ]
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "mouse_minigraph_tier",
       "name": "Mouse strain pangenome: bubble tier (one node per bubble)",
       "assemblyNames": ["mm39"],
@@ -178,7 +178,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "bovine_minigraph_segments",
       "name": "Bovine super-pangenome (rGFA segments)",
       "assemblyNames": ["bosTau9"],
@@ -208,7 +208,7 @@
       ]
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "bovine_minigraph_tier",
       "name": "Bovine super-pangenome: bubble tier (one node per bubble)",
       "assemblyNames": ["bosTau9"],

@@ -52,7 +52,7 @@ const GRAPH_CONFIG = local('test_data/graphgenomeview/config.json')
 
 const MC_SEGMENTS_TRACK = 'ecoli_cactus_segments'
 const MC_SEGMENTS_SESSION_TRACK = {
-  type: 'FeatureTrack',
+  type: 'GraphTrack',
   trackId: MC_SEGMENTS_TRACK,
   name: 'MC graph: segments (whole graph, by locus)',
   assemblyNames: ['K12'],
@@ -67,6 +67,7 @@ const MC_SEGMENTS_SESSION_TRACK = {
 const MC_CARRIAGE_TRACK = 'ecoli_cactus_carriage'
 const MC_CARRIAGE_SESSION_TRACK = {
   ...MC_SEGMENTS_SESSION_TRACK,
+  type: 'FeatureTrack',
   trackId: MC_CARRIAGE_TRACK,
   name: 'MC graph: segment carriage',
 }
@@ -560,7 +561,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
 // build writes, which is a config nothing can resolve until the reader has run
 // cactus, and so a config no film could paste.
 export const CACTUS_SEGMENTS_TRACK_JSON = `{
-  "type": "FeatureTrack",
+  "type": "GraphTrack",
   "trackId": "ecoli_cactus_segments",
   "name": "MC graph: segments (whole graph, by locus)",
   "assemblyNames": ["K12"],
