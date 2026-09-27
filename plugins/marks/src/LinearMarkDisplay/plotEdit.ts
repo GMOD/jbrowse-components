@@ -200,7 +200,10 @@ export function withStepSlot(
   ) as StepSnapshot
 }
 
-/** An aggregate with its one op, or the first of several, written. */
+/**
+ * An aggregate with its one op, or the first of several, written, keeping the
+ * name its output was written under, which a channel may read.
+ */
 export function withAggregateOp(
   step: StepSnapshot,
   op: AggregateOpName,
@@ -209,10 +212,17 @@ export function withAggregateOp(
   if (step.type !== 'aggregate') {
     return step
   }
-  const [, ...rest] = step.ops ?? []
+  const [first, ...rest] = step.ops ?? []
   return {
     ...step,
-    ops: [{ op, ...(op === 'count' || !field ? {} : { field }) }, ...rest],
+    ops: [
+      {
+        op,
+        ...(op === 'count' || !field ? {} : { field }),
+        ...(first?.as ? { as: first.as } : {}),
+      },
+      ...rest,
+    ],
   }
 }
 
