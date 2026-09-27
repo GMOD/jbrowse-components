@@ -16,10 +16,22 @@ import type {
   SnapshotOut,
 } from '@jbrowse/mobx-state-tree'
 
+// A config node under `types.optional` or `types.stripDefault` brands the
+// wrapper, so the schema is unwrapped from it, after the concrete arm: the
+// brand's `[any]` member would match an unwrap tried first.
 export type ConfigurationSchemaForModel<MODEL> =
-  MODEL extends IStateTreeNode<infer SCHEMA extends AnyConfigurationSchemaType>
-    ? SCHEMA
-    : never
+  IsAny<MODEL> extends true
+    ? AnyConfigurationSchemaType
+    : MODEL extends IStateTreeNode<infer T>
+      ? T extends AnyConfigurationSchemaType
+        ? T
+        : T extends IOptionalIType<
+              infer INNER extends AnyConfigurationSchemaType,
+              any
+            >
+          ? INNER
+          : AnyConfigurationSchemaType
+      : never
 
 /**
  * A schema's definition as **stored**: the author's own entries over the ones
