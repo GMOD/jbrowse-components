@@ -10,14 +10,15 @@ const tsv = [
 const parse = (txt: string, names: string[] | undefined) =>
   parseSamplesTsv(txt, names, 'samples.tsv', 'the VCF')
 
-test('returns rows matching the adapter samples', () => {
+// A table naming more samples than the file is one clinical table shared by
+// several tracks, and nothing on screen is missing.
+test('returns rows matching the adapter samples, silent about the rest', () => {
   const { sources, warnings } = parse(tsv, ['NA12878', 'NA19240'])
   expect(sources).toEqual([
     { name: 'NA12878', pop: 'CEU', super_pop: 'EUR' },
     { name: 'NA19240', pop: 'YRI', super_pop: 'AFR' },
   ])
-  expect(warnings).toHaveLength(1)
-  expect(warnings[0]).toContain('UNKNOWN')
+  expect(warnings).toEqual([])
 })
 
 test('excludes metadata rows the adapter does not name', () => {
@@ -42,13 +43,12 @@ test('a sample listed twice keeps its first row and is reported', () => {
   expect(warnings[0]).toContain('NA12878')
 })
 
-test('warns in both directions on a partial match', () => {
+test('warns about the adapter samples the table leaves out', () => {
   const { warnings } = parse(tsv, ['NA12878', 'EXTRA'])
 
-  expect(warnings).toHaveLength(2)
-  expect(warnings[0]).toContain('2 of the 3 samples in the metadata file')
-  expect(warnings[1]).toContain('1 of the 2 samples in the VCF')
-  expect(warnings.every(w => w.includes('samples.tsv'))).toBe(true)
+  expect(warnings).toHaveLength(1)
+  expect(warnings[0]).toContain('1 of the 2 samples in the VCF')
+  expect(warnings[0]).toContain('samples.tsv')
 })
 
 // Falling back to the adapter's own samples would show every one of them when

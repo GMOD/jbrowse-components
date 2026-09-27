@@ -26,9 +26,11 @@ export const samplesTsvAdapterConfigSchemaFields = {
 } as const
 
 /**
- * The metadata rows for the samples an adapter names, plus the warnings a
- * partial match earns. `names` undefined means the adapter lists no samples of
- * its own, so the rows become the set.
+ * The metadata rows for the samples an adapter names, plus a warning for the
+ * samples the table leaves out, which no row is drawn for. Rows naming samples
+ * the adapter lacks are dropped silently: one project-wide table serving
+ * several tracks is the normal shape. `names` undefined means the adapter lists
+ * no samples of its own, so the rows become the set.
  *
  * A table matching none of `names` throws. Falling back to `names` would show
  * every sample when the config asked for a curated subset, and an empty result
@@ -79,7 +81,6 @@ export function parseSamplesTsv(
     return { sources: metadataLines, warnings }
   }
   const nameSet = new Set(names)
-  const metadataNotInNames = [...metadataSet].filter(f => !nameSet.has(f))
   const namesNotInMetadata = [...nameSet].filter(f => !metadataSet.has(f))
   const sources = metadataLines.filter(f => nameSet.has(f.name))
   if (sources.length === 0 && names.length > 0) {
@@ -88,11 +89,6 @@ export function parseSamplesTsv(
       example === undefined
         ? `The samples metadata file ${fileLabel} has a header but no sample rows, so this track has no rows to draw`
         : `No sample in the metadata file ${fileLabel} matches ${namesLabel}, so this track has no rows to draw: its first column reads "${example}" where ${namesLabel} names "${names[0]}". Check for an added prefix or suffix, or for the sample IDs being in a different column.`,
-    )
-  }
-  if (metadataNotInNames.length) {
-    warnings.push(
-      `${metadataNotInNames.length} of the ${metadataLines.length} samples in the metadata file ${fileLabel} are not in ${namesLabel} (${names.length} samples) and were dropped: ${shorten2(metadataNotInNames.join(','))}`,
     )
   }
   if (namesNotInMetadata.length) {

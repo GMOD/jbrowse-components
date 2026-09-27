@@ -1080,9 +1080,8 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
       { name: 'c', source: 'c', tissue: 'liver', color: '#f00' },
       { name: 'a', source: 'a', tissue: 'brain', color: '#00f' },
     ])
-    expect(warnings).toHaveLength(2)
-    expect(warnings[0]).toContain('zzz')
-    expect(warnings[1]).toContain('1 of the 3 samples in the subtrack list')
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('1 of the 3 samples in the subtrack list')
   })
 
   it('fetches only the listed subtracks when the caller names none', async () => {
