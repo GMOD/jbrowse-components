@@ -123,19 +123,20 @@ import {
   markDrawsAt,
   markRowHeightPx,
   rowValuesAt,
-  zoomInRange,
 } from './markList.ts'
 import { liftMarkPlot as liftPlot, markPlotOf } from './markPlot.ts'
 import { markProblems, problemText } from './markProblems.ts'
 import {
   encodingOf,
   lastBinEdges,
+  markLayerRequest,
+  marksValue,
   positionSource,
   stepsOf,
   toBinEdges,
   widestBinStep,
 } from './markRequest.ts'
-import { markLanes, plotsValue, readsValue } from './markSpecs.ts'
+import { readsValue } from './markSpecs.ts'
 import { DEFAULT_LINK_STROKE_PX } from './markVocabulary.ts'
 import { defaultPlotMarks } from './plotDefault.ts'
 import {
@@ -314,14 +315,6 @@ function keySettingOf(
     missingLabel,
     ...(swatchColor === undefined ? {} : { swatchColor }),
   }
-}
-
-/**
- * Whether a mark plots a `y`, named or filled by its steps, and so folds into
- * the axis and stands at its value.
- */
-function marksValue(mark: MarkConfig, channels: StepChannels) {
-  return plotsValue(mark.mark) && (mark.encoding.y !== '' || !!channels.y)
 }
 
 function markEntryOf(mark: MarkConfig, channels: StepChannels): MarkEntry {
@@ -688,27 +681,10 @@ export function stateModelFactory(
           const binEdges =
             lastBinEdges(self.conf.facet.transform) ??
             lastBinEdges(self.conf.transform)
-          const { encodings, markChannels } = this
-          return self.conf.marks.map((m, i): LayerRequest => {
-            const transform = stepsOf(
-              m.transform,
-              zoomInRange(m, bpPerPx),
-              binEdges,
-            )
-            // A mark that may plot a value but names none asks for no `y` lane,
-            // so the worker fills no zeros for it to stand at; the same for a
-            // size no field feeds.
-            const lanes = markLanes(m.mark).filter(
-              lane =>
-                (lane !== 'y' || marksValue(m, markChannels[i]!)) &&
-                (lane !== 'size' || m.encoding.size.field !== ''),
-            )
-            return {
-              encoding: encodings[i]!,
-              lanes,
-              ...(transform.length > 0 ? { transform } : {}),
-            }
-          })
+          const { markChannels } = this
+          return self.conf.marks.map((m, i) =>
+            markLayerRequest(m, markChannels[i]!, bpPerPx, binEdges),
+          )
         },
         /**
          * #getter

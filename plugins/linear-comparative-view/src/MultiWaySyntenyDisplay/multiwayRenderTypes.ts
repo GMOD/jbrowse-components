@@ -9,6 +9,7 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { PaintedFill } from './geneColor.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { RegionRenderData } from '@jbrowse/plugin-canvas'
+import type { BarChannels } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { FrameDimensions } from '@jbrowse/render-core/renderingBackendBase'
 
@@ -54,6 +55,7 @@ export type MultiWayCell =
   | { kind: 'ribbons'; data: SyntenyInstanceData }
   | ({ kind: 'outline' } & SyntenyOutlineChannels)
   | { kind: 'glyphs'; data: LaneGlyphData }
+  | { kind: 'bars'; data: BarChannels }
 
 export interface RibbonLayer {
   kind: 'ribbons'
@@ -97,7 +99,25 @@ export interface OutlineLayer {
   ribbon: RibbonLayer
 }
 
-export type MultiWayLayer = RibbonLayer | GlyphLayer | OutlineLayer
+/**
+ * One mark of a lane layer over one fetched region: a band `height` px tall
+ * at `top`, the region's bp laid over `px`, its two ends in stack px before
+ * the lane's map and the drag
+ */
+export interface BarLayer {
+  kind: 'bars'
+  key: string
+  row: number
+  top: number
+  height: number
+  domain: [number, number]
+  origin: number
+  start: number
+  end: number
+  px: readonly [number, number]
+}
+
+export type MultiWayLayer = RibbonLayer | GlyphLayer | OutlineLayer | BarLayer
 
 export interface MultiWayRenderState extends FrameDimensions {
   dragOffsetPx: number

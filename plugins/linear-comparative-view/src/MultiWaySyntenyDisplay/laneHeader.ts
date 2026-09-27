@@ -112,7 +112,7 @@ export function laneHeaderRows(
         .filter(part => !!part)
         .join('  '),
       scale: scaleLabelOf(lane, visibleBpSpan),
-      y: lane.glyphTop - LABEL_BASELINE_OFFSET,
+      y: lane.layerTop - LABEL_BASELINE_OFFSET,
       isAnchor: lane.isAnchor,
     }
   })

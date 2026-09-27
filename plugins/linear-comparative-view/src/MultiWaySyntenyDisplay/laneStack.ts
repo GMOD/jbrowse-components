@@ -47,13 +47,16 @@ export function laneContentHeight(
   height: number,
   rowCount: number,
   geneLabelPx = 0,
+  layerPx = 0,
 ) {
-  return Math.max(height, rowCount * (MIN_LANE_PITCH + geneLabelPx))
+  return Math.max(height, rowCount * (MIN_LANE_PITCH + geneLabelPx + layerPx))
 }
 
 export interface LaneBand {
   glyphTop: number
   bandTop: number
+  /** the top of the layer bands, between the header and the glyphs */
+  layerTop: number
   bandStart: number
   bandEnd: number
 }
@@ -68,7 +71,7 @@ export interface LaneGeometry {
   rows: LaneBand[]
 }
 
-// Where each lane's header, glyphs and opaque band sit in a stack
+// Where each lane's header, layer bands, glyphs and opaque band sit in a stack
 // `laneContentHeight(height, rowCount)` px tall. The bands TILE — a lane owns
 // half the gutter on each side — so the view's gridlines, true on the anchor
 // lane and a lie on every other one, are covered everywhere below the anchor
@@ -79,18 +82,25 @@ export function laneGeometry(
   rowCount: number,
   splitStrands = false,
   geneLabelPx = 0,
+  layerPx = 0,
 ): LaneGeometry {
-  const contentHeight = laneContentHeight(height, rowCount, geneLabelPx)
-  const room = contentHeight / rowCount - LABEL_HEIGHT - geneLabelPx - 6
+  const contentHeight = laneContentHeight(
+    height,
+    rowCount,
+    geneLabelPx,
+    layerPx,
+  )
+  const above = LABEL_HEIGHT + layerPx
+  const room = contentHeight / rowCount - above - geneLabelPx - 6
   const strandRows = splitStrands && room >= MIN_SPLIT_GLYPH_PX
   const glyphHeight = clamp(
     room,
     MIN_GLYPH_PX,
     strandRows ? MAX_SPLIT_GLYPH_PX : MAX_GLYPH_PX,
   )
-  const usable = contentHeight - LABEL_HEIGHT - glyphHeight - geneLabelPx - 4
+  const usable = contentHeight - above - glyphHeight - geneLabelPx - 4
   const glyphTop = (row: number) =>
-    LABEL_HEIGHT + (rowCount === 1 ? 0 : (row * usable) / (rowCount - 1))
+    above + (rowCount === 1 ? 0 : (row * usable) / (rowCount - 1))
   const bandStart = (row: number) =>
     row === 0
       ? 0
@@ -98,16 +108,17 @@ export function laneGeometry(
           glyphHeight +
           geneLabelPx +
           glyphTop(row) -
-          LABEL_HEIGHT) /
+          above) /
         2
   return {
     glyphHeight,
-    bandHeight: LABEL_HEIGHT + glyphHeight + geneLabelPx,
+    bandHeight: above + glyphHeight + geneLabelPx,
     contentHeight,
     strandRows,
     rows: Array.from({ length: rowCount }, (_, row) => ({
       glyphTop: glyphTop(row),
-      bandTop: glyphTop(row) - LABEL_HEIGHT,
+      bandTop: glyphTop(row) - above,
+      layerTop: glyphTop(row) - layerPx,
       bandStart: bandStart(row),
       bandEnd: row + 1 < rowCount ? bandStart(row + 1) : contentHeight,
     })),
@@ -184,6 +195,7 @@ export interface Lane {
   baseline: Span[]
   glyphTop: number
   bandTop: number
+  layerTop: number
   bandStart: number
   bandEnd: number
   /**
@@ -247,6 +259,8 @@ export interface BuildLanesOpts {
   splitStrands?: boolean
   /** `geneLabelRowPx` — the row under each lane's glyphs its names take */
   geneLabelPx?: number
+  /** the layer bands' total height, between each lane's header and glyphs */
+  layerPx?: number
   /** the moving lanes past their midpoint, which draw their new rows */
   pastHalfway?: ReadonlySet<string>
   labelOf?: (assemblyName: string) => string
@@ -284,6 +298,7 @@ export function buildLanes({
   height,
   splitStrands = false,
   geneLabelPx = 0,
+  layerPx = 0,
   pastHalfway = new Set(),
   labelOf = assemblyName => assemblyName,
 }: BuildLanesOpts): LaneStack {
@@ -292,6 +307,7 @@ export function buildLanes({
     assemblyNames.length,
     splitStrands,
     geneLabelPx,
+    layerPx,
   )
   const reach: Span = [-width, 2 * width]
   return {

@@ -560,6 +560,38 @@ describe('lane geometry', () => {
       }
     }
   })
+
+  test('layer bands sit between the header and the glyphs, inside the tiled band', () => {
+    const layerPx = 26
+    const { rows, bandHeight, glyphHeight } = laneGeometry(
+      600,
+      4,
+      false,
+      12,
+      layerPx,
+    )
+    for (const [row, band] of rows.entries()) {
+      expect(band.layerTop).toBe(band.glyphTop - layerPx)
+      expect(band.bandTop).toBe(band.layerTop - 12)
+      expect(band.bandStart).toBeLessThanOrEqual(band.bandTop)
+      if (row > 0) {
+        expect(band.bandStart).toBeCloseTo(rows[row - 1]!.bandEnd, 6)
+        expect(band.bandTop).toBeGreaterThan(
+          rows[row - 1]!.glyphTop + glyphHeight + 12,
+        )
+      }
+    }
+    expect(bandHeight).toBe(12 + layerPx + glyphHeight + 12)
+  })
+
+  test('the pitch floor makes room for the layer bands', () => {
+    expect(laneContentHeight(240, 20, 12, 26)).toBe(
+      20 * (MIN_LANE_PITCH + 12 + 26),
+    )
+    expect(laneGeometry(240, 20, false, 12, 26).glyphHeight).toBe(
+      laneGeometry(240, 20, false, 12).glyphHeight,
+    )
+  })
 })
 
 test('every checked-in multiway demo sizes its track to the whole stack', () => {

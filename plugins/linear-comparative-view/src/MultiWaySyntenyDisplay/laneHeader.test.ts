@@ -24,6 +24,7 @@ function mateLane(
     isAnchor: false,
     hasAnnotation: true,
     glyphTop: 40,
+    layerTop: 40,
     canon: (ref: string) => ref,
     frame:
       'frame' in overrides && frameOverrides === undefined
@@ -39,6 +40,7 @@ const anchorLane = {
   isAnchor: true,
   hasAnnotation: true,
   glyphTop: 12,
+  layerTop: 12,
   canon: (ref: string) => ref,
   frame: undefined,
 } as Lane
@@ -139,11 +141,11 @@ describe('the scale', () => {
   })
 })
 
-test('each baseline sits just above its own glyph row', () => {
+test('each baseline sits just above its own layer bands, or its glyph row with none', () => {
   const lanes = [anchorLane, mateLane({})]
   const rows = laneHeaderRows(lanes, 2000, '')
   for (const [i, row] of rows.entries()) {
-    expect(row.y).toBeLessThan(lanes[i]!.glyphTop)
-    expect(row.y).toBeGreaterThan(lanes[i]!.glyphTop - 12)
+    expect(row.y).toBeLessThan(lanes[i]!.layerTop)
+    expect(row.y).toBeGreaterThan(lanes[i]!.layerTop - 12)
   }
 })

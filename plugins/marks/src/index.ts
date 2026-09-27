@@ -11,6 +11,8 @@ export {
   configSchemaFactory as linearMarkDisplayConfigSchemaFactory,
   markListSchema,
 } from './LinearMarkDisplay/configSchema.ts'
+export { markLayerRequest } from './LinearMarkDisplay/markRequest.ts'
+export { stepChannels } from './LinearMarkDisplay/stepChannels.ts'
 export type {
   LinearMarkDisplayConfigModel,
   MarkConfig,

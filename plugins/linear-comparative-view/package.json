@@ -39,6 +39,7 @@
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-canvas": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
+    "@jbrowse/plugin-marks": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/synteny-core": "workspace:^",
     "@mui/icons-material": "^9.4.0",

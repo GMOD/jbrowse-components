@@ -12,7 +12,8 @@ import {
 
 import { binStepWidth } from './autoBin.ts'
 import { markShapeScale } from './configSchema.ts'
-import { MARK_SPECS } from './markSpecs.ts'
+import { zoomInRange } from './markList.ts'
+import { MARK_SPECS, markLanes, plotsValue } from './markSpecs.ts'
 import {
   DEFAULT_BIN_AS,
   DEFAULT_PILEUP_FIELDS,
@@ -23,6 +24,7 @@ import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type {
   AggregateOp,
+  LayerRequest,
   ShapeEncoding,
   MarkEncoding,
   TransformStep,
@@ -201,6 +203,43 @@ export function stepsOf(
         return { type: 'mate' }
     }
   })
+}
+
+/**
+ * Whether a mark plots a `y`, named or filled by its steps, and so folds into
+ * the axis and stands at its value.
+ */
+export function marksValue(mark: MarkConfig, channels: StepChannels) {
+  return plotsValue(mark.mark) && (mark.encoding.y !== '' || !!channels.y)
+}
+
+/**
+ * One mark's worker request at `bpPerPx`: its encoding, its steps, and the
+ * lanes its type reads. A mark that may plot a value but names none asks for
+ * no `y` lane, so the worker fills no zeros for it to stand at; the same for
+ * a size no field feeds.
+ */
+export function markLayerRequest(
+  mark: MarkConfig,
+  channels: StepChannels,
+  bpPerPx: number,
+  binEdges?: [string, string],
+): LayerRequest {
+  const transform = stepsOf(
+    mark.transform,
+    zoomInRange(mark, bpPerPx),
+    binEdges,
+  )
+  const lanes = markLanes(mark.mark).filter(
+    lane =>
+      (lane !== 'y' || marksValue(mark, channels)) &&
+      (lane !== 'size' || mark.encoding.size.field !== ''),
+  )
+  return {
+    encoding: encodingOf(mark, channels),
+    lanes,
+    ...(transform.length > 0 ? { transform } : {}),
+  }
 }
 
 /** The widest bin any step of a request writes, in bp; 0 with none. */

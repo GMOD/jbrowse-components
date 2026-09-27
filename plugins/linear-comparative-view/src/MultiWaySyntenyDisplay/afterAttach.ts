@@ -1,5 +1,6 @@
 import { isRefNameAliasAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { dedupe, getSession, isAbortException } from '@jbrowse/core/util'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
@@ -24,6 +25,7 @@ import type {
   LaneGenesFetchSpec,
   LaneRegion,
 } from './laneFetch.ts'
+import type { HeldLaneLayer } from './laneLayers.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -493,6 +495,45 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     empty: spec => ({ key: spec.key, links: [], ops: new Map() }),
     commit: links => {
       self.setLaneLinks(links)
+    },
+  })
+
+  installLaneFetch(self, {
+    name: 'MultiWayLaneLayers',
+    fetchSpecs: () => self.laneLayersFetchSpecs,
+    held: () => self.laneLayerData,
+    fetchOne: async (spec, ctx): Promise<HeldLaneLayer> => {
+      const [region] = await laneRegions(getSession(self), spec.assemblyName, [
+        spec.region,
+      ])
+      const result = await ctx.callRpc('CoreGetEncodedLayers', {
+        adapterConfig: spec.adapterConfig,
+        region: region!,
+        layers: spec.requests,
+        bpPerPx: spec.bpPerPx,
+      })
+      return {
+        key: spec.key,
+        assemblyName: spec.assemblyName,
+        layer: spec.layer,
+        region: spec.region,
+        channels: isRegionRefused(result) ? [] : result.layers,
+      }
+    },
+    empty: spec => ({
+      key: spec.key,
+      assemblyName: spec.assemblyName,
+      layer: spec.layer,
+      region: spec.region,
+      channels: [],
+    }),
+    commit: (layers, specs) => {
+      self.setLaneLayerData(
+        layers,
+        specs.some(spec => spec.assemblyName !== self.anchorAssemblyName)
+          ? self.anchorAssemblyName
+          : undefined,
+      )
     },
   })
 }

@@ -2,11 +2,57 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
+import { markListSchema } from '@jbrowse/plugin-marks'
 
 import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
 import { ribbonColorConfigSchema } from './ribbonColorConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+/**
+ * #config MultiWayLaneLayer
+ * One row of data drawn in every lane through that lane's own frame, from
+ * each genome's own track, on one value scale shared by every lane.
+ */
+const laneLayerSchema = ConfigurationSchema(
+  'MultiWayLaneLayer',
+  {
+    /**
+     * #slot laneLayers.name
+     */
+    name: {
+      type: 'string',
+      defaultValue: '',
+      description: "what the layer's band is labelled",
+    },
+    /**
+     * #slot laneLayers.tracks
+     */
+    tracks: {
+      type: 'stringArray',
+      defaultValue: [],
+      description:
+        "the trackId each lane draws the layer from, one per genome, matched to a lane by the track's assembly. A lane no entry names draws an empty band",
+    },
+    /**
+     * #slot laneLayers.height
+     */
+    height: {
+      type: 'number',
+      defaultValue: 24,
+      description: 'px of band the layer takes in each lane',
+    },
+    /**
+     * #slot laneLayers.marks
+     * The mark display's marks, drawn over each lane's features. A lane is
+     * drawn at up to 80 times the anchor's bp per px, so a `count` or `sum`
+     * over an `auto` bin covers more bp on a zoomed-out lane and reads denser
+     * under the shared scale; a mean such as a bigWig's `score` compares
+     */
+    marks: markListSchema([{ mark: 'bar', encoding: { y: 'score' } }]),
+  },
+  { closed: true },
+)
 
 /**
  * #config MultiWaySyntenyDisplay
@@ -197,6 +243,12 @@ export function configSchemaFactory() {
         defaultValue: true,
       },
       /**
+       * #slot laneLayers
+       * Rows of data every lane draws above its genes, each from that genome's
+       * own track: a GC or conservation bigWig per genome as bars, say
+       */
+      laneLayers: types.array(laneLayerSchema),
+      /**
        * #slot
        */
       splitStrands: {
@@ -232,3 +284,5 @@ export type MultiWaySyntenyDisplayConfigModel = ReturnType<
 
 export type MultiWaySyntenyDisplayConfig =
   Instance<MultiWaySyntenyDisplayConfigModel>
+
+export type MultiWayLaneLayerConfig = Instance<typeof laneLayerSchema>

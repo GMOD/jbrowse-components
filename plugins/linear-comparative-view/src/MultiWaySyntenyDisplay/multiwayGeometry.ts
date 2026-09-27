@@ -125,7 +125,7 @@ function* lanePairs(lanes: Lane[], glyphHeight: number) {
       upper,
       lower,
       y1: upper.glyphTop + glyphHeight,
-      y2: lower.glyphTop,
+      y2: lower.layerTop,
     }
   }
 }
@@ -631,7 +631,7 @@ export function buildRibbonGeometry({
         kind: 'ribbons',
         key: bridgeKey,
         yTop: y1,
-        height: lanes[toRow]!.glyphTop - y1,
+        height: lanes[toRow]!.layerTop - y1,
         curves: drawCurves,
         rows: [row, toRow],
       })

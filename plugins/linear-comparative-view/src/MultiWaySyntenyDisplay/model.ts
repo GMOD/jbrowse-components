@@ -40,6 +40,7 @@ import {
 import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
+import { markLayerRequest, stepChannels } from '@jbrowse/plugin-marks'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import {
@@ -84,6 +85,15 @@ import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
 import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
+  barChannelsOf,
+  laneLayerBpPerPx,
+  laneLayerDomains,
+  laneLayerOrigin,
+  laneLayerSpecLane,
+  laneLayersPx,
+  layerBandTops,
+} from './laneLayers.ts'
+import {
   laneMapAt,
   laneMotionEase,
   laneTransitionsAfter,
@@ -112,6 +122,7 @@ import {
   laneFetchRegion,
   mergeContiguousRegions,
   rowAssembliesOf,
+  rowFrameX,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
 import { laneColorKey, laneFieldKey, ribbonColorScales } from './legend.ts'
@@ -157,12 +168,14 @@ import type {
   LaneRegion,
 } from './laneFetch.ts'
 import type { GeneLabel, NamedSpan, PlacedLaneLabel } from './laneLabels.ts'
+import type { HeldLaneLayer, LaneLayerFetchSpec } from './laneLayers.ts'
 import type { LaneTransition } from './laneMotion.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { LaneGlyphColors, TickGeometry } from './multiwayGeometry.ts'
 import type {
+  BarLayer,
   LaneMap,
   MultiWayCell,
   MultiWayLayer,
@@ -357,6 +370,17 @@ export function stateModelFactory(
       laneLinksLandedFor: undefined as string | undefined,
       /**
        * #volatile
+       * per lane, layer and region, what each lane layer's marks encoded
+       * from that genome's own track, beside the key it was fetched under
+       */
+      laneLayerData: undefined as Map<string, HeldLaneLayer> | undefined,
+      /**
+       * #volatile
+       * the anchor under which a lane-layer commit last covered a mate lane
+       */
+      laneLayersLandedFor: undefined as string | undefined,
+      /**
+       * #volatile
        * the glyph, box or ribbon under the pointer — what a click opens and
        * the tooltip names
        */
@@ -525,6 +549,22 @@ export function stateModelFactory(
           self.laneGenes = held
           if (coversMatesFor !== undefined) {
             self.laneGenesCoverMatesFor = coversMatesFor
+          }
+        },
+        /**
+         * #action
+         */
+        setLaneLayerData(
+          fetched: Map<string, HeldLaneLayer>,
+          coversMatesFor: string | undefined,
+        ) {
+          const held = new Map(self.laneLayerData)
+          for (const [lane, layer] of fetched) {
+            held.set(lane, layer)
+          }
+          self.laneLayerData = held
+          if (coversMatesFor !== undefined) {
+            self.laneLayersLandedFor = coversMatesFor
           }
         },
         /**
@@ -883,6 +923,20 @@ export function stateModelFactory(
        */
       get geneLabelPx() {
         return geneLabelRowPx(getConf(self, 'showGeneLabels'))
+      },
+      /**
+       * #getter
+       * each lane layer's band height, in config order
+       */
+      get laneLayerHeights(): number[] {
+        return self.configuration.laneLayers.map(layer => layer.height)
+      },
+      /**
+       * #getter
+       * the height every lane gives its layer bands, above its genes
+       */
+      get layerPx() {
+        return laneLayersPx(this.laneLayerHeights)
       },
       /**
        * #getter
@@ -1493,6 +1547,7 @@ export function stateModelFactory(
           self.height,
           1 + self.rowAssemblies.length,
           self.geneLabelPx,
+          self.layerPx,
         )
       },
       /**
@@ -2120,6 +2175,99 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * per lane layer, the track each lane draws it from: the layer's
+       * `tracks` entry whose assembly is the lane's
+       */
+      get laneLayerTracks(): Map<string, AnyConfigurationModel>[] {
+        const byId = new Map(
+          allSessionTracks(getSession(self)).map(track => [
+            readConfObject(track, 'trackId') as string,
+            track,
+          ]),
+        )
+        const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
+        return self.configuration.laneLayers.map(layer => {
+          const out = new Map<string, AnyConfigurationModel>()
+          for (const trackId of layer.tracks) {
+            const track = byId.get(trackId)
+            const names = track
+              ? (readConfObject(track, 'assemblyNames') as string[])
+              : []
+            for (const lane of lanes) {
+              if (
+                track &&
+                !out.has(lane) &&
+                names.some(name => self.laneKey(name) === self.laneKey(lane))
+              ) {
+                out.set(lane, track)
+              }
+            }
+          }
+          return out
+        })
+      },
+      /**
+       * #getter
+       * one spec per lane, layer and region the lane layers read: the
+       * anchor's content blocks, and each held mate lane's quantized window,
+       * each at the lane's own zoom snapped to a power of two
+       */
+      get laneLayersFetchSpecs(): LaneLayerFetchSpec[] {
+        const view = self.lgv
+        const specs: LaneLayerFetchSpec[] = []
+        if (!view.initialized) {
+          return specs
+        }
+        const layers = self.configuration.laneLayers
+        const add = (
+          layer: number,
+          assemblyName: string,
+          regions: LaneRegion[],
+          lanePxBpPerPx: number,
+        ) => {
+          const track = this.laneLayerTracks[layer]?.get(assemblyName)
+          if (!track) {
+            return
+          }
+          const bpPerPx = laneLayerBpPerPx(lanePxBpPerPx)
+          const requests = layers[layer]!.marks.map(m =>
+            markLayerRequest(m, stepChannels(m.transform), bpPerPx),
+          )
+          const trackId = readConfObject(track, 'trackId') as string
+          const signature = JSON.stringify(requests)
+          regions.forEach((region, i) => {
+            specs.push({
+              lane: laneLayerSpecLane(assemblyName, layer, i),
+              key: `${trackId}@${regionKey(region)}@${bpPerPx}@${signature}`,
+              assemblyName,
+              layer,
+              adapterConfig: readConfObject(track, 'adapter'),
+              region,
+              bpPerPx,
+              requests,
+            })
+          })
+        }
+        const anchorRegions = mergeContiguousRegions(
+          view.staticBlocks.contentBlocks,
+        )
+        layers.forEach((_layer, i) => {
+          add(i, self.anchorAssemblyName, anchorRegions, view.bpPerPx)
+          for (const [assemblyName, frame] of self.rowFrames) {
+            if (frame && self.holdsAssembly(assemblyName)) {
+              add(
+                i,
+                assemblyName,
+                [{ assemblyName, ...laneFetchRegion(frame) }],
+                (frame.max - frame.min) / self.canvasWidth,
+              )
+            }
+          }
+        })
+        return specs
+      },
+      /**
+       * #getter
        * the stack the picture is drawn from: one `Lane` per assembly, plus the
        * geometry every layer places against. Every layer — bands, ticks,
        * ribbons, glyphs, boxes, headers, the hover outline — is a walk over
@@ -2160,6 +2308,7 @@ export function stateModelFactory(
           height: self.height,
           splitStrands: self.splitStrands,
           geneLabelPx: self.geneLabelPx,
+          layerPx: self.layerPx,
           pastHalfway: self.laneMotionHalfway,
           labelOf: assemblyName => self.laneLabel(assemblyName),
         })
@@ -2323,6 +2472,7 @@ export function stateModelFactory(
               1 + self.rowAssemblies.length,
               self.splitStrands,
               self.geneLabelPx,
+              self.layerPx,
             ).rows,
             width: self.canvasWidth,
             paper: bandGroundColor(),
@@ -2669,6 +2819,104 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * per lane layer, the value domain every lane shares
+       */
+      get laneLayerDomains(): [number, number][] {
+        return laneLayerDomains(
+          self.laneLayerData?.values() ?? [],
+          self.configuration.laneLayers.length,
+        )
+      },
+      /**
+       * #getter
+       * each lane layer's name and the domain every lane shares, placed once
+       * on the anchor lane's band
+       */
+      get laneLayerTitles() {
+        const anchor = self.laneStack.lanes[0]
+        const heights = self.laneLayerHeights
+        const tops = anchor ? layerBandTops(anchor.layerTop, heights) : []
+        const domains = this.laneLayerDomains
+        return self.configuration.laneLayers.map((layer, i) => {
+          const [min, max] = domains[i]!
+          const range = self.laneLayerData
+            ? ` ${Number(min.toPrecision(3))}–${Number(max.toPrecision(3))}`
+            : ''
+          return {
+            key: String(i),
+            text: `${layer.name}${range}`,
+            top: tops[i]!,
+          }
+        })
+      },
+      /**
+       * #getter
+       * each held lane-layer payload that its lane still draws, as a bar
+       * cell per mark and the layer placing it: the lane's band for that
+       * layer, and the payload's region in the lane's own frame
+       */
+      get laneLayerCells() {
+        const cells = new Map<string, MultiWayCell>()
+        const layers: BarLayer[] = []
+        const view = self.lgv
+        const { lanes } = self.laneStack
+        const heights = self.laneLayerHeights
+        const domains = this.laneLayerDomains
+        const rowOf = new Map(
+          lanes.map((lane, row) => [lane.assemblyName, row]),
+        )
+        for (const [specLane, held] of self.laneLayerData ?? []) {
+          const row = rowOf.get(held.assemblyName)
+          const lane = row === undefined ? undefined : lanes[row]
+          const height = heights[held.layer]
+          const domain = domains[held.layer]
+          if (!lane || row === undefined || height === undefined || !domain) {
+            continue
+          }
+          const { refName, start, end } = held.region
+          const px: Span | undefined = lane.isAnchor
+            ? axisSpan(
+                view,
+                lane.canon(refName),
+                start,
+                end,
+                self.renderOriginPx,
+              )
+            : lane.frame &&
+                lane.canon(lane.frame.refName) === lane.canon(refName)
+              ? [
+                  rowFrameX(lane.frame, start, self.canvasWidth),
+                  rowFrameX(lane.frame, end, self.canvasWidth),
+                ]
+              : undefined
+          if (!px) {
+            continue
+          }
+          const top = layerBandTops(lane.layerTop, heights)[held.layer]!
+          held.channels.forEach((channels, mark) => {
+            const bars = barChannelsOf(channels)
+            if (bars) {
+              const key = `bars:${specLane}:${mark}`
+              cells.set(key, { kind: 'bars', data: bars })
+              layers.push({
+                kind: 'bars',
+                key,
+                row,
+                top,
+                height,
+                domain,
+                origin: laneLayerOrigin(domain),
+                start,
+                end,
+                px,
+              })
+            }
+          })
+        }
+        return { cells, layers }
+      },
+      /**
+       * #getter
        * everything the backend holds bytes for, keyed so an unchanged cell
        * keeps its identity across a rebuild of the map and uploads nothing
        */
@@ -2677,6 +2925,7 @@ export function stateModelFactory(
           [BANDS_KEY, self.bandCell],
           ...self.ribbonGeometry.cells,
           ...self.tickGeometry.cells,
+          ...this.laneLayerCells.cells,
           ...self.laneGlyphCells,
         ])
       },
@@ -2692,6 +2941,7 @@ export function stateModelFactory(
           { kind: 'glyphs', key: BANDS_KEY, scrolled: false },
           ...self.ribbonGeometry.layers,
           ...self.tickGeometry.layers,
+          ...this.laneLayerCells.layers,
           ...lanes.flatMap((_lane, row): MultiWayLayer[] => [
             { kind: 'glyphs', key: glyphsKey(row), scrolled: true, row },
             { kind: 'glyphs', key: boxesKey(row), scrolled: true, row },
@@ -3029,7 +3279,11 @@ export function stateModelFactory(
           (self.laneLinksLandedFor !== self.anchorAssemblyName &&
             self.laneLinksFetchSpecs.length > 0) ||
           (self.laneGenesCoverMatesFor !== self.anchorAssemblyName &&
-            self.lanesBeingDescribed.size > 0)
+            self.lanesBeingDescribed.size > 0) ||
+          (self.laneLayersLandedFor !== self.anchorAssemblyName &&
+            self.laneLayersFetchSpecs.some(
+              spec => spec.assemblyName !== self.anchorAssemblyName,
+            ))
         )
       },
       /**
@@ -3046,6 +3300,8 @@ export function stateModelFactory(
         return (
           staleLaneSpecs(self.laneGenesFetchSpecs, self.laneGenes).length > 0 ||
           staleLaneSpecs(self.laneLinksFetchSpecs, self.laneLinks).length > 0 ||
+          staleLaneSpecs(self.laneLayersFetchSpecs, self.laneLayerData).length >
+            0 ||
           self.lanesBeingDescribed.size > 0 ||
           self.lodTier !== self.liveLodTier ||
           this.animating
