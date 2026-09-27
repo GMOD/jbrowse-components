@@ -30,7 +30,7 @@ export interface ChannelSpec {
  * a field to a scale — the display's own list, `categorical` where it declares
  * nothing else — with the members the config spells: `domain` spending the
  * `range` or naming the cut points, and a linear or log scale's ends, middle,
- * `scheme` and `reverse`. An identity scale binds no field: each feature keeps
+ * quantile, `scheme` and `reverse`. An identity scale binds no field: each feature keeps
  * the colour `value` gives it, or its own, and the key names the `domain`
  * colours.
  */
@@ -47,6 +47,7 @@ export type ColorChannel =
       domainMin?: number
       domainMax?: number
       domainMid?: number
+      domainQuantile?: number
       labels?: string[]
       title?: string
     }
@@ -108,11 +109,17 @@ const COLOR_MEMBERS = [
   'domainMin',
   'domainMax',
   'domainMid',
+  'domainQuantile',
   'labels',
   'title',
 ]
 
-const NUMBER_MEMBERS = ['domainMin', 'domainMax', 'domainMid'] as const
+const NUMBER_MEMBERS = [
+  'domainMin',
+  'domainMax',
+  'domainMid',
+  'domainQuantile',
+] as const
 
 function numberMember(lifted: Record<string, unknown>, key: string) {
   const value = lifted[key]
@@ -267,6 +274,7 @@ export function colorSpecOf(color: ColorSetting): ChannelSpec['color'] {
     domainMin,
     domainMax,
     domainMid,
+    domainQuantile,
     labels,
     title,
   } = color
@@ -280,6 +288,9 @@ export function colorSpecOf(color: ColorSetting): ChannelSpec['color'] {
     ...(domainMin === undefined ? {} : { domainMin }),
     ...(domainMax === undefined ? {} : { domainMax }),
     ...(domainMid === undefined ? {} : { domainMid }),
+    ...(domainQuantile === undefined || domainQuantile === 1
+      ? {}
+      : { domainQuantile }),
     ...(labels?.length ? { labels: [...labels] } : {}),
     ...(title === undefined ? {} : { title }),
   }

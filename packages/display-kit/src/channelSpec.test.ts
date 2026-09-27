@@ -46,6 +46,7 @@ test('a color object carries the members of a continuous scale through', () => {
         domainMin: 0,
         domainMax: 10,
         domainMid: 2,
+        domainQuantile: 0.95,
         range: ['blue', 'white', 'red'],
         reverse: true,
       },
@@ -57,6 +58,7 @@ test('a color object carries the members of a continuous scale through', () => {
       domainMin: 0,
       domainMax: 10,
       domainMid: 2,
+      domainQuantile: 0.95,
       range: ['blue', 'white', 'red'],
       reverse: true,
     },
@@ -101,7 +103,7 @@ test.each([
   [{ color: { field: 'x', scale: 'none' } }, 'color is a CSS color'],
   [
     { color: { field: 'x', palette: ['red'] } },
-    'color takes value, field, scale, domain, range, scheme, reverse, domainMin, domainMax, domainMid, labels, title, not palette',
+    'color takes value, field, scale, domain, range, scheme, reverse, domainMin, domainMax, domainMid, domainQuantile, labels, title, not palette',
   ],
   [
     { color: { field: 'x', scale: 'linear', domainMid: 'mid' } },
@@ -187,4 +189,23 @@ test('an identity color binds no field and round-trips through the box', () => {
       title: undefined,
     }),
   ).toEqual(color)
+})
+
+test("a ramp's domainQuantile shows in the box unless it is the default", () => {
+  const ramp = {
+    value: undefined,
+    field: 'score',
+    scale: 'linear' as const,
+    domain: [],
+    range: [],
+  }
+  expect(colorSpecOf({ ...ramp, domainQuantile: 0.95 })).toEqual({
+    field: 'score',
+    scale: 'linear',
+    domainQuantile: 0.95,
+  })
+  expect(colorSpecOf({ ...ramp, domainQuantile: 1 })).toEqual({
+    field: 'score',
+    scale: 'linear',
+  })
 })
