@@ -166,7 +166,7 @@ export const hostedConfigs: Record<string, RawConfig & { absent: string[] }> = {
       {
         "trackId": "hprc_minigraph_segments",
         "name": "HPRC release 2 graph (rGFA segments)",
-        "type": "FeatureTrack",
+        "type": "GraphTrack",
         "adapter": {
           "type": "RgfaTabixAdapter"
         }
