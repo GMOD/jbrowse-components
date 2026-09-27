@@ -1,63 +1,83 @@
 ---
 name: one-display-pick-for-every-track-route
-description: A track's `displays` list both configures displays and picks the one a view opens, and a config.json track and a session track build that list differently, so one track can open two ways and tests (session route) miss what the catalog does. Colin's calls of 2026-09-27 - declared displays are settings, never a cross-view pick; both routes pick from one candidate list. Half a day to a day. Open behind it - a way to write one setting for several display types.
+description: A view picks a track's display off a hand-built candidate list (declared entries, then the track type's filtered list) beside the one the track config node already builds. Colin's calls of 2026-09-27 - a declared display is settings, never a cross-view pick; every route opens a track the same way. Half a day - pick from the node's own list, collapse the ladder, make the track selector capability-aware. Open behind it - one setting for several display types, where a chord display refuses a field-mapped colour.
 ---
 
 # One display pick for every track route
 
-## The problem
+## Where it stands
 
-A track config's `displays` list does two jobs. Each entry carries settings for
-one display type, and the list's order is the default a view opens the track
-with. An admin who writes `marks` for a BEDPE track's `LinearMarkDisplay` only
-meant to style the linear view, but until 2026-09-27 that entry also made the
-circular view open the track as a ring of those links instead of chords.
+A track config's `displays` list does two jobs: each entry carries settings
+for one display type, and its order is the default a view opens the track with.
+Until 2026-09-27 a `LinearMarkDisplay` entry written to style a BEDPE track's
+links also made the circular view open it as a ring instead of chords.
+`71dccb94c2` fixed that by trying the view's own display types before a
+declared display the view only inherits (only the circular view inherits,
+through `extendedName`), the rule ADR-119 already stated. `2de13c0bdd` then
+filtered the fallback by adapter capabilities, since the reorder had sent the
+graph plugin's `GraphTrack` on an `RgfaTabixAdapter`
+(`test_data/graphgenomeview/pangenome_nonhuman.json`) to a chord ribbon its
+adapter cannot feed.
 
-The two routes a track arrives by also build different lists. A config.json
-track is `types.frozen` raw JSON (`packages/app-core/src/JBrowseConfig/index.ts`),
-so `resolveTrackDisplayChoice` (`packages/core/src/util/tracks.ts`) sees only
-the displays it declared, and `pickDisplayForView` falls back to the track
-type's whole list with no adapter-capability filter. A track built as a config
-node (a session track, `addTrackConf`, every test harness) runs
-`preprocessTrackConfigSnapshot` (`baseTrackConfig.ts`), which appends a stub
-for each display the track type offers and the adapter can feed, and it is also
-where `displayDefaults` expands, so the catalog route's pick never sees that
-shorthand. The circle bug
-passed every suite because the tests took the node route; `ringTypes.test.ts`'s
-catalog case (`fromCatalog`) is the one that reproduces it.
-
-Commit `71dccb94c2` fixed the visible case by reordering `pickDisplayForView`:
-declared-and-the-view's-own, then the view's own, then declared, then any.
-That rule is right and stated nowhere as a rule.
+Both routes now pick the same display. What differs is the snapshot's form: an
+unhydrated one (config.json's frozen entries, a session spec's loose inline
+conf) carries only what it declared, and a hydrated one (a Web session track, a
+connection track, a catalog track after its first edit through `withDelta`)
+lists every display the adapter feeds. Every entry point (`jb` open and
+launchTrack, `jb.addTrack`, jbrowse-img, the embedded products) goes through
+`resolveTrackDisplayChoice` (`packages/core/src/util/tracks.ts`), so there is
+one picker reading two list shapes, with a four-rung ladder reconciling them.
 
 ## Colin's calls (2026-09-27)
 
 - **A declared display is settings.** Writing settings for one display type
-  never changes which display another view opens. Within one view, the listed
+  never changes which display another view opens. Within one view the listed
   order still chooses between two displays that view draws natively
   (alignments vs marks on the linear view).
-- **Both routes open a track the same way.** They build one candidate list
-  before picking.
+- **Every route opens a track the same way.**
 - **SNPs need nothing on the circle.** A VariantTrack opens as chords; a record
-  with one locus draws no chord, and the SV kinds (breakends, DEL, INV, DUP,
-  CNV, TRA) draw between their two loci (`svKinds.test.ts`).
+  with one locus draws none, and breakends, DEL, INV, DUP, CNV and TRA draw
+  between their two loci (`svKinds.test.ts`).
 
-## The work
+## The work, about half a day
 
-1. One function builds a track's candidate displays from a snapshot: declared
-   entries, then the track type's displays its adapter can feed. The catalog
-   route and `preprocessTrackConfigSnapshot` both call it.
-2. `pickDisplayForView` picks from that list by the rule above, written as the
-   rule in its docstring and ADR-119.
-3. The pick tests run each case through both routes.
+1. Pick from the list the track config node builds. `resolveTrackDisplayChoice`
+   already calls `trackType.configSchema.create(conf)` on every unhydrated conf
+   and throws the node away; `getSnapshot(node).displays` is the declared
+   entries, then every display the adapter feeds, with the retired-name
+   migration and dedupe a loose inline conf skips today. The separate
+   `Core-preProcessTrackConfig` call goes, since `create` runs it.
+2. Collapse `pickDisplayForView` to `candidates.find(own) ?? candidates.find(supported)`,
+   and check a requested type against the candidates. Declared entries lead the
+   list, so within one view the listed order still decides.
+3. Make `viewCanDisplayTrack` and `filterTracks` read the adapter's
+   capabilities too, or the selector offers a track whose every drawable display
+   the adapter cannot feed, and opening it errors. Their docstring's "the two
+   agree" is the claim to fix.
+
+Tests that move: `tracks.test.ts`'s `pickDisplayForView` cases (its signature
+loses `trackDisplayTypes`), `ringTypes.test.ts`, and
+`displayAdapterCapabilities.test.ts`. The website recipe builder
+(`website/src/lib/spec-recipe/recipe.ts`, "a sole declared display settles it")
+encodes the old rule and changes with it. No jbrowse-web suite asserts this
+pick.
 
 ## Open behind it
 
 Colin, 2026-09-27: "we may want to brainstorm a generalizable way to help
 express changes across display types. the displaydefaults is one option...kind
 of a hazy one because it sort of assumes that you are just trying to customize
-the linear primarily". Once declared entries are settings only, a setting meant
-for every display a track opens with (a colour, a label field) has no single
-place to go. `displayDefaults` routes shorthand keys to whichever displays
-accept them (`expandTrackConfigShorthand`), which is the nearest thing today.
-Not decided; bring options to Colin before building.
+the linear primarily". `displayDefaults` already routes each key to every
+display of the track type whose slot takes the value, chord displays included
+(`expandTrackConfigShorthand.ts`). What reads linear-first is the value
+vocabulary: `ChordVariantDisplay`'s `color` is a plain `color` slot, so
+`displayDefaults: { color: { field: 'type' } }` reaches the linear displays and
+silently skips the chords. Two directions to bring him, neither decided:
+
+- **Converge the vocabulary.** Give the chord displays' colour the same
+  `{ field, domain, range }` colour object the linear displays take, so one
+  setting reaches every display that draws the channel. Start from a table of
+  which shorthand keys reach which displays per track type
+  (`collectDisplayOverrides` computes each display's verdict).
+- **Report a partial reach.** When some displays take a key and others refuse
+  it, say which. Today a refusal is reported only when every display refuses.
