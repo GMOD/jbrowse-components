@@ -54,16 +54,17 @@ function sessionExpectations(spec: SessionUrlSpec | EmbeddedSpec) {
 
 // The marker held, every display painted, and nothing canceled or unpainted —
 // the gate after anything that changes the frame, a click or a resize as much
-// as a navigation. `allowUnsettled` takes the frame as it stands.
+// as a navigation. `allowUnsettled` takes the frame as it stands. A noSession
+// page publishes no marker, so network idle is all it has.
 export async function waitForSpecFrame(
   page: Page,
   spec: BrowserScreenshotSpec,
 ) {
+  const timeout = readyTimeoutOf(spec)
   try {
-    await waitForFrame(page, {
-      timeout: readyTimeoutOf(spec),
-      allowUnsettled: spec.allowUnsettled,
-    })
+    await ('noSession' in spec && spec.noSession
+      ? page.waitForNetworkIdle({ idleTime: 500, timeout })
+      : waitForFrame(page, { timeout, allowUnsettled: spec.allowUnsettled }))
   } catch (e) {
     await debugDump(page, spec.name)
     throw e
