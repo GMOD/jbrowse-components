@@ -145,6 +145,18 @@ test("a held navigation's tail is not a gesture, on its own row only", async () 
   expect(view.followAnchorIndex).toBe(0)
 })
 
+// Every placement the follow makes is async, landed or not, so a row is
+// landing on something for a moment after each one
+test('a drag on a row a held navigation is landing on still takes it', async () => {
+  const view = await openStack()
+  const held = view.holdFollowAnchor(() =>
+    view.views[2]!.navToLocString('ctgA:100-200'),
+  )
+  view.views[2]!.horizontalScroll(40)
+  expect(view.followAnchorIndex).toBe(2)
+  await held
+})
+
 // The ruler label's region edits replaced the regions and then re-centred, and
 // the re-centre, the one gesture-named step, is skipped where the edit dropped
 // the region the row was centred on. The follow put the dropped region back.

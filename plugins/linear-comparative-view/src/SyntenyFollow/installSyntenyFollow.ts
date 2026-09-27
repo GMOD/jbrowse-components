@@ -81,6 +81,11 @@ export const ROW_GESTURES = new Set([
   'fitAllRegions',
 ])
 
+// What a held `navToLocString` reaches for after its await, as fresh roots
+// under gesture names: on a row a held navigation is still landing on, these
+// are that navigation's own
+const HELD_NAVIGATION_TAILS = new Set(['navToLocations', 'navToLocation'])
+
 // The row's other navigations: the tails a gesture reaches for after an await,
 // as fresh roots, the primitives the follow writes through, the stack's zoom
 // ceiling, and `horizontallyFlip`, since a hand flip of a followed row stands.
@@ -212,7 +217,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       if (holding && isRow) {
         holding.add(call.context)
       }
-      if (gesture && isRow && !landing.has(call.context)) {
+      const heldTail =
+        HELD_NAVIGATION_TAILS.has(call.name) && landing.has(call.context)
+      if (gesture && isRow && !heldTail) {
         // untracked, since the follow's own root actions come through here from
         // inside its autoruns; a row showing nothing yet is being initialized
         // eslint-disable-next-line no-restricted-syntax -- effect input: a gesture's row, read where an autorun may be the caller

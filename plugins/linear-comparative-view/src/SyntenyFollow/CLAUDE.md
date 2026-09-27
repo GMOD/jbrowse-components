@@ -412,17 +412,18 @@ otherwise take the anchor straight back.
 await, as fresh roots, and the header search box navigates by `navToLocations`
 directly, so the name alone cannot say whose it is. The middleware records the
 rows a `holdFollowAnchor` touches and, where the hold hands back a promise,
-treats a gesture on one of those rows as the held navigation's own until the
-promise settles. A search on any other row takes the anchor. `showRegions` stays
-held, since only a tail reaches it as a root; so does `horizontallyFlip`, since
-a hand flip of a followed row is meant to stand. The ruler label's region edits
-are one action, `editDisplayedRegions`, because their re-centre, the only
-gesture-named step, is skipped when the edit drops the region the row was
-centred on. The view-wide zooms (`squareView`, `showAllRegionsAcrossRows`, the
-stack's rubber-band "Zoom to region(s)") nest the rows' zooms under the stack's
-own actions, and `centerStackOnFeature` holds its two navigations the same way
-and hands the anchor to the first row that moved, the feature's own unless its
-`navTo` threw.
+treats `navToLocations` on one of those rows as the held navigation's own until
+the promise settles. Every placement the follow makes is async, so the other
+gestures are not exempted: a drag in that moment is the reader's. A search on
+any other row takes the anchor. `showRegions` stays held, since only a tail
+reaches it as a root; so does `horizontallyFlip`, since a hand flip of a
+followed row is meant to stand. The ruler label's region edits are one action,
+`editDisplayedRegions`, because their re-centre, the only gesture-named step, is
+skipped when the edit drops the region the row was centred on. The view-wide
+zooms (`squareView`, `showAllRegionsAcrossRows`, the stack's rubber-band "Zoom
+to region(s)") nest the rows' zooms under the stack's own actions, and
+`centerStackOnFeature` holds its two navigations the same way and hands the
+anchor to the first row that moved, the feature's own unless its `navTo` threw.
 
 **The set is a list of names, so a contract test holds it against the view.**
 Every navigation-shaped action the row actually has must be in `ROW_GESTURES` or
