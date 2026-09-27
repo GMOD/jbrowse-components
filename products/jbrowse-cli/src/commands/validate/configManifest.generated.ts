@@ -3826,7 +3826,50 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | CssColor)"
+          "type": "ChordColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | CssColor)"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(ChordColorScale | undefined)"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            },
+            {
+              "name": "labels",
+              "type": "string[]"
+            },
+            {
+              "name": "title",
+              "type": "(string | undefined)"
+            }
+          ],
+          "shorthand": {
+            "string": "value"
+          },
+          "fieldPresets": {
+            "*": {
+              "scale": "categorical"
+            }
+          }
+        },
+        {
+          "name": "opacity",
+          "type": "number"
         },
         {
           "name": "colorSelected",

@@ -4678,6 +4678,78 @@
       },
       "unevaluatedProperties": false
     },
+    "ChordColor": {
+      "title": "ChordColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for `{ \"value\": ... }`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "rgba(255,133,0,0.32)",
+          "type": "string"
+        },
+        {
+          "title": "ChordColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "CSS colour or jexl callback for every chord.",
+              "$ref": "#/$defs/CssColorOrJexl",
+              "default": "rgba(255,133,0,0.32)"
+            },
+            "field": {
+              "description": "a record field, svType say, or a jexl expression over feature, whose values each paint one range colour with a key.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "enum": ["none", "categorical", "threshold"]
+            },
+            "domain": {
+              "description": "the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "description": "key title; unset keeps the display's own heading, \"\" draws none.",
+              "$ref": "#/$defs/PlainString"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "ChordVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -4692,9 +4764,12 @@
           "default": false
         },
         "color": {
-          "description": "the line color of each chord.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "rgba(255,133,0,0.32)"
+          "$ref": "#/$defs/ChordColor"
+        },
+        "opacity": {
+          "description": "the alpha every resting chord draws at, over its colour's own.",
+          "type": "number",
+          "default": 1
         },
         "colorSelected": {
           "description": "the line color of a chord that has been selected.",
@@ -9265,6 +9340,9 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
                 }
               ]
+            },
+            "opacity": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/opacity"
             },
             "colorSelected": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/colorSelected"

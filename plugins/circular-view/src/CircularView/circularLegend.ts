@@ -11,9 +11,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * What a display on the circle offers the key: a ring composing `LegendMixin`
- * answers `legendSpec` (a density ramp, or the colors a field paints), and a
- * ring in any other mode, a chord track or a ribbon track answers the one color
- * it paints with.
+ * or a variant chord track painting a field answers `legendSpec` (a density
+ * ramp, or the colors a field paints), and any other ring, chord track or
+ * ribbon track answers the one color it paints with.
  */
 export interface CircularLegendSource {
   legendSpec?: LegendSpec

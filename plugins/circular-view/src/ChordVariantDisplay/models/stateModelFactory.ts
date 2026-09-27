@@ -3,13 +3,27 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import {
   abgrAlpha,
   cssColorToABGR,
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
+import {
+  CATEGORICAL_FIELD_PRESETS,
+  withPreset,
+} from '@jbrowse/core/util/colorScale'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import {
+  derivedColorScale,
+  everyRowPaints,
+} from '@jbrowse/core/util/legendCandidates'
+import {
+  colorEncodingOf,
+  colorFieldOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -28,7 +42,9 @@ import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { ChordLanes } from '../../chords/chordStage.ts'
 import type { ChordShape } from '../../chords/shapes.ts'
 import type { ChordVariantDisplayConfigModel } from './configSchema.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { ThemeOptions } from '@mui/material'
 
 /**
@@ -162,14 +178,46 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * each drawn record's colour, as its config slot answers
+       * the `color` object as written
+       */
+      get colorSetting(): ColorSetting {
+        const { color } = self.configuration
+        return {
+          value: color.value,
+          field: color.field,
+          scale: readConfObject(color, 'scale'),
+          domain: readConfObject(color, 'domain'),
+          range: readConfObject(color, 'range'),
+          labels: readConfObject(color, 'labels'),
+          title: readConfObject(color, 'title'),
+        }
+      },
+      /**
+       * #getter
+       * the field the chords paint by, undefined for a constant or callback
+       */
+      get colorField() {
+        return colorFieldOf(colorEncodingOf(this.colorSetting))
+      },
+      /**
+       * #getter
+       * each drawn record's colour: its field's value through the scale, or
+       * the `value` the colour object answers for it
        */
       get chordStrokes(): Map<Feature, string> {
-        const { configuration } = self
+        const features = self.drawnFeatures ?? []
+        const field = this.colorField
+        if (field) {
+          const read = fieldReader(field.field, getEnv(self).pluginManager.jexl)
+          return new Map(
+            features.map(f => [f, field.color(field.key(read(f)))]),
+          )
+        }
+        const { color } = self.configuration
         return new Map(
-          (self.drawnFeatures ?? []).map(feature => [
+          features.map(feature => [
             feature,
-            readConfObject(configuration, 'color', { feature }),
+            readConfObject(color, 'value', { feature }),
           ]),
         )
       },
@@ -318,10 +366,10 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * a chord's colour carries its own alpha
+       * `opacity`, over each chord's colour's own alpha
        */
-      get shapeAlpha() {
-        return 1
+      get shapeAlpha(): number {
+        return getConf(self, 'opacity')
       },
       /**
        * #method
@@ -413,8 +461,48 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * the chord color the circle's key shows, when every chord shares one
        */
       get legendColor(): string | undefined {
-        const value: unknown = self.configuration.color
-        return typeof value === 'string' && !isJexl(value) ? value : undefined
+        const { value } = self.colorSetting
+        return self.colorField || value === undefined || isJexl(value)
+          ? undefined
+          : value
+      },
+      /**
+       * #getter
+       * the key of the values the drawn chords paint, while they paint a field
+       */
+      get colorScales(): ColorScale[] {
+        const field = self.colorField
+        if (!field) {
+          return []
+        }
+        const read = fieldReader(field.field, getEnv(self).pluginManager.jexl)
+        const painted = new Map<string, number>()
+        for (const feature of self.chordLanes.features) {
+          const value = field.key(read(feature))
+          if (!painted.has(value)) {
+            painted.set(value, cssColorToABGR(field.color(value)))
+          }
+        }
+        return derivedColorScale(
+          [painted],
+          entries =>
+            everyRowPaints(
+              [...entries].map(([value, color]) => ({ value, color })),
+            ),
+          {
+            id: 'color',
+            field,
+            title:
+              withPreset(self.colorSetting, CATEGORICAL_FIELD_PRESETS).title ??
+              field.field,
+          },
+        )
+      },
+      /**
+       * #getter
+       */
+      get legendSpec() {
+        return legendSpecOf(this.colorScales)
       },
       /**
        * #method

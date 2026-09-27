@@ -10,7 +10,7 @@ test('a v4 strokeColor lands on color, from the display or its renderer', () => 
     strokeColor: 'red',
     renderer: { strokeColorHover: 'blue', strokeColorSelected: 'green' },
   })
-  expect(readConfObject(conf, 'color')).toBe('red')
+  expect(readConfObject(conf, ['color', 'value'])).toBe('red')
   expect(readConfObject(conf, 'colorHover')).toBe('blue')
   expect(readConfObject(conf, 'colorSelected')).toBe('green')
 })

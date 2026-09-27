@@ -5,12 +5,14 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import type { CircularViewModel } from '../../CircularView/model.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function addConf(
   session: ReturnType<typeof createTestSession>,
   assemblies = ['volvox'],
+  extraFeatures: Record<string, unknown>[] = [],
 ) {
   for (const name of assemblies) {
     session.addAssemblyConf({
@@ -53,16 +55,21 @@ function addConf(
           refName: 'ctgA',
           start: 100,
           end: 200,
+          svType: 'DEL',
           mate: { refName: 'ctgB', start: 1000, end: 1100 },
         },
+        ...extraFeatures,
       ],
     },
   })
 }
 
-async function setup(assemblies = ['volvox']) {
+async function setup(
+  assemblies = ['volvox'],
+  extraFeatures: Record<string, unknown>[] = [],
+) {
   const session = createTestSession()
-  addConf(session, assemblies)
+  addConf(session, assemblies, extraFeatures)
   const view = (await session.launchView('CircularView', {
     assembly: assemblies,
     tracks: ['sv'],
@@ -83,6 +90,33 @@ test('a ready display places both ends of its chords', async () => {
   expect(display.sliceFor(undefined, 'ctgA')?.region.refName).toBe('ctgA')
   expect(display.sliceFor(undefined, 'ctgB')?.region.refName).toBe('ctgB')
 }, 20000)
+
+test('a constant colour keys as one row, a field as the values it paints', async () => {
+  const { display } = await setup(undefined, [
+    {
+      uniqueId: 'sv2',
+      refName: 'ctgA',
+      start: 5000,
+      end: 5100,
+      svType: 'INV',
+      mate: { refName: 'ctgB', start: 6000, end: 6100 },
+    },
+  ])
+  expect(display.legendColor).toBe('rgba(255,133,0,0.32)')
+  expect(display.colorScales).toEqual([])
+
+  setConf(display, 'color', { field: 'svType' })
+  setConf(display, 'opacity', 0.45)
+  const [feature] = display.chordLanes.features
+  expect(display.chordStrokes.get(feature)).toBe('#e41a1c')
+  expect(display.shapeAlpha).toBe(0.45)
+  expect(display.legendColor).toBeUndefined()
+  const [scale]: ColorScale[] = display.colorScales
+  expect(scale?.title).toBe('SV type')
+  expect(
+    scale?.kind === 'categorical' && scale.entries.map(e => e.label),
+  ).toEqual(['Deletion', 'Inversion'])
+})
 
 test('clicking a chord selects the record and opens its details', async () => {
   const { session, display } = await setup()

@@ -1,5 +1,7 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { clamp, getSession, isFeature } from '@jbrowse/core/util'
+import { SimpleFeature, clamp, getSession, isFeature } from '@jbrowse/core/util'
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
+import { svClassOf } from '@jbrowse/core/util/svAlt'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   pendingLaunch,
@@ -13,6 +15,7 @@ import { circularViewOptionsBarHeight } from './consts.ts'
 import { featureRefNames } from './featureRefNames.ts'
 import { svInspectorLaunchKeys } from './launchKeys.ts'
 import { sameCircularRegions } from './sameCircularRegions.ts'
+import { CHORD_ALPHA } from './svChordColor.ts'
 
 import type { SvInspectorViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -36,8 +39,17 @@ function variantTrackIdFor(viewId: string) {
   return `sv-inspector-variant-track-${viewId}`
 }
 
+// a row a v4.3.0 link restores carries a record serialized before svType was
 function rowFeatures(rows?: { feature?: SimpleFeatureSerialized }[]) {
-  return rows?.map(row => row.feature).filter(f => !!f) ?? []
+  return (
+    rows?.flatMap(({ feature }) =>
+      !feature
+        ? []
+        : feature.svType !== undefined
+          ? [feature]
+          : [{ ...feature, svType: svClassOf(new SimpleFeature(feature)) }],
+    ) ?? []
+  )
 }
 
 /**
@@ -302,7 +314,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   displayId: `${trackId}-chord-display`,
                   onChordClick:
                     'jexl:defaultOnChordClick(feature, track, pluginManager)',
-                  color: 'jexl:svChordColor(feature)',
+                  color: { field: SV_TYPE_FIELD },
+                  opacity: CHORD_ALPHA,
                 },
               ],
             }

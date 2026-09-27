@@ -54,9 +54,9 @@ test('one track-wide colour reaches every variant display', () => {
   expect(
     readConfObject(display(conf, 'LinearVariantDisplay'), ['color', 'value']),
   ).toBe('#1f78b4')
-  expect(readConfObject(display(conf, 'ChordVariantDisplay'), 'color')).toBe(
-    '#1f78b4',
-  )
+  expect(
+    readConfObject(display(conf, 'ChordVariantDisplay'), ['color', 'value']),
+  ).toBe('#1f78b4')
   // the multi-sample displays' cell colour is a colour object too, so a
   // track-wide colour paints their alt cells
   expect(
@@ -67,10 +67,9 @@ test('one track-wide colour reaches every variant display', () => {
   ).toBe('#1f78b4')
 })
 
-// Both variant displays read the impact preset as a field of their colour, so
-// one track-wide setting colours the single-variant marks and the genotype
-// cells alike.
-test('a variant colour preset field reaches every variant display', () => {
+// Every variant display reads a field of its colour, so one track-wide setting
+// colours the single-variant marks, the genotype cells and the chords alike.
+test('a variant colour field reaches every variant display', () => {
   const pluginManager = makePluginManager()
   const conf = pluginManager.getTrackType('VariantTrack').configSchema.create(
     {
@@ -78,15 +77,16 @@ test('a variant colour preset field reaches every variant display', () => {
       type: 'VariantTrack',
       assemblyNames: ['volvox'],
       adapter: { type: 'VcfAdapter', uri: 'volvox.filtered.vcf' },
-      displayDefaults: { color: { field: 'impact' } },
+      displayDefaults: { color: { field: 'svType' } },
     },
     { pluginManager },
   ) as AnyConfigurationModel & { displays: AnyConfigurationModel[] }
   for (const type of [
     'LinearVariantDisplay',
     'LinearMultiSampleVariantDisplay',
+    'ChordVariantDisplay',
   ]) {
-    expect(colorOf(conf, type)).toEqual({ field: 'impact' })
+    expect(colorOf(conf, type)).toEqual({ field: 'svType' })
   }
 })
 

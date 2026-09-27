@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { chordConfigSchemaFields } from '../../chords/chordConfigSchemaFields.ts'
+import { chordColorConfigSchema } from './chordColorConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -46,10 +47,9 @@ function liftRendererStrokeSlots(snap: Record<string, unknown>) {
  *
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;
- * translocations are drawn as chords across the circle. `color`, `colorHover`
- * and `colorSelected` are the chord's resting, hovered and selected colors, as
- * on the synteny ribbons, and each takes a `jexl:` expression over the
- * `feature` so a chord can be colored by what it is:
+ * translocations are drawn as chords across the circle. `color` is the
+ * chord's resting colour, a constant or a field of the record with a key, and
+ * `colorHover` and `colorSelected` its hovered and selected ones:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -64,7 +64,8 @@ function liftRendererStrokeSlots(snap: Record<string, unknown>) {
  *     {
  *       type: 'ChordVariantDisplay',
  *       displayId: 'sv-ChordVariantDisplay',
- *       color: "jexl:get(feature,'INFO').SVTYPE=='BND'?'#d95f02':'rgba(255,133,0,0.32)'",
+ *       color: { field: 'svType' },
+ *       opacity: 0.45,
  *       colorHover: '#555',
  *     },
  *   ],
@@ -87,13 +88,20 @@ function configSchemaF(_pluginManager: PluginManager) {
         contextVariable: ['feature', 'track', 'pluginManager'],
       },
       /**
+       * #slot color
+       * The line colour of each resting chord: a CSS colour or `jexl:`
+       * callback, or a field of the record, `svType` say, whose values each
+       * take a colour with a key on the circle.
+       */
+      color: chordColorConfigSchema,
+      /**
        * #slot
        */
-      color: {
-        type: 'color',
-        description: 'the line color of each chord',
-        defaultValue: 'rgba(255,133,0,0.32)',
-        contextVariable: ['feature'],
+      opacity: {
+        type: 'number',
+        description:
+          "the alpha every resting chord draws at, over its colour's own",
+        defaultValue: 1,
       },
       /**
        * #slot

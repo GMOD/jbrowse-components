@@ -29,8 +29,8 @@ An inner ring, concentric with the chords. A local event is a mark at its own
 angle — which it already has, unambiguously — placed at a radius set by
 `log10(span)`, floor at the ring's inner edge and cap at its outer one. A 172 bp
 deletion and a 4.5 Mb duplication then sit at visibly different radii instead of
-both being nothing. Colour is already decided: `svChordColor`, the same scale the
-chords and the legend use.
+both being nothing. Colour is already decided: `{ field: 'svType' }`, the
+universal preset the chords and the legend paint.
 
 This is the standard Circos idiom and it is worth taking as such rather than
 inventing: readers of cancer genomes arrive already able to read it.

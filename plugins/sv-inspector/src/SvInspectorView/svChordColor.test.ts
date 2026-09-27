@@ -1,46 +1,6 @@
-import { SimpleFeature } from '@jbrowse/core/util'
+import { chordColorForType } from './svChordColor.ts'
 
-import { chordColorForType, svChordColor } from './svChordColor.ts'
-
-import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-
-function feat(id: string, rest: Record<string, unknown>) {
-  return {
-    uniqueId: id,
-    refName: 'chr1',
-    start: 0,
-    end: 1,
-    ...rest,
-  } as SimpleFeatureSerialized
-}
-
-const del = (id: string) => feat(id, { ALT: ['<DEL>'] })
-const dup = (id: string) => feat(id, { ALT: ['<DUP:TANDEM>'] })
-
-test('a chord color is translucent, so overlapping chords still read', () => {
-  const color = svChordColor(new SimpleFeature(del('a')))
-  expect(color).toMatch(/^rgba\(/)
-  expect(color).toContain('0.45')
-})
-
-test('the class decides the color, not the record', () => {
-  expect(svChordColor(new SimpleFeature(del('a')))).toBe(
-    svChordColor(new SimpleFeature(del('b'))),
-  )
-  expect(svChordColor(new SimpleFeature(del('a')))).not.toBe(
-    svChordColor(new SimpleFeature(dup('c'))),
-  )
-})
-
-// the legend paints from the class alone
-test('a class alone gets the color its records get', () => {
-  expect(chordColorForType('DEL')).toBe(
-    svChordColor(new SimpleFeature(del('a'))),
-  )
-})
-
-test('a record that is not a structural variant still gets a color', () => {
-  expect(svChordColor(new SimpleFeature(feat('snv', { ALT: ['G'] })))).toMatch(
-    /^rgba\(/,
-  )
+test('a class swatch is its class colour at the chords’ alpha', () => {
+  expect(chordColorForType('DEL')).toMatch(/^rgba\(228, 26, 28, 0\.45/)
+  expect(chordColorForType('DUP')).not.toBe(chordColorForType('DEL'))
 })
