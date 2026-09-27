@@ -141,6 +141,6 @@ test('a config.json track spelling the retired type carries the current name', (
   })
 
   expect(state.config.tracks[0]!.displays).toEqual([
-    { type: 'LinearWiggleDisplay', defaultRendering: 'xyplot', rows: 'source' },
+    { type: 'LinearWiggleDisplay', mark: 'bar', rows: 'source' },
   ])
 })

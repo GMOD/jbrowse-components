@@ -18,7 +18,8 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
         >
           <canvas
             class="css-HASH"
-            data-display-drawn="false"
+            data-display-drawn="true"
+            data-display-phase="ready"
             data-testid="circular-chord-canvas"
             height="400"
             style="width: 808px; height: 400px;"
@@ -26,16 +27,16 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           />
           <div
             class="css-HASH"
-            style="transform: translate(204px,0px);"
+            style="transform: translate(204.00000000006094px,6.093614501878619e-11px);"
           >
             <svg
               class="css-HASH css-HASH"
-              height="400"
-              style="transform: rotate(-1.5707963267948966rad); transform-origin: 200px 200px;"
-              width="400"
+              height="399.9999999998781"
+              style="transform: rotate(-1.5707963267948966rad); transform-origin: 199.99999999993906px 199.99999999993906px;"
+              width="399.9999999998781"
             >
               <g
-                transform="translate(200,200)"
+                transform="translate(199.99999999993906,199.99999999993906)"
               >
                 <text
                   dominant-baseline="middle"
@@ -44,14 +45,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   font-weight="500"
                   letter-spacing="0.0075em"
                   text-anchor="middle"
-                  transform="translate(-71.93367076666324,158.43467742269462) rotate(24.419346067798784)"
+                  transform="translate(-71.93367076663554,158.43467742264025) rotate(24.419346067797875)"
                   x="0"
                   y="0"
                 >
                   ctgA
                 </text>
                 <path
-                  d="M 169 0 A 169 169 0 1 1 -111.23262284949317 -127.23326457346921 L -105.9671732471503 -121.21038814395587 A 161 161 0 1 0 161 0 Z"
+                  d="M 168.99999999993906 0 A 168.99999999993906 168.99999999993906 0 1 1 -111.23262284945707 -127.23326457341982 L -105.96717324711402 -121.21038814390666 A 160.99999999993906 160.99999999993906 0 1 0 160.99999999993906 0 Z"
                   fill="#996600"
                   stroke="rgba(0, 0, 0, 0.87)"
                   stroke-opacity="0.6"
@@ -64,14 +65,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   font-weight="500"
                   letter-spacing="0.0075em"
                   text-anchor="middle"
-                  transform="translate(71.93367076666328,-158.4346774226946) rotate(384.4193460677988)"
+                  transform="translate(71.93367076663542,-158.4346774226403) rotate(384.41934606779785)"
                   x="0"
                   y="0"
                 >
                   ctgB
                 </text>
                 <path
-                  d="M -103.01588510344942 -133.9728607455738 A 169 169 0 0 1 168.66586705399317 -10.621925010312273 L 160.68168399818285 -10.119111992072638 A 161 161 0 0 0 -98.13939350091927 -127.63095017773598 Z"
+                  d="M -103.01588510341334 -133.97286074552466 A 168.99999999993906 168.99999999993906 0 0 1 168.6658670539321 -10.621925010312639 L 160.68168399812177 -10.119111992072806 A 160.99999999993906 160.99999999993906 0 0 0 -98.13939350088314 -127.63095017768688 Z"
                   fill="#666600"
                   stroke="rgba(0, 0, 0, 0.87)"
                   stroke-opacity="0.6"
