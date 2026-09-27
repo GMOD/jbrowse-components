@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.x), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. The plugin's track refactor (the pane composed into the display, fixing its error, phase, height, re-cut and abort bugs) is on plugin main, unreleased (plugin agent-docs/HANDOFF_track_refactor.md). Left - a release and what it changes here, the portal upload, a GSTT1 section, and a docs deploy.
+description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.x), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. The plugin's track refactor (the pane composed into the display, fixing its error, phase, height, re-cut and abort bugs) is on plugin main, unreleased (jbrowse-plugin-graphgenomeviewer/agent-docs/HANDOFF_track_refactor.md). Left - a release and what it changes here, the portal upload, a GSTT1 section, and a docs deploy.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -201,21 +201,21 @@ jb2hubs' four portal configs declare the graph display first, jb2hubs'
 launcher opens one linear view with the graph as its last track (staging
 deployed), and every graph figure and tour draws through the track: 36
 figures and 7 clips reshot on ada and in the stores. The plugin's
-`agent-docs/GRAPH_TRACK.md` is the design record.
+`jbrowse-plugin-graphgenomeviewer/agent-docs/GRAPH_TRACK.md` is the design record.
 
 **State at the end of 2026-09-26.**
 
 - Landed on plugin main, unreleased: every label over the graph places from
   one occupancy above all the ink (the coarse tier's bubble names no longer
   print over the backbone lengths, `pggb_bubble_tier`), and
-  `scripts/preview-candidate.mjs` shoots any hosted session against a local
+  `jbrowse-plugin-graphgenomeviewer/scripts/preview-candidate.mjs` shoots any hosted session against a local
   `dist/`.
 - Landed on plugin main, unreleased: the pane is a mixin the display and the
   standalone view compose, which fixes a blank track on a failed cut, a
   missing display phase, the height ratchet, a red flash on every re-cut and a
   fetch never aborted. A bubble is a repeat array only where the session's
   repeat track has one, so GSTT1's insertion no longer reads as one. The
-  plugin's `agent-docs/HANDOFF_track_refactor.md` says what a release changes
+  plugin's `jbrowse-plugin-graphgenomeviewer/agent-docs/HANDOFF_track_refactor.md` says what a release changes
   here and in jb2hubs: flat track entries in `graph-fixtures.ts` and
   `pangenomeLinks.ts`, reshot figures, and a curated VNTR track on the HPRC
   demo if KIV-2 is to keep its repeat-array label.
@@ -226,7 +226,7 @@ figures and 7 clips reshot on ada and in the stores. The plugin's
   "Graph" leaves the Display types menu of BED, GFF and PAF tracks.
 - jb2hubs main `d8c4f6cb028`: the four portal configs search gene names
   (hosted trix) and hg38/mm39 draw cytobands, and the HPRC loci gain GSTT1 and
-  FLNA/EMD; both launches boot. Not uploaded (`website/pangenome-config/upload.sh`)
+  FLNA/EMD; both launches boot. Not uploaded (`jb2hubs/website/pangenome-config/upload.sh`)
   and staging not redeployed.
 - A GSTT1 tutorial section is not written. Its graph is compelling (a 39.5 kb
   allele loop beside GSTT4, contributed by HG03654#2), but CAT projects
