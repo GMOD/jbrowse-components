@@ -73,3 +73,28 @@ describe('a stringEnumArray slot', () => {
     expect(s.set).toHaveBeenCalledWith(['triangle', 'disc'])
   })
 })
+
+describe('an expressionArray slot', () => {
+  const slot = (value: string[]) =>
+    listSlot({ name: 'filter', type: 'expressionArray', value })
+
+  test('shows each entry after a fixed jexl:, and writes it back prefixed', () => {
+    const s = slot(["jexl:feature.type=='gene'"])
+    const { getByDisplayValue } = render(<SlotEditor slot={s} />)
+    const field = getByDisplayValue("feature.type=='gene'")
+    fireEvent.change(field, { target: { value: 'f' } })
+    expect(s.set).toHaveBeenCalledWith(['jexl:f'])
+  })
+
+  test('adds an entry prefixed', () => {
+    const s = slot([])
+    const { getByPlaceholderText, getByTestId } = render(
+      <SlotEditor slot={s} />,
+    )
+    fireEvent.change(getByPlaceholderText('add new'), {
+      target: { value: 'feature.score > 5' },
+    })
+    fireEvent.click(getByTestId('stringArrayAdd-filter'))
+    expect(s.set).toHaveBeenCalledWith(['jexl:feature.score > 5'])
+  })
+})

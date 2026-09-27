@@ -1,6 +1,6 @@
 ---
 name: grammar-one-spelling
-description: "One spelling per grammar concept, Colin's call of 2026-09-27. The scale-ends rule and encoding.size landed; the jexl: prefix everywhere with jexlFilters renamed filter, the strand vocabulary folded into the colour presets, and a list of other double spellings remain. Read before touching jexlFilters, FieldPresets, categoricalField's VOCABULARIES or a shorthand."
+description: "One spelling per grammar concept, Colin's call of 2026-09-27. The scale-ends rule, encoding.size and the filter rename (jexlFilters is filter, every entry jexl:) landed; the strand vocabulary folded into the colour presets and a list of other double spellings remain. Read before touching filter, FieldPresets, categoricalField's VOCABULARIES or a shorthand."
 ---
 
 # Grammar: one spelling per concept
@@ -22,25 +22,23 @@ calls; two landed and two remain.
   constant; `shorthand` may name several slots, each lifting the bare form its
   type holds (`shorthandTargets` in `packages/core/src/configuration/schemaTypes.ts`).
   ADR-163 §"Amended 2026-09-27".
+- **`filter` is the display filter list, every entry `jexl:`** — slot type
+  `expressionArray` (`JexlExpressionString` in `util/types/mst.ts`), session
+  override `filterSetting`, action `setFilter`; v4's `jexlFilters` and
+  `jexlFiltersSetting` lift and prefix. Edit as JSON and `jb.help` spell it the
+  same. ADR-155 §"Amended 2026-09-27".
 
 ## Remaining, in order
 
-1. **The `jexl:` prefix everywhere; `jexlFilters` becomes `filter`.** The
-   arbiter's findings, checked against the code: the slot description's
-   "deferred evaluation" reason is stale (`readSlot` evaluates only a slot value
-   that is itself a `jexl:` string; `configuredJexlFilters` in
-   `packages/core/src/util/jexlFilters.ts` already prefixes), every writer
-   already prefixes, and a bare `jexlFiltersSetting` entry throws on the mark
-   display, the multi-sample variant displays and the breakpoint overlay. Plan:
-   an `expression` slot type (and array form) that refuses a bare string; rename
-   the slot `filter` and the session prop `filterSetting`; keep the mark
-   display's `filter` step for positions in the pipeline, with a notice on a
-   leading one that duplicates the list. **Both names shipped in v4.3.0**, so the
-   config slot takes a `retired` lift (prefixing) and the session prop a
-   snapshot lift. jb2hubs writes `jexlFilters` into its hosted UCSC configs
-   (`hubtools/src/featureDisplay.ts`), protein3d writes one
-   (`proteinTrackSetup.ts`), and `jb.help` names `setJexlFilters` — mind the
-   2048-character cap and `docsRoster.test.ts`.
+1. **Left from the filter ruling, deliberately.** The ruling also moved a mark
+   step's `expr` onto an `expression` type refused at load, and wanted a notice
+   on a `filter` step heading the display `transform`. Neither was built: the
+   `step-expression` notice already catches a bare `expr`, and a load refusal
+   drops the track (ADR-133's trap) where the notice lets it draw; a leading
+   `filter` step runs correctly, so a notice on it warns on working config.
+   jb2hubs (`hubtools/src/featureDisplay.ts`) and protein3d
+   (`proteinTrackSetup.ts`) still write `jexlFilters`, which v5 lifts; jb2hubs
+   must keep it for older releases.
 2. **Strand's vocabulary into the colour presets.** `VOCABULARIES` in
    `packages/core/src/util/categoricalField.ts` and `FieldPresets` are two homes
    for "a field's own values"; the validator cannot see the first, so

@@ -7,7 +7,8 @@ summary: "A slot takes a `jexl:` callback only where it declares `contextVariabl
 
 ## Status
 
-Accepted (2026-09-21).
+Accepted (2026-09-21). Amended 2026-09-27: a list of expressions is its own
+slot type, below.
 
 ## Context
 
@@ -59,9 +60,9 @@ colour editor, the JSON Schema (`PlainString` and `not: JexlString`) and
 - The volvox repeat wiggle tracks lost `jexl:repeatColor(feature)`, a function
   the volvox plugin no longer registers, on a display that colours per signal.
 - A `jexl:` entry in a `stringArray` slot loads (`colorArray` and
-  `stringEnumArray` refuse one as not a colour or not a member). `jexlFilters`
+  `stringEnumArray` refuse one as not a colour or not a member). ~~`jexlFilters`
   entries are expressions, and `configuredJexlFilters` reads one the same with
-  or without the prefix. In a `groupby` or `pileup.fields`, the worker's
+  or without the prefix.~~ (amended below) In a `groupby` or `pileup.fields`, the worker's
   transform throws, pointing at a `formula` step, and in a mark's own
   `transform` the `step-field-expression` rule says so first; the rule does not
   read the display-level `transform`. Refusing entries at load was built and
@@ -69,6 +70,26 @@ colour editor, the JSON Schema (`PlainString` and `not: JexlString`) and
   what it newly caught, such as a `jexl:` assembly name, nobody writes.
 - `jb2export`'s `color:` modifier cannot carry a `jexl:` value through its `:`
   split.
+
+## Amended 2026-09-27: a list of expressions is `expressionArray`
+
+The display filter list, v4's `jexlFilters`, is `filter`, an `expressionArray`:
+a list whose every entry is a `jexl:` expression the display evaluates per
+feature, and which refuses a bare entry. v4 stored the entries bare and
+prefixed them on read, so the slot, the "Filter by..." override and the Edit as
+JSON box spelled one expression two ways, and a bare override entry threw in
+the worker on every display but canvas. The session override is
+`filterSetting`, held to the same entry type.
+
+The refusal runs on every surface the callback refusal does: the MST type,
+`setSlot` (naming the bare entry), the JSON Schema (`JexlExpression`), and
+`jbrowse validate`. The config editor puts `jexl:` in front of each entry as a
+fixed adornment, so typing never writes a refused entry. Both v4 names load:
+the three schemas declaring the slot retire `jexlFilters` with a prefixing lift
+(`retiredFilterSpelling`), and the three display models lift a
+`jexlFiltersSetting` in `preProcessSnapshot` (`liftRetiredFilterSetting`).
+jb2hubs keeps writing `jexlFilters`, since its hosted configs still load in
+older releases.
 
 ## Rejected alternatives
 
