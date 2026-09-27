@@ -53,6 +53,7 @@ export const MULTIWAY_MARKS = [
             base1: cell.data.base1,
             overdrawPx: MULTIWAY_OVERDRAW_PX,
             groundColor: state.groundColor,
+            overlapsStack: false,
           }
         : undefined
     },

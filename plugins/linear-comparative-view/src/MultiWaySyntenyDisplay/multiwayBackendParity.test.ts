@@ -185,7 +185,7 @@ test('a ribbon projects through the same pan on both backends', () => {
   expect(move.args[1]).toBe(30)
 
   const { hal } = gpuFrame()
-  const fill = hal.draws().find(d => d.passId === 'fillStraight')!
+  const fill = hal.draws().find(d => d.passId === 'fillStraightDarkest')!
   const u = hal.uniformsOf(fill)!
   expect(u[SYNTENY_U.panPx0]).toBe(DRAG)
   expect(u[SYNTENY_U.bpPerPxInv0]).toBe(1)
@@ -196,7 +196,7 @@ test('a ribbon projects through the same pan on both backends', () => {
 test('the GPU frame draws the layers in the order the state lists them, ribbons under glyphs', () => {
   const { hal } = gpuFrame()
   expect(hal.draws().map(d => d.passId)).toEqual([
-    'fillStraight',
+    'fillStraightDarkest',
     'line',
     'chevron',
     'rect',
@@ -222,8 +222,8 @@ test('a drawCurves toggle draws the other fill pass off the same buffer', () => 
     hal
       .callsOf('drawPass')
       .map(c => c.args)
-      .find(a => a[0] === 'fillCurve'),
-  ).toEqual(['fillCurve', RIBBON_KEY, 'fillStraight'])
+      .find(a => a[0] === 'fillCurveDarkest'),
+  ).toEqual(['fillCurveDarkest', RIBBON_KEY, 'fillStraight'])
 })
 
 function polygonPickCtx(): PickCanvasLike {
@@ -293,7 +293,7 @@ describe('a scrolled stack shifts every layer by the same offset', () => {
     expect(
       hal.uniformsOf(rectDraw)![featureGlyphShader.UNIFORM_OFFSET_F32.scrollY],
     ).toBe(SCROLL)
-    const fill = hal.draws().find(d => d.passId === 'fillStraight')!
+    const fill = hal.draws().find(d => d.passId === 'fillStraightDarkest')!
     expect(hal.uniformsOf(fill)![SYNTENY_U.yTop]).toBe(30 - SCROLL)
   })
 
@@ -329,7 +329,7 @@ describe('a ribbon with one end off the canvas', () => {
 
   test('reaches the GPU cull with the same overdraw', () => {
     const { hal } = gpuFrame(offLeft)
-    const fill = hal.draws().find(d => d.passId === 'fillStraight')!
+    const fill = hal.draws().find(d => d.passId === 'fillStraightDarkest')!
     expect(hal.uniformsOf(fill)![SYNTENY_U.overdrawPx]).toBe(
       MULTIWAY_OVERDRAW_PX,
     )
@@ -404,7 +404,7 @@ describe.each([
 
     const { hal } = gpuFrame(moving)
     const u = hal.uniformsOf(
-      hal.draws().find(d => d.passId === 'fillStraight')!,
+      hal.draws().find(d => d.passId === 'fillStraightDarkest')!,
     )!
     expect(u[SYNTENY_U.bpPerPxInv0]).toBe(1)
     expect(u[SYNTENY_U.panPx0]).toBe(DRAG)
@@ -424,3 +424,23 @@ describe.each([
     })
   })
 })
+
+// An inversion's tiles all cross near one point, and stacked at the ribbon
+// alpha that crossing went black. A gutter keeps the strongest ribbon over a
+// pixel instead: the fill leaves pre-blended and opaque, under min on a light
+// band and max on a dark one.
+test.each([
+  ['#fff', 'fillStraightDarkest', 'min'],
+  ['#121212', 'fillStraightLightest', 'max'],
+] as const)(
+  'over a %s band the ribbons draw in %s under %s',
+  (groundColor, passId, op) => {
+    const { hal } = gpuFrame({ ...state, groundColor })
+    const fill = hal.draws().find(d => d.passId.startsWith('fill'))!
+    expect(fill.passId).toBe(passId)
+    expect(MULTIWAY_PASSES.find(p => p.id === passId)!.blendState).toEqual({
+      op,
+    })
+    expect(hal.uniformsOf(fill)![SYNTENY_U.overlapsStack]).toBe(0)
+  },
+)

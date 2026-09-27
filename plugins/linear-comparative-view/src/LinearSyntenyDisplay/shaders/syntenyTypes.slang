@@ -155,6 +155,10 @@ public struct Uniforms {
   // getDpr() (capped at MAX_DPR), needed because these shaders measure in CSS
   // px but rasterize on the device-px grid — see antialias.slang.
   public float  devicePixelRatio;
+  // 0 where overlapping ribbons show the strongest of them rather than their
+  // sum: fillFs writes each fill pre-blended over `ground` and opaque, for the
+  // pass's min (light ground) or max (dark ground) blend to pick between
+  public float  overlapsStack;
   // The band's ground: whatever both backends just cleared the canvas to, as
   // linear 0-1 rgb. shadeFill pre-blends an indel against it and writes opaque,
   // which agrees with the base ribbon composited beside it only if the
@@ -581,7 +585,10 @@ public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   if (coverage <= 0.0) {
     discard;
   }
-  return shadeFill(i.color, i.featureId, coverage, i.kind, u);
+  float4 c = shadeFill(i.color, i.featureId, coverage, i.kind, u);
+  return u.overlapsStack >= 0.5
+    ? c
+    : float4(c.rgb * c.a + u.ground * (1.0 - c.a), 1.0);
 }
 
 // Clicked-feature outline: a 1px antialiased black stroke on BOTH ribbon edges,

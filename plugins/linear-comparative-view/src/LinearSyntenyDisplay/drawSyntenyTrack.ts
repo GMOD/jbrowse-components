@@ -30,7 +30,7 @@ import {
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'
-import type { CanvasLike } from './syntenyRibbonPath.ts'
+import type { CanvasLike, ProjectedCorners } from './syntenyRibbonPath.ts'
 
 export type { CanvasLike } from './syntenyRibbonPath.ts'
 
@@ -142,10 +142,33 @@ function resolveInstanceFill(
     : { r: Math.round(r), g: Math.round(g), b: Math.round(b), a: shade }
 }
 
+const MARKER = 0
+const STROKE = 1
+const FILL = 2
+
+// One instance as the loop resolved it: which primitive, in what colour, and
+// whether it carries the clicked outline. Reused across instances, so the hot
+// loop allocates nothing for it
+interface InstancePaint {
+  mode: number
+  r: number
+  g: number
+  b: number
+  a: number
+  outline: boolean
+}
+
 // Draws in logical (CSS-px) coordinates with yTop baked into the y values, so
 // the caller's canvas transform only ever carries the device scale — the SVG
 // raster export's pre-applied ctx.scale(dpr) and the interactive backend's
 // single setTransform(dpr) both work without this function touching it.
+//
+// `overlapsStack: false` is the fill passes' min/max blend spelled for a
+// canvas, which has no min blend and whose SVG twin has no composite mode at
+// all: every instance is pre-blended over the ground and painted opaque,
+// weakest first, so a pixel several ribbons cover ends up showing the
+// strongest of them. The GPU's min is per channel, so the two agree wherever
+// the overlapping ribbons share a colour
 export function drawSyntenyTrack(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
@@ -153,6 +176,7 @@ export function drawSyntenyTrack(
   logicalW: number,
   overdrawPx: number,
   groundColor: string,
+  overlapsStack = true,
 ) {
   const ground = cssColorToRgb(groundColor)
   const outlineInk = withAlpha(getContrastText(groundColor), STROKE_ALPHA)
@@ -169,12 +193,18 @@ export function drawSyntenyTrack(
   } = params
   const style = new StyleCache()
   const scratch = makeCornerScratch()
-  // Every stroke this function makes is 1px (centerlines, marker ticks, the
-  // clicked outline), so the width is set once for the pass.
-  ctx.lineWidth = 1
-  for (let i = 0; i < data.instanceCount; i++) {
+  const paint: InstancePaint = {
+    mode: FILL,
+    r: 0,
+    g: 0,
+    b: 0,
+    a: 0,
+    outline: false,
+  }
+
+  function resolve(i: number) {
     if (data.alignmentLengths[i]! < minAlignmentLength) {
-      continue
+      return undefined
     }
     // Read before both tests below, which each need it: a marker keeps its own
     // alpha through the opacity slider (see isInstanceInvisible), and is culled
@@ -184,12 +214,12 @@ export function drawSyntenyTrack(
 
     const packed = data.colors[i]!
     if (isInstanceInvisible(packed, isMarker ? 1 : alpha)) {
-      continue
+      return undefined
     }
 
     const c = projectCorners(data, i, transform, scratch)
     if (isRibbonCulled(c, logicalW, overdrawPx, isMarker)) {
-      continue
+      return undefined
     }
 
     // Location markers: zero-width context ticks. Drawn as a fixed 1px line at
@@ -199,15 +229,13 @@ export function drawSyntenyTrack(
     // predicate itself is now the shader's, generated (adr-051), so the
     // threshold can't drift even though the shading below still can.
     if (isMarker) {
-      style.stroke(
-        ctx,
-        abgrRed(packed),
-        abgrGreen(packed),
-        abgrBlue(packed),
-        abgrAlpha(packed) / 255,
-      )
-      strokeCenterline(ctx, c, yTop, height, drawCurves)
-      continue
+      paint.mode = MARKER
+      paint.r = abgrRed(packed)
+      paint.g = abgrGreen(packed)
+      paint.b = abgrBlue(packed)
+      paint.a = abgrAlpha(packed) / 255
+      paint.outline = false
+      return c
     }
 
     const featureId = data.instanceFeatureIdx[i]! + 1
@@ -220,6 +248,9 @@ export function drawSyntenyTrack(
       b,
       a: fa,
     } = resolveInstanceFill(packed, isCigar, isHovered, alpha, ground)
+    paint.r = r
+    paint.g = g
+    paint.b = b
 
     // Sub-pixel handling keys on the ribbon's PERPENDICULAR (visual) thickness,
     // not horizontal span: a steep diagonal can be several px wide horizontally
@@ -262,17 +293,63 @@ export function drawSyntenyTrack(
     // place, so it can only be the clicked one after a zoom-out.
     if (ribbonMaxPerpWidth(c, height, drawCurves) < 1) {
       const perpW = ribbonPerpWidth(c, height)
-      const widthFade = thinWidthFade(perpW, kind, fadeThinAlignments)
-      style.stroke(ctx, r, g, b, fa * widthFade)
-      strokeCenterline(ctx, c, yTop, height, drawCurves)
+      paint.mode = STROKE
+      paint.a = fa * thinWidthFade(perpW, kind, fadeThinAlignments)
+      paint.outline = false
     } else {
-      style.fill(ctx, r, g, b, fa)
+      paint.mode = FILL
+      paint.a = fa
+      paint.outline = isClicked && !isCigar
+    }
+    return c
+  }
+
+  function draw(c: ProjectedCorners, opaque: boolean) {
+    const { a } = paint
+    const r = opaque ? Math.round(paint.r * a + ground[0] * (1 - a)) : paint.r
+    const g = opaque ? Math.round(paint.g * a + ground[1] * (1 - a)) : paint.g
+    const b = opaque ? Math.round(paint.b * a + ground[2] * (1 - a)) : paint.b
+    const alphaOut = opaque ? 1 : a
+    if (paint.mode === FILL) {
+      style.fill(ctx, r, g, b, alphaOut)
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
-      if (isClicked && !isCigar) {
+      if (paint.outline) {
         style.strokeLiteral(ctx, outlineInk)
         strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
       }
+    } else {
+      style.stroke(ctx, r, g, b, alphaOut)
+      strokeCenterline(ctx, c, yTop, height, drawCurves)
     }
+  }
+
+  // Every stroke this function makes is 1px (centerlines, marker ticks, the
+  // clicked outline), so the width is set once for the pass.
+  ctx.lineWidth = 1
+  if (overlapsStack) {
+    for (let i = 0; i < data.instanceCount; i++) {
+      const c = resolve(i)
+      if (c) {
+        draw(c, false)
+      }
+    }
+    return
+  }
+  const order: number[] = []
+  const strength = new Float32Array(data.instanceCount)
+  for (let i = 0; i < data.instanceCount; i++) {
+    if (resolve(i)) {
+      order.push(i)
+      strength[i] =
+        paint.a *
+        (Math.abs(paint.r - ground[0]) +
+          Math.abs(paint.g - ground[1]) +
+          Math.abs(paint.b - ground[2]))
+    }
+  }
+  order.sort((x, y) => strength[x]! - strength[y]!)
+  for (const i of order) {
+    draw(resolve(i)!, true)
   }
 }

@@ -577,6 +577,13 @@ negative heights skip on both, a band off either canvas edge draws nothing on
 both, a band taller than the canvas clamps on both — so this is the one row
 where a band mid-height-drag can differ.
 
+Where ribbons do not stack (`overlapsStack: false`, the multi-way gutters), the
+GPU keeps the strongest per channel under `min` or `max`, while Canvas2D and the
+SVG export, which have no such blend, paint the pre-blended ribbons weakest
+first so the strongest whole colour lands last. The two agree wherever the
+overlapping ribbons share a colour; a red over a blue ribbon differs, and so
+does a pixel at an antialiased edge several copies cover.
+
 Synteny carries two more of these, both surviving the mark port unchanged.
 `perpCoverage` measures a per-fragment width from the two edges' own
 foreshortenings where `ribbonPerpWidth` measures the whole ribbon's from its
