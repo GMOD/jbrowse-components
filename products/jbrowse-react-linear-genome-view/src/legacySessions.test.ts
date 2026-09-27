@@ -144,3 +144,16 @@ test('a config.json track spelling the retired type carries the current name', (
     { type: 'LinearWiggleDisplay', mark: 'bar', rows: 'source' },
   ])
 })
+
+// A share link's session spec launches with `displaySnapshot.type`, which an
+// old link spells with the retired name.
+test('launching a track under a retired display type opens its successor', async () => {
+  const state = createViewState({ assembly, tracks })
+  await state.session.view.launchTrack(
+    'multi',
+    {},
+    { type: 'MultiLinearWiggleDisplay' },
+  )
+
+  expect(displayOf(state).type).toBe('LinearWiggleDisplay')
+})

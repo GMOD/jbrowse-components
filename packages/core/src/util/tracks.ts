@@ -1387,9 +1387,9 @@ export function showTrackGeneric(
       displays: [
         {
           ...displayConf,
-          type: displayType,
           configuration: displayId,
           ...displayInitialSnapshot,
+          type: displayType,
         },
       ],
     })
