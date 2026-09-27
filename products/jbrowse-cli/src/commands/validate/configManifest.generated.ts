@@ -4491,7 +4491,8 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "configuration",
-        "laneFilter"
+        "laneFilter",
+        "frozenLanes"
       ]
     },
     "LinearReferenceSequenceDisplay": {

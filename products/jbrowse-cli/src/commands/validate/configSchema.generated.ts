@@ -5756,9 +5756,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "splitStrands": {
-          "description": "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack.",
+          "description": "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack. A lane too short for two rows draws one.",
           "type": "boolean",
-          "default": false
+          "default": true
         }
       }
     },
@@ -14958,6 +14958,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "laneFilter": {},
+        "frozenLanes": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."

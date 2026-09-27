@@ -111,7 +111,7 @@ never a circle, whose tracks carry displays a linear panel cannot draw.
 
 ```js
 // type signature
-(view?: { type: string; } | undefined) => (ModelInstanceTypeProps<_OverrideProps<…>> & ... 26 more ... & IStateTreeNode<...>) | undefined
+(view?: { type: string; } | undefined) => (ModelInstanceTypeProps<_OverrideProps<…>> & ... 27 more ... & IStateTreeNode<...>) | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

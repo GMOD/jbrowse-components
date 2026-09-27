@@ -57,7 +57,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;{ id: IOptionalIType&lt;…&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;{ id: IOptionalIType&lt;…&gt;; displayName: IMaybe&lt;…&gt;; minimized: IOptionalIType&lt;…&gt;; }, { ...; }&gt;&gt; &amp; ... 26 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | LDTrackDisplay |
+| <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;{ id: IOptionalIType&lt;…&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;{ id: IOptionalIType&lt;…&gt;; displayName: IMaybe&lt;…&gt;; minimized: IOptionalIType&lt;…&gt;; }, { ...; }&gt;&gt; &amp; ... 27 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | LDTrackDisplay |
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> |  | LDTrackDisplay |
 | <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> |  | LDTrackDisplay |
 | <span id="getter-ldmetric">**ldMetric**</span><br><code>LDMetric</code> |  | LDTrackDisplay |
