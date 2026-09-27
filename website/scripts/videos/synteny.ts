@@ -7,15 +7,9 @@
 // chain block.
 import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
-import { GRAPH_DRAWN } from '../specs/graph-fixtures.ts'
 import { hg002VideoFixtures } from '../specs/hg002_haplotypes.ts'
 import { syntenyVideoFixtures } from '../specs/synteny.ts'
-import {
-  DISPLAY_TYPES,
-  GRAPH_DISPLAY,
-  RUBBERBAND,
-  trackMenu,
-} from './shared.ts'
+import { RUBBERBAND } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -36,7 +30,6 @@ const {
   restackLanes,
   restackSpan,
   roundTripStart,
-  segmentsTrackId,
   strains,
   unorderedDotplot,
 } = syntenyVideoFixtures
@@ -252,12 +245,12 @@ export const syntenyVideos: VideoSpec[] = [
     goal: 'Turn the grasses ortholog lanes into a stack, one panel per grass',
     url: grassesLanes,
     // Sized to the LAUNCHED STACK, the tallest of the three states and the
-    // frame the poster comes from: the run measured the app at 665 on the
-    // opening lanes and 705 once the five rows and four bands were standing,
-    // so 750 holds the payoff with the caption chip's strip under it — and
+    // frame the poster comes from: the run measured the app at 671 on the
+    // opening lanes and 711 once the five rows and four bands were standing,
+    // so 830 holds the payoff with the caption chip's strip under it — and
     // leaves the dialog's paper far over what the allvsall tour measured five
     // rows needing. The blank under the lanes early on is the stack's room.
-    viewportHeight: 750,
+    viewportHeight: 830,
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     steps: [
@@ -344,10 +337,10 @@ export const syntenyVideos: VideoSpec[] = [
     url: emptySyntenyForm,
     // One frame serves three states and the tallest is the last: the run reports
     // the app at 289 on the opening form, 572 with the stack standing empty, and
-    // 821 once three gene lanes have replaced the three empty-state blocks. The
+    // 839 once three gene lanes have replaced the three empty-state blocks. The
     // rest is the caption chip's strip, which is fixed to the frame's bottom
     // rather than the app's.
-    viewportHeight: 900,
+    viewportHeight: 960,
     readySelector: '::-p-text(Quick start)',
     readyTimeout: 120000,
     steps: [
@@ -406,7 +399,11 @@ export const syntenyVideos: VideoSpec[] = [
       // Three genomes and two alignment indexes, off camera: a film of that is a
       // film of an empty view.
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
-      { type: 'delay', ms: 1500 },
+      {
+        type: 'delay',
+        ms: 1500,
+        say: "It opens empty; add each strain's genes from its own row",
+      },
       // ONE ZOOM IN PER ROW before the gene lanes. A whole strain is 0.95
       // top-level genes per pixel against maxFeatureScreenDensity's 1, inside
       // the density probe's ~7% estimate error; half of one is 0.47 at full
@@ -433,7 +430,6 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'click',
         text: 'Open track selector',
-        say: "It opens empty; add each strain's genes from its own row",
         hold: 700,
       },
       {
@@ -767,7 +763,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: "It sorts the vertical axis to follow peach's, fixed across",
+        say: "Start re-sorts grape's axis to follow peach's, which stays put",
       },
       { type: 'click', text: 'Start' },
       // ON CAMERA, deliberately, and this is the step where that is a choice.
@@ -1082,12 +1078,10 @@ export const syntenyVideos: VideoSpec[] = [
     // standing, and neither overlay is the constraint: the dialog is two
     // checkboxes and a number field (the region launch's panel list is what puts
     // that tour's frame up at 640), and the context menu is three rows opening
-    // below a click near the top of the frame. What the last 72px are for is the
-    // chip, which is fixed 20px off the BOTTOM of the frame rather than under
-    // the app -- at 480 it lands over the empty mate panel, which is the half of
-    // the last state the caption is about. 72 is inside video-report's 120px
-    // slack, so it reports nothing. Even, per the encode.
-    viewportHeight: 540,
+    // below a click near the top of the frame. The last 126px are the caption
+    // chip's strip: the chip is fixed off the BOTTOM of the frame rather than
+    // under the app, and at 540 it sat over the hs1 panel.
+    viewportHeight: 600,
     // LGVSyntenyDisplay is the alignments display underneath, so its canvas
     // carries the pileup testid.
     readySelector: displayPainted('pileup-display'),
@@ -1184,32 +1178,27 @@ export const syntenyVideos: VideoSpec[] = [
   },
 
   // THE ROUND TRIP, which pangenome_ecoli.md's "Browsing the whole graph by
-  // locus" states in one paragraph: a rubberband on K-12 launches the synteny
-  // stack; the stack's K-12 row carries the segments lane, so the graph is one
-  // track menu away from inside the stack; and a drag on any other row's ruler
-  // raises the same launch anchored on that strain, whose Replace current view
-  // re-anchors the stack in place.
+  // locus" states in one sentence: a rubberband on K-12 launches the synteny
+  // stack, and a drag on any other row's ruler raises the same launch anchored
+  // on that strain, whose Replace current view re-anchors the stack in place.
   //
-  // The graph comes BEFORE the re-anchor, and the order is forced: a launch
-  // copies the launching row's tracks onto the anchor panel and nothing onto the
-  // mates, so once the stack is re-anchored on Sakai the K-12 row is a bare
-  // ruler with no segments lane to redraw. Filmed the other way round the graph
-  // beat has no track to click.
+  // Redrawing the K-12 row's segments lane as the graph was filmed here too and
+  // cut: it made the middle of the clip 911px tall against a 566px ending, and
+  // the section's sentence is about the two launches.
   //
   // The Sakai row's drag is a selector anchor with `dx` either side of the
   // ruler's centre rather than a locus: Sakai's coordinates for this window
   // are whatever the launch resolved them to, and naming them here would pin
-  // the tour to one resolution of the PAF.
+  // the tour to one resolution of the PAF. Most of the ruler, so the
+  // re-anchored stack keeps the indels at the window's edges.
   {
     name: 'synteny/ecoli_roundtrip',
     description:
-      'One selection on K-12 and the stacks it launches: the stack anchored on K-12 with the segments lane on its top row, that lane redrawn as the graph, and a drag on the Sakai row re-anchoring the stack on Sakai',
-    goal: 'From one K-12 selection to a strain stack, its graph, and back',
+      'One selection on K-12 and the stacks it launches: the stack anchored on K-12, then a drag on the Sakai row re-anchoring the stack on Sakai',
+    goal: 'From one K-12 selection to a strain stack, re-anchored on Sakai',
     url: roundTripStart,
-    // The frame of the clip on the page, which was filmed through the
-    // standalone graph view; re-size it off the run's content report when
-    // the tour is re-filmed.
-    viewportHeight: 1410,
+    // the launch dialog's five rows are the tallest state
+    viewportHeight: 780,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 180000,
     steps: [
@@ -1256,38 +1245,26 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 180000,
       },
       { type: 'waitForAppSettled', timeout: 180000 },
-      { type: 'delay', ms: 2500 },
-      // The graph, from the segments lane the launch carried onto the K-12 row.
       {
-        type: 'click',
-        selector: trackMenu(segmentsTrackId),
-        say: "Redraw the K-12 row's segments lane as the graph",
-        hold: 700,
+        type: 'delay',
+        ms: 2500,
+        say: 'The stack, anchored on K-12, one row per strain',
       },
-      { type: 'waitForSelector', selector: DISPLAY_TYPES },
-      { type: 'click', selector: DISPLAY_TYPES, hold: 700 },
-      { type: 'waitForSelector', selector: GRAPH_DISPLAY },
-      { type: 'click', selector: GRAPH_DISPLAY },
-      { type: 'waitForSelector', selector: GRAPH_DRAWN, timeout: 180000 },
-      { type: 'waitForAppSettled', timeout: 180000 },
-      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'delay', ms: 3000 },
-      // The re-anchor: a drag on the Sakai row's own ruler.
       {
         type: 'drag',
         fromAnchor: {
           selector: RUBBERBAND,
           view: [0, 1],
           alignX: 'center',
-          dx: -220,
+          dx: -800,
         },
         toAnchor: {
           selector: RUBBERBAND,
           view: [0, 1],
           alignX: 'center',
-          dx: 220,
+          dx: 800,
         },
-        say: "Then select on Sakai's row to re-anchor the stack on Sakai",
+        say: "Select on Sakai's row to re-anchor the stack on Sakai",
         hold: 900,
       },
       { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
@@ -1344,7 +1321,7 @@ export const syntenyVideos: VideoSpec[] = [
     // is sized to the end state and the run reports the app's own height there;
     // the slack over it is the caption chip's strip, which is fixed off the
     // frame's bottom rather than the app's.
-    viewportHeight: 1260,
+    viewportHeight: 1340,
     readySelector: displayPainted('maf-display'),
     readyTimeout: 180000,
     steps: [

@@ -3,7 +3,7 @@ import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { bisulfiteVideoFixtures } from '../specs/methylation.ts'
 import { chromhmmVideoFixtures } from '../specs/ui.ts'
-import { DENDROGRAM, trackMenu } from './shared.ts'
+import { DENDROGRAM, leaveMenu, trackMenu } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -31,43 +31,6 @@ const CONTEXT = (label: string) => colorCascade('menuitem', label)
 // there only moves the pointer.
 const WORDMARK = '[aria-label="JBrowse"]'
 
-// Leave the whole cascade and put the cursor somewhere inert, so the frame the
-// context change produced is not under the menu that produced it — and here the
-// menu is exactly over the half of the window that has to change, since it drops
-// from a track header at the left.
-//
-// A radio only writes a setting, so all three levels are still up after the
-// pick: the track menu, Color by... and Bisulfite / EM-seq. ONE CLICK ON THE
-// ROOT MENU'S BACKDROP TAKES ALL THREE, because the submenus are React children
-// of the root's list and unmount with it.
-//
-// Escape does not, and two takes went into finding out. It reaches the top modal
-// of MUI's own stack and shuts exactly that one; MUI then restores focus outside
-// any menu, so the second press lands on an element no modal is listening
-// through and the run dies waiting for a level that never closed. Nothing on
-// screen says which of the two happened, which is the whole reason the waits
-// name a row per level.
-//
-// The backdrop is the ROOT's: a submenu's `HoverMenu` sets pointer-events none
-// on its own modal root so a hovering pointer can cross the gap, and its
-// backdrop inherits that, so the first `.MuiBackdrop-root` in the document is
-// the only one a click can reach. The wordmark cannot serve as the outside
-// click, incidentally: this harness falls back to `node.click()` for a covered
-// target, and the wordmark is a bare SVG `<g>`, which has no such method.
-//
-// Neither click holds: what a reader is waiting for is the lane behind the menu,
-// and the wait under each click already carries the menu going away.
-const leaveTheMenu: VideoStep[] = [
-  { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
-  { type: 'waitForSelector', selector: COLOR_BY, hidden: true },
-  // The menu icon keeps FOCUS once the menu goes, so its "Track settings"
-  // tooltip stays up over the lane. The wordmark is inert, and clicking it both
-  // blurs the icon and parks the cursor clear of the pileup, which would
-  // otherwise draw a read tooltip under the pointer for the rest of the clip.
-  { type: 'click', selector: WORDMARK, hold: 0 },
-  { type: 'waitForText', text: 'Track settings', hidden: true },
-]
-
 // One trip through the cascade to set one cytosine context, ending on the
 // recolored pileup with nothing over it.
 const pickContext = (label: string): VideoStep[] => [
@@ -88,7 +51,7 @@ const pickContext = (label: string): VideoStep[] => [
   // The radio mark moving, before the menu goes: that is the only frame saying
   // which of the four is now in force.
   { type: 'click', selector: CONTEXT(label), hold: 1400 },
-  ...leaveTheMenu,
+  ...leaveMenu(COLOR_BY),
   // The recolor itself, on camera. Nothing is refetched — the reads are
   // loaded and the context is a render prop — so what plays here is the same
   // pileup repainting, which is the whole claim three stacked panels cannot
@@ -121,9 +84,10 @@ export const epigenomicsVideos: VideoSpec[] = [
     goal: 'Recolor one plant WGBS pileup by each cytosine context in turn',
     url: cpgPileup,
     // genes + the repeat lane + the aggregate's three rows + one 200px pileup +
-    // headers/ruler/overview. Nothing in the tour grows the app: a context is a
-    // render prop, so the lane it repaints keeps its own height.
-    viewportHeight: 848,
+    // headers/ruler/overview, 850px, and the caption chip's strip under it.
+    // Nothing in the tour grows the app: a context is a render prop, so the lane
+    // it repaints keeps its own height.
+    viewportHeight: 970,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
     steps: [

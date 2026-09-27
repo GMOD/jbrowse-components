@@ -2,7 +2,7 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { methylationVideoFixtures } from '../specs/methylation.ts'
-import { cascade, openTrackByUrlSteps, trackMenu } from './shared.ts'
+import { cascade, leaveMenu, openTrackByUrlSteps, trackMenu } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
@@ -59,11 +59,7 @@ export const methylationVideos: VideoSpec[] = [
       },
       { type: 'waitForSelector', selector: TWO_COLOR },
       { type: 'click', selector: TWO_COLOR, hold: 1200 },
-      // a radio keeps its cascade up over the reads it recolored
-      { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
-      { type: 'waitForSelector', selector: TWO_COLOR, hidden: true },
-      { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'waitForText', text: 'Track settings', hidden: true },
+      ...leaveMenu(TWO_COLOR),
       { type: 'waitForAppSettled', timeout: 120000 },
       {
         type: 'delay',

@@ -57,13 +57,13 @@ window with no satellite has no satellite lane.
 ## Switching the track over
 
 Open RepeatMasker, then **Display types → Multi-row feature display (painting)**
-in the track menu. That splits the track on the `name` column, which is one row
-per repeat, so the second pick is **Partition by... → repClass** in the same
-menu, which lists the columns the loaded features carry. <!-- menu-path-ok -->
+in the track menu. The painting partitions on `repClass` whenever the file has
+that column; **Partition by...** in the same menu lists every column the loaded
+features carry, `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track. Any feature track offers the multi-row display beside its default one." />
 
-<Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed lane to a labelled lane per class: the multi-row painting display, then the repeat class column picked out of the ones the file carries." />
+<Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed lane to a labelled lane per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column the file carries." />
 
 The colored, packed form and the lane form are the same track and the same
 fetch:

@@ -14,9 +14,10 @@ import { GRAPH_DRAWN, graphCutDrawn } from '../specs/graph-fixtures.ts'
 import { hprcClusterFixtures, hprcVideoFixtures } from '../specs/graph-hprc.ts'
 import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
 import {
-  LOCATION_BOX,
   cascade,
   displayReady,
+  leaveMenu,
+  LOCATION_BOX,
   trackMenu,
   zoomToSteps,
 } from './shared.ts'
@@ -179,16 +180,6 @@ function addGraphTrackSteps(json: string): VideoStep[] {
     { type: 'click', text: 'Submit' },
   ]
 }
-
-// A radio row of the graph's own menu leaves the cascade standing over the
-// drawing it changed: the backdrop takes every level, and the wordmark blurs the
-// menu icon, whose tooltip outlives the menu.
-const leaveTheMenu = (row: string): VideoStep[] => [
-  { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
-  { type: 'waitForSelector', selector: row, hidden: true },
-  { type: 'click', selector: WORDMARK, hold: 0 },
-  { type: 'waitForText', text: 'Track settings', hidden: true },
-]
 
 // A pasted config with no `displayId` gets `<trackId>-<displayType>`.
 const K12_GENES_READY = displayReady('K12_genes-LinearBasicDisplay')
@@ -359,7 +350,7 @@ export const pangenomeVideos: VideoSpec[] = [
       { type: 'click', selector: cascade('submenu', 'Layout'), hold: 800 },
       { type: 'waitForSelector', selector: FORCE_LAYOUT_ROW },
       { type: 'click', selector: FORCE_LAYOUT_ROW, hold: 800 },
-      ...leaveTheMenu(FORCE_LAYOUT_ROW),
+      ...leaveMenu(FORCE_LAYOUT_ROW),
       {
         type: 'waitForSelector',
         selector: FORCE_DRAWN,
@@ -546,11 +537,12 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/hprc_cluster_callset',
     description:
-      "HPRC's 464 haplotypes clustered by genotype from the track menu, so the carriers of the MHC class II deletion gather into one block",
-    goal: 'Cluster 464 haplotypes so carriers of a deletion group together',
+      "HPRC's 464 haplotypes clustered by genotype from the track menu, so the haplotypes sharing structural alleles gather into blocks",
+    goal: 'Cluster 464 haplotypes so the ones sharing alleles sit together',
     url: hprcClusterFixtures.session,
-    // the dendrogram draws beside the rows, so the app height holds at 739px
-    viewportHeight: 750,
+    // the dendrogram draws beside the rows, so the app holds at 765px, with the
+    // caption chip's strip under it
+    viewportHeight: 880,
     readySelector: hprcClusterFixtures.ready,
     readyTimeout: 360000,
     steps: [
@@ -578,7 +570,7 @@ export const pangenomeVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'The haplotypes carrying the deletion now sit in one block',
+        say: 'Haplotypes sharing alleles now gather into blocks',
       },
     ],
     tailMs: 4000,

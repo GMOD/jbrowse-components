@@ -141,34 +141,27 @@ const COLLAPSE_DOMAIN_KEY: ScreenshotAction[] = [
 // TP53 rather than NLRP1, and the reason is the second half of the clip: the
 // launch is only worth watching if the two views are then seen to be one view,
 // and that needs a locus whose variants a reader already expects to be there.
-// The window is the gene plus a margin, so the hover walk below has exons and
-// introns in the same frame.
 //
 // ClinVar SNVs ride along because the residue a variant lands on is the question
 // the connected view answers. The hover does NOT need a variant under the
 // cursor: the highlight follows the mouse's genomic position through the
 // transcript's CDS, so what the track contributes is the reason to look, not the
 // target to hit.
-const TP53_WINDOW = 'chr17:7,668,000-7,688,000'
+//
+// The window is 2.2 kb of the gene rather than all of it, for two reasons. The
+// ALIGNMENT panel scrolls horizontally and a hover does not scroll it, so only
+// the protein's first ~160 residues are on screen; TP53 is on the minus strand,
+// so those are the gene's right-hand 1.6 kb, eighty pixels of a 20 kb view. And
+// at 20 kb ClinVar paints "Too many features" instead of its variants.
+const TP53_WINDOW = 'chr17:7,674,400-7,676,600'
 const TP53_GENE_TRACK = 'hg38-ncbiRefSeqCurated'
 const TP53_CLINVAR_TRACK = 'hg38-clinvarMain'
 
 export const proteinTourFixtures = {
   geneTrack: TP53_GENE_TRACK,
-  // The window the tour zooms to before it hovers, and the three positions it
-  // hovers in it. Measured on this transcript rather than worked out from the
-  // exon list: 7,676,250 is residue 34, 7,675,200 is residue 134, and 7,674,600
-  // is in the intron between them and maps to nothing.
-  //
-  // Two constraints pick these, and they pull opposite ways at gene-wide zoom.
-  // The ALIGNMENT panel scrolls horizontally and a hover does not scroll it, so
-  // only the protein's first ~160 residues are on screen and a hover past them
-  // moves a column nobody can see. TP53 is on the minus strand, so those
-  // residues are the gene's right-hand 1.6 kb — which across a 20 kb view is
-  // eighty pixels, and three hovers inside it read as one twitching cursor.
-  // Hence the zoom: at this window the same three positions are spread across
-  // the frame, and the exon they leave is visible under the cursor.
-  hoverWindow: 'chr17:7,674,400-7,676,600',
+  // The positions the tour hovers, measured on this transcript rather than
+  // worked out from the exon list: 7,676,250 is residue 34, 7,675,200 is
+  // residue 134, and 7,674,600 is in the intron between them.
   codingLocus: 'chr17:7,676,250',
   secondCodingLocus: 'chr17:7,675,200',
   // The negative. g2p_mapper skips introns and UTRs, so the readout empties

@@ -5345,9 +5345,6 @@ export const syntenyVideoFixtures = {
   allVsAllLanes: ECOLI_ONE_VS_ALL_LANES,
   roundTripStart: ECOLI_ROUND_TRIP_START,
   mafRows: ECOLI_MAF_ROWS,
-  // The rGFA segments lane's track, which the round trip launches the graph
-  // from once it has ridden onto the stack's K-12 row.
-  segmentsTrackId: 'ecoli_minigraph_segments',
   // The alignment lane the MAF tour drags across, and the reference span the
   // drag covers. The x is named on K-12 because that is the axis the rows are
   // drawn against; which rows the drag catches is the `fracY` at each end, and

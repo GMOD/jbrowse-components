@@ -5,7 +5,6 @@
 import { RELEASED_CODE_BASE } from '../../src/lib/code-base.ts'
 import { proteinLaunchFixtures } from '../specs/features.ts'
 import { proteinTourFixtures } from '../specs/msa.ts'
-import { zoomToSteps } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -70,15 +69,6 @@ export const proteinVideos: VideoSpec[] = [
         cut: true,
       },
       { type: 'delay', ms: 2000 },
-      // the alignment panel shows only the first ~160 residues, which on a
-      // minus-strand gene are its right-hand 1.6 kb: eighty pixels across the
-      // whole gene, and a frame-wide span once zoomed
-      ...zoomToSteps(
-        proteinTourFixtures.hoverWindow,
-        'Select a few exons on the scale bar and zoom in',
-      ),
-      // a delay, not waitForAppSettled: the release publishes no data-app-phase
-      { type: 'delay', ms: 3000 },
       hoverAt(
         proteinTourFixtures.codingLocus,
         3000,
@@ -98,8 +88,6 @@ export const proteinVideos: VideoSpec[] = [
         say: 'Each coding base of the genome maps to one residue of the structure',
       },
     ],
-    // the tail un-hovers everything, so the poster comes off the last hover
-    posterAt: 40,
     tailMs: 1200,
   },
   // Both launchers ask the session to split the new view off to the right, and
@@ -181,15 +169,13 @@ export const proteinVideos: VideoSpec[] = [
         type: 'click',
         selector:
           '[data-tab-strip] > div:not([role="tablist"]) button:first-of-type',
-        say: 'Tile the three views side by side, then zoom in on the exons',
+        say: 'Tile the three views side by side',
       },
       {
         type: 'click',
         text: 'Global: tile horizontally',
         hold: 1000,
       },
-      { type: 'waitForAppSettled' },
-      ...zoomToSteps(proteinTourFixtures.hoverWindow),
       { type: 'waitForAppSettled', timeout: 120000 },
       hoverAt(
         proteinTourFixtures.codingLocus,
@@ -203,7 +189,6 @@ export const proteinVideos: VideoSpec[] = [
         say: 'One genome position: one alignment column, one residue on the structure',
       },
     ],
-    posterAt: 44,
     tailMs: 1200,
   },
   // protein3d adds its tracks to the session and turns none of them on, so a
@@ -216,7 +201,7 @@ export const proteinVideos: VideoSpec[] = [
     goal: "Open TP53's protein as a genome of its own, with tracks on it",
     url: proteinLaunchFixtures.session,
     // the two views and the drawer open beside them
-    viewportHeight: 1046,
+    viewportHeight: 1170,
     // the UCSC hub config is ~570 tracks and pulls four remote plugins
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,

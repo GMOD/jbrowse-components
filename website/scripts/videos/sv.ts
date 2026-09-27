@@ -4,9 +4,9 @@ import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { cgiabVideoFixtures, svVideoFixtures } from '../specs/sv.ts'
 import { SORT_BY_GENOTYPE, multisvVideoFixtures } from '../specs/ui.ts'
-import { DENDROGRAM, cascade, trackMenu } from './shared.ts'
+import { cascade, DENDROGRAM, leaveMenu, trackMenu } from './shared.ts'
 
-import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
+import type { VideoSpec } from '../video-spec-types.ts'
 
 const { assembly, callsetUrl, emptySession } = svVideoFixtures
 const {
@@ -24,23 +24,6 @@ const {
 const WORDMARK = '[aria-label="JBrowse"]'
 
 const cgiabCoverageMenu = trackMenu(cgiabVideoFixtures.coverageTrackId)
-
-// A radio row only writes a setting, so every level of the cascade it sits in is
-// still standing over the lane it just changed. One click on the ROOT menu's
-// backdrop takes all of them (the submenus are React children of its list);
-// Escape reaches one level per press and only from the top of MUI's modal stack.
-// The second click blurs the menu icon, whose "Track settings" tooltip outlives
-// the menu, and parks the cursor clear of the lane.
-const leaveTheMenu: VideoStep[] = [
-  { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
-  {
-    type: 'waitForSelector',
-    selector: cascade('submenu', 'Plot type'),
-    hidden: true,
-  },
-  { type: 'click', selector: WORDMARK, hold: 0 },
-  { type: 'waitForText', text: 'Track settings', hidden: true },
-]
 
 // The import form's assembly select carries no test id, but it is labelled, so
 // the accessible name is the handle — the same word the page uses when it says
@@ -173,10 +156,10 @@ export const svVideos: VideoSpec[] = [
     // the LEFT (`treeSidebarOffset`), and the cluster dialog is centred in a
     // frame this tall with room to spare.
     //
-    // 1236 rather than that figure's 1230: the run measured the app at 1234,
+    // 1244 rather than that figure's 1230: the run measured the app at 1240,
     // since the figure is captured at its content height and this is a fixed
     // frame that has to hold it.
-    viewportHeight: 1236,
+    viewportHeight: 1244,
     // BOTH heavy lanes, in one gate. The matrix has to be carrying genotypes
     // before the camera starts, because `sortByGenotype` computes the order from
     // `cellData` on the main thread — a right-click before the callset lands
@@ -349,7 +332,7 @@ export const svVideos: VideoSpec[] = [
         selector: cascade('menuitem', 'Scatter'),
         hold: 1400,
       },
-      ...leaveTheMenu,
+      ...leaveMenu(cascade('submenu', 'Plot type')),
       { type: 'waitForAppSettled', timeout: 120000 },
       {
         type: 'delay',

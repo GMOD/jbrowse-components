@@ -15,29 +15,21 @@ export const repeatVideos: VideoSpec[] = [
   // second track added, which is the whole of what repeatmasker_classes.md is
   // for.
   //
-  // It also films a step the page does not have. Picking the display type
-  // leaves `rows` picking `name`, which on RepeatMasker is one
-  // row per repeat — the intermediate state here — and the class lanes are a
-  // second pick, `Partition by...`. The page goes straight from the Display
-  // types instruction to a figure of the finished lanes, so a reader following
-  // it lands on the hairlines and has nothing to do next. The user guide
-  // (multirow_feature_track.md) has both picks; the tutorial had one.
-  //
-  // The `Partition by...` submenu is the payoff frame: its options are read off
-  // the loaded features' own attribute names, so `repClass` and `repFamily`
-  // being in that list IS the page's opening claim that "the class is already
-  // in the file".
+  // The painting partitions on `repClass` whenever the file has that column
+  // (PREFERRED_PARTITION_FIELDS), so one Display types pick is the whole
+  // route. A Partition by... beat was filmed here too and cut: it picked the
+  // radio the app had already filled.
   {
     name: 'repeats/painting_display_switch',
     description:
-      "UCSC RepeatMasker from one packed lane to a labelled lane per repeat class: Display types, the multi-row painting, then Partition by repClass out of the columns the file's own features carry",
+      "UCSC RepeatMasker from one packed lane to a labelled lane per repeat class: Display types, and the multi-row painting partitioning on the file's own repClass column",
     goal: 'Split one RepeatMasker lane into a lane per repeat class',
     url: twoDisplaySession,
     // The lanes are the tall state, at the 260 the session pins them to — the
     // same height multirow/display_types_rows captures its lanes at. The packed
     // lane the tour opens on is a third of that, so the blank under it is the
     // lanes' room. Even, per the encode.
-    viewportHeight: 520,
+    viewportHeight: 592,
     readySelector: '::-p-text(RepeatMasker)',
     readyTimeout: 60000,
     steps: [
@@ -50,7 +42,7 @@ export const repeatVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(rmskTrackId),
-        say: 'Redraw the lane as a painting, one row per repeat name',
+        say: 'Redraw the lane as a painting from the track menu',
         hold: 1200,
       },
       { type: 'waitForText', text: 'Display types' },
@@ -60,37 +52,9 @@ export const repeatVideos: VideoSpec[] = [
       // The switch re-fetches through the multi-row RPC, which packs the
       // features into rows on the way back.
       { type: 'waitForAppSettled', timeout: 120000, cut: true },
-      { type: 'delay', ms: 3000 },
-      {
-        type: 'click',
-        selector: trackMenu(rmskTrackId),
-        say: "Then partition the rows by the file's own repClass column",
-        hold: 1200,
-      },
-      { type: 'waitForText', text: 'Partition by...' },
-      {
-        type: 'click',
-        text: 'Partition by...',
-        // long enough to read the list, which is the file's own columns rather
-        // than anything the config named
-        hold: 3000,
-      },
-      { type: 'waitForText', text: 'repClass' },
-      { type: 'click', text: 'repClass' },
-      { type: 'waitForAppSettled', timeout: 120000, cut: true },
-      // A radio that only writes a setting keeps its menu up, and the menu
-      // covers the lanes it just produced. Two levels to leave, and the waits
-      // are what say it happened: focus is inside the list after the click, so
-      // Escape reaches it here.
-      { type: 'press', key: 'Escape' },
-      { type: 'press', key: 'Escape' },
-      { type: 'waitForText', text: 'Partition by...', hidden: true },
-      { type: 'waitForText', text: 'About track', hidden: true },
-      // The menu icon keeps FOCUS once the menu goes, so its "Track settings"
-      // tooltip stays up over the first lane; hovering elsewhere does not take
-      // a focus tooltip down. A click on the logo blurs it and parks the cursor
-      // clear of the lanes — the logo is a bare `<g>` with no handler, so the
-      // click does nothing else.
+      // The menu icon keeps FOCUS once the cascade closes, so its "Track
+      // settings" tooltip stays up over the first lane; a click on the logo
+      // blurs it.
       { type: 'click', selector: '[aria-label="JBrowse"]' },
       { type: 'waitForText', text: 'Track settings', hidden: true },
       {

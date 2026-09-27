@@ -6,10 +6,11 @@ import {
 } from '../specs/features.ts'
 import { uiVideoFixtures } from '../specs/ui.ts'
 import {
-  LOCATION_BOX,
-  RUBBERBAND,
   cascade,
+  leaveMenu,
+  LOCATION_BOX,
   openTrackByUrlSteps,
+  RUBBERBAND,
   trackMenu,
 } from './shared.ts'
 
@@ -60,9 +61,9 @@ export const uiVideos: VideoSpec[] = [
     goal: 'Highlight a span, name it, leave, and come back from the list',
     url: highlightSession,
     // An LGV with one gene track, and a drawer that opens beside it rather than
-    // under it, so the app holds at the 306px the run reports throughout — the
-    // highlight list arrives at the top of the drawer, not below the view.
-    viewportHeight: 360,
+    // under it, so the app holds at the 312px the run reports throughout, with
+    // the caption chip's strip under it.
+    viewportHeight: 432,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
     steps: [
@@ -447,7 +448,7 @@ export const uiVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3000,
-        say: 'The form recognizes the files and names the genome itself',
+        say: 'The form recognizes the files and suggests a name; call it hg38',
       },
       // It names it after the file, `hg38.prefix`. The field is editable, and
       // the rest of the quickstart calls the assembly `hg38`, so the tour
@@ -520,10 +521,7 @@ export const uiVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Move up' },
       { type: 'click', text: 'Move up', hold: 1800 },
-      { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
-      { type: 'waitForText', text: 'Move up', hidden: true },
-      { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
-      { type: 'waitForText', text: 'Track settings', hidden: true },
+      ...leaveMenu('::-p-text(Move up)'),
       { type: 'delay', ms: 2500 },
       {
         type: 'click',
@@ -561,7 +559,8 @@ export const uiVideos: VideoSpec[] = [
       'NCBI RefSeq genes on hg38 grouped by gene_biotype in a declared section order and colored by the same attribute in a declared color order, written as JSON from the Group by dialog',
     goal: 'Write the same grouping as JSON, with a section and color order',
     url: geneGroupingVideoFixtures.channelSpecSession,
-    viewportHeight: 740,
+    // the faceted lane stands 852px of app, with the caption chip's strip under it
+    viewportHeight: 970,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
     steps: [

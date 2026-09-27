@@ -25,8 +25,9 @@ export const dog10kVideos: VideoSpec[] = [
       'Clustering the IGF1 genotype matrix from the track menu: breed-ordered rows, the run over the differentiated core, and the order holding when the view zooms out',
     goal: 'Cluster 167 dogs by IGF1 genotype and see small and giant breeds separate',
     url: igf1Unclustered(IGF1_CORE),
-    // the matrix is a fixed 620px and the dendrogram draws beside the rows
-    viewportHeight: 960,
+    // the matrix is a fixed 620px and the dendrogram draws beside the rows; the
+    // caption chip's strip sits under the app's 951px
+    viewportHeight: 1070,
     readySelector: MATRIX_SETTLED,
     readyTimeout: 180000,
     steps: [

@@ -1,7 +1,7 @@
 // The tours over the variant tutorials, where the subject is a display the
 // track menu switches to rather than a file the reader prepares.
 import { trioVideoFixtures } from '../specs/trio.ts'
-import { openTrackByUrlSteps, trackMenu } from './shared.ts'
+import { leaveMenu, openTrackByUrlSteps, trackMenu } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
@@ -78,6 +78,7 @@ export const variantVideos: VideoSpec[] = [
       { type: 'click', text: 'Show...', hold: 1200 },
       { type: 'waitForText', text: 'Show as genotype matrix' },
       { type: 'click', text: 'Show as genotype matrix' },
+      ...leaveMenu('::-p-text(Show as genotype matrix)'),
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
       { type: 'delay', ms: 3000 },
       {
@@ -90,6 +91,7 @@ export const variantVideos: VideoSpec[] = [
       { type: 'click', text: 'Rendering mode', hold: 1200 },
       { type: 'waitForText', text: 'Phased' },
       { type: 'click', text: 'Phased' },
+      ...leaveMenu('::-p-text(Rendering mode)'),
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
       { type: 'delay', ms: 3000 },
       ...Array.from({ length: zoomOutsToMatrix }, (_, i): VideoStep => ({

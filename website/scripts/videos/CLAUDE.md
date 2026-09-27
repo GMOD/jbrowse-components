@@ -45,9 +45,11 @@ refilm and none of which the run reports.
   and a re-layout moves what that is: `Replace current view` sat where the
   breakpoint split view then drew a junction arc, so a clip held its panels for
   five seconds under a tooltip naming both ends of that arc by feature uuid. The
-  same `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` before
-  the hold, which `sv/multisample_sort` already takes for the crosshair its
-  matrix draws. It is not only menus that need blurring.
+  harness parks the pointer on the wordmark before the payoff unless a `hover`
+  precedes it; a hold mid-tour takes the same
+  `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` itself. A
+  focus tooltip outlives a hover, so a menu icon still needs the first bullet's
+  click.
 - **A display-type switch does not carry the old display's height.**
   `replaceDisplay` builds the new one from its own config, so a multi-row
   painting arriving at the default height fits every row it discovers into the

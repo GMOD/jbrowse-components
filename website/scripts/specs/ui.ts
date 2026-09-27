@@ -110,7 +110,7 @@ export const repeatVideoFixtures = {
   // height across, so a multi-row display arriving at the default height fits
   // the classes it discovers into it — eight lanes in the room one packed lane
   // was using, with the labels overlapping. `rows` is deliberately absent:
-  // which column splits the rows is what the route picks.
+  // the display picking `repClass` itself is what the route shows.
   twoDisplaySession: sessionSpec(DEMO_CONFIG, {
     sessionTracks: [
       {
@@ -2422,12 +2422,9 @@ export const uiSpecs: ScreenshotSpec[] = [
   // What the pick above produces, which is the half the figure was missing
   // (review: "might want to make two-part figure showing result").
   //
-  // It could not be built honestly until this round: picking the display type
-  // leaves `rows` picking `name`, which on RepeatMasker is one row per
-  // repeat -- thousands of hairlines -- and there was no menu item to get out of
-  // it, so a result frame showing rows by CLASS would have claimed an effect the
-  // click does not have. "Partition by..." is that item now, so this frame is
-  // two clicks from the one above rather than a config edit.
+  // The pick above partitions on `repClass` by itself whenever the file has
+  // that column (PREFERRED_PARTITION_FIELDS), so this frame is one click from
+  // the one above.
   //
   // Declarative rather than driven, per the compose note: the state is a session
   // a live link can open, so the figure cannot drift from a menu path and each

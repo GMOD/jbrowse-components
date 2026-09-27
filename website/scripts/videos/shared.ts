@@ -39,6 +39,19 @@ export function zoomToSteps(window: string, say?: string): VideoStep[] {
   ]
 }
 
+// A radio row only writes a setting, so every level of its cascade is still
+// standing over the lane it changed. One click on the root menu's backdrop takes
+// them all (a submenu's own backdrop takes no pointer events, and Escape leaves
+// one level per press); `row` is one that has to be gone after it. The second
+// click, on the inert wordmark, blurs the menu icon, whose "Track settings"
+// tooltip outlives the menu, and parks the pointer clear of the lanes.
+export const leaveMenu = (row: string): VideoStep[] => [
+  { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
+  { type: 'waitForSelector', selector: row, hidden: true },
+  { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
+  { type: 'waitForText', text: 'Track settings', hidden: true },
+]
+
 // The track menu button for one track, which is where most routes start.
 export const trackMenu = (trackId: string) =>
   `[data-testid="track_menu_icon"][data-trackid="${trackId}"]`
