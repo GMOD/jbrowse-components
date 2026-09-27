@@ -20,6 +20,7 @@ import {
   linkedReadLinesByRegion,
 } from './compute.ts'
 
+import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
@@ -131,6 +132,7 @@ export type BezierArcScope = 'all' | 'crossRegion' | 'none'
 export function bezierConnectionLegendItems(
   colorTypes: Iterable<number>,
   colors: ColorPalette,
+  declared?: Partial<Record<SwatchCategory, string>>,
 ): LegendItem[] {
   const palette = buildLinkedReadColorPalette(colors)
   const byColor = new Map<string, LegendItem>()
@@ -139,7 +141,7 @@ export function bezierConnectionLegendItems(
     if (!byColor.has(color)) {
       byColor.set(color, {
         color,
-        label: connectionLabel(colorType),
+        label: connectionLabel(colorType, declared),
       })
     }
   }
@@ -299,6 +301,8 @@ interface Opts {
   // module palette drew connectors in light-mode colors over dimmed dark-mode
   // reads.
   colors: ColorPalette
+  // `color.labels` by bucket, which the hover names a curve by
+  labels?: Partial<Record<SwatchCategory, string>>
 }
 
 // Left-to-right screen order without projecting, which answers nothing for the
@@ -356,6 +360,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     viewportTop,
     viewportBottom,
     colors,
+    labels,
   } = opts
   const linkedReadPalette = buildLinkedReadColorPalette(colors)
 
@@ -431,7 +436,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     result.push({
       d,
       stroke,
-      label: connectionLabel(c.colorType),
+      label: connectionLabel(c.colorType, labels),
       strokeWidth: straight ? LINKED_READ_LINE_WIDTH_PX : CURVE_STROKE_WIDTH_PX,
       // The id STRINGS, not the keys: these reach `selectFeatureById` and
       // `getFeatureInfoById`. One pair per drawn arc, not per read.

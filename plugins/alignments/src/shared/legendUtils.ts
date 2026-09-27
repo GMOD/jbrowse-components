@@ -50,6 +50,7 @@ import type {
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
+import type { DeclaredReadLabels } from './alignmentsColor.ts'
 import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
 import type {
@@ -105,10 +106,14 @@ function oneRowPerMeaning(
   )
 }
 
+const READS_RAMP_ID = 'reads-ramp'
+
 // "Arc colors" -> "Read and arc colors", keeping whatever noun the overlay
 // chose for itself.
-function mergedTitle(arcTitle: string) {
-  return `Read and ${arcTitle.charAt(0).toLowerCase()}${arcTitle.slice(1)}`
+function mergedTitle(arcTitle: string, readTitle = 'Read') {
+  return readTitle === ''
+    ? ''
+    : `${readTitle} and ${arcTitle.charAt(0).toLowerCase()}${arcTitle.slice(1)}`
 }
 
 // Identity of a legend row for the de-dup below: color and label, joined by a
@@ -189,9 +194,16 @@ function scaleOf(
  * fills never paint, or one the curves call something else ("Split alignment
  * (inverted)" against the fill's "Split paired-end read (inverted)"), still
  * earns its row.
+ *
+ * `colorTitle` is `color.title` as written, unset keeping the display's own
+ * heading and `''` drawing none. It heads the read fill's colour bar when the
+ * fill is a ramp, since the read rows beside a bar are the buckets every
+ * scheme paints, and otherwise the read rows, standing in for "Read" when
+ * they merge with the arcs.
  */
 export function getAlignmentsColorScales(model: {
   ramps?: readonly RampScale[]
+  colorTitle?: string
   legendItems: () => LegendItem[]
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
@@ -207,13 +219,17 @@ export function getAlignmentsColorScales(model: {
     reads.map(i => i.color).filter(c => c !== undefined),
   )
   const merge = arcs.some(a => a.color !== undefined && readColors.has(a.color))
+  const { ramps = [], colorTitle } = model
+  const readTitle = ramps.some(r => r.id === READS_RAMP_ID)
+    ? undefined
+    : colorTitle
   const readSection = merge
     ? {
         id: 'reads',
-        title: mergedTitle(model.arcLegendTitle),
+        title: mergedTitle(model.arcLegendTitle, readTitle),
         items: oneRowPerMeaning(reads, arcs),
       }
-    : { id: 'reads', title: 'Read colors', items: reads }
+    : { id: 'reads', title: readTitle ?? 'Read colors', items: reads }
   const arcSection = {
     id: 'arcs',
     title: model.arcLegendTitle,
@@ -223,7 +239,11 @@ export function getAlignmentsColorScales(model: {
     [...readSection.items, ...arcSection.items].flatMap(rowKeys),
   )
   return [
-    ...(model.ramps ?? []),
+    ...ramps.map(r =>
+      r.id === READS_RAMP_ID && colorTitle !== undefined
+        ? { ...r, title: colorTitle }
+        : r,
+    ),
     scaleOf(readSection.id, readSection.title, readSection.items),
     scaleOf(arcSection.id, arcSection.title, arcSection.items),
     scaleOf(
@@ -432,16 +452,20 @@ function strandLabelOverrides(
 // rewording, the CPU-baked schemes name what the leftover neutral bucket means
 // in their own terms — a read the tag is absent from, or a block with no mate —
 // rather than the bare "No value" the table can't specialize.
+// `declared` is `color.labels` by bucket (`declaredReadLabels`), which names a
+// bucket over every wording here.
 export function readCategoryLabelOverrides(
   colorBy: ColorBy | undefined,
   chainFramed: boolean,
-): Partial<Record<SwatchCategory, string>> {
+  declared: Partial<Record<ReadColorCategory, string>> = {},
+): Partial<Record<ReadColorCategory, string>> {
   return {
     ...strandLabelOverrides(colorBy?.type, chainFramed),
     ...(colorBy?.type === 'mateRefName' ? { noTagValue: 'No mate' } : {}),
     ...(colorBy?.type === 'tag' && colorBy.tag !== undefined
       ? { noTagValue: `No ${colorBy.tag} value` }
       : {}),
+    ...declared,
   }
 }
 
@@ -608,7 +632,7 @@ function orderedBuckets(
 function bucketItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
-  overrides: Partial<Record<SwatchCategory, string>>,
+  overrides: Partial<Record<ReadColorCategory, string>>,
   sectionKeys?: Partial<Record<SwatchCategory, string>>,
   sectionOrder?: (a: string, b: string) => number,
 ): LegendItem[] {
@@ -683,10 +707,13 @@ function getOverlapLegendItem(
 // either kind, so it names the junction, not a paired-end read.
 function arcLabelOverrides(
   interchromFromMatePair: boolean,
-): Partial<Record<SwatchCategory, string>> {
-  return interchromFromMatePair
-    ? { ...SPLIT_JUNCTION_LABELS, interchrom: undefined }
-    : SPLIT_JUNCTION_LABELS
+  declared: Partial<Record<ReadColorCategory, string>> = {},
+): Partial<Record<ReadColorCategory, string>> {
+  return {
+    ...SPLIT_JUNCTION_LABELS,
+    ...(interchromFromMatePair ? { interchrom: undefined } : {}),
+    ...declared,
+  }
 }
 
 /**
@@ -696,10 +723,11 @@ function arcLabelOverrides(
 export function arcColorCategoryLabel(
   category: ReadColorCategory,
   interchromFromMatePair: boolean,
+  declared?: Partial<Record<ReadColorCategory, string>>,
 ) {
   return readColorCategoryLabel(
     category,
-    arcLabelOverrides(interchromFromMatePair),
+    arcLabelOverrides(interchromFromMatePair, declared),
   )
 }
 
@@ -713,11 +741,12 @@ export function getArcLegendItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
   interchromFromMatePair: boolean,
+  declared?: Partial<Record<ReadColorCategory, string>>,
 ): LegendItem[] {
   return bucketItems(
     presentCategories,
     palette,
-    arcLabelOverrides(interchromFromMatePair),
+    arcLabelOverrides(interchromFromMatePair, declared),
   )
 }
 
@@ -791,6 +820,7 @@ function bakedValueLegend(
   refNamePosition: RefNamePosition | undefined,
   scale: BakedColorScale | undefined,
   sectionOrder: ((a: string, b: string) => number) | undefined,
+  names: ReadonlyMap<string, string> = new Map(),
 ): LegendItem[] {
   const field = colorFieldOf(colorBy)
   if (scale?.kind === 'linear') {
@@ -799,7 +829,7 @@ function bakedValueLegend(
   if (scale?.kind === 'threshold') {
     return scale.bins.map(({ color, label }) => ({
       color,
-      label: `${field} ${label}`,
+      label: names.get(label) ?? `${field} ${label}`,
     }))
   }
   const values = [...(present ?? [])].filter(value => value !== '')
@@ -811,7 +841,7 @@ function bakedValueLegend(
   return sorted.map(value => ({
     color:
       scale?.color(value) ?? bakedValueColor(colorBy, value, refNamePosition),
-    label: value,
+    label: names.get(value) ?? value,
   }))
 }
 
@@ -824,7 +854,7 @@ export function bakedRampScale(
   return scale?.kind === 'linear'
     ? {
         kind: 'ramp',
-        id: 'reads-ramp',
+        id: READS_RAMP_ID,
         title: colorFieldOf(colorBy),
         domain: [...scale.domain],
         stops: scale.stops,
@@ -858,7 +888,7 @@ export function colorRampScales({
   const readRamp =
     colorBy?.type === 'mappingQuality'
       ? qualityRampScale(
-          'reads-ramp',
+          READS_RAMP_ID,
           'Mapping quality',
           MAPQ_RAMP_MAX,
           mapqExtent,
@@ -944,6 +974,7 @@ type SchemeLegendArgs = Pick<
   | 'bakedScale'
   | 'sectionOrder'
   | 'baseQualityUnavailable'
+  | 'labels'
 > & { palette: ColorPalette }
 
 // The per-base layer's own rows: the base vocabulary, the modification types
@@ -988,6 +1019,7 @@ function schemeLegend({
   bakedScale,
   baseLayer,
   sectionOrder,
+  labels,
 }: SchemeLegendArgs): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
@@ -1026,6 +1058,7 @@ function schemeLegend({
       refNamePosition,
       bakedScale,
       sectionOrder,
+      labels?.values,
     )
   }
   // Mapping quality is a colour bar (`colorRampScales`); it and the strand /
@@ -1037,6 +1070,8 @@ function schemeLegend({
 // palette and the bucket scan, which the two consumers below split differently.
 interface ReadDisplayLegendArgs {
   colorBy: ColorBy | undefined
+  // `color.labels` against what it names (`declaredReadLabels`)
+  labels?: DeclaredReadLabels
   // The per-base layer, keyed ahead of the read fill it paints over.
   baseLayer?: BaseLayer
   detectedModifications?: ReadonlyMap<string, string>
@@ -1100,6 +1135,7 @@ export function getReadDisplayLegendItems({
   baseQualityUnavailable,
   chainFramed = false,
   overlaps,
+  labels,
 }: ReadDisplayLegendArgs & {
   palette: ColorPalette
   presentCategories: ReadonlySet<ReadColorCategory>
@@ -1125,6 +1161,7 @@ export function getReadDisplayLegendItems({
     bakedScale,
     sectionOrder,
     baseQualityUnavailable,
+    labels,
   }
   return [
     ...baseLayerLegend(scheme),
@@ -1132,7 +1169,7 @@ export function getReadDisplayLegendItems({
     ...bucketItems(
       categories,
       palette,
-      readCategoryLabelOverrides(colorBy, chainFramed),
+      readCategoryLabelOverrides(colorBy, chainFramed, labels?.categories),
       colorBy ? BUCKET_SECTION_KEYS[colorBy.type] : undefined,
       sectionOrder,
     ),

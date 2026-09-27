@@ -41,6 +41,7 @@ export function computePileupBezierArcsFromModel(
     const arcs = computePileupBezierArcs({
       pairs: sec.pairs,
       colors,
+      labels: model.declaredReadLabels.categories,
       displayedRegions: view.displayedRegions,
       bpToScreenX,
       featureHeight: model.featureHeight,

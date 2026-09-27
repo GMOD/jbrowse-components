@@ -12,6 +12,7 @@ import {
 import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
+import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
@@ -52,11 +53,15 @@ export const LINKED_READ_COLOR_INTERCHROM = LINKED_READ_COLOR_PAIR_LL + 3
 // The bezier-arc hover tooltip's and legend row's wording, shared with the
 // breakpoint split view through CONNECTION_LABELS. Slot 0 takes LR's swatch, but
 // calling it LR would assert an orientation nothing measured.
-export function connectionLabel(colorType: number) {
+// `declared` is `color.labels` by bucket, as the read key names it.
+export function connectionLabel(
+  colorType: number,
+  declared: Partial<Record<SwatchCategory, string>> = {},
+) {
   const category = LINKED_READ_SLOT_CATEGORY[colorType]
   return category === undefined || colorType === LINKED_READ_COLOR_PAIR_UNKNOWN
     ? CONNECTION_LABELS.readPair
-    : CONNECTION_LABELS[category]
+    : (declared[category] ?? CONNECTION_LABELS[category])
 }
 
 // No refName, unlike the arc path's entry: every comparison this path makes is

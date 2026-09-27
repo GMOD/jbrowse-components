@@ -77,6 +77,7 @@ import {
   colorFieldOf,
   colorSnapshotFor,
   declaredReadCategoryColors,
+  declaredReadLabels,
   isBakedScheme,
 } from '../shared/alignmentsColor.ts'
 import {
@@ -197,7 +198,10 @@ import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
-import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
+import type {
+  AlignmentsColorSetting,
+  DeclaredReadLabels,
+} from '../shared/alignmentsColor.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
@@ -1189,6 +1193,15 @@ export default function stateModelFactory(
           },
 
           /**
+           * #getter
+           * `color.labels` against the read buckets and values it names, which
+           * every key row, hover and connection curve names a bucket by.
+           */
+          get declaredReadLabels(): DeclaredReadLabels {
+            return declaredReadLabels(self.colorEncoding, self.colorLabels)
+          },
+
+          /**
            * #method
            * The read palette over `theme`: `color.value` over the neutral
            * entry, and the category colours `color` declares. SVG export
@@ -1298,6 +1311,7 @@ export default function stateModelFactory(
               sectionOrder: this.keySectionOrder,
               baseQualityUnavailable: this.baseQualitySpan.unavailable,
               chainFramed: this.framesChainStrand,
+              labels: this.declaredReadLabels,
             })
           },
 
@@ -1312,6 +1326,7 @@ export default function stateModelFactory(
               this.arcLegendCategories,
               this.colorPalette,
               this.arcsResult.interchromFromMatePair,
+              this.declaredReadLabels.categories,
             )
           },
 
@@ -2362,6 +2377,7 @@ export default function stateModelFactory(
           return bezierConnectionLegendItems(
             this.connectionColorTypes,
             self.colorPalette,
+            self.declaredReadLabels.categories,
           )
         },
 
@@ -2587,6 +2603,7 @@ export default function stateModelFactory(
           const overrides = readCategoryLabelOverrides(
             self.colorBy,
             self.framesChainStrand,
+            self.declaredReadLabels.categories,
           )
           return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
         },
@@ -2597,8 +2614,9 @@ export default function stateModelFactory(
          */
         get arcCategoryLabel() {
           const { interchromFromMatePair } = self.arcsResult
+          const { categories } = self.declaredReadLabels
           return (c: ReadColorCategory) =>
-            arcColorCategoryLabel(c, interchromFromMatePair)
+            arcColorCategoryLabel(c, interchromFromMatePair, categories)
         },
       }))
       .views(self => ({
@@ -2804,6 +2822,7 @@ export default function stateModelFactory(
                 mapqExtent: self.mapqExtent,
                 baseQualityExtent: self.baseQualitySpan.extent,
               }),
+              colorTitle: self.colorTitle,
               legendItems: () => self.legendItems(),
               arcLegendTitle: self.arcLegendTitle,
               arcLegendItems: () => self.arcLegendItems(),
@@ -3415,7 +3434,7 @@ export default function stateModelFactory(
               setConf(
                 self,
                 'color',
-                colorSnapshotFor(colorBy, self.colorSetting),
+                colorSnapshotFor(colorBy, self.writtenColor),
               )
             }
           },
@@ -3427,7 +3446,7 @@ export default function stateModelFactory(
            */
           setColorByTag(tag: string, scale: TagColorScale) {
             setConf(self, 'color', {
-              ...colorSnapshotFor({ type: 'tag', tag }, self.colorSetting),
+              ...colorSnapshotFor({ type: 'tag', tag }, self.writtenColor),
               scale: scale === 'linear' ? 'linear' : undefined,
             })
           },
@@ -3899,7 +3918,7 @@ export default function stateModelFactory(
                 setConf(
                   self,
                   'color',
-                  colorSnapshotFor({ type: 'normal' }, self.colorSetting),
+                  colorSnapshotFor({ type: 'normal' }, self.writtenColor),
                 )
               }
             } else if (currentType === 'normal' && !self.baseLayer) {
@@ -3910,7 +3929,7 @@ export default function stateModelFactory(
                 'color',
                 colorSnapshotFor(
                   { type: 'insertSizeAndOrientation' },
-                  self.colorSetting,
+                  self.writtenColor,
                 ),
               )
             }

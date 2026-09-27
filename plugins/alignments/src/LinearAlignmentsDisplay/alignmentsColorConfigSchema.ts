@@ -5,8 +5,10 @@ import {
   colorDomainQuantileSlot,
   colorDomainEndsSlots,
   colorDomainSlot,
+  colorLabelsSlot,
   colorRampSlots,
   colorRangeSlot,
+  colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
@@ -87,6 +89,12 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
         "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis",
     }),
     ...colorRampSlots,
+    labels: {
+      ...colorLabelsSlot.labels,
+      description:
+        "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name",
+    },
+    ...colorTitleSlot,
   },
   colorChannelOptions('color', ALIGNMENTS_FIELD_PRESETS),
 )

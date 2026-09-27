@@ -195,6 +195,34 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
+     * `color.labels` as written, read apart from `colorSetting`, which every
+     * colour tier keys on, so renaming a key entry re-bakes no read.
+     */
+    get colorLabels(): readonly string[] {
+      return getConf(self, ['color', 'labels'])
+    },
+    /**
+     * #getter
+     * `color.title` as written: unset keeps the key's own heading, `''` draws
+     * none.
+     */
+    get colorTitle(): string | undefined {
+      return getConf(self, ['color', 'title'])
+    },
+    /**
+     * #getter
+     * The `color` object a scheme pick writes over: `colorSetting` and the
+     * key's own slots, so a pick that keeps the field keeps its names.
+     */
+    get writtenColor(): AlignmentsColorSetting {
+      return {
+        ...this.colorSetting,
+        labels: this.colorLabels,
+        title: this.colorTitle,
+      }
+    },
+    /**
+     * #getter
      * What `colorSetting`'s slots say together that it cannot paint as
      * written, for the corner notice.
      */

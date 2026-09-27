@@ -1,5 +1,9 @@
+import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
+import {
+  thresholdCuts,
+  thresholdLabels,
+} from '@jbrowse/core/util/thresholdScale'
 import {
   colorEncodingOf,
   colorForField,
@@ -307,11 +311,24 @@ function levelOrder(
   )
 }
 
+// The levels `range` and `labels` index, in their order, and the read bucket
+// each one is: the levels `domain` names, or with no `domain` the field's own,
+// and a threshold over an insert-size field its short, normal and long bins.
+function declaredLevels(
+  encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
+) {
+  const colorBy = colorByOf(encoding)
+  const levels = READ_COLOR_LEVELS[colorBy.type]
+  return {
+    order: levelOrder(encoding, levels, isBakedScheme(colorBy)),
+    categoryOf: new Map(levels),
+  }
+}
+
 /**
  * The read category colours the `color` object declares, over the palette's
- * defaults: `range` colours the levels `domain` names, in order, or with no
- * `domain` the field's own levels, and a threshold over an insert-size field
- * its short, normal and long bins. A level left out keeps its default.
+ * defaults: `range[i]` colours the i-th of `declaredLevels`. A level left out
+ * keeps its default.
  */
 export function declaredReadCategoryColors(
   encoding: AlignmentsColorEncoding,
@@ -320,11 +337,9 @@ export function declaredReadCategoryColors(
     return {}
   }
   const { range } = encoding
-  const colorBy = colorByOf(encoding)
-  const levels = READ_COLOR_LEVELS[colorBy.type]
-  const categoryOf = new Map(levels)
+  const { order, categoryOf } = declaredLevels(encoding)
   const colors: Partial<Record<ReadColorCategory, RGBColor>> = {}
-  levelOrder(encoding, levels, isBakedScheme(colorBy)).forEach((value, i) => {
+  order.forEach((value, i) => {
     const category = categoryOf.get(value)
     const color = range[i]
     if (category && color !== undefined && !(category in colors)) {
@@ -332,6 +347,52 @@ export function declaredReadCategoryColors(
     }
   })
   return colors
+}
+
+/** What `color.labels` names: read buckets, and a baked scheme's values. */
+export interface DeclaredReadLabels {
+  categories: Partial<Record<ReadColorCategory, string>>
+  // a tag or mate value by the value, or a threshold bin by its interval
+  values: ReadonlyMap<string, string>
+}
+
+/**
+ * `color.labels` against the levels and values it names, in the order
+ * `range` colours them: `labels[i]` names the i-th of `declaredLevels`, and
+ * under a baked scheme the i-th `domain` value, or a threshold's i-th bin.
+ * Read apart from the encoding, so a renamed key entry re-bakes no read.
+ */
+export function declaredReadLabels(
+  encoding: AlignmentsColorEncoding,
+  labels: readonly string[],
+): DeclaredReadLabels {
+  if (typeof encoding !== 'object' || labels.length === 0) {
+    return { categories: {}, values: new Map() }
+  }
+  const { order, categoryOf } = declaredLevels(encoding)
+  const categories: Partial<Record<ReadColorCategory, string>> = {}
+  for (const [value, name] of keyNames(order, labels)) {
+    const category = categoryOf.get(value)
+    if (category) {
+      categories[category] ??= name
+    }
+  }
+  return {
+    categories,
+    values: isBakedScheme(colorByOf(encoding))
+      ? keyNames(bakedKeys(encoding), labels)
+      : new Map(),
+  }
+}
+
+function bakedKeys(
+  encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
+) {
+  return encoding.scale === 'threshold'
+    ? thresholdLabels(thresholdCuts(encoding.domain ?? []))
+    : encoding.scale === 'categorical'
+      ? (encoding.domain ?? [])
+      : []
 }
 
 /** The `color` object a scheme pick writes: `colorForField` over the scheme's field. */
