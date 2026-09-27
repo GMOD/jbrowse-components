@@ -544,8 +544,15 @@ export function encodeFeatures<L extends LaneName>(
       rampEncoding.scale,
       rampEncoding.domainQuantile,
     )
-    const { domainMin, domainMax, domainMid, range, scheme, reverse } =
-      rampEncoding
+    const {
+      domainMin,
+      domainMax,
+      domainMid,
+      domainQuantile,
+      range,
+      scheme,
+      reverse,
+    } = rampEncoding
     const { domain, lut, colorOf } = continuousColorScale(rampEncoding, extent)
     if (color && rampBits) {
       for (let i = 0; i < count; i++) {
@@ -566,6 +573,9 @@ export function encodeFeatures<L extends LaneName>(
       ...(scheme ? { scheme } : {}),
       ...(reverse ? { reverse } : {}),
       extent,
+      ...(domainQuantile !== undefined && domainQuantile < 1
+        ? { quantile: domainQuantile }
+        : {}),
       lut,
       ...(missingMet ? { missing: true } : {}),
       ...(notNumberMet ? { notNumber: true } : {}),

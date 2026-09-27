@@ -258,6 +258,11 @@ export type ColorScaleTable =
        * over it.
        */
       extent: [number, number]
+      /**
+       * The declared `domainQuantile` `extent` follows, below 1 only, so a
+       * display re-measuring a subset of the instances clips it alike.
+       */
+      quantile?: number
       lut: Uint8Array
       /**
        * Whether a feature with no value painted here, in the no-value grey:

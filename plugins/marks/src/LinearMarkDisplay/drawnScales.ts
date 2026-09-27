@@ -3,6 +3,7 @@ import {
   NO_VALUE_ABGR,
   rampOverExtent,
 } from '@jbrowse/core/util/markEncoding'
+import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
 import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 import { RAMP_NO_VALUE_BITS, rampValueBits } from '@jbrowse/render-core/marks'
 
@@ -106,6 +107,27 @@ function scanChunk(
   e.notNumber = notNumber
 }
 
+// A ramp's extent over the drawn instances as the encoder measured the
+// region's: a log scale over the positive values, and a declared quantile
+// clipping each end, which the extremes a scan keeps cannot say.
+function drawnRampExtent(
+  ramp: Float32Array,
+  row: Uint32Array | undefined,
+  drawnKeys: Uint8Array | undefined,
+  count: number,
+  scale: 'linear' | 'log',
+  quantile: number | undefined,
+) {
+  const values = new Float32Array(count)
+  let n = 0
+  for (let i = 0; i < count; i++) {
+    if (!drawnKeys || drawnKeys[row ? row[i]! : 0] === 1) {
+      values[n++] = ramp[i]!
+    }
+  }
+  return scaleExtent(values, n, scale, quantile)
+}
+
 /**
  * The key and the extents over the instances a layer draws, so a hidden
  * section or row leaves the legend and the axis the way it leaves the plot:
@@ -157,6 +179,19 @@ export function drawnScales(
     notNumber,
   } = extents
   const valued = Number.isFinite(layer.yMin)
+  const rampExtent: [number, number] =
+    ramp &&
+    scale?.kind === 'ramp' &&
+    (scale.scale === 'log' || scale.quantile !== undefined)
+      ? drawnRampExtent(
+          ramp,
+          layer.row,
+          drawnKeys,
+          count,
+          scale.scale,
+          scale.quantile,
+        )
+      : [vMin, vMax]
   return {
     ...layer,
     yMin: valued ? yMin : layer.yMin,
@@ -167,8 +202,8 @@ export function drawnScales(
         : ramp && scale?.kind === 'ramp'
           ? {
               ...(scale.pinned[0] && scale.pinned[1]
-                ? { ...scale, extent: [vMin, vMax] as [number, number] }
-                : rampOverExtent(scale, [vMin, vMax])),
+                ? { ...scale, extent: rampExtent }
+                : rampOverExtent(scale, rampExtent)),
               missing,
               notNumber,
             }
