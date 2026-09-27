@@ -2,6 +2,7 @@ import { normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
+import { rampMidNorm } from '@jbrowse/render-core/scoreScale'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import {
   RENDERING_TYPE_DENSITY,
@@ -10,7 +11,6 @@ import {
   RENDERING_TYPE_SCATTER,
 } from '@jbrowse/wiggle-core'
 
-import { rampMidNorm } from './getDensityColor.ts'
 import * as wiggleShader from './shaders/wiggle.generated.ts'
 import * as wiggleBandShader from './shaders/wiggleBand.generated.ts'
 import * as wiggleDensityShader from './shaders/wiggleDensity.generated.ts'

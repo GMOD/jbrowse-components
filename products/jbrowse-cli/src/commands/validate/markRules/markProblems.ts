@@ -20,7 +20,7 @@ import {
 } from './markVocabulary.ts'
 import { stepChannels } from './stepChannels.ts'
 
-import type { ColorScaleName } from './markRuleFacts.ts'
+import type { ColorSlots } from './markRuleFacts.ts'
 import type {
   AggregateOpName,
   LinkShape,
@@ -131,15 +131,6 @@ export type StepSnapshot =
   | { type: 'pileup'; as?: string; fields?: string[]; padding?: number }
   | { type: 'mate' }
 
-interface ColorSnapshot {
-  value?: string
-  field?: string
-  scale?: ColorScaleName
-  domain?: string[]
-  domainMin?: number
-  domainMax?: number
-}
-
 /**
  * The display's `facet` as a config snapshot holds it: the field its sections
  * stack by, a facet naming none grouping nothing, and the steps each section
@@ -171,7 +162,7 @@ export type MarkSnapshot = {
     x2?: string | { pos?: string; chrom?: string }
     y?: string
     row?: string
-    color?: ColorSnapshot
+    color?: ColorSlots
     shape?: unknown
     text?: string
     size?: string | { field?: string }

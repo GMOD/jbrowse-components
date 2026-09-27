@@ -127,6 +127,7 @@ export interface ColorProblem {
 
 /** The slots `colorProblems` reads, as a snapshot or a resolved setting holds them. */
 export interface ColorSlots {
+  value?: string
   field?: string
   scale?: string
   domain?: readonly unknown[]

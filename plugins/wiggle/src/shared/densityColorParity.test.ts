@@ -1,6 +1,7 @@
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { rampMidNorm } from '@jbrowse/render-core/scoreScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
@@ -14,7 +15,6 @@ import {
 import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,
-  rampMidNorm,
 } from './getDensityColor.ts'
 import {
   GLSL_FRAGMENT as FILL_GLSL_FRAGMENT,

@@ -6,4 +6,4 @@ export {
   colorProblems,
   paintedScale,
 } from './colorScale.ts'
-export type { ColorScaleName } from './colorScale.ts'
+export type { ColorSlots } from './colorScale.ts'

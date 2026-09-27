@@ -6,12 +6,13 @@ import {
   derivedColorScale,
   everyRowPaints,
 } from '@jbrowse/core/util/legendCandidates'
-import { rampMidNorm, rampOverExtent } from '@jbrowse/core/util/markEncoding'
+import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 import {
   rampGapScales,
   thresholdKeyEntries,
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
+import { rampMidNorm, scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type {
@@ -463,7 +464,12 @@ export function markColorScales(
             stops: stopsFromRampLut(
               scale.lut,
               RAMP_STOPS,
-              rampMidNorm(scale.scale, scale.domain, scale.domainMid),
+              rampMidNorm(
+                scale.domain[0],
+                scale.domain[1],
+                scaleTypeCode(scale.scale),
+                scale.domainMid,
+              ),
             ),
             extent: scale.extent,
           },

@@ -104,3 +104,21 @@ export function denormalizeScore(
   }
   return atFraction(t, min, max)
 }
+
+/**
+ * Where a ramp's middle stop sits in the normalized domain: `mid`'s fraction,
+ * clamped as the normalizer clamps, else 0.5, which runs the ramp straight
+ * from end to end. The GPU's `rampMidNorm` uniform and every Canvas2D reader of
+ * a straight ramp table pass a value's fraction through `rampMidT` with it.
+ */
+export function rampMidNorm(
+  min: number,
+  max: number,
+  scaleType: ScaleTypeCode,
+  mid: number | undefined,
+  symlogConstant = 1,
+) {
+  return mid === undefined
+    ? 0.5
+    : makeScoreNormalizer(min, max, scaleType, symlogConstant)(mid)
+}

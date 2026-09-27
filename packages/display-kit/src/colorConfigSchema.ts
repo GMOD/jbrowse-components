@@ -19,7 +19,7 @@ import {
   withPreset,
 } from './colorScale.ts'
 
-import type { ColorScaleName, FieldPresets } from './colorScale.ts'
+import type { ColorScaleName, ColorSlots, FieldPresets } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
@@ -440,12 +440,6 @@ export function featureColorEncoding(color: ColorSetting) {
   return colorEncodingOf(color, FEATURE_FIELD_PRESETS)
 }
 
-interface PickableColor {
-  value?: string
-  field?: string
-  scale?: string
-}
-
 function definedMembers(color: object) {
   return Object.fromEntries(
     Object.entries(color)
@@ -461,7 +455,7 @@ function definedMembers(color: object) {
  * a new field keeps only `value`. `none` takes the `scale` slot, so after the
  * way back the field paints through the display's default scale for it.
  */
-export function colorForField(current: PickableColor, field: string) {
+export function colorForField(current: ColorSlots, field: string) {
   const kept = definedMembers(current)
   if (field === '') {
     return current.field ? { ...kept, scale: 'none' } : kept
@@ -480,10 +474,7 @@ export function colorForField(current: PickableColor, field: string) {
  * undefined returning to each feature's own colour, and a field stays under
  * `scale: 'none'` for the way back.
  */
-export function colorForValue(
-  current: PickableColor,
-  value: string | undefined,
-) {
+export function colorForValue(current: ColorSlots, value: string | undefined) {
   return definedMembers({
     ...current,
     value,

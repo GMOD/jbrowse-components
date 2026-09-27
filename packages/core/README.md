@@ -1149,19 +1149,6 @@ the identity changes and a render state is rebuilt far more often than its ramp.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
-### rampMidNorm
-
-Where a ramp's middle stop sits in the normalized `domain`: `domainMid`'s
-fraction, clamped as the normalizer clamps, else the middle. Every reader of a
-ramp's straight table passes a value's fraction through `rampMidT` with it.
-
-```js
-// type signature
-(scale: "linear" | "log", domain: readonly [number, number], domainMid: number | undefined) => number
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
-
 ### rampOverExtent
 
 A ramp table over `extent`, the union a display took across the regions it

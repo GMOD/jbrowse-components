@@ -3190,7 +3190,6 @@
         "encodeFeatures",
         "encodedChannelTransferables",
         "hitIndexOf",
-        "rampMidNorm",
         "rampOverExtent",
         "withHitIndex"
       ],
@@ -5093,6 +5092,7 @@
         "SCALE_TYPE_SYMLOG",
         "denormalizeScore",
         "makeScoreNormalizer",
+        "rampMidNorm",
         "scaleTypeCode"
       ],
       "worker": "real"

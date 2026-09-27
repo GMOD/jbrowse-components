@@ -1,4 +1,4 @@
-import { SCALE_TYPE_LOG } from '../scoreScale.ts'
+import { SCALE_TYPE_LOG, rampMidNorm, scaleTypeCode } from '../scoreScale.ts'
 import { rampMidT } from '../shaders/colorRampLut.js.generated.ts'
 import {
   RAMP_LINEAR,
@@ -37,18 +37,8 @@ interface RampBake {
 
 const NO_COLORS = new Uint32Array(0)
 
-// Where the ramp's middle stop sits in the normalized domain, clamped by the
-// normalizer as `buildColorRampLut` clamps its own.
-function rampMidNorm({ domain, scale, mid }: MarkRamp) {
-  return mid === undefined
-    ? 0.5
-    : normalizeScore(
-        mid,
-        domain[0],
-        domain[1],
-        scale === 'log' ? SCALE_TYPE_LOG : 0,
-        1,
-      )
+function midNormOf({ domain, scale, mid }: MarkRamp) {
+  return rampMidNorm(domain[0], domain[1], scaleTypeCode(scale), mid)
 }
 
 /** `markColor.slang`'s four uniforms for a frame's ramp, or for none. */
@@ -58,7 +48,7 @@ export function rampUniforms(ramp: MarkRamp | undefined) {
         rampMode: ramp.scale === 'log' ? RAMP_LOG : RAMP_LINEAR,
         rampMin: ramp.domain[0],
         rampMax: ramp.domain[1],
-        rampMidNorm: rampMidNorm(ramp),
+        rampMidNorm: midNormOf(ramp),
       }
     : { rampMode: RAMP_NONE, rampMin: 0, rampMax: 1, rampMidNorm: 0.5 }
 }
@@ -109,7 +99,7 @@ export function paintColors(
   }
   const [min, max] = ramp.domain
   const log = ramp.scale === 'log'
-  const midNorm = rampMidNorm(ramp)
+  const midNorm = midNormOf(ramp)
   const { lut } = ramp
   const bake = c.rampBake
   if (

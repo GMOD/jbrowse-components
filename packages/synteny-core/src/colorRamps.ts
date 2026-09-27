@@ -3,8 +3,8 @@ import {
   colorRampStops,
   rampDomain,
 } from '@jbrowse/core/util/colorRamp'
-import { rampMidNorm } from '@jbrowse/core/util/markEncoding'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
+import { SCALE_TYPE_LINEAR, rampMidNorm } from '@jbrowse/render-core/scoreScale'
 
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
@@ -238,7 +238,7 @@ function withDeclaredRamp(
     midNorm:
       domainMid === undefined
         ? undefined
-        : rampMidNorm('linear', [minValue, maxValue], domainMid),
+        : rampMidNorm(minValue, maxValue, SCALE_TYPE_LINEAR, domainMid),
     minLabel:
       minValue === own[0]
         ? mode.minLabel

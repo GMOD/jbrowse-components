@@ -1,5 +1,6 @@
 import {
   makeScoreNormalizer,
+  rampMidNorm,
   scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
@@ -662,27 +663,6 @@ export function encodeFeatures<L extends LaneName>(
 
 /**
  * #api
- * Where a ramp's middle stop sits in the normalized `domain`: `domainMid`'s
- * fraction, clamped as the normalizer clamps, else the middle. Every reader of
- * a ramp's straight table passes a value's fraction through `rampMidT` with it.
- */
-export function rampMidNorm(
-  scale: 'linear' | 'log',
-  domain: readonly [number, number],
-  domainMid: number | undefined,
-) {
-  return domainMid === undefined
-    ? 0.5
-    : makeScoreNormalizer(
-        domain[0],
-        domain[1],
-        scaleTypeCode(scale),
-        1,
-      )(domainMid)
-}
-
-/**
- * #api
  * A continuous colour scale over `extent`, the values it met: the domain its
  * declared ends and the extent make, the straight table its stops bake to and
  * where its middle stop sits, and the packed colour a value paints through
@@ -704,7 +684,12 @@ export function continuousColorScale(
     1,
   )
   const lut = rampLutOf(encoding)
-  const midNorm = rampMidNorm(scale, domain, domainMid)
+  const midNorm = rampMidNorm(
+    domain[0],
+    domain[1],
+    scaleTypeCode(scale),
+    domainMid,
+  )
   return {
     domain,
     lut,

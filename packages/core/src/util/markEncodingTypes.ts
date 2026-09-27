@@ -241,7 +241,7 @@ export type ColorScaleTable =
       /**
        * The declared {@link ColorEncoding} `domainMid`: where the middle stop
        * of the straight `lut` sits, which every reader places through
-       * `rampMidNorm` and `rampMidT`.
+       * render-core's `rampMidNorm` and `rampMidT`.
        */
       domainMid?: number
       /**
