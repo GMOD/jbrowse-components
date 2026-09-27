@@ -1497,16 +1497,23 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The config problems as lines an agent's settle report carries, a
-         * mark whose every loaded feature was skipped, which a mistyped field
-         * is, and `dataNotices`: a display with any of them still draws, so
-         * nothing else reaches a caller that cannot see the corner notice.
+         * The config problems as lines, and `dataNotices`: what the corner's
+         * problems notice lists. The skipped count has a chip of its own.
+         */
+        get cornerNotices(): string[] {
+          return [...this.configProblems.map(problemText), ...this.dataNotices]
+        },
+        /**
+         * #getter
+         * `cornerNotices` and a mark whose every loaded feature was skipped,
+         * which a mistyped field is, as lines an agent's settle report
+         * carries: a display with any of them still draws, so nothing else
+         * reaches a caller that cannot see the corner.
          */
         get notices(): string[] {
           const { skipped, total, fields } = this.skippedFeatures
           return [
-            ...this.configProblems.map(problemText),
-            ...this.dataNotices,
+            ...this.cornerNotices,
             ...(total > 0 && skipped === total
               ? [
                   `every one of ${total.toLocaleString()} ${pluralize(total, 'feature')} was skipped: ${fields.join(', ') || 'start or end'} missing or not a number`,

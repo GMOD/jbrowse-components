@@ -40,7 +40,7 @@ export interface MarkDisplayModel
   legendSections: MarkLegendSection[]
   skippedFeatures: SkippedFeatures
   densityStandInNotice: string | undefined
-  notices: string[]
+  cornerNotices: string[]
   openMarkPlotDialog: () => void
   facetLayout: FacetLayout
   axes: YAxis[]

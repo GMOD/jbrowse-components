@@ -56,7 +56,7 @@ const LinearMarkDisplayComponent = observer(
               />
             ) : null}
             <ConfigProblemsIndicator
-              notices={model.notices}
+              notices={model.cornerNotices}
               onClick={() => {
                 model.openMarkPlotDialog()
               }}
