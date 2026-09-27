@@ -179,6 +179,18 @@ const ABSENT_ON_PURPOSE = new Map([
     'ReversedRegionLabels',
     'TEST_INFRASTRUCTURE names the test file as a historical example of a suite that went red on main',
   ],
+  [
+    'DisplayMessageComponent',
+    "DISPLAYCHROME and EAGER_BUNDLE name BaseDisplayModel's deleted getter, to say why a display no longer holds a view of its own UI",
+  ],
+  [
+    'LGVSynteny',
+    'TEST_INFRASTRUCTURE names LGVSynteny.test.tsx by its basename, the worked example of a suite that reads the track list itself and cannot be trimmed',
+  ],
+  [
+    'hprcV2',
+    "PANGENOME_GRAPHS names UCSC GenArk's chromAlias.txt column, not a jbrowse symbol",
+  ],
 ])
 
 const LADDER = ['~128', '~512', '~2048']

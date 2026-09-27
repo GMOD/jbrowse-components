@@ -175,10 +175,9 @@ time the level opens, and discards them when the level closes.
 
 ## Build it yourself
 
-[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
-turns a finished graph into the files above with one command,
-`build_pangenome_graph.sh`. The mouse panel needs its graph built first, since
-nobody has published one.
+[](/docs/tutorials/pangenome_prepare_graph) turns a finished graph into the
+files above with one command, `build_pangenome_graph.sh`. The mouse panel needs
+its graph built first, since nobody has published one.
 [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
 downloads the assemblies, extracts one sequence per chromosome renamed to PanSN,
 runs `minigraph` per chromosome and joins the chromosomes with their segment ids

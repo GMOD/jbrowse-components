@@ -57,8 +57,7 @@ adapter.
 To index a graph, convert it once into tabix-indexed BED files that JBrowse can
 query by locus: `.segs.bed.gz` for the segments and `.links.bed.gz` for the
 links between them. One command, `build_pangenome_graph.sh`, builds them and
-writes a track config for them, as
-[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
+writes a track config for them, as [](/docs/tutorials/pangenome_prepare_graph)
 describes. Then **Add track** with that config, whose adapter is
 `RgfaTabixAdapter`, and the track opens as the graph.
 [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the index. Skip to

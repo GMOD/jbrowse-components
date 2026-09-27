@@ -425,8 +425,8 @@ the two derived files before re-mapping.
 
 JBrowse can also draw the graph as a graph, as a track of the linear view,
 through the [graph genome view plugin](/docs/user_guides/graph_genome_view).
-[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
-covers installing the plugin and the one command that indexes a graph for it.
+[](/docs/tutorials/pangenome_prepare_graph) covers installing the plugin and the
+one command that indexes a graph for it.
 
 ### Indexing the graph
 

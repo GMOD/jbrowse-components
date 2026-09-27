@@ -226,7 +226,7 @@ figures and 7 clips reshot on ada and in the stores. The plugin's
   "Graph" leaves the Display types menu of BED, GFF and PAF tracks.
 - jb2hubs main `d8c4f6cb028`: the four portal configs search gene names
   (hosted trix) and hg38/mm39 draw cytobands, and the HPRC loci gain GSTT1 and
-  FLNA/EMD; both launches boot. Not uploaded (`jb2hubs/website/pangenome-config/upload.sh`)
+  FLNA/EMD; both launches boot. Not uploaded (`~/src/jb2hubs/website/pangenome-config/upload.sh`)
   and staging not redeployed.
 - A GSTT1 tutorial section is not written. Its graph is compelling (a 39.5 kb
   allele loop beside GSTT4, contributed by HG03654#2), but CAT projects

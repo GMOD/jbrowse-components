@@ -586,6 +586,10 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // misspelling one display shipped for `showRowLabels`, named to say why the
   // mixin now declares the accessors — the name must stay unwritten.
   'showSidebarLabels',
+  // packages/tree-sidebar/CLAUDE.md: the `ReactNode` prop this dialog's colour
+  // and row-edit controls replaced, named to say a node cannot be held for a
+  // Submit — the same argument DISPLAYCHROME.md makes for DisplayMessageComponent.
+  'displayControls',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on

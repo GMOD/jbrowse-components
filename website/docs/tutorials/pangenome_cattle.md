@@ -251,9 +251,9 @@ different sequence. Click one to compare the two.
 
 ## Build it yourself
 
-[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
-turns a graph into the files above with one command, `build_pangenome_graph.sh`.
-The published bovine graphs need three steps beyond it, which
+[](/docs/tutorials/pangenome_prepare_graph) turns a graph into the files above
+with one command, `build_pangenome_graph.sh`. The published bovine graphs need
+three steps beyond it, which
 [`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
 runs:
 
