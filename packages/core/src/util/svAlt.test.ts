@@ -48,6 +48,19 @@ test('a deletion keeps the sequence outside it and a duplication the sequence in
   expect([dup?.own.keeps, dup?.mate.keeps]).toEqual([1, -1])
 })
 
+// VCF 4.5 made END a computed field, so a file may state only SVLEN, one
+// value per ALT and read as its absolute value
+test('a symbolic allele with no END ends SVLEN bases past POS', () => {
+  expect(junctionEnds(vcf(['<DEL>'], { SVLEN: [500] }))?.mate.pos).toBe(1499)
+  expect(junctionEnds(vcf(['<DEL>'], { SVLEN: [-500] }))?.mate.pos).toBe(1499)
+  expect(
+    junctionEnds(vcf(['<DEL>'], { END: [1200], SVLEN: [500] }))?.mate.pos,
+  ).toBe(1199)
+  const repeat = vcf(['<CNV:TR>', '<CNV:TR>'], { SVLEN: [300, 700] })
+  expect(junctionEnds(repeat, '<CNV:TR>', 1)?.mate.pos).toBe(1699)
+  expect(junctionEnds(vcf(['<INS>'], { SVLEN: [500] }))).toBeUndefined()
+})
+
 test('a translocation takes its directions from STRANDS, and none without it', () => {
   const tra = (info: Record<string, unknown[]>) =>
     junctionEnds(vcf(['<TRA>'], { CHR2: ['chr5'], END: [300], ...info }))

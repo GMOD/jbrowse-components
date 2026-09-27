@@ -288,7 +288,7 @@ export function matedBy(f: Feature) {
   }
   const alts = f.get('ALT')
   return Array.isArray(alts) &&
-    (alts as string[]).some(alt => junctionEnds(f, alt))
+    (alts as string[]).some((alt, i) => junctionEnds(f, alt, i))
     ? ('alt' as const)
     : undefined
 }
@@ -323,7 +323,7 @@ function mates(features: readonly Feature[]) {
       continue
     }
     for (const [i, alt] of (alts as string[]).entries()) {
-      const ends = junctionEnds(f, alt)
+      const ends = junctionEnds(f, alt, i)
       if (!ends) {
         continue
       }

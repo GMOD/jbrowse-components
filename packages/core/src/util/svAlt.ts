@@ -45,14 +45,38 @@ export function getBreakendMateLocString(breakend?: Breakend) {
     : matePosition
 }
 
+// VCF 4.5 computes END rather than storing it: a DEL, DUP, INV or CNV allele
+// ends |SVLEN| bases past POS, SVLEN one value per ALT (one for all in files
+// older than 4.4)
+function spannedEnd(
+  feature: Feature,
+  alt: string,
+  svlen: unknown,
+  alleleIndex: number,
+) {
+  if (!/^<(DEL|DUP|INV|CNV)[:>]/.test(alt) || !Array.isArray(svlen)) {
+    return undefined
+  }
+  const len = Math.abs(
+    Number(svlen.length === 1 ? svlen[0] : svlen[alleleIndex]),
+  )
+  return len > 0 ? feature.get('start') + 1 + len : undefined
+}
+
 /**
  * #api
  * Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
- * Returns undefined when no mate coordinate info is found.
+ * Returns undefined when no mate coordinate info is found. `alleleIndex` is
+ * the alt's place in `ALT`, which a record repeating one symbolic allele with
+ * several lengths needs; it defaults to the first place `alt` appears.
  */
 export function parseSvAlt(
   feature: Feature,
   alt?: string,
+  alleleIndex = Math.max(
+    0,
+    (feature.get('ALT') as string[] | undefined)?.indexOf(alt ?? '') ?? 0,
+  ),
 ):
   | {
       mateRefName: string
@@ -73,7 +97,9 @@ export function parseSvAlt(
     const info = feature.get('INFO') as
       | Record<string, (string | number)[]>
       | undefined
-    const matePos = info?.END?.[0] as number | undefined
+    const matePos =
+      (info?.END?.[0] as number | undefined) ??
+      spannedEnd(feature, alt, info?.SVLEN, alleleIndex)
     if (matePos === undefined) {
       return undefined
     }
@@ -241,6 +267,7 @@ function symbolicKeeps(feature: Feature, alt: string) {
 export function junctionEnds(
   feature: Feature,
   alt = (feature.get('ALT') as string[] | undefined)?.[0],
+  alleleIndex?: number,
 ): { own: JunctionEnd; mate: JunctionEnd } | undefined {
   const refName = feature.get('refName')
   const mate = feature.get('mate') as
@@ -276,7 +303,7 @@ export function junctionEnds(
       },
     }
   }
-  const parsed = parseSvAlt(feature, alt)
+  const parsed = parseSvAlt(feature, alt, alleleIndex)
   if (!parsed || alt === undefined) {
     return undefined
   }
