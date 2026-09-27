@@ -104,26 +104,19 @@ describe('collectDisplayOverrides', () => {
 })
 
 describe('mergeOverridesIntoDisplays', () => {
-  test('creates a display entry with derived displayId', () => {
-    const merged = mergeOverridesIntoDisplays(
-      [],
-      new Map([['LinearBasicDisplay', { color: 'green' }]]),
-      'mytrack',
-    )
-    expect(merged).toEqual([
-      {
-        type: 'LinearBasicDisplay',
-        displayId: 'mytrack-LinearBasicDisplay',
-        color: 'green',
-      },
-    ])
+  test('a display with no entry gets none', () => {
+    expect(
+      mergeOverridesIntoDisplays(
+        [],
+        new Map([['LinearBasicDisplay', { color: 'green' }]]),
+      ),
+    ).toEqual([])
   })
 
   test('explicit display entry props win over shorthand', () => {
     const merged = mergeOverridesIntoDisplays(
       [{ type: 'LinearBasicDisplay', displayId: 'custom', color: 'red' }],
       new Map([['LinearBasicDisplay', { color: 'green', height: 20 }]]),
-      'mytrack',
     )
     expect(merged).toEqual([
       {
@@ -135,21 +128,15 @@ describe('mergeOverridesIntoDisplays', () => {
     ])
   })
 
-  test('merges into matching entry and appends non-matching overrides', () => {
-    const merged = mergeOverridesIntoDisplays(
-      [{ type: 'LinearBasicDisplay', displayId: 'd1' }],
-      new Map([
-        ['LinearBasicDisplay', { color: 'green' }],
-        ['LinearAlignmentsDisplay', { baseColor: 'red' }],
-      ]),
-      'mytrack',
-    )
-    expect(merged).toHaveLength(2)
-    expect(merged[0]).toMatchObject({ displayId: 'd1', color: 'green' })
-    expect(merged[1]).toMatchObject({
-      type: 'LinearAlignmentsDisplay',
-      displayId: 'mytrack-LinearAlignmentsDisplay',
-      baseColor: 'red',
-    })
+  test('merges into the matching entry and adds none for the rest', () => {
+    expect(
+      mergeOverridesIntoDisplays(
+        [{ type: 'LinearBasicDisplay', displayId: 'd1' }],
+        new Map([
+          ['LinearBasicDisplay', { color: 'green' }],
+          ['LinearAlignmentsDisplay', { baseColor: 'red' }],
+        ]),
+      ),
+    ).toEqual([{ type: 'LinearBasicDisplay', displayId: 'd1', color: 'green' }])
   })
 })

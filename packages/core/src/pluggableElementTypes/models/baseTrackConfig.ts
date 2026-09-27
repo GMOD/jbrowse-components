@@ -89,11 +89,11 @@ export function displayCandidates(
 /**
  * Snapshot normalization shared by every track config schema (including
  * ReferenceSequenceTrack). Loads retired display types as the displays they
- * retired into, runs the `Core-preProcessTrackConfig` extension point, expands
- * the `displayDefaults` shorthand, auto-fills a stub display for each of the
- * track type's registered displays whose adapter capabilities the track's
- * adapter declares, dedupes by type (first wins), and lifts legacy renderer
- * configs.
+ * retired into, runs the `Core-preProcessTrackConfig` extension point,
+ * auto-fills a stub display for each of the track type's registered displays
+ * whose adapter capabilities the track's adapter declares, folds the
+ * `displayDefaults` shorthand into those entries, dedupes by type (first wins),
+ * and lifts legacy renderer configs.
  */
 export function preprocessTrackConfigSnapshot(
   pluginManager: PluginManager,
@@ -104,48 +104,33 @@ export function preprocessTrackConfigSnapshot(
     'Core-preProcessTrackConfig',
     migrateRetiredDisplays(pluginManager, structuredClone(snapshot)),
   ) as Partial<TrackConfigSnapshot>
-  const declared = new Set(
-    Array.isArray(pre.displays) ? pre.displays.map(d => d.type) : [],
-  )
-  const snap = expandTrackConfigShorthand(
-    pre,
-    pluginManager,
-  ) as TrackConfigSnapshot
-  // expandTrackConfigShorthand folds any `displayDefaults` shorthand into
-  // `displays`, but its early-return branches can leave a malformed `displays`
-  // untouched; guard so MST union-type probing never crashes on a non-array
-  // `displays`.
-  let displays = Array.isArray(snap.displays) ? snap.displays : []
-  if (snap.trackId !== 'placeholderId') {
-    // The displays the config declared lead, in its order. Every other one of
-    // the track type's displays that can draw from this adapter follows in the
-    // type's own order, including one the shorthand created an entry for: a
-    // setting only the second display takes must not make it the one a view
-    // opens the track with.
+  // a non-array `displays` would crash MST union-type probing
+  const declared = Array.isArray(pre.displays) ? pre.displays : []
+  let displays = declared
+  if (pre.trackId !== 'placeholderId') {
+    // The displays the config declared lead, in its order; every other one
+    // the adapter feeds follows in the track type's own order.
     try {
-      const expanded = new Map(displays.map(d => [d.type, d]))
-      const feeds = adapterFeeds(pluginManager, snap.adapter)
+      const declaredTypes = new Set(declared.map(d => d.type))
+      const feeds = adapterFeeds(pluginManager, pre.adapter)
       displays = [
-        ...displays.filter(d => declared.has(d.type)),
+        ...declared,
         ...pluginManager
-          .getTrackType(snap.type)
-          .displayTypes.flatMap(d =>
-            declared.has(d.name)
-              ? []
-              : expanded.has(d.name)
-                ? [expanded.get(d.name)!]
-                : feeds(d)
-                  ? [{ displayId: `${snap.trackId}-${d.name}`, type: d.name }]
-                  : [],
-          ),
+          .getTrackType(pre.type ?? '')
+          .displayTypes.filter(d => !declaredTypes.has(d.name) && feeds(d))
+          .map(d => ({ displayId: `${pre.trackId}-${d.name}`, type: d.name })),
       ]
     } catch (e) {
       throw new Error(
-        `Unknown track type "${snap.type}" in ${JSON.stringify(snap)}`,
+        `Unknown track type "${pre.type}" in ${JSON.stringify(pre)}`,
         { cause: e },
       )
     }
   }
+  const snap = expandTrackConfigShorthand(
+    { ...pre, displays },
+    pluginManager,
+  ) as TrackConfigSnapshot & { displays: LegacyDisplaySnapshot[] }
   const knownDisplayTypes = new Set(
     pluginManager.getDisplayElements().map(d => d.name),
   )
@@ -165,7 +150,7 @@ export function preprocessTrackConfigSnapshot(
           },
         }
       : {}),
-    displays: displays
+    displays: snap.displays
       .filter(d => {
         const known = knownDisplayTypes.has(d.type)
         if (!known) {

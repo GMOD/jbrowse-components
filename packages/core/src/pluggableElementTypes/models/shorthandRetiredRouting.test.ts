@@ -60,23 +60,31 @@ test('a lift that places nothing reports the key rather than writing nothing', (
   expect(overrides.size).toBe(0)
 })
 
-// Without this the created entry is appended in the order the settings were
-// written, so a setting only the second display takes makes it the track's
-// first display — the one a view opens.
-test('a created entry keeps the track type’s display order', () => {
-  const { overrides } = collectDisplayOverrides({ pointSize: 9 }, schemas)
-  expect(
-    mergeOverridesIntoDisplays([], overrides, 't').map(d => d.type),
-  ).toEqual(['SecondDisplay'])
-
-  const both = collectDisplayOverrides(
-    { pointSize: 9, color: 'red' },
-    schemas,
-  ).overrides
-  expect(mergeOverridesIntoDisplays([], both, 't').map(d => d.type)).toEqual([
-    'FirstDisplay',
-    'SecondDisplay',
+// a retired lift is display code, and one that throws refuses the value the
+// way a slot's type check does instead of failing the track's load raw
+test('a retired lift that throws refuses the value', () => {
+  const throwing = new Map([
+    ...schemas,
+    [
+      'ThirdDisplay',
+      display(
+        'ThirdDisplay',
+        {},
+        {
+          pointSize: () => {
+            throw new Error('no point sizes here')
+          },
+        },
+      ),
+    ],
   ])
+  const { overrides, refused } = collectDisplayOverrides(
+    { pointSize: 9 },
+    throwing,
+  )
+  expect(refused).toEqual([])
+  expect(overrides.get('SecondDisplay')).toEqual({ size: 9 })
+  expect(overrides.has('ThirdDisplay')).toBe(false)
 })
 
 test('an explicit entry still wins over the members a lift answers', () => {
@@ -85,7 +93,6 @@ test('an explicit entry still wins over the members a lift answers', () => {
     mergeOverridesIntoDisplays(
       [{ type: 'SecondDisplay', displayId: 't-SecondDisplay', size: 3 }],
       overrides,
-      't',
     ),
   ).toEqual([{ type: 'SecondDisplay', displayId: 't-SecondDisplay', size: 3 }])
 })

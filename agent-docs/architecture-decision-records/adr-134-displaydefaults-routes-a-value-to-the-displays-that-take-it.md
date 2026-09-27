@@ -9,7 +9,9 @@ summary: "A track's `displayDefaults` sends each key to the displays whose slot 
 
 Accepted (2026-09-18). Makes the core fix
 [ADR-120](adr-120-one-json-schema-for-config-and-session-spec.md) named and
-left ("routing by slot acceptance rather than by name").
+left ("routing by slot acceptance rather than by name"). Amended 2026-09-27:
+a key merges only into the display entries the track has, so a setting never
+adds a display, and a retired lift that throws refuses the value.
 
 ## Context
 
@@ -52,6 +54,11 @@ over the displays declaring it, where it was the `allOf` of their slot tables.
 - A value is checked once per declaring display at load. Only tracks writing
   `displayDefaults` pay it.
 
+- A key whose every taker is a display the track's adapter cannot feed warns
+  and writes nothing. Before the amendment it created that display's entry,
+  and the display switcher offered a graph track on an rGFA adapter the lanes
+  display its adapter cannot feed.
+
 ## Rejected alternatives
 
 - **One colour vocabulary across the four colour objects**, so every display
@@ -64,3 +71,8 @@ over the displays declaring it, where it was the `allOf` of their slot tables.
   [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md):
   `ld` and the ribbon schemes are fields, the four objects share one shape
   and one `scale` vocabulary, and each display declares the members it paints.
+- **Routing only to slots built from shared definitions** (display-kit's
+  colour object, the base `height`), so a plugin display's own `color` never
+  receives a shorthand value. Every key only one display declares (`mark`,
+  `scales`, `labels`, `origin`) would need marking, against a plugin risk no
+  live case shows: a value a display's schema refuses is already skipped.

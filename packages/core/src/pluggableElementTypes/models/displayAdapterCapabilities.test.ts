@@ -18,13 +18,17 @@ function adapter(name: string, adapterCapabilities: string[] = []) {
     })
 }
 
-function display(name: string, adapterCapabilities?: string[]) {
+function display(
+  name: string,
+  adapterCapabilities?: string[],
+  slots: Record<string, { type: string; defaultValue: unknown }> = {},
+) {
   return () =>
     new DisplayType({
       name,
       configSchema: ConfigurationSchema(
         name,
-        {},
+        { height: { type: 'number', defaultValue: 100 }, ...slots },
         { explicitIdentifier: 'displayId', explicitlyTyped: true },
       ),
       stateModel: types.model(name, {}),
@@ -55,7 +59,11 @@ function trackConfig() {
       }),
   )
   pluginManager.addDisplayType(display('LinearBasicDisplay'))
-  pluginManager.addDisplayType(display('LinearGraphDisplay', ['getSubgraph']))
+  pluginManager.addDisplayType(
+    display('LinearGraphDisplay', ['getSubgraph'], {
+      layout: { type: 'string', defaultValue: 'auto' },
+    }),
+  )
   pluginManager.createPluggableElements()
   pluginManager.configure()
   const schema = pluginManager.getTrackType('FeatureTrack').configSchema
@@ -124,4 +132,33 @@ test('a declared display the adapter cannot feed is no candidate', () => {
       displays: [{ type: 'LinearGraphDisplay' }],
     }),
   ).toEqual(['LinearBasicDisplay'])
+})
+
+// A setting reaches the displays the track has; one the adapter cannot feed
+// is not added to carry it.
+test('displayDefaults adds no display the adapter cannot feed', () => {
+  const { displaysOf } = trackConfig()
+  expect(
+    displaysOf({
+      adapter: { type: 'BedAdapter' },
+      displayDefaults: { height: 50 },
+    }),
+  ).toEqual(['LinearBasicDisplay'])
+})
+
+test('a setting only an unfed display takes is reported, not applied', () => {
+  const { displaysOf } = trackConfig()
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  expect(
+    displaysOf({
+      adapter: { type: 'BedAdapter' },
+      displayDefaults: { layout: 'force' },
+    }),
+  ).toEqual(['LinearBasicDisplay'])
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining(
+      'displayDefaults.layout reaches only LinearGraphDisplay',
+    ),
+  )
+  warn.mockRestore()
 })

@@ -24,11 +24,16 @@ function verdictOf(
 ) {
   const meta = getConfigurationSchemaMetadata(schema)
   const retired = meta?.options.retired?.[key]
-  const members = retired
-    ? retired(value)
-    : meta?.definition[key]
-      ? { [key]: value }
-      : undefined
+  let members
+  try {
+    members = retired
+      ? retired(value)
+      : meta?.definition[key]
+        ? { [key]: value }
+        : undefined
+  } catch (e) {
+    return { refusal: e instanceof Error ? e.message : String(e) }
+  }
   // A lift answering nothing has not placed the value — a `colorBy` naming a
   // scheme this display never had, a `renderer` holding none of the props it
   // retired. That is the `unknownKeys` report, not a silent write of nothing.
@@ -46,17 +51,16 @@ function verdictOf(
  * whose member of that name takes its value: `color: 'red'` reaches every
  * display with a colour, `color: { field: 'type' }` only those whose colour
  * maps a field, and a spelling a display retired reaches that display as the
- * members it became. A key no display knows is an `unknownKeys` entry, and one
- * every display that knows it refuses a `refused` entry carrying each reason.
+ * members it became. `reached` names the displays each key went to. A key no
+ * display knows is an `unknownKeys` entry, and one every display that knows it
+ * refuses a `refused` entry carrying each reason.
  */
 export function collectDisplayOverrides(
   displaySettings: Record<string, unknown>,
   displaySchemas: ReadonlyMap<string, AnyConfigurationSchemaType>,
 ) {
-  // Seeded in the track type's own display order, which `mergeOverridesIntoDisplays`
-  // appends a created entry in: a track's first display is the one it opens
-  // with, and a shorthand setting only one display takes must not promote it.
   const overrides = new Map<string, Record<string, unknown>>()
+  const reached = new Map<string, string[]>()
   const unknownKeys: string[] = []
   const refused: { key: string; reasons: string[] }[] = []
   for (const [key, value] of Object.entries(displaySettings)) {
@@ -76,39 +80,24 @@ export function collectDisplayOverrides(
     for (const { name, members } of targets) {
       overrides.set(name, { ...overrides.get(name), ...members })
     }
+    reached.set(
+      key,
+      targets.map(t => t.name),
+    )
   }
-  return {
-    overrides: new Map(
-      [...displaySchemas.keys()]
-        .filter(name => overrides.has(name))
-        .map(name => [name, overrides.get(name)!]),
-    ),
-    unknownKeys,
-    refused,
-  }
+  return { overrides, reached, unknownKeys, refused }
 }
 
 /**
- * Pure: fold per-display override props into a `displays` array, creating an
- * entry (with a derived displayId) for any display type not already present.
- * Explicit entries in the existing array win over shorthand on conflict.
+ * Fold per-display override props into the entries a `displays` array already
+ * has; explicit props win. A display with no entry gets none: a setting never
+ * adds a display to a track.
  */
 export function mergeOverridesIntoDisplays(
   displays: DisplaySnapshot[],
   overrides: Map<string, Record<string, unknown>>,
-  trackId: string,
 ): DisplaySnapshot[] {
-  const seen = new Set<string>()
-  const merged = displays.map(d => {
-    seen.add(d.type)
-    return { ...overrides.get(d.type), ...d }
-  })
-  for (const [name, props] of overrides) {
-    if (!seen.has(name)) {
-      merged.push({ type: name, displayId: `${trackId}-${name}`, ...props })
-    }
-  }
-  return merged
+  return displays.map(d => ({ ...overrides.get(d.type), ...d }))
 }
 
 /**
@@ -116,14 +105,16 @@ export function mergeOverridesIntoDisplays(
  * **array**, so users can set display settings without naming the display type
  * or nesting in `displays:[{type,...}]`. `displayDefaults:{color:'green'}` routes
  * each setting to the display type(s) whose slot takes it, folding them into
- * whatever `displays` array the track already has (explicit entries win).
+ * the entries the `displays` array has (explicit props win). A key whose every
+ * taker is missing from the array, a display the track's adapter cannot feed,
+ * is reported rather than giving the track that display.
  *
  * `displayDefaults` is kept separate from `displays` (rather than overloading
  * `displays` by shape) so a config using it still loads in a JBrowse version
  * that predates the feature — the unknown key is ignored, instead of crashing
  * when the array-typed `displays` slot receives an object.
  *
- * Runs inside `baseTrackConfig.preProcessSnapshot`, before display-stub
+ * Runs inside `baseTrackConfig.preProcessSnapshot`, after display-stub
  * injection. Takes/returns the loosely-typed snapshot (as `evaluateExtensionPoint`
  * does) — the caller casts the result to its snapshot type for validation.
  */
@@ -160,7 +151,7 @@ export function expandTrackConfigShorthand(
     return snap
   }
 
-  const { overrides, unknownKeys, refused } = collectDisplayOverrides(
+  const { overrides, reached, unknownKeys, refused } = collectDisplayOverrides(
     shorthand,
     new Map(trackType.displayTypes.map(d => [d.name, d.configSchema])),
   )
@@ -183,8 +174,16 @@ export function expandTrackConfigShorthand(
   const displays = Array.isArray(rest.displays)
     ? (rest.displays as DisplaySnapshot[])
     : []
+  const listed = new Set(displays.map(d => d.type))
+  for (const [key, names] of reached) {
+    if (names.length > 0 && !names.some(name => listed.has(name))) {
+      console.warn(
+        `Track "${trackId}": displayDefaults.${key} reaches only ${names.join(', ')}, which its adapter cannot feed`,
+      )
+    }
+  }
   return {
     ...rest,
-    displays: mergeOverridesIntoDisplays(displays, overrides, trackId),
+    displays: mergeOverridesIntoDisplays(displays, overrides),
   }
 }
