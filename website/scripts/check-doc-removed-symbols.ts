@@ -47,9 +47,9 @@ const SCAN_ROOTS = [
 const isSource = (name: string) =>
   /\.(tsx?|jsx?|mjs|cjs|slang|sh|py)$/.test(name)
 
-// Docs whose subject is what is gone, exempt as documents rather than one entry
+// Docs whose subject is gone or lives on a branch, exempt as documents rather than one entry
 // per name.
-const ABSENCE_DOCS = new Set(['PLUGIN_ABI_STABILITY.md'])
+const ABSENCE_DOCS = new Set(['PLUGIN_ABI_STABILITY.md', 'R_EXPORT.md'])
 
 // A name a doc means to say is gone, or that left for another repo. The entry
 // asserts the sentence around it is still true.
