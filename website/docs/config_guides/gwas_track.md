@@ -123,7 +123,7 @@ right-clicking a point pins it as the index
         ],
         "encoding": {
           "y": "score",
-          "color": "#c951c9",
+          "color": { "value": "#c951c9" },
           "shape": {
             "field": "ld_role",
             "domain": ["index"],

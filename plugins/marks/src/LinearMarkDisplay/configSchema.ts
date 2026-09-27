@@ -59,7 +59,6 @@ const markShapeSchema = ConfigurationSchema(
      * #slot marks.encoding.shape.value
      * `circle`, `triangle-down` or `diamond`, or a jexl callback over
      * `feature` returning one, for a point mark whose shape is not a scale.
-     * Writing `shape: 'triangle-down'` directly on the encoding lands here.
      */
     value: {
       type: 'stringEnum',
@@ -152,7 +151,7 @@ const markShapeSchema = ConfigurationSchema(
     },
   },
   {
-    shorthand: 'value',
+    shorthand: 'field',
     closed: true,
     preProcessSnapshot: snap => normalizeChannel(snap, 'shape'),
   },
@@ -211,16 +210,18 @@ const markEncodingSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.color
-     * The mark's colour: a CSS colour, a jexl callback returning one, or an
-     * object binding a field to a categorical or continuous scale. A scale is
+     * The mark's colour: a field through a categorical or continuous scale,
+     * written bare or as an object with the scale's members, or a constant
+     * `{ value }`, a CSS colour or a jexl callback returning one. A scale is
      * what the legend describes.
      */
     color: markColorSchema,
     /**
      * #slot marks.encoding.shape
-     * For a point mark: `circle`, `triangle-down` or `diamond`, a jexl
-     * callback over `feature` returning one, or an object binding a field to a
-     * categorical scale over those names. A scale is what the legend describes.
+     * For a point mark: a field through a categorical scale over `circle`,
+     * `triangle-down` and `diamond`, written bare or as an object, or a
+     * constant `{ value }`, one of those names or a jexl callback returning
+     * one. A scale is what the legend describes.
      */
     shape: markShapeSchema,
     /**

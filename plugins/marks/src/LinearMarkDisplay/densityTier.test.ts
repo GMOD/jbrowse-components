@@ -31,7 +31,7 @@ const DENSITY_MARKS = [
   {
     mark: 'bar',
     source: 'density',
-    encoding: { y: 'count', color: 'red' },
+    encoding: { y: 'count', color: { value: 'red' } },
     minBpPerPx: 100,
   },
 ]

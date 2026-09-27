@@ -132,7 +132,10 @@ describe('a marks list in a config file', () => {
     ])
     expect(
       found([
-        { mark: 'bar', encoding: { y: 'score', shape: 'triangle-down' } },
+        {
+          mark: 'bar',
+          encoding: { y: 'score', shape: { value: 'triangle-down' } },
+        },
       ]),
     ).toEqual([`warning unread-channel ${DISPLAY}.marks[0].encoding.shape`])
     expect(found([{ mark: 'span', encoding: { size: 8 } }])).toEqual([
@@ -457,7 +460,9 @@ describe('a marks list in a config file', () => {
       `warning labels-domain ${color}.labels`,
     ])
     expect(found(colored('span', { value: 'red' }))).toEqual([])
-    expect(found([{ mark: 'span', encoding: { color: 'red' } }])).toEqual([])
+    expect(
+      found([{ mark: 'span', encoding: { color: { value: 'red' } } }]),
+    ).toEqual([])
   })
 
   it('reports a zoom range that admits no zoom', () => {
@@ -534,6 +539,14 @@ describe('a marks list in a config file', () => {
     })
     expect(problemsOf(config).map(p => `${p.rule} ${p.where}`)).toEqual([
       `threshold-no-cuts ${DISPLAY}.marks[0].encoding.color.domain`,
+    ])
+  })
+
+  it('warns on a colour written as a field', () => {
+    expect(
+      found([{ mark: 'bar', encoding: { y: 'score', color: 'steelblue' } }]),
+    ).toEqual([
+      `warning field-spells-constant ${DISPLAY}.marks[0].encoding.color.field`,
     ])
   })
 
@@ -676,8 +689,8 @@ describe('the lift a file takes before the rules read it', () => {
           marks: [
             {
               encoding: {
-                color: 'red',
-                shape: 'triangle-down',
+                color: { value: 'red' },
+                shape: { value: 'triangle-down' },
               },
               transform: [{ type: 'coverage', as: 'depth' }],
             },

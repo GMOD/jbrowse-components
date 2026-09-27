@@ -145,7 +145,7 @@ test('points over the same file with a jexl colour', async () => {
         mark: 'point',
         encoding: {
           y: 'score',
-          color: "jexl:get(feature,'name')=='EDEN.1'?'red':'blue'",
+          color: { value: "jexl:get(feature,'name')=='EDEN.1'?'red':'blue'" },
         },
       },
     ]),
@@ -348,7 +348,7 @@ test('past a forced-small byte limit the density sidecar draws in the banner s p
             {
               mark: 'bar',
               source: 'density',
-              encoding: { y: 'count', color: 'red' },
+              encoding: { y: 'count', color: { value: 'red' } },
             },
           ],
         },
@@ -405,7 +405,7 @@ test('a stack over the volvox BAM is a declared pileup, its rows packed in the w
         {
           mark: 'span',
           transform: [{ type: 'pileup' }],
-          encoding: { row: 'row', color: 'red' },
+          encoding: { row: 'row', color: { value: 'red' } },
         },
       ],
       'volvox_bam',
@@ -443,7 +443,7 @@ test('a coverage run and the raw reads fold into the one axis', async () => {
         {
           mark: 'bar',
           transform: [{ type: 'coverage' }],
-          encoding: { y: 'coverage', color: 'blue' },
+          encoding: { y: 'coverage', color: { value: 'blue' } },
         },
       ],
       'volvox_bam',
@@ -474,7 +474,7 @@ test('spans over a VCF stack the variants the worker packed', async () => {
         {
           mark: 'span',
           transform: [{ type: 'pileup', padding: 10000 }],
-          encoding: { row: 'row', color: 'green' },
+          encoding: { row: 'row', color: { value: 'green' } },
         },
       ],
       'volvox_filtered_vcf',

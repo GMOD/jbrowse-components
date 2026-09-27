@@ -109,7 +109,7 @@
               "mark": "point",
               "encoding": {
                 "y": "score",
-                "color": "green"
+                "color": { "value": "green" }
               }
             }
           ]
@@ -143,7 +143,9 @@
               "mark": "point",
               "encoding": {
                 "y": "score",
-                "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+                "color": {
+                  "value": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+                }
               }
             }
           ]
@@ -214,7 +216,7 @@
               ],
               "encoding": {
                 "y": "score",
-                "color": "#c951c9",
+                "color": { "value": "#c951c9" },
                 "shape": {
                   "field": "ld_role",
                   "domain": ["index"],

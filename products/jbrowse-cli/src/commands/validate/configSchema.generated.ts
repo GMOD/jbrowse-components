@@ -7221,8 +7221,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "MarkColor",
       "anyOf": [
         {
-          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColorOrJexl",
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "",
           "type": "string"
         },
         {
@@ -7350,20 +7351,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "MarkShape",
       "anyOf": [
         {
-          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "anyOf": [
-            {
-              "enum": [
-                "circle",
-                "triangle-down",
-                "diamond"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "circle",
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "",
           "type": "string"
         },
         {

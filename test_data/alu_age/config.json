@@ -81,7 +81,7 @@
                   "ops": [{ "op": "count" }]
                 }
               ],
-              "encoding": { "color": "#c0c0c0" },
+              "encoding": { "color": { "value": "#c0c0c0" } },
               "minBpPerPx": 100
             },
             {
@@ -98,7 +98,7 @@
                   "ops": [{ "op": "count" }]
                 }
               ],
-              "encoding": { "color": "#d73027" },
+              "encoding": { "color": { "value": "#d73027" } },
               "minBpPerPx": 100
             }
           ]

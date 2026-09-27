@@ -283,12 +283,12 @@ describe('a mark declared in paths', () => {
       'marks.0.encoding.color.field=strand',
       'marks.1.mark=point',
       'marks.1.encoding.y=score',
-      'marks.1.encoding.color=purple',
+      'marks.1.encoding.color.value=purple',
     ])
     const stated = await exportTrack(
       marksConfig(
         { mark: 'bar', encoding: { y: 'score', color: { field: 'strand' } } },
-        { mark: 'point', encoding: { y: 'score', color: 'purple' } },
+        { mark: 'point', encoding: { y: 'score', color: { value: 'purple' } } },
       ),
     )
     expect(written).toBe(stated)
@@ -307,7 +307,7 @@ describe('a mark declared in paths', () => {
       'marks.0.encoding.y=count',
       'marks.1.mark=point',
       'marks.1.encoding.y=score',
-      'marks.1.encoding.shape=diamond',
+      'marks.1.encoding.shape.value=diamond',
     ])
     const stated = await exportTrack(
       marksConfig(
@@ -323,7 +323,10 @@ describe('a mark declared in paths', () => {
           ],
           encoding: { y: 'count' },
         },
-        { mark: 'point', encoding: { y: 'score', shape: 'diamond' } },
+        {
+          mark: 'point',
+          encoding: { y: 'score', shape: { value: 'diamond' } },
+        },
       ),
     )
     expect(written).toBe(stated)
@@ -332,7 +335,7 @@ describe('a mark declared in paths', () => {
   test('a JSON modifier states the list the config would', async () => {
     const list = [
       { mark: 'bar', encoding: { y: 'score' } },
-      { mark: 'point', encoding: { y: 'score', color: 'purple' } },
+      { mark: 'point', encoding: { y: 'score', color: { value: 'purple' } } },
     ]
     const written = await exportTrack(configWith(basic), [
       'display:marks',
@@ -345,11 +348,11 @@ describe('a mark declared in paths', () => {
     const bar = { mark: 'bar', encoding: { y: 'score' } }
     const point = (color: string) => ({
       mark: 'point',
-      encoding: { y: 'score', color },
+      encoding: { y: 'score', color: { value: color } },
     })
     const declared = marksConfig(bar, point('purple'))
     const repainted = await exportTrack(declared, [
-      'marks.1.encoding.color=red',
+      'marks.1.encoding.color.value=red',
     ])
     expect(repainted).toBe(await exportTrack(marksConfig(bar, point('red'))))
     expect(repainted).not.toBe(await exportTrack(declared))

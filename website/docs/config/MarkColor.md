@@ -9,7 +9,11 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ## Example usage
 
 ```js
-{ mark: 'bar', encoding: { y: 'score', color: 'steelblue' } }
+{ mark: 'bar', encoding: { y: 'score', color: { value: 'steelblue' } } }
+```
+
+```js
+{ mark: 'point', encoding: { y: 'score', color: 'type' } }
 ```
 
 ```js
@@ -73,8 +77,9 @@ instance, or a field through a categorical scale (a `range` colour per
 value), a `linear` or `log` scale (a ramp between `domainMin` and
 `domainMax`, `domainMid` placing its middle stop where a diverging ramp
 turns) or a `threshold` scale (a `range` colour per interval between the
-cut points `domain` lists). A string is the constant; the object binds the
-field, and a scale is what the legend describes.
+cut points `domain` lists). A string is the field, as every channel's is
+inside `encoding`; a constant is `{ value }`. A scale is what the legend
+describes.
 
 ## Config slots
 
@@ -83,7 +88,7 @@ These slots go on a display entry: `"displays": [{ "type": "MarkColor", ... }]`,
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>`maybeColor` | A CSS colour, or a jexl callback over `feature` returning one, for a mark whose colour is not a scale. Writing `color: 'red'` or `color: 'jexl:…'` directly on the encoding lands here. Unset, a mark paints in the default blue, `#0068d1`, and a text mark prints in the page's text colour.<br>_callback args:_ `feature` |
+| <span id="slot-value">**value**</span><br>`maybeColor` | A CSS colour, or a jexl callback over `feature` returning one, for a mark whose colour is not a scale. Unset, a mark paints in the default blue, `#0068d1`, and a text mark prints in the page's text colour.<br>_callback args:_ `feature` |
 | <span id="slot-breaks">**breaks**</span><br>`stringArray` = <code>[]</code> | The values a categorical key lists, in this order; empty lists every value the loaded regions met. A value left out still paints, as ggplot2's `breaks` leaves it. |
 | <span id="slot-descending">**descending**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | A threshold key lists its intervals from the highest down, the way a vertical stepped legend stands. |
 | <span id="slot-missinglabel">**missingLabel**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | What the key calls a feature with nothing in `field`; unset is "(no value)". |

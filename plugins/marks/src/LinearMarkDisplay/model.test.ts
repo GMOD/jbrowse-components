@@ -149,8 +149,8 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
       encoding: {
         x: "jexl:get(feature,'thickStart')",
         y: 'jexl:feature.score*2',
-        color: "jexl:get(feature,'name')=='a'?'red':'blue'",
-        shape: 'triangle-down',
+        color: { value: "jexl:get(feature,'name')=='a'?'red':'blue'" },
+        shape: { value: 'triangle-down' },
       },
     },
     {
@@ -265,7 +265,7 @@ test("a text mark's values fold into the axis, and one naming no y asks for no y
 test('a text mark beside points keeps the points where they were', () => {
   const { createDisplay } = createTestEnvironment([
     { mark: 'point', encoding: { y: 'score', size: 6 } },
-    { mark: 'text', encoding: { y: 'score', color: 'red' } },
+    { mark: 'text', encoding: { y: 'score', color: { value: 'red' } } },
   ])
   const { display } = createDisplay()
   expect(display.valueInsetPx).toBe(pointInsetPx(6))
@@ -843,13 +843,15 @@ function noticesOf(marks: unknown[], display: Record<string, unknown> = {}) {
 // colour was an empty track with no message, and then a track that would not
 // load. It loads, draws nothing for that mark, and says so.
 test('a bar or point naming no y loads, draws nothing and says so', () => {
-  expect(noticesOf([{ mark: 'bar', encoding: { color: 'red' } }])).toEqual([
+  expect(
+    noticesOf([{ mark: 'bar', encoding: { color: { value: 'red' } } }]),
+  ).toEqual([
     'mark 0 encoding.y: a bar stands at a value, and names no y field while no step before it writes one — a coverage, or an aggregate with one op — so it draws nothing',
   ])
   expect(noticesOf([{ mark: 'point', encoding: { y: '' } }])).toHaveLength(1)
   expect(noticesOf([{ mark: 'span', encoding: {} }])).toEqual([])
   const { display } = createTestEnvironment([
-    { mark: 'bar', encoding: { color: 'red' } },
+    { mark: 'bar', encoding: { color: { value: 'red' } } },
     { mark: 'bar', encoding: { y: 'score' } },
   ]).createDisplay()
   expect(display.markView.visible).toEqual([false, true])
@@ -906,7 +908,7 @@ test.each([
     '(ColorScheme | undefined)',
   ],
   [undefined, { field: 'svtype', range: ['star', 'triangle-down'] }, '"star"'],
-  [undefined, 'triangl', '"triangl"'],
+  [undefined, { value: 'triangl' }, '"triangl"'],
 ])(
   'a colour %j or shape %j naming nothing the display paints fails the load',
   (color, shape, message) => {
@@ -964,7 +966,10 @@ test('a channel the mark does not read is named, and the rest still draws', () =
   ])
   expect(
     noticesOf([
-      { mark: 'bar', encoding: { y: 'score', shape: 'triangle-down' } },
+      {
+        mark: 'bar',
+        encoding: { y: 'score', shape: { value: 'triangle-down' } },
+      },
     ]),
   ).toEqual(['mark 0 encoding.shape: a bar does not read shape'])
   expect(
@@ -972,7 +977,10 @@ test('a channel the mark does not read is named, and the rest still draws', () =
   ).toEqual(['mark 0 source: a span does not draw the density sidecar'])
   expect(
     noticesOf([
-      { mark: 'point', encoding: { y: 'score', shape: 'triangle-down' } },
+      {
+        mark: 'point',
+        encoding: { y: 'score', shape: { value: 'triangle-down' } },
+      },
     ]),
   ).toEqual([])
 })
@@ -1713,7 +1721,7 @@ test("a shape scale reaches the worker beside the colour, and its key draws the 
       mark: 'point',
       encoding: {
         y: 'score',
-        color: 'red',
+        color: { value: 'red' },
         shape: {
           field: 'strand',
           scale: 'categorical',
@@ -2759,7 +2767,7 @@ const LINK = {
   encoding: {
     x2: { chrom: 'mate.refName', pos: 'mate.start' },
     size: { field: 'score', scale: 'log', range: [1, 8] },
-    color: 'red',
+    color: { value: 'red' },
   },
   transform: [{ type: 'mate' }],
 }
@@ -3091,7 +3099,11 @@ test('a shape key draws its glyphs in the default blue where no colour is writte
     { mark: 'point', encoding: { y: 'score', shape: { field: 'svtype' } } },
     {
       mark: 'point',
-      encoding: { y: 'score', color: 'red', shape: { field: 'svtype' } },
+      encoding: {
+        y: 'score',
+        color: { value: 'red' },
+        shape: { field: 'svtype' },
+      },
     },
   ]).createDisplay()
   const shapeScale = {
@@ -3121,7 +3133,7 @@ test('a mark s size and colour default by its type, and a text mark knows whethe
     { mark: 'rule', encoding: { y: 'score' } },
     { mark: 'link' },
     { mark: 'text' },
-    { mark: 'text', encoding: { color: 'red' } },
+    { mark: 'text', encoding: { color: { value: 'red' } } },
     { mark: 'text', encoding: { color: { field: 'type' } } },
   ]).createDisplay()
   expect(display.markSizes).toEqual([4, 4, 2, 4, 4, 4])

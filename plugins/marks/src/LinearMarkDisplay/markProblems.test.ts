@@ -172,7 +172,12 @@ test('a channel the mark does not read waits unread', () => {
     'warning unread-channel mark 0 encoding.y',
   ])
   expect(
-    found([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle-down' } }]),
+    found([
+      {
+        mark: 'bar',
+        encoding: { y: 'score', shape: { value: 'triangle-down' } },
+      },
+    ]),
   ).toEqual(['warning unread-channel mark 0 encoding.shape'])
   expect(
     found([{ mark: 'bar', encoding: { y: 'score', text: 'id' } }]),
@@ -185,7 +190,9 @@ test('a channel the mark does not read waits unread', () => {
     found([{ mark: 'text', encoding: { row: 'row', text: 'name' } }]),
   ).toEqual([])
   expect(
-    found([{ mark: 'text', encoding: { text: 'name', shape: 'diamond' } }]),
+    found([
+      { mark: 'text', encoding: { text: 'name', shape: { value: 'diamond' } } },
+    ]),
   ).toEqual(['warning unread-channel mark 0 encoding.shape'])
 })
 
@@ -598,7 +605,25 @@ test('labels name the domain values of a shape, and a constant shape names none'
   expect(found(shaped({ value: 'diamond', labels: ['A'] }))).toEqual([
     'warning labels-domain mark 0 encoding.shape.labels',
   ])
-  expect(found(shaped('diamond'))).toEqual([])
+  expect(found(shaped({ value: 'diamond' }))).toEqual([])
+})
+
+test('a field spelling a colour or a shape is a constant written bare', () => {
+  const encoded = (encoding: Record<string, unknown>) => [
+    { mark: 'point', encoding: { y: 'score', ...encoding } },
+  ]
+  for (const color of ['red', 'SteelBlue', '#f00', 'rgb(0,0,255)']) {
+    expect(found(encoded({ color }))).toEqual([
+      'warning field-spells-constant mark 0 encoding.color.field',
+    ])
+  }
+  expect(found(encoded({ shape: { field: 'diamond' } }))).toEqual([
+    'warning field-spells-constant mark 0 encoding.shape.field',
+  ])
+  expect(found(encoded({ color: 'type', shape: 'strand' }))).toEqual([])
+  expect(
+    found(encoded({ color: "jexl:feature.score > 1 ? 'red' : 'blue'" })),
+  ).toEqual([])
 })
 
 test('a ramp reads its ends, not a domain, and a span wants both ends pinned', () => {

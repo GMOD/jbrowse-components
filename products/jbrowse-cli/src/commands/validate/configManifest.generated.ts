@@ -5816,7 +5816,7 @@ export const configManifest: ConfigManifest = {
                     }
                   ],
                   "shorthand": {
-                    "string": "value"
+                    "string": "field"
                   },
                   "fieldPresets": {
                     "score": {
@@ -5870,7 +5870,7 @@ export const configManifest: ConfigManifest = {
                     }
                   ],
                   "shorthand": {
-                    "string": "value"
+                    "string": "field"
                   }
                 },
                 {
@@ -6288,7 +6288,7 @@ export const configManifest: ConfigManifest = {
                     }
                   ],
                   "shorthand": {
-                    "string": "value"
+                    "string": "field"
                   },
                   "fieldPresets": {
                     "score": {
@@ -6342,7 +6342,7 @@ export const configManifest: ConfigManifest = {
                     }
                   ],
                   "shorthand": {
-                    "string": "value"
+                    "string": "field"
                   }
                 },
                 {

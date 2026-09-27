@@ -177,7 +177,7 @@ test.each([
   ],
   [
     'a constant colour',
-    [{ mark: 'point', encoding: { y: 'score', color: 'green' } }],
+    [{ mark: 'point', encoding: { y: 'score', color: { value: 'green' } } }],
   ],
   [
     'bins zoomed out and points zoomed in',
@@ -209,7 +209,10 @@ test.each([
 test('LD colouring leaves every other mark and member where it was', () => {
   const { display } = createTestEnvironment({
     marks: [
-      { mark: 'point', encoding: { y: 'score', color: 'green', size: 6 } },
+      {
+        mark: 'point',
+        encoding: { y: 'score', color: { value: 'green' }, size: 6 },
+      },
       {
         mark: 'text',
         transform: [{ type: 'filter', expr: 'jexl:feature.score > 8' }],
@@ -305,7 +308,7 @@ test('unticking a hand-edited LD plot leaves no mark reading LD', () => {
         transform: [
           { type: 'filter', expr: "jexl: feature.ld_role == 'index'" },
         ],
-        encoding: { y: 'score', color: '#c951c9' },
+        encoding: { y: 'score', color: { value: '#c951c9' } },
       },
       { mark: 'text', encoding: { text: 'ld' } },
     ],

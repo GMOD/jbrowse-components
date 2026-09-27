@@ -378,7 +378,7 @@ describe('the schema', () => {
       problemsOfMarks([
         {
           mark: 'bar',
-          encoding: { y: 'depth', color: 'red' },
+          encoding: { y: 'depth', color: { value: 'red' } },
           transform: [{ type: 'coverage', as: 'depth' }],
         },
         {

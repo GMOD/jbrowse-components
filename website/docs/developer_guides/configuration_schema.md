@@ -359,10 +359,8 @@ declares one on its `value`:
 /**
  * #slot value
  * A CSS colour, or a jexl callback over `feature` returning one, for a
- * mark whose colour is not a scale. Writing `color: 'red'` or
- * `color: 'jexl:…'` directly on the encoding lands here. Unset, a mark
- * paints in the default blue, `#0068d1`, and a text mark prints in the
- * page's text colour.
+ * mark whose colour is not a scale. Unset, a mark paints in the default
+ * blue, `#0068d1`, and a text mark prints in the page's text colour.
  */
 value: {
   type: 'maybeColor',

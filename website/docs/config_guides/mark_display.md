@@ -227,7 +227,7 @@ still does it: give each mark a zoom range and they never draw together.
   {
     "mark": "bar",
     "transform": [{ "type": "coverage" }],
-    "encoding": { "color": "#c8d8ee" },
+    "encoding": { "color": { "value": "#c8d8ee" } },
     "minBpPerPx": 20
   },
   { "mark": "point", "encoding": { "y": "score" }, "maxBpPerPx": 20 }
@@ -319,7 +319,7 @@ points' colour a callback:
     "mark": "point",
     "encoding": {
       "y": "score",
-      "color": "jexl:feature.name=='EDEN.1' ? 'red' : 'blue'"
+      "color": { "value": "jexl:feature.name=='EDEN.1' ? 'red' : 'blue'" }
     }
   }
 ]
@@ -359,7 +359,10 @@ band where it does not. Bars with each feature's name over them:
       "type": "LinearMarkDisplay",
       "displayId": "labelled_scores-LinearMarkDisplay",
       "marks": [
-        { "mark": "bar", "encoding": { "y": "score", "color": "#c8d8ee" } },
+        {
+          "mark": "bar",
+          "encoding": { "y": "score", "color": { "value": "#c8d8ee" } }
+        },
         {
           "mark": "text",
           "encoding": { "y": "score", "text": "name" },
@@ -735,6 +738,7 @@ each reported under its id:
 | `ramp-domain` | warning | A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. |
 | `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a colour ramp's, a width's or `scales.y`'s. |
 | `domain-quantile` | warning | A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
+| `field-spells-constant` | warning | A colour's or a shape's `field` spelling a CSS colour or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
 | `unpinned-span-ramp` | warning | A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. |
 | `step-pair` | warning | A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. |

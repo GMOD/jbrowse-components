@@ -2665,6 +2665,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/color/cssColorsLevel4": {
+      "package": "@jbrowse/core",
+      "names": [
+        "CSS_COLOR_NAMES",
+        "isNamedColor",
+        "namedColorToHex"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/colorBits": {
       "package": "@jbrowse/core",
       "names": [
@@ -3431,6 +3440,13 @@
       "package": "@jbrowse/core",
       "names": [
         "setStackTraceLimit"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/shapeNameList": {
+      "package": "@jbrowse/core",
+      "names": [
+        "SHAPE_NAMES"
       ],
       "worker": "real"
     },

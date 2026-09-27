@@ -682,7 +682,7 @@
               "mark": "point",
               "encoding": {
                 "y": "score",
-                "color": "green"
+                "color": { "value": "green" }
               }
             }
           ]
@@ -718,7 +718,9 @@
               "mark": "point",
               "encoding": {
                 "y": "score",
-                "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+                "color": {
+                  "value": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+                }
               }
             }
           ]
@@ -1822,7 +1824,7 @@
             {
               "mark": "link",
               "encoding": {
-                "color": "#a65628",
+                "color": { "value": "#a65628" },
                 "size": 2
               },
               "transform": [{ "type": "mate" }]
@@ -2116,7 +2118,7 @@
             {
               "mark": "link",
               "encoding": {
-                "color": "#8b1a1a",
+                "color": { "value": "#8b1a1a" },
                 "size": 2
               },
               "transform": [{ "type": "mate" }]

@@ -112,11 +112,11 @@ describe('withChannel', () => {
   it('writes a value that spells a colour or a shape as the constant', () => {
     for (const color of ['red', '#f00', 'rgb(0,0,255)', 'jexl:"red"']) {
       expect(withChannel({}, 'color', color, FIELDS).encoding).toEqual({
-        color,
+        color: { value: color },
       })
     }
     expect(withChannel({}, 'shape', 'triangle-down', FIELDS).encoding).toEqual({
-      shape: 'triangle-down',
+      shape: { value: 'triangle-down' },
     })
   })
 
@@ -185,7 +185,7 @@ describe('withChannel', () => {
     // the channel as the edit began, the ramp survives the detour.
     it('keeps the ramp through a constant typed on the way to a field', () => {
       const detour = withChannel(ramp, 'color', 'red', FIELDS)
-      expect(detour.encoding!.color).toBe('red')
+      expect(detour.encoding!.color).toEqual({ value: 'red' })
       expect(
         withChannel(detour, 'color', 'reads', FIELDS, ramp.encoding.color)
           .encoding,
@@ -254,9 +254,12 @@ describe('unreadChannels', () => {
   })
 
   it('clears one without touching the rest', () => {
-    const mark = { mark: 'span', encoding: { y: 'score', color: 'red' } }
+    const mark = {
+      mark: 'span',
+      encoding: { y: 'score', color: { value: 'red' } },
+    }
     expect(withoutChannel(mark as MarkSnapshot, 'y').encoding).toEqual({
-      color: 'red',
+      color: { value: 'red' },
     })
   })
 })
@@ -299,7 +302,10 @@ describe('the mark list', () => {
 describe('markSummary', () => {
   it('names the type and what the mark reads', () => {
     expect(
-      markSummary({ mark: 'bar', encoding: { y: 'score', color: 'red' } }),
+      markSummary({
+        mark: 'bar',
+        encoding: { y: 'score', color: { value: 'red' } },
+      }),
     ).toBe('bar · y score · color red')
   })
 

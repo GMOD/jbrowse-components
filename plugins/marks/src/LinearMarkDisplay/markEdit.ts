@@ -184,19 +184,11 @@ function presetScale(channel: EditChannel, field: string) {
         : ''
 }
 
-/**
- * The field a channel reads: an object's `field`, or the string shorthand of a
- * `size`, which lifts into `field`. A colour's or a shape's string is the
- * constant.
- */
+/** The field a channel reads: an object's `field`, or its string shorthand. */
 function channelField(mark: DraftMark, channel: EditChannel): string {
   const declared = mark.encoding?.[channel]
   const field =
-    typeof declared === 'string'
-      ? channel === 'size'
-        ? declared
-        : ''
-      : objectOf(declared)?.field
+    typeof declared === 'string' ? declared : objectOf(declared)?.field
   return typeof field === 'string' ? field : ''
 }
 
@@ -373,7 +365,7 @@ export function withChannel(
   if (channel === 'color' || channel === 'shape') {
     const heldField = typeof held?.field === 'string' && held.field !== ''
     if (implied === undefined && spellsConstant(channel, value, heldField)) {
-      return { ...mark, encoding: { ...mark.encoding, [channel]: value } }
+      return writeChannel(mark, channel, { value })
     }
     if (channel === 'shape') {
       return writeChannel(mark, channel, {

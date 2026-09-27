@@ -8,6 +8,7 @@ summary: "The mark display spells a mark's kind `mark` and the point symbol `enc
 ## Status
 
 Accepted (2026-09-23), Colin's call on a Fable review's open naming item.
+Amended 2026-09-27: a bare string in `encoding` is a field, below.
 [MARK_ENCODING.md](../reference/MARK_ENCODING.md) and
 [mark_display.md](../../website/docs/config_guides/mark_display.md) carry the
 operational description.
@@ -63,6 +64,20 @@ because `MarkShape` already names render-core's painter/shader/hit triple.
   config or an error message.
 - The measurement rows `jexl-glyph` and `scale-glyph` keep their ids, which
   the generated tables key on.
+
+## Amended 2026-09-27: a bare string in `encoding` is a field
+
+`encoding.color` and `encoding.shape` read a bare string as a field, as `x`,
+`x2`, `y`, `row`, `text` and a string `size` already did, and as Vega-Lite and
+Altair read every bare string on a channel; a constant is `{ value }`. They
+read it as the constant before, so one `encoding` block mixed the two
+readings (`{ y: 'score', color: 'steelblue' }`), and Altair's
+`color: 'type'` failed to load as not a colour. A display-level `color`
+outside `encoding` keeps its constant shorthand, as Vega-Lite's `mark.color`
+does. The rule `field-spells-constant` reports a field that spells a CSS
+colour or a shape name, so an old config says what to write instead of
+painting every feature the no-value grey. No migration: the mark display
+shipped only in v5 betas.
 
 ## Rejected alternatives
 

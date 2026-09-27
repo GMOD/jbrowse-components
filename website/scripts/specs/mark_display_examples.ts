@@ -105,7 +105,7 @@ const TRACKS = {
           { type: 'bin', step: 'auto' },
           { type: 'aggregate', ops: [{ op: 'count' }] },
         ],
-        encoding: { color: '#7f7f7f' },
+        encoding: { color: { value: '#7f7f7f' } },
       },
     ],
   }),
@@ -118,7 +118,7 @@ const TRACKS = {
           { type: 'bin', step: 'auto' },
           { type: 'aggregate', ops: [{ op: 'mean', field: 'milliDiv' }] },
         ],
-        encoding: { color: '#7f7f7f' },
+        encoding: { color: { value: '#7f7f7f' } },
       },
     ],
   }),
@@ -140,11 +140,11 @@ const TRACKS = {
   }),
   alu_facet: aluTrack('alu_facet', 'Alu copies by strand', {
     facet: { field: 'strand', transform: [{ type: 'pileup' }] },
-    marks: [{ mark: 'span', encoding: { color: '#4575b4' } }],
+    marks: [{ mark: 'span', encoding: { color: { value: '#4575b4' } } }],
   }),
   alu_labels: aluTrack('alu_labels', 'Alu divergence, labelled', {
     marks: [
-      { mark: 'bar', encoding: { y: 'milliDiv', color: '#c8d8ee' } },
+      { mark: 'bar', encoding: { y: 'milliDiv', color: { value: '#c8d8ee' } } },
       {
         mark: 'text',
         encoding: { y: 'milliDiv', text: 'name' },
@@ -212,7 +212,12 @@ const TRACKS = {
         displayId: 'pur_cnv_rows-LinearMarkDisplay',
         rows: 'source',
         scales: { y: { domainMin: 0, domainMax: 10, title: 'Copies' } },
-        marks: [{ mark: 'bar', encoding: { y: 'score', color: '#4575b4' } }],
+        marks: [
+          {
+            mark: 'bar',
+            encoding: { y: 'score', color: { value: '#4575b4' } },
+          },
+        ],
       },
     ],
   },

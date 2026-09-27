@@ -16,5 +16,4 @@ export const SHAPE_CODES: Record<ShapeName, number> = {
   diamond: GLYPH_DIAMOND,
 }
 
-/** The shape names in range order: what an unlisted `range` hands out. */
-export const SHAPE_NAMES = Object.keys(SHAPE_CODES) as ShapeName[]
+export { SHAPE_NAMES } from './shapeNameList.ts'

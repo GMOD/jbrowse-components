@@ -792,7 +792,7 @@ jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
 - `true` and `false` are booleans and a number is a number
 - a comma makes a list, and a trailing comma a list of one: `color.range=tan,`
 - a digit segment indexes a list, so `color.range.0=tan` changes the first
-  colour of a range and `marks.1.encoding.color=red` the second mark of a
+  colour of a range and `marks.1.encoding.color.value=red` the second mark of a
   declared plot, where `color.range=tan,teal` says what the whole range is. An
   index has to be one the list already reaches, so fill `0` before `1`. A list
   written from nothing reads better as one JSON modifier than as a path per
@@ -824,7 +824,7 @@ value as points.
 
 ```bash
 jb2export --fasta ref.fa --bigwig conservation.bw display:marks height:300 \
-  '{"marks":[{"mark":"bar","encoding":{"y":"score","color":"#9aa89a"}},{"mark":"point","encoding":{"y":"minScore","color":"#3c7ea8"}},{"mark":"point","encoding":{"y":"maxScore","color":"#c1553b"}}]}' \
+  '{"marks":[{"mark":"bar","encoding":{"y":"score","color":{"value":"#9aa89a"}}},{"mark":"point","encoding":{"y":"minScore","color":{"value":"#3c7ea8"}}},{"mark":"point","encoding":{"y":"maxScore","color":{"value":"#c1553b"}}}]}' \
   --loc chr1:1-100000 --out out.svg
 ```
 
@@ -840,7 +840,7 @@ jb2export --fasta ref.fa --gffgz genes.gff.gz display:marks height:160 \
 
 **A path changes one mark of a list, where the JSON states the list whole.** So
 a track whose config already declares the plot takes
-`marks.1.encoding.color=red` to repaint its second mark and leave the rest
+`marks.1.encoding.color.value=red` to repaint its second mark and leave the rest
 alone, the way `color.domain=` edits one member of a colour object — and
 `marks.2` before anything has written `marks.0` and `marks.1` is an error rather
 than a list with holes in it.

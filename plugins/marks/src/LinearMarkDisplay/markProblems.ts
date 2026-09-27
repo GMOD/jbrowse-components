@@ -5,6 +5,8 @@ import {
   colorProblems,
   fieldScaleOf,
   isJexl,
+  SHAPE_NAMES,
+  isNamedColor,
   paintedScale,
   scaleEndProblems,
 } from './markRuleFacts.ts'
@@ -65,6 +67,8 @@ export const MARK_RULES = {
   'domain-ends': 'warning',
   /** A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. */
   'domain-quantile': 'warning',
+  /** A colour's or a shape's `field` spelling a CSS colour or a shape name, which is a constant written `{ value }`. */
+  'field-spells-constant': 'warning',
   /** A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
   'labels-domain': 'warning',
   /** A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. */
@@ -215,6 +219,52 @@ function sizeFieldOf(size: SizeSnapshot | undefined) {
 
 // A shape's labels name its domain values in order, as a colour's do, and a
 // constant shape names none.
+// What a reader writes as a colour, without the colour parser the rule list
+// cannot carry into `jbrowse validate`.
+function spellsColor(text: string) {
+  return (
+    /^(#[\da-f]{3,8}|(rgb|hsl)a?\(.*\)|transparent)$/i.test(text) ||
+    isNamedColor(text.toLowerCase())
+  )
+}
+
+function fieldOf(channel: unknown) {
+  const field =
+    typeof channel === 'object' && channel !== null
+      ? (channel as { field?: unknown }).field
+      : channel
+  return typeof field === 'string' && !isJexl(field) ? field : ''
+}
+
+// Inside `encoding` a bare string is a field, so a constant written the way a
+// display-level colour takes one reads as a field no feature holds.
+function constantAsFieldProblems(
+  encoding: MarkSnapshot['encoding'],
+): OwnProblem[] {
+  const color = fieldOf(encoding?.color)
+  const shape = fieldOf(encoding?.shape)
+  return [
+    ...(color && spellsColor(color)
+      ? [
+          found(
+            'field-spells-constant',
+            'encoding.color.field',
+            `${JSON.stringify(color)} is a colour, and a string in encoding is a field: a constant colour is { "value": ${JSON.stringify(color)} }`,
+          ),
+        ]
+      : []),
+    ...(shape && (SHAPE_NAMES as readonly string[]).includes(shape)
+      ? [
+          found(
+            'field-spells-constant',
+            'encoding.shape.field',
+            `${JSON.stringify(shape)} is a shape, and a string in encoding is a field: a constant shape is { "value": ${JSON.stringify(shape)} }`,
+          ),
+        ]
+      : []),
+  ]
+}
+
 function shapeLabelProblems(shape: unknown): OwnProblem[] {
   if (typeof shape !== 'object' || shape === null) {
     return []
@@ -546,6 +596,7 @@ function ownProblems(
     )
   }
   problems.push(...shapeLabelProblems(mark.encoding?.shape))
+  problems.push(...constantAsFieldProblems(mark.encoding))
   if (typeof size === 'object') {
     for (const { rule, slot, message } of scaleEndProblems(size)) {
       problems.push(found(rule, `encoding.size.${slot}`, message))

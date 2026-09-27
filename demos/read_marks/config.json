@@ -73,7 +73,7 @@
                 }
               ],
               "encoding": {
-                "color": "#c8d8ee"
+                "color": { "value": "#c8d8ee" }
               }
             }
           ]
@@ -219,7 +219,7 @@
                 }
               ],
               "encoding": {
-                "color": "#d62728"
+                "color": { "value": "#d62728" }
               }
             }
           ]

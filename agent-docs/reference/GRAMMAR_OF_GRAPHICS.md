@@ -778,25 +778,21 @@ and so do format-specific displays rebuilt on the grammar (ADR-114, ADR-118).
 ### Spelling, checked 2026-09-27
 
 Checked against the Vega-Lite docs, ggplot2 and GenomeSpy's source before a
-second spelling was cut. Each of these stays:
+second spelling was cut. The first changed for v5; the rest stay:
 
-- **A bare string fills an object's first member**: `value` on a colour object
-  (Vega-Lite's and GenomeSpy's `mark.color: "red"`), `field` where the object
-  has no constant (`facet`, `rows`, `rowColor`, as Altair's `"x:N"` and
-  ggplot2's `aes()` read one). `rowColor` has no constant, since one tint on
-  every row names nothing, so its `scale: 'none'` paints nothing. The rule
-  holds per object but not per block: in a mark's `encoding`, `y: 'score'` is
-  a field and `color: 'steelblue'` a constant, where Vega-Lite and Altair read
-  every bare string inside `encoding` as a field, so Altair's `color: 'type'`
-  is refused at load as not a colour. Open: whether `encoding.color` and
-  `encoding.shape` read a bare string as a field, leaving the display-level
-  `color` a constant as Vega-Lite's `mark.color` is.
-- **`scales.y.type` beside `color.scale`**: kept as the cheaper compromise,
-  not because either grammar spells it so. Both nest the scale under its
-  channel as an object (`encoding.color.scale.type`); GenomeSpy's view-level
-  `scales` map, whose members spell `type`, is for a scale shared across a
-  subtree. A colour object lays its scale's members flat on the channel, and
-  on a channel `type` is the data type, so its scale is named `scale`.
+- **Inside a mark's `encoding` every bare string is a field**, as Vega-Lite and
+  Altair read one, and a constant is `{ value }`; `field-spells-constant`
+  reports a field that spells a colour or a shape name. Outside `encoding` a
+  bare string fills the object's first member: `value` on a display's colour
+  object, as GenomeSpy's `mark.color: "red"` is, and `field` where the object
+  has no constant (`facet`, `rows`, `rowColor`). `rowColor` has none, since one
+  tint on every row names nothing, so its `scale: 'none'` paints nothing.
+- **`scales.y.type` beside `color.scale`**: both grammars nest the scale under
+  its channel as an object (`encoding.color.scale.type`); GenomeSpy's
+  view-level `scales` map, whose members spell `type`, is for a scale shared
+  across a subtree. A colour object lays its scale's members flat on the
+  channel, a level less to write for no loss of what it can say, and on a
+  channel `type` is the data type, so its scale is named `scale`.
 - **`rows.labels` a map, a colour's `labels` a list**: ggplot2 takes either and
   recommends the named form, so the map is the idiom. A row is renamed whether
   or not `rows.domain` lists it, so it is keyed by name; a threshold colour's

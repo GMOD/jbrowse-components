@@ -21,12 +21,16 @@ import {
  * value), a `linear` or `log` scale (a ramp between `domainMin` and
  * `domainMax`, `domainMid` placing its middle stop where a diverging ramp
  * turns) or a `threshold` scale (a `range` colour per interval between the
- * cut points `domain` lists). A string is the constant; the object binds the
- * field, and a scale is what the legend describes.
+ * cut points `domain` lists). A string is the field, as every channel's is
+ * inside `encoding`; a constant is `{ value }`. A scale is what the legend
+ * describes.
  *
  * #example
  * ```js
- * { mark: 'bar', encoding: { y: 'score', color: 'steelblue' } }
+ * { mark: 'bar', encoding: { y: 'score', color: { value: 'steelblue' } } }
+ * ```
+ * ```js
+ * { mark: 'point', encoding: { y: 'score', color: 'type' } }
  * ```
  * ```js
  * {
@@ -86,10 +90,8 @@ export const markColorSchema = ConfigurationSchema(
     /**
      * #slot value
      * A CSS colour, or a jexl callback over `feature` returning one, for a
-     * mark whose colour is not a scale. Writing `color: 'red'` or
-     * `color: 'jexl:…'` directly on the encoding lands here. Unset, a mark
-     * paints in the default blue, `#0068d1`, and a text mark prints in the
-     * page's text colour.
+     * mark whose colour is not a scale. Unset, a mark paints in the default
+     * blue, `#0068d1`, and a text mark prints in the page's text colour.
      */
     value: {
       type: 'maybeColor',
@@ -150,5 +152,8 @@ export const markColorSchema = ConfigurationSchema(
       description: 'key row for a feature with no value',
     },
   },
-  colorChannelOptions('color', FEATURE_FIELD_PRESETS),
+  {
+    ...colorChannelOptions('color', FEATURE_FIELD_PRESETS),
+    shorthand: 'field',
+  },
 )

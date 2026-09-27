@@ -5,6 +5,7 @@
  * module named here imports nothing.
  */
 export { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
+export { isNamedColor } from '@jbrowse/core/util/color/cssColorsLevel4'
 export { isJexl } from '@jbrowse/core/util/jexlStrings'
 export {
   FEATURE_FIELD_PRESETS,
@@ -14,3 +15,4 @@ export {
   scaleEndProblems,
 } from '@jbrowse/core/util/colorScale'
 export type { ColorSlots, ScaleEnds } from '@jbrowse/core/util/colorScale'
+export { SHAPE_NAMES } from '@jbrowse/core/util/shapeNameList'

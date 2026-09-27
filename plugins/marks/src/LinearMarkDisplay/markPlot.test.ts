@@ -55,7 +55,9 @@ describe('parseMarkPlot', () => {
 describe('liftMarkPlot', () => {
   it('expands every shorthand the schema declares', () => {
     const settings = lift({
-      marks: [{ mark: 'point', encoding: { y: 'score', color: 'red' } }],
+      marks: [
+        { mark: 'point', encoding: { y: 'score', color: { value: 'red' } } },
+      ],
       facet: 'HP',
       rows: 'source',
     })

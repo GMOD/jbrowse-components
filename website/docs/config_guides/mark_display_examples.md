@@ -200,7 +200,7 @@ it.
             { "type": "bin", "step": "auto" },
             { "type": "aggregate", "ops": [{ "op": "count" }] }
           ],
-          "encoding": { "color": "#7f7f7f" }
+          "encoding": { "color": { "value": "#7f7f7f" } }
         }
       ]
     }
@@ -239,7 +239,7 @@ The same bins, with `mean` over the column in place of the count.
               "ops": [{ "op": "mean", "field": "milliDiv" }]
             }
           ],
-          "encoding": { "color": "#7f7f7f" }
+          "encoding": { "color": { "value": "#7f7f7f" } }
         }
       ]
     }
@@ -309,7 +309,9 @@ chip. A `pileup` in the facet's own `transform` packs each section on its own.
       "type": "LinearMarkDisplay",
       "displayId": "alu_facet-LinearMarkDisplay",
       "facet": { "field": "strand", "transform": [{ "type": "pileup" }] },
-      "marks": [{ "mark": "span", "encoding": { "color": "#4575b4" } }]
+      "marks": [
+        { "mark": "span", "encoding": { "color": { "value": "#4575b4" } } }
+      ]
     }
   ]
 }
@@ -337,7 +339,10 @@ overlap. `maxBpPerPx` stops the labels once the view is too wide to read them.
       "type": "LinearMarkDisplay",
       "displayId": "alu_labels-LinearMarkDisplay",
       "marks": [
-        { "mark": "bar", "encoding": { "y": "milliDiv", "color": "#c8d8ee" } },
+        {
+          "mark": "bar",
+          "encoding": { "y": "milliDiv", "color": { "value": "#c8d8ee" } }
+        },
         {
           "mark": "text",
           "encoding": { "y": "milliDiv", "text": "name" },
@@ -459,7 +464,10 @@ similarity...** in the track menu.
       "rows": "source",
       "scales": { "y": { "domainMin": 0, "domainMax": 10, "title": "Copies" } },
       "marks": [
-        { "mark": "bar", "encoding": { "y": "score", "color": "#4575b4" } }
+        {
+          "mark": "bar",
+          "encoding": { "y": "score", "color": { "value": "#4575b4" } }
+        }
       ]
     }
   ]
