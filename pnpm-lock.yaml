@@ -814,8 +814,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: ^10.0.1
+        version: 10.0.1
       '@gmod/cram':
         specifier: ^14.1.1
         version: 14.1.1
@@ -4657,8 +4657,8 @@ packages:
   '@fontsource/roboto@5.3.0':
     resolution: {integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==}
 
-  '@gmod/bam@10.0.0':
-    resolution: {integrity: sha512-O32jk+xt+oEhuF4iW52QD/o5Yuq6AICvTCS9c50Xk/TW83tCS5qK6/6xPn0LZZ8fpwA76AmsLeT/OvuZHi2jSg==}
+  '@gmod/bam@10.0.1':
+    resolution: {integrity: sha512-T3UwLdR5SENuZQafd8Lk9hGp1aeJm7/xV/xldebDBD8xi+2wiQaUZrYpegfjxdLP/jeM0XAXC3zWBIhl0Ofmdg==}
 
   '@gmod/bbi@11.3.0':
     resolution: {integrity: sha512-Uztjf46uEDOMu3qQ3q1ysQSH93e/nOQT3LJ7X3mE/KkMlX3p9ywtOKylEfyaWTZfMIGu+nZoQkjKbQCqnVrqog==}
@@ -13004,15 +13004,12 @@ snapshots:
 
   '@fontsource/roboto@5.3.0': {}
 
-  '@gmod/bam@10.0.0':
+  '@gmod/bam@10.0.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
       '@gmod/shared-read-cache': 1.7.2
       '@jbrowse/quick-lru': 7.3.5
-      crc: 4.3.2
       generic-filehandle2: 2.4.0
-    transitivePeerDependencies:
-      - buffer
 
   '@gmod/bbi@11.3.0':
     dependencies:
