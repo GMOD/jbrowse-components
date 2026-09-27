@@ -1,3 +1,5 @@
+import { waitForFrame } from '@jbrowse/capture'
+
 import type { Page } from 'puppeteer'
 
 // Per-page assertions for examples-site smoke runs — the `check` hook of
@@ -120,41 +122,100 @@ export async function checkTrackIsShown(page: Page): Promise<string[]> {
   }
 }
 
+const RING_SELECTOR = '[data-testid="circular-ring-canvas"]'
+
+// Inked-pixel slack between a ring read where the page left it and read again
+// once scrolled into view: antialiasing moves a few edge pixels, a dropped
+// region moves thousands.
+const RING_SCROLL_TOLERANCE = 0.02
+
+function ringInk(selector: string) {
+  return [...document.querySelectorAll<HTMLCanvasElement>(selector)].map(
+    canvas => {
+      const copy = document.createElement('canvas')
+      copy.width = canvas.width
+      copy.height = canvas.height
+      const ctx = copy.getContext('2d')!
+      ctx.drawImage(canvas, 0, 0)
+      const { data } = ctx.getImageData(0, 0, copy.width, copy.height)
+      let ink = 0
+      for (let i = 3; i < data.length; i += 4) {
+        if (data[i]! > 0) {
+          ink++
+        }
+      }
+      return ink
+    },
+  )
+}
+
+async function settledRingInk(page: Page, index: number) {
+  let last = -1
+  for (let tries = 0; tries < 20; tries++) {
+    const ink = (await page.evaluate(ringInk, RING_SELECTOR))[index]!
+    if (ink === last) {
+      return ink
+    }
+    last = ink
+    await new Promise(resolve => setTimeout(resolve, 250))
+  }
+  return last
+}
+
 /**
- * Confirm every ring on a circular view put ink on its canvas, read once the
- * page is ready. An empty answer is a finished fetch, so readiness passes a
- * ring that drew nothing, which is how the gene density rings drew an empty
- * band against a bigWig spelling its contigs `hg38.chr1`.
+ * Confirm every ring on a circular view put ink on its canvas, and the same ink
+ * wherever the page left it. An empty answer is a finished fetch, so readiness
+ * passes a ring that drew nothing, which is how the gene density rings drew an
+ * empty band against a bigWig spelling its contigs `hg38.chr1`. A ring below
+ * the fold is read again once scrolled into view, since a canvas that stopped
+ * drawing off screen once reported ready over its first region alone. Reloads
+ * first and reads at the moment a capture would: the smoke's height check
+ * resizes the viewport, which repaints every canvas and hides that. A backstop
+ * only, since a backend that starts after the data lands paints it all at once
+ * anyway; `offscreenTargetRelease.test.ts` is what pins the rule.
  */
 export async function checkRingsPainted(page: Page): Promise<string[]> {
-  const inked = () =>
-    [...document.querySelectorAll('[data-testid="circular-ring-canvas"]')].map(
-      el => {
-        const canvas = el as HTMLCanvasElement
-        const copy = document.createElement('canvas')
-        copy.width = canvas.width
-        copy.height = canvas.height
-        const ctx = copy.getContext('2d')!
-        ctx.drawImage(canvas, 0, 0)
-        const { data } = ctx.getImageData(0, 0, copy.width, copy.height)
-        for (let i = 3; i < data.length; i += 4) {
-          if (data[i]! > 0) {
-            return true
-          }
-        }
-        return false
+  await page.evaluate(() => {
+    window.scrollTo(0, 0)
+  })
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('[data-app-phase]').length ===
+      document.querySelectorAll('.demo').length,
+    { timeout: 60000 },
+  )
+  await waitForFrame(page, { timeout: 60000, allowUnsettled: true })
+  const before = await page.evaluate(ringInk, RING_SELECTOR)
+  if (!before.length) {
+    return ['no ring canvas rendered']
+  }
+  const blank = before.filter(ink => ink === 0).length
+  if (blank) {
+    return [
+      `${blank} of ${before.length} rings drew nothing — check the ` +
+        "track's refNames against the assembly's aliases",
+    ]
+  }
+  const problems = []
+  for (const [index, ink] of before.entries()) {
+    await page.evaluate(
+      (selector, i) => {
+        document.querySelectorAll(selector)[i]!.scrollIntoView()
       },
+      RING_SELECTOR,
+      index,
     )
-  const rings = await page.evaluate(inked)
-  const blank = rings.filter(r => !r).length
-  return !rings.length
-    ? ['no ring canvas rendered']
-    : blank
-      ? [
-          `${blank} of ${rings.length} rings drew nothing — check the ` +
-            "track's refNames against the assembly's aliases",
-        ]
-      : []
+    const after = await settledRingInk(page, index)
+    if (after > ink * (1 + RING_SCROLL_TOLERANCE)) {
+      problems.push(
+        `ring ${index + 1} of ${before.length} held ${ink} inked px where ` +
+          `the page left it and ${after} once scrolled into view — the page ` +
+          'reported ready over a partial ring',
+      )
+    }
+  }
+  return problems
 }
 
 /**
