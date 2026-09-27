@@ -1540,7 +1540,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     viewportWidth: 1500,
     // 760 cut the CNV lane off, 196 css px of it by the run's own report
-    viewportHeight: 956,
+    viewportHeight: 984,
   },
 
   {
@@ -2102,7 +2102,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // calls + chrome; sized rather than left to the default, which leaves blank
     // below
     // 830 left 23.6 css px under the fold, by the run's own report
-    viewportHeight: 895,
+    viewportHeight: 922,
     annotations: [
       {
         type: 'text',
@@ -2318,7 +2318,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr9',
     readyTimeout: 120000,
     viewportWidth: 1500,
-    viewportHeight: 935,
+    viewportHeight: 990,
     annotations: [
       {
         type: 'text',
@@ -2426,7 +2426,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr3',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 943,
+    viewportHeight: 972,
     // in the depth lane's empty band on each arm: above the p-arm's points,
     // below the q-arm's
     annotations: [
@@ -2626,7 +2626,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // 800 framed the 120px HiFiCNV depth lane this replaced; the two-row
     // coverage track is 280
     // 1075 left 17.7 css px under the fold, by the run's own report
-    viewportHeight: 1135,
+    viewportHeight: 1162,
   },
 
   // KRAS, the central PDAC oncogene: a low-level allelic gain (CN 3, 2+1) on
@@ -2698,7 +2698,7 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // 980 held the 150 px UCSC RefSeq lane this replaced; the one-gene MANE
     // lane is 50, and the run's own reports settle the rest.
-    viewportHeight: 925,
+    viewportHeight: 952,
     // No arrow annotation. It existed only because featureHighlights was pinned
     // to the wrong end coordinate and so drew nothing (see the highlight above),
     // and a hand-tuned pixel arrow is the thing that goes stale silently. Now
@@ -2777,7 +2777,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr17',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 940,
+    viewportHeight: 952,
     annotations: [
       {
         type: 'text',
@@ -2882,7 +2882,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // + the 50 px one-gene lane this figure gained, and the 52.7 the run then
     // reported still under the fold; then +100 for the taller copy-ratio and
     // coverage lanes, settled by the run's own report.
-    viewportHeight: 985,
+    viewportHeight: 1012,
     // WHAT STATE THE GENE IS IN, said on the image (review: "unclear why smad4
     // matters here it looks in a relatively normal area is it a heterozygous
     // deletion add red text annotation if it helps"). It is: CNA_48 is CN 1

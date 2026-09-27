@@ -4745,7 +4745,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyText: 'NC_018939v1',
     readyTimeout: 60000,
     // the default 800 clips the bottom strain's gene labels
-    viewportHeight: 822,
+    viewportHeight: 842,
     // half of a side-by-side pair — see color_by_attribute_steps
     viewportWidth: 900,
   },
@@ -4773,7 +4773,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // the dialog is what the frame is for, and it opens centred over a stack
     // whose lower half is the other two strains
-    viewportHeight: 822,
+    viewportHeight: 842,
     // half of a side-by-side pair — see color_by_attribute_steps
     viewportWidth: 900,
     hideTooltip: true,
