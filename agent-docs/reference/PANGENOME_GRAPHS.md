@@ -1095,6 +1095,22 @@ that plugin's repo, not this one.
   only eight haplotypes**, the curated panel Colin rejected on 2026-09-24, so a
   reader who switches that track on meets it. The figures that use the track
   pick their haplotypes in the session.
+- **HPRC figures to reshoot (2026-09-27).** Once a plugin release carries
+  45f66d6 (walk rows fit their own bars in a track rather than taking the
+  linear view's x): `hprc_abca7_repeat_units`, `hprc_abca7_disagreements`,
+  `graph_kiv2_walk_rows`, `hprc_amylase_walk_rows`. On the hosted bundle
+  already: `maf_hprc_pangenome` (still a separate graph view),
+  `genomes_hprc_loci` (the portal's rows changed), `hprc_mhc_anchored` (the
+  pre-move MHC window, no Highlight band), `hprc_haplotype_launch` (its menu
+  entry and box disagree). Several specs draw the test fixture where the
+  prose opens a portal launch: `hprc_whole_chromosome`,
+  `hprc_cluster_callset`, `hprc_graph_anatomy`.
+- **At ABCA7 every haplotype comes back as its walk plus a 0.2 kb piece**
+  that walk rows draws as a `partial walk` row, in a named-sample cut and a
+  cohort cut alike, on the hosted bundle and on 45f66d6. The measurement
+  above counts 474 W lines there; gbz-base 3.0.0's CLI returns 822 paths for
+  the same `--context 1000 --snarls` cut, named `unknown#N`, so the table may
+  predate the split. Open.
 - **A lane stack cuts the window once per adjacent pair**, N-1 cuts at 0.3-1 s
   each warm on the hosted db; cutting once per stack is the speed lever.
   `pairAlignments` returned FLNA's inversion record twice with identical spans.
