@@ -599,8 +599,8 @@ const renderSynteny: ModeRenderer = async ctx => {
 // Which of these tracks a CircularView can actually open. A track type
 // declaring no display the view draws made showTrack throw "Could not find a
 // compatible display for view type CircularView" and abort the entire render.
-// Ask the question showTrackGeneric asks — does this track type declare a
-// display this view supports — and skip the ones it would reject. Warns per
+// Ask the question showTrackGeneric asks — does the track's adapter feed a
+// display this view draws — and skip the ones it would reject. Warns per
 // skipped track so the omission is visible.
 function circularDrawable(
   model: Model,
@@ -610,14 +610,16 @@ function circularDrawable(
   const { pluginManager } = getEnv(model)
   const supported = viewDisplayNames(pluginManager, 'CircularView')
   return open.filter(({ trackId }) => {
-    const type = trackType(
-      tracks.find(t => t.trackId === trackId) ?? { trackId },
-    )
+    const track = tracks.find(t => t.trackId === trackId) ?? { trackId }
+    const type = trackType(track)
     // includes the type this bundle doesn't register at all, which a
     // --hub/--config config can easily carry (a track type from a plugin
     // jb2export doesn't bundle) and which used to throw from inside the very
     // filter meant to skip untenable tracks
-    const ok = viewCanDisplayTrack(pluginManager, supported, type)
+    const ok = viewCanDisplayTrack(pluginManager, supported, {
+      type,
+      adapter: track.adapter,
+    })
     if (!ok) {
       console.warn(
         `Warning: skipping track "${trackId}" (${type}) — it has no display the circular view can render`,

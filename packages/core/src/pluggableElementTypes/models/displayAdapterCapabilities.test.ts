@@ -5,7 +5,7 @@ import { ConfigurationSchema } from '../../configuration/index.ts'
 import AdapterType from '../AdapterType.ts'
 import DisplayType from '../DisplayType.ts'
 import TrackType from '../TrackType.ts'
-import { displayTypesFedBy } from './baseTrackConfig.ts'
+import { displayCandidates, displayTypesFedBy } from './baseTrackConfig.ts'
 import { createBaseTrackConfig } from './index.ts'
 
 function adapter(name: string, adapterCapabilities: string[] = []) {
@@ -101,4 +101,27 @@ test('a view picks only among the displays the adapter serves', () => {
   expect(
     displayTypesFedBy(pluginManager, 'FeatureTrack', { type: 'GraphAdapter' }),
   ).toEqual(['LinearBasicDisplay', 'LinearGraphDisplay'])
+})
+
+test('the displays a config declares lead the candidates', () => {
+  const { pluginManager } = trackConfig()
+  expect(
+    displayCandidates(pluginManager, {
+      type: 'FeatureTrack',
+      adapter: { type: 'GraphAdapter' },
+      displays: [{ type: 'LinearGraphDisplay' }],
+    }),
+  ).toEqual(['LinearGraphDisplay', 'LinearBasicDisplay'])
+})
+
+// the config keeps the entry as settings, but the track cannot open as it
+test('a declared display the adapter cannot feed is no candidate', () => {
+  const { pluginManager } = trackConfig()
+  expect(
+    displayCandidates(pluginManager, {
+      type: 'FeatureTrack',
+      adapter: { type: 'BedAdapter' },
+      displays: [{ type: 'LinearGraphDisplay' }],
+    }),
+  ).toEqual(['LinearBasicDisplay'])
 })

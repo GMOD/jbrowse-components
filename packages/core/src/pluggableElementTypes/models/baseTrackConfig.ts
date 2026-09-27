@@ -47,8 +47,7 @@ export function adapterFeeds(
 
 /**
  * The display types of `trackType` a track on `adapter` can draw as, in the
- * track type's order: what a view picks among when the config declares none it
- * draws.
+ * track type's order.
  */
 export function displayTypesFedBy(
   pluginManager: PluginManager,
@@ -59,6 +58,32 @@ export function displayTypesFedBy(
     .getTrackType(trackType)
     .displayTypes.filter(adapterFeeds(pluginManager, adapter))
     .map(d => d.name)
+}
+
+/**
+ * The display types a view may open a track as, best first: those its adapter
+ * feeds, the ones its config declares leading in declared order. A declared
+ * display the adapter cannot feed stays in the config as settings and is never
+ * a candidate.
+ */
+export function displayCandidates(
+  pluginManager: PluginManager,
+  track: {
+    type: string
+    adapter?: TrackConfigSnapshot['adapter']
+    displays?: readonly { type: string }[]
+  },
+) {
+  const declared = (track.displays ?? []).map(
+    d => pluginManager.resolveDisplayTypeRecord(d.type)?.name ?? d.type,
+  )
+  const rank = (name: string) => {
+    const i = declared.indexOf(name)
+    return i === -1 ? declared.length : i
+  }
+  return displayTypesFedBy(pluginManager, track.type, track.adapter).sort(
+    (a, b) => rank(a) - rank(b),
+  )
 }
 
 /**

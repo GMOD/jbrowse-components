@@ -541,7 +541,10 @@ describe('addTrack in a browser', () => {
     const jb = createJbApi({
       rootModel: { session: showing },
       trackTypes: new Map([['MultiQuantitativeTrack', {}]]),
-      getTrackType: () => ({ displayTypes: [{ name: 'D' }] }),
+      hasAdapterType: () => false,
+      getTrackType: () => ({
+        displayTypes: [{ name: 'D', adapterCapabilities: [] }],
+      }),
       getViewType: () => ({ displayTypes: [{ name: 'D' }] }),
     } as unknown as PluginManager)
     const result = await jb.addTrack({
@@ -587,7 +590,10 @@ describe('addTrack with a trackId the catalog already holds', () => {
   const jb = createJbApi({
     rootModel: { session },
     trackTypes: new Map([['AlignmentsTrack', {}]]),
-    getTrackType: () => ({ displayTypes: [{ name: 'LinearD' }] }),
+    hasAdapterType: () => false,
+    getTrackType: () => ({
+      displayTypes: [{ name: 'LinearD', adapterCapabilities: [] }],
+    }),
     getViewType: () => ({ displayTypes: [{ name: 'LinearD' }] }),
   } as unknown as PluginManager)
 
@@ -1216,7 +1222,10 @@ describe('rows of a nested view', () => {
       },
     },
     trackTypes: new Map([['MultiQuantitativeTrack', {}]]),
-    getTrackType: () => ({ displayTypes: [{ name: 'LinearD' }] }),
+    hasAdapterType: () => false,
+    getTrackType: () => ({
+      displayTypes: [{ name: 'LinearD', adapterCapabilities: [] }],
+    }),
     getViewType: (type: string) => ({
       displayTypes: [
         { name: type === 'LinearGenomeView' ? 'LinearD' : 'SyntenyD' },

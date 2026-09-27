@@ -868,7 +868,7 @@ function pickView(
   capability: 'navToLocString' | 'showTrack' | 'launchTrack' | 'hideTrack',
   wants?: {
     assembly?: string
-    trackType?: string
+    track?: { type: string; adapter?: { type?: unknown } }
     pluginManager?: PluginManager
   },
 ) {
@@ -898,18 +898,18 @@ function pickView(
     )
   }
   const canDisplay =
-    wants?.trackType && wants.pluginManager
+    wants?.track && wants.pluginManager
       ? onAssembly.filter(v =>
           viewCanDisplayTrack(
             wants.pluginManager!,
             viewDisplayNames(wants.pluginManager!, v.type),
-            wants.trackType!,
+            wants.track!,
           ),
         )
       : onAssembly
   if (!canDisplay.length) {
     throw new Error(
-      `No open view can display a ${wants!.trackType} (open views: ${onAssembly.map(v => v.type).join(', ')})`,
+      `No open view can display a ${wants!.track!.type} (open views: ${onAssembly.map(v => v.type).join(', ')})`,
     )
   }
   return onlyView(session, canDisplay, 'could take this', viewId)
@@ -1719,7 +1719,12 @@ async function addTrack(
         ...(await showTrack(
           pluginManager,
           session,
-          { trackId: conf.trackId, trackType: conf.type, assembly },
+          {
+            trackId: conf.trackId,
+            trackType: conf.type,
+            adapter: conf.adapter,
+            assembly,
+          },
           args,
         )),
       }
@@ -1761,7 +1766,12 @@ async function showCatalogTrack(
     ? summary
     : {
         ...summary,
-        ...(await showTrack(pluginManager, session, track, args)),
+        ...(await showTrack(
+          pluginManager,
+          session,
+          { ...track, adapter: { type: adapterType } },
+          args,
+        )),
       }
 }
 
@@ -1772,12 +1782,17 @@ function isSettings(value: unknown): value is Record<string, unknown> {
 async function showTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
-  track: { trackId: string; trackType: string; assembly?: string },
+  track: {
+    trackId: string
+    trackType: string
+    adapter?: { type?: unknown }
+    assembly?: string
+  },
   args: Record<string, unknown>,
 ) {
   const view = pickView(session, args, 'launchTrack', {
     assembly: track.assembly,
-    trackType: track.trackType,
+    track: { type: track.trackType, adapter: track.adapter },
     pluginManager,
   })
   // awaited: a display state model is lazy in every plugin here, and the

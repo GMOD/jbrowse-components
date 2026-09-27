@@ -21,21 +21,21 @@ jest.mock('./fileHandleStore.ts', () => ({
 }))
 
 describe('pickDisplayForView', () => {
-  // a multi-sample VCF track: two displays declared, matrix first, plus the
-  // display types its track type offers beyond what this view supports
+  // a multi-sample VCF track: two displays declared, matrix first, plus a
+  // candidate this view does not draw
   const declaredDisplays = [
     { type: 'MatrixDisplay', displayId: 'vcf_matrix' },
     { type: 'RegularDisplay', displayId: 'vcf_regular' },
   ]
-  const trackDisplayTypes = ['ChordDisplay', 'MatrixDisplay', 'RegularDisplay']
+  const candidates = ['MatrixDisplay', 'RegularDisplay', 'ChordDisplay']
   const viewDisplayTypes = ['MatrixDisplay', 'RegularDisplay']
 
   test('a requested type gets its own config, not the first declared one', () => {
     expect(
       pickDisplayForView({
+        candidates,
         declaredDisplays,
         requestedType: 'RegularDisplay',
-        trackDisplayTypes,
         viewDisplayTypes,
       }),
     ).toEqual({
@@ -44,15 +44,12 @@ describe('pickDisplayForView', () => {
     })
   })
 
-  test('no requested type takes the first declared display the view supports', () => {
+  test('no requested type takes the first candidate the view draws', () => {
     expect(
       pickDisplayForView({
-        declaredDisplays: [
-          { type: 'ChordDisplay', displayId: 'vcf_chord' },
-          ...declaredDisplays,
-        ],
+        candidates: ['ChordDisplay', ...candidates],
+        declaredDisplays,
         requestedType: undefined,
-        trackDisplayTypes,
         viewDisplayTypes,
       }),
     ).toEqual({
@@ -66,9 +63,9 @@ describe('pickDisplayForView', () => {
   // config declaring only a linear display still opens as chords.
   test('a view s own display type beats a declared display it only inherits', () => {
     const inherited = {
+      candidates: ['RegularDisplay', 'MatrixDisplay', 'ChordDisplay'],
       declaredDisplays: [{ type: 'RegularDisplay', displayId: 'vcf_regular' }],
       requestedType: undefined,
-      trackDisplayTypes,
       viewDisplayTypes: [...viewDisplayTypes, 'ChordDisplay'],
     }
     expect(
@@ -90,62 +87,54 @@ describe('pickDisplayForView', () => {
     ).toBe('RegularDisplay')
   })
 
-  test('falls back to the track type when the config declares no displays', () => {
+  test('a candidate the config never declares has no conf to attach', () => {
     expect(
       pickDisplayForView({
+        candidates,
         declaredDisplays: [],
         requestedType: undefined,
-        trackDisplayTypes,
         viewDisplayTypes,
       }),
     ).toEqual({ type: 'MatrixDisplay', conf: undefined })
   })
 
-  test('a requested type the config never declares has no conf to attach', () => {
-    expect(
-      pickDisplayForView({
-        declaredDisplays,
-        requestedType: 'ExtraDisplay',
-        trackDisplayTypes: [...trackDisplayTypes, 'ExtraDisplay'],
-        viewDisplayTypes: [...viewDisplayTypes, 'ExtraDisplay'],
-      }),
-    ).toEqual({ type: 'ExtraDisplay', conf: undefined })
-  })
-
   // The refusals below are what a requested type not being taken on faith
-  // buys. An unsupported one used to pass straight through, and the
-  // `<trackId>-<type>` id it synthesized — which no config declares — was then
-  // resolved back to the track's DEFAULT display by type, so a caller that
-  // asked for read arcs got the pileup and every layer reported success. Both
-  // of these were that.
+  // buys: an unchecked one resolved its dangling `<trackId>-<type>` id back to
+  // the track's default display, so a caller that asked for read arcs got the
+  // pileup and every layer reported success.
   test('refuses a requested type this view cannot draw', () => {
     expect(
       pickDisplayForView({
+        candidates,
         declaredDisplays,
         requestedType: 'ChordDisplay',
-        trackDisplayTypes,
         viewDisplayTypes,
       }),
     ).toBeUndefined()
   })
 
-  test('refuses a requested type the track type does not offer', () => {
+  // a type the track type does not offer, or one its adapter cannot feed,
+  // which a config may still declare
+  test('refuses a requested type that is no candidate', () => {
     expect(
       pickDisplayForView({
-        declaredDisplays,
-        requestedType: 'LinearAlignmentsDisplay',
-        trackDisplayTypes,
-        viewDisplayTypes: [...viewDisplayTypes, 'LinearAlignmentsDisplay'],
+        candidates,
+        declaredDisplays: [
+          ...declaredDisplays,
+          { type: 'GraphDisplay', displayId: 'vcf_graph' },
+        ],
+        requestedType: 'GraphDisplay',
+        viewDisplayTypes: [...viewDisplayTypes, 'GraphDisplay'],
       }),
     ).toBeUndefined()
   })
 
-  test('undefined when the view supports none of the track’s displays', () => {
+  test('undefined when the view draws none of the candidates', () => {
     expect(
       pickDisplayForView({
+        candidates: ['ChordDisplay'],
         declaredDisplays: [{ type: 'ChordDisplay', displayId: 'vcf_chord' }],
         requestedType: undefined,
-        trackDisplayTypes: ['ChordDisplay'],
         viewDisplayTypes,
       }),
     ).toBeUndefined()

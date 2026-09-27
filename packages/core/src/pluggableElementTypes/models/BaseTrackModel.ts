@@ -28,6 +28,7 @@ import {
 } from '../../util/tracks.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
+import { displayTypesFedBy } from './baseTrackConfig.ts'
 import { stringifyBED } from './saveTrackFileTypes/bed.ts'
 import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
 import { stringifyGFF3 } from './saveTrackFileTypes/gff3.ts'
@@ -54,12 +55,13 @@ const DEFAULT_EXPORT_BYTE_LIMIT = 5_000_000
 function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
-  // which of THIS track's configured displays the view draws — a different
-  // question from viewCanDisplayTrack's "can it open the track at all", over
-  // the same set of names
-  const compatTypes = viewDisplayNames(pluginManager, view.type)
-  const displays: AnyConfigurationModel[] = self.configuration.displays
-  return displays.filter(d => compatTypes.has(d.type))
+  const { configuration } = self
+  const viewDisplays = viewDisplayNames(pluginManager, view.type)
+  const fed = new Set(
+    displayTypesFedBy(pluginManager, configuration.type, configuration.adapter),
+  )
+  const displays: AnyConfigurationModel[] = configuration.displays
+  return displays.filter(d => viewDisplays.has(d.type) && fed.has(d.type))
 }
 
 function getDisplayConf(displays: AnyConfigurationModel[], displayId: string) {
@@ -209,8 +211,8 @@ export function createBaseTrackModel(
 
       /**
        * #getter
-       * the configured displays the CONTAINING VIEW can draw, which is the set
-       * `replaceDisplay` will accept
+       * the configured displays the CONTAINING VIEW can draw and the track's
+       * adapter feeds, which is the set `replaceDisplay` will accept
        *
        * `configuration.displays` is not that set: baseTrackConfig injects one
        * entry per display type registered for the track TYPE, across every

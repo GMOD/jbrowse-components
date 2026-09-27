@@ -24,7 +24,10 @@ import { observable, runInAction, untracked } from 'mobx'
 import { getSequenceAdapterConfigByName } from '../assemblyManager/getSequenceAdapterConfig.ts'
 import { readConfObject } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
-import { displayTypesFedBy } from '../pluggableElementTypes/models/baseTrackConfig.ts'
+import {
+  displayCandidates,
+  displayTypesFedBy,
+} from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import {
   getFileHandle,
   storeFileHandle,
@@ -955,27 +958,6 @@ interface DisplayConfSnapshot {
 }
 
 /**
- * Which display a track opens with in a given view, and the display config that
- * display must use: `{ type, conf }`, or undefined when the view supports none
- * of the track's displays.
- *
- * Two decisions, in this order, and the order is the point. The **type** is what
- * the caller asked for, else the track's first declared display the view
- * supports, else the track type's first supported display. The **config** is
- * then whichever declared entry has that type — never "the first supported one",
- * which is what let a display be created wearing another display's config node
- * (a multi-sample VCF declares both the matrix and the regular display, so the
- * regular one inherited the matrix's 20px connector-line zone and drew its
- * clustering tree offset from the rows it labels). `display.type ===
- * display.configuration.type` is the invariant `DisplayConfigurationReference`
- * already assumes when it falls back to resolving a display config by type; this
- * is where it has to hold.
- *
- * `conf` is undefined when the track config declares no entry of that type;
- * `baseTrackConfig.preProcessSnapshot` injects one for every registered display
- * type, so the caller's `${trackId}-${type}` id resolves to it.
- */
-/**
  * The display type names a view can render, as a lookup set. Built once per
  * view and handed to {@link viewCanDisplayTrack} for every track, rather than
  * rebuilt per track.
@@ -990,17 +972,10 @@ export function viewDisplayNames(
 }
 
 /**
- * Whether a view rendering `viewDisplays` can open a track of this type at all
- * — does the track type declare a display the view draws. The coarse half of
- * the question {@link pickDisplayForView} answers precisely: a picker that
- * offers a track this says no to is offering one `showTrackGeneric` will
- * refuse.
- *
- * Reads the *track type's* registered displays rather than a config's own
- * `displays` array, which is both cheaper and the only form available on an
- * un-hydrated frozen track config (ADR-032). The two agree, since
- * `preprocessTrackConfigSnapshot` injects a stub display for every display the
- * track type registers.
+ * Whether a view rendering `viewDisplays` can open a track at all: does the
+ * track's adapter feed a display the view draws. The coarse half of the
+ * question {@link pickDisplayForView} answers precisely, over the same
+ * candidates, so a picker never offers a track `showTrackGeneric` will refuse.
  *
  * Two answers that are easy to get wrong, and both have been:
  *
@@ -1017,16 +992,16 @@ export function viewDisplayNames(
 export function viewCanDisplayTrack(
   pluginManager: PluginManager,
   viewDisplays: Set<string>,
-  trackType: string,
+  track: { type: string; adapter?: { type?: unknown } },
 ) {
-  if (!pluginManager.trackTypes.has(trackType)) {
+  if (!pluginManager.trackTypes.has(track.type)) {
     return false
   }
   return (
     viewDisplays.size === 0 ||
-    pluginManager
-      .getTrackType(trackType)
-      .displayTypes.some(d => viewDisplays.has(d.name))
+    displayTypesFedBy(pluginManager, track.type, track.adapter).some(name =>
+      viewDisplays.has(name),
+    )
   )
 }
 
@@ -1078,7 +1053,10 @@ export function filterTracks(
           trackAssemblyNames && canonical(trackAssemblyNames),
           viewAssemblyNames,
         )) &&
-      viewCanDisplayTrack(pluginManager, viewDisplays, c.type)
+      viewCanDisplayTrack(pluginManager, viewDisplays, {
+        type: c.type,
+        adapter: c.adapter,
+      })
     )
   })
 }
@@ -1104,7 +1082,7 @@ function refSeqTrackConf(
     viewCanDisplayTrack(
       pluginManager,
       viewDisplayNames(pluginManager, view.type),
-      conf.type,
+      { type: conf.type, adapter: conf.adapter },
     )
     ? conf
     : undefined
@@ -1131,51 +1109,47 @@ export function offeredTracks(
   ].filter(conf => conf !== undefined)
 }
 
+/**
+ * Which display a track opens with in a given view, and the declared entry
+ * that configures it: `{ type, conf }`, or undefined when the view draws none
+ * of the candidates or the requested type is not among them.
+ *
+ * The **type** is the requested one, checked rather than taken on faith (an
+ * unchecked one resolved its dangling `<trackId>-<type>` id back to the
+ * track's default display, and the caller was told it got what it asked for),
+ * else the first candidate among the view's own display types, else the first
+ * it draws at all. The **config** is then the declared entry of that type,
+ * never another one the view supports: `display.type ===
+ * display.configuration.type` is the invariant `DisplayConfigurationReference`
+ * assumes when it falls back to resolving by type.
+ */
 export function pickDisplayForView({
+  candidates,
   declaredDisplays,
   requestedType,
-  trackDisplayTypes,
   viewDisplayTypes,
   preferredDisplayTypes = new Set<string>(),
 }: {
+  /** {@link displayCandidates}, canonical names in preference order */
+  candidates: string[]
+  /** the config's display entries, their types canonical */
   declaredDisplays: DisplayConfSnapshot[]
   requestedType: string | undefined
-  trackDisplayTypes: string[]
   viewDisplayTypes: string[]
   /**
    * The display types the view registered as its own, ahead of those it
-   * inherits through `extendedName`, declared or not: a variant track on the
-   * circular view draws its chords, not the linear display the view also
-   * accepts as a ring, even where its config declares only the linear one.
+   * inherits through `extendedName`: a variant track on the circular view
+   * draws its chords, not the linear display the view also accepts as a
+   * ring, even where its config declares only the linear one.
    */
   preferredDisplayTypes?: Set<string>
 }) {
   const supported = new Set(viewDisplayTypes)
-  // A requested type is CHECKED, not taken on faith. It used to pass straight
-  // through: an unsupported or misspelled one produced a synthesized
-  // `<trackId>-<type>` displayId that no config declares, and the display
-  // configuration reference then resolved that dangling id back to the track's
-  // DEFAULT display by type — so a caller that asked for read arcs got the
-  // pileup, and every layer reported success. The caller turns this
-  // `undefined` into an error naming what the track can be drawn as.
-  //
-  // Callers pass a CANONICAL name (resolveTrackDisplayChoice resolves an alias
-  // first), because these two lists hold canonical names only.
-  if (requestedType !== undefined) {
-    return supported.has(requestedType) &&
-      trackDisplayTypes.includes(requestedType)
-      ? {
-          type: requestedType,
-          conf: declaredDisplays.find(d => d.type === requestedType),
-        }
-      : undefined
-  }
-  const declared = declaredDisplays.filter(d => supported.has(d.type))
+  const drawable = candidates.filter(name => supported.has(name))
   const type =
-    declared.find(d => preferredDisplayTypes.has(d.type))?.type ??
-    trackDisplayTypes.find(name => preferredDisplayTypes.has(name)) ??
-    declared[0]?.type ??
-    trackDisplayTypes.find(name => supported.has(name))
+    requestedType === undefined
+      ? (drawable.find(name => preferredDisplayTypes.has(name)) ?? drawable[0])
+      : drawable.find(name => name === requestedType)
   return type === undefined
     ? undefined
     : { type, conf: declaredDisplays.find(d => d.type === type) }
@@ -1279,25 +1253,22 @@ function resolveTrackDisplayChoice(
   // getContainingView already resolves to for everything else beneath it.
   const view = isViewModel(self) ? self : getContainingView(self)
   const viewType = pluginManager.getViewType(view.type)
-  const trackDisplayTypes = displayTypesFedBy(
-    pluginManager,
-    conf.type,
-    conf.adapter,
-  )
+  const candidates = displayCandidates(pluginManager, conf)
   const viewDisplayTypes = viewType.displayTypes.map(d => d.name)
-  // An alias first, so a session spec or a caller naming a pre-consolidation
-  // display type (`LinearPileupDisplay`) reaches the type that replaced it
-  // instead of being refused — and so the membership checks below, which are
-  // over canonical names, ask the right question.
+  // Aliases resolve first, so a caller or a config naming a pre-consolidation
+  // display type (`LinearPileupDisplay`) reaches the type that replaced it; a
+  // name no display answers to stays as written, for the refusal to quote.
+  const canonical = (name: string) =>
+    pluginManager.resolveDisplayTypeRecord(name)?.name ?? name
   const requested = displayInitialSnapshot.type
-  const requestedType =
-    requested === undefined
-      ? undefined
-      : pluginManager.resolveDisplayTypeRecord(requested)?.name
+  const declaredDisplays: DisplayConfSnapshot[] = conf.displays ?? []
   const picked = pickDisplayForView({
-    declaredDisplays: conf.displays ?? [],
-    requestedType,
-    trackDisplayTypes,
+    candidates,
+    declaredDisplays: declaredDisplays.map(d => ({
+      ...d,
+      type: canonical(d.type),
+    })),
+    requestedType: requested === undefined ? undefined : canonical(requested),
     viewDisplayTypes,
     preferredDisplayTypes: new Set(
       viewType.displayTypes
@@ -1307,9 +1278,7 @@ function resolveTrackDisplayChoice(
   })
 
   if (!picked) {
-    const drawable = trackDisplayTypes.filter(name =>
-      viewDisplayTypes.includes(name),
-    )
+    const drawable = candidates.filter(name => viewDisplayTypes.includes(name))
     throw new Error(
       requested === undefined
         ? `Could not find a compatible display for view type ${view.type}`
