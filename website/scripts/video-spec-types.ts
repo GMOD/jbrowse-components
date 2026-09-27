@@ -77,9 +77,6 @@ export interface VideoSpec {
   // spends the clip working out what it is for.
   goal: string
   steps: VideoStep[]
-  // Seconds into the finished clip to take the <video poster> from. Defaults to
-  // the last frame, which is the state the tour ends in.
-  posterAt?: number
   // Still frame held after the last step, so the end state can be read before
   // the clip ends.
   tailMs?: number

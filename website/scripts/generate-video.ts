@@ -89,6 +89,7 @@ import {
 } from './video-spec-rules.ts'
 import { externalClips, pastedTrackConfigs, videoSpecs } from './video-specs.ts'
 
+import type { Cue } from './video-captions.ts'
 import type { VideoSpec, VideoStep } from './video-specs.ts'
 import type { Page } from 'puppeteer'
 
@@ -225,7 +226,17 @@ const CONFUSING_ON_CAMERA: [string, string][] = [
 // `overflow: hidden` ancestor, which a view does to every block past its edge.
 async function confusingOnCamera(page: Page) {
   return page.evaluate((checks: [string, string][]) => {
-    const shown = (el: Element) => {
+    const shown = (node: Element) => {
+      // ReplacedDisplay publishes `tooLarge` on a `display: contents` wrapper,
+      // which has no box, and portals the banner over the track, so the
+      // track's box is what is on camera
+      let el: Element | null = node
+      while (el && getComputedStyle(el).display === 'contents') {
+        el = el.parentElement
+      }
+      if (!el) {
+        return false
+      }
       const style = getComputedStyle(el)
       const rect = el.getBoundingClientRect()
       if (
@@ -504,13 +515,20 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       ? moveCursor(stage, box.x + box.width / 2, box.y + box.height / 2)
       : moveCursor(stage, width / 2, 90))
   }
+  // The payoff is held wherever the last click left the pointer, which is
+  // usually over the data it changed, drawing a crosshair or a tooltip there.
+  // A payoff that follows a hover is the hover's, so the pointer stays.
+  const payoff = spec.steps.findLastIndex(step => step.say !== undefined)
   await injectOverlay(stage)
   await park()
   await delay(500)
   try {
     await cam.start()
     await show(spec.goal)
-    for (const step of spec.steps) {
+    for (const [i, step] of spec.steps.entries()) {
+      if (i === payoff && spec.steps[i - 1]?.type !== 'hover') {
+        await park()
+      }
       // ON-CAMERA ms, not wall clock. A step that takes the camera off — a
       // `cut`, an `opensTab` — spends most of its wall time off it, and
       // measuring that reported the tab handoff as six seconds of spinner the
@@ -687,39 +705,24 @@ function encode(segments: string[], stem: string) {
   return { mp4, duration }
 }
 
-// The still a reader sees before pressing play, and the image a card would use.
-// The end of the clip by default: a tour's last frame is the state it was filmed
-// to reach, where its first is the app before anything has happened.
-//
-// A `posterAt` past the end is CLAMPED rather than passed through, and it is
-// worth the three lines: seeking past the last frame writes no packets, ffmpeg
-// exits non-zero, and the run fails there — after the filming, throwing away a
-// clip that was already encoded. Which is a spec edit away at all times, since
-// the number is seconds into a clip whose length no one knows until it exists.
-function poster(mp4: string, stem: string, spec: VideoSpec, duration: number) {
+// The still a reader sees before pressing play, and the image a card would use:
+// the middle of the payoff line, which is held over the state the tour was
+// filmed to reach. Not the last frame, which a hover payoff has already left
+// once the tail parks the pointer.
+function poster(
+  mp4: string,
+  stem: string,
+  cues: readonly Cue[],
+  scale: number,
+  duration: number,
+) {
   const jpg = `${stem}.jpg`
-  const at = spec.posterAt ?? duration
+  const payoff = cues.at(-1)
   const last = Math.max(0, duration - 0.2)
-  // Only when the SPEC named the second. The default is the clip's own
-  // duration, which is past `last` by construction, so reporting the clamp
-  // unconditionally printed a stale-posterAt warning under every tour that had
-  // never set one — which was all but two, and made the line say nothing.
-  if (spec.posterAt !== undefined && at > last) {
-    log(
-      `  posterAt ${at}s is past the ${duration.toFixed(1)}s clip; using ${last.toFixed(1)}s`,
-    )
-  }
-  ffmpeg([
-    '-ss',
-    Math.min(at, last).toFixed(2),
-    '-i',
-    mp4,
-    '-frames:v',
-    '1',
-    '-q:v',
-    '3',
-    jpg,
-  ])
+  const at = payoff
+    ? Math.min(last, ((payoff.startMs + payoff.endMs) / 2000) * scale)
+    : last
+  ffmpeg(['-ss', at.toFixed(2), '-i', mp4, '-frames:v', '1', '-q:v', '3', jpg])
   return jpg
 }
 
@@ -841,16 +844,14 @@ async function main() {
           const filmed = await film(page, spec, stem)
           segments = filmed.segments
           const { mp4, duration } = encode(segments, stem)
-          const jpg = poster(mp4, stem, spec, duration)
           // The lines the tour said, onto the clip's own clock. Scaled by what
           // the encode actually produced over what the run counted on camera —
           // the two are the same measurement of different things, and a cue
           // past the end of the clip is a cue that never shows.
-          writeVtt(
-            `${stem}.vtt`,
-            filmed.cues,
-            filmed.filmedMs > 0 ? (duration * 1000) / filmed.filmedMs : 1,
-          )
+          const scale =
+            filmed.filmedMs > 0 ? (duration * 1000) / filmed.filmedMs : 1
+          const jpg = poster(mp4, stem, filmed.cues, scale, duration)
+          writeVtt(`${stem}.vtt`, filmed.cues, scale)
           const mb = (f: string) =>
             `${(fs.statSync(f).size / 1e6).toFixed(2)} MB`
           log(

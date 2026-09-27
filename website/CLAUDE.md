@@ -159,8 +159,8 @@ the tour was filmed in.
   through a `target="_blank"` link, so the result is a second page rather than a
   navigation. It implies a cut. A label rendered in caps by CSS is not the
   string a `text` step matches — read the DOM, and put the caps in the `say`.
-- **`posterAt` is clamped to the clip**, so a stale one no longer throws away a
-  finished film; the run says which second it used instead.
+- **The poster is the middle of the payoff line**, not the last frame: a hover
+  payoff is gone once the tail parks the pointer.
 - **The last repaint of a run of them does not reach the file.** Chrome sends
   screencast frames while the page paints and stops when it goes quiet, and the
   frames arrive a couple behind — so whatever a clip is doing at the very end is
