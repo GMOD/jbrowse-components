@@ -157,6 +157,12 @@ mechanism of the
         "uri": "arabidopsis_wgbs_CHH.bw"
       }
     ]
+  },
+  "displayDefaults": {
+    "mark": "bar",
+    "scales": {
+      "y": { "domainMin": 0, "domainMax": 100, "title": "% methylated" }
+    }
   }
 }
 ```

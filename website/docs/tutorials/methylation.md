@@ -140,8 +140,40 @@ computed in the browser, one band methylated over the island and the other not.
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order. Bottom: the same reads grouped by the HP tag, one band per haplotype. Only the grouping differs." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 
-Loading the two per-haplotype bedMethyl files above the reads puts the summary
-and its source in the same view, on one x scale.
+We'll load the two per-haplotype bedMethyl files above the reads as one track,
+each file a row, so the summary and its source share the view. Pinning the axis
+at 0 to 100 keeps an unmethylated row flat rather than autoscaled to its own
+maximum:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "HG002_snrpn_modkit_multi",
+  "name": "HG002 5mC by haplotype (modkit)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BedTabixAdapter",
+        "name": "HP1",
+        "color": "#d62728",
+        "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_hp1.modkit.bed.gz"
+      },
+      {
+        "type": "BedTabixAdapter",
+        "name": "HP2",
+        "color": "#1f77b4",
+        "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_hp2.modkit.bed.gz"
+      }
+    ]
+  },
+  "displayDefaults": {
+    "mark": "bar",
+    "scales": { "y": { "domainMin": 0, "domainMax": 100, "title": "% 5mC" } }
+  }
+}
+```
 
 <Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. Grouping reads by HP keeps the summary profile on top and the individual reads below it as the same data." src="/img/methylation/hg002_snrpn_combined.png" />
 

@@ -436,7 +436,7 @@ bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
 `chrom.sizes` is written by hand, since the `.fai` carries the PanSN path.
 
 Load it as a [`QuantitativeTrack`](/docs/config_guides/quantitative_track) on
-K12:
+K12, with a line at the strain count and one at 1:
 
 ```json addtrack
 {
@@ -447,15 +447,29 @@ K12:
   "adapter": {
     "type": "BigWigAdapter",
     "uri": "ecoli_pggb_depth.bw"
+  },
+  "displayDefaults": {
+    "scales": {
+      "y": {
+        "title": "paths",
+        "rules": [
+          { "value": 5, "label": "all five strains" },
+          { "value": 1, "label": "K12 alone" }
+        ]
+      }
+    }
   }
 }
 ```
 
+On a track already open, **Score → Reference lines...** adds the same lines. Set
+the upper one to your own strain count.
+
 Zoomed out, the track shows the pangenome's core/accessory landscape:
 
-- a **plateau** near the strain count
+- a **plateau** along the strain-count line
 - **spikes** past it over the rRNA operons the graph collapses into one copy
-- **troughs** at 1 over K12's private sequence
+- **troughs** down to the line at 1 over K12's private sequence
 
 The depth lane is drawn [at the end of this section](#per-strain-presence),
 under the per-strain rows.
@@ -497,6 +511,9 @@ for strain in Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
+The four bigWigs load as one track, a heatmap row per strain, so a stretch a
+strain lacks is a white column:
+
 ```json addtrack
 {
   "type": "MultiQuantitativeTrack",
@@ -527,7 +544,8 @@ done
         "uri": "ecoli_pggb_pav_IAI39.bw"
       }
     ]
-  }
+  },
+  "displayDefaults": { "mark": "heatmap" }
 }
 ```
 

@@ -178,6 +178,7 @@ rows in the figure below:
   },
   "displayDefaults": {
     "mark": "bar",
+    "scales": { "y": { "type": "log", "title": "CPM" } },
     "height": 330
   }
 }
@@ -188,8 +189,8 @@ stay adjacent and a row keeps the color its cluster had on the UMAP.
 
 <Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
 
-A marker gene reads as the height of its 3' spike from row to row. The figure is
-on a log scale, because every row shares one axis.
+A marker gene reads as the height of its 3' spike from row to row. The axis is
+logarithmic because every row shares it.
 
 The `--multiwig` CLI form and the add-track UI build the same track without
 hand-writing it; both are covered on [](/docs/tutorials/scatac_pseudobulk).

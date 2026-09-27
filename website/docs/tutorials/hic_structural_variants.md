@@ -175,21 +175,43 @@ regions that contact their own kind: the gene-rich, active A compartment and the
 inactive B compartment. ENCODE publishes that call for every experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments).
 
+We'll load each line's eigenvector as a bigWig, both pinned to one symmetric
+scale so that the two lanes compare and 0, where the compartment flips, sits in
+the middle of each:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "hic_gm12878_compartments",
+  "name": "GM12878 compartment eigenvector (ENCFF661LPK)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig"
+  },
+  "displayDefaults": {
+    "scales": { "y": { "domainMin": -0.012, "domainMax": 0.012 } }
+  }
+}
+```
+
+The K562 track is the same with its own file,
+`https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig`.
+On an eigenvector track already open, **Score → Set min/max score...** writes
+the same two ends.
+
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1 is in opposite compartments in the two lines while the frame edges agree." links="Open this view=hic/compartment_switch" />
 
 _EBF1_ is a transcription factor B cells depend on for their identity. The band
 over it is in the A compartment in GM12878, a B-lymphoblastoid line, and the B
 compartment in K562, an erythroleukemia, while the sequence either side of it
-agrees. Two settings in the figure:
-
-- The eigenvector tracks are pinned to one shared scale
-- An eigenvector names the A compartment only up to a sign, so which sign is
-  active is read off the gene track, A being the gene-rich compartment
+agrees. An eigenvector names the A compartment only up to a sign, so which sign
+is active is read off the gene track, A being the gene-rich compartment.
 
 The
 [user guide section](/docs/user_guides/hic_track#compartments-and-subcompartments)
-covers both, and why subcompartment class numbers cannot be compared between
-files.
+covers the pinning and the sign, and why subcompartment class numbers cannot be
+compared between files.
 
 ## Configuring the Hi-C tracks
 

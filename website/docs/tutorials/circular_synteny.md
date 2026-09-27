@@ -270,11 +270,20 @@ is opened as a density strip whose colour is the average over each pixel's bins:
       "displayId": "hg38ToMm39_gene_density-LinearWiggleDisplay",
       "mark": "heatmap",
       "summaryScoreMode": "avg",
+      "color": {
+        "field": "score",
+        "scale": "threshold",
+        "range": ["#e01e26", "#d95f02"]
+      },
       "height": 40
     }
   ]
 }
 ```
+
+The `color` is the pair **Edit colors/arrangement...** in the track menu sets,
+one colour below the baseline and one above; a heatmap of counts fades from
+white to the one above.
 
 Rings stack inward from the ideogram in the order the view's `tracks` lists
 them, and the ribbons draw inside the innermost ring, so the density entry goes
@@ -297,6 +306,11 @@ before the synteny track:
             "type": "LinearWiggleDisplay",
             "mark": "heatmap",
             "summaryScoreMode": "avg",
+            "color": {
+              "field": "score",
+              "scale": "threshold",
+              "range": ["#e01e26", "#d95f02"]
+            },
             "height": 40
           },
           "hg38ToMm39_liftover"

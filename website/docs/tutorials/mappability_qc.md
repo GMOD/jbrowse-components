@@ -126,7 +126,7 @@ references the columns barely move.
 
 ## What the lanes are
 
-<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four lanes and one read per row. Almost every read is red, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
+<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four lanes and one read per row. Almost every read is dark blue, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
 
 The lanes are independent of each other:
 
@@ -193,6 +193,9 @@ The same three tracks and a control work anywhere in hg38:
 - Open the hosted hg38 config and turn on **Umap M100**, **gnomAD v3 Genome
   Coverage - Mean Coverage**, and the **GIAB Problematic Regions** and
   **Problematic Regions** annotation tracks.
+- On **Umap M100**, set **Score → Set min/max score...** to 0 and 1, and **Score
+  → Summary score mode → Minimum**, so a zoomed-out bin draws its worst position
+  and a low-mappability block sits on the floor.
 - Add your reads and set **Color by...** → **Mapping quality** from the track
   menu. Turn on **Show legend** in the same menu.
 - Take a second window of the same width, from the same sample, outside every

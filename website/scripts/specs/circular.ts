@@ -20,7 +20,7 @@ const CHROMOSOMES = [
 const LIFTOVER = 'hg38ToMm39_liftover'
 // gene density as a heat strip: the average over each pixel's bins, so a
 // megabase-per-pixel ring reads genes per bin rather than the bin maximum.
-// Orange, so the ring and the steel-blue ribbons read as two things.
+// Orange, so the ring reads apart from the chromosome-coloured ribbons.
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   type: 'LinearWiggleDisplay',

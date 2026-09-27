@@ -97,7 +97,7 @@ export const scrnaSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
               type: 'LinearWiggleDisplay',
-              scales: { y: { type: 'log' } },
+              scales: { y: { type: 'log', title: 'CPM' } },
               // 9 rows, so 45px each: enough for a peak to have a shape rather
               // than being a spike two pixels tall
               height: 405,

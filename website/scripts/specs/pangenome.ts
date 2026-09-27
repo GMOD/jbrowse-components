@@ -454,6 +454,15 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               trackId: 'ecoli_pggb_depth',
               type: 'LinearWiggleDisplay',
               height: 150,
+              scales: {
+                y: {
+                  title: 'paths',
+                  rules: [
+                    { value: 5, label: 'all five strains' },
+                    { value: 1, label: 'K12 alone' },
+                  ],
+                },
+              },
             },
             {
               trackId: 'ecoli_pggb_pav',
