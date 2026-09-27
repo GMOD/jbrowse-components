@@ -307,10 +307,10 @@ hosts one annotation chosen by rank and nothing else, so a reader who wants a
 second track on some genome has only the two escape hatches — open the lane in
 its own unsynchronised LGV, or launch a `LinearSyntenyView`, both costed in
 [../../reference/MULTIWAY_SYNTENY_DISPLAY.md](../../reference/MULTIWAY_SYNTENY_DISPLAY.md)
-§2.3. Four ways out were weighed. (1) Let a lane host tracks, a
-frame-projected track container per lane: large, and it recreates the deleted
-`MultiLGVSyntenyDisplay` (`884a126861`, ~4,000 lines) by another route — leave
-it alone. (2) The stacked launch with the anchor REPEATED between every pair of
+§2.3. Four ways out were weighed. (1) Let a lane host more rows: taken as
+a layer list drawn through the lane's frame rather than nested tracks, which is
+what the deleted `MultiLGVSyntenyDisplay` (`884a126861`) was
+([ADR-180](../../architecture-decision-records/adr-180-a-multiway-lane-is-a-layer-list-under-its-frame.md)). (2) The stacked launch with the anchor REPEATED between every pair of
 mates, since `views` may name one assembly twice and `[m1, anchor, m2, anchor,
 m3]` makes every level a direct pair on a star: landed 2026-09-06 as **Repeat
 ⟨anchor⟩ between panels**, 2N-1 rows, every band a direct pair. (3) A hub
