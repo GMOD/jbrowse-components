@@ -6,21 +6,6 @@
 # visual takeaway, and move the color/stroke/row glossary into the prose that
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
-tutorials/.claude/worktrees/agent-a08e892289a99807d/website/docs/tutorials/odp_linkage_groups_synteny.md /img/linkage_groups/alg_stack.png
-tutorials/.claude/worktrees/agent-a08e892289a99807d/website/docs/tutorials/pangenome_mouse.md /img/pangenome/mouse_dock2.png
-tutorials/.claude/worktrees/agent-a08e892289a99807d/website/docs/tutorials/sv_visualization_cgiab.md /img/sv_cgiab/synteny_view.png
-tutorials/.claude/worktrees/agent-a3d8a10c0fd3b8315/website/docs/tutorials/odp_linkage_groups_synteny.md /img/linkage_groups/alg_stack.png
-tutorials/.claude/worktrees/agent-a3d8a10c0fd3b8315/website/docs/tutorials/pangenome_mouse.md /img/pangenome/mouse_dock2.png
-tutorials/.claude/worktrees/agent-a3d8a10c0fd3b8315/website/docs/tutorials/sv_visualization_cgiab.md /img/sv_cgiab/synteny_view.png
-tutorials/.claude/worktrees/agent-a80ed00f2f20d1492/website/docs/tutorials/odp_linkage_groups_synteny.md /img/linkage_groups/alg_stack.png
-tutorials/.claude/worktrees/agent-a80ed00f2f20d1492/website/docs/tutorials/pangenome_mouse.md /img/pangenome/mouse_dock2.png
-tutorials/.claude/worktrees/agent-a80ed00f2f20d1492/website/docs/tutorials/sv_visualization_cgiab.md /img/sv_cgiab/synteny_view.png
-tutorials/.claude/worktrees/agent-a95531177236168f5/website/docs/tutorials/odp_linkage_groups_synteny.md /img/linkage_groups/alg_stack.png
-tutorials/.claude/worktrees/agent-a95531177236168f5/website/docs/tutorials/pangenome_mouse.md /img/pangenome/mouse_dock2.png
-tutorials/.claude/worktrees/agent-a95531177236168f5/website/docs/tutorials/sv_visualization_cgiab.md /img/sv_cgiab/synteny_view.png
-tutorials/.claude/worktrees/agent-ad2c2b9c70c5293dc/website/docs/tutorials/odp_linkage_groups_synteny.md /img/linkage_groups/alg_stack.png
-tutorials/.claude/worktrees/agent-ad2c2b9c70c5293dc/website/docs/tutorials/pangenome_mouse.md /img/pangenome/mouse_dock2.png
-tutorials/.claude/worktrees/agent-ad2c2b9c70c5293dc/website/docs/tutorials/sv_visualization_cgiab.md /img/sv_cgiab/synteny_view.png
 tutorials/odp_linkage_groups_synteny.md /img/linkage_groups/alg_stack.png
 tutorials/pangenome_mouse.md /img/pangenome/mouse_dock2.png
 tutorials/sv_visualization_cgiab.md /img/sv_cgiab/synteny_view.png
