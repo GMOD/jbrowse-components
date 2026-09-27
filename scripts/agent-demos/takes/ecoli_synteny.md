@@ -180,6 +180,12 @@ K-12-only for a net 857,932 bp, and the Stx2 prophage on camera with stx2A at
 
 ## Open
 
+- **Check UCSC before shooting.** Turn four reads gene names off the Sakai
+  track, which UCSC serves: `curl -o /dev/null -w '%{time_total}'` on
+  `hgdownload.soe.ucsc.edu/hubs/GCF/000/008/865/GCF_000008865.2/GCF_000008865.2.chromAlias.txt`
+  answered in 0.58 s on 2026-09-16, and took ~6 s on 2026-09-09, when the agent
+  spent turn one diagnosing the network.
+- Turn four's "most interesting one" reached Stx2 in Take 1, not LEE.
 - **A square dotplot does not fit beside the synteny view.** The app's half of a
   1920x1080 frame is 930x1008, so a plot as tall as it is wide wants ~785 px
   plus ~90 of axis chrome, against ~256 for the synteny view and 48 for the app

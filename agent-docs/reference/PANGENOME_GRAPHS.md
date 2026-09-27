@@ -955,6 +955,31 @@ that reaches a node the reference visits several times is placed at the
 occurrence that continues its chain, which is right for a tandem repeat the
 query walks in order and a guess when it does not.
 
+### Lane pairs read off the hosted HPRC graph (measured 2026-09-24)
+
+The plugin runs no analysis and no aligner of its own (Colin, 2026-09-24): a
+lane pair is the alignment the graph states, through `@gmod/gbz-base`
+`pairAlignments({ bases: false })`, and a curated 8-16 haplotype panel was
+rejected as not pangenome-ready. Scripts in `~/tutorial_spikes/lane_pairs/`
+(`pairbench.mjs`, `bubblebench.mjs`, `mm.sh`), captures under `captures/`:
+
+- gbz-base per adjacent pair, context 1000: cut 0.3-1 s warm (3-7 s cold),
+  align 0.06-3.5 s. Share of each walk the graph states (shared nodes, 1-vs-1
+  SNPs, one-sided indels): C4 and CFH ~100%, HLA-DR 64-94%, amylase 33-64%,
+  LPA KIV-2 15-99%.
+- 1q21.1 inversion (chr1:144.40-144.52 Mb, carrier HG01891#1): the cut holds
+  4 kb of the carrier's walk, and the graph pairs it with the other
+  segmental-duplication copy (88%) rather than its allelic position on −
+  (100%). minimap2 on the assembly windows: one − record, 112.7 kb, 99.9%.
+- minimap2 reproduces C4's 32,738 bp module and 6,367 bp HERV-K insertions
+  exactly; CFH is one record per pair; HLA-DR depends on the preset; at
+  amylase and LPA a copy-number difference lands at an arbitrary copy.
+- HPRC's assemblies publish `.fa.gz` with `.fai` and `.gzi`, so windows are
+  range-readable.
+
+What composition through GRCh38 would lose instead is measured in
+[MULTIWAY_SYNTENY_DISPLAY.md](MULTIWAY_SYNTENY_DISPLAY.md) §1.1.
+
 ## Prior art
 
 **The abandoned `gfa-to-tabix` / `GfaTabixAdapter` effort** (removed in

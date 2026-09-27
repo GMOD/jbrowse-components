@@ -1,0 +1,98 @@
+{
+  "id": "multiway-composition-through-grch38",
+  "measured": "2026-09-26",
+  "source": {
+    "kind": "hand",
+    "repro": "node ~/tutorial_spikes/pangenome_simplicity/expA/measure.mjs against the hosted HPRC v2.1 gbz.db and its anchored companion: per adjacent pair, keep on 4-5 named haplotypes at context 1000, count the bp the two walks share on graph nodes against the bp a composition through GRCh38 can draw.",
+    "notes": "Tables in expA/tables.txt beside the script. Cuts took 4.3-7.2 s hosted."
+  },
+  "columns": [
+    {
+      "key": "locus",
+      "label": "locus",
+      "format": "text"
+    },
+    {
+      "key": "pair",
+      "label": "pair",
+      "format": "text"
+    },
+    {
+      "key": "sharedBp",
+      "label": "shared on graph nodes",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "drawableBp",
+      "label": "drawable through GRCh38",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "lostBp",
+      "label": "lost",
+      "format": "int",
+      "align": "right",
+      "derived": "sharedBp - drawableBp"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "locus": "C4",
+        "pair": "HG01978#2, HG02004#2",
+        "sharedBp": 182945,
+        "drawableBp": 150178
+      }
+    },
+    {
+      "values": {
+        "locus": "GSTT1",
+        "pair": "HG00097#1, HG00146#1",
+        "sharedBp": 145014,
+        "drawableBp": 90478
+      }
+    },
+    {
+      "values": {
+        "locus": "KIR",
+        "pair": "HG00133#1, NA20503#1",
+        "sharedBp": 231857,
+        "drawableBp": 157566
+      }
+    },
+    {
+      "values": {
+        "locus": "HLA-DR",
+        "pair": "NA19036#2, NA18906#1",
+        "sharedBp": 186684,
+        "drawableBp": 164037
+      }
+    },
+    {
+      "values": {
+        "locus": "CFH",
+        "pair": "HG01109#1, HG01123#1",
+        "sharedBp": 115337,
+        "drawableBp": 115013
+      }
+    },
+    {
+      "values": {
+        "locus": "FLNA/EMD",
+        "pair": "HG01150#2, HG00735#1",
+        "sharedBp": 99977,
+        "drawableBp": 99934
+      }
+    },
+    {
+      "values": {
+        "locus": "amylase",
+        "pair": "NA18608#2, HG00232#1",
+        "sharedBp": 213977,
+        "drawableBp": 213918
+      }
+    }
+  ]
+}

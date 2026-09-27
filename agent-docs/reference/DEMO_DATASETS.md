@@ -458,6 +458,17 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   carries one, which all eight now do. Locus
   `chr17:7,400,000-7,700,000` (TP53), the same window `demos/primate_orthologs`
   was picked on.
+- **`demos/arabidopsis_pangenome` is 26 1001G+ Phase 1 accessions against
+  TAIR10** (`scripts/build_arabidopsis_pangenome.sh`, run on ada under
+  `~/1001g/`; `graph/order_v1/` there is the superseded graph_order.txt
+  build). Its `README.txt` holds the provenance and the chromosome 4 knob
+  finding, which only the SyRI track shows: minigraph holds no knob-sized
+  bubble. A session spec naming `GCF_000001735.4` opens `TAIR10` through its
+  `aliases`, but jb2capture's census wants the literal name; jb2hubs launches
+  pass `dataset.reference.assembly`, so check `checkPangenomeLaunches.mjs`
+  before choosing a reference name. Lanes draw gene annotation only
+  (`laneAnnotation.ts` ranks GFF3, GTF, BED), so the accessions' methylation
+  bigWigs cannot ride in a lane.
 
 ## Other demos
 

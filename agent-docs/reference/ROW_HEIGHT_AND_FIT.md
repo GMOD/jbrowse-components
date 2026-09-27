@@ -84,6 +84,10 @@ in two other places only: `effectiveRowHeight` guarding against a **non-positive
 value (consumers divide by it), and the drawing code widening a sub-pixel band
 (`rowBand` in canvas) without changing how many rows fit.
 
+Nor does anything cap or warn about rows past the pixels (Colin, 2026-09-24): a
+dense stack such as 2,504 samples in 400 px is the picture the reader asked
+for, so at most a hint sits where the setting is chosen.
+
 Both halves of that — resolving the `0` sentinel and flooring only a
 non-positive result — are `packages/core/src/util/resolveRowHeight.ts`, called
 once from `RowHeightMixin`. Each display used to spell it out individually and

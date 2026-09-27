@@ -154,6 +154,9 @@ before it is asked.
    a pileup's variable-height sections need a tree laid against section tops.
    Its integer `encoding.row` gets another name then — not "lane", which
    already names a synteny section.
+7. **Harden the hook seam**: static hooks become mixin factory options and
+   dynamic ones getters, plus a test that no display redefines a mixin member
+   outside the declared list.
 
 ## Declined
 
@@ -181,6 +184,7 @@ Notes as the design pass left them; file and line references are to main of that
 
 ### Palette call (Colin) — page: scenes × palettes (+ deuteranopia column via feColorMatrix)
 Candidates: set1 (9; #ffff33 vanishes; #999 = no-value grey), categoricalPalette (~40, tableau10-first, 14 near-twins), tableau10, Okabe-Ito (8, CVD), Tol bright/vibrant (7), Tol muted (9, lines), d3 schemeSet2 (8 pastels, poor at 1 px), Tableau 20, re-lit laps off 9–10 base (karyotype mechanism). Scenes at 5/20/100 rows: wiggle overlay line+xy (volvox_microarray_multi, microarray_multi, pur_copynumber_1000g); wiggle rows density with groups (volvox_microarray_multi_grouped, microarray_multi_groups); multi-row blocks (volvox_mouse_inheritance_rows, broad_chromhmm, roadmap_chromhmm); variants label tint (volvox multi-sample sv; chrm superpopulation 5 / population ~26); MAF label tint (volvox_maf, hg38.multiz470way). How: `generate-screenshots.ts --check --filter <spec> --exact --localport 3355` (FIGURE_CAPTURE.md:184) + dealer palette override, one run per candidate; one HTML page. One-look question: at 20 rows on a 1 px line and a 4 px block, which palette keeps every neighbour apart with nothing vanishing on white — and past its length, re-lit lap or wrap?
+Why the flip should deal over an order no save changes: the multi-row display recolours rows on a pan until the dealer's order changes with this call, and "Save track settings to config" recolours every row, since the palette is dealt over the base order and the save rewrites the base. A second page goes with the call: a tour of what steps 3–4 changed on screen (drag, cluster, undo, reset on an agent-built track, the MAF guide tree turning).
 Questions: 1 palette; 2 past-length rule; 3 label boxes always tinted (tint on/off pair at 20 rows); 4 variants value order first-seen vs count-ranked (legend both ways); 5 field mapping vs TSV colour column (no fixture; design says own colour stays).
 
 ### Precedence

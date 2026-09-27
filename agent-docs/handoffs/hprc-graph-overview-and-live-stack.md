@@ -1,264 +1,59 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.7, released and in the store), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. The demo and portal carry a curated VNTR track, the portal configs are uploaded, and the graph figures are reshot. Left - 4.0.8 is on npm but must stay out of the store until the hosted FeatureTrack graph configs move to GraphTrack, the anchored KIV-2 cut that never lands, a GSTT1 section, and a docs deploy.
+description: The HPRC graph thread as of 2026-09-27. Plugin 4.0.9 is in the store and draws the graph on FeatureTrack, SyntenyTrack and GraphTrack; the portal configs are on GraphTrack. Left - the demo configs onto GraphTrack, a stale rgfa_launch_roundtrip caption, the curated eight on hprc_v2_1_gbz_lanes, gbz-base writing M for mismatches, the anchored KIV-2 cut that never lands, and two of Colin's calls (PangyPlot chr1, a GSTT1 section).
 ---
 
-# HPRC graph: the v2 overview and alignments between haplotype lanes
+# HPRC graph: the overview and alignments between haplotype lanes
 
 Colin's goal, 2026-09-20: a structural picture of the graph zoomed out, and
-base-level detail zoomed in. PangyPlot does the whole-genome overview; this
-thread covers comparing chosen haplotypes at a locus.
+base-level detail zoomed in. How lane pairs work now is
+[MULTIWAY_SYNTENY_DISPLAY.md](../reference/MULTIWAY_SYNTENY_DISPLAY.md) §1.1;
+what they cost is
+[PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) §"Lane pairs read off
+the hosted HPRC graph"; the graph track's design is the plugin's
+`agent-docs/GRAPH_TRACK.md`.
 
-## 1. PangyPlot's overview at v2 scale: chr1 is the open call
+## Open
 
-chr22 of v2.1 (3.12M nodes, 1,131 walks) laid out in 32 minutes with the
-`perf` branch of gbz2layout (`--balanced --updates-mult 100`, the init anchored
-on GRCh38; numbers in `~/src/vendor/gbz2layout-perf/PERF_NOTES.md`), ingested
-into `~/tutorial_spikes/pp_v2/ppdata` as db `hprcv2`, and captured beside the
-hosted v1.1 at three windows (`shots/pp_v2_*.png`); it reads the same.
-`tools/pprun.sh`, `tools/add_chr.sh <chr> <layout>` and
-`tools/compare_shots.sh <dir>` run it. chr1 (amylase) needs the whole-genome
-export (chr22's peaked at 14.5 GB) and about five times chr22's nodes.
+- **Demo configs onto GraphTrack.** `demos/{hprc,hprc_multiway,ecoli_pangenome,arabidopsis_pangenome}`
+  still declare their graph tracks as FeatureTrack or SyntenyTrack, as do the
+  hosted copies; 4.0.9 draws either, so nothing is broken. `b018ad16a2`
+  ("Demo graph tracks declare GraphTrack") exists but is not on main. The plan (fixtures,
+  generators, specs, deploy) is the plugin repo's
+  `agent-docs/HANDOFF_2026-09-27_graphtrack.md`.
+- **`rgfa_launch_roundtrip`'s caption** (`graph_genome_view.md`) still says
+  "segment s1277 in the segments lane" over a frame showing Display types →
+  Graph.
+- **`demos/hprc`** has no `defaultSession`, and its `hprc_v2_1_gbz_lanes` names
+  only the curated eight, so switching that track on meets the panel Colin
+  rejected.
+- **gbz-base's `Subgraph.alignment()` writes `M` for match and mismatch alike**
+  (`src/subgraph.ts`), so the anchor gutter inks no mismatch until it writes
+  `X`.
+- **The anchored cut of the KIV-2 window** (the portal's LPA card, `auto`
+  layout) sits on "Fetching subgraph" past three minutes; the force layout's
+  window-only cut lands quickly. One hop through a 129-route VNTR plus a
+  window-width margin each side is the suspect.
+- Smaller: the bovine callset lacks `renderingMode: "phased"`;
+  `ecoli_minigraph` has no hosted tier and `build_ecoli_pangenome_graph.sh`
+  builds none; ecoli, cactus, chrM, syri and the host page lead with a build;
+  `pggb_bubble_tier`'s bubble labels overlap the backbone's length labels; a
+  stack cuts the window once per adjacent pair (0.3-1 s each warm), and cutting
+  once per stack is the speed lever; `pairAlignments` returned FLNA's inversion
+  record twice with identical spans.
 
-## 2. Alignments between haplotype lanes: where it stands
+## Colin's calls
 
-**Colin's constraints (2026-09-24).** No analysis in the plugin and no aligner
-of our own ("we can be wrong and misrepresent the data"). Tutorials show other
-people how to navigate their pangenomes: the browsing user runs no commands;
-the host prepares data once, from files the pangenome pipeline already emits.
-
-**Direction both design reviews reached, then fitted to those constraints.**
-The host builds an all-vs-all PAF over a panel of haplotypes (`minimap2 -c
---eqx -x asm20`, primaries; a pggb or wfmash pipeline emits one already),
-indexes it with `jbrowse make-pif`, and serves it through
-`MultiGenomeIndexedPAFAdapter`. That adapter names no star anchor, so
-`MultiWaySyntenyDisplay` fetches each adjacent pair directly and any lane order
-keeps every gutter a stated alignment. Haplotypes outside the panel stay lanes
-against GRCh38, their gutters composed through it. The gutter aligner has since been deleted outright (below);
-`scripts/build_graph_haplotype_stack.sh` stays, being offline. gbz-base keeps
-locating haplotypes and the graph view. impg reads local files only and HPRC's all-vs-all set is
-sparse, so it is a host-side prep tool, not a gutter source.
-
-**Colin rejected the curated panel (2026-09-24)**: a hand-picked 8-16 shows
-that we are not truly pangenome ready, and puts the GBZ effort in question. So
-the panel plan below is not agreed, and what replaces it is open.
-
-**Answered 2026-09-25.** A gutter mismatch fades with its width
-(`KIND_BASE_TILE`) rather than holding ≥1 px at full colour — a difference you
-cannot yet read fades out. Captures:
-https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86
-
-**What replaced that plan (2026-09-26).** The curated panel and the offline
-minimap2 all-vs-all are dropped. A lane pair is the alignment the graph
-states: `@gmod/gbz-base` `pairAlignments({ bases: false })` chains the nodes
-two walks share as `=` and writes the sequence between two shared stretches as
-`I` then `D`, and the plugin's `GbzBaseSyntenyAdapter` answers the display's
-restored `lanePairsOnAnchor` route with it (jbrowse-components `dfc136f47d`,
-`7a56432548`; plugin `63b9e20`..`b45fa44`, which also ported core's
-`keepAlignment` into the plugin's clip helper, without which no GBZ gutter ever
-received an op). Every pair of the 464 works and no aligner runs. What the
-graph does not state stays a gap: at a tandem array the copies fold onto nodes
-GRCh38 visits once, and the lane length carries the count.
-
-**Measured 2026-09-24** (scripts in `~/tutorial_spikes/lane_pairs/`:
-`pairbench.mjs`, `bubblebench.mjs`, `mm.sh`; captures under `captures/`):
-
-- gbz-base per adjacent pair, context 1000: cut 0.3-1 s warm (3-7 s cold),
-  align 0.06-3.5 s. Share of each walk the graph states (shared nodes, 1-vs-1
-  SNPs, one-sided indels): C4 and CFH ~100%, HLA-DR 64-94%, amylase 33-64%,
-  LPA KIV-2 15-99%.
-- 1q21.1 inversion (chr1:144.40-144.52 Mb, carrier HG01891#1): the cut holds
-  4 kb of the carrier's walk, and the graph pairs it with the other
-  segmental-duplication copy (88%) rather than its allelic position on −
-  (100%). minimap2 on the assembly windows: one − record, 112.7 kb, 99.9%.
-- minimap2 reproduces C4's 32,738 bp module and 6,367 bp HERV-K insertions
-  exactly; CFH is one record per pair; HLA-DR depends on the preset; at
-  amylase and LPA a copy-number difference lands at an arbitrary copy.
-- HPRC's assemblies publish `.fa.gz` with `.fai` and `.gzi`, so windows are
-  range-readable.
-
-**The gutter aligner is deleted.** `lanePairsOnAnchor` and everything it
-reached are gone from both repos: the capability, `pairFeatures`,
-`referencePieces`, `pairFeature`, `PairTargetError` and `laneHaplotypes` in the
-plugin, and `adapterPairsOnAnchor`, the anchor-window fetch branch and
-`queryAssemblyName` in core. Every gutter below the anchor now composes through
-the reference. `Subgraph.pairAlignments` stays in gbz-base's CLI (`--against`,
-`--stack`), where a host runs it offline and the result arrives as a file.
-
-What that gives up, and it is real: sequence two haplotypes share and GRCh38
-lacks has no anchor interval to compose through, so a band draws nothing there.
-A graph-stated successor would emit shared-node runs as `=` and everything else
-as explicitly unaligned, which needs no DP; nobody has built it.
-
-**The plugin is not published with this.** Its configs name an unversioned
-unpkg url, so publishing moves every hosted config at once.
-
-**Found along the way, unfixed.** `demos/hprc/config.json` has no
-`defaultSession` and its `hprc_v2_1_gbz_lanes` names only the curated eight, so
-a reader who switches that track on meets the panel Colin rejected. gbz-base's
-`Subgraph.alignment()` writes `M` for match and mismatch alike, so the anchor
-gutter inks no mismatch until that one line writes `X`.
-
-**A composed gutter carries the composed alignment.** `composeLaneLinks` used to
-hand a gutter a ribbon and nothing inside it, so deleting the aligner would have
-left every lane pair below the anchor blank. It now steps the two records
-through each other (`composeAlignmentOps`): over the anchor stretch both cover,
-a base each lane places is a match between them, a base only one places is that
-lane's own insertion, and a base one calls a mismatch while the other calls it a
-match is a mismatch between the two. Where BOTH call it a mismatch the file has
-not said whether they share the alternative, so the op is `M` and no mark draws,
-and an insertion both make at one anchor point is `M` for the length they share.
-The second matters wherever GRCh38 carries the minor allele: at
-chr1:103,619,894 five HPRC haplotypes on one graph path each state `I35`, which
-composed one lane at a time drew as an indel pair between identical lanes.
-Nothing is aligned here; every op comes from an op the file carries. Stepping
-them through each other also places the stretch where the alignment puts it
-instead of where the record's overall ratio does, which is finding 4.1's
-remainder in `reference/MULTIWAY_SYNTENY_DISPLAY.md`.
-
-Mismatches sharing a pixel on both lanes draw as one mark carrying their
-mismatched length, so a gutter emits at most one per pixel of its width: the
-eight hosted `demos/hprc_multiway` records state 85,864 mismatches at the widest
-window the fine tier serves, against a 1,588 px canvas. The `alignmentDetail`
-gate is gone with the asymmetry it protected — a record with ops draws them,
-wherever it sits.
-
-## 3. Measured 2026-09-26: what composition loses, and a follow prototype
-
-Colin asked where the simplicity went across the pangenome tutorials, graph
-navigation, the graph-to-stack route, video, PangyPlot's lessons and scale. Two
-experiments ran; scripts, tables and screenshots are in
-`~/tutorial_spikes/pangenome_simplicity/`.
-
-**Composition through GRCh38, per adjacent pair, bp** (hosted v2.1 `gbz.db`
-plus the anchored companion, `keep` on 4-5 named haplotypes, context 1000;
-`expA/measure.mjs`, tables in `expA/tables.txt`):
-
-| locus | pair | shared on graph nodes | drawable through GRCh38 | lost |
-| --- | --- | --: | --: | --: |
-| C4 | HG01978#2, HG02004#2 | 182,945 | 150,178 | 32,767 |
-| GSTT1 | HG00097#1, HG00146#1 | 145,014 | 90,478 | 54,536 |
-| KIR | HG00133#1, NA20503#1 | 231,857 | 157,566 | 74,291 |
-| HLA-DR | NA19036#2, NA18906#1 | 186,684 | 164,037 | 22,647 |
-| CFH | HG01109#1, HG01123#1 | 115,337 | 115,013 | 324 |
-| FLNA/EMD | HG01150#2, HG00735#1 | 99,977 | 99,934 | 43 |
-| amylase | NA18608#2, HG00232#1 | 213,977 | 213,918 | 59 |
-
-The lost column is the third C4 module, the GSTT1 branch, the KIR B-haplotype
-genes and the DR52 region: the sequence each showcase locus exists to show. A
-pair that includes a GRCh38-like haplotype loses under 0.3 kb, and the CFH
-deletion and the FLNA inversion lose nothing, since there the shared sequence
-is GRCh38's own. None of the lost bp sits on a GRCh38 node within 250 kb of
-the window. The reader's chained shared runs (`sharedRuns` plus `chainRuns`
-in `pairAlignment.ts`, no bases compared) are within 0.3% of the set count
-wherever a node is visited once, so a graph-stated gutter is that function
-with the gap filling replaced by plain gaps. The tandem array is the limit:
-at amylase the chain anchors 148 kb of the 214 kb two walks share, the extra
-copies fold onto nodes GRCh38 visits once, and counted by visits the pair
-loses 64,352 bp. Cuts took 4.3-7.2 s hosted; HLA-DR's full window is 50,065
-nodes, 65 over the reader's limit. `pairAlignments` returned FLNA's inversion
-record twice with identical spans, against its own one-record-per-base rule.
-
-**Landed the same day.** The graph pane follows the linear view (plugin main
-`0fb3c0e`..`b9b36cc`): a launch from a linear view opens anchored and
-following, `Pin` holds it and `Follow` hands it back, and `RgfaTabixAdapter`'s
-`coarse: { uri, aboveBpPerPx }` names the one-node-per-bubble tier the pane
-cuts past that zoom, with no `maxRegionBp` on that route. Every hosted graph
-track carries the slot with a handover measured off its index (HPRC 1014,
-bovine 880, mouse 328, Arabidopsis 117, pggb 1; jbrowse-components
-`0343e1b62a`, jb2hubs `be51522310a`), the portal launcher sets
-`followLinearView`, `layoutMode: 'auto'` and `coarseCut` for a wide window
-(same jb2hubs commit), `scripts/build_pangenome_graph.sh` builds a host's
-files and config in one command (`44a1f847ad`, `7d6bca8cab`), and the
-tutorials open on the hosted instance: `pangenome_hprc` browses the graph and
-absorbs the portal page and part 4, part 3 folds in the amylase and multi-way
-pages, the retired slugs redirect, and the host page is one command
-(`eae099f299`, `4a1695b2ea`..`294c873e86`, `5028a0a582`..`37e1186e94`).
-
-**Released 2026-09-26.** `@gmod/gbz-base` 2.8.0 and the plugin 3.1.0 are on
-npm; the plugin's pin on the reader moved to `^2.8.0` in the same push (the
-symlinked checkout had hidden that `bases: false` needs it, and plugin main was
-red on tsc and three adapter tests once `pnpm install` restored the npm copy).
-The store serves 3.1.0 at `latest/` (jbrowse-plugin-list `e8c8cf9`), the three
-demo configs with their `coarse` slots are deployed, the four portal configs
-are in the bucket with their upload stamps committed (jb2hubs `4db85836dc1`),
-and staging serves the launcher that sets `followLinearView` and `coarseCut`.
-`pangenome/genomes_hprc_mhc_graph`, `hprc_haplotype_launch`, `graph_kiv2_walks`,
-`graph_kiv2_walk_rows`, `hprc_gbz_cfhr_lanes`, `hprc_c4_graph_stack`,
-`hprc_amylase_lanes`, `host_your_own`, `hprc_amylase_walk_rows` and
-`pggb_bubble_tier` were shot on ada against the store's 3.1.0; the portal
-launch figures give the three graph lanes compact heights so the graph and its
-node menu sit in frame.
-
-**The graph is a track (plugin 4.0.6, 2026-09-26).** `LinearGraphDisplay`
-hosts the pane inside the linear view: a layout whose x is reference bp takes
-the view's transform and a cut with a window-width margin each side; force,
-ordered and walk rows are cut to the window alone and the first two draw in
-their own coordinates inside the track. The linear view's Launch entries, the
-follow and its Pin/Follow control are gone; the standalone view keeps
-whole-file imports. The store's `latest/` serves 4.0.6, the demo configs and
-jb2hubs' four portal configs declare the graph display first, jb2hubs'
-launcher opens one linear view with the graph as its last track (staging
-deployed), and every graph figure and tour draws through the track: 36
-figures and 7 clips reshot on ada and in the stores. The plugin's
-`jbrowse-plugin-graphgenomeviewer/agent-docs/GRAPH_TRACK.md` is the design record.
-
-**State at the end of 2026-09-26.**
-
-- Plugin 4.0.7 is on npm and in the store: the pane is a mixin the display
-  and the standalone view compose (the track's error, phase, height, re-cut
-  and abort bugs), and a bubble is a repeat array only where the session's
-  repeat track has one, so GSTT1's insertion no longer reads as one.
-  `jbrowse-plugin-graphgenomeviewer/agent-docs/GRAPH_TRACK.md` is the design.
-- The demo config, the HPRC portal config and the figure fixture carry
-  `hprc_curated_vntrs` (`demos/hprc/hprc_curated_vntrs.bed`), so KIV-2
-  labels its array; TRF catalogues stop near a 2 kb period and the KIV-2
-  unit is 5.5 kb. The four portal configs are uploaded, with the gene search,
-  cytobands and new loci of jb2hubs `d8c4f6cb028`, and jb2hubs launches write
-  the graph track's choices flat.
-- The graph figures are reshot on 4.0.7: `graphTrack()` in graph-fixtures
-  writes flat props with `paneHeight` as the track's `height`, the anchor
-  reads a flat display, and 21 specs grew their viewport because a track is
-  now the height it states rather than shrinking to its rows.
-- Plugin 4.0.8 is on npm and NOT in the store: it carries `f00ebc9` (a
-  declared `pane` prop, so a 4.0 `pane: {...}` link stops raising core's
-  unknown-key snackbar, which 4.0.7 shows) and `82b2ead`, which registers the
-  graph display for GraphTrack alone. Every hosted graph track is a
-  FeatureTrack, so promoting 4.0.8 would drop the graph from all of them.
-  jbrowse-plugin-list pins 4.0.7 in plugins.json; leave the pin until the
-  configs move.
-- The anchored cut of the KIV-2 window (the portal's LPA card, `auto`
-  layout) sits on "Fetching subgraph" past three minutes, on 4.0.6 as on
-  4.0.7; the force layout's window-only cut lands quickly. One hop through a
-  129-route VNTR plus a window-width margin each side is the suspect.
-- Core `b05ac725c4`: a display type declares `adapterCapabilities` and the
-  track config fills it in only where the adapter has them. The plugin
-  declares `['getSubgraph']` once core past 5.0.0-beta.9 is on npm; then
-  "Graph" leaves the Display types menu of BED, GFF and PAF tracks.
-- A GSTT1 tutorial section is not written. Its graph is compelling (a 39.5 kb
-  allele loop beside GSTT4, contributed by HG03654#2), but CAT projects
-  GRCh38's genes and GRCh38's chr22 has no GSTT1, so no haplotype's annotation
-  names it, and HPRC's PAF targets the no-alt set, so nothing hosted shows the
-  gene on a haplotype. Colin's call: a data product for GRCh38's alt-contig
-  genes on each haplotype, or a section that says the annotation cannot see it.
-- The `rgfa_launch_roundtrip` caption still says "segment s1277 in the
-  segments lane" over a frame that shows the Display types menu on Graph.
-
-**Next.** A docs deploy, which is Colin's (`update docs` on main deploys every
-agent's landed doc commits at once).
-
-**Still open, none blocking the above.** The segments lane in the linear view
-cannot pick a tier by zoom, because `RenderFeatureData` hands an adapter no
-bpPerPx, so a tier track stays a lane, and the browse page's chromosome step
-shows the graph track under a zoom-in message. `hprc_v2_1_gbz_lanes` still
-names the curated eight. A lane pair cuts the
-window once per adjacent pair (N-1 cuts per stack, 0.3-1 s each warm on the
-hosted db); cutting once per stack is the speed lever. On the coarse tier the
-bubble labels overlap the backbone's length labels (`pggb_bubble_tier`). Six
-of the eleven pangenome pages still lead with a build (ecoli, cactus, chrM,
-part 5, syri, the host page). The
-portal's graph configs carry no text index and no cytobands, so the browse
-page types coordinates. `ecoli_minigraph` has no hosted tier, and the portal's
-bovine callset lacks `renderingMode: "phased"`. `build_ecoli_pangenome_graph.sh`
-builds no tier. Expand-a-bubble-on-click across tiers is unbuilt; `popBubble`
-opens a bubble inside the current cut only.
+- **PangyPlot at v2 scale: chr1.** chr22 of v2.1 (3.12M nodes, 1,131 walks)
+  laid out in 32 minutes with gbz2layout's `perf` branch (`--balanced
+  --updates-mult 100`, the init anchored on GRCh38; numbers in
+  `~/src/vendor/gbz2layout-perf/PERF_NOTES.md`) and reads the same as the
+  hosted v1.1 (`~/tutorial_spikes/pp_v2/`, `shots/pp_v2_*.png`). chr1
+  (amylase) needs the whole-genome export (chr22's peaked at 14.5 GB) and about
+  five times chr22's nodes.
+- **A GSTT1 tutorial section.** Its graph is compelling (a 39.5 kb allele loop
+  beside GSTT4, contributed by HG03654#2), but CAT projects GRCh38's genes and
+  GRCh38's chr22 has no GSTT1, so no haplotype's annotation names it, and
+  HPRC's PAF targets the no-alt set, so nothing hosted shows the gene on a
+  haplotype. Either a data product for GRCh38's alt-contig genes on each
+  haplotype, or a section that says the annotation cannot see it.

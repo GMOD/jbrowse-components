@@ -65,3 +65,16 @@ twice or lifting the hit into model state, neither of which is a win.
 data) and a per-feature "Color by..." menu are new UI. (The third,
 `showReferenceAlleles` collapsing into `referenceDrawingMode`, landed in the v5
 no-migrations cycle.)
+
+**Row-model loose ends (2026-09-24).** None reached by a shipped config:
+
+- a phased dialog opened before the first cellData and submitted over
+  haplotype rows still writes the sample order;
+- a dialog recolour under a multi-row `rowColor: { scale: 'none' }` replaces
+  the object and turns the palette back on for every row;
+- a density sidecar standing in under `rows` draws in the first row only, and
+  `valueMarkIndex` picks the hidden mark;
+- `refillArray` in `packages/core/src/configuration/configurationSchema.ts`
+  works around the fork's quadratic array reconcile, which
+  `@jbrowse/mobx-state-tree` 6.6.1 made linear; measure a 5,000-name reorder
+  through plain assignment and drop the refill if it holds.
