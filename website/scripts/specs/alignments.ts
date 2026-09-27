@@ -853,6 +853,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // says — so before re-anchoring, check that a right-click anywhere in
           // the track offers the item at all.
           { type: 'rightclick', anchor: SORT_COLUMN },
+          // the read's own rows land a fetch after the click, and a submenu
+          // opened before them was shut by the time of the shot
+          { type: 'waitForAppSettled' },
           ...menuCascade(['SNP/Mismatch', 'Sort by base at position']),
         ],
         annotations: [

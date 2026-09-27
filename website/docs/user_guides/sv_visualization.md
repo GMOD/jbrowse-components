@@ -182,7 +182,7 @@ own coverage curve and arcs, the concordant pairs drop out, and the pileup goes
 away. Which band fills names the rearrangement, and a band that stays empty
 under a call is a call with no read-pair evidence behind it.
 
-<Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles ending on the same breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band stays near empty." src="/img/sv_channels.png" />
+<Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles ending on the same breakpoints, the normal band carries the ordinary coverage, and the outward-pointing band stays near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 <figure>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 404" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="Which pair-orientation band each SV type fills">

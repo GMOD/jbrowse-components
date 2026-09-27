@@ -919,11 +919,11 @@ export const svSpecs: ScreenshotSpec[] = [
               showLegend: true,
               coverageHeight: 60,
               readConnectionsHeight: 90,
-              // the four bands' own stack, so the track box ends where the LL
-              // arcs do. A taller one pads the frame from inside, which neither
+              // the five bands' own stack, so the track box ends where the last
+              // one does. A taller one pads the frame from inside, which neither
               // the clipped-below-the-fold report nor the blank-below-content
               // one can see.
-              height: 640,
+              height: 800,
             },
           ],
         },
@@ -931,9 +931,10 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    // the fourth band is the LL half of the inversion's evidence, and it is the
-    // one a default-height frame drops.
-    viewportHeight: 990,
+    // the LL band is half the inversion's evidence, and a default-height frame
+    // drops it and the "No orientation" band under it: reads whose mate is
+    // unmapped or on another chromosome carry no pair orientation (829535ce51).
+    viewportHeight: 1150,
   },
 
   // Same inversion, short reads vs long reads, in ONE sample (HG00151). The
