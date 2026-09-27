@@ -181,6 +181,17 @@ test('a ruler region edit on a followed row takes it', async () => {
   expect(row.displayedRegions).toEqual([halves[1]])
 })
 
+test("the ruler's Reverse region stands on a followed row, as its Flip does", async () => {
+  const view = await openStack()
+  const row = view.views[2]!
+  row.editDisplayedRegions({
+    regions: row.displayedRegions.map(r => ({ ...r, reversed: !r.reversed })),
+    newIndexOf: i => i,
+  })
+  expect(view.followAnchorIndex).toBe(0)
+  expect(row.displayedRegions[0]!.reversed).toBe(true)
+})
+
 test("the anchor row's own gesture changes nothing", async () => {
   const view = await openStack()
   view.views[0]!.horizontalScroll(40)

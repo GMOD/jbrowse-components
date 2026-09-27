@@ -32,6 +32,7 @@ import type { AnchorWindow, FollowWindow } from './followAnchorWindow.ts'
 import type { FollowAnchorHost, FollowReport } from './followHost.ts'
 import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
+import type { Region } from '@jbrowse/core/util'
 import type {
   LinearGenomeViewModel,
   RegionsOrientation,
@@ -84,7 +85,7 @@ export const ROW_GESTURES = new Set([
 // What a held `navToLocString` reaches for after its await, as fresh roots
 // under gesture names: on a row a held navigation is still landing on, these
 // are that navigation's own
-const HELD_NAVIGATION_TAILS = new Set(['navToLocations', 'navToLocation'])
+const HELD_NAVIGATION_TAILS = new Set(['navToLocations'])
 
 // The row's other navigations: the tails a gesture reaches for after an await,
 // as fresh roots, the primitives the follow writes through, the stack's zoom
@@ -130,6 +131,23 @@ interface SpreadWork {
   level: FollowLevel
   movingView: LinearGenomeViewModel
   spans: ResolvedSpan[]
+}
+
+const regionKey = (r: Region) =>
+  `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`
+
+// a ruler edit that only reverses or reorders the row's regions is its flip,
+// which stands the way `horizontallyFlip` does
+function rearrangesOnly(
+  row: LinearGenomeViewModel,
+  { regions }: { regions: readonly Region[] },
+) {
+  // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: the row's regions before an edit, read where an autorun may be the caller
+  const before = untracked(() => row.displayedRegions.map(regionKey)).sort()
+  const after = regions.map(regionKey).sort()
+  return (
+    before.length === after.length && before.every((k, i) => k === after[i])
+  )
 }
 
 interface FollowPlan extends Omit<FollowReport, 'partial'> {
@@ -219,7 +237,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       }
       const heldTail =
         HELD_NAVIGATION_TAILS.has(call.name) && landing.has(call.context)
-      if (gesture && isRow && !heldTail) {
+      const flip =
+        call.name === 'editDisplayedRegions' &&
+        rearrangesOnly(call.context, call.args[0])
+      if (gesture && isRow && !heldTail && !flip) {
         // untracked, since the follow's own root actions come through here from
         // inside its autoruns; a row showing nothing yet is being initialized
         // eslint-disable-next-line no-restricted-syntax -- effect input: a gesture's row, read where an autorun may be the caller
