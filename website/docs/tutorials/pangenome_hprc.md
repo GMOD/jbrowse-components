@@ -21,7 +21,7 @@ the view. We:
 - zoom out to a whole chromosome, one node per bubble
 - follow one allele back to the haplotype that carries it
 
-The other HPRC pages start from this view:
+Three more pages start from the same HPRC page:
 [who carries each allele](/docs/tutorials/pangenome_hprc_carriers),
 [haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) and
 [repeat lengths](/docs/tutorials/pangenome_hprc_repeats).
@@ -143,7 +143,7 @@ with its CAT gene annotation. Zoom out a few steps for the genes around it.
 
 <Figure caption="The same launch in two frames. First, the MHC class II cut with the NA20809.2 allele ringed and its right-click menu open on Open in NA20809.2. Second, the view that entry opens: NA20809 haplotype 2's chromosome 6 with its CAT genes, which put HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 
-The haplotype's own genes put _HLA-DRB9_ and _HLA-DRB6_ either side of the
+The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
 allele and no _HLA-DRB5_, the gene its band covered on hg38.
 
 ## See also

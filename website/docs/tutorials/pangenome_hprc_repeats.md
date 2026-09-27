@@ -101,12 +101,12 @@ GRCh38's, with no purple, is the shortest of the nine.
 
 ## The ABCA7 VNTR
 
-A walk's length is what the assembly says, and reads measure the same repeat
-independently. An intron of _ABCA7_ holds a VNTR tied to Alzheimer's disease
-risk (De Roeck et al. 2018), which PacBio genotyped from HiFi reads in 100 HPRC
-samples. Open the session below: the genes, the catalogue's VNTR row and the
-TRGT genotypes, over the gbz-base graph track in **Walk rows** layout with
-**Uniform** color:
+Each walk's length comes from an assembly, and HiFi reads measure the same
+repeat independently. An intron of _ABCA7_ holds a VNTR tied to Alzheimer's
+disease risk (De Roeck et al. 2018), which PacBio genotyped from HiFi reads in
+100 HPRC samples. Open the session below: the genes, the catalogue's VNTR row
+and the TRGT genotypes, over the gbz-base graph track in **Walk rows** layout
+with **Uniform** color:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {

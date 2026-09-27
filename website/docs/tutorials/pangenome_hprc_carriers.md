@@ -34,7 +34,7 @@ one haplotype the graph credits it to.
 
 The data is [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
 JBrowse reads its callsets and its multiple alignment directly from S3, and
-reads the bubble and allele projections from our host.
+reads the bubble projections from our host.
 
 - the decomposed variant callset, 464 haplotypes, read straight off S3:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz
@@ -97,9 +97,9 @@ dendrogram beside them, and haplotypes that share alleles gather into blocks.
 
 ## The graph beside the callset
 
-minigraph collapses variation under about 50 bp, so the callset's structural
-tier is the graph's own: the graph records an allele and its length, the callset
-who carries it.
+minigraph collapses variation under about 50 bp, so the callset filtered to 50
+bp and up holds the same tier as the graph. The graph records an allele and its
+length, the callset who carries it.
 
 Press **graph** on the same HLA / MHC row for the graph track under the genes,
 the bubbles and the allele inventory. Turn on **HPRC2 pangenome callset (464
