@@ -14,14 +14,17 @@ tutorial_subcategory: HPRC release 2
 A pangenome graph records what a set of genomes share and where they diverge, so
 sequence that one person carries and the reference lacks is an object in the
 file. The Human Pangenome Reference Consortium's release 2 builds 464 human
-haplotypes into one such graph. We open it at the MHC class II locus from the
-consortium's page on genomes.jbrowse.org, where it draws as a track of a linear
-view of GRCh38 and moves with the view. We then follow one allele back to the
-haplotype that carries it, and read how many copies of the LPA kringle repeat
-eight haplotypes carry. [Part 2](/docs/tutorials/pangenome_hprc_part2) reads who
-carries each allele across the release, and
-[part 3](/docs/tutorials/pangenome_hprc_part3) draws haplotypes against each
-other.
+haplotypes into one such graph, and we open it from the consortium's page on
+genomes.jbrowse.org as a track of a linear view of GRCh38, where it moves with
+the view. We:
+
+- at MHC class II, read the graph's backbone, bubbles, alleles and edges
+- follow one allele back to the haplotype that carries it
+- at LPA, read how many copies of the kringle repeat eight haplotypes carry
+
+[Part 2](/docs/tutorials/pangenome_hprc_part2) reads who carries each allele
+across the release, and [part 3](/docs/tutorials/pangenome_hprc_part3) draws
+haplotypes against each other.
 
 :::caution Experimental
 
@@ -63,8 +66,7 @@ Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc). Under
 a row of whole-chromosome links, the **Loci** table gives each locus its gene
 cluster, the kind of variation it is known for and its GRCh38 region, and ends
 the row in its launches: **graph**, **variants**, **haplotypes** and **gene
-hub**. RHD / RHCE, SMN1 / SMN2 and CYP2D6 have no graph launch, because
-minigraph merges their near-identical copies onto one path.
+hub**.
 
 <Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows open only the callset and the gene hub. The boxed link is the graph launch the next step takes." src="/img/pangenome/genomes_hprc_loci.png" />
 
@@ -77,14 +79,13 @@ graph itself: the rGFA segments track, drawing the same window as a graph.
 
 ## Reading the cut
 
-The graph opens in the anchored layout, where every x is a GRCh38 coordinate.
-Four words describe the drawing:
+The graph opens in the anchored layout, where every x is a GRCh38 coordinate:
 
 - the **backbone** is GRCh38's path through the graph, the chain of segments
   along the top row
 - a **bubble** is a place where that chain opens out and closes again, at one
-  locus where haplotypes disagree; each bubble in the hosted bubble index draws
-  as a halo along its nodes, labelled with what kind of variation it is
+  locus where haplotypes disagree, drawn as a halo along its nodes and labelled
+  with what kind of variation it is
 - an **allele** is a stretch of sequence some haplotype carries in place of the
   reference, drawn as a node in a lower row, hanging below the point it attaches
   at
@@ -92,30 +93,26 @@ Four words describe the drawing:
   segment to another, skipping the segments between them
 
 Each lower row is one **rank**, the order in which minigraph added the assembly
-that first contributed the sequence. Hover any node: the tooltip gives its
-length and its rank, and rank 0 is the backbone. The hover also bands the node's
-interval across the lanes above.
+that first contributed the sequence, and rank 0 is the backbone. Hover any node
+for its length and rank, which also bands its interval across the lanes above.
 
 The graph opens colored by **Reference position**, red at the start of the
-window to magenta at its end. An allele sits on another assembly's sequence and
-has no GRCh38 position, so it draws in charcoal.
-
-The graph draws the RefSeq genes onto the backbone too: exons as dark stretches
-along the reference nodes that carry them, with each gene's name pinned under
-the backbone. **Genes on the backbone** and **Mark bubbles** in the graph
-track's menu turn off either layer.
+window to magenta at its end, and an allele has no GRCh38 position, so it draws
+in charcoal. It draws the RefSeq genes onto the backbone too, exons as dark
+stretches with each gene's name pinned under it; **Genes on the backbone** and
+**Mark bubbles** in the graph track's menu turn off either layer.
 
 ## The graph moves with the view
 
 Type the C4 window, `chr6:31,980,000-32,050,000`, into the location box and
-press Enter. The view moves half a megabase towards the centromere and the graph
-track cuts the new window. Scrolling or zooming moves the graph with the lanes
-above it, and the track cuts again once the view leaves the window it last cut.
+press Enter. The graph track cuts the new window, and scrolling or zooming moves
+it with the lanes above, cutting again each time the view leaves the window it
+last cut.
 
-Now open the graph track's menu and pick **Layout → Force-directed layout**. The
-force layout draws the graph by its shape, with no GRCh38 axis, so it draws in
-coordinates of its own fitted to the track, and the menu gains **Zoom in**,
-**Zoom out** and **Zoom to fit** for it.
+Open the graph track's menu and pick **Layout → Force-directed layout**. The
+force layout draws the graph by its shape, with no GRCh38 axis, in coordinates
+of its own fitted to the track, and the menu gains **Zoom in**, **Zoom out** and
+**Zoom to fit** for it.
 
 <Figure caption="The C4 locus cut as a force-directed graph, the bottom track under the hg38 genes for the same window, colored by reference position. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
 
@@ -127,11 +124,11 @@ the arc itself.
 ## A chromosome and back
 
 Pick **Layout → Anchored** again, which puts the graph back on the view's
-coordinates. Type `chr6` into the location box. The graph track names a zoom,
-`aboveBpPerPx` in its adapter's `coarse` slot, past which it switches from its
-segments to its bubble tier: one node per bubble, with the invariant reference
-between bubbles as backbone, so the whole chromosome draws. The lanes above show
-a zoom-in message at this width.
+coordinates. Type `chr6` into the location box. Past a zoom named in the
+adapter's `coarse` slot, the graph switches from its segments to its bubble
+tier, one node per bubble with the invariant reference between bubbles as
+backbone, so the whole chromosome draws. The lanes above show a zoom-in message
+at this width.
 
 Type the MHC class II window, `chr6:32,510,001-32,600,000`, to come back. Past
 the same zoom the graph crosses back to the segments, and the class II cut

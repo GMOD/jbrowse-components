@@ -13,12 +13,15 @@ tutorial_subcategory: HPRC release 2
 A tandem repeat can be many times longer in one person than in the reference,
 and the long alleles are the ones association studies care about. An intron of
 _ABCA7_ holds a variable number tandem repeat whose expansions were tied to
-Alzheimer's disease risk (De Roeck et al. 2018). Genotyping it from reads needs
-reads that span the whole allele, which gets harder the longer the allele is. We
-draw the repeat once per haplotype from the Human Pangenome Reference
-Consortium's release 2 graph, where each haplotype is an assembled sequence, set
-the TRGT genotypes PacBio called from HiFi reads of the same samples on the same
-bars, and look at the samples where the two disagree.
+Alzheimer's disease risk (De Roeck et al. 2018), and genotyping it from reads
+needs reads that span the whole allele, which gets harder the longer the allele
+is. We draw the repeat once per haplotype from the Human Pangenome Reference
+Consortium's release 2 graph, where each haplotype is an assembled sequence. We:
+
+- set PacBio's TRGT genotypes, called from HiFi reads of the same samples, on
+  the same bars
+- find the samples where the assemblies and the reads disagree
+
 [Part 3](/docs/tutorials/pangenome_hprc_part3) reads the same database as one
 lane per haplotype.
 
@@ -253,9 +256,9 @@ and assemblies part, and two carrying a walk the view declines to score.
 }
 ```
 
-HG00099, HG03688 and HG00741 carry a tick at the end of each bar. Reads and
-assemblies agree on both haplotypes there, across a sample whose two alleles lie
-far apart, one whose two are both long, and one whose two are both short.
+HG00099, HG03688 and HG00741 carry a tick at the end of each bar: reads and
+assemblies agree on both haplotypes in each, one sample with its two alleles far
+apart, one with both long, and one with both short.
 
 HG02647 and HG01943 are where reads and assemblies part. TRGT called each of
 them close to homozygous, with reads spanning both alleles, and the graph

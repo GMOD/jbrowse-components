@@ -13,10 +13,13 @@ tutorial_subcategory: HPRC release 2
 A pangenome graph stores each allele once, credited to the first assembly that
 contributed it, so the graph alone cannot say who else carries it. The Human
 Pangenome Reference Consortium's release 2 publishes that answer beside its
-graph as a callset, one genotype per haplotype for all 464. We open the callset
-from the consortium's page on genomes.jbrowse.org at the MHC class II locus and
-gather the haplotypes that share alleles, then read the graph's lanes for where
-it varies and by how much, and put the two products side by side.
+graph as a callset, one genotype per haplotype for all 464, and we open both
+from the consortium's page on genomes.jbrowse.org at the MHC class II locus. We:
+
+- cluster the callset's haplotypes by the alleles they share
+- read the graph's lanes for where it varies and by how much
+- put the two products side by side, at the CFH deletion and a 1q21.1 inversion
+
 [Part 1](/docs/tutorials/pangenome_hprc) reads the graph itself.
 
 ## Prerequisites
@@ -146,13 +149,7 @@ and the MHC class II window loads in a couple of seconds over HTTP. The file
 carries 231 sample columns, without CHM13, so phased mode draws 462 rows and
 `AN` tops out at 462 too. Apply the [same `LV==0` filter](#the-variant-callset)
 from **Edit filters** and the lane cuts to top-level sites, the tier the graph's
-bubbles hold. A record matches a bubble by interval.[^integer-nodes]
-
-The snarl-level file adds the `AT` field, which records each allele as the
-**traversal** it takes through the graph. A pggb VCF carries the same `AT`
-field. The wave file drops it, and its header shows the
-`bcftools annotate -x INFO/AT` command that did so. Click any record and its
-details list `AT` with the rest of `INFO`.
+bubbles hold.[^snarl-at] A record matches a bubble by interval.[^integer-nodes]
 
 ## Where the graph varies {#the-bubble-track}
 
@@ -207,9 +204,9 @@ insertion draws at its real magnitude.
 The whole graph holds a few hundred thousand alleles, so a wide window is dense.
 The
 [graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
-explains the columns and how the walk derives them. It also gives two filters
-that make a lane this size readable: `jexl:abs(feature.delta)>10000` for size,
-and `jexl:feature.nested==0` before reading lengths in bulk.
+gives two filters that make a lane this size readable:
+`jexl:abs(feature.delta)>10000` for size, and `jexl:feature.nested==0` before
+reading lengths in bulk.
 
 Type the CFH cluster on chr1, `chr1:196,700,000-196,900,000`. One of the lane's
 rows there is the 84,684 bp deletion of _CFHR3_ and _CFHR1_, and the graph track
@@ -222,12 +219,10 @@ that carries the deletion and one that does not.
 
 ## Comparing the graph with the callset
 
-The graph and the callset describe the same variation at two resolutions.
 minigraph records structural variation (roughly >50 bp) and collapses everything
 smaller, so SNPs are absent from the graph even though every one is in the VCF.
-Filter the callset to that same tier, and the two describe the same events from
-opposite ends: the graph records an allele and its length, and the callset
-records who carries it.
+Filter the callset to that same tier: the graph records an allele and its
+length, and the callset records who carries it.
 
 Back on `chr6:32,510,001-32,600,000`, turn on the callset lane in the graph
 session from the track selector, where it is **HPRC2 pangenome callset (464
@@ -291,10 +286,7 @@ force-directed layout.
 <Figure caption="C4 on one axis: the RefSeq genes, the callset's haplotypes clustered by genotype, a subtree of them as alignment rows clustered by identity, white where a haplotype has no aligned sequence, and the graph track drawing the window force-directed. The band marks the pseudogene pair between C4A and C4B, and the haplotypes with no sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
 
 The figure keeps thirty-two haplotype rows so each has the height for its name
-beside it; the track as configured above draws every haplotype. The
-[MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
-per-row identity and codon view, all derived from the alignment with no extra
-files.
+beside it; the track as configured above draws every haplotype.
 
 ## Inversions
 
@@ -309,11 +301,11 @@ jexl:feature.inversion
 ```
 
 Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus. The lane holds one block
-there, a bubble whose paths disagree about orientation, and clicking it opens
-the flag in its details. The flag marks that the paths disagree, and cannot
-distinguish a polymorphic inversion from an inverted paralog inside a segmental
-duplication. The graph draws the bubble's breakpoints as two deletion arcs,
-because the view's edges carry no orientation. The alignments settle it.
+there: a bubble whose paths disagree about orientation. Click it to open the
+flag in its details, which marks that the paths disagree but cannot distinguish
+a polymorphic inversion from an inverted paralog inside a segmental duplication.
+The graph draws the bubble's breakpoints as two deletion arcs, because the
+view's edges carry no orientation. The alignments settle it.
 
 The figure below is the same bubble as an alignment, and it takes one build
 script to make, because nothing in the session so far carries the haplotypes'
@@ -321,10 +313,8 @@ own sequence.
 [`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
 under [Reproduce it end to end](#reproduce-it-end-to-end) classifies every
 haplotype at the bubble from HPRC's published all-vs-GRCh38 PAF and slices out
-one carrier and one non-carrier, each with its CAT annotation. The boxed pair on
-each row is the same two genes, _PPIAL4F_ and _PPIAL4E_. On the carrier
-_PPIAL4F_ comes first, and on the non-carrier _PPIAL4E_ does. The hg38 row
-between them agrees with the non-carrier.
+one carrier and one non-carrier, each with its CAT annotation. The hg38 row
+between the two agrees with the non-carrier.
 
 <Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E, in opposite orders on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
 
@@ -400,3 +390,8 @@ does the same for the carrier and non-carrier in the deletion figure.
 [^integer-nodes]:
     `ID` and `AT` name base-level integer nodes (`>161001867>161004536`), where
     `sv.gfa` uses `sNNNNN` segment ids.
+
+[^snarl-at]:
+    The snarl-level file adds the `AT` field, each allele's traversal through
+    the graph, which a pggb VCF also carries. The wave file drops it, and its
+    header shows the `bcftools annotate -x INFO/AT` command that did so.
