@@ -431,6 +431,50 @@ every assembly anchored against one reference, is `MultiWaySyntenyDisplay`
 ([grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny)
 has a worked config).
 
+## Settings every track type shares {#shared-settings}
+
+A handful of setting names recur across track types, and each means the same
+thing wherever it appears, as in ggplot2 and Vega-Lite. `field` names a feature
+field, `domain` lists values in the order you want them, and `range` gives what
+each value gets.
+
+| Setting    | What it does                                                                                                                                 | Track types                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `color`    | a CSS colour, or `{ "field", "domain", "range" }` painting by a field, with a key ([Colors](#colors))                                        | every track with a colour; the fields it can name differ per type        |
+| `facet`    | one labelled section per value of a field; `domain` stacks the listed values first                                                           | feature, variant, alignments, synteny, mark display                      |
+| `rows`     | one row per source or sample; `domain` puts the listed rows first                                                                            | quantitative, multi-row feature, multi-sample variant, MAF, mark display |
+| `scales.y` | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, alignments coverage, synteny, mark display, GWAS           |
+
+A `scales.y` object carries over unchanged between those track types. This one
+captions an alignments track's coverage band, rules it at every tick and draws a
+labelled line at 20x:
+
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "reads_depth_guides",
+  "name": "Reads, with depth guides",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
+  "displayDefaults": {
+    "scales": {
+      "y": {
+        "title": "depth",
+        "grid": true,
+        "rules": [{ "value": 20, "color": "#d62728", "label": "20x" }]
+      }
+    }
+  }
+}
+```
+
+For a picture no built-in display draws, such as bars from a BED score, points
+coloured by a category or a histogram of feature lengths, the
+[mark display](/docs/config_guides/mark_display) builds it from `marks`,
+`encoding` and `transform`.
+[Its examples](/docs/config_guides/mark_display_examples) are copy-paste recipes
+like the ones on this page.
+
 ## Instance-wide settings
 
 A nested `category` makes nested folders in the track selector, and `metadata`
@@ -487,6 +531,8 @@ share links.
 
 - [](/docs/config_guides/grouping_and_ordering) - the `domain` slot that orders
   sections, lanes and rows, across every display type that has one
+- [](/docs/config_guides/mark_display_examples) - one copyable config per plot
+  shape, from bars and points to histograms and links
 - [](/docs/config_guide) - structure of `config.json` and every per-track guide
 - [](/docs/cli) - `add-track --displayDefaults '<json>'` applies any recipe
   above

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it. Amended 2026-09-20: the scale also owns `rules`, its reference lines as a typed array with a bare-number shorthand, and `title`, its axis caption as a three-state `maybeString`, each a factory opt-in; `ValueScale` carries both to the chrome, which draws a scale's rules down its own bands and its caption once however many bands it rules. Amended 2026-09-21: the caption is optional, unset drawing none rather than deriving the shared \`encoding.y\` field"
+summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it. Amended 2026-09-20: the scale also owns `rules`, its reference lines as a typed array with a bare-number shorthand, and `title`, its axis caption as a three-state `maybeString`, each a factory opt-in; `ValueScale` carries both to the chrome, which draws a scale's rules down its own bands and its caption once however many bands it rules. Amended 2026-09-21: the caption is optional, unset drawing none rather than deriving the shared \`encoding.y\` field. Amended 2026-09-26: every scale takes `rules`, `title`, `grid` and `minimalTicks`, the coverage band draws all four, and `grid` is read per axis"
 ---
 
 # ADR-142: One value-scale object, on every quantitative display
@@ -64,8 +64,8 @@ alone — one scale per aesthetic, owned by the plot.
 | `numStdDev` | `localsd` is a mode | 3 | — | 3 | 3 |
 | `numQuantile` | `localpercentile` is a mode | 0.99 | — | — | 0.99 |
 | `symlogConstant` | `symlog` is a type | 0 | — | 1 | — |
-| `rules` | the factory is given `rules: true` | none | none | — | none |
-| `title` | the factory is given `title: true` | — | — | — | unset, which draws no caption |
+| `rules` | always (2026-09-26) | none | none | none | none |
+| `title` | always (2026-09-26) | unset, which draws no caption | unset | unset | unset |
 
 `numStdDev` and `numQuantile` gate on the modes rather than on `autoscale`
 being present at all: the coverage band offers `local` and `localsd`, so a
@@ -270,6 +270,20 @@ chose the move on 2026-09-26. `ScoreScaleMixin` answers `grid`,
 (`retiredAxisSpellings`), and a retired lift now merges into an object the
 snapshot already writes, member by member, so `displayCrossHatches: true`
 beside a written `scales.y` keeps both.
+
+### Amended 2026-09-26: every scale takes every guide
+
+`rules`, `title`, `grid` and `minimalTicks` stop being opt-ins: every display
+that builds a `scales.y` now draws all four, so none of them is a dead slot.
+The coverage band was the one that drew none. It rules its bands, captions
+them, grids them and ends-only labels them like the others. Its rules drop
+while the density tier stands in, whose axis counts features per bin rather
+than reads. The wiggle display gained `title`. `grid` became a `ValueScale`
+member read per axis, replacing a host-level `showCrossHatches`: the
+alignments display draws two scales, and a host flag would have hatched the
+read cloud's TLEN band with the coverage band's grid. What still differs
+between displays is what their renderers place: the `type` enum, and the
+`domainQuantile` and `symlogConstant` defaults.
 
 ## Rejected alternatives
 
