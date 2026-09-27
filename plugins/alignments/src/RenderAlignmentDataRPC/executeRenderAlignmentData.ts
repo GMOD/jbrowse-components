@@ -40,6 +40,7 @@ import { filterChainFeatures } from './filterChainFeatures.ts'
 import type { JunctionReference } from '../features/sashimi/compute.ts'
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
+import type { ModCoverageKind } from '../shared/runCoveragePipeline.ts'
 import type {
   ChainFeatureData,
   ModificationEntry,
@@ -129,10 +130,10 @@ interface GroupContext {
   region: Region
   effShowSoftClipping: boolean
   showCoverage: boolean
-  trackStrands: boolean
-  // Bisulfite mode splits the coverage bar by C->T-derived methylation level
-  // rather than the modBAM base-pileup denominator (see computeModificationCoverage).
-  bisulfite: boolean
+  // Which modification coverage the band stacks: modBAM calls over a read-base
+  // pileup, or bisulfite's C->T-derived methylation level. Undefined outside the
+  // modification colour modes, and in chain mode.
+  modCoverage: ModCoverageKind | undefined
   // The region's reference bases, for the junctions' splice motifs. Fetched
   // once for the whole fetch and only when some group carries a skip gap.
   junctionReference: JunctionReference | undefined
@@ -192,8 +193,7 @@ async function buildGroupResult(
     region,
     effShowSoftClipping,
     showCoverage,
-    trackStrands,
-    bisulfite,
+    modCoverage,
     junctionReference,
     detectedSimplexModifications,
     insertSizeStats,
@@ -252,9 +252,10 @@ async function buildGroupResult(
   // IGV-style per-strand read-base pileup at the modified columns, computed from
   // the reads themselves — the modBAM mod-coverage denominator, no reference
   // needed. Bisulfite derives its bar from the C->T calls alone (see
-  // computeBisulfiteCoverage), so it skips this pileup entirely.
+  // computeBisulfiteCoverage), so it skips this pileup entirely, and so does a
+  // fetch with the coverage band off, whose mod coverage nothing computes.
   const modBaseCounts =
-    trackStrands && !bisulfite
+    showCoverage && modCoverage === 'modifications'
       ? computeReadBaseCounts(rawFeatures, modifiedPositions(modifications))
       : new Map<number, StrandBaseCounts>()
 
@@ -273,8 +274,7 @@ async function buildGroupResult(
     interbaseArrays,
     gapArrays,
     showCoverage,
-    trackStrands,
-    bisulfite,
+    modCoverage,
     junctionReference,
     statusCallback,
     signal,
@@ -482,11 +482,13 @@ export async function executeRenderAlignmentData({
 
   checkAbortSignal(signal)
 
-  // Modification color modes (pileup only) draw mod coverage + track per-base
-  // strands; chain omits them so runCoveragePipeline skips mod-coverage.
-  const trackStrands =
-    !isChain && !!baseLayer && isModificationScheme(baseLayer.type)
-  const bisulfite = !isChain && baseLayer?.type === 'bisulfite'
+  // Modification color modes (pileup only) draw mod coverage; chain omits it.
+  const modCoverage: ModCoverageKind | undefined =
+    isChain || !baseLayer || !isModificationScheme(baseLayer.type)
+      ? undefined
+      : baseLayer.type === 'bisulfite'
+        ? 'bisulfite'
+        : 'modifications'
 
   // Splice motifs need the reference under every junction. A spliced read is
   // the one signal that this is RNA-seq, so a DNA-seq fetch never reads
@@ -519,8 +521,7 @@ export async function executeRenderAlignmentData({
     region,
     effShowSoftClipping,
     showCoverage,
-    trackStrands,
-    bisulfite,
+    modCoverage,
     junctionReference,
     detectedSimplexModifications,
     insertSizeStats: sharedInsertSizeStats,

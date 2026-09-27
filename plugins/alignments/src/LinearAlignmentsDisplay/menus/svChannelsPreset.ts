@@ -33,7 +33,7 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 // `colorBy` is deliberately NOT among them, though the arrangement wrote it
 // until 2026-08-26. With the pileup hidden there are no read fills to paint,
 // and the coverage band reads `colorBy` only under a modification or bisulfite
-// scheme (executeRenderAlignmentData's `trackStrands`/`bisulfite`). What the
+// scheme (executeRenderAlignmentData's `modCoverage`). What the
 // read colour still reaches is the arcs, through `arcColorField`, so writing
 // it would also have repainted them.
 //

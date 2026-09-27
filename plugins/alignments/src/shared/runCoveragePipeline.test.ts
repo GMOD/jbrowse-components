@@ -61,7 +61,6 @@ const baseArgs = {
   modBaseCounts: new Map<number, StrandBaseCounts>(),
   bisulfiteCallCounts: new Map<number, number>(),
   simplexModifications: new Set<string>(),
-  bisulfite: false,
   region,
   mismatchArrays,
   interbaseArrays,
@@ -141,14 +140,13 @@ describe('runCoveragePipeline bisulfite mod coverage', () => {
     ]
   }
 
-  test('bisulfite=true fills the whole coverage bar from C->T calls alone', async () => {
+  test('bisulfite mod coverage fills the whole coverage bar from C->T calls alone', async () => {
     const out = await runCoveragePipeline({
       ...baseArgs,
       modifications: bisulfiteCalls(MISMATCH_POS),
       bisulfiteCallCounts: new Map([[MISMATCH_POS, 40]]),
       showCoverage: true,
-      trackStrands: true,
-      bisulfite: true,
+      modCoverage: 'bisulfite',
     })
     const segments = readModCovSegments(
       out.coverageAreaPacked.modCovPackedBuffer,
@@ -169,8 +167,7 @@ describe('runCoveragePipeline bisulfite mod coverage', () => {
       modifications: bisulfiteCalls(MISMATCH_POS).filter(m => !m.noMod),
       bisulfiteCallCounts: new Map([[MISMATCH_POS, 40]]),
       showCoverage: true,
-      trackStrands: true,
-      bisulfite: true,
+      modCoverage: 'bisulfite',
     })
     const segments = readModCovSegments(
       out.coverageAreaPacked.modCovPackedBuffer,

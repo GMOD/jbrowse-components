@@ -36,13 +36,15 @@ import type { Region, StatusCallback } from '@jbrowse/core/util'
  * (compute → freqs → SNP → interbase → mod → mod-tooltip → sashimi → pack) cannot
  * drift between them.
  *
- * Mod coverage runs whenever `trackStrands` is set (the modification color
- * modes); chain mode leaves it off so `packCoverageAreaForGpu` emits a 0-byte
- * mod-cov pass. The modBAM modifiable/detectable denominator comes from a
- * read-base pileup (`modBaseCounts`, IGV-style), so no reference sequence is
- * needed here; bisulfite divides by `bisulfiteCallCounts` instead, which the
- * extractor tallies because only it knows which reads called which cytosine.
+ * Mod coverage runs under a `modCoverage` kind (the modification color modes);
+ * chain mode passes none, so `packCoverageAreaForGpu` emits a 0-byte mod-cov
+ * pass. The modBAM modifiable/detectable denominator comes from a read-base
+ * pileup (`modBaseCounts`, IGV-style), so no reference sequence is needed here;
+ * bisulfite divides by `bisulfiteCallCounts` instead, which the extractor
+ * tallies because only it knows which reads called which cytosine.
  */
+export type ModCoverageKind = 'modifications' | 'bisulfite'
+
 export async function runCoveragePipeline({
   features,
   gaps,
@@ -58,8 +60,7 @@ export async function runCoveragePipeline({
   interbaseArrays,
   gapArrays,
   showCoverage,
-  trackStrands,
-  bisulfite,
+  modCoverage,
   junctionReference,
   statusCallback,
   signal,
@@ -78,8 +79,7 @@ export async function runCoveragePipeline({
   interbaseArrays: Parameters<typeof computeFrequenciesAndThresholds>[1]
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
   showCoverage: boolean
-  trackStrands?: boolean
-  bisulfite: boolean
+  modCoverage?: ModCoverageKind
   // Reference bases for the junctions' splice motifs; fetched by the executor
   // only when the region carries a skip gap, so DNA-seq never pays for it.
   junctionReference?: JunctionReference
@@ -130,8 +130,7 @@ export async function runCoveragePipeline({
         modBaseCounts,
         bisulfiteCallCounts,
         simplexModifications,
-        trackStrands,
-        bisulfite,
+        modCoverage,
         junctionReference,
       })
     : emptyCoverageBand()
@@ -169,8 +168,7 @@ function computeCoverageBand({
   modBaseCounts,
   bisulfiteCallCounts,
   simplexModifications,
-  trackStrands,
-  bisulfite,
+  modCoverage,
   junctionReference,
 }: {
   coverage: ReturnType<typeof computeCoverage>
@@ -183,8 +181,7 @@ function computeCoverageBand({
   modBaseCounts: ReadonlyMap<number, StrandBaseCounts>
   bisulfiteCallCounts: ReadonlyMap<number, number>
   simplexModifications: ReadonlySet<string>
-  trackStrands?: boolean
-  bisulfite: boolean
+  modCoverage?: ModCoverageKind
   junctionReference?: JunctionReference
 }) {
   const snpCoverage = computeSNPCoverage(
@@ -199,16 +196,17 @@ function computeCoverageBand({
     coverage,
   )
 
-  const modCoverage = trackStrands
-    ? bisulfite
+  const modCoverageResult =
+    modCoverage === 'bisulfite'
       ? computeBisulfiteCoverage(modifications, bisulfiteCallCounts, coverage)
-      : computeModificationCoverage(
-          modifications,
-          modBaseCounts,
-          coverage,
-          simplexModifications,
-        )
-    : undefined
+      : modCoverage === 'modifications'
+        ? computeModificationCoverage(
+            modifications,
+            modBaseCounts,
+            coverage,
+            simplexModifications,
+          )
+        : undefined
 
   const modTooltip =
     buildModTooltipIndex(modifications) ?? emptyModTooltipIndex()
@@ -218,7 +216,7 @@ function computeCoverageBand({
     coverage,
     snpCoverage,
     interbaseCoverage,
-    modCoverage,
+    modCoverageResult,
   )
 
   // Only the packed buffers, the interbase denominator, the tooltip index and
