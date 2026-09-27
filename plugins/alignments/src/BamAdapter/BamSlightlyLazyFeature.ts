@@ -3,6 +3,7 @@ import { clipLengthAtStartOfReadNumeric } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import {
+  cigarHasEndClip,
   convertTagsToPlainArrays,
   hasPairOrientation,
   nextSegmentPosition,
@@ -180,6 +181,10 @@ export default class BamSlightlyLazyFeature
 
   get clipLengthAtStartOfRead() {
     return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
+  }
+
+  get hasEndClip() {
+    return cigarHasEndClip(this.NUMERIC_CIGAR)
   }
 
   get refName() {
@@ -406,6 +411,10 @@ class RegionBoundBamFeature implements MismatchFeature {
 
   get clipLengthAtStartOfRead() {
     return this.base.clipLengthAtStartOfRead
+  }
+
+  get hasEndClip() {
+    return this.base.hasEndClip
   }
 
   get NUMERIC_CIGAR() {

@@ -151,11 +151,13 @@ from tens of thousands up.
 - **Mate reference is `readNextRefIds` + `nextRefNames`**; the worker resolves a
   name once per contig. `buildReadInterchrom` compares per SLOT, not per read.
 - **`readSuppAlignments` ships only when some read in the group HAS one.** The
-  `getTag(f, 'SA')` walk is unconditional; the absent array saves the clone.
-  **Gating the WALK on `readConnections` is the mistake to not repeat** — linked
-  reads and the curved connectors read the same tags under settings of their
-  own. `readConnections` is therefore **not** in `rpcProps`, pinned by
-  `fetchAutorun.test.ts`.
+  `getTag(f, 'SA')` walk runs whatever the settings; the absent array saves the
+  clone. **Gating the WALK on `readConnections` is the mistake to not repeat** —
+  linked reads, the curved connectors and a breakpoint split view over this
+  display read the same tags under settings of their own. `readConnections` is
+  therefore **not** in `rpcProps`, pinned by `fetchAutorun.test.ts`. What does
+  skip the walk is the read: SAM clips every record of a chimeric alignment, so
+  a read whose `hasEndClip` is false carries no SA (`saClipGate.probe.ts`).
 
 The shared rule: **ask what the consumer actually is before making the shape
 cheaper**, and **enumerate the consumers before deciding not to BUILD one** — a

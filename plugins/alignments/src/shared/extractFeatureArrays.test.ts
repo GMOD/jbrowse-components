@@ -256,3 +256,39 @@ describe('modification type detection', () => {
     expect([...detected(past, { type: 'modifications' })]).toEqual(['m'])
   })
 })
+
+// A read that says it has no clip at either end is not looked up for SA, since
+// every record of a chimeric alignment is clipped; one that says nothing is
+describe('the SA lookup', () => {
+  class Read extends SimpleFeature {
+    clipLengthAtStartOfRead = 0
+    hasEndClip: boolean | undefined
+    constructor(hasEndClip: boolean | undefined) {
+      super({
+        uniqueId: 'r',
+        refName: 'ctgA',
+        start: 100,
+        end: 200,
+        strand: 1,
+        tags: { SA: 'ctgB,500,+,50S50M,60,0;' },
+      })
+      this.hasEndClip = hasEndClip
+    }
+    forEachMismatch() {}
+  }
+  const saOf = (read: Read) =>
+    extractFeatureArrays([read], buildFeatureData, {
+      colorBy: { type: 'normal' },
+      showSoftClipping: false,
+      region,
+      perBaseBinBp: 1,
+    }).suppAlignments
+
+  test.each([
+    [true, ['ctgB,500,+,50S50M,60,0;']],
+    [undefined, ['ctgB,500,+,50S50M,60,0;']],
+    [false, undefined],
+  ] as const)('hasEndClip %s', (hasEndClip, expected) => {
+    expect(saOf(new Read(hasEndClip))).toEqual(expected)
+  })
+})

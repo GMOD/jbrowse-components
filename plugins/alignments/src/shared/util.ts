@@ -1,4 +1,6 @@
 import {
+  CIGAR_H,
+  CIGAR_S,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECOND_IN_PAIR,
@@ -9,6 +11,23 @@ import { getContrastText } from '@jbrowse/core/ui/palette'
 import type { FilterBy } from './types.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
+
+// Whether a packed CIGAR is soft or hard clipped at either end. Clips sit only
+// at the ends, hard outside soft, so the two outermost ops answer it.
+export function cigarHasEndClip(ops: ArrayLike<number>) {
+  const n = ops.length
+  if (n === 0) {
+    return false
+  }
+  const first = ops[0]! & 0xf
+  const last = ops[n - 1]! & 0xf
+  return (
+    first === CIGAR_S ||
+    first === CIGAR_H ||
+    last === CIGAR_S ||
+    last === CIGAR_H
+  )
+}
 
 export const defaultFilterFlags = {
   flagInclude: 0,

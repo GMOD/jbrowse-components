@@ -9,7 +9,11 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
-import { hasPairOrientation, nextSegmentPosition } from '../shared/util.ts'
+import {
+  cigarHasEndClip,
+  hasPairOrientation,
+  nextSegmentPosition,
+} from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type { SamRecordData } from './parseSam.ts'
@@ -177,6 +181,10 @@ export default class SamRecordFeature implements MismatchFeature {
 
   get clipLengthAtStartOfRead() {
     return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
+  }
+
+  get hasEndClip() {
+    return cigarHasEndClip(this.NUMERIC_CIGAR)
   }
 
   // IGV's pair-orientation string (e.g. `F1R2`)

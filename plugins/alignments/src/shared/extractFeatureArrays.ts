@@ -101,14 +101,19 @@ export function extractFeatureArrays<T extends FeatureData>(
   const isPerBaseLetterMode = baseLayer?.type === 'perBaseLetter'
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
-  // ALWAYS walked, and shipped only when some read actually had one.
+  // Walked whatever the settings, and shipped only when some read actually had
+  // one.
   //
   // The walk is not free — `getTag(feature, 'SA')` scans the read's whole tag
   // block, 18.1ms over 153,677 reads on the deepest short-read fixture — and it
   // was briefly gated on `readConnections !== 'off'` on the grounds that the arc
-  // computation is the only consumer. It is not: linked reads and the curved
-  // connectors read the same tags (`readGroupConnections`) under settings of
-  // their own, so a gate on connections takes their off-screen segments away.
+  // computation is the only consumer. It is not: linked reads, the curved
+  // connectors (`readGroupConnections`) and a breakpoint split view drawing
+  // over this display read the same tags under settings of their own, so a gate
+  // on connections takes their off-screen segments away. What does gate it is
+  // the read itself: a record of a chimeric alignment is clipped, so a read
+  // with no clip at either end (`hasEndClip`) is not walked — 27 ms to 4 ms on
+  // that fixture, where 1,430 of the reads are clipped (saClipGate.probe.ts).
   //
   // What the gate was really buying was the CLONE, and `hasSuppAlignment` keeps
   // that half: structured clone is priced by object count, and on that fixture
@@ -150,10 +155,13 @@ export function extractFeatureArrays<T extends FeatureData>(
     features.push(buildFeatureData(feature))
 
     nextPositions.push((feature.get('next_pos') as number | undefined) ?? 0)
-    const sa = (getTag(feature, 'SA') as string | undefined) ?? ''
+    const isMismatch = isMismatchFeature(feature)
+    const sa =
+      isMismatch && feature.hasEndClip === false
+        ? ''
+        : ((getTag(feature, 'SA') as string | undefined) ?? '')
     hasSuppAlignment ||= sa !== ''
     suppAlignments.push(sa)
-    const isMismatch = isMismatchFeature(feature)
     // Read once: it drives both the start clip and the indel walk below.
     const cigarString = isMismatch
       ? ''

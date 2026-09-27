@@ -211,3 +211,34 @@ test('the spliced filter partitions reads by a CIGAR skip', async () => {
   expect(exclude).toBeGreaterThan(0)
   expect(only + exclude).toBe(all)
 })
+
+// The extract skips the SA lookup for a read with no clip at either end, on
+// the SAM rule that every record of a chimeric alignment is clipped; this
+// holds that rule to a real file of split reads
+test('every read carrying SA is clipped at an end', async () => {
+  const bam = require.resolve('../../../../test_data/volvox/volvox-sv.bam')
+  const adapter = new Adapter(
+    configSchema.create({
+      bamLocation: { localPath: bam, locationType: 'LocalPathLocation' },
+      index: {
+        location: {
+          localPath: `${bam}.bai`,
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+  const reads = (await firstValueFrom(
+    adapter
+      .getFeatures({
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: 0,
+        end: 50000,
+      })
+      .pipe(toArray()),
+  )) as unknown as { getTag: (t: string) => unknown; hasEndClip: boolean }[]
+  const withSA = reads.filter(r => r.getTag('SA') !== undefined)
+  expect(withSA.length).toBeGreaterThan(0)
+  expect(withSA.every(r => r.hasEndClip)).toBe(true)
+})

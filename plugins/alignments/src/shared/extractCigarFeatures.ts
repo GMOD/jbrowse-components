@@ -62,6 +62,14 @@ export interface MismatchFeature extends Feature {
   // render path wants per read, comes from `CramRecord.getLeadingClipLength()`
   // in O(1) instead. Don't "optimize" that back into an eager NUMERIC_CIGAR.
   readonly NUMERIC_CIGAR?: ArrayLike<number>
+
+  // OPTIONAL — a performance hint. Whether either end of the alignment is soft
+  // or hard clipped. Per the SAM spec every record of a chimeric alignment is
+  // clipped, so a read answering false carries no SA and the extract skips the
+  // tag-block walk that looks for one. BAM and SAM, whose tag lookup is that
+  // walk, answer it off the packed CIGAR's end ops; a feature that omits it is
+  // looked up as before.
+  readonly hasEndClip?: boolean
 }
 
 // Only BAM/CRAM features carry per-base mismatch/CIGAR detail. Other features
