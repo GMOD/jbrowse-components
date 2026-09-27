@@ -285,7 +285,10 @@ describe('the ribbons', () => {
     const bridge = ribbonData(cells, 'ribbons:0>2')
     expect(bridge.instanceCount).toBe(1)
     expect(bridge.instanceFeatureIdx[0]).toBe(groupTarget.get('g1'))
-    expect(abgrAlpha(bridge.colors[0]!)).toBe(Math.round(0.4 * 255))
+    // under the adjacent ribbons' alpha, which it crosses a lane of
+    const adjacent = abgrAlpha(ribbonData(cells, 'ribbons:0').colors[0]!)
+    expect(adjacent).toBe(Math.round(0.4 * 255))
+    expect(abgrAlpha(bridge.colors[0]!)).toBeLessThan(adjacent / 2)
     // the near end is the anchor's span and the far end is CACAO's span for
     // the group, not peach's: a bridge lands on the lane that places it
     const [anchorSpan] = s.lanes[0]!.placements.get('g1')!.spans

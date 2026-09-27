@@ -66,6 +66,10 @@ import type { AttributeRange, DeclaredRamp } from '@jbrowse/synteny-core'
 // density; the boxes they connect are still drawn in the lanes
 const MIN_RIBBON_PX = 2
 const BOX_ALPHA = 64
+// a ribbon across a lane that lacks its group crosses that lane's genes and
+// every ribbon between, so it draws under the adjacent ones rather than
+// matching them
+const BRIDGE_ALPHA = 0.4
 
 export function ribbonsKey(row: number, toRow = row + 1) {
   return toRow === row + 1 ? `ribbons:${row}` : `ribbons:${row}>${toRow}`
@@ -509,10 +513,16 @@ export function buildRibbonGeometry({
           if (wideEnough(s1, s2, upper, farLane)) {
             const record = far.features[j]!
             const target = targetOfGroup(key, group)
-            const fill = colorOf(
+            const painted = colorOf(
               orientations[i]! * far.orientations[j]!,
               record,
             )
+            const fill = bridged
+              ? withAbgrAlpha(
+                  painted,
+                  Math.round((painted >>> 24) * BRIDGE_ALPHA),
+                )
+              : painted
             const first = builder.count
             const tiled =
               direct &&
