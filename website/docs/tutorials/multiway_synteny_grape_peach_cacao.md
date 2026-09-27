@@ -528,4 +528,3 @@ The script needs the tools under [Prerequisites](#prerequisites).
 - [](/docs/config_guides/grouping_and_ordering)
 - [](/docs/config/mcscanblocksadapter)
 - [](/docs/config/multiwaysyntenydisplay)
-</content>
