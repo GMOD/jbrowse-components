@@ -63,17 +63,17 @@ function colorRow(
   const { color, colorValue } = hit
   const swatch =
     color === undefined ? undefined : { color: abgrToCssRgba(color) }
-  const scale = colorSection(sections, hit.markIndex)
-  if (scale) {
+  const section = colorSection(sections, hit.markIndex)
+  if (section) {
     return {
       channel: 'color',
-      field: scale.field,
+      field: section.scale.field,
       value:
         colorValue !== undefined
           ? toP(colorValue, 4)
           : color === undefined
             ? undefined
-            : categoryLabel(scale, color),
+            : categoryLabel(section, color),
       swatch,
     }
   }
@@ -99,12 +99,12 @@ function shapeRow(
     return undefined
   }
   const swatch: LegendSwatch = { color: 'currentColor', shape: name }
-  const scale = shapeSection(sections, hit.markIndex)
-  if (scale) {
+  const section = shapeSection(sections, hit.markIndex)
+  if (section) {
     return {
       channel: 'shape',
-      field: scale.kind === 'shape' ? scale.field : undefined,
-      value: shapeLabel(scale, name),
+      field: section.scale.field,
+      value: shapeLabel(section, name),
       swatch,
     }
   }

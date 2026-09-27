@@ -41,10 +41,11 @@ export type ScaledChannel = 'color' | 'shape'
 
 /**
  * What a mark's channel says of its key beyond the table the worker resolved,
- * as ggplot2's scale arguments do: the heading, which values it lists and in
- * what order, what it calls a value's absence, and for a shape the name of
- * each domain value and the one colour its mark paints, which ggplot2 draws a
- * layer's key glyphs in. A colour's `labels` ride in the table instead.
+ * as ggplot2's scale arguments do: the heading, the name of each domain value
+ * or threshold interval, which values it lists and in what order, what it
+ * calls a value's absence, and for a shape the one colour its mark paints,
+ * which ggplot2 draws a layer's key glyphs in. All of it is the config's, so
+ * renaming a key row refetches nothing.
  */
 export interface MarkKeySetting {
   title?: string
@@ -283,12 +284,13 @@ function shapeOverSameField(
 // A key over the facet's own field lists its rows in the sections' order, so
 // the key and the chips read top to bottom alike.
 function keyField(
-  scale: { field: string; domain: string[]; labels?: string[] },
+  scale: { field: string; domain: string[] },
+  key: MarkKeySetting,
   facet: CategoricalField | undefined,
 ) {
   const own = categoricalField(scale.field, {
     domain: scale.domain,
-    labels: scale.labels,
+    labels: key.labels,
   })
   return facet?.field === scale.field ? { ...facet, label: own.label } : own
 }
@@ -330,7 +332,7 @@ function shapeKey(
   facet: CategoricalField | undefined,
   key: MarkKeySetting,
 ): CategoricalScale {
-  const field = keyField({ ...scale, labels: [...(key.labels ?? [])] }, facet)
+  const field = keyField(scale, key, facet)
   return listedKey(
     {
       kind: 'categorical',
@@ -355,14 +357,9 @@ function shapeKey(
 // the rows for no value and not a number stay last either way.
 function thresholdRows(
   scale: Extract<ScaleTable, { kind: 'threshold' }>,
-  { descending, missingLabel }: MarkKeySetting,
+  { labels, descending, missingLabel }: MarkKeySetting,
 ) {
-  const rows = thresholdKeyEntries(
-    scale.domain,
-    scale.range,
-    scale,
-    scale.labels,
-  )
+  const rows = thresholdKeyEntries(scale.domain, scale.range, scale, labels)
   const intervals = scale.domain.length + 1
   return listedRows(
     descending
@@ -414,7 +411,7 @@ export function markColorScales(
         const shape = shapeOverSameField(sections, section)
         const keys = derivedColorScale([scale.entries], everyRowPaints, {
           id,
-          field: keyField(scale, facet),
+          field: keyField(scale, key, facet),
           title: section.title,
           swatches:
             shape?.scale.kind === 'shape'
@@ -485,26 +482,34 @@ export function markColorScales(
 export function colorSection(sections: MarkLegendSection[], markIndex: number) {
   return sections.find(
     s => s.channel === 'color' && s.markIndexes.includes(markIndex),
-  )?.scale
+  )
 }
 
 /** The shape key of one mark, if its shape is a scale. */
 export function shapeSection(sections: MarkLegendSection[], markIndex: number) {
   return sections.find(
     s => s.channel === 'shape' && s.markIndexes.includes(markIndex),
-  )?.scale
+  )
 }
 
 /**
- * The categories a shape names in a shape table: three shapes over any number
- * of values, so a shape the range handed out twice names both, the way a key
- * derived from the painting lists every value drawn in one colour.
+ * The categories a shape names in a shape key, each as the key names it:
+ * three shapes over any number of values, so a shape the range handed out
+ * twice names both, the way a key derived from the painting lists every value
+ * drawn in one colour.
  */
-export function shapeLabel(scale: ScaleTable | undefined, shape: ShapeName) {
-  if (scale?.kind !== 'shape') {
+export function shapeLabel(
+  section: MarkLegendSection | undefined,
+  shape: ShapeName,
+) {
+  if (section?.scale.kind !== 'shape') {
     return undefined
   }
-  const field = categoricalField(scale.field)
+  const { scale, key } = section
+  const field = categoricalField(scale.field, {
+    domain: scale.domain,
+    labels: key.labels,
+  })
   const values = scale.entries
     .filter(e => e.shape === shape)
     .map(e => field.label(e.value))
@@ -512,26 +517,34 @@ export function shapeLabel(scale: ScaleTable | undefined, shape: ShapeName) {
 }
 
 /**
- * The interval or categories a packed colour names, if its table has any. An
- * instance carries its colour and not its value, so two values hashed onto one
- * palette entry are both named, as {@link shapeLabel} names a shared shape; a
- * threshold's rows are read back off its palette and its two greys.
+ * The interval or categories a packed colour names, as its key names them, if
+ * its table has any. An instance carries its colour and not its value, so two
+ * values hashed onto one palette entry are both named, as {@link shapeLabel}
+ * names a shared shape; a threshold's rows are read back off its palette and
+ * its two greys.
  */
-export function categoryLabel(scale: ScaleTable | undefined, color: number) {
-  if (scale?.kind === 'threshold') {
+export function categoryLabel(
+  section: MarkLegendSection | undefined,
+  color: number,
+) {
+  if (!section) {
+    return undefined
+  }
+  const { scale, key } = section
+  if (scale.kind === 'threshold') {
     return thresholdKeyEntries(
       scale.domain,
       scale.range,
       scale,
-      scale.labels,
+      key.labels,
     ).find(e => cssColorToABGR(e.color) === color)?.label
   }
-  if (scale?.kind !== 'categorical') {
+  if (scale.kind !== 'categorical') {
     return undefined
   }
   const { label } = categoricalField(scale.field, {
     domain: scale.domain,
-    labels: scale.labels,
+    labels: key.labels,
   })
   const values = scale.entries
     .filter(e => e.color === color)

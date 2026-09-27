@@ -7129,7 +7129,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
           "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#0068d1",
           "type": "string"
         },
         {
@@ -7138,9 +7137,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour or jexl callback.",
-              "$ref": "#/$defs/CssColorOrJexl",
-              "default": "#0068d1"
+              "description": "CSS colour or jexl callback; unset is the default blue.",
+              "$ref": "#/$defs/CssColorOrJexl"
             },
             "field": {
               "description": "the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in.",
@@ -7881,8 +7879,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "size": {
           "description": "point diameter, rule thickness or link stroke in px.",
-          "type": "number",
-          "default": 4
+          "type": "number"
         },
         "linkShape": {
           "description": "dome, arc or line.",

@@ -165,7 +165,6 @@ import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 import type {
   FacetSnapshot,
   MarkProblem,
-  MarkSnapshot,
   RowsSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
@@ -261,6 +260,17 @@ function markConstantColor(mark: MarkConfig): number {
   return cssColorToABGR(constantColorOf(mark) ?? DEFAULT_MARK_COLOR)
 }
 
+/**
+ * A mark's `size` with its type's default where none is written: a point's
+ * diameter, a rule's thickness, or the 2 px a link strokes at.
+ */
+export function markSizeOf({ mark, size }: Pick<MarkConfig, 'mark' | 'size'>) {
+  return (
+    size ??
+    (mark === 'link' ? DEFAULT_LINK_STROKE_PX : DEFAULT_POINT_DIAMETER_PX)
+  )
+}
+
 // What a mark's channel says of its key: its guide members, copied out of the
 // config so a section holds plain values.
 function keySettingOf(
@@ -271,8 +281,15 @@ function keySettingOf(
     return {}
   }
   if (channel === 'color') {
-    const { title, breaks, descending, missingLabel } = mark.encoding.color
-    return { title, breaks: [...breaks], descending, missingLabel }
+    const { title, labels, breaks, descending, missingLabel } =
+      mark.encoding.color
+    return {
+      title,
+      labels: [...labels],
+      breaks: [...breaks],
+      descending,
+      missingLabel,
+    }
   }
   const { title, labels, breaks, missingLabel } = mark.encoding.shape
   const swatchColor = constantColorOf(mark)
@@ -542,15 +559,15 @@ export function stateModelFactory(
         /**
          * #getter
          * Each mark as the text layer places it: the entry with whether it
-         * names a `y` and whether the config writes its colour, read off the
-         * marks' snapshot, which carries only the slots the config wrote. Its
-         * own getter so a slot only a label reads never remakes the mark list.
+         * names a `y` and whether its colour is written, a constant or a
+         * scale. Its own getter so a slot only a label reads never remakes
+         * the mark list.
          */
         get textMarkEntries(): TextMarkEntry[] {
-          const written: MarkSnapshot[] = getSnapshot(self.conf.marks)
+          const { marks } = self.conf
           return this.markEntries.map((entry, i) => ({
             ...entry,
-            ownColor: written[i]?.encoding?.color !== undefined,
+            ownColor: colorEncodingOf(marks[i]!.encoding.color) !== undefined,
           }))
         },
         /**
@@ -582,16 +599,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each mark's `size`: a point's diameter in px, which a bar or
-         * span leaves unread.
+         * Each mark's `size` in px, its type's default where none is
+         * written, which a bar or span leaves unread.
          */
         get markSizes(): number[] {
-          const written: MarkSnapshot[] = getSnapshot(self.conf.marks)
-          return self.conf.marks.map((m, i) =>
-            m.mark === 'link' && written[i]?.size === undefined
-              ? DEFAULT_LINK_STROKE_PX
-              : m.size,
-          )
+          return self.conf.marks.map(markSizeOf)
         },
         /**
          * #getter
@@ -608,7 +620,7 @@ export function stateModelFactory(
          */
         get pointSize(): number {
           const first = self.conf.marks.find(m => m.mark === 'point')
-          return first ? first.size : DEFAULT_POINT_DIAMETER_PX
+          return first ? markSizeOf(first) : DEFAULT_POINT_DIAMETER_PX
         },
         /**
          * #getter
@@ -1282,7 +1294,7 @@ export function stateModelFactory(
         get colorRamps(): (MarkRamp | undefined)[] {
           const sections = this.legendSections
           return self.conf.marks.map((_, i) => {
-            const table = colorSection(sections, i)
+            const table = colorSection(sections, i)?.scale
             return table?.kind === 'ramp'
               ? {
                   domain: table.domain,

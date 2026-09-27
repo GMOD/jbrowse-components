@@ -83,7 +83,7 @@ These slots go on a display entry: `"displays": [{ "type": "MarkColor", ... }]`,
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#0068d1'</code> | A CSS colour, or a jexl callback over `feature` returning one, for a mark whose colour is not a scale. Writing `color: 'red'` or `color: 'jexl:…'` directly on the encoding lands here.<br>_callback args:_ `feature` |
+| <span id="slot-value">**value**</span><br>`maybeColor` | A CSS colour, or a jexl callback over `feature` returning one, for a mark whose colour is not a scale. Writing `color: 'red'` or `color: 'jexl:…'` directly on the encoding lands here. Unset, a mark paints in the default blue, `#0068d1`, and a text mark prints in the page's text colour.<br>_callback args:_ `feature` |
 | <span id="slot-breaks">**breaks**</span><br>`stringArray` = <code>[]</code> | The values a categorical key lists, in this order; empty lists every value the loaded regions met. A value left out still paints, as ggplot2's `breaks` leaves it. |
 | <span id="slot-descending">**descending**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | A threshold key lists its intervals from the highest down, the way a vertical stepped legend stands. |
 | <span id="slot-missinglabel">**missingLabel**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | What the key calls a feature with nothing in `field`; unset is "(no value)". |

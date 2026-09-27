@@ -3027,3 +3027,79 @@ test('a mark every loaded feature skipped is a notice, as a mistyped field is', 
   display.setRpcData(0, result([{ y: [3] }]), REGION)
   expect(display.notices).toEqual([])
 })
+
+// The worker paints from the colour less its `labels`, so the names reach
+// the key and the hover from the config alone, and renaming a row refetches
+// nothing.
+test('a colour s labels name its key rows and its hover without crossing the wire', () => {
+  const { display } = createTestEnvironment([
+    {
+      mark: 'point',
+      encoding: {
+        y: 'score',
+        color: {
+          field: 'svtype',
+          domain: ['DEL', 'DUP'],
+          labels: ['Loss', 'Gain'],
+        },
+      },
+    },
+  ]).createDisplay()
+  expect(display.encodings[0]!.color).toEqual({
+    field: 'svtype',
+    scale: 'categorical',
+    domain: ['DEL', 'DUP'],
+  })
+  display.setRpcData(
+    0,
+    result([
+      {
+        y: [1, 2],
+        color: [0xff0000ff, 0xffff0000],
+        scale: {
+          kind: 'categorical',
+          field: 'svtype',
+          domain: ['DEL', 'DUP'],
+          entries: [
+            { value: 'DEL', color: 0xff0000ff },
+            { value: 'DUP', color: 0xffff0000 },
+          ],
+        },
+      },
+    ]),
+    REGION,
+  )
+  const [key] = display.colorScales
+  expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
+    'Loss',
+    'Gain',
+  ])
+})
+
+test('a mark s size and colour default by its type, and a text mark knows whether its colour is written', () => {
+  const { display } = createTestEnvironment([
+    { mark: 'point' },
+    { mark: 'rule', encoding: { y: 'score' } },
+    { mark: 'link' },
+    { mark: 'text' },
+    { mark: 'text', encoding: { color: 'red' } },
+    { mark: 'text', encoding: { color: { field: 'type' } } },
+  ]).createDisplay()
+  expect(display.markSizes).toEqual([4, 4, 2, 4, 4, 4])
+  expect(display.encodings.map(e => e.color)).toEqual([
+    '#0068d1',
+    '#0068d1',
+    '#0068d1',
+    '#0068d1',
+    'red',
+    { field: 'type', scale: 'categorical' },
+  ])
+  expect(display.textMarkEntries.map(e => e.ownColor)).toEqual([
+    false,
+    false,
+    false,
+    false,
+    true,
+    true,
+  ])
+})

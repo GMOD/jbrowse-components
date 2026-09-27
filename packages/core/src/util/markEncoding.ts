@@ -522,7 +522,6 @@ export function encodeFeatures<L extends LaneName>(
       field: scaled.field,
       domain: [...colorField.domain],
       ...(scaled.range ? { range: [...scaled.range] } : {}),
-      ...(scaled.labels?.length ? { labels: [...scaled.labels] } : {}),
       ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
@@ -533,9 +532,6 @@ export function encodeFeatures<L extends LaneName>(
       domain: cuts,
       ...(thresholdEncoding.range
         ? { range: [...thresholdEncoding.range] }
-        : {}),
-      ...(thresholdEncoding.labels?.length
-        ? { labels: [...thresholdEncoding.labels] }
         : {}),
       ...(missingMet ? { missing: true } : {}),
       ...(notNumberMet ? { notNumber: true } : {}),

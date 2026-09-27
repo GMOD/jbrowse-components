@@ -47,6 +47,10 @@ function region(...scales: (ColorScaleTable | undefined)[]): MarkRegionData {
 
 const TEN = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
+function sectionOf(scale: ColorScaleTable) {
+  return buildMarkLegend([region(scale)])[0]
+}
+
 function noteOf(scale: ColorScaleTable) {
   const [key] = markColorScales(buildMarkLegend([region(scale)]))
   return key?.kind === 'categorical' ? key.note : undefined
@@ -148,11 +152,11 @@ test('a threshold key lists every interval, and the two keyless rows once a regi
     ['(not a number)', false],
     ['(no value)', true],
   ])
-  expect(categoryLabel(sections[0]!.scale, NO_VALUE_ABGR)).toBe('(no value)')
-  expect(categoryLabel(sections[0]!.scale, MISCONFIGURED_ABGR)).toBe(
-    '(not a number)',
-  )
-  expect(categoryLabel(thresholdTable(), NO_VALUE_ABGR)).toBeUndefined()
+  expect(categoryLabel(sections[0], NO_VALUE_ABGR)).toBe('(no value)')
+  expect(categoryLabel(sections[0], MISCONFIGURED_ABGR)).toBe('(not a number)')
+  expect(
+    categoryLabel(sectionOf(thresholdTable()), NO_VALUE_ABGR),
+  ).toBeUndefined()
 })
 
 test('a colour two values hashed onto names both of them on hover', () => {
@@ -166,10 +170,12 @@ test('a colour two values hashed onto names both of them on hover', () => {
       { value: 'tRNA', color: 0xff222222 },
     ],
   }
-  expect(categoryLabel(shared, 0xff111111)).toBe('lncRNA, snoRNA')
-  expect(categoryLabel(shared, 0xff222222)).toBe('tRNA')
-  expect(categoryLabel(shared, 0xff333333)).toBeUndefined()
-  expect(categoryLabel(thresholdTable(), 0xff222222)).toBe('0.1 – 0.5')
+  expect(categoryLabel(sectionOf(shared), 0xff111111)).toBe('lncRNA, snoRNA')
+  expect(categoryLabel(sectionOf(shared), 0xff222222)).toBe('tRNA')
+  expect(categoryLabel(sectionOf(shared), 0xff333333)).toBeUndefined()
+  expect(categoryLabel(sectionOf(thresholdTable()), 0xff222222)).toBe(
+    '0.1 – 0.5',
+  )
 })
 
 const GREY = cssColorToABGR('#8c8c8c')
@@ -339,7 +345,7 @@ test('two threshold marks over one field and cuts keep a key each when their ran
   }
   const sections = buildMarkLegend([region(thresholdTable(), recoloured)])
   expect(sections).toHaveLength(2)
-  expect(categoryLabel(sections[1]!.scale, cssColorToABGR('#222223'))).toBe(
+  expect(categoryLabel(sections[1], cssColorToABGR('#222223'))).toBe(
     '0.1 – 0.5',
   )
 })
@@ -491,24 +497,36 @@ test('two marks over one declaration share a key only under one title', () => {
   expect(keys(i => (i === 0 ? 'MAPQ' : undefined))).toEqual(['MAPQ', 'score'])
 })
 
-test('a key names a domain value by the label the colour lists for it', () => {
+// The names are the config's, never the worker's: a colour crosses the wire
+// without its `labels`, so renaming a row refetches nothing.
+test('a key and a hover name a domain value by the label the colour lists for it', () => {
   const labelled: ColorScaleTable = {
     kind: 'categorical',
     field: 'type',
     domain: ['DEL', 'DUP'],
-    labels: ['Loss', 'Gain'],
     entries: [
       { value: 'DEL', color: 0xff0000ff },
       { value: 'DUP', color: 0xffff0000 },
       { value: 'INV', color: 0xff00ff00 },
     ],
   }
-  const [key] = markColorScales(buildMarkLegend([region(labelled)]))
+  const sections = buildMarkLegend([region(labelled)], undefined, () => ({
+    labels: ['Loss', 'Gain'],
+  }))
+  const [key] = markColorScales(sections)
   expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
     'Loss',
     'Gain',
     'INV',
   ])
+  expect(categoryLabel(sections[0], 0xff0000ff)).toBe('Loss')
+  const cut = buildMarkLegend([region(thresholdTable())], undefined, () => ({
+    labels: ['weak', 'moderate', 'strong'],
+  }))
+  expect(rowLabels(markColorScales(cut))).toEqual([
+    ['weak', 'moderate', 'strong'],
+  ])
+  expect(categoryLabel(cut[0], cssColorToABGR('#222222'))).toBe('moderate')
 })
 
 const shapeRegion = (values: [string, ShapeName][]): MarkRegionData => ({

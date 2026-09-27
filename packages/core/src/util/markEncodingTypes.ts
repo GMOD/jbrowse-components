@@ -195,8 +195,6 @@ export type ColorScaleTable =
       domain: string[]
       /** The declared range, the other half of what assigns a key its colour. */
       range?: string[]
-      /** What the key names each `domain` value, one each in order. */
-      labels?: string[]
       /**
        * Whether every non-empty key met here parsed as a finite number: a
        * numeric field the declaration landed on a categorical scale, which
@@ -217,8 +215,6 @@ export type ColorScaleTable =
        * palette fills what the declaration leaves.
        */
       range?: string[]
-      /** What the key names each bin, one each from the lowest. */
-      labels?: string[]
       /**
        * Whether a feature with no value painted here, in the no-value grey:
        * the key's `(no value)` row, as the feature display's threshold gives

@@ -5544,7 +5544,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "size",
-              "type": "number"
+              "type": "(number | undefined)"
             },
             {
               "name": "linkShape",
@@ -5587,7 +5587,7 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | CssColor)"
+                      "type": "(JexlString | (CssColor | undefined))"
                     },
                     {
                       "name": "field",
@@ -5995,7 +5995,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "size",
-              "type": "number"
+              "type": "(number | undefined)"
             },
             {
               "name": "linkShape",
@@ -6038,7 +6038,7 @@ export const configManifest: ConfigManifest = {
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | CssColor)"
+                      "type": "(JexlString | (CssColor | undefined))"
                     },
                     {
                       "name": "field",

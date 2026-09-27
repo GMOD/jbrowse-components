@@ -4,6 +4,7 @@
  * a slot left at its default and one written at it are one fetch.
  */
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
+import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import {
   colorEncodingOf,
   paintedColorEncoding,
@@ -66,7 +67,7 @@ export function encodingOf(
     // between linear and log would refetch every region to no effect.
     y: reads('y') && y ? y : undefined,
     row: (reads('row') && row) || undefined,
-    color: paintedColorEncoding(colorEncodingOf(color)),
+    color: paintedColorEncoding(colorEncodingOf(color)) ?? DEFAULT_MARK_COLOR,
     ...(reads('shape') ? { shape: shapeEncoding } : {}),
     ...(reads('text') && text ? { text } : {}),
     ...(reads('size') && size.field !== ''

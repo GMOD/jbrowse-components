@@ -13,7 +13,6 @@ import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightC
 import { types } from '@jbrowse/mobx-state-tree'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import {
-  DEFAULT_POINT_DIAMETER_PX,
   retiredAxisSpellings,
   scalesSchema,
   valueScaleSchema,
@@ -295,12 +294,12 @@ const markSchema = ConfigurationSchema(
      * px, the mark's own as a grammar's `size` is, so two marks may differ; a
      * bar, span or text
      * reads none, and a link whose `encoding.size` names a field reads that
-     * instead. Unwritten, a link strokes at 2 px. The track menu's Point
-     * size writes it on every point mark.
+     * instead. Unwritten, a point is 4 px across, a rule 4 px thick and a
+     * link stroked at 2 px. The track menu's Point size writes it on every
+     * point mark.
      */
     size: {
-      type: 'number',
-      defaultValue: DEFAULT_POINT_DIAMETER_PX,
+      type: 'maybeNumber',
       description: 'point diameter, rule thickness or link stroke in px',
     },
     /**

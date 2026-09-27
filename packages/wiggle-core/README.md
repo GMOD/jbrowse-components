@@ -13,8 +13,9 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 The domain the visible instances autoscale to: at a `quantile` of 1 their
 extremes, `stats`; below it `quantileExtent`'s ends, the top read off the
-positive `high`s and the bottom off the `low`s, so whiskers open to their spread
-and a sparse window's empty bins lower no top.
+non-zero `high`s and the bottom off the `low`s, so whiskers open to their
+spread, a sparse window's empty bins lower no top, and a window of one sign
+keeps both its ends.
 
 ```js
 // type signature

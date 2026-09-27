@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import {
   COLOR_SCALES,
   colorChannelOptions,
@@ -87,12 +86,13 @@ export const markColorSchema = ConfigurationSchema(
      * #slot value
      * A CSS colour, or a jexl callback over `feature` returning one, for a
      * mark whose colour is not a scale. Writing `color: 'red'` or
-     * `color: 'jexl:…'` directly on the encoding lands here.
+     * `color: 'jexl:…'` directly on the encoding lands here. Unset, a mark
+     * paints in the default blue, `#0068d1`, and a text mark prints in the
+     * page's text colour.
      */
     value: {
-      type: 'color',
-      defaultValue: DEFAULT_MARK_COLOR,
-      description: 'CSS colour or jexl callback',
+      type: 'maybeColor',
+      description: 'CSS colour or jexl callback; unset is the default blue',
       contextVariable: ['feature'],
     },
     // #endregion
