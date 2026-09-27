@@ -210,9 +210,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         call.type === 'action' &&
         call.id === call.rootId &&
         ROW_GESTURES.has(call.name)
-      // eslint-disable-next-line no-restricted-syntax -- effect input: which row an action is on, read where an autorun may be the caller
       const isRow =
         (holding || gesture) &&
+        // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: which row an action is on, read where an autorun may be the caller
         untracked(() => self.views.includes(call.context))
       if (holding && isRow) {
         holding.add(call.context)
