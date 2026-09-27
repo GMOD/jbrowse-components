@@ -286,7 +286,9 @@ in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
 ```
 
 Load it as a [`VariantTrack`](/docs/config_guides/variant_track) on K12 with the
-multi-sample display, one row per sample:
+multi-sample display, one row per sample. Each strain is one haplotype, so the
+phased rendering keys each cell by the allele it carries rather than by a
+diploid dosage:
 
 ```json addtrack
 {
@@ -298,7 +300,9 @@ multi-sample display, one row per sample:
     "type": "VcfTabixAdapter",
     "uri": "ecoli_pggb.vcf.gz"
   },
-  "displays": [{ "type": "LinearMultiSampleVariantDisplay" }]
+  "displays": [
+    { "type": "LinearMultiSampleVariantDisplay", "renderingMode": "phased" }
+  ]
 }
 ```
 
@@ -388,16 +392,9 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 
 <Figure caption="The graph's whole-genome alignment projected onto K12, one row per strain in the tree's order, with the variant calls above. A blank row is a strain with no alignment to K12 there." src="/img/pangenome/maf.png" />
 
-The track colors each variant-lane cell by that strain's genotype:
-
-- **grey** where the strain matches K12
-- **blue** where it carries the alternate allele
-- **olive** where the site is uncalled
-- **a numbered purple box** for an insertion, the number giving its length in
-  bases beyond K12
-
-An insertion consumes no reference, so the record spans one base and the marker
-carries its length.
+The variant lane's key names each cell's genotype. An insertion consumes no
+reference, so its record spans one base and a numbered box carries its length in
+bases beyond K12.
 
 Drag across the rows and the menu that opens on release lists each strain the
 selection covers under two submenus:

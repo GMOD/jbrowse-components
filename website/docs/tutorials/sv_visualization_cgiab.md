@@ -360,8 +360,35 @@ awk 'NR>1 {printf "%s\t%d\t%d\t%.4f\n", $1, $2-1, $3, $9}' \
   HG008-T--HG008-N.bicseq2.txt > HG008-T_bicseq2_log2ratio.bedgraph
 ```
 
-Plot it as a **Line (step)** over a fixed range. A homozygous deletion has no
-reads and so no finite ratio, and the balanced baseline sits above zero.
+We'll plot it as bars from zero on a fixed axis, so a step means the same thing
+from one window to the next. A homozygous deletion has no reads and so no finite
+ratio, and the balanced baseline sits above zero.
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "hg008t_bicseq2",
+  "name": "HG008-T copy ratio, segmented (NYGC BIC-seq2, log2 T/N)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "BedGraphAdapter",
+    "uri": "HG008-T_bicseq2_log2ratio.bedgraph"
+  },
+  "displayDefaults": {
+    "mark": "bar",
+    "scales": {
+      "y": {
+        "domainMin": -2,
+        "domainMax": 2,
+        "grid": true,
+        "title": "log2 tumor/normal"
+      }
+    }
+  }
+}
+```
+
+On a track already open, **Score → Set min/max score...** pins the same range.
 
 ### Wakhan: copy number per parental haplotype
 

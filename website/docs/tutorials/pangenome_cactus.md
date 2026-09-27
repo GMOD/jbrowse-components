@@ -257,14 +257,20 @@ matrix display, one column per variant and one row per sample:
     "uri": "mc/ecoli.vcf.gz"
   },
   "displays": [
-    { "type": "LinearMultiSampleVariantDisplay", "variantLayout": "columns" }
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "variantLayout": "columns",
+      "renderingMode": "phased"
+    }
   ]
 }
 ```
 
-The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
-covers columns versus genomic positions, the genotype colors, and clustering
-samples by genotype.
+Each strain is one haplotype, so `renderingMode: "phased"` keys each cell by the
+allele it carries rather than by a diploid dosage. The
+[multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
+columns versus genomic positions, the genotype colors, and clustering samples by
+genotype.
 
 `vg deconstruct` emits a snarl **tree**, one record per snarl at every level, so
 wide records paint over the fine layer under them. `cactus-pangenome` pops that

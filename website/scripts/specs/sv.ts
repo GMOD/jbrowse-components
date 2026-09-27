@@ -376,7 +376,9 @@ const HG008_BICSEQ2_LANE = {
   trackId: 'hg008_bicseq2',
   type: 'LinearWiggleDisplay',
   mark: 'bar',
-  scales: { y: { domainMin: -2, domainMax: 2, grid: true } },
+  scales: {
+    y: { domainMin: -2, domainMax: 2, grid: true, title: 'log2 tumor/normal' },
+  },
   height: 130,
 }
 

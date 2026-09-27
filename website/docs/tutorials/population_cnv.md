@@ -106,7 +106,35 @@ with these settings already applied.
 
 ## Read the copy-number heatmap
 
-Six individuals across the range each appear below as a profile:
+Six individuals across the range each appear below as a profile. We'll load them
+as a second track drawn as step lines on one pinned axis, so a plateau reads off
+the axis as a copy count:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "pur_cnv_ladder",
+  "name": "PUR copy number, six individuals",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "bigWigs": [
+      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01177.qm2.CN.1k.bw",
+      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01083.qm2.CN.1k.bw",
+      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01070.qm2.CN.1k.bw",
+      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG01395.qm2.CN.1k.bw",
+      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00731.qm2.CN.1k.bw",
+      "https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw"
+    ]
+  },
+  "displayDefaults": {
+    "mark": "line",
+    "scales": {
+      "y": { "domainMin": 0, "domainMax": 10, "title": "Copy number" }
+    }
+  }
+}
+```
 
 <Figure caption="The same window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 

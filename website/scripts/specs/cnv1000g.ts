@@ -176,7 +176,9 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
               // was rebuilt for it.
               mark: 'line',
               height: 500,
-              scales: { y: { domainMin: 0, domainMax: 10 } },
+              scales: {
+                y: { domainMin: 0, domainMax: 10, title: 'Copy number' },
+              },
             },
           ],
         },
