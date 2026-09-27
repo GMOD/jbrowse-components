@@ -272,9 +272,9 @@ display draws nothing in the gutter for sequence two lanes share and the anchor
 lacks.
 
 What composition through GRCh38 loses, per adjacent pair on the hosted HPRC
-v2.1 graph (2026-09-26), is the sequence each showcase locus exists to show:
-the third C4 module, the GSTT1 branch, the KIR B-haplotype genes and the DR52
-region. A pair that includes a GRCh38-like haplotype loses under 0.3 kb, and
+v2.1 graph (2026-09-26), is the third C4 module, the GSTT1 branch, the KIR
+B-haplotype genes and the DR52 region, the sequence those loci were picked
+for. A pair that includes a GRCh38-like haplotype loses under 0.3 kb, and
 the CFH deletion and the FLNA inversion lose nothing, since there the shared
 sequence is GRCh38's own. That loss is why a graph adapter's lane pair is the
 alignment `pairAlignments` reads off the graph rather than a composition.

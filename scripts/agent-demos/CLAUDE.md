@@ -154,11 +154,12 @@ primary's.
 - **Nobody may touch the keyboard or mouse for the first ~15 s**, while the
   harness presses the tiling keys: input from the desk sends the keystroke
   elsewhere, and the take stops with "the terminal did not tile".
-- Stop a take with `kill -INT $(pgrep -xf "node scripts/agent-demos/recordDemoTui.mjs")`;
-  a bare `pkill -f recordDemoTui.mjs` also matches the shell running it and
-  kills that first.
-- Shoot `takes/smoke.mjs` first when the loop has not run for a while, and
-  clear a take's directory of everything but `cwd/` before rerunning.
+- Stop a take with
+  `kill -INT $(pgrep -xf "node scripts/agent-demos/recordDemoTui.mjs")`; a bare
+  `pkill -f recordDemoTui.mjs` also matches the shell running it and kills that
+  first.
+- Shoot `takes/smoke.mjs` first when the loop has not run for a while, and clear
+  a take's directory of everything but `cwd/` before rerunning.
 - **The recorder is `recorder.py`, and it must stay alive.** GNOME's
   `org.gnome.Shell.Screencast` ties the recording to the D-Bus connection that
   started it, so `gdbus call` — which exits the instant the method returns —

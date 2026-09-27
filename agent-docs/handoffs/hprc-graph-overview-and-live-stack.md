@@ -11,7 +11,7 @@ base-level detail zoomed in. How lane pairs work now is
 what they cost is
 [PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) §"Lane pairs read off
 the hosted HPRC graph"; the graph track's design is the plugin's
-`agent-docs/GRAPH_TRACK.md`.
+[GRAPH_TRACK.md](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer/blob/main/agent-docs/GRAPH_TRACK.md).
 
 ## Open
 
