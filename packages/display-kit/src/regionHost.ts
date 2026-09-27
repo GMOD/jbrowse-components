@@ -67,6 +67,11 @@ export interface RegionHost extends AbstractViewModel, IStateTreeNode {
   readonly coarseBpPerPx: number
   readonly offsetPx: number
   readonly displayedRegions: Region[]
+  /**
+   * The px each displayed region starts at, where a host lays gaps between
+   * them (the circular view's strip); absent, they abut.
+   */
+  readonly displayedRegionOffsetsPx?: readonly number[]
   readonly staticBlocks: BlockSet
   readonly dynamicBlocks: BlockSet
   readonly settledDynamicBlocks: ContentBlock[]

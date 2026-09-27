@@ -415,6 +415,21 @@ export const RingHost = types
     get dynamicBlocks() {
       return this.staticBlocks
     },
+    /**
+     * The strip px each displayed region starts at: its slice's, the gaps
+     * between slices included, and within an elided run the bp before it.
+     */
+    get displayedRegionOffsetsPx() {
+      const offsets: number[] = []
+      for (const { region, startRadians } of self.view.staticSlices) {
+        let px = startRadians * this.stripRadiusPx
+        for (const r of region.elided ? region.regions : [region]) {
+          offsets.push(px)
+          px += (r.end - r.start) / this.bpPerPx
+        }
+      }
+      return offsets
+    },
     get settledDynamicBlocks(): ContentBlock[] {
       return self.coarseDynamicBlocks.length
         ? self.coarseDynamicBlocks

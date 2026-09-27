@@ -24,3 +24,18 @@ test('each region places a bp where the view does, and spans its own screen exte
   expect(a!.anchorBp).toBe(1500)
   expect(b!.anchorBp).toBe(6000)
 })
+
+test('a host laying gaps between its regions places each from its own offset', () => {
+  const [a, b] = viewRegionTable({
+    displayedRegions: [
+      { start: 1000, end: 2000 },
+      { start: 5000, end: 6000 },
+    ],
+    bpPerPx: 10,
+    offsetPx: 0,
+    displayedRegionOffsetsPx: [0, 130],
+  })
+  expect([a!.leftPx, a!.rightPx]).toEqual([0, 100])
+  expect([b!.leftPx, b!.rightPx]).toEqual([130, 230])
+  expect(place(b!, 5500)).toBeCloseTo(180)
+})

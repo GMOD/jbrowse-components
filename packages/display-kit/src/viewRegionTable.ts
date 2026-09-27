@@ -10,22 +10,27 @@ interface ViewRegions {
   }[]
   bpPerPx: number
   offsetPx: number
+  displayedRegionOffsetsPx?: readonly number[]
 }
 
 /**
  * The view's displayed regions as a mark drawing across the view places a
  * foot through them: each anchored at its bp under the view's left edge, or
  * its near end off screen, so a foot's offset from the anchor stays inside
- * float32 on the GPU, with the screen extent a breakend foot stops at.
+ * float32 on the GPU, with the screen extent a breakend foot stops at. A host
+ * that lays gaps between its regions, as the circular view's strip does, says
+ * where each starts in `displayedRegionOffsetsPx`; otherwise they abut.
  */
 export function viewRegionTable({
   displayedRegions,
   bpPerPx,
   offsetPx,
+  displayedRegionOffsetsPx,
 }: ViewRegions): LinkRegion[] {
   let bpSoFar = 0
-  return displayedRegions.map(region => {
-    const leftPx = bpSoFar / bpPerPx - offsetPx
+  return displayedRegions.map((region, i) => {
+    const leftPx =
+      (displayedRegionOffsetsPx?.[i] ?? bpSoFar / bpPerPx) - offsetPx
     const spanBp = region.end - region.start
     bpSoFar += spanBp
     const rightPx = leftPx + spanBp / bpPerPx

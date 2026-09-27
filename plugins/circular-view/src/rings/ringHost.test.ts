@@ -5,6 +5,7 @@ import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import { calculateStaticSlices } from '../CircularView/slices.ts'
 import {
   MAX_RINGS_RADIUS_FRACTION,
+  RingHost,
   RING_AXIS_LABEL_GAP_PX,
   RING_GAP_PX,
   layoutRings,
@@ -15,7 +16,7 @@ import {
 import { RING_PASSES, ringMarks } from './ringMarks.ts'
 import { SLICE_ARC_PX, ringShape } from './ringShape.ts'
 
-import type { RingDisplay } from './ringHost.ts'
+import type { RingDisplay, RingHostView } from './ringHost.ts'
 import type { RingCell, RingFrame } from './ringMarks.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
@@ -80,6 +81,27 @@ test('the strip lays one block per slice at the slice arc, and an elided run cou
   expect(stripBlocks(slices, 50).blocks[3]!.offsetPx).toBeCloseTo(
     blocks.blocks[3]!.offsetPx / 2,
   )
+})
+
+// A link's feet place through these, so a gap the strip lays between slices
+// they miss lands every foot past the first slice short.
+test('each displayed region starts on the strip where its slice does', () => {
+  const host = RingHost.create({})
+  host.setView({
+    staticSlices: slices,
+    radiusPx: 100,
+    circumferencePx: TWO_PI * 100,
+    bpPerPx: 0.1,
+  } as unknown as RingHostView)
+  const offsets = host.displayedRegionOffsetsPx
+  const blocks = stripBlocks(slices, 100)
+  expect(offsets).toHaveLength(5)
+  for (const block of blocks.contentBlocks) {
+    expect(offsets[block.displayedRegionIndex!]).toBeCloseTo(block.offsetPx)
+  }
+  const elided = blocks.blocks[2]!
+  expect(offsets[2]).toBeCloseTo(elided.offsetPx)
+  expect(offsets[3]).toBeCloseTo(elided.offsetPx + 2 / 0.1)
 })
 
 const display = (id: string, height: number): RingDisplay => ({
