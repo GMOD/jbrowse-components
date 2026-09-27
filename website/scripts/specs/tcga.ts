@@ -107,9 +107,9 @@ const TCGA_BRCA_RECURRENCE_TRACK = {
 // Eight equal rows share this, so a row is SUBTYPE_ROWS_HEIGHT/8 px tall and
 // SUBTYPE_ROW_PITCH is what the callouts below measure their dy against.
 const SUBTYPE_ROWS_HEIGHT = 500
-const SUBTYPE_ROW_PITCH = SUBTYPE_ROWS_HEIGHT / 8
+const SUBTYPE_ROW_PITCH = SUBTYPE_ROWS_HEIGHT / 4
 
-// A label for one event in one of the eight subtype rows, with an arrow into the
+// A label for one event in one of the four subtype rows, with an arrow into the
 // bars. `row` is the row index and `labelDy`/`headDy` are fractions of that
 // row's own height, so every offset is stated in the layout's own units and a
 // change to SUBTYPE_ROWS_HEIGHT moves the callouts with the rows. fracY stays 0
@@ -195,19 +195,42 @@ const TCGA_BRCA_RECURRENCE_BY_SUBTYPE_TRACK = {
       },
     },
   },
+  // One row per subtype, gain above the line and loss below: the file's eight
+  // columns are "<subtype> gain" and "<subtype> loss", losses negative, so a
+  // formula reads the subtype off each column's name and `rows` splits on it.
   displays: [
     {
-      type: 'LinearWiggleDisplay',
+      type: 'LinearMarkDisplay',
+      displayId: 'tcga_brca_cnv_recurrence_by_subtype-LinearMarkDisplay',
       height: SUBTYPE_ROWS_HEIGHT,
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        range: ['#2166ac', '#b2182b'],
+      transform: [
+        {
+          type: 'formula',
+          expr: "jexl:replace(replace(feature.source, ' gain', ''), ' loss', '')",
+          as: 'subtype',
+        },
+      ],
+      rows: {
+        field: 'subtype',
+        domain: ['HR+/HER2-', 'HER2+', 'triple-negative', 'unknown'],
       },
-      scales: { y: { domainMin: -70, domainMax: 70 } },
-      // eight rows of one signed direction each, so the boundary between a
-      // group's row and the next one is not otherwise drawn
-      showRowSeparators: true,
+      scales: { y: { domainMin: -70, domainMax: 70, title: '% of tumors' } },
+      marks: [
+        {
+          mark: 'bar',
+          encoding: {
+            y: 'score',
+            color: {
+              field: 'score',
+              scale: 'threshold',
+              domain: [0],
+              range: ['#2166ac', '#b2182b'],
+              labels: ['loss', 'gain'],
+              title: 'Copy number call',
+            },
+          },
+        },
+      ],
     },
   ],
 }
@@ -749,10 +772,10 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // 10p gain the triple-negative row, and 1q gain is the event they share. A
   // zoom would carry one of those and imply the rest are alike.
   //
-  // Two callouts, one per subtype-specific event, each sitting in the half of
-  // its own row that the bars leave empty: a gain row fills upward from its
-  // baseline, so its label goes near the row's top edge, and a loss row hangs
-  // downward, so its label goes near the bottom. Both anchor to the locus in the
+  // Two callouts, one per subtype-specific event, each in the half of its row
+  // that event draws in: a gain rises from the row's midline, so the ERBB2
+  // label sits near the top edge, and a loss hangs below it, so the 16q label
+  // sits near the bottom. Both anchor to the locus in the
   // live view (`{track, locus}` resolves through the same bp->px layout that
   // painted the bar), with dy measured off the track's top edge in whole row
   // pitches, so neither has a hand-measured coordinate in it.
@@ -770,14 +793,14 @@ export const tcgaSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'tcga_brca_cnv_recurrence_by_subtype',
-              type: 'LinearWiggleDisplay',
+              type: 'LinearMarkDisplay',
               height: SUBTYPE_ROWS_HEIGHT,
             },
           ],
         },
       ],
     }),
-    readySelector: displayPainted('wiggle-display'),
+    readySelector: displayPainted('mark-display'),
     // 246KB across the whole genome, so unlike the 5.7MB stack this needs no
     // raised navigation or ready budget
     readyTimeout: 180000,
@@ -785,18 +808,19 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     // the display plus the view's own chrome (ruler, header, track label)
     viewportHeight: SUBTYPE_ROWS_HEIGHT + 210,
     annotations: [
-      // row 1, HER2+ gain: the amplicon that names the subtype. To the RIGHT of
-      // its locus, over chr18-22 where this row is flat; chr17 sits far enough
-      // from the frame's right edge for the pill to fit beside it.
+      // row 1, HER2+, whose gain half holds the amplicon that names the
+      // subtype. To the RIGHT of its locus, over chr18-22 where this row is
+      // flat; chr17 sits far enough from the frame's right edge for the pill to
+      // fit beside it.
       ...subtypeCallout({
         text: 'ERBB2 (17q12)',
         locus: '17:39,688,094',
         row: 1,
-        labelDy: 0.25,
-        headDy: 0.7,
+        labelDy: 0.12,
+        headDy: 0.35,
         labelDx: 60,
       }),
-      // row 4, HR+/HER2- loss: the arm-scale loss that is this subtype's
+      // row 0, HR+/HER2-, whose loss half holds the arm-scale loss that is this subtype's
       // signature the way 17q gain is HER2+'s. The label names a gene on the arm
       // rather than the arm alone -- CDH1 is at 16q22.1, and it is the gene the
       // mutation figures on this cohort are about -- since "16q loss" on its own
@@ -805,9 +829,9 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       ...subtypeCallout({
         text: '16q loss (CDH1 arm)',
         locus: '16:70,000,000',
-        row: 4,
-        labelDy: 0.6,
-        headDy: 0.3,
+        row: 0,
+        labelDy: 0.85,
+        headDy: 0.65,
         // far enough left to sit over chr13-14, where this row is flat
         labelDx: -420,
       }),

@@ -219,9 +219,14 @@ python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
 
 The `--groups` file is the same
 [clinical TSV](/docs/tutorials/tcga_cohort_mutations#what-the-two-files-hold)
-the mutation cohort uses. The eight columns arrive as eight signals, and a
-[`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track) draws one row
-each:
+the mutation cohort uses. The eight columns arrive as eight signals, each named
+for its subtype and direction, with losses stored below zero. We'll draw them on
+a [mark display](/docs/config_guides/mark_display), one row per subtype with its
+gain above the line and its loss below:
+
+- a `formula` step reads the subtype off each signal's column name
+- `rows` gives each subtype a row, in the order `domain` lists
+- the bar's colour cuts at zero, so the key names gain and loss
 
 ```json addtrack config=test_data/tcga_cnv/config.json
 {
@@ -234,29 +239,56 @@ each:
     "type": "BedGraphTabixAdapter",
     "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz"
   },
-  "displayDefaults": {
-    "height": 620,
-    "color": {
-      "field": "score",
-      "scale": "threshold",
-      "range": ["#2166ac", "#b2182b"]
-    },
-    "scales": { "y": { "domainMin": -70, "domainMax": 70 } },
-    "showRowSeparators": true
-  }
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "tcga_brca_cnv_recurrence_by_subtype-LinearMarkDisplay",
+      "height": 500,
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "jexl:replace(replace(feature.source, ' gain', ''), ' loss', '')",
+          "as": "subtype"
+        }
+      ],
+      "rows": {
+        "field": "subtype",
+        "domain": ["HR+/HER2-", "HER2+", "triple-negative", "unknown"]
+      },
+      "scales": {
+        "y": { "domainMin": -70, "domainMax": 70, "title": "% of tumors" }
+      },
+      "marks": [
+        {
+          "mark": "bar",
+          "encoding": {
+            "y": "score",
+            "color": {
+              "field": "score",
+              "scale": "threshold",
+              "domain": [0],
+              "range": ["#2166ac", "#b2182b"],
+              "labels": ["loss", "gain"],
+              "title": "Copy number call"
+            }
+          }
+        }
+      ]
+    }
+  ]
 }
 ```
 
-Row order follows the file's columns: four gain rows in red, then four loss rows
-in blue. The bottom row of each block is the tumors whose receptor calls do not
-resolve a subtype.
+**Display types → Marks** on a track already open draws one row per column, and
+**Edit plot...** adds the step and the rows. The bottom row is the tumors whose
+receptor calls do not resolve a subtype.
 
 <Figure caption="Gain and loss frequency per 100 kb across the 22 autosomes and chrX, tallied separately for each receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
 [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)/[`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax)
-pin the rows to one axis, narrower than the pooled track since each row fills
-only half its axis. Gain and loss stay separate columns, since at the edge of
-the 17q amplicon the HER2+ group is gained and lost at nearly the same rate.
+pin every row to one axis. The file keeps gain and loss as separate columns,
+since at the edge of the 17q amplicon the HER2+ group is gained and lost at
+nearly the same rate, and its row draws both.
 
 `--min-group` sets how many tumors a subtype needs before it is plotted; the
 script names each group it dropped. Point `--groups` at any other column for a

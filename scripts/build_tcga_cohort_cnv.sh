@@ -294,6 +294,33 @@ cfg['tracks'] += [
             'type': 'BedGraphTabixAdapter',
             'uri': f'{by}.gz',
         },
+        # One row per group, gain above the line and loss below: the columns
+        # are "<group> gain" and "<group> loss", losses negative.
+        'displays': [{
+            'type': 'LinearMarkDisplay',
+            'displayId': f'{out}_recurrence_by_{groupby}-LinearMarkDisplay',
+            'transform': [{
+                'type': 'formula',
+                'expr': "jexl:replace(replace(feature.source, ' gain', ''), ' loss', '')",
+                'as': 'group',
+            }],
+            'rows': {'field': 'group'},
+            'scales': {'y': {'domainMin': -70, 'domainMax': 70, 'title': '% of tumors'}},
+            'marks': [{
+                'mark': 'bar',
+                'encoding': {
+                    'y': 'score',
+                    'color': {
+                        'field': 'score',
+                        'scale': 'threshold',
+                        'domain': [0],
+                        'range': ['#2166ac', '#b2182b'],
+                        'labels': ['loss', 'gain'],
+                        'title': 'Copy number call',
+                    },
+                },
+            }],
+        }],
     },
 ]
 
