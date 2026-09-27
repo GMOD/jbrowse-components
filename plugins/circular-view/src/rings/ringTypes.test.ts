@@ -30,8 +30,12 @@ async function ringTestSession(
   track: Record<string, unknown>,
   displayType?: string,
   assemblies = ['volvox'],
+  fromCatalog = false,
 ) {
-  const session = createTestSession()
+  const ring = { trackId: 'ring', name: 'ring', assemblyNames: ['volvox'] }
+  const session = createTestSession(
+    fromCatalog ? { jbrowseConfig: { tracks: [{ ...ring, ...track }] } } : {},
+  )
   for (const name of assemblies) {
     session.addAssemblyConf({
       name,
@@ -60,12 +64,9 @@ async function ringTestSession(
       },
     })
   }
-  session.addSessionTrackConf({
-    trackId: 'ring',
-    name: 'ring',
-    assemblyNames: ['volvox'],
-    ...track,
-  })
+  if (!fromCatalog) {
+    session.addSessionTrackConf({ ...ring, ...track })
+  }
   const view = (await session.launchView('CircularView', {
     assembly: assemblies,
     tracks: [
@@ -506,4 +507,38 @@ test('a variant track keeps its chords: the view prefers its own display over an
   expect(display.type).toBe('ChordVariantDisplay')
   expect(view.ringHost.rings).toHaveLength(0)
   expect(view.chordRadiusPx).toBe(view.radiusPx)
+}, 30000)
+
+// The demo's BEDPE, Hi-C loop and fusion tracks declare only a mark display's
+// links, which on a ring arc round the circle where a chord crosses it. From
+// the catalog, where a track's displays are only the ones its JSON lists.
+test('a variant track declaring only a linear display still opens as chords', async () => {
+  const { display } = await ringTestSession(
+    {
+      type: 'VariantTrack',
+      displays: [
+        {
+          type: 'LinearMarkDisplay',
+          displayId: 'ring-LinearMarkDisplay',
+          marks: [{ mark: 'link' }],
+        },
+      ],
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: [
+          {
+            uniqueId: 'sv1',
+            refName: 'ctgA',
+            start: 100,
+            end: 200,
+            mate: { refName: 'ctgB', start: 1000, end: 1100 },
+          },
+        ],
+      },
+    },
+    undefined,
+    ['volvox'],
+    true,
+  )
+  expect(display.type).toBe('ChordVariantDisplay')
 }, 30000)

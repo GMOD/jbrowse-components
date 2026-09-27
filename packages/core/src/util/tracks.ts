@@ -1143,8 +1143,9 @@ export function pickDisplayForView({
   viewDisplayTypes: string[]
   /**
    * The display types the view registered as its own, ahead of those it
-   * inherits through `extendedName`: a variant track on the circular view
-   * draws its chords, not the linear display the view also accepts as a ring.
+   * inherits through `extendedName`, declared or not: a variant track on the
+   * circular view draws its chords, not the linear display the view also
+   * accepts as a ring, even where its config declares only the linear one.
    */
   preferredDisplayTypes?: Set<string>
 }) {
@@ -1171,8 +1172,8 @@ export function pickDisplayForView({
   const declared = declaredDisplays.filter(d => supported.has(d.type))
   const type =
     declared.find(d => preferredDisplayTypes.has(d.type))?.type ??
-    declared[0]?.type ??
     trackDisplayTypes.find(name => preferredDisplayTypes.has(name)) ??
+    declared[0]?.type ??
     trackDisplayTypes.find(name => supported.has(name))
   return type === undefined
     ? undefined

@@ -55,9 +55,10 @@ a resampling of the strip the display rendered.**
 - **The view inherits the linear genome view's display types.** `ViewType`
   already had `extendedName` and nothing used it. A track shown on the circle
   takes its own display types first — a variant track keeps its chords when its
-  config lists `LinearVariantDisplay` before `ChordVariantDisplay` — through
-  `pickDisplayForView`'s `preferredDisplayTypes`, and falls to the linear
-  display otherwise. A session spec naming `displaySnapshot.type` still picks
+  config lists `LinearVariantDisplay` before `ChordVariantDisplay`, or lists
+  only a linear display — through `pickDisplayForView`'s
+  `preferredDisplayTypes`, and falls to the linear display where its track type
+  has none. A session spec naming `displaySnapshot.type` still picks
   exactly that.
 - **The strip is the display's own component, hidden.** `RingStrips` mounts
   each ring display's `RenderingComponent` in a `visibility: hidden` wrapper

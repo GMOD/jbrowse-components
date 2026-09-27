@@ -61,6 +61,35 @@ describe('pickDisplayForView', () => {
     })
   })
 
+  // A view that inherits another's display types (the circular view takes the
+  // linear view's as rings) draws with its own where the track has one, so a
+  // config declaring only a linear display still opens as chords.
+  test('a view s own display type beats a declared display it only inherits', () => {
+    const inherited = {
+      declaredDisplays: [{ type: 'RegularDisplay', displayId: 'vcf_regular' }],
+      requestedType: undefined,
+      trackDisplayTypes,
+      viewDisplayTypes: [...viewDisplayTypes, 'ChordDisplay'],
+    }
+    expect(
+      pickDisplayForView({
+        ...inherited,
+        preferredDisplayTypes: new Set(['ChordDisplay']),
+      }),
+    ).toEqual({ type: 'ChordDisplay', conf: undefined })
+    expect(pickDisplayForView(inherited)).toEqual({
+      type: 'RegularDisplay',
+      conf: { type: 'RegularDisplay', displayId: 'vcf_regular' },
+    })
+    expect(
+      pickDisplayForView({
+        ...inherited,
+        requestedType: 'RegularDisplay',
+        preferredDisplayTypes: new Set(['ChordDisplay']),
+      })?.type,
+    ).toBe('RegularDisplay')
+  })
+
   test('falls back to the track type when the config declares no displays', () => {
     expect(
       pickDisplayForView({
