@@ -141,19 +141,19 @@ mechanism of the
       {
         "type": "BigWigAdapter",
         "name": "CpG",
-        "color": "red",
+        "color": "#d62728",
         "uri": "arabidopsis_wgbs_CpG.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CHG",
-        "color": "green",
+        "color": "#ff7f0e",
         "uri": "arabidopsis_wgbs_CHG.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "CHH",
-        "color": "blue",
+        "color": "#1f77b4",
         "uri": "arabidopsis_wgbs_CHH.bw"
       }
     ]
