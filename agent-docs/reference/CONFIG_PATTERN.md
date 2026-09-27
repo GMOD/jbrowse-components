@@ -265,8 +265,8 @@ a feature? If the value is going into `rpcProps()`, a renderer, or anywhere the
 worker will call `readConfigValue` on it, it is transport — read it raw. If it is
 going into a swatch, a menu label, or arithmetic on the main thread, it is a
 resolving read, and it needs either a feature in `args` or an `isJexl` guard.
-`LinearBasicDisplay`'s `featureColor` / `utrColor` / `colorByMode` are the worked
-examples of the second kind: raw read, `isJexl` guard, fall back to a default,
+`LinearBasicDisplay`'s `color` / `utrColor` are the worked examples of the
+second kind: raw read, `isJexl` guard, fall back to a default,
 because no single swatch can show a per-feature expression.
 
 Slots that can hold a callback are the ones declaring `contextVariable`, and

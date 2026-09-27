@@ -123,22 +123,15 @@ already computed.
 
 ### A palette with one slot substituted is still a palette
 
-`arcMarkerColorByIndex` is the read-cloud endpoint squares, and it is the arc
-palette with exactly one slot swapped: the squares are opaque fills, so the
-short-insert slot takes the pale pileup-fill color rather than the saturated
-stroke variant the thin translucent arc curves need. It was written as a branch
-on that index over the packed `u.colorShortInsert`, which left one small
-function **indexing a float4 array in one arm and unpacking a uint in the
-other**. Correct, and it rendered correctly, but it is the same shape as the
-17-arm chain above wearing a smaller hat: a rule about colors living in the
-shader, with a comment in `palettes.ts` promising the CPU copy mirrors it "down
-to the slot it overrides".
-
-It is now a second `float4[ARC_COLOR_SLOTS]`, `u.arcMarkerColor`, written from
-the `arcMarkerColorPalette` the Canvas2D and SVG marker draws already read. 144
-bytes, once per block render, to delete a branch and a promise. The general
-rule: **if the CPU can name the substitution, upload the substituted table** and
-let every renderer index the same one.
+The read-cloud endpoint squares used the arc palette with exactly one slot
+swapped: opaque fills take the pale pileup-fill short-insert color, not the
+saturated stroke the translucent arcs need. The shader first spelled that as a
+branch **indexing a float4 array in one arm and unpacking a uint in the other**
+— the 17-arm chain above in a smaller hat, with a comment promising the CPU
+copy mirrored it. Uploading the substituted table as its own array deleted the
+branch and the promise. The squares are a `point` mark pass now
+(`arcMarks.ts`), but the rule stands: **if the CPU can name the substitution,
+upload the substituted table** and let every renderer index the same one.
 
 ### Where the rule stops: a palette something overwrites at write time
 

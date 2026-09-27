@@ -256,8 +256,8 @@ vendored app or a `node_modules` that was uploaded with it.
 A related drift that reachability checks cannot see: `demos/hprc/` holds both
 `hprc-v2.0-mc-grch38.*` and `hprc-v2.1-mc-grch38.*`, and consumers can sit on
 either indefinitely because both answer 200. The HPRC tutorials moved to v2.1;
-GMOD/jb2hubs' own `hprc-grch38.json` graph config was still on v2.0 as of
-2026-09-09, serving the older graph with nothing reporting it. Its
+GMOD/jb2hubs' own `hprc-grch38.json` graph config stayed on v2.0 after they
+moved, serving the older graph with nothing reporting it. Its
 `pnpm check-pangenome-assets` now probes the next minor and major sibling of
 whatever version a config names, which is the general form of that check.
 

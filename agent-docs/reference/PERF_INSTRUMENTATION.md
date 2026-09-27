@@ -258,7 +258,7 @@ Recording these because future investigations will likely re-discover them.
    ~150× overdraw on slanted thin ribbons (a 1bp diagonal spanning 200px
    horizontally on a 200px-tall track produces ~42,600 fragments inside the
    bbox vs ~280 actual ribbon pixels). The 8-segment tessellated-trapezoid
-   geometry reduces this ~11×. See `syntenyFill.slang`.
+   geometry reduces this ~11×. See `syntenyFillCurve.slang`.
 
 6. **React reconciliation is fast on modern React + MobX**. React-flush of
    <2ms even during scroll. If you're suspecting "React commits are slow,"

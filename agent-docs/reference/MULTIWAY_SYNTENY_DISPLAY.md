@@ -16,14 +16,13 @@ test gaps — lives in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md),
 which is also the design record this file cites by section name.
 
-Read against the code on 2026-09-06 and re-checked on 2026-09-07, 2026-09-09 and
-2026-09-12. Paths: `JC/` is `~/src/jbrowse-components`, `P/` is
+Paths: `JC/` is `~/src/jbrowse-components`, `P/` is
 `~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer`, `G/` is
 `~/src/gbz-base-js`. The display is
 `JC/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/`, abbreviated
 `MW/` below, and cited by symbol rather than line, since its line numbers move
 with every change. Every measurement here was either taken against the hosted
-data on the reading date or is cited to the file that records it.
+data or is cited to the file that records it.
 
 ## Findings that have landed — do not re-fix them
 
@@ -385,7 +384,10 @@ does not know lanes exist. Concretely:
   reads, or sequence, and the gene track it shows is not the track the user
   configured a display for; it is the raw adapter re-drawn through
   `geneGlyph.ts` with the canvas track's rules (design record §"Gene glyph
-  rendering").
+  rendering"). ADR-180 makes a lane a list of grammar layers drawn through its
+  frame, which is how a second row arrives: gene names are the first extra
+  layer, on by default (`showGeneLabels`, placed by `laneGeneLabels`), and add
+  a 12 px row to each lane's band.
 - No per-lane navigation or zoom, by design: "Per-lane pan/zoom stays
   deliberately absent: the lanes re-fit to the anchor's viewport by design, and
   the launch above is the route to a lane you drive yourself" (design record

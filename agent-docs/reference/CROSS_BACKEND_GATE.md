@@ -332,7 +332,7 @@ rasterizer test that would have separated those two claims was not run on it.
 ### Fixed: the outline is one rule now, and the override is gone
 
 `read.slang` `export-consts`es `READ_OUTLINE_PX` / `READ_OUTLINE_SHADE` /
-`READ_OUTLINE_MIN_PX`, and `features/read/drawCanvas.ts` reads all three. The
+`READ_OUTLINE_MIN_WIDTH_PX` / `READ_OUTLINE_MIN_HEIGHT_PX`, and `features/read/mark.ts` reads them. The
 placement rule is `strokeRectInside` in `canvas2dUtils` — stroke inside the rect,
 never straddling it — which `plugins/canvas` had open-coded as `+0.5` and is now
 the one spelling both painters use.
@@ -785,7 +785,7 @@ found was eight stable failures: 3-4% on the targeted alignments captures and
 15-27% on the full-page ones, reproducing to the decimal across a from-scratch
 baseline build at `82ac1951f6` and every later run.
 
-**It was the capture, not the render, and it is fixed as of 2026-08-26.**
+**It was the capture, not the render, and it is fixed.**
 `el.screenshot()` scrolls the element into view first; Firefox scrolled an inner
 container by 73px where Chrome did not; the canvas top then sat under the app
 header and the capture composited 37px of locstring box, toolbar divs and ruler
@@ -834,7 +834,7 @@ safe; the drift is gone on its own.
 
 ### Widening the gate scripts: the drift half is done, the CI half is not
 
-`test:browser:gate` — the hand run — drops `--skip-webgpu` as of 2026-08-26.
+`test:browser:gate` — the hand run — drops `--skip-webgpu`.
 **`test:browser:gate:ci` does not, and the blocker is the runner, not the
 pixels.** `cross_backend_gate` in `push.yml` runs on `ubuntu-latest`, and the
 webgpu backend is the only one that is not Chrome:

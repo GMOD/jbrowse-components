@@ -422,7 +422,7 @@ touching either path, preserve whichever of these the display uses:
   wrapper, so authoring the scalar core pure and wrapping the conversion around
   it is what makes it exportable, and is the better shape anyway. Retire the
   hand-written twin only behind a differential sweep —
-  `hicShaderParity.test.ts` is the pattern.
+  `alphaShaderParity.test.ts` is the pattern.
   [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)
   covers why this stops at scalars and why a vertex/fragment stage is never
   transpiled;
@@ -1417,7 +1417,7 @@ WebGL2 path never enforces:
   fragment shader that branches on a varying — a `shape` discriminator, an early
   `return` — and then takes a derivative inside that branch fails with `'dpdy'
   must only be called from uniform control flow`. Fix: each branch picks only its
-  SDF, and the derivative + AA ramp run once after the branch (`manhattan.slang`),
+  SDF, and the derivative + AA ramp run once after the branch (`pointMark.slang`),
   or compute every glyph's alpha before the branch and let it select
   (`wiggle.slang`). Reconvergence restores uniformity, so a plain `if/else` that
   assigns and falls through is fine; `discard` doesn't demote it either.

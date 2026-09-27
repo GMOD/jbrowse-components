@@ -438,7 +438,7 @@ this table exists at all: **a "pass" identifier means a PSO**, and **our uniform
 | **Primitive topology** | `PipelineDescriptor.topology` | `hal/types.ts` |
 | **MSAA / resolve target** | `SampleCount` — per display, stated by `RenderingBackendOptions.sampleCount` and 4 unless a display says otherwise; `msaaView` + `resolveTarget` | `hal/types.ts`, `webgpuHal.ts` |
 | **Scissor / viewport** | same words | `hal/types.ts` |
-| **Frustum culling** | "cull" — CPU-side, over a 1D bp interval; there is no frustum and no camera | `syntenyRibbonCull.ts`, `syntenyFetchWindow.ts` |
+| **Frustum culling** | "cull" — CPU-side, over a 1D bp interval; there is no frustum and no camera | `syntenyTypes.slang`, `syntenyFetchWindow.ts` |
 | **Spatial index / BVH** | Flatbush (packed Hilbert R-tree) — **picking and hit-testing only**, never draw culling | `packages/core/src/util/flatbush/` |
 | **Scene graph** | the MST view → track → display tree; we never call it that | `ARCHITECTURE.md` §"Display stacks" |
 | **Render graph / frame graph** | none, deliberately | GPU_RENDERING.md §"What this architecture deliberately does not have" |

@@ -17,7 +17,7 @@ is filed:
 - `handoffs/` — live state of an unfinished thread, usually a review whose
   findings nobody has committed to. **Pointers, not content.** Delete when the
   thread lands. A handoff names what is unfinished and never where someone was
-  doing it: `pnpm check-handoff-pointers` refuses a branch or a worktree path,
+  doing it: `check-handoff-pointers.ts`, run by `pnpm check-docs`, refuses a branch or a worktree path,
   since both are gone once the thread lands and neither is reachable from
   another machine before that. Citing a commit stays legal. **The "next" list is
   the part that rots**, so re-read it against main before editing a handoff, and

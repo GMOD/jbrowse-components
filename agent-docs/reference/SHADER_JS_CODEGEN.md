@@ -158,7 +158,7 @@ move on. The reason to generate a twin is that a hand-written one drifts
    offending type; a dead function says so.
 4. Wire the consumer, keeping the hand-written twin **as a test fixture**.
 5. Sweep generated-vs-retired over the inputs where it historically broke, then
-   delete the fixture. Copy `hicShaderParity.test.ts`. If the sweep fails,
+   delete the fixture. Copy `alphaShaderParity.test.ts`. If the sweep fails,
    **decide which side is right first** — `scoreToYParity` failed because the
    hand-written twin was wrong, not the generator.
 6. Cross-package consumers outside the `js-export-out` package need an entry in
@@ -501,8 +501,6 @@ fill pad). Recount rather than restate.
 
 Three structural findings from that sweep, so it need not be redone:
 
-- **`maf.slang` and `multiRow.slang` are entry points over `rowRect`** and hold no
-  math of their own. Their decisions were already exported via `rowRect`.
 - **The thin alignments passes** (`clip`, `arcMarker`, `linkedReadLine`) are
   `vs_main` over `alignmentsUniforms` helpers. Anything shared in them is in that
   module, so that is where to look. The coverage band's four were the same shape

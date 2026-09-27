@@ -100,7 +100,7 @@ export default function stateModelFactory(
         return getConf(self, 'displayDirectionalChevrons')
       },
 
-      // Raw slot rather than getConf, as `featureColor` reads its own: a jexl
+      // Raw slot rather than getConf: a jexl
       // color evaluated without a feature throws.
       get utrColor(): string {
         const raw = this.conf.utrColor

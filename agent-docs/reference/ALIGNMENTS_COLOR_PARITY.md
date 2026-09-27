@@ -133,8 +133,7 @@ showing translocations.
 
 Now both sides call `refNameColor` (core, beside `getQueryColor`), which takes a
 position and hashes only when there is none. The alignments position comes from
-`paintedRefNamePosition`, the twin of `LinearSyntenyDisplay.paintedChromosomeOrder`
-— **canonicalized first**, because a mate reference is `next_ref` and arrives in
+`paintedRefNamePosition` — **canonicalized first**, because a mate reference is `next_ref` and arrives in
 the file's spelling (REFNAME_NAMESPACES.md). Both halves fail silently, so both
 are sabotage-checked in `chromosomePainting.test.ts`: dropping the
 canonicalization and dropping the whole position both fall back to a real,
@@ -148,7 +147,7 @@ a **call site**, not a rule.
 
 `linkedReadColorSlot` (a clamp, generated from `alignmentsUniforms.slang`)
 replaced a hand-spelled `colorType % palette.length` at three sites. Two moved
-onto it; `features/linkedReads/drawCanvas.ts` — the Canvas2D/SVG twin of the GPU
+onto it; the linked-reads Canvas2D/SVG painter — the twin of the GPU
 straight-line pass — did not, and the rule's own unit test passed throughout,
 because it tested the rule. **Test the caller when the rule is shared**; a rule with three callers
 and one test proves nothing about the other two.

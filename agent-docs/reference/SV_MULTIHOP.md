@@ -507,11 +507,6 @@ else's program, and not in the browser.
   to this — it used to leave its whole temp directory behind, every run.
 - **Port 3334 is exclusive to one screenshot run.** Other agents use it. Wait on
   it (`until ! ss -lptn 'sport = :3334' | grep -q LISTEN`), never kill it.
-- **`galleryLinks.generated.ts` must be committed surgically.** Regenerating it
-  from the working tree bakes in other agents' uncommitted spec entries and
-  fails CI, which regenerates from committed specs. Build it as
-  `git show HEAD:<file>` plus your own entries in spec-array order, verify the
-  diff is additions only, commit, then regenerate to restore the shared tree.
   See `key_pattern_shared_worktree_generated_aggregate_commit`.
 - **Verify CI checks in a detached worktree at HEAD**, which is what CI actually
   does: `gen-gallery-links --check`, `check-spec-recipes --check`,

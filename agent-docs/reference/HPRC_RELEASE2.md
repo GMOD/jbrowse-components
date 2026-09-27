@@ -44,7 +44,7 @@ per-build set, and what is in them changes which file to reach for.
   name sequences `GRCh38.chr6`, and the v2.0 TAF's header is
   `#taf run_length_encode_bases:1 version:1`, which `BgzipTaffyAdapter.ts` handles
   explicitly.
-- **Everything here reads v2.1 since 2026-09-16**, the alignment included. The
+- **Everything here reads v2.1**, the alignment included. The
   TAF was the last holdout, on the read sizes below; the re-run beat them.
 - **What the gate sees, measured 2026-09-16** through `queryBlockSpan` over the
   buffered region the fetch uses (the view plus half a screen each side), against
