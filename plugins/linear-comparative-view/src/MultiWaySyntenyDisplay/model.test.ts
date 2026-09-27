@@ -19,6 +19,7 @@ import { autorun, when } from 'mobx'
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { LaneGene } from './geneGlyph.ts'
+import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
@@ -2058,6 +2059,48 @@ test('the fit sees a record cut to the viewport, the picture sees it whole', () 
   expect(display.fitGroups.map(g => g.anchor)).toEqual([
     { refName: 'ctgA', start: 0, end: 800 },
   ])
+})
+
+// The seed a lane aligns on is the centre of what the viewport shows, the same
+// cut the lane's own runs are: seeded at the whole record's centre, ctgA:500,
+// against the lane's cut centre, ctgB:5400, a lane of one long record — a
+// haplotype off a graph — slid 100px toward its overhang
+test('a record running off the viewport aligns its lane on the part it shows', () => {
+  const display = createDisplay()
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'r1',
+      refName: 'ctgA',
+      start: 0,
+      end: 1000,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 5000,
+        end: 6000,
+      },
+    }),
+  ])
+  const { anchorAbsX, lgv } = display
+  expect(anchorAbsX.get('r1')?.x).toBe(400)
+  const decision = decideLaneFrames({
+    groups: display.fitGroups,
+    assemblyNames: ['volvox_random'],
+    anchorX: new Map([...anchorAbsX].map(([key, { x }]) => [key, x])),
+    anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,
+    pxOfAnchor: coord => lgv.bpToPx(coord)?.offsetPx,
+    unitBp: display.visibleBpSpan,
+    width: display.canvasWidth,
+    previous: new Map(),
+  }).get('volvox_random')!
+  const frame = frameFromDecision(
+    decision,
+    lgv.bpToPx(decision.pivotAnchor)!.offsetPx,
+    display.visibleBpSpan,
+    display.canvasWidth,
+  )
+  expect(frame.min).toBeCloseTo(5000)
 })
 
 // A sliced displayed region — a bookmark, a launched panel, one region of

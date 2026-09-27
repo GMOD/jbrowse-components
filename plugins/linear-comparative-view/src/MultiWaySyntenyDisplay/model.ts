@@ -1663,14 +1663,33 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the first link of the alignment chain: each visible group's anchor
-       * centre and the view's px for it BEFORE the scroll offset, so a settle
-       * decision reading this does not re-run on every pan
+       * the first link of the alignment chain: the centre of what the viewport
+       * shows of each group, and the view's px for it BEFORE the scroll
+       * offset, so a settle decision reading this does not re-run on every
+       * pan. Off `fitGroups`, the cut the lanes are aligned by: the whole
+       * record's centre sits off to the side it overhangs, and a lane holding
+       * a few long records slid by half the overhang
        */
       get anchorAbsX(): Map<string, { coord: AnchorCoord; x: number }> {
+        const view = self.lgv
+        const assembly = self.anchorAssembly
         const out = new Map<string, { coord: AnchorCoord; x: number }>()
-        for (const [key, { centre, x1, x2 }] of self.anchorPlacements) {
-          out.set(key, { coord: centre, x: (x1 + x2) / 2 })
+        if (!view.initialized || !assembly) {
+          return out
+        }
+        for (const group of self.fitGroups) {
+          const placement = axisPlacement(
+            view,
+            assembly.getCanonicalRefName2(group.anchor.refName),
+            group.anchor.start,
+            group.anchor.end,
+          )
+          if (placement) {
+            out.set(group.key, {
+              coord: placement.centre,
+              x: (placement.x1 + placement.x2) / 2,
+            })
+          }
         }
         return out
       },

@@ -97,7 +97,11 @@ Re-checked against the code and every tutorial the display appears in.
   anchor's even where that leaves part of its fit off an edge or starts its
   frame below zero; the header, ticks and gene fetch stop at zero. The hold
   compares against what a fresh alignment would show, and the lane order ranks
-  each lane by its heaviest contig (§4.3).
+  each lane by its heaviest contig (§4.3). The anchor seed a lane aligns on,
+  `anchorAbsX`, is the centre of what the viewport shows of each group, the
+  same cut as the lane's runs; seeded at the whole record's centre, the HPRC
+  CFH haplotypes, each a few long records running past the window, slid about
+  75 px toward their overhang once the shift was unclamped.
 
 Still open, and carried in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md):
