@@ -3639,7 +3639,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": 1
             },
             "title": {
-              "description": "key title; unset follows field, \\"\\" draws none.",
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
             }
           },
@@ -5523,7 +5523,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "title": {
-              "description": "key title; unset follows field, \\"\\" draws none.",
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
             }
           },
@@ -5595,7 +5595,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "title": {
-              "description": "key title; unset follows field, \\"\\" draws none.",
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
             }
           },
@@ -6110,7 +6110,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "title": {
-              "description": "key title; unset follows field, \\"\\" draws none.",
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
             }
           },
@@ -6473,7 +6473,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "title": {
-              "description": "key title; unset follows field, \\"\\" draws none.",
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
             }
           },
@@ -7163,7 +7163,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "type": "number"
             },
             "title": {
-              "description": "key title; unset follows field, \\"\\" draws none.",
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
             },
             "breaks": {
@@ -17398,7 +17398,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "title": {
-              "description": "key title; unset follows field, \\"\\" draws none.",
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
               "$ref": "#/$defs/PlainString"
             }
           },
