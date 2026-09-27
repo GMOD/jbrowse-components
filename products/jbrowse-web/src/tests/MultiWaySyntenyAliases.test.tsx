@@ -122,7 +122,9 @@ test('a lane finds an annotation declared under an alias and draws it', async ()
   // the drawn side: those genes reach the lane rather than being filtered out
   // by a refName comparison across two files
   const drawn = [...display.laneGlyphCells.values()].flatMap(cell =>
-    cell.kind === 'glyphs' ? cell.data.hits.map(h => h.label) : [],
+    cell.kind === 'glyphs'
+      ? cell.data.hits.map(h => h.label.split('\n')[0])
+      : [],
   )
   expect(drawn).toContain('p1')
   expect(drawn).toContain('p2')
