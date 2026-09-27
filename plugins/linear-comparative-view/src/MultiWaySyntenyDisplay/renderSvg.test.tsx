@@ -66,8 +66,6 @@ test('the SVG export carries no hover and no selection; the chrome ink does', as
   expect(await exported()).toBe(quiet)
 })
 
-// A figure of the stack draws no labels at all, so what the exported picture
-// says about its colors is the key or nothing.
 test('the export carries the color key where the colors key something', async () => {
   const display = createDisplay()
   setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
@@ -101,5 +99,39 @@ test('the export carries the color key where the colors key something', async ()
   display.setShowLegend(false)
   expect(renderToString(<svg>{await display.renderSvg()}</svg>)).not.toContain(
     'color-legend',
+  )
+})
+
+// Each named placement with no gene over it is a box naming the table's gene,
+// and the export prints that name in the lane's name row, as the screen does.
+test('the export prints the lane names, and none with names off', async () => {
+  const display = createDisplay()
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'r1',
+      name: 'galF',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 200,
+        name: 'galF_mate',
+      },
+    }),
+  ])
+  await when(() => display.svgReady, { timeout: 5000 })
+  display.setShowLegend(false)
+  const svg = renderToString(<svg>{await display.renderSvg()}</svg>)
+  expect(svg).toContain('>galF<')
+  expect(svg).toContain('>galF_mate<')
+
+  display.setShowGeneLabels(false)
+  expect(renderToString(<svg>{await display.renderSvg()}</svg>)).not.toContain(
+    'galF_mate',
   )
 })
