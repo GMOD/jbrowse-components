@@ -88,7 +88,6 @@ describe('makeScoreSubMenu derives its radios from the scale', () => {
 const testConfigSchema = ConfigurationSchema('TestScoreDisplay', {
   scales: scalesSchema(
     valueScaleSchema({
-      types: ['linear', 'log', 'symlog'],
       domainQuantile: 0.99,
     }),
   ),
@@ -145,7 +144,7 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
 // to cross.
 describe('the reference lines row', () => {
   const ruledSchema = ConfigurationSchema('TestRuledDisplay', {
-    scales: scalesSchema(valueScaleSchema({ types: ['linear'] })),
+    scales: scalesSchema(valueScaleSchema()),
   })
   const ruled = (bandTops?: number[]) =>
     types

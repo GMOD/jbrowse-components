@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it. Amended 2026-09-20: the scale also owns `rules`, its reference lines as a typed array with a bare-number shorthand, and `title`, its axis caption as a three-state `maybeString`, each a factory opt-in; `ValueScale` carries both to the chrome, which draws a scale's rules down its own bands and its caption once however many bands it rules. Amended 2026-09-21: the caption is optional, unset drawing none rather than deriving the shared \`encoding.y\` field. Amended 2026-09-26: every scale takes `rules`, `title`, `grid` and `minimalTicks`, the coverage band draws all four, and `grid` is read per axis"
+summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it. Amended 2026-09-20: the scale also owns `rules`, its reference lines as a typed array with a bare-number shorthand, and `title`, its axis caption as a three-state `maybeString`, each a factory opt-in; `ValueScale` carries both to the chrome, which draws a scale's rules down its own bands and its caption once however many bands it rules. Amended 2026-09-21: the caption is optional, unset drawing none rather than deriving the shared \`encoding.y\` field. Amended 2026-09-26: every scale takes `rules`, `title`, `grid` and `minimalTicks` and the same three types, the factory takes only the `domainQuantile` and `symlogConstant` defaults, the coverage band draws all four guides and its density tier draws its own counts scale, and `grid` is read per axis"
 ---
 
 # ADR-142: One value-scale object, on every quantitative display
@@ -64,8 +64,11 @@ alone — one scale per aesthetic, owned by the plot.
 | `numStdDev` | `localsd` is a mode | 3 | — | 3 | 3 |
 | `numQuantile` | `localpercentile` is a mode | 0.99 | — | — | 0.99 |
 | `symlogConstant` | `symlog` is a type | 0 | — | 1 | — |
-| `rules` | always (2026-09-26) | none | none | none | none |
-| `title` | always (2026-09-26) | unset, which draws no caption | unset | unset | unset |
+| `rules` | the factory is given `rules: true` | none | none | — | none |
+| `title` | the factory is given `title: true` | — | — | — | unset, which draws no caption |
+
+The table records the decision as made; §"Amended 2026-09-26: every scale
+takes every guide" has the members as they stand.
 
 `numStdDev` and `numQuantile` gate on the modes rather than on `autoscale`
 being present at all: the coverage band offers `local` and `localsd`, so a
@@ -281,9 +284,26 @@ while the density tier stands in, whose axis counts features per bin rather
 than reads. The wiggle display gained `title`. `grid` became a `ValueScale`
 member read per axis, replacing a host-level `showCrossHatches`: the
 alignments display draws two scales, and a host flag would have hatched the
-read cloud's TLEN band with the coverage band's grid. What still differs
-between displays is what their renderers place: the `type` enum, and the
-`domainQuantile` and `symlogConstant` defaults.
+read cloud's TLEN band with the coverage band's grid.
+
+Every display offers the same three types, so the factory's `types` option
+went too, and what it still takes is two defaults. A follow-up the same day
+made the guides belong to the scale that is drawn. While the density tier
+stands in, the coverage band draws a scale of its own over the bins' counts,
+keeping `grid` and `minimalTicks` and captioned "features per bin", where the
+depth title, rules and pinned ends do not apply. The band's depth scale floors
+at 0 through `defaultScoreDomain`, so a rule below 0 drops and the axis stays
+on the bars' baseline.
+
+| member | wiggle | coverage band, LGV synteny | mark, Manhattan |
+| --- | --- | --- | --- |
+| `type` | `linear\|log\|symlog`, `linear` | same | same |
+| `domainMin`, `domainMax` | unset | unset, bottom floored at 0 | unset |
+| `domainQuantile` | 0.99 | 1 | 1 |
+| `symlogConstant` | 0 | 1 | 0 |
+| `autoscaleGroup`, `title` | unset | unset | unset |
+| `rules` | none | none | none |
+| `grid`, `minimalTicks` | false | false | false |
 
 ## Rejected alternatives
 

@@ -15,7 +15,6 @@ import {
 export function wiggleValueScale() {
   return scalesSchema(
     valueScaleSchema({
-      types: ['linear', 'log', 'symlog'],
       domainQuantile: DEFAULT_CLIP_QUANTILE,
     }),
   )

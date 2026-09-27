@@ -240,12 +240,14 @@ describe('the band fetches nothing where the gate is not blocking', () => {
   })
 })
 
-// The bins count features rather than reads, so a depth rule stays off their axis.
-test('the coverage scale carries its title and grid, and no rules under the density tier', () => {
+// The bins count features rather than reads, so the tier draws a scale of its
+// own: the depth title, rules and pinned ends stay off it, the grid stays on.
+test('the density tier draws its own counts scale under the unit-free guides', () => {
   const { display } = refusedDisplay({ withSource: true })
   setConf(display, ['scales', 'y'], {
     title: 'depth',
     grid: true,
+    domainMax: 60,
     rules: [{ value: 30, label: 'diploid' }],
   })
   display.setCoarseTier(
@@ -253,10 +255,11 @@ test('the coverage scale carries its title and grid, and no rules under the dens
     { regions: [], key: 'test-key' },
   )
   expect(display.valueScales[0]).toMatchObject({
-    caption: 'depth',
+    caption: 'features per bin',
     grid: true,
     rules: [],
   })
+  expect(display.coverageDepthDomain![1]).toBeGreaterThanOrEqual(4000)
   expect(display.scoreRules).toEqual([{ value: 30, label: 'diploid' }])
   expect(display.scoreRulesDrawn).toBe(false)
 })

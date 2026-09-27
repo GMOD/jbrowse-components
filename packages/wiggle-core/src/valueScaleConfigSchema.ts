@@ -3,12 +3,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+const VALUE_SCALE_TYPES = ['linear', 'log', 'symlog'] as const
+
 export interface ValueScaleOptions {
-  /** the scale types this display's renderer places, `linear` first */
-  types: readonly string[]
   /** `domainQuantile`'s default: 1 follows the extremes, 0.99 clips the outermost 1% */
   domainQuantile?: number
-  /** `symlogConstant`'s default, where `types` holds `symlog` */
+  /** `symlogConstant`'s default */
   symlogConstant?: number
 }
 
@@ -125,10 +125,9 @@ export type ValueScaleRuleConfig = Instance<
  * ```
  */
 export function valueScaleSchema({
-  types: scaleTypes,
   domainQuantile = 1,
   symlogConstant = 0,
-}: ValueScaleOptions) {
+}: ValueScaleOptions = {}) {
   return ConfigurationSchema(
     'ValueScale',
     {
@@ -138,15 +137,14 @@ export function valueScaleSchema({
        * renderer's placement all come from it. `log` cannot represent 0 or
        * negative values and floors the domain above them; `symlog` is log-like
        * away from zero and linear through it, so a track whose values touch or
-       * cross 0 keeps them. Which of the three a display offers is which of
-       * them its renderer places.
+       * cross 0 keeps them.
        */
       // #region stringEnumSlot
       type: {
         type: 'stringEnum',
-        model: types.enumeration('ValueScaleType', [...scaleTypes]),
+        model: types.enumeration('ValueScaleType', [...VALUE_SCALE_TYPES]),
         defaultValue: 'linear',
-        description: scaleTypes.join(' or '),
+        description: VALUE_SCALE_TYPES.join(' or '),
       },
       // #endregion
       /**
@@ -179,24 +177,20 @@ export function valueScaleSchema({
         type: 'maybeString',
         description: 'tracks naming one group autoscale together',
       },
-      ...(scaleTypes.includes('symlog')
-        ? {
-            /**
-             * #slot scales.y.symlogConstant
-             * Width of symlog's linear region around zero. `0` derives it from
-             * the domain, a thousandth of its largest magnitude — right for a
-             * wiggle track, whose units are its own. The coverage band starts
-             * at `1` instead, which makes symlog exactly `log(depth+1)` and
-             * puts the knee at one read.
-             */
-            symlogConstant: {
-              type: 'number',
-              defaultValue: symlogConstant,
-              description: "width of symlog's linear region around zero",
-              advanced: true,
-            },
-          }
-        : {}),
+      /**
+       * #slot scales.y.symlogConstant
+       * Width of symlog's linear region around zero. `0` derives it from
+       * the domain, a thousandth of its largest magnitude — right for a
+       * wiggle track, whose units are its own. The coverage band starts
+       * at `1` instead, which makes symlog exactly `log(depth+1)` and
+       * puts the knee at one read.
+       */
+      symlogConstant: {
+        type: 'number',
+        defaultValue: symlogConstant,
+        description: "width of symlog's linear region around zero",
+        advanced: true,
+      },
       /**
        * #slot scales.y.domainQuantile
        * What an unpinned end follows over the loaded values: `1` their

@@ -605,15 +605,26 @@ the row axis in the vocabulary above, and none is a new channel.
   union nothing and each key is its own: the domain is a uniform each mark's
   shaders read off its own loaded values, so sharing it is a rendering change
   to measure, not a legend change.
-- **A reference line is the scale's, so it has no zoom range.**
-  `scales.y.rules` and `scales.y.title` are members of the one value scale
+- **A reference line is the scale's, so it has no zoom range and no
+  per-row value.** Every `scales.y` carries its guides: `rules`, `title`,
+  `grid` and `minimalTicks`
   ([ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)
-  §Consequences). A multiscale pair shares that scale, so a rule written for
-  the raw mark's quantity draws over the binned mark's too; ggplot2's
-  `geom_hline` is a layer, which here would carry `minBpPerPx`/`maxBpPerPx`,
-  and nothing is built for it. A title is opt-in and holds at every zoom
-  (ADR-142 §"Amended 2026-09-21"), and a faceted plot's axis is titled once
-  beside its bands, as ggplot2's is beside the panel stack.
+  §"Amended 2026-09-26"). `title` and `minimalTicks` are ggplot2 scale
+  arguments (`name`, `breaks`), and `grid` is Vega-Lite's `axis.grid` rather
+  than ggplot2's theme, which is right while each scale draws one axis. A rule
+  is the conflation, since ggplot2's `geom_hline` is a layer. A multiscale pair
+  shares the scale, so a rule written for the raw mark's quantity draws over
+  the binned mark's too, and a row-stacked plot draws one value in every row,
+  where a `geom_hline` with the facet column in its data could draw one per
+  row; a rule layer would carry `minBpPerPx`/`maxBpPerPx` and a row field, and
+  nothing is built for it. A rule trains the scale as `yintercept` does in
+  ggplot2, so an autoscaled end widens to reach it. A title is written, never
+  derived, and holds at every zoom (ADR-142 §"Amended 2026-09-21"), and a
+  faceted plot's axis is titled once beside its bands, as ggplot2's is beside
+  the panel stack. A guide belongs to the scale that is drawn. The coverage
+  band's density tier counts features per bin, so it draws a scale of its own
+  that keeps `grid` and `minimalTicks` and drops the depth title, rules and
+  pinned ends.
 - **No conditional encoding.** Hover and selection are a guide over the
   painting, not a `condition` on a channel: a display names the lit
   instances and the chrome boxes their ink

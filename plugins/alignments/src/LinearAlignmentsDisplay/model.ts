@@ -1021,28 +1021,34 @@ export default function stateModelFactory(
                         entries,
                         self.domainQuantile,
                       )!,
-                      self.scoreRules
-                        .map(rule => rule.value)
-                        .filter(value => value >= 0),
+                      self.scoreRules.map(rule => rule.value),
                     ),
                 })
           },
 
           /**
            * #getter
+           * Depth has a floor of 0, so an unpinned bottom stays there whatever
+           * a rule below it asks for.
+           */
+          get defaultScoreDomain(): [number | undefined, number | undefined] {
+            return [0, undefined]
+          },
+
+          /**
+           * #getter
            * The autoscaled depth domain. While the density tier stands in, the
-           * axis is the bins' own: a count of features per bin rather than a
-           * read depth, under the same min/max bounds the Coverage menu
-           * writes, undefined until some region holds one so the depth-scaled
-           * layers stay gated on the same `hasCoverageScale` question they
-           * always were.
+           * axis is the bins' own, a count of features per bin: its own scale,
+           * which the depth bounds `scales.y` pins do not reach. Undefined
+           * until some region holds one so the depth-scaled layers stay gated
+           * on the same `hasCoverageScale` question they always were.
            */
           get coverageDomain(): [number, number] | undefined {
             return self.coarseTierStandsIn
               ? this.densityDepthMax > 0
                 ? getNiceDomain({
                     domain: [0, this.densityDepthMax],
-                    bounds: [self.minScoreBound, self.maxScoreBound],
+                    bounds: [0, undefined],
                     scaleType: self.scaleType,
                   })
                 : undefined
@@ -2985,19 +2991,22 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Overrides `ScoreScaleMixin`'s: `scales.y.rules` are depths, so the
-         * coverage band draws them except while the density tier's feature
-         * counts stand in.
+         * Overrides `ScoreScaleMixin`'s: `scales.y.rules` are depths, so they
+         * draw on the coverage band, and not while the density tier's
+         * feature counts stand in for it.
          */
         get scoreRulesDrawn(): boolean {
-          return !self.coarseTierStandsIn
+          return self.showCoverage && !self.coarseTierStandsIn
         },
 
         /**
          * #getter
          * The scales the chrome places the axes from. Coverage rules one band
          * per section, on the right wherever the group label chips take the
-         * left edge; the read cloud's insert-size scale rules the arc band of
+         * left edge. While the density tier stands in, its scale counts
+         * features per bin, so it keeps the unit-free guides of `scales.y`
+         * and is captioned with its unit instead of the depth title and
+         * rules. The read cloud's insert-size scale rules the arc band of
          * every section that reserves one, on the side its axis had in each
          * mode, captioned TLEN. Each band is projected to screen through the
          * section's own scroll; the chrome drops the ones off screen.
@@ -3006,6 +3015,7 @@ export default function stateModelFactory(
           const { scrollModel: scroll, renderSections } = self
           const scales: ValueScale[] = []
           if (self.showCoverage && self.coverageDepthDomain) {
+            const counts = self.coarseTierStandsIn
             scales.push({
               domain: self.coverageDepthDomain,
               scaleType: self.scaleType,
@@ -3013,8 +3023,8 @@ export default function stateModelFactory(
               ticks: self.coverageTicks,
               side: self.showsGroupLabels ? 'right' : 'left',
               symlogConstant: self.symlogConstant,
-              caption: self.scaleTitle,
-              rules: this.scoreRulesDrawn ? self.scoreRules : [],
+              caption: counts ? 'features per bin' : self.scaleTitle,
+              rules: counts ? [] : self.scoreRules,
               grid: self.grid,
               bandTops: renderSections.map(section =>
                 bandScreenTop(section.coverageTop, scroll),

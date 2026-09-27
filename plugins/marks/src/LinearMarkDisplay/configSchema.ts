@@ -485,14 +485,9 @@ export function configSchemaFactory() {
        * #slot scales
        * The scales the marks are read through, owned by the display rather
        * than by a mark: `y` alone, and every mark's `encoding.y` shares it.
-       * The same object the wiggle family declares, with its three scale
-       * types.
+       * The same object the wiggle family declares.
        */
-      scales: scalesSchema(
-        valueScaleSchema({
-          types: ['linear', 'log', 'symlog'],
-        }),
-      ),
+      scales: scalesSchema(valueScaleSchema()),
       /**
        * #slot origin
        * The value bars grow from. The axis widens to include it whenever a

@@ -176,9 +176,9 @@ For enums, use `type: 'stringEnum'` and add a `model` field. The value scale's
 ```ts
 type: {
   type: 'stringEnum',
-  model: types.enumeration('ValueScaleType', [...scaleTypes]),
+  model: types.enumeration('ValueScaleType', [...VALUE_SCALE_TYPES]),
   defaultValue: 'linear',
-  description: scaleTypes.join(' or '),
+  description: VALUE_SCALE_TYPES.join(' or '),
 },
 ```
 

@@ -230,7 +230,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       scales: scalesSchema(
         valueScaleSchema({
-          types: ['linear', 'log', 'symlog'],
           symlogConstant: 1,
         }),
       ),

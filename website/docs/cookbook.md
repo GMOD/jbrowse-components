@@ -433,21 +433,24 @@ has a worked config).
 
 ## Settings every track type shares {#shared-settings}
 
-A handful of setting names recur across track types, and each means the same
-thing wherever it appears, as in ggplot2 and Vega-Lite. `field` names a feature
-field, `domain` lists values in the order you want them, and `range` gives what
-each value gets.
+A handful of setting names recur across track types. `field` names a feature
+field. Over a field's categories (a colour per value, the sections of a facet,
+the rows) `domain` lists the values that lead, in order, and the rest follow
+after them; a colour's `range` gives the listed values their colours, as
+ggplot2's `breaks` with named `values` would. A threshold colour reads `domain`
+as its cut points, one fewer than the colours in `range`, and a gradient pins
+its ends with `domainMin` and `domainMax`.
 
-| Setting    | What it does                                                                                                                                 | Track types                                                              |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `color`    | a CSS colour, or `{ "field", "domain", "range" }` painting by a field, with a key ([Colors](#colors))                                        | every track with a colour; the fields it can name differ per type        |
-| `facet`    | one labelled section per value of a field; `domain` stacks the listed values first                                                           | feature, variant, alignments, synteny, mark display                      |
-| `rows`     | one row per source or sample; `domain` puts the listed rows first                                                                            | quantitative, multi-row feature, multi-sample variant, MAF, mark display |
-| `scales.y` | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, alignments coverage, synteny, mark display, GWAS           |
+| Setting    | What it does                                                                                                                                 | Track types                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `color`    | a CSS colour, or `{ "field", "domain", "range" }` painting by a field, with a key ([Colors](#colors))                                        | feature, variant, alignments, quantitative, synteny, mark display (`encoding.color`) |
+| `facet`    | one labelled section per value of a field; `domain` stacks the listed values first                                                           | feature, variant, alignments, synteny, mark display                                  |
+| `rows`     | one row per source or sample; `domain` puts the listed rows first                                                                            | quantitative, multi-row feature, multi-sample variant, MAF, mark display             |
+| `scales.y` | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, alignments coverage, synteny, mark display, GWAS                       |
 
-A `scales.y` object carries over unchanged between those track types. This one
-captions an alignments track's coverage band, rules it at every tick and draws a
-labelled line at 20x:
+The same `scales.y` object works on each of those track types. This one captions
+an alignments track's coverage band, rules it at every tick and draws a labelled
+line at 20x:
 
 ```json addtrack
 {
