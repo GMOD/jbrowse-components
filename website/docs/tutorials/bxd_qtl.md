@@ -147,7 +147,8 @@ first if you haven't. See the
       "color": {
         "scale": "identity",
         "domain": ["rgb(65,105,225)", "rgb(220,60,50)", "rgb(150,150,150)"],
-        "labels": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"]
+        "labels": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"],
+        "title": "Genotype"
       }
     }
   ]
@@ -225,7 +226,8 @@ natural-log p-value column would need it instead. See the
   },
   "displays": [
     {
-      "type": "LinearManhattanDisplay"
+      "type": "LinearManhattanDisplay",
+      "scales": { "y": { "title": "LOD" } }
     }
   ]
 }

@@ -280,7 +280,11 @@ const CEA_ROWS = arrangedSamples(
 // the top windows; the highest is chr10's), and writing it down is what keeps
 // the two axes from parting company when only one of them is autoscaled.
 const FST_DOMAIN_MAX = 0.8
-const FST_AXIS = { scales: { y: { domainMin: 0, domainMax: FST_DOMAIN_MAX } } }
+const FST_AXIS = {
+  scales: {
+    y: { domainMin: 0, domainMax: FST_DOMAIN_MAX, title: 'Hudson Fst' },
+  },
+}
 
 // Both halves of dog10k-size-fst-scan are 240px where they were 380 (review:
 // "make both figures shorter in y-axis real estate space"). What each lane is
@@ -357,7 +361,9 @@ const FST_AXIS_RULED = {
       // The red is the figure's own claim, not a meaning the display assigns:
       // a rule naming no colour draws in the grey the chrome rules every plot
       // in.
-      rules: [{ value: 0.295, color: 'rgb(200,60,60)' }],
+      rules: [
+        { value: 0.295, color: 'rgb(200,60,60)', label: '99.9th percentile' },
+      ],
     },
   },
 }

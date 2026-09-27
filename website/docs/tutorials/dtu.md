@@ -157,14 +157,14 @@ count.
 ## Configuring the track
 
 `color` bins `dif_called` through a threshold scale: `domain` lists the cut
-points and `range` one color per interval between them, liver-preferred blues
-below zero and muscle-preferred reds above. A value on a cut takes the interval
-above it. The key lists every interval under the field's name, and a
-`(no value)` row for the uncalled transcripts. A UTR follows `color` unless
-`utrColor` is set. `labels.name` reads GENCODE's `transcript_name`, which also
-names the isoform under the cursor. `mouseover` resolves against the gene, so it
-summarizes the gene; an isoform's own numbers are in the details panel, one
-click away.
+points, `range` one color per interval between them, and `labels` what the key
+calls each interval, liver-preferred below zero and muscle-preferred above. A
+value on a cut takes the interval above it. The key lists every interval under
+its `title`, and a `(no value)` row for the uncalled transcripts. A UTR follows
+`color` unless `utrColor` is set. `labels.name` reads GENCODE's
+`transcript_name`, which also names the isoform under the cursor. `mouseover`
+resolves against the gene, so it summarizes the gene; an isoform's own numbers
+are in the details panel, one click away.
 
 ```json addtrack
 {
@@ -189,7 +189,16 @@ click away.
         "#d5716a",
         "#c63335",
         "#901e21"
-      ]
+      ],
+      "labels": [
+        "liver, below -0.6",
+        "liver, -0.6 to -0.3",
+        "liver, -0.3 to 0",
+        "muscle, 0 to 0.3",
+        "muscle, 0.3 to 0.6",
+        "muscle, 0.6 and above"
+      ],
+      "title": "ΔIF, muscle - liver"
     },
     "labels": {
       "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"

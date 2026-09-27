@@ -101,6 +101,7 @@ export const CN_HEATMAP_SETTINGS = {
     field: 'score',
     scale: 'threshold',
     range: ['#2166ac', '#b2182b'],
+    title: 'Copy number',
   },
 }
 

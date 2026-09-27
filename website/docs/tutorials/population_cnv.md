@@ -75,7 +75,8 @@ color settings are declared once:
     "color": {
       "field": "score",
       "scale": "threshold",
-      "range": ["#2166ac", "#b2182b"]
+      "range": ["#2166ac", "#b2182b"],
+      "title": "Copy number"
     }
   }
 }
@@ -197,7 +198,8 @@ hosted (see [configuring plugins](/docs/config_guides/plugins)):
         "color": {
           "field": "score",
           "scale": "threshold",
-          "range": ["#2166ac", "#b2182b"]
+          "range": ["#2166ac", "#b2182b"],
+          "title": "Copy number"
         }
       }
     }

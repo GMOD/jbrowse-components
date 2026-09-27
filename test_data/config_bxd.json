@@ -74,7 +74,8 @@
           "color": {
             "scale": "identity",
             "domain": ["rgb(65,105,225)", "rgb(220,60,50)", "rgb(150,150,150)"],
-            "labels": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"]
+            "labels": ["B (C57BL/6J)", "D (DBA/2J)", "H (heterozygous)"],
+            "title": "Genotype"
           },
           "height": 700
         }
@@ -103,7 +104,8 @@
       "displays": [
         {
           "type": "LinearManhattanDisplay",
-          "displayId": "bxd_gwas_coatcolor_mm10-LinearManhattanDisplay"
+          "displayId": "bxd_gwas_coatcolor_mm10-LinearManhattanDisplay",
+          "scales": { "y": { "title": "LOD" } }
         }
       ]
     }

@@ -1891,7 +1891,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: 'K562_cn',
           height: 130,
-          scales: { y: { domainMin: 0, domainMax: 8 } },
+          scales: {
+            y: { domainMin: 0, domainMax: 8, title: 'copy ratio (DepMap)' },
+          },
         },
       ],
     }),
