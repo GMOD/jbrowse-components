@@ -135,7 +135,8 @@ export function RenderLifecycleMixin() {
       /**
        * #volatile
        * the display's canvas has scrolled out of the page, so the render
-       * autorun stops drawing into it and hands its GPU targets back. Written
+       * autorun skips pan and zoom redraws, still draws new data, and hands its
+       * GPU targets back after every tick. Written
        * by `useRenderingBackend`, which watches the canvas element itself —
        * false everywhere `IntersectionObserver` is absent, which is every unit
        * test and every non-browser host.
@@ -339,6 +340,7 @@ export function RenderLifecycleMixin() {
         // un-installed and the next backend can try again.
         const cbs = setup()
         self.autorunsInstalled = true
+        let drawnTick = -1
         namedAutorun(
           self,
           () => {
@@ -372,7 +374,7 @@ export function RenderLifecycleMixin() {
           self,
           () => {
             const b = self.currentRenderingBackend as B | undefined
-            void self.renderTick
+            const tick = self.renderTick
             if (b === undefined || !self.canRender) {
               return
             }
@@ -384,13 +386,16 @@ export function RenderLifecycleMixin() {
             // Same loop caveat as the upload autorun above: the
             // unmount-and-dispose that prevents re-fire is DisplayChrome's,
             // not a shared canvas's.
-            // First paint is never skipped, whatever the canvas's position:
-            // `data-display-drawn` is what every capture and browser test
-            // waits on, and a track that loads below the fold would otherwise
-            // hold each of them to its full timeout. It paints once, and the
-            // release below takes the target straight back.
+            // Off screen, only a re-fire with no `renderNow()` behind it (a
+            // pan, a zoom) is skipped: new data draws wherever the canvas is,
+            // so `painted` never stands over a partial picture. The tick is
+            // recorded even when the render answers false, since Canvas2D
+            // resizes before answering.
             try {
-              if (!(self.offScreen && self.canvasDrawn) && cbs.render(b)) {
+              const skip =
+                self.offScreen && self.canvasDrawn && tick === drawnTick
+              drawnTick = tick
+              if (!skip && cbs.render(b)) {
                 self.markCanvasDrawn()
               }
               if (self.offScreen) {

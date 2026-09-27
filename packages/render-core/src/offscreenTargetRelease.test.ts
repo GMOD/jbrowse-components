@@ -74,8 +74,8 @@ test('a drawing display never releases its targets', () => {
   expect(hal.callsOf('releaseRenderTargets')).toHaveLength(0)
 })
 
-test('going off screen releases the targets and stops sizing the canvas', () => {
-  const { hal, model, cells } = setup()
+test('going off screen releases the targets and skips frame-only redraws', () => {
+  const { hal, model } = setup()
   hal.calls = []
 
   runInAction(() => {
@@ -83,17 +83,39 @@ test('going off screen releases the targets and stops sizing the canvas', () => 
   })
   expect(methods(hal)).toEqual(['releaseRenderTargets'])
 
-  // Every later tick has to re-release rather than resize: `renderBlocks`
-  // reallocates the target on its opening `resize`, so a single release that
-  // the next pan undoes saves nothing.
+  // A tick with no upload behind it is a pan or a settings read: nothing new
+  // to show, so no resize (which reallocates the target) and a fresh release.
+  runInAction(() => {
+    model.setOffScreen(true)
+  })
+  expect(hal.callsOf('resize')).toHaveLength(0)
+  expect(methods(hal).at(-1)).toBe('releaseRenderTargets')
+})
+
+test('an upload while off screen draws, then releases again', () => {
+  const { hal, model, cells } = setup()
+  runInAction(() => {
+    model.setOffScreen(true)
+  })
+  hal.calls = []
+  const paints = model.paintCount
+
+  // A track below the fold that only ever drew its first region reported
+  // `painted` over a picture missing the rest; every upload draws.
   runInAction(() => {
     cells.set(0, { value: 3 })
   })
+  expect(model.paintCount).toBe(paints + 1)
+  expect(hal.callsOf('resize')).toHaveLength(1)
+  expect(methods(hal).at(-1)).toBe('releaseRenderTargets')
+
+  // and `renderNow()` is the same request from outside the upload
+  hal.calls = []
   runInAction(() => {
     model.renderNow()
   })
-  expect(hal.callsOf('resize')).toHaveLength(0)
-  expect(hal.callsOf('releaseRenderTargets').length).toBeGreaterThan(1)
+  expect(model.paintCount).toBe(paints + 2)
+  expect(methods(hal).at(-1)).toBe('releaseRenderTargets')
 })
 
 test('coming back on screen resizes again and draws', () => {
