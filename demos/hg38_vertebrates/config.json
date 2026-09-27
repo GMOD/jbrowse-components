@@ -806,7 +806,7 @@
         {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "hg38_liftover_multiway-MultiWaySyntenyDisplay",
-          "height": 200
+          "height": 310
         }
       ]
     }

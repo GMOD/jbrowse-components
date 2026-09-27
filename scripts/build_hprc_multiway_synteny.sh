@@ -308,7 +308,7 @@ haps = os.environ['HAPLOTYPES'].split()
 pif, sizes, source = os.environ['PIF'], os.environ['SIZES'], os.environ['SOURCE']
 names = [h.replace('#', '.') for h in haps]
 lanes = 1 + len(names)
-height = math.ceil(lanes * 22 / 10) * 10
+height = math.ceil(lanes * 34 / 10) * 10
 
 
 def uri(path):

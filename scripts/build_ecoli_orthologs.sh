@@ -244,9 +244,9 @@ python3 - "$BLOCK_ASSEMBLIES" <<'PY'
 import json, math, sys
 order = sys.argv[1].split()
 
-# MultiWaySyntenyDisplay's MIN_LANE_PITCH: below this per lane the stack
-# scrolls inside the track instead of dividing its height
-LANE_PITCH = 22
+# MultiWaySyntenyDisplay's MIN_LANE_PITCH plus its gene-name row: below this
+# per lane the stack scrolls inside the track instead of dividing its height
+LANE_PITCH = 34
 
 def uri(u):
     return {'uri': u, 'locationType': 'UriLocation'}

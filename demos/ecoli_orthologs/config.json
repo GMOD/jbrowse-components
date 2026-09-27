@@ -1832,7 +1832,7 @@
           "type": "MultiWaySyntenyDisplay",
           "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
           "color": { "field": "cluster" },
-          "height": 970
+          "height": 1500
         }
       ]
     }

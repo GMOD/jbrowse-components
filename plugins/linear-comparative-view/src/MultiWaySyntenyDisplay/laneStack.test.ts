@@ -8,6 +8,7 @@ import { autorun, observable, runInAction, when } from 'mobx'
 import {
   MIN_LANE_PITCH,
   buildLanes,
+  geneLabelRowPx,
   laneContentHeight,
   laneGeometry,
 } from './laneStack.ts'
@@ -562,7 +563,13 @@ describe('lane geometry', () => {
 })
 
 test('every checked-in multiway demo sizes its track to the whole stack', () => {
-  for (const demo of ['ecoli_orthologs', 'primate_orthologs', 'hprc']) {
+  for (const demo of [
+    'ecoli_orthologs',
+    'primate_orthologs',
+    'hprc',
+    'hprc_multiway',
+    'hg38_vertebrates',
+  ]) {
     const config = JSON.parse(
       fs.readFileSync(
         path.join(__dirname, `../../../../demos/${demo}/config.json`),
@@ -571,14 +578,22 @@ test('every checked-in multiway demo sizes its track to the whole stack', () => 
     ) as {
       tracks: {
         assemblyNames: string[]
-        displays?: { type: string; height?: number }[]
+        displays?: {
+          type: string
+          height?: number
+          showGeneLabels?: boolean
+        }[]
       }[]
     }
     for (const track of config.tracks) {
       for (const display of track.displays ?? []) {
         if (display.type === 'MultiWaySyntenyDisplay' && display.height) {
           expect(
-            laneContentHeight(display.height, track.assemblyNames.length),
+            laneContentHeight(
+              display.height,
+              track.assemblyNames.length,
+              geneLabelRowPx(display.showGeneLabels ?? true),
+            ),
           ).toBe(display.height)
         }
       }

@@ -410,10 +410,11 @@ does not know lanes exist. Concretely:
   assembly is the anchor's).
 - The SVG export is the viewport at the current `scrollTop`, so a 44-lane figure
   is a screenshot of a scrolled canvas, not the stack.
-- Height is divided until `MIN_LANE_PITCH = 22` px, then fixed and scrolled
-  (`laneContentHeight`); at the floor the glyph row is
-  `clamp(22 - 12 - 6, 5, 18) = 5` px (`laneGeometry`), which is the E. coli
-  figure's gene height.
+- Height is divided until `MIN_LANE_PITCH = 22` px plus the 12 px gene-name
+  row, 34 px with names on, then fixed and scrolled (`laneContentHeight`); at
+  the floor the glyph row is 5 px (`laneGeometry`), one strand row, which is
+  the E. coli figure's gene height. A lane splits its strands only with room
+  for two rows of 5 px.
 
 The escape hatches are two: **Open ⟨assembly⟩ at the matching region**
 (`openInNewView`), which opens an *unsynchronised* LGV with the multiway track
@@ -429,8 +430,8 @@ join over RefSeq GFF3s (`symbols_to_blocks.py`) written as an MCScan `.blocks`
 table with 44 columns; hosted at `jbrowse.org/demos/ecoli_orthologs/`. Measured
 on 2026-09-06: 44 assemblies (each a `ChromSizesAdapter`), 45 tracks,
 `ecoli.blocks.gz` 503 KB, blocks plus 44 BEDs 2.6 MB total, display
-`height: 970` (44 × 22 px, the floor; `MW/laneStack.test.ts:212` pins that every
-checked-in demo sizes its track to the whole stack). Every lane's genes come
+`height: 1500` (44 × 34 px, the floor with gene names; `MW/laneStack.test.ts`
+pins that every checked-in demo sizes its track to the whole stack). Every lane's genes come
 from its own tabix GFF3.
 
 **What the display does well here.** This is the case the display was built
@@ -477,9 +478,9 @@ indexed PAF (`hg38To<Genome>.over.pif.gz`, 26-173 MB each, measured on
 from each genome's hub config. All eight PIFs carry a coarse tier and a
 version-2 `#pif` header since their 2026-09-11 rebuild
 ([DEMO_DATASETS.md](DEMO_DATASETS.md), `demos/hg38_vertebrates`), so the star
-offers **Level of detail**. The hosted config's display height is 200
-(nine rows at the 22 px floor is 198), while the tutorial session overrides it
-to 600.
+offers **Level of detail**. The checked-in config's display height is 310
+(nine rows at the 34 px floor with gene names is 306), while the tutorial
+session overrides it to 600.
 
 **What the picture actually contains.** The records the display fetches for the
 TP53 window (`tabix … tchr17:7400000-7700000`, the hg38 side of each PIF) place

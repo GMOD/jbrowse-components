@@ -105,7 +105,7 @@ for g in genomes:
     tracks.extend(gene_tracks)
 
 lanes = 1 + len(genomes)
-height = math.ceil(lanes * 22 / 10) * 10
+height = math.ceil(lanes * 34 / 10) * 10
 tracks.append({
     'type': 'SyntenyTrack',
     'trackId': 'hg38_liftover_multiway',

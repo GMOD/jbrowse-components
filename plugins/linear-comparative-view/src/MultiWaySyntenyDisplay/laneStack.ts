@@ -28,7 +28,8 @@ const MIN_SPLIT_GLYPH_PX = 2 * MIN_GLYPH_PX + STRAND_GAP_PX
 
 // A lane pitch below this is an unreadable crush, so the stack stops dividing
 // the track height and lays out at this fixed pitch instead, scrolling inside
-// the viewport. build_ecoli_orthologs.sh derives its config height from it.
+// the viewport. The demo build scripts size a stack from it and the
+// gene-name row.
 export const MIN_LANE_PITCH = 22
 
 /** the row under a lane's glyphs its gene names take, 0 with names off */
