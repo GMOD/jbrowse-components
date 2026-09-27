@@ -10,9 +10,8 @@ description: Open findings of two 2026-09-25/26 reviews nobody has taken up. Lin
 1. **A log scale whose domain bottom is 0 or below floors at 1.** A link's
    `linkStrokeWidthPx(0.4, …, [0, 0.5], log)` is 1.5, the range minimum, since
    `normalizeScore` (`scoreScale.slang:48`) takes 1 as the floor and a maximum
-   below 1 collapses the domain. `wiggle-core/src/scale.ts`'s `getNiceDomain`
-   floors the same way whenever the max is above 1, so a log scale with Clip
-   outliers, which anchors at 0 first, loses the decades below 1.
+   below 1 collapses the domain; the scan should take the least positive
+   value on a log scale.
 2. **A VCF breakend pair whose ALT spells `chr1` where CHROM says `1`, both
    records in one region**, draws twice: the `mate` step's key reads raw names
    in the worker (`featureTransforms.ts`), and the owner pass (`linkOwners.ts`)
@@ -29,9 +28,9 @@ description: Open findings of two 2026-09-25/26 reviews nobody has taken up. Lin
 
 ## domainQuantile (ADR-179)
 
-- No range check: 0 or below puts each end at the smallest magnitude, and 99
-  typed as a percent reads as the extremes (`quantileExtent.ts` checks only
-  `>= 1`). Only a hand-typed value reaches it.
+- No range check: 99 typed as a percent reads as the extremes, as 1 does, and
+  anything under 0.5 as 0.5 (`quantileExtent.ts`). Only a hand-typed value
+  reaches it.
 - Clip outliers re-ticks at the scale's default, not a value a config wrote
   before the untick (`scoreMenuItems.ts`); the help text names the one in
   force.

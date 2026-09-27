@@ -103,22 +103,32 @@ export function quantileOf(a: Float32Array, n: number, quantile: number) {
     : selectNth(a, n, Math.min(n - 1, Math.max(0, Math.ceil(quantile * n) - 1)))
 }
 
+function lowQuantileOf(a: Float32Array, n: number, quantile: number) {
+  return n === 0
+    ? 0
+    : selectNth(a, n, Math.max(0, Math.min(n - 1, n - Math.ceil(quantile * n))))
+}
+
 /**
  * #api
  * What the open ends of a scale follow over `values[0, count)`: at a
- * `quantile` of 1 their finite extremes, and below it that quantile of each
- * sign's magnitudes, anchored at 0, so one spike takes neither the axis nor
- * the ramp. `scales.y.domainQuantile` and a colour's `domainQuantile` both
- * name it. `[Infinity, -Infinity]` where nothing is finite.
+ * `quantile` of 1 their finite extremes, and below it each end clipped at
+ * that quantile of the values on its side of 0, so one spike takes neither
+ * the axis nor the ramp, and a sparse tail of the other sign keeps its own
+ * end. An axis that starts at 0 adds it itself. Under 0.5 reads as 0.5,
+ * where the ends meet rather than cross. `scales.y.domainQuantile` and a
+ * colour's `domainQuantile` both name it. `[Infinity, -Infinity]` where
+ * nothing is finite.
  */
 export function quantileExtent(
   values: ArrayLike<number>,
   count: number,
   quantile = 1,
 ): [number, number] {
-  if (quantile >= 1) {
+  if (!(quantile < 1)) {
     return finiteExtremes(values, count)
   }
+  const q = Math.max(0.5, quantile)
   const positive = new Float32Array(count)
   const negative = new Float32Array(count)
   let np = 0
@@ -129,14 +139,16 @@ export function quantileExtent(
       if (v >= 0) {
         positive[np++] = v
       } else {
-        negative[nn++] = -v
+        negative[nn++] = v
       }
     }
   }
-  return np + nn === 0
-    ? [Infinity, -Infinity]
-    : [
-        nn > 0 ? -quantileOf(negative, nn, quantile) : 0,
-        np > 0 ? quantileOf(positive, np, quantile) : 0,
-      ]
+  if (np + nn === 0) {
+    return [Infinity, -Infinity]
+  }
+  const low =
+    nn > 0 ? lowQuantileOf(negative, nn, q) : lowQuantileOf(positive, np, q)
+  const high =
+    np > 0 ? quantileOf(positive, np, q) : quantileOf(negative, nn, q)
+  return [Math.min(low, high), high]
 }

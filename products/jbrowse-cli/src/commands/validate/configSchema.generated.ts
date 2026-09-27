@@ -3634,7 +3634,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "type": "number"
             },
             "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.",
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
               "type": "number",
               "default": 1
             },
@@ -4339,7 +4339,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "type": "number"
             },
             "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.",
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
               "type": "number",
               "default": 1
             },
@@ -4488,7 +4488,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 1
         },
         "domainQuantile": {
-          "description": "the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%.",
+          "description": "the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own.",
           "type": "number",
           "default": 0.99
         },
@@ -5103,7 +5103,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "type": "number"
             },
             "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.",
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
               "type": "number",
               "default": 1
             },
@@ -6516,7 +6516,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "domainQuantile": {
-          "description": "the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%.",
+          "description": "the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own.",
           "type": "number",
           "default": 0.99
         },
@@ -7120,7 +7120,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "type": "number"
             },
             "domainQuantile": {
-              "description": "the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.",
+              "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
               "type": "number",
               "default": 1
             },
@@ -7945,7 +7945,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "domainQuantile": {
-          "description": "the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%.",
+          "description": "the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own.",
           "type": "number",
           "default": 1
         },

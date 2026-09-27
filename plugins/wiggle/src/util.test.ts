@@ -113,15 +113,19 @@ describe('computeAutoscaleDomain', () => {
     const local = computeAutoscaleDomain(1, 'avg', entries)
     const pct = computeAutoscaleDomain(0.99, 'avg', entries)
     expect(local).toEqual([1, 1000])
-    expect(pct![0]).toBe(0)
+    expect(pct![0]).toBe(1)
     expect(pct![1]).toBeLessThan(1000)
   })
 
-  test('a clipped domain pins its low bound at 0 for all-positive data', () => {
+  test('a clipped domain keeps all-positive data off 0, and a linear axis adds it', () => {
     const data = makeFeatureArrays([2, 5, 8])
     const entries = [{ data, visStart: 0, visEnd: 300 }]
-    const result = computeAutoscaleDomain(0.99, 'avg', entries)
-    expect(result![0]).toBe(0)
+    const result = computeAutoscaleDomain(0.99, 'avg', entries)!
+    expect(result).toEqual([2, 8])
+    const bounds = [undefined, undefined] as const
+    expect(
+      getNiceDomain({ scaleType: 'linear', domain: result, bounds })[0],
+    ).toBe(0)
   })
 
   test('a clipped domain keeps a sparse negative tail visible (bidirectional)', () => {

@@ -194,18 +194,17 @@ export function valueScaleSchema({
       /**
        * #slot scales.y.domainQuantile
        * What an unpinned end follows over the loaded values: `1` their
-       * extremes, and below it that quantile of each sign's magnitudes,
-       * anchored at 0, so `0.99` drops the outermost 1% of each sign and one
-       * spike no longer flattens the rest. The two signs are measured on
-       * their own, so a sparse minority tail stays visible and all-positive
-       * data keeps its bottom at 0. The score menu's "Clip outliers" toggles
-       * it.
+       * extremes, and below it that quantile of the values on its side of 0,
+       * so `0.99` drops the outermost 1% at each end and one spike no longer
+       * flattens the rest. Where both signs appear each end is measured on its
+       * own sign, so a sparse minority tail stays visible; a linear or symlog
+       * axis still starts at 0. The score menu's "Clip outliers" toggles it.
        */
       domainQuantile: {
         type: 'number',
         defaultValue: domainQuantile,
         description:
-          'the quantile an unpinned end follows, each sign anchored at 0: 1 the extremes, 0.99 drops the outermost 1%',
+          'the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own',
       },
       /**
        * #slot scales.y.grid

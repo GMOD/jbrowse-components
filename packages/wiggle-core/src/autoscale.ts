@@ -218,9 +218,9 @@ export function computeScoreStats(
 /**
  * #api
  * The domain the visible instances autoscale to: at a `quantile` of 1 their
- * extremes, `stats`; below it `quantileExtent` over each side's own values —
- * the top read off `high` and the bottom off `low`, so whiskers open to their
- * spread — each sign clipped on its own and anchored at 0.
+ * extremes, `stats`; below it `quantileExtent`'s ends, the top read off the
+ * positive `high`s and the bottom off the `low`s, so whiskers open to their
+ * spread and a sparse window's empty bins lower no top.
  */
 export function autoscaleDomainFromSpans({
   stats,
@@ -234,7 +234,8 @@ export function autoscaleDomainFromSpans({
   if (quantile >= 1) {
     return [stats.scoreMin, stats.scoreMax]
   }
-  const values: number[] = []
+  const lows: number[] = []
+  const highs: number[] = []
   for (const span of spans) {
     const { low, high } = span
     const { from, to } = visibleIndexRange(span)
@@ -242,15 +243,14 @@ export function autoscaleDomainFromSpans({
       if (!spanOverlaps(span, i)) {
         continue
       }
+      lows.push(low[i]!)
       if (high[i]! > 0) {
-        values.push(high[i]!)
-      }
-      if (low[i]! < 0) {
-        values.push(low[i]!)
+        highs.push(high[i]!)
       }
     }
   }
-  const [min, max] = quantileExtent(values, values.length, quantile)
+  const min = quantileExtent(lows, lows.length, quantile)[0]
+  const max = quantileExtent(highs, highs.length, quantile)[1]
   return [Number.isFinite(min) ? min : 0, Number.isFinite(max) ? max : 0]
 }
 

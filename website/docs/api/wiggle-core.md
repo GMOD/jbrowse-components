@@ -10,9 +10,9 @@ import these from a plugin.
 ## autoscaleDomainFromSpans
 
 The domain the visible instances autoscale to: at a `quantile` of 1 their
-extremes, `stats`; below it `quantileExtent` over each side's own values —
-the top read off `high` and the bottom off `low`, so whiskers open to their
-spread — each sign clipped on its own and anchored at 0.
+extremes, `stats`; below it `quantileExtent`'s ends, the top read off the
+positive `high`s and the bottom off the `low`s, so whiskers open to their
+spread and a sparse window's empty bins lower no top.
 
 ```js
 // type signature

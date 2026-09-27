@@ -72,8 +72,8 @@ export interface ContinuousRef {
   scheme?: ColorSchemeName
   reverse?: boolean
   /**
-   * The quantile an open end follows over the loaded values, each sign's
-   * magnitudes anchored at 0: 1 their extremes, 0.99 clips the outermost 1%.
+   * The quantile an open end follows over the loaded values: 1 their
+   * extremes, 0.99 clips the outermost 1% at each end, each sign on its own.
    */
   domainQuantile?: number
 }

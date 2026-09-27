@@ -291,15 +291,16 @@ export const colorDomainEndsSlots = {
 /**
  * The quantile an open end of a linear or log colour scale follows over the
  * loaded values, the rule `scales.y.domainQuantile` names alike: 1 spans
- * their extremes, and below it each sign's magnitudes are clipped at that
- * quantile, anchored at 0, so one spike no longer takes the whole ramp.
+ * their extremes, and below it each end is clipped at that quantile of the
+ * values on its side of 0, so one spike no longer takes the whole ramp and a
+ * ramp over MAPQ or GC spans the data rather than starting at 0.
  */
 export const colorDomainQuantileSlot = {
   domainQuantile: {
     type: 'number',
     defaultValue: 1,
     description:
-      'the quantile an open end of a linear or log scale follows over the loaded values, each sign anchored at 0: 1 their extremes, 0.99 clips the outermost 1%',
+      'the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own',
     advanced: true,
   },
 } as const

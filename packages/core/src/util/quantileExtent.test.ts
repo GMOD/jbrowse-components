@@ -10,15 +10,34 @@ test('a quantile of 1 spans the finite extremes, and nothing finite spans nothin
   expect(quantileExtent([Number.NaN], 1)).toEqual([Infinity, -Infinity])
 })
 
-test('a quantile below 1 clips a spike and anchors positive values at 0', () => {
-  expect(quantileExtent(spiky, spiky.length, 0.95)).toEqual([0, 95])
+test('a quantile below 1 clips both tails of one-signed values, and 0 stays out', () => {
+  expect(quantileExtent(spiky, spiky.length, 0.95)).toEqual([6, 95])
   expect(quantileExtent(spiky, spiky.length, 1)).toEqual([1, 10000])
+  expect(quantileExtent([-4, -2], 2, 0.95)).toEqual([-4, -2])
 })
 
-test('each sign clips on its own', () => {
+test('a quantile under 0.5 meets at the median rather than crossing it', () => {
+  expect(quantileExtent(spiky, spiky.length, 0.2)).toEqual([50, 50])
+  expect(quantileExtent(spiky, spiky.length, Number.NaN)).toEqual([1, 10000])
+})
+
+test('a quantile just below 1 keeps the extremes of values far from 0', () => {
+  const scores = Array.from({ length: 501 }, (_, i) => 500 + i)
+  expect(quantileExtent(scores, scores.length, 0.999)).toEqual([500, 1000])
+})
+
+test('each sign clips on its own, so a sparse tail of the other keeps its end', () => {
   const signed = Float32Array.from([...spiky, ...Array.from(spiky, v => -v)])
   expect(quantileExtent(signed, signed.length, 0.95)).toEqual([-95, 95])
-  expect(quantileExtent([-4, -2], 2, 0.95)).toEqual([-4, 0])
+  const copyNumber = [
+    ...Array.from({ length: 995 }, () => 0.5),
+    -1,
+    -1,
+    -1,
+    -1,
+    -1,
+  ]
+  expect(quantileExtent(copyNumber, copyNumber.length, 0.99)).toEqual([-1, 0.5])
   expect(quantileExtent([], 0, 0.95)).toEqual([Infinity, -Infinity])
 })
 

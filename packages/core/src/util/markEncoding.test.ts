@@ -229,7 +229,7 @@ test('a pinned ceiling keeps its value and the open floor follows the region', (
   expect(r.color[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
 })
 
-test('under a domain quantile an open end stops short of a spike', () => {
+test('under a domain quantile each open end stops short of its tail', () => {
   const spiky = encodeFeatures(
     [...Array.from({ length: 99 }, (_, i) => i + 1), 10000].map((score, i) =>
       feature(i, { score }),
@@ -244,9 +244,27 @@ test('under a domain quantile an open end stops short of a spike', () => {
     },
     ['color'],
   )
-  expect(spiky.scale).toMatchObject({ domain: [0, 90], extent: [0, 90] })
+  expect(spiky.scale).toMatchObject({ domain: [11, 90], extent: [11, 90] })
+  expect(spiky.color[0]).toBe(cssColorToABGR('black'))
   expect(spiky.color[89]).toBe(cssColorToABGR('white'))
   expect(spiky.color[99]).toBe(cssColorToABGR('white'))
+})
+
+test('a log ramp under a domain quantile spreads values below 1 across it', () => {
+  const small = encodeFeatures(
+    [0.001, 0.01, 0.1, 0.5].map((score, i) => feature(i, { score })),
+    {
+      color: {
+        field: 'score',
+        scale: 'log',
+        range: ['black', 'white'],
+        domainQuantile: 0.99,
+      },
+    },
+    ['color'],
+  )
+  expect(small.scale).toMatchObject({ domain: [expect.closeTo(0.001), 0.5] })
+  expect(new Set(small.color).size).toBe(4)
 })
 
 test('an open end never crosses a pinned one', () => {
