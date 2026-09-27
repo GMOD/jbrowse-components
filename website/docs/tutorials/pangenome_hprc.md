@@ -1,11 +1,10 @@
 ---
 title: 'Pangenome (HPRC): browsing the graph'
-sidebar_label: Pangenome (HPRC 1, browsing)
+sidebar_label: Pangenome (HPRC, browsing the graph)
 description:
   Open HPRC release 2's pangenome graph from genomes.jbrowse.org as a track of
-  the linear view, move it along a chromosome, follow one allele to the
-  haplotype that carries it, and read how many kringle copies eight haplotypes
-  carry in LPA
+  the linear view, read where it varies from one locus to a whole chromosome,
+  and follow one allele to the haplotype that carries it
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
@@ -19,12 +18,13 @@ genomes.jbrowse.org as a track of a linear view of GRCh38, where it moves with
 the view. We:
 
 - at MHC class II, read the graph's backbone, bubbles, alleles and edges
+- zoom out to a whole chromosome, one node per bubble
 - follow one allele back to the haplotype that carries it
-- at LPA, read how many copies of the kringle repeat eight haplotypes carry
 
-[Part 2](/docs/tutorials/pangenome_hprc_part2) reads who carries each allele
-across the release, and [part 3](/docs/tutorials/pangenome_hprc_part3) draws
-haplotypes against each other.
+The other HPRC pages start from this view:
+[who carries each allele](/docs/tutorials/pangenome_hprc_carriers),
+[haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) and
+[repeat lengths](/docs/tutorials/pangenome_hprc_repeats).
 
 :::caution Experimental
 
@@ -54,11 +54,6 @@ JBrowse reads through small tabix projections of its graph that we host.
 - the config every launch on the HPRC page opens, which declares every release 2
   haplotype as an assembly with its CAT gene annotation:
   https://jbrowse.org/pangenome/hprc-grch38/config.json
-- the base-level graph as a gbz-base database, one walk per haplotype, read by
-  range request:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
-- our companion index naming that database's haplotypes:
-  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
 
 ## The HPRC page
 
@@ -87,6 +82,14 @@ Hover a node for its length and **rank**, the lower row it sits in. Nodes are
 colored by reference position, red to magenta; an allele has none, so it draws
 in charcoal.
 
+Two lanes above the graph track index the same graph on GRCh38:
+
+- the **bubbles** lane draws one block per bubble; hover the widest, covering
+  _HLA-DRB5_ and more, for its shortest and longest allele
+- the **allele inventory** draws one row per allele; the
+  [graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
+  filters it by size
+
 ## The graph moves with the view
 
 Type the C4 window, `chr6:31,980,000-32,050,000`, into the location box and
@@ -102,15 +105,21 @@ The arc in the labelled bubble is the edge: a haplotype with one fewer C4 copy
 takes it straight past GRCh38's, and the renderer labels the arc with the bp it
 removes.
 
-## A chromosome and back
+## A whole chromosome, one node per bubble {#a-chromosome-and-back}
 
 Pick **Layout → Anchored** again and type `chr6` into the location box. Past a
 zoom named in the adapter's `coarse` slot, the graph switches to one node per
 bubble, so the whole chromosome draws; the lanes above show a zoom-in message at
 this width.
 
-Type the MHC class II window, `chr6:32,510,001-32,600,000`, to come back and
-cross back to segments.
+The **Whole chromosome** links above the HPRC page's loci table open the same
+tier with a curve of segments per bubble, how much the haplotypes disagree at
+each locus. Press **chr1** there.
+
+<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three chr1 loci the HPRC pages open, then two lanes from one file. The blue curve is segments per bubble, how much the haplotypes disagree at each locus; the tier lane draws the same bubbles, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
+
+Back in the first tab, type the MHC class II window,
+`chr6:32,510,001-32,600,000`, to cross back to segments.
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
 tier and writes the `coarse` slot.
 
@@ -125,66 +134,24 @@ the allele attaches over, covering most of _HLA-DRB5_.
 
 <Figure caption="The MHC class II cut drawn both ways under the same tracks, colored by reference position with alleles in charcoal. Left, force-directed, with the allele's right-click menu open on Highlight in hg38 and its band in the linear view. Right, anchored: each x a GRCh38 coordinate, the reference row on top, each lower row one rank, and the ringed dashed arc a deletion." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
-Now left-click the same node. Its details give `contributingHaplotype`,
-`NA20809#2`, and the node's menu offers **Open in NA20809.2**. Take it. A second
-linear view opens below the first, on that haplotype's chromosome 6, framed on
-the allele with its CAT gene annotation. Zoom out a few steps for the genes
-around it.
+## Check it on the haplotype
+
+Left-click the same node. Its details give `contributingHaplotype`, `NA20809#2`,
+and the node's menu offers **Open in NA20809.2**. Take it. A second linear view
+opens below the first, on that haplotype's chromosome 6, framed on the allele
+with its CAT gene annotation. Zoom out a few steps for the genes around it.
 
 <Figure caption="The same launch in two frames. First, the MHC class II cut with the NA20809.2 allele ringed and its right-click menu open on Open in NA20809.2. Second, the view that entry opens: NA20809 haplotype 2's chromosome 6 with its CAT genes, which put HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 
-## The LPA kringle repeat
-
-_LPA_ carries a tandem array of kringle IV type 2 (KIV-2) copies, tied to
-lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). Type
-the LPA window, `chr6:160,525,000-160,655,000`, and pick **Layout →
-Force-directed layout** from the graph track's menu.
-
-<Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
-
-Every loop in the knot is a different number of copies. Click the array's purple
-label to lay the bubble's segments out alone, with a button back to the window.
-This rGFA cut records only segments and links, so which haplotype takes which
-loop stays unanswered here.
-
-## One haplotype's copies
-
-A **walk** is one haplotype's route through the graph, and the release publishes
-one per haplotype as a gbz-base database. Type the array's own window,
-`chr6:160,616,002-160,646,753`, put the rGFA graph track back to a segments lane
-with **Display types → Feature display**, and turn the gbz-base track on from
-the track selector. **Display types → Graph** in its track menu then cuts that
-same track as a graph of the walks. Enter the eight lanes the track drew in the
-**Haplotypes** field of **Settings**,
-`HG00097.1, HG00099.1, HG00128.1, HG00133.1, HG01109.1, HG01123.1, HG01960.1, HG02055.1`,
-and pick **Layout → Force-directed layout**.
-
-A node draws thicker the more walks carry it (Bandage's depth as width), so the
-shared backbone is the thick line and one haplotype's own copies are the thin
-loops. Untick **Mark bubbles** so the per-route chips stop stacking, then pick
-`HG00133` under **Walk**: its route keeps its ink while everything else fades,
-and a readout gives its length against the reference walk.
-
-<Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
-
-Pick **Layout → Walk rows** and **Color → Uniform**: each walk becomes a bar,
-longest first, blue where GRCh38 carries the same sequence and purple where it
-does not, so the copies a haplotype adds read as its purple stretch.
-
-<Figure caption="The eight-haplotype KIV-2 cut in walk rows, one bar per haplotype under GRCh38's, longest first, under LPA with the KIV-2 bubble boxed in the bubbles lane. The purple stretch of each bar is kringle copies GRCh38 does not carry, and each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/graph_kiv2_walk_rows.png" />
-
-## Check it against the bubble index
-
-Click the KIV-2 bubble boxed in the last figure. Its details give
-`shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
-routes the rGFA holds there. Every bar in walk rows falls between them, and
-GRCh38's, with no purple, is the shortest of the nine.
+The haplotype's own genes put _HLA-DRB9_ and _HLA-DRB6_ either side of the
+allele and no _HLA-DRB5_, the gene its band covered on hg38.
 
 ## See also
 
-- [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/pangenome_hprc_part3)
-- [](/docs/tutorials/pangenome_hprc_part5)
+- [](/docs/tutorials/pangenome_hprc_carriers)
+- [](/docs/tutorials/pangenome_hprc_haplotypes)
+- [](/docs/tutorials/pangenome_hprc_repeats)
+- [](/docs/tutorials/pangenome_chrm)
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/tutorials/pangenome_mouse)
@@ -198,9 +165,3 @@ GRCh38's, with no purple, is the shortest of the nine.
   [The rGFA format](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md) and
   [gfatools](https://github.com/lh3/gfatools), which define the `SN`/`SO`/`SR`
   tags this page opens the graph by.
-- Schmidt K, Noureen A, Kronenberg F, Utermann G. Structure, function, and
-  genetics of lipoprotein(a). J Lipid Res. 2016;57(8):1339-1359.
-  https://doi.org/10.1194/jlr.R067314
-- Wick RR, Schultz MB, Zobel J, Holt KE. Bandage: interactive visualization of
-  de novo genome assemblies. Bioinformatics. 2015;31(20):3350-3352.
-  https://doi.org/10.1093/bioinformatics/btv383

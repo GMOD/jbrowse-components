@@ -98,9 +98,9 @@ How to drive JBrowse once it is running. New here? Start with the
 #### HPRC release 2
 
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/pangenome_hprc_part3)
-- [](/docs/tutorials/pangenome_hprc_part5)
+- [](/docs/tutorials/pangenome_hprc_carriers)
+- [](/docs/tutorials/pangenome_hprc_haplotypes)
+- [](/docs/tutorials/pangenome_hprc_repeats)
 - [](/docs/tutorials/pangenome_chrm)
 
 ### Structural variation

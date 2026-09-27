@@ -144,7 +144,7 @@ those. It then derives bubbles from the popped graph. A backbone node that no
 edge jumps over is a boundary, and whatever lies between two boundaries is a
 bubble. Each derived bubble gets a halo and a label, and one of them opens in
 turn.
-[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#the-lpa-kringle-repeat)
+[Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#the-lpa-kringle-repeat)
 opens one such level in the same track.
 
 Each level has a button that returns to the level above, so you climb back out

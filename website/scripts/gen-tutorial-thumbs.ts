@@ -455,6 +455,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.05, 0.95],
   },
   pangenome_hprc: {
+    // The C4 window force-directed with its backbone, allele and bubble
+    // labelled, the graph track only.
+    src: 'pangenome/hprc_graph_anatomy.png',
+    band: [0.4, 0.9],
+    xband: [0.05, 0.95],
+  },
+  pangenome_hprc_repeats: {
     // The KIV-2 window force-directed with its bubbles haloed: the knot of
     // loops and the labels naming each bubble, below the linear lanes.
     // xband starts right of the kringle-copies callout.
@@ -462,16 +469,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.72, 0.96],
     xband: [0.52, 1],
   },
-  pangenome_hprc_part5: {
-    src: 'pangenome/hprc_abca7_repeat_units.png',
-    band: [0.4, 0.8],
-  },
   pangenome_mouse: {
     // The Dock2 bubble as one superbubble, the graph pane only.
     src: 'pangenome/mouse_dock2.png',
     band: [0.56, 0.97],
   },
-  pangenome_hprc_part3: {
+  pangenome_hprc_haplotypes: {
     // The CFH lanes with their own contig names and coordinates in the row
     // labels, which is the whole of what this page is about. Cropped from the
     // left so those labels survive the 5:3 cover-crop -- a centre crop keeps
@@ -480,10 +483,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.34, 0.95],
     position: 'left',
   },
-  pangenome_hprc_part2: {
+  pangenome_hprc_carriers: {
     // The deletion band running down from the genes, through the rank-colored
     // segments, into the 464-haplotype matrix, which is the question this half
-    // answers. Deliberately not the force drawing, which is part 1's card.
+    // answers. Deliberately not a force drawing, which two other HPRC cards are.
     // Stops above the graph pane because the arrow and the callout into it are
     // hand-added paint.
     src: 'pangenome/hprc_graph_vs_callset.png',

@@ -89,9 +89,9 @@ two computed the numbers is itself the methodological point.
 where the page visits several loci, lists them: "at CFH, find haplotypes missing
 two genes". Each section is the instruction, then its figure. Readers skip prose
 and copy commands, so cut content rather than compress it, and let the figures
-and fences carry the page. `pangenome_hprc_part3` is the page to copy. Cut
+and fences carry the page. `pangenome_hprc_haplotypes` is the page to copy. Cut
 explanation, never a route a reader can run on their own data: the GFA to PAF
-conversion left part 3 once and came straight back.
+conversion left that page once and came straight back.
 
 **Commands a reader can run on their own data.** Placeholder filenames
 (`graph.gbz.db`, `genes.fa`) over accession-laden URLs, one command per fence,

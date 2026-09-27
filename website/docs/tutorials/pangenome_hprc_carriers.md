@@ -1,10 +1,10 @@
 ---
-title: Pangenome (HPRC) part 2, who carries what
-sidebar_label: Pangenome (HPRC 2, who carries what)
+title: 'Pangenome (HPRC): who carries each allele'
+sidebar_label: Pangenome (HPRC, who carries each allele)
 description:
   Which of HPRC release 2's 464 haplotypes carry each allele, read from the
-  release's callset on the hosted HPRC page, beside where its graph varies and
-  by how much
+  release's callsets beside its graph, and checked against the multiple
+  alignment both are derived from
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
@@ -17,10 +17,13 @@ graph as a callset, one genotype per haplotype for all 464, and we open both
 from the consortium's page on genomes.jbrowse.org at the MHC class II locus. We:
 
 - cluster the callset's haplotypes by the alleles they share
-- read the graph's lanes for where it varies and by how much
-- put the two products side by side, at the CFH deletion and a 1q21.1 inversion
+- find who carries the _HLA-DRB5_ allele in the callset and the graph at once
+- read carriage at the graph's own granularity
+- check both against the multiple alignment they come from, and settle a 1q21.1
+  inversion the graph cannot
 
-[Part 1](/docs/tutorials/pangenome_hprc) reads the graph itself.
+[Browsing the graph](/docs/tutorials/pangenome_hprc) traces that allele to the
+one haplotype the graph credits it to.
 
 ## Prerequisites
 
@@ -39,13 +42,12 @@ reads the bubble and allele projections from our host.
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz
 - the multiple alignment the graph and the callset are both derived from:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz
-- the release's all-vs-GRCh38 alignment, sliced for the deletion and inversion
-  figures:
+- the release's all-vs-GRCh38 alignment, sliced for the inversion figure:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
-- the CAT gene annotation index, one GFF3 per haplotype, which those figures'
+- the CAT gene annotation index, one GFF3 per haplotype, which that figure's
   haplotype rows carry:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
-- our bubble and allele projections, with the exact build recorded beside them:
+- our bubble projections, with the exact build recorded beside them:
   https://jbrowse.org/demos/hprc/README.txt
 
 ## The variant callset
@@ -93,11 +95,34 @@ dendrogram beside them, and haplotypes that share alleles gather into blocks.
 
 <Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 464-haplotype lane clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
 
+## The graph beside the callset
+
+minigraph collapses variation under about 50 bp, so the callset's structural
+tier is the graph's own: the graph records an allele and its length, the callset
+who carries it.
+
+Press **graph** on the same HLA / MHC row for the graph track under the genes,
+the bubbles and the allele inventory. Turn on **HPRC2 pangenome callset (464
+haplotypes)** from the track selector and filter it as before, admitting the
+_HLA-DRB5_ deletion by position since vcfwave nests it one level down:
+
+```text
+jexl:(feature.INFO.LV[0]==0 || feature.start==32517421) && alleleLength(feature)>=50
+```
+
+Cluster it, hide the bubbles and the allele inventory, pick **Layout →
+Force-directed layout**, and right-click the charcoal allele beside _HLA-DRB5_
+for **Highlight in hg38**.
+
+<Figure caption="One window, both products. The band is the HLA-DRB5 deletion site from the callset, over every haplotype clustered by genotype: grey where a haplotype matches the reference, teal where it carries the alt allele, magenta for another alt. Below, the force-directed graph, where an arrow runs from the band to the same deletion as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
+
 ## Carriage at the graph's own granularity
 
-Release 2 also publishes an undecomposed form, one record per **snarl**, as the
-`pgbi.vcf.gz` beside each build: read it to find who carries a given bubble,
-since its rows are the graph's own alleles. Add it to the same session:
+vcfwave splits a snarl's alleles into smaller records, so a callset record need
+not line up with a bubble. Release 2 also publishes the undecomposed form, one
+record per **snarl**, as the `pgbi.vcf.gz` beside each build: read it to find
+who carries a given bubble, since its rows are the graph's own alleles. Add it
+to the same session:
 
 ```json addtrack
 {
@@ -121,70 +146,6 @@ since its rows are the graph's own alleles. Add it to the same session:
 Apply the [same `LV==0` filter](#the-variant-callset) from **Edit filters**, and
 the lane cuts to the tier the graph's bubbles hold, matched to a bubble by
 interval.
-
-## Where the graph varies {#the-bubble-track}
-
-A **bubble** is a place where haplotypes diverge and rejoin. Press **graph** on
-the same HLA / MHC row for the session holding the graph's lanes: the RefSeq
-genes, the bubbles and the allele inventory over the graph track.
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds these
-files, which we built here with `gfatools bubble` since HPRC publishes none.
-
-The bubbles lane draws one block per bubble; hover the widest, covering
-_HLA-DRB5_ and more, for its shortest and longest allele.
-
-## A whole chromosome, one node per bubble {#a-whole-chromosome-as-a-graph}
-
-A window past a few hundred kilobases holds more segments than any layout can
-place, so the same bubble file also collapses each bubble to a node and plots a
-curve of segments per bubble. Press **chr1** among the **Whole chromosome**
-links above the loci table for the whole chromosome, the curve and the tier lane
-under the genes.
-
-<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three chr1 loci these pages open, then two lanes from one file. The blue curve is segments per bubble, how much the haplotypes disagree at each locus; the tier lane draws the same bubbles, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
-
-Back in the tab the HLA / MHC **graph** link opened, type
-`chr6:31,500,001-33,500,000`, past the graph track's handover to one node per
-bubble. Hover the widest node for its span, and right-click it for **Open in
-hg38**, which puts the view on that bubble; under the handover the graph track
-cuts the same span again from the fine index.
-
-<Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in hg38, and once the view lands on its span, the graph track cutting the same span again from the fine index." />
-
-## The allele inventory
-
-The bubbles report where the graph varies; the allele inventory, packed into the
-same tab's lane, reports what it is: one row per allele, anchored on GRCh38. A
-wide window is dense, so the
-[graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
-gives two filters: `jexl:abs(feature.delta)>10000` for size, and
-`jexl:feature.nested==0` before reading lengths in bulk.
-
-Type the CFH cluster on chr1, `chr1:196,700,000-196,900,000`. One row there is
-the 84,684 bp deletion of _CFHR3_ and _CFHR1_, and the graph track below cuts
-the same window, where the deletion is an edge.
-
-<Figure caption="The complement factor H cluster: a carrier and a non-carrier haplotype aligned to GRCh38, above the same window as an anchored graph. The carrier's ribbon narrows where it has nothing to align, over CFHR3 and CFHR1, and the dashed arc under the graph's reference row spans the same stretch." src="/img/pangenome/hprc_cfhr_deletion.png" />
-
-## Comparing the graph with the callset
-
-minigraph collapses variation under about 50 bp, so filter the callset to that
-same tier: the graph records an allele and its length, the callset who carries
-it.
-
-Back on `chr6:32,510,001-32,600,000`, turn on **HPRC2 pangenome callset (464
-haplotypes)** from the track selector and filter it as before, admitting the
-_HLA-DRB5_ deletion by position since vcfwave nests it one level down:
-
-```text
-jexl:(feature.INFO.LV[0]==0 || feature.start==32517421) && alleleLength(feature)>=50
-```
-
-Cluster it, hide the bubbles and the allele inventory, pick **Layout →
-Force-directed layout**, and right-click the charcoal allele beside _HLA-DRB5_
-for **Highlight in hg38**.
-
-<Figure caption="One window, both products. The band is the HLA-DRB5 deletion site from the callset, over every haplotype clustered by genotype: grey where a haplotype matches the reference, teal where it carries the alt allele, magenta for another alt. Below, the force-directed graph, where an arrow runs from the band to the same deletion as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## The alignment underneath both {#the-alignment-underneath-both}
 
@@ -251,9 +212,8 @@ them agrees with the non-carrier.
 ## Reproduce it end to end
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
-bubble file, its [coarse tier](#a-whole-chromosome-as-a-graph) and the
-[allele inventory](#the-allele-inventory) in one command that runs on any rGFA;
-pointed at `hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
+bubbles lane in one command that runs on any rGFA; pointed at
+`hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host, and
 [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them records
 their provenance.
 
@@ -285,13 +245,12 @@ bash build_hprc_inversion_synteny.sh  # writes ./hprc_inversion_synteny_build/
 keeps the haplotypes whose alignments reverse the block while the flanks stay
 forward, then slices out one haplotype of each kind: the alignment, the contig
 length and the CAT genes.
-[`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)
-does the same for the deletion figure's carrier and non-carrier.
 
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_part3)
+- [](/docs/tutorials/pangenome_hprc_haplotypes)
+- [](/docs/tutorials/pangenome_chrm)
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/multivariant_track)

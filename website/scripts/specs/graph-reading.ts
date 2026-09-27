@@ -1,4 +1,4 @@
-// The graph drawn as a graph: HPRC KIV-2 on pangenome_hprc and the mouse Nnt
+// The graph drawn as a graph: HPRC KIV-2 on pangenome_hprc_repeats and the mouse Nnt
 // locus on pangenome_mouse. Every figure here is the force-directed layout.
 //
 // Kept apart from graph-hprc.ts and graph-mouse-cattle.ts for the reason those
@@ -30,7 +30,7 @@ const WALK_READOUT = '[data-testid="graph-walk-readout"]'
 // HPRC, the LPA KIV-2 window
 // ---------------------------------------------------------------------------
 
-// The 130 kb window pangenome/hprc_lpa_kiv2 draws on pangenome_hprc. LPA's
+// The 130 kb window pangenome/hprc_lpa_kiv2 draws on pangenome_hprc_repeats. LPA's
 // own start is in frame so the gene lane labels it.
 // The KIV-2 bubble's interval, which the view frames, and the domain both the
 // linear lane and the graph paint their ramp over.

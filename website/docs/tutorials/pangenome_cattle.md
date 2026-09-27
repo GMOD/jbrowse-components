@@ -290,7 +290,7 @@ bash build_omia_cattle_variants.sh   # writes ./omia_cattle_build/
 ## See also
 
 - [](/docs/tutorials/pangenome_mouse)
-- [](/docs/tutorials/pangenome_hprc_part2)
+- [](/docs/tutorials/pangenome_hprc_carriers)
 - [](/docs/tutorials/pangenome_prepare_graph)
 
 ## References

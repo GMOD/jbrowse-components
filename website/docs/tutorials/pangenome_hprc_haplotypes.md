@@ -1,6 +1,6 @@
 ---
-title: Pangenome (HPRC) part 3, haplotypes against each other
-sidebar_label: Pangenome (HPRC 3, haplotypes against each other)
+title: 'Pangenome (HPRC): haplotypes against each other'
+sidebar_label: Pangenome (HPRC, haplotypes against each other)
 description:
   Draw HPRC haplotypes as lanes in their own coordinates, aligned to each other
   by the release's pangenome graph, at a CFH deletion, a C4 duplication and the
@@ -218,8 +218,8 @@ To host your own graph, see
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/pangenome_hprc_part5)
+- [](/docs/tutorials/pangenome_hprc_carriers)
+- [](/docs/tutorials/pangenome_hprc_repeats)
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/allvsall_synteny)

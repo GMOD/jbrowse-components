@@ -171,7 +171,7 @@ anchored on the view's coordinates.
 Right-click a node for **Open in** the haplotype named in its rGFA id
 (`NA20809#2#CM094351.1`), when the session holds an assembly named or aliased to
 `sample#haplotype`.
-[Browsing the graph](/docs/tutorials/pangenome_hprc#from-an-allele-to-its-haplotype)
+[Browsing the graph](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
 takes that route.
 
 ## Checking the index against the graph
@@ -252,8 +252,8 @@ by carriage:
 
 Carriage is per haplotype (`HG002.1`); the sample alone merges a diploid's two
 copies.
-[Part 2 reads carriage at the graph's own granularity](/docs/tutorials/pangenome_hprc_part2#carriage-at-the-graphs-own-granularity)
-from a file built this way.
+[Who carries each allele](/docs/tutorials/pangenome_hprc_carriers#carriage-at-the-graphs-own-granularity)
+reads carriage from a file built this way.
 
 ## Every haplotype's walk: a gbz-base database
 
@@ -337,8 +337,8 @@ The database and companion need URLs that serve range requests: the track's
 
 The companion records the graph's path count; the adapter refuses a mismatched
 one. `nodeLimit` fails an over-large window, naming a zoom that would fit. What
-the track does with the lanes is
-[part 3's](/docs/tutorials/pangenome_hprc_part3#lanes-from-the-graph) subject.
+the track does with the lanes is the subject of
+[haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes).
 
 ## Reproduce it end to end
 
@@ -371,8 +371,8 @@ bash build_hprc_gbz_index.sh out
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/pangenome_hprc_part3)
+- [](/docs/tutorials/pangenome_hprc_carriers)
+- [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/user_guides/graph_genome_view)

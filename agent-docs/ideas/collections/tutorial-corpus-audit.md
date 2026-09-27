@@ -34,7 +34,7 @@ pages are correct:
   JBrowse URL of their own (`jbrowse.org/demos/tiberius_review/`,
   `jbrowse.org/code/jb2/main/test_data/protein3d_config.json`), which is a
   destination the three arms do not admit.
-- `pangenome_hprc_part2`, `part5`, `pangenome_graph_reading` and
+- `pangenome_hprc_carriers`, `part5`, `pangenome_graph_reading` and
   `pangenome_prepare_graph` open their Prerequisites with the session from an
   earlier part. A series member inherits its destination, and a check that did
   not follow that link would put a redundant bullet on every part after the

@@ -136,8 +136,6 @@ const {
   launchedZoomOut,
   c4Window: HPRC_C4_WINDOW,
   mhcWindow: HPRC_MHC_WINDOW,
-  tierSession,
-  mhcBubbleNode: MHC_BUBBLE,
 } = hprcVideoFixtures
 
 // What the add-track tours drive, named here because a menu label and a testid read
@@ -239,7 +237,6 @@ const leaveTheMenu = (row: string): VideoStep[] => [
   { type: 'waitForText', text: 'Track settings', hidden: true },
 ]
 
-const GENES_READY = displayReady('hg38_ncbiRefSeq_ucsc-LinearBasicDisplay')
 // The two E. coli pages open on K12's genes and nothing else, and each waits on
 // its own pasted lane afterwards. A pasted config with no `displayId` gets
 // `<trackId>-<displayType>` (packages/core/src/util/tracks.ts), which is the one
@@ -684,65 +681,5 @@ export const pangenomeVideos: VideoSpec[] = [
       { type: 'delay', ms: 3000 },
     ],
     tailMs: 4000,
-  },
-  // THE LADDER ON THE HUMAN GRAPH: the bubble tier over a region, down to a
-  // bubble and the fine index under it. pangenome/tier_to_fine films the same
-  // move on E. coli; here the tier is two megabases of the MHC and the bubble is
-  // the class II one. Why the tier is not the whole chromosome the figure draws
-  // is at hprcTierSession.
-  //
-  // One move does both rungs: the node's `Open in hg38` lands the linear view
-  // on the bubble's span, which is past the segments track's `coarse` handover,
-  // so the graph track re-cuts from the fine index in the same frame.
-  {
-    name: 'pangenome/hprc_tier_to_fine',
-    description:
-      "The HPRC bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in the linear view, and the graph track re-cut from the fine index at the bubble's span",
-    url: tierSession(),
-    // The frame of the clip on the page, which was filmed through the
-    // standalone graph view; re-size it off the run's content report when
-    // the tour is re-filmed.
-    viewportHeight: 1490,
-    readySelector: graphCutDrawn('coarse'),
-    readyTimeout: 300000,
-    steps: [
-      { type: 'hover', selector: WORDMARK, hold: 0 },
-      {
-        type: 'delay',
-        ms: 2500,
-        say: 'The MHC, one node per bubble',
-      },
-      // the hover also syncs a band into the lanes above, so the frame says
-      // where on the chromosome the bubble is before anything is clicked
-      {
-        type: 'hover',
-        anchor: { graphNode: MHC_BUBBLE },
-        say: 'Hover the MHC class II bubble',
-        hold: 3200,
-      },
-      {
-        type: 'rightclick',
-        anchor: { graphNode: MHC_BUBBLE },
-        say: "Open the bubble's span in the linear view",
-        hold: 900,
-      },
-      { type: 'waitForText', text: 'Open in hg38' },
-      { type: 'click', text: 'Open in hg38' },
-      {
-        type: 'waitForSelector',
-        selector: graphCutDrawn('fine'),
-        timeout: 180000,
-      },
-      // the navigation and the refetch it starts, then the gene lane's own paint
-      { type: 'waitForAppSettled', timeout: 180000, cut: true },
-      { type: 'waitForSelector', selector: GENES_READY, timeout: 180000 },
-      { type: 'hover', selector: WORDMARK, hold: 0 },
-      {
-        type: 'delay',
-        ms: 3000,
-        say: "At the bubble's own span, one node per segment",
-      },
-    ],
-    tailMs: 3500,
   },
 ]

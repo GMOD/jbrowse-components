@@ -59,41 +59,6 @@ const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 // the wrong node being ringed unless the words are there.
 const HPRC_ALLELE = 's348700+'
 
-// The complement factor H cluster. CFH, CFHR3, CFHR1 and CFHR4 all fall in this
-// 200 kb, and the graph holds three deletions across it.
-const CFHR_WINDOW = 'chr1:196,700,000-196,900,000'
-
-// The two haplotypes hprc_cfhr_deletion draws against hg38: hap 1 of HG01109,
-// which is homozygous for the 84.7 kb deletion, and hap 1 of HG00099, which is
-// homozygous reference. A haplotype carries an allele; only the sample it comes
-// from can be homozygous for one, and both of these were picked out of the
-// callset on the sample's genotype (scripts/build_hprc_cfhr_synteny.sh), so the
-// drawn row is one of two identical haplotypes either way. Their alignments to
-// GRCh38 come out of HPRC's own
-// impg/pafs/hprc465vsgrch38.aln.paf.gz, sliced to this window by
-// scripts/build_hprc_cfhr_synteny.sh -- one record for the non-carrier running
-// straight through, two for the carrier with the deleted span between them.
-//
-// The per-row windows are the reference window carried across each haplotype's
-// own record by offset, which is the arithmetic the PAF's four coordinate columns
-// state directly. Indels inside the alignment make that approximate at the scale
-// of hundreds of bp over half a megabase, which nothing here can see: the rows
-// are 200 kb and 125 kb wide, and the synteny view draws the ribbons from the
-// alignment itself rather than from these numbers.
-const CFHR_CARRIER = 'HG01109.1'
-const CFHR_CARRIER_TRACK = 'hprc_cfhr_synteny_HG01109_1'
-const CFHR_CARRIER_GENES = 'hprc_cfhr_genes_HG01109_1'
-const CFHR_CARRIER_WINDOW = 'JAHEPA020000055.1:49,360,000-49,485,000'
-const CFHR_NONCARRIER = 'HG00099.1'
-const CFHR_NONCARRIER_TRACK = 'hprc_cfhr_synteny_HG00099_1'
-const CFHR_NONCARRIER_GENES = 'hprc_cfhr_genes_HG00099_1'
-const CFHR_NONCARRIER_WINDOW = 'JBHDWO010000059.1:61,620,000-61,822,000'
-// The deleted span, from the allele inventory's own row (-84,683 at this
-// position), used both as the in-app highlight and as the box that names what is
-// inside it, so the two cannot part company.
-const CFHR_DELETED = { refName: 'chr1', start: 196759450, end: 196844134 }
-const CFHR_DELETED_LOCUS = `chr1:${CFHR_DELETED.start + 1}-${CFHR_DELETED.end}`
-
 // The inversion figure, at 1q21.1. `hprc-v2.1-mc-grch38.bubbles.bed.gz` flags
 // this bubble as an inversion (245 of its 129,611 rows carry that column), and
 // the links index states the breakpoints as three mixed-orientation rank-0
@@ -281,8 +246,7 @@ function hg38GeneLane(height: number) {
 }
 
 // A haplotype row's own genes: HPRC's CAT annotation of that assembly, sliced to
-// the window by scripts/build_hprc_cfhr_synteny.sh and
-// scripts/build_hprc_inversion_synteny.sh. Same glyph settings as the hg38 lane
+// the window by scripts/build_hprc_inversion_synteny.sh. Same glyph settings as the hg38 lane
 // between them, so the three rows are read the same way and the missing genes
 // are missing rather than differently drawn.
 function haplotypeGeneLane(trackId: string) {
@@ -576,72 +540,6 @@ const launchedZoomOut = (clicks: number): ScreenshotAction[] =>
     { type: 'waitForAppSettled' as const, timeout: 120000 },
   ]).flat()
 
-// ---------------------------------------------------------------------------
-// The bubble tier over the MHC, the coarse end of the ladder the tier tour
-// climbs down
-// ---------------------------------------------------------------------------
-//
-// Two megabases rather than the whole chromosome the figure draws. On the
-// whole-chromosome tier a bubble is narrower than a pixel and the drawing
-// gives it a floor, and a graph-node anchor there landed on a neighbour: the
-// tour's right-click on s101110 opened s100702, 2.6 Mb away, which at 90 kb per
-// pixel is 29 px. At 1 kb per pixel the class II bubble is sixty pixels wide
-// and its menu is its own. The chromosome-scale picture stays with
-// pangenome/hprc_whole_chromosome, which clicks nothing.
-const MHC_TIER_REGION = {
-  refName: 'chr6',
-  assemblyName: 'hg38',
-  start: 31_500_000,
-  end: 33_500_000,
-}
-const MHC_TIER_WINDOW = 'chr6:31,500,001-33,500,000'
-// The MHC class II bubble in the tier, chr6:32,486,309-32,575,299
-// (`tabix …tier10000.segs.bed.gz 'GRCh38#0#chr6:32,400,000-32,600,000'`):
-// 254 segments and a 205 kb longest allele (release 2.0 had 91 and 78 kb over
-// chr6:32,486,309-32,550,924), and the window every MHC figure on the page is
-// cut inside.
-const MHC_TIER_BUBBLE = 's329829'
-
-// The graph track is the segments track: 2 Mb across the frame is past its
-// adapter's `coarse.aboveBpPerPx`, so it cuts the one-node-per-bubble tier, and
-// zoomed in past the handover it cuts the segments. The ramp is pinned to the
-// tier lane's domain, so the two agree on every cut.
-export function hprcTierSession() {
-  return sessionSpec(HPRC_CONFIG, {
-    sessionTracks: [HPRC_TIER_SESSION_TRACK, HPRC_BUBBLE_SCORE_SESSION_TRACK],
-    views: [
-      {
-        type: 'LinearGenomeView',
-        assembly: 'hg38',
-        loc: MHC_TIER_WINDOW,
-        tracks: [
-          cytobandLane(),
-          hg38GeneLane(60),
-          {
-            trackId: 'hprc_bubble_score',
-            type: 'LinearWiggleDisplay',
-            height: 90,
-          },
-          {
-            trackId: 'hprc_tier',
-            type: 'LinearBasicDisplay',
-            showLabels: 'none',
-            color: referencePositionColor(MHC_TIER_REGION),
-            height: 50,
-          },
-          graphTrack(SEGMENTS_TRACK, {
-            colorScheme: 'reference-position',
-            colorDomain: {
-              start: MHC_TIER_REGION.start,
-              end: MHC_TIER_REGION.end,
-            },
-          }),
-        ],
-      },
-    ],
-  })
-}
-
 // What website/scripts/videos/pangenome.ts films on the human graph.
 export const hprcVideoFixtures = {
   haplotype: HAPLOTYPE,
@@ -650,8 +548,6 @@ export const hprcVideoFixtures = {
   launchedZoomOut,
   c4Window: C4_WINDOW,
   mhcWindow: 'chr6:32,510,001-32,600,000',
-  tierSession: hprcTierSession,
-  mhcBubbleNode: MHC_TIER_BUBBLE,
 }
 
 const ABCA7_CONFIG = encodeURIComponent(
@@ -1064,196 +960,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportHeight: 940,
     hideTooltip: true,
   },
-  // CFHR3/CFHR1: the deletion figure, and the locus this spec file used to say
-  // could not be drawn. The note is still in hprc_lpa_kiv2 below -- "sample rows
-  // gives a carrier an empty row (a deletion contributes no segment), the
-  // anchored layout draws its edge flat along the backbone under the backbone
-  // ... Extra sequence has somewhere to be drawn; missing sequence does not."
-  // Deletion edges are what changed: a link between two backbone segments that
-  // are not neighbours is red and thick, and hovering it says how many bp are
-  // gone.
-  //
-  // Counted off the hosted link index, this window holds three of them, the
-  // largest 84,683 bp -- CFHR3 and CFHR1 together, which is one of the
-  // best-known common deletions in the human genome. The graph draws it as what
-  // it is: an edge that leaves the backbone before CFHR3 and rejoins it after
-  // CFHR1, with the reference the deletion skips running underneath.
-  //
-  // ANCHORED, NOT FORCE, and that is the whole answer to "does the bandage graph
-  // intuitively show the deletion" (review). It did not, and the reason is
-  // structural rather than a matter of taste: FMMM has no reference axis, so the
-  // arc's two endpoints are wherever the simulation put them and its size is the
-  // only thing left to carry the event. Two consequences were visible in the
-  // force capture. The arc bowed out by the drawn length of the backbone it
-  // bypasses (DELETION_BULGE_FRACTION), but that backbone was scattered across
-  // the drawing, so the loop enclosed nothing; and the label rides an apex
-  // computed from the *bypassed* nodes (graphLabels.ts deletionApex) while the
-  // curve is drawn between the *edge's* endpoints, which in a force layout are
-  // different places -- "skips 84.7 kb of reference" sat at the top right on the
-  // magenta chain with the arc sweeping the opposite corner.
-  //
-  // Cross-referenced against ~/src/vendor, since the review asked: every tool
-  // that shows a deletion legibly puts the reference on an axis first. VRPG
-  // (lh3's rGFA viewer) projects the graph onto reference coordinates and sits it
-  // beside a linear annotation panel, which is this pairing. sequenceTubeMap
-  // orders nodes monotonically along x and gives each a width from its length, so
-  // a path that skips nodes is drawn over the nodes it skips (drawDeletion in
-  // tubemap.js is a grey line across exactly that span). odgi does not use a
-  // node-link drawing for this at all: `odgi pav` / `odgi viz` reduce
-  // presence/absence to a path-by-position matrix, where a deletion is a gap in
-  // one row. Bandage itself has no reference concept, so a deletion there is a
-  // bare link at a joint with nothing to state -- our bulge was already an
-  // improvement on that, and it is as far as a force layout can go. PangyPlot is
-  // the one force-directed pangenome viewer that does solve it, and it does the
-  // inverse of what we do: the deletion link stays a straight chord with an x
-  // drawn at its midpoint, and a dedicated force (delLinkForce in
-  // layout-forces.js) pushes the bypassed nodes perpendicularly off it, so the
-  // layout itself closes the bubble instead of the edge bowing to fake one.
-  //
-  // The step after this one, which is NOT taken: project the link index into a
-  // link-mark track and drop the graph panel. Decided against, with
-  // the three reasons in agent-docs/reference/PANGENOME_GRAPHS.md under Carriage
-  // ("No linearized deletion track"). Short version: the arcs are anonymous, and
-  // the wave VCF already states this event with a genotype per haplotype.
-  //
-  // On this window the anchored layout costs nothing and pays twice: the arc
-  // spans exactly the bp it removes, and the graph is a track of the synteny
-  // view's hg38 row, so the boxed CFHR3/CFHR1, the carrier's missing ribbon and
-  // the arc all line up on the same coordinates. What it loses is the labels
-  // on the other two deletions (2.2 kb and 9.3 kb): MIN_DELETION_LABEL_PX gates
-  // on the arc's bulge in screen px, and at 0.4% zoom theirs is ~13 px, where in
-  // FMMM units the same two cleared it. They are still drawn, as the short thick
-  // arcs off the backbone, and the caption says so rather than naming a number
-  // the figure cannot show.
-  //
-  // The linear panel is a synteny view of two real haplotypes rather than the
-  // reference alone (review: "in the most ideal world, we would have a
-  // linearsyntenyview showing this deletion along with the graph"). The graph
-  // states the deletion as an arc, which is the graph's own vocabulary; the
-  // synteny rows state it as one haplotype's alignment simply stopping and
-  // resuming past CFHR1 while another's runs straight through. Two readings of
-  // the same event, which is what the pairing is for.
-  //
-  // The anchored layout is one row per stable rank present in the cut. Rank
-  // numbers mean nothing to a reader on their own (rank is minigraph's build
-  // order over the whole graph, not this window), but the rows are the ranks
-  // actually present, in order, so the depth is the number of distinct
-  // alternatives and not the graph's rank ceiling.
-  //
-  // Carriers are picked from the callset, not by eye: at the wave VCF's
-  // chr1:196,753,075 record the 1 bp ALT is the 84.7 kb deletion and 139 of the
-  // 464 haplotypes carry it. HG01109 is homozygous for it and HG00099
-  // homozygous reference (scripts/build_hprc_cfhr_synteny.sh prints both
-  // counts), so the pair is a carrier and a non-carrier of the same event.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_cfhr_deletion',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          // carrier above the reference and non-carrier below it, because
-          // ribbons are drawn between neighbouring rows only: both bands are
-          // then against hg38, which is the comparison.
-          tracks: [[CFHR_CARRIER_TRACK], [CFHR_NONCARRIER_TRACK]],
-          drawCurves: true,
-          // The carrier's band is where the event is — a ribbon that stops and
-          // resumes around the highlighted span — and the non-carrier's is one
-          // ribbon straight through it, which needs less height to be read
-          // (review: "the third row just looks like normal non interesting
-          // alignment"). It is the row's GENE LANE that earns its keep, not its
-          // ribbon: CFHR3 and CFHR1 annotated there are what make their absence
-          // from the carrier a deletion rather than a gap in CAT's annotation of
-          // one assembly.
-          levelHeights: [110, 70],
-          collapseEmptyRows: true,
-          views: [
-            {
-              assembly: CFHR_CARRIER,
-              loc: CFHR_CARRIER_WINDOW,
-              tracks: [haplotypeGeneLane(CFHR_CARRIER_GENES)],
-            },
-            {
-              assembly: 'hg38',
-              loc: CFHR_WINDOW,
-              // The deleted span itself, from the allele inventory's own row, so
-              // the band is drawn from the data rather than measured off the
-              // picture. The carrier's ribbon is absent over it and the
-              // non-carrier's runs through it, which is the figure in one look.
-              // The ribbon gap is a little narrower than the band: the two
-              // alignment records overlap by a few kb of breakpoint homology,
-              // which is where the ribbons cross.
-              highlight: [{ ...CFHR_DELETED, color: 'rgba(60,65,72,0.10)' }],
-              tracks: [
-                hg38GeneLane(70),
-                // No bubbleSpread: it is a floor on a node's drawn length in
-                // FMMM units, so under a layout that runs locally from
-                // coordinates it changes nothing.
-                graphTrack(SEGMENTS_TRACK, {
-                  colorScheme: 'reference-position',
-                  showDeletionEdges: true,
-                }),
-              ],
-            },
-            {
-              assembly: CFHR_NONCARRIER,
-              loc: CFHR_NONCARRIER_WINDOW,
-              tracks: [haplotypeGeneLane(CFHR_NONCARRIER_GENES)],
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: GRAPH_DRAWN,
-    readyTimeout: 120000,
-    allowUnsettled: true,
-    viewportWidth: 1000,
-    viewportHeight: 1080,
-    hideTooltip: true,
-    // What the reader is looking at, named on the rows themselves (review: "can
-    // red boxes and text annotation be added"). The box wraps the two genes the
-    // deletion takes, on the reference lane where they are annotated; each
-    // haplotype label sits at the left edge of its own gene lane, anchored to the
-    // row's window start rather than to a measured x.
-    annotations: [
-      {
-        type: 'box',
-        anchor: {
-          view: [0, 1],
-          track: 'hg38_ncbiRefSeq_ucsc',
-          locus: CFHR_DELETED_LOCUS,
-        },
-      },
-      {
-        type: 'text',
-        fontSize: 17,
-        maxWidth: 480,
-        anchor: {
-          view: [0, 0],
-          track: CFHR_CARRIER_GENES,
-          locus: windowStart(CFHR_CARRIER_WINDOW),
-          fracY: 1,
-          dx: 14,
-          dy: -24,
-        },
-        text: 'HG01109 hap1: no CFHR3, no CFHR1',
-      },
-      {
-        type: 'text',
-        fontSize: 17,
-        maxWidth: 480,
-        anchor: {
-          view: [0, 2],
-          track: CFHR_NONCARRIER_GENES,
-          locus: windowStart(CFHR_NONCARRIER_WINDOW),
-          fracY: 1,
-          dx: 14,
-          dy: -24,
-        },
-        text: 'HG00099 hap1: both present',
-      },
-    ],
-  },
   // The inversion figure. Insertions are nodes and deletions are edges, and the
   // tutorial drew both; an inversion is neither, and until this figure the page
   // named the class without ever showing one.
@@ -1265,8 +971,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // a caption saying "inversion" would teach the drawing wrong. The bubble lane
   // is what states the flag, and the alignment is what shows the event.
   //
-  // Same shape as hprc_cfhr_deletion: carrier above the reference, non-carrier
-  // below, so both bands are against hg38. The highlight is the bubble's own
+  // Carrier above the reference, non-carrier below, so both bands are against hg38. The highlight is the bubble's own
   // span from the links index rather than a measured one, and the carrier's
   // ribbon crosses inside it while its flanking ribbons run parallel, which is
   // the whole figure.
@@ -1453,22 +1158,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // up asserting the two windows correspond end to end. minAlignmentLength 20000
   // does not change it, and a synteny view's sub-panels carry no displayName, so
   // it also costs the two titles that said the panes were different intervals.
-  // pangenome/hprc_allele_inventory was here and is RETIRED (review: "I am
-  // still not sure i like this figure ... the entire allele inventory concept is
-  // just tricky to visualize. Might need graph bandage view alongside it. this
-  // might be a candidate for figure deletion if we already have that").
-  //
-  // We already have that, on the same window: hprc_cfhr_deletion draws this
-  // exact 200 kb as a graph beside three rows of alignment, and the -84,683 bar
-  // that was this figure's subject is the arc that one labels "84.7 kb
-  // deletion". So the pairing the note asks for exists, and this was the half of
-  // it that had to be read as a lane of grey bars whose rows are a packing
-  // rather than a set of haplotypes -- the misreading the spec spent a paragraph
-  // heading off.
-  //
-  // The tutorial section stays, with the BED, the CIGAR trick that draws an
-  // insertion at its real magnitude, and the warning that a row is not a
-  // haplotype. What it no longer carries is a picture of it.
+
   // The KIV-2 repeat in LPA, picked out of the bubble index rather than off a
   // locus list. Every record in hprc-v2.1-mc-grch38.bubbles.bed.gz, ranked for a
   // bubble that is deeply traversed and still few enough segments to follow:
@@ -1884,7 +1574,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // 700 left 297 css px of blank under a two-lane view
     viewportHeight: 404,
   },
-  // The five amylase lanes pangenome_hprc_part3 chooses, cut from the gbz-base
+  // The five amylase lanes pangenome_hprc_haplotypes chooses, cut from the gbz-base
   // track for those lanes and drawn in walk rows, in the lanes' place: each
   // bar's length is the haplotype's span across the cut, and the readout its
   // excess over GRCh38.

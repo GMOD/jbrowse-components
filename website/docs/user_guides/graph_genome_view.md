@@ -351,7 +351,7 @@ its track menu draws the same track as a graph of the haplotypes' walks. The
 **Haplotypes** field in **Settings** lists the haplotypes the cut holds beside
 the reference, and with the field empty the track cuts every haplotype the graph
 carries.
-[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#one-haplotypes-copies)
+[Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#one-haplotypes-copies)
 reads a repeat array this way.
 
 ## Bubble spread and graph context {#two-settings-that-decide-what-is-drawn}
@@ -517,7 +517,7 @@ matching region**, so either view opens a strain the same way.
 On HPRC's graph the contributors are its 464 haplotypes, and the config the HPRC
 page on genomes.jbrowse.org opens declares every one as an assembly under its
 PanSN name, so a node there offers the haplotype that contributed it.
-[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#from-an-allele-to-its-haplotype)
+[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#check-it-on-the-haplotype)
 opens one this way.
 
 <Figure caption="Top: the graph view's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes, in that strain's coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, here with curved ribbons, transparent indels and Follow switched on so each row tracks the K12 window above it." src="/img/pangenome/rgfa_launch_out_menu.png" />
@@ -687,8 +687,8 @@ per-strain route when you have the assemblies.
 - [](/docs/user_guides/alignments_track)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/pangenome_hprc_part3)
+- [](/docs/tutorials/pangenome_hprc_carriers)
+- [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cactus)
 - [Configuring plugins](/docs/config_guides/plugins)

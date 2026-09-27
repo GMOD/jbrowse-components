@@ -1,6 +1,6 @@
 ---
-title: Pangenome (HPRC) part 5, mitochondrial lineages from the graph
-sidebar_label: Pangenome (HPRC 5, mitochondrial lineages)
+title: 'Pangenome (HPRC): mitochondrial lineages'
+sidebar_label: Pangenome (HPRC, mitochondrial lineages)
 description:
   Read a 9 bp deletion off the pangenome graph of the human mitochondrial
   chromosome, find who carries it, and cluster the graph's 234 haplotypes into
@@ -279,7 +279,7 @@ bash build_chrm_graph.sh
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_hprc_part2)
+- [](/docs/tutorials/pangenome_hprc_carriers)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/population_genomics)
 

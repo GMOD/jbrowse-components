@@ -49,7 +49,7 @@ export function portalGraphLaunch() {
 
 // The haplotypes launch's window and lanes at three loci: CFH is the page's own
 // panel for the locus (public/pangenome-hprc/panels.json in jb2hubs), C4 and
-// amylase the lanes pangenome_hprc_part3 chooses there.
+// amylase the lanes pangenome_hprc_haplotypes chooses there.
 export const PORTAL_LOCI = {
   cfhr: {
     loc: 'chr1:196740001-196850000',

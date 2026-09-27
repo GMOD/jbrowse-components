@@ -135,9 +135,9 @@ refilm and none of which the run reports.
   Mb and 29 px away, and the debug screenshot's tooltip said so. A tier node
   there is narrower than a pixel and the drawing gives it a floor, so the
   resolved point and the app's own hit test disagree by the width of a node or
-  two. Cut the tier over a few megabases instead — `hprcTierSession` takes 2 Mb,
-  where the class II bubble is sixty pixels wide — and leave the
-  chromosome-scale picture to a figure, which clicks nothing.
+  two. Cut the tier over a few megabases instead, where at 2 Mb the class II
+  bubble is sixty pixels wide, and leave the chromosome-scale picture to a
+  figure, which clicks nothing.
 - **A node's `Open in <assembly>` navigates the linear view its graph track is
   in rather than adding one**, when that view carries the assembly, so a tour
   built on it keeps the frame it opened at. That is what makes the
