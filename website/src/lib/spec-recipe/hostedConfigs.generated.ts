@@ -250,6 +250,35 @@ export const hostedConfigs: Record<string, RawConfig & { absent: string[] }> = {
     ],
     "absent": []
   },
+  "https://jbrowse.org/ucsc/hg38/config-staging.json": {
+    "assemblies": [
+      {
+        "name": "hg38",
+        "sequence": {
+          "trackId": "hg38-refseq",
+          "adapter": {
+            "type": "TwoBitAdapter"
+          }
+        }
+      }
+    ],
+    "tracks": [
+      {
+        "trackId": "hg38_liftOver_multiway",
+        "name": "hg38 vs 240 genomes (liftOver, multi-way)",
+        "type": "SyntenyTrack",
+        "adapter": {
+          "type": "MultiPairwiseSyntenyAdapter"
+        },
+        "displays": [
+          {
+            "type": "MultiWaySyntenyDisplay"
+          }
+        ]
+      }
+    ],
+    "absent": []
+  },
   "https://jbrowse.org/ucsc/hg38/config.json": {
     "assemblies": [
       {
