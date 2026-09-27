@@ -342,15 +342,3 @@ export function buildArcBandFeeds({
 
 /** A feed with nothing in it, which releases a region's band buffers. */
 export const EMPTY_ARC_BAND_FEED: ArcBandFeed = new RegionLanes().feed()
-
-/** Whether a feed paints anything in the band. */
-export function feedHasInk(feed: ArcBandFeed) {
-  return (
-    feed.ticks.count > 0 ||
-    feed.links.count > 0 ||
-    feed.dashed.count > 0 ||
-    feed.clippedLinks.count > 0 ||
-    feed.clippedDashed.count > 0 ||
-    feed.markers.count > 0
-  )
-}

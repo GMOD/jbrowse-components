@@ -166,7 +166,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
         // overlapping two of them then walked one region's mismatches against
         // the other's sequence.
         observer.next(
-          !record.NUMERIC_MD && packedRef !== undefined && span
+          !record.NUMERIC_MD && packedRef !== undefined
             ? record.withRegionRef(packedRef)
             : record,
         )

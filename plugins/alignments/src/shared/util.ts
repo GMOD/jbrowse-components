@@ -128,7 +128,7 @@ export function getOrCreate<K, V>(
   return value
 }
 
-export function filterReadFlag(
+function filterReadFlag(
   flags: number,
   flagInclude: number,
   flagExclude: number,

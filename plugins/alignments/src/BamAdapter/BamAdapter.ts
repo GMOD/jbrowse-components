@@ -193,7 +193,7 @@ export abstract class BamAdapterBase<
             // an assignment would rebind the read for whichever fetch still
             // holds it. See BamSlightlyLazyFeature.withRegionRef.
             observer.next(
-              !record.NUMERIC_MD && packedRef && span
+              !record.NUMERIC_MD && packedRef
                 ? record.withRegionRef(packedRef)
                 : record,
             )

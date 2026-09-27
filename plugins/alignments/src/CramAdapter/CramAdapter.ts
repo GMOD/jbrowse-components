@@ -159,7 +159,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     return rawHeader
   }
 
-  refIdToOriginalName(refId: number) {
+  private refIdToOriginalName(refId: number) {
     return this.seqIdToOriginalRefName[refId]
   }
 
