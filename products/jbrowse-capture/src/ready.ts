@@ -4,7 +4,7 @@ import {
   displayCensusInPage,
   waitForSession,
 } from './sessionGate.ts'
-import { waitForAppSettled } from './waits.ts'
+import { appSettledBlocker } from './waits.ts'
 
 import type { DisplayState, SessionExpectations } from './sessionGate.ts'
 import type { Page } from 'puppeteer'
@@ -52,8 +52,11 @@ export async function waitForFrame(
   }: Omit<ReadyOptions, keyof SessionExpectations> = {},
 ): Promise<ReadyReport> {
   const unsettled: string[] = []
-  if (!(await waitForAppSettled(page, { timeout }))) {
-    unsettled.push('the app never held itself ready')
+  const blocker = await appSettledBlocker(page, { timeout })
+  if (blocker) {
+    unsettled.push(
+      `the app never held itself ready (last blocked by ${blocker})`,
+    )
   }
   const timedOut = unsettled.length > 0
 

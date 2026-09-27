@@ -179,23 +179,32 @@ export function waitForAppReady(
   return settled(page.waitForSelector(APP_READY, { timeout }))
 }
 
+// What each term of the settled hold waits out, as a timeout names it. The
+// marker reads `loading` over a display that is fetching or has not painted,
+// but only over the displays its view walk finds, so a plugin view that does
+// not declare its `ownTracks` is held by the display term. `data-busy` is every
+// `LoadingEllipses`: a view body still loading its code, and the panels,
+// widgets and dialogs no view walk reaches.
+const SETTLE_BLOCKERS: [selector: string, reason: string][] = [
+  [APP_LOADING, 'an app still loading'],
+  [LOADING_DISPLAYS, 'a display still loading'],
+  ['[data-busy="true"]', 'a loading indicator still up'],
+  [ANIMATING_DISPLAYS, 'a display still animating'],
+]
+
+type SettleOptions = WaitOptions & { holdMs?: number; pollMs?: number }
+
 /**
- * Wait until every app on the page has read ready, with no view component
- * loading and no display loading or animating, for an unbroken `holdMs`. False
- * on timeout. Throws on a page that publishes no `[data-app-phase]`, where
- * nothing positive exists to wait for.
- *
- * The marker already reads `loading` over a display that is fetching or has not
- * painted, but only over the displays its view walk finds. The display check
- * covers a plugin view that does not declare its `ownTracks`.
+ * `waitForAppSettled`, answering with what was still blocking at the timeout,
+ * or undefined once the hold passed.
  */
-export async function waitForAppSettled(
+export async function appSettledBlocker(
   page: Page,
   {
     timeout = 30000,
     holdMs = APP_SETTLED_HOLD_MS,
     pollMs = 250,
-  }: WaitOptions & { holdMs?: number; pollMs?: number } = {},
+  }: SettleOptions = {},
 ) {
   const hasMarker = await page.evaluate(
     () => document.querySelector('[data-app-phase]') !== null,
@@ -207,20 +216,35 @@ export async function waitForAppSettled(
         'that has not started also satisfies.',
     )
   }
-  return holdTrue(
-    () =>
-      page
-        .evaluate(
-          (ready, ...busy) =>
-            document.querySelector(ready) !== null &&
-            busy.every(selector => document.querySelector(selector) === null),
-          APP_READY,
-          APP_LOADING,
-          VIEW_COMPONENT_PENDING,
-          LOADING_DISPLAYS,
-          ANIMATING_DISPLAYS,
-        )
-        .catch(() => false),
-    { holdMs, timeout, pollMs },
-  )
+  const blocker = () =>
+    page
+      .evaluate(
+        (ready, blockers) =>
+          blockers.find(([selector]) =>
+            document.querySelector(selector),
+          )?.[1] ??
+          (document.querySelector(ready) === null
+            ? 'the marker not reading ready'
+            : undefined),
+        APP_READY,
+        SETTLE_BLOCKERS,
+      )
+      .catch(() => 'the page could not be queried')
+  const held = await holdTrue(async () => (await blocker()) === undefined, {
+    holdMs,
+    timeout,
+    pollMs,
+  })
+  return held
+    ? undefined
+    : ((await blocker()) ?? 'a hold the timeout cut short')
+}
+
+/**
+ * Wait until every app on the page has read ready, with nothing loading or
+ * animating, for an unbroken `holdMs`. False on timeout. Throws on a page that
+ * publishes no `[data-app-phase]`, where nothing positive exists to wait for.
+ */
+export async function waitForAppSettled(page: Page, options?: SettleOptions) {
+  return (await appSettledBlocker(page, options)) === undefined
 }

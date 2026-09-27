@@ -93,7 +93,7 @@ test('an app that never goes ready reports the stage and the census', async () =
     timeout: 200,
   })
   expect(report.unsettled).toEqual([
-    'the app never held itself ready',
+    'the app never held itself ready (last blocked by an app still loading)',
     'display(s) never painted: pileup is loading',
   ])
   expect(report.pending).toEqual([{ name: 'pileup', phase: 'loading' }])
@@ -111,7 +111,9 @@ test('a loading display the marker cannot see keeps the chain waiting', async ()
     allowUnsettled: true,
     timeout: 1500,
   })
-  expect(report.unsettled).toEqual(['the app never held itself ready'])
+  expect(report.unsettled).toEqual([
+    'the app never held itself ready (last blocked by a display still loading)',
+  ])
 }, 15000)
 
 // A display in a terminal phase is not coming back, so the chain fails at once

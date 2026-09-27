@@ -52,7 +52,7 @@ test('work that starts after the wait does resets the hold', async () => {
 
 test('a view body still waiting on its component keeps the app unsettled', async () => {
   document.body.innerHTML = `<span hidden data-app-phase="ready"></span>
-    <span data-view-component-pending="true"></span>`
+    <p data-busy="true" data-view-component-pending="true">Loading</p>`
   const arrived = setTimeout(() => {
     setPhase('ready')
   }, 100)
@@ -60,6 +60,20 @@ test('a view body still waiting on its component keeps the app unsettled', async
   await expect(waitForAppSettled(jsdomPage(), FAST)).resolves.toBe(true)
   expect(Date.now() - start).toBeGreaterThanOrEqual(100 + FAST.holdMs)
   clearTimeout(arrived)
+})
+
+// A feature panel or dialog loading its contents sits outside every view, so
+// the marker cannot see it.
+test('a loading indicator outside any view keeps the app unsettled', async () => {
+  document.body.innerHTML = `<span hidden data-app-phase="ready"></span>
+    <p data-busy="true">Loading description</p>`
+  const loaded = setTimeout(() => {
+    document.querySelector('[data-busy]')?.remove()
+  }, 100)
+  const start = Date.now()
+  await expect(waitForAppSettled(jsdomPage(), FAST)).resolves.toBe(true)
+  expect(Date.now() - start).toBeGreaterThanOrEqual(100 + FAST.holdMs)
+  clearTimeout(loaded)
 })
 
 test('one engine finished does not settle a page whose other is loading', async () => {
