@@ -1,3 +1,4 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { useMouseState } from '@jbrowse/core/ui/useMouseTracking'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
@@ -1140,5 +1141,20 @@ describe('the highlight', () => {
     const dark = renderChrome(HighlightModel.create({ lit: false }))
     await dark.findByTestId('probe-canvas')
     expect(dark.queryAllByTestId('chrome-hover')).toHaveLength(0)
+  })
+
+  // the synteny band stays light in a dark theme, where the theme's white
+  // hover wash would vanish on it
+  test('a display on its own ground shades in that ground’s palette', async () => {
+    const ground = { ...resolvePalette(), featureHover: 'rgb(1, 2, 3)' }
+    const OnGround = HighlightModel.views(() => ({
+      get groundPalette() {
+        return ground
+      },
+    }))
+    const { findByTestId, findAllByTestId } = renderChrome(OnGround.create({}))
+    await findByTestId('probe-canvas')
+    const [weak] = await findAllByTestId('chrome-hover')
+    expect(weak!.style.background).toBe('rgb(1, 2, 3)')
   })
 })

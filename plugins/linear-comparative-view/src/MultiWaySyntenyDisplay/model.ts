@@ -46,6 +46,7 @@ import {
   PRESET_ATTRIBUTES,
   bandGroundColor,
   bandInk,
+  bandPalette,
   colorableColumns,
   declaredAttributes,
   declaredLanesOf,
@@ -2537,10 +2538,18 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * A wash and a border: the glyph colours are the data.
+       * the feature track's shade, which darkens a pale placement box as
+       * visibly as a gene
        */
       get highlightStyle(): HighlightStyle {
-        return 'box'
+        return 'shade'
+      },
+      /**
+       * #getter
+       * the band's light palette, whatever the page theme
+       */
+      get groundPalette() {
+        return bandPalette
       },
     }))
     .views(self => ({

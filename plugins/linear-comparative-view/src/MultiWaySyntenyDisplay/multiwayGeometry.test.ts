@@ -167,6 +167,26 @@ const colors = {
 }
 
 describe('the ribbons', () => {
+  test('an unnamed alignment group is labelled by its anchor locus, not the id its key falls back to', () => {
+    const record = new SimpleFeature({
+      uniqueId: 'adapter-internal-17',
+      refName: 'chr1',
+      start: 500,
+      end: 600,
+      strand: 1,
+      assemblyName: 'grape',
+      mate: { assemblyName: 'peach', refName: 'Pp1', start: 1500, end: 1600 },
+    })
+    const { targets } = buildRibbonGeometry({
+      stack: stack({ features: [record] }),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    expect(targets.map(t => t.label)).toEqual(['grape chr1:501..600'])
+  })
+
   test('join the anchor span to the mate span end to end, and a reverse pair crossed', () => {
     const s = stack({
       features: [
@@ -197,8 +217,7 @@ describe('the ribbons', () => {
     expect(abgrAlpha(data.colors[0]!)).toBe(Math.round(0.3 * 255))
     expect(targets.map(t => t.groupKey)).toEqual(['g1', 'g2'])
     // one target per group is shared by every gutter, so the label names the
-    // group's identity rather than a lane pair: the key and where the anchor
-    // puts it. A bare key gave the reader nothing to locate it by
+    // group rather than a lane pair: its gene name and where the anchor puts it
     expect(targets[0]!.label).toBe('g1\ngrape chr1:101..200')
     expect([...data.instanceFeatureIdx]).toEqual([
       groupTarget.get('g1'),
@@ -1128,9 +1147,32 @@ describe('a lane cell', () => {
     // at the gene's end; the pass draws it inward from there
     expect(cell.arrowXs[0]).toBe(PX_ORIGIN + 80)
     // no placement box: the gene covers the group's span
-    expect(cell.hits.map(h => h.label)).toEqual(['GENE1'])
+    expect(cell.hits.map(h => h.label)).toEqual(['GENE1\ngrape chr1:101..200'])
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop + 1)?.feature).toBe(gene)
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop - 5)).toBeUndefined()
+  })
+
+  test('a gene the source names by ID alone is labelled by that ID, and one with neither by its locus', () => {
+    const s = stack({ features: [pairFeature('g1', 100, 200)] })
+    const unnamed = (id?: string) =>
+      new SimpleFeature({
+        uniqueId: 'internal-7',
+        refName: 'chr1',
+        start: 100,
+        end: 200,
+        type: 'gene',
+        ...(id ? { id } : {}),
+      })
+    const labelOf = (feature: Feature) =>
+      buildLaneCells({
+        lane: s.lanes[0]!,
+        genes: [new LaneGene(feature)],
+        glyphHeight: s.glyphHeight,
+        width: WIDTH,
+        colors,
+      }).glyphs.hits[0]!.label
+    expect(labelOf(unnamed('gene-g1'))).toBe('gene-g1\ngrape chr1:101..200')
+    expect(labelOf(unnamed())).toBe('grape chr1:101..200')
   })
 
   test('an alignment record no gene reaches draws no box', () => {
@@ -1279,7 +1321,7 @@ describe('a lane cell', () => {
       })
       const line = lane.glyphTop + s.glyphHeight / 2
       const side = (name: string) => {
-        const hit = glyphs.hits.find(h => h.label === name)!
+        const hit = glyphs.hits.find(h => h.feature.get('name') === name)!
         return hit.y2 <= line ? 'above' : hit.y1 >= line ? 'below' : 'across'
       }
       return { fwd: side('fwd'), rev: side('rev'), divider: glyphs.lineYs[0] }

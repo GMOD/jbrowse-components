@@ -10,7 +10,11 @@ import {
 } from '@jbrowse/cigar-utils'
 import { assembleLocString } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
-import { UTR_HEIGHT_FRACTION, centerShrink } from '@jbrowse/plugin-canvas'
+import {
+  UTR_HEIGHT_FRACTION,
+  centerShrink,
+  getFeatureName,
+} from '@jbrowse/plugin-canvas'
 import {
   categoricalColor,
   colorSchemes,
@@ -101,6 +105,10 @@ function locOn(lane: Lane, refName: string, start: number, end: number) {
     start: Math.round(start),
     end: Math.round(end),
   })}`
+}
+
+function lines(...parts: (string | undefined)[]) {
+  return parts.filter(Boolean).join('\n')
 }
 
 function* lanePairs(lanes: Lane[], glyphHeight: number) {
@@ -450,19 +458,18 @@ export function buildRibbonGeometry({
   const records = new Map<string, ReadonlyMap<number, Feature>>()
   // One target per group, shared by every gutter — which is what lets one
   // hover light the whole chain, and also what stops the label naming a lane
-  // PAIR. What it can name is the group's identity: its key and where the
-  // anchor puts it. A bare key left the reader a gene name and nothing to
-  // locate it by, where a direct-link ribbon has printed both loci all along
+  // PAIR. It names the group by the gene name its source gives, never by a key
+  // minted from a row number or a feature id, and by where the anchor puts it
   const anchor = lanes[0]
   const targetOfGroup = (key: string, group: MultiWayGroup) => {
     let idx = groupTarget.get(key)
     if (idx === undefined) {
       idx = targets.length
-      const { refName, start, end } = group.anchor
+      const { refName, start, end, name } = group.anchor
       targets.push({
         feature: group.feature,
         groupKey: key,
-        label: anchor ? `${key}\n${locOn(anchor, refName, start, end)}` : key,
+        label: lines(name, anchor && locOn(anchor, refName, start, end)),
       })
       groupTarget.set(key, idx)
     }
@@ -1012,7 +1019,10 @@ export function buildLaneCells({
       y2: row.top + row.height,
       feature,
       groupKey: cluster,
-      label: feature.get('name') ?? feature.id(),
+      label: lines(
+        getFeatureName(feature),
+        locOn(lane, refName, feature.get('start'), feature.get('end')),
+      ),
       fill,
     })
   }
@@ -1045,7 +1055,10 @@ export function buildLaneCells({
       y2: y + glyphHeight,
       feature,
       groupKey: key,
-      label: key,
+      label: lines(
+        name ?? key,
+        locOn(lane, interval.refName, interval.start, interval.end),
+      ),
       fill,
     })
   }

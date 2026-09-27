@@ -111,13 +111,14 @@ const ChromeHighlight = observer(function ChromeHighlight({
 }: {
   model: HighlightHost
 }) {
-  const palette = usePalette()
+  const themePalette = usePalette()
   const {
     hoverInk,
     selectionInk = [],
     pinnedInk = [],
     soloInk = [],
     highlightStyle,
+    groundPalette: palette = themePalette,
   } = model
   const pinned = highlightBoxColors(palette.highlight.main)
   return (

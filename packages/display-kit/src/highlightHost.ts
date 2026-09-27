@@ -1,3 +1,4 @@
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { InkRect } from '@jbrowse/render-core/marks'
 
@@ -38,6 +39,12 @@ export interface HighlightHost extends IStateTreeNode {
    */
   soloInk?: HighlightRect[]
   highlightStyle?: HighlightStyle
+  /**
+   * The palette of a ground the display paints itself, where that differs from
+   * the page theme's — the synteny band stays light in a dark theme, and the
+   * dark theme's white hover wash vanishes on it
+   */
+  groundPalette?: JBrowsePalette
 }
 
 export function isHighlightHost(model: object): model is HighlightHost {
