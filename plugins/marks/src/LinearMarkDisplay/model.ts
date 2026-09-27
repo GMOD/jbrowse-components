@@ -1111,10 +1111,10 @@ export function stateModelFactory(
           return this.visibleMarkTypes.includes('point')
         },
         /**
-         * #getter
-         * the filters actually applied, `jexl:`-prefixed
+         * #method
+         * the filters actually applied
          */
-        get activeFilters(): string[] {
+        activeFilters(): string[] {
           return activeJexlFilters(self)
         },
         /**
@@ -1263,7 +1263,7 @@ export function stateModelFactory(
             ...(opts ? { opts } : {}),
             layers: self.layerRequests,
             transform: [
-              ...self.activeFilters.map(expr => ({
+              ...self.activeFilters().map(expr => ({
                 type: 'filter' as const,
                 expr,
               })),

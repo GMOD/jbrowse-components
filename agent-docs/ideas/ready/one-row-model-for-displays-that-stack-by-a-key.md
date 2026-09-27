@@ -187,6 +187,9 @@ Candidates: set1 (9; #ffff33 vanishes; #999 = no-value grey), categoricalPalette
 The flip should deal over an order no save changes. Until it does, the multi-row display recolours rows on a pan, and "Save track settings to config" recolours every row, since the palette is dealt over the base order and the save rewrites the base. A second page goes with the call: a tour of what steps 3–4 changed on screen (drag, cluster, undo, reset on an agent-built track, the MAF guide tree turning).
 Questions: 1 palette; 2 past-length rule; 3 label boxes always tinted (tint on/off pair at 20 rows); 4 variants value order first-seen vs count-ranked (legend both ways); 5 field mapping vs TSV colour column (no fixture; design says own colour stays).
 
+### The rowGroups colour against GenomeSpy (2026-09-27)
+GenomeSpy's groups carry no colour; a group's is its attribute's scale (`getGroupColorScale`, `packages/app/src/charts/sampleAttributePlotUtils.js`), and attribute colours paint the metadata cells, never the marks. So `rowGroups[].color` → `rowColor: { field: 'group' }` is right, but it cannot ship alone: `rowColor` targets multi-row's blocks, and an explicit entry beats itemRgb, so the roadmap/chromHMM and dog10k figures would paint group colours over their states. It needs question 3's answer — an attribute's colour on the label box, a row's own (`field: 'name'`) on its content — first.
+
 ### Precedence
 explicit entry (pair in the field's keyspace) → row's own colour (subtrack color, MAF samples[].color, samplesTsv color column, multi-row itemRgb/color slot) → dealt palette. Variants deviates (field palette beats own + pairs) → fixed at the flip (no fixture TSV has a color column → no pixel moves). Wiggle follows. Multi-row withholds palette under color slot/itemRgb = display fact. Gradient→label identity, rowColor entry replacing threshold pair = display facts.
 

@@ -41,7 +41,7 @@ export const wiggleConfigSchemaFields = {
     type: 'number',
     defaultValue: 2,
     description:
-      "Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size",
+      "Point diameter in px for the point mark, the display's constant for what the mark display spells encoding.size",
     advanced: true,
   },
   lineWidth: {

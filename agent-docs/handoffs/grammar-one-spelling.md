@@ -1,6 +1,6 @@
 ---
 name: grammar-one-spelling
-description: "One spelling per grammar concept, Colin's call of 2026-09-27. The scale-ends rule, encoding.size, the filter rename (jexlFilters is filter, every entry jexl:) and strand's vocabulary as a universal colour preset landed; a list of other double spellings remains, unruled. Read before touching filter, FieldPresets, UNIVERSAL_FIELD_PRESETS or a shorthand."
+description: "One spelling per grammar concept, Colin's call of 2026-09-27. The scale-ends rule, encoding.size, the filter rename (jexlFilters is filter, every entry jexl:) and strand's vocabulary as a universal colour preset landed; the other double spellings are ruled, one left to the row-model plan. Read before touching filter, FieldPresets, UNIVERSAL_FIELD_PRESETS or a shorthand."
 ---
 
 # Grammar: one spelling per concept
@@ -46,15 +46,14 @@ calls; two landed and two remain.
    jb2hubs (`hubtools/src/featureDisplay.ts`) and protein3d
    (`proteinTrackSetup.ts`) still write `jexlFilters`, which v5 lifts; jb2hubs
    must keep it for older releases.
-2. **Other double spellings the arbiter listed**, unruled: `rowColor`'s bare
-   string is a field where every colour object's is its constant, and its
-   `scale: 'none'` paints nothing; `scales.y.type` against `scale` on colour,
-   shape and size; `rows.labels` a map where colour's is a list; three row
-   colours on the multi-row feature display (`rowColor`, `color.field`,
-   `rowGroups[].color`); wiggle's `origin` doubling as the threshold cut; the
-   wiggle display's own `mark`/`size` beside the mark display's. Found this
-   round: the mark display's `activeFilters` is a getter where the canvas and
-   multi-sample variant displays' is a method.
+2. **The other double spellings are ruled** (2026-09-27, against Vega-Lite,
+   ggplot2 and GenomeSpy): `rowColor`'s bare string, `scales.y.type` beside
+   `color.scale`, `rows.labels` as a map, wiggle's `origin` and its `mark`/`size`
+   all stay, for the reasons in `reference/GRAMMAR_OF_GRAPHICS.md` §"Spelling,
+   checked 2026-09-27". The mark display's `activeFilters` is a method, as on
+   the other two. `rowGroups[].color` goes, but only as step 4 of
+   [one-row-model](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md),
+   which waits on Colin's call on where an attribute's colour lands.
 
 ## Traps met
 

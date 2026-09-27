@@ -768,11 +768,51 @@ The gaps a user meets first, in order:
 A link's `size` is a channel, a field through a linear or log scale into a px
 range, unioned over the loaded regions the way a ramp's domain is
 ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md));
-a point's `size` is the mark's own, as Vega-Lite's `mark.size` is, and a
-constant rather than a channel (ADR-095); `origin` is the display's rather
+a point's and a rule's size is the constant in the same `encoding.size`, which
+Vega-Lite spells `mark.size` or `encoding.size.value` (ADR-163 §"Amended
+2026-09-27"); `origin` is the display's rather
 than a mark's, and no mark declares its own tooltip fields. Line and area marks stay
 out ([ADR-127](../architecture-decision-records/adr-127-line-stays-wiggles.md)),
 and so do format-specific displays rebuilt on the grammar (ADR-114, ADR-118).
+
+### Spelling, checked 2026-09-27
+
+Checked against the Vega-Lite docs, ggplot2 and GenomeSpy's source before a
+second spelling was cut. Each of these stays:
+
+- **A bare string fills an object's first member**: `value` on a colour object
+  (Vega-Lite's and GenomeSpy's `mark.color: "red"`), `field` where the object
+  has no constant (`facet`, `rows`, `rowColor`, as Altair's `"x:N"` and
+  ggplot2's `aes()` read one). `rowColor` has no constant, since one tint on
+  every row names nothing, so its `scale: 'none'` paints nothing. The rule
+  holds per object but not per block: in a mark's `encoding`, `y: 'score'` is
+  a field and `color: 'steelblue'` a constant, where Vega-Lite and Altair read
+  every bare string inside `encoding` as a field, so Altair's `color: 'type'`
+  is refused at load as not a colour. Open: whether `encoding.color` and
+  `encoding.shape` read a bare string as a field, leaving the display-level
+  `color` a constant as Vega-Lite's `mark.color` is.
+- **`scales.y.type` beside `color.scale`**: kept as the cheaper compromise,
+  not because either grammar spells it so. Both nest the scale under its
+  channel as an object (`encoding.color.scale.type`); GenomeSpy's view-level
+  `scales` map, whose members spell `type`, is for a scale shared across a
+  subtree. A colour object lays its scale's members flat on the channel, and
+  on a channel `type` is the data type, so its scale is named `scale`.
+- **`rows.labels` a map, a colour's `labels` a list**: ggplot2 takes either and
+  recommends the named form, so the map is the idiom. A row is renamed whether
+  or not `rows.domain` lists it, so it is keyed by name; a threshold colour's
+  labels name intervals, which have no key, and that alone keeps a colour's a
+  list paired with `domain` as `range` is.
+- **Wiggle's `origin` and its threshold cut** are two settings, as in both
+  grammars (GenomeSpy's bar example writes 0 as `y2` and as the cut); the cut
+  falls back to `origin` only while `color.domain` is empty.
+- **A mark-level `size` beside `encoding.size`** is Vega-Lite's own pair, so
+  wiggle's one-mark `mark`/`size` stands beside the mark display's encoding.
+
+One goes: a GenomeSpy group has no colour of its own, it takes its attribute's
+scale, so `rowGroups[].color` is to become `rowColor: { field: 'group' }` —
+step 4 of
+[one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md),
+which waits on where an attribute's colour lands on the multi-row display.
 
 ## What the tree does that the grammars do not
 

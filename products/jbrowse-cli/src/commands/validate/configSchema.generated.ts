@@ -6690,7 +6690,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         "size": {
-          "description": "Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size.",
+          "description": "Point diameter in px for the point mark, the display's constant for what the mark display spells encoding.size.",
           "type": "number",
           "default": 2
         },
