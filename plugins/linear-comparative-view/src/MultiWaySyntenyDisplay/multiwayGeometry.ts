@@ -763,6 +763,8 @@ export interface LaneCells {
   boxes: LaneGlyphData
   /** each named box's gene and where it draws, for the lane's name row */
   boxNames: NamedSpan[]
+  /** the group each drawn gene carries, by feature id */
+  geneGroups: Map<string, string>
 }
 
 interface DrawnGene {
@@ -963,6 +965,7 @@ export function buildLaneCells({
       boxNames.push({
         id: `box:${key}:${boxLeft}`,
         name,
+        group: key,
         left: boxLeft,
         right: boxRight,
       })
@@ -985,7 +988,13 @@ export function buildLaneCells({
       fill,
     })
   }
-  return { glyphs: glyphs.build(), boxes: boxes.build(), boxNames }
+  const geneGroups = new Map<string, string>()
+  for (const { gene, cluster } of drawn) {
+    if (cluster !== undefined) {
+      geneGroups.set(gene.feature.id(), cluster)
+    }
+  }
+  return { glyphs: glyphs.build(), boxes: boxes.build(), boxNames, geneGroups }
 }
 
 /** the glyph hit under a render-origin px point, topmost first: boxes draw over genes */

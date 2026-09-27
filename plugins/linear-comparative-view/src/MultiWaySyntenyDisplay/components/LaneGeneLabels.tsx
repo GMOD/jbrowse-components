@@ -28,7 +28,7 @@ const LaneGeneLabels = observer(function LaneGeneLabels({
         fontFamily,
       }}
     >
-      {model.laneGeneLabels(fontFamily).map(label => (
+      {model.laneGeneLabels(fontFamily, model.pinnedLabelGroups).map(label => (
         <FloatingText
           key={label.key}
           data-testid="multiway-gene-label"
@@ -37,6 +37,7 @@ const LaneGeneLabels = observer(function LaneGeneLabels({
           color={palette.text.primary}
           fontSize={GENE_LABEL_FONT_PX}
           halo={palette.background.paper}
+          style={label.pinned ? { fontWeight: 'bold' } : undefined}
         >
           {label.text}
         </FloatingText>

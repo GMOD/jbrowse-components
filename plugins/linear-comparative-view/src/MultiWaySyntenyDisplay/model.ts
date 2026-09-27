@@ -2047,6 +2047,7 @@ export function stateModelFactory(
         glyphs: MultiWayCell
         boxes: MultiWayCell
         boxNames: NamedSpan[]
+        geneGroups: Map<string, string>
       }[] = []
       return {
         /**
@@ -2083,7 +2084,7 @@ export function stateModelFactory(
             ) {
               return prev
             }
-            const { glyphs, boxes, boxNames } = buildLaneCells({
+            const { glyphs, boxes, boxNames, geneGroups } = buildLaneCells({
               lane,
               genes: laneGenes?.get(lane.assemblyName)?.genes ?? [],
               glyphHeight,
@@ -2096,6 +2097,7 @@ export function stateModelFactory(
               glyphs: { kind: 'glyphs', data: glyphs },
               boxes: { kind: 'glyphs', data: boxes },
               boxNames,
+              geneGroups,
             }
           })
           const cells = new Map<string, MultiWayCell>()
@@ -2107,6 +2109,12 @@ export function stateModelFactory(
             cells,
             boxNames: new Map(
               held.map(({ lane, boxNames }) => [lane.assemblyName, boxNames]),
+            ),
+            geneGroups: new Map(
+              held.map(({ lane, geneGroups }) => [
+                lane.assemblyName,
+                geneGroups,
+              ]),
             ),
           }
         },
@@ -2125,6 +2133,25 @@ export function stateModelFactory(
        */
       get laneBoxNames(): Map<string, NamedSpan[]> {
         return self.laneCells.boxNames
+      },
+      /**
+       * #getter
+       * per lane, the group each drawn gene carries, by feature id
+       */
+      get laneGeneGroups(): Map<string, Map<string, string>> {
+        return self.laneCells.geneGroups
+      },
+      /**
+       * #getter
+       * the groups whose names every lane prints however crowded: the
+       * hovered one and the clicked one
+       */
+      get pinnedLabelGroups(): ReadonlySet<string> {
+        return new Set(
+          [self.hoveredGroupKey, self.clickedTarget?.groupKey].filter(
+            (key): key is string => key !== undefined,
+          ),
+        )
       },
     }))
     .views(self => ({
@@ -2150,7 +2177,10 @@ export function stateModelFactory(
        * the gene names each lane prints under its glyphs, placed and
        * decimated, in the stack's px; none with `showGeneLabels` off
        */
-      laneGeneLabels(fontFamily: string) {
+      laneGeneLabels(
+        fontFamily: string,
+        pinnedGroups: ReadonlySet<string> = new Set(),
+      ) {
         const { lanes, glyphHeight } = self.laneStack
         const boxNames = self.laneBoxNames
         return self.showGeneLabels
@@ -2160,6 +2190,8 @@ export function stateModelFactory(
                 self.laneGenes?.get(assemblyName)?.genes ?? [],
               boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
               textOf: self.geneTextOf,
+              groupsOf: assemblyName => self.laneGeneGroups.get(assemblyName),
+              pinnedGroups,
               glyphHeight,
               width: self.canvasWidth,
               height: self.scrollContentHeight,

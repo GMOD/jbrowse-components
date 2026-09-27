@@ -85,4 +85,27 @@ describe('placeLaneLabels', () => {
     })
     expect(labels.map(l => l.text)).toEqual(['G', 'Potri.001G'])
   })
+
+  it("keeps a pinned group's name however crowded, ahead of its neighbours", () => {
+    const genes = [
+      gene('A', 100, 110),
+      gene('CROWDED', 112, 114),
+      gene('B', 116, 200),
+    ]
+    const labels = placeLaneLabels({
+      lanes: [lane('a', 20)],
+      genesOf: () => genes,
+      textOf: getFeatureName,
+      groupsOf: () => new Map([['CROWDED', 'g1']]),
+      pinnedGroups: new Set(['g1']),
+      glyphHeight: 10,
+      width: 1000,
+      height: 200,
+      fontFamily: 'sans-serif',
+    })
+    expect(labels.map(l => [l.text, l.pinned])).toEqual([
+      ['CROWDED', true],
+      ['B', false],
+    ])
+  })
 })

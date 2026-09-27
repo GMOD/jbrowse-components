@@ -10,9 +10,14 @@ export const GENE_LABEL_FONT_PX = 10
 export const GENE_LABEL_HALO_PX = 1
 export const GENE_LABEL_GAP_PX = 1
 
+// a bold name's advance over the regular widths `measureText` tabulates
+const BOLD_WIDTH = 1.1
+
 export interface PlacedLaneLabel {
   key: string
   text: string
+  /** of the hovered or selected group, so kept first and drawn bold */
+  pinned: boolean
   /** the label's left edge, in the stack's px */
   left: number
   /** the label box's top, in the stack's px */
@@ -32,6 +37,8 @@ export interface NamedSpan {
   name: string
   left: number
   right: number
+  /** the group the gene carries, where one claims it */
+  group?: string
 }
 
 function drawnNames(
@@ -39,6 +46,7 @@ function drawnNames(
   genes: readonly LaneGene[],
   boxes: readonly NamedSpan[],
   textOf: (feature: Feature) => string | undefined,
+  groups: ReadonlyMap<string, string> | undefined,
   width: number,
 ) {
   const out = boxes.filter(b => b.right >= 0 && b.left <= width)
@@ -53,7 +61,8 @@ function drawnNames(
       const left = Math.min(span[0], span[1])
       const right = Math.max(span[0], span[1])
       if (right >= 0 && left <= width) {
-        out.push({ id: feature.id(), name, left, right })
+        const id = feature.id()
+        out.push({ id, name, left, right, group: groups?.get(id) })
       }
     }
   }
@@ -62,16 +71,20 @@ function drawnNames(
 
 /**
  * Each lane's gene names, in the row under its glyphs — its genes' own and
- * those of the placement boxes standing in for genes its annotation lacks — decimated the way the
- * feature track decimates: a name is kept only where the gap between its
+ * those of the placement boxes standing in for genes its annotation lacks —
+ * decimated the way the feature track decimates: a name is kept only where the gap between its
  * neighbours' edges holds it (`keepFeatureLabel`), and of the names left, one
- * meeting a kept name's halo is dropped (`cullOverlappingLabels`).
+ * meeting a kept name's halo is dropped (`cullOverlappingLabels`). The names of
+ * a pinned group — the hovered or selected one — skip the room test and are
+ * placed first, so the group reads down the whole stack.
  */
 export function placeLaneLabels({
   lanes,
   genesOf,
   boxesOf = () => [],
   textOf,
+  groupsOf = () => undefined,
+  pinnedGroups = new Set(),
   glyphHeight,
   width,
   height,
@@ -82,6 +95,8 @@ export function placeLaneLabels({
   boxesOf?: (assemblyName: string) => readonly NamedSpan[]
   /** a gene's label, `geneTextOf` */
   textOf: (feature: Feature) => string | undefined
+  groupsOf?: (assemblyName: string) => ReadonlyMap<string, string> | undefined
+  pinnedGroups?: ReadonlySet<string>
   glyphHeight: number
   width: number
   height: number
@@ -94,20 +109,25 @@ export function placeLaneLabels({
       genesOf(lane.assemblyName),
       boxesOf(lane.assemblyName),
       textOf,
+      groupsOf(lane.assemblyName),
       width,
     )
     const top = lane.glyphTop + glyphHeight + GENE_LABEL_GAP_PX
     names.forEach((n, i) => {
       const roomLeft = names[i - 1]?.right ?? -Infinity
       const roomRight = names[i + 1]?.left ?? Infinity
-      const textWidth = measureText(n.name, GENE_LABEL_FONT_PX, fontFamily)
+      const pinned = n.group !== undefined && pinnedGroups.has(n.group)
+      const textWidth =
+        measureText(n.name, GENE_LABEL_FONT_PX, fontFamily) *
+        (pinned ? BOLD_WIDTH : 1)
       if (
-        keepFeatureLabel('fitWidth', roomRight - roomLeft, textWidth, false, 1)
+        keepFeatureLabel('fitWidth', roomRight - roomLeft, textWidth, pinned, 1)
       ) {
         const left = (n.left + n.right) / 2 - textWidth / 2
         candidates.push({
           key: `${lane.assemblyName}:${n.id}`,
           text: n.name,
+          pinned,
           left,
           right: left + textWidth,
           top,
@@ -117,10 +137,28 @@ export function placeLaneLabels({
       }
     })
   }
-  return cullOverlappingLabels(
-    candidates,
+  const kept = cullOverlappingLabels(
+    candidates.filter(c => c.pinned),
     width,
     height,
     GENE_LABEL_HALO_PX,
-  ).map(({ right, bottom, ...placed }) => placed)
+  )
+  const gap = 2 * GENE_LABEL_HALO_PX
+  const clear = (c: Candidate) =>
+    !kept.some(
+      k =>
+        k.left - gap < c.right &&
+        k.right + gap > c.left &&
+        k.top - gap < c.bottom &&
+        k.bottom + gap > c.top,
+    )
+  return [
+    ...kept,
+    ...cullOverlappingLabels(
+      candidates.filter(c => !c.pinned && clear(c)),
+      width,
+      height,
+      GENE_LABEL_HALO_PX,
+    ),
+  ].map(({ right, bottom, ...placed }) => placed)
 }
