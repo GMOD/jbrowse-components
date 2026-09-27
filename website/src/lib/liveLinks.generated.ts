@@ -2295,15 +2295,17 @@ export const videoLiveRefs: Record<string, string> = {
   "pangenome/tier_to_fine": "?config=test_data/graphgenomeview/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22K12_genes%22%2C%22name%22%3A%22K12%20genes%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22GraphTrack%22%2C%22trackId%22%3A%22ecoli_pggb_tier50%22%2C%22name%22%3A%22pggb%20graph%20bubbles%20(coarse%20tier%2C%20one%20node%20per%20bubble)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22RgfaTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.tier50%22%7D%7D%2C%7B%22type%22%3A%22GraphTrack%22%2C%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22name%22%3A%22pggb%20graph%20segments%20(whole%20graph%2C%20by%20locus)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22RgfaTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb%22%2C%22coarse%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.tier50%22%2C%22aboveBpPerPx%22%3A1%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C250%2C000-1%2C350%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22ecoli_pggb_tier50%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22none%22%2C%22height%22%3A50%2C%22color%22%3A%22jexl%3Aget(feature%2C'rank')%3E0%20%3F%20'rgb(60%2C65%2C72)'%20%3A%20'hsl('%20%2B%20min(300%2C%20max(0%2C%20((get(feature%2C'start')%2Bget(feature%2C'end'))%2F2%20-%201250000)%20%2F%20100000%20*%20300))%20%2B%20'%2C70%25%2C50%25)'%22%7D%2C%7B%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22colorScheme%22%3A%22reference-position%22%2C%22colorDomain%22%3A%7B%22start%22%3A1250000%2C%22end%22%3A1350000%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/pggb_layout_switch": "?config=test_data/graphgenomeview/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22K12_genes%22%2C%22name%22%3A%22K12%20genes%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz.tbi%22%7D%7D%7D%7D%2C%7B%22type%22%3A%22GraphTrack%22%2C%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22name%22%3A%22pggb%20graph%20segments%20(whole%20graph%2C%20by%20locus)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22RgfaTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb%22%2C%22coarse%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.tier50%22%2C%22aboveBpPerPx%22%3A1%7D%7D%7D%2C%7B%22type%22%3A%22MafTrack%22%2C%22trackId%22%3A%22ecoli_pggb_maf%22%2C%22name%22%3A%22pggb%20graph%3A%20whole-genome%20alignment%20(MAF%2C%20vs%20K12)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22MafTabixAdapter%22%2C%22samples%22%3A%5B%22K12%22%2C%22Sakai%22%2C%22CFT073%22%2C%22NCTC86%22%2C%22IAI39%22%5D%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.maf.bed.gz%22%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C004%2C500-1%2C004%2C961%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22ecoli_pggb_maf%22%2C%22type%22%3A%22LinearMafDisplay%22%2C%22rows%22%3A%7B%22domain%22%3A%5B%22K12%22%2C%22CFT073%22%2C%22IAI39%22%2C%22NCTC86%22%2C%22Sakai%22%5D%7D%2C%22showTree%22%3Atrue%2C%22height%22%3A150%7D%2C%7B%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22samplerows%22%2C%22colorScheme%22%3A%22reference-position%22%2C%22colorDomain%22%3A%7B%22start%22%3A1004500%2C%22end%22%3A1004961%7D%2C%22maxRegionBp%22%3A508%2C%22height%22%3A600%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/hprc_browse": "https://staging.genomes.jbrowse.org/pangenomes/hprc",
+  "pangenome/hprc_follow_view": "?config=https%3A%2F%2Fjbrowse.org%2Fpangenome%2Fhprc-grch38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22displayName%22%3A%22HLA%20%2F%20MHC%20graph%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%3A32510001-32600000%22%2C%22tracks%22%3A%5B%22hg38_ncbiRefSeq_ucsc%22%2C%7B%22trackId%22%3A%22hprc_minigraph_bubbles%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22hprc_minigraph_alleles%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22height%22%3A120%7D%2C%7B%22trackId%22%3A%22hprc_minigraph_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22auto%22%2C%22colorScheme%22%3A%22reference-position%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/pggb_out_to_strain": "?config=test_data/graphgenomeview/ecoli_pangenome.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22GraphTrack%22%2C%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22name%22%3A%22pggb%20graph%20segments%20(whole%20graph%2C%20by%20locus)%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22RgfaTabixAdapter%22%2C%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb%22%2C%22coarse%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2Fecoli_pggb.tier50%22%2C%22aboveBpPerPx%22%3A1%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C004%2C500-1%2C004%2C961%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ecoli_pggb_segments%22%2C%22type%22%3A%22LinearGraphDisplay%22%2C%22layoutMode%22%3A%22force%22%2C%22colorScheme%22%3A%22stable-rank%22%2C%22maxRegionBp%22%3A508%2C%22showBubbles%22%3Afalse%2C%22height%22%3A420%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome/hprc_cluster_callset": "?config=test_data/graphgenomeview/hprc.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr6%3A32%2C510%2C000-32%2C600%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38_ncbiRefSeq_ucsc%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hprc_minigraph_segments%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22none%22%2C%22heightMode%22%3A%22grow%22%2C%22color%22%3A%22jexl%3Aget(feature%2C'rank')%3E0%20%3F%20'rgb(60%2C65%2C72)'%20%3A%20'hsl('%20%2B%20min(300%2C%20max(0%2C%20((get(feature%2C'start')%2Bget(feature%2C'end'))%2F2%20-%2032510000)%20%2F%2090000%20*%20300))%20%2B%20'%2C70%25%2C50%25)'%22%7D%2C%7B%22trackId%22%3A%22hprc2_wave_grch38%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22height%22%3A340%2C%22jexlFilters%22%3A%5B%22jexl%3Afeature.INFO.LV%5B0%5D%3D%3D0%20%26%26%20alleleLength(feature)%3E%3D50%22%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "proteins/genomes_protein_launch": "https://jbrowse.org/code/jb2/latest/?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C000-7%2C688%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hg38-clinvarMain%22%2C%22height%22%3A90%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "proteins/tiled_views": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C000-7%2C688%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hg38-clinvarMain%22%2C%22height%22%3A90%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "proteins/genomes_protein_launch": "https://jbrowse.org/code/jb2/latest/?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C674%2C400-7%2C676%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hg38-clinvarMain%22%2C%22height%22%3A90%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "proteins/tiled_views": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C674%2C400-7%2C676%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A60%7D%2C%7B%22trackId%22%3A%22hg38-clinvarMain%22%2C%22height%22%3A90%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "proteins/annotation_1d": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C000-7%2C688%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeqCurated%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A60%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "dog10k/igf1_cluster_route": "?config=test_data/dog10k/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22UU_Cfam_GSD_1.0%22%2C%22loc%22%3A%22chr15%3A41%2C440%2C000-41%2C580%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22canFam4_ncbi_refseq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22dog10k_igf1_haplotype%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%2C%22height%22%3A620%2C%22lineZoneHeight%22%3A34%2C%22rowColor%22%3A%22size%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "tcga/cohort_cnv_clustering": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22tcga_brca_cnv%22%2C%22name%22%3A%22TCGA-BRCA%20copy%20number%20(1104%20primary%20tumors)%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22bedGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_cnv.bed.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22TBI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_cnv.bed.gz.tbi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22rows%22%3A%22sample%22%2C%22color%22%3A%7B%22field%22%3A%22segmean%22%2C%22scale%22%3A%22threshold%22%2C%22domain%22%3A%5B%22-1%22%2C%22-0.3%22%2C%220.3%22%2C%221%22%5D%2C%22range%22%3A%5B%22%232166ac%22%2C%22%2392c5de%22%2C%22%23f7f7f7%22%2C%22%23f4a582%22%2C%22%23b2182b%22%5D%2C%22labels%22%3A%5B%22Deep%20loss%20(log2%20%3C%20-1)%22%2C%22Loss%22%2C%22Balanced%22%2C%22Gain%22%2C%22Amplification%20(log2%20%3E%201)%22%5D%2C%22title%22%3A%22Copy%20number%20(log2)%22%7D%2C%22rowHeight%22%3A0%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%2217%3A39%2C000%2C000-40%2C500%2C000%22%2C%22highlight%22%3A%5B%2217%3A39%2C688%2C094-39%2C728%2C658%22%5D%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22tcga_brca_cnv%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A700%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "tcga/mutations_collapse_introns": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22tcga_brca_mutations%22%2C%22name%22%3A%22TCGA-BRCA%20somatic%20mutations%20(979%20primary%20tumors)%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22TBI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz.tbi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22samplesTsvLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_clinical.tsv%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%2C%22height%22%3A450%2C%22lineZoneHeight%22%3A130%2C%22color%22%3A%7B%22field%22%3A%22impact%22%7D%2C%22facet%22%3A%7B%22field%22%3A%22histology%22%2C%22domain%22%3A%5B%22ductal%22%2C%22lobular%22%5D%7D%2C%22rowColor%22%3A%22histology%22%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%2216%3A68%2C730%2C000-68%2C842%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22MANE.GRCh38.v1.4.refseq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A84%7D%2C%7B%22trackId%22%3A%22tcga_brca_mutations%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "qtl/painting_sort": "?config=test_data/config_bxd.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22mm10%22%2C%22loc%22%3A%22chr4%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22bxd_gwas_coatcolor_mm10%22%2C%22type%22%3A%22LinearManhattanDisplay%22%2C%22height%22%3A140%7D%2C%7B%22trackId%22%3A%22bxd_chromosome_painting_mm10%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A420%2C%22forceLoad%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "methylation/open_modbam": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr15%3A24%2C953%2C500-24%2C957%2C500%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22cpgisland_ucsc_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A90%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "methylation/group_by_hp": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr15%3A24%2C948%2C000-24%2C962%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22cpgisland_ucsc_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22HG002_snrpn_5mC_reads%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22height%22%3A320%2C%22forceLoad%22%3Atrue%2C%22baseColor%22%3A%7B%22field%22%3A%22modifications%22%7D%2C%22modifications%22%3A%7B%22fillUnmarked%22%3Atrue%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "synteny/multiway_zoom_out": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_030704535.1%22%2C%22loc%22%3A%22chr11%3A828%2C000-866%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22GCF_030704535.1-ncbiRefSeq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showOnlyGenes%22%3Atrue%2C%22displayMode%22%3A%22compact%22%2C%22showLabels%22%3A%22auto%22%7D%2C%7B%22trackId%22%3A%22grape_peach_cacao_blocks%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22domain%22%3A%5B%22GCF_000346465.2%22%2C%22GCF_000208745.1%22%2C%22poplar%22%2C%22citrus%22%2C%22arabidopsis%22%2C%22tomato%22%5D%2C%22height%22%3A340%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "synteny/multiway_launch_stack": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Forthofinder_grasses%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22rice%22%2C%22loc%22%3A%223%3A31%2C590%2C000-31%2C775%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22rice_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showOnlyGenes%22%3Atrue%2C%22displayMode%22%3A%22compact%22%7D%2C%7B%22trackId%22%3A%22grasses_orthogroups%22%2C%22type%22%3A%22MultiWaySyntenyDisplay%22%2C%22domain%22%3A%5B%22sorghum%22%2C%22brachypodium%22%2C%22setaria%22%2C%22maize%22%5D%2C%22height%22%3A320%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -2327,7 +2329,8 @@ export const videoLiveRefs: Record<string, string> = {
   "ui/add_genome": "?config=test_data/empty.json&sessionName=Screenshot",
   "ui/gene_track_sections": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C540%2C000-7%2C640%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A520%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/gene_track_channel_spec": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C540%2C000-7%2C640%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A640%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "variants/trio_phased_matrix": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A62%2C174%2C000-62%2C194%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22showOnlyGenes%22%3Atrue%2C%22showLabels%22%3A%22auto%22%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.vcf%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "variants/trio_open_vcf": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A63%2C624%2C200-63%2C647%2C100%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22showOnlyGenes%22%3Atrue%2C%22showLabels%22%3A%22auto%22%2C%22height%22%3A80%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "variants/trio_phased_matrix": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A63%2C624%2C200-63%2C647%2C100%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22showOnlyGenes%22%3Atrue%2C%22showLabels%22%3A%22auto%22%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.vcf%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "repeats/painting_display_switch": "?config=test_data/config_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22name%22%3A%22RepeatMasker%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22bedGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22CSI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz.csi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearBasicDisplay%22%2C%22displayId%22%3A%22rmsk_hg38_ucsc-LinearBasicDisplay%22%7D%2C%7B%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22displayId%22%3A%22rmsk_hg38_ucsc-LinearMultiRowFeatureDisplay%22%2C%22height%22%3A260%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A45%2C700%2C000-45%2C750%2C000%22%2C%22tracks%22%3A%5B%22rmsk_hg38_ucsc%22%5D%7D%5D%7D&sessionName=Screenshot",
   "hic/two_regions": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr9%3A129%2C730%2C000-131%2C730%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22highlight%22%3A%5B%7B%22refName%22%3A%22chr9%22%2C%22start%22%3A130713881%2C%22end%22%3A130887675%2C%22label%22%3A%22ABL1%22%2C%22color%22%3A%22rgba(30%2C110%2C190%2C0.16)%22%7D%2C%7B%22refName%22%3A%22chr22%22%2C%22start%22%3A23180509%2C%22end%22%3A23318037%2C%22label%22%3A%22BCR%22%2C%22color%22%3A%22rgba(30%2C110%2C190%2C0.16)%22%7D%5D%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22mane_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A68%7D%2C%7B%22trackId%22%3A%22hic_gm12878_insitu%22%2C%22type%22%3A%22LinearHicDisplay%22%2C%22height%22%3A380%2C%22color%22%3A%7B%22scale%22%3A%22linear%22%7D%2C%22useColorPercentile%22%3Atrue%2C%22selectedNormalization%22%3A%22NONE%22%2C%22squashToHeight%22%3Afalse%7D%2C%7B%22trackId%22%3A%22hic_k562_insitu%22%2C%22type%22%3A%22LinearHicDisplay%22%2C%22height%22%3A380%2C%22color%22%3A%7B%22scale%22%3A%22linear%22%7D%2C%22useColorPercentile%22%3Atrue%2C%22selectedNormalization%22%3A%22NONE%22%2C%22squashToHeight%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "epigenomics/bisulfite_contexts": "?config=test_data/arabidopsis_methylation/config_emseq_bisulfite.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GCF_000001735.4%22%2C%22loc%22%3A%22chr1%3A4%2C398%2C000-4%2C412%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22GCF_000001735.4-ncbiRefSeq%22%7D%2C%7B%22trackId%22%3A%22GCF_000001735.4-repeatMasker%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22jexlFiltersSetting%22%3A%5B%22jexl%3Afeature.end-feature.start%3E1000%22%5D%2C%22height%22%3A50%7D%2C%7B%22trackId%22%3A%22arabidopsis_methyldackel%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22mark%22%3A%22bar%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A100%7D%7D%2C%22height%22%3A170%7D%2C%7B%22trackId%22%3A%22arabidopsis_wgbs%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22baseColor%22%3A%7B%22field%22%3A%22bisulfite%22%7D%2C%22modifications%22%3A%7B%22cytosineContext%22%3A%22CG%22%7D%2C%22showCoverage%22%3Afalse%2C%22heightMode%22%3A%22fixed%22%2C%22featureHeight%22%3A5%2C%22height%22%3A200%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -2348,11 +2351,11 @@ export const videoFrames: Record<
 > = {
   "pangenome/pggb_subgraph_launch": {
     "width": 1920,
-    "height": 1110
+    "height": 780
   },
   "pangenome_cactus/subgraph_launch": {
     "width": 1920,
-    "height": 1110
+    "height": 780
   },
   "pangenome/tier_to_fine": {
     "width": 1920,
@@ -2364,7 +2367,11 @@ export const videoFrames: Record<
   },
   "pangenome/hprc_browse": {
     "width": 1920,
-    "height": 1110
+    "height": 1500
+  },
+  "pangenome/hprc_follow_view": {
+    "width": 1920,
+    "height": 1100
   },
   "pangenome/pggb_out_to_strain": {
     "width": 1920,
@@ -2372,7 +2379,7 @@ export const videoFrames: Record<
   },
   "pangenome/hprc_cluster_callset": {
     "width": 1920,
-    "height": 750
+    "height": 880
   },
   "proteins/genomes_protein_launch": {
     "width": 1920,
@@ -2384,11 +2391,11 @@ export const videoFrames: Record<
   },
   "proteins/annotation_1d": {
     "width": 1920,
-    "height": 1046
+    "height": 1170
   },
   "dog10k/igf1_cluster_route": {
     "width": 1920,
-    "height": 960
+    "height": 1070
   },
   "tcga/cohort_cnv_clustering": {
     "width": 1920,
@@ -2396,11 +2403,15 @@ export const videoFrames: Record<
   },
   "tcga/mutations_collapse_introns": {
     "width": 1920,
-    "height": 840
+    "height": 904
   },
   "qtl/painting_sort": {
     "width": 1920,
-    "height": 850
+    "height": 930
+  },
+  "methylation/open_modbam": {
+    "width": 1920,
+    "height": 740
   },
   "methylation/group_by_hp": {
     "width": 1920,
@@ -2408,15 +2419,15 @@ export const videoFrames: Record<
   },
   "synteny/multiway_zoom_out": {
     "width": 1920,
-    "height": 690
+    "height": 810
   },
   "synteny/multiway_launch_stack": {
     "width": 1920,
-    "height": 750
+    "height": 830
   },
   "synteny/three_strain_import": {
     "width": 1920,
-    "height": 900
+    "height": 960
   },
   "synteny/hg002_dotplot_import": {
     "width": 1920,
@@ -2440,15 +2451,15 @@ export const videoFrames: Record<
   },
   "synteny/liftover_launch": {
     "width": 1920,
-    "height": 540
+    "height": 600
   },
   "synteny/ecoli_roundtrip": {
     "width": 1920,
-    "height": 1410
+    "height": 780
   },
   "synteny/maf_row_synteny": {
     "width": 1920,
-    "height": 1260
+    "height": 1340
   },
   "sv/inspector_route": {
     "width": 1920,
@@ -2456,7 +2467,7 @@ export const videoFrames: Record<
   },
   "sv/multisample_sort": {
     "width": 1920,
-    "height": 1236
+    "height": 1244
   },
   "sv_cgiab/copy_number_layout": {
     "width": 1920,
@@ -2464,7 +2475,7 @@ export const videoFrames: Record<
   },
   "ui/highlight_region": {
     "width": 1920,
-    "height": 360
+    "height": 432
   },
   "ui/open_track_url": {
     "width": 1920,
@@ -2492,7 +2503,11 @@ export const videoFrames: Record<
   },
   "ui/gene_track_channel_spec": {
     "width": 1920,
-    "height": 740
+    "height": 970
+  },
+  "variants/trio_open_vcf": {
+    "width": 1920,
+    "height": 640
   },
   "variants/trio_phased_matrix": {
     "width": 1920,
@@ -2500,15 +2515,15 @@ export const videoFrames: Record<
   },
   "repeats/painting_display_switch": {
     "width": 1920,
-    "height": 520
+    "height": 592
   },
   "hic/two_regions": {
     "width": 1920,
-    "height": 1124
+    "height": 1238
   },
   "epigenomics/bisulfite_contexts": {
     "width": 1920,
-    "height": 848
+    "height": 970
   },
   "epigenomics/chromhmm_cluster": {
     "width": 1920,
@@ -2524,7 +2539,7 @@ export const videoFrames: Record<
   },
   "genomes_basics/find_a_track": {
     "width": 1920,
-    "height": 520
+    "height": 572
   },
   "mcp/agent_geo_ratio_take1": {
     "width": 1920,
@@ -2553,8 +2568,10 @@ export const videoCaptioned: string[] = [
   "genomes_basics/gnomad_filter",
   "hic/two_regions",
   "methylation/group_by_hp",
+  "methylation/open_modbam",
   "pangenome/hprc_browse",
   "pangenome/hprc_cluster_callset",
+  "pangenome/hprc_follow_view",
   "pangenome/pggb_layout_switch",
   "pangenome/pggb_out_to_strain",
   "pangenome/pggb_subgraph_launch",
@@ -2589,6 +2606,7 @@ export const videoCaptioned: string[] = [
   "ui/highlight_region",
   "ui/open_track_url",
   "ui/sequence_search_motifs",
+  "variants/trio_open_vcf",
   "variants/trio_phased_matrix"
 ]
 
@@ -2596,261 +2614,285 @@ export const videoCaptioned: string[] = [
 // beside the clip.
 export const videoSteps: Record<string, string[]> = {
   "pangenome/pggb_subgraph_launch": [
-    "Add the graph track from Open track...",
-    "The track opens as the graph of the window",
-    "chr:1,299,300-1,300,900",
-    "Narrowed to the IS5 element, it cuts again"
+    "Load the graph by URL from File, Open track",
+    "The graph draws under the genes, cut from the window on screen",
+    "Select the IS5 element on the scale bar and zoom to it",
+    "At IS5 the graph re-cuts: strains without the element take the arc past it"
   ],
   "pangenome_cactus/subgraph_launch": [
-    "Add the graph track from Open track...",
-    "The track opens as the graph of the window",
-    "chr:1,978,100-1,979,700",
-    "Narrowed to the IS1 element, it cuts again"
+    "Load the graph by URL from File, Open track",
+    "The graph draws under the genes, cut from the window on screen",
+    "Select the IS1 element past flhD and zoom to it",
+    "At IS1 the graph re-cuts: the element is one node the other strains skip"
   ],
   "pangenome/tier_to_fine": [
-    "Hover a node for the segments it collapses",
+    "Zoomed out, each node is a whole bubble; hover for its span",
     "Open the bubble's span in the linear view",
-    "Zoomed past the handover, the graph re-cuts from the segments"
+    "Zoomed in, the graph swaps the bubble for the segments inside it"
   ],
   "pangenome/pggb_layout_switch": [
-    "Re-lay the same rows out with the force engine"
+    "Sample rows: one row per strain, on the reference axis",
+    "Switch the layout to force-directed from the track menu",
+    "The same nodes, placed by the shape of the graph instead"
   ],
   "pangenome/hprc_browse": [
-    "Press graph on the HLA / MHC row",
-    "MHC class II, the graph anchored under the lanes",
-    "Type the C4 window, and the graph re-cuts",
-    "C4, cut again under the lanes",
-    "Out to the whole chromosome",
-    "Chromosome 6 from the bubble tier, one node per bubble",
-    "Back to MHC class II",
-    "The segments again",
-    "Right-click the allele under HLA-DRB5",
-    "Now open it on the haplotype that contributed it",
-    "NA20809 haplotype 2, on its own chromosome 6",
-    "Zoom out for its neighbours"
+    "Each locus on the HPRC page opens as a graph",
+    "GRCh38 runs along the top row; lower rows are sequence it lacks",
+    "This allele under HLA-DRB5 came from one haplotype",
+    "Open it on that haplotype's own chromosome 6",
+    "This haplotype has no HLA-DRB5, the gene the allele sits under in GRCh38"
+  ],
+  "pangenome/hprc_follow_view": [
+    "Search C4A, one of the two complement C4 genes",
+    "GRCh38 also carries C4A on alt contigs; take chr6",
+    "Zoom out to take in C4B, the second copy",
+    "One bubble: where GRCh38 has a 33 kb C4 module, alleles run 0 to 66 kb"
   ],
   "pangenome/pggb_out_to_strain": [
-    "Open this allele on the CFT073 assembly"
+    "Right-click the CFT073 allele and open it on CFT073",
+    "CFT073's own coordinates open below, with its genes under them"
   ],
   "pangenome/hprc_cluster_callset": [
-    "Cluster the 464 haplotypes by genotype"
+    "Cluster the haplotypes by genotype from the track menu",
+    "Haplotypes sharing alleles now gather into blocks"
   ],
   "proteins/genomes_protein_launch": [
-    "Open this gene as its AlphaFold structure",
-    "chr17:7,674,400-7,676,600",
-    "Hover a coding position",
-    "An intronic position maps to no residue",
-    "Back on the exon, and the residue is back"
+    "Right-click TP53 and launch its protein structure",
+    "Hover a coding position: the structure lights its residue",
+    "An intron maps to no residue",
+    "Each coding base of the genome maps to one residue of the structure"
   ],
   "proteins/tiled_views": [
-    "Line the gene up against its orthologs",
-    "Rows to align: 15",
-    "Fit the alignment to its panel",
-    "And the same gene as a structure, beside it",
+    "Align TP53 with 15 of its orthologs from the gene's menu",
+    "Then launch its AlphaFold structure the same way",
     "Tile the three views side by side",
-    "chr17:7,674,400-7,676,600",
-    "Hover a coding position",
-    "An intronic position maps to no residue",
-    "Back on the exon, and the residue is back"
+    "Hover a coding position: the alignment and structure follow",
+    "One genome position: one alignment column, one residue on the structure"
   ],
   "proteins/annotation_1d": [
     "Open a view whose genome is the protein itself",
-    "Two destinations, not one",
-    "No tracks active",
-    "Four of its tracks, in residue coordinates",
-    "DNA binding",
-    "Natural variant",
-    "AlphaFold confidence (pLDDT)",
-    "AlphaMissense scores"
+    "The arrow beside Launch holds the 1D annotation view",
+    "It opens on the amino-acid chain, with its tracks off",
+    "Turn on four tracks from UniProt and AlphaFold",
+    "A binding region, variants and two AlphaFold scores, residue by residue"
   ],
   "dog10k/igf1_cluster_route": [
-    "Cluster the breeds by genotype",
-    "chr15:41,348,000-41,752,000"
+    "Rows start in breed order; the left stripe is each dog's size class",
+    "Cluster the rows by genotype from the track menu",
+    "On genotypes alone, the size classes gather into blocks",
+    "Zoom out to the flanks around the core",
+    "The order computed on the core holds across the wider window"
   ],
   "tcga/cohort_cnv_clustering": [
-    "Cluster the 1104 tumors by their profile"
+    "One row per tumor, in barcode order, which groups nothing",
+    "Cluster the tumors by their profile from the track menu",
+    "Clustered, the tumors amplified at ERBB2 gather into one red block"
   ],
   "tcga/mutations_collapse_introns": [
-    "Reshape CDH1 to its coding exons"
+    "Right-click CDH1 and collapse its introns",
+    "979 tumors over CDH1's exons alone; red marks high-impact mutations"
   ],
   "qtl/painting_sort": [
-    "Sort the strains by genotype under the peak"
+    "Each strain is a mosaic of B and D blocks, in load order",
+    "Right-click under the peak and sort the rows by genotype there",
+    "Sorted, the strains split into B above D under the peak"
+  ],
+  "methylation/open_modbam": [
+    "From File, Open track, then paste the BAM URL",
+    "The form infers the .bai index and the adapter; Add",
+    "Then color the reads by their modification calls",
+    "Each read painted by its 5mC calls: red methylated, blue not"
   ],
   "methylation/group_by_hp": [
-    "Group the pileup by the HP tag",
-    "HP"
+    "Both haplotypes' reads interleave; red is a methylated CpG, blue is not",
+    "Group the reads by their HP haplotype tag",
+    "HP 1 is methylated at the SNRPN promoter; HP 2 is not"
   ],
   "synteny/multiway_zoom_out": [
-    "Hover a ribbon",
-    "Zoom out"
+    "Gene scale: one ribbon per ortholog pair between the lanes",
+    "Hover a ribbon to light its ortholog group down the stack",
+    "Zoom out; each lane re-fits its own window to the anchor's",
+    "Block scale: each genome's copy of the grape block, lane by lane"
   ],
   "synteny/multiway_launch_stack": [
-    "Launch a stacked view, one panel per grass",
-    "One panel per grass"
+    "Rice's genes, with one ortholog lane per grass under them",
+    "From the track menu, launch a synteny view of this region",
+    "The dialog lists a panel per grass, with the span each opens at",
+    "The stack replaces the lanes: rice on top, each grass below it"
   ],
   "synteny/three_strain_import": [
-    "Build the stack a row at a time",
-    "Row 2",
-    "Row 1",
-    "Add row",
-    "Row 3",
-    "26695 against CHC155",
-    "CHC155 against J99",
-    "Zoom each row in",
-    "26695 genes",
-    "CHC155 genes",
-    "J99 genes"
+    "Choose Manual, then set a genome for each row",
+    "Add a third row for the third strain",
+    "Each arrow between rows has already found its alignment",
+    "It opens empty; add each strain's genes from its own row",
+    "Three strains stacked with their genes, alignments drawn between"
   ],
   "synteny/hg002_dotplot_import": [
-    "Plot one genome against itself",
-    "One assembly on both axes",
-    "Plot only certain chromosomes",
-    "X axis: *_MATERNAL",
-    "Y axis: *_PATERNAL",
-    "Color the plot by strand"
+    "Open a dotplot view from the Add menu",
+    "In Manual, the one diploid assembly goes on both axes",
+    "Limit each axis: maternal contigs across, paternal up",
+    "Color the alignments by strand",
+    "Red runs the same way, blue is inverted: the haplotypes align end to end"
   ],
   "synteny/hg002_follow_panels": [
-    "Same coordinates typed into both panels: the genes sit 240 kb apart",
-    "Follow: the panel below is placed from the top one via the chain",
-    "The same genes now sit under each other, the markers upright",
-    "Drag the top panel: the one below keeps pace untouched",
-    "The panel below was never touched"
+    "Both panels on the same coordinates, but the genes do not line up",
+    "Turn on Follow: the lower panel is placed through the alignment",
+    "The same genes now sit under each other",
+    "Drag the top panel sideways",
+    "The lower panel kept pace without being touched"
   ],
   "synteny/dotplot_reorder": [
-    "Re-order the vertical axis on demand",
-    "The vertical axis, against the fixed horizontal one"
+    "Grape's chromosomes in file order scatter the alignments",
+    "Re-order chromosomes, from the view menu",
+    "Start re-sorts grape's axis to follow peach's, which stays put",
+    "Re-sorted, the grape-peach synteny runs down the diagonal"
   ],
   "synteny/restack_around_locus": [
-    "Drag across the scale bar",
-    "Linear synteny view",
-    "The reference opens on top",
-    "Move grape between peach and cacao"
+    "Select the locus on the scale bar and launch a synteny view",
+    "The dialog seats grape, the reference, between its two mates",
+    "Replace the lanes with the stack",
+    "Grape in the middle: each band compares it with a neighbour"
   ],
   "synteny/allvsall_launch_from_selection": [
-    "Drag across the scale bar",
-    "Linear synteny view",
-    "One panel per strain that aligns",
-    "Move IAI39 up"
+    "K-12, with one alignment lane per other strain",
+    "Select the locus on the scale bar and launch a synteny view",
+    "Ribbons join neighbouring rows only, so the order picks the pairs",
+    "Move IAI39 up to sit under K-12",
+    "IAI39 under K-12, so the stack compares that pair directly"
   ],
   "synteny/liftover_launch": [
-    "Open this chain block as a two-panel view",
-    "Use CIGAR to map the current visible region to the target",
-    "Copy this view's tracks into its panel"
+    "The liftOver chain at TNNT3, one feature per aligned block",
+    "Right-click a block and launch a synteny view with hs1",
+    "Both options on: map this exact window, and keep its tracks",
+    "hg38 above hs1 at TNNT3, the ribbons tracing the rearrangement"
   ],
   "synteny/ecoli_roundtrip": [
-    "K-12: one lane per strain, and the graph segments",
-    "Drag across the scale bar",
-    "Stack the strains on the selection",
-    "One panel per strain that aligns",
-    "The stack, anchored on K-12, with its lanes on the top row",
-    "Redraw the segments lane as the graph",
-    "The graph, drawn inside the stack",
-    "Drag on the Sakai row",
-    "The same launch, from Sakai",
-    "The same dialog, anchored on Sakai",
-    "The stack re-anchored on Sakai"
+    "K-12, with one lane per strain and the graph segments",
+    "Select a span and launch a stack of the strains on it",
+    "The stack, anchored on K-12, one row per strain",
+    "Select on Sakai's row to re-anchor the stack on Sakai",
+    "The same stack, now anchored on Sakai"
   ],
   "synteny/maf_row_synteny": [
-    "The alignment, one row per strain",
-    "Drag across the rows",
-    "One entry per strain the drag covers",
-    "NCTC86",
-    "K-12 over NCTC86, the ribbon cut from the columns"
+    "The pggb alignment as a MAF, one row per strain",
+    "Drag across the rows; the menu offers a view per strain",
+    "K-12 over NCTC86, the ribbons drawn from the alignment's columns"
   ],
   "sv/inspector_route": [
-    "Open the SV inspector on a callset of its own",
-    "The SKBR3 VCF, by URL",
-    "Filter the table to X, either end"
+    "Launch the SV inspector from the Add menu",
+    "Paste the SKBR3 callset's URL and open it",
+    "A table of the calls, and their breakends drawn as chords",
+    "Filter the table to chromosome X",
+    "Only the calls touching X stay, in the table and in the circle"
   ],
   "sv/multisample_sort": [
-    "Order the callset by genotype at the deletion",
-    "Re-key the same rows on the whole window"
+    "3202 samples in callset order, which groups nothing",
+    "Right-click the deletion and sort the rows by genotype there",
+    "Three bands, top to bottom: both copies deleted, one, then neither",
+    "Now cluster the same rows on the whole window instead",
+    "Clustered on every call in view, with the tree beside the rows"
   ],
   "sv_cgiab/copy_number_layout": [
-    "Pin the score axis by hand",
-    "0",
-    "3",
-    "Draw the two rows on one axis, as points"
+    "Tumor and normal on stacked rows, each autoscaled on its own",
+    "Overlay the two rows as points on one axis",
+    "The tumor sits above its normal on 5p, below it on 5q"
   ],
   "ui/highlight_region": [
-    "Highlight the span on screen",
+    "Select the start of PTEN on the scale bar and highlight it",
     "Open the highlight list from the view menu",
-    "PTEN 5' end",
-    "chr10:100,000,000-100,200,000",
-    "Click the row to navigate back"
+    "Search another gene, FAS, to leave",
+    "Click the row's location to jump back",
+    "Back on PTEN, under the highlight you named"
   ],
   "ui/open_track_url": [
-    "Open a track from a URL",
-    "Paste the bigwig URL",
-    "The name and adapter the form resolved"
+    "From File, Open track, then paste the file URL",
+    "The form names the track and picks its adapter; Add",
+    "The bigwig draws under the genes"
   ],
   "ui/feature_sequence_types": [
-    "Open the transcript details",
-    "CDS",
-    "Protein",
-    "Genomic w/ full introns +/- up+down stream"
+    "Open a transcript's details and show its sequence",
+    "First the coding sequence alone",
+    "Then that sequence translated to protein",
+    "Then the whole genomic span, introns and flanks included",
+    "One dropdown, and the key under it marks each part of the span"
   ],
   "ui/sequence_search_motifs": [
-    "Scan the reference itself for motifs",
-    "Motif list",
-    "Edit the list",
-    "Launch one track per motif"
+    "Open Sequence search from the view menu",
+    "Its motif list comes prefilled with restriction enzymes",
+    "Keep three of them: EcoRI, BamHI and HindIII",
+    "A lane of each enzyme's cut sites, scanned from the genome itself"
   ],
   "ui/bulk_add_tracks": [
-    "Add four files in one go, in any order",
-    "Add 3 tracks"
+    "From File, Open track, choose Add multiple tracks at once",
+    "Each file is typed by its extension, and the index joins its file",
+    "Three tracks from four URLs, drawn under the genes"
   ],
   "ui/add_genome": [
-    "Give a JBrowse with no genome one",
-    "The FASTA and its two indexes",
-    "Genome name",
-    "hg38"
+    "Open the assembly manager from Tools and add a genome",
+    "Paste the URLs of the FASTA and its two indexes",
+    "The form recognizes the files and suggests a name; call it hg38",
+    "hg38 is in the assembly manager, ready to open in a view"
   ],
   "ui/gene_track_sections": [
     "Group the genes by their gene_biotype attribute",
-    "Reorder the sections from the track menu",
-    "Give each biotype a color of its own"
+    "Move protein_coding to the top from the Sections menu",
+    "Then give each biotype a color of its own",
+    "A section per biotype, protein_coding first, each in its own color"
   ],
   "ui/gene_track_channel_spec": [
-    "Write the grouping as JSON from the Group by dialog",
-    "A facet and a color, each with its domain",
-    "Sections and colors follow each domain"
+    "Open Group by, then Edit as JSON",
+    "The facet and the color each carry a domain: the order to use",
+    "The sections and the colors now follow each domain's order"
+  ],
+  "variants/trio_open_vcf": [
+    "From File, Open track, then paste the VCF URL",
+    "The form infers the .tbi index and the adapter; Add",
+    "The trio's variants, one box each, under the genes"
   ],
   "variants/trio_phased_matrix": [
-    "Redraw the lane as one row per sample",
-    "Split each sample into its two haplotypes",
-    "chr1:62,174,000-65,097,304"
+    "One lane, one box per variant: nothing yet about who carries what",
+    "Redraw the lane as a genotype matrix, one row per sample",
+    "Split each sample's row into its two haplotypes",
+    "Zoom out until the haplotype blocks read",
+    "Six phased rows: the child's two haplotypes above each parent's two"
   ],
   "repeats/painting_display_switch": [
-    "Redraw the packed lane as a painting",
-    "Partition the rows by a column of the file",
-    "repClass"
+    "Every repeat in one packed lane, whatever its class",
+    "Redraw the lane as a painting from the track menu",
+    "A labelled lane per class, LINE to SINE, found in the file itself"
   ],
   "hic/two_regions": [
-    "Both windows in the box, separated by a space",
-    "chr9 against chr22"
+    "One chr9 window: each Hi-C track is chr9 against itself",
+    "Enter ABL1's chr9 window and BCR's chr22 one, space-separated",
+    "Between the triangles, chr9 meets chr22 in K562 only: the fusion"
   ],
   "epigenomics/bisulfite_contexts": [
+    "CpG: methylated, red, over the gene body and the LTR element",
     "Color the reads by the CHG context",
-    "Color the reads by the CHH context"
+    "Color the reads by the CHH context",
+    "Only the LTR stays red in CHG and CHH; the gene body is CpG only"
   ],
   "epigenomics/chromhmm_cluster": [
-    "Cluster the epigenomes by similarity"
+    "Rows in Roadmap's tissue order: a clean tissue stripe, no blocks",
+    "Cluster the epigenomes by their chromatin states",
+    "Clustered, the states form blocks and the tissue stripe mixes"
   ],
   "config/settings_to_json": [
-    "Two settings off one open menu",
-    "Color the reads by insert size and orientation",
-    "Link each read to its mate",
-    "Hand the session back with the settings readable",
-    "The session behind that link, readable"
+    "From the track menu, color the reads by insert size and orientation",
+    "Then link each read to its mate",
+    "Share the session, and show it as readable JSON",
+    "Both settings, spelled out in the session behind the link"
   ],
   "genomes_basics/gnomad_filter": [
-    "Keep only the predicted loss-of-function variants",
-    "annot is pLoF"
+    "Every gnomAD exome variant over TP53, colored by consequence",
+    "Filter the track from its menu: keep annot equal to pLoF",
+    "Only the predicted loss-of-function variants remain, each labelled"
   ],
   "genomes_basics/find_a_track": [
-    "Find a conservation track in the hg38 catalog",
-    "phyloP"
+    "Open the track selector: UCSC's whole hg38 catalog",
+    "Type phyloP to narrow it to the conservation tracks",
+    "Tick the 100-way vertebrate one",
+    "phyloP under TP53: the conservation peaks line up with its exons"
   ]
 }
 
