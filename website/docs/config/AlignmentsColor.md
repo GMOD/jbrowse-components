@@ -61,7 +61,7 @@ These slots go on a display entry: `"displays": [{ "type": "AlignmentsColor", ..
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>`maybeColor` | The fill of every read while no field paints, and of a read carrying no value under a tag or attribute. Writing `color: "steelblue"` lands here. Unset, the theme's read colour. |
+| <span id="slot-value">**value**</span><br>`maybeColor` | The fill of every read while no field paints, and of a read carrying no value under a tag or attribute, or no mate under `mateRefName`. Arcs and pair orientations keep the theme's colours. Writing `color: "steelblue"` lands here. Unset, the theme's read colour. |
 | <span id="slot-labels">**labels**</span><br>`stringArray` = <code>[]</code> | What the key, the hovers and the arc key name each level or value `range` colours, in the same order: `labels: ["Maternal", "Paternal"]` beside `domain: ["1", "2"]` on `tags.HP`. |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute |
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, categorical, linear, threshold) | none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field |
