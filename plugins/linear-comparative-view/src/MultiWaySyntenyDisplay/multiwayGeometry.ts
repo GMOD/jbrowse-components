@@ -750,13 +750,15 @@ class GlyphBuilder {
 }
 
 /**
- * An opaque band per lane, tiling the stack so it sits on the band ground
- * whatever the page's, and so the view's gridlines — true only at the
- * anchor's scale — stop where the anchor does. The anchor's own band only
- * where `page`, the ground the track sits on, is not already the band's, since
- * it hides those gridlines. Unscrolled: a band is chrome pinned to the track.
- * Built off the lane geometry alone, so a pan, a zoom or a settle that moves
- * every other cell leaves this one's identity, and its upload, where it was.
+ * An opaque band per mate lane, tiling everything below the anchor so the
+ * view's gridlines — true only at the anchor's scale — stop where the anchor
+ * does. Where `page`, the ground the track sits on, is not the band's, the
+ * whole stack sits on one sheet of the band ground laid first: the anchor lane
+ * too, which on a page of the band ground keeps the gridlines instead, and in
+ * one piece, since the page showed through the bands' fractional edges as a
+ * seam. Unscrolled: a band is chrome pinned to the track. Built off the lane
+ * geometry alone, so a pan, a zoom or a settle that moves every other cell
+ * leaves this one's identity, and its upload, where it was.
  */
 export function buildBandCell({
   bands,
@@ -773,16 +775,18 @@ export function buildBandCell({
 }): LaneGlyphData {
   const paperColor = cssColorToABGR(paper)
   const stripeColor = cssColorToABGR(stripe)
-  const onPaper = cssColorToABGR(page) === paperColor
   const glyphs = new GlyphBuilder()
+  const bottom = bands.at(-1)
+  if (bottom && cssColorToABGR(page) !== paperColor) {
+    glyphs.rect(0, width, 0, bottom.bandEnd, paperColor)
+  }
   bands.forEach((band, row) => {
-    if (row === 0 && onPaper) {
-      return
-    }
-    const height = band.bandEnd - band.bandStart
-    glyphs.rect(0, width, band.bandStart, height, paperColor)
-    if (row % 2 === 1) {
-      glyphs.rect(0, width, band.bandStart, height, stripeColor)
+    if (row > 0) {
+      const height = band.bandEnd - band.bandStart
+      glyphs.rect(0, width, band.bandStart, height, paperColor)
+      if (row % 2 === 1) {
+        glyphs.rect(0, width, band.bandStart, height, stripeColor)
+      }
     }
   })
   return glyphs.build()
