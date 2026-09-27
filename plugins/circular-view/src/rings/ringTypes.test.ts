@@ -22,9 +22,10 @@ const CTG_A_BP = 16000
 const CTG_B_BP = 8000
 
 /**
- * A two-contig assembly and one track, opened on a circular view as a ring.
- * The display is whichever the track's config names first, or the one the
- * caller asks for.
+ * A two-contig assembly and one track, opened on a circular view: as the
+ * circle's own display where the track type has one, else the linear display
+ * its config names first, or the one the caller asks for. `fromCatalog` puts
+ * the track in config.json's frozen list rather than the session's.
  */
 async function ringTestSession(
   track: Record<string, unknown>,

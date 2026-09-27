@@ -26,16 +26,39 @@ interface TrackConfigSnapshot {
   displays?: LegacyDisplaySnapshot[]
 }
 
-function adapterCapabilitiesOf(
+/**
+ * Whether a track's adapter serves what a display type draws from: every
+ * `adapterCapabilities` entry the display asks for, among those the adapter
+ * type declares.
+ */
+export function adapterFeeds(
   pluginManager: PluginManager,
   adapter: TrackConfigSnapshot['adapter'],
 ) {
   const type = adapter?.type
-  return new Set(
+  const capabilities = new Set(
     typeof type === 'string' && pluginManager.hasAdapterType(type)
       ? pluginManager.getAdapterType(type).adapterCapabilities
       : [],
   )
+  return (display: { adapterCapabilities: readonly string[] }) =>
+    display.adapterCapabilities.every(c => capabilities.has(c))
+}
+
+/**
+ * The display types of `trackType` a track on `adapter` can draw as, in the
+ * track type's order: what a view picks among when the config declares none it
+ * draws.
+ */
+export function displayTypesFedBy(
+  pluginManager: PluginManager,
+  trackType: string,
+  adapter: TrackConfigSnapshot['adapter'],
+) {
+  return pluginManager
+    .getTrackType(trackType)
+    .displayTypes.filter(adapterFeeds(pluginManager, adapter))
+    .map(d => d.name)
 }
 
 /**
@@ -76,7 +99,7 @@ export function preprocessTrackConfigSnapshot(
     // opens the track with.
     try {
       const expanded = new Map(displays.map(d => [d.type, d]))
-      const capabilities = adapterCapabilitiesOf(pluginManager, snap.adapter)
+      const feeds = adapterFeeds(pluginManager, snap.adapter)
       displays = [
         ...displays.filter(d => declared.has(d.type)),
         ...pluginManager
@@ -86,7 +109,7 @@ export function preprocessTrackConfigSnapshot(
               ? []
               : expanded.has(d.name)
                 ? [expanded.get(d.name)!]
-                : d.adapterCapabilities.every(c => capabilities.has(c))
+                : feeds(d)
                   ? [{ displayId: `${snap.trackId}-${d.name}`, type: d.name }]
                   : [],
           ),

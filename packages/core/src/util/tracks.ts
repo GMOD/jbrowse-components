@@ -24,6 +24,7 @@ import { observable, runInAction, untracked } from 'mobx'
 import { getSequenceAdapterConfigByName } from '../assemblyManager/getSequenceAdapterConfig.ts'
 import { readConfObject } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
+import { displayTypesFedBy } from '../pluggableElementTypes/models/baseTrackConfig.ts'
 import {
   getFileHandle,
   storeFileHandle,
@@ -1278,7 +1279,11 @@ function resolveTrackDisplayChoice(
   // getContainingView already resolves to for everything else beneath it.
   const view = isViewModel(self) ? self : getContainingView(self)
   const viewType = pluginManager.getViewType(view.type)
-  const trackDisplayTypes = trackType.displayTypes.map(d => d.name)
+  const trackDisplayTypes = displayTypesFedBy(
+    pluginManager,
+    conf.type,
+    conf.adapter,
+  )
   const viewDisplayTypes = viewType.displayTypes.map(d => d.name)
   // An alias first, so a session spec or a caller naming a pre-consolidation
   // display type (`LinearPileupDisplay`) reaches the type that replaced it
