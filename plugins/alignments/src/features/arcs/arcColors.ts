@@ -1,4 +1,4 @@
-import { splitJunctionKind } from '@jbrowse/alignments-core'
+import { PAIR_DIRECTION_NUM, splitJunctionKind } from '@jbrowse/alignments-core'
 
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
@@ -29,7 +29,11 @@ export function isConcordantFRPair(
   tlen: number | undefined,
   stats: InsertSizeBand | undefined,
 ) {
-  if (pairOrientationNum !== 1 || tlen === undefined || stats === undefined) {
+  if (
+    pairOrientationNum !== PAIR_DIRECTION_NUM.LR ||
+    tlen === undefined ||
+    stats === undefined
+  ) {
     return false
   }
   const abs = Math.abs(tlen)
@@ -124,18 +128,15 @@ function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
   return kind === undefined ? COLOR_DEFAULT : SPLIT_KIND_COLOR[kind]
 }
 
-// pairOrientationToNum (see shared/buildBaseFeatureData.ts) encodes:
-//   0=unknown, 1=LR/normal (F1R2,F2R1), 2=RL (R1F2,R2F1),
-//   3=RR (R1R2,R2R1), 4=LL (F1F2,F2F1).
 // undefined means "normal/LR or unknown orientation" — the caller decides the
 // fallback (plain default vs. defer to insert size).
 function orientationColor(pairOrientationNum: number) {
   switch (pairOrientationNum) {
-    case 2:
+    case PAIR_DIRECTION_NUM.RL:
       return COLOR_PAIR_RL
-    case 3:
+    case PAIR_DIRECTION_NUM.RR:
       return COLOR_PAIR_RR
-    case 4:
+    case PAIR_DIRECTION_NUM.LL:
       return COLOR_PAIR_LL
     default:
       return undefined
