@@ -153,8 +153,22 @@ export function drawSyntenyTrack(
   logicalW: number,
   overdrawPx: number,
   groundColor: string,
+  flatten = false,
 ) {
   const ground = cssColorToRgb(groundColor)
+  // PROTOTYPE: a flattened pass paints each pixel with its darkest ribbon (its
+  // lightest on a dark ground) instead of stacking every ribbon's alpha
+  const blend =
+    flatten && 'globalCompositeOperation' in ctx
+      ? (ctx as unknown as CanvasRenderingContext2D)
+      : undefined
+  const previousOp = blend?.globalCompositeOperation
+  if (blend) {
+    blend.globalCompositeOperation =
+      ground[0] + ground[1] + ground[2] > 384 ? 'darken' : 'lighten'
+  }
+  const over = (c: number, i: number, a: number) =>
+    Math.round(c * a + ground[i]! * (1 - a))
   const outlineInk = withAlpha(getContrastText(groundColor), STROKE_ALPHA)
   const transform = computeTransform(params, data)
   const {
@@ -263,10 +277,19 @@ export function drawSyntenyTrack(
     if (ribbonMaxPerpWidth(c, height, drawCurves) < 1) {
       const perpW = ribbonPerpWidth(c, height)
       const widthFade = thinWidthFade(perpW, kind, fadeThinAlignments)
-      style.stroke(ctx, r, g, b, fa * widthFade)
+      const sa = fa * widthFade
+      if (blend) {
+        style.stroke(ctx, over(r, 0, sa), over(g, 1, sa), over(b, 2, sa), 1)
+      } else {
+        style.stroke(ctx, r, g, b, sa)
+      }
       strokeCenterline(ctx, c, yTop, height, drawCurves)
     } else {
-      style.fill(ctx, r, g, b, fa)
+      if (blend) {
+        style.fill(ctx, over(r, 0, fa), over(g, 1, fa), over(b, 2, fa), 1)
+      } else {
+        style.fill(ctx, r, g, b, fa)
+      }
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
       if (isClicked && !isCigar) {
@@ -274,5 +297,8 @@ export function drawSyntenyTrack(
         strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
       }
     }
+  }
+  if (blend && previousOp) {
+    blend.globalCompositeOperation = previousOp
   }
 }

@@ -52,6 +52,7 @@ export interface SyntenyRibbonParams {
   base1: number
   overdrawPx: number
   groundColor: string
+  flatten?: boolean
 }
 
 /**
@@ -205,6 +206,7 @@ function ribbonFillShape(
           frame.canvasWidth,
           p.overdrawPx,
           p.groundColor,
+          p.flatten,
         )
       }
     },
