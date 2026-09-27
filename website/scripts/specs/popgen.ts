@@ -449,7 +449,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
       },
     ],
     readySelector: displayPainted('variant-display'),
-    readyText: 'In(2L)t genotyped',
+    readyText: IN2LT_SV_TRACK.name as string,
     readyTimeout: 120000,
     viewportHeight: 1180,
   },
