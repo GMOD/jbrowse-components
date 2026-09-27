@@ -71,7 +71,7 @@
             "organism": "NHGRI_mPanTro3-v2.0_pri Jan. 2024",
             "defaultPos": "NC_072398.2:77099816-77109816",
             "scientificName": "Pan troglodytes",
-            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/html/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.description.html\">html/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.description.html</a>",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/html/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri.description.html\">html/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri.description.html</a>",
             "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/858/775/GCF_028858775.2",
             "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/858/775/GCF_028858775.2",
             "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/858/775/GCF_028858775.2",
@@ -119,7 +119,7 @@
             "organism": "NHGRI_mPanPan1-v2.0_pri Jan. 2024",
             "defaultPos": "NC_073249.2:75901684-75911684",
             "scientificName": "Pan paniscus",
-            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/html/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.description.html\">html/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.description.html</a>",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/html/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri.description.html\">html/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri.description.html</a>",
             "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/289/425/GCF_029289425.2",
             "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/289/425/GCF_029289425.2",
             "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/289/425/GCF_029289425.2"
@@ -210,7 +210,7 @@
             "organism": "NHGRI_mPonAbe1-v2.0_pri Jan. 2024",
             "defaultPos": "NC_071985.2:77931839-77941839",
             "scientificName": "Pongo abelii",
-            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/html/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.description.html\">html/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.description.html</a>",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/html/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri.description.html\">html/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri.description.html</a>",
             "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/655/GCF_028885655.2",
             "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/655/GCF_028885655.2",
             "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/655/GCF_028885655.2"
@@ -255,7 +255,7 @@
             "organism": "NHGRI_mPonPyg2-v2.0_pri Jan. 2024",
             "defaultPos": "NC_072373.2:76935800-76945800",
             "scientificName": "Pongo pygmaeus",
-            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/html/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.description.html\">html/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.description.html</a>",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/html/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri.description.html\">html/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri.description.html</a>",
             "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/625/GCF_028885625.2",
             "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/625/GCF_028885625.2",
             "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/625/GCF_028885625.2"
@@ -418,8 +418,8 @@
           "labelFields": "name2,geneName,geneName2",
           "defaultLabelFields": "name2",
           "searchIndex": "name",
-          "searchTrix": "ixIxx/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.ncbiRefSeq.ix",
-          "bigDataUrl": "bbi/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.ncbiRefSeq.bb",
+          "searchTrix": "ixIxx/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri.ncbiRefSeq.bb",
           "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
           "idXref": "ncbiRefSeqLink mrnaAcc name",
           "baseColorUseCds": "given",
@@ -435,7 +435,7 @@
       "type": "FeatureTrack",
       "adapter": {
         "type": "BigBedAdapter",
-        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/bbi/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.ncbiRefSeq.bb",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/bbi/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri.ncbiRefSeq.bb",
         "aggregateField": "name2"
       },
       "displays": [
@@ -460,8 +460,8 @@
           "labelFields": "name2,geneName,geneName2",
           "defaultLabelFields": "name2",
           "searchIndex": "name",
-          "searchTrix": "ixIxx/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.ncbiRefSeq.ix",
-          "bigDataUrl": "bbi/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.ncbiRefSeq.bb",
+          "searchTrix": "ixIxx/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri.ncbiRefSeq.bb",
           "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
           "idXref": "ncbiRefSeqLink mrnaAcc name",
           "baseColorUseCds": "given",
@@ -477,7 +477,7 @@
       "type": "FeatureTrack",
       "adapter": {
         "type": "BigBedAdapter",
-        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/bbi/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.ncbiRefSeq.bb",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/bbi/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri.ncbiRefSeq.bb",
         "aggregateField": "name2"
       },
       "displays": [
@@ -544,8 +544,8 @@
           "labelFields": "name2,geneName,geneName2",
           "defaultLabelFields": "name2",
           "searchIndex": "name",
-          "searchTrix": "ixIxx/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.ncbiRefSeq.ix",
-          "bigDataUrl": "bbi/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.ncbiRefSeq.bb",
+          "searchTrix": "ixIxx/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri.ncbiRefSeq.bb",
           "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
           "idXref": "ncbiRefSeqLink mrnaAcc name",
           "baseColorUseCds": "given",
@@ -561,7 +561,7 @@
       "type": "FeatureTrack",
       "adapter": {
         "type": "BigBedAdapter",
-        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/bbi/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.ncbiRefSeq.bb",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/bbi/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri.ncbiRefSeq.bb",
         "aggregateField": "name2"
       },
       "displays": [
@@ -586,8 +586,8 @@
           "labelFields": "name2,geneName,geneName2",
           "defaultLabelFields": "name2",
           "searchIndex": "name",
-          "searchTrix": "ixIxx/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.ncbiRefSeq.ix",
-          "bigDataUrl": "bbi/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.ncbiRefSeq.bb",
+          "searchTrix": "ixIxx/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri.ncbiRefSeq.bb",
           "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
           "idXref": "ncbiRefSeqLink mrnaAcc name",
           "baseColorUseCds": "given",
@@ -603,7 +603,7 @@
       "type": "FeatureTrack",
       "adapter": {
         "type": "BigBedAdapter",
-        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/bbi/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.ncbiRefSeq.bb",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/bbi/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri.ncbiRefSeq.bb",
         "aggregateField": "name2"
       },
       "displays": [
