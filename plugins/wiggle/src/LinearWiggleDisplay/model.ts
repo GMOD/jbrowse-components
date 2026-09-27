@@ -398,11 +398,15 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * What `colorSetting`'s slots say together that it cannot paint as
-       * written, and a gradient a line cannot paint, for the corner notice.
+       * What `colorSetting`'s and `scales.y`'s slots say together that they
+       * cannot draw as written, and a gradient a line cannot paint, for the
+       * corner notice.
        */
       get notices(): string[] {
-        const notices = wiggleColorNotices(self.colorSetting)
+        const notices = [
+          ...wiggleColorNotices(self.colorSetting),
+          ...self.valueScaleNotices,
+        ]
         return this.wiggleColor.rampLut !== null &&
           isLineMode(self.renderingType)
           ? [

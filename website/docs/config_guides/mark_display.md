@@ -732,8 +732,8 @@ each reported under its id:
 | `threshold-no-cuts` | warning | A threshold colour naming no cut, so every value paints one colour. |
 | `threshold-range` | warning | A threshold `range` not one colour longer than its cuts. |
 | `ramp-domain` | warning | A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. |
-| `ramp-ends` | warning | A colour ramp's `domainMax` below its `domainMin`. |
-| `ramp-quantile` | warning | A colour ramp's `domainQuantile` outside 0.5 to 1, a percent among them. |
+| `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a colour ramp's, a width's or `scales.y`'s. |
+| `domain-quantile` | warning | A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
 | `labels-domain` | warning | A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
 | `unpinned-span-ramp` | warning | A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. |
 | `step-pair` | warning | A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. |

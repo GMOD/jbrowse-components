@@ -5,6 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
+import { noticeLines, scaleEndProblems } from '@jbrowse/display-kit/colorScale'
 import { rulesABand } from '@jbrowse/display-ui/axisPlacement'
 
 import { ScoreAxisMixin } from './ScoreAxisMixin.ts'
@@ -118,6 +119,22 @@ export function ScoreScaleMixin() {
        */
       get manualMaxScore(): number | undefined {
         return getConf(confNode(self), ['scales', 'y', 'domainMax'])
+      },
+      /**
+       * #getter
+       * What `scales.y`'s ends say together that the axis cannot draw as
+       * written, as corner-notice lines, by the rule a colour ramp's ends
+       * answer to. The mark display reports them through its rule list.
+       */
+      get valueScaleNotices(): string[] {
+        return noticeLines(
+          'scales.y',
+          scaleEndProblems({
+            domainMin: this.manualMinScore,
+            domainMax: this.manualMaxScore,
+            domainQuantile: this.domainQuantile,
+          }),
+        )
       },
       /**
        * #getter

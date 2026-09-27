@@ -400,7 +400,7 @@ describe('validateConfig', () => {
             domainMax: 1,
           }),
         ),
-      ).toEqual([`ramp-ends ${where}.domainMax`])
+      ).toEqual([`domain-ends ${where}.domainMax`])
     })
 
     it("reads a field's default scale where none is written", () => {
@@ -462,6 +462,37 @@ describe('validateConfig', () => {
       ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
     })
 
+    it("checks scales.y's ends by the colour ramp's rule, once on a mark display", () => {
+      const scales = { y: { domainMin: 10, domainMax: 1, domainQuantile: 99 } }
+      const at = 'tracks[0].displays[0].scales.y'
+      expect(
+        found({
+          type: 'QuantitativeTrack',
+          adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
+          displays: [{ type: 'LinearWiggleDisplay', scales }],
+        }),
+      ).toEqual([
+        `domain-ends ${at}.domainMax`,
+        `domain-quantile ${at}.domainQuantile`,
+      ])
+      expect(
+        found({
+          type: 'FeatureTrack',
+          adapter: { type: 'BedTabixAdapter', uri: 'x.bed.gz' },
+          displays: [
+            {
+              type: 'LinearMarkDisplay',
+              marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+              scales,
+            },
+          ],
+        }),
+      ).toEqual([
+        `domain-ends ${at}.domainMax`,
+        `domain-quantile ${at}.domainQuantile`,
+      ])
+    })
+
     it('checks labels and domainQuantile as the display does', () => {
       expect(
         found(
@@ -471,7 +502,7 @@ describe('validateConfig', () => {
             domainQuantile: 99,
           }),
         ),
-      ).toEqual([`ramp-quantile ${where}.domainQuantile`])
+      ).toEqual([`domain-quantile ${where}.domainQuantile`])
       expect(
         found(
           display('LinearAlignmentsDisplay', {

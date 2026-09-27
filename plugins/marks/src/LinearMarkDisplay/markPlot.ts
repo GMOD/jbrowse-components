@@ -2,14 +2,14 @@ import { pluralize } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { markProblems } from './markProblems.ts'
-
 import type { LinearMarkDisplayConfigModel } from './configSchema.ts'
 import type {
   FacetSnapshot,
   MarkProblem,
   MarkSnapshot,
+  PlotSnapshot,
   RowsSnapshot,
+  ScalesSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
 
@@ -66,11 +66,9 @@ export interface MarkPlot {
 }
 
 /** A plot the schema has lifted: shorthands expanded, defaults left off. */
-export interface MarkPlotSettings {
+export interface MarkPlotSettings extends PlotSnapshot {
   marks: MarkSnapshot[]
   transform: StepSnapshot[]
-  facet?: FacetSnapshot
-  rows?: RowsSnapshot
 }
 
 const SYNTHETIC_DISPLAY_ID = 'markPlotLift'
@@ -153,17 +151,8 @@ export function liftMarkPlot(
     transform: (snapshot.transform ?? []) as StepSnapshot[],
     facet: snapshot.facet as FacetSnapshot | undefined,
     rows: snapshot.rows as RowsSnapshot | undefined,
+    scales: snapshot.scales as ScalesSnapshot | undefined,
   }
-}
-
-/** Every rule the declared plot breaks. */
-export function markPlotProblems({
-  marks,
-  facet,
-  transform,
-  rows,
-}: MarkPlotSettings): MarkProblem[] {
-  return markProblems(marks, facet, transform, rows)
 }
 
 /** Which settings a plot writes and which it resets, against what is declared. */

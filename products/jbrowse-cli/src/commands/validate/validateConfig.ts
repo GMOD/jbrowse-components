@@ -12,7 +12,7 @@
 import { configManifest } from './configManifest.generated.ts'
 import { displayDefaultsForTrackType } from './displayDefaultKeys.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
-import { colorProblems } from './markRules/colorScale.ts'
+import { colorProblems, scaleEndProblems } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
 import {
   hasDeclaredShape,
@@ -21,6 +21,7 @@ import {
 } from './schemaValidate.ts'
 import { didYouMean } from './suggest.ts'
 
+import type { ScaleProblem } from './markRules/colorScale.ts'
 import type { MarkSnapshot, StepSnapshot } from './markRules/markProblems.ts'
 import type {
   ConfigManifest,
@@ -515,14 +516,15 @@ function checkMarkDisplay(
   if (!slots || !isRecord(lifted)) {
     return
   }
-  const { facet, rows } = lifted
-  for (const { level, rule, mark, slot, message } of markProblems(
-    declaredEntries<MarkSnapshot>(lifted, display, 'marks'),
-    isRecord(facet) ? facet : undefined,
-    declaredEntries<StepSnapshot>(lifted, display, 'transform'),
-    isRecord(rows) ? rows : undefined,
-  )) {
-    report.problems.push({
+  const { facet, rows, scales } = lifted
+  for (const { level, rule, mark, slot, message } of markProblems({
+    marks: declaredEntries<MarkSnapshot>(lifted, display, 'marks'),
+    facet: isRecord(facet) ? facet : undefined,
+    transform: declaredEntries<StepSnapshot>(lifted, display, 'transform'),
+    rows: isRecord(rows) ? rows : undefined,
+    scales: isRecord(scales) ? scalesOf(scales) : undefined,
+  })) {
+    pushOnce(report, {
       level,
       where: `${where}${mark === undefined ? '' : `.marks[${mark}]`}.${slotPath(slot)}`,
       message,
@@ -531,9 +533,46 @@ function checkMarkDisplay(
   }
 }
 
-// The display's own colour rules, with its schema's fieldPresets standing in
-// for the plugin code the CLI does not run
-function checkColorSlots(
+// A problem the colour and scale rules and the mark rule list both reach, such
+// as scales.y's ends on a mark display, is reported once.
+function pushOnce(report: Report, problem: Problem) {
+  if (
+    !report.problems.some(
+      p => p.where === problem.where && p.rule === problem.rule,
+    )
+  ) {
+    report.problems.push(problem)
+  }
+}
+
+function numberOf(value: unknown) {
+  return typeof value === 'number' ? value : undefined
+}
+
+function scaleEndsOf(scale: Record<string, unknown>) {
+  return {
+    domainMin: numberOf(scale.domainMin),
+    domainMax: numberOf(scale.domainMax),
+    domainQuantile: numberOf(scale.domainQuantile),
+  }
+}
+
+function scalesOf(scales: Record<string, unknown>) {
+  return isRecord(scales.y) ? { y: scaleEndsOf(scales.y) } : {}
+}
+
+function declaredMembers(written: Record<string, unknown>, slot: SlotEntry) {
+  const declared = new Set((slot.subSlots ?? []).map(s => s.name))
+  return Object.fromEntries(
+    Object.entries(written).filter(([key]) => declared.has(key)),
+  )
+}
+
+// What the display's colour objects and its value scale say together that it
+// cannot draw as written: its schema's fieldPresets stand in for the plugin
+// code the CLI does not run, and every quantitative scale's ends answer to
+// one rule.
+function checkScaleSlots(
   display: Record<string, unknown>,
   slots: SlotEntry[],
   where: string,
@@ -543,44 +582,38 @@ function checkColorSlots(
   if (!isRecord(lifted)) {
     return
   }
-  for (const { name, fieldPresets, subSlots = [] } of slots) {
-    const written = lifted[name]
-    if (!fieldPresets || !isRecord(written)) {
+  const warn = (at: string, { rule, slot, message }: ScaleProblem) => {
+    pushOnce(report, {
+      level: 'warning',
+      where: `${at}.${slot}`,
+      message,
+      rule,
+    })
+  }
+  for (const slot of slots) {
+    const written = lifted[slot.name]
+    if (!isRecord(written)) {
       continue
     }
-    const declared = new Set(subSlots.map(slot => slot.name))
-    const color = Object.fromEntries(
-      Object.entries(written).filter(([key]) => declared.has(key)),
-    )
-    const field = typeof color.field === 'string' ? color.field : ''
-    for (const problem of colorProblems(
-      {
-        field,
-        scale: typeof color.scale === 'string' ? color.scale : undefined,
-        domain: Array.isArray(color.domain) ? color.domain : undefined,
-        range: Array.isArray(color.range) ? color.range : undefined,
-        domainMin:
-          typeof color.domainMin === 'number' ? color.domainMin : undefined,
-        domainMax:
-          typeof color.domainMax === 'number' ? color.domainMax : undefined,
-        domainQuantile:
-          typeof color.domainQuantile === 'number'
-            ? color.domainQuantile
-            : undefined,
-        labels: Array.isArray(color.labels) ? color.labels : undefined,
-      },
-      fieldPresets,
-    )) {
-      const at = `${where}.${name}.${problem.slot}`
-      if (
-        !report.problems.some(p => p.where === at && p.rule === problem.rule)
-      ) {
-        report.problems.push({
-          level: 'warning',
-          where: at,
-          message: problem.message,
-          rule: problem.rule,
-        })
+    const members = declaredMembers(written, slot)
+    if (slot.fieldPresets) {
+      for (const problem of colorProblems(
+        {
+          ...scaleEndsOf(members),
+          field: typeof members.field === 'string' ? members.field : '',
+          scale: typeof members.scale === 'string' ? members.scale : undefined,
+          domain: Array.isArray(members.domain) ? members.domain : undefined,
+          range: Array.isArray(members.range) ? members.range : undefined,
+          labels: Array.isArray(members.labels) ? members.labels : undefined,
+        },
+        slot.fieldPresets,
+      )) {
+        warn(`${where}.${slot.name}`, problem)
+      }
+    }
+    if (slot.name === 'scales' && isRecord(members.y)) {
+      for (const problem of scaleEndProblems(scaleEndsOf(members.y))) {
+        warn(`${where}.scales.y`, problem)
       }
     }
   }
@@ -602,17 +635,17 @@ function checkMarkDisplays(
       checkMarkDisplays(item, manifest, `${where}[${i}]`, report)
     }
   } else if (isRecord(node)) {
-    const colorSlots =
+    const slots =
       typeof node.type === 'string'
         ? manifest.displays[node.type]?.slots
         : undefined
-    if (colorSlots) {
-      checkColorSlots(node, colorSlots, where, report)
+    if (slots) {
+      checkScaleSlots(node, slots, where, report)
     }
     if (typeof node.type === 'string' && isRecord(node.displayDefaults)) {
       for (const display of displayDefaultsForTrackType(node.type, manifest)
         .displayTypes) {
-        checkColorSlots(
+        checkScaleSlots(
           node.displayDefaults,
           manifest.displays[display]?.slots ?? [],
           `${where}.displayDefaults`,

@@ -11,5 +11,6 @@ export {
   colorProblems,
   fieldScaleOf,
   paintedScale,
+  scaleEndProblems,
 } from '@jbrowse/display-kit/colorScale'
-export type { ColorSlots } from '@jbrowse/display-kit/colorScale'
+export type { ColorSlots, ScaleEnds } from '@jbrowse/display-kit/colorScale'

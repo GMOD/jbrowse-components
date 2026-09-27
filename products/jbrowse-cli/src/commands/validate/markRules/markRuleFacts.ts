@@ -6,5 +6,6 @@ export {
   colorProblems,
   fieldScaleOf,
   paintedScale,
+  scaleEndProblems,
 } from './colorScale.ts'
-export type { ColorSlots } from './colorScale.ts'
+export type { ColorSlots, ScaleEnds } from './colorScale.ts'

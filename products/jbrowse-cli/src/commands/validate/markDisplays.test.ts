@@ -441,9 +441,9 @@ describe('a marks list in a config file', () => {
     ])
     expect(
       found(colored('bar', { ...ramp, domainMin: 10, domainMax: 0 })),
-    ).toEqual([`warning ramp-ends ${color}.domainMax`])
+    ).toEqual([`warning domain-ends ${color}.domainMax`])
     expect(found(colored('bar', { ...ramp, domainQuantile: 99 }))).toEqual([
-      `warning ramp-quantile ${color}.domainQuantile`,
+      `warning domain-quantile ${color}.domainQuantile`,
     ])
     expect(found(colored('span', ramp))).toEqual([
       `warning unpinned-span-ramp ${color}.domainMin`,

@@ -6,12 +6,12 @@ import { observer } from 'mobx-react'
 
 import {
   MARK_PLOT_EXAMPLES,
-  markPlotProblems,
   markPlotSettingsWritten,
   markPlotText,
   parseMarkPlot,
   summarizeMarkPlot,
 } from '../markPlot.ts'
+import { markProblems } from '../markProblems.ts'
 import { MarkProblemList } from './MarkProblems.tsx'
 
 import type { MarkPlot, MarkPlotSettings } from '../markPlot.ts'
@@ -44,7 +44,7 @@ function readDraft(model: PlotJsonDialogModel, text: string): Draft {
   try {
     const plot = parseMarkPlot(text)
     const lifted = model.liftMarkPlot(plot)
-    const problems = markPlotProblems(lifted)
+    const problems = markProblems(lifted)
     return {
       plot,
       problems,

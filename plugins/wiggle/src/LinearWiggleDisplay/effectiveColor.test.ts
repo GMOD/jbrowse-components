@@ -298,3 +298,12 @@ test('a gradient on a line keys nothing and says why', () => {
     'color.scale: a gradient colours bars, points and density; a line paints its two end colours',
   ])
 })
+
+test("the corner notice reads scales.y's ends by the colour ramp's rule", () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { scales: { y: { domainQuantile: 99 } } },
+  }).createDisplay()
+  expect(display.notices).toEqual([
+    'scales.y.domainQuantile: domainQuantile is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5',
+  ])
+})

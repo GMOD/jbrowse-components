@@ -10,6 +10,7 @@ import type {
   MarkProblem,
   MarkSnapshot,
   RowsSnapshot,
+  ScalesSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
 
@@ -22,12 +23,14 @@ function problemsOf(
   facet?: unknown,
   transform?: unknown[],
   rows?: unknown,
+  scales?: unknown,
 ): MarkProblem[] {
   const snap: {
     marks?: MarkSnapshot[]
     facet?: FacetSnapshot
     transform?: StepSnapshot[]
     rows?: RowsSnapshot
+    scales?: ScalesSnapshot
   } = getSnapshot(
     schema.create({
       displayId: 'd',
@@ -35,10 +38,11 @@ function problemsOf(
       ...(facet ? { facet } : {}),
       ...(transform ? { transform } : {}),
       ...(rows ? { rows } : {}),
+      ...(scales ? { scales } : {}),
     }),
   )
   const lifted = snap.marks ?? []
-  const problems = markProblems(lifted, snap.facet, snap.transform, snap.rows)
+  const problems = markProblems({ ...snap, marks: lifted })
   for (const { rule } of problems) {
     reached.add(rule)
   }
@@ -50,8 +54,9 @@ function found(
   facet?: unknown,
   transform?: unknown[],
   rows?: unknown,
+  scales?: unknown,
 ) {
-  return problemsOf(marks, facet, transform, rows).map(
+  return problemsOf(marks, facet, transform, rows, scales).map(
     p => `${p.level} ${p.rule} mark ${p.mark} ${p.slot}`,
   )
 }
@@ -421,7 +426,7 @@ test('a mark the caller could not read keeps its index as a gap', () => {
     transform: [{ type: 'pileup' }],
   }
   expect(
-    markProblems([undefined, packed, packed]).map(
+    markProblems({ marks: [undefined, packed, packed] }).map(
       p => `${p.rule} ${p.mark} ${p.message}`,
     ),
   ).toEqual([
@@ -606,10 +611,10 @@ test('a ramp reads its ends, not a domain, and a span wants both ends pinned', (
     'warning ramp-domain mark 0 encoding.color.domain',
   ])
   expect(found(ramp('bar', { domainMin: 10, domainMax: 0 }))).toEqual([
-    'warning ramp-ends mark 0 encoding.color.domainMax',
+    'warning domain-ends mark 0 encoding.color.domainMax',
   ])
   expect(found(ramp('bar', { domainQuantile: 99 }))).toEqual([
-    'warning ramp-quantile mark 0 encoding.color.domainQuantile',
+    'warning domain-quantile mark 0 encoding.color.domainQuantile',
   ])
   expect(found(ramp('span', { domainMin: 0 }))).toEqual([
     'warning unpinned-span-ramp mark 0 encoding.color.domainMax',
@@ -621,6 +626,27 @@ test('a ramp reads its ends, not a domain, and a span wants both ends pinned', (
     found([{ mark: 'span', encoding: { color: { field: 'score' } } }]),
   ).toEqual(['warning unpinned-span-ramp mark 0 encoding.color.domainMin'])
   expect(found(ramp('span', { domainMin: 0, domainMax: 10 }))).toEqual([])
+})
+
+test("scales.y and a width read their ends by the colour ramp's one rule", () => {
+  const bar = [{ mark: 'bar', encoding: { y: 'score' } }]
+  const y = (ends: Record<string, number>) =>
+    found(bar, undefined, undefined, undefined, { y: ends })
+  expect(y({ domainMin: 0, domainMax: 10 })).toEqual([])
+  expect(y({ domainMin: 10, domainMax: 0 })).toEqual([
+    'warning domain-ends mark undefined scales.y.domainMax',
+  ])
+  expect(y({ domainQuantile: 99 })).toEqual([
+    'warning domain-quantile mark undefined scales.y.domainQuantile',
+  ])
+  expect(
+    found([
+      {
+        mark: 'link',
+        encoding: { size: { field: 'score', domainMin: 9, domainMax: 1 } },
+      },
+    ]),
+  ).toEqual(['warning domain-ends mark 0 encoding.size.domainMax'])
 })
 
 // A written range used to make an unset scale linear, so emptying it in the

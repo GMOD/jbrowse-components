@@ -42,6 +42,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known. | ScoreScaleMixin |
 | <span id="getter-manualminscore">**manualMinScore**</span><br><code>number &#124; undefined</code> | The lower bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
 | <span id="getter-manualmaxscore">**manualMaxScore**</span><br><code>number &#124; undefined</code> | The upper bound the config pins, `undefined` where it pins none. | ScoreScaleMixin |
+| <span id="getter-valuescalenotices">**valueScaleNotices**</span><br><code>string[]</code> | What `scales.y`'s ends say together that the axis cannot draw as written, as corner-notice lines, by the rule a colour ramp's ends answer to. The mark display reports them through its rule list. | ScoreScaleMixin |
 | <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | `scales.y.autoscaleGroup`, `undefined` while it names none. | ScoreScaleMixin |
 | <span id="getter-scaletitle">**scaleTitle**</span><br><code>string</code> | `scales.y.title`, `''` while unset | ScoreScaleMixin |
 | <span id="getter-grid">**grid**</span><br><code>boolean</code> | `scales.y.grid` | ScoreScaleMixin |

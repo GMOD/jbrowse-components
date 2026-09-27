@@ -120,18 +120,73 @@ export function paintedScale<S extends string, F extends string>(
   return field ? (scale ?? fieldScale) : 'none'
 }
 
-/** A combination of a colour object's slots the display cannot paint as written. */
-export interface ColorProblem {
+/** A combination of a scale's slots the display cannot draw as written. */
+export interface ScaleProblem {
   rule:
     | 'threshold-cuts'
     | 'threshold-range'
     | 'ramp-domain'
-    | 'ramp-ends'
-    | 'ramp-quantile'
+    | 'domain-ends'
+    | 'domain-quantile'
     | 'labels-domain'
-  /** the slot to look at, relative to the colour object */
+  /** the slot to look at, relative to the scale's own object */
   slot: string
   message: string
+}
+
+/**
+ * The members a quantitative scale's ends are read by, as a colour ramp,
+ * `scales.y` and a mark's width spell them alike.
+ */
+export interface ScaleEnds {
+  domainMin?: number
+  domainMax?: number
+  domainQuantile?: number
+}
+
+/**
+ * What a quantitative scale's ends say together that neither can refuse
+ * alone: a `domainMax` below its `domainMin`, which every such scale draws in
+ * order either way, and a `domainQuantile` outside 0.5 to 1, where the quantile
+ * an open end follows is clamped. `reverse` is whether the scale turns round by
+ * a member of its own, which is then the spelling to point at.
+ */
+export function scaleEndProblems(
+  { domainMin, domainMax, domainQuantile }: ScaleEnds,
+  { reverse = false }: { reverse?: boolean } = {},
+): ScaleProblem[] {
+  return [
+    ...(domainMin !== undefined &&
+    domainMax !== undefined &&
+    domainMin > domainMax
+      ? [
+          {
+            rule: 'domain-ends' as const,
+            slot: 'domainMax',
+            message: `domainMax is below domainMin: the scale spans the two in order either way${reverse ? ', and reverse is what turns it round' : ''}`,
+          },
+        ]
+      : []),
+    ...(domainQuantile !== undefined &&
+    !(domainQuantile >= 0.5 && domainQuantile <= 1)
+      ? [
+          {
+            rule: 'domain-quantile' as const,
+            slot: 'domainQuantile',
+            message:
+              'domainQuantile is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5',
+          },
+        ]
+      : []),
+  ]
+}
+
+/** Problems as the lines a display's corner notice lists, under the setting that holds the scale. */
+export function noticeLines(
+  setting: string,
+  problems: readonly ScaleProblem[],
+): string[] {
+  return problems.map(({ slot, message }) => `${setting}.${slot}: ${message}`)
 }
 
 /** The slots `colorProblems` reads, as a snapshot or a resolved setting holds them. */
@@ -162,9 +217,9 @@ function pinned(entry: unknown) {
 export function colorProblems(
   written: ColorSlots,
   presets: FieldPresets<string>,
-): ColorProblem[] {
+): ScaleProblem[] {
   const color = withPreset(written, presets)
-  const { domain = [], domainMin, domainMax } = color
+  const { domain = [] } = color
   const { range = [] } = written
   const scale =
     color.scale === IDENTITY_SCALE
@@ -173,7 +228,7 @@ export function colorProblems(
           { scale: color.scale, field: color.field ?? '' },
           fieldScaleOf(presets, color.field ?? ''),
         )
-  const problems: ColorProblem[] = []
+  const problems: ScaleProblem[] = []
   if (scale === 'threshold') {
     if (
       domain.some(
@@ -208,30 +263,7 @@ export function colorProblems(
           "a linear or log scale reads no domain, which is a categorical scale's order and a threshold scale's cuts; a ramp's ends are domainMin and domainMax where the colour has them",
       })
     }
-    if (
-      domainMin !== undefined &&
-      domainMax !== undefined &&
-      domainMin > domainMax
-    ) {
-      problems.push({
-        rule: 'ramp-ends',
-        slot: 'domainMax',
-        message:
-          'domainMax is below domainMin: the ramp spans the two either way, and reverse is what turns it round',
-      })
-    }
-    const { domainQuantile } = color
-    if (
-      domainQuantile !== undefined &&
-      !(domainQuantile >= 0.5 && domainQuantile <= 1)
-    ) {
-      problems.push({
-        rule: 'ramp-quantile',
-        slot: 'domainQuantile',
-        message:
-          'domainQuantile is a fraction from 0.5 to 1, not a percent: 1 follows the extremes and 0.99 clips the outermost 1% at each end; above 1 reads as 1 and below 0.5 as 0.5',
-      })
-    }
+    problems.push(...scaleEndProblems(color, { reverse: true }))
   }
   const { labels = [] } = color
   const named =
@@ -269,7 +301,5 @@ export function colorNotices(
   color: ColorSlots,
   presets: FieldPresets<string>,
 ): string[] {
-  return colorProblems(color, presets).map(
-    ({ slot, message }) => `color.${slot}: ${message}`,
-  )
+  return noticeLines('color', colorProblems(color, presets))
 }

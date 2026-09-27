@@ -123,12 +123,8 @@ import {
   rowValuesAt,
   zoomInRange,
 } from './markList.ts'
-import {
-  liftMarkPlot as liftPlot,
-  markPlotOf,
-  markPlotProblems,
-} from './markPlot.ts'
-import { problemText } from './markProblems.ts'
+import { liftMarkPlot as liftPlot, markPlotOf } from './markPlot.ts'
+import { markProblems, problemText } from './markProblems.ts'
 import {
   encodingOf,
   lastBinEdges,
@@ -171,6 +167,7 @@ import type {
   FacetSnapshot,
   MarkProblem,
   RowsSnapshot,
+  ScalesSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
 import type { PlotFields } from './scanPlotFields.ts'
@@ -1466,11 +1463,12 @@ export function stateModelFactory(
          * reported where a load would once have refused the track.
          */
         get configProblems(): MarkProblem[] {
-          return markPlotProblems({
+          return markProblems({
             marks: getSnapshot(self.conf.marks),
             transform: getSnapshot(self.conf.transform) as StepSnapshot[],
             facet: getSnapshot(self.conf.facet) as FacetSnapshot,
             rows: getSnapshot(self.conf.rows) as RowsSnapshot,
+            scales: getSnapshot(self.conf.scales) as ScalesSnapshot,
           })
         },
         /**
@@ -1496,7 +1494,7 @@ export function stateModelFactory(
          * file would refuse throws the refusal.
          */
         plotProblems(plot: MarkPlot): string[] {
-          return markPlotProblems(this.liftMarkPlot(plot)).map(problemText)
+          return markProblems(this.liftMarkPlot(plot)).map(problemText)
         },
         /**
          * #method

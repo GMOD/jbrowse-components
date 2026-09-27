@@ -82,9 +82,13 @@ test('a mark display faceted by strand on a MultiQuantitativeTrack carries no ro
     ['LinearMarkDisplay', ''],
     ['LinearWiggleDisplay', 'source'],
   ])
-  expect(markProblems(mark!.marks ?? [], mark!.facet, [], mark!.rows)).toEqual(
-    [],
-  )
+  expect(
+    markProblems({
+      marks: mark!.marks ?? [],
+      facet: mark!.facet,
+      rows: mark!.rows,
+    }),
+  ).toEqual([])
 })
 
 test('displayDefaults.rows on another field fails the load for the quantitative display', () => {

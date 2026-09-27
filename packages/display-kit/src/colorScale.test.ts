@@ -93,14 +93,14 @@ test('a ramp reads no domain, and its ends in either order are named', () => {
   ])
   expect(
     rules({ field: 'x', scale: 'log', domainMin: 10, domainMax: 1 }),
-  ).toEqual(['ramp-ends'])
+  ).toEqual(['domain-ends'])
 })
 
 test('a ramp quantile outside 0.5 to 1 is named, a percent among them', () => {
   const quantile = (domainQuantile: number) =>
     rules({ field: 'x', scale: 'linear', domainQuantile })
-  expect(quantile(99)).toEqual(['ramp-quantile'])
-  expect(quantile(0.2)).toEqual(['ramp-quantile'])
+  expect(quantile(99)).toEqual(['domain-quantile'])
+  expect(quantile(0.2)).toEqual(['domain-quantile'])
   expect(quantile(0.99)).toEqual([])
   expect(quantile(1)).toEqual([])
 })

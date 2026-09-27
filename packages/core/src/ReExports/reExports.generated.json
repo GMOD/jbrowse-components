@@ -3972,8 +3972,10 @@
         "colorNotices",
         "colorProblems",
         "fieldScaleOf",
+        "noticeLines",
         "paintedScale",
         "presetOf",
+        "scaleEndProblems",
         "withPreset"
       ],
       "worker": "real"

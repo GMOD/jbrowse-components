@@ -18,8 +18,9 @@ import {
   withScaleMember,
   withoutChannel,
 } from '../markEdit.ts'
-import { markPlotProblems, markPlotSettingsWritten } from '../markPlot.ts'
+import { markPlotSettingsWritten } from '../markPlot.ts'
 import { markProblemIndex } from '../markProblemIndex.ts'
+import { markProblems } from '../markProblems.ts'
 import { MARK_TYPES } from '../markVocabulary.ts'
 import { stepWrittenFields, stepsOfMark, withSteps } from '../plotEdit.ts'
 import MarkFieldPicker from './MarkFieldPicker.tsx'
@@ -53,7 +54,7 @@ export interface MarkPlotDialogModel {
 function readDraft(model: MarkPlotDialogModel, draft: MarkPlot) {
   try {
     return {
-      problems: markProblemIndex(markPlotProblems(model.liftMarkPlot(draft))),
+      problems: markProblemIndex(markProblems(model.liftMarkPlot(draft))),
     }
   } catch (error) {
     return { problems: markProblemIndex([]), error }

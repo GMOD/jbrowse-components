@@ -226,9 +226,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      * What `writtenColor`'s slots say together that it cannot paint as
-     * written, for the corner notice.
+     * written, which the corner notice lists.
      */
-    get notices(): string[] {
+    get colorNotices(): string[] {
       return alignmentsColorNotices(this.writtenColor)
     },
     /**

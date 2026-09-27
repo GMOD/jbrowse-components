@@ -406,6 +406,16 @@ export default function stateModelFactory(
       )
       // Track-menu toggles resolved from config slots — see `configSlotViews`.
       .views(configSlotViews)
+      .views(self => ({
+        /**
+         * #getter
+         * What the `color` object's and `scales.y`'s slots say together that
+         * they cannot draw as written, for the corner notice.
+         */
+        get notices(): string[] {
+          return [...self.colorNotices, ...self.valueScaleNotices]
+        },
+      }))
       .volatile(() => {
         return {
           /**

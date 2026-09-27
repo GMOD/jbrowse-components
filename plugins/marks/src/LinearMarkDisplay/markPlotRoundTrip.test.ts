@@ -1,4 +1,5 @@
-import { markPlotProblems, markPlotSettingsWritten } from './markPlot.ts'
+import { markPlotSettingsWritten } from './markPlot.ts'
+import { markProblems } from './markProblems.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MarkPlot } from './markPlot.ts'
@@ -79,7 +80,7 @@ it('a null clears the setting rather than writing an empty one', () => {
 // cannot disagree about what a plot says.
 it('says through the corner notice exactly what the box would say', () => {
   const display = displayOn({ marks: [{ mark: 'bar' }], rows: 'source' })
-  expect(markPlotProblems(display.liftMarkPlot(display.markPlot))).toEqual(
+  expect(markProblems(display.liftMarkPlot(display.markPlot))).toEqual(
     display.configProblems,
   )
   expect(display.configProblems.map(p => p.rule)).toContain(

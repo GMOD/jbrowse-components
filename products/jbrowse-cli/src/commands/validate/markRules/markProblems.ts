@@ -7,6 +7,7 @@ import {
   fieldScaleOf,
   isJexl,
   paintedScale,
+  scaleEndProblems,
 } from './markRuleFacts.ts'
 import { MARK_SPECS, rampResolvesPerRegion, readsValue } from './markSpecs.ts'
 import {
@@ -21,7 +22,7 @@ import {
 } from './markVocabulary.ts'
 import { stepChannels } from './stepChannels.ts'
 
-import type { ColorSlots } from './markRuleFacts.ts'
+import type { ColorSlots, ScaleEnds } from './markRuleFacts.ts'
 import type {
   AggregateOpName,
   LinkShape,
@@ -60,10 +61,10 @@ export const MARK_RULES = {
   'threshold-range': 'warning',
   /** A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. */
   'ramp-domain': 'warning',
-  /** A colour ramp's `domainMax` below its `domainMin`. */
-  'ramp-ends': 'warning',
-  /** A colour ramp's `domainQuantile` outside 0.5 to 1, a percent among them. */
-  'ramp-quantile': 'warning',
+  /** A scale's `domainMax` below its `domainMin`: a colour ramp's, a width's or `scales.y`'s. */
+  'domain-ends': 'warning',
+  /** A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. */
+  'domain-quantile': 'warning',
   /** A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
   'labels-domain': 'warning',
   /** A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. */
@@ -149,6 +150,11 @@ export interface RowsSnapshot {
   field?: unknown
 }
 
+/** The display's `scales` as a config snapshot holds it: the value scale's ends. */
+export interface ScalesSnapshot {
+  y?: ScaleEnds
+}
+
 /**
  * One entry of a `marks` list as a config snapshot holds it, defaults left
  * off. A type alias, which a `Record<string, unknown>` reader takes.
@@ -168,7 +174,7 @@ export type MarkSnapshot = {
     color?: ColorSlots
     shape?: unknown
     text?: string
-    size?: string | { field?: string }
+    size?: string | ({ field?: string } & ScaleEnds)
   }
   transform?: StepSnapshot[]
 }
@@ -526,6 +532,12 @@ function ownProblems(
     )
   }
   problems.push(...shapeLabelProblems(mark.encoding?.shape))
+  const size = mark.encoding?.size
+  if (typeof size === 'object') {
+    for (const { rule, slot, message } of scaleEndProblems(size)) {
+      problems.push(found(rule, `encoding.size.${slot}`, message))
+    }
+  }
   const ramp = rampColor(mark)
   if (ramp) {
     const { domainMin, domainMax } = ramp
@@ -576,24 +588,37 @@ function ownProblems(
 }
 
 /**
- * The problems of a `marks` list as a config snapshot holds it: shorthands
- * lifted, defaults left off. `facet` is the display's facet as written, the
- * field its sections stack by and the steps each section runs; under one, a
- * rowless mark stands on each section's first row by design. `transform` is
- * the display's own steps. Both lists are checked as a mark's are and reported
- * with no mark, under `transform` and `facet.transform`. `rows` is the field
- * each value of which takes one row. An `undefined` mark or step is one the
- * caller could not read, such as one a file's schema refuses: it keeps its
- * index, so the others are reported where they are, and is checked for
- * nothing. A file's own spelling goes through the schema's lift first, which
- * `jbrowse validate` does from the generated manifest.
+ * A plot as a config snapshot holds it, shorthands lifted and defaults left
+ * off: the `marks` list and the display's own settings they read. `facet` is
+ * the field its sections stack by and the steps each section runs; under one,
+ * a rowless mark stands on each section's first row by design. `transform` is
+ * the display's own steps. `rows` is the field each value of which takes one
+ * row, and `scales` the axis every mark's `y` reads through. An `undefined`
+ * mark or step is one the caller could not read, such as one a file's schema
+ * refuses: it keeps its index, so the others are reported where they are, and
+ * is checked for nothing.
  */
-export function markProblems(
-  marks: readonly (MarkSnapshot | undefined)[],
-  facet?: FacetSnapshot,
-  transform: Steps = [],
-  rows?: RowsSnapshot,
-): MarkProblem[] {
+export interface PlotSnapshot {
+  marks: readonly (MarkSnapshot | undefined)[]
+  transform?: Steps
+  facet?: FacetSnapshot
+  rows?: RowsSnapshot
+  scales?: ScalesSnapshot
+}
+
+/**
+ * Every rule a plot breaks. The display's step lists are checked as a mark's
+ * are and reported with no mark, under `transform` and `facet.transform`, and
+ * so are `scales.y`'s ends. A file's own spelling goes through the schema's
+ * lift first, which `jbrowse validate` does from the generated manifest.
+ */
+export function markProblems({
+  marks,
+  facet,
+  transform = [],
+  rows,
+  scales,
+}: PlotSnapshot): MarkProblem[] {
   const faceted = named(facet?.field)
   const drawsRows = named(rows?.field) && !faceted
   const section = readable(facet?.transform ?? [])
@@ -602,6 +627,9 @@ export function markProblems(
   const problems: MarkProblem[] = [
     ...stepProblems(transform),
     ...stepProblems(facet?.transform ?? [], 'facet.transform'),
+    ...scaleEndProblems(scales?.y ?? {}).map(({ rule, slot, message }) =>
+      found(rule, `scales.y.${slot}`, message),
+    ),
     ...(faceted
       ? transform.flatMap((step, i) =>
           step?.type === 'pileup'

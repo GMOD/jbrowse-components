@@ -6,11 +6,11 @@ import {
   liftMarkPlot,
   markPlotChanges,
   markPlotOf,
-  markPlotProblems,
   markPlotSettingsWritten,
   parseMarkPlot,
   summarizeMarkPlot,
 } from './markPlot.ts'
+import { markProblems } from './markProblems.ts'
 
 import type { MarkPlot } from './markPlot.ts'
 
@@ -87,7 +87,7 @@ describe('liftMarkPlot', () => {
     const current = declared({ facet: 'HP' })
     const settings = lift({ rows: 'source' }, current)
     expect(settings.facet).toMatchObject({ field: 'HP' })
-    expect(markPlotProblems(settings).map(p => p.rule)).toContain(
+    expect(markProblems(settings).map(p => p.rule)).toContain(
       'rows-beside-facet',
     )
   })
@@ -98,10 +98,10 @@ describe('liftMarkPlot', () => {
   })
 })
 
-describe('markPlotProblems', () => {
+describe('markProblems over a lifted plot', () => {
   it('reports a requirement as an error', () => {
     const settings = lift({ marks: [{ mark: 'bar' }] })
-    const problems = markPlotProblems(settings)
+    const problems = markProblems(settings)
     expect(problems.map(p => p.rule)).toContain('mark-without-value')
     expect(problems.find(p => p.rule === 'mark-without-value')?.level).toBe(
       'error',
@@ -112,7 +112,7 @@ describe('markPlotProblems', () => {
     const settings = lift({
       marks: [{ mark: 'span', encoding: { y: 'score' } }],
     })
-    const problems = markPlotProblems(settings)
+    const problems = markProblems(settings)
     expect(problems.map(p => p.rule)).toContain('unread-channel')
     expect(problems.every(p => p.level === 'warning')).toBe(true)
   })
@@ -128,7 +128,7 @@ describe('markPlotProblems', () => {
         },
       ],
     })
-    expect(markPlotProblems(settings).map(p => p.rule)).toContain(
+    expect(markProblems(settings).map(p => p.rule)).toContain(
       'empty-zoom-range',
     )
   })
@@ -162,7 +162,7 @@ describe('markPlotChanges', () => {
 
 describe('summarizeMarkPlot', () => {
   it('counts the problems the plot still has beside what it writes', () => {
-    const problems = markPlotProblems(lift({ marks: [{ mark: 'bar' }] }))
+    const problems = markProblems(lift({ marks: [{ mark: 'bar' }] }))
     expect(
       summarizeMarkPlot({ rows: 'a' }, {}, problems, lift({ rows: 'a' })),
     ).toBe('Sets rows. 1 problem')
