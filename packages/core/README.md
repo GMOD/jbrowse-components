@@ -437,6 +437,24 @@ so a declaration spelling it out and one leaving it unset resolve alike.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
 
+### DERIVES_FROM_SEQUENCE
+
+The `adapterCapabilities` entry of an adapter that computes what it answers from
+the assembly's sequence and holds no file of its own — GC content, a motif scan.
+One config on two genomes is then two instances, each primed with its own
+genome's sequence, where a config alone would key one instance and the first
+genome to prime it would answer for both. Every other adapter keys on its config
+alone: a BAM keyed on its reference would parse its index again for each creator
+that passes no sequence, and a synteny adapter is primed from each of its
+assemblies by design.
+
+```js
+// type signature
+'derivesFromSequence'
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/dataAdapterCache.ts)
+
 ### EncodeContext
 
 What surrounds an encode: the jexl instance a `jexl:` channel compiles against —
