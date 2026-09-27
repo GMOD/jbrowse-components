@@ -104,6 +104,22 @@ test('a density mark draws the sidecar in the refused fetch place', () => {
   ])
 })
 
+// the tier draws on the canvas the banner would have replaced, so the display
+// has not finished until it does
+test('a refused display with its density tier standing in is painted once the tier draws', () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS, SIDECAR)
+  const { display, view } = createDisplay()
+  refuse(display, view)
+  display.setCoarseTier([{ displayedRegionIndex: 0, payload: bins() }], {
+    regions: [],
+    key: '',
+  })
+  expect(display.coarseTierStandsIn).toBe(true)
+  expect(display.painted).toBe(false)
+  display.markCanvasDrawn()
+  expect(display.painted).toBe(true)
+})
+
 test('a point density mark draws the sidecar too, its layer carrying the lanes a point reads', () => {
   const { createDisplay } = createTestEnvironment(
     [
