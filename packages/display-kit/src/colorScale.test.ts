@@ -110,9 +110,8 @@ test('a notice line names the setting and the slot', () => {
     colorNotices(
       { field: 'x', scale: 'linear', domain: ['0'] },
       { '*': { scale: 'categorical' } },
-      'fill',
     )[0],
-  ).toMatch(/^fill\.domain: a linear or log scale reads no domain/)
+  ).toMatch(/^color\.domain: a linear or log scale reads no domain/)
 })
 
 test('an identity scale names one colour per label, with or without a field', () => {
@@ -123,4 +122,21 @@ test('an identity scale names one colour per label, with or without a field', ()
     'labels-domain',
   ])
   expect(rules({ labels: ['a'] })).toEqual(['labels-domain'])
+})
+
+test("a preset's domain is the order labels name, and a threshold with no cuts counts none", () => {
+  const presets = {
+    strand: { scale: 'categorical', domain: ['1', '-1'] },
+    band: { scale: 'threshold' },
+  } as const
+  const problems = (color: Record<string, unknown>) =>
+    colorProblems(color, presets).map(p => p.rule)
+  expect(problems({ field: 'strand', labels: ['+', '-'] })).toEqual([])
+  expect(problems({ field: 'strand', labels: ['+', '-', '?'] })).toEqual([
+    'labels-domain',
+  ])
+  expect(problems({ field: 'band', labels: ['a', 'b', 'c'] })).toEqual([])
+  expect(
+    problems({ field: 'band', domain: ['5'], labels: ['a', 'b', 'c'] }),
+  ).toEqual(['labels-domain'])
 })

@@ -193,6 +193,19 @@ describe('a domain that names no level says so', () => {
     expect(notices({ field: 'pairOrientation', domain: ['RR'] })).toEqual([])
     expect(notices({ field: 'tags.HP', domain: ['x'] })).toEqual([])
   })
+
+  test("labels with no domain name the field's own levels", () => {
+    expect(notices({ field: 'strand', labels: ['Fwd', 'Rev'] })).toEqual([])
+    expect(
+      notices({ field: 'insertSize', labels: ['Short', 'Ok', 'Long'] }),
+    ).toEqual([])
+    expect(notices({ field: 'strand', labels: ['a', 'b', 'c'] })).toEqual([
+      'color.labels: labels names one value each, and 3 labels name 2 values: a label past them names nothing',
+    ])
+    expect(
+      notices({ field: 'pairOrientation', domain: ['RR'], labels: ['a', 'b'] }),
+    ).toHaveLength(1)
+  })
 })
 
 test('nothing declared, or a range over an open field, leaves the defaults', () => {

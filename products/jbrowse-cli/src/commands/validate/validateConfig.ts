@@ -563,6 +563,11 @@ function checkColorSlots(
           typeof color.domainMin === 'number' ? color.domainMin : undefined,
         domainMax:
           typeof color.domainMax === 'number' ? color.domainMax : undefined,
+        domainQuantile:
+          typeof color.domainQuantile === 'number'
+            ? color.domainQuantile
+            : undefined,
+        labels: Array.isArray(color.labels) ? color.labels : undefined,
       },
       fieldPresets,
     )) {

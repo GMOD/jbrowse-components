@@ -462,6 +462,42 @@ describe('validateConfig', () => {
       ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
     })
 
+    it('checks labels and domainQuantile as the display does', () => {
+      expect(
+        found(
+          display('LinearAlignmentsDisplay', {
+            field: 'tags.XS',
+            scale: 'linear',
+            domainQuantile: 99,
+          }),
+        ),
+      ).toEqual([`ramp-quantile ${where}.domainQuantile`])
+      expect(
+        found(
+          display('LinearAlignmentsDisplay', {
+            field: 'strand',
+            labels: ['+', '-', '?'],
+          }),
+        ),
+      ).toEqual([`labels-domain ${where}.labels`])
+      expect(
+        found(
+          display('LinearAlignmentsDisplay', {
+            field: 'strand',
+            labels: ['+', '-'],
+          }),
+        ),
+      ).toEqual([])
+      expect(
+        found(
+          display('LinearAlignmentsDisplay', {
+            field: 'insertSize',
+            labels: ['Short', 'Ok', 'Long'],
+          }),
+        ),
+      ).toEqual([])
+    })
+
     it('reads no slot the colour object does not declare', () => {
       expect(
         found({

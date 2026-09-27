@@ -3485,11 +3485,44 @@ export const configManifest: ConfigManifest = {
           ],
           "shorthand": "value",
           "fieldPresets": {
+            "strand": {
+              "scale": "categorical",
+              "domain": [
+                "1",
+                "-1"
+              ]
+            },
+            "mapq": {
+              "scale": "categorical",
+              "domain": [
+                "255"
+              ]
+            },
             "insertSize": {
               "scale": "threshold"
             },
+            "firstOfPairStrand": {
+              "scale": "categorical",
+              "domain": [
+                "1",
+                "-1"
+              ]
+            },
+            "pairOrientation": {
+              "scale": "categorical",
+              "domain": [
+                "LR",
+                "RL",
+                "RR",
+                "LL",
+                ""
+              ]
+            },
             "insertSizeAndOrientation": {
               "scale": "threshold"
+            },
+            "mateRefName": {
+              "scale": "categorical"
             },
             "*": {
               "scale": "categorical"
@@ -3982,11 +4015,44 @@ export const configManifest: ConfigManifest = {
           ],
           "shorthand": "value",
           "fieldPresets": {
+            "strand": {
+              "scale": "categorical",
+              "domain": [
+                "1",
+                "-1"
+              ]
+            },
+            "mapq": {
+              "scale": "categorical",
+              "domain": [
+                "255"
+              ]
+            },
             "insertSize": {
               "scale": "threshold"
             },
+            "firstOfPairStrand": {
+              "scale": "categorical",
+              "domain": [
+                "1",
+                "-1"
+              ]
+            },
+            "pairOrientation": {
+              "scale": "categorical",
+              "domain": [
+                "LR",
+                "RL",
+                "RR",
+                "LL",
+                ""
+              ]
+            },
             "insertSizeAndOrientation": {
               "scale": "threshold"
+            },
+            "mateRefName": {
+              "scale": "categorical"
             },
             "*": {
               "scale": "categorical"

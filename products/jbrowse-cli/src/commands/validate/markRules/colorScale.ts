@@ -156,7 +156,9 @@ function pinned(entry: unknown) {
  * What a colour object's slots say together that no single slot can refuse,
  * since the config editor writes one slot at a time (ADR-133), read with its
  * field's preset under it. A display shows these as a notice and draws what
- * it can.
+ * it can. A threshold naming no cuts leaves its intervals to the display —
+ * the alignments insert-size band samples its cuts, the wiggle plot cuts at
+ * its origin — so its `labels` go uncounted.
  */
 export function colorProblems(
   written: ColorSlots,
@@ -239,7 +241,12 @@ export function colorProblems(
       : scale === 'threshold'
         ? domain.length + 1
         : undefined
-  if (labels.length > 0 && (named === undefined || labels.length > named)) {
+  const cutsFromData = scale === 'threshold' && domain.length === 0
+  if (
+    labels.length > 0 &&
+    !cutsFromData &&
+    (named === undefined || labels.length > named)
+  ) {
     const what =
       scale === 'categorical'
         ? 'value'
@@ -258,13 +265,12 @@ export function colorProblems(
   return problems
 }
 
-/** `colorProblems` as the lines a display's corner notice lists, under the setting's own name. */
+/** `colorProblems` as the lines a display's corner notice lists, under `color`. */
 export function colorNotices(
   color: ColorSlots,
   presets: FieldPresets<string>,
-  name = 'color',
 ): string[] {
   return colorProblems(color, presets).map(
-    ({ slot, message }) => `${name}.${slot}: ${message}`,
+    ({ slot, message }) => `color.${slot}: ${message}`,
   )
 }

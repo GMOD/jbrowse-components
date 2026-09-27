@@ -104,14 +104,6 @@ export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
   return colorEncodingOf(setting, ALIGNMENTS_FIELD_PRESETS)
 }
 
-/** Insert size is a threshold and any other field categorical while `scale` is unset. */
-export const ALIGNMENTS_FIELD_PRESETS = {
-  ...Object.fromEntries(
-    [...INSERT_SIZE_FIELDS].map(f => [f, { scale: 'threshold' as const }]),
-  ),
-  '*': { scale: 'categorical' },
-} satisfies FieldPresets
-
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function alignmentsColorNotices(setting: AlignmentsColorSetting) {
   return [
@@ -252,6 +244,31 @@ const READ_COLOR_LEVELS: Record<
   mateRefName: [NO_VALUE_LEVEL],
   tag: [NO_VALUE_LEVEL],
 }
+
+/**
+ * What each field paints through while `scale` is unset: an insert-size field
+ * a threshold, and any other field categorical, a preset scheme's field over
+ * its own levels, which `range` and `labels` then index while `domain` is
+ * unwritten.
+ */
+export const ALIGNMENTS_FIELD_PRESETS = {
+  ...Object.fromEntries(
+    Object.entries(COLOR_FIELDS).map(([scheme, field]) => [
+      field,
+      INSERT_SIZE_FIELDS.has(field)
+        ? { scale: 'threshold' }
+        : isBakedScheme({ type: scheme as PresetScheme })
+          ? { scale: 'categorical' }
+          : {
+              scale: 'categorical',
+              domain: READ_COLOR_LEVELS[scheme as PresetScheme].map(
+                ([value]) => value,
+              ),
+            },
+    ]),
+  ),
+  '*': { scale: 'categorical' },
+} satisfies FieldPresets
 
 /** The schemes whose levels are their whole vocabulary, so a `domain` names them. */
 const LEVEL_SCHEMES = new Set<ReadColorSchemeType>([
