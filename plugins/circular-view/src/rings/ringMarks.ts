@@ -14,7 +14,7 @@ export interface RingCell {
   display: { paintCount: number; renderNow: () => void }
   paintCount: number
   channels: RingChannels
-  strip: MarkImage | undefined
+  strip: MarkImage
 }
 
 export interface RingFrame extends MarkFrame {

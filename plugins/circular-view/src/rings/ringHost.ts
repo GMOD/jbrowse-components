@@ -38,6 +38,7 @@ export interface RingDisplay {
   type: string
   height: number
   paintCount: number
+  painted: boolean
   renderNow: () => void
   configuration: { displayId: string }
   RenderingComponent: ComponentType<{ model: never }>
@@ -246,9 +247,9 @@ function sameCell(a: RingCell | undefined, b: RingCell | undefined) {
       a.index === b.index &&
       a.display === b.display &&
       a.paintCount === b.paintCount &&
-      a.strip?.image === b.strip?.image &&
-      a.strip?.width === b.strip?.width &&
-      a.strip?.height === b.strip?.height &&
+      a.strip.image === b.strip.image &&
+      a.strip.width === b.strip.width &&
+      a.strip.height === b.strip.height &&
       a.channels.innerPx[0] === b.channels.innerPx[0] &&
       a.channels.outerPx[0] === b.channels.outerPx[0])
   )
@@ -290,6 +291,19 @@ export const RingPass = types
     },
     get canRender() {
       return self.host?.view.initialized ?? false
+    },
+    /**
+     * every display in this group finished without painting a strip, so this
+     * canvas has nothing to draw and is done
+     */
+    get paintInert() {
+      const first = self.group * RING_PASSES
+      return (
+        this.cells.size === 0 &&
+        self
+          .host!.rings.slice(first, first + RING_PASSES)
+          .every(r => r.display.painted)
+      )
     },
   }))
   .actions(self => ({
@@ -550,21 +564,30 @@ export const RingHost = types
     },
     /**
      * One ring's upload payload: its annulus, trimmed to where the display's
-     * canvas sits in its strip, and the strip canvas it samples.
+     * canvas sits in its strip, and the strip canvas it samples. None until
+     * the display has painted that canvas: the ring canvas's first paint is
+     * the one an off-screen circle keeps, so it must not sample a blank strip.
      */
     ringCell(displayId: string): RingCell | undefined {
       const index = this.rings.findIndex(r => r.display.id === displayId)
       const ring = this.rings[index]
-      if (!ring) {
+      const el = self.stripElements.get(displayId)
+      const canvas = el?.querySelector('canvas')
+      if (
+        !ring ||
+        ring.display.paintCount === 0 ||
+        !canvas ||
+        canvas.width === 0 ||
+        canvas.height === 0
+      ) {
         return undefined
       }
       const { display } = ring
-      const el = self.stripElements.get(displayId)
-      const canvas = el?.querySelector('canvas')
-      const strip: MarkImage | undefined =
-        canvas && canvas.width > 0 && canvas.height > 0
-          ? { image: canvas, width: canvas.width, height: canvas.height }
-          : undefined
+      const strip: MarkImage = {
+        image: canvas,
+        width: canvas.width,
+        height: canvas.height,
+      }
       const box = canvasBox(el, canvas)
       const scale = stripPerRingPx(ring)
       const outerPx = ring.outerPx - box.top / scale

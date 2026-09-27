@@ -87,6 +87,7 @@ const display = (id: string, height: number): RingDisplay => ({
   type: 'LinearWiggleDisplay',
   height,
   paintCount: 0,
+  painted: false,
   renderNow() {},
   configuration: { displayId: id },
   RenderingComponent: () => null,

@@ -87,6 +87,8 @@ async function ringTestSession(
     displayPhase: string
     error: unknown
     viewportWithinLoadedData: boolean
+    markCanvasDrawn: () => void
+    setError: (error: unknown) => void
   }
   return { session, view, display }
 }
@@ -213,14 +215,36 @@ test("a ring's track menu is under the view menu's Tracks item", async () => {
   ).toEqual(expect.arrayContaining(['Score']))
 }, 30000)
 
+// the ring canvas's first paint is the one an off-screen circle keeps
+test('a ring samples its strip only once its display has painted it', async () => {
+  const { view, display } = await wiggleSession()
+  const host = view.ringHost
+  host.setStripElement(
+    display.id,
+    fakeStrip(Math.round(host.width), display.height).strip,
+  )
+  expect(host.ringCells).toEqual([])
+  display.markCanvasDrawn()
+  expect(host.ringCells).toHaveLength(1)
+}, 30000)
+
+test('a ring canvas whose displays failed before painting has finished', async () => {
+  const { view, display } = await wiggleSession()
+  const [pass] = view.ringHost.passes
+  expect(pass!.painted).toBe(false)
+  display.setError(new Error('boom'))
+  expect(pass!.painted).toBe(true)
+}, 30000)
+
 test('a point on the wiggle ring unwarps to the strip column of its base', async () => {
   const { view, display } = await wiggleSession()
   const host = view.ringHost
   const [ring] = host.rings
   const { strip, canvas } = fakeStrip(Math.round(host.width), display.height)
   host.setStripElement(display.id, strip)
+  display.markCanvasDrawn()
   const [cell] = host.ringCells
-  expect(cell!.strip?.image).toBe(canvas)
+  expect(cell!.strip.image).toBe(canvas)
   expect(cell!.channels.outerPx[0]).toBe(Math.fround(ring!.outerPx))
 
   // ctgB's midpoint, at the ring's middle, in the screen frame
@@ -277,6 +301,7 @@ test("a ring repainting or resizing leaves the other ring's cell as it was", asy
       d.id,
       fakeStrip(Math.round(host.width), d.height).strip,
     )
+    d.markCanvasDrawn()
   }
   const cells: (typeof host.ringCells)[] = []
   const dispose = autorun(() => {
@@ -290,7 +315,7 @@ test("a ring repainting or resizing leaves the other ring's cell as it was", asy
   const [firstAfter, otherAfter] = cells.at(-1)!
   expect(firstAfter === first).toBe(true)
   expect(otherAfter === other).toBe(false)
-  expect(otherAfter!.strip?.image === other!.strip?.image).toBe(true)
+  expect(otherAfter!.strip.image === other!.strip.image).toBe(true)
 
   second.setHeight(30)
 
