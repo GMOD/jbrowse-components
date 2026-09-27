@@ -85,6 +85,16 @@ feature afterwards is worth doing when it tells the reader a capability exists,
 and so is naming the outside tool the page integrates with, because which of the
 two computed the numbers is itself the methodological point.
 
+**Tell the reader what we are doing, and how.** The opening names the task and,
+where the page visits several loci, lists them: "at CFH, find haplotypes missing
+two genes". Each section is the instruction, then its figure. Readers skip prose
+and copy commands, so cut content rather than compress it, and let the figures
+and fences carry the page. `pangenome_hprc_part3` is the page to copy.
+
+**Commands a reader can run on their own data.** Placeholder filenames
+(`graph.gbz.db`, `genes.fa`) over accession-laden URLs, one command per fence,
+one line of prose above it saying what it produces.
+
 ## Commands
 
 These pages are about _using JBrowse_, not bioinformatics scripting, with one
