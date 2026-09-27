@@ -81,7 +81,7 @@ import {
   nudgeDecision,
 } from './laneDecision.ts'
 import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
-import { laneHeaderRows } from './laneHeader.ts'
+import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
   laneMapAt,
@@ -224,6 +224,11 @@ function drawnRect(
 function ribbonChannelNames(adapterConfig: Record<string, unknown>) {
   return [...PRESET_ATTRIBUTES, ...declaredAttributes(adapterConfig)]
 }
+
+// the widest a lane header's scale reads, so the key clears the column
+// wherever a pan or zoom takes the spans
+const SCALE_COLUMN_PX =
+  Math.ceil(measureText('8.88Mbp  88.8×', LABEL_FONT_SIZE)) + 4
 
 /**
  * #stateModel MultiWaySyntenyDisplay
@@ -2652,6 +2657,13 @@ export function stateModelFactory(
           ),
         ]
         return scales.filter(scale => !colorScaleIsEmpty(scale))
+      },
+      /**
+       * #getter
+       * `LegendMixin`'s hook: the key sits left of the lane headers' scales
+       */
+      get legendRight(): number {
+        return SCALE_COLUMN_PX
       },
     }))
     .views(self => ({

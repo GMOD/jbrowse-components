@@ -1,4 +1,8 @@
-import { FLOATING_LEGEND_TOP_PX, FloatingLegend } from '@jbrowse/display-ui'
+import {
+  FLOATING_LEGEND_RIGHT_PX,
+  FLOATING_LEGEND_TOP_PX,
+  FloatingLegend,
+} from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import { axisCaptionsReservedPx, isAxisHost } from './axisHost.ts'
@@ -17,13 +21,15 @@ const ChromeLegend = observer(function ChromeLegend({
 }: {
   model: LegendHost
 }) {
-  const { showLegend, legendSpec, legendTop, legendMaxWidth } = model
+  const { showLegend, legendSpec, legendTop, legendRight, legendMaxWidth } =
+    model
   const captions = isAxisHost(model) ? axisCaptionsReservedPx(model) : 0
   return showLegend ? (
     <FloatingLegend
       sections={legendSpec.sections}
       title={legendSpec.title}
       top={FLOATING_LEGEND_TOP_PX + (legendTop ?? 0) + captions}
+      right={FLOATING_LEGEND_RIGHT_PX + (legendRight ?? 0)}
       maxWidth={legendMaxWidth}
       onDismiss={() => {
         model.setShowLegend(false)

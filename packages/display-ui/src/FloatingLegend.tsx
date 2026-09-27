@@ -12,7 +12,10 @@ import {
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { FLOATING_LEGEND_TOP_PX } from './floatingLegendTop.ts'
+import {
+  FLOATING_LEGEND_RIGHT_PX,
+  FLOATING_LEGEND_TOP_PX,
+} from './floatingLegendTop.ts'
 import Tooltip from './tooltip/Tooltip.tsx'
 import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 
@@ -25,7 +28,6 @@ import type {
 const useStyles = makeStyles()(theme => ({
   legend: {
     position: 'absolute',
-    right: 10,
     background: theme.palette.background.paper,
     // A hairline edge, because `background.paper` on a track whose canvas is
     // also paper-white is no edge at all: the key read as loose text floating
@@ -369,6 +371,7 @@ const FloatingLegend = observer(function FloatingLegend({
   maxItems = DEFAULT_MAX_ITEMS,
   maxWidth = DEFAULT_MAX_WIDTH,
   top = FLOATING_LEGEND_TOP_PX,
+  right = FLOATING_LEGEND_RIGHT_PX,
 }: {
   sections: readonly LegendSection[]
   title?: string
@@ -383,10 +386,11 @@ const FloatingLegend = observer(function FloatingLegend({
   // split-read rows have to say which kind of read they classify); leave it for
   // everything else, and let the ellipsis be the signal that a label is too long.
   maxWidth?: number
-  // Distance from the top of the display box. `ChromeLegend` adds a display's
-  // `legendTop` clearance to the default for a display that already draws
-  // something in that corner.
+  // Distances from the top and right of the display box. `ChromeLegend` adds a
+  // display's `legendTop` and `legendRight` clearances to the defaults for a
+  // display that already draws something in that corner.
   top?: number
+  right?: number
 }) {
   const { classes } = useStyles()
 
@@ -402,7 +406,12 @@ const FloatingLegend = observer(function FloatingLegend({
     <TrackOverlayPortal>
       <div
         className={cx(classes.legend, onDismiss && classes.withClose)}
-        style={{ top, maxWidth, maxHeight: `calc(100% - ${top + 4}px)` }}
+        style={{
+          top,
+          right,
+          maxWidth,
+          maxHeight: `calc(100% - ${top + 4}px)`,
+        }}
         // Same doctrine as `plainChromeOverlays`' testids: a stable hook for the
         // harnesses that have to find this box. The build-your-own site's smoke
         // census needs it to prove the zero it reports for a page showing a

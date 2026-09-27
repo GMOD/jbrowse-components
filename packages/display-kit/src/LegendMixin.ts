@@ -88,6 +88,15 @@ export default function LegendMixin() {
         return 0
       },
       /**
+       * #getter
+       * Overridable hook (default 0): px the on-screen key is pushed left from
+       * its own inset, for a display that draws a column of text down its
+       * right edge — the multi-way lanes' scales. Not read by the export.
+       */
+      get legendRight(): number {
+        return 0
+      },
+      /**
        * #method
        * Overridable hook (default 0): the width the LGV export reserves beside
        * the plot for this legend. A display whose plot fills its band — the

@@ -50,7 +50,10 @@ export type {
 // a display draws that is not its data. `@jbrowse/plugin-linear-genome-view`
 // re-exports it, so its published name is unchanged.
 export { default as FloatingLegend } from './FloatingLegend.tsx'
-export { FLOATING_LEGEND_TOP_PX } from './floatingLegendTop.ts'
+export {
+  FLOATING_LEGEND_RIGHT_PX,
+  FLOATING_LEGEND_TOP_PX,
+} from './floatingLegendTop.ts'
 export type { LegendItem, LegendSection } from './FloatingLegend.tsx'
 
 // The <svg> counterpart of that legend, for a display whose key is drawn by an
