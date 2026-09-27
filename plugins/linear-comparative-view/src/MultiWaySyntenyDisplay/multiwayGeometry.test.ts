@@ -515,6 +515,84 @@ describe('the ribbons', () => {
     expect(Math.abs(data.bp3[0]! - data.bp4[1]!)).toBe(16)
   })
 
+  // Peach's reach is Pp1:500-2500 and the record's mate is Pp1:300-1100, so the
+  // tile reaching Pp1:300 is cut at Pp1:500 (x=-400, or 1200 flipped). A
+  // reverse record walks the mate high end first.
+  test.each([
+    [
+      'forward',
+      1,
+      false,
+      [[80, 720, -400, 80]],
+      [
+        [80, 400, -400, -240],
+        [400, 720, -240, 80],
+      ],
+    ],
+    [
+      'reverse',
+      -1,
+      false,
+      [[80, 720, 80, -400]],
+      [
+        [80, 400, 80, -240],
+        [400, 720, -240, -400],
+      ],
+    ],
+    [
+      'reverse, flipped',
+      -1,
+      true,
+      [[80, 720, 720, 1200]],
+      [
+        [80, 400, 720, 1040],
+        [400, 720, 1040, 1200],
+      ],
+    ],
+  ])(
+    'a %s record crossing the lane’s reach edge clips its tiles there',
+    (_, strand, flipped, whole, split) => {
+      const tiles = (...cigar: [number, number][]) => {
+        const record = new SimpleFeature({
+          uniqueId: 'r1',
+          refName: 'chr1',
+          start: 100,
+          end: 900,
+          strand,
+          assemblyName: 'grape',
+          mate: {
+            assemblyName: 'peach',
+            refName: 'Pp1',
+            start: 300,
+            end: 1100,
+          },
+        })
+        const data = ribbonData(
+          buildRibbonGeometry({
+            stack: stack({
+              features: [record],
+              peach: { ...peachFrame, flipped },
+            }),
+            anchorOps: new Map([['r1', ops(...cigar)]]),
+            laneLinks: undefined,
+            ribbonColor: 'grey',
+            drawCurves: false,
+            bridgeSkippedLanes: false,
+          }).cells,
+          'ribbons:0',
+        )
+        return Array.from({ length: data.instanceCount }, (_, i) => [
+          data.bp1[i],
+          data.bp2[i],
+          data.bp4[i],
+          data.bp3[i],
+        ])
+      }
+      expect(tiles([800, CIGAR_M])).toEqual(whole)
+      expect(tiles([400, CIGAR_M], [400, CIGAR_M])).toEqual(split)
+    },
+  )
+
   // g2's record is reverse against the anchor, so its ribbon takes the reverse
   // color; g1 the forward one
   test('color by strand reads the record’s strand, at the slot color’s alpha', () => {

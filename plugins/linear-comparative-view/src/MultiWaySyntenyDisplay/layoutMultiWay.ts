@@ -388,7 +388,8 @@ export function rowFrameX(frame: RowFrame, bp: number, width: number) {
  * the ribbon keeping it sweeps across everything.
  *
  * Clipping in bp keeps the pair in the interval's own order and keeps a flipped
- * lane's mirroring intact, since `rowFrameX` is monotonic either way.
+ * lane's mirroring intact, since `rowFrameX` is monotonic either way. A
+ * reverse-strand walk hands the pair high end first.
  */
 export function frameSpan(
   frame: RowFrame,
@@ -397,7 +398,7 @@ export function frameSpan(
   width: number,
 ): Span | undefined {
   const { min, max } = frameReach(frame)
-  return doesIntersect2(min, max, start, end)
+  return doesIntersect2(min, max, Math.min(start, end), Math.max(start, end))
     ? [
         rowFrameX(frame, clamp(start, min, max), width),
         rowFrameX(frame, clamp(end, min, max), width),
