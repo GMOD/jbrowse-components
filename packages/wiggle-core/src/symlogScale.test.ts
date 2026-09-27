@@ -17,6 +17,7 @@ describe('a domain that reaches zero', () => {
   test('log floors it away, symlog keeps it', () => {
     expect(
       getNiceDomain({
+        zero: true,
         scaleType: 'log',
         domain: [0, 1000],
         bounds: noBounds,
@@ -24,6 +25,7 @@ describe('a domain that reaches zero', () => {
     ).toBe(1)
     expect(
       getNiceDomain({
+        zero: true,
         scaleType: 'symlog',
         domain: [0, 1000],
         bounds: noBounds,
@@ -45,6 +47,7 @@ describe('a domain that reaches zero', () => {
 describe('a domain that crosses zero', () => {
   test('log cannot express one, symlog puts 0 up the plot', () => {
     const domain = getNiceDomain({
+      zero: true,
       scaleType: 'symlog',
       domain: [-40, 60],
       bounds: noBounds,

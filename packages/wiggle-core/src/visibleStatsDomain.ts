@@ -59,6 +59,8 @@ export interface VisibleStatsDomainSpec<
   /** `ScoreScaleMixin`'s resolved bounds; `undefined` autoscales that end */
   bounds: readonly [number | undefined, number | undefined]
   scaleType: string
+  /** whether a linear or symlog domain reaches 0 (`scales.y.zero`) */
+  zero: boolean
 }
 
 /**
@@ -104,8 +106,11 @@ export function visibleStatsRange<Payload, Item, Stats>({
 export function visibleStatsDomain<Payload, Item, Stats>({
   bounds,
   scaleType,
+  zero,
   ...spec
 }: VisibleStatsDomainSpec<Payload, Item, Stats>) {
   const range = visibleStatsRange(spec)
-  return range ? getNiceDomain({ domain: range, bounds, scaleType }) : undefined
+  return range
+    ? getNiceDomain({ domain: range, bounds, scaleType, zero })
+    : undefined
 }

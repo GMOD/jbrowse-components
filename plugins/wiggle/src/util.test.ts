@@ -26,7 +26,7 @@ test('test minScore', () => {
   const scaleType = 'linear'
   const domain = [0, 100] as const
   const bounds = [50, undefined] as const
-  const ret = getNiceDomain({ scaleType, domain, bounds })
+  const ret = getNiceDomain({ zero: true, scaleType, domain, bounds })
   expect(ret).toEqual([50, 100])
 })
 
@@ -34,7 +34,7 @@ test('test min and max score', () => {
   const scaleType = 'linear'
   const domain = [1, 100] as const
   const bounds = [undefined, 70] as const
-  const ret = getNiceDomain({ scaleType, domain, bounds })
+  const ret = getNiceDomain({ zero: true, scaleType, domain, bounds })
   expect(ret).toEqual([0, 70])
 })
 
@@ -124,7 +124,12 @@ describe('computeAutoscaleDomain', () => {
     expect(result).toEqual([2, 8])
     const bounds = [undefined, undefined] as const
     expect(
-      getNiceDomain({ scaleType: 'linear', domain: result, bounds })[0],
+      getNiceDomain({
+        zero: true,
+        scaleType: 'linear',
+        domain: result,
+        bounds,
+      })[0],
     ).toBe(0)
   })
 

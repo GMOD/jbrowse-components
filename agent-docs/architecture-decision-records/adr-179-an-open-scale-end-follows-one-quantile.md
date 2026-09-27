@@ -82,9 +82,11 @@ data with both signs clips each sign as before, and data with one sign clips
 both of its ends. Before, one-signed data took 0 as its near end, so a colour
 ramp over MAPQ, GC or QUAL at 0.99 ran from 0, a log ramp over values below 1
 painted one colour, and 1 to 0.999 jumped the bottom to 0. A linear or symlog
-axis still starts at 0, since `getNiceDomain` adds it, and the coverage band
-and Hi-C pin it themselves, so no default picture moves. Vega-Lite keeps 0 on
-its own `zero` property, on for x and y and off for colour. seaborn's
+axis still starts at 0, since `getNiceDomain` adds it (`scales.y.zero` since
+[ADR-182](adr-182-an-axis-reaches-0-unless-its-scale-says-otherwise.md)), and
+the coverage band and Hi-C pin it themselves, so no default picture moves.
+Vega-Lite keeps 0 on its own `zero` property, on for x and y and off for
+colour. seaborn's
 two-tailed quantile over all values was rejected: it erased a 0.5% deletion
 tail in the probe. A quantile under 0.5 reads as 0.5, where the ends meet.
 Colin delegated the call on 2026-09-27.

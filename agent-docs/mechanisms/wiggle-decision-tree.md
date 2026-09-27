@@ -32,7 +32,8 @@ plugins draw a wiggle-shaped axis against it.
 - `domainQuantile` at 1 takes the visible extremes; below it each end is
   clipped to that quantile of the values on its side of 0 (`quantileExtent`,
   the rule a colour ramp's `domainQuantile` reads too), and a linear or symlog
-  axis then reaches 0.
+  axis then reaches 0 while `scales.y.zero` is on; a density row, which has
+  no axis, spans its values either way.
 - The domain is then widened to reach any score a rule is drawn at, and clamped
   by `scales.y`'s `domainMin` and `domainMax`. **A set bound wins; an unset one
   autoscales that end.**

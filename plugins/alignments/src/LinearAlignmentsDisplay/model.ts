@@ -1056,6 +1056,7 @@ export default function stateModelFactory(
                     domain: [0, this.densityDepthMax],
                     bounds: [0, undefined],
                     scaleType: self.scaleType,
+                    zero: true,
                   })
                 : undefined
               : self.autoscaledDomain

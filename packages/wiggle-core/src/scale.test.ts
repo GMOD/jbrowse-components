@@ -9,6 +9,7 @@ function isFiniteDomain([min, max]: [number, number]) {
 test('linear domain includes the zero baseline', () => {
   expect(
     getNiceDomain({
+      zero: true,
       scaleType: 'linear',
       domain: [5, 100],
       bounds: noBounds,
@@ -16,6 +17,7 @@ test('linear domain includes the zero baseline', () => {
   ).toBe(0)
   expect(
     getNiceDomain({
+      zero: true,
       scaleType: 'linear',
       domain: [-100, -5],
       bounds: noBounds,
@@ -23,9 +25,82 @@ test('linear domain includes the zero baseline', () => {
   ).toBe(0)
 })
 
+// `scales.y.zero` off: the axis spans the values, and a log axis, which has
+// no 0 to reach, is unchanged either way.
+test('zero off spans the data on a linear or symlog axis', () => {
+  expect(
+    getNiceDomain({
+      zero: false,
+      scaleType: 'linear',
+      domain: [32, 61],
+      bounds: noBounds,
+    }),
+  ).toEqual([32, 62])
+  expect(
+    getNiceDomain({
+      zero: false,
+      scaleType: 'symlog',
+      domain: [-61, -32],
+      bounds: noBounds,
+    }),
+  ).toEqual([-62, -32])
+  for (const zero of [true, false]) {
+    expect(
+      getNiceDomain({
+        zero,
+        scaleType: 'log',
+        domain: [5, 100],
+        bounds: noBounds,
+      }),
+    ).toEqual([1, 128])
+  }
+})
+
+test('zero off still keeps a pinned end exactly', () => {
+  expect(
+    getNiceDomain({
+      zero: false,
+      scaleType: 'linear',
+      domain: [32, 61],
+      bounds: [0, undefined],
+    }),
+  ).toEqual([0, 65])
+})
+
+// A flat window is one the zero rule used to save: [30, 30] reached down to
+// [0, 30]. Without it the domain has to widen on its own, or every bar in a
+// segmented copy-number window draws at 0 height.
+test('one value in view widens the free end', () => {
+  expect(
+    getNiceDomain({
+      zero: false,
+      scaleType: 'linear',
+      domain: [30, 30],
+      bounds: noBounds,
+    }),
+  ).toEqual([30, 60])
+  expect(
+    getNiceDomain({
+      zero: false,
+      scaleType: 'linear',
+      domain: [30, 30],
+      bounds: [undefined, 30],
+    }),
+  ).toEqual([0, 30])
+  expect(
+    getNiceDomain({
+      zero: true,
+      scaleType: 'linear',
+      domain: [0, 0],
+      bounds: noBounds,
+    }),
+  ).toEqual([0, 1])
+})
+
 test('linear explicit max bound caps the domain', () => {
   expect(
     getNiceDomain({
+      zero: true,
       scaleType: 'linear',
       domain: [5, 100],
       bounds: [undefined, 50],
@@ -35,6 +110,7 @@ test('linear explicit max bound caps the domain', () => {
 
 test('log positive data floors at the origin', () => {
   const [min, max] = getNiceDomain({
+    zero: true,
     scaleType: 'log',
     domain: [50, 100],
     bounds: noBounds,
@@ -45,6 +121,7 @@ test('log positive data floors at the origin', () => {
 
 test('log data crossing zero yields a valid positive domain (no NaN)', () => {
   const domain = getNiceDomain({
+    zero: true,
     scaleType: 'log',
     domain: [-2, 100],
     bounds: noBounds,
@@ -56,6 +133,7 @@ test('log data crossing zero yields a valid positive domain (no NaN)', () => {
 
 test('log data entirely in (0,1) stays valid', () => {
   const domain = getNiceDomain({
+    zero: true,
     scaleType: 'log',
     domain: [0, 0.5],
     bounds: noBounds,
@@ -67,6 +145,7 @@ test('log data entirely in (0,1) stays valid', () => {
 
 test('log all-negative data degrades to a valid domain', () => {
   const domain = getNiceDomain({
+    zero: true,
     scaleType: 'log',
     domain: [-5, -2],
     bounds: noBounds,
@@ -81,6 +160,7 @@ test('log all-negative data degrades to a valid domain', () => {
 // to NaN ticks over a blank plot.
 test('log explicit non-positive minScore bound is floored to stay valid', () => {
   const domain = getNiceDomain({
+    zero: true,
     scaleType: 'log',
     domain: [1, 100],
     bounds: [0, 100],
@@ -102,15 +182,21 @@ describe('an explicitly bounded end keeps its exact value', () => {
   ] as [string, [number, number]][])(
     '%s bounds %j survive nicing',
     (scaleType, bounds) => {
-      expect(getNiceDomain({ scaleType, domain: [5, 90], bounds })).toEqual(
-        bounds,
-      )
+      expect(
+        getNiceDomain({
+          zero: true,
+          scaleType,
+          domain: [5, 90],
+          bounds,
+        }),
+      ).toEqual(bounds)
     },
   )
 
   test('an unbounded end is still niced', () => {
     expect(
       getNiceDomain({
+        zero: true,
         scaleType: 'linear',
         domain: [3, 97],
         bounds: [3, undefined],

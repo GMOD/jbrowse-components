@@ -116,13 +116,16 @@ export function getScale({
 
 /**
  * #api
- * Rounds a domain to "nice" endpoints, clamped to the origin. An end given an
- * explicit `bounds` value keeps that value exactly — only an autoscaled end is
- * rounded. A log scale's floor still outranks a bound it cannot hold.
+ * Rounds a domain to "nice" endpoints. `zero` reaches a linear or symlog
+ * domain to 0 (`scales.y.zero`, ADR-182); a log domain has no 0 and floors at
+ * 1 instead. An end given an explicit `bounds` value keeps that value exactly
+ * — only an autoscaled end is rounded. A log scale's floor still outranks a
+ * bound it cannot hold.
  *
- * The result never descends: a bound that would put `min` above `max` widens
- * the other end instead, so no consumer has to guess what a backwards domain
- * means.
+ * The result never descends and never collapses: a bound that would put `min`
+ * above `max` widens the other end instead, and one value in view widens
+ * away from itself, so no consumer has to guess what a backwards or a flat
+ * domain means.
  */
 // No `symlogConstant` parameter: `niceDomain` puts symlog through d3's linear
 // path, which never reads the constant, so one passed here only looked like it
@@ -131,18 +134,20 @@ export function getNiceDomain({
   scaleType,
   domain,
   bounds,
+  zero,
 }: {
   scaleType: string
   domain: readonly [number, number]
   bounds: readonly [number | undefined, number | undefined]
+  zero: boolean
 }) {
   const [minScore, maxScore] = bounds
   let [min, max] = domain
 
   // symlog joins linear here rather than log: it is defined at 0, so the
-  // domain should reach the baseline its bars grow from instead of being
+  // domain can reach the baseline its bars grow from instead of being
   // floored off it the way a log domain has to be.
-  if (scaleType === 'linear' || scaleType === 'symlog') {
+  if (zero && (scaleType === 'linear' || scaleType === 'symlog')) {
     if (max < 0) {
       max = 0
     }
@@ -188,6 +193,16 @@ export function getNiceDomain({
       min = max * 2
     } else {
       ;[min, max] = [max, min]
+    }
+  } else if (max === min) {
+    // One value in view, which a domain reaching 0 never collapses on unless
+    // that value is 0. Flat, the normalizer steps at the value and every bar
+    // draws at 0 height; widen the free end by the value's own size.
+    const pad = Math.abs(min) || 1
+    if (maxScore === undefined) {
+      max += pad
+    } else if (minScore === undefined) {
+      min -= pad
     }
   }
 

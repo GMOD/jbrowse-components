@@ -108,17 +108,20 @@ for `'min'`/`'max'`, otherwise the average score.
 
 ## getNiceDomain
 
-Rounds a domain to "nice" endpoints, clamped to the origin. An end given an
-explicit `bounds` value keeps that value exactly — only an autoscaled end is
-rounded. A log scale's floor still outranks a bound it cannot hold.
+Rounds a domain to "nice" endpoints. `zero` reaches a linear or symlog
+domain to 0 (`scales.y.zero`, ADR-182); a log domain has no 0 and floors at
+1 instead. An end given an explicit `bounds` value keeps that value exactly
+— only an autoscaled end is rounded. A log scale's floor still outranks a
+bound it cannot hold.
 
-The result never descends: a bound that would put `min` above `max` widens
-the other end instead, so no consumer has to guess what a backwards domain
-means.
+The result never descends and never collapses: a bound that would put `min`
+above `max` widens the other end instead, and one value in view widens
+away from itself, so no consumer has to guess what a backwards or a flat
+domain means.
 
 ```js
 // type signature
-({ scaleType, domain, bounds, }: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; }) => [number, number]
+({…}: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; zero: boolean; }) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
@@ -212,7 +215,7 @@ domain of a display whose range is its own alone.
 
 ```js
 // type signature
-<Payload, Item, Stats>({ bounds, scaleType, ...spec }: VisibleStatsDomainSpec<Payload, Item, Stats>) => [number, number] | undefined
+<Payload, Item, Stats>({ bounds, scaleType, zero, ...spec }: VisibleStatsDomainSpec<Payload, Item, Stats>) => [number, number] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/visibleStatsDomain.ts)

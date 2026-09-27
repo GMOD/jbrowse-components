@@ -118,7 +118,7 @@ describe('a minScore bound', () => {
     // autoscaled TOP rather than handing anything a descending domain — which
     // the two normalizers used to answer in opposite directions, so the same
     // band drew empty on the GPU and solid full-height in an SVG export.
-    const domain = getNiceDomain({
+    const domain = getNiceDomain({ zero: true,
       scaleType: 'linear',
       domain: [0, 60],
       bounds: [200, undefined],

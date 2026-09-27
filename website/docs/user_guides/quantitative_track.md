@@ -39,6 +39,16 @@ the default, each sign is clipped at the 99th percentile of what is in view;
 unticked, the axis runs to the plain min and max. A config takes any quantile,
 `0.95` for a harder clip.
 
+### Start axis at 0
+
+A linear or symlog Y axis reaches 0 whatever the region in view holds, so a bar
+always shows its whole height and a GC track reads from 0 where the region holds
+30 to 60%. This checkbox (the display's
+[`scales.y.zero`](/docs/config/valuescale/#slot-scalesyzero) slot) turns that
+off, and the axis then spans the values in view. A pinned end from **Set min/max
+score** is unmoved either way, a log axis has no 0, and Density mode, which maps
+score to colour, spans its values whichever way the box is ticked.
+
 ### Summary score mode
 
 Zoomed out, a BigWig serves precomputed summary bins, and **Summary score mode**

@@ -1,39 +1,14 @@
 ---
 name: grammar-next-steps
-description: What the grammar thread does next as of 2026-09-27 - Colin's open call on where a linear y axis gets its 0, a reviewed and ranked list of the candidates (the clipped-bar marker first, wiggle onto the bar and point shapes second), the corrections that review made to older claims, and two leftovers of the domainQuantile call. Read before picking up grammar work or touching getNiceDomain.
+description: What the grammar thread does next as of 2026-09-27 - a reviewed and ranked list of the candidates (the clipped-bar marker first, wiggle onto the bar and point shapes second), the corrections that review made to older claims, and one leftover of the domainQuantile call. Read before picking up grammar work.
 ---
 
 # Grammar thread: next steps
 
-ADR-181 (a centred point and a `rule` mark) and ADR-179's 2026-09-27 amendment
-(each quantile end clips its own tail) landed that day. Figure reshoots wait on
-ada and are listed in [scales-and-colour-keys](scales-and-colour-keys.md).
-
-## Colin's call: where a linear y axis gets its 0
-
-Every linear or symlog y axis starts at 0 today, whatever is drawn, because
-`getNiceDomain` (`packages/wiggle-core/src/scale.ts`) lowers a positive minimum
-to 0. So a plot of points whose values all sit between 30 and 60 draws 0 to 60,
-its bottom half empty. The mark display already states the rule for bars
-explicitly (its domain widens to `origin` only when a bar draws, `autoscaleRange`
-in `plugins/marks/src/LinearMarkDisplay/model.ts`), and the hidden line in
-`getNiceDomain` overrides it for every other mark.
-
-The three answers put to Colin, who asked to clarify before choosing:
-
-1. **Bars reach 0, the rest span their data** (recommended). ggplot2's rule: a
-   bar reaches its baseline because the baseline is part of the bar, so wiggle's
-   bar mode, the coverage band and a `bar` mark keep 0; points, lines and rules
-   span their data. `domainMin: 0` forces 0 for anyone who wants it, so nothing
-   new is added. Wiggle line and scatter plots and point-only mark plots over
-   data far from 0 change (GC as a line: 30-60% rather than 0-60%); Manhattan
-   barely moves, since p near 1 puts values near 0.
-2. **Every axis starts at 0**, IGV's convention for signal tracks, with the rule
-   moved out of `getNiceDomain` into one named, documented place. No picture
-   changes.
-3. **A `scales.y.zero` switch**, Vega-Lite's: on by default where a bar draws,
-   off otherwise, visible in the config and Edit plot. The most explicit, and
-   one more setting.
+ADR-181 (a centred point and a `rule` mark), ADR-179's 2026-09-27 amendment
+(each quantile end clips its own tail) and ADR-182 (`scales.y.zero`, the axis's
+0 as a slot and a Score-menu tick) landed that day. Figure reshoots wait on ada
+and are listed in [scales-and-colour-keys](scales-and-colour-keys.md).
 
 ## Next, ranked
 
@@ -75,13 +50,9 @@ probes come from that review and nobody has re-measured them.
 6. **review's `domainQuantile` range check and the Clip outliers re-tick**,
    under an hour each; nothing reaches either by default.
 
-## Leftovers of the domainQuantile call
+## Leftover of the domainQuantile call
 
-Both leftovers surfaced in the probe behind the 2026-09-27 call.
-
-- **Wiggle's density mode colours through the niced y domain**, so a GC BigWig
-  drawn as a heatmap spans 0 to its top at any quantile: an axis's 0 applied to
-  a colour. The axis call above decides it too.
-- **Ties fill a nearest-rank quantile**: at 0.95 a segmented copy-number track
-  pins 99.5% of its values to one colour, because one value holds the rank.
-  Unrelated to the zero anchor.
+**Ties fill a nearest-rank quantile**: at 0.95 a segmented copy-number track
+pins 99.5% of its values to one colour, because one value holds the rank. It
+surfaced in the probe behind the 2026-09-27 amendment and nothing decides it
+yet.

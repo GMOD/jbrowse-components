@@ -12,7 +12,7 @@ import { autoscaleGroupMembers, autoscalePeers } from './autoscaleGroup.ts'
 import { VALUE_SCALE_TYPES } from './valueScaleConfigSchema.ts'
 
 import type { AutoscalePeer } from './autoscaleGroup.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { CheckboxMenuItem, MenuItem } from '@jbrowse/core/ui'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -34,6 +34,7 @@ const SetScoreRulesDialog = lazy(() => import('./SetScoreRulesDialog.tsx'))
 // `ScoreAxisMixin`.
 export interface ScoreScaleModel extends IStateTreeNode {
   scaleType: string
+  scaleZero: boolean
   domainQuantile: number
   clipQuantile: number
   manualMinScore: number | undefined
@@ -43,6 +44,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   hasManualScoreBounds: boolean
   autoscaledDomain: [number, number] | undefined
   setScaleType: (v: string) => void
+  setScaleZero: (zero: boolean) => void
   setMinScore: (n?: number) => void
   setMaxScore: (n?: number) => void
   setDomainQuantile: (quantile: number) => void
@@ -102,6 +104,26 @@ export function makeClipOutliersItem(self: {
     },
     {
       helpText: `An unpinned end follows the ${percent}th percentile of each sign rather than the extremes, so one spike no longer flattens the rest.`,
+    },
+  )
+}
+
+// Quoted by the docs' click paths, so one literal string.
+export const AXIS_ZERO_LABEL = 'Start axis at 0'
+
+export function makeAxisZeroItem(self: {
+  scaleZero: boolean
+  setScaleZero: (zero: boolean) => void
+}): CheckboxMenuItem {
+  return toggleItem(
+    AXIS_ZERO_LABEL,
+    self.scaleZero,
+    zero => {
+      self.setScaleZero(zero)
+    },
+    {
+      helpText:
+        'A linear or symlog axis reaches 0 whatever the values in view span. Off, it spans those values alone.',
     },
   )
 }
@@ -192,6 +214,12 @@ function drawsScoreRules<T extends IStateTreeNode>(
   )
 }
 
+// A density plot maps its score to colour and rules no band, so its domain
+// spans the values whatever `zero` says; the row is offered with the axis.
+function rulesABand(self: Partial<ScoreRulesModel>) {
+  return self.scoreRulesDrawn === true
+}
+
 // The count is in the label, as the min/max row carries its bounds: a dashed
 // line across a plot means nothing until the reader knows it was put there.
 export function makeSetScoreRulesItem(
@@ -229,6 +257,7 @@ export function makeScoreSubMenu(
       ...leadingItems,
       makeScaleTypeSubMenu(self),
       makeClipOutliersItem(self),
+      ...(rulesABand(self) ? [makeAxisZeroItem(self)] : []),
       makeSetMinMaxScoreItem(self),
       ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
       ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),

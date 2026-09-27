@@ -21,6 +21,7 @@ const scores = new Map([
 
 function domainOver(view: SettledBlocksView, active = true) {
   return visibleStatsDomain({
+    zero: true,
     active,
     view,
     payloadFor: index => scores.get(index),
@@ -64,6 +65,7 @@ test('walks only the blocks on screen, so an offscreen region is out', () => {
 test('clips each block to whole bp before the accumulator sees it', () => {
   const spans: [number, number][] = []
   visibleStatsDomain({
+    zero: true,
     active: true,
     view: viewWith([{ displayedRegionIndex: 0, start: 10.7, end: 20.2 }]),
     payloadFor: () => [1],
@@ -84,6 +86,7 @@ test('clips each block to whole bp before the accumulator sees it', () => {
 test('a configured bound wins over the autoscaled end', () => {
   expect(
     visibleStatsDomain({
+      zero: true,
       active: true,
       view: viewWith([block(0, 0, 3)]),
       payloadFor: index => scores.get(index),

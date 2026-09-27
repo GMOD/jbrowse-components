@@ -3560,6 +3560,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(number | undefined)"
                 },
                 {
+                  "name": "zero",
+                  "type": "boolean"
+                },
+                {
                   "name": "autoscaleGroup",
                   "type": "(string | undefined)"
                 },
@@ -4051,6 +4055,10 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainMax",
                   "type": "(number | undefined)"
+                },
+                {
+                  "name": "zero",
+                  "type": "boolean"
                 },
                 {
                   "name": "autoscaleGroup",
@@ -5125,6 +5133,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(number | undefined)"
                 },
                 {
+                  "name": "zero",
+                  "type": "boolean"
+                },
+                {
                   "name": "autoscaleGroup",
                   "type": "(string | undefined)"
                 },
@@ -5840,6 +5852,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(number | undefined)"
                 },
                 {
+                  "name": "zero",
+                  "type": "boolean"
+                },
+                {
                   "name": "autoscaleGroup",
                   "type": "(string | undefined)"
                 },
@@ -6285,6 +6301,10 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainMax",
                   "type": "(number | undefined)"
+                },
+                {
+                  "name": "zero",
+                  "type": "boolean"
                 },
                 {
                   "name": "autoscaleGroup",

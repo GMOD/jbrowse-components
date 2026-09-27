@@ -65,8 +65,9 @@ export type ValueScaleRuleConfig = Instance<
  * Manhattan plot among them, each carry one, with the axis guides it draws —
  * its ticks, its `grid`, its `rules` and its `title`.
  *
- * Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, and an end
- * left unset autoscales over the loaded regions.
+ * Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, an end
+ * left unset autoscales over the loaded regions, and `zero` says whether an
+ * autoscaled linear or symlog axis reaches 0 whatever those regions hold.
  *
  * Two defaults come from the display rather than from the scale.
  * `domainQuantile` starts at `0.99` on the wiggle plot and the coverage band,
@@ -86,6 +87,15 @@ export type ValueScaleRuleConfig = Instance<
  * {
  *   type: 'LinearWiggleDisplay',
  *   scales: { y: { type: 'log', domainMin: 1 } },
+ * }
+ * ```
+ *
+ * #example
+ * A GC line plot whose axis spans the loaded values, 30 to 60%:
+ * ```js
+ * {
+ *   type: 'LinearWiggleDisplay',
+ *   scales: { y: { zero: false } },
  * }
  * ```
  *
@@ -166,6 +176,22 @@ export function valueScaleSchema({
         description: 'pinned top of the axis; unset autoscales',
       },
       /**
+       * #slot scales.y.zero
+       * Whether an autoscaled linear or symlog axis reaches 0 whatever the
+       * loaded values span, Vega-Lite's `zero`. On, a plot of values between
+       * 30 and 60 draws 0 to 60, and a bar always shows its whole height.
+       * Off, the axis spans the values alone. A pinned end is unmoved either
+       * way, a log axis has no 0, and a density plot, which maps score to
+       * colour and has no axis, spans its values whatever this says.
+       * The score menu's "Start axis at 0" toggles it.
+       */
+      zero: {
+        type: 'boolean',
+        defaultValue: true,
+        description:
+          'an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values',
+      },
+      /**
        * #slot scales.y.autoscaleGroup
        * A name shared by the tracks whose axes autoscale together: each
        * unpinned end spans the data of every track in the view naming the
@@ -197,8 +223,9 @@ export function valueScaleSchema({
        * extremes, and below it that quantile of the values on its side of 0,
        * so `0.99` drops the outermost 1% at each end and one spike no longer
        * flattens the rest. Where both signs appear each end is measured on its
-       * own sign, so a sparse minority tail stays visible; a linear or symlog
-       * axis still starts at 0. The score menu's "Clip outliers" toggles it.
+       * own sign, so a sparse minority tail stays visible; whether the axis
+       * then reaches 0 is `zero`'s. The score menu's "Clip outliers" toggles
+       * it.
        */
       domainQuantile: {
         type: 'number',

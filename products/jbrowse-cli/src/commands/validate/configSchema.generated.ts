@@ -4489,6 +4489,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "pinned top of the axis; unset autoscales.",
           "type": "number"
         },
+        "zero": {
+          "description": "an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values.",
+          "type": "boolean",
+          "default": true
+        },
         "autoscaleGroup": {
           "description": "tracks naming one group autoscale together.",
           "$ref": "#/$defs/PlainString"
@@ -6528,6 +6533,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "pinned top of the axis; unset autoscales.",
           "type": "number"
         },
+        "zero": {
+          "description": "an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values.",
+          "type": "boolean",
+          "default": true
+        },
         "autoscaleGroup": {
           "description": "tracks naming one group autoscale together.",
           "$ref": "#/$defs/PlainString"
@@ -7956,6 +7966,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
           "type": "number"
+        },
+        "zero": {
+          "description": "an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values.",
+          "type": "boolean",
+          "default": true
         },
         "autoscaleGroup": {
           "description": "tracks naming one group autoscale together.",

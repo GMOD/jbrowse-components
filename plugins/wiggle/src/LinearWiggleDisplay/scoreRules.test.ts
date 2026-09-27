@@ -151,14 +151,15 @@ it('offers the reference lines only where the rules draw', () => {
 // Density spends the domain on its color ramp instead of on height, so lifting
 // the axis to a rule it does not draw stretches the ramp over a range nothing
 // on screen reaches and washes the plot out — the same trap
-// effectiveSummaryScoreMode exists for.
+// effectiveSummaryScoreMode exists for. Nor does it reach 0 (ADR-182): the one
+// value in view widens by its own size instead.
 it('does not lift the axis for a rule density will not draw', () => {
   const display = makeDisplay([90])
   expect(display.domain).toEqual([0, 90])
 
   display.setRenderingType('density')
   expect(ruleMarksOf(display)).toEqual([])
-  expect(display.domain).toEqual([0, 30])
+  expect(display.domain).toEqual([30, 60])
 })
 
 // A row per source shares the one scale, so each row is ruled in its own band:

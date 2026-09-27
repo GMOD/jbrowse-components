@@ -3,7 +3,11 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
-import { makeClipOutliersItem, makeScoreSubMenu } from './scoreMenuItems.ts'
+import {
+  makeAxisZeroItem,
+  makeClipOutliersItem,
+  makeScoreSubMenu,
+} from './scoreMenuItems.ts'
 import { scalesSchema, valueScaleSchema } from './valueScaleConfigSchema.ts'
 
 import type { ScoreScaleModel } from './scoreMenuItems.ts'
@@ -18,6 +22,7 @@ import type { ValueScale } from '@jbrowse/display-ui'
 function makeSelf(over: Partial<ScoreScaleModel> = {}) {
   const self = {
     scaleType: 'linear',
+    scaleZero: true,
     domainQuantile: 1,
     clipQuantile: 0.99,
     manualMinScore: undefined,
@@ -26,6 +31,7 @@ function makeSelf(over: Partial<ScoreScaleModel> = {}) {
     maxScoreBound: undefined,
     autoscaledDomain: undefined,
     setScaleType: () => {},
+    setScaleZero: () => {},
     setDomainQuantile: () => {},
     setMinScore: () => {},
     setMaxScore: () => {},
@@ -67,6 +73,35 @@ describe('makeScoreSubMenu', () => {
       'Clip outliers',
       'Set min/max score (2 – auto)...',
     ])
+  })
+
+  // A density plot rules no band and its domain ignores `zero`, so the row
+  // comes and goes with the axis, as the reference lines do.
+  it('offers Start axis at 0 where the scale rules a band', () => {
+    const withAxis = {
+      ...makeSelf(),
+      scoreRulesDrawn: true,
+      scoreRules: [],
+      setScoreRules: () => {},
+    }
+    expect(labels(makeScoreSubMenu(withAxis))).toEqual([
+      'Scale type',
+      'Clip outliers',
+      'Start axis at 0',
+      'Set min/max score...',
+      'Reference lines...',
+    ])
+  })
+
+  it('Start axis at 0 writes the opposite of the slot it shows', () => {
+    const written: boolean[] = []
+    const item = makeAxisZeroItem({
+      scaleZero: true,
+      setScaleZero: zero => written.push(zero),
+    })
+    expect(item.checked).toBe(true)
+    item.onClick()
+    expect(written).toEqual([false])
   })
 
   it('names the percentile Clip outliers clips at, the one in force first', () => {

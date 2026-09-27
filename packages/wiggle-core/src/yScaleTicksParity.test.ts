@@ -31,7 +31,7 @@ const noBounds: [undefined, undefined] = [undefined, undefined]
 // Every wiggle-family domain reaches both sides through getNiceDomain, so nice
 // it here too rather than testing a domain the app can't produce.
 function niced(scaleType: string, domain: [number, number]) {
-  return getNiceDomain({ scaleType, domain, bounds: noBounds })
+  return getNiceDomain({ zero: true, scaleType, domain, bounds: noBounds })
 }
 
 interface TickCase {

@@ -1657,6 +1657,7 @@ export default function stateModelFactory(
             range: ({ scoreMin, scoreMax }) => [scoreMin, scoreMax],
             bounds: [undefined, undefined],
             scaleType: 'linear',
+            zero: true,
           })
         },
       }))

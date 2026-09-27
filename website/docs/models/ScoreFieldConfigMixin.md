@@ -21,7 +21,9 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scorefield">**scoreField**</span><br><code>string</code> | The feature field the worker plots on the score axis, `score` by default. A fetch input: every composing display carries it in its `rpcProps()`, since the field is read where the features are. | ScoreFieldConfigMixin |
 | <span id="getter-size">**size**</span><br><code>number</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-size) |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether score maps to color instead of height; a display overrides it.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-isdensitymode) |
+| <span id="getter-axisreacheszero">**axisReachesZero**</span><br><code>boolean</code> | <span data-pagefind-ignore>A density row maps score to colour and has no axis to start at 0, so its domain spans the values whatever `scales.y.zero` says.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-axisreacheszero) |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
+| <span id="getter-scalezero">**scaleZero**</span><br><code>boolean</code> | <span data-pagefind-ignore>`scales.y.zero`: whether an autoscaled linear or symlog axis reaches 0.</span> | [ScoreScaleMixin](../scorescalemixin#getter-scalezero) |
 | <span id="getter-domainquantile">**domainQuantile**</span><br><code>number</code> | <span data-pagefind-ignore>`scales.y.domainQuantile`: what an unpinned end follows, 1 the extremes and below it that quantile of each sign.</span> | [ScoreScaleMixin](../scorescalemixin#getter-domainquantile) |
 | <span id="getter-clipquantile">**clipQuantile**</span><br><code>number</code> | <span data-pagefind-ignore>The quantile "Clip outliers" clips at: the scale's own default where that is below 1, else 0.99.</span> | [ScoreScaleMixin](../scorescalemixin#getter-clipquantile) |
 | <span id="getter-symlogconstant">**symlogConstant**</span><br><code>number</code> | <span data-pagefind-ignore>Raw slot; `0` means "derive from the domain". Resolve it with `resolveSymlogConstant` once the domain is known.</span> | [ScoreScaleMixin](../scorescalemixin#getter-symlogconstant) |
@@ -49,6 +51,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setsize) |
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscaletype) |
+| <span id="action-setscalezero">**setScaleZero**</span><br><code>(zero: boolean) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscalezero) |
 | <span id="action-setdomainquantile">**setDomainQuantile**</span><br><code>(quantile: number) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setdomainquantile) |
 | <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setminscore) |
 | <span id="action-setmaxscore">**setMaxScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setmaxscore) |

@@ -37,7 +37,7 @@ const confNode = (self: object) => self as ScoreScaleHost
 /**
  * #stateModel ScoreScaleMixin
  * #category display
- * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
+ * #crossCuttingMixin Value scale, written in `scales.y`. `valueScaleSchema` / `scalesSchema`. Brings `ScoreAxisMixin` plus `scaleType` / `scaleZero` / `domainQuantile` / `clipQuantile` / `symlogConstant` / `manual*` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
  * The value scale of every quantitative display: wiggle, the alignments
  * coverage band and the mark display, Manhattan among them, each declare
@@ -60,6 +60,14 @@ export function ScoreScaleMixin() {
        */
       get scaleType(): string {
         return getConf(confNode(self), ['scales', 'y', 'type'])
+      },
+      /**
+       * #getter
+       * `scales.y.zero`: whether an autoscaled linear or symlog axis reaches
+       * 0.
+       */
+      get scaleZero(): boolean {
+        return getConf(confNode(self), ['scales', 'y', 'zero'])
       },
       /**
        * #getter
@@ -169,6 +177,12 @@ export function ScoreScaleMixin() {
        */
       setScaleType(scaleType: string) {
         setConf(confNode(self), ['scales', 'y', 'type'], scaleType)
+      },
+      /**
+       * #action
+       */
+      setScaleZero(zero: boolean) {
+        setConf(confNode(self), ['scales', 'y', 'zero'], zero)
       },
       /**
        * #action

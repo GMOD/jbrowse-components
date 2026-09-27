@@ -39,7 +39,7 @@ function nice(
   domain: [number, number],
   bounds: [number | undefined, number | undefined] = noBounds,
 ) {
-  return getNiceDomain({ scaleType, domain, bounds })
+  return getNiceDomain({ zero: true, scaleType, domain, bounds })
 }
 
 // Domains the app can actually reach, each already through getNiceDomain the

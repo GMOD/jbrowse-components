@@ -717,6 +717,7 @@ describe('drawLineCenter gap breaks', () => {
 // a log track under 1 — so this is where it gets looked at.
 describe('a log domain entirely under 1', () => {
   const domainY = getNiceDomain({
+    zero: true,
     scaleType: 'log',
     domain: [0.01, 0.5],
     bounds: [undefined, undefined],

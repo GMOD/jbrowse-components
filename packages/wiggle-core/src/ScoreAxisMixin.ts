@@ -43,6 +43,14 @@ export function ScoreAxisMixin() {
       },
       /**
        * #getter
+       * Overridable: where `scales.y.zero` is written down, whether an
+       * autoscaled linear or symlog axis reaches 0.
+       */
+      get scaleZero(): boolean {
+        return true
+      },
+      /**
+       * #getter
        * Overridable: the lower bound the config really pins, `undefined`
        * where nothing does.
        */
@@ -110,6 +118,16 @@ export function ScoreAxisMixin() {
     .views(self => ({
       /**
        * #getter
+       * Overridable: whether the autoscaled domain reaches 0, `scaleZero`
+       * unless the display maps its score to something with no axis.
+       */
+      get axisReachesZero(): boolean {
+        return self.scaleZero
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The domain an autoscaled axis draws: `autoscaleRange`, widened to
        * every range its `autoscaleGroup` holds, nice-rounded inside this
        * display's own bounds. Each member unions the others' own ranges and
@@ -133,6 +151,7 @@ export function ScoreAxisMixin() {
               domain: range,
               bounds: [this.minScoreBound, this.maxScoreBound],
               scaleType: self.scaleType,
+              zero: self.axisReachesZero,
             })
           : undefined
       },
