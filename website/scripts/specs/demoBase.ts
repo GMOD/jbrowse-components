@@ -1,3 +1,5 @@
+import { pageTrack } from './pageTrack.ts'
+
 // Where the E. coli pangenome demo's data files live.
 //
 // Every pggb/minigraph figure reads this demo, and its files are rebuilt by
@@ -14,10 +16,20 @@
 // Leave it unset to render against the hosted demo, which is what a committed
 // figure and its live link must both point at — `pnpm check-live-configs`
 // fails on a figure whose config lives on no server.
-export const ECOLI_DEMO_BASE =
-  process.env.ECOLI_DEMO_BASE ?? 'https://jbrowse.org/demos/ecoli_pangenome'
+const ECOLI_HOSTED = 'https://jbrowse.org/demos/ecoli_pangenome'
+
+export const ECOLI_DEMO_BASE = process.env.ECOLI_DEMO_BASE ?? ECOLI_HOSTED
 
 export const usingLocalDemo = Boolean(process.env.ECOLI_DEMO_BASE)
+
+// A track as an E. coli pangenome page prints it: its bare filenames are the
+// demo's, and every demo URL reads from ECOLI_DEMO_BASE.
+export function ecoliPageTrack(doc: string, trackId: string) {
+  const track = pageTrack(doc, trackId, { base: ECOLI_HOSTED })
+  return JSON.parse(
+    JSON.stringify(track).replaceAll(ECOLI_HOSTED, ECOLI_DEMO_BASE),
+  ) as typeof track
+}
 
 // The five E. coli strains stacked in one LinearSyntenyView, with one
 // all-vs-all track backing every band. Three figures draw this — minimap2

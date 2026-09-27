@@ -9,6 +9,7 @@ import {
   ECOLI_AVA_STACK_HEIGHT,
   ECOLI_DEMO_BASE,
   ecoliAvaStack,
+  ecoliPageTrack,
 } from './demoBase.ts'
 import {
   CARRIAGE_DISPLAY,
@@ -17,6 +18,7 @@ import {
   graphTrack,
   local,
 } from './graph-fixtures.ts'
+import { pageFenceText } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -50,26 +52,19 @@ const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 // is not a gate anyway.
 const GRAPH_CONFIG = local('test_data/graphgenomeview/config.json')
 
+const CACTUS_DOC = 'tutorials/pangenome_cactus.md'
 const MC_SEGMENTS_TRACK = 'ecoli_cactus_segments'
-const MC_SEGMENTS_SESSION_TRACK = {
-  type: 'GraphTrack',
-  trackId: MC_SEGMENTS_TRACK,
-  name: 'MC graph: segments (whole graph, by locus)',
-  assemblyNames: ['K12'],
-  adapter: {
-    type: 'RgfaTabixAdapter',
-    uri: `${ECOLI_DEMO_BASE}/ecoli_cactus`,
-  },
-}
+const MC_SEGMENTS_SESSION_TRACK = ecoliPageTrack(CACTUS_DOC, MC_SEGMENTS_TRACK)
 
 // The same index a second time, for the carriage lane, because a view shows a
 // track once and the graph track is the segments one.
 const MC_CARRIAGE_TRACK = 'ecoli_cactus_carriage'
 const MC_CARRIAGE_SESSION_TRACK = {
-  ...MC_SEGMENTS_SESSION_TRACK,
   type: 'FeatureTrack',
   trackId: MC_CARRIAGE_TRACK,
   name: 'MC graph: segment carriage',
+  assemblyNames: MC_SEGMENTS_SESSION_TRACK.assemblyNames,
+  adapter: MC_SEGMENTS_SESSION_TRACK.adapter,
 }
 
 const K12_GENES_SESSION_TRACK = {
@@ -551,36 +546,12 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // comparison and this one kept only the restatement.
 ]
 
-// WHAT THE SUBGRAPH TOUR TYPES INTO THE PASTE BOX, and it is
-// `pangenome_cactus.md`'s own "Indexing the graph" fence character for character
-// (check-paste-configs). The two are one text: change the fence and change this
-// in the same commit.
-//
-// The url is the hosted pair rather than ECOLI_DEMO_BASE, because the page
-// prints the hosted one -- it used to print the bare `ecoli_cactus` prefix the
-// build writes, which is a config nothing can resolve until the reader has run
-// cactus, and so a config no film could paste.
-export const CACTUS_SEGMENTS_TRACK_JSON = `{
-  "type": "GraphTrack",
-  "trackId": "ecoli_cactus_segments",
-  "name": "MC graph: segments (whole graph, by locus)",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus"
-  },
-  "displayDefaults": { "showLabels": "none" },
-  "displays": [
-    {
-      "type": "LinearGraphDisplay",
-      "displayId": "ecoli_cactus_segments-LinearGraphDisplay"
-    },
-    {
-      "type": "LinearBasicDisplay",
-      "displayId": "ecoli_cactus_segments-LinearBasicDisplay"
-    }
-  ]
-}`
+// What the subgraph tour types into the paste box: the page's "Indexing the
+// graph" fence, hosted URLs and all.
+export const CACTUS_SEGMENTS_TRACK_JSON = pageFenceText(
+  CACTUS_DOC,
+  MC_SEGMENTS_TRACK,
+)
 
 // The window the tour opens on, before it narrows to IS1_WINDOW. A Minigraph-
 // Cactus graph is coarser than a pggb one, so the same 12 kb is ~800 K12

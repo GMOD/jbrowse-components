@@ -12,9 +12,8 @@ import {
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
-import { ECOLI_DEMO_BASE } from './demoBase.ts'
+import { ECOLI_DEMO_BASE, ecoliPageTrack } from './demoBase.ts'
 import {
-  CARRIAGE_DISPLAY,
   GRAPH_DRAWN,
   GRAPH_VIEW_DRAWN,
   GRAPH_VIEW_READY,
@@ -25,6 +24,7 @@ import {
   local,
   referencePositionColor,
 } from './graph-fixtures.ts'
+import { pageTrack, pageFenceText } from './pageTrack.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -36,6 +36,7 @@ const ECOLI_PANGENOME_CONFIG = local(
   'test_data/graphgenomeview/ecoli_pangenome.json',
 )
 const DATA = ECOLI_DEMO_BASE
+const ECOLI_DOC = 'tutorials/pangenome_ecoli.md'
 const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 
 // Paint the linear segments track in the graph view's own 'Stable rank'
@@ -120,46 +121,23 @@ const PGGB_NODES_SESSION_TRACK = {
 // this 3 kb one cuts ~340 segments, where the same 3 kb of the SV-resolution
 // minigraph graph is a handful.
 const PGGB_SEGMENTS_TRACK = 'ecoli_pggb_segments'
-const PGGB_SEGMENTS_SESSION_TRACK = {
-  type: 'GraphTrack',
-  trackId: PGGB_SEGMENTS_TRACK,
-  name: 'pggb graph segments (whole graph, by locus)',
-  assemblyNames: ['K12'],
-  adapter: {
-    type: 'RgfaTabixAdapter',
-    uri: `${DATA}/ecoli_pggb`,
-    coarse: { uri: `${DATA}/ecoli_pggb.tier50`, aboveBpPerPx: 1 },
-  },
-}
+const PGGB_SEGMENTS_SESSION_TRACK = ecoliPageTrack(
+  ECOLI_DOC,
+  PGGB_SEGMENTS_TRACK,
+)
 
 // The same segments as PGGB_SEGMENTS_SESSION_TRACK, colored by how many
-// haplotypes walk each one rather than by reference position. The ramp and its
-// legend are CARRIAGE_DISPLAY in graph-fixtures.ts, shared with the
-// Minigraph-Cactus figure that draws the same five strains.
+// haplotypes walk each one rather than by reference position.
 const PGGB_CARRIAGE_TRACK = 'ecoli_pggb_carriage'
-const PGGB_CARRIAGE_SESSION_TRACK = {
-  type: 'FeatureTrack',
-  trackId: PGGB_CARRIAGE_TRACK,
-  name: 'pggb graph: segment carriage',
-  assemblyNames: ['K12'],
-  adapter: {
-    type: 'RgfaTabixAdapter',
-    uri: `${DATA}/ecoli_pggb`,
-  },
-}
+const PGGB_CARRIAGE_SESSION_TRACK = ecoliPageTrack(
+  ECOLI_DOC,
+  PGGB_CARRIAGE_TRACK,
+)
+
 // The aggregate the lane is read against: `odgi depth` over fixed windows,
 // hosted beside the graph indexes. Same question, different unit.
 const PGGB_DEPTH_TRACK = 'ecoli_pggb_depth'
-const PGGB_DEPTH_SESSION_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: PGGB_DEPTH_TRACK,
-  name: 'pggb graph: pangenome depth (paths over K12)',
-  assemblyNames: ['K12'],
-  adapter: {
-    type: 'BigWigAdapter',
-    bigWigLocation: { uri: `${DATA}/ecoli_pggb_depth.bw` },
-  },
-}
+const PGGB_DEPTH_SESSION_TRACK = ecoliPageTrack(ECOLI_DOC, PGGB_DEPTH_TRACK)
 
 // An IS5 element K12 carries and the other four strains do not (review of the
 // old window: "unfortunately not interesting screenshot. need structural
@@ -226,16 +204,7 @@ const PGGB_TIER_IS5_NODE = '79945@1299497'
 // than the fine tier), and at 1,000 the 1.2 kb insertion this locus is about is
 // the only thing left in 50 kb. 50 keeps every indel and absorbs the
 // single-base alternatives into backbone, which is the cut a reader wants.
-const PGGB_TIER_SESSION_TRACK = {
-  type: 'GraphTrack',
-  trackId: PGGB_TIER_TRACK,
-  name: 'pggb graph bubbles (coarse tier, one node per bubble)',
-  assemblyNames: ['K12'],
-  adapter: {
-    type: 'RgfaTabixAdapter',
-    uri: `${DATA}/ecoli_pggb.tier50`,
-  },
-}
+const PGGB_TIER_SESSION_TRACK = ecoliPageTrack(ECOLI_DOC, PGGB_TIER_TRACK)
 
 // The segments track as a graph over the tier window. Past the adapter's
 // `coarse.aboveBpPerPx` the track cuts the tier by itself, and the ramp runs
@@ -628,33 +597,17 @@ const PGGB_STRAIN_ROWS = ['K12', 'CFT073', 'IAI39', 'NCTC86', 'Sakai']
 // the hosted config's relative ones — a session track's relative `uri` resolves
 // against the RPC worker's own url.
 const PGGB_MAF_TRACK = 'ecoli_pggb_maf'
-const PGGB_MAF_SESSION_TRACK = {
-  type: 'MafTrack',
-  trackId: PGGB_MAF_TRACK,
-  name: 'pggb graph: whole-genome alignment (MAF, vs K12)',
-  assemblyNames: ['K12'],
-  adapter: {
-    type: 'MafTabixAdapter',
-    samples: ['K12', 'Sakai', 'CFT073', 'NCTC86', 'IAI39'],
-    uri: `${DATA}/ecoli_pggb.maf.bed.gz`,
-  },
-}
+const PGGB_MAF_SESSION_TRACK = ecoliPageTrack(ECOLI_DOC, PGGB_MAF_TRACK)
 
 // The same graph read as a callset: `pggb -V K12:...` runs `vg deconstruct` over
 // the smoothed graph, so every bubble becomes a record on the K12 axis. It is
 // the one lane in this set that can state an alternate route the reference has
 // no coordinate for, because a record's ADDRESS is the span the route replaces.
 const PGGB_VARIANTS_TRACK = 'ecoli_pggb_variants'
-const PGGB_VARIANTS_SESSION_TRACK = {
-  type: 'VariantTrack',
-  trackId: PGGB_VARIANTS_TRACK,
-  name: 'pggb graph: variants (vg deconstruct, vs K12)',
-  assemblyNames: ['K12'],
-  adapter: {
-    type: 'VcfTabixAdapter',
-    uri: `${DATA}/ecoli_pggb.vcf.gz`,
-  },
-}
+const PGGB_VARIANTS_SESSION_TRACK = ecoliPageTrack(
+  ECOLI_DOC,
+  PGGB_VARIANTS_TRACK,
+)
 
 // The positional-variant track and the two structural-filter spellings that
 // used to live here went with `pangenome/pggb_spur_linear`, which was their only
@@ -1196,42 +1149,15 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
   ]
 }
 
-// WHAT THE SUBGRAPH TOUR TYPES INTO THE PASTE BOX, and it is
-// `pangenome_ecoli.md`'s own "Browsing the whole graph by locus" fence character
-// for character (check-paste-configs). A reader watching the clip is meant to
-// recognise the block above it on the page, so the two are one text: change the
-// fence and change this in the same commit.
-//
-// The url is written out rather than taken from DATA, for the same reason: the
-// page prints one, and an ECOLI_DEMO_BASE run would type a config the page does
-// not carry. It is also why the tour is worth filming at all — this adapter
-// reads four files off one prefix, so `Add a track from file or URL` has no
-// extension to guess from and pasting the config is the route.
-export const PGGB_SEGMENTS_TRACK_JSON = `{
-  "type": "GraphTrack",
-  "trackId": "ecoli_pggb_segments",
-  "name": "pggb graph segments (whole graph, by locus)",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb",
-    "coarse": {
-      "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50",
-      "aboveBpPerPx": 1
-    }
-  },
-  "displayDefaults": { "showLabels": "none" },
-  "displays": [
-    {
-      "type": "LinearGraphDisplay",
-      "displayId": "ecoli_pggb_segments-LinearGraphDisplay"
-    },
-    {
-      "type": "LinearBasicDisplay",
-      "displayId": "ecoli_pggb_segments-LinearBasicDisplay"
-    }
-  ]
-}`
+// What the subgraph tour types into the paste box: the page's fence, so a
+// reader watching the clip recognises the block above it on the page. Its URLs
+// are the page's, never DATA's. The adapter reads four files off one prefix,
+// so `Add a track from file or URL` has no extension to guess from and pasting
+// the config is the route.
+export const PGGB_SEGMENTS_TRACK_JSON = pageFenceText(
+  ECOLI_DOC,
+  PGGB_SEGMENTS_TRACK,
+)
 
 // The window the subgraph tour opens on, before it narrows to PGGB_LOCUS_WINDOW.
 // Wide enough that the narrowing is a visible move and the lane arrives as the
@@ -1542,14 +1468,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: PGGB_CARRIAGE_TRACK,
               type: 'LinearBasicDisplay',
-              // one band, not a pile: the rank-0 segments tile K12 without
-              // overlapping, so collapsed is the true layout rather than a
-              // squeeze, and the lane reads as a single strip of membership
-              displayMode: 'collapsed',
-              showLabels: 'none',
               // tall enough for the five-row legend the display floats over it
               height: 150,
-              ...CARRIAGE_DISPLAY,
             },
           ],
         },
@@ -1614,18 +1534,11 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       sessionTracks: [
         K12_GENES_SESSION_TRACK,
         {
-          ...PGGB_CARRIAGE_SESSION_TRACK,
-          trackId: 'graph_carriage',
-          name: 'graph: carriage per segment',
-          displayDefaults: {
-            color: {
-              field: 'carriers',
-              scale: 'linear',
-              domainMin: 1,
-              range: ['#e31a1c', '#bdbdbd'],
-              title: 'Haplotypes carrying',
-            },
-          },
+          ...pageTrack(
+            'tutorials/pangenome_prepare_graph.md',
+            'graph_carriage',
+          ),
+          adapter: PGGB_CARRIAGE_SESSION_TRACK.adapter,
         },
       ],
       views: [

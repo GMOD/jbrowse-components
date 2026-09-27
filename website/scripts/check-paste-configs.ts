@@ -1,14 +1,12 @@
-// A config a video tour fills the add-track form from has to be a config the
-// page it sits on prints.
+// A config a video tour types into the app has to be a config the page it sits
+// on prints.
 //
-// `pangenome/pggb_subgraph_launch` films **Open track... → Add pangenome graph
-// track** with the pggb segments track's fields going into the form, and the
-// whole of what that clip is worth is that a reader recognises the block from
-// the page above it and enters the same one. The two copies are a template literal in
-// video-specs.ts and a fence in markdown, so nothing but this holds them
-// together: reword the track `name`, rehost the `uri`, add one display slot to
-// the block a reader copies, and the page moves while the film keeps showing
-// the old text. Nobody re-reads a film.
+// A whole track config needs no check: the tour reads the page's fence
+// (`pageFenceText`). What is left is a fragment, like the channel spec
+// `ui/gene_track_channel_spec` pastes into Edit as JSON, which the page prints
+// in an untagged fence. The two copies are a template literal in a spec module
+// and a fence in markdown, so nothing but this holds them together, and nobody
+// re-reads a film.
 //
 // The comparison is the whole string rather than the parsed object, and
 // deliberately: a reader copies characters. A fence reformatted by prettier and

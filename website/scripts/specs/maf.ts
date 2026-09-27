@@ -2,6 +2,7 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
 import { GRAPH_DRAWN, graphTrack, local } from './graph-fixtures.ts'
+import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -194,18 +195,11 @@ const HPRC_C4_MARKED = 'chr6:32,005,691-32,011,057'
 
 // The alignment itself, as a session track over the graph config: the fixture
 // the graph figures load carries the graph, the callset and the genes, and the
-// MAF is the one product of release 2 it has no track for. Same four fields the
-// tutorial's own fence prints.
-const HPRC_MAF_TRACK = {
-  type: 'MafTrack',
-  trackId: 'hprc_v2_0_mc_grch38',
-  name: 'HPRC release 2 pangenome alignment (464 haplotypes)',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BgzipMafAdapter',
-    uri: 'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz',
-  },
-}
+// MAF is the one product of release 2 it has no track for.
+const HPRC_MAF_TRACK = pageTrack(
+  'tutorials/pangenome_hprc_carriers.md',
+  'hprc_v2_0_mc_grch38',
+)
 
 // UNFILTERED, where every other HPRC figure on the page cuts the callset to
 // `LV==0 && alleleLength>=50`, and both halves of that filter were measured out

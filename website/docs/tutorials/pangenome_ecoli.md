@@ -722,7 +722,7 @@ haplotype list and `carriers` its length, which the color paints by:
       "type": "LinearBasicDisplay",
       "displayId": "ecoli_pggb_carriage-LinearBasicDisplay",
       "displayMode": "collapsed",
-      "showLabels": false,
+      "showLabels": "none",
       "color": {
         "field": "carriers",
         "domain": ["5", "4", "3", "2", "1"],

@@ -27,23 +27,32 @@ function resolveUris(value: unknown, base: string): unknown {
 }
 
 /**
- * The track config `doc` prints in a `json addtrack` fence, for a figure to
- * load exactly what the page tells a reader to paste. A page that names its
- * files by bare filename (the reader's own copy) gets them resolved against
- * `base`, where the hosted copies live. Throws when the page prints no such
- * track, so a renamed trackId fails the spec rather than drawing a stale copy.
+ * The text of the `json addtrack` fence `doc` prints for `trackId`, as a
+ * reader copies it: what a tour types into a paste box. Throws when the page
+ * prints no such track, so a renamed trackId fails the spec rather than
+ * drawing or typing a stale copy.
+ */
+export function pageFenceText(doc: string, trackId: string) {
+  const text = readFileSync(join(docsDir, doc), 'utf8')
+  for (const [, body] of text.matchAll(ADDTRACK_FENCE)) {
+    if ((JSON.parse(body!) as PageTrackConfig).trackId === trackId) {
+      return body!
+    }
+  }
+  throw new Error(`${doc} prints no json addtrack fence for ${trackId}`)
+}
+
+/**
+ * The track config `doc` prints for `trackId`, for a figure to load exactly
+ * what the page tells a reader to paste. A page that names its files by bare
+ * filename (the reader's own copy) gets them resolved against `base`, where the
+ * hosted copies live.
  */
 export function pageTrack(
   doc: string,
   trackId: string,
   { base }: { base?: string } = {},
 ): PageTrackConfig {
-  const text = readFileSync(join(docsDir, doc), 'utf8')
-  for (const [, body] of text.matchAll(ADDTRACK_FENCE)) {
-    const config = JSON.parse(body!) as PageTrackConfig
-    if (config.trackId === trackId) {
-      return (base ? resolveUris(config, base) : config) as PageTrackConfig
-    }
-  }
-  throw new Error(`${doc} prints no json addtrack fence for ${trackId}`)
+  const config = JSON.parse(pageFenceText(doc, trackId)) as PageTrackConfig
+  return (base ? resolveUris(config, base) : config) as PageTrackConfig
 }

@@ -20,8 +20,6 @@
 // through an app the rest of the page is not showing.
 import { liveHref } from '../src/lib/code-base.ts'
 import { GENE_CHANNEL_SPEC_JSON } from './specs/features.ts'
-import { PGGB_SEGMENTS_TRACK_JSON } from './specs/graph-ecoli.ts'
-import { CACTUS_SEGMENTS_TRACK_JSON } from './specs/pangenome_cactus.ts'
 import { configVideos } from './videos/config.ts'
 import { dog10kVideos } from './videos/dog10k.ts'
 import { epigenomicsVideos } from './videos/epigenomics.ts'
@@ -108,29 +106,16 @@ export const externalClips: ExternalClip[] = [
   },
 ]
 
-// The track configs a tour TYPES into the app, paired with the page that prints
-// them, for `check-paste-configs`.
+// The configs a tour TYPES into the app that it cannot read off the page,
+// paired with the page that prints them, for `check-paste-configs`. A tour
+// pasting a whole track config reads the page's fence (`pageFenceText`), so
+// only a fragment lands here: the page prints it in an untagged fence with no
+// trackId to find it by.
 //
-// A tour that films a config being pasted documents the page only while the two
-// texts are one text, and nothing about either makes them so: the tour's is a
-// template literal in a spec module and the page's is a fence in markdown. A
-// reworded `name`, a rehosted `uri`, one slot added to the block a reader
-// copies — any of those moves one copy and leaves the other filming a config
-// the page no longer prints, and the film is the half nobody re-reads.
-//
-// A tour reading its config through ECOLI_DEMO_BASE would need the check to
-// know that; none does yet, and the check says so rather than guessing.
+// A tour documents the page only while the two texts are one text: a reworded
+// value moves one copy and leaves the other filming a config the page no
+// longer prints, and the film is the half nobody re-reads.
 export const pastedTrackConfigs = [
-  {
-    video: 'pangenome/pggb_subgraph_launch',
-    doc: 'tutorials/pangenome_ecoli.md',
-    json: PGGB_SEGMENTS_TRACK_JSON,
-  },
-  {
-    video: 'pangenome_cactus/subgraph_launch',
-    doc: 'tutorials/pangenome_cactus.md',
-    json: CACTUS_SEGMENTS_TRACK_JSON,
-  },
   {
     video: 'ui/gene_track_channel_spec',
     doc: 'user_guides/gene_track.md',
