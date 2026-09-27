@@ -36,9 +36,9 @@ export interface RenderingBackendCallbacks<B> {
   render: (backend: B) => boolean
   /**
    * Hand back whatever the backend allocated for a canvas that is no longer on
-   * the page. Called on every tick the render autorun declines to draw because
-   * the display is off screen, so it has to be idempotent and must not leave
-   * the backend unable to draw the next frame.
+   * the page. Called after every render tick while the display is off screen,
+   * drawn or not, so it has to be idempotent and must not leave the backend
+   * unable to draw the next frame.
    */
   releaseTargets: (backend: B) => void
 }
@@ -62,9 +62,9 @@ export interface RenderingBackendCallbacks<B> {
  *    recovery. Autoruns read it each tick so they re-fire against the new
  *    one without being reinstalled.
  *  - `renderTick` — counter the render autorun observes; bumped by
- *    `renderNow()` (tab-visibility restore) and after every upload
- *    (ensures render re-fires when an upload happens but renderState
- *    identity stays stable).
+ *    `renderNow()` after every upload that reached the backend, on
+ *    tab-visibility restore, and when a circular ring backend starts. None of
+ *    those is a pan or zoom, so off screen a moved tick means new data.
  *  - `autorunsInstalled` — guards `attachRenderingBackend` so the autorun
  *    pair is spawned once per model instance, not once per backend
  *    assignment.
@@ -193,11 +193,10 @@ export function RenderLifecycleMixin() {
        * #getter
        * Overridable hook (default false): the display has reached a state it
        * will not paint its way out of, so `painted` below should answer
-       * *finished* rather than *pending*. Both LGV fetch families fill it with
-       * `!!error` — a fetch that failed before first paint keeps its canvas
-       * mounted, since the error bar is an overlay rather than a subtree
-       * replacement, so nothing ever draws into it. Named for `fetchInert` on
-       * the comparative side.
+       * *finished* rather than *pending*. Both LGV fetch families fill it
+       * through `foundationPaintInert`: a failed fetch, a standing cancel, no
+       * content on screen, or the too-large banner in the canvas's place. Named
+       * for `fetchInert` on the comparative side.
        *
        * A hook rather than a read of `error` here, for two reasons that both
        * bite: this package is a leaf and `error` belongs to the fetch mixins,

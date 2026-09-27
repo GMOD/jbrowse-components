@@ -565,8 +565,8 @@ export const RingHost = types
     /**
      * One ring's upload payload: its annulus, trimmed to where the display's
      * canvas sits in its strip, and the strip canvas it samples. None until
-     * the display has painted that canvas: the ring canvas's first paint is
-     * the one an off-screen circle keeps, so it must not sample a blank strip.
+     * the display has painted that canvas, so the ring never samples a blank
+     * strip and reports it drawn.
      */
     ringCell(displayId: string): RingCell | undefined {
       const index = this.rings.findIndex(r => r.display.id === displayId)

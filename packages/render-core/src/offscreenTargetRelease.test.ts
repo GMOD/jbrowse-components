@@ -45,14 +45,18 @@ function setup() {
   const backend = new TestBackend(hal)
   const model = TestModel.create()
   const cells = observable.map<number, Data>(undefined, { deep: false })
+  const frame = observable.box(0)
   installUpload(model, backend, {
     cells: () => cells,
-    render: (b, encoded) => b.renderBlocks([BLOCK], encoded, STATE),
+    render: (b, encoded) => {
+      void frame.get()
+      return b.renderBlocks([BLOCK], encoded, STATE)
+    },
   })
   runInAction(() => {
     cells.set(0, { value: 1 })
   })
-  return { hal, model, cells }
+  return { hal, model, cells, frame }
 }
 
 function methods(hal: MockHal) {
@@ -75,7 +79,7 @@ test('a drawing display never releases its targets', () => {
 })
 
 test('going off screen releases the targets and skips frame-only redraws', () => {
-  const { hal, model } = setup()
+  const { hal, model, cells, frame } = setup()
   hal.calls = []
 
   runInAction(() => {
@@ -83,12 +87,23 @@ test('going off screen releases the targets and skips frame-only redraws', () =>
   })
   expect(methods(hal)).toEqual(['releaseRenderTargets'])
 
-  // A tick with no upload behind it is a pan or a settings read: nothing new
-  // to show, so no resize (which reallocates the target) and a fresh release.
+  // a pan has no upload behind it, so nothing draws and no resize
+  // reallocates the target
   runInAction(() => {
-    model.setOffScreen(true)
+    frame.set(1)
   })
-  expect(hal.callsOf('resize')).toHaveLength(0)
+  expect(methods(hal)).toEqual(['releaseRenderTargets'])
+
+  // nor once an upload has drawn off screen and the render reads the frame again
+  runInAction(() => {
+    cells.set(0, { value: 2 })
+  })
+  const resizes = hal.callsOf('resize').length
+  expect(resizes).toBe(1)
+  runInAction(() => {
+    frame.set(2)
+  })
+  expect(hal.callsOf('resize')).toHaveLength(resizes)
   expect(methods(hal).at(-1)).toBe('releaseRenderTargets')
 })
 
