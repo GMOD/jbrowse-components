@@ -41,6 +41,7 @@ test('only the displays that read jexlFilters publish it', () => {
   }
   expect(publishing.sort()).toEqual([
     'LinearBasicDisplay',
+    'LinearManhattanDisplay',
     'LinearMarkDisplay',
     'LinearMultiSampleVariantDisplay',
     'LinearVariantDisplay',

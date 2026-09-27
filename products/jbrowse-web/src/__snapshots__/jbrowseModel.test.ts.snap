@@ -90,12 +90,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_refseq-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox_refseq-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-            "windowDelta": 10,
-            "windowSize": 10,
-          },
         ],
         "formatAbout": {
           "config": "jexl:{extraField:'important data'}",
@@ -121,10 +115,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           {
             "displayId": "volvox_refseq2-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
-          },
-          {
-            "displayId": "volvox_refseq2-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
           },
         ],
         "trackId": "volvox_refseq2",
@@ -153,10 +143,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_sample01_anchor_seq-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox_sample01_anchor_seq-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
         ],
         "trackId": "volvox_sample01_anchor_seq",
         "type": "ReferenceSequenceTrack",
@@ -176,10 +162,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           {
             "displayId": "volvox_refseq404-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
-          },
-          {
-            "displayId": "volvox_refseq404-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
           },
         ],
         "trackId": "volvox_refseq404",
@@ -205,10 +187,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "misc_asm-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "misc_asm-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
         ],
         "trackId": "misc_asm",
         "type": "ReferenceSequenceTrack",
@@ -232,10 +210,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           {
             "displayId": "volvox_del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
-          },
-          {
-            "displayId": "volvox_del-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
           },
         ],
         "trackId": "volvox_del-ReferenceSequenceTrack",
@@ -261,10 +235,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_ins-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox_ins-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
         ],
         "trackId": "volvox_ins-ReferenceSequenceTrack",
         "type": "ReferenceSequenceTrack",
@@ -288,10 +258,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           {
             "displayId": "volvox-rev-del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
-          },
-          {
-            "displayId": "volvox-rev-del-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
           },
         ],
         "trackId": "volvox-rev-del-ReferenceSequenceTrack",
@@ -317,10 +283,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox-simple-inv-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          {
-            "displayId": "volvox-simple-inv-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
-          },
         ],
         "trackId": "volvox-simple-inv-ReferenceSequenceTrack",
         "type": "ReferenceSequenceTrack",
@@ -344,10 +306,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           {
             "displayId": "volvox_random_inv-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
-          },
-          {
-            "displayId": "volvox_random_inv-ReferenceSequenceTrack-LinearGCContentDisplay",
-            "type": "LinearGCContentDisplay",
           },
         ],
         "trackId": "volvox_random_inv-ReferenceSequenceTrack",
@@ -525,6 +483,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "colorRowLabels": true,
           "displayId": "volvox_mouse_inheritance_rows-LinearMultiRowFeatureDisplay",
+          "facet": "group",
           "rowColor": {
             "domain": [
               "mom",
@@ -1256,7 +1215,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "xyplot",
+          "mark": "bar",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -1292,7 +1251,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "density",
+          "mark": "heatmap",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -1328,7 +1287,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "line",
+          "mark": "line",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -1368,7 +1327,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "line",
+          "mark": "line",
           "rows": "",
           "type": "LinearWiggleDisplay",
         },
@@ -1495,8 +1454,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "line",
           "displayId": "volvox_microarray_line_line",
+          "mark": "line",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -1521,8 +1480,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "density",
           "displayId": "volvox_microarray_density_density",
+          "mark": "heatmap",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -1548,8 +1507,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "line",
           "displayId": "volvox_microarray_line_folder_line",
+          "mark": "line",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -1575,8 +1534,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "density",
           "displayId": "volvox_microarray_density_folder_density",
+          "mark": "heatmap",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -2219,8 +2178,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "line",
           "displayId": "LrM3WWJR0tj_line",
+          "mark": "line",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -2263,8 +2222,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "density",
           "displayId": "VUyE25kYsQo_density",
+          "mark": "heatmap",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -2308,8 +2267,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "density",
           "displayId": "oMVFQozR9NO_density",
+          "mark": "heatmap",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -2353,8 +2312,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "line",
           "displayId": "wiggle_track_posneg_line",
+          "mark": "line",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -2379,8 +2338,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "line",
           "displayId": "wiggle_track_fractional_posneg_line",
+          "mark": "line",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -2424,8 +2383,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "defaultRendering": "line",
           "displayId": "p7FU-K6WqS__line",
+          "mark": "line",
           "type": "LinearWiggleDisplay",
         },
       ],
@@ -3465,10 +3424,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             {
               "encoding": {
                 "color": "#a65628",
-                "x2": {
-                  "chrom": "mate.refName",
-                  "pos": "mate.start",
-                },
               },
               "mark": "link",
               "size": 3,
@@ -3507,10 +3462,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             {
               "encoding": {
                 "color": "#a65628",
-                "x2": {
-                  "chrom": "mate.refName",
-                  "pos": "mate.start",
-                },
               },
               "mark": "link",
               "size": 3,

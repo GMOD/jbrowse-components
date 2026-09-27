@@ -29,8 +29,13 @@ function panelCount(session: { views: unknown[] }) {
 
 // The resting chords are painted on a canvas, so a click reaches one through
 // the display the way the view's own pointer routing does, once it has shapes
-async function clickChord(session: { views: unknown[] }, featureId: string) {
-  const inspector = session.views[0] as {
+async function clickChord(
+  session: { views: { type: string }[] },
+  featureId: string,
+) {
+  const inspector = session.views.find(
+    v => v.type === 'SvInspectorView',
+  ) as unknown as {
     circularView: {
       tracks: {
         displays: {

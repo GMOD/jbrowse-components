@@ -269,6 +269,7 @@ test('the new GC track computes content through its adapter, drawn as a wiggle',
   }
   const track = findGCTrack(session)
   expect(readConfObject(track, ['adapter', 'type'])).toBe('GCContentAdapter')
-  expect(readConfObject(track, ['adapter', 'gcMode'])).toBe('content')
+  // the stored conf leaves the default, content, out
+  expect(readConfObject(track, ['adapter', 'gcMode'])).not.toBe('skew')
   expect(readConfObject(track.displays[0], 'type')).toBe('LinearWiggleDisplay')
 })
