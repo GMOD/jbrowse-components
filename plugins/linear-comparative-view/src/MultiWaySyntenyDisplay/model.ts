@@ -15,6 +15,7 @@ import {
   morphClockMs,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -1457,10 +1458,24 @@ export function stateModelFactory(
        * #getter
        * the groups the viewport shows something of, WHOLE: what the picture is
        * drawn from, since the stack is translated between settles and a group
-       * cut at the viewport edge would end mid-ribbon on the first pan
+       * cut at the viewport edge would end mid-ribbon on the first pan. Cut,
+       * mates too, where `axisPlacement` cuts the anchor: at a displayed
+       * region's end, which no pan moves
        */
       get visibleGroups() {
-        return self.visibleGroupWindows.map(({ group }) => group)
+        const view = self.lgv
+        const assembly = self.anchorAssembly
+        return self.visibleGroupWindows.map(({ group }) => {
+          const { refName, start, end } = group.anchor
+          const shown = clipToDisplayedRegions(view, {
+            refName: assembly?.getCanonicalRefName2(refName) ?? refName,
+            start,
+            end,
+          })
+          return shown
+            ? clipGroupToAnchor(group, shown.start, shown.end)
+            : group
+        })
       },
       /**
        * #getter

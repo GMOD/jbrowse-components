@@ -2029,3 +2029,58 @@ test('the fit sees a record cut to the viewport, the picture sees it whole', () 
     { refName: 'ctgA', start: 0, end: 800 },
   ])
 })
+
+// A sliced displayed region — a bookmark, a launched panel, one region of
+// several — ends on screen, and the anchor cannot draw past it. The lane side
+// is cut by the same fraction, so the ribbon does not fan out under blank
+// anchor space: ctgA:300-700 against a region ending at ctgA:500 draws the
+// half that maps to ctgA:300-500.
+describe('a record crossing a displayed region’s end', () => {
+  test.each([
+    ['forward', 1, [1300, 1500], undefined],
+    ['reverse', -1, [1500, 1700], undefined],
+    ['named', 1, [1300, 1500], 'gene1'],
+  ])(
+    'is cut on its lane where the anchor is cut, %s',
+    (_, strand, shown, name) => {
+      const display = createDisplay()
+      display.lgv.setDisplayedRegions([
+        { refName: 'ctgA', start: 0, end: 500, assemblyName: 'volvox' },
+      ])
+      display.setFeatures([
+        new SimpleFeature({
+          uniqueId: 'r1',
+          name,
+          refName: 'ctgA',
+          start: 300,
+          end: 700,
+          strand,
+          mate: {
+            assemblyName: 'volvox_random',
+            refName: 'ctgB',
+            start: 1300,
+            end: 1700,
+          },
+        }),
+      ])
+      display.setLaneFrames(
+        0,
+        new Map([['volvox_random', decisionOn('ctgB', 1200)]]),
+      )
+      const [anchor, lane] = display.laneStack.lanes
+      const cell = display.ribbonGeometry.cells.get('ribbons:0')!
+      if (cell.kind !== 'ribbons') {
+        throw new Error('ribbons:0 is not a ribbon cell')
+      }
+      const { data } = cell
+      expect(data.instanceCount).toBe(1)
+      expect([data.bp1[0], data.bp2[0]]).toEqual(
+        anchor!.spanOf('ctgA', 300, 500)!.map(Math.fround),
+      )
+      const [lo, hi] = lane!.spanOf('ctgB', shown[0]!, shown[1]!)!
+      expect([data.bp4[0], data.bp3[0]]).toEqual(
+        (strand === 1 ? [lo, hi] : [hi, lo]).map(Math.fround),
+      )
+    },
+  )
+})
