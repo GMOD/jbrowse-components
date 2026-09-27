@@ -20,9 +20,10 @@ connection without losing it.
 
 1. **Release the Hubs plugin's new answer.** `describeAssemblies.ts` answers
    `{ assembly, geneAdapter }`, `baseUri` stamped beside each `uri`
-   (committed in jbrowse-plugin-hubs, unreleased). Core now reads only those
-   two, so hub stars on a main build draw no mate genes until it ships; land
-   and release together.
+   (jbrowse-plugin-hubs `69b9eb5`, on its local main, unpushed and
+   unreleased). Core reads only those two, so a hub star on a build carrying
+   `d3f8e161e7` draws no mate genes under plugin 1.0.15; release 1.0.16
+   (`pnpm version patch`, then the store step) before pushing core.
 2. **Measure before jb2hubs writes GC into every star.** Cold at TP53, a
    chromosome-level lane reads 2.4-2.9 MB of 2bit, mostly its chromosome's
    soft-mask block list, against about 1 MB for a gc5Base bigWig. A
@@ -36,8 +37,18 @@ connection without losing it.
    the gene-name row, and the gene-page link's pitch (34) grows by the band.
 3. **The hg38 star reads every child's index.** On the default lanes at TP53
    it fetched 241 `.pif.gz.csi` files, 234 MB, with temporary assemblies
-   off, where on 2026-09-24 it read the eight lanes it drew. Separate from
-   lane layers, and larger than anything above.
+   off. Three routes do it, and none is a lane-layers change:
+   `MultiPairwiseSyntenyAdapter.getRefNames` for the anchor unions every
+   child holding it, which is every child, and each child's
+   `PifFile.refSeqNames` is its index; the warm-up in `tracks.ts`
+   (`688793ff8b`) sends that `CoreGetRefNames` before the first fetch and
+   the rename map sends it again; and `getHeader` reads every child's tabix
+   header and coarse-tier probe for one `hasCoarseTier`. The 2026-09-24
+   "reads eight" measured `getFeatures`, whose `childrenForLanes` already
+   narrows to the chosen lanes, so this is a cost those routes always had
+   rather than a regression. The display knows its lanes (`haplotypes` in
+   its fetch options) and the anchor's names are the assembly's own, so the
+   fix is those two routes reading only the chosen children, or nothing.
 
 ## Not now
 
