@@ -1,6 +1,6 @@
 ---
 name: scales-and-colour-keys
-description: "What the 2026-09-26 scales.y and colour-key round left open: the coverage and ADR-181 figure reshoots, the alignments read-colour key's title and labels, and a marker for bars clipped at the top of an axis"
+description: "What the 2026-09-26 scales.y and colour-key round left open: the coverage and ADR-181 figure reshoots, color.value recolouring normal arcs, synteny range on ramps, and a marker for bars clipped at the top of an axis"
 ---
 
 ## Open
@@ -11,25 +11,14 @@ description: "What the 2026-09-26 scales.y and colour-key round left open: the c
   extent or a lane became a rule: `mark_display_examples/points`,
   `read_marks/insert_size`, `read_marks/chromosome` and
   `dog10k-size-fst-scan-igf1`. ada refused ssh at the landing.
-- **Alignments read colours** take no `title` or `labels` yet. A reviewer's
-  recommended direction, not yet put to Colin, who wants the reads-and-arcs
-  merge kept since it exists to keep the key small:
-  - `title` heads the reads alone, and a merged section reads
-    `<title> and arc colors` (`mergedTitle` in
-    `plugins/alignments/src/shared/legendUtils.ts` must not lowercase user
-    text); under a ramp it titles `reads-ramp`. Read it in its own getter, not
-    through `colorSettingOf`, which feeds the baked scale and would re-bake the
-    reads on a text edit.
-  - `labels` reach buckets through the walk `declaredReadCategoryColors`
-    already uses (`READ_COLOR_LEVELS`, `levelOrder` in `alignmentsColor.ts`),
-    shared rather than copied, and apply as the top layer of
-    `readCategoryLabelOverrides`, `getArcLegendItems`, the connection curves and
-    the arc hover; group-by chips keep theirs. Tag values map through the
-    written `domain`, not `bakedColorScale`'s copy, which drops `''`.
-    Threshold bins take one per interval, as wiggle's do.
-  - The colour merge folds the arcs' grey Normal row into a read row of that
-    grey (No HP value, MAPQ unavailable), so a label there names normal arcs
-    too; and `legendWidth.test.ts` measures only the built-in labels.
+- **`color.value` recolours normal arcs** under the normal scheme, since the
+  arcs' neutral slot reads `colorPairLR`, which `value` sets for the reads.
+- **Synteny `range` on ramps**: identity, mapq and numeric columns ignore it,
+  where every other display's linear `range` sets the stops.
+- **Web snapshots red on main, reasons known**: the LGV vector exports lost
+  their outer `<g transform="translate(0 0)">` with the close-up removal
+  (ddecae4f13); a canvas-feature line moved from y 19.5 to 18.5 (cause not
+  traced); the synteny colour-by legend's viridis stops drift by one unit.
 - **A marker for bars clipped at the top of an axis**, on wiggle and the
   coverage band, so a clipped bar does not read as its value. A visual call:
   show Colin a picture before building it across GPU, Canvas2D and SVG.
