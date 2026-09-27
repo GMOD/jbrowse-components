@@ -2637,6 +2637,7 @@
       "names": [
         "NO_VALUE_LABEL",
         "STRAND_FIELD",
+        "SV_TYPE_FIELD",
         "categoricalField",
         "keyNames"
       ],
@@ -3473,7 +3474,6 @@
     "@jbrowse/core/util/svAlt": {
       "package": "@jbrowse/core",
       "names": [
-        "SV_CLASSES",
         "SV_MIN_LENGTH",
         "SV_SYMBOLIC_ALLELES",
         "breakendKeepsDirections",

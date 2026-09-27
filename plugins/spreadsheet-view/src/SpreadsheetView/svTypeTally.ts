@@ -1,9 +1,9 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { svClassOf, svClassOfToken } from '@jbrowse/core/util/svAlt'
 import {
-  PREDEFINED_SV_TYPES,
-  svTypeDisplayLabel,
-} from '@jbrowse/plugin-variants'
+  SV_TYPE_FIELD,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
+import { svClassOf, svClassOfToken } from '@jbrowse/core/util/svAlt'
 
 import type { GridRow } from './SpreadsheetModel.tsx'
 
@@ -29,9 +29,7 @@ export function rowSvType(row: GridRow, field?: string) {
   )
 }
 
-const CANONICAL_ORDER = Object.fromEntries(
-  PREDEFINED_SV_TYPES.map((t, i) => [t.type, i]),
-)
+const SV_TYPE = categoricalField(SV_TYPE_FIELD)
 
 /**
  * The structural-variant classes present in a set of rows, in the order a
@@ -58,11 +56,6 @@ export function tallySvTypes(rows: GridRow[] | undefined, field?: string) {
     }
   }
   return [...tally]
-    .map(([type, count]) => ({ type, label: svTypeDisplayLabel(type), count }))
-    .sort(
-      (a, b) =>
-        (CANONICAL_ORDER[a.type] ?? Number.POSITIVE_INFINITY) -
-          (CANONICAL_ORDER[b.type] ?? Number.POSITIVE_INFINITY) ||
-        a.type.localeCompare(b.type),
-    ) satisfies SvTypeTally[]
+    .map(([type, count]) => ({ type, label: SV_TYPE.label(type), count }))
+    .sort((a, b) => SV_TYPE.compare(a.type, b.type)) satisfies SvTypeTally[]
 }

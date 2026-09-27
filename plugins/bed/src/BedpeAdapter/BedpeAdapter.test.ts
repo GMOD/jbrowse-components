@@ -104,6 +104,7 @@ test('basic', async () => {
     strand: -1,
   })
   expect(firstFeature.get('ALT')).toEqual(['<DUP>'])
+  expect(firstFeature.get('svType')).toBe('DUP')
 })
 
 test('gets correct reference sequence names', async () => {
@@ -151,6 +152,7 @@ test('handles different SV types correctly', async () => {
 
   const feature = features.find(f => f.get('name') === 'SV3')
   expect(feature?.get('ALT')).toEqual(['<TRA>'])
+  expect(feature?.get('svType')).toBe('BND')
   expect(feature?.get('score')).toBe(70)
 })
 

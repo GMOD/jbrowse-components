@@ -127,21 +127,21 @@ the color of its variant's structural-variant type. From the track menu, open
 option it greys out rather than disappearing, reading _(no structural variants
 in view)_ where the variants in view hold none.
 
-The common classes get fixed colors, so the legend reads the same across tracks:
-deletion (red), duplication (blue), insertion (purple), inversion (orange), copy
-number (dark brown), and breakend (brown). A het cell draws its class color
-paler, as in the default coloring, and the legend shows both shades. Any other
-`SVTYPE` token gets an auto-assigned color and shows its raw token in the
-legend, and a record whose alleles span more than one class is flagged **Mixed**
-(grey). The legend lists only the classes actually present in the loaded region.
+Each class has one fixed color, the same on every display that paints SV type,
+so a deletion is the same red here, on the single-variant display, on a mark
+display and on the SV inspector's chords: deletion (red), duplication (blue),
+insertion (purple), inversion (orange), copy-number variable (dark brown),
+tandem repeat (pink), breakend (cyan), complex (green), and other / mixed
+(black) for a token no class names or a record whose alleles disagree. A het
+cell draws its class color paler, as in the default coloring, and the legend
+shows both shades. The legend lists only the classes present in the loaded
+region, and a record with no structural class keeps the default alt color.
 
-Copy-number alleles written as `<CN0>`, `<CN1>`, `<CN3>`, ... are colored on an
-absolute rainbow by copy number (low copy blue, ascending to red), so different
-copy states read apart. The spectrum ascends plainly, with no assumed baseline
-copy number.
-
-The class is read from the ALT allele (`<DEL>`, `<CN3>`, breakend notation),
-falling back to `INFO/SVTYPE` when the ALT is a plain sequence.
+The class is read from the ALT allele first: `<DEL>`, `<DUP:TANDEM>`, breakend
+notation, and 1000 Genomes' `<CN0>` (a deletion) and `<CN2>` and up (a
+duplication). Otherwise it comes from `INFO/EVENTTYPE` or `INFO/SVTYPE`, or from
+a sequence allele 50 bp or more longer or shorter than REF. Every VCF record
+carries the result as its `svType` field.
 
 <Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-carrying cell taking its variant's class color, pale for a het and full for a hom. The legend names every class present, including the callset's complex (CPX) events, with both shades beside each." src="/img/multisv_svtype.png" />
 

@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
-import { colorNotices } from '@jbrowse/core/util/colorScale'
+import { colorNotices, withPreset } from '@jbrowse/core/util/colorScale'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
@@ -201,10 +201,14 @@ export function featureColorViews(self: FeatureColorHost) {
 
     /**
      * #getter
-     * The key's heading: the color's `title` where written, else the field.
+     * The key's heading: the color's `title`, or its field's preset's, else
+     * the field.
      */
     get colorKeyTitle(): string | undefined {
-      return this.colorSettings.title ?? this.colorFieldName
+      return (
+        withPreset(this.colorSettings, FEATURE_FIELD_PRESETS).title ??
+        this.colorFieldName
+      )
     },
 
     /**

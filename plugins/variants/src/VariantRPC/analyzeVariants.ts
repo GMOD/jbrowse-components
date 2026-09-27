@@ -1,4 +1,4 @@
-import { svClassOf } from '@jbrowse/core/util/svAlt'
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 
 import {
   alleleBucketCounts,
@@ -14,7 +14,6 @@ import {
   summarizeAlleleCounts,
 } from '../shared/minorAlleleFrequencyUtils.ts'
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
-import { NON_SV_TYPE, assignSvTypeColors } from '../shared/variantSvType.ts'
 
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { SampleInfo } from '../shared/types.ts'
@@ -116,11 +115,8 @@ export interface AnalyzedVariants {
   hasConsequence: boolean
   hasPhaseSet: boolean
   // Whether any visible record has a structural class, which gates the "Color
-  // by...→SV type" entry. Not `svTypeColors` being non-empty: that map now
-  // carries the scale's NON_SV_TYPE member too, so a callset of plain SNVs
-  // fills it.
+  // by...→SV type" entry.
   hasSvType: boolean
-  svTypeColors: Record<string, string>
   // The interned genotype payload, built here rather than in a later pass: per
   // feature a Uint32Array of codes aligned to `sampleNames` (0 = no genotype),
   // resolving against the shared `genotypeDict`. See shared/genotypeCodec.ts.
@@ -237,7 +233,6 @@ export function analyzeVariants({
   let hasConsequence = false
   let hasPhaseSet = false
   let hasSvType = false
-  const svTypes = new Set<string>()
 
   // With a threshold set, a cheaper counting pass drops what it rejects before
   // the analysis walks the rest; unset, the analysis is the only pass.
@@ -487,9 +482,7 @@ export function analyzeVariants({
       ) {
         hasPhaseSet = true
       }
-      const svType = svClassOf(feature)
-      svTypes.add(svType || NON_SV_TYPE)
-      hasSvType ||= !!svType
+      hasSvType ||= !!feature.get(SV_TYPE_FIELD)
     } else if (codes) {
       codes.fill(0)
       spareCodes = codes
@@ -547,7 +540,6 @@ export function analyzeVariants({
     hasConsequence,
     hasPhaseSet,
     hasSvType,
-    svTypeColors: assignSvTypeColors([...svTypes]),
     featureGenotypeCodes,
     genotypeDict,
     sampleNames,

@@ -1,5 +1,9 @@
+import {
+  SV_TYPE_FIELD,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
+
 import { IMPACT_TIERS } from './variantConsequence.ts'
-import { PREDEFINED_SV_TYPES } from './variantSvType.ts'
 
 import type { JexlFilterField } from '@jbrowse/core/ui/JexlFilterDialog'
 
@@ -40,7 +44,7 @@ const COMPUTED = (
       label: 'svType',
       call: 'svType',
       type: 'text',
-      values: PREDEFINED_SV_TYPES.map(t => t.type),
+      values: [...categoricalField(SV_TYPE_FIELD).domain],
       description: 'Structural variant class',
     },
     {

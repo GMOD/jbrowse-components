@@ -31,7 +31,6 @@ import {
   getVariantImpact,
   getVariantImpactColor,
 } from './shared/variantConsequence.ts'
-import { getVariantSvTypeColor } from './shared/variantSvType.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -85,10 +84,6 @@ export default class VariantsPlugin extends Plugin {
     jexl.addFunction('consequences', getVariantConsequences)
     /** #jexlFunction Variant functions | impactColor(feature) | the color the "Color by consequence impact" menu item uses */
     jexl.addFunction('impactColor', getVariantImpactColor)
-    // `svTypeColor` powers the one-click "Color by SV type" menu item on the
-    // single-variant display (fixed class colors + copy-number rainbow).
-    /** #jexlFunction Variant functions | svTypeColor(feature) | the color "Color by SV type" uses */
-    jexl.addFunction('svTypeColor', getVariantSvTypeColor)
     // Longest allele in bp, so a filter can select the SV tier of a decomposed
     // pangenome callset (`jexl:alleleLength(feature) >= 50`) without missing
     // insertions, which consume no reference and so have a span of 1.
@@ -108,15 +103,6 @@ export default class VariantsPlugin extends Plugin {
 }
 
 export { default as VcfFeature } from './VcfFeature/index.ts'
-
-// The SV-type color scheme, for the other plugins that paint the same callset:
-// the SV inspector's chords read it so a chord and a variant cell agree on what
-// a deletion looks like, and it carries the legend's labels and order with it
-export {
-  PREDEFINED_SV_TYPES,
-  getSvTypeColor,
-  svTypeDisplayLabel,
-} from './shared/variantSvType.ts'
 
 export type { LinearVariantDisplayModel } from './LinearVariantDisplay/model.ts'
 export type { LinearMultiSampleVariantDisplayModel } from './LinearMultiSampleVariantDisplay/model.ts'

@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 
 import VariantsPlugin from '../index.ts'
@@ -7,7 +8,6 @@ import { ALT_HUE } from './cellFill.ts'
 import { cellHueOf } from './cellHue.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 import { IMPACT_FIELD, getVariantImpactColor } from './variantConsequence.ts'
-import { SV_TYPE_FIELD } from './variantSvType.ts'
 
 const pluginManager = new PluginManager([new VariantsPlugin()])
 pluginManager.createPluggableElements()
@@ -31,7 +31,6 @@ function hue(
 ) {
   return cellHueOf(encoding, {
     jexl: pluginManager.jexl,
-    svTypeColors: { DEL: '#ff0000' },
     renderingMode,
   })
 }
@@ -50,9 +49,18 @@ test('the impact preset reads the consequence tier natively', () => {
   expect(domain).toBeDefined()
 })
 
-test('the svType preset paints the palette dealt over the types present', () => {
-  const { color } = hue({ field: SV_TYPE_FIELD, scale: 'categorical' })
-  expect(color?.(variant({ SVTYPE: ['DEL'] }))).toBe('#ff0000')
+test('svType paints the class colours, and a record with no class the alt hue', () => {
+  const { color, domain } = hue({ field: SV_TYPE_FIELD, scale: 'categorical' })
+  const del = new SimpleFeature({
+    uniqueId: 'd',
+    refName: 'chr1',
+    start: 0,
+    end: 1,
+    svType: 'DEL',
+  })
+  expect(domain?.(del)).toBe('DEL')
+  expect(color?.(del)).toBe('#e41a1c')
+  expect(color?.(variant({}))).toBe(ALT_HUE)
 })
 
 test('the phaseSet preset is a flag, and only in phased mode', () => {

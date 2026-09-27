@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { svClassOfToken } from '@jbrowse/core/util/svAlt'
 
 import { parseStrand } from '../util.ts'
 
@@ -32,7 +33,7 @@ export function featureData(
   const rest = names
     ? Object.fromEntries(names.slice(10).map((n, idx) => [n, extra[idx]]))
     : {}
-  const ALT = svTypes.has(extra[0]!) ? `<${extra[0]}>` : undefined
+  const token = svTypes.has(extra[0]!) ? extra[0]! : undefined
 
   // `name` and `score` are spread only when the file actually sets them, which
   // is what lets a column past 10 of the same name through. juicer's bedpe is
@@ -55,6 +56,6 @@ export function featureData(
       end: end2,
       strand: strand2,
     },
-    ...(ALT ? { ALT: [ALT] } : {}),
+    ...(token ? { ALT: [`<${token}>`], svType: svClassOfToken(token) } : {}),
   })
 }

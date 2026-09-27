@@ -55,8 +55,12 @@ const CATEGORICAL_PRESET: FieldPreset<'categorical'> = { scale: 'categorical' }
 
 /**
  * The fields whose values have names, an order and colours of their own on
- * every display, beneath each display's own presets: red forward and blue
- * reverse is what the synteny ribbons paint too.
+ * every display, beneath each display's own presets. Red forward and blue
+ * reverse is what the synteny ribbons paint too. The SV classes are
+ * `svClassOf`'s, deletion red and duplication blue as dbVar and gnomAD-SV
+ * paint them, insertion the pileup's purple, and the rest kept apart under
+ * deuteranopia and protanopia. A record with no class files under `''`, so
+ * each display keeps its own no-value colour for it.
  */
 export const UNIVERSAL_FIELD_PRESETS = {
   strand: {
@@ -66,10 +70,39 @@ export const UNIVERSAL_FIELD_PRESETS = {
     range: ['tomato', 'cornflowerblue', 'goldenrod'],
     labels: ['Forward strand', 'Reverse strand', 'No strand'],
   },
+  svType: {
+    scale: 'categorical',
+    domain: ['DEL', 'DUP', 'INS', 'INV', 'CNV', 'TR', 'BND', 'CPX', 'OTHER'],
+    range: [
+      '#e41a1c',
+      '#377eb8',
+      '#800080',
+      '#ff7f00',
+      '#7e6148',
+      '#e7298a',
+      '#17becf',
+      '#66a61e',
+      '#000000',
+    ],
+    labels: [
+      'Deletion',
+      'Duplication',
+      'Insertion',
+      'Inversion',
+      'Copy-number variable',
+      'Tandem repeat',
+      'Breakend / translocation',
+      'Complex',
+      'Other / mixed',
+    ],
+    title: 'SV type',
+  },
 } as const satisfies FieldPresets<'categorical'>
 
 /** The universal preset of `field`, if it has one. */
-export function universalPresetOf(field: string) {
+export function universalPresetOf(
+  field: string,
+): FieldPreset<'categorical'> | undefined {
   return Object.hasOwn(UNIVERSAL_FIELD_PRESETS, field)
     ? UNIVERSAL_FIELD_PRESETS[field as keyof typeof UNIVERSAL_FIELD_PRESETS]
     : undefined

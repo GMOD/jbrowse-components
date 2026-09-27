@@ -41,7 +41,6 @@ function matrixCellData({ ref = [], alt = [] }: Cells): CellDataResult {
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,
-    svTypeColors: {},
     paintedCategories: 0,
     paintedDomain: [],
     simplifiedFeatures: [

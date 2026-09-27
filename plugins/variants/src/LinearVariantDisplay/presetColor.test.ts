@@ -51,14 +51,26 @@ test('Consequence impact writes the impact field', () => {
   expect(display.colorEncoding).toBe(CONSEQUENCE_IMPACT_JEXL)
 })
 
-// Read as an ordinary attribute, the preset ticked Attribute... and offered a
+// Read as an ordinary attribute, a preset ticked Attribute... and offered a
 // pin that does nothing.
-test('a preset ticks its own row and nothing else', () => {
+test.each(['Consequence impact', 'SV type'])(
+  '%s ticks its own row and nothing else',
+  label => {
+    const display = createDisplay()
+    clickRow(display, label)
+    expect(checked(colorByRows(display))).toEqual([label])
+    expect(display.colorByAttribute).toBe('')
+  },
+)
+
+test('SV type paints the svType field, which a VCF record carries', () => {
   const display = createDisplay()
   clickRow(display, 'SV type')
-  expect(checked(colorByRows(display))).toEqual(['SV type'])
-  expect(display.colorByMode).toBe('default')
-  expect(display.colorByAttribute).toBe('')
+  expect(display.colorEncoding).toMatchObject({
+    field: 'svType',
+    scale: 'categorical',
+  })
+  expect(display.colorKeyTitle).toBe('SV type')
 })
 
 test('the worker is sent the jexl colour, not the preset field', () => {

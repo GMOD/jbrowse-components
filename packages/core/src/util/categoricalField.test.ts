@@ -48,6 +48,21 @@ test("a declared order leaves strand's colours on their own values", () => {
   }
 })
 
+test('svType paints each class its one colour and files a non-SV record under the empty key', () => {
+  const sv = categoricalField('svType')
+  expect(sv.color('DEL')).toBe('#e41a1c')
+  expect(sv.color('DUP')).toBe('#377eb8')
+  expect(sv.label('BND')).toBe('Breakend / translocation')
+  expect(sv.key(undefined)).toBe('')
+  expect(sv.label('')).toBe(NO_VALUE_LABEL)
+  expect(sv.color('')).toBe(NO_CATEGORY_COLOR)
+  expect(['OTHER', 'INS', 'DEL'].sort(sv.compare)).toEqual([
+    'DEL',
+    'INS',
+    'OTHER',
+  ])
+})
+
 test('any other field names a key as itself in a legend and field: key on a chip', () => {
   const hp = categoricalField('HP')
   expect(hp.label('2')).toBe('2')

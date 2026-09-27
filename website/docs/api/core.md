@@ -1037,18 +1037,6 @@ the color string.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
-## SV_CLASSES
-
-The structural-variant classes, in key order. `OTHER` is a token no class
-names, or a record whose alleles disagree.
-
-```js
-// type signature
-readonly ["DEL", "DUP", "INS", "INV", "CNV", "TR", "BND", "CPX", "OTHER"]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
-
 ## SV_MIN_LENGTH
 
 The conventional size floor for calling a sequence indel structural.
@@ -1059,6 +1047,18 @@ The conventional size floor for calling a sequence indel structural.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
+## SV_TYPE_FIELD
+
+The structural-variant class `svClassOf` names. A VCF record and a BEDPE
+row carry it, and the mark display's `mate` step writes it per allele.
+
+```js
+// type signature
+"svType"
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
 ## svClassOf
 

@@ -39,7 +39,6 @@ function regularCellData(rowNames: string[]): CellDataResult {
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,
-    svTypeColors: {},
     simplifiedFeatures: [
       { id: 'v0', data: { start: 100, end: 200, refName: 'ctgA', name: 'v0' } },
     ],

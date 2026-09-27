@@ -1853,9 +1853,6 @@ importers:
       '@jbrowse/plugin-spreadsheet-view':
         specifier: workspace:^
         version: link:../spreadsheet-view
-      '@jbrowse/plugin-variants':
-        specifier: workspace:^
-        version: link:../variants
       '@jbrowse/sv-core':
         specifier: workspace:^
         version: link:../../packages/sv-core

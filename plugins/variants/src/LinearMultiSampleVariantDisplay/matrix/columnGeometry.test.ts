@@ -19,7 +19,6 @@ function matrixCellData(starts: number[], refNames?: string[]): CellDataResult {
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,
-    svTypeColors: {},
     paintedCategories: 0,
     paintedDomain: [],
     simplifiedFeatures: starts.map((start, i) => ({

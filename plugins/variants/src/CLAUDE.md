@@ -42,11 +42,11 @@ elsewhere.
 - Cell arrays stay in the **worker's** row numbering; the hit test converts its
   one query row through `rowUnmap`.
 - **`color` is the single cell-coloring axis** (`shared/cellHue.ts`). A preset
-  (`impact`, `svType`, `phaseSet`) and a record field are both fields of it, and
-  a record with no value keeps the alt hue. Colour never depends on zoom: the
-  insertion marker is the cell's own colour widened, and "insertion" is its
-  shape and width. A purple marker made a variant read as an insertion only at
-  the zooms where the marker outgrew its cell.
+  (`impact`, `phaseSet`) and a record field (`svType` among them) are both
+  fields of it, and a record with no value keeps the alt hue. Colour never
+  depends on zoom: the insertion marker is the cell's own colour widened, and
+  "insertion" is its shape and width. A purple marker made a variant read as an
+  insertion only at the zooms where the marker outgrew its cell.
 
 ## One composition rule: `fill = shade(hue(variant, cell), dosage)`
 
@@ -67,9 +67,10 @@ Each channel carries one variable through one scale.
   is also what makes a legend swatch and a hom cell the same colour. The
   `shadeByDosage` slot turns it off; it is a fetch input, since the worker
   colours the cells.
-- **A scale's domain has no gaps**: a record with no structural class is
-  `NON_SV_TYPE`, an unannotated record is `UNANNOTATED_IMPACT`. Without those
-  the mode was class colours beside the default blue, i.e. two scales at once.
+- **A scale's domain has no gaps**: a record with no structural class files
+  under the SV key's `''`, which core's vocabulary names `SNV/indel`, and an
+  unannotated record is `UNANNOTATED_IMPACT`. Without those the mode was class
+  colours beside the default blue, i.e. two scales at once.
 - **The absent-data colours are off every wheel.** The phase-set hue band is
   saturation/lightness the no-call yellow is not on, or a phase set paints a
   called haplotype the "missing" colour.

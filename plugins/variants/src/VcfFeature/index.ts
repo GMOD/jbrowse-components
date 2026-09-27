@@ -1,3 +1,5 @@
+import { svClassOf } from '@jbrowse/core/util/svAlt'
+
 import { getEnd, getSOTermAndDescription } from './util.ts'
 
 import type VCFParser from '@gmod/vcf'
@@ -34,6 +36,8 @@ export default class VCFFeature implements Feature {
 
   private _id: string
 
+  private _svType?: string
+
   constructor(args: { variant: Variant; parser: VCFParser; id: string }) {
     this.variant = args.variant
     this.parser = args.parser
@@ -42,7 +46,9 @@ export default class VCFFeature implements Feature {
   }
 
   get(name: 'refName'): string
-  get(name: 'name' | 'type' | 'id' | 'source' | 'REF'): string | undefined
+  get(
+    name: 'name' | 'type' | 'id' | 'source' | 'REF' | 'svType',
+  ): string | undefined
   get(name: 'start' | 'end'): number
   get(name: 'phase'): 0 | 1 | 2 | undefined
   get(name: 'strand'): -1 | 0 | 1 | undefined
@@ -59,8 +65,15 @@ export default class VCFFeature implements Feature {
       ? this.variant.SAMPLES()
       : field === 'genotypes'
         ? this.variant.GENOTYPES()
-        : (this.data[field as keyof typeof this.data] ??
-          this.variant[field as keyof typeof this.variant])
+        : field === 'svType'
+          ? this.svType()
+          : (this.data[field as keyof typeof this.data] ??
+            this.variant[field as keyof typeof this.variant])
+  }
+
+  private svType() {
+    this._svType ??= svClassOf(this)
+    return this._svType || undefined
   }
   parent() {
     return undefined
@@ -83,10 +96,12 @@ export default class VCFFeature implements Feature {
   }
 
   toJSON() {
+    const svType = this.svType()
     return {
       uniqueId: this._id,
       ...this.variant.toJSON(),
       ...this.data,
+      ...(svType ? { svType } : {}),
       samples: this.variant.SAMPLES(),
     }
   }

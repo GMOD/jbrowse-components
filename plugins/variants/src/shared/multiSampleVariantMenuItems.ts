@@ -2,6 +2,7 @@ import { makeSizeMenu } from '@jbrowse/core/ui'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
@@ -37,7 +38,6 @@ import {
 import { IMPACT_FIELD } from './variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from './variantFilterExamples.ts'
 import { variantFilterFields } from './variantFilterFields.ts'
-import { SV_TYPE_FIELD } from './variantSvType.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -159,7 +159,8 @@ export function variantTrackMenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
   const loaded = !!self.cellData
-  const recordField = recordHueField(self.colorEncoding)?.field
+  const hueField = recordHueField(self.colorEncoding)?.field
+  const recordField = hueField === SV_TYPE_FIELD ? undefined : hueField
   const phaseSet = needs(
     'Phase set',
     'phase sets (FORMAT PS)',

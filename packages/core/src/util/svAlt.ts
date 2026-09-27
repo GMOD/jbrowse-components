@@ -174,23 +174,6 @@ export function isBreakend(alt: string) {
 
 /**
  * #api
- * The structural-variant classes, in key order. `OTHER` is a token no class
- * names, or a record whose alleles disagree.
- */
-export const SV_CLASSES = [
-  'DEL',
-  'DUP',
-  'INS',
-  'INV',
-  'CNV',
-  'TR',
-  'BND',
-  'CPX',
-  'OTHER',
-] as const
-
-/**
- * #api
  * The conventional size floor for calling a sequence indel structural.
  */
 export const SV_MIN_LENGTH = 50

@@ -1,3 +1,4 @@
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { ALT_HUE, shadeByDosage } from './cellFill.ts'
@@ -10,11 +11,6 @@ import {
   getSampleGroupEntries,
   getVariantColorScales,
 } from './variantLegend.ts'
-import {
-  NON_SV_TYPE,
-  SV_TYPE_FIELD,
-  assignSvTypeColors,
-} from './variantSvType.ts'
 
 import type { Source } from './types.ts'
 import type { VariantLegendInputs } from './variantLegend.ts'
@@ -391,63 +387,38 @@ describe('getVariantColorScales', () => {
     expect(unannotated.color).not.toBe(modifier.color)
   })
 
-  it('builds an SV-type section from the painted classes', () => {
-    const sections = getVariantColorScales({
-      ...inputs({ paintedDomain: ['INVDUP', 'DEL'], shadeByDosage: false }),
-      color: SV_TYPE,
-      svTypeColors: { DEL: '#e41a1c', DUP: '#377eb8', INVDUP: '#1f77b4' },
-      colorBy: '',
-      sources,
-    })
-    expect(sections.map(s => s.id)).toEqual(['svType'])
-    expect(entriesOf(sections[0])!).toEqual([
-      { value: 'DEL', label: 'Deletion', color: '#e41a1c' },
-      { value: 'INVDUP', label: 'INVDUP', color: '#1f77b4' }, // raw token label
-      {
-        value: 'Homozygous reference',
-        label: 'Homozygous reference',
-        color: REFERENCE_COLOR,
-      },
+  const svKey = (over: Partial<VariantLegendInputs>) =>
+    entriesOf(
+      getVariantColorScales({
+        ...inputs(over),
+        color: SV_TYPE,
+        colorBy: '',
+        sources,
+      })[0],
+    )!.map(i => [i.label, i.color && cssColorToABGR(i.color)])
+
+  it('keys the painted SV classes in class order, in their class colours', () => {
+    expect(
+      svKey({ paintedDomain: ['OTHER', 'DEL'], shadeByDosage: false }),
+    ).toEqual([
+      ['Deletion', cssColorToABGR('#e41a1c')],
+      ['Other / mixed', cssColorToABGR('#000000')],
+      ['Homozygous reference', cssColorToABGR(REFERENCE_COLOR)],
     ])
   })
 
-  it('lists the non-structural class as a member of the SV scale', () => {
-    const [section] = getVariantColorScales({
-      ...inputs({ paintedDomain: ['DEL', NON_SV_TYPE], shadeByDosage: false }),
-      color: SV_TYPE,
-      svTypeColors: assignSvTypeColors(['DEL', NON_SV_TYPE]),
-      colorBy: '',
-      sources,
-    })
-    expect(entriesOf(section)!.map(i => i.value)).toEqual([
-      'DEL',
-      NON_SV_TYPE,
-      'Homozygous reference',
-    ])
-  })
-
-  it('names the no-call fill in an SV-type key when one was painted', () => {
-    const [section] = getVariantColorScales({
-      ...inputs({
+  it('keys a record with no class on the alt hue, and a painted no-call', () => {
+    expect(
+      svKey({
+        paintedDomain: ['DEL', ''],
         hasNoCall: true,
-        paintedDomain: ['DEL'],
         shadeByDosage: false,
       }),
-      color: SV_TYPE,
-      svTypeColors: { DEL: '#e41a1c' },
-      colorBy: '',
-      sources,
-    })
-    // an SV-type hue paints alt cells only; a no-call keeps the no-call yellow,
-    // and a key that omits it leaves a whole column unexplained
-    expect(entriesOf(section)!).toEqual([
-      { value: 'DEL', label: 'Deletion', color: '#e41a1c' },
-      {
-        value: 'Homozygous reference',
-        label: 'Homozygous reference',
-        color: REFERENCE_COLOR,
-      },
-      { value: 'No call', label: 'No call', color: NO_CALL_COLOR },
+    ).toEqual([
+      ['Deletion', cssColorToABGR('#e41a1c')],
+      ['(no value)', cssColorToABGR(ALT_HUE)],
+      ['Homozygous reference', cssColorToABGR(REFERENCE_COLOR)],
+      ['No call', cssColorToABGR(NO_CALL_COLOR)],
     ])
   })
 
@@ -455,35 +426,23 @@ describe('getVariantColorScales', () => {
     const [section] = getVariantColorScales({
       ...inputs({ paintedDomain: ['DEL'] }),
       color: SV_TYPE,
-      svTypeColors: { DEL: '#e41a1c' },
       colorBy: '',
       sources,
     })
-    expect(entriesOf(section)!.slice(0, 2)).toEqual([
-      {
-        value: 'DEL',
-        label: 'Deletion',
-        swatches: [
-          { color: shadeByDosage('#e41a1c', 0.5) },
-          { color: '#e41a1c' },
-        ],
-      },
-      { value: DOSAGE_NOTE, label: DOSAGE_NOTE, color: undefined },
+    const [del, note] = entriesOf(section)!
+    expect(del!.swatches).toEqual([
+      { color: shadeByDosage('#e41a1c', 0.5) },
+      { color: '#e41a1c' },
     ])
+    expect(note!.label).toBe(DOSAGE_NOTE)
   })
 
   it('keeps one swatch per SV class in phased mode', () => {
-    const [section] = getVariantColorScales({
-      ...inputs({ renderingMode: 'phased', paintedDomain: ['DEL'] }),
-      color: SV_TYPE,
-      svTypeColors: { DEL: '#e41a1c' },
-      colorBy: '',
-      sources,
-    })
-    expect(entriesOf(section)!.map(i => i.label)).toEqual([
-      'Deletion',
-      'Reference',
-    ])
+    expect(
+      svKey({ renderingMode: 'phased', paintedDomain: ['DEL'] }).map(
+        ([label]) => label,
+      ),
+    ).toEqual(['Deletion', 'Reference'])
   })
 
   it('keeps a genotype key for a plain CSS feature color, recolored', () => {
@@ -535,7 +494,6 @@ describe('getVariantColorScales', () => {
 describe('phase-set legend section', () => {
   const base = {
     ...inputs(),
-    svTypeColors: {},
     colorBy: '',
     sources: undefined,
   }
@@ -579,7 +537,6 @@ describe('getVariantColorScales insertion marker', () => {
   const base = {
     ...inputs(),
     color: undefined,
-    svTypeColors: {},
     colorBy: '',
     sources: undefined,
   }
@@ -613,13 +570,12 @@ describe('getVariantColorScales insertion marker', () => {
   // looked at. Same for consequence impact, and for a raw jexl expression,
   // which drops the cell section entirely.
   test.each([
-    ['svType', SV_TYPE],
+    ['recordField', SV_TYPE],
     ['consequenceImpact', IMPACT],
   ])('survives the %s coloring replacing the genotype items', (id, color) => {
     const sections = getVariantColorScales({
       ...base,
       color,
-      svTypeColors: { DEL: '#123456' },
       insertionMarkers: true,
     })
     expect(sections.map(s => s.id)).toEqual([id, 'insertions'])

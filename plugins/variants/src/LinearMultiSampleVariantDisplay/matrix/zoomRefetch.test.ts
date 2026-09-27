@@ -29,7 +29,6 @@ const EMPTY_MATRIX = {
   hasConsequence: false,
   hasSvType: false,
   hasPhaseSet: false,
-  svTypeColors: {},
   simplifiedFeatures: [],
   genotypeDict: [],
   sampleNames: ['HG001'],

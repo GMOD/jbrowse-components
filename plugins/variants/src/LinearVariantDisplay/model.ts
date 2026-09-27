@@ -1,5 +1,6 @@
 import { getDialogHost } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
@@ -18,11 +19,6 @@ import {
 } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
-import {
-  SV_TYPE_COLOR_JEXL,
-  SV_TYPE_FIELD,
-  svTypeLegendEntries,
-} from '../shared/variantSvType.ts'
 import { breakendMenuItems } from './breakendMenu.ts'
 import { VARIANT_CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 import { presetColorOf } from './presetColor.ts'
@@ -71,8 +67,8 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The canvas resolver, with the `impact` and `svType` preset fields
-       * resolved to the jexl colours that compute them.
+       * The canvas resolver, with the `impact` preset field resolved to the
+       * jexl colour that computes it.
        */
       get colorEncoding() {
         return (
@@ -82,10 +78,22 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The attribute the Attribute dialog opens on, '' under a preset.
+       */
+      get colorsBySvType() {
+        return (
+          self.colorSettings.field === SV_TYPE_FIELD &&
+          self.colorSettings.scale !== 'none'
+        )
+      },
+      /**
+       * #getter
+       * The attribute the Attribute dialog opens on, '' under a preset or the
+       * SV type, each of which has its own row.
        */
       get colorByAttribute(): string {
-        return presetColorOf(self.colorSettings) ? '' : self.colorSettings.field
+        return presetColorOf(self.colorSettings) || this.colorsBySvType
+          ? ''
+          : self.colorSettings.field
       },
     }))
     .views(self => {
@@ -155,23 +163,13 @@ export default function stateModelFactory(
       /**
        * #getter
        */
-      get colorsBySvType() {
-        return self.colorEncoding === SV_TYPE_COLOR_JEXL
-      },
-      /**
-       * #getter
-       */
       get channelSpecExamples() {
         return VARIANT_CHANNEL_SPEC_EXAMPLES
       },
       /**
        * #getter
-       * The key while features draw: the scale of whichever preset coloring is active
-       * (impact tiers or SV classes), or else the key a color by a field
-       * derives. SV-type shows the fixed class key and the grey everything
-       * else takes; a copy-number state's rainbow color is the one thing it
-       * paints and cannot list, the pure jexl having no present-set to
-       * enumerate.
+       * The key while features draw: the impact tiers under that preset, or
+       * else the key a color by a field derives.
        */
       get featureColorScales(): ColorScale[] {
         if (this.colorsByConsequenceImpact) {
@@ -192,16 +190,6 @@ export default function stateModelFactory(
                   color: getImpactColor(UNANNOTATED_IMPACT),
                 },
               ],
-            },
-          ]
-        }
-        if (this.colorsBySvType) {
-          return [
-            {
-              kind: 'categorical',
-              id: 'svType',
-              title: 'SV type',
-              entries: svTypeLegendEntries(),
             },
           ]
         }
@@ -261,7 +249,7 @@ export default function stateModelFactory(
           {
             label: 'Attribute...',
             type: 'radio' as const,
-            checked: self.colorByMode === 'attribute',
+            checked: self.colorByMode === 'attribute' && !self.colorsBySvType,
             keepMenuOpen: false,
             onClick: () => {
               self.openColorByAttributeDialog()

@@ -208,6 +208,16 @@ test('multiple insertions of varying lengths', () => {
   expect(f.get('description')).toMatchSnapshot()
 })
 
+test('svType is the structural class, carried through toJSON', () => {
+  const del = createFeature('chr1\t100\t.\tG\t<DEL:ME:ALU>\t29\tPASS\t.')
+  const snv = createFeature('chr1\t100\t.\tG\tA\t29\tPASS\t.')
+
+  expect(del.get('svType')).toBe('DEL')
+  expect(del.toJSON().svType).toBe('DEL')
+  expect(snv.get('svType')).toBeUndefined()
+  expect('svType' in snv.toJSON()).toBe(false)
+})
+
 // VCF 4.3 spec example 1.1: . in ALT field indicates monomorphic reference
 test('null ALT', () => {
   const f = createFeature('chr1\t100\trs123\tG\t.\t29\tPASS\t.')

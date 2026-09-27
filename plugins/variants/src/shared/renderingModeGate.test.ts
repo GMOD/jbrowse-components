@@ -29,7 +29,6 @@ function cellData(flags: {
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,
-    svTypeColors: {},
     simplifiedFeatures: [],
     genotypeDict: [],
     sampleNames: ['S0'],

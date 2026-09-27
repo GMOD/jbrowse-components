@@ -1,6 +1,5 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
-import { svClassOf } from '@jbrowse/core/util/svAlt'
 import { colorFieldOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { ALT_HUE } from './cellFill.ts'
@@ -10,7 +9,6 @@ import {
   getVariantImpactColor,
   getVariantImpactDomain,
 } from './variantConsequence.ts'
-import { NON_SV_TYPE, SV_TYPE_FIELD } from './variantSvType.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -34,13 +32,12 @@ export function cellHueField(encoding: ColorEncoding | undefined) {
 /**
  * The categorical or threshold field a record field paints through, or
  * undefined for a preset or a constant. A record with no value keeps the
- * default alt hue, as a record with no structural class does under `svType`.
+ * default alt hue.
  */
 export function recordHueField(encoding: ColorEncoding | undefined) {
   const field = cellHueField(encoding)
   return field === undefined ||
     field === IMPACT_FIELD ||
-    field === SV_TYPE_FIELD ||
     field === PHASE_SET_FIELD
     ? undefined
     : colorFieldOf(encoding)
@@ -54,25 +51,18 @@ export function recordKeyColor(
   return key === '' ? ALT_HUE : field.color(key)
 }
 
-function svTypeDomain(feature: Feature) {
-  return svClassOf(feature) || NON_SV_TYPE
-}
-
 /**
  * The per-variant hue a `color` encoding paints the alt cells with. Runs once
  * per feature, not per cell, so a jexl callback or a field read costs
- * O(variants). `svTypeColors` is the palette the worker dealt over the types
- * present.
+ * O(variants).
  */
 export function cellHueOf(
   encoding: ColorEncoding | undefined,
   {
     jexl,
-    svTypeColors,
     renderingMode,
   }: {
     jexl: JexlInstance
-    svTypeColors: Record<string, string>
     renderingMode: string
   },
 ): CellHue {
@@ -95,11 +85,6 @@ export function cellHueOf(
   switch (encoding.field) {
     case IMPACT_FIELD:
       return { color: getVariantImpactColor, domain: getVariantImpactDomain }
-    case SV_TYPE_FIELD:
-      return {
-        color: feature => svTypeColors[svTypeDomain(feature)],
-        domain: svTypeDomain,
-      }
     case PHASE_SET_FIELD:
       return { byPhaseSet: renderingMode === 'phased' }
   }

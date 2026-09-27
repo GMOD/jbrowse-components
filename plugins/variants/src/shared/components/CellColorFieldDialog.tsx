@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Autocomplete, TextField, Typography } from '@mui/material'
 
 import { IMPACT_FIELD } from '../variantConsequence.ts'
 import { variantFilterFields } from '../variantFilterFields.ts'
-import { SV_TYPE_FIELD } from '../variantSvType.ts'
 import {
   cellColorOfField,
   fieldRefOf,

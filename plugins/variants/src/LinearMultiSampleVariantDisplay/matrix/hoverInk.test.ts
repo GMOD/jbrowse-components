@@ -30,7 +30,6 @@ function matrixCellData(): MatrixCellDataResult {
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,
-    svTypeColors: {},
     paintedCategories: 0,
     paintedDomain: [],
     simplifiedFeatures: [0, 1000].map((start, i) => ({

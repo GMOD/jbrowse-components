@@ -279,23 +279,13 @@ get colorsByConsequenceImpact() {
 /**
  * #getter
  */
-get colorsBySvType() {
-  return self.colorEncoding === SV_TYPE_COLOR_JEXL
-},
-/**
- * #getter
- */
 get channelSpecExamples() {
   return VARIANT_CHANNEL_SPEC_EXAMPLES
 },
 /**
  * #getter
- * The key while features draw: the scale of whichever preset coloring is active
- * (impact tiers or SV classes), or else the key a color by a field
- * derives. SV-type shows the fixed class key and the grey everything
- * else takes; a copy-number state's rainbow color is the one thing it
- * paints and cannot list, the pure jexl having no present-set to
- * enumerate.
+ * The key while features draw: the impact tiers under that preset, or
+ * else the key a color by a field derives.
  */
 get featureColorScales(): ColorScale[] {
   if (this.colorsByConsequenceImpact) {
@@ -316,16 +306,6 @@ get featureColorScales(): ColorScale[] {
             color: getImpactColor(UNANNOTATED_IMPACT),
           },
         ],
-      },
-    ]
-  }
-  if (this.colorsBySvType) {
-    return [
-      {
-        kind: 'categorical',
-        id: 'svType',
-        title: 'SV type',
-        entries: svTypeLegendEntries(),
       },
     ]
   }

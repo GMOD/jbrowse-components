@@ -13,6 +13,10 @@ import {
   SimpleFeature,
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
+import {
+  CATEGORICAL_FIELD_PRESETS,
+  withPreset,
+} from '@jbrowse/core/util/colorScale'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
@@ -508,15 +512,6 @@ export default function MultiSampleVariantBaseModelF(
          */
         get hasPhaseSet() {
           return self.cellData?.hasPhaseSet ?? false
-        },
-        /**
-         * #getter
-         * The color assigned to each present SV type, built in the worker so the
-         * legend swatches match the painted cells (drives the "SV type" legend
-         * section).
-         */
-        get svTypeColors() {
-          return self.cellData?.svTypeColors
         },
         /**
          * #getter
@@ -1588,8 +1583,8 @@ export default function MultiSampleVariantBaseModelF(
             paintedDomain: self.paintedDomain,
             shadeByDosage: self.shadeByDosage,
             color: self.colorEncoding,
-            colorTitle: self.colorSetting.title,
-            svTypeColors: self.svTypeColors,
+            colorTitle: withPreset(self.colorSetting, CATEGORICAL_FIELD_PRESETS)
+              .title,
             colorBy: self.rowColorField,
             sources: self.sources,
             groupOrder: this.rowColorKeyOrder,

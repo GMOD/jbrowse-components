@@ -1,5 +1,6 @@
 import { LONG_INSERTION_MIN_LENGTH } from '@jbrowse/alignments-core'
 import { setConf } from '@jbrowse/core/configuration'
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -38,7 +39,6 @@ function cellData(insertedBp: number): CellDataResult {
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,
-    svTypeColors: {},
     simplifiedFeatures: [
       { id: 'v0', data: { start: 100, end: 200, refName: 'ctgA', name: 'v0' } },
     ],
@@ -126,5 +126,16 @@ test('the entry has no swatch and names what the number means', () => {
   const scale = setup(7833).colorScales.find(s => s.id === 'insertions')
   expect(scale?.kind === 'categorical' && scale.entries[0]!.color).toBe(
     undefined,
+  )
+})
+
+test('the SV-type key takes its title and class names from the field preset', () => {
+  const display = setup(0)
+  display.setColorField(SV_TYPE_FIELD)
+  display.setCellData({ ...cellData(0), paintedDomain: ['DEL'] })
+  const [scale] = display.colorScales
+  expect(scale?.title).toBe('SV type')
+  expect(scale?.kind === 'categorical' && scale.entries[0]!.label).toBe(
+    'Deletion',
   )
 })

@@ -24,7 +24,6 @@ import {
   UNANNOTATED_IMPACT,
   getImpactColor,
 } from './variantConsequence.ts'
-import { SV_TYPE_FIELD, svTypeDisplayLabel } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
 import type {
@@ -264,15 +263,14 @@ function recordFieldScale(
 }
 
 // The cell-coloring scale for the resolved `color`: the impact tiers painted
-// for the consequence preset, the SV classes painted for the SV-type preset,
-// the phasing rule for the phase-set preset, a record field's values, or the
+// for the consequence preset, the phasing rule for the phase-set preset, a
+// record field's values (the SV classes among them), or the
 // genotype key — which is also where a plain CSS color lands, since "every alt
 // cell is that color" is a genotype key with one alt hue. Undefined only for a
 // jexl callback, whose output can't be enumerated into swatches.
 function getCellColorScale(
   encoding: ColorEncoding | undefined,
   inputs: VariantLegendInputs,
-  svTypeColors?: Record<string, string>,
 ): CategoricalScale | undefined {
   const cellField = cellHueField(encoding)
   if (cellField === IMPACT_FIELD) {
@@ -286,23 +284,6 @@ function getCellColorScale(
           inputs,
           getImpactColor,
           labelOf(encoding, tier => tier),
-        ),
-        ...absentDataEntries(inputs),
-      ],
-    }
-  }
-  if (cellField === SV_TYPE_FIELD) {
-    const colors = svTypeColors ?? {}
-    return {
-      kind: 'categorical',
-      id: 'svType',
-      title: keyTitle(inputs, 'SV type'),
-      entries: [
-        ...domainEntries(
-          Object.keys(colors),
-          inputs,
-          type => colors[type]!,
-          labelOf(encoding, svTypeDisplayLabel),
         ),
         ...absentDataEntries(inputs),
       ],
@@ -353,7 +334,6 @@ function getCellColorScale(
  */
 export function getVariantColorScales({
   color,
-  svTypeColors,
   colorBy,
   sources,
   groupOrder,
@@ -363,9 +343,6 @@ export function getVariantColorScales({
   // The alt cells' hue as the display resolved its `color`; undefined for the
   // genotype colours.
   color: ColorEncoding | undefined
-  // The worker-assigned color per present SV type, so the swatches match the
-  // painted cells. Only read when the SV-type preset is selected.
-  svTypeColors?: Record<string, string>
   colorBy: string
   sources: Source[] | undefined
   // The order the grouping key lists its values in: the bands' when the facet
@@ -387,7 +364,6 @@ export function getVariantColorScales({
       ? undefined
       : color,
     inputs,
-    svTypeColors,
   )
   return [
     ...(cellScale ? [cellScale] : []),

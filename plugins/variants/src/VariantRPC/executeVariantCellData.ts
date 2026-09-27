@@ -82,7 +82,6 @@ interface CellDataBase {
   // Whether any visible variant declares a phase set (PS in FORMAT), gating the
   // "Color by...→Phase set" menu option.
   hasPhaseSet: boolean
-  svTypeColors: Record<string, string>
   simplifiedFeatures: SimplifiedVariantFeature[]
   // Interned genotype payload (see shared/genotypeCodec.ts): the distinct
   // genotype strings, and the canonical sample order that each feature's
@@ -164,7 +163,6 @@ export async function executeVariantCellData({
     hasConsequence,
     hasPhaseSet,
     hasSvType,
-    svTypeColors,
     featureGenotypeCodes,
     genotypeDict,
     sampleNames,
@@ -200,7 +198,6 @@ export async function executeVariantCellData({
   // key and the cells agree.
   const hue = cellHueOf(color, {
     jexl: pluginManager.jexl,
-    svTypeColors,
     renderingMode,
   })
   const colorByPhaseSet = hue.byPhaseSet ?? false
@@ -299,7 +296,6 @@ export async function executeVariantCellData({
         hasConsequence,
         hasSvType,
         hasPhaseSet,
-        svTypeColors,
         simplifiedFeatures,
         genotypeDict,
         sampleNames,
@@ -351,7 +347,6 @@ export async function executeVariantCellData({
         hasConsequence,
         hasSvType,
         hasPhaseSet,
-        svTypeColors,
         simplifiedFeatures,
         genotypeDict,
         sampleNames,

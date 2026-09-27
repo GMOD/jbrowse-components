@@ -78,7 +78,6 @@ test('a regular-mode fetch stays current across a zoom', async () => {
             hasConsequence: false,
             hasSvType: false,
             hasPhaseSet: false,
-            svTypeColors: {},
             simplifiedFeatures: [],
             genotypeDict: [],
             sampleNames: ['HG001'],
