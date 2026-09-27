@@ -51,3 +51,11 @@ export const DEFAULTS = {
   // should do.
   showReferenceRow: true,
 } as const
+
+// Row-height presets for the shared "Row height" menu. Each pairs a height with
+// the glyph proportion that reads best at it — maf is the one display that has
+// a second axis here, and the shared builder writes both.
+export const HEIGHT_PRESETS = [
+  { label: 'Normal', rowHeight: DEFAULTS.rowHeight, rowProportion: 0.8 },
+  { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
+]

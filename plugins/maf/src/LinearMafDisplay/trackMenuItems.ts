@@ -19,7 +19,7 @@ import {
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { CONSERVATION_MODES } from './conservationModes.ts'
-import { DEFAULTS } from './displayDefaults.ts'
+import { HEIGHT_PRESETS } from './displayDefaults.ts'
 import { CODON_ROW_RENDERING, ROW_RENDERINGS } from './rowRenderings.ts'
 
 import type { ConservationMode } from './conservationModes.ts'
@@ -55,14 +55,6 @@ export const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier'
 export function zoomGatedItem(item: MenuItem, hint: string | undefined) {
   return hint ? { ...item, disabled: true, disabledHelpText: hint } : item
 }
-
-// Row-height presets for the shared "Row height" menu. Each pairs a height with
-// the glyph proportion that reads best at it — maf is the one display that has
-// a second axis here, and the shared builder writes both.
-const HEIGHT_PRESETS = [
-  { label: 'Normal', rowHeight: DEFAULTS.rowHeight, rowProportion: 0.8 },
-  { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
-]
 
 interface MafMenuSelf
   extends IStateTreeNode, MafClusterSelf, TreeLayoutModel<MafSource> {

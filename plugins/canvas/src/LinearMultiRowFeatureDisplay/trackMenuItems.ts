@@ -19,6 +19,7 @@ import TableRowsIcon from '@mui/icons-material/TableRows'
 
 import { partitionRowCountHint } from './partitionFields.ts'
 import { entryHidden } from './rendering/colorLegend.ts'
+import { ROW_HEIGHT_PRESETS } from './rowHeightPresets.ts'
 
 import type { PartitionRowCount } from './partitionFields.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
@@ -34,11 +35,6 @@ const SetRowArrangementDialog = lazy(
 const MultiRowClusterDialog = lazy(
   () => import('./components/MultiRowClusterDialog.tsx'),
 )
-
-const ROW_HEIGHT_PRESETS = [
-  { label: 'Normal', rowHeight: 14 },
-  { label: 'Compact', rowHeight: 8 },
-]
 
 interface MultiRowMenuSelf
   extends

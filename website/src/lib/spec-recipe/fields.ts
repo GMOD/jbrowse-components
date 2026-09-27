@@ -15,7 +15,8 @@ import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // died on ERR_UNKNOWN_FILE_EXTENSION before running a single check.
 import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.ts'
 import { CONSERVATION_MODES } from '../../../../plugins/maf/src/LinearMafDisplay/conservationModes.ts'
-import { DEFAULTS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
+import { HEIGHT_PRESETS as MAF_HEIGHT_PRESETS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
+import { ROW_HEIGHT_PRESETS as MULTIROW_HEIGHT_PRESETS } from '../../../../plugins/canvas/src/LinearMultiRowFeatureDisplay/rowHeightPresets.ts'
 import {
   CODON_ROW_RENDERING,
   ROW_RENDERINGS,
@@ -684,19 +685,25 @@ const MAF_ROW_RENDERING_LABELS = new Map<string, string>([
   [CODON_ROW_RENDERING[0], CODON_ROW_RENDERING[1]],
 ])
 
-// HEIGHT_PRESETS in the MAF track menu, which writes rowHeight and
-// rowProportion together — hand-verified, since its module pulls in the menu
-// helpers, though the Normal height itself comes from the imported DEFAULTS.
-const MAF_HEIGHT_PRESETS: { label: string; rowHeight: number }[] = [
-  { label: 'Normal', rowHeight: DEFAULTS.rowHeight },
-  { label: 'Compact', rowHeight: 8 },
-]
+// The displays whose menu carries tree-sidebar's shared "Row height" submenu,
+// with the presets each passes it; the multi-sample variant display passes
+// none.
+const ROW_HEIGHT_MENUS: Record<string, readonly RowHeightPreset[]> = {
+  LinearMafDisplay: MAF_HEIGHT_PRESETS,
+  LinearMultiRowFeatureDisplay: MULTIROW_HEIGHT_PRESETS,
+  LinearMultiSampleVariantDisplay: [],
+}
 
-function mafRowHeightPath(rowHeight: number) {
+interface RowHeightPreset {
+  label: string
+  rowHeight: number
+}
+
+function rowHeightPath(rowHeight: number, presets: readonly RowHeightPreset[]) {
   if (rowHeight === 0) {
     return `${TRACK_MENU} → Row height → Squeeze to fit view`
   }
-  const preset = MAF_HEIGHT_PRESETS.find(p => p.rowHeight === rowHeight)
+  const preset = presets.find(p => p.rowHeight === rowHeight)
   return preset
     ? `${TRACK_MENU} → Row height → ${preset.label}`
     : `${TRACK_MENU} → Row height → Custom... → ${rowHeight}px`
@@ -1551,10 +1558,12 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  rowHeight: (value, { displayType }) =>
-    typeof value === 'number' && displayType === 'LinearMafDisplay'
-      ? { path: mafRowHeightPath(value) }
-      : undefined,
+  rowHeight: (value, { displayType }) => {
+    const presets = displayType ? ROW_HEIGHT_MENUS[displayType] : undefined
+    return typeof value === 'number' && presets
+      ? { path: rowHeightPath(value, presets) }
+      : undefined
+  },
   rowProportion: (value, { displayType }) =>
     typeof value === 'number' && displayType === 'LinearMafDisplay'
       ? {

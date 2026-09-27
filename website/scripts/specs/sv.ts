@@ -2025,7 +2025,12 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             benchmarkCnvLane(),
             { trackId: 'hg008t_nygc_cnv', height: 70 },
-            { trackId: 'hg008t_dragen_cnv', showLabels: 'name', height: 70 },
+            {
+              trackId: 'hg008t_dragen_cnv',
+              type: 'LinearVariantDisplay',
+              showLabels: 'name',
+              height: 70,
+            },
             {
               // Pinned, because auto-fit was dividing whatever was left over
               // and gave the two haplotypes unequal bands — the reader is being
