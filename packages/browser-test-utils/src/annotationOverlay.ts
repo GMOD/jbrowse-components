@@ -33,6 +33,11 @@
 // - `text`: the smallest-area element whose visible text matches — for menu
 //   items and buttons with no testid. Scans the whole document, so prefer
 //   `selector` where one exists.
+//
+// A `view` on either DOM anchor scopes the lookup to that view's own
+// container, which is what tells the rows of a synteny stack apart: each
+// row's scalebar carries the same `refLabel-prefix` chip, and two rows of one
+// assembly caption it with the same name.
 export interface AnnotationAnchor {
   selector?: string
   text?: string
@@ -59,9 +64,10 @@ export interface AnnotationAnchor {
   // nothing here to measure.
   hLocus?: string
   vLocus?: string
-  // which view to resolve against: an index into `session.views` (default 0).
-  // An array descends through nested `.views` — `[0, 1]` is the second LGV of a
-  // comparative/breakpoint-split view.
+  // which view to resolve against: an index into `session.views` (default 0
+  // for a model anchor; a `selector`/`text` anchor without one searches the
+  // whole document). An array descends through nested `.views` — `[0, 1]` is
+  // the second LGV of a comparative/breakpoint-split view.
   view?: number | number[]
   // config `trackId` of the track supplying the y band and the x origin. Its
   // rendering container is the same element the blocks draw into, so a locus
@@ -333,27 +339,35 @@ export function drawAnnotationOverlay(
   // rendering container is the element the blocks draw into, and
   // getHighlightCoords maps a region into that same space (aliases
   // resolved, scroll subtracted).
-  function modelRect(anchor: NonNullable<Anchor>): Rect | undefined {
-    const path = Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0]
+  function viewAt(path: number | number[] | undefined) {
     let view = (window as unknown as { JBrowseSession?: AnchorableView })
       .JBrowseSession
-    for (const i of path) {
+    for (const i of Array.isArray(path) ? path : [path ?? 0]) {
       view = view?.views?.[i]
     }
+    return view
+  }
+
+  // The element a view's own DOM sits in: app-core's ViewContainer around a
+  // session view, or the LinearGenomeView's own box, which is all a row of a
+  // synteny stack has.
+  const viewContainerSelector = (view: AnchorableView) =>
+    ['view-container', 'linear-genome-view']
+      .map(t => `[data-testid="${t}-${CSS.escape(view.id)}"]`)
+      .join(', ')
+
+  function modelRect(anchor: NonNullable<Anchor>): Rect | undefined {
+    const view = viewAt(anchor.view)
     if (!view) {
       return undefined
     }
-    const el =
-      document.querySelector(
-        anchor.track
-          ? `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(anchor.track)}"]`
-          : ['view-container', 'linear-genome-view']
-              .map(
-                t =>
-                  `[data-testid="${t}-${CSS.escape(view.id)}"] [data-testid="tracksContainer"]`,
-              )
-              .join(', '),
-      ) ?? undefined
+    const el = anchor.track
+      ? document.querySelector(
+          `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(anchor.track)}"]`,
+        )
+      : document
+          .querySelector(viewContainerSelector(view))
+          ?.querySelector('[data-testid="tracksContainer"]')
     if (!el) {
       return undefined
     }
@@ -391,14 +405,22 @@ export function drawAnnotationOverlay(
   // smallest-area element whose visible text matches (so a callout can point
   // at a menu item / button without a testid).
   function domRect(anchor: NonNullable<Anchor>): Rect | undefined {
+    let scope: ParentNode | null = document.body
+    if (anchor.view !== undefined) {
+      const view = viewAt(anchor.view)
+      scope = view ? document.querySelector(viewContainerSelector(view)) : null
+    }
+    if (!scope) {
+      return undefined
+    }
     if (anchor.selector) {
-      return document.querySelector(anchor.selector)?.getBoundingClientRect()
+      return scope.querySelector(anchor.selector)?.getBoundingClientRect()
     }
     if (anchor.text) {
       const want = anchor.text.trim().toLowerCase()
       let best: Rect | undefined
       let bestArea = Number.POSITIVE_INFINITY
-      for (const el of document.querySelectorAll('body *')) {
+      for (const el of scope.querySelectorAll('*')) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const txt = (el.textContent !== null ? el.textContent : '')
           .trim()

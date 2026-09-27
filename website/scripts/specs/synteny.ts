@@ -4588,36 +4588,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
       ],
     }),
     annotations: [
-      // Which row is which genome. Anchored to each row's own header label,
-      // which is the one string in the frame that names that row and nothing
-      // else — the toolbar's assembly chips repeat the names without the
-      // `<assembly>:<refName>` colon these carry.
-      {
-        type: 'text',
-        text: 'HG008-T hap2',
-        fontSize: 19,
-        anchor: {
-          text: 'HG008T_v3.2:chr3_chr6_chr11_hap2',
-          alignX: 'right',
-          dx: 24,
-        },
-      },
-      {
-        type: 'text',
-        text: 'GRCh38 reference',
-        fontSize: 19,
-        anchor: { text: 'GRCh38_GIABv3:chr3', alignX: 'right', dx: 24 },
-      },
-      {
-        type: 'text',
-        text: 'HG008-T hap1',
-        fontSize: 19,
-        anchor: {
-          text: 'HG008T_v3.2:chr3_chr13_hap1',
-          alignX: 'right',
-          dx: 24,
-        },
-      },
+      // Which row is which genome. Anchored to each row's own caption chip,
+      // the assembly name at the scalebar's left edge, scoped to the row by
+      // `view`: the chip is the same testid on every row, and the two
+      // haplotype rows caption it with the same name.
+      ...(['HG008-T hap2', 'GRCh38 reference', 'HG008-T hap1'] as const).map(
+        (text, row) => ({
+          type: 'text' as const,
+          text,
+          fontSize: 19,
+          anchor: {
+            selector: '[data-testid="refLabel-prefix"]',
+            view: [0, row],
+            alignX: 'right' as const,
+            dx: 24,
+          },
+        }),
+      ),
       // The two breakends. Anchored to the bands themselves (`highlight-band`,
       // HighlightBand.tsx) rather than to a locus: a locus anchor resolves
       // through `getHighlightCoords` with the view's own `assemblyNames[0]`,
@@ -4627,11 +4614,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
       //
       // The second band takes the SIBLING COMBINATOR — "a band preceded by a
       // band". `:nth-of-type(2)` and `:last-of-type` both match nothing, since
-      // neither band is the second or last DIV among its siblings, and `view`
-      // is not honoured for a selector anchor inside a nested view, so a
-      // `tracksContainer` anchor takes the first one in the whole synteny view.
-      // Highlights exist on the reference row alone, which is what makes both
-      // of these unambiguous.
+      // neither band is the second or last DIV among its siblings. Highlights
+      // exist on the reference row alone, which is what makes both of these
+      // unambiguous.
       {
         type: 'text',
         text: 'chr3 breakend',
