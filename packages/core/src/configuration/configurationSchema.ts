@@ -93,8 +93,9 @@ export interface ConfigurationSchemaOptions<
   views?: (self: SELF) => any
   extend?: (self: SELF) => any
   /**
-   * The slot a bare string snapshot lifts into, so `color: "red"` and
-   * `color: { value: "red" }` are one config. Applied before
+   * The slot a bare string or number snapshot lifts into, as that slot's type
+   * takes it, so `color: "red"` and `color: { value: "red" }` are one config,
+   * and `rules: [5]` is `rules: [{ value: 5 }]`. Applied before
    * `preProcessSnapshot`, on every path a snapshot arrives by; the JSON schema,
    * `describeSlots` and the config editor read it here.
    */
