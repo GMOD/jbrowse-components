@@ -113,7 +113,7 @@ export function pluginCheckout(name: string) {
 // A plugin's `src/` plus each workspace package's, since a plugin that splits
 // into `packages/*` renders labels from both: graphgenomeviewer's layout and
 // colour names moved into `packages/core`.
-export function pluginSourceDirs(name: string) {
+export function pluginSourceDirs(name: string): [string, ...string[]] {
   const checkout = pluginCheckout(name)
   const packages = join(checkout, 'packages')
   return [

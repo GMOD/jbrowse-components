@@ -40,7 +40,7 @@ const figureLiveRefs = Object.fromEntries(
 
 const figureFrames = Object.fromEntries(
   specs.flatMap(spec =>
-    specLiveRef(spec) === undefined
+    spec.mode !== 'url' || specLiveRef(spec) === undefined
       ? []
       : [
           [

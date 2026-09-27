@@ -1,5 +1,5 @@
 import type { AnnotationAnchor } from './screenshot-specs.ts'
-import type { Page } from 'puppeteer'
+import type { JSHandle, Page } from 'puppeteer'
 
 export interface ViewportRect {
   left: number
@@ -146,7 +146,7 @@ export function nodeGeometryInPage(
 export function locateGraphPane(
   page: Page,
   anchor: Pick<AnnotationAnchor, 'view' | 'track'>,
-) {
+): Promise<JSHandle<LocatedGraphPane | undefined>> {
   const path = Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0]
   return page.evaluateHandle(locateGraphPaneInPage, path, anchor.track)
 }
