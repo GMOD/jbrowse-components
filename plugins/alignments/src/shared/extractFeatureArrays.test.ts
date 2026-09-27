@@ -185,3 +185,31 @@ describe('CIGAR-only features', () => {
     expect(() => extract([bamRead('')], { type: 'strand' })).not.toThrow()
   })
 })
+
+// Collapsed introns with padding 0 make each region exactly one exon, so the
+// intron touches both edges and overlaps neither; the walk's half-open window
+// test dropped it from both and the view drew no sashimi arc at all
+describe('an intron that only touches a region edge', () => {
+  const spliced = new SimpleFeature({
+    uniqueId: 'spliced',
+    refName: 'ctgA',
+    start: 100,
+    end: 1400,
+    strand: 1,
+    CIGAR: '100M1000N200M',
+  })
+  const skipsIn = (start: number, end: number) =>
+    extractFeatureArrays([spliced], buildFeatureData, {
+      colorBy: { type: 'normal' },
+      showSoftClipping: false,
+      region: { refName: 'ctgA', start, end, assemblyName: 'volvox' },
+      perBaseBinBp: 1,
+    }).gaps.filter(g => g.type === 'skip')
+
+  test.each([
+    ['the donor exon', 100, 200],
+    ['the acceptor exon', 1200, 1400],
+  ])('is still extracted in %s', (_, start, end) => {
+    expect(skipsIn(start, end)).toMatchObject([{ start: 200, end: 1200 }])
+  })
+})

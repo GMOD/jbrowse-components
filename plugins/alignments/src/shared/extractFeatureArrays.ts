@@ -179,10 +179,13 @@ export function extractFeatureArrays<T extends FeatureData>(
     // but does carry a CIGAR string, so it walks that instead — an assembly
     // alignment's indels are the whole point of drawing it. A PIF's coarse tier
     // carries no CIGAR at all, and an empty string walks to nothing.
+    //
+    // Clipped to the region, which for reads far larger than the viewport
+    // (whole-chromosome assembly contigs) skips walking the off-screen bulk of
+    // the CIGAR. Widened a base each side because the walk's window test is
+    // half-open: an intron abutting the region, as every intron does when
+    // collapsed-intron padding is 0, overlaps no base of it and was dropped.
     if (isMismatch) {
-      // Clip CIGAR extraction to the visible region. For reads far larger than
-      // the viewport (whole-chromosome assembly contigs) this skips walking the
-      // off-screen bulk of the CIGAR entirely.
       extractCigarFeatures(
         feature,
         readIndex,
@@ -190,8 +193,8 @@ export function extractFeatureArrays<T extends FeatureData>(
         strand,
         cigarOutput,
         showSoftClipping,
-        region.start,
-        region.end,
+        region.start - 1,
+        region.end + 1,
       )
     } else if (cigarString) {
       extractCigarFeaturesFromString(
@@ -202,8 +205,8 @@ export function extractFeatureArrays<T extends FeatureData>(
         strand,
         cigarOutput,
         showSoftClipping,
-        region.start,
-        region.end,
+        region.start - 1,
+        region.end + 1,
       )
     }
 

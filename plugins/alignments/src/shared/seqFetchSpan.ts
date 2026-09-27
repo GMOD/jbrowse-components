@@ -11,8 +11,8 @@ import { SAM_FLAG_UNMAPPED } from '@jbrowse/cigar-utils'
  * writing it an MD, so counting it opened BAM's sticky `needsReference` on
  * files whose every aligned read carries MD.
  *
- * Exactly the reads' own span: the walk bounds only base COMPARISON by what the
- * region covers, and reports indels and clips whether or not it reaches them.
+ * Clamping loses nothing: `extractFeatureArrays` walks a base past each region
+ * edge, but the walk compares a base only where this slice holds one.
  */
 export function seqFetchSpan(
   records: readonly {
