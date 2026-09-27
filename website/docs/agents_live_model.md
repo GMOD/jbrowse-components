@@ -7,20 +7,18 @@ description:
 ---
 
 Desktop's `run_javascript` MCP tool runs an async JavaScript function body
-inside the app's renderer, and what you `return` is serialized back. A browser
-agent on JBrowse Web runs the same code in the page, where the value is the last
+inside the app's renderer and serializes what you `return`. A browser agent on
+JBrowse Web runs the same code in the page, where the value is the last
 expression. In scope either way:
 
 - `session`, the live MST session model: views, tracks, assemblies, dialogs
 - `rootModel`, its parent: the jbrowse config, menus, `session` itself
 - `pluginManager`, the plugin registry: track, view and adapter types, extension
   points
-- `jb`, the helper library below; `jb.help` restates it in one string, for an
-  agent that finds the object before this page.
-- `signal` (Desktop only), an `AbortSignal` that fires when the call's
-  `timeoutMs` expires — check it in long loops so a timed-out call stops rather
-  than pinning the renderer
-- `window`, the real DOM. In Desktop this is an Electron renderer with
+- `jb`, the helper library below; `jb.help` restates it in one string
+- `signal` (Desktop only), an `AbortSignal` that fires when `timeoutMs` expires;
+  check it in long loops
+- `window`, the real DOM. In Desktop that is an Electron renderer with
   nodeIntegration, so Node is one `window.require` away
 
 ## The helper library
@@ -32,50 +30,38 @@ else is done with the model.
 
 Orientation and building:
 
-- `jb.sessionSummary()` is the orientation call: views, tracks with their
-  display type and render phase, assemblies, visible regions, and the `drawer`
-  and `dialog` over them.
-- `jb.inspect(node?, maxBytes?)` answers a live node's value, its getters, **the
-  actions it takes** and its `modelType`; MST actions are non-enumerable, so
-  `Object.keys` lists none. Pass the node — `jb.inspect(jb.view())` — and bare
-  `jb.inspect()` is the session.
-- `jb.listTracks(search?, limit?)` is the track catalog, capped at 100 by
-  default: `{ total, tracks }`, a row of
-  `{ trackId, name, type, assemblyNames }`.
-- `jb.loadSessionSpec(spec, settleMs?)` builds views declaratively from the spec
-  on `docs topic:"session-spec"`, settles (default 30000) and answers the settle
-  plus the summary. It **replaces the session**: the `session` argument you were
-  given is a dead node afterwards. Every `jb` helper re-reads the live one, and
-  `jb.session` is it if you need to rebind.
-- `jb.addView(spec, settleMs?)` opens one more view beside what is open, from
-  one entry of a spec's `views` array; a key the view does not take throws
-  before anything opens. It answers `{ viewId }` plus the settle.
-- `jb.setSession(document, settleMs?)` rewrites the session as a document:
-  `jb.mst.getSnapshot(jb.session)`, edited and handed back. A view, track or
-  display whose `id` the document keeps is patched in place, one it drops is
-  closed, an entry with no `id` is new, and a top-level key left out keeps its
-  value — so `{ views }` is a whole instruction. It answers the settle plus the
-  summary.
-- `jb.fitToWindow(settleMs?)` shrinks what is open until the session fits the
-  window, answering with each cut. The settle's `offscreen` is the cue.
+- `jb.sessionSummary()` orients: views, tracks (display type, render phase),
+  assemblies, visible regions, `drawer` and `dialog`.
+- `jb.inspect(node?, maxBytes?)`: a live node's value, getters, **actions** and
+  `modelType`; `Object.keys` lists no MST action. Bare, it is the session.
+- `jb.listTracks(search?, limit?)`: the catalog, `{ total, tracks }` of
+  `{ trackId, name, type, assemblyNames }`, 100 by default.
+- `jb.loadSessionSpec(spec, settleMs?)` builds views from a spec
+  (`docs topic:"session-spec"`), settles (default 30000) and answers the settle
+  plus the summary. It **replaces the session**: your `session` argument is dead
+  afterwards, and `jb.session` is the live one.
+- `jb.addView(spec, settleMs?)` opens one entry of a spec's `views` beside what
+  is open; an unknown key throws first. Answers `{ viewId }` plus the settle.
+- `jb.setSession(document, settleMs?)` rewrites the session as a document,
+  `jb.mst.getSnapshot(jb.session)` edited: an entry keeping its `id` is patched,
+  one dropped is closed, one without is new, and a top-level key left out keeps
+  its value.
+- `jb.fitToWindow(settleMs?)` shrinks what is open until it fits the window.
 - `jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? })`
-  adds an absolute local path or a URL (a relative one is refused), infers the
-  format from the extension, shows it and settles; an unreadable file reports in
-  `notReady`.
-- `jb.addTrack({ trackId, settings?, viewId?, settleMs? })` shows a track the
-  catalog holds; the file keys above are refused, not ignored.
+  adds an absolute local path or a URL (relative refused), infers the format,
+  shows it and settles; an unreadable file reports in `notReady`.
+- `jb.addTrack({ trackId, settings?, viewId?, settleMs? })` shows a catalog
+  track; the file keys are refused.
 - `jb.view(viewId?)` is the open view. With several open and no `viewId` it
-  throws naming each one, as do `jb.trackModel`, `jb.visibleRegions`,
-  `jb.addTrack` and `jb.getFeatures`. `viewId` comes from `jb.sessionSummary()`.
-- `jb.trackModel(trackId, viewId?)` is the shown track's live model. It throws
-  when no view shows the track, saying whether the id is unknown or just not
-  shown.
-- `track.applyDisplaySettings(settings)` styles the track's `activeDisplay` in
-  place and returns `{ applied, unapplied, failed }` — a key it did not apply is
-  not an error, so read the report.
+  throws naming each, as do `jb.trackModel`, `jb.visibleRegions`, `jb.addTrack`
+  and `jb.getFeatures`; `viewId` comes from `jb.sessionSummary()`.
+- `jb.trackModel(trackId, viewId?)` is the shown track's live model; it throws
+  when no view shows it.
+- `track.applyDisplaySettings(settings)` styles `activeDisplay` in place and
+  returns `{ applied, unapplied, failed }`; read the report, since an unapplied
+  key is not an error.
 - `jb.describeSlots(confNode)` lists every slot the node's schema defines, with
-  type, description and default, a list's entries under `items` and a list of
-  several kinds under `items.oneOf`. Introspect before writing:
+  type, description and default:
   `jb.describeSlots(jb.trackModel('x').activeDisplay.configuration)`.
 
 Reading:
@@ -83,25 +69,20 @@ Reading:
 - `jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? })`,
   or `jb.getFeatures(trackId, loc?, { assembly?, viewId?, byteLimit? })`, is the
   track's data as live Feature objects, over the visible region by default. It
-  runs `renameRegionsIfNeeded`, so a file spelling "ctgA" "contigA" answers
-  rather than reading empty. See
+  runs `renameRegionsIfNeeded`, so a file spelling "ctgA" "contigA" answers. See
   [Reading data directly](#reading-data-directly-fast-path).
 - `await jb.visibleRegions(viewId?)` is the visible region as numbers
-  (`{ assemblyName, refName, start, end }`), what `getFeatures` reads by
-  default.
+  (`{ assemblyName, refName, start, end }`).
 - `jb.waitReady(timeoutMs?)` resolves when views and tracks finish loading and
-  drawing (default 30000). Its result carries `notifications` (the session's
-  error toasts), `notReady` (views that failed or are still `initializing`, and
-  tracks that settled without drawing (a `phase`) or drew around config
-  (`notices`)), `offscreen` (views taller than the window) and the `drawer` and
-  `dialog` above. None raises a toast and all look plausible in a screenshot, so
-  check this report instead.
+  drawing (default 30000), answering `notifications` (error toasts), `notReady`
+  (views failed or `initializing`, tracks settled without drawing (`phase`) or
+  drawn around config (`notices`)), `offscreen` (views taller than the window),
+  `drawer` and `dialog`. None raises a toast, so check this report.
 
 The foundations:
 
 - `jb.require(name)` is the module registry plugins link against, by the same
-  names (`'@jbrowse/core/util'`, `'react'`); everything lower level than the
-  helpers above is there rather than on `jb`; a browser needs
+  names (`'@jbrowse/core/util'`, `'react'`); a browser needs
   `await jb.ensureRequire()` once first.
 - `jb.mst` and `jb.mobx` are the whole mobx-state-tree and mobx APIs.
 - `jb.readConfObject(conf, 'slot')` and `jb.getConf(model, 'slot')` read config
@@ -110,43 +91,36 @@ The foundations:
 
 ## What changed since v4
 
-Three things you may know from before v5 are wrong:
-
-- One `LinearAlignmentsDisplay` draws pileup, coverage, read arcs and read
-  cloud; they are its slots (`readConnections: 'arc'`), and
-  `LinearPileupDisplay`, `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay` and
+- One `LinearAlignmentsDisplay` draws pileup, coverage, read arcs and read cloud
+  as its slots (`readConnections: 'arc'`); `LinearPileupDisplay`,
+  `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay` and
   `LinearReadCloudDisplay` are aliases of it, not types to `replaceDisplay` to.
 - A view's launch keys go directly on the view object in a spec or a snapshot;
   the v4 `init: { ... }` nesting is unwrapped with a warning.
 - Synteny and dotplot rows each take `loc` and `displayedRegionNames`, in a spec
-  and in `jb.setSession`, so an axis is navigated declaratively, not with
-  `setDisplayedRegions`.
+  and in `jb.setSession`, so an axis is navigated declaratively.
 
 ## Calls and what they answer with
 
-- State persists between `run_javascript` calls in the same app run: stash your
-  own helpers on `globalThis`.
-- The `open` tool and `jb.loadSessionSpec` replace `session`, so re-read it per
-  call and never cache it on `globalThis`.
-- `open` from the start screen loads a new page, emptying `globalThis`; with a
-  session open it swaps in place and helpers survive.
+State persists between calls in one app run: stash helpers on `globalThis`. The
+`open` tool and `jb.loadSessionSpec` replace `session`, so re-read it per call
+and never cache it. `open` from the start screen loads a new page, emptying
+`globalThis`.
 
 Besides `value`, a call answers with:
 
-- `logs`, what the code passed to `console.log`, `info`, `warn`, `error` or
-  `debug`, in order. Print intermediate state instead of returning it.
+- `logs`, the console output in order. Print intermediate state instead of
+  returning it.
 - `notifications`, toasts the session raised since the previous call, each with
-  its `level`, each reported once on the first call after it fired.
-- `pageErrors`, the throws no toast carried: an uncaught exception, a rejection
-  nobody awaited, a mobx reaction that died. Nothing else reports these, so a
-  session that settles clean and screenshots right can still carry one.
+  its `level`, each reported once.
+- `pageErrors`, the throws no toast carried: an uncaught exception, an unawaited
+  rejection, a mobx reaction that died. Nothing else reports these.
 - a thrown error as its message plus `at code line L, column C`, counted in your
-  code, then the console output before it. A compile error has no line — V8
-  gives none for a function body — look for an unbalanced bracket or an `await`
-  in a non-async callback.
+  code. A compile error has no line; look for an unbalanced bracket or an
+  `await` in a non-async callback.
 - a call that outlives `timeoutMs` (default 120 s) answers with an error and the
-  logs so far; the code keeps running with its `signal` aborted, so work that
-  checks `signal.aborted` stops. For a long job, park the promise:
+  logs so far; the code keeps running with `signal` aborted. For a long job,
+  park the promise:
 
 ```js
 // call 1
@@ -162,25 +136,19 @@ return 'started'
 - Model mutations render asynchronously: `await jb.waitReady(30000)` after
   navigating or adding tracks, before reading render state or capturing.
   `jb.mobx.when(() => predicate)` awaits any observable condition.
-- To prove a track drew rather than settled empty, pair an empty `notReady` with
-  a `jb.getFeatures` count over the visible region. Do not look for pixels:
-  displays render into offscreen canvases and paint the result, so the page's
-  `<canvas>` elements measure 0x0.
+- To prove a track drew, pair an empty `notReady` with a `jb.getFeatures` count
+  over the visible region. Do not look for pixels: displays render into
+  offscreen canvases, so the page's `<canvas>` elements measure 0x0.
 - A freshly created view throws "width undefined" from its region getters until
-  it mounts and navigates; `initialized` is true before that, and
-  `visibleRegions` returns empty with no error.
-  `await jb.visibleRegions(viewId)` waits for both.
+  it mounts and navigates; `await jb.visibleRegions(viewId)` waits for both.
 - Long synchronous loops block the UI thread; chunk big work with
-  `await new Promise(r => setTimeout(r))` between batches.
-- Screenshot when the change is visual — styling, layout, a figure someone will
-  see — and whenever the settle reports `notReady` or `offscreen`. For show,
-  hide, reorder, navigate and fit, the settle plus `jb.sessionSummary()` is the
-  verification, far cheaper than an image. When you do take one, read it: an
-  unread image proves nothing.
-- Whether it all fits is arithmetic, not a capture: `jb.sessionSummary()`
-  reports each view's and each display's `height`. A window capture spends most
-  of its pixels on chrome and cuts off a session taller than the window (the
-  settle's `offscreen`); `screenshot` takes `fullPage: true`, `selector`
+  `await new Promise(r => setTimeout(r))`.
+- Screenshot when the change is visual and whenever the settle reports
+  `notReady` or `offscreen`; for show, hide, reorder, navigate and fit, the
+  settle plus `jb.sessionSummary()` verifies. Read any image you take.
+- Whether it all fits is arithmetic: `jb.sessionSummary()` reports each view's
+  and display's `height`. A window capture cuts off a taller session;
+  `screenshot` takes `fullPage: true`, `selector`
   (`[data-testid="view-container-<view.id>"]`) or a measured `rect`.
 
 ## Deep dives
