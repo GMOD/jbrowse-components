@@ -1,13 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 
-import puppeteer from 'puppeteer'
-
-import {
-  BASE_CHROME_ARGS,
-  findChromeExecutable,
-  isBrowserConsoleNoise,
-} from './browser.ts'
+import { isBrowserConsoleNoise, launchBrowser } from './browser.ts'
 import { resolveAgainstConfig } from './catalog.ts'
 import { assertImagePath } from './imagePath.ts'
 import { assertSupportedInstance } from './instanceVersion.ts'
@@ -21,20 +15,17 @@ import {
 import { sessionOverflowInPage } from './sessionOverflow.ts'
 import { PUBLIC_INSTANCE, assertSessionStandsAlone, jbrowseUrl } from './url.ts'
 
+import type { LaunchOptions } from './browser.ts'
 import type { ReadyOptions, ReadyReport } from './ready.ts'
 import type { JBrowseUrlOptions } from './url.ts'
 import type { Browser, Page } from 'puppeteer'
 
-export interface OpenOptions extends JBrowseUrlOptions, ReadyOptions {
+export interface OpenOptions
+  extends JBrowseUrlOptions, ReadyOptions, LaunchOptions {
   width?: number
   height?: number
   /** Device pixel ratio. Default 2, the density a figure usually wants. */
   deviceScaleFactor?: number
-  headless?: boolean
-  /** Chrome binary. Defaults to $CHROME_PATH, a system Chrome, then Puppeteer's own. */
-  executablePath?: string
-  /** Extra Chrome flags, appended to the defaults. */
-  args?: string[]
   /** Called with each page console message that is not known GPU noise, and each uncaught page error. */
   onConsole?: (text: string) => void
 }
@@ -58,9 +49,9 @@ export async function openJBrowse(
     width = 1400,
     height = 900,
     deviceScaleFactor = 2,
-    headless = true,
-    executablePath = findChromeExecutable(),
-    args = [],
+    headless,
+    executablePath,
+    args,
     onConsole,
     timeout = DEFAULT_TIMEOUT,
     trackIds,
@@ -76,11 +67,7 @@ export async function openJBrowse(
     ...urlOptions,
     sessionName: urlOptions.sessionName ?? 'Screenshot',
   })
-  const browser = await puppeteer.launch({
-    headless,
-    executablePath,
-    args: [...BASE_CHROME_ARGS, ...args],
-  })
+  const browser = await launchBrowser({ headless, executablePath, args })
   try {
     const page = await browser.newPage()
     await page.setViewport({ width, height, deviceScaleFactor })

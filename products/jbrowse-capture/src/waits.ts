@@ -25,7 +25,7 @@ export const APP_READY = '[data-app-phase="ready"]'
 const APP_LOADING = '[data-app-phase="loading"]'
 
 /** A display drawing a transition between two settled pictures. */
-export const ANIMATING_DISPLAYS = '[data-display-animating="true"]'
+const ANIMATING_DISPLAYS = '[data-display-animating="true"]'
 
 /** Displays that have not yet drawn anything. */
 export const PENDING_DISPLAYS = '[data-display-drawn="false"]'

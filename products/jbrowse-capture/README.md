@@ -67,7 +67,12 @@ that will never say it has finished.
 ## Library
 
 ```js
-import { captureJBrowse, openJBrowse } from '@jbrowse/capture'
+import {
+  captureJBrowse,
+  launchBrowser,
+  openJBrowse,
+  waitForJBrowseReady,
+} from '@jbrowse/capture'
 
 // one call: launch, wait, shoot, close
 const { pending, unsettled } = await captureJBrowse({
@@ -85,6 +90,14 @@ const tracks = await page.evaluate(
 const view = await page.$('[data-testid^="view-container-"]')
 await view.screenshot({ path: 'view-only.png' })
 await browser.close()
+
+// or a page of your own that embeds a JBrowse component
+const own = await launchBrowser()
+const ownPage = await own.newPage()
+await ownPage.goto('http://localhost:8000/my-widget.html')
+await waitForJBrowseReady(ownPage)
+await ownPage.screenshot({ path: 'embedded.png' })
+await own.close()
 ```
 
 The CLI covers the common capture and has no flag for the rest. A crop, a click
@@ -105,6 +118,11 @@ Two waits, depending on what you did:
   the click's work registers, so waiting for `ready` there returns on the
   pre-click frame. `waitForAppSettled` requires it to hold, and throws on a
   build with no marker rather than falling back to a wait that cannot fail.
+
+`openJBrowse` opens a JBrowse Web instance. A page of your own that embeds a
+JBrowse component, such as an htmlwidget or a notebook widget, publishes the
+same marker: `launchBrowser`, navigate, then `waitForJBrowseReady(page)`, as the
+last example above does.
 
 ## Timeouts and unsettled waits
 

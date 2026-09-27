@@ -14,7 +14,6 @@ export {
   trackIdsFromSession,
 } from './session.ts'
 export {
-  ANIMATING_DISPLAYS,
   PENDING_DISPLAYS,
   displayPainted,
   displaySettled,
@@ -30,8 +29,10 @@ export {
   BASE_CHROME_ARGS,
   findChromeExecutable,
   isBrowserConsoleNoise,
+  launchBrowser,
 } from './browser.ts'
 
+export type { LaunchOptions } from './browser.ts'
 export type {
   CaptureOptions,
   CaptureResult,
