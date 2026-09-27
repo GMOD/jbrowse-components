@@ -173,8 +173,13 @@ python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
   --species vv=grape --species pp=peach --species tc=cacao
 ```
 
+A two-column table is valid too, so a reciprocal-best-hit list already loads as
+a pairwise synteny track.
+
 `mcscanx_to_anchors.py` writes `grape.blocks` and a BED per genome, anchored on
-the first `--species`; ties resolve to the best-scoring block.
+the first `--species`; ties resolve to the best-scoring block. Given two
+`--species`, it writes `.anchors` files instead, which load a pair the table
+left out as a second track.
 
 `--blocks-score` appends the row's weakest pairing as a trailing column, which
 the adapter's `attributeColumns` names:
@@ -223,7 +228,9 @@ python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
 ```
 
 `attributeColumns` can name `identity`, `homology_identity` and `goc_score` the
-way the scored table above names `score`.
+way the scored table above names `score`. A partner species the export lacks
+writes no table and raises no error, so check each `--species` name against the
+file's `homology_species` column.
 
 ### From reciprocal best BLAST hits
 
@@ -269,7 +276,8 @@ Ensembl namespaces its GFF3 ids (`ID=gene:VIT_00000001`); the `sub` strips that.
 Column 1 must use the JBrowse assembly's sequence names, and column 4 must match
 the table's gene ids
 ([adapter gotchas](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
-cover how ids get mangled). Column 6 is strand.
+cover how ids get mangled; `--no_strip_names` stops jcvi dropping isoform
+suffixes). Column 6 is strand.
 
 ## Setting up the three assemblies
 
@@ -366,7 +374,9 @@ dialog. The declarative equivalent, stacking peach-cacao-grape:
 }
 ```
 
-`tracks` is one entry per band.
+`tracks` is one entry per band. `autoDiagonalize` reorders and flips each row's
+chromosomes so the ribbons run along the diagonal, and
+`color: { "field": "reference" }` anchors every band on the middle row.
 
 <Figure caption="Three genomes stacked peach-cacao-grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal, and Color by → Reference anchors both bands on the shared middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
 
