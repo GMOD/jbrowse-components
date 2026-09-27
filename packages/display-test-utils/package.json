@@ -15,7 +15,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.6.1",
     "@jbrowse/render-core": "workspace:^",
-    "mobx": "^7.0.4"
+    "mobx": "^7.0.5"
   },
   "peerDependencies": {
     "@testing-library/react": "^16.3.3"
