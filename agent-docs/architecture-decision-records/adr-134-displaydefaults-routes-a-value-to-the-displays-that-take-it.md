@@ -76,3 +76,7 @@ over the displays declaring it, where it was the `allOf` of their slot tables.
   receives a shorthand value. Every key only one display declares (`mark`,
   `scales`, `labels`, `origin`) would need marking, against a plugin risk no
   live case shows: a value a display's schema refuses is already skipped.
+- **A warning when a key reaches some displays and not others.** A display
+  skips a key because it has no such setting (`height` never reaches a
+  chord), which is normal config; ggplot drops an inherited aesthetic a geom
+  does not use the same way.
