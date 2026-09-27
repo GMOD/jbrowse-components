@@ -9,6 +9,7 @@ import { createCanvas as nodeCreateCanvas } from 'canvas'
 import {
   createView,
   doBeforeEach,
+  expectSvgGolden,
   findAnyDisplayPainted,
   findDisplayPainted,
   getSavedSvg,
@@ -80,8 +81,7 @@ test('wiggle display SVG vector export', async () => {
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/wiggle_vector_snapshot.svg`, svg)
-  expect(normalizeSvg(svg)).toMatchSnapshot()
+  expectSvgGolden(svg, 'wiggle_vector_snapshot', normalizeSvg(svg))
 }, 45000)
 
 test('wiggle display SVG rasterized export embeds PNG', async () => {
@@ -105,8 +105,7 @@ test('canvas feature display SVG vector export', async () => {
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
-  fs.writeFileSync(`${snapshotDir}/canvas_feature_vector_snapshot.svg`, svg)
-  expect(normalizeSvg(svg)).toMatchSnapshot()
+  expectSvgGolden(svg, 'canvas_feature_vector_snapshot', normalizeSvg(svg))
 }, 45000)
 
 test('canvas feature display SVG rasterized export embeds PNG', async () => {

@@ -522,6 +522,31 @@ function snapshotMismatches() {
   return snapshotState.unmatched
 }
 
+/**
+ * Snapshot `snapshotted` and write `svg` to `__image_snapshots__/<golden>.svg`
+ * ONLY WHEN THE SNAPSHOT ACCEPTED IT. The golden and the `.snap` hold the same
+ * export for two readers — the golden is the one a human diffs, the `.snap` is
+ * what fails a run — so a golden the `.snap` rejected is a picture of the bug,
+ * and it reads in `git status` as somebody's pending snapshot update rather than
+ * as red CI.
+ *
+ * Sequencing alone does not buy that: `toMatchSnapshot` records its verdict and
+ * RETURNS, so everything after it runs on a red run too. Count the mismatch
+ * instead.
+ */
+export function expectSvgGolden(
+  svg: string,
+  golden: string,
+  snapshotted = svg,
+) {
+  const before = snapshotMismatches()
+  expect(snapshotted).toMatchSnapshot()
+  if (snapshotMismatches() === before) {
+    const dir = path.dirname(module.filename)
+    fs.writeFileSync(`${dir}/__image_snapshots__/${golden}.svg`, svg)
+  }
+}
+
 export async function exportAndVerifySvg({
   findByTestId,
   findByText,
@@ -556,21 +581,7 @@ export async function exportAndVerifySvg({
   const svg = getSavedSvg()
   assertNoDuplicateSvgIds(svg)
   assertNoDanglingSvgRefs(svg)
-  // ONLY WHEN THE SNAPSHOT ACCEPTED THESE BYTES. The golden `.svg` and the
-  // `.snap` hold the same string for two readers — the golden is the one a
-  // human diffs, the `.snap` is what fails a run — so a golden the `.snap`
-  // rejected is a picture of the bug, and it reads in `git status` as somebody's
-  // pending snapshot update rather than as red CI.
-  //
-  // Sequencing alone does not buy that: `toMatchSnapshot` records its verdict
-  // and RETURNS, so everything after it runs on a red run too. Count the
-  // mismatch instead.
-  const before = snapshotMismatches()
-  expect(svg).toMatchSnapshot()
-  if (snapshotMismatches() === before) {
-    const dir = path.dirname(module.filename)
-    fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
-  }
+  expectSvgGolden(svg, `${filename}_snapshot`)
   return svg
 }
 
