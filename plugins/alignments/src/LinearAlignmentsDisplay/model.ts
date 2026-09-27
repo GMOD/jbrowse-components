@@ -3501,6 +3501,10 @@ export default function stateModelFactory(
             // `sortOverlappingByIndex` only ever orders the reads that ranked
             // — strand included. There is no sort this action can reach that
             // lays out sensibly without a center line.
+            // The sort anchors on the column under the center line, so reveal
+            // it either way: the user sees where the pileup is ordered, or what
+            // the warning below asks them to move.
+            view.setShowCenterLine(true)
             if (centerLineInfo && !centerLineInfo.oob) {
               setSortSlot({
                 type,
@@ -3512,13 +3516,7 @@ export default function stateModelFactory(
                 refName: centerLineInfo.refName,
                 tag,
               })
-              // The sort anchors on the column under the center line, so reveal
-              // it — the user sees exactly where the pileup is being ordered.
-              view.setShowCenterLine(true)
             } else {
-              // Reveal the center line the warning asks the user to reposition —
-              // it's the thing they need to see to comply.
-              view.setShowCenterLine(true)
               getNotificationSink(self).notify(
                 'Cannot sort: the view center line is not over a valid position. Scroll so the center line is within a region and try again.',
                 'warning',
