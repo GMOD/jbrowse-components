@@ -279,7 +279,7 @@
       ]
     },
     {
-      "type": "SyntenyTrack",
+      "type": "GraphTrack",
       "trackId": "hprc_v2_1_gbz",
       "name": "HPRC release 2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
       "assemblyNames": [

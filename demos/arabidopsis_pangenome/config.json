@@ -612,7 +612,7 @@
       ]
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "arabidopsis_minigraph_segments",
       "name": "1001G+ minigraph pangenome (rGFA segments)",
       "assemblyNames": ["TAIR10"],
@@ -642,7 +642,7 @@
       ]
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "arabidopsis_minigraph_tier",
       "name": "1001G+ minigraph pangenome: bubble tier (one node per bubble)",
       "assemblyNames": ["TAIR10"],

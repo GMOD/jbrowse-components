@@ -440,7 +440,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "ecoli_minigraph_segments",
       "name": "minigraph graph: rGFA segments (browsable by locus)",
       "assemblyNames": ["K12"],
@@ -534,7 +534,7 @@
       ]
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "ecoli_pggb_segments",
       "name": "pggb graph segments (whole graph, by locus)",
       "assemblyNames": ["K12"],
@@ -559,7 +559,7 @@
       ]
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "ecoli_pggb_tier50",
       "name": "pggb graph bubbles (coarse tier, one node per bubble)",
       "assemblyNames": ["K12"],
@@ -722,7 +722,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "GraphTrack",
       "trackId": "ecoli_cactus_segments",
       "name": "MC graph: segments (whole graph, by locus)",
       "assemblyNames": ["K12"],
