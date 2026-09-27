@@ -250,3 +250,8 @@ Moving a figure off a page means moving its card's crop source in
 - `agent-docs/reference/PANGENOME_GRAPHS.md`
 - `agent-docs/ideas/collections/tutorial-ideas-audit.md`, and the dead ends in
   `agent-docs/ideas/waiting-on-someone-else/figures-blocked-on-data.md`
+- Two pages were removed and don't come back as written: `readpair_heatmap`
+  (16250c4b58) and `introgression` (3be9f8f745), whose human archaic figures a
+  reviewer could not check and which had no negative control. `methylation.md`'s
+  fiber-seq section is the pattern: the treated sample above its no-enzyme
+  control in one figure.

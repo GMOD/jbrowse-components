@@ -221,7 +221,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   Illumina 161x, using `samtools view -q20 -f65 -F2316` for one primary record
   per pair. The tutorial and its two build scripts were removed in
   `16250c4b58`, which is where the pipeline is if it is wanted again;
-  `agent-docs/ideas/collections/tutorial-ideas-audit.md` records why it went.
+  `website/docs/tutorials/CLAUDE.md` lists it among the removed pages.
 
 ## Cohort and population
 
