@@ -15,7 +15,8 @@ const PAN_CLICK_THRESHOLD_PX = 4
 // as `data-gesture-owner`. `data-pan-dragging` is present from press to
 // release; `data-pan-moved` is set once the press travels past the threshold
 // or becomes a pinch, and cleared by the next press, so it still answers for
-// the click that follows the release.
+// the click that follows the release: `clickCapture` swallows that click
+// before any track sees it.
 const PAN_DRAGGING_ATTR = 'data-pan-dragging'
 const PAN_MOVED_ATTR = 'data-pan-moved'
 
@@ -193,5 +194,14 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     }
   }
 
-  return { pointerDown }
+  // The browser fires `click` after a release on whatever the press and the
+  // release share, which over a track is its canvas, so a pan that ended on a
+  // gene would open that gene's details.
+  function clickCapture(event: React.MouseEvent) {
+    if (event.currentTarget.hasAttribute(PAN_MOVED_ATTR)) {
+      event.stopPropagation()
+    }
+  }
+
+  return { pointerDown, clickCapture }
 }

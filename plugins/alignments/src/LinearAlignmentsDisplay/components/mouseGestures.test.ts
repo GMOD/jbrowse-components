@@ -70,9 +70,6 @@ function setup() {
   function panStarts() {
     container.dataset.panDragging = ''
   }
-  function panMoves() {
-    container.dataset.panMoved = ''
-  }
   function panEnds() {
     delete container.dataset.panDragging
   }
@@ -103,7 +100,6 @@ function setup() {
     display,
     openedWidgets,
     panStarts,
-    panMoves,
     panEnds,
     hover,
     click,
@@ -113,30 +109,6 @@ function setup() {
     hook: result,
   }
 }
-
-test('a pan swallows the click that ends it, but a small wobble does not', () => {
-  // The control first: that pixel is a coverage bin, and clicking one opens its
-  // widget. Every assertion below is this not happening.
-  const plain = setup()
-  plain.click()
-  expect(plain.openedWidgets).toHaveLength(1)
-
-  const panned = setup()
-  panned.panStarts()
-  panned.panMoves()
-  panned.panEnds()
-  panned.click()
-  expect(panned.openedWidgets).toHaveLength(0)
-
-  // A press that never travelled past the threshold sets no `data-pan-moved`,
-  // and is still a click — otherwise a hand that wobbles two pixels stops being
-  // able to select anything.
-  const jitter = setup()
-  jitter.panStarts()
-  jitter.panEnds()
-  jitter.click()
-  expect(jitter.openedWidgets).toHaveLength(1)
-})
 
 test('no hover lands while the view is being panned', () => {
   const { display, hover, panStarts, panEnds, runFrame, queuedFrame } = setup()

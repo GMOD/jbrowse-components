@@ -6,7 +6,6 @@ import { observer } from 'mobx-react'
 import { sashimiArcColor } from '../../features/sashimi/computeOverlay.ts'
 import SashimiArcLabels from './SashimiArcLabels.tsx'
 import { openSashimiWidget } from './detailWidgets.ts'
-import { PAN_MOVED } from './panState.ts'
 import {
   SASHIMI_SIDES,
   sashimiArcKey,
@@ -104,10 +103,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
                 setHoveredArcKey(null)
                 model.clearHoverUnlessPinned()
               }}
-              onClick={e => {
-                if (e.currentTarget.closest(PAN_MOVED)) {
-                  return
-                }
+              onClick={() => {
                 openSashimiWidget(model, arc, groupKey)
               }}
             />

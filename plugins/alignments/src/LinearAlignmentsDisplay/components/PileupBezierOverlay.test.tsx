@@ -143,17 +143,6 @@ test("a section's connectors clip to its own pileup band", () => {
   expect(clip.getAttribute('height')).toBe('100')
 })
 
-// A click-drag pan across the pileup still ends in a click, and the curves sit
-// on top of the reads — so panning off one would open a read's detail widget.
-test('a click that followed a pan selects nothing', () => {
-  const { model, target, container } = renderOverlay()
-  container.dataset.panMoved = ''
-
-  fireEvent.click(target, { clientX: 25 })
-
-  expect(model.selectFeatureById).not.toHaveBeenCalled()
-})
-
 // Through `setHoverState`, which the open context menu's hover pin can refuse —
 // the direct volatile write it replaces could not be. Outside chain mode the
 // connector's two ends are what a canvas hover on either would box.

@@ -15,7 +15,7 @@ import {
 } from './detailWidgets.ts'
 import { findSectionAtY } from './findSectionAtY.ts'
 import { contextMenuTargetForHit, performHitTest } from './hitTestPipeline.ts'
-import { PAN_DRAGGING, PAN_MOVED } from './panState.ts'
+import { PAN_DRAGGING } from './panState.ts'
 import { onPileupBand } from './sectionScreen.ts'
 import {
   formatArcLineTooltip,
@@ -422,10 +422,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function handleClick(e: React.MouseEvent) {
-    // click fires after mousedown+mouseup regardless of motion in between
-    if (e.currentTarget.closest(PAN_MOVED)) {
-      return
-    }
     const { result } = hitTestEvent(e)
 
     switch (result.type) {

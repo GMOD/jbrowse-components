@@ -5,7 +5,6 @@ import { observer } from 'mobx-react'
 
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 import { SectionBandClip } from './PileupBezierArcsSvg.tsx'
-import { PAN_MOVED } from './panState.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
   computePileupBezierArcsFromModel,
@@ -167,11 +166,6 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                       model.clearHoverUnlessPinned()
                     }}
                     onClick={e => {
-                      // A pan that started on this curve still ends in a click, as
-                      // the canvas `handleClick` says.
-                      if (e.currentTarget.closest(PAN_MOVED)) {
-                        return
-                      }
                       // The overlay's own box: the path's `ownerSVGElement` is
                       // the section clip, whose box in Chrome is its ink's.
                       const svg = overlayRef.current

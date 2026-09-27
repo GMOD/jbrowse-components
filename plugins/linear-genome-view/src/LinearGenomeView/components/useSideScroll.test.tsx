@@ -70,14 +70,18 @@ function dragFrom(el: Element, init: PointerEventInit = {}) {
 function Harness({
   model,
   children,
+  onCanvasClick,
 }: {
   model: LinearGenomeViewModel
   children?: React.ReactNode
+  onCanvasClick?: () => void
 }) {
-  const { pointerDown } = useSideScroll(model)
+  const { pointerDown, clickCapture } = useSideScroll(model)
   return (
-    <div onPointerDown={pointerDown}>
-      <div data-testid="canvas">canvas</div>
+    <div onPointerDown={pointerDown} onClickCapture={clickCapture}>
+      <div data-testid="canvas" onClick={onCanvasClick}>
+        canvas
+      </div>
       {children}
     </div>
   )
@@ -254,6 +258,30 @@ test('the container says while a pan runs, and whether the press travelled', () 
     fireEvent.pointerDown(canvas, { button: 0, clientX: 60 })
   })
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
+})
+
+// The browser fires `click` on the canvas the press and release share, so
+// without this a pan that stopped on a gene opened its details. A wobble under
+// the threshold is still a click.
+test('the click that ends a pan never reaches the track', () => {
+  const model = fakeView()
+  const onCanvasClick = jest.fn()
+  const { getByTestId } = render(
+    <Harness model={model} onCanvasClick={onCanvasClick} />,
+  )
+  const canvas = getByTestId('canvas')
+
+  dragFrom(canvas)
+  fireEvent.click(canvas)
+  expect(onCanvasClick).not.toHaveBeenCalled()
+
+  act(() => {
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 100 })
+  })
+  pointer('pointermove', { clientX: 98 })
+  pointer('pointerup', { clientX: 98 })
+  fireEvent.click(canvas)
+  expect(onCanvasClick).toHaveBeenCalledTimes(1)
 })
 
 // ...and it is cleared by a press that starts NO pan, which is the half the
