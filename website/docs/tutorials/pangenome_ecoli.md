@@ -26,7 +26,7 @@ welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- `docker` or `singularity`, for the pggb image, which also carries odgi
+- `docker` or `singularity`, for the pggb image
 - `samtools`
 - `bedGraphToBigWig` (UCSC kentUtils)
 - `python3`
@@ -34,26 +34,22 @@ welcome your [feedback](/contact).
 - `node`, for the [JBrowse CLI](/docs/cli)
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI, which the [whole build](#reproduce-it-end-to-end) uses to fetch the
-  RefSeq genomes
-- `unzip`, to unpack them for the same [whole build](#reproduce-it-end-to-end)
+  CLI
+- `unzip`
 - the GraphGenomeView plugin, for
-  [the graph itself](#opening-the-graph-in-the-graph-genome-view); every other
-  track here is a built-in type
+  [the graph itself](#opening-the-graph-in-the-graph-genome-view)
 
 On Debian/Ubuntu, `apt install samtools tabix unzip python3` covers four of
 those. Docker installs from
 [docs.docker.com](https://docs.docker.com/engine/install/); the NCBI `datasets`
 CLI and `bedGraphToBigWig` are each a
 [single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/); and `node`
-comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
-pggb image.
+comes from [nodejs.org](https://nodejs.org/).
 
 ## Where the data comes from
 
 Five _E. coli_ RefSeq assemblies, fetched by accession with the NCBI datasets
-CLI and concatenated into one PanSN-named FASTA for pggb, the same five genomes
-as the [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny).
+CLI and concatenated into one PanSN-named FASTA for pggb.
 
 - K12:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
@@ -65,11 +61,10 @@ as the [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny).
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/
 - IAI39:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
-- nanopore reads from an unrelated isolate, _E. coli_ E146, mapped straight onto
-  K12 with no graph: https://www.ebi.ac.uk/ena/browser/view/DRR193901
+- nanopore reads from an unrelated isolate, _E. coli_ E146:
+  https://www.ebi.ac.uk/ena/browser/view/DRR193901
 - the pggb and minigraph graphs' segments, links and bubbles, tabix-indexed and
-  rehosted so the graph genome view figures load with no local build:
-  https://jbrowse.org/demos/ecoli_pangenome/
+  rehosted: https://jbrowse.org/demos/ecoli_pangenome/
 
 ## The linear projections
 
@@ -81,8 +76,8 @@ and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
 build these graphs, and [odgi](https://github.com/pangenome/odgi) manipulates
 them.
 
-Most of what JBrowse draws are the graph's **linear projections**: the graph
-flattened onto one reference genome's coordinates. Every builder emits them:
+The graph's **linear projections** flatten it onto one reference genome's
+coordinates. Every builder emits them:
 
 | Projection             | What it shows                                               | From the graph                                        | JBrowse track                                                      |
 | ---------------------- | ----------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
@@ -95,10 +90,8 @@ flattened onto one reference genome's coordinates. Every builder emits them:
 
 pggb takes one FASTA of all the genomes,
 [PanSN](https://github.com/pangenome/PanSN-spec)-named
-`sample#haplotype#contig`. The prefix before the last `#` is how wfmash avoids
-aligning a genome to itself and how `-V` assigns VCF samples. Concatenate the
-five strains (haplotype `1`, these being haploid) and index the result,
-chromosomes only:
+`sample#haplotype#contig`. Concatenate the five strains (haplotype `1`, these
+being haploid) and index the result, chromosomes only:
 
 ```bash
 for strain in K12 Sakai CFT073 NCTC86 IAI39; do
@@ -108,11 +101,10 @@ bgzip all.fa
 samtools faidx all.fa.gz
 ```
 
-The image pins all five tools of the pipeline at once (pggb's
-[installation docs](https://pggb.readthedocs.io/en/latest/rst/installation.html)
-cover the alternatives) and carries [odgi](https://github.com/pangenome/odgi),
-which later sections reuse, so wrap the `docker run` once. `-V K12:10000`
-decomposes the graph into a VCF against the K12 path and `-M` writes the MAF:
+The image pins all five tools at once and carries
+[odgi](https://github.com/pangenome/odgi), so wrap the `docker run` once.
+`-V K12:10000` decomposes the graph into a VCF against the K12 path, and `-M`
+writes the MAF:
 
 ```bash
 in_pggb() {
@@ -125,24 +117,18 @@ in_pggb pggb -i /data/all.fa.gz -o /data/pggb \
 ```
 
 `-n` is the number of haplotypes, `-p` the minimum alignment identity and `-s`
-the segment length; `-p 90 -s 5000` suits a bacterial pangenome. `-c` is the
-number of mappings wfmash keeps per segment and defaults to `1`, so it has to
-rise alongside `-n` or the graph comes out under-connected. Under singularity,
+the segment length; `-p 90 -s 5000` suits a bacterial pangenome, and `-c`
+(mappings kept per segment) should rise alongside `-n`. Under singularity,
 `singularity exec --bind "$PWD":/data --pwd /data docker://<image>` replaces the
 wrapper body.
 
-Five bacterial chromosomes are minutes on a laptop.
-
-Resolve the graph's two spellings once; the glob has to expand on the host,
-since `/data/*.gfa` inside the container is a literal:
+Resolve the graph's two spellings once, since the glob has to expand on the
+host:
 
 ```bash
 gfa=$(ls pggb/*.smooth.final.gfa)
 og=$(ls pggb/*.smooth.final.og)
 ```
-
-`.og` is odgi's own serialization, read by every odgi command below; the tabix
-index is instead built from the GFA, whose P and W lines it reads as text.
 
 ## Synteny projection
 
@@ -178,8 +164,7 @@ jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 
 Stack the five strains in a linear synteny view as the
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
-describes. The PanSN `sample#` prefix is how the adapter maps a record to its
-strain.
+describes; the PanSN `sample#` prefix maps each record to its strain.
 
 <Figure caption="The wfmash alignment pggb induced the graph from: five strains stacked K12 to IAI39, a ribbon between each adjacent pair. The crossings in the bottom band are IAI39's inversions." src="/img/pangenome/pggb_synteny.png" />
 
@@ -187,30 +172,21 @@ strain.
 
 [`odgi untangle`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_untangle.html)
 walks each query path and reports which stretch of the reference path it
-traverses, so it reads homology the way the graph resolved it. Sequence that
-collapsed into one set of nodes comes back as several query segments pointing at
-the same reference span:
+traverses, so it reads homology the way the graph resolved it:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
 ```bash
 printf 'K12#1#chr\n' > target.txt
 printf 'Sakai#1#chr\nCFT073#1#chr\nNCTC86#1#chr\nIAI39#1#chr\n' > query.txt
-# -m merges runs under this length into the previous segment (else every SNP
-#   node starts a new one); -j keeps mappings at or above this jaccard
-# -e forces a boundary every N bp of the sorted graph, since untangle finds few
-#   on its own over a near-colinear bacterial pangenome; leave it off on a
-#   graph with many haplotypes, where the cut it bakes in is unwanted
-# -p asks for PAF, so make-pif reads it with nothing in between
+# -m merges short runs into the previous segment; -j is the minimum jaccard
+# -e forces a boundary every N bp; omit it on graphs with many haplotypes
+# -p asks for PAF, so make-pif reads it directly
 in_pggb odgi untangle -i "/data/$og" \
   -R /data/target.txt -Q /data/query.txt -m 1000 -j 0.5 -e 5000 -p -t "$(nproc)" \
   > ecoli_pggb_untangle.paf
 jbrowse make-pif ecoli_pggb_untangle.paf
 ```
-
-The
-[Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus#all-vs-all-synteny-projection)
-builds the same projection with `halSynteny`.
 
 Load it as a separate `SyntenyTrack`:
 
@@ -228,50 +204,35 @@ Load it as a separate `SyntenyTrack`:
 }
 ```
 
-untangle projects queries onto a **target** path, so every record has K12 on one
-side and a band between two non-reference rows has nothing to draw. Put the
-reference between the strains you want to compare.
+Put the reference between the strains you want to compare.
 
-The wfmash alignment and the untangle projection differ at a repeat. Find one by
-looking for a reference span that more than one segment of the same query lands
-on:
+The wfmash alignment and the untangle projection differ at a repeat, a reference
+span more than one segment of the same query lands on:
 
 ```bash
 gzip -dc ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
   | cut -f1,3,4,8,9 | sort -k4,4n
 ```
 
-Two K12 spans come back, `chr:3,941,447-3,944,255` and
-`chr:4,169,192-4,171,723`, and Sakai, NCTC86 and IAI39 each reach both from two
-places; CFT073 reaches neither twice. A pairwise PAF cannot express this, since
-a collapsed repeat is either dropped or assigned to one copy.
-
-A [dotplot](/docs/user_guides/dotplot_view) reads the same PIF. A stretch the
-strain traverses backwards descends, so every inversion is visible at once.
-
-Untangle indexes every step of every path, so it is the slower of the two;
-restrict `-Q` to the paths you need on a base-level graph.
+Two K12 spans come back where Sakai, NCTC86 and IAI39 land twice and CFT073
+once, a repeat a pairwise PAF collapses to one.
 
 ### One lane per strain, on the K12 axis
 
 The untangle PAF, drawn as a
 [multi-row feature track](/docs/config/linearmultirowfeaturedisplay), puts every
-strain on the reference at once, one row each, so orientation is read down a
-column. PAF column 5 is the strand, which the variant and MAF projections carry
-no field for.
+strain on the reference at once, orientation read down each row.
 
 `untangle_to_bed.py` projects the PAF onto the per-strain BED schema
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-defines, so `rows` and the colors carry across. The bubble-decomposition columns
-untangle does not report are left empty:
+defines, so `rows` and the colors carry across:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/untangle_to_bed.py
 python3 untangle_to_bed.py ecoli_pggb_untangle.paf chr > ecoli_pggb_untangle_rows.bed
-# the writer's header line is `#`-prefixed, and `jbrowse sort-bed` keeps every
-# such line on top while sorting the rest, i.e. `sort -k1,1 -k2,2n` under LC_ALL=C
+# the header line is `#`-prefixed; sort-bed keeps it on top (sort -k1,1 -k2,2n)
 jbrowse sort-bed ecoli_pggb_untangle_rows.bed | bgzip > ecoli_pggb_untangle_rows.bed.gz
 tabix -p bed ecoli_pggb_untangle_rows.bed.gz
 ```
@@ -305,21 +266,17 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 }
 ```
 
-`rows` gives each strain a separate row, and the colors come from the file's
-`itemRgb`.
-
 <Figure caption="The untangle projection read two ways, with each of IAI39's five inverted arms boxed in a distinct color in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment at all; only IAI39 is inverted at length. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
 
-`selfCov` in the popup goes above 1 where a segment lands on a reference span
-the same strain also lands on elsewhere, so `jexl:feature.selfCov>1` in **Edit
-filters** cuts the lane to the collapsed repeats.
+`selfCov` in the popup goes above 1 where a segment repeats within the same
+strain; `jexl:feature.selfCov>1` in **Edit filters** cuts the lane to those
+repeats.
 
 ## Pangenome variants projection
 
 `pggb -V` writes a VCF of every variant the graph decomposes against the K12
 path, genotyped across the other four strains. Its `CHROM` is the PanSN path
-(`K12#1#chr`), so rename it to the assembly's refName (`chr`) with `bcftools`,
-which ships in the pggb image:
+(`K12#1#chr`), so rename it to the assembly's refName (`chr`) with `bcftools`:
 
 ```bash
 printf 'K12#1#chr\tchr\n' > rename_chrs.tsv
@@ -345,30 +302,18 @@ multi-sample display, one row per sample:
 }
 ```
 
-Stacked over the MAF alignment (the figure under
-[Whole-genome alignment (MAF) projection](#whole-genome-alignment-maf-projection)),
-the calls sit over the alignment they were decomposed from. The variant lane's
-row order follows the VCF's sample columns; the MAF lane's follows the tree the
-track loads.
+The variant calls, stacked over the
+[MAF alignment](#whole-genome-alignment-maf-projection), sit over the alignment
+they were decomposed from.
 
 ### Why the reference path takes a length
 
-A graph VCF is a snarl **tree**: `vg deconstruct` emits a record per snarl at
-every level, each carrying `LV` (its level, `0` at the top) and `PS` (its
-parent), so the file holds both a bubble and the variants nested inside it, and
-the wide records paint over the SNPs underneath.
-
 With a length, pggb runs [`vcfbub`](https://github.com/pangenome/vcfbub)
-`-l 0 -a LEN` piped into [`vcfwave`](https://github.com/vcflib/vcflib) and
-writes `*.decomposed.vcf` beside the raw file. `vcfbub` **pops** any site whose
-alleles run past `LEN`, emitting the nested sites in its place, and `vcfwave`
-realigns what survives into primitive variants. On this graph nothing then
-paints over the layer beneath it, so the track needs no display filter. `LEN`
-also controls runtime, since the longest alleles dominate vcfwave's time;
-structural variation that large reads better in the graph view or the per-strain
-path track.
+`-l 0 -a LEN` piped into [`vcfwave`](https://github.com/vcflib/vcflib),
+decomposing any site whose alleles run past `LEN` into the primitive variants
+`*.decomposed.vcf` carries.
 
-Keep the raw file too, through the same rename, as a second track:
+Keep the raw file, similarly renamed, as a second track:
 
 ```bash
 in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
@@ -376,50 +321,33 @@ in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -p vcf /data/ecoli_pggb_snarls.vcf.gz"
 ```
 
-`LV`/`PS` give the snarl tree, and `AT` encodes each allele as the segment ids
-it traverses (`AT=>2>4>5,>2>3>5`), the ids the graph view labels its nodes with.
-Filter on `LV` in **Edit filters** to pick one level. The coarse tier below is
-built from the `LV=0` records.
-
-The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
-covers the matrix versus per-position display, genotype coloring, and
-clustering.
+`LV`/`PS` give the snarl tree. Filter on `LV` in **Edit filters** to pick one
+level. The coarse tier below is built from the `LV=0` records.
 
 ## Whole-genome alignment (MAF) projection
 
-`pggb -M` writes the multiple alignment as a MAF, which JBrowse reads as a
+`pggb -M` writes the multiple alignment as a MAF, read as a
 [](/docs/config_guides/maf_track). Its blocks are smoothxg's **POA blocks**,
 with two consequences.
 
-**Block order.** pggb orders each block from its longest path, so the reference
-row is not consistently the same genome. Re-root every block on K12, dropping
-blocks that lack it, and rename the PanSN names to `sample.chr`:
+**Block order.** Re-root every block on K12, drop blocks that lack it, and
+rename the PanSN names to `sample.chr`:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/reroot_maf.py
-# reroot_maf.py keeps K12-containing blocks, puts K12 first (+ strand), sorts by
-# K12 position, and puts each K12 row of a repeat-collapsed block in a separate
-# block
+# keeps K12-containing blocks, puts K12 first, sorts by K12 position, and
+# splits a repeat-collapsed block's second K12 row into its own block
 python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf K12#1#chr
 ```
 
-[`reroot_maf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/reroot_maf.py)
-also splits a repeat's second copy into a separate block, since an index keys a
-block on its first row.
-
-**Block padding.** A smoothxg bug leaves block padding on some rows, which reads
-as a phantom insertion at every POA block boundary.
-[pangenome/smoothxg#223](https://github.com/pangenome/smoothxg/pull/223) fixes
-it upstream, and no published pggb image carries the fix yet, so `reroot_maf.py`
-crops around it.
+**Block padding.** A smoothxg bug leaves block padding on some rows;
+`reroot_maf.py` crops around it.
 
 Then convert the MAF to the tabix-indexed BED the
-[`MafTabixAdapter`](/docs/config/maftabixadapter) reads. The usual converter,
-[maf2bed](https://github.com/cmdcolin/maf2bed), picks the reference row by
-assembly name and would undo the split above; `maf_to_bed.py` takes row 0 as the
-reference:
+[`MafTabixAdapter`](/docs/config/maftabixadapter) reads, with `maf_to_bed.py`,
+which takes row 0 as the reference:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -430,11 +358,10 @@ bgzip ecoli_pggb.maf.bed
 tabix -p bed ecoli_pggb.maf.bed.gz
 ```
 
-For the row order,
+For row order,
 [`odgi similarity`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_similarity.html)
-reports how much of the graph each pair of samples shares, and UPGMA over
-`1 - estimated.identity` turns that into the Newick the track reads as
-`nhLocation`:
+reports how much of the graph each pair shares; UPGMA over
+`1 - estimated.identity` gives the Newick read as `nhLocation`:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -461,22 +388,16 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 
 <Figure caption="The graph's whole-genome alignment projected onto K12, one row per strain in the tree's order, with the variant calls above. A blank row is a strain with no alignment to K12 there." src="/img/pangenome/maf.png" />
 
-`samples` names the rows, so a tree that fails to build leaves the track
-working. The track colors each cell in the variant lane by that strain's
-genotype:
+The track colors each variant-lane cell by that strain's genotype:
 
 - **grey** where the strain matches K12
 - **blue** where it carries the alternate allele
 - **olive** where the site is uncalled
-- **a numbered purple box** where it carries an insertion, the number being how
-  many bases the allele adds beyond K12
+- **a numbered purple box** for an insertion, the number giving its length in
+  bases beyond K12
 
-An insertion consumes no reference, so the record spans a single base and the
-marker carries its length; the alignment below draws the same insertions the
-same way, blank where the strains stop aligning to K12 at that coordinate.
-
-The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
-per-row identity, and codon view.
+An insertion consumes no reference, so the record spans one base and the marker
+carries its length.
 
 Drag across the rows and the menu that opens on release lists each strain the
 selection covers under two submenus:
@@ -486,21 +407,13 @@ selection covers under two submenus:
 - **Linear synteny view, K12 vs...** opens the two as a
   [linear synteny view](/docs/user_guides/linear_synteny_view)
 
-The drag menu works because the config loads the strains as assemblies under the
-names the MAF uses; a
-[`samples` entry](/docs/config_guides/maf_track#the-samples-array) names the
-assembly where the two differ.
-
 <Video src="/media/synteny/maf_row_synteny.mp4" caption="From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the NCTC86 entry opens, with K12's genes over the alignment and NCTC86's genes under the ribbon." />
 
 ## Pangenome depth projection (core vs accessory)
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
-counts how many paths traverse the graph under each reference base: near the
-strain count over core sequence, toward 1 over K12-private sequence. Tile the
-K12 path into windows, take each window's mean depth, rename the PanSN path to
-`chr`, and convert to bigWig with
-[`bedGraphToBigWig`](https://genome.ucsc.edu/goldenPath/help/bigWig.html):
+counts how many paths traverse each reference base, near the strain count over
+core sequence and toward 1 over K12-private sequence:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -510,9 +423,8 @@ awk -v p="K12#1#chr" -v len="$reflen" -v w=500 \
   'BEGIN { for (s = 0; s < len; s += w) { e = s + w; if (e > len) e = len
            print p "\t" s "\t" e } }' > depth_windows.bed
 
-# -b gives one row per window, so the window size above sets the resolution of
-# the curve; the awk drops the PanSN prefix for the plain refName the K12
-# assembly uses
+# -b gives one row per window, so window size sets the curve's resolution;
+# the awk drops the PanSN prefix for K12's plain refName
 in_pggb odgi depth -i "/data/$og" -b /data/depth_windows.bed |
   awk -v p="K12#1#chr" -v OFS='\t' '$1 == p && $4 + 0 == $4 { print "chr", $2, $3, $4 }' |
   sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
@@ -521,7 +433,7 @@ printf 'chr\t%s\n' "$reflen" > chrom.sizes
 bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
 ```
 
-`chrom.sizes` is written by hand, since the `.fai` carries the PanSN path name.
+`chrom.sizes` is written by hand, since the `.fai` carries the PanSN path.
 
 Load it as a [`QuantitativeTrack`](/docs/config_guides/quantitative_track) on
 K12:
@@ -539,44 +451,36 @@ K12:
 }
 ```
 
-Zoomed out, the track is the pangenome's core/accessory landscape along K12:
+Zoomed out, the track shows the pangenome's core/accessory landscape:
 
 - a **plateau** near the strain count
 - **spikes** past it over the rRNA operons the graph collapses into one copy
-- **troughs** at 1 over K12's private sequence, mostly cryptic prophages and IS
-  elements
+- **troughs** at 1 over K12's private sequence
 
 The depth lane is drawn [at the end of this section](#per-strain-presence),
-under the per-strain rows. Zoom into one trough and the gene lane names it, as
-the figure below does for the widest.
+under the per-strain rows.
 
 An unrelated isolate's long reads show the same thing without the graph:
-nanopore reads from _E. coli_ E146
-([ENA DRR193901](https://www.ebi.ac.uk/ena/browser/view/DRR193901)), a clinical
-isolate that is not one of the five, mapped straight onto K12 with
-`minimap2 -ax map-ont`. The pileup links supplementary segments, so a read split
-at the prophage boundary is joined to its other half, and reads long enough to
-cross the element carry it as a single labelled deletion.
+nanopore reads from _E. coli_ E146, mapped straight onto K12 with
+`minimap2 -ax map-ont`. Reads long enough to cross the element carry it as a
+single labelled deletion.
 
 <Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. All four lanes break at the edges of the cryptic prophage CPZ-55." src="/img/pangenome/long_reads.png" />
 
 :::tip 💡 See also
 
 [The Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus#whole-genome-alignment-maf-projection)
-draws this window from its own graph's MAF, which breaks at the same prophage
-edges.
+draws this window from its own graph's MAF, breaking at the same prophage edges,
+and plots
+[both graphs' curves over one of those operons](/docs/tutorials/pangenome_cactus#pangenome-depth-and-per-strain-presence).
 
 :::
-
-The Minigraph-Cactus tutorial draws
-[both graphs' curves over one of those operons](/docs/tutorials/pangenome_cactus#pangenome-depth-and-per-strain-presence).
 
 ### Per-strain presence
 
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
-splits depth per strain: over the same windows it reports the fraction of each
-window that strain's path traverses. Slice each strain's rows into a separate
-bigWig and load the set as one
+splits depth per strain: it reports the fraction of each window that strain's
+path traverses. Load the set as one
 [`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track#many-signals-in-one-track):
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
@@ -592,9 +496,6 @@ for strain in Sakai CFT073 NCTC86 IAI39; do
   bedGraphToBigWig "pav_${strain}.bedgraph" chrom.sizes "ecoli_pggb_pav_${strain}.bw"
 done
 ```
-
-The output is one row per window per path (`chrom start end name group pav`),
-where `group` is the PanSN path and `pav` the fraction.
 
 ```json addtrack
 {
@@ -630,10 +531,8 @@ where `group` is the PanSN path and `pav` the fraction.
 }
 ```
 
-Under the aggregate curve, these rows show which strain each dip is missing.
-Across the shaded span K12 carries _ybaL_ through the allantoin operon, one row
-goes white for its full width, and a second goes white over the _rhsD_ Rhs
-element alone.
+Under the curve, these rows show which strain each dip is missing: one row goes
+white over _ybaL_, and a second over the _rhsD_ Rhs element.
 
 <Figure caption="The aggregate depth curve over all of K12, with odgi pav on the same windows below it, one row per non-K12 strain. Under the shaded span a single row goes white; the deepest troughs in the curve above are where all four do." src="/img/pangenome/pav.png" />
 
@@ -643,43 +542,28 @@ pggb rendered the graph in 1D with
 [`odgi viz`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_viz.html)
 (`*.viz_*.png`) and in 2D with
 [`odgi layout`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_layout.html)
-(`*.lay.draw.png`). The figure below is `odgi viz` re-run at a printable size.
+(`*.lay.draw.png`). The figure below is `odgi viz` re-run.
 
 <Figure caption="The five-strain graph drawn by odgi viz, one row per strain. The axis is graph node order, so its positions do not correspond to genes or to K12 coordinates." src="/img/pangenome/graph.png" />
 
-One row per strain over a horizontal axis of graph node order; the brackets
-under the rows are the links. The JBrowse projections keep one row per strain
-and redraw everything on K12's coordinates:
-
-- **Depth** is the raster's column coverage summed into one curve.
-- **Per-strain presence** is its filled-vs-gap rows, windowed.
-- **The MAF track** is those same rows at single-base resolution, colored by
-  mismatch.
-- **The variant track** marks where the rows branch, one column each.
-
-The
+The JBrowse projections below keep one row per strain, redrawn on K12's
+coordinates; the
 [Minigraph-Cactus page](/docs/tutorials/pangenome_cactus#compared-to-odgi-viz)
-marks the same 100 kb of K12 on both axes. `odgi layout`'s 2D drawing is
-path-guided stochastic gradient descent over the whole graph; the graph view's
-force-directed layout is Bandage's FMMM over one cut window, plus two anchored
-layouts.
+marks the same 100 kb on both axes.
 
 ## Drawing the graph as a graph {#opening-the-graph-in-the-graph-genome-view}
 
-JBrowse can also draw the graph as a graph, as a track of the linear view,
-through the [graph genome view plugin](/docs/user_guides/graph_genome_view).
-That guide covers the track and its layouts.
-[Pangenome (hosting your own graph)](/docs/tutorials/pangenome_prepare_graph)
-covers installing the plugin and the one command that indexes a graph for it,
-which this section runs on the base-level graph.
+JBrowse can also draw the graph as a graph, through the
+[graph genome view plugin](/docs/user_guides/graph_genome_view);
+[](/docs/tutorials/pangenome_prepare_graph) covers installing it and the one
+command that indexes a graph.
 
 ### Browsing the whole graph by locus
 
 Walking a P line in step order gives every segment an interval on that path,
-coordinates a plain GFA does not otherwise carry.
+coordinates a plain GFA does not carry.
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
-does that walk once, offline, from the path of the sample `--reference` names,
-and takes the graph's bubbles from the raw snarl VCF kept
+does that walk and takes the graph's bubbles from the raw snarl VCF kept
 [above](#why-the-reference-path-takes-a-length):
 
 ```bash
@@ -687,13 +571,9 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_pangenome_graph.sh "$gfa" ecoli_pggb --reference K12 --snarls ecoli_pggb_snarls.vcf.gz
 ```
 
-The script writes the tabix-indexed segments and links `RgfaTabixAdapter` reads,
-a coarse tier beside them, and an `ecoli_pggb.config.json` with a track for
-each. The
-[graph view guide](/docs/user_guides/graph_genome_view#route-1-a-graph-track-browsable-by-locus)
-covers the four choices the walk makes. The graph track is one `FeatureTrack`
-pointed at the shared prefix, with the tier under `coarse`. The `uri`s below are
-our hosted copy, where a local build has the `ecoli_pggb` prefix written above:
+The script writes the tabix-indexed segments, links, a coarse tier, and an
+`ecoli_pggb.config.json`. The `uri`s below are our hosted copy; a local build
+uses `ecoli_pggb` instead:
 
 ```json addtrack
 {
@@ -723,53 +603,35 @@ our hosted copy, where a local build has the `ecoli_pggb` prefix written above:
 }
 ```
 
-A segment's name is its GFA id, and pggb cuts one every ~17 bp, so `showLabels`
-is off here and in the figures below.
+A segment's name is its GFA id, cut every ~17 bp, so `showLabels` is off here
+and below.
 
-Turned on, the track draws the window on screen as a graph on K12's coordinates,
-with no `odgi` step, and **Display types → Feature display** in its track menu
-draws the same segments as a lane instead, one block each. Type a locus, search
-a gene or drag a zoom, and the graph moves with the view like any other track,
-cutting the new window whenever the view leaves the last cut. With the
-[all-vs-all alignment](/docs/tutorials/allvsall_synteny) open in the same view,
-a drag across the ruler offers **Launch → Linear synteny view**, a stack of the
-strains over the dragged window, and a drag on any synteny row's scale bar
-raises the same **Launch** menu anchored on that strain, where **Replace current
-view** re-anchors the stack on it.
+Turned on, the track draws the window as a graph on K12's coordinates; **Display
+types → Feature display** draws it as a lane. A ruler drag offers **Launch →
+Linear synteny view**; the same menu on a synteny row's scale bar lets **Replace
+current view** re-anchor the stack.
 
 <Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, a synteny stack: the Launch menu over a K12 window, the stack anchored on K12, and a drag on the Sakai row re-anchoring the stack on Sakai in place." />
 
-The clip below takes the graph from the beginning: a K12 session carrying the
-plugin and its gene track, the graph track added through **Open track... → Add
-pangenome graph track**, and the graph it draws over the window that leaves. The
-form takes the segments prefix and the track name, and leaves the `coarse` tier
-to the pasted config.
+Adding the track itself, from an empty session, is **Open track... → Add
+pangenome graph track**:
 
 <Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a graph track: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the track drawing the graph on K12's coordinates." />
 
-In the force layout, a node's drawn length is proportional to its sequence by
-default, so one long arm can swallow the rest of the drawing. **Bubble spread →
-Compress lengths** pulls the longest and shortest nodes towards the mean; use it
-whenever a cut spans kilobases and single bases at once.
+In the force layout, a node's length is proportional to its sequence, so one
+long arm can swallow the drawing. **Bubble spread → Compress lengths** pulls the
+longest and shortest nodes towards the mean.
 
 #### One node per bubble, when the window is wider than the graph can draw
 
-The segments draw one node per GFA segment, about 17 bp each, so a cut stays
-legible over a kilobase or so. The coarse tier draws one node per **bubble**
-instead, with the invariant reference between bubbles as backbone;
-`RgfaTabixAdapter` reads it unchanged, since a collapsed bubble is a reference
-span with an id and a rank.
+The segments draw one node per GFA segment, about 17 bp each; the coarse tier
+draws one node per **bubble** instead, with the invariant reference as backbone.
+Its 50 bp threshold absorbs single-base alternatives and keeps every indel. The
+reference-position ramp colors agreeing stretches and paints charcoal where the
+strains differ.
 
-The tier's threshold defaults to 50 bp of content, so single-base alternatives
-are absorbed into the backbone and every indel is kept, taking the whole graph
-to about a thousand nodes. The builder ranks an invariant stretch 0 and a bubble
-1, so the reference-position ramp colors the stretches the strains agree on and
-paints charcoal on the sites they differ at.
-
-The graph track names the tier under `coarse`, and `aboveBpPerPx` is the
-handover. Type `chr:1,250,000-1,350,000`, 100 kb around the IS5 element: the
-linear view is past one bp per pixel there, so the graph track cuts the tier. As
-a lane the segments refuse a window that wide, and the tier also loads as a
+The graph track names the tier `coarse`, handed over via `aboveBpPerPx`. Type
+`chr:1,250,000-1,350,000`, past one bp per pixel; the tier also loads as a
 separate track, whose **Display types → Feature display** draws it as a lane at
 any width:
 
@@ -798,49 +660,37 @@ any width:
 
 <Figure caption="100 kb of K12 around an IS5 element, one node per bubble: the tier as a lane above, and below it the graph track, which cuts from its tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
 
-Hover a node for the segments it collapsed, how many traversals cross it, and
-its shortest and longest allele. The tier finds an event and the segments open
-it. A tier node's **Open in K12** takes the view to the span it stands for, and
-the graph track cuts the segments there.
+Hover a node for the segments it collapsed. A tier node's **Open in K12** takes
+the view to the span it stands for, and the graph track cuts the segments there.
 
 <Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the segments: hovering the node marks the K12 span it stands for in the lanes above, and the node's Open in K12 entry moves the view to that span, where the graph track cuts the segments." />
 
-**Layout → Sample rows** in the track menu gives each strain a separate row. On
-this graph a row means carriage, since it names a path that walks the segment;
-on an rGFA it means build order, from minigraph's `SR`.
+**Layout → Sample rows** gives each strain a separate row: carriage on this
+graph, build order (minigraph's `SR`) on an rGFA.
 
-Sample rows reads each segment individually, so it wants a few hundred bp. Type
-`chr:1,004,500-1,004,961`, and the graph track cuts that window. A row's bar is
-drawn over the **reference it replaces**, never over the segment's own sequence
-length, so the tooltip gives an insertion's length. That is why CFT073's row
-draws one long bar labelled `7 kb del` running off the left edge: its segment is
-75 bp on CFT073's contig, and its two links land on `K12:1,004,667` inside the
-window and on `K12:997,574` 7.1 kb upstream. `pggb -V` writes the same event as
-one record at `chr:997,575` genotyped in CFT073 alone, and it is drawn again
-[below](#out-of-the-graph-into-the-strain) from CFT073's own coordinates.
+Sample rows reads each segment individually. Type `chr:1,004,500-1,004,961`; a
+row's bar is drawn over the **reference it replaces**, so CFT073's row draws one
+long bar labelled `7 kb del` for a 75 bp segment.
 
-In **Sample rows** the top row is the K12 backbone, and below it each strain's
-marks are the segments it takes instead, in the MAF's row order.
+In **Sample rows** the top row is K12's backbone; each strain's marks below are
+the segments it takes instead, in the MAF's row order.
 
 <Figure caption="460 bp at the ycbF/pyrD boundary in Sample rows, under the MAF lane. CFT073's row is the long bar running off the left edge, and its MAF row is empty over the same span." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
-**Layout → Force-directed layout** redraws the same nodes by their shape. The
-force drawing has no reference axis; it lays out the nodes in coordinates fitted
-to the track alone, until **Layout → Sample rows** puts them back on K12's:
+**Layout → Force-directed layout** redraws the same nodes by their shape, with
+no reference axis, until **Layout → Sample rows** puts them back on K12's:
 
 <Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the track menu's Layout submenu. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes extend from the backbone where the rows had flattened them." />
 
 #### Who carries a segment
 
-Clicking a node opens its details, which on a graph indexed this way include
-**`carriedBy`**: every haplotype whose path walks that segment, recorded by the
-walk as an `SM:Z:` tag. **`contributingAssembly`** in the same panel is the
-field an rGFA has to use, and there `SR` is build order.
+Clicking a node opens its details, including **`carriedBy`**: every haplotype
+walking that segment, recorded as an `SM:Z:` tag.
 
 #### Carriage as a linear lane
 
-The `SM:Z:` tag reaches the segments track as feature attributes: `samples` is
-the haplotype list and `carriers` its length, which the color paints by:
+The `SM:Z:` tag reaches the segments track as attributes: `samples` is the
+haplotype list and `carriers` its length, which the color paints by:
 
 ```json addtrack
 {
@@ -878,25 +728,19 @@ the haplotype list and `carriers` its length, which the color paints by:
 
 <Figure caption="Who carries the IS5 element at K12 chr:1,299,499-1,300,693. The carriage lane is a feature track colored by the GFA SM:Z: tag's strain count, so the red box is a segment K12 alone walks." src="/img/pangenome/pggb_carriage_lane.png" />
 
-The [depth track](#pangenome-depth-projection-core-vs-accessory) answers the
-same question as a mean over windows, so an accessory stretch shorter than one
-window is averaged into its neighbours; the lane is one box per segment. An rGFA
-has no tag column, so `carriers` is absent there and the whole lane falls back
-to the last color in the chain.
+This lane is one box per segment, unlike the
+[depth track](#pangenome-depth-projection-core-vs-accessory)'s windowed mean.
 
 #### Opening a node in the strain that carries it {#out-of-the-graph-into-the-strain}
 
-A segment the reference never visits sits on the coordinates of the strain that
-carries it, so the graph can open the strain itself. Right-click the 75 bp
-CFT073 segment and pick **Open in CFT073**: it opens CFT073 at `1,048,515` with
-CFT073's gene track.
+A segment the reference never visits sits on the strain's own coordinates.
+Right-click the 75 bp CFT073 segment and pick **Open in CFT073**: it opens
+CFT073 at `1,048,515` with its gene track.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, and the view its Open in entry adds: CFT073 in CFT073 coordinates, with its gene track already under it." />
 
-Seven K12 genes sit inside the span the two links bridge (the _elf_ fimbrial
-operon _elfA_, _elfD_, _elfC_, _elfG_, and _ycbU_, _ycbV_, _ycbF_), with _ssuE_
-ending just before it and _pyrD_ starting just after. CFT073 runs _ssuE_
-straight into _pyrD_.
+K12 carries several genes in the span; CFT073 runs _ssuE_ straight into _pyrD_
+with none between.
 
 <Figure caption="K12 above, with the span the 75 bp CFT073 segment bypasses boxed in blue; that segment ringed in the graph; and the view its Open in CFT073 entry adds below, where the same segment (boxed in red) sits between ssuE and pyrD with no genes between them." src="/img/pangenome/pggb_strain_launch.png" />
 
@@ -909,42 +753,27 @@ covers the rest of the node's menu.
 Three limits on browsing a base-level graph by locus:
 
 - **The index is offline.** It is rebuilt whenever the graph changes.
-- **Index size tracks total sequence.** A human pangenome at base level is
-  orders of magnitude past a bacterial one, so index a community or a chromosome
-  at a time (pggb itself partitions via
-  [`partition-before-pggb`](https://github.com/pangenome/pggb#partitioning)) and
-  prefer the SV-resolution minigraph graph for whole-genome browsing, as the
+- **Index size tracks total sequence.** Prefer the SV-resolution minigraph graph
+  for whole-genome browsing on a human pangenome, as the
   [HPRC tutorial](/docs/tutorials/pangenome_hprc) does.
-- **A cut of segments covers a small window.** At 17 bp per segment, 3 kb is a
-  solid braid, and the track declines past its node budget; a wider window is
-  the tier's.
+- **A cut of segments covers a small window.** The track declines past its node
+  budget; a wider window is the tier's.
 
-A segment carried by several assemblies draws on one row, the first path that
-walks it; the rest are in the node popup under
-[`carriedBy`](#who-carries-a-segment).
-
-The [build script](#reproduce-it-end-to-end) also runs `minigraph -cxggs` over
-the same five strains and indexes its rGFA the same way, so the figure below
-puts one locus through both graphs.
+The [build script](#reproduce-it-end-to-end) also runs `minigraph -cxggs` and
+indexes its rGFA the same way, so the figure below puts one locus through both
+graphs.
 
 <Figure caption="One stretch of K12 at the colanic acid cluster through both graphs, each over the window it can draw. Left, the minigraph rGFA. Right, the pggb graph, with a node at every variant." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
 
-Each half runs the reference-position ramp over the same 28 kb. Browse the rGFA
-whole-genome, and open the pggb graph where you want every base.
+Browse the rGFA whole-genome, and open the pggb graph for every base.
 
 ### A window as a file
 
-With no index, **Add → Graph genome view** takes a GFA by file or URL, for a
-graph too large to index or a window someone else cut for you. Three odgi
-commands cut one:
-
-- `extract -E` takes every node between the first and last in the range
-- `sort -O` compacts the node ids
-- `view -g` writes GFA
+With no index, **Add → Graph genome view** takes a GFA by file or URL. Three
+odgi commands cut one:
 
 `-E` is the aggressive option; `-c`/`-d` expand by a bounded number of steps or
-bp instead, the same bound the graph track's own **Graph context** setting
-applies when it cuts from an index:
+bp instead:
 
 ```bash
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - \
@@ -953,8 +782,7 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - 
 ```
 
 A plain GFA marks no path as the reference, so pick one under **View menu →
-Settings → Reference path**. `odgi extract` writes the window into the path name
-(`K12#1#chr:1004500-1004961`), and the offsets come from there.
+Settings → Reference path**.
 
 The same odgi extract/sort/view walk, run outside the browser, puts those nodes
 on a linear track:
@@ -968,34 +796,29 @@ python3 gfa_nodes_to_bed.py ecoli_pggb_subgraph.gfa K12#1#chr chr \
 tabix -p bed ecoli_pggb_subgraph_nodes.bed.gz
 ```
 
-The BED's `itemRgb` is the view's own viridis **Depth** ramp, so the track needs
-no color configuration. Nodes the reference path never visits have no K12
-position, so they are absent from the linear track.
+The BED's `itemRgb` is the view's own viridis **Depth** ramp, needing no color
+configuration.
 
-A cut graph has ends. The 93 bp node at the green-to-yellow junction, ringed in
-the figure below, marks where CFT073 rejoins after
-[the same deletion](#out-of-the-graph-into-the-strain) drawn above, and its
-second link falls 7 kb outside the window, so it draws with one end open.
-Widening the window until it closes returns thousands of segments where this one
-returns 48; `-c 1` fetches the far anchor without everything between.
+A cut graph has ends: the ringed node marks where CFT073 rejoins after
+[the same deletion](#out-of-the-graph-into-the-strain), one end open since its
+far link falls outside. `-c 1` fetches only that anchor, skipping the nodes
+between.
 
-The CFT073 deletion is four nodes in the
-[minigraph graph](/docs/user_guides/graph_genome_view) of these strains, where a
-structural graph spends one segment on the 7 kb K12 stretch:
+The same deletion is four nodes in the
+[minigraph graph](/docs/user_guides/graph_genome_view):
 
 ```bash
 tabix https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph.links.bed.gz \
   'K12#1#chr:997000-1005000'
 ```
 
-`s378 → s379 → s380` is K12 through the deletion and `s378 → s2025 → s380` is
-CFT073 around it, where `s2025` is this same CFT073 sequence.
+`s378 → s379 → s380` is K12 through the deletion; `s378 → s2025 → s380` is
+CFT073 around it.
 
 <Figure caption="The extracted file beside a linear view of the same locus, anchored on the graph's K12 path so both share an axis and the Depth colors. The ringed node is the one left with an open end." src="/img/pangenome/local_subgraph.png" />
 
-`-d` is the answer at a collapsed repeat, where `-E` walks out of the window to
-every copy: at the 16S rRNA gene _rrsB_ it returns tens of thousands of segments
-for a 500 bp cut, where `-d 500` returns six.
+`-d` is the answer at a collapsed repeat, where `-E` walks out to every copy: at
+the 16S rRNA gene _rrsB_, `-d 500` keeps the cut to a handful of segments.
 
 ```bash
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:4166800-4167300 -d 500 -o - \
@@ -1003,22 +826,18 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:4166800-4167300 -d 500 -
   | odgi view -i - -g" > ecoli_pggb_rrna.gfa
 ```
 
-`odgi paths -L` on that cut lists nine path intervals over those six segments,
-two copies each in Sakai, CFT073, NCTC86 and IAI39 and one in K12: the collapse
-the depth curve reads as a spike and
+`odgi paths -L` lists two copies each in Sakai, CFT073, NCTC86 and IAI39 and one
+in K12: the same collapse the depth curve reads as a spike and
 [untangle draws in coordinate space](#the-same-picture-read-out-of-the-graph).
 
 ### Drawing the haplotype paths
 
-A P line is a path, the ordered list of segments one strain takes through the
-graph, and a W line is the same thing in GFA 1.1's walk syntax. **View menu →
-Settings → Draw paths** splits every node and connector lengthwise into one lane
-per path, and a strain that does not walk a node leaves its lane empty there.
-Set **Color** to **Grey** first, so the only colors are the paths.
+A P line is a path through the graph; a W line is the same in GFA 1.1's walk
+syntax. **View menu → Settings → Draw paths** splits every node into one lane
+per path. Set **Color** to **Grey** first.
 
-The setting needs a graph with P or W records. An rGFA has neither, nor does a
-subgraph cut from the tabix index, which rebuilds segments and links only. The
-file route keeps them: cut the IS5 bubble
+Neither an rGFA nor a subgraph cut from the tabix index carries P or W lines.
+The file route keeps them: cut the IS5 bubble
 [the coarse tier arrows](#one-node-per-bubble-when-the-window-is-wider-than-the-graph-can-draw)
 as a file.
 
@@ -1028,24 +847,18 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1299400-1300800 -E -o - 
   | odgi view -i - -g" > ecoli_pggb_is5.gfa
 ```
 
-The figure keeps the same interval in K12 coordinates above the graph. The gene
-lane names the element (_insH21_, the IS5 transposase), and the loop in the
-drawing is its node.
+The gene lane names the element, _insH21_, the IS5 transposase, and the loop in
+the drawing below is its node.
 
 <Figure caption="The IS5 bubble cut as a file, so its P lines survive: the interval in K12 coordinates above, the bubble with the strain paths drawn below and Sakai picked in the Walk menu. The element's loop fades because Sakai's walk skips it, as the four MAF rows other than K12 do above." src="/img/pangenome/pggb_haplotype_paths.png" />
 
-With the paths in the file, the view derives the bubble itself and labels each
-route through it for the strains that take it, under **Mark bubbles**, and the
-**Walk** dropdown lifts one strain's path out of the drawing with a readout of
-its length against the reference path.
-[Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#one-haplotypes-copies)
-does the same with eight human haplotypes through a repeat array.
+With the paths in the file, the view derives the bubble under **Mark bubbles**;
+the **Walk** dropdown lifts one strain's path out of the drawing.
 
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
-runs everything above in one shot, fetching the helper scripts it needs beside
-itself:
+runs everything above in one shot, fetching the helper scripts it needs:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_graph.sh
@@ -1055,28 +868,21 @@ npx --yes serve ecoli_pangenome_graph_build/jbrowse2
 
 In one run it:
 
-- downloads the RefSeq genomes
-- runs pggb
-- converts the wfmash PAF, `odgi untangle`, both VCF tiers, the MAF,
-  `odgi similarity`, `odgi depth` and `odgi pav` into the projections above
-- downloads JBrowse
-- writes a `config.json` with the assemblies, per-strain gene tracks, the
+- downloads the RefSeq genomes and runs pggb
+- converts the projections above from the wfmash PAF, `odgi untangle`, both VCF
+  tiers, the MAF, `odgi similarity`, `odgi depth` and `odgi pav`
+- downloads JBrowse and writes a `config.json` with the assemblies, gene tracks,
   graph-derived tracks, and a default session
-- writes the `odgi viz` raster and every cut GFA this page opens as a file:
-  `ecoli_pggb_subgraph.gfa`, `ecoli_pggb_is5.gfa` and `ecoli_pggb_rrna.gfa` out
-  of odgi, then `ecoli_rgfa_slice.gfa`, `ecoli_paa_subgraph.gfa` and the rGFA
-  tabix indexes behind the segments track out of the cactus image, which is
-  where minigraph and gfatools live
+- writes the `odgi viz` raster, every cut GFA this page opens as a file, and the
+  rGFA tabix indexes behind the segments track
 
-The `config.json` declares the graph genome view plugin. The script needs the
-tools under [Prerequisites](#prerequisites) and picks its container runtime off
-`PATH`, docker first; force one with `CONTAINER=singularity`.
+The `config.json` declares the graph genome view plugin; force the container
+runtime with `CONTAINER=singularity`.
 [JBrowse Desktop](/docs/quickstart_desktop) opens the folder's `config.json` by
 path, so `npx serve` is only for the web build.
 
-Adding genomes to the strain table at the top of the script is the only edit an
-expanded pangenome needs. wfmash mapping scales with the square of the genome
-count, and `odgi untangle` indexes every step of every path.
+Adding genomes to the strain table is the only edit an expanded pangenome needs;
+wfmash mapping cost grows with the square of the genome count.
 
 ## See also
 
