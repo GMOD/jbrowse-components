@@ -495,10 +495,13 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
   // needs. Replacing it waits out the remainder, on camera, so the frame it
   // explains is still there while it is read.
   let line = { text: '', at: 0, needs: 0 }
+  // this step's share of that wait, which is reading rather than spinner
+  let reading = 0
   const show = async (text: string) => {
     const unread = line.needs - (cam.filmed - line.at)
     if (unread > 0 && cam.recording) {
       await delay(unread)
+      reading += unread
     }
     await setCaption(stage, text)
     captions.say(text, filmedMs())
@@ -534,6 +537,7 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
       // measuring that reported the tab handoff as six seconds of spinner the
       // reader never sees.
       const startedAt = cam.filmed
+      reading = 0
       if (step.cut) {
         if (cam.recording) {
           // the click that started this wait is still the last thing on screen;
@@ -565,9 +569,13 @@ async function film(page: Page, spec: VideoSpec, stem: string) {
         await setCaption(stage, line.text)
         await park()
       }
-      const took = cam.filmed - startedAt
-      if (!step.cut && took > SLOW_STEP_MS) {
-        slowSteps.push([describeStep(step), took])
+      // what the spec chose to hold, and the caption's reading time, are not
+      // the app keeping anyone waiting
+      const chosen =
+        reading + holdMs(step) + (step.type === 'delay' ? (step.ms ?? 0) : 0)
+      const waited = cam.filmed - startedAt - chosen
+      if (!step.cut && waited > SLOW_STEP_MS) {
+        slowSteps.push([describeStep(step), waited])
       }
       for (const what of await confusingOnCamera(stage)) {
         confusing.push([describeStep(step), what])
