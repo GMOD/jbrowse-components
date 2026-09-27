@@ -5579,6 +5579,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               ]
+            },
+            "range": {
+              "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {
@@ -17364,6 +17382,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               ]
+            },
+            "range": {
+              "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {

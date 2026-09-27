@@ -4327,6 +4327,18 @@ export const configManifest: ConfigManifest = {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            },
+            {
+              "name": "labels",
+              "type": "string[]"
+            },
+            {
+              "name": "title",
+              "type": "(string | undefined)"
             }
           ],
           "shorthand": "value",

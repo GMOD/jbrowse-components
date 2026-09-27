@@ -19,7 +19,13 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ```js
 {
   type: 'LinearSyntenyView',
-  color: { field: 'gene_group', domain: ['A1a', 'B1'] },
+  color: {
+    field: 'gene_group',
+    domain: ['A1a', 'B1'],
+    range: ['#1b9e77', '#d95f02'],
+    labels: ['Subgenome A', 'Subgenome B'],
+    title: 'Gene group',
+  },
 }
 ```
 
@@ -43,3 +49,6 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it) |
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none) | none paints value and keeps the field for a switch back; unset, a field paints |
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it |
+| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name |
+| <span id="slot-labels">**labels**</span><br>`stringArray` = <code>[]</code> | what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name |
+| <span id="slot-title">**title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset follows field, "" draws none |

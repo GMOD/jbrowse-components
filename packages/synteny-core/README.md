@@ -148,11 +148,12 @@ so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its own end labels
 a no-value row once a row carried no value; chips are blended over the band's
 ground by the view's alpha, so the key matches the on-screen composited ribbon
 colors, subject to `legendChipColor`'s legibility floor; a mode with no fixed
-key (a color per sequence name) is a note row saying so.
+key (a color per sequence name) is a note row saying so. `title` is
+`color.title` as written: unset keeps the field's own heading, `''` draws none.
 
 ```js
 // type signature
-(field: string, {…}?: {…} & { ...; }) => ColorScale[]
+(field: string, {…}?: {…} & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)

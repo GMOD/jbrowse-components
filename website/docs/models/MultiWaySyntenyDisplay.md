@@ -101,7 +101,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-ribboncolorfield">**ribbonColorField**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> | the columns the track declares, each offered as its own ribbon mode. From the config rather than the data, so the menu is right before the first fetch | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> | the `ribbonColor.domain` order a text column's labels take. A label's color is its position in that list, so this is the ribbons' order as much as the key's | MultiWaySyntenyDisplay |
-| <span id="getter-ribbonattributeranges">**ribbonAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> | what the ribbon modes paint from: each channel's span, and a text column's labels in `ribbonColorDomain` order | MultiWaySyntenyDisplay |
+| <span id="getter-ribbonattributeranges">**ribbonAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> | what the ribbon modes paint from: each channel's span, and a text column's labels in `ribbonColorDomain` order, coloured from `ribbonColor.range` | MultiWaySyntenyDisplay |
 | <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-drawcurves">**drawCurves**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
