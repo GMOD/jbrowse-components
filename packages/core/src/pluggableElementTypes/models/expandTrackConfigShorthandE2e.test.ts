@@ -153,3 +153,37 @@ test('a plain track with no displays still gets its display stub', () => {
     'goldenrod',
   )
 })
+
+// A setting only the second display takes creates that display's entry before
+// the stubs are filled in, and a view opens a track on its first display: a
+// graph track given `displayDefaults: { showLabels: 'none' }` for its feature
+// lane opened as the feature lane.
+test('a setting only the second display takes leaves the first as the default', () => {
+  const conf = createTrack({
+    type: 'FeatureTrack',
+    trackId: 't',
+    name: 't',
+    displayDefaults: { baseColor: 'red' },
+  })
+  expect(conf.displays.map(d => readConfObject(d, 'type'))).toEqual([
+    'LinearBasicDisplay',
+    'LinearAlignmentsDisplay',
+  ])
+  expect(
+    readConfObject(display(conf, 'LinearAlignmentsDisplay'), 'baseColor'),
+  ).toBe('red')
+})
+
+test('an explicit display still leads, whatever the shorthand reaches', () => {
+  const conf = createTrack({
+    type: 'FeatureTrack',
+    trackId: 't',
+    name: 't',
+    displays: [{ type: 'LinearAlignmentsDisplay', displayId: 't-aln' }],
+    displayDefaults: { color: 'red' },
+  })
+  expect(conf.displays.map(d => readConfObject(d, 'type'))).toEqual([
+    'LinearAlignmentsDisplay',
+    'LinearBasicDisplay',
+  ])
+})

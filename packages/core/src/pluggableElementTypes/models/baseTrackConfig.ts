@@ -51,36 +51,46 @@ export function preprocessTrackConfigSnapshot(
   pluginManager: PluginManager,
   snapshot: Record<string, unknown>,
 ) {
+  const pre = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint Core-preProcessTrackConfig | sync | Rewrite a track config snapshot before it is instantiated */
+    'Core-preProcessTrackConfig',
+    migrateRetiredDisplays(pluginManager, structuredClone(snapshot)),
+  ) as Partial<TrackConfigSnapshot>
+  const declared = new Set(
+    Array.isArray(pre.displays) ? pre.displays.map(d => d.type) : [],
+  )
   const snap = expandTrackConfigShorthand(
-    pluginManager.evaluateExtensionPoint(
-      /** #extensionPoint Core-preProcessTrackConfig | sync | Rewrite a track config snapshot before it is instantiated */
-      'Core-preProcessTrackConfig',
-      migrateRetiredDisplays(pluginManager, structuredClone(snapshot)),
-    ),
+    pre,
     pluginManager,
   ) as TrackConfigSnapshot
   // expandTrackConfigShorthand folds any `displayDefaults` shorthand into
   // `displays`, but its early-return branches can leave a malformed `displays`
   // untouched; guard so MST union-type probing never crashes on a non-array
   // `displays`.
-  const displays = Array.isArray(snap.displays) ? snap.displays : []
+  let displays = Array.isArray(snap.displays) ? snap.displays : []
   if (snap.trackId !== 'placeholderId') {
-    // Add any of the track type's possible displays not already on the
-    // snapshot that can draw from this track's adapter
+    // The displays the config declared lead, in its order. Every other one of
+    // the track type's displays that can draw from this adapter follows in the
+    // type's own order, including one the shorthand created an entry for: a
+    // setting only the second display takes must not make it the one a view
+    // opens the track with.
     try {
-      const configDisplayTypes = new Set(displays.map(d => d.type))
+      const expanded = new Map(displays.map(d => [d.type, d]))
       const capabilities = adapterCapabilitiesOf(pluginManager, snap.adapter)
-      for (const d of pluginManager.getTrackType(snap.type).displayTypes) {
-        if (
-          !configDisplayTypes.has(d.name) &&
-          d.adapterCapabilities.every(c => capabilities.has(c))
-        ) {
-          displays.push({
-            displayId: `${snap.trackId}-${d.name}`,
-            type: d.name,
-          })
-        }
-      }
+      displays = [
+        ...displays.filter(d => declared.has(d.type)),
+        ...pluginManager
+          .getTrackType(snap.type)
+          .displayTypes.flatMap(d =>
+            declared.has(d.name)
+              ? []
+              : expanded.has(d.name)
+                ? [expanded.get(d.name)!]
+                : d.adapterCapabilities.every(c => capabilities.has(c))
+                  ? [{ displayId: `${snap.trackId}-${d.name}`, type: d.name }]
+                  : [],
+          ),
+      ]
     } catch (e) {
       throw new Error(
         `Unknown track type "${snap.type}" in ${JSON.stringify(snap)}`,
