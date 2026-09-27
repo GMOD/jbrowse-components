@@ -10,7 +10,7 @@ tutorial_category: Pangenomes
 You have a pangenome graph and want people to browse it in JBrowse: open a
 locus, zoom to a chromosome, to the nodes, and to the haplotypes that carry a
 variant. One command converts the graph into small indexed files that answer a
-window at a time, and writes the config that puts them on a track. This page:
+window at a time, and writes the config that puts them on a track. We:
 
 - runs that command on HPRC release 2, checked against a published output
 - opens the track as a graph and as tiled features
