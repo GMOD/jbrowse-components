@@ -200,14 +200,16 @@ export const circularSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The same circle coloured by strand: a mouse chromosome antiparallel to its
-  // human partner is one colour along its whole bundle, so a ribbon of the
-  // other colour inside it is a local inversion.
+  // The same circle coloured by strand, with the key naming the two colours: a
+  // mouse chromosome antiparallel to its human partner is one colour along its
+  // whole bundle, so a ribbon of the other colour inside it is a local
+  // inversion.
   {
     mode: 'url',
     name: 'circular_synteny/color_by_strand',
     url: circularSyntenyView(CHROMOSOMES, [LIFTOVER], {
       color: { field: 'strand' },
+      showLegend: true,
     }),
     ...circularSyntenyReady,
   },

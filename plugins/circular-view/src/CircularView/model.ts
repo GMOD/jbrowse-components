@@ -714,6 +714,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         return 0
       },
       /**
+       * #method
+       * a ribbon twists against its two arcs' directions, and nothing on the
+       * circle shows which way an arc runs
+       */
+      shapeShowsStrand(): boolean {
+        return false
+      },
+      /**
        * #getter
        * the ribbon displays of `syntenyTracks()`; a chromosome reorder reads
        * its alignments from these

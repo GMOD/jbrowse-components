@@ -166,6 +166,15 @@ test('a declared ramp reaches the chords and the key', async () => {
   expect(bar?.gradient).toMatchObject({ minLabel: '50%', maxLabel: '100%' })
 }, 40000)
 
+// A twist on the circle is against arcs whose direction nothing draws, so the
+// colour is the only strand cue.
+test('strand keys its two colours', async () => {
+  const { circle } = await launch({ color: { field: 'strand' } })
+  expect(
+    circle.legendSpec.sections.flatMap(s => s.items.map(item => item.label)),
+  ).toEqual(['forward', 'reverse'])
+}, 40000)
+
 test('the identity fade reaches the ribbon’s alpha', async () => {
   const { circle, display } = await launch({})
   expect(display.ribbonLanes.color[0]! >>> 24).toBe(255)

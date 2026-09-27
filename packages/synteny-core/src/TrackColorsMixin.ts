@@ -260,6 +260,16 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
     }))
     .views(self => ({
       /**
+       * #method
+       * Overridable hook: whether an alignment's shape shows its strand, which
+       * spares the strand colours a key. A linear ribbon twists against its
+       * rows' directions, which their rulers show; a whole-genome dotplot is
+       * mostly dots with no slope to read.
+       */
+      shapeShowsStrand(): boolean {
+        return self.colorSurface() === 'ribbons'
+      },
+      /**
        * #getter
        * The `color` object as its snapshot holds it.
        */
@@ -389,15 +399,14 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       /**
        * #getter
        * Whether the mode has a key worth a box: a track palette, a ramp, a
-       * reader-named column, or strand on points. A reversed ribbon twists,
-       * but a whole-genome dotplot is mostly dots with no slope to read, so
-       * there the colour is the only strand cue and needs its key.
+       * reader-named column, or strand wherever the shape does not show it
+       * (`shapeShowsStrand`), which leaves the colour the only strand cue.
        */
       get hasLegendKey(): boolean {
         const field = this.colorField
         return (
           field === 'track' ||
-          (field === 'strand' && self.colorSurface() === 'points') ||
+          (field === 'strand' && !self.shapeShowsStrand()) ||
           presetRamp(field) !== undefined ||
           isColumnField(field)
         )

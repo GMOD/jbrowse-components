@@ -200,11 +200,12 @@ painted in.
 
 The chromosome colours show where each piece went; strand shows which way round
 it lies. **Color by... → Strand** in the view's menu paints the reverse
-alignments a second colour. A mouse chromosome that runs antiparallel to its
-human partner is then one colour along its whole bundle, and a ribbon of the
-other colour inside that bundle is an inversion within it. As a session setting
-it is `"color": { "field": "strand" }` on the view, and `"field": "query"` is
-the chromosome colouring the circle opens with.
+alignments a second colour, and **Show legend** names the two. A mouse
+chromosome that runs antiparallel to its human partner is then one colour along
+its whole bundle, and a ribbon of the other colour inside that bundle is an
+inversion within it. As a session setting it is `"color": { "field": "strand" }`
+on the view, and `"field": "query"` is the chromosome colouring the circle opens
+with.
 
 <Figure src="/img/circular_synteny/color_by_strand.png" caption="The same circle coloured by strand. Whole mouse chromosomes take one colour or the other by which way they run against their human partners; a ribbon of the other colour inside a bundle is an inversion." />
 
