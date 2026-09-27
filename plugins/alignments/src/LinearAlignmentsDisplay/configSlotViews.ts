@@ -68,6 +68,7 @@ function colorSettingOf(self: ConfigSlotSelf): AlignmentsColorSetting {
     domainMin: getConf(self, ['color', 'domainMin']),
     domainMax: getConf(self, ['color', 'domainMax']),
     domainMid: getConf(self, ['color', 'domainMid']),
+    domainQuantile: getConf(self, ['color', 'domainQuantile']),
   }
 }
 
@@ -223,11 +224,11 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * What `colorSetting`'s slots say together that it cannot paint as
+     * What `writtenColor`'s slots say together that it cannot paint as
      * written, for the corner notice.
      */
     get notices(): string[] {
-      return alignmentsColorNotices(this.colorSetting)
+      return alignmentsColorNotices(this.writtenColor)
     },
     /**
      * #getter
