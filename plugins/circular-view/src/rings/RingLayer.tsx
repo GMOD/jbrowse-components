@@ -1,10 +1,12 @@
 import { Suspense } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
+import { passPhase } from '../CircularView/passPhase.ts'
 import { ringMarks } from './ringMarks.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
@@ -49,16 +51,16 @@ const RingCanvas = observer(function RingCanvas({
   view: CircularViewModel
 }) {
   const { classes } = useStyles()
-  const { canvasRef, canvasKey } = useRenderingBackend(ringFactory, pass)
+  const handle = useRenderingBackend(ringFactory, pass)
   const { width, height } = view
   return (
-    <canvas
-      key={canvasKey}
-      ref={canvasRef}
+    <RenderCanvas
+      handle={handle}
       className={classes.canvas}
       style={{ width, height }}
       data-testid="circular-ring-canvas"
-      data-display-drawn={pass.painted}
+      drawn={pass.painted}
+      phase={passPhase(pass)}
     />
   )
 })

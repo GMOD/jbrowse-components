@@ -1,8 +1,10 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
+import { passPhase } from '../CircularView/passPhase.ts'
 import { chordLayerMarks } from './chordMarks.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
@@ -33,16 +35,16 @@ const ChordLayer = observer(function ChordLayer({
 }) {
   const { classes } = useStyles()
   const pass = view.chordPass
-  const { canvasRef, canvasKey } = useRenderingBackend(chordFactory, pass)
+  const handle = useRenderingBackend(chordFactory, pass)
   const { width, height } = view
   return (
-    <canvas
-      key={canvasKey}
-      ref={canvasRef}
+    <RenderCanvas
+      handle={handle}
       className={classes.canvas}
       style={{ width, height }}
       data-testid="circular-chord-canvas"
-      data-display-drawn={pass.painted}
+      drawn={pass.painted}
+      phase={passPhase(pass)}
     />
   )
 })
