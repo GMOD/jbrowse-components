@@ -181,86 +181,13 @@ const RECURRENT_LOCI = [
 const COHORT_TRACK_ID = 'tcga_brca_cnv'
 
 // The same cohort's somatic point mutations, as a genotype matrix: one column
-// per distinct mutation, one row per tumor. Built by
+// per distinct mutation, one row per tumor, built by
 // scripts/build_tcga_cohort_mutations.sh from GDC open-access Masked Somatic
-// Mutation MAFs; see website/docs/tutorials/tcga_cohort_mutations.md.
-//
-// `samplesTsvLocation` is the same clinical table for every figure, and each
-// figure picks which of its columns to group and color rows by, so the grouped
-// figures differ from the plain one by two config slots.
-//
-// A session track, so the display slots have to live in the track's own
-// `displays` array: slots put on the view's `tracks` entry are dropped for a
-// track the config doesn't already carry.
-function mutationTrack({
-  facetField = '',
-  facetDomain = [],
-  colorBy = '',
-  height = 1010,
-  lineZoneHeight = 20,
-}: {
-  facetField?: string
-  facetDomain?: string[]
-  colorBy?: string
-  height?: number
-  lineZoneHeight?: number
-} = {}) {
-  return {
-    type: 'VariantTrack',
-    trackId: 'tcga_brca_mutations',
-    name: 'TCGA-BRCA somatic mutations (979 primary tumors)',
-    assemblyNames: ['hg38'],
-    adapter: {
-      type: 'VcfTabixAdapter',
-      vcfGzLocation: {
-        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz',
-        locationType: 'UriLocation',
-      },
-      index: {
-        indexType: 'TBI',
-        location: {
-          uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      },
-      samplesTsvLocation: {
-        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv',
-        locationType: 'UriLocation',
-      },
-    },
-    displays: [
-      {
-        type: 'LinearMultiSampleVariantDisplay',
-        variantLayout: 'columns',
-        // Columns, not genomic positions: a cohort's somatic mutations are
-        // sparse and spread over a whole gene, so drawing them at their
-        // positions puts most of the figure in empty space. As columns they
-        // pack, and the lineZone above still ties each column back to the
-        // position it came from.
-        //
-        // 1010px so the 979 rows clear 1px each. Auto-fit here allows sub-pixel
-        // rows (unlike the multi-row feature display, whose effectiveRowHeight
-        // floors at 1px and grows the track), and a somatic matrix is one alt
-        // cell per carrier rather than a painted row, so a shorter display would
-        // thin exactly the single-carrier columns these figures are about.
-        height,
-        // The band the connector lines are drawn in, above the rows. `height`
-        // includes it, so a figure raising this raises `height` by the same
-        // amount to leave the rows what they had.
-        lineZoneHeight,
-        // Every alt-carrying cell takes its mutation's VEP impact tier, from the
-        // CSQ the MAF's own Consequence/IMPACT columns are re-encoded into. On
-        // somatic data this separates truncating (HIGH) from missense
-        // (MODERATE) without a per-figure color table.
-        color: { field: 'impact' },
-        ...(facetField
-          ? { facet: { field: facetField, domain: facetDomain } }
-          : {}),
-        rowColor: colorBy,
-      },
-    ],
-  }
-}
+// Mutation MAFs. The page restates the track in each section that groups it,
+// so a figure names the section whose config it draws.
+const MUTATIONS_DOC = 'tutorials/tcga_cohort_mutations.md'
+const HISTOLOGY_SECTION = 'Group the rows by clinical annotation'
+const SUBTYPE_SECTION = 'Group by receptor subtype'
 
 // The matrix canvas only mounts once the cell-data RPC has landed, so this gates
 // each capture on real completion rather than on a duration guess.
@@ -360,32 +287,18 @@ const CLINVAR_TRACK = {
 
 function mutationFigure({
   loc,
-  facetField = '',
-  facetDomain = [],
-  colorBy = '',
-  height = 1010,
-  lineZoneHeight = 20,
+  section,
   clinvar = false,
   displayOverrides = {},
 }: {
   loc: string
-  facetField?: string
-  facetDomain?: string[]
-  colorBy?: string
-  height?: number
-  lineZoneHeight?: number
+  section: string
   clinvar?: boolean
   displayOverrides?: Record<string, unknown>
 }) {
   return kgUrl({
     sessionTracks: [
-      mutationTrack({
-        facetField,
-        facetDomain,
-        colorBy,
-        height,
-        lineZoneHeight,
-      }),
+      pageTrack(MUTATIONS_DOC, 'tcga_brca_mutations', { section }),
     ],
     views: [
       {
@@ -421,11 +334,7 @@ export const tcgaMutationVideoFixtures = {
   matrixDone: MATRIX_DONE,
   cdh1WholeTranscript: mutationFigure({
     loc: '16:68,730,000-68,842,000',
-    facetField: 'histology',
-    facetDomain: ['ductal', 'lobular'],
-    colorBy: 'histology',
-    lineZoneHeight: LINE_ZONE_HEIGHT,
-    height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
+    section: HISTOLOGY_SECTION,
   }),
 }
 
@@ -735,11 +644,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       // column in the frame is an exonic change and the connector fan lands in
       // one bundle per exon.
       loc: '16:68,730,000-68,842,000',
-      facetField: 'histology',
-      facetDomain: ['ductal', 'lobular'],
-      colorBy: 'histology',
-      lineZoneHeight: LINE_ZONE_HEIGHT,
-      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
+      section: HISTOLOGY_SECTION,
       // NO ClinVar lane. It was here as "the germline record of a gene the
       // cohort is mutating somatically", but collapsed to one row over a
       // 16-exon window it draws as a 1500px barcode of touching CLNSIG ticks:
@@ -837,11 +742,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     name: 'tcga/mutations_pik3ca_grouped',
     url: mutationFigure({
       loc: '3:179,148,000-179,240,500',
-      facetField: 'subtype',
-      facetDomain: ['HR+/HER2-', 'HER2+', 'triple-negative'],
-      colorBy: 'subtype',
-      lineZoneHeight: LINE_ZONE_HEIGHT,
-      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
+      section: SUBTYPE_SECTION,
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,

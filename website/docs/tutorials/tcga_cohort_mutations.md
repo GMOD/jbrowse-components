@@ -208,7 +208,39 @@ gene-scale.
 
 Point `facet` and `rowColor` at `subtype` instead, or pick **Group by...** then
 **Color by... → Samples** in the track menu, and the rows band by receptor
-status ([TCGA 2012](https://doi.org/10.1038/nature11412)).
+status ([TCGA 2012](https://doi.org/10.1038/nature11412)). The `domain` puts the
+HR+/HER2- band first:
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "tcga_brca_mutations",
+  "name": "TCGA-BRCA somatic mutations (979 primary tumors)",
+  "assemblyNames": ["hg38"],
+  "category": ["TCGA"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz",
+    "samplesTsvLocation": {
+      "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "variantLayout": "columns",
+      "height": 450,
+      "lineZoneHeight": 130,
+      "color": { "field": "impact" },
+      "facet": {
+        "field": "subtype",
+        "domain": ["HR+/HER2-", "HER2+", "triple-negative"]
+      },
+      "rowColor": "subtype"
+    }
+  ]
+}
+```
 
 The bottom band is the tumors whose receptor calls do not resolve a subtype.
 Hovering a column names its mutation and consequence; clicking opens the variant
