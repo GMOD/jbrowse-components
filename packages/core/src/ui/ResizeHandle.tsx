@@ -3,16 +3,14 @@ import { useResizeDrag } from '../util/useResizeDrag.ts'
 
 import type React from 'react'
 
-// Two kinds of handle, one ladder of weight between them. A handle that draws
+const layer = (color: string) => `linear-gradient(${color}, ${color})`
+
+// Three kinds of handle, one ladder of weight between them. A handle that draws
 // nothing at rest reveals itself under the pointer at exactly the weight a
 // visible one rests at (`action.disabled`); a visible one then goes past that,
 // to `action.active` — the same resting/hover pair `VerticalScrollbar`'s thumb
-// uses.
-//
-// `action.selected` (0.08 light / 0.16 dark) used to be the hover for both, and
-// was too faint to answer "is this the thing I grab?" over a dense pileup — and
-// on a `bar`, which rests at 0.26, it made the handle go *fainter* under the
-// pointer, since `:hover` beats the plain class whatever the source order.
+// uses. A `grip` bar sits on an opaque paper fill so a view's gridlines stop at
+// it, and a centred pill marks it as something to grab.
 const useStyles = makeStyles()(theme => ({
   horizontalHandle: {
     cursor: 'row-resize',
@@ -20,19 +18,39 @@ const useStyles = makeStyles()(theme => ({
     // stop the browser turning a touch-drag into a scroll/pan gesture so the
     // pointer stream reaches us
     touchAction: 'none',
-    '&:hover': { background: theme.palette.action.disabled },
+    '&:hover': { backgroundColor: theme.palette.action.disabled },
   },
   verticalHandle: {
     cursor: 'col-resize',
     height: '100%',
     touchAction: 'none',
-    '&:hover': { background: theme.palette.action.disabled },
+    '&:hover': { backgroundColor: theme.palette.action.disabled },
   },
   // `bar` opt-in: the standard always-visible resize divider used at the bottom
   // (or side) of views and tracks. Other call sites stay invisible until hover.
   bar: { '&:hover': { background: theme.palette.action.active } },
   horizontalBar: { height: 4, background: theme.palette.action.disabled },
   verticalBar: { width: 4, background: theme.palette.action.disabled },
+  grip: {
+    backgroundColor: theme.palette.background.paper,
+    backgroundImage: `${layer(theme.palette.action.active)}, ${layer(theme.palette.action.disabled)}`,
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    '&:hover': {
+      backgroundColor: theme.palette.background.paper,
+      backgroundImage: `${layer(theme.palette.text.primary)}, ${layer(theme.palette.action.active)}`,
+    },
+  },
+  horizontalGrip: {
+    height: 6,
+    backgroundSize: '36px 3px, auto',
+    borderTop: `1px solid ${theme.palette.text.disabled}`,
+  },
+  verticalGrip: {
+    width: 6,
+    backgroundSize: '3px 36px, auto',
+    borderLeft: `1px solid ${theme.palette.text.disabled}`,
+  },
 }))
 
 function ResizeHandle({
@@ -41,6 +59,7 @@ function ResizeHandle({
   onDragEnd,
   vertical = false,
   bar = false,
+  grip = false,
   gain,
   className: originalClassName,
   onPointerDown,
@@ -51,6 +70,8 @@ function ResizeHandle({
   onDragEnd?: () => void
   vertical?: boolean
   bar?: boolean
+  /** An opaque `bar` with a grip pill, for the bottom edge of a view */
+  grip?: boolean
   /**
    * How many px this handle moves per px of the value it drags — see
    * `useResizeDrag`. Pass it when the value is shared by several stacked bands
@@ -84,8 +105,15 @@ function ResizeHandle({
       className={cx(
         originalClassName,
         vertical ? classes.verticalHandle : classes.horizontalHandle,
-        bar && classes.bar,
-        bar && (vertical ? classes.verticalBar : classes.horizontalBar),
+        grip && [
+          classes.grip,
+          vertical ? classes.verticalGrip : classes.horizontalGrip,
+        ],
+        bar &&
+          !grip && [
+            classes.bar,
+            vertical ? classes.verticalBar : classes.horizontalBar,
+          ],
       )}
       {...handleProps}
       onPointerDown={event => {

@@ -57,7 +57,9 @@ function readBarAlphas(el: HTMLElement) {
       if (!(rule instanceof CSSStyleRule)) {
         continue
       }
-      const bg = rule.style.backgroundColor || rule.style.background
+      const bg =
+        rule.style.getPropertyValue('background-color') ||
+        rule.style.getPropertyValue('background')
       if (!bg) {
         continue
       }
@@ -205,6 +207,13 @@ describe('ResizeHandle', () => {
 
     expect(bgAlpha(plain)).toBe(0)
     expect(bgAlpha(barred)).toBeGreaterThan(0)
+  })
+
+  it('draws a `grip` bar opaque, at rest and under the pointer', () => {
+    const { container } = render(<ResizeHandle grip onDrag={() => {}} />)
+    const { rest, hover } = readBarAlphas(container.firstChild as HTMLElement)
+    expect(colord(rest).alpha()).toBe(1)
+    expect(colord(hover).alpha()).toBe(1)
   })
 
   // A bar rests at `action.disabled` and used to inherit the invisible handles'

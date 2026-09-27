@@ -63,7 +63,7 @@ const ResizeAllTracksHandle = observer(function ResizeAllTracksHandle({
   return (
     <div ref={ref} style={{ position: 'sticky', bottom: 0, zIndex: 300 }}>
       <ResizeHandle
-        bar
+        grip
         data-testid="resize-all-tracks"
         title={
           isTopLevelView
