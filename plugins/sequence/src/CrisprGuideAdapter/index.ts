@@ -1,3 +1,4 @@
+import { DERIVES_FROM_SEQUENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchema from './configSchema.ts'
@@ -8,6 +9,7 @@ export default function CrisprGuideAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'CrisprGuideAdapter',
+      adapterCapabilities: [DERIVES_FROM_SEQUENCE],
       displayName: 'CRISPR guide RNA adapter',
       adapterMetadata: {
         hiddenFromGUI: true,

@@ -16,6 +16,7 @@ export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
       this.pluginManager,
       sessionId,
       adapterConfig,
+      sequenceAdapter,
     )
 
     // Primes BEFORE it asks: a ReferenceScanAdapter answers `getRefNames` by

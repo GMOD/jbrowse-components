@@ -6,7 +6,11 @@ import CoreGetRefNames from '../rpc/methods/CoreGetRefNames.ts'
 import { ObservableCreate } from '../util/rxjs.ts'
 import SimpleFeature from '../util/simpleFeature.ts'
 import { BaseFeatureDataAdapter } from './BaseAdapter/index.ts'
-import { clearAdapterCache } from './dataAdapterCache.ts'
+import {
+  DERIVES_FROM_SEQUENCE,
+  clearAdapterCache,
+  getAdapter,
+} from './dataAdapterCache.ts'
 import { getFeatureAdapterOrThrow } from './getFeatureAdapter.ts'
 
 import type { Feature, Region } from '../util/index.ts'
@@ -80,11 +84,23 @@ class TestSequenceAdapter extends BaseFeatureDataAdapter {
   }
 }
 
+class OtherSequenceAdapter extends TestSequenceAdapter {
+  async getSequence() {
+    return 'TTTT'
+  }
+}
+
+// GC content's shape: it reads the reference and holds no file, so its
+// registration declares DERIVES_FROM_SEQUENCE
+class DerivedAdapter extends ReferenceReadingAdapter {}
+
 const pluginManager = new PluginManager()
 for (const [name, AdapterClass] of [
   ['ReferenceReadingAdapter', ReferenceReadingAdapter],
   ['ScanAdapter', ScanAdapter],
   ['TestSequenceAdapter', TestSequenceAdapter],
+  ['OtherSequenceAdapter', OtherSequenceAdapter],
+  ['DerivedAdapter', DerivedAdapter],
 ] as const) {
   pluginManager.addAdapterType(
     () =>
@@ -92,6 +108,8 @@ for (const [name, AdapterClass] of [
         name,
         configSchema: ConfigurationSchema(name, {}, { explicitlyTyped: true }),
         getAdapterClass: () => Promise.resolve(AdapterClass),
+        adapterCapabilities:
+          name === 'DerivedAdapter' ? [DERIVES_FROM_SEQUENCE] : [],
       }),
   )
 }
@@ -127,9 +145,9 @@ beforeEach(() => {
 })
 
 // The contract the methods that rename no regions depend on. `dataAdapterCache`
-// keys on adapterConfig alone, so the sequence config CoreGetRefNames leaves on
-// the instance is what every later fetch reads — including the ones that pass
-// nothing. Sabotaging the priming reds this; sabotaging any single caller does
+// keys a file-reading adapter on adapterConfig alone, so the sequence config
+// CoreGetRefNames leaves on the instance is what every later fetch reads —
+// including the ones that pass nothing. Sabotaging the priming reds this; sabotaging any single caller does
 // not, which is why the coverage cannot live at a call site.
 test('CoreGetRefNames primes the cached instance for a later fetch that passes nothing', async () => {
   await getRefNames({ sequenceAdapter })
@@ -152,9 +170,10 @@ test('without it the same fetch reads no reference, and says nothing', async () 
 // What set-once does not settle is which config gets there first.
 // `renameRegionsIfNeeded` resolves one refName map per assembly through
 // `Promise.all`, each priming the same cached instance, so an adapter config
-// displayed against two assemblies takes whichever call resolves first. No
-// adapter that reads the reference is displayed that way today; if one ever is,
-// this is the line that decides it.
+// displayed against two assemblies takes whichever call resolves first. A
+// synteny adapter is displayed that way by design and reads no reference; an
+// adapter computing from the reference declares DERIVES_FROM_SEQUENCE and gets
+// an instance per sequence (below).
 test('a later call passing no sequence adapter does not clear it', async () => {
   await getRefNames({ sequenceAdapter })
   await getRefNames({})
@@ -195,4 +214,57 @@ test('CoreGetExportData reads the reference renaming added, unprimed', async () 
       formatType: 'fasta',
     }),
   ).resolves.toBe('ACGT')
+})
+
+describe('an adapter derived from the sequence', () => {
+  const derived = { type: 'DerivedAdapter' }
+  const other = { type: 'OtherSequenceAdapter' }
+
+  async function readThrough(sequence: Record<string, unknown>) {
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager,
+      sessionId: 'test',
+      adapterConfig: derived,
+      sequenceAdapter: sequence,
+    })
+    const features = await dataAdapter.getFeaturesArray(region)
+    return features[0]!.get('seq') as string | null
+  }
+
+  // grape's and peach's GC tracks are one config, `{ type: 'GCContentAdapter' }`;
+  // keyed on it alone, whichever genome primed first answered for both
+  test('reads each genome from its own sequence, one config on two genomes', async () => {
+    await expect(readThrough(sequenceAdapter)).resolves.toBe('ACGT')
+    await expect(readThrough(other)).resolves.toBe('TTTT')
+  })
+
+  test('the instance CoreGetRefNames primes is the one a fetch with that sequence reads', async () => {
+    await new CoreGetRefNames(pluginManager).invoke({
+      sessionId: 'test',
+      adapterConfig: derived,
+      sequenceAdapter: other,
+    })
+    const primed = await getAdapter(pluginManager, 'test', derived, other)
+    const fetched = await getFeatureAdapterOrThrow({
+      pluginManager,
+      sessionId: 'test',
+      adapterConfig: derived,
+      sequenceAdapter: other,
+    })
+    expect(fetched).toBe(primed.dataAdapter)
+  })
+
+  test('a file-reading adapter stays one instance across sequences, as a synteny adapter needs', async () => {
+    const [a, b] = await Promise.all(
+      [sequenceAdapter, other].map(sequence =>
+        getFeatureAdapterOrThrow({
+          pluginManager,
+          sessionId: 'test',
+          adapterConfig,
+          sequenceAdapter: sequence,
+        }),
+      ),
+    )
+    expect(a).toBe(b)
+  })
 })

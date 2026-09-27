@@ -14,6 +14,7 @@ export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRe
       this.pluginManager,
       sessionId,
       adapterConfig,
+      args.sequenceAdapter,
     )
 
     // "Unmeasurable", not an error: the gate reads undefined as "no byte axis".

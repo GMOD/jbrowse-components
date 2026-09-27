@@ -1,3 +1,4 @@
+import { DERIVES_FROM_SEQUENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchema from './configSchema.ts'
@@ -8,6 +9,7 @@ export default function MotifListAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'MotifListAdapter',
+      adapterCapabilities: [DERIVES_FROM_SEQUENCE],
       displayName: 'Motif list adapter',
       adapterMetadata: {
         hiddenFromGUI: true,

@@ -18,6 +18,7 @@ export default class CoreGetFeatureDensity extends RpcMethodTypeWithRenameRegion
       this.pluginManager,
       sessionId,
       adapterConfig,
+      args.sequenceAdapter,
     )
     return isFeatureAdapter(dataAdapter)
       ? dataAdapter.getFeatureDensity(regions, {

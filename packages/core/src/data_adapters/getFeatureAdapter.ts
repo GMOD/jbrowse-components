@@ -30,6 +30,7 @@ export async function getFeatureAdapter({
     pluginManager,
     sessionId,
     adapterConfig,
+    sequenceAdapter,
   )
   const featureAdapter = isFeatureAdapter(dataAdapter) ? dataAdapter : undefined
   featureAdapter?.setSequenceAdapterConfig(sequenceAdapter)

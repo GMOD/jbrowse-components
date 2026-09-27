@@ -1,4 +1,5 @@
 import idMaker from '../util/idMaker.ts'
+import { isFeatureAdapter } from './BaseAdapter/util.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
@@ -10,6 +11,32 @@ type ConfigSnap = SnapshotIn<AnyConfigurationSchemaType>
 export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
   const { adapterId } = conf
   return typeof adapterId === 'string' && adapterId ? adapterId : idMaker(conf)
+}
+
+/**
+ * #api
+ * The `adapterCapabilities` entry of an adapter that computes what it answers
+ * from the assembly's sequence and holds no file of its own — GC content, a
+ * motif scan. One config on two genomes is then two instances, each primed
+ * with its own genome's sequence, where a config alone would key one instance
+ * and the first genome to prime it would answer for both. Every other adapter
+ * keys on its config alone: a BAM keyed on its reference would parse its index
+ * again for each creator that passes no sequence, and a synteny adapter is
+ * primed from each of its assemblies by design.
+ */
+export const DERIVES_FROM_SEQUENCE = 'derivesFromSequence'
+
+function derivesFromSequence(
+  pluginManager: PluginManager,
+  adapterConfigSnapshot: ConfigSnap,
+) {
+  const type: unknown = adapterConfigSnapshot?.type
+  return (
+    typeof type === 'string' &&
+    pluginManager
+      .getAdapterType(type)
+      .adapterCapabilities.includes(DERIVES_FROM_SEQUENCE)
+  )
 }
 
 interface AdapterCacheEntry {
@@ -36,6 +63,7 @@ async function getAdapterPre(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+  keyedSequence: Record<string, unknown> | undefined,
 ) {
   const adapterType = adapterConfigSnapshot?.type
 
@@ -59,6 +87,9 @@ async function getAdapterPre(
     getAdapter(pluginManager, sessionId, conf)
   const CLASS = await dataAdapterType.getAdapterClass()
   const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
+  if (keyedSequence && isFeatureAdapter(dataAdapter)) {
+    dataAdapter.setSequenceAdapterConfig(keyedSequence)
+  }
 
   return {
     dataAdapter,
@@ -66,32 +97,54 @@ async function getAdapterPre(
   }
 }
 
-/** look up the cached entry for a config, creating and storing it if absent */
+/**
+ * look up the cached entry for a config, creating and storing it if absent.
+ * Keyed synchronously, so concurrent callers share one pending entry
+ */
 function getOrCreateEntry(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+  sequenceAdapter: Record<string, unknown> | undefined,
 ) {
-  const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
+  const keyedSequence =
+    sequenceAdapter && derivesFromSequence(pluginManager, adapterConfigSnapshot)
+      ? sequenceAdapter
+      : undefined
+  const configKey = adapterConfigCacheKey(adapterConfigSnapshot)
+  const cacheKey = keyedSequence
+    ? `${configKey}|${adapterConfigCacheKey(keyedSequence)}`
+    : configKey
   return (
     adapterCache[cacheKey] ??
     storeWithEvict(
       cacheKey,
-      getAdapterPre(pluginManager, sessionId, adapterConfigSnapshot),
+      getAdapterPre(
+        pluginManager,
+        sessionId,
+        adapterConfigSnapshot,
+        keyedSequence,
+      ),
     )
   )
 }
 
-/** instantiate a data adapter, or return a cached one with the same config */
+/**
+ * instantiate a data adapter, or return a cached one with the same config.
+ * `sequenceAdapter` is the assembly sequence the caller already holds; it
+ * keys and primes the instance only for a {@link DERIVES_FROM_SEQUENCE} type
+ */
 export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+  sequenceAdapter?: Record<string, unknown>,
 ): Promise<AdapterCacheEntry> {
   const ret = await getOrCreateEntry(
     pluginManager,
     sessionId,
     adapterConfigSnapshot,
+    sequenceAdapter,
   )
   ret.sessionIds.add(sessionId)
   return ret
