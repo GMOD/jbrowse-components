@@ -13,7 +13,7 @@ holds the remaining user-guide proposals and the harness analysis; this file is
 the tutorial half and is the one to work from.
 
 Every candidate below came out of the ten-agent tutorial audit
-(`tutorial-corpus-audit.md` §5-7 is that audit's structural half). Each names the
+(`tutorial-corpus-audit.md` §5-6 is that audit's structural half). Each names the
 prose it makes unnecessary, which is what ranks it.
 
 **A tour does not retire a figure.** Two were retired on 2026-08-21 and put back

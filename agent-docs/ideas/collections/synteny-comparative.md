@@ -110,7 +110,7 @@ Encouragingly the geometry is already generic over an arbitrary view *pair* —
 `views[level+1]` in `LinearSyntenyDisplay/afterAttach.ts` and the `connectedViews` getter). So
 non-adjacent ribbons are a level-model + z-ordering change, not a geometry rewrite — but a
 separate, larger step. The id is the prerequisite, not the whole feature. Start with MCScan
-(already block-structured) for populating the field. See [block-level-synteny-from-external-tools](../ready/block-level-synteny-from-external-tools.md)
+(already block-structured) for populating the field. See [block-level-synteny-from-external-tools](../ready/block-level-synteny-from-external-tools.md).
 
 
 **PIF / tabix indexing weaknesses + improvements** (the all-vs-all adapter now

@@ -1,49 +1,19 @@
 ---
 name: tutorial-corpus-audit
-description: Two passes over website/docs/tutorials/ — four measurements taken 2026-08-31 (no destination named, nothing starts from scratch, prose per figure, claims that do not survive checking) and the 2026-08-21 structural read (which pages are user guides wearing a tutorial's clothes, the two that want splitting at a named line, and the four duplication clusters that turned out not to exist). Population genomics ranks last on every measurement. Read before restructuring a tutorial, proposing to dedupe the corpus, or quoting one of its censuses.
+description: Two passes over website/docs/tutorials/ — three measurements taken 2026-08-31 (nothing starts from scratch, prose per figure, claims that do not survive checking) and the 2026-08-21 structural read (which pages are user guides wearing a tutorial's clothes, and the two that want splitting at a named line). Population genomics ranks last on every measurement. Read before restructuring a tutorial, proposing to dedupe the corpus, or quoting one of its censuses.
 ---
 
 # The tutorial corpus, audited
 
 Two passes over `website/docs/tutorials/`, kept together because they read the
-same pages and their findings land on the same edits. §1-4 are four measurements
-taken on 2026-08-31 across the 48 pages there then; §5-7 are the structural half,
+same pages and their findings land on the same edits. §2-4 are three measurements
+taken on 2026-08-31 across the 48 pages there then; §5-6 are the structural half,
 from a ten-agent read of the 43 pages there on 2026-08-21. The corpus is 57 pages
 today, so a census below is a floor rather than a current count — re-run one
 before quoting it.
 
-**Population genomics ranks last on every measurement in §1-4.** The same eight
+**Population genomics ranks last on every measurement in §2-4.** The same eight
 pages head three different rankings.
-
-## 1. No destination named
-
-`check-prereq-tools` asserts every tool a `## Prerequisites` names gets run on
-the page. Nothing asserts the reverse.
-
-Four pages link neither quickstart: `genomes_basics`, `genomes_pangenome`, `genomes_proteins`
-and `genomes_synteny`, and they are correct as they stand: each is a click-path
-through genomes.jbrowse.org, so the hosted site *is* the destination and the
-prerequisite already reads "nothing to install".
-
-**`check-prereq-app.ts` was the proposal here, and re-measuring closed it
-instead** (2026-09-25, 69 pages). Six pages match none of the three arms this
-section names, and reading all six shows the arms are incomplete and the
-pages are correct:
-
-- `gene_prediction_review` and `tp53_structures` hand the reader a hosted
-  JBrowse URL of their own (`jbrowse.org/demos/tiberius_review/`,
-  `jbrowse.org/code/jb2/main/test_data/protein3d_config.json`), which is a
-  destination the three arms do not admit.
-- `pangenome_hprc_carriers`, `part5`, `pangenome_graph_reading` and
-  `pangenome_prepare_graph` open their Prerequisites with the session from an
-  earlier part. A series member inherits its destination, and a check that did
-  not follow that link would put a redundant bullet on every part after the
-  first.
-
-Widen the arms to those two and every page passes, so the checker would ship
-green over a convention 69 pages already keep. `check-prereq-tools` earned its
-place by finding live drift; this one finds none. **Build it when a page lands
-that names nowhere, not before.**
 
 ## 2. Nothing starts from scratch, and nothing is Desktop
 
@@ -280,46 +250,9 @@ donor.
   → fine index opens it → carriage says who → the node's menu opens CFT073 → the
   file cut brings the paths back.
 
-## 7. Duplication: four expected clusters that do not exist
-
-Worth recording, because the obvious dedupe pass would find nothing.
-
-- **bgzip/tabix** — no page carries a paragraph explaining what they do. The rule
-  ("link to `quickstart_web.md` for the prep") is being followed.
-- **`jbrowse text-index`** — two occurrences corpus-wide, one a command and one a
-  link.
-- **The `.anchors` explanation** — lives once, on `mcscan_synteny_grape_peach`,
-  and the sibling links it.
-- **The TCGA "use your own cohort" pair** — already solved by delegation at
-  `tcga_cohort_mutations.md:339`, which is the model the rest should copy.
-
-What *is* duplicated is prose whose repetition is load-bearing under the
-cold-start rule: the "nothing to read along" bullet (four wordings across ~12
-pages), the `UU_Cfam_GSD_1.0` gloss (four pages), the assembly-name sentence
-(four pages, each one clause and each already a link). **The win there is
-consistency of wording, not removal.** The one that looks like an exception is
-not:
-
-- **The `## Reproduce it end to end` fence**, 23 pages, whose only varying token
-  is the script name. `include:` cannot own it (`sync-doc-snippets` fills fenced
-  blocks from compiled TS/JS), and `check-script-commands` already pins it, so
-  this one is correctly left alone.
-
-**And one label that has two real spellings.** An agent reported
-`**Add track**` as missing its ellipsis on seven lines, since
-`HamburgerMenu.tsx:66` renders `Add track...`. **Both spellings are real**: the
-FAB's menu renders a bare `Add track`
-(`HierarchicalTrackSelectorWidget/components/HierarchicalFab.tsx:78`). The docs'
-bare form matches a rendered label and was left alone.
-
-## 8. SV review
-
-`ideas/sv-review-portal.md` §"What a card is", §"Sorting the queue is what makes
-it finishable".
-
 ## Order
 
-§1 is one checker, widest reach. §4's two figures are unshot. §3 is a scope change to an existing checker plus a rule
-in `docs/tutorials/CLAUDE.md`. §2 is the only real work. §5-7 are editorial calls
+§4's two figures are unshot. §3 is a scope change to an existing checker plus a rule
+in `docs/tutorials/CLAUDE.md`. §2 is the only real work. §5-6 are editorial calls
 on pages that already work, so they wait on someone deciding to take a page
-apart; §6 is the cheapest of the three, because each cut is at a line number.
+apart; §6 is the cheaper of the two, because each cut is at a line number.
