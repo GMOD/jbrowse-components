@@ -54,7 +54,11 @@ This page uses the phased VCF above, the Kinh-Vietnamese trio HG02024, chr1
 only.
 
 Everything here is on `hg38`, and the VCF loads as an ordinary `VariantTrack`,
-covered in the [variant track guide](/docs/config_guides/variant_track).
+covered in the [variant track guide](/docs/config_guides/variant_track). In
+JBrowse Web, paste its URL into **File → Open track...**, which infers the
+`.tbi` index beside it and the adapter.
+
+<Video src="/media/variants/trio_open_vcf.mp4" caption="The trio VCF opened by URL with no config written: File, Open track..., the URL pasted in, and the variants drawing under the genes in the default display." />
 
 <Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
 

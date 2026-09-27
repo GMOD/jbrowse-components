@@ -222,6 +222,22 @@ const snrpnReadsPanel = ({ grouped = false, fillUnmarked = true } = {}) =>
 export const methylationVideoFixtures = {
   ungrouped: snrpnReadsPanel(),
   readsTrackId: 'HG002_snrpn_5mC_reads',
+  bamUrl:
+    'https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam',
+  // the island and the genes with no reads yet, over the island alone, for the
+  // tour that opens the modBAM by URL
+  readsAbsent: lgvSession(DEMO_CONFIG, {
+    assembly: 'hg38',
+    loc: 'chr15:24,953,500-24,957,500',
+    tracks: [
+      {
+        trackId: 'cpgisland_ucsc_hg38',
+        type: 'LinearBasicDisplay',
+        height: 40,
+      },
+      HG38_GENE_LANE,
+    ],
+  }),
 }
 
 // What videos/epigenomics.ts films: ONE per-read pileup over the same three

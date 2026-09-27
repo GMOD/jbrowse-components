@@ -1,13 +1,41 @@
 // The tours over the variant tutorials, where the subject is a display the
 // track menu switches to rather than a file the reader prepares.
 import { trioVideoFixtures } from '../specs/trio.ts'
-import { trackMenu } from './shared.ts'
+import { openTrackByUrlSteps, trackMenu } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
-const { defaultDisplay, vcfTrackId, zoomOutsToMatrix } = trioVideoFixtures
+const { defaultDisplay, genesOnly, vcfTrackId, vcfUrl, zoomOutsToMatrix } =
+  trioVideoFixtures
 
 export const variantVideos: VideoSpec[] = [
+  // The page's VCF opened the way a reader opens their own, by URL, where the
+  // page itself hands over a config fence.
+  {
+    name: 'variants/trio_open_vcf',
+    description:
+      'The trio VCF opened by URL with no config written: File, Open track..., the URL pasted in, the index and adapter the form infers, and the variants drawing under the genes',
+    goal: 'Open the trio VCF from its URL, with no config to write',
+    url: genesOnly,
+    // the add-track drawer is the tallest state
+    viewportHeight: 640,
+    readySelector: '::-p-text(NCBI RefSeq)',
+    readyTimeout: 120000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      ...openTrackByUrlSteps(vcfUrl, {
+        open: 'From File, Open track, then paste the VCF URL',
+        add: 'The form infers the .tbi index and the adapter; Add',
+      }),
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: "The trio's variants, one box each, under the genes",
+      },
+    ],
+    tailMs: 3000,
+  },
   // analyze_trio.md spends three sections and four figures on one route: the
   // display type and then the rendering mode, on one track and one window.
   // What the stills cannot carry is that the six rows ARE the three, each

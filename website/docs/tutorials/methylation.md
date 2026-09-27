@@ -70,12 +70,17 @@ assembly already configured in JBrowse (see the
 }
 ```
 
+The same file also opens by URL through **File → Open track...**, which infers
+the `.bai` beside it.
+
 Set **Color by... → Modifications** from the track menu to paint each read with
 its 5mC calls. One mode paints only the positions the MM tag reports as
 modified; the other (IGV's "2-color" scheme) also fills in every CpG the tag
 left implicit, so an unmethylated region reads as solid blue. The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes, the probability threshold, and the cytosine-context submenu.
+
+<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its new track menu: Color by..., Modifications, and the two-color mode painting methylated CpGs red and unmethylated ones blue." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, so a read carrying no methylation reads blue where it was blank." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 

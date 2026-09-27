@@ -2,13 +2,77 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { methylationVideoFixtures } from '../specs/methylation.ts'
-import { trackMenu } from './shared.ts'
+import { cascade, openTrackByUrlSteps, trackMenu } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
-const { ungrouped, readsTrackId } = methylationVideoFixtures
+const { ungrouped, readsTrackId, bamUrl, readsAbsent } =
+  methylationVideoFixtures
+
+// An opened track's id is its name slugged plus a timestamp (makeTrackId), and
+// its name is the file's.
+const OPENED_READS_MENU =
+  '[data-testid="track_menu_icon"][data-trackid^="hg002_snrpn_5mc_haplotagged.bam-"]'
+const TWO_COLOR = cascade(
+  'menuitem',
+  'One color per type, plus low-probability & unmodified in blue',
+)
 
 export const methylationVideos: VideoSpec[] = [
+  // The page's modBAM opened by URL and colored the way its next sentence says,
+  // for a reader holding their own file rather than the fence's config.
+  {
+    name: 'methylation/open_modbam',
+    description:
+      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by..., Modifications and its two-color mode from the new track menu',
+    goal: 'Open a modBAM by URL and paint its reads by methylation',
+    url: readsAbsent,
+    viewportHeight: 740,
+    readySelector: '::-p-text(NCBI RefSeq)',
+    readyTimeout: 120000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      ...openTrackByUrlSteps(bamUrl, {
+        open: 'From File, Open track, then paste the BAM URL',
+        add: 'The form infers the .bai index and the adapter; Add',
+      }),
+      {
+        type: 'click',
+        selector: OPENED_READS_MENU,
+        say: 'Then color the reads by their modification calls',
+        hold: 1200,
+      },
+      { type: 'waitForSelector', selector: cascade('submenu', 'Color by...') },
+      {
+        type: 'click',
+        selector: cascade('submenu', 'Color by...'),
+        hold: 1000,
+      },
+      {
+        type: 'waitForSelector',
+        selector: cascade('submenu', 'Modifications'),
+      },
+      {
+        type: 'click',
+        selector: cascade('submenu', 'Modifications'),
+        hold: 1200,
+      },
+      { type: 'waitForSelector', selector: TWO_COLOR },
+      { type: 'click', selector: TWO_COLOR, hold: 1200 },
+      // a radio keeps its cascade up over the reads it recolored
+      { type: 'click', selector: '.MuiBackdrop-root', hold: 0 },
+      { type: 'waitForSelector', selector: TWO_COLOR, hidden: true },
+      { type: 'click', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'waitForText', text: 'Track settings', hidden: true },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'Each read painted by its 5mC calls: red methylated, blue not',
+      },
+    ],
+    tailMs: 3000,
+  },
   // A RE-LAYOUT, and the one on this page that a pair of stills states least
   // well. hg002_snrpn_group_by_hp stacks the ungrouped reads over the grouped
   // ones and its caption has to carry the whole claim in a sentence -- "Only the

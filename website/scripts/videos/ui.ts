@@ -5,7 +5,13 @@ import {
   geneGroupingVideoFixtures,
 } from '../specs/features.ts'
 import { uiVideoFixtures } from '../specs/ui.ts'
-import { LOCATION_BOX, RUBBERBAND, cascade, trackMenu } from './shared.ts'
+import {
+  LOCATION_BOX,
+  RUBBERBAND,
+  cascade,
+  openTrackByUrlSteps,
+  trackMenu,
+} from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
@@ -154,38 +160,10 @@ export const uiVideos: VideoSpec[] = [
     steps: [
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
-      {
-        type: 'click',
-        text: 'File',
-        say: 'From File, Open track, then paste the file URL',
-        hold: 900,
-      },
-      { type: 'waitForText', text: 'Open track...' },
-      { type: 'click', text: 'Open track...' },
-      { type: 'waitForText', text: 'Enter track data' },
-      { type: 'delay', ms: 1200 },
-      {
-        type: 'type',
-        selector: '[data-testid="urlInput"]',
-        value: addTrackUrl,
-        // long enough to see the second step appear under the field, which is
-        // the form answering
-        hold: 2200,
-      },
-      {
-        type: 'click',
-        selector: '[data-testid="addTrackNextButton"]',
-        hold: 1800,
-      },
-      // Same button, now reading Add: the confirm step is the name and the
-      // adapter the form worked out, and the tour holds on it rather than
-      // clicking through.
-      {
-        type: 'click',
-        selector: '[data-testid="addTrackNextButton"]',
-        say: 'The form names the track and picks its adapter; Add',
-      },
-      { type: 'waitForAppSettled', timeout: 60000 },
+      ...openTrackByUrlSteps(addTrackUrl, {
+        open: 'From File, Open track, then paste the file URL',
+        add: 'The form names the track and picks its adapter; Add',
+      }),
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {
         type: 'delay',

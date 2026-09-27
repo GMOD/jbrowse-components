@@ -61,3 +61,35 @@ export const cascade = (kind: 'submenu' | 'menuitem', label: string) =>
 // submenu, and the row the graph plugin's LinearGraphDisplay is listed by.
 export const DISPLAY_TYPES = cascade('submenu', 'Display types')
 export const GRAPH_DISPLAY = cascade('menuitem', 'Graph')
+
+// File → Open track..., a file URL pasted in, Next, and Add: the route a reader
+// takes to open their own file, with no config written. The form infers the
+// index beside the file and the adapter from its extension, which is what the
+// Add step's line names; the track draws once the drawer has closed itself.
+export function openTrackByUrlSteps(
+  url: string,
+  { open, add }: { open: string; add: string },
+): VideoStep[] {
+  return [
+    { type: 'click', text: 'File', say: open, hold: 900 },
+    { type: 'waitForText', text: 'Open track...' },
+    { type: 'click', text: 'Open track...' },
+    { type: 'waitForText', text: 'Enter track data' },
+    { type: 'delay', ms: 1000 },
+    // held long enough to see the second step appear under the field
+    {
+      type: 'type',
+      selector: '[data-testid="urlInput"]',
+      value: url,
+      hold: 2200,
+    },
+    {
+      type: 'click',
+      selector: '[data-testid="addTrackNextButton"]',
+      hold: 1800,
+    },
+    // the same button, now reading Add
+    { type: 'click', selector: '[data-testid="addTrackNextButton"]', say: add },
+    { type: 'waitForAppSettled', timeout: 120000 },
+  ]
+}
