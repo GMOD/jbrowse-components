@@ -283,6 +283,9 @@ no index, and serves it to a variant track:
 }
 ```
 
+A link whose mate lies outside the view draws as a short stem at its own end,
+which is how both NYGC records at cluster_3 appear in the figure above.
+
 ## Copy number from the published callsets
 
 Four groups have called copy number on this pair, and C-GIAB publishes each

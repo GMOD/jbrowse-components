@@ -1397,7 +1397,8 @@ export const svSpecs: ScreenshotSpec[] = [
   //   - benchmark and minda: a BND, so a mark at the breakend.
   //   - Severus and DRAGEN: symbolic <INV> with SVLEN 53.9 Mb, so the lane draws
   //     a span from the breakend off the right edge of the window.
-  //   - NYGC: a BEDPE record, whose near end lands at the same base.
+  //   - NYGC: a BEDPE record drawn as a link, a stem where its mate is off
+  //     screen, whose near end lands at the same base.
   // Both readings are of one event, so the caption says representation rather
   // than disagreement.
   //
@@ -1481,6 +1482,21 @@ export const svSpecs: ScreenshotSpec[] = [
               locationType: 'UriLocation',
             },
           },
+          // the page's NYGC config: both mates are off screen here, so each
+          // record draws a stem at its breakend
+          displays: [
+            {
+              type: 'LinearMarkDisplay',
+              displayId: 'hg008t_nygc_sv-LinearMarkDisplay',
+              marks: [
+                {
+                  mark: 'link',
+                  encoding: { size: 2 },
+                  transform: [{ type: 'mate' }],
+                },
+              ],
+            },
+          ],
         },
       ],
       views: [
@@ -1517,8 +1533,7 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008t_nygc_sv',
-              type: 'LinearVariantDisplay',
-              showLabels: 'none',
+              type: 'LinearMarkDisplay',
               height: 45,
             },
             {
