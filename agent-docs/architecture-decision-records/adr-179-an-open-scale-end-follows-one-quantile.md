@@ -47,7 +47,7 @@ ggplot2's `oob_squish` and Vega's `clamp`.
 renamed `rampExtent`): the nearest-rank quantile by quickselect, exact where
 the histogram `scales.y` used to walk collapsed skewed data into its bottom
 bucket. Hi-C's contact counts went through the same quickselect at a floor
-rank, one rank lower for most counts; since 2026-09-27 they take this rule's
+rank, one rank lower for most counts; since 2026-09-26 they take this rule's
 rank through `quantileOf`. The wiggle
 family, the mark display, the coverage band and every ramp read it; the
 coverage band clips the peaks of the bins in view and gains the option, having
