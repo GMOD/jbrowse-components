@@ -12,10 +12,10 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 ### autoscaleDomainFromSpans
 
 The domain the visible instances autoscale to: at a `quantile` of 1 their
-extremes, `stats`; below it `quantileExtent`'s ends, the top read off the
-non-zero `high`s and the bottom off the `low`s, so whiskers open to their
-spread, a sparse window's empty bins lower no top, and a window of one sign
-keeps both its ends.
+extremes, `stats`; below it `quantileExtent`'s ends, the bottom read off the
+`low`s and the top off the `high`s less the zeros where any is positive, so
+whiskers open to their spread, a sparse window's empty bins lower no top, and a
+window of nothing above 0 keeps the top it has.
 
 ```js
 // type signature
