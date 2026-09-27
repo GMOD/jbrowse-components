@@ -135,7 +135,9 @@ and the CNV calls as a BED, both loaded straight from their FTP URL.
 ```
 
 The CNV BED ships without a header; name its columns with
-[`columnNames`](/docs/config/bedadapter/#slot-columnnames):
+[`columnNames`](/docs/config/bedadapter/#slot-columnnames). A threshold colour
+over `total_copy_number` paints each call by its copy number with a key, the
+same palette as the subclonal lane further down:
 
 ```json addtrack
 {
@@ -155,6 +157,16 @@ The CNV BED ships without a header; name its columns with
       "hap2_copy_number",
       "name"
     ]
+  },
+  "displayDefaults": {
+    "color": {
+      "field": "total_copy_number",
+      "scale": "threshold",
+      "domain": ["1", "2", "3", "4"],
+      "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
+      "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4+"],
+      "title": "Copy number"
+    }
   }
 }
 ```

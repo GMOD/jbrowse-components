@@ -380,6 +380,23 @@ const HG008_BICSEQ2_LANE = {
   height: 130,
 }
 
+// The benchmark CNV calls coloured by total copy number, with the subclonal
+// lane's palette and key, so the page's two copy-number lanes read alike. The
+// hosted config's copy carries only the CN label; the colour rides here.
+const BENCHMARK_CNV_COLOR = {
+  field: 'total_copy_number',
+  scale: 'threshold',
+  domain: ['1', '2', '3', '4'],
+  range: ['#2166ac', '#92c5de', '#e0e0e0', '#f4a582', '#b2182b'],
+  labels: ['CN 0', 'CN 1', 'CN 2', 'CN 3', 'CN 4+'],
+  title: 'Copy number',
+}
+const benchmarkCnvLane = (trackId = 'hg008_cnv_calls') => ({
+  trackId,
+  type: 'LinearBasicDisplay',
+  color: BENCHMARK_CNV_COLOR,
+})
+
 // The SKBR3 Sniffles translocation calls, which is the file
 // user_guides/sv_inspector_view.md tells the reader to paste into the import
 // form. Two of the figures below load it declaratively; the tour types it.
@@ -1511,7 +1528,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 140, grid: true } },
               height: 180,
             },
-            'hg008_cnv_calls',
+            benchmarkCnvLane(),
           ],
         },
       ],
@@ -2067,7 +2084,9 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
-            'GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls',
+            benchmarkCnvLane(
+              'GRCh38_HG008-T-V0.5_somatic-CNV_PASS.draftbenchmark.calls',
+            ),
           ],
         },
       ],
@@ -2274,7 +2293,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 140 } },
               height: 110,
             },
-            { trackId: 'hg008_cnv_calls', height: 70 },
+            { ...benchmarkCnvLane(), height: 70 },
             { trackId: 'hg008t_nygc_cnv', height: 70 },
             { trackId: 'hg008t_dragen_cnv', height: 70 },
             {
@@ -2396,7 +2415,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
-            'hg008_cnv_calls',
+            benchmarkCnvLane(),
           ],
         },
       ],
@@ -2593,7 +2612,7 @@ export const svSpecs: ScreenshotSpec[] = [
               featureHeight: 1,
               height: 160,
             },
-            'hg008_cnv_calls',
+            benchmarkCnvLane(),
           ],
         },
       ],
@@ -2666,7 +2685,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
-            'hg008_cnv_calls',
+            benchmarkCnvLane(),
           ],
         },
       ],
@@ -2747,7 +2766,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
-            'hg008_cnv_calls',
+            benchmarkCnvLane(),
           ],
         },
       ],
@@ -2849,7 +2868,7 @@ export const svSpecs: ScreenshotSpec[] = [
               scales: { y: { domainMin: 0, domainMax: 1 } },
               height: 140,
             },
-            'hg008_cnv_calls',
+            benchmarkCnvLane(),
           ],
         },
       ],
