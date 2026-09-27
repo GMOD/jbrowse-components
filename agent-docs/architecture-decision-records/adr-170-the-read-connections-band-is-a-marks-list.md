@@ -8,7 +8,7 @@ summary: "The alignments read-connections band's four private shapes are the gra
 ## Status
 
 Accepted (2026-09-25), Colin's calls of 2026-09-25 on the second of the three
-[pending-calls](../handoffs/pending-calls.md) decisions, and his answers on the
+decisions the arc band geometry round left, and his answers on the
 connector's colour and the breakend feet.
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) and
 [MARK_ENCODING.md](../reference/MARK_ENCODING.md) carry the operational
@@ -67,7 +67,8 @@ every other shape in the band to reach the DOM overlay to cross a seam.
 - **What stays is policy.** `compute.ts`, `arcChains.ts`, `arcClustering.ts`,
   `arcColors.ts` and `arcRegions.ts` decide which arcs exist, what supports
   each one and which category it falls in. Those feed `x`, `x2`, `y`, `size`
-  and `color`; rule 4 of the grammar handoff keeps them the display's.
+  and `color`; rule 4 of the grammar
+  (GRAMMAR_OF_GRAPHICS.md §"Four rules for how far to take it") keeps them the display's.
 
 ## Consequences
 

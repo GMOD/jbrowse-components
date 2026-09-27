@@ -20,13 +20,10 @@ mark workers receive, so renaming a key entry refetches nothing. The wiggle
 two-swatch colour edit keeps title and labels.
 
 Typecheck, `pnpm verify` and the variants, wiggle, multi-way, mark and
-display-kit suites passed. A later `jb-test main` run on ada failed 20 suites,
-several plainly unrelated (`WorkspaceTab.test.tsx` expects `hg19!,hg38!`,
-`legacySessions`, the MCP docs sections). Before landing, run those 20 on main
-alone and compare; the candidates that could be this change are the wiggle
-SVG vector export snapshot, `ChannelObjectSlotWrites` (the walk finds the
-channel objects), the markProblems leaf check (`markRequest.ts` now imports
-`paintedColorEncoding`), and the synteny export's colour-by legend.
+display-kit suites passed. Main's own CI at `0d06731e1e` already fails the
+four suites that could be this change's (`ChannelObjectSlotWrites`,
+`ExportSvgLinearSyntenyView`, `ExportSvgDisplayTypes`, `moduleClosure`), so
+before landing, compare each one's failure body with and without the change.
 
 ## Open
 
@@ -45,5 +42,3 @@ channel objects), the markProblems leaf check (`markRequest.ts` now imports
 - **A marker for bars clipped at the top of an axis**, on wiggle and the
   coverage band, so a clipped bar does not read as its value. A visual call:
   show Colin a picture before building it across GPU, Canvas2D and SVG.
-- A reference line is a member of the scale, so it has no zoom range and no
-  per-row value (GRAMMAR_OF_GRAPHICS.md). Parked.

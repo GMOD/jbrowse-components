@@ -7,8 +7,8 @@ summary: "FeatureColor takes `scale: 'identity'`: each feature paints the colour
 
 ## Status
 
-Accepted (2026-09-24), Colin's answer to the question
-[identity_coloring](../handoffs/identity_coloring.md) left open. Amends
+Accepted (2026-09-24), Colin's answer to the question the identity-colouring
+round left open. Amends
 [ADR-167](adr-167-the-feature-colours-scale-resolves-on-the-main-thread.md),
 which kept the multi-row display's `legend` slot for a file's own `itemRgb`
 relabelled and called that, in grammar terms, an identity scale with labels.

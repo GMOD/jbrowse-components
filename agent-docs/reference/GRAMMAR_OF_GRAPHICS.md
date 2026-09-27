@@ -82,6 +82,63 @@ in full and of the format-typed displays only where it says so.
 
 ![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
 
+## Four rules for how far to take it
+
+On 2026-09-23 Colin asked for a philosophy rather than a feature list, with the
+data coming straight from the `~/src/gmod/` parsers and little transformed.
+Four rules rank grammar work against that.
+
+**1. The parser's output is the data.** The grammar reads each record where the
+parser left it — bbi's typed arrays, a BAM record's bytes, CRAM's decoded slice,
+vcf-js's variant — through a reader resolved once per region. The GPU instance
+buffer is the one new representation the drawing needs, and any other copy
+between the parser and that buffer needs a reason the drawing gives. ADR-152
+found that every measured refusal to move a display onto the encoder blamed the
+per-row feature object, never the grammar's rule. The copies that remain are
+[copies-between-each-parser-and-its-instance-buffer](../ideas/waiting-on-a-number/copies-between-each-parser-and-its-instance-buffer.md).
+
+**2. One object per concept, and every surface reads it.** Colour, the value
+scale, the facet and the transform step are one object each (ADR-131, 135, 142,
+150, 153): the painter, the shader's uniforms, the legend, the axis, the menu,
+the dialog, the validator, the SVG export and the hit test all derive from it.
+A display that spells one of those concepts its own way is the finding. The
+row axis follows it on the multi-row feature and mark displays, where the row
+table is the one object the shader, the painter and the hit test place a key
+through (ADR-165). Text follows it in typography only: `FloatingText` and
+`SvgHaloText` are the one emit, and each display's placement stays its own
+(ADR-162). Hi-C (`HicColor`), LD (R² through `reds`, D′ through `blues`, no
+colour slot) and MAF (`MafColor`) resolve colour outside `colorEncodingOf`.
+
+**3. Generality resolves before the loop.** A shape composes its scale at
+`gen:shaders` (ADR-095), a field name becomes a direct read before the walk, a
+domain rides a uniform, and a lane nobody asked for is never allocated. A
+declared form lands at 1.00x the hand-written path or better, and anything
+per-instance that a config does not name costs nothing.
+
+**4. A track stays its format, and the grammar supplies its parts.** What a
+format-typed display holds is layout, tiering and fetch shape, and none of those
+are channels (ADR-091, and SESSION_SPEC_FORMAT.md §"The assessment"). The
+grammar converges the parts every display shares, not the displays. A new mark
+or channel arrives when it retires a hand-written spelling somewhere, which is
+ADR-040's two-consumer bar stated as a goal.
+
+A track type is not always a format. `MultiQuantitativeTrack`, `GWASTrack` and
+`GCContentTrack` are role bundles. Each is a name the guesser returns and
+Add-track offers, carrying which display leads and the `displayDefaults` it
+leads with. No display names `GWASTrack` alone — the Manhattan plot reads a
+score any feature adapter serves, so it attaches to `FeatureTrack` too
+(`plugins/gwas/src/LinearManhattanDisplay/index.ts`). The rule refuses a
+channel hidden inside a track type, which a bundle of defaults does not carry.
+
+**Colour stays each mark's** (2026-09-23): scale members on each mark's
+`encoding.color` are Vega-Lite's own spelling, and marks declaring one alike
+already share a scale and a key. A display-level `scales.color` would be a
+second spelling. The named ramps were picked from captures on a Hi-C locus and
+a compartment eigenvector: plasma read as magma's sibling and turbo is not
+perceptually uniform, so neither is in, and HicColor's `reverse`, left unset,
+follows `darkAtLowEnd`, since a ramp dark at its low end paints every sparse
+bin a dark speck.
+
 ## Where the tree answers each stage
 
 | Stage | What the grammar means | Where the tree answers | How far |
@@ -556,7 +613,7 @@ the row axis in the vocabulary above, and none is a new channel.
   stacked histogram by category (ggplot2's `position_stack`, GenomeSpy's
   `stack` writing `y0`/`y1`) needs a bar drawn between two values, which is
   the `y2` channel declined on captures for the range bar
-  ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)); a
+  (§"Against GenomeSpy and Gosling"); a
   bar mark per category drawn from the origin gives the overlay the Alu
   tutorial draws. `aggregate` takes `count`, `sum`, `mean`, `min` and `max`
   where Vega-Lite and GenomeSpy add `median` and the quartiles, and
@@ -633,6 +690,15 @@ the row axis in the vocabulary above, and none is a new channel.
   a uniform the shape reads, and the Canvas2D fallback would repaint the
   whole display per mousemove for it, which is the measurement that keeps
   the highlight a div.
+- **No per-layer data and no `lookup` join**, withdrawn 2026-09-23: no
+  measurement backs it, and each source multiplies the refName renaming, the
+  byte gate and the zoom range a display runs once today. Manhattan's LD join
+  carries index-SNP semantics a generic `lookup` would not hold. It reopens
+  when a named plot needs two files in one display.
+- **Text outside the text layer.** Alignments' inline labels, synteny's
+  off-screen mate names, MAF's row labels and bases, variant insertion lengths
+  and the sequence letters still paint on a canvas; the dense per-base ones
+  stay there by the 2026-09-23 call (ADR-162).
 - **Fewer channels.** `size`, `opacity` and `angle` are uniforms, not
   channels, because shapes are compiled from hand-written Slang rather than
   generated from the encoding. That is ADR-095's trade, and it holds until a
@@ -673,10 +739,12 @@ holds each shape's painter, shader and hit test to each other
 
 The gaps a user meets first, in order:
 
-1. **No `y2` channel**, declined on captures: a BigWig tier's min-to-max range
-   bar read worse than the same `minScore`/`maxScore` (ADR-123) as two point
-   marks over the mean, and than wiggle's whisker band
-   ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)).
+1. **No `y2` channel**, declined on captures (2026-09-23): on the COLO829
+   tumour coverage over 1 Mb of hg19 chr17, a BigWig tier's min-to-max range
+   bar read worse to Colin than the same `minScore`/`maxScore` (ADR-123) as two
+   point marks over the mean, and than wiggle's whisker band. `origin` stays
+   the display's slot, and the channel reopens on a config whose picture two
+   point marks cannot give.
 2. **In-app authoring reaches the whole plot, and stops at the display's own
    steps.** **Edit plot...** is `facet`, `rows` and the axis (`scales.y` title,
    type, ends, grid) above the mark list, and per mark its type, its steps and

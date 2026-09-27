@@ -1,6 +1,6 @@
 ---
 name: evaluate-jexl-channels-a-column-at-a-time
-description: a jexl channel or filter evaluated over whole columns runs 2-10x faster than per feature, but only once the data already is columns — gathering the fields off feature objects first gives most of the gain back — so it waits on the call to encode features as columns, or on a window transform (lag, cumsum, score - mean(score)) that needs a column to exist
+description: a jexl channel or filter evaluated over whole columns runs 2-10x faster than per feature, but only once the data already is columns — gathering the fields off feature objects first gives most of the gain back — and a column table over feature objects was withdrawn, so it waits on a source whose parser already answers columns (bbi, hic, CRAM), or on a window transform (lag, cumsum, score - mean(score)) that needs a column to exist
 ---
 
 # Evaluate jexl channels a column at a time
@@ -48,6 +48,12 @@ agree before timing:
   [ADR-152](../../architecture-decision-records/adr-152-wiggle-stays-off-the-column-encoder-until-two-lanes-go.md)
   keeps wiggle off the column encoder; if that or a feature column table
   arrives, the gather row above disappears and the columnar row is the cost.
+  A feature column table for BAM, VCF or GFF was withdrawn on 2026-09-23: it
+  would be a new representation between the parser and the instance buffer,
+  which rule 1 of the grammar refuses, and ADR-152's 18x `bin` and 3.8x
+  `coverage` kernel gains are measured against those steps over
+  `SimpleFeature`s. Where a parser already answers columns (bbi, hic, CRAM's
+  `DecodedSlice`), reading them by index is rule 1.
 - **A window transform.** A columnar mode makes vector-only functions possible —
   `lag(score)`, `cumsum(score)`, `score - mean(score)` — which is the missing
   `window` transform in

@@ -96,3 +96,21 @@ transforms or Edit plot.
   into one list entry, which the retired-spelling pass cannot express.
 - **A model-level colour preset for `ld`.** Two answers to one field's scale:
   the paint would have said threshold and the editor categorical.
+- **Inferring the LD join from the encodings** (`ld_role` shape entries, the
+  colour lanes) for the missing-index notice: it held only for plots shaped
+  like `LD_MARKS`. The adapter reports through `BaseOptions.notices` instead.
+- **The auto index following the top visible SNP under a row focus**: a focus
+  would refetch every region, undoing the row table's one-upload promise.
+- **A conditional colour on the encoding** (Vega-Lite's `condition`) for the
+  pink index: layering with a `filter` step used pieces the grammar already
+  had.
+- **Stashing the pre-LD plot and restoring it on untick**: a hidden second copy
+  of the plot, whose one advantage, the point's own colour, the `value` kept
+  beside the r² scale gives. A `colorByLd` flag deriving the drawn plot fails
+  too: Edit plot would show a plot other than the one drawn, and 22 readers of
+  `conf.marks` need live config nodes.
+- **Colouring a bar-only plot by LD**: no shipped config has one, and the item
+  greys out with a pointer to Edit plot instead.
+- **A notice for an LD plot whose marks all fail `placesEachSnp`**: only an
+  Edit plot `bin` or `x` reaches it, and the adapter's missing-index notice
+  already covers the grey plot it leads to.

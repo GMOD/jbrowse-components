@@ -10,8 +10,8 @@ summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds
 Accepted (2026-09-24). Stage 1 of the row axis resolved on the GPU: the
 mechanism in `@jbrowse/render-core`, the `span` shape reading it, and the
 multi-row feature display driving it. Applies rule 3 of
-[grammar-of-graphics-convergence](../handoffs/grammar-of-graphics-convergence.md)
-— generality resolves before the loop, and a domain rides a uniform — to the
+[GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) §"Four rules for
+how far to take it" — generality resolves before the loop, and a domain rides a uniform — to the
 row axis, and closes §3 of
 [wiggle-instance-records-carry-per-row-constants](../ideas/waiting-on-someone-else/wiggle-instance-records-carry-per-row-constants.md)
 for the span pass. Builds on ADR-113 (a span's colour is packed in the worker)
@@ -248,3 +248,10 @@ below.
 - **A display lens for the table beside the params lens.** Two lenses naming
   one object let a display forget one and draw differently per backend; the
   shape binding its own texture off the params it paints from cannot.
+- **Reading "drawn" through `rowSlot` in `wiggle-core/src/autoscale.ts`** in
+  place of the `drawnKeys` mask: the website's figure recipes import that
+  module by path as a dependency-free leaf, and `rowSlot` would pull the
+  render-core marks barrel into their node script.
+- **Deleting `rowsLayout` and `FacetLayout.rows`**: they still carry the row
+  count, the chip suppression and the tooltip's `field: value` row label,
+  which would move into a new model getter rather than go.

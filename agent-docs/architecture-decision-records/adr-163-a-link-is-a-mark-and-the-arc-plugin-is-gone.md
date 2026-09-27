@@ -30,7 +30,7 @@ path, fetch model and chrome entry, and every channel a `jexl:` callback —
 thickness by log score, the paired display's `lineWidth` beside the single
 one's `thickness`, and a score filter as a bespoke mixin where the mark
 display has a `filter` step. It was 4.4k lines, and the copy rule 1 of the
-grammar handoff rejects.
+grammar (GRAMMAR_OF_GRAPHICS.md §"Four rules for how far to take it") rejects.
 
 Two facts decided the shape of the replacement. The worker's positions are
 chromosome coordinates, with no refName lane and no genome-wide offset
