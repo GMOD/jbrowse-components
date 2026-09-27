@@ -3473,6 +3473,14 @@ export const configManifest: ConfigManifest = {
             {
               "name": "domainMid",
               "type": "(number | undefined)"
+            },
+            {
+              "name": "labels",
+              "type": "string[]"
+            },
+            {
+              "name": "title",
+              "type": "(string | undefined)"
             }
           ],
           "shorthand": "value",
@@ -3958,6 +3966,14 @@ export const configManifest: ConfigManifest = {
             {
               "name": "domainMid",
               "type": "(number | undefined)"
+            },
+            {
+              "name": "labels",
+              "type": "string[]"
+            },
+            {
+              "name": "title",
+              "type": "(string | undefined)"
             }
           ],
           "shorthand": "value",

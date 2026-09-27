@@ -4373,6 +4373,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
               "type": "number"
+            },
+            "labels": {
+              "description": "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {
@@ -5137,6 +5148,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
               "type": "number"
+            },
+            "labels": {
+              "description": "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "title": {
+              "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {

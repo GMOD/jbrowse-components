@@ -2635,7 +2635,8 @@
       "names": [
         "NO_VALUE_LABEL",
         "STRAND_FIELD",
-        "categoricalField"
+        "categoricalField",
+        "keyNames"
       ],
       "worker": "real"
     },

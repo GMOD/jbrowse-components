@@ -505,6 +505,20 @@ states none for the target, so it names no side.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
 
+## keyNames
+
+What a key names each of `keys`, from a colour object's `labels`: one each in
+order, an empty or missing entry leaving that key its own name. Every key
+that takes `labels` reads them through this, so a config means one thing by
+them everywhere.
+
+```js
+// type signature
+(keys: readonly unknown[], labels?: readonly string[]) => ReadonlyMap<string, string>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
+
 ## LaneName
 
 The lanes a caller asks the encoder to fill, beyond `x`, `x2` and
