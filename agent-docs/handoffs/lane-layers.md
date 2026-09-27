@@ -1,6 +1,6 @@
 ---
 name: lane-layers
-description: "What ADR-180's config-declared lane layers still need after the spike: template layers that reach genomes the session lacks, the Hubs plugin's sequence answer and the jb2hubs star; genes stay out of laneLayers for now."
+description: "ADR-180's lane layers after the spike: template layers and described lanes as temporary assemblies are built; left are releasing the Hubs plugin's assembly answer, a GC cost measurement (and a twobit index over-read) before jb2hubs writes GC into every star, and the hg38 star reading every child's index."
 ---
 
 The spike is `laneLayers` on `MultiWaySyntenyDisplay`: a row of data per lane
@@ -10,22 +10,34 @@ shared scale ([ADR-180](../architecture-decision-records/adr-180-a-multiway-lane
 
 ## Next
 
-1. **Template layers and genomes the session lacks.** A layer may name one
-   `adapter` every lane reads through its own genome; core keys a
-   `DERIVES_FROM_SEQUENCE` adapter per sequence (`e12f8ced81`), so it needs
-   no `adapterId`. **The sequence reaches that adapter only through an
-   assembly**: `loadRefNameMap`'s `CoreGetRefNames` primes it and
-   `renameRegionsIfNeeded` derives it for every fetch. Never pass
-   `sequenceAdapter` through an RPC by hand, `CoreGetRefNames` included, and
-   never let renaming keep a caller's (Colin, 2026-09-27). A held lane needs
-   nothing more. A described lane has no assembly, so it draws a template
-   only once its genome becomes one. `hasAnnotation` stays off the layer
-   sources so a layer never rebuilds `laneStack`. A zoom cap per lane, since
-   a template reads its lane's whole fetch window of sequence.
-2. **Hubs plugin and jb2hubs.** The description's sequence adapter carries
-   `baseUri`, since jb2hubs writes a relative `chromSizes`. The star builder
-   (`ucsc2jbrowse/src/multiwayStarTrack.ts`) writes a GC layer and grows its
-   height and the gene-page link's lane pitch by the band.
+Template layers and lanes the session lacks are built (`7700ccb6bb`): a
+described lane is a temporary assembly, so its sequence reaches an adapter
+only through renaming, and never through an RPC by hand
+(`reference/MULTIWAY_SYNTENY_DISPLAY.md` §"Lanes the session lacks",
+§"Lane layers"). Driven on hg38's hosted star at TP53: all nine lanes draw
+their own genome's GC, and "Open in new view" hands a lane to its hub's
+connection without losing it.
+
+1. **Release the Hubs plugin's new answer.** `describeAssemblies.ts` answers
+   `{ assembly, geneAdapter }`, `baseUri` stamped beside each `uri`
+   (committed in jbrowse-plugin-hubs, unreleased). Core now reads only those
+   two, so hub stars on a main build draw no mate genes until it ships; land
+   and release together.
+2. **Measure before jb2hubs writes GC into every star.** Cold at TP53, a
+   chromosome-level lane reads 2.4-2.9 MB of 2bit, mostly its chromosome's
+   soft-mask block list, against about 1 MB for a gc5Base bigWig. A
+   scaffold-level lane reads far more: `@gmod/twobit` 6.0.12 `getIndex`
+   reads `sequenceCount * (1 + 255 + offsetSize)` bytes, so bisBis1's 315k
+   scaffolds cost 118 MB and dasNov3's 12.6 MB. That over-read hits every
+   2bit read on such a genome, the reference sequence track's too; fix it in
+   twobit-js first. Then the star builder
+   (`ucsc2jbrowse/src/multiwayStarTrack.ts`) writes the layer and sizes each
+   lane at 22 + 12 (gene names) + the band + 2; its 22 is already short by
+   the gene-name row, and the gene-page link's pitch (34) grows by the band.
+3. **The hg38 star reads every child's index.** On the default lanes at TP53
+   it fetched 241 `.pif.gz.csi` files, 234 MB, with temporary assemblies
+   off, where on 2026-09-24 it read the eight lanes it drew. Separate from
+   lane layers, and larger than anything above.
 
 ## Not now
 
