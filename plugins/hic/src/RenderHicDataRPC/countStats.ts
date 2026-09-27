@@ -1,9 +1,9 @@
-import { selectNth } from '@jbrowse/core/util/quantileExtent'
+import { quantileOf } from '@jbrowse/core/util/quantileExtent'
 
 import { getInstanceCount } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 
 /**
- * The maximum and `quantile` percentile of the finite counts. A NaN (the
+ * The maximum and the nearest-rank `quantile` of the finite counts. A NaN (the
  * `.hic` no-value marker) or an Infinity (a tiny normalization divisor) would
  * otherwise become the colour domain and paint every bin wrong. Both are 0
  * when nothing is finite.
@@ -34,10 +34,6 @@ export function computeCountStats(
     ? { maxScore: 0, quantileScore: 0 }
     : {
         maxScore,
-        quantileScore: selectNth(
-          finite,
-          n,
-          Math.min(n - 1, Math.max(0, Math.floor(quantile * (n - 1)))),
-        ),
+        quantileScore: quantileOf(finite, n, quantile),
       }
 }

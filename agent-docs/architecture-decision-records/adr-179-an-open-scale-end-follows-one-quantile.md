@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An unpinned end of a value scale or a colour ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of each sign's magnitudes anchored at 0, through one exact rule (`quantileExtent`, the nearest-rank quickselect Hi-C already used). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C colour at 0.95; everything else at 1. Amended 2026-09-26: the coverage band starts at 0.99 too The Score menu's Autoscale type radio is a Clip outliers checkbox"
+summary: "An unpinned end of a value scale or a colour ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of each sign's magnitudes anchored at 0, through one exact rule (`quantileExtent`, a nearest-rank quickselect). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C colour at 0.95; everything else at 1. Amended 2026-09-26: the coverage band starts at 0.99 too The Score menu's Autoscale type radio is a Clip outliers checkbox"
 ---
 
 # ADR-179: An open scale end follows one quantile
@@ -46,7 +46,9 @@ ggplot2's `oob_squish` and Vega's `clamp`.
 **One rule, `quantileExtent`** (`@jbrowse/core/util/quantileExtent`, the
 renamed `rampExtent`): the nearest-rank quantile by quickselect, exact where
 the histogram `scales.y` used to walk collapsed skewed data into its bottom
-bucket, and what Hi-C's contact counts already went through. The wiggle
+bucket. Hi-C's contact counts went through the same quickselect at a floor
+rank, one rank lower for most counts; since 2026-09-27 they take this rule's
+rank through `quantileOf`. The wiggle
 family, the mark display, the coverage band and every ramp read it; the
 coverage band clips the peaks of the bins in view and gains the option, having
 offered only `local` and `localsd` before.

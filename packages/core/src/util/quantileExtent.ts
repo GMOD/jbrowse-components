@@ -1,6 +1,17 @@
 /** The quantile "Clip outliers" clips at on a scale whose own default is the extremes. */
 export const DEFAULT_CLIP_QUANTILE = 0.99
 
+/**
+ * #api
+ * The quantile a clip toggle writes: a scale's declared default where that
+ * clips, below 1, else {@link DEFAULT_CLIP_QUANTILE}.
+ */
+export function clipQuantileOf(declaredDefault: unknown) {
+  return typeof declaredDefault === 'number' && declaredDefault < 1
+    ? declaredDefault
+    : DEFAULT_CLIP_QUANTILE
+}
+
 function swap(a: Float32Array, i: number, j: number) {
   const t = a[i]!
   a[i] = a[j]!
@@ -80,16 +91,16 @@ export function finiteExtremes(
   return [min, max]
 }
 
-// The nearest-rank quantile: the smallest value at least `quantile` of the
-// population sits at or below, so a handful of values clips at their maximum.
-function magnitudeAt(magnitudes: Float32Array, n: number, quantile: number) {
+/**
+ * #api
+ * The nearest-rank `quantile` of `a[0, n)`: the smallest value at least that
+ * share of them sit at or below, so a handful of values clips at their
+ * maximum. Permutes `a`; 0 where `n` is.
+ */
+export function quantileOf(a: Float32Array, n: number, quantile: number) {
   return n === 0
     ? 0
-    : selectNth(
-        magnitudes,
-        n,
-        Math.min(n - 1, Math.max(0, Math.ceil(quantile * n) - 1)),
-      )
+    : selectNth(a, n, Math.min(n - 1, Math.max(0, Math.ceil(quantile * n) - 1)))
 }
 
 /**
@@ -125,7 +136,7 @@ export function quantileExtent(
   return np + nn === 0
     ? [Infinity, -Infinity]
     : [
-        nn > 0 ? -magnitudeAt(negative, nn, quantile) : 0,
-        np > 0 ? magnitudeAt(positive, np, quantile) : 0,
+        nn > 0 ? -quantileOf(negative, nn, quantile) : 0,
+        np > 0 ? quantileOf(positive, np, quantile) : 0,
       ]
 }

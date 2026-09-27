@@ -24,7 +24,7 @@ const COLOR_SCHEME_OPTIONS = COLOR_SCHEMES.map(
 interface HicMenuSelf {
   colorScaleType: HicColorScale
   colorFollowsPercentile: boolean
-  colorQuantile: number
+  saturationQuantile: number
   showLegend: boolean
   showResolutionControls: boolean
   squashToHeight: boolean
@@ -128,11 +128,11 @@ function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
       self.setColorScale(log ? 'log' : 'linear')
     }),
     toggleItem(
-      `Emphasize faint contacts (${percentileName(self.colorQuantile)} percentile)`,
+      `Emphasize faint contacts (${percentileName(self.saturationQuantile)} percentile)`,
       self.colorFollowsPercentile,
       self.setColorFollowsPercentile,
       {
-        helpText: `Saturate the color scale at the ${percentileName(self.colorQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A color.domainMax in the config overrides both.`,
+        helpText: `Saturate the color scale at the ${percentileName(self.saturationQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A color.domainMax in the config overrides both.`,
       },
     ),
   ]

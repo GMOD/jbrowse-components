@@ -63,6 +63,8 @@ test('the percentile is the colour domain quantile, and the retired checkbox lan
   expect(display.rpcProps().quantile).toBe(0.95)
   display.setColorFollowsPercentile(false)
   expect(display.configuration.color.domainQuantile).toBe(1)
+  expect(display.rpcProps().quantile).toBe(0.95)
+  expect(display.saturationQuantile).toBe(0.95)
   display.setColorFollowsPercentile(true)
   expect(display.configuration.color.domainQuantile).toBe(0.95)
   const schema = configSchemaF()

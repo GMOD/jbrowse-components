@@ -126,7 +126,7 @@ function reference(counts: Float32Array) {
   finite.sort()
   return {
     maxScore: finite[finite.length - 1]!,
-    quantileScore: finite[Math.floor(0.95 * (finite.length - 1))]!,
+    quantileScore: finite[Math.max(0, Math.ceil(0.95 * finite.length) - 1)]!,
   }
 }
 

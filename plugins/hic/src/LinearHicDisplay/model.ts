@@ -10,6 +10,7 @@ import {
   installPrerequisiteFetch,
   readFor,
 } from '@jbrowse/core/util/installPrerequisiteFetch'
+import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -190,6 +191,20 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get colorFollowsPercentile(): boolean {
         return this.colorQuantile < 1
+      },
+      /**
+       * #getter
+       * The quantile "Emphasize faint contacts" saturates at: `colorQuantile`
+       * while it clips, else the one ticking it writes. The worker computes
+       * this one whichever is drawn, so the toggle refetches nothing.
+       */
+      get saturationQuantile(): number {
+        return this.colorFollowsPercentile
+          ? this.colorQuantile
+          : clipQuantileOf(
+              getSlotDefinition(self.configuration.color, 'domainQuantile')
+                .defaultValue,
+            )
       },
       /**
        * #getter
@@ -420,7 +435,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       rpcProps(): { normalization: string; quantile: number } {
         return {
           normalization: self.activeNormalization,
-          quantile: self.colorQuantile,
+          quantile: self.saturationQuantile,
         }
       },
       /**
@@ -465,10 +480,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         setConf(
           self,
           ['color', 'domainQuantile'],
-          f
-            ? getSlotDefinition(self.configuration.color, 'domainQuantile')
-                .defaultValue
-            : 1,
+          f ? self.saturationQuantile : 1,
         )
       },
       /**

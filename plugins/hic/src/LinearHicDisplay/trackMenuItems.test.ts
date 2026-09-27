@@ -13,7 +13,7 @@ function baseSelf() {
   return {
     colorScaleType: 'linear' as const,
     colorFollowsPercentile: true,
-    colorQuantile: 0.95,
+    saturationQuantile: 0.95,
     showLegend: false,
     showResolutionControls: false,
     squashToHeight: false,
