@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { Loader } from '../components/Loader.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -16,14 +18,17 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // reintroduce the mock; `tests/rootModelTeardown.test.tsx` and
 // `tests/pluginLifecycleHooks.test.tsx` are what hold this closed.
 
+// The URL is set in a state initializer: it runs once per mount, before
+// `Loader` renders and reads it, and a render stays pure.
 export function App({ search }: { search: string }) {
-  const currentSearch = window.location.search
-  if (search !== currentSearch) {
-    window.history.replaceState(
-      null,
-      '',
-      `${window.location.pathname}${search}`,
-    )
-  }
+  useState(() => {
+    if (search !== window.location.search) {
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${search}`,
+      )
+    }
+  })
   return <Loader />
 }
