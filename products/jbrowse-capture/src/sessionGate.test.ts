@@ -90,6 +90,23 @@ test('a load failure fails the gate at once, with the app message', async () => 
   expect(Date.now() - start).toBeLessThan(1000)
 })
 
+// A `loc` that does not resolve leaves the view with no regions, so it
+// publishes no assembly, and says why only in a snackbar that dismisses itself
+// long before the gate gives up.
+test('a snackbar the app raised is named in the timeout, even once it is gone', async () => {
+  census(1, [], [])
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    '<div data-testid="snackbar-warning">Error navigating to NOTAGENE</div>',
+  )
+  setTimeout(() => {
+    document.querySelector('[data-testid="snackbar-warning"]')?.remove()
+  }, 100)
+  await expect(
+    waitForSession(gatePage(), { assembly: 'hg38', timeout: 600 }),
+  ).rejects.toThrow(/The app said: Error navigating to NOTAGENE\./)
+})
+
 test('no load failure reads as undefined', () => {
   census(1, ['hg38'], [])
   expect(readSessionInPage().failure).toBeUndefined()

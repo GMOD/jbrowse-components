@@ -21,22 +21,28 @@ export interface SessionCensus {
 }
 
 /**
- * The load failure the app shows in place of itself, and the census
- * `AppReadyMarker` publishes beside its phase. Serialized into the page.
+ * The load failure the app shows in place of itself, the census
+ * `AppReadyMarker` publishes beside its phase, and any snackbar up — which is
+ * where a location that did not resolve says so. Serialized into the page.
  */
 export function readSessionInPage(): {
   failure?: string
   census?: SessionCensus
+  notices: string[]
 } {
   const failure =
     document.querySelector<HTMLElement>('[data-app-error]')?.dataset.appError
+  const notices = [
+    ...document.querySelectorAll<HTMLElement>('[data-testid^="snackbar-"]'),
+  ].map(el => el.textContent.trim())
   const marker = document.querySelector<HTMLElement>('[data-app-tracks]')
   if (!marker) {
-    return { failure }
+    return { failure, notices }
   }
   try {
     return {
       failure,
+      notices,
       census: {
         views: Number(marker.dataset.appViews) || 0,
         assemblies: JSON.parse(
@@ -46,7 +52,7 @@ export function readSessionInPage(): {
       },
     }
   } catch {
-    return { failure }
+    return { failure, notices }
   }
 }
 
@@ -65,14 +71,17 @@ export async function waitForSession(
   }: SessionExpectations & { timeout?: number } = {},
 ) {
   let last: SessionCensus | undefined
+  const notices = new Set<string>()
   const reached = await holdTrue(
     async () => {
-      const { failure, census } = await page
-        .evaluate(readSessionInPage)
-        .catch(() => ({ failure: undefined, census: undefined }))
-      if (failure) {
-        throw new Error(`JBrowse could not load: ${failure}`)
+      const read = await page.evaluate(readSessionInPage).catch(() => undefined)
+      if (read?.failure) {
+        throw new Error(`JBrowse could not load: ${read.failure}`)
       }
+      for (const notice of read?.notices ?? []) {
+        notices.add(notice)
+      }
+      const census = read?.census
       last = census
       return (
         !!census &&
@@ -96,11 +105,11 @@ export async function waitForSession(
     ]
       .filter(Boolean)
       .join(' and ')
+    const said = notices.size
+      ? `The app said: ${[...notices].join(' | ')}.`
+      : 'A trackId the config does not define, or an assembly name that does not match the config, looks like this.'
     throw new Error(
-      `the session never reached the requested state after ${timeout}ms. ` +
-        `Wanted ${wanted || (views > 0 ? 'an open view' : 'a session')}; found ${found}. ` +
-        'A trackId the config does not define, or an assembly name that does ' +
-        'not match the config, looks like this.',
+      `the session never reached the requested state after ${timeout}ms. Wanted ${wanted || (views > 0 ? 'an open view' : 'a session')}; found ${found}. ${said}`,
     )
   }
 }
