@@ -699,11 +699,15 @@ the row axis in the vocabulary above, and none is a new channel.
   off-screen mate names, MAF's row labels and bases, variant insertion lengths
   and the sequence letters still paint on a canvas; the dense per-base ones
   stay there by the 2026-09-23 call (ADR-162).
-- **Fewer channels.** `size`, `opacity` and `angle` are uniforms, not
-  channels, because shapes are compiled from hand-written Slang rather than
-  generated from the encoding. That is ADR-095's trade, and it holds until a
-  second in-tree consumer wants one; `opacity` also breaks the Canvas2D
-  painters' colour batching.
+- **Fewer channels.** `opacity` and `angle` are uniforms, not channels,
+  because shapes are compiled from hand-written Slang rather than generated
+  from the encoding. That is ADR-095's trade, and it holds until a second
+  in-tree consumer wants one; `opacity` also breaks the Canvas2D painters'
+  colour batching. `size` is a channel on the link alone
+  ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md));
+  a point's diameter and a rule's thickness are the mark's `size`, one
+  uniform, so a config spells a constant size on the mark and a mapped one in
+  `encoding`, where `color` and `shape` carry both.
 - **The coordinate stage is a resampling, and it reaches the displays that
   read the `RegionHost` contract.** A ring is the display's strip warped,
   which is exact in angle and minifies an inner ring by `inner / ruler`, and
