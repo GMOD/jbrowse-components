@@ -1,6 +1,6 @@
 ---
 name: scales-and-colour-keys
-description: "What the 2026-09-26 scales.y and colour-key round left open: a context submenu shut by the read's late rows, and the coverage and wiggle figures the clip strip (ADR-183) changes. Synteny's continuous ramps went to ideas/ready."
+description: "What the 2026-09-26 scales.y and colour-key round left open: a context submenu shut by the read's late rows, and the coverage and wiggle figures the clip strip (ADR-183) changes."
 ---
 
 ## Open
