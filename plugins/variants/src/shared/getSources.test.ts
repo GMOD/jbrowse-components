@@ -45,6 +45,18 @@ describe('expandSourcesToHaplotypes', () => {
     })
   })
 
+  test('a haploid sample keeps its own name', () => {
+    const sources = [{ name: 'CFT073' }, { name: 'HG001' }]
+    const sampleInfo = {
+      CFT073: { isPhased: true, maxPloidy: 1 },
+      HG001: { isPhased: true, maxPloidy: 2 },
+    }
+
+    expect(
+      expandSourcesToHaplotypes({ sources, sampleInfo }).map(s => s.name),
+    ).toEqual(['CFT073', 'HG001 HP0', 'HG001 HP1'])
+  })
+
   test('defaults to ploidy 2 when sampleInfo missing', () => {
     const sources = [{ name: 'HG001' }]
     const sampleInfo = {}
@@ -139,7 +151,7 @@ describe('expandPhasedRows', () => {
       'HG001 HP1',
       'HG002 HP0',
       'HG002 HP1',
-      'HG003 HP0',
+      'HG003',
     ])
     expect(out[1]).toMatchObject({
       sampleName: 'HG001',

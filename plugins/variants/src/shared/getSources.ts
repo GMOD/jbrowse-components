@@ -17,12 +17,16 @@ export type HaplotypeSource = ProcessedSource & { HP: number }
 
 const HAPLOTYPE_ROW_NAME = /^(.*) HP(\d+)$/
 
+// A haploid sample's one haplotype is the sample, so its row keeps the
+// sample's name.
 function haplotypeRow(
   source: Source,
   sampleName: string,
   HP: number,
+  ploidy: number | undefined,
 ): HaplotypeSource {
-  return { ...source, name: `${sampleName} HP${HP}`, sampleName, HP }
+  const name = ploidy === 1 && HP === 0 ? sampleName : `${sampleName} HP${HP}`
+  return { ...source, name, sampleName, HP }
 }
 
 function makeHaplotypeSources(
@@ -31,7 +35,7 @@ function makeHaplotypeSources(
 ): HaplotypeSource[] {
   const sampleName = resolveSampleName(source)
   return Array.from({ length: ploidy }, (_, i) =>
-    haplotypeRow(source, sampleName, i),
+    haplotypeRow(source, sampleName, i, ploidy),
   )
 }
 
@@ -210,7 +214,9 @@ export function expandPhasedRows({
     if (hps.length) {
       expanded = true
       for (const HP of hps) {
-        out.push(haplotypeRow(row, row.sampleName, HP))
+        out.push(
+          haplotypeRow(row, row.sampleName, HP, ploidy?.[row.sampleName]),
+        )
       }
     } else {
       out.push(row)
