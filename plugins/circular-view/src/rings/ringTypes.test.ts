@@ -89,6 +89,12 @@ async function ringTestSession(
     viewportWithinLoadedData: boolean
     markCanvasDrawn: () => void
     setError: (error: unknown) => void
+    regionTooLarge: boolean
+    gateViewport: unknown
+    commitFetchBytes: (
+      bytes: number[],
+      issued: { viewport: unknown; gated: boolean; tierKey: undefined },
+    ) => void
   }
   return { session, view, display }
 }
@@ -233,6 +239,33 @@ test('a ring canvas whose displays failed before painting has finished', async (
   const [pass] = view.ringHost.passes
   expect(pass!.painted).toBe(false)
   display.setError(new Error('boom'))
+  expect(pass!.painted).toBe(true)
+}, 30000)
+
+// the banner replaces the strip's canvas, which then never paints
+test('a ring canvas whose display is too large to fetch has finished', async () => {
+  const { view, display } = await ringTestSession(
+    {
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features },
+      displays: [
+        {
+          type: 'LinearMarkDisplay',
+          displayId: 'ring-LinearMarkDisplay',
+          marks: [{ mark: 'bar' }],
+        },
+      ],
+    },
+    'LinearMarkDisplay',
+  )
+  const [pass] = view.ringHost.passes
+  expect(pass!.painted).toBe(false)
+  display.commitFetchBytes([1e15], {
+    viewport: display.gateViewport,
+    gated: false,
+    tierKey: undefined,
+  })
+  expect(display.regionTooLarge).toBe(true)
   expect(pass!.painted).toBe(true)
 }, 30000)
 
