@@ -403,6 +403,9 @@ export function stateModelFactory(
           field: getConf(self, ['ribbonColor', 'field']),
           scale: getConf(self, ['ribbonColor', 'scale']),
           domain: getConf(self, ['ribbonColor', 'domain']),
+          range: getConf(self, ['ribbonColor', 'range']),
+          labels: getConf(self, ['ribbonColor', 'labels']),
+          title: getConf(self, ['ribbonColor', 'title']),
         }
       }
       function observeRibbonFeatures(features: readonly Feature[]) {
@@ -784,12 +787,14 @@ export function stateModelFactory(
       /**
        * #getter
        * what the ribbon modes paint from: each channel's span, and a text
-       * column's labels in `ribbonColorDomain` order
+       * column's labels in `ribbonColorDomain` order, coloured from
+       * `ribbonColor.range`
        */
       get ribbonAttributeRanges(): Record<string, AttributeRange> {
         return orderAttributeLabels(
           self.seenAttributeRanges,
           this.ribbonColorDomain,
+          getConf(self, ['ribbonColor', 'range']),
         )
       },
       /**
@@ -2374,9 +2379,13 @@ export function stateModelFactory(
           ...ribbonColorScales(
             self.ribbonColorField,
             self.ribbonAttributeRanges,
-            self.ribbonColorDomain,
-            self.hideUnlabelled,
-            self.ribbonColor,
+            {
+              domain: self.ribbonColorDomain,
+              hideUnlabelled: self.hideUnlabelled,
+              slotColor: self.ribbonColor,
+              labels: getConf(self, ['ribbonColor', 'labels']),
+              title: getConf(self, ['ribbonColor', 'title']),
+            },
           ),
         ]
         return scales.filter(scale => !colorScaleIsEmpty(scale))

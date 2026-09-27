@@ -213,11 +213,12 @@ export function makeContinuousColorFunction(
 
 /**
  * The color a label paints: the file's own if the row carried one, else the
- * one core's categorical channel paints it under the declared domain, so the
- * same label is the same color whichever window, session or view met it first.
+ * one core's categorical channel paints it under the declared domain and
+ * range, so the same label is the same color whichever window, session or
+ * view met it first.
  */
 export function categoricalColor(mode: CategoricalMode, label: string) {
-  return mode.colors[label] ?? labelColor(label, mode.domain)
+  return mode.colors[label] ?? labelColor(label, mode.domain, mode.palette)
 }
 
 /**

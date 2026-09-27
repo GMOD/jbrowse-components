@@ -242,6 +242,24 @@ describe('a categorical attribute', () => {
     )
   })
 
+  test("the view's range paints the domain's labels in order, and the file color still wins", () => {
+    const fn = createComparativeColorFunction({
+      field: 'group',
+      data,
+      trackColor: '#000',
+      defaultColor: 0,
+      attributeRanges: {
+        group: {
+          ...fetchLabels,
+          domain: ['B1', 'A1a'],
+          palette: ['#ff0000', '#00ff00'],
+        },
+      },
+    })
+    expect(fn(0)).toBe(cssColorToABGR('#ff0000'))
+    expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
+  })
+
   test('hideUnlabelled draws the unlabelled row at zero alpha and leaves the rest', () => {
     const fn = createComparativeColorFunction({
       field: 'group',

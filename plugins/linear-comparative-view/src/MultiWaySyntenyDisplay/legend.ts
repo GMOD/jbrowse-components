@@ -102,8 +102,7 @@ export function laneFieldKey(
 export function ribbonColorKey(
   field: string,
   attributeRanges: Record<string, AttributeRange> = {},
-  hideUnlabelled = false,
-  slotColor?: string,
+  { hideUnlabelled = false, slotColor, labels }: RibbonKeyOptions = {},
 ): CategoricalEntry[] {
   if (field === 'strand') {
     return [
@@ -126,6 +125,7 @@ export function ribbonColorKey(
     attributeRanges,
     hideUnlabelled,
     missingColor: slotColor,
+    labels,
   })
   return swatch?.kind === 'chips'
     ? swatch.chips.map(({ color, label, values, missing }) => ({
@@ -138,18 +138,29 @@ export function ribbonColorKey(
     : []
 }
 
+interface RibbonKeyOptions {
+  hideUnlabelled?: boolean
+  // what a pair carrying no label paints, which its key row shows
+  slotColor?: string
+  // `ribbonColor.labels`: what a text column's key names each domain label
+  labels?: readonly string[]
+}
+
 /**
  * The ribbons' key in its own titled section, so a reader can tell a ribbon's
  * color from a glyph's: the synteny view's ramp where some ribbon carries the
  * value it paints, with the slot color a pair carrying none paints, else
- * `ribbonColorKey`'s rows
+ * `ribbonColorKey`'s rows. `title` is `ribbonColor.title` as written: unset
+ * keeps the ribbons' own heading, `''` draws none.
  */
 export function ribbonColorScales(
   field: string,
   attributeRanges: Record<string, AttributeRange>,
-  domain?: string[],
-  hideUnlabelled = false,
-  slotColor?: string,
+  {
+    domain,
+    title,
+    ...keyOptions
+  }: RibbonKeyOptions & { domain?: string[]; title?: string } = {},
 ): ColorScale[] {
   const continuous = resolveContinuousMode(field, attributeRanges)
   if (continuous && continuous.attribute in attributeRanges) {
@@ -159,7 +170,7 @@ export function ribbonColorScales(
       {
         ...ramp!,
         id: 'ribbons',
-        title: `Ribbon ${label[0]!.toLowerCase()}${label.slice(1)}`,
+        title: title ?? `Ribbon ${label[0]!.toLowerCase()}${label.slice(1)}`,
       },
       ...noValue,
     ]
@@ -169,13 +180,8 @@ export function ribbonColorScales(
     {
       kind: 'categorical',
       id: 'ribbons',
-      title: 'Ribbon colors',
-      entries: ribbonColorKey(
-        field,
-        attributeRanges,
-        hideUnlabelled,
-        slotColor,
-      ),
+      title: title ?? 'Ribbon colors',
+      entries: ribbonColorKey(field, attributeRanges, keyOptions),
       // strand's pair is fixed and means what it is drawn in, so only the
       // label rows take a declared order
       domain: labels ? domain : undefined,

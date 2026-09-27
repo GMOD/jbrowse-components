@@ -86,28 +86,44 @@ export function widenAttributeRanges(
   return grown.length === 0 ? into : { ...into, ...Object.fromEntries(grown) }
 }
 
-// The declared domain, applied at the read rather than to the accumulation:
-// `widenOne` above stays first-seen, so clearing the domain gives back the
-// order the fetches found. Each label range carries the domain, which also
-// decides its colors. Identity-preserving like `widenAttributeRanges`, and for
+function sameList(a: readonly string[] = [], b: readonly string[]) {
+  return a.length === b.length && a.every((v, i) => v === b[i])
+}
+
+// The declared domain and range, applied at the read rather than to the
+// accumulation: `widenOne` above stays first-seen, so clearing the domain
+// gives back the order the fetches found. Each label range carries both, which
+// decide its colors. Identity-preserving like `widenAttributeRanges`, and for
 // the same reason.
 export function orderAttributeLabels(
   ranges: Record<string, AttributeRange>,
   domain: readonly string[],
+  palette: readonly string[] = [],
 ) {
-  if (domain.length === 0) {
+  if (domain.length === 0 && palette.length === 0) {
     return ranges
   }
-  const compare = groupKeyComparator(domain)
+  const compare = domain.length > 0 ? groupKeyComparator(domain) : undefined
   const moved = Object.entries(ranges).flatMap(([name, range]) => {
     if (!isAttributeLabels(range)) {
       return []
     }
-    const labels = [...range.labels].sort(compare)
+    const labels = compare ? [...range.labels].sort(compare) : range.labels
     return labels.every((label, i) => label === range.labels[i]) &&
-      range.domain?.join('\u001F') === domain.join('\u001F')
+      sameList(range.domain, domain) &&
+      sameList(range.palette, palette)
       ? []
-      : ([[name, { ...range, labels, domain }]] as const)
+      : ([
+          [
+            name,
+            {
+              ...range,
+              labels,
+              ...(domain.length > 0 ? { domain } : {}),
+              ...(palette.length > 0 ? { palette } : {}),
+            },
+          ],
+        ] as const)
   })
   return moved.length === 0
     ? ranges
@@ -135,7 +151,8 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * [](/docs/config/syntenycolor) object: `{ field: "strand" }`,
        * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
        * a measurement (`identity`, `mapq`, `dnds`) or a column the
-       * tracks declare, with `domain` ordering a text column's labels; a
+       * tracks declare, with `domain` ordering a text column's labels,
+       * `range` colouring them and `labels` naming them in the key; a
        * colour string paints every alignment. Unset, the view's default
        * paints: `query` on the circular view, the default scheme elsewhere.
        */
@@ -251,6 +268,9 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
           field: readConfObject(self.color, 'field'),
           scale: readConfObject(self.color, 'scale'),
           domain: readConfObject(self.color, 'domain'),
+          range: readConfObject(self.color, 'range'),
+          labels: readConfObject(self.color, 'labels'),
+          title: readConfObject(self.color, 'title'),
         }
       },
       /**
@@ -306,7 +326,11 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         const widened = self
           .loadedAttributeRanges()
           .reduce(widenAttributeRanges, self.seenAttributeRanges)
-        return orderAttributeLabels(widened, this.colorDomain)
+        return orderAttributeLabels(
+          widened,
+          this.colorDomain,
+          this.colorSetting.range,
+        )
       },
       /**
        * #getter
@@ -398,6 +422,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
           return []
         }
         const field = self.colorField
+        const { labels, title } = self.colorSetting
         // only a text column's rows are the reader's to order; a track
         // palette and a ramp key what they key
         return colorByScales(field, {
@@ -407,6 +432,8 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
           attributeRanges: self.attributeRanges,
           alpha: self.legendAlpha(),
           hideUnlabelled: self.hideUnlabelled,
+          labels,
+          title,
         }).map(scale =>
           scale.kind === 'categorical' &&
           scale.id === field &&

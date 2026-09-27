@@ -3,6 +3,8 @@ import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
+import { categoricalColor } from './colorFunctions.ts'
+import { resolveCategoricalMode } from './colorRamps.ts'
 
 import type { AttributeRange } from './colorRamps.ts'
 
@@ -181,6 +183,77 @@ describe('a categorical column', () => {
   })
 })
 
+// A text column's range colours its labels, its labels rename them in the key
+// and its title heads the key. None of them reorders what the fetches found.
+describe("a text column's range, labels and title", () => {
+  const view = (color: Record<string, unknown>) =>
+    TrackColorsMixin().create({ color: { field: 'group', ...color } })
+  const seen = { group: { labels: ['B1', 'A1a'], colors: {} } }
+  const colorOf = (v: ReturnType<typeof view>, label: string) =>
+    categoricalColor(resolveCategoricalMode('group', v.attributeRanges)!, label)
+  const keyOf = (v: ReturnType<typeof view>) => {
+    const [section] = legendSpecOf(v.colorScales).sections
+    return { title: section!.title, labels: section!.items.map(i => i.label) }
+  }
+
+  it('paints the domain from range and names it by labels under title', () => {
+    const v = view({
+      domain: ['A1a'],
+      range: ['#ff0000'],
+      labels: ['Subgenome A'],
+      title: 'Gene group',
+    })
+    v.observeAttributeRanges(seen)
+    expect(colorOf(v, 'A1a')).toBe('#ff0000')
+    expect(colorOf(v, 'B1')).not.toBe('#ff0000')
+    expect(keyOf(v)).toEqual({
+      title: 'Gene group',
+      labels: ['Subgenome A', 'B1'],
+    })
+  })
+
+  it('takes range alone without reordering the labels', () => {
+    const v = view({ range: ['#ff0000', '#00ff00'] })
+    v.observeAttributeRanges(seen)
+    expect(v.attributeRanges.group).toMatchObject({ labels: ['B1', 'A1a'] })
+    for (const label of ['B1', 'A1a']) {
+      expect(['#ff0000', '#00ff00']).toContain(colorOf(v, label))
+    }
+  })
+
+  it('draws no heading under an empty title, and the field name when unset', () => {
+    const titleOf = (title?: string) => {
+      const v = view(title === undefined ? {} : { title })
+      v.observeAttributeRanges(seen)
+      return v.colorScales[0]!.title
+    }
+    expect(titleOf()).toBe('group')
+    expect(titleOf('')).toBe('')
+  })
+
+  it('keeps all three through a domain pin and a re-pick of the field', () => {
+    const color = {
+      domain: ['A1a'],
+      range: ['#ff0000'],
+      labels: ['Subgenome A'],
+      title: 'Gene group',
+    }
+    const v = view(color)
+    v.setColorDomain(['A1a', 'B1'])
+    expect(getSnapshot(v).color).toEqual({
+      field: 'group',
+      ...color,
+      domain: ['A1a', 'B1'],
+    })
+    v.setColorField('group')
+    expect(getSnapshot(v).color).toEqual({
+      field: 'group',
+      ...color,
+      domain: ['A1a', 'B1'],
+    })
+  })
+})
+
 // A whole-genome dotplot is mostly dots with no slope, so its strand colour is
 // the only strand cue on screen and gets the key a ribbon's twist makes
 // unnecessary.
@@ -253,7 +326,7 @@ describe('the color object', () => {
 
   it('refuses a key the object does not declare', () => {
     expect(() => view({ fields: 'strand' })).toThrow(
-      'SyntenyColor takes value, field, scale and domain, not fields',
+      'SyntenyColor takes value, field, scale, domain, range, labels and title, not fields',
     )
   })
 

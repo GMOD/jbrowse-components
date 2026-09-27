@@ -175,9 +175,7 @@ test('a pair with no value is keyed in the color it paints', () => {
   const [, noValue] = ribbonColorScales(
     'identity',
     { identity: { min: 0.5, max: 1, missing: true } },
-    undefined,
-    false,
-    slot,
+    { slotColor: slot },
   )
   expect(noValue).toMatchObject({
     entries: [{ label: NO_VALUE_LABEL, color: NO_CATEGORY_COLOR }],
@@ -185,8 +183,7 @@ test('a pair with no value is keyed in the color it paints', () => {
   const rows = ribbonColorKey(
     'group',
     { group: { labels: ['B1'], colors: {}, missing: true } },
-    false,
-    slot,
+    { slotColor: slot },
   )
   expect(rows.at(-1)!.color).toBe(slot)
 })
@@ -225,11 +222,36 @@ test('an attribute ribbon mode keys a row per label', () => {
   expect(many[30]).toEqual({ value: '', label: '+3 more' })
 })
 
+// ribbonColor's title heads the ribbons' key in place of its own, `''` heads
+// it with nothing, and its labels rename the domain's rows.
+test("ribbonColor's title and labels head and name the ribbons' key", () => {
+  const ranges = {
+    group: { labels: ['C1', 'B1'], colors: {}, domain: ['C1'] },
+  }
+  const [scale] = ribbonColorScales('group', ranges, {
+    labels: ['Core'],
+    title: 'Gene family',
+  })
+  expect(scale?.title).toBe('Gene family')
+  expect(
+    scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+  ).toEqual(['Core', 'B1'])
+  expect(ribbonColorScales('group', ranges)[0]?.title).toBe('Ribbon colors')
+  expect(ribbonColorScales('group', ranges, { title: '' })[0]?.title).toBe('')
+  expect(
+    ribbonColorScales(
+      'identity',
+      { identity: { min: 0, max: 1 } },
+      { title: 'Percent identity' },
+    )[0]?.title,
+  ).toBe('Percent identity')
+})
+
 // The mode that draws the unlabelled rows at zero alpha names no grey: there
 // is none on screen for the row to point at.
 test('hiding the unlabelled rows drops the no-value row', () => {
   const ranges = { group: { labels: ['B1'], colors: {}, missing: true } }
-  expect(ribbonColorKey('group', ranges, true).map(r => r.label)).toEqual([
-    'B1',
-  ])
+  expect(
+    ribbonColorKey('group', ranges, { hideUnlabelled: true }).map(r => r.label),
+  ).toEqual(['B1'])
 })

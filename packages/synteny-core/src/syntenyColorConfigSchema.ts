@@ -3,6 +3,9 @@ import {
   colorChannelOptions,
   colorChannelSlots,
   colorDomainSlot,
+  colorLabelsSlot,
+  colorRangeSlot,
+  colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
@@ -33,6 +36,9 @@ export interface SyntenyColorSnapshot {
   field?: string
   scale?: SyntenyColorScale
   domain?: readonly string[]
+  range?: readonly string[]
+  labels?: readonly string[]
+  title?: string
 }
 
 /**
@@ -55,7 +61,13 @@ export interface SyntenyColorSnapshot {
  * ```js
  * {
  *   type: 'LinearSyntenyView',
- *   color: { field: 'gene_group', domain: ['A1a', 'B1'] },
+ *   color: {
+ *     field: 'gene_group',
+ *     domain: ['A1a', 'B1'],
+ *     range: ['#1b9e77', '#d95f02'],
+ *     labels: ['Subgenome A', 'Subgenome B'],
+ *     title: 'Gene group',
+ *   },
  * }
  * ```
  */
@@ -87,6 +99,12 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
       domain:
         "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it",
     }),
+    ...colorRangeSlot({
+      range:
+        "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name",
+    }),
+    ...colorLabelsSlot,
+    ...colorTitleSlot,
   },
   colorChannelOptions('color'),
 )

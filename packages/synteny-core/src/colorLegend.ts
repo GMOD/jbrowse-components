@@ -42,8 +42,18 @@ export interface ColorChip {
 
 // One chip per color, naming every label painted in it: SyRI's palette gives
 // INVDP the color of DUP, as plotsr does, and two rows with one swatch would
-// ask the reader to tell apart what the plot cannot.
-function labelChips(categorical: CategoricalMode): ColorChip[] {
+// ask the reader to tell apart what the plot cannot. `names` renames the
+// domain's labels, one each in order.
+function labelChips(
+  categorical: CategoricalMode,
+  names: readonly string[] = [],
+): ColorChip[] {
+  const named = new Map(
+    categorical.domain.flatMap((value, i) => {
+      const name = names[i]
+      return name ? [[value, name] as const] : []
+    }),
+  )
   const rows = new Map<number, { color: string; values: string[] }>()
   for (const label of categorical.labels) {
     const color = categoricalColor(categorical, label)
@@ -58,7 +68,11 @@ function labelChips(categorical: CategoricalMode): ColorChip[] {
   const compare = groupKeyComparator(categorical.domain)
   return [...rows.values()].map(({ color, values }) => {
     const sorted = values.toSorted(compare)
-    return { color, label: sorted.join(', '), values: sorted }
+    return {
+      color,
+      label: sorted.map(value => named.get(value) ?? value).join(', '),
+      values: sorted,
+    }
   })
 }
 
@@ -164,6 +178,7 @@ export function getColorBySwatch(
     attributeRanges,
     hideUnlabelled = false,
     missingColor,
+    labels,
   }: {
     pointBased?: boolean
     cigarOps?: CigarOpMask
@@ -180,6 +195,8 @@ export function getColorBySwatch(
     // both kinds of mode; by default a ramp's is the match red and a text
     // column's the no-category grey, as `colorFunctions` paints them
     missingColor?: string
+    // `color.labels`: what a text column's key names each domain label
+    labels?: readonly string[]
   } = {},
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
@@ -237,7 +254,7 @@ export function getColorBySwatch(
   if (!categorical) {
     return undefined
   }
-  const chips = labelChips(categorical)
+  const chips = labelChips(categorical, labels)
   const shown = chips.slice(0, MAX_LEGEND_ENTRIES)
   const rest = chips.length - shown.length
   return {
@@ -270,17 +287,21 @@ export function getColorBySwatch(
  * over the band's ground by the view's alpha, so the key matches the
  * on-screen composited ribbon colors, subject to `legendChipColor`'s
  * legibility floor; a mode with no fixed key (a color per sequence name) is a
- * note row saying so.
+ * note row saying so. `title` is `color.title` as written: unset keeps the
+ * field's own heading, `''` draws none.
  */
 export function colorByScales(
   field: string,
   {
     alpha = 1,
+    title = colorByShortLabel(field),
     ...opts
-  }: Parameters<typeof getColorBySwatch>[1] & { alpha?: number } = {},
+  }: Parameters<typeof getColorBySwatch>[1] & {
+    alpha?: number
+    title?: string
+  } = {},
 ): ColorScale[] {
   const swatch = getColorBySwatch(field, opts)
-  const title = colorByShortLabel(field)
   const ground = bandGroundColor()
   const chipColor = (color: string) => legendChipColor(color, alpha, ground)
   if (swatch?.kind === 'ramp') {

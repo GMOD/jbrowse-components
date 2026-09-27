@@ -9,7 +9,11 @@ import {
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { takeSnackbarAction, testAssembly } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { declaredLanesOf } from '@jbrowse/synteny-core'
+import {
+  categoricalColor,
+  declaredLanesOf,
+  resolveCategoricalMode,
+} from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
 
 import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
@@ -1843,6 +1847,52 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   ).toEqual(['C1', 'A1a', 'B1'])
 })
 
+// ribbonColor's range paints a text column's domain in order, its labels rename
+// the key's rows and its title heads the ribbons' key; re-picking the column
+// keeps all three.
+test("ribbonColor's range paints the domain, and labels and title name its key", () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: {
+      type: 'MCScanBlocksAdapter',
+      attributeColumns: ['group'],
+    },
+  })
+  const row = (id: string, group: string) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      name: id,
+      group,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    })
+  const color = {
+    field: 'group',
+    domain: ['C1'],
+    range: ['#ff0000'],
+    labels: ['Core'],
+    title: 'Gene family',
+  }
+  display.configuration.setSubschema('ribbonColor', color)
+  display.setFeatures([row('f1', 'B1'), row('f2', 'C1')])
+  const mode = resolveCategoricalMode('group', display.ribbonAttributeRanges)!
+  expect(categoricalColor(mode, 'C1')).toBe('#ff0000')
+  const ribbons = display.colorScales.find(scale => scale.id === 'ribbons')
+  expect(ribbons?.title).toBe('Gene family')
+  expect(
+    ribbons?.kind === 'categorical' ? ribbons.entries.map(e => e.label) : [],
+  ).toEqual(['Core', 'B1'])
+  display.setRibbonColorField('group')
+  expect(getSnapshot(display.configuration.ribbonColor)).toEqual(color)
+})
+
 // The Color by menu picks a synteny mode; the config holds the object. A
 // scheme lands as its scale with the column and its order kept unread, so
 // picking the column again finds them; re-picking the same column keeps its
@@ -1900,7 +1950,9 @@ test('a ribbonColor field is a preset or a column, scale none parks it, and a pa
       field: 'group',
       palette: ['red'],
     }),
-  ).toThrow('RibbonColor takes value, field, scale and domain, not palette')
+  ).toThrow(
+    'RibbonColor takes value, field, scale, domain, range, labels and title, not palette',
+  )
   for (const field of ['strand', 'identity', 'mapq', 'dnds']) {
     display.configuration.setSubschema('ribbonColor', { field })
     expect(display.ribbonColorField).toBe(field)

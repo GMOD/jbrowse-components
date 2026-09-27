@@ -113,8 +113,10 @@ export interface AttributeLabels {
   colors: Record<string, string>
   /** some row carried no label, so the unlabelled grey was painted */
   missing?: boolean
-  /** the view's declared `colorBy.domain`, which orders the labels and colors them */
+  /** the view's declared `color.domain`, which orders the labels and colors them */
   domain?: readonly string[]
+  /** the view's declared `color.range`, the colors the domain takes in order */
+  palette?: readonly string[]
 }
 
 export type AttributeRange = AttributeSpan | AttributeLabels
@@ -131,12 +133,13 @@ export interface CategoricalMode {
   colors: Record<string, string>
   missing: boolean
   domain: readonly string[]
+  palette: readonly string[]
 }
 
 /**
  * How a column carrying text paints: one color per distinct label, which
- * depends only on the label and the declared domain, so every window, session
- * and view agrees on it. Undefined for a field whose values are numbers, a
+ * depends only on the label and the declared domain and range, so every
+ * window, session and view agrees on it. Undefined for a field whose values are numbers, a
  * preset, or the constant.
  */
 export function resolveCategoricalMode(
@@ -151,6 +154,7 @@ export function resolveCategoricalMode(
         colors: range.colors,
         missing: range.missing ?? false,
         domain: range.domain ?? [],
+        palette: range.palette ?? [],
       }
     : undefined
 }
