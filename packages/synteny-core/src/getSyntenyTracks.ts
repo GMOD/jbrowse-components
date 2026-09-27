@@ -1,6 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
+import { getEnv, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   AssemblyNameResolver,
@@ -32,13 +34,28 @@ export function sameAssemblySet(a: string[], b: string[]) {
   )
 }
 
+const SYNTENY_ADAPTER_CATEGORY = 'Synteny adapters'
+
+function readsSyntenyAdapter(track: AnyConfigurationModel) {
+  const adapterType: unknown = track.adapter?.type
+  if (typeof adapterType !== 'string' || !isStateTreeNode(track)) {
+    return false
+  }
+  const { pluginManager } = getEnv<{ pluginManager?: PluginManager }>(track)
+  return (
+    !!pluginManager?.hasAdapterType(adapterType) &&
+    pluginManager.getAdapterType(adapterType).adapterMetadata?.category ===
+      SYNTENY_ADAPTER_CATEGORY
+  )
+}
+
 /**
- * Cheap type test, no config read. Gates the `readConfObject` in every scan
- * below: resolving `assemblyNames` on every track in the session is wasted work
- * for the non-synteny majority.
+ * A SyntenyTrack, or any track reading a synteny adapter: a plugin's graph
+ * track over a gbz-base database aligns haplotypes as well as a SyntenyTrack
+ * does. No config read, so it can gate the `readConfObject` in every scan below.
  */
 export function isSyntenyTrack(track: AnyConfigurationModel) {
-  return track.type.includes('Synteny')
+  return track.type.includes('Synteny') || readsSyntenyAdapter(track)
 }
 
 /**
