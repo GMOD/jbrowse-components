@@ -101,7 +101,7 @@ Two consequences for anyone applying this ADR's rule:
   export calls `buildSourceRenderData(data, gpuProps)` directly. Since the
   supersession it is the only copy.
 - **The mirror-image proposal meets the same accounting from the other side.**
-  Moving wiggle's instance packing *to* the worker (`ideas/collections/zoom-perf-followups.md`)
+  Moving wiggle's instance packing *to* the worker (`ideas/waiting-on-a-call/wiggle-instance-packing-moves-to-the-worker.md`)
   is this ADR's preferred direction — O(K) per region at fetch time — but the
   encoder cannot leave, only be duplicated, because the no-refetch re-encodes
   above still have to be served main-thread. This ADR does not forbid that move;

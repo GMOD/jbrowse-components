@@ -81,7 +81,7 @@ hardcoded list of 18 plugins and `createViewState`'s `plugins` option only
 
 An engine should be a value you compose; the product should be a preset over
 it. The host-chosen plugin set is already proposed from the bundle side in
-[build-and-dependencies.md](../collections/build-and-dependencies.md) — the conceptual
+[host-chosen-plugin-sets-for-embedded-products](../waiting-on-a-number/host-chosen-plugin-sets-for-embedded-products.md) — the conceptual
 argument is the stronger one, because a reader who cannot subtract a plugin also
 cannot tell which of the 18 their code depends on.
 

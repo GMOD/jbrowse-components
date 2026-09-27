@@ -1,30 +1,13 @@
 ---
-name: data-formats
-description: Partial-feature cues, circular genomes.
+name: circular-genomes-and-origin-spanning-features
+description: A feature crossing a circular replicon's origin draws into virtual space, is unreachable at the origin, and core has no topology flag. Listing the contig twice in displayedRegions plus a circular adapter decorator covers the linear view; first count whether jb2hubs has origin-spanning features at all.
 ---
 
-# Data formats
+# Circular genomes and origin-spanning features
 
-**Partial-feature truncation cue.** NCBI eukaryote GFFs pervasively mark
-incomplete annotations with `partial=true` plus `start_range=.,N` / `end_range=N,.`
-(a `.` on the open side) — a gene/mRNA/CDS whose true boundary runs off the
-assembled sequence or past an assembly gap. Today these render with an ordinary
-square cap, so a biologically truncated feature looks identical to a complete one
-and the "this is partial" signal is silently dropped. Cue: draw a ragged/open
-(zig-zag or feathered) cap on the open end(s) — only the end flagged `.` gets it,
-so a 5'-partial gene is ragged on the left only. Cost is a full vertical slice, not
-a tweak: the **worker** reads the attrs in `RenderFeatureDataRPC` and derives a
-per-feature 2-bit open-end flag (5'/3', strand-corrected); that flag is threaded
-through the **packed render arrays** as a new per-feature byte (mind the
-byte-offset/UBO layout invariants called out in CLAUDE.md and
-`featureGlyphShapes.ts`); and the **glyph** draws the open cap in a new
-`.slang` source (run `pnpm gen:shaders`, never hand-edit `*.generated.ts`) with a
-matching Canvas2D fallback path. Worth a dedicated task with browser verification
-on a real NCBI eukaryote GFF (e.g. a partial gene near a contig edge) before
-sweeping the shader/packing layers. Companion to the gff-nostream parser fix that
-stopped dropping top-level discontinuous features (cDNA_match/EST_match).
+Split out of the data-formats collection on 2026-09-27. The number it waits on is whether jb2hubs serves any feature that crosses an origin, or only `Is_circular` contigs.
 
-**Circular genomes / origin-spanning features.** NCBI GFF3 encodes a feature that
+NCBI GFF3 encodes a feature that
 crosses the origin of a circular replicon as a single line whose `end` runs past
 the sequence length into "virtual space" (and flags the landmark with
 `Is_circular=true`) — common in the bacterial/organellar/viral genomes we serve
@@ -38,8 +21,8 @@ core (`Region` is `refName/start/end/reversed` only; assembly/refseq have no
 circular view draws any linear display as a ring warped from its strip
 (ADR-119), so a one-contig circle with `spacingPx: 0` is a plasmid or organelle
 map whose origin is the ring's seam, where the decorator below would make the
-two halves of an origin-spanning feature abut. Its feature labels and highlights
-are DOM layers the ring does not warp yet, so a gene ring there has no names.
+two halves of an origin-spanning feature abut. Its labels and highlights are
+[a-ring-draws-its-displays-labels-and-highlights](../ready/a-ring-draws-its-displays-labels-and-highlights.md).
 For the linear view, **repeated-linear concatenation** — the key unlock is that
 `displayedRegions` *already is* linear concatenation (LGV space sums `Region[]`
 end-to-end, each region carrying true coords), so listing the contig twice gives
@@ -58,4 +41,3 @@ zeroed on pneumobrowse to eyeball the UX before building the decorator. Confirm
 first whether jb2hubs has origin-*spanning features* or just `Is_circular`
 contigs with no crossing genes (if the latter, this is purely a cosmetic origin
 marker).
-

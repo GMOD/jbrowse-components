@@ -79,7 +79,7 @@ That measurement is cheap, and it is the input every direction above needs.
 ## What this is not
 
 Not a case for pinning. Pinning trades an invisible failure for a stale one, and
-`build-and-dependencies.md` has the MUI v10 bump we actively want. The point is
+`waiting-on-someone-else/delete-the-jbrowse-img-esm-workaround-at-mui-v10.md` has the MUI v10 bump we actively want. The point is
 that the bump should *announce itself* — a release note saying "this is an ABI
 event" is worth more than the ones about renamed exports, and today nothing
 prompts anyone to write it.

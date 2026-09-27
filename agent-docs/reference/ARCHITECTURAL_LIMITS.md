@@ -1028,12 +1028,9 @@ it into one would make the per-region refetch decision (which needs the
 per-block answer, not the aggregate) go through a serialize/compare it has no
 use for.
 
-**Residual:** `dataCurrent` is an overridable getter defaulting to `false`, so a
-new global display that forgets it hangs its export rather than failing to
-compile. Deliberate (fail-hung over fail-stale). Making it a *required* member
-would need a composition trick that
-[ADR-041](../architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
-rules out; tracked in `agent-docs/ideas/collections/deferred-architecture-review.md`.
+`dataCurrent` has no default: `foundationSvgReady` types it as a required
+boolean on the display it reads, so a new global display that forgets it fails
+to compile rather than hanging its export.
 
 ---
 

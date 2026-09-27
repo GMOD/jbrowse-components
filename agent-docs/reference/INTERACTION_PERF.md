@@ -64,7 +64,7 @@ in the long tasks; and the relayout a zoom legitimately owes
 Both named targets were taken up on 2026-08-30 and only one survived. The mint
 count is not the `createObjectURL` frame — see "The stop-token probe" below. The
 per-frame component count got the render census, whose findings are in
-[ideas/collections/zoom-perf-followups.md](../ideas/collections/zoom-perf-followups.md).
+§"Count the renders in jsdom before you profile a build" below.
 
 ### Honest next step
 
@@ -498,6 +498,19 @@ usually the unchanged `trackWidthPx` — 66 renders over 20 frames, 7 after the
 view published `contentRightEdgePx`. Publishing the raw edge would have changed
 nothing: `Math.min(trackWidthPx, …)` is what makes the value repeat, so it has
 to happen where MobX can stop at it.
+
+### Three census readings that closed no work
+
+- **Gene labels are not a structural cost.** Censused at 10-69 bpPerPx,
+  `FloatingLabelsLayer` renders under once a frame with 1.6 structural mutations
+  a frame against the chrome's 55 attribute writes. The volvox gene track is
+  small, so widen the fixture before re-asking.
+- **The zoom slider's 5.7 mutations a frame stay.** Reading `coarseBpPerPx`, as
+  `SearchBox` does, would bring back the thumb trailing the zoom that
+  `HeaderZoomControls` killed MUI's transition to stop.
+- **The wheel-driven arm books 2158ms in rAF callbacks**, far above the
+  scripted arm, but the two covered different `bpPerPx` ranges, so the number
+  means nothing until a matched run.
 
 ## The census checked against a real browser
 
