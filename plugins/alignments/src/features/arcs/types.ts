@@ -1,7 +1,8 @@
 import type { PartnerLocus } from './arcTypes.ts'
 
-// Worker → main-thread payload for paired-end / split-read arcs and the
-// interchromosomal connector ticks. Owned by the arcs feature.
+// One region's paired-end / split-read arcs and interchromosomal connector
+// ticks, as the model's arc pass files them (`arcsToRegionResult`) for the
+// band's feed.
 export interface ArcsUploadData {
   arcX1: Uint32Array
   arcX2: Uint32Array

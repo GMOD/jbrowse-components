@@ -64,8 +64,9 @@ export function nextRefsToTable(mateRefs: string[]): ReadNextRefs {
 
 /**
  * A feature that can report its mate's reference as the number the file stores,
- * so the name never has to be built per read. `BamSlightlyLazyFeature`
- * implements it; -1 is BAM's own "no reference" value and is passed through.
+ * so the name never has to be built per read. `BamSlightlyLazyFeature` and
+ * `CramSlightlyLazyFeature` implement it; -1 is "no reference" in both, and is
+ * passed through.
  */
 interface HasNextRefId {
   nextRefId?: number
@@ -74,9 +75,9 @@ interface HasNextRefId {
 /**
  * Build the slots and the name table for one fetch's features.
  *
- * The BAM path indexes by the file's own reference id, so recognising a repeat
- * is an array read with no hashing and the name is resolved once per contig.
- * Anything else (CRAM, SAM, the synteny blocks) has only the string, so it
+ * The BAM and CRAM path indexes by the file's own reference id, so recognising
+ * a repeat is an array read with no hashing and the name is resolved once per
+ * contig. Anything else (SAM, the synteny blocks) has only the string, so it
  * interns through a Map — still one entry per distinct name, and it was already
  * paying for the string.
  */
