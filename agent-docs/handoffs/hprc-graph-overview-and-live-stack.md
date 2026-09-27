@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.x), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. The plugin's track refactor (the pane composed into the display, fixing its error, phase, height, re-cut and abort bugs) is on plugin main, unreleased (jbrowse-plugin-graphgenomeviewer/agent-docs/HANDOFF_track_refactor.md). Left - a release and what it changes here, the portal upload, a GSTT1 section, and a docs deploy.
+description: The HPRC graph thread as of 2026-09-26. The graph is a track of the linear view (plugin 4.0.7, released and in the store), lanes read from the graph draw the alignment it states, and the tutorials open on the hosted instance. The demo and portal carry a curated VNTR track, the portal configs are uploaded, and the graph figures are reshot. Left - a plugin release holding the pane-key fix but not main's GraphTrack-only change, the anchored KIV-2 cut that never lands, a GSTT1 section, and a docs deploy.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -205,29 +205,35 @@ figures and 7 clips reshot on ada and in the stores. The plugin's
 
 **State at the end of 2026-09-26.**
 
-- Landed on plugin main, unreleased: every label over the graph places from
-  one occupancy above all the ink (the coarse tier's bubble names no longer
-  print over the backbone lengths, `pggb_bubble_tier`), and
-  `jbrowse-plugin-graphgenomeviewer/scripts/preview-candidate.mjs` shoots any hosted session against a local
-  `dist/`.
-- Landed on plugin main, unreleased: the pane is a mixin the display and the
-  standalone view compose, which fixes a blank track on a failed cut, a
-  missing display phase, the height ratchet, a red flash on every re-cut and a
-  fetch never aborted. A bubble is a repeat array only where the session's
-  repeat track has one, so GSTT1's insertion no longer reads as one. The
-  plugin's `jbrowse-plugin-graphgenomeviewer/agent-docs/HANDOFF_track_refactor.md` says what a release changes
-  here and in jb2hubs: flat track entries in `graph-fixtures.ts` and
-  `pangenomeLinks.ts`, reshot figures, and a curated VNTR track on the HPRC
-  demo if KIV-2 is to keep its repeat-array label.
-- Plugin CI is green again: `test/launchAndHover` drives the track.
+- Plugin 4.0.7 is on npm and in the store: the pane is a mixin the display
+  and the standalone view compose (the track's error, phase, height, re-cut
+  and abort bugs), and a bubble is a repeat array only where the session's
+  repeat track has one, so GSTT1's insertion no longer reads as one.
+  `jbrowse-plugin-graphgenomeviewer/agent-docs/GRAPH_TRACK.md` is the design.
+- The demo config, the HPRC portal config and the figure fixture carry
+  `hprc_curated_vntrs` (`demos/hprc/hprc_curated_vntrs.bed`), so KIV-2
+  labels its array; TRF catalogues stop near a 2 kb period and the KIV-2
+  unit is 5.5 kb. The four portal configs are uploaded, with the gene search,
+  cytobands and new loci of jb2hubs `d8c4f6cb028`, and jb2hubs launches write
+  the graph track's choices flat.
+- The graph figures are reshot on 4.0.7: `graphTrack()` in graph-fixtures
+  writes flat props with `paneHeight` as the track's `height`, the anchor
+  reads a flat display, and 21 specs grew their viewport because a track is
+  now the height it states rather than shrinking to its rows.
+- On plugin main, unreleased: `f00ebc9` declares a `pane` prop, so a 4.0
+  `pane: {...}` link no longer raises core's unknown-key snackbar (live on
+  4.0.7), and the legend measures nothing after its track closes. Main also
+  holds `82b2ead`, which registers the graph display for GraphTrack alone.
+  Every hosted graph track is a FeatureTrack, so releasing main before those
+  configs move would drop the graph from all of them.
+- The anchored cut of the KIV-2 window (the portal's LPA card, `auto`
+  layout) sits on "Fetching subgraph" past three minutes, on 4.0.6 as on
+  4.0.7; the force layout's window-only cut lands quickly. One hop through a
+  129-route VNTR plus a window-width margin each side is the suspect.
 - Core `b05ac725c4`: a display type declares `adapterCapabilities` and the
   track config fills it in only where the adapter has them. The plugin
   declares `['getSubgraph']` once core past 5.0.0-beta.9 is on npm; then
   "Graph" leaves the Display types menu of BED, GFF and PAF tracks.
-- jb2hubs main `d8c4f6cb028`: the four portal configs search gene names
-  (hosted trix) and hg38/mm39 draw cytobands, and the HPRC loci gain GSTT1 and
-  FLNA/EMD; both launches boot. Not uploaded (`~/src/jb2hubs/website/pangenome-config/upload.sh`)
-  and staging not redeployed.
 - A GSTT1 tutorial section is not written. Its graph is compelling (a 39.5 kb
   allele loop beside GSTT4, contributed by HG03654#2), but CAT projects
   GRCh38's genes and GRCh38's chr22 has no GSTT1, so no haplotype's annotation
