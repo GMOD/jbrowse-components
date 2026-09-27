@@ -283,10 +283,18 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * `color.domain`, the order a text column's labels take.
+       * `color.domain`, the order a text column's labels take. Read off its
+       * own slot, so a key-only edit (`title`, `labels`) recolours nothing.
        */
       get colorDomain(): readonly string[] {
-        return this.colorSetting.domain ?? []
+        return readConfObject(self.color, 'domain') ?? []
+      },
+      /**
+       * #getter
+       * `color.range`, the colours a text column's labels take in domain order
+       */
+      get colorRange(): readonly string[] {
+        return readConfObject(self.color, 'range') ?? []
       },
       /**
        * #getter
@@ -329,7 +337,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         return orderAttributeLabels(
           widened,
           this.colorDomain,
-          this.colorSetting.range,
+          this.colorRange,
         )
       },
       /**

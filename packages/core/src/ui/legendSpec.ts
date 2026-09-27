@@ -102,16 +102,14 @@ export function nonEmptyLegendSections(sections: readonly LegendSection[]) {
 // section survives — a lone vocabulary needs no title above it — which is the
 // rule `FloatingLegend` applies on screen, so an export and the live legend
 // agree about when headings show. A box-level `title` is unconditional, like its
-// on-screen counterpart.
+// on-screen counterpart, and `''` is no heading in either.
 export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
   const sections = nonEmptyLegendSections(spec.sections)
   const titled = sections.length > 1
   return [
-    ...(spec.title === undefined
-      ? []
-      : [{ key: 'legend-title', label: spec.title }]),
+    ...(spec.title ? [{ key: 'legend-title', label: spec.title }] : []),
     ...sections.flatMap(section => [
-      ...(titled && section.title !== undefined
+      ...(titled && section.title
         ? [{ key: `${section.id}-title`, label: section.title }]
         : []),
       ...(section.note === undefined

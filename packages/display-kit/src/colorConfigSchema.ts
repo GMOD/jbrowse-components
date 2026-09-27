@@ -180,14 +180,15 @@ export const colorLabelsSlot = {
 /**
  * #slot title
  * The heading of the key this scale draws, naming what the colour measures.
- * Three states: unset, the key is titled with `field`; some text is that text;
- * `""` is a key with no title, and the only spelling of one. `null` reads as
- * unset, as it does in every slot.
+ * Three states: unset, the key keeps the display's own heading, usually the
+ * field's name; some text is that text; `""` is a key with no title, and the
+ * only spelling of one. `null` reads as unset, as it does in every slot.
  */
 export const colorTitleSlot = {
   title: {
     type: 'maybeString',
-    description: 'key title; unset follows field, "" draws none',
+    description:
+      'key title; unset keeps the display\'s own heading, "" draws none',
   },
 } as const
 

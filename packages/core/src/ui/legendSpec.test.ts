@@ -37,6 +37,17 @@ test('a box title shows even as the only section', () => {
   ])
 })
 
+// A colour object's `title: ""` is how a key asks for no heading, and the live
+// legend draws none for it, so the export draws no blank row either.
+test('an empty box or section title draws no heading row', () => {
+  expect(
+    legendEntries({
+      title: '',
+      sections: [{ ...READS, title: '' }, ARCS],
+    }).map(e => e.label),
+  ).toEqual(['A', 'Arc colors', 'B'])
+})
+
 test('heading rows carry no color, so they read as headings not swatches', () => {
   const [heading] = legendEntries({ sections: [READS, ARCS] })
   expect(heading!.color).toBeUndefined()

@@ -1,6 +1,7 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
 import { categoricalColor } from './colorFunctions.ts'
@@ -229,6 +230,19 @@ describe("a text column's range, labels and title", () => {
     }
     expect(titleOf()).toBe('group')
     expect(titleOf('')).toBe('')
+  })
+
+  it('recolours nothing when only the title or labels change', () => {
+    const v = view({ domain: ['A1a'], range: ['#ff0000'] })
+    v.observeAttributeRanges(seen)
+    const reads: unknown[] = []
+    const stop = autorun(() => {
+      reads.push(v.attributeRanges)
+    })
+    v.color.setSlot('title', 'Gene group')
+    v.color.setSlot('labels', ['Subgenome A'])
+    stop()
+    expect(reads).toHaveLength(1)
   })
 
   it('keeps all three through a domain pin and a re-pick of the field', () => {
