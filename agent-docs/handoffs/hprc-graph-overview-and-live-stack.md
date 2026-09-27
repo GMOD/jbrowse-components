@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-27. Plugin 4.0.9 is in the store and draws the graph on FeatureTrack, SyntenyTrack and GraphTrack; the portal configs are on GraphTrack. Left - the demo configs onto GraphTrack, a stale rgfa_launch_roundtrip caption, the curated eight on hprc_v2_1_gbz_lanes, gbz-base writing M for mismatches, the anchored KIV-2 cut that never lands, and two of Colin's calls (PangyPlot chr1, a GSTT1 section).
+description: The HPRC graph thread as of 2026-09-27. Plugin 4.0.9 is in the store, and the portal and demo graph tracks are GraphTrack. Left - a stale rgfa_launch_roundtrip caption, the curated eight on hprc_v2_1_gbz_lanes, gbz-base writing M for mismatches, the anchored KIV-2 cut that never lands, and two of Colin's calls (PangyPlot chr1, a GSTT1 section).
 ---
 
 # HPRC graph: the overview and alignments between haplotype lanes
@@ -15,12 +15,6 @@ the hosted HPRC graph"; the graph track's design is the plugin's
 
 ## Open
 
-- **Demo configs onto GraphTrack.** `demos/{hprc,hprc_multiway,ecoli_pangenome,arabidopsis_pangenome}`
-  still declare their graph tracks as FeatureTrack or SyntenyTrack, as do the
-  hosted copies; 4.0.9 draws either, so nothing is broken. `b018ad16a2`
-  ("Demo graph tracks declare GraphTrack") exists but is not on main. The plan (fixtures,
-  generators, specs, deploy) is the plugin repo's
-  `agent-docs/HANDOFF_2026-09-27_graphtrack.md`.
 - **`rgfa_launch_roundtrip`'s caption** (`graph_genome_view.md`) still says
   "segment s1277 in the segments lane" over a frame showing Display types →
   Graph.

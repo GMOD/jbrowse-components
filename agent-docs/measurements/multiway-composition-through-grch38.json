@@ -1,6 +1,7 @@
 {
   "id": "multiway-composition-through-grch38",
   "measured": "2026-09-26",
+  "published": false,
   "source": {
     "kind": "hand",
     "repro": "node ~/tutorial_spikes/pangenome_simplicity/expA/measure.mjs against the hosted HPRC v2.1 gbz.db and its anchored companion: per adjacent pair, keep on 4-5 named haplotypes at context 1000, count the bp the two walks share on graph nodes against the bp a composition through GRCh38 can draw.",
