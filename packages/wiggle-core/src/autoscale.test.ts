@@ -152,3 +152,20 @@ describe('non-finite scores', () => {
     ).toBeUndefined()
   })
 })
+
+// A window holding one sign keeps both its ends under a quantile: a log-ratio
+// track panned into a depleted stretch clips its top among the least negative
+// values, where the extremes arm already put it, and never at 0.
+describe('one-signed windows', () => {
+  it('an all-negative window keeps a negative top', () => {
+    expect(
+      computeAutoscaleDomain(0.99, 'avg', [entry([-4, -3, -2, -1])])![1],
+    ).toBeLessThan(0)
+  })
+
+  it('empty bins lower no top', () => {
+    expect(
+      computeAutoscaleDomain(0.99, 'avg', [entry([0, 0, 0, 5, 5, 5])]),
+    ).toEqual([0, 5])
+  })
+})
