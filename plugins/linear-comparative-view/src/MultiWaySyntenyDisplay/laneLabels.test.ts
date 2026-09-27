@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { getFeatureName } from '@jbrowse/plugin-canvas'
 
 import { LaneGene } from './geneGlyph.ts'
 import { placeLaneLabels } from './laneLabels.ts'
@@ -22,6 +23,7 @@ function place(genes: Record<string, LaneGene[]>, lanes = [lane('a', 20)]) {
   return placeLaneLabels({
     lanes,
     genesOf: name => genes[name] ?? [],
+    textOf: getFeatureName,
     glyphHeight: 10,
     width: 1000,
     height: 200,
@@ -50,6 +52,7 @@ describe('placeLaneLabels', () => {
     const labels = placeLaneLabels({
       lanes: [lane('a', 20), lane('b', 60)],
       genesOf: () => [gene('G', 400, 500)],
+      textOf: getFeatureName,
       glyphHeight: 10,
       width: 1000,
       height: 200,
@@ -71,6 +74,7 @@ describe('placeLaneLabels', () => {
     const labels = placeLaneLabels({
       lanes: [lane('a', 20)],
       genesOf: () => [gene('G', 100, 200)],
+      textOf: getFeatureName,
       boxesOf: () => [
         { id: 'box:g', name: 'Potri.001G', left: 500, right: 600 },
       ],

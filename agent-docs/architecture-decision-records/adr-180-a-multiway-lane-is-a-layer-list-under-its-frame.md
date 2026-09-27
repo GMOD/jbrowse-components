@@ -41,8 +41,10 @@ lifecycle of its own.
 - **They decimate as the feature track does.** A name stays only where its
   neighbours' edges leave room for it (`keepFeatureLabel`, factor 1), and of the
   rest, one meeting a kept name's halo goes (`cullOverlappingLabels`, the rule
-  ADR-162's text mark already used, moved to display-ui). The name is
-  `getFeatureName`, the feature track's own name-else-id.
+  ADR-162's text mark already used, moved to display-ui). The label is
+  the `text` slot, a field or jexl expression spelt as the mark display's
+  `encoding.text`, and unset it is `getFeatureName`, the feature track's own
+  name-else-ID. A placement box prints the name its table gives the gene.
 - **Screen and export share one placement**, `laneGeneLabels`: DOM text through
   `FloatingText` on screen, `SvgHaloText` in the figure.
 

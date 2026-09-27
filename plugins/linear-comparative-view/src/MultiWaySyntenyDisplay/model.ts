@@ -15,6 +15,8 @@ import {
   morphClockMs,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { valueText } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
@@ -33,6 +35,7 @@ import {
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
@@ -583,6 +586,12 @@ export function stateModelFactory(
         /**
          * #action
          */
+        setGeneTextField(field: string) {
+          setConf(self, 'text', field)
+        },
+        /**
+         * #action
+         */
         setLodMode(mode: LodMode) {
           setConf(self, 'lodMode', mode)
         },
@@ -801,6 +810,14 @@ export function stateModelFactory(
        */
       get showGeneLabels(): boolean {
         return getConf(self, 'showGeneLabels')
+      },
+      /**
+       * #getter
+       * the `text` slot as written: a field, a jexl expression, or empty for
+       * the feature track's name-else-ID
+       */
+      get geneTextField(): string {
+        return getConf(self, 'text')
       },
       /**
        * #getter
@@ -2112,6 +2129,23 @@ export function stateModelFactory(
     }))
     .views(self => ({
       /**
+       * #getter
+       * a gene's label under `text`
+       */
+      get geneTextOf(): (feature: Feature) => string | undefined {
+        const field = self.geneTextField
+        if (!field) {
+          return getFeatureName
+        }
+        const read = fieldReader(
+          field,
+          getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
+        )
+        return feature => valueText(read(feature)) || undefined
+      },
+    }))
+    .views(self => ({
+      /**
        * #method
        * the gene names each lane prints under its glyphs, placed and
        * decimated, in the stack's px; none with `showGeneLabels` off
@@ -2125,6 +2159,7 @@ export function stateModelFactory(
               genesOf: assemblyName =>
                 self.laneGenes?.get(assemblyName)?.genes ?? [],
               boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
+              textOf: self.geneTextOf,
               glyphHeight,
               width: self.canvasWidth,
               height: self.scrollContentHeight,

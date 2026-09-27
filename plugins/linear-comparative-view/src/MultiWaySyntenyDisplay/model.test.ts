@@ -61,6 +61,25 @@ const namedGene = (
 // always won that race on any pan that moved a quantized lane window. Before
 // the first commit there is nothing on screen to flash over and a capture
 // would shoot placement boxes, which is what the gate is for.
+test('the text slot picks what a gene label prints, name-else-ID unset', () => {
+  const display = createDisplay()
+  const gene = new SimpleFeature({
+    uniqueId: 'u1',
+    refName: 'ctgA',
+    start: 0,
+    end: 10,
+    id: 'gene-1',
+    gene_name: 'ABC1',
+  })
+  expect(display.geneTextOf(gene)).toBe('gene-1')
+  display.setGeneTextField('gene_name')
+  expect(display.geneTextOf(gene)).toBe('ABC1')
+  display.setGeneTextField("jexl:get(feature,'gene_name') + '*'")
+  expect(display.geneTextOf(gene)).toBe('ABC1*')
+  display.setGeneTextField('product')
+  expect(display.geneTextOf(gene)).toBeUndefined()
+})
+
 test('the lane fetch is part of loading only until it first lands', () => {
   const display = createDisplay()
   // the harness mounts no canvas; the paint half of loading is the mixin's

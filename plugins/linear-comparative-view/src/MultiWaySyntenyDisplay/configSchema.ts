@@ -178,6 +178,17 @@ export function configSchemaFactory() {
       },
       /**
        * #slot
+       * The feature field, or jexl expression over `feature`, each lane's
+       * gene labels print. Unset, the feature track's own: the gene's name,
+       * else its ID. A gene with nothing there prints nothing
+       */
+      text: {
+        type: 'featureField',
+        defaultValue: '',
+        description: 'gene label field, or jexl expression',
+      },
+      /**
+       * #slot
        */
       showGeneLabels: {
         type: 'boolean',

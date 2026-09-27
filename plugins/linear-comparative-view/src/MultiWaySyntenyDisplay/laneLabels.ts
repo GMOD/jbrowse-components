@@ -1,9 +1,10 @@
 import { measureText } from '@jbrowse/core/util/measureText'
 import { cullOverlappingLabels } from '@jbrowse/display-ui'
-import { getFeatureName, keepFeatureLabel } from '@jbrowse/plugin-canvas'
+import { keepFeatureLabel } from '@jbrowse/plugin-canvas'
 
 import type { LaneGene } from './geneGlyph.ts'
 import type { Lane } from './laneStack.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 export const GENE_LABEL_FONT_PX = 10
 export const GENE_LABEL_HALO_PX = 1
@@ -37,11 +38,12 @@ function drawnNames(
   lane: LabelledLane,
   genes: readonly LaneGene[],
   boxes: readonly NamedSpan[],
+  textOf: (feature: Feature) => string | undefined,
   width: number,
 ) {
   const out = boxes.filter(b => b.right >= 0 && b.left <= width)
   for (const { feature } of genes) {
-    const name = getFeatureName(feature)
+    const name = textOf(feature)
     const span = lane.spanOf(
       feature.get('refName'),
       feature.get('start'),
@@ -69,6 +71,7 @@ export function placeLaneLabels({
   lanes,
   genesOf,
   boxesOf = () => [],
+  textOf,
   glyphHeight,
   width,
   height,
@@ -77,6 +80,8 @@ export function placeLaneLabels({
   lanes: readonly LabelledLane[]
   genesOf: (assemblyName: string) => readonly LaneGene[]
   boxesOf?: (assemblyName: string) => readonly NamedSpan[]
+  /** a gene's label, `geneTextOf` */
+  textOf: (feature: Feature) => string | undefined
   glyphHeight: number
   width: number
   height: number
@@ -88,6 +93,7 @@ export function placeLaneLabels({
       lane,
       genesOf(lane.assemblyName),
       boxesOf(lane.assemblyName),
+      textOf,
       width,
     )
     const top = lane.glyphTop + glyphHeight + GENE_LABEL_GAP_PX

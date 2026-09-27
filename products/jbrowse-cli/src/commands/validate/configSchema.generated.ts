@@ -5659,6 +5659,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": true
         },
+        "text": {
+          "description": "gene label field, or jexl expression.",
+          "$ref": "#/$defs/FeatureField",
+          "default": ""
+        },
         "showGeneLabels": {
           "description": "print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room.",
           "type": "boolean",
@@ -11410,6 +11415,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLaneTicks": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showLaneTicks"
+            },
+            "text": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/text"
             },
             "showGeneLabels": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showGeneLabels"

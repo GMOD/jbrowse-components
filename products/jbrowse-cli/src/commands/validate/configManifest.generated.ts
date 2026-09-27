@@ -4353,6 +4353,10 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
+          "name": "text",
+          "type": "string"
+        },
+        {
           "name": "showGeneLabels",
           "type": "boolean"
         },
