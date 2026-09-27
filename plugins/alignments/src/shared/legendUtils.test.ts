@@ -1019,24 +1019,38 @@ describe('getAlignmentsColorScales', () => {
         [
           'LR - Normal pair orientation',
           'LL - Both mates forward strand',
+          'Normal',
           'Long insert',
         ],
       ],
     ])
   })
 
-  // The neutral arc slot and the reads' LR slot are the same colorPairLR, so
-  // "Normal" would be that grey a second time under a different word.
-  test('keys a color once, under the label it got first', () => {
-    const [[, labels]] = shown(
+  // The palette paints one grey for a read with no HP value and for a normal
+  // arc. Folding by colour keyed the normal arcs "No HP value"; each meaning
+  // keeps its row, in the one merged box.
+  test('a colour two buckets share keeps a row per meaning', () => {
+    const [[title, labels]] = shown(
       getAlignmentsColorScales(
         model(
-          [{ color: '#aaa', label: 'LR - Normal pair orientation' }],
-          [{ color: '#aaa', label: 'Normal' }],
+          [
+            { color: '#aaa', label: 'No HP value' },
+            { color: '#f0f', label: 'Supplementary/split' },
+          ],
+          [
+            { color: '#aaa', label: 'Normal' },
+            { color: '#f00', label: 'Long insert' },
+          ],
         ),
       ),
     ) as [[string, string[]]]
-    expect(labels).toEqual(['LR - Normal pair orientation'])
+    expect(title).toBe('Read and arc colors')
+    expect(labels).toEqual([
+      'No HP value',
+      'Supplementary/split',
+      'Normal',
+      'Long insert',
+    ])
   })
 
   // Short insert is the one bucket the two vocabularies paint differently (pale
@@ -1056,7 +1070,11 @@ describe('getAlignmentsColorScales', () => {
         ),
       ),
     ) as [[string, string[]]]
-    expect(items).toEqual(['LR - Normal pair orientation', 'Short insert'])
+    expect(items).toEqual([
+      'LR - Normal pair orientation',
+      'Short insert',
+      'Normal',
+    ])
   })
 
   // …and the arc's color is not thrown away to achieve that. The pale fill is

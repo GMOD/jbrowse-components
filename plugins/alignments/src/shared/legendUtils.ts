@@ -61,39 +61,18 @@ import type { AlignmentFill } from '@jbrowse/core/ui/palette'
 
 export type { LegendItem } from '@jbrowse/core/ui'
 
-// One row per color AND one row per label. A swatch means one thing in a legend
-// box, so a color that two vocabularies both produce is keyed once, under the
-// first label it got — the arcs' neutral slot and the reads' LR slot are both
-// `colorPairLR`, and "Normal" listed under "LR - Normal pair orientation" is the
-// same grey twice.
+// One row per meaning, and a row's label is its meaning. An arc row joins the
+// read row carrying its label — "LR - Normal pair orientation" is one bucket in
+// both vocabularies — and brings its swatch along where the arcs paint that
+// bucket in another colour, so the box still names every colour drawn. A
+// same-coloured arc row naming something else keeps a row of its own: the
+// palette paints `colorPairLR` for five buckets (`pairLR`, `normalInsert`,
+// `noTagValue`, `nonSplit`, `mapqUnavailable`), so folding by colour keyed
+// normal arcs as "No HP value" or "MAPQ unavailable (255)".
 //
-// The label rule covers the mirror case, and it is where a row grows a SECOND
-// swatch rather than losing one: for a bucket the two vocabularies paint in
-// *different* colors, keying by color alone lists one label twice, while keying
-// by label alone drops whichever color arrived second — off a box whose whole
-// claim is that it names every color drawn. Keeping both swatches on one row is
-// the only form that is neither repetitive nor a lie. The reads' swatch leads,
-// since a pileup fill is what most of the frame shows.
-//
-// Short insert was the one live instance of that, back when the pileup filled it
-// pale and the curves stroked it saturated; both are the saturated pink now, so
-// today every shared bucket collapses to a single swatch and this arm is
-// unexercised by the alignments vocabulary. Kept because the label collision it
-// resolves is a property of merging two vocabularies at all, not of that one
-// color choice — and because losing a drawn color silently is the failure it
-// exists to prevent.
-//
-// Color-less rows (headings, notes) merge by label only, never by color.
-//
-// TWO lists, not one concatenation, and that is the half the rules above cannot
-// state on their own: they are about what a color means in a DIFFERENT
-// vocabulary, so only the arcs are ever folded. Handed the concatenation, the
-// same rules also collapsed two READ rows that happen to share a palette entry
-// — and two groups do (`{pairLR, normalInsert, noTagValue, nonSplit,
-// mapqUnavailable}` on colorPairLR, `{supplementary, splitDeletion}` on
-// colorSupplementary), each member a distinct bucket the renderer paints for a
-// distinct reason. A scheme that emits two of one group keeps both rows, since
-// the box claims to name every reason a color is drawn.
+// TWO lists, not one concatenation: only the arcs are ever folded, since two
+// READ rows sharing a palette entry are two buckets the renderer paints for two
+// reasons.
 function oneRowPerMeaning(
   reads: LegendItem[],
   arcs: LegendItem[],
@@ -103,35 +82,21 @@ function oneRowPerMeaning(
   const rows: { item: LegendItem; swatches: LegendSwatch[] }[] = reads.map(
     item => ({ item, swatches: [...legendSwatches(item)] }),
   )
-  const byColor = new Map<string, number>()
   const byLabel = new Map<string, number>()
   rows.forEach(({ item }, i) => {
     if (!byLabel.has(item.label)) {
       byLabel.set(item.label, i)
     }
-    if (item.color !== undefined && !byColor.has(item.color)) {
-      byColor.set(item.color, i)
-    }
   })
   for (const item of arcs) {
-    const at =
-      (item.color === undefined ? undefined : byColor.get(item.color)) ??
-      byLabel.get(item.label)
+    const at = byLabel.get(item.label)
     if (at === undefined) {
       byLabel.set(item.label, rows.length)
-      if (item.color !== undefined) {
-        byColor.set(item.color, rows.length)
-      }
       rows.push({ item, swatches: [...legendSwatches(item)] })
     } else if (item.color !== undefined) {
       const row = rows[at]!
       if (!row.swatches.some(s => s.color === item.color)) {
         row.swatches.push({ color: item.color })
-      }
-      // so a third row in this color joins the same one rather than opening its
-      // own under the label it happens to carry
-      if (!byColor.has(item.color)) {
-        byColor.set(item.color, at)
       }
     }
   }
@@ -206,8 +171,9 @@ function scaleOf(
  * both sides. Splitting them there is a false choice between two bad lists — key
  * both fully and the same four swatches appear under two headings, or subtract
  * the shared ones and "Arc colors" lists three colors for arcs that are drawn in
- * seven. Merged and deduped, every drawn color appears exactly once, which is
- * also the most compact form.
+ * seven. Merged, every bucket appears exactly once, which is also the most
+ * compact form; a colour two buckets share appears once per bucket
+ * (`oneRowPerMeaning`).
  *
  * They stay separate only when the two genuinely disagree (reads by
  * modification, arcs by insert size): no color is then shared, so neither
