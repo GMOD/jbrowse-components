@@ -340,6 +340,16 @@ describe('the scale beside a field', () => {
       scale: 'log',
       scheme: 'viridis',
     })
+    const stops = withListMember(ramp, 'color', 'range', 'white, red')
+    expect(withChannelScale(stops, 'color', 'log').encoding!.color).toEqual({
+      field: 'score',
+      scale: 'log',
+      scheme: 'viridis',
+      range: ['white', 'red'],
+    })
+    expect(
+      withChannelScale(stops, 'color', 'categorical').encoding!.color,
+    ).toEqual({ field: 'score', scale: 'categorical' })
   })
 
   it('writes an end as a number and a reverse as a boolean', () => {
@@ -416,11 +426,21 @@ describe('the scale beside a width', () => {
     })
   })
 
-  it('keeps the ends when one width ramp becomes the other', () => {
+  it('keeps the ends and the widths when one width ramp becomes the other', () => {
     expect(withChannelScale(width, 'size', 'log').encoding!.size).toEqual({
       field: 'score',
       scale: 'log',
       domainMin: 1,
+    })
+    const widths = {
+      mark: 'link' as const,
+      encoding: { size: { ...width.encoding.size, range: ['1', '9'] } },
+    }
+    expect(withChannelScale(widths, 'size', 'log').encoding!.size).toEqual({
+      field: 'score',
+      scale: 'log',
+      domainMin: 1,
+      range: ['1', '9'],
     })
   })
 })

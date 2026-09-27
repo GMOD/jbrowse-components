@@ -233,6 +233,8 @@ function writeChannel(
  * The mark with a channel read through another scale. A field is required —
  * a constant reads through no scale — and the members the new kind does not
  * paint are dropped, which the rule list would otherwise report as unread.
+ * One ramp becoming the other keeps its `range`, the stops or widths both
+ * read alike.
  */
 export function withChannelScale(
   mark: DraftMark,
@@ -242,6 +244,7 @@ export function withChannelScale(
   const declared = channelObject(mark, channel) ?? {}
   const kept = [
     ...(isRamp(scale) ? rampMembers(channel) : []),
+    ...(isRamp(scale) && isRamp(channelScale(mark, channel)) ? ['range'] : []),
     'title',
     'missingLabel',
   ]
