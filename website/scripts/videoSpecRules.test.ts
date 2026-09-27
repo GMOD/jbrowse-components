@@ -105,6 +105,21 @@ test('a drag with an end of each kind', () => {
   ).toBe('')
 })
 
+test('a settle wait on a page that publishes no app phase', () => {
+  const settle: VideoStep = { type: 'waitForAppSettled' }
+  expect(problems([spec({ noSession: true, steps: [settle] })])).toMatch(
+    'noSession page',
+  )
+  expect(
+    problems([
+      spec({
+        noSession: true,
+        steps: [{ type: 'click', selector: '#launch', opensTab: true }, settle],
+      }),
+    ]),
+  ).toBe('')
+})
+
 test('a spec that types a config nothing pairs to a page', () => {
   const pasting = [
     spec({

@@ -63,9 +63,9 @@ export const DISPLAY_TYPES = cascade('submenu', 'Display types')
 export const GRAPH_DISPLAY = cascade('menuitem', 'Graph')
 
 // File → Open track..., a file URL pasted in, Next, and Add: the route a reader
-// takes to open their own file, with no config written. The form infers the
-// index beside the file and the adapter from its extension, which is what the
-// Add step's line names; the track draws once the drawer has closed itself.
+// takes to open their own file, with no config written. The `add` line goes up
+// on Next, so it stands over the confirm step that shows the inferred name and
+// adapter; the track draws once the drawer has closed itself.
 export function openTrackByUrlSteps(
   url: string,
   { open, add }: { open: string; add: string },
@@ -86,10 +86,11 @@ export function openTrackByUrlSteps(
     {
       type: 'click',
       selector: '[data-testid="addTrackNextButton"]',
+      say: add,
       hold: 1800,
     },
     // the same button, now reading Add
-    { type: 'click', selector: '[data-testid="addTrackNextButton"]', say: add },
+    { type: 'click', selector: '[data-testid="addTrackNextButton"]' },
     { type: 'waitForAppSettled', timeout: 120000 },
   ]
 }

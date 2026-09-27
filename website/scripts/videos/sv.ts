@@ -223,11 +223,10 @@ export const svVideos: VideoSpec[] = [
       // hold is of. The wordmark is an svg with no handler, so parking there
       // takes both down and reaches nothing.
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
-      // three contiguous bands, read against the depth lane under them
       {
         type: 'delay',
         ms: 4500,
-        say: 'Three bands: no deletion, one copy deleted, and both',
+        say: 'Three bands, top to bottom: both copies deleted, one, then neither',
       },
       {
         type: 'click',
@@ -281,39 +280,25 @@ export const svVideos: VideoSpec[] = [
     tailMs: 4000,
   },
 
-  // THE TWO MENU ROUTES sv_visualization_cgiab.md's copy-number walkthrough
-  // lists as bullets and pictures nowhere. Every cgiab figure that draws the
-  // matched pair's coverage is taken with both already applied, so the page
-  // shows the destination four times and the way there zero times — and the
-  // second of them is a three-level cascade whose leaf word appears twice in
-  // the one menu.
+  // sv_visualization_cgiab.md's copy-number walkthrough lists its menu routes
+  // as bullets, and every cgiab figure of the matched pair's coverage is taken
+  // with them already applied. The row-per-source default gives each sample an
+  // axis of its own, while the claim is that the tumor steps where its own
+  // normal holds still, which is only a claim on one axis: Plot type →
+  // Overlapping → Scatter puts them there, a three-level cascade whose leaf
+  // word appears twice in the one menu. The clip ends on the lane the chr5
+  // figure below the embed prints.
   //
-  // The SECOND route is the one that changes the picture, and the first is why
-  // the picture can be compared to the next one: an autoscaled axis is a
-  // different axis in every window, so a plateau at the same height means
-  // nothing across two of them. Filmed on chr5 the cap is a small move — local
-  // autoscale gives this chromosome 0..2 and the cap makes it 0..3 — because
-  // the spikes that run to 497 are elsewhere in the genome. What it buys is
-  // visible in the figures around the clip rather than inside it, so the beat
-  // is short and the chip names the control.
-  //
-  // Then the row-per-source default gives each sample an axis of its own,
-  // which is exactly what a reader must not have here: the claim is that the
-  // tumor steps while its own normal holds still, and that is only a claim
-  // while both are drawn against one axis. Plot type → Overlapping → Scatter is
-  // what puts them there, and the clip ends on it — the lane the chr5 figure
-  // below the embed prints.
+  // Set min/max score was filmed here too and cut: local autoscale already
+  // gives chr5 0..2, so pinning 0..3 barely moved the picture.
   {
     name: 'sv_cgiab/copy_number_layout',
     description:
-      "HG008's tumor and normal coverage brought onto one axis: Score → Set min/max score... to pin the scale, then Plot type → Overlapping → Scatter, which redraws the two stacked rows as one band of points",
+      "HG008's tumor and normal coverage brought onto one axis: Plot type → Overlapping → Scatter redraws the two stacked rows as one band of points",
     goal: "Put a tumor's coverage and its normal's on one axis to compare",
     url: cgiabVideoFixtures.coverageAsLoaded,
-    // 406px of app at every frame the run measured — nothing here grows it,
-    // since both routes rewrite settings on a lane that keeps its height — plus
-    // the strip the caption chip is fixed into, which is off the FRAME's bottom
-    // rather than the app's. The Set min/max dialog is ~206px centred in the
-    // frame, so it lands inside the app at this height. Even, per the encode.
+    // 406px of app at every frame, plus the strip the caption chip is fixed
+    // into, which is off the FRAME's bottom rather than the app's.
     //
     // Nesting the plots under a layout put the open submenu's last row under
     // the caption chip, and 600 was tried to clear it: the chip moves down with
@@ -323,8 +308,7 @@ export const svVideos: VideoSpec[] = [
     // costs less than the dead space.
     viewportHeight: 520,
     // The rows have to be carrying the whole chromosome before the camera
-    // starts. A tour of an autoscaled axis being capped is a tour of nothing
-    // while the lane is empty.
+    // starts, or the overlay redraws an empty lane.
     readySelector: displaySettled('wiggle-display'),
     readyTimeout: 180000,
     steps: [
@@ -337,51 +321,7 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: cgiabCoverageMenu,
-        say: 'First pin the score axis to 0 to 3',
-        hold: 1400,
-      },
-      { type: 'waitForSelector', selector: cascade('submenu', 'Score') },
-      {
-        type: 'click',
-        selector: cascade('submenu', 'Score'),
-        hold: 1200,
-      },
-      {
-        type: 'waitForSelector',
-        selector: cascade('menuitem', 'Set min/max score...'),
-      },
-      {
-        type: 'click',
-        selector: cascade('menuitem', 'Set min/max score...'),
-      },
-      { type: 'waitForText', text: 'Set min/max score for track' },
-      { type: 'delay', ms: 1500 },
-      {
-        type: 'type',
-        selector: 'input[placeholder="Enter min score"]',
-        value: '0',
-      },
-      {
-        type: 'type',
-        selector: 'input[placeholder="Enter max score"]',
-        value: '3',
-      },
-      { type: 'delay', ms: 1200 },
-      // MUI uppercases the button in CSS, so the match is the string the DOM
-      // carries and the chip is the label a reader sees.
-      { type: 'click', text: 'Submit' },
-      {
-        type: 'waitForText',
-        text: 'Set min/max score for track',
-        hidden: true,
-      },
-      { type: 'hover', selector: WORDMARK, hold: 0 },
-      { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 2500 },
-      {
-        type: 'click',
-        selector: cgiabCoverageMenu,
-        say: 'Then overlay the two rows as points on one axis',
+        say: 'Overlay the two rows as points on one axis',
         hold: 1200,
       },
       { type: 'waitForSelector', selector: cascade('submenu', 'Plot type') },
@@ -414,7 +354,7 @@ export const svVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 5000,
-        say: 'On one axis the tumor rises above its normal on 5p and drops on 5q',
+        say: 'The tumor sits above its normal on 5p, below it on 5q',
       },
     ],
     tailMs: 4000,

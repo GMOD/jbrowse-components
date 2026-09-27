@@ -812,23 +812,15 @@ export const syntenyVideos: VideoSpec[] = [
     tailMs: 4500,
   },
 
-  // A DRAG, A DIALOG WHOSE ROWS THE READER REORDERS, AND A RE-LAYOUT OFF THE
-  // BACK OF IT. "Restacking around a locus" is the one section of
-  // multiway_synteny_grape_peach_cacao.md with no figure at all, and it states
-  // the whole route in a sentence: drag-select a locus, pick Launch -> Linear
-  // synteny view, order the dialog's rows with its arrows. Every noun in that
-  // sentence is a shape on screen the reader has not seen, and the arrows are
-  // the half no still can carry -- what they change is the stack the launch then
-  // builds, so the before and the after are two pictures with nothing linking
-  // them.
+  // A DRAG, A DIALOG AND A RE-LAYOUT OFF THE BACK OF IT. "Restacking around a
+  // locus" is the one section of multiway_synteny_grape_peach_cacao.md with no
+  // figure at all, and every noun in its route -- drag-select a locus, Launch ->
+  // Linear synteny view, the dialog's rows -- is a shape on screen the reader
+  // has not seen.
   //
-  // THE REORDER IS ONE CLICK, and that is the section's point rather than a
-  // shortcut. The dialog lists the anchor first and then the mates in the
-  // track's declared `assemblyNames` order (pickMatesForRegion), so it opens
-  // grape / peach / cacao -- the reference on top, where the lower band is peach
-  // against cacao and therefore transitive. Moving grape down once is the
-  // reference-in-the-middle arrangement "Direct vs transitive pairs" asks for,
-  // and `launchOrder` states the same case from the launch's own side.
+  // With two mates `launchOrder` seats the anchor between them, so the dialog
+  // opens peach / grape / cacao: the reference-in-the-middle arrangement
+  // "Direct vs transitive pairs" asks for, with no arrow to click.
   //
   // Four more genomes align at this locus and get no panel. The track declares
   // assemblies for grape, peach and cacao only, so arabidopsis, poplar, tomato
@@ -836,15 +828,13 @@ export const syntenyVideos: VideoSpec[] = [
   // between a lane and a panel that the section's second paragraph makes, said
   // by the dialog itself.
   //
-  // It ends on "Replace current view", the dialog's other way out: the stack
-  // takes the lane view's slot, so the last frame is the result rather than
-  // mostly the source, and nothing has to be scrolled to reach a view appended
-  // below one that is still standing.
+  // It ends on "Replace current view": the stack takes the lane view's slot, so
+  // the last frame is the result rather than mostly the source.
   {
     name: 'synteny/restack_around_locus',
     description:
-      "Restacking the grape / peach / cacao view around one locus: drag the scale bar, Launch, Linear synteny view, move grape into the middle with the dialog's arrows, and replace the lane view with the three-row stack",
-    goal: 'Restack grape, peach and cacao around one locus, grape in the middle',
+      'Restacking the grape / peach / cacao view around one locus: drag the scale bar, Launch, Linear synteny view, a dialog that seats grape between its two mates, and the lane view replaced with the three-row stack',
+    goal: 'Stack grape between peach and cacao around one locus',
     url: restackLanes,
     // Sized to the DIALOG, which is the subject and the tallest of the three
     // states. `multiway_synteny/blocks_one_vs_all` measures the opening lane
@@ -883,31 +873,21 @@ export const syntenyVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Panels, top to bottom' },
       // The arrows exist only once the worker has resolved a row per aligning
-      // assembly, so waiting on one is the gate over that fetch rather than a
-      // sleep guessing at it. The whole .blocks table and its per-column BEDs
-      // are read for this, and the lane display above has already read them, so
-      // it is a cache hit in the same worker.
+      // assembly, so waiting on one is the gate over that fetch.
       {
         type: 'waitForSelector',
-        selector: panelArrow(restackAnchor, 1, 'down'),
+        selector: panelArrow(restackAnchor, 2, 'down'),
         timeout: 180000,
       },
-      // Long enough to read the order the dialog opens in, which is what the
-      // click after it changes.
       {
         type: 'delay',
         ms: 3000,
-        say: 'Grape, the reference, opens on top of the list',
-      },
-      {
-        type: 'click',
-        selector: panelArrow(restackAnchor, 1, 'down'),
-        say: 'Move it down, between peach and cacao, then replace the view',
-        hold: 3000,
+        say: 'The dialog seats grape, the reference, between its two mates',
       },
       {
         type: 'click',
         text: 'Replace current view',
+        say: 'Replace the lanes with the stack',
       },
       // Camera stays on: the re-layout IS the payoff here, and both bands read
       // the file the lanes and the mate discovery have already pulled into the
@@ -921,7 +901,7 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 3500,
-        say: 'Grape in the middle: each band now compares it with a neighbour',
+        say: 'Grape in the middle: each band compares it with a neighbour',
       },
     ],
     tailMs: 4500,

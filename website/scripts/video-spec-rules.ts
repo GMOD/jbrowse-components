@@ -58,6 +58,9 @@ export function videoFrame(spec: VideoSpec) {
 // - a tour that types a config the page does not print documents a route
 //   through an app the page is not showing, and only pastedTrackConfigs pairs
 //   the two texts (check-paste-configs.ts)
+// - a `waitForAppSettled` on a `noSession` page throws at that step, since the
+//   page publishes no `[data-app-phase]`; a tab an `opensTab` step follows into
+//   is a different page
 export function validateVideoSpecs(
   list: VideoSpec[],
   pastedVideos: readonly string[] = [],
@@ -104,6 +107,17 @@ export function validateVideoSpecs(
     if (halfDrags > 0) {
       problems.push(
         `${spec.name}: ${halfDrags} drag step(s) name only one of their two ends, and the other is resolved at film time — after the load, the readiness wait and every step before it`,
+      )
+    }
+    const firstTab = spec.steps.findIndex(step => step.opensTab)
+    const onOpeningPage =
+      firstTab === -1 ? spec.steps : spec.steps.slice(0, firstTab)
+    if (
+      spec.noSession &&
+      onOpeningPage.some(step => step.type === 'waitForAppSettled')
+    ) {
+      problems.push(
+        `${spec.name}: waits for the app to settle on a noSession page, which publishes no [data-app-phase] and throws at that step; wait on a selector or text instead`,
       )
     }
     const pastes = spec.steps.filter(

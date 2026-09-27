@@ -14,13 +14,6 @@ const CHROMHMM_MENU = trackMenu(CHROMHMM_TRACK)
 // rows to cluster (`discoveredRows`), and a disabled MenuItem swallows a
 // click and reports nothing.
 const MULTIROW_READY = displaySettled('multirow-display')
-// The run's own progress chip, which is the gate the `chromhmm` figure waits on
-// rather than settling for a duration: "clustering 127 rows is real WASM compute,
-// and a settle long enough to cover it on a slow runner is one that is wrong on a
-// fast one — a 15s settle shot the run mid-cluster, chip and all" (specs/ui.ts).
-// The autorun's `finally` retires the status slot, which is what takes the chip
-// down. One consumer, so it stays here rather than in shared.ts.
-const PROGRESS_CHIP = '[data-testid="progress-chip"]'
 
 const { wgbsTrackId, cpgPileup } = bisulfiteVideoFixtures
 const WGBS_MENU = trackMenu(wgbsTrackId)
@@ -170,16 +163,11 @@ export const epigenomicsVideos: VideoSpec[] = [
   // the stripe goes mixed, which is the page's "the tissue is an axis the
   // clustering never saw" happening rather than being asserted.
   //
-  // NOT CUT, unlike the other two clustering tours. Those cut because what is on
-  // screen while they work is a frozen frame — 1104 rows repainting in one pass
-  // under swiftshader. This run reports itself: the RPC's `statusCallback` reaches
-  // the display's status channel, `DisplayBackgroundProgress` draws it as a corner
-  // chip while the phase is still `ready`, and the phases name themselves through
-  // it — "Downloading features", then hclust's own "Computing distance matrix" and
-  // "Clustering samples" with a determinate bar over each
-  // (clusterProgressStatus.ts gives each half of the bar to one of them). The
-  // unclustered rows stay drawn and usable underneath the whole time. That is the
-  // app saying what it is doing, so the camera stays on for it.
+  // NOT CUT, unlike the other two clustering tours, which repaint over a
+  // thousand rows in one frozen pass under swiftshader. Here the dialog's
+  // progress bar names each phase of the run ("Computing distance matrix",
+  // "Clustering samples") and the dialog closes itself on success, so the camera
+  // stays on for it.
   {
     name: 'epigenomics/chromhmm_cluster',
     description:
@@ -219,37 +207,24 @@ export const epigenomicsVideos: VideoSpec[] = [
       { type: 'waitForText', text: 'Clustering' },
       { type: 'click', text: 'Clustering', hold: 1600 },
       { type: 'waitForText', text: 'Cluster rows by similarity' },
-      // No ellipsis and no dialog on this display: the item sets the trigger and
-      // the run starts on the autorun's next tick, 500ms later. The hold is that
-      // tick plus the chip's own 250ms anti-flash delay, so the chip is seen to
-      // come up rather than the frame cutting from a menu to a finished tree.
-      { type: 'click', text: 'Cluster rows by similarity', hold: 1400 },
-      // The menu dismisses on that click (a plain row, not a radio), and this is
-      // what says so — the click below has to land on the wordmark rather than on
-      // a modal backdrop still closing.
-      { type: 'waitForText', text: 'Cluster rows by similarity', hidden: true },
-      // Park the cursor before the run, not after it. It is sitting where the
-      // menu item was, which is over the painting, and the multi-row display
-      // draws crosshairs and a feature tooltip under the pointer — that would be
-      // on screen for the whole run and in the poster frame. The logo is a bare
-      // `<g>` with no handler, so the click only moves the cursor and blurs the
-      // menu icon, whose "Track settings" tooltip would otherwise outlive its
-      // menu.
-      { type: 'click', selector: '[aria-label="JBrowse"]' },
-      { type: 'waitForText', text: 'Track settings', hidden: true },
-      // The figure's own gate, on camera: the chip going away is the run's
-      // `finally` retiring its status slot. Waiting on `hidden` for a chip that
-      // has not gone up yet passes instantly, which is why this is a floor rather
-      // than the whole wait — the dendrogram below is the positive half.
+      { type: 'click', text: 'Cluster rows by similarity', hold: 1200 },
+      { type: 'waitForText', text: 'Run clustering' },
+      { type: 'delay', ms: 1500 },
+      // by `button`: the dialog's description ends in "hierarchical clustering"
+      { type: 'click', selector: 'button::-p-text(Run clustering)' },
+      // `TreeSidebar` mounts only once the run has returned a hierarchy
+      { type: 'waitForSelector', selector: DENDROGRAM, timeout: 300000 },
       {
-        type: 'waitForSelector',
-        selector: PROGRESS_CHIP,
+        type: 'waitForText',
+        text: 'Run clustering',
         hidden: true,
-        timeout: 300000,
+        timeout: 60000,
       },
-      // The visible half of what the route produced: `TreeSidebar` mounts only
-      // once the run has returned a hierarchy.
-      { type: 'waitForSelector', selector: DENDROGRAM, timeout: 120000 },
+      // The pointer is where the dialog's button was, over the painting, which
+      // draws a crosshair and a feature tooltip under it; the click also blurs
+      // the menu icon, whose "Track settings" tooltip would outlive its menu.
+      { type: 'click', selector: WORDMARK },
+      { type: 'waitForText', text: 'Track settings', hidden: true },
       {
         type: 'delay',
         ms: 4000,

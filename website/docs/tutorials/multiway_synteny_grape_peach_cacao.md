@@ -500,16 +500,16 @@ Two routes reach the stacked view from the lanes:
 - **From the lane track**, **Launch → Linear synteny view (visible region)** in
   its track menu offers a row to every aligning genome
 - **From the scale bar**, drag-select a locus and pick **Launch → Linear synteny
-  view**. The dialog opens a row per genome with arrows to order them; moving
-  grape between peach and cacao gives the
-  [reference-in-the-middle](#direct-vs-transitive-pairs) layout
+  view**. The dialog opens a row per genome, grape already seated between peach
+  and cacao for the [reference-in-the-middle](#direct-vs-transitive-pairs)
+  layout, with arrows to reorder them
 - **From a lane's header**, click the ⋮ or right-click its name. **Re-anchor on
   peach** turns the track around on that genome, and **Open peach at the
   matching region** opens it on its own with its gene track
 
 <Figure caption="A lane header's menu: reorder or hide the lane, open peach on its own at the span the lane is drawing, or re-anchor the whole track on it." src="/img/multiway_synteny/lane_header_menu.png" />
 
-<Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus, from the lane reading above: a scale-bar selection raises Launch, the dialog lists a panel per genome and names the mates it can draw a lane for but not a panel, and one arrow moves the reference into the middle of the launched stack." />
+<Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus, from the lane reading above: a scale-bar selection raises Launch, and the dialog lists a panel per genome with the reference between its two mates, naming the mates it can draw a lane for but not a panel." />
 
 ## Reproduce it end to end
 

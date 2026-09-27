@@ -77,7 +77,8 @@ export const proteinVideos: VideoSpec[] = [
         proteinTourFixtures.hoverWindow,
         'Select a few exons on the scale bar and zoom in',
       ),
-      { type: 'waitForAppSettled', timeout: 120000 },
+      // a delay, not waitForAppSettled: the release publishes no data-app-phase
+      { type: 'delay', ms: 3000 },
       hoverAt(
         proteinTourFixtures.codingLocus,
         3000,

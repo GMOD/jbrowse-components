@@ -202,14 +202,14 @@ refilm and none of which the run reports.
   left: the affordance goes on the page instead, which is the division the
   corpus is built on anyway.
 - **A beat can film a control doing nothing visible, and the run reports it as a
-  step like any other.** `sv_cgiab/copy_number_layout` sets a manual min/max on
-  the coverage lane because the page lists that as a bullet and because
+  step like any other.** `sv_cgiab/copy_number_layout` once set a manual min/max
+  on the coverage lane because the page lists that as a bullet and because
   indexcov's spikes run to 497 — but those spikes are elsewhere in the genome,
   and on the chromosome the tour films local autoscale had already given the
-  lane 0..2, so capping it to 0..3 barely moves the drawing. Nothing says so:
-  the click lands, the wait passes, the report is clean. The caption written
-  from the SPEC's reasoning then claims a change the frames do not carry. Pull
+  lane 0..2, so capping it to 0..3 barely moved the drawing. Nothing said so:
+  the click landed, the wait passed, the report was clean. The caption written
+  from the SPEC's reasoning then claimed a change the frames did not carry. Pull
   the frames on either side of the beat (`ffmpeg -ss`, one before the click and
   one after the repaint) and write the caption from those two pictures; where
-  they are the same picture, either move the tour to a window where the control
-  bites or say what the beat is really for.
+  they are the same picture, move the tour to a window where the control bites,
+  or cut the beat, as that tour did.

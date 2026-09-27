@@ -49,6 +49,10 @@ export const tcgaVideos: VideoSpec[] = [
       { type: 'click', text: 'Clustering', hold: 1600 },
       { type: 'waitForText', text: 'Cluster rows by similarity' },
       { type: 'click', text: 'Cluster rows by similarity', hold: 1200 },
+      { type: 'waitForText', text: 'Run clustering' },
+      { type: 'delay', ms: 1500 },
+      // by `button`: the dialog's description ends in "hierarchical clustering"
+      { type: 'click', selector: 'button::-p-text(Run clustering)' },
       // The camera comes off for the run itself. Clustering ships the matrix to
       // an RPC worker and then repaints 1104 rows in one pass, which under
       // swiftshader is seconds of a frozen frame rather than an animation.
@@ -58,6 +62,13 @@ export const tcgaVideos: VideoSpec[] = [
         timeout: 300000,
         cut: true,
       },
+      {
+        type: 'waitForText',
+        text: 'Run clustering',
+        hidden: true,
+        timeout: 60000,
+      },
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {
         type: 'delay',
         ms: 3500,
