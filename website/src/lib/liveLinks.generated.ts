@@ -2117,7 +2117,7 @@ export const figureFrames: Record<
   },
   "paper/cohort_sv_multisample": {
     "width": 1500,
-    "height": 820
+    "height": 830
   },
   "paper/cohort_cnv": {
     "width": 1500,
