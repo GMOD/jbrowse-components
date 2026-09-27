@@ -307,7 +307,9 @@ it from the tumor reads.
 
 ### DRAGEN: integer copy number from short reads
 
-DRAGEN's CNV calls load as an indexed VCF, one record per segment:
+DRAGEN's CNV calls load as an indexed VCF, one record per segment. Each record's
+ID reads `DRAGEN:CNLOH:chr9:22631070-22939213`, so the label takes the class
+from its second field:
 
 ```json addtrack
 {
@@ -318,6 +320,9 @@ DRAGEN's CNV calls load as an indexed VCF, one record per segment:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz"
+  },
+  "displayDefaults": {
+    "labels": { "name": "jexl:split(feature.name,':')[1]" }
   }
 }
 ```
@@ -412,8 +417,8 @@ set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "hg008_wakhan_haplotype",
-  "name": "HG008-T Wakhan copy number per haplotype",
+  "trackId": "hg008t_wakhan_hifi_hic",
+  "name": "HG008-T Wakhan copy number per haplotype (HiFi + Hi-C)",
   "assemblyNames": ["GRCh38_GIABv3"],
   "adapter": {
     "type": "BedAdapter",
@@ -430,7 +435,7 @@ set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
+      "displayId": "hg008t_wakhan_hifi_hic-LinearMultiRowFeatureDisplay",
       "rows": "haplotype",
       "color": {
         "field": "copynumber_state",

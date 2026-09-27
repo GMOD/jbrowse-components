@@ -11,8 +11,16 @@ import {
   lgvSession,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
+import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// A track as sv_visualization_cgiab prints it, its bare filenames (a file the
+// page has the reader build) read from where the demo hosts them.
+const cgiabPageTrack = (trackId: string) =>
+  pageTrack('tutorials/sv_visualization_cgiab.md', trackId, {
+    base: 'https://jbrowse.org/demos/cgiab',
+  })
 
 // HG008-T tumor PacBio HiFi Revio reads, the same rehosted slice the hosted
 // cgiab config's own reads track points at. Same reasoning as
@@ -23,13 +31,6 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // full BAM's — build_demo_slices.sh says what a too-narrow cut looks like.
 export const HG008_T_PACBIO_BAM =
   'https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam'
-
-// Where C-GIAB publishes every analysis run on HG008, each in its own dated
-// directory. The CNV callsets the comparison figure loads are a few KB each and
-// are read from here rather than rehosted, so the figure shows the project's own
-// files and a newer run is a path edit.
-const CGIAB_FTP_ANALYSIS =
-  'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis'
 
 // Where the Revio run itself is published, tumour and matched normal. The demo
 // config already reads the normal straight from here; the tandem-repeat figure
@@ -92,19 +93,7 @@ export const HG008_DEPTH_TRACK = {
 // (CN 1 to CN 2, log2(2/1) = 1.0 apart), chr18 flips the same distance over
 // SMAD4, and KRAS's tandem duplication is +1.07 against the +0.45 beside it,
 // which is log2(3/2).
-export const HG008_BICSEQ2_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: 'hg008_bicseq2',
-  name: 'HG008-T copy ratio, segmented (NYGC BIC-seq2, log2 T/N)',
-  assemblyNames: ['GRCh38_GIABv3'],
-  adapter: {
-    type: 'BedGraphAdapter',
-    bedGraphLocation: {
-      uri: 'https://jbrowse.org/demos/cgiab/HG008-T_bicseq2_log2ratio.bedgraph',
-      locationType: 'UriLocation',
-    },
-  },
-}
+const HG008_BICSEQ2_TRACK = cgiabPageTrack('hg008t_bicseq2')
 
 export const HG008_BAF_TRACK = {
   type: 'QuantitativeTrack',
@@ -276,28 +265,7 @@ const SMAD4_MANE = maneGeneLane({
 // deletion and cannot drift apart.
 const SV_85_DEL = 'chr10:122,835,344..122,837,142'
 
-// The public catalogue that answers "is this a known bad thing" as a LANE rather
-// than as prose, from `~/src/jb2hubs/ucsc2jbrowse/configs/hg38.json` and an
-// hgdownload bigBed that answers ranged reads with
-// `Access-Control-Allow-Origin: *`. `assemblyNames` is the C-GIAB benchmark's
-// own GRCh38, not `hg38`: same coordinates, different assembly name in that
-// config, and a track named for the wrong one is silently absent.
-//
-// COLLAPSED: the question is whether anything is catalogued here at all, which
-// one row answers, and stacked rows over a 30 kb gene are most of a viewport.
-const CLINVAR_CNV_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'hg38_clinvar_cnv_ucsc',
-  name: 'ClinVar CNVs (UCSC)',
-  assemblyNames: ['GRCh38_GIABv3'],
-  adapter: {
-    type: 'BigBedAdapter',
-    bigBedLocation: {
-      uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb',
-      locationType: 'UriLocation',
-    },
-  },
-}
+const CLINVAR_CNV_TRACK = cgiabPageTrack('hg38_clinvar_cnv_ucsc')
 
 // The pileup band `inverted_duplication`'s callouts sit in, as an origin: the
 // track's own top edge (`fracY: 0`) at the view's left edge, with each callout a
@@ -341,44 +309,13 @@ const HG19_MAIN_CHROMS = [
   'X',
   'Y',
 ]
-
-// THE SEGMENTED LOG2-RATIO LANE, ONE CONFIG FOR EVERY CGIAB FIGURE THAT CARRIES
-// IT (review, on driver_smad4_loh: "please make all the cgiab use this same
-// look-and-feel for the segmented track in their screenshots"). It was six
-// near-identical inline copies, five of them still on the settings the smad4
-// round replaced, so one track looked like two different tracks depending which
-// figure you were reading.
-//
-// FILLED FROM ZERO, NOT A LINE (review: "the line representation of the copy
-// number here is very confusing, and there is no '0' horizontal line, and the
-// scale from -2 to 1.5 is very unnatural"). All three were one setting apart,
-// and the line was the worst of it: a log2 ratio is a signed quantity read
-// against zero, and a 1px polyline at whole-chromosome scale gives the eye
-// nothing to read it against, so a whole arm at -1 looked like a flat trace
-// slightly lower down. An unset `color` (the schema default, which these used
-// to override with a flat one) cuts at the origin of 0, so a loss is a red
-// block hanging below the midline and a gain a blue one above it: the zero line
-// is drawn by the fill rather than needing to be found.
-//
-// The range is symmetric so zero is the middle of the lane and a step down is
-// the same distance as a step up; -2..1.5 put zero at 57% of the height for no
-// reason beyond where the data happened to reach. Still fixed rather than
-// autoscaled, so a step means the same thing from one figure to the next: a
-// homozygous deletion has no reads, BIC-seq2 writes -8.79 for it, and one such
-// segment (chr17:53.93 Mb, the benchmark's CN 0) would flatten every other step
-// on the chromosome into a hairline. That clips off the bottom instead, which
-// is what an unbounded value should do.
-//
-// 130 rather than 90 because tick density follows the lane's height: at 90 the
-// axis drew two labels, the two extremes, which is the other half of "there is
-// no 0 horizontal line".
+// THE SEGMENTED LOG2-RATIO LANE, ONE FOR EVERY CGIAB FIGURE THAT CARRIES IT.
+// Its bars from zero on a symmetric -2..2 axis are the page's config; 130 px
+// because tick density follows the lane's height, and at 90 the axis drew only
+// its two extremes.
 const HG008_BICSEQ2_LANE = {
-  trackId: 'hg008_bicseq2',
+  trackId: HG008_BICSEQ2_TRACK.trackId,
   type: 'LinearWiggleDisplay',
-  mark: 'bar',
-  scales: {
-    y: { domainMin: -2, domainMax: 2, grid: true, title: 'log2 tumor/normal' },
-  },
   height: 130,
 }
 
@@ -1417,87 +1354,10 @@ export const svSpecs: ScreenshotSpec[] = [
     url: cgiabUrl({
       sessionTracks: [
         HG008_DEPTH_TRACK,
-        {
-          type: 'VariantTrack',
-          trackId: 'hg008t_severus_sv',
-          name: 'Severus somatic SVs (HiFi)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'VcfTabixAdapter',
-            vcfGzLocation: {
-              uri: `${CGIAB_FTP_ANALYSIS}/NIH_HiFi_Severus-SV_20240308/somatic_SVs/severus_somatic.vcf.gz`,
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'TBI',
-              location: {
-                uri: `${CGIAB_FTP_ANALYSIS}/NIH_HiFi_Severus-SV_20240308/somatic_SVs/severus_somatic.vcf.gz.tbi`,
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-        {
-          type: 'VariantTrack',
-          trackId: 'hg008t_minda_sv',
-          name: 'minda ensemble SVs (HiFi, ONT, Illumina)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'VcfAdapter',
-            vcfLocation: {
-              uri: `${CGIAB_FTP_ANALYSIS}/NIH-NCI_minda-ensemble_20240710/HG008_minda_ensemble.vcf`,
-              locationType: 'UriLocation',
-            },
-          },
-        },
-        {
-          type: 'VariantTrack',
-          trackId: 'hg008t_dragen_sv',
-          name: 'DRAGEN somatic SVs (Illumina)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'VcfTabixAdapter',
-            vcfGzLocation: {
-              uri: `${CGIAB_FTP_ANALYSIS}/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.sv.vcf.gz`,
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'TBI',
-              location: {
-                uri: `${CGIAB_FTP_ANALYSIS}/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.sv.vcf.gz.tbi`,
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-        {
-          type: 'VariantTrack',
-          trackId: 'hg008t_nygc_sv',
-          name: 'NYGC somatic SVs (Manta, GRIDSS)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BedpeAdapter',
-            bedpeLocation: {
-              uri: `${CGIAB_FTP_ANALYSIS}/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.sv.annotated.v7.somatic.high_confidence.final.bedpe`,
-              locationType: 'UriLocation',
-            },
-          },
-          // the page's NYGC config: both mates are off screen here, so each
-          // record draws a stem at its breakend
-          displays: [
-            {
-              type: 'LinearMarkDisplay',
-              displayId: 'hg008t_nygc_sv-LinearMarkDisplay',
-              marks: [
-                {
-                  mark: 'link',
-                  encoding: { size: 2 },
-                  transform: [{ type: 'mate' }],
-                },
-              ],
-            },
-          ],
-        },
+        cgiabPageTrack('hg008t_severus_sv'),
+        cgiabPageTrack('hg008t_minda_sv'),
+        cgiabPageTrack('hg008t_dragen_sv'),
+        cgiabPageTrack('hg008t_nygc_sv'),
       ],
       views: [
         {
@@ -1611,31 +1471,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // +140 for the one catalogue lane, off the run's own below-the-fold report
     viewportHeight: 990,
     url: cgiabUrl({
-      sessionTracks: [
-        CLINVAR_CNV_TRACK,
-        // hg38 NCBI RefSeq genes (chr-named, CSI-indexed) so the LGV below the
-        // inspector shows CUZD1's gene model over the deletion
-        {
-          type: 'FeatureTrack',
-          trackId: 'hg38_ncbiRefSeq_ucsc',
-          name: 'NCBI RefSeq genes (hg38)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
-                locationType: 'UriLocation',
-              },
-              indexType: 'CSI',
-            },
-          },
-        },
-      ],
+      sessionTracks: [CLINVAR_CNV_TRACK],
       views: [
         {
           type: 'SvInspectorView',
@@ -1690,8 +1526,6 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: CLINVAR_CNV_TRACK.trackId,
               type: 'LinearBasicDisplay',
-              filter: ["jexl:get(feature,'_varLen') < 50000"],
-              displayMode: 'compact',
               heightMode: 'grow',
             },
             {
@@ -1835,29 +1669,6 @@ export const svSpecs: ScreenshotSpec[] = [
     name: 'sv_cgiab/deletion_linear_view',
     url: cgiabUrl({
       sessionTracks: [
-        // hg38 NCBI RefSeq genes served from the jbrowse.org/ucsc hub (chr-named,
-        // CSI-indexed) — matches the GRCh38_GIABv3 chr refnames directly, so no
-        // rehosting needed.
-        {
-          type: 'FeatureTrack',
-          trackId: 'hg38_ncbiRefSeq_ucsc',
-          name: 'NCBI RefSeq genes (hg38)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
-                locationType: 'UriLocation',
-              },
-              indexType: 'CSI',
-            },
-          },
-        },
         // A small region-slice of the 116x tumor PacBio BAM (chr10:122.8-122.87Mb,
         // ~360 reads, 2.8MB) rehosted on jbrowse.org/demos/cgiab so the reads
         // auto-load fast instead of tripping the force-load guard the full 116x
@@ -2125,7 +1936,7 @@ export const svSpecs: ScreenshotSpec[] = [
         maxWidth: 600,
         fontSize: 18,
         anchor: {
-          track: 'hg008_bicseq2',
+          track: 'hg008t_bicseq2',
           locus: 'chr5:6,000,000',
           fracY: 0.8,
         },
@@ -2136,7 +1947,7 @@ export const svSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'hg008_bicseq2',
+          track: 'hg008t_bicseq2',
           locus: 'chr5:38,000,000',
           fracY: 0.3,
         },
@@ -2148,7 +1959,7 @@ export const svSpecs: ScreenshotSpec[] = [
         text: 'one copy lost: tumor halved, BAF at 0 and 1',
         fontSize: 18,
         anchor: {
-          track: 'hg008_bicseq2',
+          track: 'hg008t_bicseq2',
           locus: 'chr5:100,000,000',
           fracY: 0.2,
         },
@@ -2183,108 +1994,9 @@ export const svSpecs: ScreenshotSpec[] = [
     url: cgiabUrl({
       sessionTracks: [
         HG008_DEPTH_TRACK,
-        {
-          type: 'FeatureTrack',
-          trackId: 'hg008t_nygc_cnv',
-          name: 'NYGC CNV calls, annotated (BIC-seq2)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BedAdapter',
-            bedLocation: {
-              uri: `${CGIAB_FTP_ANALYSIS}/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.cnv.annotated.v7.final.bed`,
-              locationType: 'UriLocation',
-            },
-          },
-          displays: [
-            {
-              type: 'LinearBasicDisplay',
-              displayId: 'hg008t_nygc_cnv-LinearBasicDisplay',
-              // the call is the file's own `type` column, which reaches
-              // feature.type because a BED feature has no type of its own
-              color: {
-                field: 'type',
-                domain: ['DEL', 'DUP'],
-                range: ['#2166ac', '#b2182b'],
-                labels: ['Loss (DEL)', 'Gain (DUP)'],
-                title: 'Call',
-              },
-              labels: { name: "jexl:feature.type+' '+feature.cytoband" },
-            },
-          ],
-        },
-        {
-          type: 'VariantTrack',
-          trackId: 'hg008t_dragen_cnv',
-          name: 'DRAGEN somatic CNV (Illumina)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'VcfTabixAdapter',
-            vcfGzLocation: {
-              uri: `${CGIAB_FTP_ANALYSIS}/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz`,
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'TBI',
-              location: {
-                uri: `${CGIAB_FTP_ANALYSIS}/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz.tbi`,
-                locationType: 'UriLocation',
-              },
-            },
-          },
-          displays: [
-            {
-              type: 'LinearVariantDisplay',
-              displayId: 'hg008t_dragen_cnv-LinearVariantDisplay',
-              // DRAGEN:CNLOH:chr9:22631070-22939213 -> CNLOH, the class it
-              // assigned; the whole id under a 300 kb box is unreadable
-              labels: { name: "jexl:split(feature.name,':')[1]" },
-              showLabels: 'name',
-            },
-          ],
-        },
-        {
-          // the later of the two published Wakhan runs, phased with Hi-C. Its
-          // column-name line carries no leading '#', so the names come from
-          // columnNames or `rows` has nothing to partition on
-          type: 'FeatureTrack',
-          trackId: 'hg008t_wakhan_hifi_hic',
-          name: 'Wakhan copy number per haplotype (HiFi + Hi-C)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BedAdapter',
-            columnNames: [
-              'chrom',
-              'start',
-              'end',
-              'copynumber_state',
-              'coverage',
-              'haplotype',
-            ],
-            bedLocation: {
-              uri: `${CGIAB_FTP_ANALYSIS}/NIH_HiFi-HiC_Wakhan-CNA_20240424/bed_output/HG008_HiFi_HiC_copynumbers_segments.bed`,
-              locationType: 'UriLocation',
-            },
-          },
-          displays: [
-            {
-              type: 'LinearMultiRowFeatureDisplay',
-              displayId: 'hg008t_wakhan_hifi_hic-LinearMultiRowFeatureDisplay',
-              rows: 'haplotype',
-              color: {
-                field: 'copynumber_state',
-                scale: 'threshold',
-                domain: ['0.5', '1.5'],
-                range: ['#2166ac', '#bdbdbd', '#f4a582'],
-                labels: [
-                  'Haplotype lost (0)',
-                  'One copy',
-                  'Two or more copies',
-                ],
-                title: 'Copy number per haplotype',
-              },
-            },
-          ],
-        },
+        cgiabPageTrack('hg008t_nygc_cnv'),
+        cgiabPageTrack('hg008t_dragen_cnv'),
+        cgiabPageTrack('hg008t_wakhan_hifi_hic'),
       ],
       views: [
         {
@@ -2313,7 +2025,7 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             benchmarkCnvLane(),
             { trackId: 'hg008t_nygc_cnv', height: 70 },
-            { trackId: 'hg008t_dragen_cnv', height: 70 },
+            { trackId: 'hg008t_dragen_cnv', showLabels: 'name', height: 70 },
             {
               // Pinned, because auto-fit was dividing whatever was left over
               // and gave the two haplotypes unequal bands — the reader is being
