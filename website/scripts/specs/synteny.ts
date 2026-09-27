@@ -1757,7 +1757,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'ecoli_orthologs',
                 type: 'MultiWaySyntenyDisplay',
-                height: 1100,
+                height: 1500,
               },
             ],
           },
@@ -1766,7 +1766,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 1340,
+    viewportHeight: 1740,
   },
 
   // The join's negative at cohort scale: the O-antigen cluster between galF
@@ -1790,7 +1790,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'ecoli_orthologs',
                 type: 'MultiWaySyntenyDisplay',
-                height: 1100,
+                height: 1500,
               },
             ],
           },
@@ -1799,7 +1799,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 1340,
+    viewportHeight: 1740,
   },
 
   // Whole-genome alignment as lanes, eukaryote scale: hg38 over eight UCSC
