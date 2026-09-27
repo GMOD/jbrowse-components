@@ -247,11 +247,15 @@ function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
   return highest
 }
 
+// The one colour a mark paints every instance: the default blue where none
+// is written, and none under a jexl callback or a scale.
 function constantColorOf(mark: MarkConfig): string | undefined {
   const encoding = colorEncodingOf(mark.encoding.color)
-  return typeof encoding === 'string' && !isJexl(encoding)
-    ? encoding
-    : undefined
+  return encoding === undefined
+    ? DEFAULT_MARK_COLOR
+    : typeof encoding === 'string' && !isJexl(encoding)
+      ? encoding
+      : undefined
 }
 
 // A scale has no meaning over a bin the sidecar wrote, and a jexl callback

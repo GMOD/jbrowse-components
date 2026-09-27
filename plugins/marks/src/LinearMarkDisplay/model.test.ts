@@ -3076,6 +3076,35 @@ test('a colour s labels name its key rows and its hover without crossing the wir
   ])
 })
 
+test('a shape key draws its glyphs in the default blue where no colour is written', () => {
+  const { display } = createTestEnvironment([
+    { mark: 'point', encoding: { y: 'score', shape: { field: 'svtype' } } },
+    {
+      mark: 'point',
+      encoding: { y: 'score', color: 'red', shape: { field: 'svtype' } },
+    },
+  ]).createDisplay()
+  const shapeScale = {
+    kind: 'shape' as const,
+    field: 'svtype',
+    domain: [],
+    entries: [{ value: 'DEL', shape: 'diamond' as const }],
+  }
+  display.setRpcData(
+    0,
+    result([
+      { y: [1], shapeScale },
+      { y: [1], shapeScale },
+    ]),
+    REGION,
+  )
+  expect(
+    display.colorScales.map(
+      key => key.kind === 'categorical' && key.entries[0]?.swatches?.[0]?.color,
+    ),
+  ).toEqual(['#0068d1', 'red'])
+})
+
 test('a mark s size and colour default by its type, and a text mark knows whether its colour is written', () => {
   const { display } = createTestEnvironment([
     { mark: 'point' },

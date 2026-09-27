@@ -218,10 +218,10 @@ export function computeScoreStats(
 /**
  * #api
  * The domain the visible instances autoscale to: at a `quantile` of 1 their
- * extremes, `stats`; below it `quantileExtent`'s ends, the top read off the
- * non-zero `high`s and the bottom off the `low`s, so whiskers open to their
- * spread, a sparse window's empty bins lower no top, and a window of one sign
- * keeps both its ends.
+ * extremes, `stats`; below it `quantileExtent`'s ends, the bottom read off
+ * the `low`s and the top off the `high`s less the zeros where any is
+ * positive, so whiskers open to their spread, a sparse window's empty bins
+ * lower no top, and a window of nothing above 0 keeps the top it has.
  */
 export function autoscaleDomainFromSpans({
   stats,
@@ -245,13 +245,12 @@ export function autoscaleDomainFromSpans({
         continue
       }
       lows.push(low[i]!)
-      if (high[i] !== 0) {
-        highs.push(high[i]!)
-      }
+      highs.push(high[i]!)
     }
   }
+  const tops = highs.some(v => v > 0) ? highs.filter(v => v !== 0) : highs
   const min = quantileExtent(lows, lows.length, quantile)[0]
-  const max = quantileExtent(highs, highs.length, quantile)[1]
+  const max = quantileExtent(tops, tops.length, quantile)[1]
   return [Number.isFinite(min) ? min : 0, Number.isFinite(max) ? max : 0]
 }
 

@@ -168,4 +168,11 @@ describe('one-signed windows', () => {
       computeAutoscaleDomain(0.99, 'avg', [entry([0, 0, 0, 5, 5, 5])]),
     ).toEqual([0, 5])
   })
+
+  it('empty bins beside negatives keep the top at 0, where the extremes put it', () => {
+    const scores = [...new Array(90).fill(0), -1, -2, -3, -1, -2, -3]
+    expect(computeAutoscaleDomain(0.99, 'avg', [entry(scores)])).toEqual([
+      -3, 0,
+    ])
+  })
 })
