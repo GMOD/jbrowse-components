@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A MultiWaySyntenyDisplay lane becomes a list of grammar layers drawn through its frame as a coordinate stage, the way ADR-119 draws the circle's rings, not a host of nested tracks. This reverses the collection's 'let a lane host tracks — leave it alone' call: that call priced a per-lane track container rebuilding the deleted MultiLGVSyntenyDisplay, and a layer list rebuilds none of it, since a lane keeps its one fetch lifecycle and gains marks rather than displays. Stage 1 is built: every lane prints its gene names under its glyphs, on by default behind `showGeneLabels`, decimated by the feature track's `keepFeatureLabel` and the mark display's overlap cull, which moved to display-ui as `cullOverlappingLabels`. Stage 2, gene glyphs and placement boxes through `encodeFeatures`, waits on a measurement at 40 lanes against ADR-114's 3.11x"
+summary: "A MultiWaySyntenyDisplay lane becomes a list of grammar layers drawn through its frame as a coordinate stage, the way ADR-119 draws the circle's rings, not a host of nested tracks. This reverses the collection's 'let a lane host tracks — leave it alone' call: that call priced a per-lane track container rebuilding the deleted MultiLGVSyntenyDisplay, and a layer list rebuilds none of it, since a lane keeps its one fetch lifecycle and gains marks rather than displays. Stage 1 is built: every lane prints its gene names under its glyphs, on by default behind `showGeneLabels`, decimated by the feature track's `keepFeatureLabel` and the mark display's overlap cull, which moved to display-ui as `cullOverlappingLabels`. Stage 2, gene glyphs and named-record placement boxes through `encodeFeatures`, waits on a measurement at 40 lanes against ADR-114's 3.11x"
 ---
 
 # ADR-180: A multi-way lane is a layer list under its frame
@@ -49,10 +49,9 @@ lifecycle of its own.
 ## Consequences
 
 - Stage 2 moves the gene glyphs and the placement boxes onto `encodeFeatures`,
-  and makes the box an opt-in layer, so a lane of alignment records stops
-  drawing one where no gene covers a record. It is gated on measuring the
-  encoder at 40 lanes, since ADR-114 kept canvas's packer at 3.11x the
-  encoder's cost.
+  gated on measuring the encoder at 40 lanes, since ADR-114 kept canvas's
+  packer at 3.11x the encoder's cost. Only a named record draws a box already:
+  an alignment record no gene covers names no gene to stand in for.
 - Extra layers cost one fetch per lane each; the synced per-lane LGV (route 4)
   stays the drill-down for anything a mark list cannot say.
 - The name row makes every lane taller by 12 px with names on, so a stack that
