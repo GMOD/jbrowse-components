@@ -469,23 +469,22 @@ export function stateModelFactory(
         StoredHoverMixin<MarkHitInfo>(sameMarkHit),
         HiddenGroupsMixin(),
         // #region configRef
-        types
-          .model({
-            type: types.literal('LinearMarkDisplay'),
-            /**
-             * #property
-             */
-            configuration: ConfigurationReference(configSchema),
-            // #endregion
-            /**
-             * #property
-             * The "Filter by..." dialog's override of the `filter` slot; unset
-             * follows the config.
-             */
-            filterSetting: FilterSetting,
-          })
-          .preProcessSnapshot(liftRetiredFilterSetting),
+        types.model({
+          type: types.literal('LinearMarkDisplay'),
+          /**
+           * #property
+           */
+          configuration: ConfigurationReference(configSchema),
+          // #endregion
+          /**
+           * #property
+           * The "Filter by..." dialog's override of the `filter` slot; unset
+           * follows the config.
+           */
+          filterSetting: FilterSetting,
+        }),
       )
+      .preProcessSnapshot(liftRetiredFilterSetting)
       .views(() => ({
         /**
          * #getter

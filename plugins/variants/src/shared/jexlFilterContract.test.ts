@@ -69,6 +69,13 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     expect(display.activeFilters()).toEqual(["jexl:get(feature,'score')>10"])
   })
 
+  it("loads a v4.3 session's jexlFiltersSetting, prefixed", () => {
+    const { display } = createDisplay({
+      displaySnapshot: { jexlFiltersSetting: ["get(feature,'score')>99"] },
+    })
+    expect(display.filterSetting).toEqual(["jexl:get(feature,'score')>99"])
+  })
+
   it('keeps the override off the config node', () => {
     const { display } = createDisplay()
     display.setFilter(["jexl:get(feature,'score')>99"])

@@ -243,60 +243,59 @@ export default function baseStateModelFactory(
       DensityBandMixin(),
       ContextMenuMixin<FeatureContextMenuInfo>(),
       HiddenGroupsMixin(),
-      types
-        .model({
-          /**
-           * #property
-           */
-          configuration: ConfigurationReference(configSchema),
-          /**
-           * #property
-           * Runtime "Filter by..." override.
-           */
-          filterSetting: FilterSetting,
-          /**
-           * #property
-           * Feature ids the user pinned to the top of the layout via the
-           * feature right-click menu.
-           */
-          pinnedFeatureIds: types.stripDefault(types.array(types.string), []),
-          /**
-           * #property
-           * "Show only these features": the collected set the user builds by
-           * ctrl+clicking features (or via the right-click menu).
-           */
-          soloFeatureIds: types.stripDefault(types.array(types.string), []),
-          /**
-           * #property
-           * Whether the collected soloFeatureIds set is actually isolating
-           * the view (worker drops non-members).
-           */
-          soloApplied: types.stripDefault(types.boolean, false),
-          /**
-           * #property
-           * "Hide this feature" exclusion set (inverse of solo): the worker
-           * drops these from layout/drawing.
-           */
-          hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
-          /**
-           * #property
-           * Genes the user opened from the isoform badge on their own label:
-           * these draw every isoform whatever `geneGlyphMode` or the fit
-           * ladder's isoform rung would otherwise collapse them to.
-           */
-          expandedGeneIds: types.stripDefault(types.array(types.string), []),
-          /**
-           * #property
-           * Declarative feature highlights, typically seeded by a text search
-           * (highlight the gene you searched for).
-           */
-          featureHighlights: types.stripDefault(
-            types.array(FeatureHighlightModel),
-            [],
-          ),
-        })
-        .preProcessSnapshot(liftRetiredFilterSetting),
+      types.model({
+        /**
+         * #property
+         */
+        configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * Runtime "Filter by..." override.
+         */
+        filterSetting: FilterSetting,
+        /**
+         * #property
+         * Feature ids the user pinned to the top of the layout via the
+         * feature right-click menu.
+         */
+        pinnedFeatureIds: types.stripDefault(types.array(types.string), []),
+        /**
+         * #property
+         * "Show only these features": the collected set the user builds by
+         * ctrl+clicking features (or via the right-click menu).
+         */
+        soloFeatureIds: types.stripDefault(types.array(types.string), []),
+        /**
+         * #property
+         * Whether the collected soloFeatureIds set is actually isolating
+         * the view (worker drops non-members).
+         */
+        soloApplied: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * "Hide this feature" exclusion set (inverse of solo): the worker
+         * drops these from layout/drawing.
+         */
+        hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
+        /**
+         * #property
+         * Genes the user opened from the isoform badge on their own label:
+         * these draw every isoform whatever `geneGlyphMode` or the fit
+         * ladder's isoform rung would otherwise collapse them to.
+         */
+        expandedGeneIds: types.stripDefault(types.array(types.string), []),
+        /**
+         * #property
+         * Declarative feature highlights, typically seeded by a text search
+         * (highlight the gene you searched for).
+         */
+        featureHighlights: types.stripDefault(
+          types.array(FeatureHighlightModel),
+          [],
+        ),
+      }),
     )
+    .preProcessSnapshot(liftRetiredFilterSetting)
     .volatile(() => ({
       // #region volatile
       /**

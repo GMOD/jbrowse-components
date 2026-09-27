@@ -322,22 +322,21 @@ export default function MultiSampleVariantBaseModelF(
         StoredHoverMixin<VariantHoverFields>(),
         TreeSidebarMixin<ProcessedSource>(),
         ContextMenuMixin<VariantContextMenuInfo>(),
-        types
-          .model({
-            type: types.string,
-            configuration: ConfigurationReference(configSchema),
-            /**
-             * #property
-             * Runtime "Filter by..." override. When set (even to an empty list)
-             * it replaces the `filter` config slot; when undefined the config
-             * default applies. See `JexlFilterModel`.
-             */
-            filterSetting: FilterSetting,
-            // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
-            // trigger a run whose output is that mixin's `rows`.
-          })
-          .preProcessSnapshot(liftRetiredFilterSetting),
+        types.model({
+          type: types.string,
+          configuration: ConfigurationReference(configSchema),
+          /**
+           * #property
+           * Runtime "Filter by..." override. When set (even to an empty list)
+           * it replaces the `filter` config slot; when undefined the config
+           * default applies. See `JexlFilterModel`.
+           */
+          filterSetting: FilterSetting,
+          // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
+          // trigger a run whose output is that mixin's `rows`.
+        }),
       )
+      .preProcessSnapshot(liftRetiredFilterSetting)
       .volatile(() => ({
         /**
          * #volatile
