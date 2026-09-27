@@ -23,12 +23,9 @@ import {
 import {
   KIND_BASE,
   KIND_BASE_TILE,
-  KIND_CIGAR_D,
-  KIND_CIGAR_I,
-  KIND_CIGAR_N,
   KIND_MARKER,
-  buildIndelColors,
 } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { isNamedRecord } from '../syntenyMate.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
 import {
   frameMagnification,
@@ -258,47 +255,26 @@ interface LinkMate {
   assemblyName?: string
 }
 
-export interface AlignmentColors {
-  I: number
-  D: number
-  N: number
-  X: number
-}
-
-export function alignmentColors(field: string): AlignmentColors {
+export function mismatchColor(field: string) {
   const { cigarColors } =
     field === 'strand' ? colorSchemes.strand : colorSchemes.default
-  return {
-    ...buildIndelColors(field),
-    X: cssColorToABGR(cigarColors.X),
-  }
-}
-
-function indelKind(op: number) {
-  return op === CIGAR_I
-    ? KIND_CIGAR_I
-    : op === CIGAR_D
-      ? KIND_CIGAR_D
-      : op === CIGAR_N
-        ? KIND_CIGAR_N
-        : undefined
+  return cssColorToABGR(cigarColors.X)
 }
 
 /**
- * A record's own alignment between the two lanes it joins, over the ribbon it
- * already draws. Insertions and deletions are walked in each lane's own bp and
- * merged below a px of either, the way the synteny view merges them, so a lane
- * pair aligned base by base draws the wedges LinearSyntenyView draws for the
- * same PAF. Each mismatch joins its base on one lane to its base on the other,
- * fading with its width so a difference you cannot yet read fades out rather
- * than inking a whole pixel. Mismatches sharing a pixel on both lanes join into
- * one mark AS LONG AS THEIR MISMATCHED BASES: an HPRC pair states about one
- * mismatch per kb over a record tens of Mb long, and marking each separately
- * spends an instance to paint a pixel that already has one. Carrying the run's
- * mismatched length rather than the stretch it spans keeps the width fade
- * reading as density — the same ink the separate marks composited to — while
- * bounding the marks by the ribbon's width in px, the bound
- * `visitCigarRenderedSegments` gives the indels above.
+ * A record's ribbon drawn off its own alignment: one tile per matched stretch,
+ * walked in each lane's own bp and merged below a px of either the way the
+ * synteny view merges them, so an insertion or deletion is the gap between two
+ * tiles, as the synteny view's Transparent indels draws it. Each mismatch joins
+ * its base on one lane to its base on the other, fading with its width so a
+ * difference you cannot yet read fades out rather than inking a whole pixel.
+ * Mismatches sharing a pixel on both lanes join into one mark AS LONG AS THEIR
+ * MISMATCHED BASES: an HPRC pair states about one mismatch per kb over a record
+ * tens of Mb long, and marking each separately spends an instance to paint a
+ * pixel that already has one.
+ *
+ * False where the record carries no alignment to walk, which leaves the caller
+ * the whole ribbon to draw.
  */
 function addAlignmentDetail(
   builder: RibbonBuilder,
@@ -306,7 +282,8 @@ function addAlignmentDetail(
   upper: Lane,
   lower: Lane,
   featureIdx: number,
-  colors: AlignmentColors,
+  fill: number,
+  mismatch: number,
 ) {
   const ops = feature.get('alignmentOps') as Uint32Array | undefined
   const mate = feature.get('mate') as LinkMate | undefined
@@ -343,16 +320,8 @@ function addAlignmentDetail(
       1,
       dir2,
       (op, bp1Start, bp1End, bp2Start, bp2End) => {
-        const kind = indelKind(op)
-        if (kind !== undefined) {
-          add(
-            bp1Start,
-            bp1End,
-            bp2Start,
-            bp2End,
-            kind,
-            op === CIGAR_I ? colors.I : op === CIGAR_D ? colors.D : colors.N,
-          )
+        if (op !== CIGAR_I && op !== CIGAR_D && op !== CIGAR_N) {
+          add(bp1Start, bp1End, bp2Start, bp2End, KIND_BASE, fill)
         }
       },
     )
@@ -369,7 +338,7 @@ function addAlignmentDetail(
           markStart2,
           markStart2 + markLen * dir2,
           KIND_BASE_TILE,
-          colors.X,
+          mismatch,
         )
         markLen = 0
       }
@@ -404,7 +373,9 @@ function addAlignmentDetail(
       }
     }
     flushMark()
+    return true
   }
+  return false
 }
 
 /**
@@ -447,7 +418,7 @@ export function buildRibbonGeometry({
     attributeRanges,
     hideUnlabelled,
   )
-  const detailColors = alignmentColors(ribbonColorField)
+  const mismatch = mismatchColor(ribbonColorField)
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
@@ -508,16 +479,20 @@ export function buildRibbonGeometry({
               orientations[i]! * far.orientations[j]!,
               group.feature,
             )
-            builder.add(s1, s2, KIND_BASE, target, fill)
-            if (direct && fill >>> 24 !== 0) {
+            const tiled =
+              direct &&
+              fill >>> 24 !== 0 &&
               addAlignmentDetail(
                 builder,
                 group.feature,
                 upper,
                 farLane,
                 target,
-                detailColors,
+                fill,
+                mismatch,
               )
+            if (!tiled) {
+              builder.add(s1, s2, KIND_BASE, target, fill)
             }
           }
         })
@@ -564,9 +539,11 @@ export function buildRibbonGeometry({
           ].join('\n'),
         })
         const fill = colorOf(link.get('strand') === -1 ? -1 : 1, link)
-        ribbons.add(s1, ordered, KIND_BASE, idx, fill)
-        if (fill >>> 24 !== 0) {
-          addAlignmentDetail(ribbons, link, upper, lower, idx, detailColors)
+        const tiled =
+          fill >>> 24 !== 0 &&
+          addAlignmentDetail(ribbons, link, upper, lower, idx, fill, mismatch)
+        if (!tiled) {
+          ribbons.add(s1, ordered, KIND_BASE, idx, fill)
         }
       }
     }
@@ -800,8 +777,9 @@ interface LaneBox {
 
 /**
  * Which placements a lane's drawn genes stand in for. A placement one of them
- * overlaps is that gene's, the widest overlap where several do; a placement no
- * gene overlaps is a box. A gene claimed twice — a tandem array, a clipped
+ * overlaps is that gene's, the widest overlap where several do; a named
+ * placement no gene overlaps is a box, since it names a gene the lane's
+ * annotation lacks, while an alignment record no gene overlaps draws nothing. A gene claimed twice — a tandem array, a clipped
  * edge — carries the widest claim, the group it is mostly made of.
  *
  * In bp on the lane's own sequence, so a gene straddling the edge claims the
@@ -835,7 +813,7 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
           widest.set(gene, cover.overlap)
           gene.cluster = key
         }
-      } else {
+      } else if (isNamedRecord(group.feature)) {
         boxes.push({ key, group, span: spans[i]! })
       }
     })

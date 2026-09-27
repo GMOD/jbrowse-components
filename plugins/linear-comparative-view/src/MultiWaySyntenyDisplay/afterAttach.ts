@@ -50,8 +50,9 @@ const DESCRIBE_DEADLINE_MS = 20_000
  * --coarse`, 10 kb): that tier keeps every indel past half its bound as its own
  * op, so the cut lands the same on either tier.
  *
- * A gutter that is a direct pair now draws a record's own indels, so for those
- * the cut is what stops the wedge being drawn. Three consumers still read a
+ * A gutter that is a direct pair leaves a record's own indels open between its
+ * tiles, so for those the cut changes nothing a reader sees. Three consumers
+ * still read a
  * placement as one linear mapping and keep it earning its place: composed
  * gutters interpolate within a run, `rowAssembliesOf` orders lanes by a run's
  * anchor bp, and the orientation vote weighs the same bp where the source is an

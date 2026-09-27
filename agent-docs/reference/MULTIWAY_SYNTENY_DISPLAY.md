@@ -107,10 +107,10 @@ pairwise alignments over one human locus. It is the wrong frame, unmodified, for
 three things: more than one row of content per genome (a lane is a
 display-internal object that hosts one annotation and nothing else), alignment
 sources whose within-record structure matters (at TP53 a 25 kb mouse indel drew
-as a straight ribbon until the gap split landed; every gutter now draws its
-record's own indels and mismatches, but `SPLIT_AT_GAP_BP` still cuts at 10 kb,
-so a larger indel is the space between two placements rather than a drawn
-wedge), and cohorts of hundreds to thousands of haplotypes (every cost is
+as a straight ribbon until the gap split landed; a direct gutter now tiles its
+record's matched stretches and leaves every indel open, the synteny view's
+Transparent indels, so an indel under `SPLIT_AT_GAP_BP`'s 10 kb and one over it
+read alike), and cohorts of hundreds to thousands of haplotypes (every cost is
 linear in lanes, the picker is a flat checkbox list, and the graph fetch is the
 whole cohort regardless of the selection). The row-per-haplotype picture should
 be kept as the *reading* for a chosen handful; the *choosing* and the *fetching*

@@ -12,7 +12,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { declaredLanesOf } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
 
-import { KIND_BASE, KIND_CIGAR_D } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { KIND_BASE } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
@@ -1359,7 +1359,7 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
     expect([...ribbonsBetweenMates(display).kinds]).toEqual([
       KIND_BASE,
-      KIND_CIGAR_D,
+      KIND_BASE,
     ])
   })
 

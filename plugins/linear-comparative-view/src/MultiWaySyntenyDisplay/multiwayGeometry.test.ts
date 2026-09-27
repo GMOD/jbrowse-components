@@ -17,10 +17,7 @@ import {
 import {
   KIND_BASE,
   KIND_BASE_TILE,
-  KIND_CIGAR_D,
-  KIND_CIGAR_I,
   KIND_MARKER,
-  buildIndelColors,
 } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { LaneGene } from './geneGlyph.ts'
@@ -30,7 +27,7 @@ import {
   buildBandCell,
   buildLaneCells,
   buildRibbonGeometry,
-  alignmentColors,
+  mismatchColor,
   buildTickGeometry,
   glyphHitAt,
 } from './multiwayGeometry.ts'
@@ -332,7 +329,7 @@ describe('the ribbons', () => {
     expect(ribbonData(cells, 'ribbons:1').instanceCount).toBe(1)
   })
 
-  test('a lane pair’s own deletion draws as a wedge over its ribbon', () => {
+  test('a lane pair’s own deletion is the gap between two tiles of its ribbon', () => {
     const s = stack({
       features: [
         pairFeature('g1', 100, 200),
@@ -358,12 +355,11 @@ describe('the ribbons', () => {
       bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
-    expect([...data.kinds]).toEqual([KIND_BASE, KIND_CIGAR_D])
-    // Pp1:1540-1560 over the one point Tc1:1540, at 0.8 px/bp from 1000
-    expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual([
+    expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE])
+    // Pp1:1540-1560 left open over the one point Tc1:1540, at 0.8 px/bp from 1000
+    expect([data.bp2[0], data.bp1[1], data.bp3[0], data.bp4[1]]).toEqual([
       432, 448, 432, 432,
     ])
-    expect(data.colors[1]).toBe(buildIndelColors('').D)
   })
 
   test('a mismatch joins its two bases, however far out the lanes are', () => {
@@ -392,12 +388,16 @@ describe('the ribbons', () => {
       bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
-    expect(data.instanceCount).toBe(2)
+    const mark = [...data.kinds].indexOf(KIND_BASE_TILE)
+    expect([...data.kinds].filter(k => k === KIND_BASE_TILE)).toHaveLength(1)
     // Pp1:1550-1551 onto Tc1:1550-1551, a 0.8px quad the renderer widens to 1
-    expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual(
-      [440, 440.8, 440, 440.8].map(Math.fround),
-    )
-    expect(data.colors[1]).toBe(alignmentColors('').X)
+    expect([
+      data.bp1[mark],
+      data.bp2[mark],
+      data.bp4[mark],
+      data.bp3[mark],
+    ]).toEqual([440, 440.8, 440, 440.8].map(Math.fround))
+    expect(data.colors[mark]).toBe(mismatchColor(''))
   })
 
   // 25 bp/px on both lanes, so each cluster of three mismatches below spans
@@ -441,16 +441,18 @@ describe('the ribbons', () => {
       bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
-    // the full-span ribbon, then one mark per cluster, each 3 bp long — the
-    // mismatched bases of its cluster, not the 21 bp they are spread over, so
-    // the width fade lays down the ink the three separate marks composited to
-    expect(data.instanceCount).toBe(3)
-    expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE_TILE, KIND_BASE_TILE])
-    expect([data.colors[1], data.colors[2]]).toEqual([
-      alignmentColors('').X,
-      alignmentColors('').X,
+    // one mark per cluster, each 3 bp long — the mismatched bases of its
+    // cluster, not the 21 bp they are spread over, so the width fade lays down
+    // the ink the three separate marks composited to
+    const marks = [...data.kinds].flatMap((k, i) =>
+      k === KIND_BASE_TILE ? [i] : [],
+    )
+    expect(marks).toHaveLength(2)
+    expect(marks.map(i => data.colors[i])).toEqual([
+      mismatchColor(''),
+      mismatchColor(''),
     ])
-    expect([data.bp1[1], data.bp2[1], data.bp1[2], data.bp2[2]]).toEqual(
+    expect(marks.flatMap(i => [data.bp1[i], data.bp2[i]])).toEqual(
       [20, 20.12, 60, 60.12].map(Math.fround),
     )
   })
@@ -476,10 +478,11 @@ describe('the ribbons', () => {
       bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:0')
-    expect([...data.kinds]).toEqual([KIND_BASE, KIND_CIGAR_I])
-    expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual([
-      120, 120, 136, 120,
-    ])
+    expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE])
+    // the anchor meets itself at chr1:150 while the mate opens 20 bp between
+    // the two tiles, walked backwards from its end
+    expect([data.bp2[0], data.bp1[1]]).toEqual([120, 120])
+    expect(Math.abs(data.bp3[0]! - data.bp4[1]!)).toBe(16)
   })
 
   // g2's record is reverse against the anchor, so its ribbon takes the reverse
@@ -922,6 +925,27 @@ describe('a lane cell', () => {
     expect(cell.hits.map(h => h.label)).toEqual(['GENE1'])
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop + 1)?.feature).toBe(gene)
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop - 5)).toBeUndefined()
+  })
+
+  test('an alignment record no gene reaches draws no box', () => {
+    const record = new SimpleFeature({
+      uniqueId: 'r1',
+      refName: 'chr1',
+      start: 500,
+      end: 600,
+      strand: 1,
+      assemblyName: 'grape',
+      mate: { assemblyName: 'peach', refName: 'Pp1', start: 1500, end: 1600 },
+    })
+    const s = stack({ features: [pairFeature('g1', 100, 200), record] })
+    const { boxes } = buildLaneCells({
+      lane: s.lanes[0]!,
+      genes: [new LaneGene(gene)],
+      glyphHeight: s.glyphHeight,
+      width: WIDTH,
+      colors,
+    })
+    expect(boxes.hits).toEqual([])
   })
 
   test('draws the table’s own box, translucent and outlined, where no gene reaches', () => {
