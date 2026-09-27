@@ -76,15 +76,19 @@ export const GRAPH_DRAWN =
 export const graphCutDrawn = (tier: 'fine' | 'coarse') =>
   `[data-testid="linear-graph-display"][data-cut-tier="${tier}"][data-node-count]:not([data-loading])`
 
-// A graph track's display entry. The pane holds the props the standalone view
-// has, and what it states wins over the display config's layout, colour and
-// height. An unstated `paneHeight` is the config's 300 px; the standalone
-// view's pane took up to 600, and the figures sized around that state it.
-export const graphTrack = (trackId: string, pane: Record<string, unknown>) => ({
-  trackId,
-  type: 'LinearGraphDisplay',
-  pane,
-})
+// A graph track's display entry, its props flat (plugin 4.0.7; a 4.0 `pane`
+// still loads). What it states wins over the display config's layout and
+// colour. `paneHeight`, the standalone view's ceiling, is the track's `height`
+// here; unstated, the track is the config's 300 px.
+export const graphTrack = (trackId: string, props: Record<string, unknown>) => {
+  const { paneHeight, ...rest } = props
+  return {
+    trackId,
+    type: 'LinearGraphDisplay',
+    ...rest,
+    ...(paneHeight === undefined ? {} : { height: paneHeight }),
+  }
+}
 
 // A `maxRegionBp` that holds a graph track's cut near the view's window, for a
 // drawing sized to the window's own nodes: the track narrows the window-width

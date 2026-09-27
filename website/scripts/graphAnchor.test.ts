@@ -83,6 +83,30 @@ test('a graph track resolves through its display, the first one by default', () 
   expect(geometry(undefined, 's1+')?.top).toBe(107)
 })
 
+// plugin 4.0.7 composes the pane into the display rather than nesting it
+test('a flat graph display is its own pane', () => {
+  const view = element(document.body, 'view-container-lgv')
+  graphTrackElement(view, 'graph', 100)
+  setSession([
+    {
+      id: 'lgv',
+      tracks: [
+        {
+          configuration: { trackId: 'graph' },
+          displays: [
+            {
+              type: 'LinearGraphDisplay',
+              nodePositions: POSITIONS,
+              ...TRANSFORM,
+            },
+          ],
+        },
+      ],
+    },
+  ])
+  expect(geometry(undefined, 's1+')?.top).toBe(107)
+})
+
 test('`track` picks one of several graph tracks, and its own canvas', () => {
   const view = element(document.body, 'view-container-lgv')
   graphTrackElement(view, 'first', 100)

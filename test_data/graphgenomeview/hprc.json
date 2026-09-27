@@ -190,6 +190,17 @@
       ]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "hprc_curated_vntrs",
+      "name": "Curated VNTRs (LPA KIV-2)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc_curated_vntrs.bed",
+        "columnNames": ["chrom", "chromStart", "chromEnd", "name", "period"]
+      }
+    },
+    {
       "type": "SyntenyTrack",
       "trackId": "hprc_cfhr_synteny_HG01109_1",
       "name": "HG01109.1 vs GRCh38 at CFH (HPRC release 2 alignment)",

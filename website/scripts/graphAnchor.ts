@@ -22,9 +22,9 @@ export interface GraphNodeGeometry extends ViewportRect {
 // The graph pane an anchor addresses, and the canvas it draws on. The graph is
 // one canvas with no element per node, so the pane is asked where it put one
 // instead, the way a locus anchor asks the LGV. The pane is the addressed view
-// itself when that is a GraphGenomeView, and otherwise the `pane` of a
-// LinearGraphDisplay among the view's tracks: the one `trackId` names, or the
-// first.
+// itself when that is a GraphGenomeView, and otherwise a LinearGraphDisplay
+// among the view's tracks, the one `trackId` names or the first: the display
+// itself from plugin 4.0.7, its nested `pane` before that.
 //
 // Puppeteer serializes this into the page, so it closes over nothing.
 export function locateGraphPaneInPage(
@@ -54,9 +54,13 @@ export function locateGraphPaneInPage(
       }[]
     }
   }
+  interface Display extends Pane {
+    type?: string
+    pane?: Pane
+  }
   interface Track {
     configuration?: { trackId?: string }
-    displays?: { pane?: Pane }[]
+    displays?: Display[]
   }
   interface View extends Pane {
     id: string
@@ -74,12 +78,15 @@ export function locateGraphPaneInPage(
   let pane: Pane | undefined = view
   let scope = container
   if (view.tracks) {
+    const paneOf = (d: Display) =>
+      d.pane ?? (d.type === 'LinearGraphDisplay' ? d : undefined)
     const track = view.tracks.find(
       t =>
-        t.displays?.some(d => d.pane) &&
+        t.displays?.some(paneOf) &&
         (trackId === undefined || t.configuration?.trackId === trackId),
     )
-    pane = track?.displays?.find(d => d.pane)?.pane
+    const display = track?.displays?.find(paneOf)
+    pane = display ? paneOf(display) : undefined
     const id = track?.configuration?.trackId ?? ''
     scope = `${container} [data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(id)}"] [data-testid="linear-graph-display"]`
   }
