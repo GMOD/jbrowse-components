@@ -3233,8 +3233,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // them and Dvorak et al. 2018 reassessed them against the reference
     // assemblies, and the tutorial's reference list carries both dois.
     //
-    // Anchored to the TOP ROW'S TICK LABELS, which are DOM text, because the
-    // two anchors this figure would otherwise want are both unavailable and the
+    // Anchored to the TOP ROW'S CHROMOSOME LABELS by testid, since a bare
+    // `text: '5D'` matched the smaller "5D" tick labels under 1D and parked
+    // both pills off the left edge. The two anchors this figure would
+    // otherwise want are both unavailable and the
     // comment above records why: a synteny sub-panel has no
     // `view-container-<id>` element for a `{view, locus}` anchor to resolve
     // against, and an in-app `highlight` has nowhere to paint on a bare
@@ -3250,14 +3252,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'text',
         text: '4AL/5AL',
         fontSize: 20,
-        anchor: { text: '5D', alignX: 'left' },
+        anchor: { selector: '[data-testid="refLabel-5D"]', alignX: 'left' },
         dy: 54,
       },
       {
         type: 'text',
         text: '4AL/7BS',
         fontSize: 20,
-        anchor: { text: '7D', alignX: 'right' },
+        anchor: { selector: '[data-testid="refLabel-7D"]', alignX: 'right' },
         dx: -30,
         dy: 150,
       },
