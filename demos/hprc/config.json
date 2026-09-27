@@ -547,6 +547,17 @@
       ]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "hprc_curated_vntrs",
+      "name": "Curated VNTRs (LPA KIV-2)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc_curated_vntrs.bed",
+        "columnNames": ["chrom", "chromStart", "chromEnd", "name", "period"]
+      }
+    },
+    {
       "type": "VariantTrack",
       "trackId": "hprc_abca7_trgt",
       "name": "TRGT repeat genotypes at ABCA7, 100 HPRC samples",

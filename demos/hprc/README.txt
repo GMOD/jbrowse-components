@@ -9,8 +9,9 @@ The hprc-v2.*-mc-grch38.* files below are that set. This prefix also serves two
 other demos' files, which have their own provenance: hprc_cfhr_* is the CFH
 panel that build_hprc_cfhr_synteny.sh cuts, hprc_abca7_trgt.vcf.gz is PacBio's
 TRGT genotypes at the ABCA7 VNTR (Zenodo 8329210) that
-build_hprc_abca7_trgt.sh writes, and hprc2_pclai_chr1.bed.gz is a chr1 slice
-nothing in the repo reads any more.
+build_hprc_abca7_trgt.sh writes, hprc_curated_vntrs.bed is a hand-written
+repeat track (below), and hprc2_pclai_chr1.bed.gz is a chr1 slice nothing in
+the repo reads any more.
 
 Source
 ------
@@ -217,3 +218,13 @@ repeat_density/ - per-class RepeatMasker density
 
   Each assembly is measured over its OWN last 650 kb, not a lifted-over
   interval: there is no lift-over for sequence one of them does not have.
+
+Curated VNTRs
+-------------
+
+  hprc_curated_vntrs.bed (the copy in demos/hprc is the source) names tandem
+  repeat arrays too long for TRF catalogues, which stop near a 2 kb period:
+  chrom, start, end, name, unit. The graph plugin calls a bubble a repeat array
+  only where the session's repeat track has one, and walk rows tile by the
+  unit. One row so far: the LPA KIV-2 array, chr6:160,616,003-160,646,753 with a
+  5,548 bp kringle unit, bounded by the flanks copycount.mjs maps.
