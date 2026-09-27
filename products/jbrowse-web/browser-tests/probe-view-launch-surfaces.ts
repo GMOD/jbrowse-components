@@ -24,7 +24,6 @@ import {
   encodeSessionSpec,
   findChromeExecutable,
   isBrowserConsoleNoise,
-  waitForAppReady,
   waitForAppSettled,
   waitForDisplayPhases,
   waitForSession,
@@ -344,8 +343,8 @@ async function pageState(page: Page) {
 
 async function settle(page: Page, c: ViewCase) {
   const t0 = Date.now()
-  if (!(await waitForAppReady(page, { timeout: TIMEOUT }))) {
-    throw new Error('the app never published data-app-phase="ready"')
+  if (!(await waitForAppSettled(page, { timeout: TIMEOUT }))) {
+    throw new Error('the app never held data-app-phase="ready"')
   }
   await waitForSession(page, {
     assembly: c.gateAssembly ? 'volvox' : undefined,
@@ -410,7 +409,7 @@ async function driveTypo(
   const log = attachLog(page)
   const t0 = Date.now()
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: TIMEOUT })
-  const ready = await waitForAppReady(page, { timeout: TYPO_TIMEOUT })
+  const ready = await waitForAppSettled(page, { timeout: TYPO_TIMEOUT })
   const form = await page
     .waitForSelector(c.importFormSelector, { timeout: TYPO_TIMEOUT })
     .then(() => true)

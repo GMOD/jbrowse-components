@@ -41,9 +41,10 @@ THE IMAGE
 
 WAITING
   --timeout <ms>        budget per wait stage (default 60000)
-  --allowUnsettled      write the image anyway when a stage times out
+  --allowUnsettled      write the image anyway when a stage times out or a
+                        display is showing an error or a cancel
 
-  A stage that times out fails the run rather than writing a half-drawn frame.
+  Either fails the run rather than writing a frame that is not the picture.
 
 OTHER
   --headed              run with a visible browser window

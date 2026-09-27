@@ -117,10 +117,8 @@ Two waits, depending on what you did:
 
 - **`waitForJBrowseReady(page)`** is the wait on its own, for a page you
   navigated yourself. `waitForFrame(page)` is its second half alone, for a page
-  whose session you already gated, after a resize or a click. The individual
-  stages (`waitForSession`, `waitForLoadingComplete`, `waitForDisplayPhases`,
-  `waitForQuiescent`, ...) are exported too, and each one documents what it can
-  and cannot tell you.
+  whose session you already gated, after a resize or a click. `waitForSession`,
+  the first half, is exported too.
 - **`waitForAppSettled(page)`** is the wait after you CLICK something. A page
   that is loading starts out `loading` and the transition into `ready` is it
   finishing; a page you just clicked is already `ready` and stays that way until

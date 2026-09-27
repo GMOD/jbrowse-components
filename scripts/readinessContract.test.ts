@@ -51,10 +51,13 @@ describe('the readiness contract', () => {
     expect(jb).toContain(LOADING_OVERLAY)
   })
 
-  it('is read by @jbrowse/capture with the same selectors', () => {
-    const waits = read('products/jbrowse-capture/src/waits.ts')
-    expect(waits).toContain(`APP_READY = '${APP_READY}'`)
-    expect(waits).toContain(`LOADING_OVERLAY = '${LOADING_OVERLAY}'`)
+  it('is read by @jbrowse/capture and the browser tests with the same selectors', () => {
+    expect(read('products/jbrowse-capture/src/waits.ts')).toContain(
+      `APP_READY = '${APP_READY}'`,
+    )
+    expect(read('packages/browser-test-utils/src/phaseWaits.ts')).toContain(
+      `LOADING_OVERLAY = '${LOADING_OVERLAY}'`,
+    )
   })
 
   // The census beside the phase: AppReadyMarker publishes what is open as

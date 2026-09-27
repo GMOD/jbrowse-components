@@ -1,4 +1,4 @@
-import { holdTrue } from './poll.ts'
+import { DEFAULT_TIMEOUT, holdTrue } from './poll.ts'
 import { describeDisplays, displayCensusInPage } from './sessionGate.ts'
 
 import type { ElementHandle, Page } from 'puppeteer'
@@ -7,46 +7,15 @@ interface WaitOptions {
   timeout?: number
 }
 
-async function settled(work: Promise<unknown>) {
-  try {
-    await work
-    return true
-  } catch {
-    return false
-  }
-}
-
-export const LOADING_OVERLAY = '[data-testid="loading-overlay"]'
-
 /** The app's own verdict: no view is resolving an assembly, no display is fetching. */
 export const APP_READY = '[data-app-phase="ready"]'
-
-/** An engine still working, of the several a page of embedded views may hold. */
-const APP_LOADING = '[data-app-phase="loading"]'
-
-/** A display drawing a transition between two settled pictures. */
-const ANIMATING_DISPLAYS = '[data-display-animating="true"]'
 
 /** Displays that have not yet drawn anything. */
 export const PENDING_DISPLAYS = '[data-display-drawn="false"]'
 
-/** A display still fetching or waiting on its first paint. */
-const LOADING_DISPLAYS = '[data-display-phase="loading"]'
-
-const VIEW_COMPONENT_PENDING = '[data-view-component-pending]'
-
 // longer than the ~600ms FetchVisibleRegions debounce, so the gap between one
 // fetch and the next cannot pass for settled
 const APP_SETTLED_HOLD_MS = 1000
-
-/** Everything the app publishes to say it is working, as one selector. */
-export const BUSY_SELECTOR = [
-  LOADING_OVERLAY,
-  '[data-busy="true"]',
-  LOADING_DISPLAYS,
-  '[data-view-phase="loading"]',
-  ANIMATING_DISPLAYS,
-].join(', ')
 
 /** A display of this type that has drawn something, possibly mid-fetch. */
 export const displayPainted = (testid: string) =>
@@ -55,45 +24,6 @@ export const displayPainted = (testid: string) =>
 /** A display of this type whose fetch has finished. */
 export const displaySettled = (testid: string) =>
   `[data-testid="${testid}"][data-display-phase="ready"]`
-
-export function isPageBusyInPage(busySelector: string) {
-  return document.querySelector(busySelector) !== null
-}
-
-/** Throws if the loading overlay is still up after `timeout`. */
-export async function waitForLoadingComplete(
-  page: Page,
-  { timeout = 30000 }: WaitOptions = {},
-) {
-  await page.waitForFunction(
-    (selector: string) => document.querySelector(selector) === null,
-    { timeout, polling: 'mutation' },
-    LOADING_OVERLAY,
-  )
-}
-
-/**
- * Wait until nothing on the page reports itself busy, and has stayed that way
- * for `quietMs`. False on timeout. An app that has not started is not busy
- * either, so this is no readiness gate; `waitForAppSettled` is.
- */
-export function waitForQuiescent(
-  page: Page,
-  {
-    timeout = 30000,
-    quietMs = 0,
-    pollMs = 250,
-  }: WaitOptions & { quietMs?: number; pollMs?: number } = {},
-) {
-  return holdTrue(
-    () =>
-      page.evaluate(isPageBusyInPage, BUSY_SELECTOR).then(
-        busy => !busy,
-        () => false,
-      ),
-    { holdMs: quietMs, timeout, pollMs },
-  )
-}
 
 async function describeDisplaysNow(page: Page) {
   try {
@@ -121,7 +51,7 @@ async function describeDisplaysNow(page: Page) {
 export async function waitForSelectorAttributed(
   page: Page,
   selector: string,
-  { timeout = 30000 }: WaitOptions = {},
+  { timeout = DEFAULT_TIMEOUT }: WaitOptions = {},
 ): Promise<ElementHandle> {
   try {
     const handle = await page.waitForSelector(selector, { timeout })
@@ -137,48 +67,6 @@ export async function waitForSelectorAttributed(
   }
 }
 
-/** Wait until no display is fetching. False on timeout. */
-export function waitForDisplayPhases(
-  page: Page,
-  { timeout = 30000 }: WaitOptions = {},
-) {
-  return settled(
-    page.waitForFunction(
-      (selector: string) => document.querySelector(selector) === null,
-      { timeout, polling: 'mutation' },
-      LOADING_DISPLAYS,
-    ),
-  )
-}
-
-/**
- * Throws unless every view has resolved its assembly and loaded its
- * component within `timeout`.
- */
-export async function waitForViewPhases(
-  page: Page,
-  { timeout = 30000 }: WaitOptions = {},
-) {
-  await page.waitForFunction(
-    (pending: string) =>
-      document.querySelector('[data-view-phase="loading"]') === null &&
-      document.querySelector(pending) === null,
-    { timeout, polling: 'mutation' },
-    VIEW_COMPONENT_PENDING,
-  )
-}
-
-/**
- * Wait for the first frame the app calls ready. False on timeout. After an
- * interaction the app already reads ready, so use `waitForAppSettled` there.
- */
-export function waitForAppReady(
-  page: Page,
-  { timeout = 30000 }: WaitOptions = {},
-) {
-  return settled(page.waitForSelector(APP_READY, { timeout }))
-}
-
 // What each term of the settled hold waits out, as a timeout names it. The
 // marker reads `loading` over a display that is fetching or has not painted,
 // but only over the displays its view walk finds, so a plugin view that does
@@ -186,11 +74,13 @@ export function waitForAppReady(
 // `LoadingEllipses`: a view body still loading its code, and the panels,
 // widgets and dialogs no view walk reaches.
 const SETTLE_BLOCKERS: [selector: string, reason: string][] = [
-  [APP_LOADING, 'an app still loading'],
-  [LOADING_DISPLAYS, 'a display still loading'],
+  ['[data-app-phase="loading"]', 'an app still loading'],
+  ['[data-display-phase="loading"]', 'a display still loading'],
   ['[data-busy="true"]', 'a loading indicator still up'],
-  [ANIMATING_DISPLAYS, 'a display still animating'],
+  ['[data-display-animating="true"]', 'a display still animating'],
 ]
+
+const NO_MARKER = 'no [data-app-phase] on the page'
 
 type SettleOptions = WaitOptions & { holdMs?: number; pollMs?: number }
 
@@ -201,33 +91,26 @@ type SettleOptions = WaitOptions & { holdMs?: number; pollMs?: number }
 export async function appSettledBlocker(
   page: Page,
   {
-    timeout = 30000,
+    timeout = DEFAULT_TIMEOUT,
     holdMs = APP_SETTLED_HOLD_MS,
     pollMs = 250,
   }: SettleOptions = {},
 ) {
-  const hasMarker = await page.evaluate(
-    () => document.querySelector('[data-app-phase]') !== null,
-  )
-  if (!hasMarker) {
-    throw new Error(
-      'this page publishes no [data-app-phase], so there is nothing positive ' +
-        'to wait for — every other readiness attribute is an absence an app ' +
-        'that has not started also satisfies.',
-    )
-  }
   const blocker = () =>
     page
       .evaluate(
-        (ready, blockers) =>
-          blockers.find(([selector]) =>
-            document.querySelector(selector),
-          )?.[1] ??
-          (document.querySelector(ready) === null
-            ? 'the marker not reading ready'
-            : undefined),
+        (ready, blockers, noMarker) =>
+          document.querySelector('[data-app-phase]') === null
+            ? noMarker
+            : (blockers.find(([selector]) =>
+                document.querySelector(selector),
+              )?.[1] ??
+              (document.querySelector(ready) === null
+                ? 'the marker not reading ready'
+                : undefined)),
         APP_READY,
         SETTLE_BLOCKERS,
+        NO_MARKER,
       )
       .catch(() => 'the page could not be queried')
   const held = await holdTrue(async () => (await blocker()) === undefined, {
@@ -235,15 +118,27 @@ export async function appSettledBlocker(
     timeout,
     pollMs,
   })
-  return held
-    ? undefined
-    : ((await blocker()) ?? 'a hold the timeout cut short')
+  if (held) {
+    return undefined
+  }
+  const last = await blocker()
+  if (last === NO_MARKER) {
+    throw new Error(
+      `this page published no [data-app-phase] within ${timeout}ms, so there ` +
+        'is nothing positive to wait for — every other readiness attribute is ' +
+        'an absence an app that has not started also satisfies. A JBrowse ' +
+        'older than v5 publishes none.',
+    )
+  }
+  return last ?? 'a hold the timeout cut short'
 }
 
 /**
  * Wait until every app on the page has read ready, with nothing loading or
- * animating, for an unbroken `holdMs`. False on timeout. Throws on a page that
- * publishes no `[data-app-phase]`, where nothing positive exists to wait for.
+ * animating, for an unbroken `holdMs`. False on timeout. Right after a
+ * navigation it first waits for the marker to mount; a page that never
+ * publishes `[data-app-phase]` throws, since nothing positive exists to wait
+ * for.
  */
 export async function waitForAppSettled(page: Page, options?: SettleOptions) {
   return (await appSettledBlocker(page, options)) === undefined

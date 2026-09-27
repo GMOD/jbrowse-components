@@ -1,4 +1,4 @@
-import { waitForAppSettled, waitForQuiescent } from './waits.ts'
+import { waitForAppSettled } from './waits.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -116,29 +116,21 @@ test('an app still working when the timeout expires reports false', async () => 
 // that has not started, so a fallback here reports success on an empty browser.
 test('a build with no marker is an error, not a fallback', async () => {
   document.body.innerHTML = '<div data-testid="loading-overlay"></div>'
-  await expect(waitForAppSettled(jsdomPage(), FAST)).rejects.toThrow(
-    'publishes no [data-app-phase]',
-  )
+  await expect(
+    waitForAppSettled(jsdomPage(), { ...FAST, timeout: 100 }),
+  ).rejects.toThrow('published no [data-app-phase] within 100ms')
 })
 
-// Idle has to HOLD: a track that ends one fetch and starts the next is
-// momentarily idle, and a single-sample read takes that gap for the end.
-test('the quiet period restarts when the page goes busy again', async () => {
-  const goBusy = setTimeout(() => {
-    document.body.innerHTML = '<div data-testid="loading-overlay"></div>'
+// Called straight after a navigation, the app has not mounted yet: that is the
+// marker still to come, not a build without one.
+test('a marker that mounts after the call is waited for', async () => {
+  const mounted = setTimeout(() => {
+    setPhase('ready')
   }, 100)
-  const goIdle = setTimeout(() => {
-    document.body.replaceChildren()
-  }, 200)
   const start = Date.now()
   await expect(
-    waitForQuiescent(jsdomPage(), {
-      quietMs: 300,
-      pollMs: 10,
-      timeout: 3000,
-    }),
+    waitForAppSettled(jsdomPage(), { ...FAST, timeout: 3000 }),
   ).resolves.toBe(true)
-  expect(Date.now() - start).toBeGreaterThanOrEqual(500)
-  clearTimeout(goBusy)
-  clearTimeout(goIdle)
+  expect(Date.now() - start).toBeGreaterThanOrEqual(100 + FAST.holdMs)
+  clearTimeout(mounted)
 })

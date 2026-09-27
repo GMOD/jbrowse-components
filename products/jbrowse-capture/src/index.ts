@@ -17,13 +17,8 @@ export {
   PENDING_DISPLAYS,
   displayPainted,
   displaySettled,
-  waitForAppReady,
   waitForAppSettled,
-  waitForDisplayPhases,
-  waitForLoadingComplete,
-  waitForQuiescent,
   waitForSelectorAttributed,
-  waitForViewPhases,
 } from './waits.ts'
 export {
   BASE_CHROME_ARGS,

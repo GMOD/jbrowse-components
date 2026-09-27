@@ -4,7 +4,6 @@
 export {
   PENDING_DISPLAYS,
   assemblyFromSession,
-  delay,
   describeDisplays,
   displayCensusInPage,
   displayPainted,
@@ -14,17 +13,20 @@ export {
   isBrowserConsoleNoise,
   sessionSpecQuery,
   trackIdsFromSession,
-  waitForAppReady,
   waitForAppSettled,
-  waitForDisplayPhases,
   waitForFrame,
   waitForJBrowseReady,
-  waitForLoadingComplete,
-  waitForQuiescent,
   waitForSelectorAttributed,
   waitForSession,
-  waitForViewPhases,
 } from '@jbrowse/capture'
+
+export {
+  delay,
+  waitForDisplayPhases,
+  waitForLoadingComplete,
+  waitForQuiescent,
+  waitForViewPhases,
+} from './phaseWaits.ts'
 
 export { BASE_CHROME_ARGS } from './chromeArgs.ts'
 export { createSecureTestServer, createTestServer } from './server.ts'

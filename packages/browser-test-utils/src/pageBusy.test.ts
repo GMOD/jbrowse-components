@@ -1,4 +1,4 @@
-import { BUSY_SELECTOR, isPageBusyInPage } from './waits.ts'
+import { BUSY_SELECTOR, isPageBusyInPage } from './phaseWaits.ts'
 
 afterEach(() => {
   document.body.replaceChildren()
