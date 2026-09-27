@@ -1,3 +1,5 @@
+import { setConf } from '@jbrowse/core/configuration'
+
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
 import type { WiggleSourceData } from '@jbrowse/wiggle-core'
@@ -77,4 +79,12 @@ it("writes the plot type as the mark and the line's interpolation it draws", () 
   display.setRenderingType('line')
   expect(display.configuration.interpolate).toBe('step')
   expect(display.renderingType).toBe('line')
+})
+
+it('titles the density key with the scale title, the axis it replaces', () => {
+  const display = makeDisplay()
+  display.setRenderingType('density')
+  expect(display.scoreColorScale?.title).toBe('Score')
+  setConf(display, ['scales', 'y', 'title'], 'phyloP')
+  expect(display.scoreColorScale?.title).toBe('phyloP')
 })

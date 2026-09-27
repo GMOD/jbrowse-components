@@ -59,6 +59,7 @@ function stops(model: ReturnType<typeof makeModel>) {
     model.scaleType,
     model.symlogConstant,
     model.wiggleColor,
+    'Score',
   ).stops
 }
 
@@ -142,22 +143,28 @@ test('named-ramp stops are the render LUT entries the plot paints', () => {
 // painting a full-strength blue. A symmetric domain saturates both ends.
 test('an off-center pivot shows its short side unsaturated', () => {
   const ramp = { ...RAMP, pivot: 2, rampLut: null }
-  const off = scoreRampScale([0, 6], 'linear', 1, ramp).stops
+  const off = scoreRampScale([0, 6], 'linear', 1, ramp, 'Score').stops
   expect(off.at(0)).toEqual({ offset: 0, color: 'rgb(144,178,213)' })
   expect(off.at(-1)).toEqual({ offset: 1, color: 'rgb(178,24,43)' })
-  const even = scoreRampScale([0, 4], 'linear', 1, ramp).stops
+  const even = scoreRampScale([0, 4], 'linear', 1, ramp, 'Score').stops
   expect(even.at(0)!.color).toBe('rgb(33,102,172)')
   expect(even.at(-1)!.color).toBe('rgb(178,24,43)')
 })
 
 test('a CSS color the picker writes is parsed, not read as hex', () => {
-  const scale = scoreRampScale([0, 4], 'linear', 1, {
-    ...RAMP,
-    posColor: 'rgb(178, 24, 43)',
-    pivot: 2,
-    rampLut: null,
-    rampMid: undefined,
-  })
+  const scale = scoreRampScale(
+    [0, 4],
+    'linear',
+    1,
+    {
+      ...RAMP,
+      posColor: 'rgb(178, 24, 43)',
+      pivot: 2,
+      rampLut: null,
+      rampMid: undefined,
+    },
+    'Score',
+  )
   expect(scale.stops.at(-1)!.color).toBe('rgb(178,24,43)')
 })
 
@@ -165,9 +172,13 @@ test('a CSS color the picker writes is parsed, not read as hex', () => {
 // log that is the geometric mean of the domain, not its arithmetic midpoint.
 test('a log key puts the geometric mean at its middle', () => {
   const ramp = { ...RAMP, rampLut: rampLutOf({ scheme: 'viridis' }) }
-  const middle = scoreRampScale([1, 10_000], 'log', 1, ramp).stops.find(
-    s => s.offset === 0.5,
-  )!
+  const middle = scoreRampScale(
+    [1, 10_000],
+    'log',
+    1,
+    ramp,
+    'Score',
+  ).stops.find(s => s.offset === 0.5)!
   const paint = makeDensityLutFillFn(
     1,
     10_000,
@@ -180,7 +191,13 @@ test('a log key puts the geometric mean at its middle', () => {
 })
 
 test('the scale names its domain ends through the score formatter', () => {
-  const scale = scoreRampScale([0, 1500], 'log', 1, { ...RAMP, rampLut: null })
+  const scale = scoreRampScale(
+    [0, 1500],
+    'log',
+    1,
+    { ...RAMP, rampLut: null },
+    'Score',
+  )
   expect(scale.title).toBe('Score (log)')
   expect(scale.domain).toEqual([0, 1500])
   expect(scale.format!(1500)).toBe('1500')

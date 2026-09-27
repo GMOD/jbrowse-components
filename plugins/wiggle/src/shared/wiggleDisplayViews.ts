@@ -34,6 +34,8 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   maxGapMultiple: number
   resolution: number
   scoreField: string
+  /** `scales.y.title`, empty where it names none. */
+  scaleTitle: string
   /**
    * Whether one color ramp describes the whole plot: a gradient outside the
    * line renderings, or density's fade. Each display has its own reason a
@@ -71,6 +73,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
             self.scaleType,
             self.symlogConstant,
             self.wiggleColor,
+            self.scaleTitle || 'Score',
           )
         : undefined
     },

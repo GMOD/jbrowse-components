@@ -53,6 +53,7 @@ export function scoreRampScale(
   scaleType: string,
   symlogConstant: number,
   ramp: ScoreRamp,
+  title: string,
 ): RampScale {
   const [min, max] = domain
   const type = scaleTypeCode(scaleType)
@@ -97,7 +98,7 @@ export function scoreRampScale(
   return {
     kind: 'ramp',
     id: 'score',
-    title: `Score${suffix}`,
+    title: `${title}${suffix}`,
     domain,
     stops: Array.from({ length: STEPS + 1 }, (_, i) => {
       const offset = i / STEPS
