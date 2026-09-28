@@ -46,7 +46,10 @@
 //                    the mean of `match` weighted by `overlap`, which one
 //                    kernel runs (ADR-197), over the fetched MafFeatures
 //   typed-identity   the same over the MAF adapters' table, as the display
-//                    runs it
+//                    runs it: `cells`, the bin and the aggregate as one walk
+//                    over the rows' bytes (`binnedCellMatches`)
+//   bin-fused-typed-identity  the same with `cells` writing its runs and
+//                    ADR-197's kernel binning them, the path before the walk
 //   unfused-typed-identity  the same with the bin in the facet's steps and the
 //                    aggregate in the layer's, so the piece table is built
 //   columns-identity the bench-only lanes: the column `cells`, then
@@ -71,6 +74,9 @@
 // sink (`readBlocks`), for the MAF display's pack and coverage and for the
 // mark display's table, steps and encode, beside the BED read alone. The
 // direct path must pack and encode what the features do before any timing.
+//
+// `--shape=<index>` runs one shape. Under `node --expose-gc` each arm starts
+// after a collection.
 //
 // Interleaved round-robin with the order rotated each round, MIN across rounds
 // (agent-docs/reference/BENCHMARKING.md). Each arm's instance count prints
@@ -109,6 +115,8 @@ import {
   sectionRows,
   spanHitsInRow,
 } from '../../../packages/core/benches/columnSteps.ts'
+import { binnedAggregate } from '../../../packages/core/src/util/binnedAggregate.ts'
+import { cells } from '../../../packages/core/src/util/cellsStep.ts'
 import BigBedAdapter from '../../bed/src/BigBedAdapter/BigBedAdapter.ts'
 import BigBedConfigSchema from '../../bed/src/BigBedAdapter/configSchema.ts'
 import BigMafAdapter from '../src/BigMafAdapter/BigMafAdapter.ts'
@@ -141,6 +149,8 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { FeatureTable } from '@jbrowse/core/util/featureTable'
 import type {
+  AggregateStep,
+  BinStep,
   LaneName,
   MarkEncodingInput,
   TransformStep,
@@ -426,6 +436,43 @@ function armTypedIdentity(features: readonly Feature[]) {
   )
   const { table: bins, row } = layers[0]!
   return encodeFeatures(bins, { y: 'identity', row }, IDENTITY_LANES, {
+    jexl,
+  }).count
+}
+// The declared identity as it ran before `cells` fused with the bin: the
+// species split, `cells` writing its runs, then ADR-197's bin and aggregate.
+function binFusedTypedIdentity(features: readonly Feature[]) {
+  const { layers } = facetLayers(
+    runTransforms(mafFeatureTableOf(features, features[0]!.get('refName')), [
+      SHARED[0]!,
+    ]),
+    FACET,
+    [{}],
+    jexl,
+  )
+  const { table, rows: sectionOfRow } = layers[0]!
+  const sections = table.length ? sectionOfRow[table.length - 1]! + 1 : 0
+  const bounds = new Uint32Array(sections + 1)
+  for (const s of sectionOfRow) {
+    bounds[s + 1]!++
+  }
+  for (let s = 0; s < sections; s++) {
+    bounds[s + 1] = bounds[s + 1]! + bounds[s]!
+  }
+  const out = binnedAggregate(
+    cells({ table, bounds }, { type: 'cells' }),
+    IDENTITY_BIN as BinStep,
+    IDENTITY_MEAN as AggregateStep,
+  )!
+  const row = new Uint32Array(out.table.length)
+  for (let s = 0; s < sections; s++) {
+    row.fill(s, out.bounds[s], out.bounds[s + 1])
+  }
+  return { table: out.table, rows: row }
+}
+function armBinFusedTypedIdentity(features: readonly Feature[]) {
+  const { table, rows } = binFusedTypedIdentity(features)
+  return encodeFeatures(table, { y: 'identity', row: rows }, IDENTITY_LANES, {
     jexl,
   }).count
 }
@@ -731,7 +778,12 @@ function checkIdentity(features: readonly Feature[]) {
     })
   }
   const want = readBack(declared[1]!)
-  for (const other of [declared[0]!, declared[2]!]) {
+  const binFused = binFusedTypedIdentity(features)
+  for (const other of [
+    declared[0]!,
+    declared[2]!,
+    { layers: [binFused], sections: declared[1]!.sections },
+  ]) {
     if (!isDeepStrictEqual(readBack(other), want)) {
       throw new Error('the declared identity differs between its paths')
     }
@@ -794,7 +846,11 @@ function time(fn: () => number) {
 
 const asJson = process.argv.includes('--json')
 const results = []
-for (const { name, spec } of stages || parse ? [] : SHAPES) {
+const gc = (globalThis as { gc?: () => void }).gc
+const oneShape = flag('shape')
+for (const { name, spec } of stages || parse
+  ? []
+  : SHAPES.filter((_, i) => oneShape === undefined || i === Number(oneShape))) {
   const features = await fetchRegion(spec)
   const species = Object.keys(
     features[0]!.get('alignments') as Record<string, unknown>,
@@ -815,6 +871,7 @@ for (const { name, spec } of stages || parse ? [] : SHAPES) {
     'start-bin-identity': () => armStartBinIdentity(features),
     'marks-identity': () => armMarksIdentity(features),
     'typed-identity': () => armTypedIdentity(features),
+    'bin-fused-typed-identity': () => armBinFusedTypedIdentity(features),
     'unfused-typed-identity': () => armUnfusedTypedIdentity(features),
     'columns-identity': () => armColumnsIdentity(features),
   }
@@ -838,6 +895,7 @@ for (const { name, spec } of stages || parse ? [] : SHAPES) {
       ...order.slice(0, r % order.length),
     ]
     for (const arm of rotated) {
+      gc?.()
       const { ms, n } = time(arms[arm]!)
       best[arm] = Math.min(best[arm] ?? Infinity, ms)
       counts[arm] = n
@@ -862,6 +920,7 @@ for (const { name, spec } of stages || parse ? [] : SHAPES) {
     featuresIdentityMs: ms('start-bin-identity'),
     pipelineIdentityMs: ms('marks-identity'),
     typedIdentityMs: ms('typed-identity'),
+    binFusedIdentityMs: ms('bin-fused-typed-identity'),
     unfusedIdentityMs: ms('unfused-typed-identity'),
     columnsIdentityMs: ms('columns-identity'),
     featuresWorst: Math.round(identity.featuresWorst * 1000) / 1000,
@@ -1145,7 +1204,6 @@ if (parse) {
     throw new Error(`the direct table encodes a different ${spanDiff}`)
   }
 
-  const gc = (globalThis as { gc?: () => void }).gc
   const arms: Record<string, () => Promise<number>> = {
     'maf-features': async () =>
       (await parseMafFeatures(adapter, region)).packed.rowOffset.length,
