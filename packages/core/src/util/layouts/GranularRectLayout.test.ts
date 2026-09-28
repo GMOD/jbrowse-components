@@ -149,3 +149,20 @@ test('a later rect clears the lower span, not just the rect', () => {
   expect(l.addRect('beside', 0, 95, 10)).toBe(0)
   expect(l.addRect('under', 0, 95, 10)).toBe(30)
 })
+
+test('a lower span is checked on the binary-search path too', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
+
+  // 25 spans in row 2, one of them inside the lower span but clear of the
+  // rows above it, so row 2 is searched rather than scanned.
+  l.addRect('blockLeft', 0, 250, 20)
+  l.addRect('blockRight', 405, 420, 20)
+  for (let i = 0; i < 24; i++) {
+    expect(l.addRect(`span${i}`, i * 10, i * 10 + 5, 10)).toBe(20)
+  }
+  expect(l.addRect('inLower', 410, 415, 10)).toBe(20)
+
+  expect(
+    l.addRect('rect', 300, 400, 30, { top: 20, left: 300, right: 420 }),
+  ).toBe(10)
+})
