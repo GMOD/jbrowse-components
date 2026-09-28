@@ -2554,7 +2554,8 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "displayTypes": [
-        "LinearMafDisplay"
+        "LinearMafDisplay",
+        "LinearMarkDisplay"
       ]
     },
     "HicTrack": {

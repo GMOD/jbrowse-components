@@ -33,6 +33,7 @@ names the MAF's reference species when it differs from the assembly name.
 
 - **Track:** [MafTrack](../maftrack)
 - **Display:** [LinearMafDisplay](../linearmafdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 

@@ -40,6 +40,7 @@ Use `BgzipTaffyAdapter` for TAF (taffy's own, more compact format),
 
 - **Track:** [MafTrack](../maftrack)
 - **Display:** [LinearMafDisplay](../linearmafdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 

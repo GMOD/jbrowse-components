@@ -177,6 +177,18 @@ const suite: TestSuite = {
       snapshotSelector: withChrome,
       readySelector: `${withChrome} [data-testid="group-label-chip"]`,
     }),
+    // A MAF block is one feature with an `alignments` record per species; a
+    // flatten with `key` fans it out into a row each (ADR-186), and a span
+    // coloured by `chr` is the MAF display's colour-by-source-chromosome.
+    lgvSnapshotTest({
+      name: 'a MAF fanned out into a row per species, each span coloured by its source chromosome',
+      snapshot: 'mark-maf-species-rows',
+      loc: 'ctgA:1-2000',
+      tracks: ['marks_maf'],
+      config,
+      snapshotSelector: withChrome,
+      readySelector: '[data-testid="mark-row-labels"]',
+    }),
   ],
 }
 

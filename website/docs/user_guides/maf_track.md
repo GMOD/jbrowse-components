@@ -266,6 +266,8 @@ clustering elsewhere and pasting the order back.
 ## See also
 
 - [MAF track configuration](/docs/config_guides/maf_track)
+- [](/docs/config_guides/mark_display) - a row per species drawn as declared
+  marks, off a `flatten` over each block's `alignments`
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/gene_track)
 - [](/docs/user_guides/quantitative_track) - phyloP/phastCons conservation

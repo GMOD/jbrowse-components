@@ -145,7 +145,7 @@ The display types, grouped by the track type they attach to:
 | [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) |
 | [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) |
 | [](/docs/config/ldtrack) | [](/docs/config/ldtrackdisplay) |
-| [](/docs/config/maftrack) | [](/docs/config/linearmafdisplay) |
+| [](/docs/config/maftrack) | [](/docs/config/linearmafdisplay)<br/>[](/docs/config/linearmarkdisplay) |
 | [](/docs/config/multiquantitativetrack) | [](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearwiggledisplay) |
 | [](/docs/config/quantitativetrack) | [](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearwiggledisplay) |
 | [](/docs/config/referencesequencetrack) | [](/docs/config/linearreferencesequencedisplay) |

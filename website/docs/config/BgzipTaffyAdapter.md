@@ -32,6 +32,7 @@ used to configure BgzipTaffy adapter
 
 - **Track:** [MafTrack](../maftrack)
 - **Display:** [LinearMafDisplay](../linearmafdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 

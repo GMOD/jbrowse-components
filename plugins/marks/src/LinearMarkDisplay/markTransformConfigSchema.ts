@@ -186,13 +186,13 @@ const flatten = ConfigurationSchema(
   {
     /**
      * #slot flatten.field
-     * The array field fanned out, one feature per element: a name or a dotted
-     * path.
+     * The field fanned out, one feature per element of an array or per entry
+     * of a record keyed by name: a name or a dotted path.
      */
     field: {
       type: 'string',
       defaultValue: DEFAULT_FLATTEN_FIELD,
-      description: 'array field fanned out',
+      description: 'array or record field fanned out',
     },
     /**
      * #slot flatten.index
@@ -205,14 +205,24 @@ const flatten = ConfigurationSchema(
       description: "field for the element's position",
     },
     /**
+     * #slot flatten.key
+     * The field each entry's key is written to where the field is a record:
+     * the sample of a VCF `samples` entry, the species of a MAF block's
+     * `alignments` entry. Empty writes none.
+     */
+    key: {
+      type: 'string',
+      defaultValue: '',
+      description: "field for the entry's key",
+    },
+    /**
      * #slot flatten.keepEmpty
-     * Keep a feature whose array field holds nothing, which is otherwise
-     * dropped.
+     * Keep a feature whose field holds nothing, which is otherwise dropped.
      */
     keepEmpty: {
       type: 'boolean',
       defaultValue: false,
-      description: 'keep a feature whose array field is empty',
+      description: 'keep a feature whose field is empty',
     },
   },
   STEP,
@@ -270,7 +280,8 @@ const pileup = ConfigurationSchema(
  * expression's value into a field; `bin` snaps each feature to a
  * genome-aligned bin; `aggregate` folds each group into one feature carrying
  * its summaries; `coverage` replaces the features with runs of how many
- * overlap each stretch; `flatten` fans out an array field; `pileup` writes
+ * overlap each stretch; `flatten` fans out an array or a record field;
+ * `pileup` writes
  * each feature's row in a greedy first-fit packing; `mate` answers one
  * feature per other end a record states, the `mate` a paired adapter fills
  * in (BEDPE, STAR-Fusion) or each VCF `ALT` naming a locus, with

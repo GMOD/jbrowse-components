@@ -144,7 +144,13 @@ export type StepSnapshot =
   | { type: 'bin'; step?: number | string; field?: string; as?: string[] }
   | { type: 'aggregate'; groupby?: string[]; ops?: OpSnapshot[] }
   | { type: 'coverage'; as?: string }
-  | { type: 'flatten'; field?: string; index?: string; keepEmpty?: boolean }
+  | {
+      type: 'flatten'
+      field?: string
+      index?: string
+      key?: string
+      keepEmpty?: boolean
+    }
   | { type: 'pileup'; as?: string; fields?: string[]; padding?: number }
   | { type: 'mate' }
 
@@ -482,8 +488,12 @@ function madeFields(steps: readonly StepSnapshot[]) {
       fields.add(step.as ?? DEFAULT_FORMULA_AS)
     } else if (step.type === 'pileup') {
       fields.add(step.as ?? DEFAULT_PILEUP_AS)
-    } else if (step.type === 'flatten' && step.index) {
-      fields.add(step.index)
+    } else if (step.type === 'flatten') {
+      for (const field of [step.index, step.key]) {
+        if (field) {
+          fields.add(field)
+        }
+      }
     } else if (step.type === 'mate') {
       for (const field of MATE_FIELDS) {
         fields.add(field)

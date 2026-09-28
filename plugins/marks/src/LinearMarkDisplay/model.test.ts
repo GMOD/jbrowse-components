@@ -1189,9 +1189,16 @@ test("a transform list reaches the worker as its own layer's steps, every slot w
       type: 'flatten',
       field: 'subfeatures',
       index: '',
+      key: '',
       keepEmpty: false,
     },
-    { type: 'flatten', field: 'exons', index: 'nth', keepEmpty: false },
+    {
+      type: 'flatten',
+      field: 'exons',
+      index: 'nth',
+      key: '',
+      keepEmpty: false,
+    },
     { type: 'pileup', as: 'row', fields: ['start', 'end'], padding: 0 },
     { type: 'pileup', as: 'lane', fields: ['s', 'e'], padding: 20 },
   ])
@@ -1388,8 +1395,20 @@ test('a flatten keeping its empty features says so on the wire', () => {
   ])
   const { display } = createDisplay()
   expect(display.rpcProps().layers[0]!.transform).toEqual([
-    { type: 'flatten', field: 'subfeatures', index: '', keepEmpty: true },
-    { type: 'flatten', field: 'exons', index: '', keepEmpty: false },
+    {
+      type: 'flatten',
+      field: 'subfeatures',
+      index: '',
+      key: '',
+      keepEmpty: true,
+    },
+    {
+      type: 'flatten',
+      field: 'exons',
+      index: '',
+      key: '',
+      keepEmpty: false,
+    },
   ])
 })
 

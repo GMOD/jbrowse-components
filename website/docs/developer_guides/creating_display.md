@@ -39,6 +39,7 @@ past `LinearGenomeView`:
 | [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) | LinearGenomeView |
 | [](/docs/config/ldtrack) | [](/docs/config/ldtrackdisplay) | LinearGenomeView |
 | [](/docs/config/maftrack) | [](/docs/config/linearmafdisplay) | LinearGenomeView |
+|  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 | [](/docs/config/multiquantitativetrack) | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearwiggledisplay) | LinearGenomeView |
 | [](/docs/config/quantitativetrack) | [](/docs/config/linearmarkdisplay) | LinearGenomeView |

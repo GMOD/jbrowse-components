@@ -28,13 +28,16 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
       // is its MAPQ, a variant's quality is `QUAL`, a BigWig's `score` past
       // its raw section is a zoom level's mean, with `minScore` and
       // `maxScore` beside it, and a multi-BigWig's rows carry `source`, the
-      // field a `facet` bands them by (ADR-126).
+      // field a `facet` bands them by (ADR-126). A MAF block is one feature
+      // with an `alignments` record per species, which a `flatten` with
+      // `key` fans out into a row each.
       trackType: [
         'FeatureTrack',
         'AlignmentsTrack',
         'VariantTrack',
         'QuantitativeTrack',
         'MultiQuantitativeTrack',
+        'MafTrack',
       ],
       viewType: 'LinearGenomeView',
       ReactComponent,

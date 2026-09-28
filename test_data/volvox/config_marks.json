@@ -1198,6 +1198,67 @@
           ]
         }
       ]
+    },
+    {
+      "type": "MafTrack",
+      "trackId": "marks_maf",
+      "name": "Mark rows by species over a MAF",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "samples": [
+          "volvox",
+          "simvolvox",
+          "minivolvox",
+          "microvolvox",
+          "nanovolvox",
+          "megavolvox",
+          "ultravolvox",
+          "picovolvox",
+          "hypervolvox",
+          "metavolvox"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox.maf.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "nhLocation": {
+          "uri": "volvox.maf.nh",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "volvox.maf.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_maf-LinearMarkDisplay",
+          "transform": [
+            {
+              "type": "flatten",
+              "field": "alignments",
+              "key": "species"
+            }
+          ],
+          "rows": "species",
+          "marks": [
+            {
+              "mark": "span",
+              "encoding": {
+                "color": {
+                  "field": "chr",
+                  "scale": "categorical"
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

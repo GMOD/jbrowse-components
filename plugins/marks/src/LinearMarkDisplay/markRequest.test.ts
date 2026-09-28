@@ -48,7 +48,13 @@ test('an emptied step slot leaves the worker its default, which the channel read
     { type: 'coverage', as: 'coverage' },
     { type: 'pileup', as: 'row', fields: ['start', 'end'], padding: 0 },
     { type: 'formula', expr: 'jexl:1', as: 'value' },
-    { type: 'flatten', field: 'subfeatures', index: '', keepEmpty: false },
+    {
+      type: 'flatten',
+      field: 'subfeatures',
+      index: '',
+      key: '',
+      keepEmpty: false,
+    },
     { type: 'bin', step: 10, field: 'start', as: ['start', 'end'] },
   ])
   const reads = [

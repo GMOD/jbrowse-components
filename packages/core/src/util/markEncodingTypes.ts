@@ -486,16 +486,20 @@ export interface CoverageStep {
  * #api
  * Fan each feature out into one feature per element of an array-valued field
  * — `subfeatures`, so a gene answers its transcripts and a transcript its
- * exons. Each answer reads the element's own fields first and the feature it
+ * exons — or per entry of a record keyed by name, so a VCF record answers one
+ * feature per sample and a MAF block one per species, each with its key in
+ * `key`. Each answer reads the element's own fields first and the feature it
  * came from for everything else, so an exon still knows its gene's name and
- * strand. A feature whose field holds no array drops out unless `keepEmpty`
- * says otherwise.
+ * strand and a species row its block's reference span. A feature whose field
+ * holds no array and no record drops out unless `keepEmpty` says otherwise.
  */
 export interface FlattenStep {
   type: 'flatten'
   field?: FieldRef
   /** Written with the element's position in its parent's array. */
   index?: string
+  /** Written with the entry's key, where the field is a record. */
+  key?: string
   keepEmpty?: boolean
 }
 

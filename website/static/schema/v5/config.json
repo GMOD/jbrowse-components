@@ -6108,7 +6108,7 @@
           "const": "flatten"
         },
         "field": {
-          "description": "array field fanned out.",
+          "description": "array or record field fanned out.",
           "$ref": "#/$defs/PlainString",
           "default": "subfeatures"
         },
@@ -6117,8 +6117,13 @@
           "$ref": "#/$defs/PlainString",
           "default": ""
         },
+        "key": {
+          "description": "field for the entry's key.",
+          "$ref": "#/$defs/PlainString",
+          "default": ""
+        },
         "keepEmpty": {
-          "description": "keep a feature whose array field is empty.",
+          "description": "keep a feature whose field is empty.",
           "type": "boolean",
           "default": false
         }
@@ -10819,13 +10824,34 @@
           "type": "object",
           "properties": {
             "fetchSizeLimit": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/fetchSizeLimit"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
             },
             "forceLoad": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/forceLoad"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/forceLoad"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
+                }
+              ]
             },
             "height": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/height"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/height"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/height"
+                }
+              ]
             },
             "mouseover": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/mouseover"
@@ -10849,25 +10875,74 @@
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAsUpperCase"
             },
             "showTree": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showTree"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                }
+              ]
             },
             "showBranchLength": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showBranchLength"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+                }
+              ]
             },
             "showRowLabels": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showRowLabels"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+                }
+              ]
             },
             "treeAreaWidth": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/treeAreaWidth"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
             },
             "rows": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rows"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rows"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+                }
+              ]
             },
             "rowColor": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowColor"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+                }
+              ]
             },
             "showLegend": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showLegend"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
+                }
+              ]
             },
             "showCoverage": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showCoverage"
@@ -10898,6 +10973,42 @@
             },
             "showInversions": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showInversions"
+            },
+            "densityTier": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
+            },
+            "densityTierBpPerPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
+            },
+            "marks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
+            },
+            "transform": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "facet": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "scales": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+            },
+            "origin": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
+            },
+            "minWidthPx": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
+            },
+            "filter": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+            },
+            "displayCrossHatches": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
+            },
+            "minimalTicks": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {

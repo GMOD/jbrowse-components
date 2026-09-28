@@ -223,9 +223,9 @@ function flattenedElement(
   container: Feature,
   field: string,
   item: unknown,
-  i: number,
+  at: string | number,
 ): Feature {
-  const id = `${container.id()}#${i}`
+  const id = `${container.id()}#${at}`
   if (isFeature(item)) {
     return new FlattenedFeature(container, item, field)
   }
@@ -245,23 +245,42 @@ function flattenedElement(
   return new DerivedFeature(container, { [field]: item }, id)
 }
 
+// An array's elements in order, or a record's entries keyed by name; a
+// feature standing in the field is neither.
+function fannedEntries(items: unknown): [string | number, unknown][] {
+  if (Array.isArray(items)) {
+    return [...items.entries()]
+  }
+  return typeof items === 'object' && items !== null && !isFeature(items)
+    ? Object.entries(items)
+    : []
+}
+
 function flatten(features: readonly Feature[], step: FlattenStep) {
-  const { field = DEFAULT_FLATTEN_FIELD, index, keepEmpty } = step
+  const { field = DEFAULT_FLATTEN_FIELD, index, key, keepEmpty } = step
   const out: Feature[] = []
   const read = isPlainFieldRef(field)
     ? undefined
     : pathReader(field, 'a flatten')
   for (const f of features) {
-    const items: unknown = read ? read(f) : f.get(field)
-    if (!Array.isArray(items) || items.length === 0) {
+    const entries = fannedEntries(read ? read(f) : f.get(field))
+    if (entries.length === 0) {
       if (keepEmpty) {
         out.push(f)
       }
       continue
     }
-    for (const [i, item] of items.entries()) {
-      const flat = flattenedElement(f, field, item, i)
-      out.push(index ? new DerivedFeature(flat, { [index]: i }) : flat)
+    for (const [i, [at, item]] of entries.entries()) {
+      const flat = flattenedElement(f, field, item, at)
+      const keyed = key && typeof at === 'string'
+      out.push(
+        index || keyed
+          ? new DerivedFeature(flat, {
+              ...(index ? { [index]: i } : {}),
+              ...(keyed ? { [key]: at } : {}),
+            })
+          : flat,
+      )
     }
   }
   return out

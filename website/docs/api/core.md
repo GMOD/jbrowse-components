@@ -408,10 +408,12 @@ The least and greatest finite values of `values[0, count)`,
 
 Fan each feature out into one feature per element of an array-valued field
 — `subfeatures`, so a gene answers its transcripts and a transcript its
-exons. Each answer reads the element's own fields first and the feature it
+exons — or per entry of a record keyed by name, so a VCF record answers one
+feature per sample and a MAF block one per species, each with its key in
+`key`. Each answer reads the element's own fields first and the feature it
 came from for everything else, so an exon still knows its gene's name and
-strand. A feature whose field holds no array drops out unless `keepEmpty`
-says otherwise.
+strand and a species row its block's reference span. A feature whose field
+holds no array and no record drops out unless `keepEmpty` says otherwise.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

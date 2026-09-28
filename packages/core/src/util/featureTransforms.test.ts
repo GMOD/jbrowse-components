@@ -211,6 +211,48 @@ test('flatten fans out plain records and index names the position', () => {
   expect(out.map(f => f.id())).toEqual(['0-100#0', '0-100#1'])
 })
 
+test('flatten fans out a record keyed by name, and key names each entry', () => {
+  const block = feature(100, 160, {
+    seq: 'ACGT',
+    alignments: {
+      hg38: { chr: 'chr1', srcStart: 5, strand: 1, seq: 'ACGT' },
+      panTro6: { chr: 'chr1', srcStart: 9, strand: -1, seq: 'AC-T' },
+    },
+    genotypes: { HG001: '0/1', HG002: '1/1' },
+  })
+  const species = runTransforms(
+    [block],
+    [{ type: 'flatten', field: 'alignments', key: 'species', index: 'i' }],
+  )
+  expect(
+    rows(species, 'species', 'i', 'start', 'end', 'srcStart', 'strand', 'seq'),
+  ).toEqual([
+    ['hg38', 0, 100, 160, 5, 1, 'ACGT'],
+    ['panTro6', 1, 100, 160, 9, -1, 'AC-T'],
+  ])
+  expect(species.map(f => f.id())).toEqual(['100-160#hg38', '100-160#panTro6'])
+  expect(
+    rows(
+      runTransforms(
+        [block],
+        [{ type: 'flatten', field: 'genotypes', key: 'sample' }],
+      ),
+      'sample',
+      'genotypes',
+      'start',
+    ),
+  ).toEqual([
+    ['HG001', '0/1', 100],
+    ['HG002', '1/1', 100],
+  ])
+  expect(
+    runTransforms(
+      [feature(0, 10, { alignments: {} }), feature(0, 10, { alignments: 3 })],
+      [{ type: 'flatten', field: 'alignments', key: 'species' }],
+    ),
+  ).toEqual([])
+})
+
 test('flatten twice reaches a gene’s exons, and a bin then counts them', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene1',

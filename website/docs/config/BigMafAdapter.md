@@ -35,6 +35,7 @@ used to configure BigMaf adapter
 
 - **Track:** [MafTrack](../maftrack)
 - **Display:** [LinearMafDisplay](../linearmafdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 

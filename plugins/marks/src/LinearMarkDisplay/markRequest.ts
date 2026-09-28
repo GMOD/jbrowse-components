@@ -213,6 +213,7 @@ export function stepsOf(
           type: 'flatten',
           field: step.field || DEFAULT_FLATTEN_FIELD,
           index: step.index,
+          key: step.key,
           keepEmpty: step.keepEmpty,
         }
       case 'pileup':

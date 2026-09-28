@@ -42,6 +42,7 @@ Every MafTrack has a unique `trackId`, a required top-level field that identifie
 ## Related links
 
 - **Display:** [LinearMafDisplay](../linearmafdisplay) ([state model](../../models/linearmafdisplay))
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay) ([state model](../../models/linearmarkdisplay))
 - **Adapter:** [BgzipMafAdapter](../bgzipmafadapter)
 - **Adapter:** [BgzipTaffyAdapter](../bgziptaffyadapter)
 - **Adapter:** [BigMafAdapter](../bigmafadapter)

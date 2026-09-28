@@ -35,7 +35,7 @@ inference.
 - [GCContentTrack](https://jbrowse.org/jb2/docs/config/gccontenttrack.md) —
   displays: LinearWiggleDisplay
 - [MafTrack](https://jbrowse.org/jb2/docs/config/maftrack.md) — displays:
-  LinearMafDisplay
+  LinearMafDisplay, LinearMarkDisplay
 - [HicTrack](https://jbrowse.org/jb2/docs/config/hictrack.md) — displays:
   LinearHicDisplay
 - [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —

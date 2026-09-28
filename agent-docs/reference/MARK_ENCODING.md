@@ -152,7 +152,7 @@ walks it in order:
 | --- | --- | --- |
 | `filter` | the features a `jexl:` expression admits | none |
 | `formula` | every feature, with a `jexl:` expression's value in `as` | `as` |
-| `flatten` | one feature per element of an array-valued `field` (`subfeatures`), reading the element's fields over the feature it came from; `keepEmpty` holds on to a feature whose array is empty, which is otherwise dropped | the element's, and `index` |
+| `flatten` | one feature per element of an array-valued `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), reading the element's fields over the feature it came from; `keepEmpty` holds on to a feature whose field is empty, which is otherwise dropped | the element's, `index` and, for a record, `key` |
 | `bin` | every feature, snapped to the genome-aligned bin of `step` bp its `field` (`start`) falls in; `step: "auto"` follows the view's zoom | `start` and `end`, or the two names in `as` |
 | `aggregate` | one feature per distinct `groupby` value set, spanning its members' extent, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` over a field — in `as` or `count`/`<op>_<field>`; no `groupby` folds the region | the group's fields, the ops |
 | `coverage` | one feature per run of constant depth over the spans, where the depth is not zero | `as` (`coverage`) |

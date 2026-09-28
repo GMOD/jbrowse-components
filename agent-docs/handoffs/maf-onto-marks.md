@@ -1,15 +1,17 @@
 ---
 name: maf-onto-marks
-description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path (one block feature per region, not one per species), the row geometry, the band stack and the overlays. Ranked lists of what the mark display must gain and what ports today; nothing is built.
+description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. The first item landed the same day as ADR-186 - flatten fans out a record, so a MafTrack takes the mark display with a row per species - and the rest stays ranked here.
 ---
 
 # The MAF display onto the mark display
 
 Colin, 2026-09-28, after the span gained its colour scale: "we can try to make
-maf leverage the new wiggle display marks". Nothing is built. The wiggle port's
-own state is in [grammar-next-steps](grammar-next-steps.md). An Opus inventory
-the same day read `plugins/maf/src` against `plugins/marks/src/LinearMarkDisplay`;
-what follows is its findings with the file pointers to re-read.
+maf leverage the new wiggle display marks". The first item below landed that
+evening as [ADR-186](../architecture-decision-records/adr-186-flatten-fans-out-a-record-keyed-by-name.md).
+The wiggle port's own state is in [grammar-next-steps](grammar-next-steps.md).
+An Opus inventory the same day read `plugins/maf/src` against
+`plugins/marks/src/LinearMarkDisplay`; what follows is its findings with the
+file pointers to re-read.
 
 ## What is established
 
@@ -29,20 +31,25 @@ what follows is its findings with the file pointers to re-read.
   (`website/docs/user_guides/maf_track.md`); `rows`, `rowColor`, the
   tree-sidebar slots, the legend and `fetchSizeLimit` are the same schemas the
   mark display composes.
-- **The mark display cannot attach to a MafTrack** (`plugins/marks/src/index.ts`
-  `trackType`), and a `MafFeature` is **one feature per alignment block** with
-  a nested `alignments` record per species (`plugins/maf/src/MafFeature.ts`,
-  `types.ts`), no `species` or `identity` field; `flatten` drops a non-array
-  field, so nothing fans it out today. The summary sub-adapter's file is
-  already one record per species per block (`util/loadMafSummaryAdapter.ts`).
+- **The mark display attaches to a MafTrack** since ADR-186. A `MafFeature`
+  is **one feature per alignment block** with an `alignments` record per
+  species (`plugins/maf/src/MafFeature.ts`, `types.ts`), and `flatten` over it
+  with `key: "species"` answers a row per species on the block's reference
+  span, carrying `chr`, `srcStart`, `strand`, `srcSize` and `seq`; no
+  `identity` field yet. The `marks_maf` track in
+  `test_data/volvox/config_marks.json` and the `mark-maf-species-rows` scene
+  are the working example. The summary sub-adapter's file is already one
+  record per species per block (`util/loadMafSummaryAdapter.ts`).
 - A reorder re-places and re-encodes every loaded region
   (`stateModel.ts` `placeMafRegionData` memo); the row table (ADR-165) is what
   the mark display would bring instead.
 
 ## What the mark display must gain, ranked
 
-1. A way onto a MafTrack, with one feature per species per block that keeps
-   reference coordinates and carries the species key. Everything waits on it.
+1. ~~A way onto a MafTrack, with one feature per species per block.~~ Landed,
+   ADR-186. One cost to watch: a species row's hover JSON is its block's, so
+   it carries every species' sequence (`FlattenedFeature.toJSON` merges the
+   container's).
 2. A per-base cell step with the reference comparison (match, gap, base),
    run-merged and sub-pixel sampled as `binning.ts` and `rowFlank.ts` do; a
    per-base `match` field then gives the identity heatmap and X-Y plot through

@@ -285,6 +285,9 @@ export function stepWrittenFields(steps: readonly StepSnapshot[]): string[] {
       case 'pileup': {
         return [step.as || DEFAULT_PILEUP_AS]
       }
+      case 'flatten': {
+        return [step.index, step.key].filter((f): f is string => !!f)
+      }
       default: {
         return []
       }
