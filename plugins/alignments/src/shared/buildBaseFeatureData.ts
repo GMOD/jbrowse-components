@@ -2,7 +2,7 @@ import { pairOrientationToNum, readKeyOf } from '@jbrowse/alignments-core'
 
 import { getFlags, getMappingQuality, getStrand } from './util.ts'
 
-import type { ChainFeatureData, FeatureData } from './webglRpcTypes.ts'
+import type { FeatureData } from './webglRpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
@@ -32,15 +32,5 @@ export function buildBaseFeatureData(
     // The normalization lives in getStrand, so `readStrands` and every
     // feature-side strand read resolve it identically.
     strand: getStrand(feature),
-  }
-}
-
-export function buildChainFeatureData(
-  feature: Feature,
-  readIdPrefix: string | undefined,
-): ChainFeatureData {
-  return {
-    ...buildBaseFeatureData(feature, readIdPrefix),
-    name: feature.get('name') ?? '',
   }
 }

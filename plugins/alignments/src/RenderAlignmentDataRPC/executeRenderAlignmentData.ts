@@ -1,8 +1,4 @@
 import { readIdPrefixOf, buildReadNameBlock } from '@jbrowse/alignments-core'
-import {
-  SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_SUPPLEMENTARY,
-} from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
@@ -12,12 +8,8 @@ import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
-import {
-  buildBaseFeatureData,
-  buildChainFeatureData,
-} from '../shared/buildBaseFeatureData.ts'
+import { buildBaseFeatureData } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
-import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
 import { isModificationScheme } from '../shared/colorSchemes.ts'
@@ -25,11 +17,7 @@ import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeS
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
-import {
-  groupByForMode,
-  partitionChains,
-  partitionFeatures,
-} from '../shared/groupFeatures.ts'
+import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   buildReadInterchrom,
   buildReadNextRefs,
@@ -41,94 +29,24 @@ import type { JunctionReference } from '../features/sashimi/compute.ts'
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ModCoverageKind } from '../shared/runCoveragePipeline.ts'
-import type {
-  ChainFeatureData,
-  ModificationEntry,
-} from '../shared/webglRpcTypes.ts'
+import type { ModificationEntry } from '../shared/webglRpcTypes.ts'
 import type { AlignmentGroup, WorkerPileupData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
-
-// Chain metadata + the per-read arrays linking each read back to its chain.
-// `readPairOrientations` (already built by buildBaseReadArrays) is corrected in
-// place: a supplementary segment's own record computes a divergent orientation
-// (its strand is flipped at the split junction), so under the pairOrientation
-// scheme it would color as the normal LR grey instead of the pair's abnormal
-// RR/LL hue. Inheriting the chain primary's orientation makes the whole read
-// pair color consistently — the fix flows to the GPU (pairOrient attribute),
-// the Canvas2D/legend path, and the tooltip alike, since all read the corrected
-// array.
-function buildChainResultFields(
-  features: ChainFeatureData[],
-  readPairOrientations: Uint8Array,
-): Partial<WorkerPileupData> {
-  const {
-    chainAbsMinStarts,
-    chainAbsMaxEnds,
-    chainDistances,
-    chainNames,
-    chainSuppTypes,
-    chainMate0SplitKind,
-    chainMate1SplitKind,
-    chainPairOrientations,
-    chainFirstReadIndices,
-    featureIdToChainIdx,
-  } = buildChainMetadata(features)
-  const numChains = chainNames.length
-
-  const readChainHasSupp = new Uint8Array(features.length)
-  const readChainIndices = new Uint32Array(features.length)
-  const chainFirstReadSeen = new Uint8Array(numChains)
-  for (let i = 0; i < features.length; i++) {
-    const f = features[i]!
-    const cIdx = featureIdToChainIdx.get(f.id)!
-    // Split bits are per-MATE: BOTH segments of a split mate get them so the
-    // whole split read stands out; the normal partner mate has none and keeps
-    // its pair color. ORed onto the chain's has-supp/frame bits rather than
-    // replacing them — the two describe different units (this mate's junction,
-    // the chain's orientation) and were only ever mutually exclusive because a
-    // 0-4 enum had nowhere to put both.
-    const splitKind =
-      f.flags & SAM_FLAG_FIRST_IN_PAIR
-        ? chainMate0SplitKind[cIdx]!
-        : chainMate1SplitKind[cIdx]!
-    readChainHasSupp[i] = chainSuppTypes[cIdx]! | splitKind
-    readChainIndices[i] = cIdx
-    // Only overwrite when the chain's primary (paired) read set an orientation;
-    // a supplementary whose primary is in another region keeps its own value.
-    if (f.flags & SAM_FLAG_SUPPLEMENTARY && chainPairOrientations[cIdx]! > 0) {
-      readPairOrientations[i] = chainPairOrientations[cIdx]!
-    }
-    if (!chainFirstReadSeen[cIdx]) {
-      chainFirstReadSeen[cIdx] = 1
-      chainFirstReadIndices[cIdx] = i
-    }
-  }
-  return {
-    readChainHasSupp,
-    readChainIndices,
-    chainAbsMinStarts,
-    chainAbsMaxEnds,
-    chainDistances,
-    chainNames,
-    chainFirstReadIndices,
-  }
-}
 
 // Per-group context shared across every section of one fetch. The region
 // sequence, simplex-modification set, and color/softclip flags are global to
 // the fetch (not the group) — resolving them once keeps modification coloring
 // identical in every section.
 interface GroupContext {
-  isChain: boolean
   // The fetch's verified `${adapter.id}-`, or undefined when its features carry
   // no numeric record id. Resolved once for the whole fetch rather than per
   // group so every section's `readKeys` are the same form. See
   // alignments-core/src/readIdentity.ts.
   readIdPrefix: string | undefined
   region: Region
-  effShowSoftClipping: boolean
+  showSoftClipping: boolean
   showCoverage: boolean
   // Which modification coverage the band stacks: modBAM calls over a read-base
   // pileup, or bisulfite's C->T-derived methylation level. Undefined outside the
@@ -188,10 +106,9 @@ async function buildGroupResult(
     detectedModifications,
   } = extraction
   const {
-    isChain,
     readIdPrefix,
     region,
-    effShowSoftClipping,
+    showSoftClipping,
     showCoverage,
     modCoverage,
     junctionReference,
@@ -201,9 +118,8 @@ async function buildGroupResult(
     signal,
   } = ctx
 
-  // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread via
-  // `laidOutPileupMap` (pileup) / `computeChainLayout` (chain), which is also
-  // where those arrays are allocated — see `PileupLayoutArrays`.
+  // Layout (readYs/gapYs/mismatchYs/etc.) and chain identity are the main
+  // thread's — see `PileupLayoutArrays` and `ChainFields`.
   const { readArrays } = buildBaseReadArrays(features, readIdPrefix)
 
   // From the RAW features, not the extracted ones: BAM hands over its QNAME
@@ -215,14 +131,6 @@ async function buildGroupResult(
   // the mate's reference is a NUMBER on the record and only becomes a string
   // through `refIdToName`. See shared/readNextRefs.ts.
   const nextRefs = buildReadNextRefs(rawFeatures)
-
-  // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
-  const chainFields: Partial<WorkerPileupData> = isChain
-    ? buildChainResultFields(
-        features as ChainFeatureData[],
-        readArrays.readPairOrientations,
-      )
-    : { sortTagValues }
 
   const {
     gapArrays,
@@ -243,7 +151,7 @@ async function buildGroupResult(
     modifications,
     perBaseQualities,
     perBaseLetters,
-    showSoftClipping: effShowSoftClipping,
+    showSoftClipping,
     statusCallback,
   })
 
@@ -324,21 +232,13 @@ async function buildGroupResult(
     // worker entry), so stacked sections stay color-comparable.
     insertSizeStats,
 
-    ...chainFields,
+    sortTagValues,
   }
 }
 
-// Single worker entry for both the pileup and chain (linked-reads) displays.
-// The shared spine — fetch, per-read/gap/mismatch arrays, coverage pipeline,
-// result assembly — is identical; `isChain` gates the few divergent steps:
-// chain pre-filters into chains and emits chain metadata, and drops the soft
-// clipping and sort-tag values its layout never reads.
-//
-// When `groupBy` is set, the single fetch is partitioned into N ordered groups
-// and the spine runs once per group, returning one WorkerPileupData per group.
-// Pileup partitions per read (partitionFeatures); chain partitions per chain
-// (partitionChains) so a chain stays whole, and is restricted to
-// fragment-level dimensions. Ungrouped fetches return a single group.
+// The worker entry for every alignments display. When `facet` is set, the fetch
+// is partitioned into N ordered groups and the spine runs once per group,
+// returning one WorkerPileupData per group; ungrouped fetches return one.
 export async function executeRenderAlignmentData({
   pluginManager,
   args,
@@ -355,11 +255,10 @@ export async function executeRenderAlignmentData({
     colorBy,
     baseLayer,
     sortTag,
-    groupBy: groupByArg,
+    facet,
     lodMode,
     showSoftClipping = false,
     showCoverage = true,
-    linkedReads = 'off',
     byteLimit,
     perBaseBinBp = 1,
     statusCallback,
@@ -382,11 +281,6 @@ export async function executeRenderAlignmentData({
     return tooLarge
   }
 
-  const isChain = linkedReads !== 'off'
-  // Chain mode never expands soft clips or fetches sequence/sort-tag data.
-  const effShowSoftClipping = isChain ? false : showSoftClipping
-  const effectiveGroupBy = groupByForMode(groupByArg, isChain)
-
   const { featuresArray } = await fetchFeaturesFromAdapter({
     pluginManager,
     sessionId,
@@ -399,9 +293,8 @@ export async function executeRenderAlignmentData({
     signal,
   })
 
-  // The singleton/proper-pair filter groups reads by name, so it applies in
-  // both pileup and chain mode (it short-circuits to a plain dedupe when both
-  // are kept, the default). Only bisulfite needs the reference sequence (its
+  // The singleton/proper-pair filter groups reads by name (it short-circuits to
+  // a plain dedupe when both are kept, the default). Only bisulfite needs the reference sequence (its
   // methylation is read-vs-reference C->T). modBAM modifications/methylation
   // derive everything from the reads, including the mod-coverage denominator
   // (computeReadBaseCounts), so they fetch nothing.
@@ -420,21 +313,21 @@ export async function executeRenderAlignmentData({
     regionSequenceStart = result.regionSequenceStart
   }
 
-  const featureGroups = isChain
-    ? partitionChains(inputFeatures, effectiveGroupBy, pluginManager.jexl)
-    : partitionFeatures(inputFeatures, effectiveGroupBy, pluginManager.jexl)
+  const featureGroups = partitionFeatures(
+    inputFeatures,
+    facet,
+    pluginManager.jexl,
+  )
   // One prefix for the whole fetch, off the unfiltered feature set so an empty
   // group still gets the same form as its siblings.
   const readIdPrefix = readIdPrefixOf(featuresArray)
-  const buildFeatureData = isChain
-    ? (f: Feature) => buildChainFeatureData(f, readIdPrefix)
-    : (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
+  const buildFeatureData = (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
   const extractOpts = {
     colorBy,
     baseLayer,
-    showSoftClipping: effShowSoftClipping,
+    showSoftClipping,
     region,
-    sortTag: isChain ? undefined : sortTag,
+    sortTag,
     perBaseBinBp,
     regionSequence,
     regionSequenceStart,
@@ -474,8 +367,7 @@ export async function executeRenderAlignmentData({
   // distribution is a property of the whole fetched read set, not of a group,
   // so a per-group scale would color the same insert size differently between
   // stacked sections. Same cross-section comparability as the simplex-mod set
-  // above. `insertSize` is `abs(template_length)`, so chain and pileup share
-  // this one denominator.
+  // above.
   const sharedInsertSizeStats = computePairedInsertSizeStats(
     extractions.map(e => e.features),
   )
@@ -515,10 +407,9 @@ export async function executeRenderAlignmentData({
       : { sequence: regionSequence, start: regionSequenceStart }
 
   const ctx: GroupContext = {
-    isChain,
     readIdPrefix,
     region,
-    effShowSoftClipping,
+    showSoftClipping,
     showCoverage,
     modCoverage,
     junctionReference,

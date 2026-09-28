@@ -8,21 +8,23 @@
  */
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-import type { BaseLayer, FilterBy, GroupBy, ReadColorBy } from '../shared/types'
+import type {
+  BaseLayer,
+  FilterBy,
+  ReadColorBy,
+  WorkerFacet,
+} from '../shared/types'
 import type { ReadKeys } from '@jbrowse/alignments-core'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 
-// Args for the single RenderAlignmentData RPC. `linkedReads` selects the
-// pileup (`'off'`) vs chain (`'normal'`) path inside the worker — the same flag
-// the client already tracks, so no separate `mode` is needed.
-// `sortTag`/`showSoftClipping` are pileup-only — the chain path forces them off
-// below, and the display projects them the same way so the `rpcProps` cache key
-// doesn't refetch for a value this worker will discard. Every read filter rides
-// `filterBy`, the grouped-by-read-name chain ones included, and applies in both
-// modes.
+// Args for the single RenderAlignmentData RPC. The worker has no chain mode:
+// chain identity is joined on the main thread (`attachChainFields`), and the
+// one thing chains change about a fetch is the unit a facet keeps whole
+// (`WorkerFacet.unit`). Every read filter rides `filterBy`, the
+// grouped-by-read-name ones included.
 export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
@@ -42,13 +44,10 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // The pileup's low-frequency mismatch/indel fade is unaffected (frequencies
   // are computed from the full depth sweep regardless). Defaults true.
   showCoverage?: boolean
-  // In-track stacked grouping. When set, the worker partitions the single fetch
-  // into N ordered groups and returns one WorkerPileupData per group. Honored in
-  // chain mode too, but only for the fragment-level dimensions — `groupByForMode`
-  // degrades a per-read one to ungrouped rather than splitting a chain across
-  // sections, and `partitionChains` assigns each chain as a unit. Tier-1 refetch
-  // setting (in rpcProps): changing it re-partitions, so the worker must re-run.
-  groupBy?: GroupBy
+  // In-track stacked grouping: the worker partitions the fetch into N ordered
+  // groups and returns one WorkerPileupData per group, keeping each `unit`
+  // whole. In rpcProps, since changing it re-partitions.
+  facet?: WorkerFacet
   // Which detail tier a tiered adapter should serve. Set only by the synteny
   // displays, whose PIF adapters carry a coarse no-CIGAR tier for zoomed-out
   // views; read adapters have no tiers and ignore it. A call-site argument
@@ -56,7 +55,6 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // with zoom, and the display declares it in its `zoomFetchArgs`, so a tier
   // flip refetches the regions on screen and leaves the rest alone.
   lodMode?: LodTier
-  linkedReads?: 'off' | 'normal'
   /**
    * `subPixelBinBp` off the display's debounced zoom: genomic bp one per-base
    * cell stands for, and so the stride the two per-base color modes sample the
@@ -111,7 +109,6 @@ export interface WorkerPileupData {
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
-  readChainHasSupp?: Uint8Array // CHAIN_SUPP_* / CHAIN_FRAME_REV / CHAIN_SPLIT_* bits — see shared/types.ts
   readInterchrom: Uint8Array // 1 = mate on a different chromosome (else 0)
   // Per-read identity for hit testing, dedupe and layout tiebreaks — numeric
   // for BAM/CRAM, with `readIdPrefix` rebuilding the `feature.id()` string at
@@ -128,7 +125,6 @@ export interface WorkerPileupData {
   // shared/readNextRefs.ts.
   readNextRefIds: Int32Array
   nextRefNames: string[]
-  readChainIndices?: Uint32Array // chain index per read (only in chain mode)
 
   // Segment data - per-exon segments for GPU instancing (reads split at skip gaps)
   segmentPositions: Uint32Array // [start, end] absolute pairs per segment
@@ -293,17 +289,6 @@ export interface WorkerPileupData {
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]
 
-  // Chain layout metadata — returned by RPC, consumed by main-thread layout.
-  // Layout (Y positions) is computed on the main thread so that chains spanning
-  // multiple displayedRegions can be assigned consistent rows across all regions.
-  // One entry per chain, indexed by chain index (== readChainIndices values).
-  chainAbsMinStarts?: Uint32Array // absolute genomic start of each chain
-  chainAbsMaxEnds?: Uint32Array // absolute genomic end of each chain
-  chainDistances?: Uint32Array // chain distance: templateLength or span
-  chainNames?: string[] // chain identity key: QNAME, or a unique synthetic key
-  // for secondary alignments (see chainGroupingKey); for cross-region dedup
-  chainFirstReadIndices?: Uint32Array // maps chain index → its first read index
-
   // The short/normal/long |TLEN| thresholds for insert-size coloring: robust
   // median ± 3·1.4826·MAD over the fetch's primary proper pairs, pooled across
   // every group (see computePairedInsertSizeStats / getInsertSizeStats). Absent
@@ -434,11 +419,35 @@ export interface PileupLayoutArrays {
   modFlatbush?: Flatbush
 }
 
+// Chain identity for one region's reads, joined on the main thread from every
+// displayed region (`attachChainFields`). Chain indices are numbered per region;
+// `chainNames` is what joins them across regions and lanes.
+export interface ChainFields {
+  readChainIndices: Uint32Array
+  // CHAIN_SUPP_* / CHAIN_FRAME_REV / CHAIN_SPLIT_* bits — see shared/types.ts
+  readChainHasSupp: Uint8Array
+  // One entry per chain, indexed by `readChainIndices`' values.
+  chainAbsMinStarts: Uint32Array
+  chainAbsMaxEnds: Uint32Array
+  // The layout's packing key: |TLEN| for a lone read, else the span
+  chainDistances: Uint32Array
+  // QNAME, or a unique synthetic key where one would join unrelated records
+  // (`chainGroupingKey`)
+  chainNames: string[]
+  chainFirstReadIndices: Uint32Array
+}
+
+// The layout's input: fetched data, with chain identity attached in chain mode.
+export interface ChainedPileupData
+  extends WorkerPileupData, Partial<ChainFields> {}
+
+export type ChainPileupData = WorkerPileupData & ChainFields
+
 // Rows placed, colors not yet baked. Only the layout pipeline names this: it is
 // the input `applyReadColorsByGroup` takes and nothing else reads, so a consumer
 // asking for `PileupDataResult` cannot be handed a half-baked one.
 export interface LaidOutPileupData
-  extends WorkerPileupData, PileupLayoutArrays {}
+  extends ChainedPileupData, PileupLayoutArrays {}
 
 // Tag colors, packed ABGR u32 per read (0 = no tag color). Baked on the main
 // thread by `overlayReadTagColors` from `readTagValues`, so no color table
@@ -460,29 +469,9 @@ export interface PileupDataResult extends TagColoredPileupData {
   readColorCategories: Uint8Array
 }
 
-// The chain-only fields are emitted as a group by `buildChainResultFields`
-// (chain mode) and entirely absent in pileup mode — they always co-vary. A
-// single guard narrows the whole set, so consumers never have to re-assert
-// that the siblings of the field they checked are also present.
-export type ChainFields = Required<
-  Pick<
-    WorkerPileupData,
-    | 'readChainIndices'
-    | 'readChainHasSupp'
-    | 'chainAbsMinStarts'
-    | 'chainAbsMaxEnds'
-    | 'chainDistances'
-    | 'chainNames'
-    | 'chainFirstReadIndices'
-  >
->
-
-export type ChainPileupData = WorkerPileupData & ChainFields
-
-// Generic in the input so the guard keeps whichever tier it was handed: narrowing
-// a laid-out result must not lose its rows, and a plain `data is ChainPileupData`
-// would have widened one back to the worker's set.
-export function isChainData<T extends WorkerPileupData>(
+// The chain fields are attached as a set or not at all, so one guard narrows
+// them together. Generic so the guard keeps whichever tier it was handed.
+export function isChainData<T extends ChainedPileupData>(
   data: T,
 ): data is T & ChainFields {
   return data.readChainIndices !== undefined

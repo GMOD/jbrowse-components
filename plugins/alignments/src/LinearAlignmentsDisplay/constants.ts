@@ -63,8 +63,8 @@ export function colorSchemeIndexFor(type: ColorSchemeType) {
 // schema and the resolved type can't drift; likewise for the two below.
 //
 // It is two members, so "is chain layout on" is binary and `!== 'off'` (the
-// worker, the menu row) and `=== 'normal'` (the model's `isChainMode`) are the
-// same question. They were not always: a third member, 'bezier', is now the
+// menu row) and `=== 'normal'` (the model's `isChainMode`) are the same
+// question. They were not always: a third member, 'bezier', is now the
 // orthogonal `showBezierConnections` flag. Adding a member means revisiting both
 // spellings and `setLinkedReads`, which currently treats any change as
 // entering-or-leaving chain mode.

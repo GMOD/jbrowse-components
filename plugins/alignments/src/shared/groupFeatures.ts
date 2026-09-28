@@ -36,7 +36,7 @@ import {
   getStrand,
 } from './util.ts'
 
-import type { GroupBy, ReadDimension } from './types.ts'
+import type { GroupBy, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -255,27 +255,37 @@ function appendFeature(
   }
 }
 
-// The ungrouped result, returned by both partitioners so grouped and ungrouped
-// fetches share one downstream shape.
-function singleSection(features: Feature[]): FeatureGroup[] {
-  return [{ key: '', label: '', features }]
-}
-
-// Partition the fetched reads into ordered groups, one group key per read.
+// Partition the fetched reads into ordered sections. A read unit keys each read
+// by itself; a chain unit keys each chain as a whole, so no chain splits across
+// sections and breaks its connecting lines.
 export function partitionFeatures(
   features: Feature[],
-  groupBy: GroupBy | undefined,
+  facet: WorkerFacet | undefined,
   jexl?: JexlInstance,
 ): FeatureGroup[] {
-  if (!groupBy) {
-    return singleSection(features)
+  if (!facet) {
+    return [{ key: '', label: '', features }]
   }
-  const { key } = groupKeyer(groupBy.field, jexl)
+  const keyer = groupKeyer(facet.field, jexl)
   const groups = new Map<string, FeatureGroup>()
-  for (const feature of features) {
-    appendFeature(groups, feature, key(feature))
+  if (facet.unit === 'chain') {
+    const chains = new Map<string, Feature[]>()
+    for (const feature of features) {
+      getOrCreate(chains, featureChainKey(feature), () => []).push(feature)
+    }
+    for (const chain of chains.values()) {
+      const groupKey =
+        keyer.chainKey?.(chain) ?? keyer.key(chainRepresentative(chain))
+      for (const feature of chain) {
+        appendFeature(groups, feature, groupKey)
+      }
+    }
+  } else {
+    for (const feature of features) {
+      appendFeature(groups, feature, keyer.key(feature))
+    }
   }
-  return orderGroups([...groups.values()], groupBy.field)
+  return orderGroups([...groups.values()], facet.field)
 }
 
 // The read a chain's group key comes from: a primary, preferring read1 so the
@@ -297,15 +307,15 @@ function chainRepresentative(chain: Feature[]): Feature {
 
 export interface GroupByDimension<K extends ReadDimension = ReadDimension> {
   field: K
-  // Whether the dimension describes the FRAGMENT rather than the record, so
-  // `partitionChains` can key a whole chain off its representative read.
+  // Whether the dimension describes the FRAGMENT rather than the record, so a
+  // chain-unit partition can key a whole chain off its representative read.
   //
   // NOT "every read of the chain yields this key", which two of the dimensions
   // marked true fail: a supplementary segment carries its own strand and its own
   // @gmod/bam-derived `pair_orientation`, so an inverted split makes
   // `firstOfPairStrand` and `pairOrientation` disagree with their primary. The
   // primary read1 holds the fragment's answer either way — the same read
-  // buildChainMetadata takes pair orientation off. `mapq` and `strand` are false
+  // `attachChainFields` takes pair orientation off. `mapq` and `strand` are false
   // because a chain has no single answer: its two mates genuinely point opposite
   // ways and map with their own confidence.
   //
@@ -444,38 +454,20 @@ export function pickGroupByOptions(...fields: ReadDimension[]) {
   return fields.map(field => ({ type: field, label: GROUP_BY_LABELS[field] }))
 }
 
-// Partition for chain (linked-reads) mode: reads sharing a QNAME form one chain
-// and land in one group as a unit, so a chain never splits across sections —
-// which would break its connecting lines and desync its mate rows.
-export function partitionChains(
-  features: Feature[],
-  groupBy: GroupBy | undefined,
-  jexl?: JexlInstance,
-): FeatureGroup[] {
-  if (!groupBy) {
-    return singleSection(features)
-  }
-  const { key, chainKey } = groupKeyer(groupBy.field, jexl)
-  const chains = new Map<string, Feature[]>()
-  for (const feature of features) {
-    getOrCreate(chains, featureChainKey(feature), () => []).push(feature)
-  }
-  const groups = new Map<string, FeatureGroup>()
-  for (const chain of chains.values()) {
-    const groupKey = chainKey?.(chain) ?? key(chainRepresentative(chain))
-    for (const feature of chain) {
-      appendFeature(groups, feature, groupKey)
-    }
-  }
-  return orderGroups([...groups.values()], groupBy.field)
-}
-
 /**
- * What the worker partitions by: the field. The domain only orders the
- * sections, which the main thread does, so a reorder refetches nothing.
+ * What the worker partitions by: the field, and in chain mode the chain as the
+ * unit a section keeps whole. The domain only orders the sections, which the
+ * main thread does, so a reorder refetches nothing — and ungrouped sends no
+ * facet at all, so toggling chain mode over ungrouped data refetches nothing
+ * either.
  */
-export function workerGroupBy(
-  groupBy: GroupBy | undefined,
-): GroupBy | undefined {
-  return groupBy === undefined ? undefined : { field: groupBy.field }
+export function workerFacet(
+  facet: GroupBy | undefined,
+  isChainMode: boolean,
+): WorkerFacet | undefined {
+  return facet === undefined
+    ? undefined
+    : isChainMode
+      ? { field: facet.field, unit: 'chain' }
+      : { field: facet.field }
 }

@@ -16,8 +16,6 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-// Single RPC for both pileup and chain (linked-reads) modes; the worker
-// branches on `args.linkedReads`.
 export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<'RenderAlignmentData'> {
   name = 'RenderAlignmentData' as const
 

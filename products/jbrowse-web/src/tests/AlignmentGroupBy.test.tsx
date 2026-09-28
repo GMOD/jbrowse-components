@@ -219,7 +219,7 @@ test('lowering the sashimi score reveals a group-specific junction', async () =>
 }, 90000)
 
 // Chain (linked-read) mode + HP-tag grouping: the
-// worker partitions whole chains into per-haplotype sections (partitionChains),
+// worker partitions whole chains into per-haplotype sections (a chain-unit facet),
 // so each chain's mates stay on shared rows inside one section and connecting
 // lines stay intact. Only the chain-consistent dimensions are allowed; HP
 // haplotype grouping of linked/long reads is the marquee use case.
@@ -238,15 +238,23 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
       expect(display.isChainMode).toBe(true)
       expect(display.isGrouped).toBe(true)
       expect(display.groupOrder.length).toBeGreaterThanOrEqual(2)
-      // every section carries chain metadata, proving the chain-aware partition
-      // ran (rather than degrading to ungrouped). Insert-size stats are pooled
-      // across groups in the worker, so every section of a region shares one
-      // color scale (not a per-group denominator).
+      // the worker kept each chain whole: within a region, no chain name is
+      // in two sections
+      const laneOf = new Map<string, string>()
+      for (const [key, regions] of display.chainedByGroup) {
+        for (const [idx, { chainNames }] of regions) {
+          expect(chainNames).toBeDefined()
+          for (const name of chainNames ?? []) {
+            expect(laneOf.get(`${idx}:${name}`) ?? key).toBe(key)
+            laneOf.set(`${idx}:${name}`, key)
+          }
+        }
+      }
+      // Insert-size stats are pooled across groups in the worker, so every
+      // section of a region shares one color scale.
       for (const grouped of display.rpcDataMap.values()) {
         const scales = new Set<string>()
         for (const { data } of grouped.groups) {
-          expect(data.readChainIndices).toBeDefined()
-          expect(data.chainNames).toBeDefined()
           scales.add(JSON.stringify(data.insertSizeStats ?? null))
         }
         expect(scales.size).toBe(1)

@@ -4,7 +4,6 @@ import {
   withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { consensusChainStrandFrames } from './chainStrandConsensus.ts'
-import { reconcileChainSuppAcrossRegions } from './chainSuppAcrossRegions.ts'
 import {
   buildCollapsedPileupMap,
   collapsedLayoutMaxY,
@@ -16,11 +15,11 @@ import { overlayReadTagColors } from './readTagColors.ts'
 
 import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type {
+  ChainedPileupData,
   LaidOutPileupData,
   PileupDataResult,
   PileupLayoutArrays,
   RowCap,
-  WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { GroupConnectors } from '../features/linkedReads/computeOverlay.ts'
 import type {
@@ -139,10 +138,9 @@ export function tighterCap(budgetRows: number, ceilingRows: number): RowCap {
 // the caps vary, so they're threaded separately.
 export interface GroupLayoutContext {
   order: GroupId[]
-  // Pre-grouped raw data (group key → region idx → data) from
-  // `buildRawDataByGroup`; reused so the per-key region map is an O(1) lookup
-  // instead of re-partitioning `rpcDataMap` with a nested `.find`.
-  rawByGroup: ReadonlyMap<string, Map<number, WorkerPileupData>>
+  // Group key → region idx → fetched data, with chain identity attached in
+  // chain mode (the model's `chainedByGroup`).
+  rawByGroup: ReadonlyMap<string, ReadonlyMap<number, ChainedPileupData>>
   isChainMode: boolean
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
@@ -161,7 +159,7 @@ export interface GroupLayoutContext {
 // `rpcDataMap`, so a key present in the first is present in the second — the
 // empty map keeps both passes below total for a miss they cannot see, spelled
 // here rather than once each.
-const NO_REGIONS: ReadonlyMap<number, WorkerPileupData> = new Map()
+const NO_REGIONS: ReadonlyMap<number, ChainedPileupData> = new Map()
 function regionsOf(ctx: GroupLayoutContext, key: string) {
   return ctx.rawByGroup.get(key) ?? NO_REGIONS
 }
@@ -224,46 +222,30 @@ export interface ReadColorContext {
 }
 
 /**
- * Settle every chain's `readChainHasSupp` frame bit over an already laid-out
- * map, ahead of the colour bake.
+ * Settle every unpaired split chain's `readChainHasSupp` frame bit by comparing
+ * chains to each other (`consensusChainStrandFrames`), over an already laid-out
+ * map and ahead of the colour bake. `attachChainFields` has already made the
+ * frame one answer per chain; this settles which way "same strand" points.
  *
- * Two passes, and the order is the dependency: `reconcileChainSuppAcrossRegions`
- * settles what one chain's own segments say across the displayed regions — each
- * worker call sees one region, so a fusion read's primary and its supplementary
- * are classified by two calls that each saw half a molecule — and then
- * `consensusChainStrandFrames` settles the one thing no single chain can, which
- * way "same strand" points, by comparing chains to each other.
+ * ITS OWN STEP because its inputs are its own: it reads the layout, chain mode
+ * and whether the framing is live, and nothing in `ReadColorContext`. Folded
+ * into the colour bake it re-ran on every scheme switch and every tag value
+ * discovered mid-fetch, re-solving a relaxation over every chain on screen for a
+ * bit-identical answer. Callers should memoize this on `framed` as a BOOLEAN, so
+ * the schemes that share an answer share the memo.
  *
- * ITS OWN STEP because its inputs are its own. Neither pass reads the colour
- * scheme, the tag map, or anything else in `ReadColorContext`; both read the
- * layout, chain mode, and whether the framing is live. Folded into the colour
- * bake (where they were) they re-ran on every scheme switch and on every tag
- * value discovered mid-fetch, re-solving a relaxation over every chain on screen
- * for a bit-identical answer. Callers should memoize this on `framed` as a
- * BOOLEAN, so the schemes that share an answer share the memo.
- *
- * Reconciliation is per group and the consensus is across all of them, which is
- * the scope each question actually has. A chain never spans groups
- * (`partitionChains` keeps it whole), so unioning one across them would be a
- * no-op; but the consensus is a comparison BETWEEN chains, and confining it to a
- * group let two sections of the same locus settle on opposite signs — the
- * red-for-blue swap its global sign anchor exists to prevent, happening between
- * sections instead of between renders.
+ * Across every group, since the consensus is a comparison BETWEEN chains, and
+ * confining it to a group let two sections of the same locus settle on opposite
+ * signs — the red-for-blue swap its global sign anchor exists to prevent,
+ * happening between sections instead of between renders.
  */
 export function applyChainStrandFrames(
   byGroup: LaidOutByGroup,
   chainMode: boolean,
   framed: boolean,
 ): LaidOutByGroup {
-  if (!chainMode) {
+  if (!chainMode || !framed) {
     return byGroup
-  }
-  const reconciled: LaidOutByGroup = new Map()
-  for (const [key, map] of byGroup) {
-    reconciled.set(key, reconcileChainSuppAcrossRegions(map))
-  }
-  if (!framed) {
-    return reconciled
   }
   // The groups are flattened into a private key space and split back out again.
   // The keys are this function's alone — nothing downstream sees them — so a
@@ -275,7 +257,7 @@ export function applyChainStrandFrames(
   // — the very thing this pass runs across all the groups to prevent.
   const flat = new Map<number, LaidOutPileupData>()
   const origin: { key: string; idx: number }[] = []
-  for (const [key, map] of reconciled) {
+  for (const [key, map] of byGroup) {
     for (const [idx, data] of map) {
       flat.set(origin.length, data)
       origin.push({ key, idx })
@@ -286,10 +268,10 @@ export function applyChainStrandFrames(
     flatKey => origin[flatKey]!.idx,
   )
   if (framedFlat === flat) {
-    return reconciled
+    return byGroup
   }
   const out: LaidOutByGroup = new Map()
-  for (const key of reconciled.keys()) {
+  for (const key of byGroup.keys()) {
     out.set(key, new Map())
   }
   for (const [flatKey, data] of framedFlat) {

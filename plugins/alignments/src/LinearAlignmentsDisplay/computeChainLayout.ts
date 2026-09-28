@@ -18,10 +18,10 @@ import type {
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type {
   ChainPileupData,
+  ChainedPileupData,
   LaidOutPileupData,
   RowCap,
   RowCapSource,
-  WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
 import type { OverlapsUploadData } from '../features/overlap/types.ts'
 import type { Span } from './spanOverlaps.ts'
@@ -30,7 +30,7 @@ import type { Span } from './spanOverlaps.ts'
 // The tiebreaks matter for the same reason `compareReadsCanonically`
 // (sortLayout.ts) needs them — first-fit-lowest-row placement is arrival-order
 // sensitive and JS sort is stable, so a distance-only comparator hands ties to
-// whatever order the worker emitted chains in. Ties are the rule here: distance
+// whatever order chains were numbered in. Ties are the rule here: distance
 // is `maxEnd - minStart` (or |TLEN|), so every singleton chain of a fixed-length
 // read set shares one value. Across regions `mergeChains` orders by which region
 // first showed a chain, so a pan that re-split the regions reshuffled the rows.
@@ -88,7 +88,7 @@ interface MergedChain {
 // ungrouped iteration would fold that refName twice, each time with a partial
 // span. Few groups (one per refName in view), so this is cheap.
 function chainEntriesByRefName(
-  entries: [number, WorkerPileupData][],
+  entries: [number, ChainedPileupData][],
   refNameOf: (idx: number) => string | undefined,
 ) {
   const byRef = new Map<string | undefined, ChainPileupData[]>()
@@ -119,7 +119,7 @@ function chainEntriesByRefName(
 // single-refName views, so the common case is untouched. `distance` is a span,
 // not a coordinate, so it never shifts.
 function mergeChains(
-  entries: [number, WorkerPileupData][],
+  entries: [number, ChainedPileupData][],
   regions: ReadonlyMap<number, RegionBounds> | undefined,
 ) {
   const refNameOf = (idx: number) => regions?.get(idx)?.refName
@@ -224,7 +224,7 @@ function mergeChains(
 }
 
 export function readYsFromRowMap(
-  data: WorkerPileupData,
+  data: ChainedPileupData,
   rowMap: Map<string, number>,
 ) {
   const numReads = data.readKeys.length
@@ -246,7 +246,7 @@ export function readYsFromRowMap(
  * axis (`regions`, omitted only by single-region callers/tests).
  */
 export function computeMultiRegionChainLayout(
-  entries: [number, WorkerPileupData][],
+  entries: [number, ChainedPileupData][],
   regions?: ReadonlyMap<number, RegionBounds>,
   maxRows = Number.POSITIVE_INFINITY,
 ) {
@@ -264,7 +264,7 @@ export function chainLayoutMaxY({
   regions,
   maxRows = Number.POSITIVE_INFINITY,
 }: {
-  dataMap: ReadonlyMap<number, WorkerPileupData>
+  dataMap: ReadonlyMap<number, ChainedPileupData>
   regions?: ReadonlyMap<number, RegionBounds>
   maxRows?: number
 }) {
@@ -301,7 +301,7 @@ function groupMultiReadChains(
 // on top of each other and the overlap is invisible. For each chain, find the
 // intervals where its reads overlap; the tint overlay (GPU + Canvas2D)
 // marks them. Reads are grouped per-region because rendering is per-region; a
-// chain's mates in other regions live in their own WorkerPileupData and never
+// chain's mates in other regions live in their own region's data and never
 // visually overlap these.
 function buildChainOverlaps(
   data: ChainPileupData,
@@ -375,7 +375,7 @@ function emptyChainConnectingData(): ChainConnectingData {
  * index and draws that case instead (`bezierArcScope`, `crossRegion`).
  */
 export function buildChainConnectingData(
-  data: WorkerPileupData,
+  data: ChainedPileupData,
   readYs: Uint16Array,
 ) {
   if (!isChainData(data)) {
@@ -420,7 +420,7 @@ export function buildChainConnectingData(
 
 // Pileup clone + chain connecting-line / Flatbush data layered on top.
 function cloneWithChainLayout(
-  data: WorkerPileupData,
+  data: ChainedPileupData,
   readYs: Uint16Array,
   maxY: number,
   clippedBy: RowCapSource | undefined,
@@ -443,13 +443,13 @@ export function buildLaidOutChainMap({
   regions,
   rowCap = UNCAPPED,
 }: {
-  dataMap: ReadonlyMap<number, WorkerPileupData>
+  dataMap: ReadonlyMap<number, ChainedPileupData>
   regions?: ReadonlyMap<number, RegionBounds>
   // The cap and the policy that set it — see `PileupLayoutArgs.rowCap`.
   rowCap?: RowCap
 }): Map<number, LaidOutPileupData> {
   const out = new Map<number, LaidOutPileupData>()
-  const withReads: [number, WorkerPileupData][] = []
+  const withReads: [number, ChainedPileupData][] = []
   for (const [k, v] of dataMap) {
     if (v.readKeys.length === 0) {
       out.set(k, withoutLayout(v))

@@ -305,12 +305,12 @@ export function primaryOf<E extends MinEntry>(segs: E[]) {
 // it exists for: a mate whose primary is off-screen, so `primaryOf` above handed
 // the resolver its supplementary segment instead.
 //
-// The same rule the read FILLS already follow — `buildChainResultFields` exists
-// to overwrite a supplementary's `readPairOrientations` entry with the chain
-// primary's, "rather than the divergent one their own strand-flipped record
-// computes". Both connection renderers read that array, so in chain mode they
-// were already getting the corrected value and in pileup mode they were not: the
-// same reads, the same locus, a different colour depending on a layout setting.
+// The read FILLS follow the same rule in chain mode, where `attachChainFields`
+// gives a supplementary its chain primary's `readPairOrientations` entry. The
+// arc band reads the fetched array, which carries no such correction, and the
+// bezier overlay the laid-out one, which carries it in chain mode alone — so the
+// resolver applies the rule itself, or the same reads at the same locus would
+// colour differently depending on a layout setting.
 //
 // Lives here, beside the resolver that chose the two entries, because the arc
 // band and the bezier overlay each need it and a second copy is how the two came

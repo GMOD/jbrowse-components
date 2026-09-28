@@ -559,9 +559,8 @@ describe('ordering controls in chain mode', () => {
   })
 
   // `rpcProps()` is the fetch cache key (through `settingsFetchInputs`), so
-  // anything in it that the worker then throws away buys a refetch for nothing.
-  // Chain mode forces soft clipping off and drops the sort tag, so both have to
-  // be projected the same way here.
+  // anything in it that nothing then reads buys a refetch for nothing. Chain
+  // layout reads neither soft clipping nor the sort tag.
   test('the sort tag leaves the fetch key when chain mode drops it', () => {
     const display = createDisplay()
     display.setSortedByAtPosition({
@@ -576,22 +575,24 @@ describe('ordering controls in chain mode', () => {
     expect(display.rpcProps().sortTag).toBeUndefined()
   })
 
-  // A per-read grouping is the third thing chain mode drops (`groupByForMode`,
-  // which the worker re-applies to whatever it is sent), so it has to leave the
-  // key the same way. The menu won't offer one in chain mode, but a session or
-  // the settings editor can hold one — and then clearing or changing it dropped
-  // every fetched region to re-read byte-identical data.
+  // Chain mode degrades a per-read grouping to none (`groupByForMode`), so it
+  // has to leave the key too. The menu won't offer one in chain mode, but a
+  // session or the settings editor can hold one — and then clearing or
+  // changing it dropped every fetched region to re-read byte-identical data.
   test('a per-read grouping leaves the fetch key when chain mode drops it', () => {
     const display = createDisplay()
     display.setFacet({ field: 'strand' })
-    expect(display.rpcProps().groupBy).toEqual({ field: 'strand' })
+    expect(display.rpcProps().facet).toEqual({ field: 'strand' })
 
     display.setLinkedReads('normal')
-    expect(display.rpcProps().groupBy).toBeUndefined()
+    expect(display.rpcProps().facet).toBeUndefined()
 
-    // a chain-groupable dimension still reaches the worker
+    // a chain-groupable dimension still reaches the worker, keeping chains whole
     display.setFacet({ field: 'tags.HP' })
-    expect(display.rpcProps().groupBy).toEqual({ field: 'tags.HP' })
+    expect(display.rpcProps().facet).toEqual({
+      field: 'tags.HP',
+      unit: 'chain',
+    })
   })
 
   // The collapse is the same shape of no-op, and the one you can arrive at with
@@ -634,6 +635,86 @@ describe('ordering controls in chain mode', () => {
     // ...and it is a real fetch input again the moment the mode is left
     display.setLinkedReads('off')
     expect(display.rpcProps().showSoftClipping).toBe(true)
+  })
+})
+
+// The worker knows no chains: chain identity is joined on the main thread, so
+// the mode toggle is a relayout of data already in hand.
+describe('chain mode is a main-thread tier', () => {
+  const first = SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR
+  const second = SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR
+
+  // Two overlapping mates of one fragment: stacked in pileup, one row as a chain.
+  function matesDisplay() {
+    const display = createDisplay()
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: '',
+            label: '',
+            data: {
+              ...baseWorkerPileupData(2),
+              ...namesToBlock(['frag', 'frag']),
+              readPositions: new Uint32Array([100, 200, 150, 250]),
+              readFlags: new Uint16Array([first, second]),
+              readStrands: new Int8Array([1, -1]),
+              segmentPositions: new Uint32Array([100, 200, 150, 250]),
+              segmentReadIndices: new Uint32Array([0, 1]),
+            },
+          },
+        ],
+      },
+      region(0),
+    )
+    return display
+  }
+
+  const laidOut = (display: ReturnType<typeof matesDisplay>) =>
+    display.laidOutByGroup.get('')!.get(0)!
+  const rows = (display: ReturnType<typeof matesDisplay>) => [
+    ...laidOut(display).readYs,
+  ]
+
+  test('toggling pairs ungrouped refetches nothing and lays chains out at once', () => {
+    const display = matesDisplay()
+    const fetchKey = JSON.stringify(display.rpcProps())
+    expect(rows(display)).toEqual([0, 1])
+    expect(display.rawDataByGroup.get('')!.get(0)!).not.toHaveProperty(
+      'readChainIndices',
+    )
+
+    display.setLinkedReads('normal')
+    expect(JSON.stringify(display.rpcProps())).toBe(fetchKey)
+    expect(display.rpcDataMap.size).toBe(1)
+    expect(rows(display)).toEqual([0, 0])
+    expect([...laidOut(display).connectingLinePositions]).toEqual([100, 250])
+    expect(display.readIdsByChainName.get('frag')).toEqual(['id0', 'id1'])
+
+    display.setLinkedReads('off')
+    expect(rows(display)).toEqual([0, 1])
+    expect(display.readIdsByChainName.size).toBe(0)
+  })
+
+  test('the toggle leaves the chain-free tier alone', () => {
+    const display = matesDisplay()
+    const raw = display.rawDataByGroup
+    display.setLinkedReads('normal')
+    expect(display.rawDataByGroup).toBe(raw)
+  })
+
+  test('a facet in effect sends the chain as the unit it keeps whole', () => {
+    const display = matesDisplay()
+    display.setFacet({ field: 'tags.HP' })
+    const fetchKey = JSON.stringify(display.rpcProps())
+
+    display.setLinkedReads('normal')
+    expect(JSON.stringify(display.rpcProps())).not.toBe(fetchKey)
+    expect(display.rpcProps().facet).toEqual({
+      field: 'tags.HP',
+      unit: 'chain',
+    })
   })
 })
 

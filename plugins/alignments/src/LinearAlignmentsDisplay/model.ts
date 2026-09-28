@@ -88,7 +88,7 @@ import {
 import {
   groupByForMode,
   sectionOrder,
-  workerGroupBy,
+  workerFacet,
 } from '../shared/groupFeatures.ts'
 import {
   LEGEND_MAX_WIDTH,
@@ -109,6 +109,7 @@ import {
   numericExtentAcrossGroups,
   quantileExtentAcrossGroups,
 } from './bakedColorScale.ts'
+import { attachChainFields, buildReadIdsByChainName } from './chainFields.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
   framesUnpairedChainStrand,
@@ -142,7 +143,6 @@ import {
   stacksRows,
 } from './groupLayout.ts'
 import {
-  buildReadIdsByChainName,
   buildRawDataByGroup,
   buildReadIdIndexMap,
   buildSashimiDownKeys,
@@ -188,6 +188,7 @@ import {
 } from './sectionLayout.ts'
 
 import type {
+  ChainedPileupData,
   GroupedAlignmentsResult,
   RowCap,
   WorkerPileupData,
@@ -718,23 +719,6 @@ export default function stateModelFactory(
           // keeps callers from re-deriving it and conflating pitch with body.
           get rowHeight(): number {
             return this.featureHeight + this.featureSpacing
-          },
-
-          /**
-           * #getter
-           * Chain name → the ids of the READS in it. The two id spaces are easy to
-           * confuse and nothing else in this model crosses them: `chainNames` (the
-           * key here) is a chain's own identity, `readIds` (the values) are the
-           * reads', and every consumer of this map resolves the values through
-           * `readIdToIndex` / `readIdIndexMap`. Hence the names carried downstream
-           * — `highlightedChainReadIds`, `selectedChainReadIds`.
-           */
-          get readIdsByChainName() {
-            return buildReadIdsByChainName(
-              self.rpcDataMap,
-              self.isChainMode,
-              self.hiddenGroupKeys,
-            )
           },
 
           /**
@@ -1692,7 +1676,7 @@ export default function stateModelFactory(
           get groupLayoutContext() {
             return {
               order: this.groupOrder,
-              rawByGroup: this.rawDataByGroup,
+              rawByGroup: this.chainedByGroup,
               isChainMode: self.isChainMode,
               sortedBy: this.sortedBy,
               showSoftClipping: self.showSoftClipping,
@@ -1888,6 +1872,46 @@ export default function stateModelFactory(
               self.hiddenGroupKeys,
               self.pinnedInsertSizeBand,
             )
+          },
+
+          /**
+           * #getter
+           * `rawDataByGroup` with chain identity joined across every region and
+           * lane (`attachChainFields`), in chain mode only. The worker knows no
+           * chains, so toggling the mode is this getter changing, not a fetch.
+           */
+          get chainAttachment() {
+            return self.isChainMode
+              ? attachChainFields(this.rawDataByGroup)
+              : undefined
+          },
+
+          /**
+           * #getter
+           * The layout's input: `chainAttachment` in chain mode, else the
+           * fetched data. `rawDataByGroup` stays chain-free, so the arcs,
+           * sashimi, coverage and a split view overlaying this display do not
+           * recompute on the toggle.
+           */
+          get chainedByGroup(): ReadonlyMap<
+            string,
+            ReadonlyMap<number, ChainedPileupData>
+          > {
+            return this.chainAttachment ?? this.rawDataByGroup
+          },
+
+          /**
+           * #getter
+           * Chain name → the ids of the READS in it; empty outside chain mode.
+           * The two id spaces are easy to confuse: `chainNames` (the key here)
+           * is a chain's own identity, `readIds` (the values) are the reads',
+           * and every consumer resolves the values through `readIdToIndex` /
+           * `readIdIndexMap`. Hence the names carried downstream —
+           * `highlightedChainReadIds`, `selectedChainReadIds`.
+           */
+          get readIdsByChainName(): ReadonlyMap<string, string[]> {
+            const chained = this.chainAttachment
+            return chained ? buildReadIdsByChainName(chained) : new Map()
           },
 
           /**
@@ -2555,7 +2579,7 @@ export default function stateModelFactory(
          * read isn't part of a chain. Shared by hover-highlight and click-select
          * so the two paths can't drift.
          */
-        readIdsSharingChain(rpcData: WorkerPileupData, index: number) {
+        readIdsSharingChain(rpcData: ChainedPileupData, index: number) {
           return chainReadIdsAt(rpcData, index, self.readIdsByChainName)
         },
 
@@ -3092,10 +3116,8 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        // Fields that invalidate the fetched pileup/chain data. Worker-
-        // bound (filterBy, colorBy, …) plus the one main-thread decision
-        // field that selects between pileup and chain RPC (linkedReads).
-        // Arc-only fields (arcColor, drawInter, drawLongRange) are
+        // Fields that invalidate the fetched data, every one worker-bound
+        // (filterBy, colorBy, …). Arc-only fields (arcColor, drawInter, drawLongRange) are
         // NOT here — `arcsResult` reads them and they do not require a
         // refetch. Non-tag sort changes are handled by the main-thread layout,
         // as is tag coloring (`readTagColors` is baked in `laidOutByGroup` from
@@ -3118,21 +3140,14 @@ export default function stateModelFactory(
             // data already in memory instead of refetching the region.
             colorBy: workerColorBy(self.colorBy),
             baseLayer: self.baseLayer,
-            // All three mirror what `executeRenderAlignmentData` does with them
-            // in chain mode — it forces soft clipping off, drops the sort tag
-            // and degrades a per-read grouping to ungrouped (`groupByForMode`,
-            // which this getter is the main-thread half of) — so that the cache
-            // key names the fetch the worker will actually perform. Sending the
-            // raw values instead made settings that cannot reach chain output
-            // invalidate every fetched region anyway: "Show soft clipping" is a
-            // live checkbox in chain mode, so each click dropped `rpcDataMap`
-            // and re-read the region to receive byte-identical data; a
-            // `sortedBy` carried in from before the mode was entered kept a tag
-            // name in the key that only ever extracted `sortTagValues` nothing
-            // reads (see `canSortReads`); and a `groupBy` chain mode drops is
-            // reachable the same way, from a session or the settings editor.
+            // Chain layout reads neither the sort tag nor soft-clipped bases,
+            // so chain mode sends neither: "Show soft clipping" stays a live
+            // checkbox there, and a `sortedBy` carried in from before the mode
+            // was entered would otherwise refetch for data nothing reads. The
+            // facet keeps a chain whole only when there is a facet, so the
+            // mode toggle over ungrouped data leaves these props equal.
             sortTag: self.isChainMode ? undefined : self.sortTag,
-            groupBy: workerGroupBy(self.effectiveFacet),
+            facet: workerFacet(self.effectiveFacet, self.isChainMode),
             showSoftClipping: self.isChainMode ? false : self.showSoftClipping,
             // showCoverage is here (not just renderState) because the worker
             // skips the entire coverage-band pipeline — including the per-bp GPU
@@ -3140,7 +3155,6 @@ export default function stateModelFactory(
             // scale — when the band is off. So toggling it refetches. The
             // pileup's low-frequency fade is unaffected (see runCoveragePipeline).
             showCoverage: self.showCoverage,
-            linkedReads: self.linkedReads,
             // `readConnections` is deliberately NOT here: the per-read SA tag
             // walk it could gate also feeds linked reads and the curved
             // connectors, which have settings of their own
@@ -3918,9 +3932,10 @@ export default function stateModelFactory(
                 colorSnapshotFor({ type: to }, self.writtenColor),
               )
             }
-            // No explicit invalidation here: `linkedReads` is an `rpcProps()`
-            // key, so `SettingsInvalidate` runs `invalidateSettings` when this
-            // action ends and the plan refetches every held region.
+            // No refetch: chain identity is joined on the main thread
+            // (`chainAttachment`), so the layout tier recomputes through MobX.
+            // A facet in effect is the exception, since it changes the unit
+            // the worker keeps whole (`workerFacet`).
           },
 
           /**

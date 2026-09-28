@@ -280,6 +280,14 @@ export interface GroupBy {
   domain?: readonly string[]
 }
 
+// What the worker partitions by. `unit` is the observation a section keeps
+// whole: a read, or a chain (a read's mates and split segments, one QNAME).
+// The domain stays behind, since ordering the sections is the main thread's.
+export interface WorkerFacet {
+  field: string
+  unit?: 'read' | 'chain'
+}
+
 export interface SortedBy {
   type: string
   pos: number
@@ -293,26 +301,17 @@ export const LAYOUT_ORDERS = ['position', 'length', 'spliced'] as const
 export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
 
 // Bit flags stored in the Uint8Array `readChainHasSupp`, describing how a read's
-// chain is split. Emitted by the worker (executeRenderAlignmentData), rewritten
-// twice on the main thread (reconcileChainSuppAcrossRegions, then
-// consensusChainStrandFrames), and consumed by exactly ONE reader:
+// chain is split. Built by `attachChainFields` from every displayed region,
+// reframed by `consensusChainStrandFrames`, and consumed by exactly ONE reader:
 // `readColorCategory` (colorUtils), which bakes it into `readColorCategories`
 // once per recolour. Every fill path — GPU, Canvas2D, SVG export, legend — then
 // reads that baked category and never this.
 //
-// FLAGS, NOT A 0-4 ENUM, and the difference is not cosmetic. The two things this
-// byte carries are answers to unrelated questions asked of different units —
-// which way does this CHAIN point (a sign, from the chain's primary) and how did
-// this MATE split away from its own primary (a category, from the pair) — and as
-// consecutive integers the second could only be written by destroying the first.
-// It was: `buildChainResultFields` overwrote the 1/2 frame with a 3/4 split kind,
-// so a split read's frame was simply gone. Everything downstream then had to
-// defend against that. `reconcileChainSuppAcrossRegions` skipped split reads
-// outright rather than re-answer half a byte, `consensusChainStrandFrames`
-// re-tested the enum's membership on all four of its loops, and the long comment
-// in `readColorCategory` about a magnitude test being "correct only under
-// unreachable-with-3-and-4" was describing the encoding rather than the data.
-// Orthogonal bits let both answers be true at once, which they always were.
+// FLAGS, NOT A 0-4 ENUM: the byte answers two unrelated questions asked of
+// different units — which way does this CHAIN point (a sign, from the chain's
+// primary) and how did this MATE split away from its own primary (a category,
+// from the pair) — and as consecutive integers the second could only be written
+// by destroying the first.
 export const CHAIN_SUPP_NONE = 0
 // The chain carries a supplementary segment at all. Every other bit here is
 // meaningless without it.

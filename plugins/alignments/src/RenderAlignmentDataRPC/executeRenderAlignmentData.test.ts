@@ -7,7 +7,7 @@ import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { executeRenderAlignmentData } from './executeRenderAlignmentData.ts'
 
 import type * as ReadBaseCounts from '../features/modCoverage/readBaseCounts.ts'
-import type { BaseLayer } from '../shared/types.ts'
+import type { BaseLayer, WorkerFacet } from '../shared/types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
@@ -45,7 +45,7 @@ const spliced = [0, 1].map(
 function run(settings: {
   showCoverage: boolean
   baseLayer?: BaseLayer
-  linkedReads?: 'off' | 'normal'
+  facet?: WorkerFacet
 }) {
   jest
     .mocked(fetchFeaturesFromAdapter)
@@ -102,21 +102,24 @@ test.each([
 )
 
 // Both modification layers stay offered in chain mode (menus/colorBy.ts), so
-// the fetch serves them there too: bisulfite reads the reference its C->T calls
-// are against, and modBAM tallies the read-base pileup its coverage bar divides
-// by. With the band off, the reference has no other reader.
-test.each(['off', 'normal'] as const)(
-  'bisulfite fetches the reference with linkedReads %s',
-  async linkedReads => {
-    await run({ showCoverage: false, baseLayer: BISULFITE, linkedReads })
+// the fetch serves them under a chain-unit facet too: bisulfite reads the
+// reference its C->T calls are against, and modBAM tallies the read-base pileup
+// its coverage bar divides by. With the band off, the reference has no other
+// reader.
+const CHAIN_FACET: WorkerFacet = { field: 'tags.HP', unit: 'chain' }
+
+test.each([undefined, CHAIN_FACET])(
+  'bisulfite fetches the reference with facet %o',
+  async facet => {
+    await run({ showCoverage: false, baseLayer: BISULFITE, facet })
     expect(fetchReferenceSequence).toHaveBeenCalledTimes(1)
   },
 )
 
-test.each(['off', 'normal'] as const)(
-  'the modBAM read-base pileup runs with linkedReads %s',
-  async linkedReads => {
-    await run({ showCoverage: true, baseLayer: MODIFICATIONS, linkedReads })
+test.each([undefined, CHAIN_FACET])(
+  'the modBAM read-base pileup runs with facet %o',
+  async facet => {
+    await run({ showCoverage: true, baseLayer: MODIFICATIONS, facet })
     expect(computeReadBaseCounts).toHaveBeenCalledTimes(1)
   },
 )

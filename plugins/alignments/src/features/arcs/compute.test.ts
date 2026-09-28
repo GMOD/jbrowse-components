@@ -3063,11 +3063,10 @@ describe('identical arcs coalesce and carry their support', () => {
 // primary is a no-op whenever both are on screen, and only bites when a mate's
 // primary is off-screen and `primaryOf` fell back to its supplementary segment.
 //
-// This is the rule the read fills already follow: `buildChainResultFields`
-// overwrites a supplementary's `readPairOrientations` entry with the chain
-// primary's. Arcs read that same array, so in CHAIN mode the correction was
-// already applied upstream and in pileup mode it was not — the same reads at the
-// same locus painting a different arc colour depending on a layout setting.
+// The read fills follow the same rule in chain mode, where `attachChainFields`
+// gives a supplementary its chain primary's `readPairOrientations` entry. Arcs
+// read the fetched array, which carries no such correction, so the link applies
+// the rule itself.
 describe('a mate link reads its pair fields off a primary, not a supplementary', () => {
   const regions = [
     { refName: 'chr1', start: 0, end: 10000, displayedRegionIndex: 0 },

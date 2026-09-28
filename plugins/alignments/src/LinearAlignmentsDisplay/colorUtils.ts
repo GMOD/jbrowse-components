@@ -253,7 +253,7 @@ export function readColorCategory(
 //
 // 2 and 3 are scoped to opposite data because a pair HAS a richer answer: a
 // supplementary framed against its own mate's primary is an inversion or a
-// deletion junction, which `buildChainMetadata` already resolved into
+// deletion junction, which `attachChainFields` already resolved into
 // CHAIN_SPLIT_*. An unpaired read has no mate to frame against, so the
 // strand flip is the whole story. 1 is scoped to neither, and used to be
 // paired-only purely because it was added to restore what a paired-only change

@@ -1557,10 +1557,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // twice from half a molecule each time — the primary side reporting
           // "not a split read" (plain) and the far side framing its segment
           // against an invented forward primary. Which is exactly a left/right
-          // asymmetry, and exactly not what the legend claimed. Fixed in
-          // `reconcileChainSuppAcrossRegions`, so the framing now means what the
-          // rows say on both sides of the join, and plain `Reads` is left to the
-          // molecules whose other segment is in neither window.
+          // asymmetry, and exactly not what the legend claimed. Fixed by
+          // joining chains across windows (`attachChainFields`), so the framing
+          // now means what the rows say on both sides of the join, and plain
+          // `Reads` is left to the molecules whose other segment is in neither
+          // window.
           // `showLegend` is opt-in per track and off by default, so a figure
           // that leans on those colours has to ask for it.
           showLegend: true,

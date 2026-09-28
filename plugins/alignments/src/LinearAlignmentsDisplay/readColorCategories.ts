@@ -17,15 +17,10 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // otherwise have to enter `rpcProps()` and turn two color toggles into full
 // region refetches. Here they are tier-2 — a relayout, no worker round trip.
 //
-// A PURE PER-READ BAKE, and nothing else. It used to also run the two passes
-// that rewrite `readChainHasSupp` (`reconcileChainSuppAcrossRegions`, then
-// `consensusChainStrandFrames`), which made this function's cost a function of
-// inputs it does not have: neither pass reads the colour scheme or the tag map,
-// yet both re-ran on every change to either — so switching strand →
-// first-of-pair-strand re-solved a mean-field relaxation over every chain on
-// screen to arrive at the identical answer. They now live in
-// `applyChainStrandFrames` (groupLayout), memoized on what they actually depend
-// on.
+// A PURE PER-READ BAKE, and nothing else. The frame pass that rewrites
+// `readChainHasSupp` reads neither the colour scheme nor the tag map, so it runs
+// ahead of this in `applyChainStrandFrames` (groupLayout), memoized on what it
+// depends on.
 export function overlayReadColorCategories(
   map: Map<number, TagColoredPileupData>,
   colorScheme: ColorSchemeType,

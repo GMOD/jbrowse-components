@@ -14,15 +14,6 @@ export interface FeatureData {
   strand: number // -1=reverse, 0=unknown, 1=forward
 }
 
-export interface ChainFeatureData extends FeatureData {
-  // The QNAME, and ONLY on the chain shape. Pileup mode never reads a name —
-  // the per-read names ship as one block built from the records' bytes
-  // (alignments-core/src/readNameBlock.ts) — so decoding one per read here was the larger
-  // half of what `readNames` cost. Chain mode does need it: `chainGroupingKey`
-  // is what puts mates and split segments on one row.
-  name: string
-}
-
 export interface GapData {
   readIndex: number
   start: number

@@ -8,9 +8,8 @@ import {
   OVERFLOW_GROUP_KEY,
   groupByForMode,
   isChainGroupable,
-  partitionChains,
   partitionFeatures,
-  workerGroupBy,
+  workerFacet,
 } from './groupFeatures.ts'
 
 import type { GroupBy } from './types.ts'
@@ -330,23 +329,15 @@ test('split-read grouping keys a chain off any read carrying SA', () => {
       tags: { SA: 'ctgA,200,+,50M50S,60,0;' },
     }),
   ]
-  const groups = partitionChains(features, { field: 'splitRead' })
+  const groups = partitionFeatures(features, {
+    field: 'splitRead',
+    unit: 'chain',
+  })
   expect(groups.map(g => g.label)).toEqual(['Split (SA)'])
   expect(groups[0]!.features).toHaveLength(2)
 })
 
-test('partitionChains ungrouped is a single section holding every read', () => {
-  const features = [
-    feat('a', { name: 'r1', flags: 0 }),
-    feat('b', { name: 'r2', flags: 0 }),
-  ]
-  const groups = partitionChains(features, undefined)
-  expect(groups).toHaveLength(1)
-  expect(groups[0]!.key).toBe('')
-  expect(groups[0]!.features).toHaveLength(2)
-})
-
-test('partitionChains keeps every read of a chain in one group', () => {
+test('a chain unit keeps every read of a chain in one group', () => {
   // read1 (HP 1) and its mate read2 carry the same HP tag, but even if a mate
   // lacked the tag the representative read's key decides the whole chain.
   const features = [
@@ -355,32 +346,41 @@ test('partitionChains keeps every read of a chain in one group', () => {
     feat('r2a', { name: 'r2', flags: 0x40, tags: { HP: 2 } }),
     feat('r2b', { name: 'r2', flags: 0x80, tags: { HP: 2 } }),
   ]
-  const groups = partitionChains(features, { field: 'tags.HP' })
+  const groups = partitionFeatures(features, {
+    field: 'tags.HP',
+    unit: 'chain',
+  })
   expect(keys(groups)).toEqual(['1', '2'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['r1a', 'r1b'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['r2a', 'r2b'])
 })
 
-test('partitionChains keys a chain from its read1 representative', () => {
+test('a chain unit keys a chain from its read1 representative', () => {
   // The mate (read2, no HP) would key as untagged, but the representative is the
   // primary read1, which carries HP 1 — so the whole chain lands in group '1'.
   const features = [
     feat('mate', { name: 'r1', flags: 0x80 }),
     feat('primary', { name: 'r1', flags: 0x40, tags: { HP: 1 } }),
   ]
-  const groups = partitionChains(features, { field: 'tags.HP' })
+  const groups = partitionFeatures(features, {
+    field: 'tags.HP',
+    unit: 'chain',
+  })
   expect(keys(groups)).toEqual(['1'])
   expect(groups[0]!.features).toHaveLength(2)
 })
 
-test('partitionChains ignores supplementary/secondary for the key', () => {
+test('a chain unit ignores supplementary/secondary for the key', () => {
   // The only primary read is read2 (HP 9); the supplementary record (HP absent)
   // must not be picked as representative.
   const features = [
     feat('supp', { name: 'r1', flags: 0x800 }),
     feat('prim', { name: 'r1', flags: 0x80, tags: { HP: 9 } }),
   ]
-  const groups = partitionChains(features, { field: 'tags.HP' })
+  const groups = partitionFeatures(features, {
+    field: 'tags.HP',
+    unit: 'chain',
+  })
   expect(keys(groups)).toEqual(['9'])
 })
 
@@ -446,7 +446,7 @@ test('the untagged group survives the cap, pinned just ahead of the overflow', (
   expect(groups.flatMap(g => g.features)).toHaveLength(MAX_GROUPS + 6)
 })
 
-test('partitionChains caps groups too, keeping each chain whole', () => {
+test('a chain unit caps groups too, keeping each chain whole', () => {
   // one two-read chain per tag value, so a naive per-read cap could split a chain
   const features = Array.from({ length: MAX_GROUPS + 5 }, (_, i) => {
     const tags = { RX: `v${String(i).padStart(3, '0')}` }
@@ -455,7 +455,10 @@ test('partitionChains caps groups too, keeping each chain whole', () => {
       feat(`r${i}b`, { name: `q${i}`, flags: 0x80, tags }),
     ]
   }).flat()
-  const groups = partitionChains(features, { field: 'tags.RX' })
+  const groups = partitionFeatures(features, {
+    field: 'tags.RX',
+    unit: 'chain',
+  })
   expect(groups).toHaveLength(MAX_GROUPS)
   expect(groups.flatMap(g => g.features)).toHaveLength((MAX_GROUPS + 5) * 2)
   // every group holds whole chains, i.e. an even number of reads (both mates)
@@ -475,11 +478,9 @@ test('the worker partitions in natural order and caps off the key set alone', ()
     '2',
     '',
   ])
-  expect(keys(partitionChains(features, { field: 'tags.HP' }))).toEqual([
-    '1',
-    '2',
-    '',
-  ])
+  expect(
+    keys(partitionFeatures(features, { field: 'tags.HP', unit: 'chain' })),
+  ).toEqual(['1', '2', ''])
   const last = `v${String(MAX_GROUPS + 9).padStart(3, '0')}`
   const groups = partitionFeatures(umiFeatures(MAX_GROUPS + 10), {
     field: 'tags.RX',
@@ -488,13 +489,21 @@ test('the worker partitions in natural order and caps off the key set alone', ()
 })
 
 test('the worker is sent the field, never the domain', () => {
-  expect(workerGroupBy({ field: 'tags.HP', domain: ['2'] })).toEqual({
+  expect(workerFacet({ field: 'tags.HP', domain: ['2'] }, false)).toEqual({
     field: 'tags.HP',
   })
-  expect(workerGroupBy({ field: 'strand', domain: ['-1'] })).toEqual({
+  expect(workerFacet({ field: 'strand', domain: ['-1'] }, false)).toEqual({
     field: 'strand',
   })
-  expect(workerGroupBy(undefined)).toBeUndefined()
+  expect(workerFacet(undefined, false)).toBeUndefined()
+})
+
+test('chain mode sends the chain as the unit only when there is a facet', () => {
+  expect(workerFacet({ field: 'tags.HP', domain: ['2'] }, true)).toEqual({
+    field: 'tags.HP',
+    unit: 'chain',
+  })
+  expect(workerFacet(undefined, true)).toBeUndefined()
 })
 
 test('groupByForMode degrades a per-read dimension in chain mode only', () => {

@@ -742,10 +742,32 @@ describe('FetchVisibleRegions autorun', () => {
     expect(display.colorBy.type).toBe('normal')
   })
 
-  it('refetches when linkedReads toggles (switches RPC type)', async () => {
+  // Chain identity is joined on the main thread, so the toggle is a relayout.
+  it('does NOT refetch when linkedReads toggles ungrouped', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    display.setLinkedReads('normal')
+    jest.advanceTimersByTime(400)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    expect(display.loadedRegions.size).toBe(1)
+  })
+
+  // ...except under a facet, where a chain is the unit a section keeps whole.
+  it('refetches when linkedReads toggles under a facet', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
+    const { display } = createDisplay()
+    display.setFacet({ field: 'tags.HP' })
 
     jest.advanceTimersByTime(400)
     await waitFor(() => {

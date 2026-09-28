@@ -103,8 +103,6 @@ export interface FetchFeaturesSelf {
   zoomFetchArgs: () => Pick<RenderAlignmentDataArgs, 'perBaseBinBp' | 'lodMode'>
 }
 
-// One RPC for both pileup and chain modes; the worker branches on `linkedReads`
-// (passed via rpcProps).
 export function fetchFeaturesForRegion(
   self: FetchFeaturesSelf,
   region: Region,

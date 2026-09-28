@@ -4,7 +4,7 @@ import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { chainFrame, chainHasSupp, withChainFrame } from '../shared/types.ts'
 import { getOrCreate } from '../shared/util.ts'
 
-import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
+import type { ChainedPileupData } from '../RenderAlignmentDataRPC/types.ts'
 
 // Sweeps stop as soon as a pass flips nothing, so this only bounds a
 // pathological case. Each sweep is one linear walk of the votes, and every flip
@@ -214,8 +214,7 @@ function solveFrames(
  * molecule contributes one segment of each arm) while chr10 and chr12 go
  * uniform.
  *
- * Runs after `reconcileChainSuppAcrossRegions`, whose per-chain answer is this
- * one's starting point, and only when `flipStrandLongReadChains` is on and the
+ * Starts from `attachChainFields`' per-chain answer, and runs only when `flipStrandLongReadChains` is on and the
  * scheme actually reads the framing (see `framesUnpairedChainStrand`).
  *
  * `locusOf` names which entries share a locus, defaulting to one locus per entry
@@ -224,13 +223,14 @@ function solveFrames(
  * the region, or the lanes at one locus share no bucket and the comparison this
  * pass exists to make never happens between them.
  */
-// Generic in the entry type for the reason `reconcileChainSuppAcrossRegions` is.
-export function consensusChainStrandFrames<T extends WorkerPileupData>(
+// Generic in the entry type: it rewrites one field and must not decide which
+// tier its caller is holding.
+export function consensusChainStrandFrames<T extends ChainedPileupData>(
   map: Map<number, T>,
   locusOf: (key: number) => number = key => key,
 ): Map<number, T> {
-  // `reconcileChainSuppAcrossRegions` has already made the frame one answer per
-  // chain, so the first segment met states it for the whole chain.
+  // `attachChainFields` has already made the frame one answer per chain, so the
+  // first segment met states it for the whole chain.
   const seedByName = new Map<string, number>()
   const byLocus = new Map<number, Seg[]>()
   for (const [key, data] of map) {

@@ -175,37 +175,6 @@ export function orderedGroups(
   return [...order.values()].sort((a, b) => compare(a.key, b.key))
 }
 
-// The per-read lookups below scan every group of every fetched region. They live
-// here rather than in the model so the O(reads) scans stay pure and testable;
-// the model exposes them as memoized getters over `rpcDataMap`.
-
-// chain name → the read ids belonging to that chain, across all groups/regions.
-// Empty outside chain mode, where reads carry a `readChainIndices` entry into
-// the per-fetch `chainNames`. Keyed by the globally-unique chain NAME: chainIdx
-// is assigned per worker call (per region, and per group), so the same integer
-// means different chains across calls and keying by it merges unrelated ones.
-export function buildReadIdsByChainName(
-  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  chainMode: boolean,
-  hidden?: ReadonlySet<string>,
-): Map<string, string[]> {
-  const map = new Map<string, string[]>()
-  if (chainMode) {
-    for (const { data } of eachGroup(rpcDataMap, hidden)) {
-      if (data.readChainIndices && data.chainNames) {
-        for (let i = 0; i < data.readKeys.length; i++) {
-          const name = data.chainNames[data.readChainIndices[i]!]
-          const id = readIdAt(data, i)
-          if (name !== undefined && id !== undefined) {
-            getOrCreate(map, name, () => []).push(id)
-          }
-        }
-      }
-    }
-  }
-  return map
-}
-
 // Regroup the fetched `rpcDataMap` (region idx → grouped result) into group key
 // → region idx → raw data. The arc compute (`computeArcsFromPileupData`) takes
 // one of these per-group maps, which is what lets arcs run per group.

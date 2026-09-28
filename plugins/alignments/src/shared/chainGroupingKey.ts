@@ -39,10 +39,10 @@ export function chainGroupingKey(name: string, id: ReadKey, flags: number) {
 
 /**
  * `chainGroupingKey` for a raw fetched feature — the form both by-name grouping
- * sites over `Feature`s (`partitionChains`, `filterChainFeatures`) need, so
- * neither re-spells the field reads. A missing QNAME reads as '' and takes the
- * unique-key branch above. (`buildChainMetadata` works from already extracted
- * `ChainFeatureData`, so it calls `chainGroupingKey` directly.)
+ * sites over `Feature`s (a chain-unit `partitionFeatures`, `filterChainFeatures`)
+ * need, so neither re-spells the field reads. A missing QNAME reads as '' and
+ * takes the unique-key branch above. (`attachChainFields` works from the fetched
+ * arrays, so it calls `chainGroupingKey` directly.)
  */
 export function featureChainKey(feature: Feature) {
   return chainGroupingKey(

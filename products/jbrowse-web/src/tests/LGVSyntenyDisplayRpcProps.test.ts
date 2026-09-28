@@ -110,7 +110,6 @@ test('the override still carries the inherited alignments fields', async () => {
       'colorBy',
       'showSoftClipping',
       'showCoverage',
-      'linkedReads',
     ]),
   )
   expect(display.rpcProps()).toMatchObject({
@@ -119,7 +118,6 @@ test('the override still carries the inherited alignments fields', async () => {
     filterBy: expect.anything(),
     showSoftClipping: expect.any(Boolean),
     showCoverage: expect.any(Boolean),
-    linkedReads: expect.any(String),
   })
 })
 

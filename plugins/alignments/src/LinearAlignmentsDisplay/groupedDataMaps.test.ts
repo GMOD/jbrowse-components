@@ -9,7 +9,6 @@ import {
 } from '../shared/groupFeatures.ts'
 import {
   buildSashimiDownKeys,
-  buildReadIdsByChainName,
   buildRawDataByGroup,
   buildReadIdIndexMap,
   hasNamedGroups,
@@ -24,18 +23,8 @@ import type { GroupBy } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Minimal PileupDataResult stub: only the fields these scans read.
-function data(
-  readKeys: string[],
-  readChainIndices?: number[],
-  chainNames?: string[],
-): PileupDataResult {
-  return makePileupDataResult({
-    readKeys,
-    readChainIndices: readChainIndices
-      ? new Uint32Array(readChainIndices)
-      : undefined,
-    chainNames,
-  })
+function data(readKeys: string[]): PileupDataResult {
+  return makePileupDataResult({ readKeys })
 }
 
 function grouped(
@@ -446,67 +435,6 @@ test('buildRawDataByGroup keeps the single ungrouped group under key ""', () => 
   )
   expect([...byGroup.keys()]).toEqual([''])
   expect(byGroup.get('')!.get(0)).toBe(d)
-})
-
-test('buildReadIdsByChainName is empty when linked-reads off', () => {
-  const m = buildReadIdsByChainName(
-    new Map([[0, grouped([{ key: '', data: data(['a'], [0], ['chain0']) }])]]),
-    false,
-  )
-  expect(m.size).toBe(0)
-})
-
-test('buildReadIdsByChainName unions a chain by name across regions', () => {
-  // 'chain0' is the local chainIdx-0 in both regions; keying by name unions its
-  // reads instead of letting region 1 overwrite region 0.
-  const m = buildReadIdsByChainName(
-    new Map([
-      [0, grouped([{ key: '', data: data(['a', 'b'], [0, 1], ['c0', 'c1']) }])],
-      [1, grouped([{ key: '', data: data(['c'], [0], ['c0']) }])],
-    ]),
-    true,
-  )
-  expect(m.get('c0')).toEqual(['a', 'c'])
-  expect(m.get('c1')).toEqual(['b'])
-})
-
-test('buildReadIdsByChainName keyed by name never collides across groups', () => {
-  // Both groups number their chains from 0, so group '1' and group '2' each have
-  // a local chainIdx 0 for *different* chains; keying by name keeps them apart
-  // (index keying would merge them).
-  const m = buildReadIdsByChainName(
-    new Map([
-      [
-        0,
-        grouped([
-          { key: '1', data: data(['a', 'b'], [0, 0], ['hp1chain']) },
-          { key: '2', data: data(['c', 'd'], [0, 0], ['hp2chain']) },
-        ]),
-      ],
-    ]),
-    true,
-  )
-  expect(m.get('hp1chain')).toEqual(['a', 'b'])
-  expect(m.get('hp2chain')).toEqual(['c', 'd'])
-})
-
-// The read ids here are resolved through `readIdIndexMap`, which drops the same
-// lanes, so a hidden lane's chain could only ever have highlighted nothing.
-test('buildReadIdsByChainName drops the chains of a hidden lane', () => {
-  const m = buildReadIdsByChainName(
-    new Map([
-      [
-        0,
-        grouped([
-          { key: 'peach', data: data(['a'], [0], ['peachchain']) },
-          { key: 'self', data: data(['b'], [0], ['selfchain']) },
-        ]),
-      ],
-    ]),
-    true,
-    new Set(['self']),
-  )
-  expect([...m.keys()]).toEqual(['peachchain'])
 })
 
 // [start, end, count] per junction.
