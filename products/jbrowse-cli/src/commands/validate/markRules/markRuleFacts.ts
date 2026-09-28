@@ -8,6 +8,7 @@ export {
   fieldScaleOf,
   paintedScale,
   scaleEndProblems,
+  universalPresetOf,
 } from './colorScale.ts'
 export type { ColorSlots, ScaleEnds } from './colorScale.ts'
 export { SHAPE_NAMES } from './shapeNameList.ts'

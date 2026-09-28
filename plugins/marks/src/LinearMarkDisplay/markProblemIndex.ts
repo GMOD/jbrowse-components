@@ -34,6 +34,12 @@ export interface MarkProblemIndex {
    * `undefined` for a display-level slot.
    */
   under: (mark: number | undefined, slot: string) => readonly MarkProblem[]
+  /**
+   * The problems of one mark at no slot in `claimed` or under one, for the
+   * list a form prints beneath its controls so a finding a row's dot counts
+   * is printed somewhere.
+   */
+  except: (mark: number, claimed: readonly string[]) => readonly MarkProblem[]
 }
 
 function covers(slot: string, prefix: string) {
@@ -65,6 +71,10 @@ export function markProblemIndex(
     under: (mark, slot) =>
       (mark === undefined ? display : forMark(mark)).filter(problem =>
         covers(problem.slot, slot),
+      ),
+    except: (mark, claimed) =>
+      forMark(mark).filter(
+        problem => !claimed.some(slot => covers(problem.slot, slot)),
       ),
   }
 }

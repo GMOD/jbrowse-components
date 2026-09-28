@@ -764,6 +764,66 @@ test("a pileup under rows is told its packed rows share their value's row", () =
   )
 })
 
+test("a shape's labels over a field with an order of its own name that order", () => {
+  expect(
+    found([
+      {
+        mark: 'point',
+        encoding: {
+          y: 'score',
+          shape: { field: 'strand', labels: ['Fwd', 'Rev', 'None'] },
+        },
+      },
+    ]),
+  ).toEqual([])
+})
+
+test('a field spelling a colour in any CSS syntax is a constant written bare', () => {
+  for (const color of [
+    'hwb(0 0% 0%)',
+    'oklch(0.6 0.2 30)',
+    'lab(50% 40 59)',
+    'color(srgb 1 0 0)',
+  ]) {
+    expect(found([{ mark: 'bar', encoding: { y: 'score', color } }])).toEqual([
+      'warning field-spells-constant mark 0 encoding.color.field',
+    ])
+  }
+})
+
+test('a slot written at its default reads as unwritten, as the display sees it', () => {
+  const written = {
+    mark: 'span',
+    linkShape: 'dome',
+    source: 'features',
+    encoding: {
+      y: '',
+      x: 'start',
+      x2: 'end',
+      text: 'name',
+      shape: {},
+      size: {},
+    },
+  }
+  expect(markProblems({ marks: [written as MarkSnapshot] })).toEqual([])
+  expect(found([written])).toEqual([])
+})
+
+test('breaks and labels take the numbers a domain takes', () => {
+  expect(
+    found([
+      {
+        mark: 'point',
+        encoding: {
+          y: 'score',
+          color: { field: 'strand', breaks: [1, -1], labels: [1, 2] },
+          shape: { field: 'strand', breaks: [1, -1] },
+        },
+      },
+    ]),
+  ).toEqual([])
+})
+
 test('every rule of the list is reached by a case above', () => {
   expect([...reached].sort()).toEqual(Object.keys(MARK_RULES).sort())
 })

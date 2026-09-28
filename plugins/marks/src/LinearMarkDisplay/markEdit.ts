@@ -130,9 +130,17 @@ const PICKABLE_MEMBERS = new Set<string>([
   ...LIST_MEMBERS,
 ])
 
+// The field a channel object paints through: none under `scale: 'none'`,
+// where the field waits unread and `value` paints.
+function paintedField(members: Record<string, unknown> | undefined) {
+  const field = members?.field
+  return typeof field === 'string' && members?.scale !== 'none' ? field : ''
+}
+
 function pickedValue(declared: Record<string, unknown>) {
-  const { field, value } = declared
-  return typeof field === 'string' && field !== ''
+  const field = paintedField(declared)
+  const { value } = declared
+  return field !== ''
     ? field
     : typeof value === 'string' || typeof value === 'number'
       ? String(value)
@@ -187,9 +195,9 @@ function presetScale(channel: EditChannel, field: string) {
 /** The field a channel reads: an object's `field`, or its string shorthand. */
 function channelField(mark: DraftMark, channel: EditChannel): string {
   const declared = mark.encoding?.[channel]
-  const field =
-    typeof declared === 'string' ? declared : objectOf(declared)?.field
-  return typeof field === 'string' ? field : ''
+  return typeof declared === 'string'
+    ? declared
+    : paintedField(objectOf(declared))
 }
 
 /**
@@ -317,17 +325,13 @@ function readsNumbers(scale: unknown) {
 }
 
 /**
- * Whether a colour or shape value is the constant its shorthand spells: a CSS
- * colour or a shape name, or a `jexl:` callback — except over a field, where a
- * `jexl:` is the field's own expression.
+ * Whether a colour or shape value spells a constant: a CSS colour or a shape
+ * name. A `jexl:` expression is a field, as a config file reads one inside
+ * `encoding`; a constant callback is the JSON box's `{ value }`.
  */
-function spellsConstant(
-  channel: 'color' | 'shape',
-  value: string,
-  overField: boolean,
-) {
+function spellsConstant(channel: 'color' | 'shape', value: string) {
   return isJexl(value)
-    ? !overField
+    ? false
     : channel === 'color'
       ? isCssColor(value)
       : (SHAPE_NAMES as readonly string[]).includes(value)
@@ -356,7 +360,8 @@ export function withChannel(
   if (value === '') {
     return withoutChannel(mark, channel)
   }
-  const held = objectOf(base)
+  // a bare string is a field, so it is held as the object it lifts to
+  const held = typeof base === 'string' ? { field: base } : objectOf(base)
   const implied = fields.numeric.includes(value)
     ? 'linear'
     : fields.categorical.includes(value)
@@ -364,7 +369,7 @@ export function withChannel(
       : undefined
   if (channel === 'color' || channel === 'shape') {
     const heldField = typeof held?.field === 'string' && held.field !== ''
-    if (implied === undefined && spellsConstant(channel, value, heldField)) {
+    if (implied === undefined && spellsConstant(channel, value)) {
       return writeChannel(mark, channel, { value })
     }
     if (channel === 'shape') {

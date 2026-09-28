@@ -731,7 +731,7 @@ each reported under its id:
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. |
 | `unread-size` | warning | An `encoding.size` on a mark that draws no point or rule and strokes no link. |
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
-| `span-density-source` | warning | `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. |
+| `span-density-source` | warning | `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold colour naming no cut, so every value paints one colour. |
 | `threshold-range` | warning | A threshold `range` not one colour longer than its cuts. |

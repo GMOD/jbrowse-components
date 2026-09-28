@@ -10,6 +10,7 @@ import {
   isNamedColor,
   paintedScale,
   scaleEndProblems,
+  universalPresetOf,
 } from './markRuleFacts.ts'
 import { MARK_SPECS, rampResolvesPerRegion, readsValue } from './markSpecs.ts'
 import {
@@ -17,9 +18,12 @@ import {
   DEFAULT_BIN_AS,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
+  DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
+  DEFAULT_TEXT_FIELD,
+  DEFAULT_X2,
   MATE_FIELDS,
 } from './markVocabulary.ts'
 import { stepChannels } from './stepChannels.ts'
@@ -54,7 +58,7 @@ export const MARK_RULES = {
   'unread-size': 'warning',
   /** A `linkShape` on a mark that draws no link. */
   'unread-link-shape': 'warning',
-  /** `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. */
+  /** `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. */
   'span-density-source': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
   'threshold-cuts': 'warning',
@@ -191,6 +195,51 @@ function markTypeOf(mark: MarkSnapshot) {
   return mark.mark ?? DEFAULT_MARK_TYPE
 }
 
+// Whether a slot holds nothing a reader could act on: unset, empty text, an
+// empty list, or an object none of whose members holds anything.
+function unwritten(value: unknown): boolean {
+  return (
+    value === undefined ||
+    value === '' ||
+    (Array.isArray(value) && value.length === 0) ||
+    (typeof value === 'object' &&
+      value !== null &&
+      Object.values(value).every(unwritten))
+  )
+}
+
+// Whether a channel is written as its default, which a display's snapshot
+// leaves off and a file may spell out: the two read alike, so a slot at its
+// default is no channel for a rule to find unread.
+function atDefault(channel: string, value: unknown) {
+  switch (channel) {
+    case 'x':
+      return value === DEFAULT_BIN_AS[0]
+    case 'x2':
+      return (
+        value === DEFAULT_X2 ||
+        (typeof value === 'object' &&
+          value !== null &&
+          unwritten((value as { chrom?: unknown }).chrom) &&
+          ((value as { pos?: unknown }).pos === DEFAULT_X2 ||
+            unwritten((value as { pos?: unknown }).pos)))
+      )
+    case 'text':
+      return value === DEFAULT_TEXT_FIELD
+    default:
+      return false
+  }
+}
+
+/** The channels a mark's encoding writes, less those at their default. */
+function writtenChannels(encoding: MarkSnapshot['encoding']) {
+  return Object.entries(encoding ?? {})
+    .filter(
+      ([channel, value]) => !unwritten(value) && !atDefault(channel, value),
+    )
+    .map(([channel]) => channel)
+}
+
 function stepsOf(mark: MarkSnapshot) {
   return mark.transform ?? []
 }
@@ -224,8 +273,9 @@ function sizeFieldOf(size: SizeSnapshot | undefined) {
 // cannot carry into `jbrowse validate`.
 function spellsColor(text: string) {
   return (
-    /^(#[\da-f]{3,8}|(rgb|hsl)a?\(.*\)|transparent)$/i.test(text) ||
-    isNamedColor(text.toLowerCase())
+    /^(#[\da-f]{3,8}|(rgb|hsl|hwb|lab|lch|oklab|oklch|color)a?\(.*\)|transparent)$/i.test(
+      text,
+    ) || isNamedColor(text.toLowerCase())
   )
 }
 
@@ -271,9 +321,13 @@ function shapeLabelProblems(shape: unknown): OwnProblem[] {
     return []
   }
   const { field = '', scale, domain = [], labels = [] } = shape as ColorSlots
+  // an unwritten domain pairs the labels with the field's own order, as the
+  // key and the worker do
+  const order =
+    domain.length > 0 ? domain : (universalPresetOf(field)?.domain ?? [])
   const named =
     paintedScale({ scale, field }, 'categorical') === 'categorical'
-      ? domain.length
+      ? order.length
       : 0
   return labels.length > named
     ? [
@@ -530,7 +584,7 @@ function ownProblems(
   }
   const spec: MarkSpec = MARK_SPECS[type]
   const channels = new Set<string>(['x', 'x2', 'size', ...spec.channels])
-  for (const channel of Object.keys(mark.encoding ?? {})) {
+  for (const channel of writtenChannels(mark.encoding)) {
     if (!channels.has(channel)) {
       problems.push(
         found(
@@ -542,7 +596,7 @@ function ownProblems(
     }
   }
   const size = mark.encoding?.size
-  if (size !== undefined && spec.size === undefined) {
+  if (!unwritten(size) && spec.size === undefined) {
     problems.push(
       found(
         'unread-size',
@@ -559,7 +613,11 @@ function ownProblems(
       ),
     )
   }
-  if (mark.linkShape !== undefined && type !== 'link') {
+  if (
+    mark.linkShape !== undefined &&
+    mark.linkShape !== DEFAULT_LINK_SHAPE &&
+    type !== 'link'
+  ) {
     problems.push(
       found(
         'unread-link-shape',

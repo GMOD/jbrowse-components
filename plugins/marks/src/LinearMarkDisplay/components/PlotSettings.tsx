@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { Autocomplete, TextField, Typography } from '@mui/material'
@@ -39,6 +39,7 @@ function SplitControls({
 }) {
   const [order, setOrder] = useState(() => splitOrder(plot, kind))
   const field = splitField(plot, kind)
+  const base = useRef<unknown>(undefined)
   return (
     <div style={{ display: 'flex', gap: 8 }}>
       <Autocomplete
@@ -46,8 +47,14 @@ function SplitControls({
         style={{ flex: 1 }}
         options={[...options]}
         inputValue={field}
+        onFocus={() => {
+          base.current = plot[kind]
+        }}
+        onBlur={() => {
+          base.current = undefined
+        }}
         onInputChange={(_event, next) => {
-          onChange(withSplitField(plot, kind, next))
+          onChange(withSplitField(plot, kind, next, base.current))
         }}
         renderInput={({ slotProps, ...params }) => (
           <TextField

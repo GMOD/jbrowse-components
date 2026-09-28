@@ -110,7 +110,7 @@ describe('withChannel', () => {
   })
 
   it('writes a value that spells a colour or a shape as the constant', () => {
-    for (const color of ['red', '#f00', 'rgb(0,0,255)', 'jexl:"red"']) {
+    for (const color of ['red', '#f00', 'rgb(0,0,255)']) {
       expect(withChannel({}, 'color', color, FIELDS).encoding).toEqual({
         color: { value: color },
       })
@@ -118,6 +118,46 @@ describe('withChannel', () => {
     expect(withChannel({}, 'shape', 'triangle-down', FIELDS).encoding).toEqual({
       shape: { value: 'triangle-down' },
     })
+  })
+
+  // Inside `encoding` a bare string is a field, a `jexl:` expression included,
+  // as a config file reads it; a constant callback is the JSON box's { value }.
+  it('writes a jexl expression as a field, as a config file reads one', () => {
+    const expr = 'jexl:feature.score > 5 ? "red" : "blue"'
+    expect(withChannel({}, 'color', expr, FIELDS).encoding).toEqual({
+      color: { field: expr, scale: 'categorical' },
+    })
+  })
+
+  it('edits a bare field as the object it lifts to, keeping the preset scale', () => {
+    const bare = {
+      mark: 'bar' as const,
+      encoding: { y: 'score', color: 'strand' },
+    }
+    const object = {
+      mark: 'bar' as const,
+      encoding: { y: 'score', color: { field: 'strand' } },
+    }
+    expect(
+      withChannel(bare, 'color', 'INFO.AF', FIELDS).encoding?.color,
+    ).toEqual(withChannel(object, 'color', 'INFO.AF', FIELDS).encoding?.color)
+    expect(withChannel(bare, 'color', 'INFO.AF', FIELDS).encoding).toEqual({
+      y: 'score',
+      color: { field: 'INFO.AF' },
+    })
+  })
+
+  it('shows a colour under scale none as the constant it paints', () => {
+    const mark = {
+      mark: 'bar' as const,
+      encoding: {
+        y: 'score',
+        color: { value: 'red', field: 'strand', scale: 'none' },
+      },
+    }
+    expect(channelEdit(mark, 'color')).toEqual({ value: 'red', beyond: false })
+    expect(channelScale(mark, 'color')).toBe('')
+    expect(markSummary(mark)).toContain('color red')
   })
 
   // A scan reads one window, and none has landed while it runs, so a field it

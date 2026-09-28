@@ -13,6 +13,7 @@ export {
   fieldScaleOf,
   paintedScale,
   scaleEndProblems,
+  universalPresetOf,
 } from '@jbrowse/core/util/colorScale'
 export type { ColorSlots, ScaleEnds } from '@jbrowse/core/util/colorScale'
 export { SHAPE_NAMES } from '@jbrowse/core/util/shapeNameList'

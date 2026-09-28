@@ -82,8 +82,8 @@ export interface ColorSetting {
 
 /**
  * What every channel object checks on the way in, `name` being the setting's
- * key: a `domain` or `range` is a list, and a `domain` written as numbers is
- * carried as strings. No combination of slots is refused, since the config
+ * key: a `domain` or `range` is a list, and a `domain`, `breaks` or `labels`
+ * written as numbers is carried as strings. No combination of slots is refused, since the config
  * editor writes one slot at a time: a `domain` with no `field`, or a `field`
  * under `none`, waits unread until it paints again.
  */
@@ -96,9 +96,13 @@ export function normalizeChannel(
       throw new Error(`${name}.${key} is a list`)
     }
   }
-  return Array.isArray(snap.domain)
-    ? { ...snap, domain: snap.domain.map(String) }
-    : snap
+  const out = { ...snap }
+  for (const key of ['domain', 'breaks', 'labels']) {
+    if (Array.isArray(out[key])) {
+      out[key] = out[key].map(String)
+    }
+  }
+  return out
 }
 
 /**

@@ -17,6 +17,12 @@ export interface SlotEntry {
   /** present when the slot is a nested sub-schema (adapter.index and friends) */
   subSlots?: SlotEntry[]
   /**
+   * A list of sub-schemas that draws these entries until a config writes its
+   * own (a display's default plot), which the rules read where the slot is
+   * unwritten.
+   */
+  defaultEntries?: unknown[]
+  /**
    * A sub-schema slot: the member a bare string or number written in its place
    * lifts into, by the schema's `shorthand` option (`color: "red"` is
    * `color: { value: "red" }`, a width's `size: 3` is `{ value: 3 }`).

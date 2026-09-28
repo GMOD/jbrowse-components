@@ -555,20 +555,63 @@ describe('a marks list in a config file', () => {
   })
 })
 
+describe('a mark display drawing its default plot', () => {
+  const manhattan = (display: Record<string, unknown>) => {
+    const config = configOf([])
+    ;(config.tracks as Record<string, unknown>[])[0]!.displays = [
+      { type: 'LinearManhattanDisplay', displayId: 'm', ...display },
+    ]
+    return problemsOf(config).map(p => `${p.level} ${p.rule} ${p.where}`)
+  }
+
+  it('reads the default marks the manifest carries', () => {
+    expect(
+      configManifest.displays.LinearManhattanDisplay!.slots.find(
+        s => s.name === 'marks',
+      )!.defaultEntries,
+    ).toHaveLength(1)
+    expect(manhattan({ transform: [{ type: 'coverage' }] })).toEqual([
+      `error unwritten-y ${DISPLAY}.marks[0].encoding.y`,
+    ])
+  })
+
+  it('checks the display-level slots with no marks written', () => {
+    expect(
+      manhattan({
+        facet: { field: 'chr', transform: [{ type: 'bin', step: -5 }] },
+        rows: 'source',
+      }),
+    ).toEqual([
+      `error bin-width ${DISPLAY}.facet.transform[0].step`,
+      `warning rows-beside-facet ${DISPLAY}.rows.field`,
+    ])
+  })
+
+  it('reads a slot written at its default as unwritten, as the display does', () => {
+    expect(
+      found([
+        {
+          mark: 'span',
+          linkShape: 'dome',
+          encoding: { y: '', text: 'name', shape: {}, size: {} },
+        },
+      ]),
+    ).toEqual([])
+  })
+})
+
 describe('where a config holds a marks list', () => {
   const marks = [{ mark: 'span', encoding: { y: 'score' } }]
   const base = () => configOf([{ mark: 'bar', encoding: { y: 'score' } }])
 
   // Why the walk is the whole file and an untyped node carrying `marks` is a
-  // mark display's: no type but the mark display and the one built on it
-  // declares the slot, at any depth.
+  // mark display's: no display type but the mark display and the one built on
+  // it declares the slot on itself, and the multi-way lane layers carry one
+  // under their `layers`, which only their own `marks` list names.
   it('finds a marks slot on the mark displays alone', () => {
     const declares = (slots: unknown): boolean =>
       Array.isArray(slots) &&
-      slots.some(
-        slot =>
-          isRecord(slot) && (slot.name === 'marks' || declares(slot.subSlots)),
-      )
+      slots.some(slot => isRecord(slot) && slot.name === 'marks')
     expect(
       Object.values(configManifest).flatMap(group =>
         Object.entries(group).flatMap(([type, entry]) =>

@@ -459,15 +459,20 @@ const SLOTS_POINTER = `/$defs/${MARK_DISPLAY}Slots/properties`
 // The rule list reads a config snapshot, which is what a file is once the
 // schema passes its keys and types and the manifest's lifts are applied. An
 // entry the schema refuses is the schema's to report, and stands as a gap so
-// its siblings keep their indices and their own reports.
+// its siblings keep their indices and their own reports. A list the file
+// leaves unwritten is the slot's default entries, a display's default plot.
 function declaredEntries<T>(
   lifted: Record<string, unknown>,
   display: Record<string, unknown>,
   slot: string,
+  slots: readonly SlotEntry[],
 ): (T | undefined)[] {
   const list = lifted[slot]
   const written = display[slot]
-  return Array.isArray(list) && Array.isArray(written)
+  if (!Array.isArray(written)) {
+    return (slots.find(s => s.name === slot)?.defaultEntries ?? []) as T[]
+  }
+  return Array.isArray(list)
     ? list.map((entry, i) =>
         hasDeclaredShape(written[i], `${SLOTS_POINTER}/${slot}/items`)
           ? (entry as T)
@@ -489,16 +494,17 @@ function isMarkDisplayType(type: unknown, manifest: ConfigManifest) {
   )
 }
 
-// A mark display's own entry, whose marks may come from `displayDefaults`, or
+// A mark display's own entry, whose marks may be its type's default plot, or
 // a `displayDefaults` holding marks. A mark is a record with a `transform` of
 // its own, so an untyped node counts only by its `marks`.
 function holdsMarkRules(
   node: Record<string, unknown>,
   manifest: ConfigManifest,
 ) {
-  return isMarkDisplayType(node.type, manifest)
-    ? Array.isArray(node.marks) || Array.isArray(node.transform)
-    : node.type === undefined && Array.isArray(node.marks)
+  return (
+    isMarkDisplayType(node.type, manifest) ||
+    (node.type === undefined && Array.isArray(node.marks))
+  )
 }
 
 // What the marks of one display say together that it cannot draw as written:
@@ -518,9 +524,14 @@ function checkMarkDisplay(
   }
   const { facet, rows, scales } = lifted
   for (const { level, rule, mark, slot, message } of markProblems({
-    marks: declaredEntries<MarkSnapshot>(lifted, display, 'marks'),
+    marks: declaredEntries<MarkSnapshot>(lifted, display, 'marks', slots),
     facet: isRecord(facet) ? facet : undefined,
-    transform: declaredEntries<StepSnapshot>(lifted, display, 'transform'),
+    transform: declaredEntries<StepSnapshot>(
+      lifted,
+      display,
+      'transform',
+      slots,
+    ),
     rows: isRecord(rows) ? rows : undefined,
     scales: isRecord(scales) ? scalesOf(scales) : undefined,
   })) {

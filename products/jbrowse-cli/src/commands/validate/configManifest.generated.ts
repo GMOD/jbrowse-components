@@ -2959,7 +2959,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "scheme",
@@ -3231,7 +3232,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "scheme",
@@ -3490,7 +3492,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "title",
@@ -3851,7 +3854,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "title",
@@ -4069,7 +4073,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "title",
@@ -4440,7 +4445,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "title",
@@ -4515,7 +4521,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "title",
@@ -4667,7 +4674,8 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "labels",
-                          "type": "string[]"
+                          "type": "string[]",
+                          "liftsNumbers": true
                         },
                         {
                           "name": "scheme",
@@ -4687,7 +4695,8 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "breaks",
-                          "type": "string[]"
+                          "type": "string[]",
+                          "liftsNumbers": true
                         },
                         {
                           "name": "descending",
@@ -4741,11 +4750,13 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "labels",
-                          "type": "string[]"
+                          "type": "string[]",
+                          "liftsNumbers": true
                         },
                         {
                           "name": "breaks",
-                          "type": "string[]"
+                          "type": "string[]",
+                          "liftsNumbers": true
                         },
                         {
                           "name": "missingLabel",
@@ -4812,6 +4823,14 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "maxBpPerPx",
                   "type": "number"
+                }
+              ],
+              "defaultEntries": [
+                {
+                  "mark": "bar",
+                  "encoding": {
+                    "y": "score"
+                  }
                 }
               ]
             }
@@ -4964,7 +4983,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "scheme",
@@ -5210,7 +5230,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "title",
@@ -5503,7 +5524,8 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "labels",
-              "type": "string[]"
+              "type": "string[]",
+              "liftsNumbers": true
             },
             {
               "name": "title",
@@ -6038,7 +6060,8 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "labels",
-                      "type": "string[]"
+                      "type": "string[]",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "scheme",
@@ -6058,7 +6081,8 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "breaks",
-                      "type": "string[]"
+                      "type": "string[]",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "descending",
@@ -6112,11 +6136,13 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "labels",
-                      "type": "string[]"
+                      "type": "string[]",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "breaks",
-                      "type": "string[]"
+                      "type": "string[]",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "missingLabel",
@@ -6183,6 +6209,14 @@ export const configManifest: ConfigManifest = {
             {
               "name": "maxBpPerPx",
               "type": "number"
+            }
+          ],
+          "defaultEntries": [
+            {
+              "mark": "point",
+              "encoding": {
+                "y": "score"
+              }
             }
           ]
         },
@@ -6510,7 +6544,8 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "labels",
-                      "type": "string[]"
+                      "type": "string[]",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "scheme",
@@ -6530,7 +6565,8 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "breaks",
-                      "type": "string[]"
+                      "type": "string[]",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "descending",
@@ -6584,11 +6620,13 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "labels",
-                      "type": "string[]"
+                      "type": "string[]",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "breaks",
-                      "type": "string[]"
+                      "type": "string[]",
+                      "liftsNumbers": true
                     },
                     {
                       "name": "missingLabel",

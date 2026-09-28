@@ -151,6 +151,10 @@ function slotsOf(type) {
       // A sub-schema is an object slot with slots of its own (adapter.index,
       // track.displays[]); the validator recurses into these.
       subSlots: sub ? slotsOf(prop) : undefined,
+      // A list of sub-schemas drawing entries of its own until a config
+      // writes some (a display's default plot), which the validator's rules
+      // read where the file leaves the slot unwritten.
+      defaultEntries: sub ? defaultEntriesOf(prop) : undefined,
       // What the schema lifts on the way in, which the validator applies to a
       // file before its rules read it: a bare string or number into the
       // sub-schema's shorthand slot taking it or a string into a list of one,
@@ -164,6 +168,11 @@ function slotsOf(type) {
       liftsUri: lifts.uri || undefined,
     }
   })
+}
+
+function defaultEntriesOf(prop) {
+  const entries = prop?.getDefaultInstanceOrSnapshot?.()
+  return Array.isArray(entries) && entries.length > 0 ? entries : undefined
 }
 
 function isSubSchema(prop) {

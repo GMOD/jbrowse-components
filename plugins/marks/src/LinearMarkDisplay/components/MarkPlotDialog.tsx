@@ -273,7 +273,15 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
                 write({ ...mark, maxBpPerPx: value })
               })}
             </div>
-            <MarkProblemList problems={problems.under(at, 'minBpPerPx')} />
+            <MarkProblemList
+              problems={problems.except(at, [
+                'minBpPerPx',
+                ...editChannels(markTypeOf(mark)).map(
+                  channel => `encoding.${channel}`,
+                ),
+                ...stepsOfMark(mark).map((_, i) => `transform.${i}`),
+              ])}
+            />
             <UnreadChannels mark={mark} onWrite={write} />
           </div>
         ) : (

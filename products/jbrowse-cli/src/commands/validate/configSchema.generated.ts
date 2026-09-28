@@ -3601,10 +3601,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
@@ -4385,10 +4396,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
@@ -4958,10 +4980,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
@@ -5243,10 +5276,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
@@ -5630,10 +5674,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
@@ -5734,10 +5789,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
@@ -5856,10 +5922,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
@@ -5891,10 +5968,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "breaks": {
               "description": "values the key lists; empty lists every value met.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "descending": {
               "description": "threshold key lists the highest interval first.",
@@ -5990,17 +6078,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "key names for the domain values, in order.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "breaks": {
               "description": "values the key lists; empty lists every value met.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "missingLabel": {
               "description": "key row for a feature with no value.",
@@ -7125,10 +7235,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
@@ -7492,10 +7613,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
@@ -17741,10 +17873,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",

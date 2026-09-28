@@ -56,17 +56,19 @@ export function splitOrder(plot: MarkPlot, key: 'facet' | 'rows'): string {
 /**
  * The plot with its `facet` or `rows` splitting by `field`, keeping the rest
  * of the object: an empty field clears the setting, as `null` does in the
- * JSON box.
+ * JSON box. `base` is the setting as it stood when the edit began, so a field
+ * retyped through empty keeps the order and the steps the setting held.
  */
 export function withSplitField(
   plot: MarkPlot,
   key: 'facet' | 'rows',
   field: string,
+  base: unknown = plot[key],
 ): MarkPlot {
   if (field === '') {
     return { ...plot, [key]: null }
   }
-  const held = channelObject(plot[key])
+  const held = channelObject(plot[key]) ?? channelObject(base)
   return { ...plot, [key]: { ...held, field } }
 }
 
