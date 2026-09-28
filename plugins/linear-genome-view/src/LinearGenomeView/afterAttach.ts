@@ -273,7 +273,7 @@ function setupInitWarmup(self: LinearGenomeViewModel) {
           }
           for (const t of tracks) {
             const { trackId, displaySnapshot } = normalizeTrackInit(t)
-            warmTrackDisplayGeneric(self, trackId, displaySnapshot)
+            warmTrackDisplayGeneric(self, trackId, displaySnapshot, assembly)
           }
         })
       },

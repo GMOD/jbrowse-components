@@ -23,9 +23,6 @@ export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
     // asking the reference, and this line is what tells it where that is.
     // Pinned by sequenceAdapterPriming.test.ts, because reversing the two left
     // 3,015 tests green.
-    //
-    // The one call that still passes `sequenceAdapter` by hand — it is what
-    // `renameRegionsIfNeeded` CALLS, so the derivation cannot reach it.
     if (isFeatureAdapter(dataAdapter)) {
       dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
     }

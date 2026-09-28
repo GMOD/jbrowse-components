@@ -18,15 +18,22 @@ export function getSequenceAdapterConfig(
 }
 
 /**
- * {@link getSequenceAdapterConfig} read off the config answering to
- * `assemblyName`, so it answers before the assembly's model is built or its
- * regions have loaded.
+ * {@link getSequenceAdapterConfig} for a name, canonical or alias. The built
+ * model first, then the config it will be built from, so this answers before
+ * the model exists. Neither lookup reports an unknown name the way
+ * `assemblyManager.get` does, and a track config may name an assembly the
+ * session lacks.
  */
 export function getSequenceAdapterConfigByName(
-  assemblyManager: { confByName: Map<string, AnyConfigurationModel> },
+  assemblyManager: {
+    assemblyNameMap: Record<string, Pick<Assembly, 'configuration'>>
+    confByName: Map<string, AnyConfigurationModel>
+  },
   assemblyName: string,
 ): Record<string, unknown> | undefined {
-  const adapter =
-    assemblyManager.confByName.get(assemblyName)?.sequence?.adapter
+  const adapter = (
+    assemblyManager.assemblyNameMap[assemblyName]?.configuration ??
+    assemblyManager.confByName.get(assemblyName)
+  )?.sequence?.adapter
   return adapter ? getSnapshot(adapter) : undefined
 }

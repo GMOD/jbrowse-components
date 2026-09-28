@@ -1,7 +1,5 @@
 import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import { getSequenceAdapterConfig } from '../assemblyManager/getSequenceAdapterConfig.ts'
-
 import type { StatusCallback } from './progress.ts'
 import type { AssemblyManager, Region } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'
@@ -60,13 +58,11 @@ export function renameRegionIfNeeded(
   return region
 }
 
-// What a single assembly contributes to a rename: the adapter refName map, the
-// FASTA-name lookup CRAM/BAM need for originalRefName, and the sequence adapter
-// config those two are names *into*.
+// What a single assembly contributes to a rename: the adapter refName map and
+// the FASTA-name lookup CRAM/BAM need for originalRefName.
 interface AssemblyRenameData {
   refNameMap: Record<string, string>
   getSeqAdapterRefName: ((refName: string) => string) | undefined
-  sequenceAdapter: Record<string, unknown> | undefined
 }
 
 // Region-shaped enough that, if it slipped through under a `region` key, it was
@@ -151,22 +147,25 @@ export async function renameRegionsIfNeeded<
               getSeqAdapterRefName: assembly
                 ? (r: string) => assembly.getSeqAdapterRefName(r)
                 : undefined,
-              sequenceAdapter: getSequenceAdapterConfig(assembly),
             },
           ] as const
         }),
       ),
     )
 
+  // A comparative call (synteny, dotplot) renames regions on two assemblies at
+  // once and has no genome of its own. Any other call's genome is its regions',
+  // named in the one field every call names it in, `assemblyName`, which
+  // RpcMethodType.serializeArguments turns into the reference a BAM/CRAM or
+  // scan adapter is built with.
+  const comparative = uniqueAssemblyNames.length > 1
+  const assemblyName = comparative
+    ? undefined
+    : (uniqueAssemblyNames[0] ?? args.assemblyName)
+
   return {
     ...args,
-    // Supplied here, not by each caller: this is the one place that has already
-    // resolved the assembly a fetch is against, and it is the same handle
-    // `originalRefName` is a name into. Every caller that passed its own wrote
-    // these same two lines, and the three that forgot — `CoreGetExportData`,
-    // `BreakpointGetFeatures`, `fetchTrackData` — failed silently, saved only by
-    // whichever call happened to prime the adapter instance first.
-    sequenceAdapter: assemblyData[assemblyNames[0]!]?.sequenceAdapter,
+    assemblyName,
     regions: regions.map((region, i) => {
       const data = assemblyData[assemblyNames[i]!]
       return renameRegionIfNeeded(

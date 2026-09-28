@@ -1,6 +1,5 @@
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import { updateStatus } from '../util/progress.ts'
-import { getSequenceAdapterConfig } from './getSequenceAdapterConfig.ts'
 import { checkRefName } from './refNameMaps.ts'
 import { detectRefNameMismatch } from './refNameMismatch.ts'
 
@@ -20,7 +19,6 @@ export type RefNameMapAssembly = Pick<
   | 'refNames'
   | 'refNameAliases'
   | 'rpcManager'
-  | 'configuration'
   | 'getCanonicalRefName'
   | 'setRefNameMismatch'
 >
@@ -39,11 +37,6 @@ export async function loadRefNameMap(
   // `when` on those volatiles. It rejects on failure, so no error check follows
   await assembly.load()
 
-  // pass the assembly's sequence adapter config (as a snapshot, since MST
-  // objects can't be assigned elsewhere) so BAM/CRAM adapters can cache it for
-  // later use when fetching features
-  const sequenceAdapter = getSequenceAdapterConfig(assembly)
-
   // Labelled, because this is the multi-second stall before any RPC's own
   // status appears: `renameRegionsIfNeeded` runs inside `serializeArguments`,
   // so every fetch waits here first, and the byte-granularity progress below
@@ -55,7 +48,6 @@ export async function loadRefNameMap(
     assembly.rpcManager.call(sessionId, 'CoreGetRefNames', {
       adapterConfig: adapterConfig as Record<string, unknown>,
       assemblyName: assembly.name,
-      sequenceAdapter,
       haplotypes: options.haplotypes,
       // signal intentionally not passed, fixes issues like #2221.
       // alternative fix #2540 was proposed but non-working currently

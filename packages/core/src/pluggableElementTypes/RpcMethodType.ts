@@ -1,5 +1,7 @@
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { untracked } from 'mobx'
 
+import { getSequenceAdapterConfigByName } from '../assemblyManager/getSequenceAdapterConfig.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
 import { resolveUriLocation } from '../util/io/index.ts'
 import { unwrapRpcResult } from '../util/rpc.ts'
@@ -253,12 +255,34 @@ export default abstract class RpcMethodType<
 
   async serializeArguments(args: object): Promise<Record<string, unknown>> {
     const augmented = await this.augmentLocationObjects(
-      args as Record<string, unknown>,
+      this.attachReference(args as Record<string, unknown>),
     )
     return {
       ...augmented,
       blobMap: getBlobMap(),
     }
+  }
+
+  /**
+   * The reference sequence of the genome a call names in `assemblyName`, as a
+   * sibling of `adapterConfig`. The worker keys and builds a reference-reading
+   * adapter with it (dataAdapterCache), and this is the one place it comes
+   * from: a renaming method's regions have already become its `assemblyName`
+   * by the time super is reached, and a header call names its own. Ahead of
+   * the location walk, which converts and authorizes what the worker opens.
+   */
+  private attachReference(args: Record<string, unknown>) {
+    const { assemblyName } = args as { assemblyName?: string }
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+    if (!assemblyName || !assemblyManager) {
+      return args
+    }
+    // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: the reference only rides along on the RPC this call sends; the autorun that reached here (the synteny swap check) branches on the call's result, not on this read
+    const sequenceAdapter = untracked(() =>
+      getSequenceAdapterConfigByName(assemblyManager, assemblyName),
+    )
+    return sequenceAdapter ? { ...args, sequenceAdapter } : args
   }
 
   protected async renameRegions<T extends RenameRegionsArgs>(

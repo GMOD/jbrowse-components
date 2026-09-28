@@ -21,10 +21,6 @@ export interface RpcRegistry {
   CoreGetRefNames: {
     args: {
       adapterConfig: Record<string, unknown>
-      // The one entry where a caller really does pass this — `loadRefNameMap`.
-      // This RPC is what renaming CALLS, so the derivation that fills it in for
-      // every other method cannot reach it.
-      sequenceAdapter?: Record<string, unknown>
       assemblyName?: string
       haplotypes?: string[]
     }
@@ -100,6 +96,7 @@ export interface RpcRegistry {
     args: {
       adapterConfig: Record<string, unknown>
       haplotypes?: string[]
+      assemblyName?: string
     }
     return: unknown
   }
@@ -169,10 +166,10 @@ export type RpcSession = {
   sessionId: string
 }
 
-// The reference the regions were renamed against, which BAM/CRAM and the
-// reference-scan adapters decode with. renameRegionsIfNeeded adds it, so no
-// caller writes one. An execute passes its whole args to getFeatureAdapter
-// rather than naming it.
+// The reference sequence of the genome the request names, which BAM/CRAM and
+// the reference-scan adapters decode with. `BaseRpcDriver.call` attaches it to
+// every call that names a genome, so no caller writes one. An execute passes
+// its whole args to getFeatureAdapter rather than naming it.
 export type RpcReference = {
   sequenceAdapter?: Record<string, unknown>
 }

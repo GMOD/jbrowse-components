@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   CopyToClipboardButton,
   Dialog,
@@ -51,11 +52,17 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
 }: AboutPanelProps & { onClose: () => void }) {
   const { classes } = useStyles()
   const { rpcManager } = session
-  const trackId = readConfObject(config, 'trackId') as string
+  const adapterConfig = readConfObject(config, 'adapter') as Record<
+    string,
+    unknown
+  >
+  // the id the track's own requests use, so this reaches their worker and
+  // their cached adapter rather than pinning a copy on another worker
+  const sessionId = adapterConfigCacheKey(adapterConfig)
 
   const { data, error, isLoading, status } = useFetch(
-    ['CoreGetRefNames', trackId] as const,
-    (_name, _trackId, signal, statusCallback) => {
+    ['CoreGetRefNames', sessionId] as const,
+    (_name, _sessionId, signal, statusCallback) => {
       // one status slot per assembly, so N concurrent reads aggregate into one
       // bar instead of the last writer winning
       const slot = createStatusFanOut(statusCallback)
@@ -68,8 +75,8 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
           async assemblyName =>
             [
               assemblyName,
-              await rpcManager.call(trackId, 'CoreGetRefNames', {
-                adapterConfig: readConfObject(config, 'adapter'),
+              await rpcManager.call(sessionId, 'CoreGetRefNames', {
+                adapterConfig,
                 assemblyName,
                 signal,
                 statusCallback: slot(),

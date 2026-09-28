@@ -21,7 +21,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
 
-import { getSequenceAdapterConfigByName } from '../assemblyManager/getSequenceAdapterConfig.ts'
 import { readConfObject } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import {
@@ -1463,6 +1462,7 @@ export function warmTrackDisplayGeneric(
   self: GenericView,
   trackId: string,
   displayInitialSnapshot: DisplayInitialSnapshot = {},
+  assemblyName?: string,
 ) {
   const { pluginManager } = getEnv(self)
   try {
@@ -1475,7 +1475,7 @@ export function warmTrackDisplayGeneric(
       .resolveDisplayTypeRecord(picked.type)
       ?.loadStateModel()
       .catch(() => {})
-    warmTrackAdapter(self, trackId)
+    warmTrackAdapter(self, trackId, assemblyName)
   } catch {
     // the launch reports an unresolvable track
   }
@@ -1506,6 +1506,11 @@ function adapterTypesIn(
  * boots, the worker that serves them. That id hashes the adapter config as the
  * track's config node reads it, so a frozen config.json entry is read through a
  * node of its type: its raw adapter snapshot hashes to another worker.
+ *
+ * `assemblyName` is the one the view is launching on. The track's own
+ * `assemblyNames[0]` is not that: a reference-reading adapter is built for the
+ * genome its request names, and warming it for the config's first assembly
+ * would build an instance the view never reads.
  */
 function declaresLanes(
   adapterConfig: Record<string, unknown>,
@@ -1521,7 +1526,11 @@ function declaresLanes(
   )
 }
 
-function warmTrackAdapter(self: GenericView, trackId: string) {
+function warmTrackAdapter(
+  self: GenericView,
+  trackId: string,
+  assemblyName?: string,
+) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
   const raw: AnyConfigurationModel | Record<string, unknown> | undefined =
@@ -1545,19 +1554,14 @@ function warmTrackAdapter(self: GenericView, trackId: string) {
         adapterTypes: [...adapterTypesIn(adapterConfig, pluginManager)],
       })
       .catch(() => {})
-    const [assemblyName] = readConfObject(conf, 'assemblyNames') as string[]
-    const sequenceAdapter = assemblyName
-      ? getSequenceAdapterConfigByName(session.assemblyManager, assemblyName)
-      : undefined
     // a source that declares its lanes reads an index per lane asked about,
     // and only its display knows which; asked about none it would read all
-    if (sequenceAdapter && !declaresLanes(adapterConfig, pluginManager)) {
+    if (assemblyName && !declaresLanes(adapterConfig, pluginManager)) {
       session.rpcManager
         // eslint-disable-next-line no-restricted-syntax -- an index read the track's first request would make anyway: nothing to show, and nothing a user can move on from
         .call(sessionId, 'CoreGetRefNames', {
           adapterConfig,
           assemblyName,
-          sequenceAdapter,
           signal: undefined,
         })
         .catch(() => {})

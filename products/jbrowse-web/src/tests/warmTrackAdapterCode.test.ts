@@ -76,12 +76,7 @@ test('a pending track loads its adapter code and reads its index under the id it
   expect(call.mock.calls[1]).toEqual([
     idOf('RenderFeatureData'),
     'CoreGetRefNames',
-    expect.objectContaining({
-      assemblyName: 'volvox',
-      sequenceAdapter: expect.objectContaining({
-        type: 'FromConfigSequenceAdapter',
-      }),
-    }),
+    expect.objectContaining({ assemblyName: 'volvox' }),
   ])
 })
 
