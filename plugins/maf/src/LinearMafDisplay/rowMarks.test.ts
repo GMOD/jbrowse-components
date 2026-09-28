@@ -178,7 +178,7 @@ describe('identity is a row mark', () => {
     display.setRowRendering('xyplot')
     const flat = display.encodedUpload.get(0)!.identityBars!
     expect(flat.count).toBeGreaterThan(0)
-    expect(new Set(flat.color).size).toBe(1)
+    expect(new Set(flat.color as Uint32Array).size).toBe(1)
     expect(display.identityEncoding).toBe('bars')
 
     display.setColorField('identity')

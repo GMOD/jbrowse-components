@@ -1,4 +1,5 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { colorAt } from '@jbrowse/core/util/markEncoding'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { TEXT_BASELINE_RATIO, cullOverlappingLabels } from '@jbrowse/display-ui'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
@@ -108,7 +109,7 @@ export function placeTextMarks(
       ) {
         continue
       }
-      const { x, x2, y, row, color, count } = layer
+      const { x, x2, y, row, count } = layer
       const values = entry.valued ? y : undefined
       for (let i = 0; i < count; i++) {
         const label = text[i]
@@ -142,6 +143,7 @@ export function placeTextMarks(
             : bandTop + band / 2 + font.size * (TEXT_BASELINE_RATIO - 0.5)
         const centre = bpToPx(mid)
         const width = measureText(label, font.size, font.family)
+        const own = entry.ownColor ? colorAt(layer, i) : undefined
         candidates.push({
           markIndex,
           regionIndex: block.displayedRegionIndex,
@@ -151,9 +153,9 @@ export function placeTextMarks(
           baseline,
           width,
           color:
-            entry.ownColor && color
-              ? abgrToCssRgba(rowColor(color[i]!, row, i, state.rowTable))
-              : defaultColor,
+            own === undefined
+              ? defaultColor
+              : abgrToCssRgba(rowColor(own, row, i, state.rowTable)),
           left: centre - width / 2,
           right: centre + width / 2,
           top: baseline - ascent,

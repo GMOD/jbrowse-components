@@ -106,7 +106,8 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
   id: 'span',
   pass: {
     ...slangPass({ id: 'span', mod: shader }),
-    pack: c => shader.packInstances({ ...c, color: colorBits(c) }, c.count),
+    pack: c =>
+      shader.packInstances({ ...c, color: colorBits(c, c.count) }, c.count),
   },
 
   writeUniforms(scratch, clip, block, frame, params) {

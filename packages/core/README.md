@@ -337,6 +337,18 @@ readonly[
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
 
+### colorAt
+
+The packed colour instance `i` of `channels` paints: `color[i]`, or `color`
+itself where the colour is a constant and so shipped as one number.
+
+```js
+// type signature
+(channels: Pick<EncodedChannels, "color">, i: number) => number | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ### ColorEncoding
 
 How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression

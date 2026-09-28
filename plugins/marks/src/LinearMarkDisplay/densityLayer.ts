@@ -15,7 +15,7 @@ const EMPTY: StoredLayer = {
 
 /**
  * One region's density read as the layer a value mark draws: the sidecar's
- * own intervals as `x`/`x2` and its levels as `y`, one packed colour per bin,
+ * own intervals as `x`/`x2` and its levels as `y`, one packed colour for all,
  * a circle for the point's shape, and the Flatbush the hover reads where the
  * mark answers through one. The sidecar's rows are what a wiggle track would
  * draw of the same bigWig at the same bp/px — the zoom level the adapter
@@ -27,7 +27,6 @@ export function densityLayer(
   indexed: boolean,
 ): StoredLayer {
   const count = starts.length
-  const colors = new Uint32Array(count)
   const fb =
     indexed && count > 0
       ? new Flatbush(count, undefined, Float64Array)
@@ -36,7 +35,6 @@ export function densityLayer(
   let yMax = -Infinity
   for (let i = 0; i < count; i++) {
     const v = scores[i]!
-    colors[i] = color
     yMin = v < yMin ? v : yMin
     yMax = v > yMax ? v : yMax
     fb?.add(starts[i]!, v, ends[i], v)
@@ -48,7 +46,7 @@ export function densityLayer(
     x: starts,
     x2: ends,
     y: scores,
-    color: colors,
+    color,
     glyph: new Uint8Array(count).fill(GLYPH_DISC),
     yMin,
     yMax,

@@ -14,6 +14,7 @@ import {
   linkMark,
 } from './linkMark.ts'
 import { inkHitNearest } from './markHit.ts'
+import { instanceColor } from './markRamp.ts'
 import { pointMark } from './pointMark.ts'
 import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
 import { ruleMark } from './ruleMark.ts'
@@ -98,7 +99,7 @@ describe('span through a row table: every drawn rect answers its own hit, in bot
     x: c.x.subarray(i, i + 1),
     x2: c.x2.subarray(i, i + 1),
     row: c.row.subarray(i, i + 1),
-    color: c.color!.subarray(i, i + 1),
+    color: instanceColor(c.color, i),
     count: 1,
   })
   test.each([false, true])('reversed %s', reversed => {
@@ -123,7 +124,7 @@ describe('containment: a rule in place of the painted box', () => {
     x: c.x.subarray(i, i + 1),
     x2: c.x2.subarray(i, i + 1),
     row: c.row.subarray(i, i + 1),
-    color: c.color!.subarray(i, i + 1),
+    color: instanceColor(c.color, i),
     count: 1,
   })
   const onInk =
@@ -257,7 +258,7 @@ const slicePoint = (c: PointChannels, i: number): PointChannels => ({
   x: c.x.subarray(i, i + 1),
   x2: c.x2.subarray(i, i + 1),
   y: c.y.subarray(i, i + 1),
-  color: c.color!.subarray(i, i + 1),
+  color: instanceColor(c.color, i),
   glyph: c.glyph.subarray(i, i + 1),
   count: 1,
 })
@@ -315,7 +316,7 @@ function sliceOneBar(c: BarChannels, i: number): BarChannels {
     x: c.x.subarray(i, i + 1),
     x2: c.x2.subarray(i, i + 1),
     y: c.y.subarray(i, i + 1),
-    color: c.color!.subarray(i, i + 1),
+    color: instanceColor(c.color, i),
     count: 1,
   }
 }
@@ -483,7 +484,7 @@ test('bar: a zero-height bar paints nothing and is never the answer', () => {
           x: c.x.subarray(i, i + 1),
           x2: c.x2.subarray(i, i + 1),
           y: c.y.subarray(i, i + 1),
-          color: c.color!.subarray(i, i + 1),
+          color: instanceColor(c.color, i),
           count: 1,
         }),
       },
@@ -541,7 +542,7 @@ const sliceLink = (c: LinkChannels, i: number): LinkChannels => ({
   x2Region: c.x2Region.subarray(i, i + 1),
   y: c.y?.subarray(i, i + 1),
   size: c.size?.subarray(i, i + 1),
-  color: c.color?.subarray(i, i + 1),
+  color: instanceColor(c.color, i),
   feet: c.feet?.subarray(i, i + 1),
   count: 1,
 })

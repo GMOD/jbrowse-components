@@ -24,6 +24,7 @@ export {
   RAMP_NO_VALUE_COLOR,
 } from '../shaders/markColor.generated.ts'
 export {
+  instanceColor,
   isThreshold,
   keepRampValues,
   rampUniforms,

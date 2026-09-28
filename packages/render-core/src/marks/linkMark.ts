@@ -760,7 +760,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
           x2Region: c.x2Region,
           y: c.y ?? (c.count === 0 ? NO_VALUES : new Float32Array(c.count)),
           size: sizeLane(c),
-          color: colorBits(c),
+          color: colorBits(c, c.count),
           row: rowLane(c.row, c.count),
           feet: c.feet ?? (c.count === 0 ? NO_FEET : new Uint8Array(c.count)),
         },

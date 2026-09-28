@@ -3,6 +3,7 @@ import * as iface from '../shaders/linkMark.iface.generated.ts'
 import { linkStrokeWidthPx } from '../shaders/linkMark.js.generated.ts'
 import { recordingContext } from './drawAgainstHit.ts'
 import { linkMark } from './linkMark.ts'
+import { instanceColor } from './markRamp.ts'
 
 import type { LinkChannels, LinkParams, LinkRegion } from './linkMark.ts'
 
@@ -54,7 +55,7 @@ function instance(c: LinkChannels, i: number): LinkChannels {
     x2: c.x2.subarray(i, i + 1),
     x2Region: c.x2Region.subarray(i, i + 1),
     ...(c.size ? { size: c.size.subarray(i, i + 1) } : {}),
-    color: c.color!.subarray(i, i + 1),
+    color: instanceColor(c.color, i),
     count: 1,
   }
 }

@@ -122,7 +122,7 @@ export const ruleMark: MarkShape<RuleChannels, RuleParams> = {
       shader.packInstances(
         {
           ...c,
-          color: colorBits(c),
+          color: colorBits(c, c.count),
           glyph: new Uint8Array(c.count),
           row: rowLane(c.row, c.count),
         },

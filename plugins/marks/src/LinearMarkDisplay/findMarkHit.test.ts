@@ -207,6 +207,25 @@ test('of two bars under the cursor, the one drawn over the other answers', () =>
   expect(hit?.instance).toBe(2)
 })
 
+test('a constant colour answers a hover as the one number the layer holds', () => {
+  const layer: StoredLayer = {
+    count: 2,
+    skipped: 0,
+    x: Uint32Array.from([100, 200]),
+    x2: Uint32Array.from([140, 240]),
+    y: Float32Array.from([5, 6]),
+    color: 0xff0000ff,
+    yMin: 5,
+    yMax: 6,
+  }
+  const state = { ...STATE, rowHeight: STATE.canvasHeight }
+  const marks = buildMarkList(entries('bar'))
+  const data = new Map([[0, { layers: [layer] }]])
+  const hit = findMarkHit(176, 300, [BLOCK], data, marks, state, REGIONS)
+  expect(hit?.instance).toBe(1)
+  expect(hit?.color).toBe(0xff0000ff)
+})
+
 test('a bar with no row lane, the whole canvas its band, answers the same', () => {
   const { row: _row, ...layer } = randomLayer(2, 800, 1)
   const state = { ...STATE, rowHeight: STATE.canvasHeight }

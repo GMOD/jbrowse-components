@@ -1,5 +1,6 @@
 import {
   backToFront,
+  instanceColor,
   nearestMarkHit,
   recordPath,
 } from '@jbrowse/render-core/marks'
@@ -71,7 +72,7 @@ function sliceLink(c: LinkChannels, i: number): LinkChannels {
     x2Region: one(c.x2Region)!,
     y: one(c.y),
     size: one(c.size),
-    color: one(c.color),
+    color: instanceColor(c.color, i),
     feet: one(c.feet),
     count: 1,
   }
@@ -82,7 +83,7 @@ function slicePoint(c: PointChannels, i: number): PointChannels {
     x: c.x.subarray(i, i + 1),
     x2: c.x2.subarray(i, i + 1),
     y: c.y.subarray(i, i + 1),
-    color: c.color?.subarray(i, i + 1),
+    color: instanceColor(c.color, i),
     glyph: c.glyph.subarray(i, i + 1),
     count: 1,
   }

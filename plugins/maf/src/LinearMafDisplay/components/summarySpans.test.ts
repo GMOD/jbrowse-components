@@ -117,8 +117,8 @@ test('a bar takes the match color at its score-proportional alpha', () => {
     rowIndexBySrc,
     MATCH,
   )
-  expect([...color!].map(c => c & 0xffffff)).toEqual([0, 0, 0])
-  expect([...color!].map(abgrAlpha)).toEqual([255, 64, 179])
+  expect([...(color as Uint32Array)].map(c => c & 0xffffff)).toEqual([0, 0, 0])
+  expect([...(color as Uint32Array)].map(abgrAlpha)).toEqual([255, 64, 179])
 })
 
 test('positions a bar on its species row across the block extent', () => {

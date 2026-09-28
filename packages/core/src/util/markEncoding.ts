@@ -768,8 +768,20 @@ export function encodeFeatures<L extends LaneName>(
         ? y
         : new Float32Array(count)
       : undefined
-  const color = has('color') && !colorValue ? new Uint32Array(count) : undefined
-  const scaled = color || colorValue ? declaredScale : undefined
+  const paintsColor = has('color') && !colorValue
+  const unscaled =
+    paintsColor && declaredScale?.scale !== 'categorical' && !quantitative
+      ? unscaledColor(
+          table,
+          colorEncoding as string | ChannelReader<number>,
+          jexl,
+        )
+      : undefined
+  const color =
+    paintsColor && typeof unscaled !== 'number'
+      ? new Uint32Array(count)
+      : undefined
+  const scaled = paintsColor || colorValue ? declaredScale : undefined
   let scale: ColorScaleTable | undefined
   let missingMet = false
   let notNumberMet = false
@@ -855,19 +867,10 @@ export function encodeFeatures<L extends LaneName>(
         notNumberMet,
       })
     }
-  } else if (color) {
-    const paint = unscaledColor(
-      table,
-      colorEncoding as string | ChannelReader<number>,
-      jexl,
-    )
-    if (typeof paint === 'number') {
-      color.fill(paint)
-    } else {
-      for (let k = 0; k < count; k++) {
-        report?.(k)
-        color[k] = paint(rowAt(k))
-      }
+  } else if (color && typeof unscaled === 'function') {
+    for (let k = 0; k < count; k++) {
+      report?.(k)
+      color[k] = unscaled(rowAt(k))
     }
   }
 
@@ -909,7 +912,9 @@ export function encodeFeatures<L extends LaneName>(
   if (row) {
     encoded.row = row
   }
-  if (color) {
+  if (typeof unscaled === 'number') {
+    encoded.color = unscaled
+  } else if (color) {
     encoded.color = color
   }
   if (colorValue) {
@@ -1102,8 +1107,6 @@ export function colorEvaluator(
   return () => constant
 }
 
-// A constant colour is its packed value, which fills the lane without reading
-// a row.
 function unscaledColor(
   table: FeatureTable,
   color: string | ChannelReader<number>,
@@ -1134,6 +1137,16 @@ export function featureIndexAt(
 
 /**
  * #api
+ * The packed colour instance `i` of `channels` paints: `color[i]`, or `color`
+ * itself where the colour is a constant and so shipped as one number.
+ */
+export function colorAt(channels: Pick<EncodedChannels, 'color'>, i: number) {
+  const { color } = channels
+  return typeof color === 'number' ? color : color?.[i]
+}
+
+/**
+ * #api
  * The buffers an {@link EncodedChannels} owns, for `rpcResult`'s transfer
  * list.
  */
@@ -1145,7 +1158,7 @@ export function encodedChannelTransferables(c: EncodedChannels) {
     c.featureIndex,
     c.y,
     c.row,
-    c.color,
+    typeof c.color === 'number' ? undefined : c.color,
     c.colorValue,
     c.glyph,
     c.size,

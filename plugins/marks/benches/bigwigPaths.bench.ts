@@ -1,4 +1,5 @@
-import { resolve } from 'node:path'
+import { rmSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 // The mark display beside the wiggle display over one BigWig: the worker work
 // each path does for one region at one zoom, over the same tier bbi picks for
 // both (ADR-125), and how far a binned `mean` over a summary tier sits from
@@ -16,9 +17,11 @@ import { resolve } from 'node:path'
 // the contig, which is what a display's region fetch is), --zooms=<bp/px,...>
 // (default one zoom inside each tier of the file, the raw section included),
 // --rounds (default 7), --index (the marks arms with the hit index a bar
-// asked for before ADR-196), --json.
+// asked for before ADR-196), --base=<ref> (a seventh arm, table-base: the
+// table arm through packages/core extracted at that ref), --json.
 //
-// Six arms per zoom, interleaved round-robin, MIN across rounds
+// Six arms per zoom, interleaved round-robin with the order rotated each
+// round, MIN across rounds
 // (agent-docs/reference/BENCHMARKING.md), each a fetch plus what the RPC
 // executor does with it:
 //
@@ -33,6 +36,8 @@ import { resolve } from 'node:path'
 //   table       getFeatureTable, the adapter's rows as a table over bbi's
 //               arrays, then the same encode: what CoreGetEncodedLayers runs
 //   table-mean  the same table through `bin: auto` and `aggregate: mean`
+//   table-base  with --base, the table arm's encode as the ref spells it, its
+//               lanes checked equal to the table arm's first
 //
 // The bbi block cache is warm after the first round, so the MIN is a refetch
 // over held blocks: the zoom-across-a-tier case, not a cold open.
@@ -48,6 +53,10 @@ import { resolve } from 'node:path'
 // 5000 random hovers over the screen, and the mean time of one hover each way
 // prints beside it.
 //
+// The bytes: what each path's payload holds a row once the RPC returns — the
+// unique buffers under wiggle's arrays and under the table arm's lanes, as
+// `rpcDataMap` retains them — per row.
+//
 // The error rows: for a summary tier, `aggregate: mean` over `bin: auto` is
 // a mean of tier means, unweighted, since bbi exports no validCnt. Against
 // the raw section's coverage-weighted mean over the same bins, the bench
@@ -59,7 +68,11 @@ import { performance } from 'node:perf_hooks'
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import createJexlInstance from '@jbrowse/core/util/jexl'
-import { encodeFeatures, hitIndexOf } from '@jbrowse/core/util/markEncoding'
+import {
+  colorAt,
+  encodeFeatures,
+  hitIndexOf,
+} from '@jbrowse/core/util/markEncoding'
 import {
   barMark,
   defineMark,
@@ -67,6 +80,7 @@ import {
   withPassId,
 } from '@jbrowse/render-core/marks'
 
+import { checkoutPackageAtRef } from '../../maf/benches/refCheckout.ts'
 import BigWigAdapter from '../../wiggle/src/BigWigAdapter/BigWigAdapter.ts'
 import configSchema from '../../wiggle/src/BigWigAdapter/configSchema.ts'
 import { tierSpanRange } from '../../wiggle/src/BigWigAdapter/tierSpanRange.ts'
@@ -96,6 +110,18 @@ const num = (name: string, fallback: number) => Number(flag(name) ?? fallback)
 const file = resolve(flag('file') ?? 'test_data/volvox/volvox_microarray.bw')
 const rounds = num('rounds', 7)
 const asJson = process.argv.includes('--json')
+const baseRef = flag('base')
+const baseDir = baseRef
+  ? checkoutPackageAtRef(
+      resolve(import.meta.dirname, '../../..'),
+      baseRef,
+      'packages/core',
+    )
+  : undefined
+const encodeBase: typeof encodeFeatures | undefined = baseDir
+  ? (await import(join(baseDir, 'packages/core/src/util/markEncoding.ts')))
+      .encodeFeatures
+  : undefined
 
 const adapter = new BigWigAdapter(
   configSchema.create({
@@ -189,6 +215,13 @@ function armTableMean(region: Region, bpPerPx: number) {
     const table = await adapter.getFeatureTable(region, { bpPerPx })
     const binned = runTransforms(table, steps, jexl)
     return encodeFeatures(binned, { y: MEAN_FIELD }, BAR_LANES, { jexl })
+  }
+}
+
+function armTableBase(region: Region, bpPerPx: number) {
+  return async () => {
+    const table = await adapter.getFeatureTable(region, { bpPerPx })
+    return encodeBase!(table, { y: 'score' }, BAR_LANES, { jexl })
   }
 }
 
@@ -292,6 +325,31 @@ function barMarkOf(hitBy: DisplayMark['hitBy']): DisplayMark {
     }),
   })
   return Object.assign(mark, { markIndex: 0, hitBy })
+}
+
+function uniqueBytes(views: (ArrayBufferView | undefined)[]) {
+  const seen = new Set<ArrayBufferLike>()
+  let bytes = 0
+  for (const view of views) {
+    if (view && !seen.has(view.buffer)) {
+      seen.add(view.buffer)
+      bytes += view.buffer.byteLength
+    }
+  }
+  return bytes
+}
+
+function encodedBytes(c: EncodedChannels) {
+  return uniqueBytes([
+    c.x,
+    c.x2,
+    c.featureIndex,
+    c.y,
+    c.row,
+    typeof c.color === 'number' ? undefined : c.color,
+    c.colorValue,
+    c.glyph,
+  ])
 }
 
 function minMs(run: () => unknown) {
@@ -399,6 +457,9 @@ for (const bpPerPx of zooms) {
     ['marks-mean', armMarksMean(region, bpPerPx)],
     ['table', armTable(region, bpPerPx)],
     ['table-mean', armTableMean(region, bpPerPx)],
+    ...(encodeBase
+      ? [['table-base', armTableBase(region, bpPerPx)] as const]
+      : []),
   ] as const
 
   const wiggle = await arms[0][1]()
@@ -422,15 +483,38 @@ for (const bpPerPx of zooms) {
     }
   }
 
+  const tableBase = encodeBase
+    ? await armTableBase(region, bpPerPx)()
+    : undefined
+  if (tableBase) {
+    for (let i = 0; i < table.count; i++) {
+      if (
+        tableBase.x[i] !== table.x[i] ||
+        tableBase.x2[i] !== table.x2[i] ||
+        tableBase.y[i] !== table.y[i] ||
+        colorAt(tableBase, i) !== colorAt(table, i)
+      ) {
+        throw new Error(`${bpPerPx} bp/px: row ${i} differs from ${baseRef}`)
+      }
+    }
+  }
+
   const best = arms.map(() => Infinity)
   for (let r = 0; r < rounds; r++) {
-    for (const [i, [, run]] of arms.entries()) {
+    for (let k = 0; k < arms.length; k++) {
+      const i = (k + r) % arms.length
       const t0 = performance.now()
-      await run()
+      await arms[i]![1]()
       best[i] = Math.min(best[i]!, performance.now() - t0)
     }
   }
 
+  const wiggleBytes = uniqueBytes([
+    wiggle.featurePositions,
+    wiggle.featureScores,
+    wiggle.featureMinScores,
+    wiggle.featureMaxScores,
+  ])
   const hover = hoverCheck(table, region, bpPerPx)
   const tier = tierLabel(bpPerPx)
   const binBp = autoBinStep(bpPerPx)
@@ -454,6 +538,16 @@ for (const bpPerPx of zooms) {
     tableMs: Number(best[4]!.toFixed(2)),
     tableMeanMs: Number(best[5]!.toFixed(2)),
     binBp,
+    wiggleBytesPerRow: Number((wiggleBytes / marks.count).toFixed(2)),
+    tableBytesPerRow: Number((encodedBytes(table) / marks.count).toFixed(2)),
+    ...(tableBase
+      ? {
+          tableBaseMs: Number(best[6]!.toFixed(2)),
+          tableBaseBytesPerRow: Number(
+            (encodedBytes(tableBase) / marks.count).toFixed(2),
+          ),
+        }
+      : {}),
     hover,
     ...(error
       ? {
@@ -481,10 +575,17 @@ if (asJson) {
         : `  bin ${r.binBp}bp x${r.bins}: mean-of-means err ${r.meanErrPct}% mean, ${r.maxErrPct}% max; span-weighted ${r.weightedErrPct}%`
     const h = r.hover
     console.log(
+      `  ${String(r.bpPerPx).padStart(9)} bp/px  retained a row: wiggle ${r.wiggleBytesPerRow}B, table ${r.tableBytesPerRow}B${r.tableBaseMs === undefined ? '' : `; table-base ${r.tableBaseBytesPerRow}B in ${r.tableBaseMs}ms (${(r.tableBaseMs / r.wiggleMs).toFixed(2)}x)`}`,
+    )
+    console.log(
       `  ${String(r.bpPerPx).padStart(9)} bp/px  hover: ${h.hits}/${h.probes} hits agree; Flatbush build ${h.flatbushMs}ms, row index ${h.rowIndexMs}ms; a hover ${h.indexHoverUs}us through the Flatbush, ${h.rowHoverUs}us by rows`,
     )
     console.log(
       `  ${String(r.bpPerPx).padStart(9)} bp/px  tier ${r.tier.padEnd(9)} ${String(r.regionBp).padStart(10)}bp rows ${String(r.rows).padStart(7)}  wiggle ${r.wiggleMs.toFixed(2).padStart(7)}ms  control ${r.controlMs.toFixed(2).padStart(7)}ms  marks ${r.marksMs.toFixed(2).padStart(7)}ms (${(r.marksMs / r.wiggleMs).toFixed(2)}x)  marks-mean ${r.marksMeanMs.toFixed(2).padStart(7)}ms  table ${r.tableMs.toFixed(2).padStart(7)}ms (${(r.tableMs / r.wiggleMs).toFixed(2)}x)  table-mean ${r.tableMeanMs.toFixed(2).padStart(7)}ms${error}`,
     )
   }
+}
+
+if (baseDir) {
+  rmSync(baseDir, { recursive: true, force: true })
 }

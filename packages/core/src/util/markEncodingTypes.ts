@@ -338,7 +338,11 @@ export interface EncodedChannels {
   x2: Uint32Array
   featureIndex?: Uint32Array
   y?: Float32Array
-  color?: Uint32Array
+  /**
+   * Each instance's packed ABGR, or one number every instance paints where
+   * the colour is a constant; {@link colorAt} reads either.
+   */
+  color?: Uint32Array | number
   /**
    * The raw values of a quantitative colour channel — a ramp's or a
    * threshold's — for a caller that named the `colorValue` lane: the scale

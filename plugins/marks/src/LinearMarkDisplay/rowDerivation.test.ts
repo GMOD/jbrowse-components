@@ -1,3 +1,4 @@
+import { colorAt } from '@jbrowse/core/util/markEncoding'
 import { rowSlot } from '@jbrowse/render-core/marks'
 import { waitFor } from '@testing-library/react'
 
@@ -54,7 +55,8 @@ function drawnLayers(display: LinearMarkDisplayModel) {
         x2: shown.map(({ i }) => l.x2[i]!),
         y: l.y ? shown.map(({ i }) => l.y![i]!) : [],
         row: l.row ? shown.map(({ slot }) => slot) : [],
-        color: l.color ? shown.map(({ i }) => l.color![i]!) : [],
+        color:
+          l.color === undefined ? [] : shown.map(({ i }) => colorAt(l, i)!),
       }
     }),
   )

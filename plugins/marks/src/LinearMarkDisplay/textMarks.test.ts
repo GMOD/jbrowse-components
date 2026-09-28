@@ -125,6 +125,26 @@ test('a label stands over the middle of its span, just above its value, in its c
   expect(label!.width).toBe(measureText('geneA', FONT.size, FONT.family))
 })
 
+test('a constant colour, one number for the layer, prints every label in it', () => {
+  const labels = place(
+    [entry('text')],
+    [
+      textLayer(
+        [
+          [100, 200],
+          [500, 600],
+        ],
+        ['a', 'b'],
+        { color: RED },
+      ),
+    ],
+  )
+  expect(labels.map(l => l.color)).toEqual([
+    abgrToCssRgba(RED),
+    abgrToCssRgba(RED),
+  ])
+})
+
 test('a mark whose colour the config leaves at the default prints in the text colour', () => {
   const [label] = place(
     [entry('text', { ownColor: false })],

@@ -1,6 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
+import { colorAt, featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
@@ -54,7 +54,7 @@ describe('a point reads back as its whole GWAS record', () => {
             layer: mark,
             featureIndex: featureIndexAt(layer, i),
           })) as SimpleFeatureSerialized)
-    return { glyph: layer.glyph![i], color: layer.color?.[i], feature }
+    return { glyph: layer.glyph![i], color: colorAt(layer, i), feature }
   }
 
   it("carries the file's own columns and the r² to the index", async () => {

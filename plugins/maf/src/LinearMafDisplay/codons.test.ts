@@ -295,7 +295,7 @@ describe('codonConservation', () => {
     expect(Array.from(bars.x)).toEqual([100, 103, 106])
     expect(Array.from(bars.x2)).toEqual([103, 106, 109])
     expect(Array.from(bars.y)).toEqual([1, 0.5, 1])
-    expect(Array.from(bars.color!)).toEqual([7, 7, 7])
+    expect(Array.from(bars.color as Uint32Array)).toEqual([7, 7, 7])
   })
 })
 
@@ -312,9 +312,12 @@ test('the cells fill every changed codon run, and leave conserved ones clean', (
     stop: 3,
   })
   expect(spans.count).toBe(1)
-  expect([spans.x[0], spans.x2[0], spans.row[0], spans.color![0]]).toEqual([
-    103, 106, 1, 2,
-  ])
+  expect([
+    spans.x[0],
+    spans.x2[0],
+    spans.row[0],
+    (spans.color as Uint32Array)[0],
+  ]).toEqual([103, 106, 1, 2])
 })
 
 describe('findCodonAt', () => {

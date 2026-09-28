@@ -17,15 +17,18 @@ import type { MarkColorScale, MarkRamp, MarkThreshold } from './types.ts'
 
 /**
  * A colour channel as a shape reads it: `color`, the packed ABGR the worker
- * resolved, or `colorValue`, the raw values a frame's {@link MarkColorScale}
- * turns into colours here. A shape reading a scale declares both optional and
- * asks {@link colorBits} for the GPU and {@link paintColors} for Canvas2D.
+ * resolved — one per instance, or one number for all of them — or
+ * `colorValue`, the raw values a frame's {@link MarkColorScale} turns into
+ * colours here. A shape reading a scale declares both optional and asks
+ * {@link colorBits} for the GPU and {@link paintColors} for Canvas2D.
  */
 export interface ColorChannel {
-  color?: Uint32Array
+  color?: Uint32Array | number
   colorValue?: Float32Array
   /** The Canvas2D bake, memoized on the payload; nothing else writes it. */
   rampBake?: RampBake
+  /** A constant `color` as Canvas2D paints it, memoized as `rampBake` is. */
+  constantBake?: Uint32Array
 }
 
 interface RampBake {
@@ -115,11 +118,21 @@ export function rampUniforms(scale: MarkColorScale | undefined) {
  * The 4-byte instance lane, for the packer. Under a scale it is the value's
  * float32 bits viewed as the `uint` the attribute declares — the reinterpret
  * `markColor.slang`'s `asfloat` undoes, and the reason a quantitative colour
- * adds no lane.
+ * adds no lane. A constant colour fills a lane for the pack alone, which the
+ * payload never holds.
  */
-export function colorBits(c: ColorChannel): ArrayLike<number> {
-  const { colorValue } = c
-  return colorValue ? rampValueBits(colorValue) : (c.color ?? NO_COLORS)
+export function colorBits(c: ColorChannel, count: number): ArrayLike<number> {
+  const { colorValue, color } = c
+  return colorValue
+    ? rampValueBits(colorValue)
+    : typeof color === 'number'
+      ? new Uint32Array(count).fill(color)
+      : (color ?? NO_COLORS)
+}
+
+/** Instance `i`'s `color` alone, as a one-instance channel carries it. */
+export function instanceColor(color: ColorChannel['color'], i: number) {
+  return typeof color === 'number' ? color : color?.subarray(i, i + 1)
 }
 
 /** A value lane's float32 values viewed as their bits. */
@@ -179,16 +192,19 @@ function sameScale(a: MarkColorScale, b: MarkColorScale) {
  * against it once and kept on the payload, so a repaint at an unchanged scale
  * — every pan and every hover — walks no values and the painters' fill
  * batching still sees runs of one colour. The bake reruns when the domain, the
- * scale type, the ramp's bytes or a threshold's cuts or colours move.
+ * scale type, the ramp's bytes or a threshold's cuts or colours move. A
+ * constant colour expands once and is kept the same way.
  */
 export function paintColors(
   c: ColorChannel,
   count: number,
   scale: MarkColorScale | undefined,
 ): ArrayLike<number> {
-  const { colorValue } = c
+  const { colorValue, color } = c
   if (!scale || !colorValue) {
-    return c.color ?? NO_COLORS
+    return typeof color === 'number'
+      ? constantColors(c, color, count)
+      : (color ?? NO_COLORS)
   }
   const bake = c.rampBake
   if (
@@ -216,6 +232,16 @@ export function paintColors(
           : colorOf(value)
   }
   c.rampBake = { values: colorValue, scale, colors }
+  return colors
+}
+
+function constantColors(c: ColorChannel, color: number, count: number) {
+  const bake = c.constantBake
+  if (bake?.length === count && (count === 0 || bake[0] === color)) {
+    return bake
+  }
+  const colors = new Uint32Array(count).fill(color)
+  c.constantBake = colors
   return colors
 }
 

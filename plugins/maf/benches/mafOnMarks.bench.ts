@@ -76,6 +76,7 @@ import {
 } from '@jbrowse/core/util/featureTransforms'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import {
+  colorAt,
   encodeFeatures,
   featureIndexAt,
   hitIndexOf,
@@ -427,13 +428,16 @@ function checkCells(features: readonly Feature[]) {
   const wantBase = Array.from(
     { length: want.count },
     (_, k) =>
-      `${want.color[k]}/${cells.row(featureIndexAt(want, k)).get('base') ?? ''}`,
+      `${colorAt(want, k)}/${cells.row(featureIndexAt(want, k)).get('base') ?? ''}`,
   )
   const runs = cellsColumns(flattenRecords(features, 'alignments', 'species'))
   const { row } = facetRows(runs, 'species')
   const got = encodeSpanColumns(runs, COLUMN_ENCODING, row, false)
   const base = resolve(runs, 'base').column as readonly (string | undefined)[]
-  const gotBase = Array.from(got.color!, (c, i) => `${c}/${base[i] ?? ''}`)
+  const gotBase = Array.from(
+    { length: got.count },
+    (_, i) => `${colorAt(got, i)}/${base[i] ?? ''}`,
+  )
   const a = tuplesOf(want.x, want.x2, want.row, wantBase)
   const b = tuplesOf(got.x, got.x2, got.row!, gotBase)
   const first = a.findIndex((t, i) => t !== b[i])
@@ -464,8 +468,18 @@ function checkRowMajor(features: readonly Feature[]) {
   const runs = cellsColumns(table)
   const { row, offsets } = sectionRows(runs, section, sections.length)
   const got = encodeSpanColumns(runs, COLUMN_ENCODING, row, false)
-  const a = tuplesOf(want.x, want.x2, want.row!, Array.from(want.color!))
-  const b = tuplesOf(got.x, got.x2, got.row!, Array.from(got.color!))
+  const a = tuplesOf(
+    want.x,
+    want.x2,
+    want.row!,
+    Array.from(want.color as Uint32Array),
+  )
+  const b = tuplesOf(
+    got.x,
+    got.x2,
+    got.row!,
+    Array.from(got.color as Uint32Array),
+  )
   if (a.length !== b.length || a.some((t, i) => t !== b[i])) {
     throw new Error('row-major column cells differ from the unordered ones')
   }
@@ -480,7 +494,7 @@ function checkRowMajor(features: readonly Feature[]) {
     bytesEncoded.x,
     bytesEncoded.x2,
     bytesEncoded.row!,
-    Array.from(bytesEncoded.color!),
+    Array.from(bytesEncoded.color as Uint32Array),
   )
   if (c.length !== a.length || c.some((t, i) => t !== a[i])) {
     throw new Error(

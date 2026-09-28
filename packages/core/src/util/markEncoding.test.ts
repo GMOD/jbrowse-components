@@ -16,6 +16,8 @@ import { ColumnTable } from './featureTable.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
 import {
+  DEFAULT_MARK_COLOR,
+  colorAt,
   continuousColorScale,
   encodeFeatures,
   encodedChannelTransferables,
@@ -30,6 +32,13 @@ import type { ContinuousRef, ShapeName, LaneName } from './markEncoding.ts'
 
 const jexl = createJexlInstance()
 const ALL: LaneName[] = ['y', 'color', 'glyph', 'row', 'index']
+
+function colorLane(color: Uint32Array | number | undefined) {
+  if (!(color instanceof Uint32Array)) {
+    throw new Error(`expected a colour lane, got ${color}`)
+  }
+  return color
+}
 
 function feature(
   i: number,
@@ -118,10 +127,10 @@ test('under a ramp no value, text and an infinity each paint as every scale pain
     },
     ['color'],
   )
-  expect(r.color[1]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
-  expect(r.color[2]).toBe(cssColorToABGR(MISCONFIGURED_COLOR))
-  expect(r.color[4]).toBe(r.color[3])
-  expect(r.color[5]).toBe(r.color[0])
+  expect(colorLane(r.color)[1]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
+  expect(colorLane(r.color)[2]).toBe(cssColorToABGR(MISCONFIGURED_COLOR))
+  expect(colorLane(r.color)[4]).toBe(colorLane(r.color)[3])
+  expect(colorLane(r.color)[5]).toBe(colorLane(r.color)[0])
   expect(r.scale).toMatchObject({ missing: true, notNumber: true })
 })
 
@@ -164,7 +173,7 @@ test('threshold cuts written high to low paint the intervals they name', () => {
     },
     ['color'],
   )
-  expect([...r.color]).toEqual(
+  expect([...colorLane(r.color)]).toEqual(
     ['#111111', '#222222', '#333333'].map(c => cssColorToABGR(c)),
   )
   expect(r.scale).toMatchObject({ kind: 'threshold', domain: [0.1, 0.5] })
@@ -188,16 +197,18 @@ function blackToWhite(color: Partial<ContinuousRef>) {
 test('reverse turns the ramp round over the same domain', () => {
   const forward = blackToWhite({ domainMin: 0, domainMax: 50 })
   const reversed = blackToWhite({ domainMin: 0, domainMax: 50, reverse: true })
-  expect([forward.color[0], forward.color[2]]).toEqual(
+  expect([colorLane(forward.color)[0], colorLane(forward.color)[2]]).toEqual(
     ['black', 'white'].map(c => cssColorToABGR(c)),
   )
-  expect([reversed.color[0], reversed.color[2]]).toEqual(
+  expect([colorLane(reversed.color)[0], colorLane(reversed.color)[2]]).toEqual(
     ['white', 'black'].map(c => cssColorToABGR(c)),
   )
   // the middle of a 256-entry table rounds either way by one level
   const grey = (packed: number) => packed & 0xff
   expect(
-    Math.abs(grey(reversed.color[1]!) - grey(forward.color[1]!)),
+    Math.abs(
+      grey(colorLane(reversed.color)[1]!) - grey(colorLane(forward.color)[1]!),
+    ),
   ).toBeLessThanOrEqual(1)
   expect(reversed.scale).toMatchObject({
     domain: [0, 50],
@@ -210,7 +221,7 @@ test('reverse turns the ramp round over the same domain', () => {
 test('ends written high to low span the same interval, unreversed', () => {
   const written = blackToWhite({ domainMin: 50, domainMax: 0 })
   const forward = blackToWhite({ domainMin: 0, domainMax: 50 })
-  expect([...written.color]).toEqual([...forward.color])
+  expect([...colorLane(written.color)]).toEqual([...colorLane(forward.color)])
   expect(written.scale).toMatchObject({ domain: [0, 50] })
 })
 
@@ -221,15 +232,15 @@ test('a pinned floor keeps its value and the open ceiling follows the region', (
     pinned: [true, false],
     extent: [0, 50],
   })
-  expect(r.color[0]).toBe(cssColorToABGR('rgb(128,128,128)'))
-  expect(r.color[2]).toBe(cssColorToABGR('white'))
+  expect(colorLane(r.color)[0]).toBe(cssColorToABGR('rgb(128,128,128)'))
+  expect(colorLane(r.color)[2]).toBe(cssColorToABGR('white'))
 })
 
 test('a pinned ceiling keeps its value and the open floor follows the region', () => {
   const r = blackToWhite({ domainMax: 100 })
   expect(r.scale).toMatchObject({ domain: [0, 100], pinned: [false, true] })
-  expect(r.color[0]).toBe(cssColorToABGR('black'))
-  expect(r.color[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
+  expect(colorLane(r.color)[0]).toBe(cssColorToABGR('black'))
+  expect(colorLane(r.color)[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
 })
 
 test('under a domain quantile each open end stops short of its tail', () => {
@@ -248,9 +259,9 @@ test('under a domain quantile each open end stops short of its tail', () => {
     ['color'],
   )
   expect(spiky.scale).toMatchObject({ domain: [11, 90], extent: [11, 90] })
-  expect(spiky.color[0]).toBe(cssColorToABGR('black'))
-  expect(spiky.color[89]).toBe(cssColorToABGR('white'))
-  expect(spiky.color[99]).toBe(cssColorToABGR('white'))
+  expect(colorLane(spiky.color)[0]).toBe(cssColorToABGR('black'))
+  expect(colorLane(spiky.color)[89]).toBe(cssColorToABGR('white'))
+  expect(colorLane(spiky.color)[99]).toBe(cssColorToABGR('white'))
 })
 
 test('a log ramp under a domain quantile spreads values below 1 across it', () => {
@@ -267,22 +278,24 @@ test('a log ramp under a domain quantile spreads values below 1 across it', () =
     ['color'],
   )
   expect(small.scale).toMatchObject({ domain: [expect.closeTo(0.001), 0.5] })
-  expect(new Set(small.color).size).toBe(4)
+  expect(new Set(colorLane(small.color)).size).toBe(4)
 })
 
 test('an open end never crosses a pinned one', () => {
   const r = blackToWhite({ domainMin: 80 })
   expect(r.scale).toMatchObject({ domain: [80, 80] })
-  expect(new Set(r.color)).toEqual(new Set([cssColorToABGR('black')]))
+  expect(new Set(colorLane(r.color))).toEqual(
+    new Set([cssColorToABGR('black')]),
+  )
 })
 
 test('scheme names the ramp, and range, where it lists colours, wins over it', () => {
   const viridis = blackToWhite({ range: undefined, scheme: 'viridis' })
   const unset = blackToWhite({ range: undefined })
-  expect([...viridis.color]).toEqual([...unset.color])
-  expect(viridis.color[0]).toBe(cssColorToABGR('#440154'))
+  expect([...colorLane(viridis.color)]).toEqual([...colorLane(unset.color)])
+  expect(colorLane(viridis.color)[0]).toBe(cssColorToABGR('#440154'))
   const both = blackToWhite({ scheme: 'viridis' })
-  expect(both.color[0]).toBe(cssColorToABGR('black'))
+  expect(colorLane(both.color)[0]).toBe(cssColorToABGR('black'))
 })
 
 test('a region holding no number spans [0, 1] and contributes no extent', () => {
@@ -325,19 +338,56 @@ test('a jexl: field ref is the escape for a derived channel', () => {
   expect([...r.y]).toEqual([20, 80, 50])
 })
 
-test('a constant colour packs once, a jexl colour per feature', () => {
+test('a constant colour ships as one number, a jexl colour as a lane', () => {
   const constant = encodeFeatures(features, { color: 'red' }, ALL, { jexl })
-  expect(new Set(constant.color)).toEqual(new Set([cssColorToABGR('red')]))
+  expect(constant.color).toBe(cssColorToABGR('red'))
+  expect(colorAt(constant, 2)).toBe(cssColorToABGR('red'))
+  const unset = encodeFeatures(features, {}, ['color'], { jexl })
+  expect(unset.color).toBe(cssColorToABGR(DEFAULT_MARK_COLOR))
+  expect(encodedChannelTransferables(unset)).toEqual([
+    unset.x.buffer,
+    unset.x2.buffer,
+  ])
   const perFeature = encodeFeatures(
     features,
     { color: "jexl:get(feature,'strand')==1?'red':'blue'" },
     ALL,
     { jexl },
   )
-  expect([...perFeature.color]).toEqual(
+  expect([...colorLane(perFeature.color)]).toEqual(
     [1, -1, 1, -1, 1].map(s => cssColorToABGR(s === 1 ? 'red' : 'blue')),
   )
+  expect(colorAt(perFeature, 1)).toBe(cssColorToABGR('blue'))
+  expect(encodedChannelTransferables(perFeature)).toContain(
+    colorLane(perFeature.color).buffer,
+  )
   expect(perFeature.scale).toBeUndefined()
+})
+
+test('a scaled colour stays a lane even where every feature takes one colour', () => {
+  const same = features.map((_, i) => feature(i, { type: 'gene', score: 10 }))
+  const categorical = encodeFeatures(
+    same,
+    { color: { field: 'type', scale: 'categorical' } },
+    ['color'],
+    { jexl },
+  )
+  const threshold = encodeFeatures(
+    same,
+    { color: { field: 'score', scale: 'threshold', domain: [50] } },
+    ['color'],
+    { jexl },
+  )
+  const ramp = encodeFeatures(
+    same,
+    { color: { field: 'score', scale: 'linear' } },
+    ['color'],
+    { jexl },
+  )
+  for (const r of [categorical, threshold, ramp]) {
+    expect(colorLane(r.color)).toHaveLength(5)
+    expect(new Set(colorLane(r.color)).size).toBe(1)
+  }
 })
 
 test('an unpinned categorical scale colours by value, so two regions agree, and names the missing row', () => {
@@ -359,14 +409,16 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
       { value: 'gene', color: of('gene') },
     ],
   })
-  expect([...r.color]).toEqual(['gene', 'exon', 'gene', 'cds', 'gene'].map(of))
+  expect([...colorLane(r.color)]).toEqual(
+    ['gene', 'exon', 'gene', 'cds', 'gene'].map(of),
+  )
   const other = encodeFeatures(
     [feature(9, { type: 'gene' }), feature(10, {})],
     { color: { field: 'type', scale: 'categorical' } },
     ALL,
     { jexl },
   )
-  expect(other.color[0]).toBe(of('gene'))
+  expect(colorLane(other.color)[0]).toBe(of('gene'))
   expect(other.scale).toEqual({
     kind: 'categorical',
     field: 'type',
@@ -376,7 +428,7 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
       { value: '', color: cssColorToABGR(NO_CATEGORY_COLOR) },
     ],
   })
-  expect(other.color[1]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
+  expect(colorLane(other.color)[1]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
 })
 
 test('a categorical domain pins the order and a palette the colours', () => {
@@ -445,8 +497,8 @@ test('two regions agree on a value the domain leaves out, whatever else each met
     ALL,
     { jexl },
   )
-  expect(sparse.color[1]).toBe(busy.color[2])
-  expect(busy.color[2]).not.toBe(busy.color[0])
+  expect(colorLane(sparse.color)[1]).toBe(colorLane(busy.color)[2])
+  expect(colorLane(busy.color)[2]).not.toBe(colorLane(busy.color)[0])
 })
 
 test('the table lists the values met, the domain first and the rest in facet order', () => {
@@ -491,12 +543,12 @@ test('a ramp scale reads the field through its domain into the LUT', () => {
     expect(r.scale.lut.length).toBe(256 * 4)
   }
   // score 10 is the domain floor, 40 the ceiling, 25 halfway
-  expect(r.color[0]).toBe(cssColorToABGR('black'))
-  expect(r.color[1]).toBe(cssColorToABGR('white'))
-  expect(r.color[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
+  expect(colorLane(r.color)[0]).toBe(cssColorToABGR('black'))
+  expect(colorLane(r.color)[1]).toBe(cssColorToABGR('white'))
+  expect(colorLane(r.color)[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
   // a feature with no value paints the no-value grey and stays in the payload
   expect(r.count).toBe(5)
-  expect(r.color[3]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
+  expect(colorLane(r.color)[3]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
 })
 
 test('domainMid puts the ramp middle stop at that value', () => {
@@ -517,11 +569,13 @@ test('domainMid puts the ramp middle stop at that value', () => {
   )
   // score 10 is the middle stop, 40 the far end: the middle falls between two
   // entries of the straight table, so it is white to within one step
-  const [red, green, blue] = [0, 8, 16].map(s => (r.color[0]! >>> s) & 255)
+  const [red, green, blue] = [0, 8, 16].map(
+    s => (colorLane(r.color)[0]! >>> s) & 255,
+  )
   for (const channel of [red, green, blue]) {
     expect(channel).toBeGreaterThanOrEqual(254)
   }
-  expect(r.color[1]).toBe(cssColorToABGR('black'))
+  expect(colorLane(r.color)[1]).toBe(cssColorToABGR('black'))
   if (r.scale?.kind === 'ramp') {
     expect(r.scale.domainMid).toBe(10)
   }
@@ -542,7 +596,7 @@ test('a pinned ramp domain wins over the region extremes', () => {
     ALL,
     { jexl },
   )
-  expect(r.color[1]).toBe(cssColorToABGR('rgb(102,102,102)'))
+  expect(colorLane(r.color)[1]).toBe(cssColorToABGR('rgb(102,102,102)'))
 })
 
 test('a pinned ramp domain with no range steps at its value', () => {
@@ -560,9 +614,9 @@ test('a pinned ramp domain with no range steps at its value', () => {
     ALL,
     { jexl },
   )
-  expect(r.color[0]).toBe(cssColorToABGR('black'))
-  expect(r.color[1]).toBe(cssColorToABGR('white'))
-  expect(r.color[2]).toBe(cssColorToABGR('black'))
+  expect(colorLane(r.color)[0]).toBe(cssColorToABGR('black'))
+  expect(colorLane(r.color)[1]).toBe(cssColorToABGR('white'))
+  expect(colorLane(r.color)[2]).toBe(cssColorToABGR('black'))
 })
 
 test('the colorValue lane ships the raw values and the region extent instead of colours', () => {
@@ -613,7 +667,7 @@ test('a threshold colour packs one palette entry per interval for a caller namin
   // and file under its two rows
   const noValue = cssColorToABGR(NO_CATEGORY_COLOR)
   const notNumber = cssColorToABGR(MISCONFIGURED_COLOR)
-  expect([...r.color]).toEqual([
+  expect([...colorLane(r.color)]).toEqual([
     cssColorToABGR(palette[0]!),
     cssColorToABGR(palette[2]!),
     cssColorToABGR(palette[1]!),
@@ -713,8 +767,8 @@ test('a threshold domain written as strings cuts at the numbers it names', () =>
     { jexl },
   )
   const [below, above] = thresholdPalette(2).map(c => cssColorToABGR(c))
-  expect(r.color[0]).toBe(below)
-  expect(r.color[1]).toBe(above)
+  expect(colorLane(r.color)[0]).toBe(below)
+  expect(colorLane(r.color)[1]).toBe(above)
   expect(r.scale).toMatchObject({ kind: 'threshold', domain: [20] })
 })
 
@@ -893,8 +947,8 @@ test('colour and shape scales over different fields resolve side by side', () =>
     GLYPH_TRIANGLE,
     GLYPH_DISC,
   ])
-  expect(r.color[0]).toBe(r.color[2])
-  expect(r.color[0]).not.toBe(r.color[1])
+  expect(colorLane(r.color)[0]).toBe(colorLane(r.color)[2])
+  expect(colorLane(r.color)[0]).not.toBe(colorLane(r.color)[1])
 })
 
 test('an empty feature list ships no index', () => {
@@ -916,7 +970,7 @@ test("a channel spelled as a reader is read in the field ref's place", () => {
   )
   expect(r.count).toBe(3)
   expect([...r.y]).toEqual([20, 80, 50])
-  expect([...r.color]).toEqual([0xff0000ff, 0xff00ff00, 0xff0000ff])
+  expect([...colorLane(r.color)]).toEqual([0xff0000ff, 0xff00ff00, 0xff0000ff])
   expect([...r.glyph]).toEqual([GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DISC])
   expect(r.scale).toBeUndefined()
 })
@@ -1164,7 +1218,7 @@ test("the encoder's threshold paints each value as thresholdField colours it", (
     ['color'],
   )
   const field = thresholdField('v', { domain, range })
-  expect([...color]).toEqual(
+  expect([...colorLane(color)]).toEqual(
     values.map(v => cssColorToABGR(field.color(field.key(v)))),
   )
 })
@@ -1254,7 +1308,7 @@ test('a lane read through its index, with rows skipped, names each instance by i
   expect([...r.x]).toEqual([30, 20, 0])
   expect([...r.y]).toEqual([4, 3, 1])
   const [b, a] = ['b', 'a'].map(v => cssColorToABGR(categoricalValueColor(v)))
-  expect([...r.color]).toEqual([b, a, a])
+  expect([...colorLane(r.color)]).toEqual([b, a, a])
 })
 
 test('lanes with no index skip a row whose y is not finite, and stop a negative position at 0', () => {

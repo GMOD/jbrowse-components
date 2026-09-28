@@ -78,7 +78,7 @@ test('an arc inside one region draws once, its far foot through that region', ()
   expect([...links.x]).toEqual([100, 900])
   expect([...links.x2Region]).toEqual([0, 0])
   expect([...links.size!]).toEqual([4, 4])
-  expect(links.color![0]).toBe(slotColor(COLOR_LONG_INSERT))
+  expect((links.color as Uint32Array)[0]).toBe(slotColor(COLOR_LONG_INSERT))
   expect(markers.count).toBe(0)
   expect(linkHits[0]).toMatchObject({ kind: 'arc', spanBp: 310, support: 4 })
   expect(f.get(1)!.links.count).toBe(0)
@@ -130,7 +130,7 @@ test('a read cloud bar takes its category colour at the cloud alpha, squares at 
   const { links, dashed, markers, markerHits } = f.get(0)!
   expect([...links.x]).toEqual([100])
   expect([...dashed.x]).toEqual([200])
-  expect(links.color![0]).toBe(
+  expect((links.color as Uint32Array)[0]).toBe(
     withAbgrAlpha(
       slotColor(COLOR_LONG_INSERT),
       Math.round(CLOUD_LINE_ALPHA * 255),
@@ -139,7 +139,7 @@ test('a read cloud bar takes its category colour at the cloud alpha, squares at 
   expect([...links.y!]).toEqual([300])
   expect([...markers.x]).toEqual([100, 400, 200, 300])
   expect([...markers.x2]).toEqual([...markers.x])
-  expect(markers.color![0]).toBe(slotColor(COLOR_LONG_INSERT))
+  expect((markers.color as Uint32Array)[0]).toBe(slotColor(COLOR_LONG_INSERT))
   expect(markerHits[0]).toBe(f.get(0)!.linkHits[0])
 })
 
@@ -160,7 +160,7 @@ test('ticks are stems in the interchromosomal colour, a mark of their own', () =
   expect([...ticks.x]).toEqual([700])
   expect([...links.x]).toEqual([100])
   expect(ticks.x2Region[0]).toBe(LINK_NO_REGION)
-  expect(ticks.color![0]).toBe(slotColor(ARC_COLOR_INTERCHROM))
+  expect((ticks.color as Uint32Array)[0]).toBe(slotColor(ARC_COLOR_INTERCHROM))
   expect(tickHits[0]).toMatchObject({ kind: 'tick', bp: 700, support: 3 })
 })
 

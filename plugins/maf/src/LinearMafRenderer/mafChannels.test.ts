@@ -20,7 +20,7 @@ function decodeRuns(c: SpanChannels): DecodedRun[] {
       startBp: c.x[i]!,
       endBp: c.x2[i]!,
       rowIndex: c.row[i]!,
-      color: c.color![i]!,
+      color: (c.color as Uint32Array)[i]!,
     })
   }
   return runs

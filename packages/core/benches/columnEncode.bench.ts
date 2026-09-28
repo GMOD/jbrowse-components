@@ -103,7 +103,11 @@ import { barMark } from '../../render-core/src/marks/barMark.ts'
 import { readerOf } from '../src/util/featureTable.ts'
 import { runTransforms } from '../src/util/featureTransforms.ts'
 import createJexlInstance from '../src/util/jexl.ts'
-import { DEFAULT_MARK_COLOR, encodeFeatures } from '../src/util/markEncoding.ts'
+import {
+  DEFAULT_MARK_COLOR,
+  colorAt,
+  encodeFeatures,
+} from '../src/util/markEncoding.ts'
 import SimpleFeature from '../src/util/simpleFeature.ts'
 import {
   argsortByStart,
@@ -175,10 +179,16 @@ function encodedViews(channels: EncodedChannels[]) {
     c.featureIndex,
     c.y,
     c.row,
-    c.color,
+    typeof c.color === 'number' ? undefined : c.color,
     c.colorValue,
     c.glyph,
   ])
+}
+
+function colorsOf(c: EncodedChannels) {
+  return c.color === undefined
+    ? undefined
+    : Array.from({ length: c.count }, (_, i) => colorAt(c, i)!)
 }
 
 interface Driver {
@@ -254,7 +264,7 @@ function compareEncoded(a: EncodedChannels, b: EncodedChannels, what: string) {
     ['featureIndex', a.featureIndex, b.featureIndex],
     ['y', a.y, b.y],
     ['row', a.row, b.row],
-    ['color', a.color, b.color],
+    ['color', colorsOf(a), colorsOf(b)],
   ]
   for (const [lane, left, right] of lanes) {
     if ((left === undefined) !== (right === undefined)) {
@@ -653,7 +663,9 @@ function runEncodeScenario(fixture: SourceColumns[]) {
     'wiggle fill record against bar instance record',
   )
 
-  const distinct = new Set(columnsJexlOut.encoded[0]!.color!.slice(0, 1000))
+  const distinct = new Set(
+    (columnsJexlOut.encoded[0]!.color as Uint32Array).slice(0, 1000),
+  )
   console.log(
     `identity: ${differences.length} difference(s); the jexl colour answered ` +
       `${distinct.size} distinct value(s) over the first 1,000 rows`,

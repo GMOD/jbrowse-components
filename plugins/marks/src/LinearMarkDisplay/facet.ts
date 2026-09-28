@@ -182,7 +182,7 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
   const x = gather(layer.x, kept)
   const x2 = gather(layer.x2, kept)
   const y = layer.y && gatherFloats(layer.y, kept)
-  const { featureIndex, text } = layer
+  const { featureIndex, text, color } = layer
   return drawnScales({
     ...layer,
     count: shown,
@@ -191,7 +191,7 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
     y,
     row: gather(moved, kept),
     featureIndex: featureIndex ? gather(featureIndex, kept) : kept,
-    color: layer.color && gather(layer.color, kept),
+    color: typeof color === 'object' ? gather(color, kept) : color,
     colorValue: layer.colorValue && gatherFloats(layer.colorValue, kept),
     glyph: layer.glyph && gather(layer.glyph, kept),
     text: text && Array.from(kept, i => text[i]!),

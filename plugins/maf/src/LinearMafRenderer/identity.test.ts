@@ -116,9 +116,11 @@ test('the heatmap paints each run its ramp colour, and the bars stand at it', ()
   const r = buildIdentityRuns([block(100, 'ACGT', [[0, 'ACGA']])], 1)
   const spans = identitySpans(r)
   const bars = identityBars(r, false)
-  expect(spans.color![0]).not.toBe(spans.color![1])
+  const spanColors = spans.color as Uint32Array
+  expect(spanColors[0]).not.toBe(spanColors[1])
   expect(Array.from(bars.y)).toEqual([1, 0])
-  expect(bars.color![0]).toBe(bars.color![1])
+  const barColors = bars.color as Uint32Array
+  expect(barColors[0]).toBe(barColors[1])
   expect(identityBars(r, true).color).toEqual(spans.color)
 })
 

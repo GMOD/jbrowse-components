@@ -1,4 +1,4 @@
-import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
+import { colorAt, featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import { clamp } from '@jbrowse/core/util/numericUtils'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 import {
@@ -170,7 +170,7 @@ export function findMarkHit(
       ? start
       : clamp(bpAtPx(mouseX, hit.block), start, Math.max(start, end - 1)),
     y: layer.y?.[hit.index],
-    color: layer.color?.[hit.index],
+    color: colorAt(layer, hit.index),
     colorValue: layer.colorValue?.[hit.index],
     glyph: layer.glyph?.[hit.index],
     row: layer.row?.[hit.index],

@@ -94,7 +94,7 @@ test('a density mark draws the sidecar in the refused fetch place', () => {
   expect(layers[0]!.count).toBe(0)
   expect([...layers[1]!.y!]).toEqual([4, 17, 9])
   expect([...layers[1]!.x]).toEqual([0, 1000, 2000])
-  expect(layers[1]!.color![0]).toBe(cssColorToABGR('red'))
+  expect(layers[1]!.color).toBe(cssColorToABGR('red'))
   // the sidecar's levels are the axis, through the same y scale the features
   // draw against
   expect(display.domain).toEqual([0, 18])

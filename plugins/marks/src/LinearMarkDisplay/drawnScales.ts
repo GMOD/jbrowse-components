@@ -158,7 +158,8 @@ export function drawnScales(
   const lanes: ScannedLanes = {
     row: layer.row,
     y: layer.y,
-    color: askedColors.size > 0 ? color : undefined,
+    color:
+      askedColors.size > 0 && typeof color === 'object' ? color : undefined,
     glyph: askedGlyphs.size > 0 ? layer.glyph : undefined,
     size: sizeScale && layer.size,
     ramp,

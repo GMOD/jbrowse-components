@@ -102,7 +102,7 @@ function packStep(c: LineChannels) {
     nextY[i] = i < count - 1 && abutsBefore(c, row, i + 1) ? y[i]! : GAP_Y
   }
   return stepShader.packInstances(
-    { x, x2, y, color: colorBits(c), row, prevY, nextY },
+    { x, x2, y, color: colorBits(c, count), row, prevY, nextY },
     count,
   )
 }
@@ -120,7 +120,7 @@ function packCenter(c: LineChannels) {
     prevY[i] = linked ? y[i - 1]! : 0
   }
   return centerShader.packInstances(
-    { x, x2, y, color: colorBits(c), row, prevX, prevX2, prevY },
+    { x, x2, y, color: colorBits(c, count), row, prevX, prevX2, prevY },
     count,
   )
 }

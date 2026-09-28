@@ -73,7 +73,7 @@ const params: BarParams = {
 
 test('the colour lane carries the value bits, so a ramp adds no instance byte', () => {
   const c = bars([0, 50, 100])
-  const bits = colorBits(c)
+  const bits = colorBits(c, c.count)
   expect(bits.length).toBe(3)
   const copy = Uint32Array.from(bits as Uint32Array)
   const back = new Float32Array(copy.buffer, copy.byteOffset, copy.length)
@@ -87,8 +87,40 @@ test('a packed colour lane is passed through untouched', () => {
     colorValue: undefined,
     color: Uint32Array.from([1, 2]),
   }
-  expect([...(colorBits(c) as Uint32Array)]).toEqual([1, 2])
+  expect([...(colorBits(c, 2) as Uint32Array)]).toEqual([1, 2])
   expect([...(paintColors(c, 2, undefined) as Uint32Array)]).toEqual([1, 2])
+})
+
+test('a constant colour packs and paints the bytes a lane of it gave', () => {
+  const red = 0xff0000ff
+  const lane: BarChannels = {
+    ...bars([0, 50, 100]),
+    colorValue: undefined,
+    color: new Uint32Array(3).fill(red),
+  }
+  const scalar: BarChannels = { ...lane, color: red }
+  const bytes = (c: BarChannels) =>
+    new Uint8Array(barMark.pass.pack(c) as ArrayBuffer)
+  expect(bytes(scalar)).toEqual(bytes(lane))
+  expect(Array.from(paintColors(scalar, 3, undefined))).toEqual([red, red, red])
+  expect(Array.from(paintColors({ ...scalar }, 3, ramp))).toEqual([
+    red,
+    red,
+    red,
+  ])
+})
+
+test('a constant colour expands once for Canvas2D and never for the pack', () => {
+  const c: BarChannels = { ...bars([0, 100]), colorValue: undefined, color: 7 }
+  colorBits(c, 2)
+  expect(c.constantBake).toBeUndefined()
+  const first = paintColors(c, 2, undefined)
+  expect(paintColors(c, 2, undefined)).toBe(first)
+  expect(c.constantBake).toBe(first)
+  const recoloured = paintColors({ ...c, color: 9 }, 2, undefined)
+  expect(Array.from(recoloured)).toEqual([9, 9])
+  const longer: BarChannels = { ...c, count: 3 }
+  expect(Array.from(paintColors(longer, 3, undefined))).toEqual([7, 7, 7])
 })
 
 test('the bake reads the LUT at the value fraction, floors and ceilings clamped', () => {

@@ -170,7 +170,7 @@ function pickSpans(spans: SpanChannels, kept: readonly number[]) {
     x: pick(spans.x),
     x2: pick(spans.x2),
     row: pick(spans.row),
-    color: spans.color && pick(spans.color),
+    color: typeof spans.color === 'object' ? pick(spans.color) : spans.color,
     count: kept.length,
   }
 }

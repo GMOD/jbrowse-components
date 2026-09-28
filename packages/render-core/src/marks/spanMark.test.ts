@@ -237,7 +237,8 @@ const retiredSpan: Required<
   Pick<MarkShape<SpanChannels, SpanParams>, 'paintBlock' | 'ink'>
 > = {
   paintBlock(ctx, channels, block, _frame, params) {
-    const { x, x2, row, color, count } = channels
+    const { x, x2, row, count } = channels
+    const color = channels.color as Uint32Array
     const { rowHeight, rowProportion, minWidthPx, seamPx, scrollTop } = params
     const h = drawnRowHeightPx(rowHeight, rowProportion)
     const offset = rowBandOffsetPx(rowHeight, rowProportion)
@@ -247,7 +248,7 @@ const retiredSpan: Required<
       const xa = bpToPx(x[i]!)
       const xb = bpToPx(x2[i]!)
       const width = Math.max(minWidthPx, Math.abs(xb - xa))
-      setFill(color![i]!)
+      setFill(color[i]!)
       ctx.fillRect(
         spanLeft(xa, xb, width),
         offset + rowHeight * row[i]! - scrollTop,

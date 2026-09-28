@@ -142,7 +142,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     ...slangPass({ id: 'bar', mod: shader }),
     pack: c =>
       shader.packInstances(
-        { ...c, color: colorBits(c), row: rowLane(c.row, c.count) },
+        { ...c, color: colorBits(c, c.count), row: rowLane(c.row, c.count) },
         c.count,
       ),
   },
