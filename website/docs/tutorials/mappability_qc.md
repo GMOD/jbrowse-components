@@ -9,16 +9,14 @@ tutorial_category: Structural variation
 ---
 
 A pileup looks the same whether its reads belong at a locus or merely landed
-there. Four tracks tell the difference, and genomes.jbrowse.org publishes all of
-them for hg38, so turning them on is a matter of clicking.
+there. At _SMN1_ and _SMN2_, a duplicated gene pair on chromosome 5, we check
+four hosted hg38 tracks against a control window, and then ask whether the
+finished T2T-CHM13 assembly gives the reads a better place to land.
 
 ## Prerequisites
 
-- nothing to install to read along: every track comes from the hosted hg38
-  config, and the one read track is a public CRAM added as a session track
 - a JBrowse to paste the tracks into ([Web](/docs/quickstart_web) or
-  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so Desktop
-  needs nothing hosted
+  [Desktop](/docs/quickstart_desktop))
 - to re-measure the numbers on this page, the tools listed under
   [Reproduce it end to end](#reproduce-it-end-to-end)
 
@@ -58,149 +56,58 @@ Genomes high-coverage short-read CRAM and its ONT long-read release
 ## The SMN1 and SMN2 duplication
 
 _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
-identical across their ~28 kb. Which of the two a read came from is the
-clinically interesting question, since spinal muscular atrophy turns on the copy
-number of _SMN1_. A 150 bp read cannot answer it: the same sequence exists
-twice, so an aligner given a read from either copy has two equally good places
-to put it.
-
-An aligner reports that as MAPQ 0. The read is still aligned and still drawn
-where it aligned; MAPQ is `-10 log10 Pr{mapping position is wrong}`
+identical across their ~28 kb. A 150 bp read from either copy has two equally
+good places to align, which an aligner reports as MAPQ 0. MAPQ is
+`-10 log10 Pr{mapping position is wrong}`
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so MAPQ 0
-means the aligner found the position it chose about as likely wrong as right.
+means the chosen position is about as likely wrong as right. The distinction
+matters clinically, because spinal muscular atrophy turns on the copy number of
+_SMN1_.
 
 ## The block, and the reads inside it
 
 <Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, the block on chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Below it, a second view from SMN1 to where the reads recover, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
-The affected sequence is a much larger block than the gene. The two published
-annotations disagree about where it ends: GIAB's interval stops well short of
-where ENCODE's blacklist continues to. `scan_mappability_qc.sh` bins the
-coverage lane so a locus between the two edges can be settled by measurement,
-and the lane stays low across the span GIAB has let go of.
+The affected sequence is a block much larger than the gene. GIAB's interval
+stops well short of where ENCODE's blacklist continues, and the gnomAD coverage
+lane stays low across the span GIAB lets go of. In the lower view, reads do not
+recover until well past the end of _SMN1_.
 
-The block is one interval. GIAB's annotation over this arm is a single
-megabase-and-a-half region, a second one a few kilobases past it, and then
-nothing larger than a few kilobases for megabases in either direction. Short
-reads fail across a whole gene neighbourhood here.
+## What the lanes show
 
-The lower view shows the same block at the scale a read lives at, where reads do
-not recover until well past the end of _SMN1_.
+Each lane is computed independently:
 
-## The same block in T2T-CHM13
-
-T2T-CHM13 is a finished assembly of this chromosome. UCSC publishes an hg38 to
-CHM13 liftOver chain set, and over this block that chain set does not resolve to
-one correspondence:
-
-```bash
-tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
-  tchr5:69200000-71700000
-```
-
-Several of the chains it returns are long, they overlap each other on both
-sides, and some of them run backwards.
-
-<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
-
-The gene order is the same in both assemblies (_SMN2_ first, then _SMN1_), so
-this is two copies similar enough that a whole-genome chainer can join either
-one to either one; the Umap and MAPQ lanes below show the same thing per base.
-The array is a different length in the two assemblies, the genes sitting closer
-together in CHM13.
-
-The 1000 Genomes ONT release, the same project as the long-read SV callset in
-the wide figure, aligned some of its samples to both references with the same
-minimap2 pipeline, so one sample answers the question twice.
-`scan_mappability_qc.sh` counts GM18501's records over _SMN1_ in each assembly's
-own coordinates:
-
-| reference | records | MAPQ 0 | MAPQ 60 |
-| --------- | ------: | -----: | ------: |
-| GRCh38    |     290 |  46.6% |    6.9% |
-| T2T-CHM13 |     290 |  46.6% |    9.7% |
-
-The long reads place better than the short-read lane does at the same gene, and
-a large share of them still fit somewhere else as well. Between the two
-references the columns barely move.
-
-## What the lanes are
-
-The lanes are independent of each other:
-
-- **Umap k100 multi-read mappability** is computed from the reference alone. For
-  each position it gives the fraction of overlapping 100-mers that are unique in
-  the genome. Positions where no 100-mer is unique are absent from the file
-  rather than stored as zero, so the lane goes blank rather than to the floor.
-  Most of the genome scores near the top of its range, so a blank stretch is
-  unusual. How it summarizes decides whether it survives a wide window. The
-  default **Score → Summary score mode → Whiskers** draws each pixel's min and
-  max, so a bin touching one unique position paints full height, while
-  **Minimum** takes the worst position in the bin and sits on the floor across
-  the block, stepping up at the same coordinate as the MAPQ 0 to MAPQ 60
-  transition and the gnomAD coverage step. Past about a kilobase per pixel even
-  **Minimum** saturates low, so this lane belongs in the narrower frame. Pinned
-  at 0 to 1 with **Score → Set min/max score...**, the lane keeps its full
-  range, so the collapse reads as a drop to the floor.
-- **gnomAD v3 mean genome coverage** is the outcome of that annotation on real
-  data, averaged over tens of thousands of sequenced genomes. gnomAD drops
-  non-uniquely-placed reads before computing it, so wherever the lane above is
-  blank this one falls.
-- **Mapping quality on the reads** is the aligner's per-read confidence, in the
-  sample on screen. Dark blue is MAPQ 0, meaning the aligner found another place
-  the read fits equally well; yellow is MAPQ 60 and above.
-- The **GIAB low-mappability + segdup lane** in the wide panel is a published
-  opinion of the same sequence, drawn by a project that had to decide where its
-  benchmark regions stop.
+- **Umap k100 multi-read mappability** comes from the reference alone: the
+  fraction of overlapping 100-mers that are unique in the genome. Positions
+  where no 100-mer is unique are absent from the file, so the lane goes blank.
+  The default **Score → Summary score mode → Whiskers** paints a pixel full
+  height if it touches one unique position. **Minimum** takes the worst position
+  in the bin, which sits on the floor across the block, and past about a
+  kilobase per pixel it saturates low. Pin the axis with **Score → Set min/max
+  score...** at 0 to 1.
+- **gnomAD v3 mean genome coverage** averages tens of thousands of genomes after
+  dropping non-uniquely-placed reads, so it falls wherever the Umap lane is
+  blank.
+- **Mapping quality on the reads** is the aligner's per-read confidence. Dark
+  blue is MAPQ 0 and yellow is MAPQ 60 and above.
+- **GIAB low-mappability + segdup** is a published opinion of the same sequence.
 
 <Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four lanes and one read per row. Almost every read is dark blue, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
 
-Everything on this page except the read track comes out of the hosted hg38
-config at [genomes.jbrowse.org](https://genomes.jbrowse.org): find them in the
-track selector under **Multi-read mappability**, **gnomAD v3 Genome Coverage**
-and **Problematic Regions**. The reads are the public 1000 Genomes NA12878
-high-coverage CRAM, added to the session; the figure's link opens both together.
+All lanes except the reads come from the hosted hg38 config at
+[genomes.jbrowse.org](https://genomes.jbrowse.org), under **Multi-read
+mappability**, **gnomAD v3 Genome Coverage** and **Problematic Regions**. The
+reads are the public 1000 Genomes NA12878 CRAM, which the figure's link opens
+together with the lanes.
 
 ## Depth at the locus and at a control
 
-`scan_mappability_qc.sh` counts the reads in equal windows over _SMN1_ and over
-the right-hand end of the frame, from the same library, and they come back at
-the same depth. Without a MAPQ filter a coverage track draws flat across both.
-The share of those reads sitting at MAPQ 0 separates them: most of them at
-_SMN1_ and almost none at the control.
-
-The gnomAD lane shows what a MAPQ filter does to a depth track, in a different
-set of samples. It drops to a fraction of the control's depth over _SMN1_,
-because MAPQ 0 reads were dropped before the average was taken.
-
-## SV calls over the block
-
-The long-read lane in the wide figure is empty across the block. Counting over
-the flagged block and an equal-width window on either side of it,
-`scan_mappability_qc.sh` finds few calls in the callset inside the block and
-many on both sides, where the older DGV catalogue carries records throughout.
-
-Widen the same count to the whole chromosome and both catalogues put a larger
-share of their calls inside the flagged regions than those regions' share of
-chr5 would predict. Segmental duplications are copy-number variable, so this is
-where real variation lives as well as where artifacts do.
-
-At this locus, in this sample, the reads carry no information about which copy
-they came from, so a short-read call over it cannot be checked against them.
-
-## Checking your own locus
-
-The same three tracks and a control work anywhere in hg38:
-
-- Open the hosted hg38 config and turn on **Umap M100**, **gnomAD v3 Genome
-  Coverage - Mean Coverage**, and the **GIAB Problematic Regions** and
-  **Problematic Regions** annotation tracks.
-- On **Umap M100**, pin the axis at 0 to 1 and draw each bin's minimum, as
-  [the lanes](#what-the-lanes-are) are set.
-- Add your reads and set **Color by...** → **Mapping quality** from the track
-  menu. Turn on **Show legend** in the same menu.
-- Take a second window of the same width, from the same sample, outside every
-  flagged interval, and put the two side by side.
+`scan_mappability_qc.sh` counts reads in equal windows over _SMN1_ and over the
+right-hand end of the frame, from the same library. The depth matches, so a
+coverage track draws flat across both. The share of reads at MAPQ 0 separates
+them: most at _SMN1_ and almost none at the control. The gnomAD lane shows the
+same thing from the other side, dropping to a fraction of the control's depth
+over _SMN1_ because it discards MAPQ 0 reads.
 
 The same comparison is three counts per window, `-q` being a minimum MAPQ:
 
@@ -212,26 +119,64 @@ samtools view -c -q 1 "$CRAM" chr5:70,900,000-71,000,000       # placed at all
 samtools view -c -q 60 "$CRAM" chr5:70,900,000-71,000,000      # placed uniquely
 ```
 
-Run it on the control window too, at the same width and from the same sample.
-
-The eye reads the Umap lane as high or low, and the number behind it is one
-command over the same bigWig the lane draws:
+Run it on the control window too. The Umap lane has a number as well, the
+fraction of a span carrying any value:
 
 <!-- from: scripts/scan_mappability_qc.sh -->
 
 ```bash
-# A position where NO 100-mer maps uniquely is ABSENT from the file rather than
-# stored as zero, so bigWigToBedGraph emits no interval there at all. That makes
-# the fraction of the span carrying any value the number to read, and it is
-# stronger than the mean: a mean is taken only over what is present.
+# A position where NO 100-mer maps uniquely is absent from the file, so
+# bigWigToBedGraph emits no interval there
 bigWigToBedGraph -chrom=chr5 -start=70049000 -end=70077000 \
   k100.Umap.MultiTrackMappability.bw stdout |
   awk -v s=70049000 -v e=70077000 \
     '{cov += $3 - $2} END {printf "%.1f%% has a value\n", 100 * cov / (e - s)}'
 ```
 
-Run it over the control window too. A percentage means nothing until an ordinary
-gene has produced one.
+## Does T2T-CHM13 resolve it?
+
+T2T-CHM13 is a finished assembly of this chromosome, so a reader might expect
+reads to place better there. UCSC's hg38 to CHM13 liftOver chains do not resolve
+the block to one correspondence: they overlap each other on both sides, and some
+run backwards.
+
+<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
+
+The gene order is the same in both assemblies, _SMN2_ first and then _SMN1_. The
+two copies are similar enough that a chainer can join either to either. The
+array is shorter in CHM13, with the genes closer together.
+
+The 1000 Genomes ONT release aligned GM18501 to both references with the same
+minimap2 pipeline. `scan_mappability_qc.sh` counts its records over _SMN1_ in
+each assembly's own coordinates:
+
+| reference | records | MAPQ 0 | MAPQ 60 |
+| --------- | ------: | -----: | ------: |
+| GRCh38    |     290 |  46.6% |    6.9% |
+| T2T-CHM13 |     290 |  46.6% |    9.7% |
+
+The long reads place better than the short reads do at the same gene, and 46.6%
+still fit somewhere else as well in both assemblies. The complete assembly
+carries the same two copies, so mapping quality at _SMN1_ does not improve.
+
+## SV calls over the block
+
+The long-read SV lane in the wide figure is empty across the block.
+`scan_mappability_qc.sh` counts few calls from that callset inside the flagged
+block and many on both sides, where the older DGV catalogue carries records
+throughout. Over the whole of chr5, both catalogues put a larger share of their
+calls inside the flagged regions than those regions' share of the chromosome
+predicts, because segmental duplications are copy-number variable. A short-read
+call over _SMN1_ therefore cannot be checked against its reads.
+
+## Checking your own locus
+
+Open the hosted hg38 config and turn on **Umap M100**, **gnomAD v3 Genome
+Coverage - Mean Coverage** and the two problematic-regions tracks. Set **Umap
+M100** to a 0 to 1 axis with each bin's minimum. Add your reads and choose
+**Color by... → Mapping quality**, with **Show legend** on. Then take a second
+window of the same width from the same sample, outside every flagged interval,
+and compare the two.
 
 ## Reproduce it end to end
 
