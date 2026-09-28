@@ -161,18 +161,6 @@ test("renameRegionsIfNeeded names the regions' genome as the call's assemblyName
   expect(result.assemblyName).toBe('hg38')
 })
 
-test("renameRegionsIfNeeded keeps a caller's assemblyName when it sends no regions", async () => {
-  const result = await renameRegionsIfNeeded(
-    mockAssemblyManager({ refNameMap: {} }),
-    {
-      adapterConfig: {},
-      sessionId: 'test',
-      assemblyName: 'hg38',
-    },
-  )
-  expect(result.assemblyName).toBe('hg38')
-})
-
 test('renameRegionsIfNeeded refuses regions on two genomes', async () => {
   await expect(
     renameRegionsIfNeeded(mockAssemblyManager({ refNameMap: {} }), {
@@ -180,7 +168,7 @@ test('renameRegionsIfNeeded refuses regions on two genomes', async () => {
       sessionId: 'test',
       regions: [region, { ...region, assemblyName: 'mm10' }],
     }),
-  ).rejects.toThrow(/regions on hg38, mm10 in one request/)
+  ).rejects.toThrow(/regions on hg38 and mm10 in one request/)
 })
 
 test('renameComparativeRegions renames a region per assembly and names no genome', async () => {

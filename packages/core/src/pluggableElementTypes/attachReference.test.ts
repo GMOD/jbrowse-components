@@ -107,7 +107,7 @@ test('a per-genome call with regions on two genomes is refused', async () => {
       adapterConfig,
       regions: [region('volvox'), region('peach')],
     }),
-  ).rejects.toThrow(/regions on volvox, peach in one request/)
+  ).rejects.toThrow(/regions on volvox and peach in one request/)
 })
 
 test('a call naming no genome, or one the session lacks, carries nothing', async () => {

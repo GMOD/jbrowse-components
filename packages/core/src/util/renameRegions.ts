@@ -109,89 +109,69 @@ function checkRenameArgs(args: RenameArgs) {
   }
 }
 
-// annotated, because Object.fromEntries over an array whose element type is
-// not a tuple selects its `any` overload — which left refNameMap and
-// getSeqAdapterRefName unchecked all the way to renameRegionIfNeeded
-async function loadRenameData(
+// What one assembly contributes to a rename, off the loaded assembly: resolved
+// via requireAssembly (which awaits registration and load) so the refName map
+// and getSeqAdapterRefName come from one handle. A synchronous
+// assemblyManager.get() could miss an assembly still registering, leaving
+// originalRefName (CRAM/BAM's reference fetch name) on the canonical name
+// instead of the FASTA's. Require, not wait: a region names an assembly, so
+// failing to resolve it is renaming that cannot be done, not nothing to rename,
+// and an empty map would query un-renamed refNames and draw an empty track
+// with no word about why. Only an unnamed assembly is a legitimate no-op.
+async function assemblyRenameData(
   assemblyManager: AssemblyManager,
-  assemblyNames: string[],
+  assemblyName: string | undefined,
   args: RenameArgs,
-): Promise<Record<string, AssemblyRenameData | undefined>> {
-  const { adapterConfig } = args
-  return Object.fromEntries(
-    await Promise.all(
-      [...new Set(assemblyNames)].map(async name => {
-        // resolve the assembly once via requireAssembly (which awaits both
-        // registration and load) and derive the refName map AND
-        // getSeqAdapterRefName from this single loaded handle. A synchronous
-        // assemblyManager.get() here could miss an assembly still being
-        // registered, leaving getSeqAdapterRefName undefined so
-        // originalRefName (used by CRAM/BAM to fetch reference bases) falls
-        // back to the canonical name instead of the FASTA name.
-        //
-        // require, not wait: a region names an assembly, so failing to
-        // resolve it is not "nothing to rename", it is renaming that cannot
-        // be done. Substituting an empty map leaves the adapter querying
-        // un-renamed refNames, which finds nothing and draws an empty track
-        // with no indication that the assembly is what is missing. Only an
-        // unnamed assembly is a legitimate no-op.
-        const assembly = name
-          ? await assemblyManager.requireAssembly(name)
-          : undefined
-        return [
-          name,
-          {
-            refNameMap: assembly
-              ? await assembly.getRefNameMapForAdapter(adapterConfig, args)
-              : {},
-            getSeqAdapterRefName: assembly
-              ? (r: string) => assembly.getSeqAdapterRefName(r)
-              : undefined,
-          },
-        ] as const
-      }),
+): Promise<AssemblyRenameData | undefined> {
+  if (!assemblyName) {
+    return undefined
+  }
+  const assembly = await assemblyManager.requireAssembly(assemblyName)
+  return {
+    refNameMap: await assembly.getRefNameMapForAdapter(
+      args.adapterConfig,
+      args,
     ),
-  )
+    getSeqAdapterRefName: (r: string) => assembly.getSeqAdapterRefName(r),
+  }
 }
 
-function renamedRegions(
-  regions: Region[],
-  assemblyNames: string[],
-  data: Record<string, AssemblyRenameData | undefined>,
-): (Region & { originalRefName?: string })[] {
-  return regions.map((region, i) => {
-    const d = data[assemblyNames[i]!]
-    return renameRegionIfNeeded(d?.refNameMap, region, d?.getSeqAdapterRefName)
-  })
+function renamed(region: Region, data: AssemblyRenameData | undefined) {
+  return renameRegionIfNeeded(
+    data?.refNameMap,
+    region,
+    data?.getSeqAdapterRefName,
+  )
 }
 
 /**
  * Rename for a request about one genome, which is every request but a
- * comparative one. Its regions all name that genome, and it becomes the call's
- * `assemblyName`, the one field a call names its genome in:
- * `RpcMethodType.serializeArguments` turns it into the reference a BAM/CRAM or
- * scan adapter is built with. Regions on two assemblies are refused: a request
- * over a synteny adapter renames with {@link renameComparativeRegions}.
+ * comparative one. The call's genome is its regions' genome, and renaming
+ * writes it as the call's `assemblyName`, the one field a call names its
+ * genome in: `RpcMethodType.serializeArguments` turns it into the reference a
+ * BAM/CRAM or scan adapter is built with. A region on another assembly is
+ * refused: a request over a synteny adapter renames with
+ * {@link renameComparativeRegions}.
  */
-export async function renameRegionsIfNeeded<
-  ARGTYPE extends RenameArgs & { assemblyName?: string },
->(assemblyManager: AssemblyManager, args: ARGTYPE) {
+export async function renameRegionsIfNeeded<ARGTYPE extends RenameArgs>(
+  assemblyManager: AssemblyManager,
+  args: ARGTYPE,
+) {
   checkRenameArgs(args)
   const { regions = [] } = args
-  // captured before the await, since MST regions may be dead after
-  const assemblyNames = regions.map(r => r.assemblyName)
-  const genomes = [...new Set(assemblyNames)]
-  if (genomes.length > 1) {
+  // read before the await, since MST regions may be dead after
+  const assemblyName = regions[0]?.assemblyName
+  const stray = regions.find(r => r.assemblyName !== assemblyName)
+  if (stray) {
     throw new Error(
-      `regions on ${genomes.join(', ')} in one request: a request is about one genome, and a comparative request (synteny, dotplot) renames with renameComparativeRegions`,
+      `regions on ${assemblyName} and ${stray.assemblyName} in one request: a request is about one genome, and a comparative request (synteny, dotplot) renames with renameComparativeRegions`,
     )
   }
-  const data = await loadRenameData(assemblyManager, assemblyNames, args)
+  const data = await assemblyRenameData(assemblyManager, assemblyName, args)
   return {
     ...args,
-    // a call with no regions keeps the genome it named itself
-    assemblyName: genomes[0] ?? args.assemblyName,
-    regions: renamedRegions(regions, assemblyNames, data),
+    assemblyName,
+    regions: regions.map(region => renamed(region, data)),
   }
 }
 
@@ -208,6 +188,21 @@ export async function renameComparativeRegions<ARGTYPE extends RenameArgs>(
   checkRenameArgs(args)
   const { regions = [] } = args
   const assemblyNames = regions.map(r => r.assemblyName)
-  const data = await loadRenameData(assemblyManager, assemblyNames, args)
-  return { ...args, regions: renamedRegions(regions, assemblyNames, data) }
+  const data = new Map(
+    await Promise.all(
+      [...new Set(assemblyNames)].map(
+        async name =>
+          [
+            name,
+            await assemblyRenameData(assemblyManager, name, args),
+          ] as const,
+      ),
+    ),
+  )
+  return {
+    ...args,
+    regions: regions.map((region, i) =>
+      renamed(region, data.get(assemblyNames[i]!)),
+    ),
+  }
 }
