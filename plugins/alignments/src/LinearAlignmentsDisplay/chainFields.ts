@@ -49,9 +49,11 @@ import type { ReadKeys } from '@jbrowse/alignments-core'
  * meet that segment's primary.
  *
  * The per-region pass — keying reads, numbering chains, their bounds and packing
- * distance — is memoized on `readKeys` identity, which is the region's fetched
- * data whatever object wraps it (`buildRawDataByGroup` re-spreads a region when
- * a band is pinned). A region landing costs its own reads; the rest are hits.
+ * distance, and the answer the region gives alone — is memoized on `readKeys`
+ * identity, which is the region's fetched data whatever object wraps it
+ * (`buildRawDataByGroup` re-spreads a region when a band is pinned). A landing
+ * then costs the new region's reads, one name lookup per chain on screen to
+ * find the chains two regions share, and the reads of those chains alone.
  *
  * Two deviations from the worker's earlier chain numbering are accepted: chains
  * come out in first-seen order rather than integer-keys-first, which moves only
@@ -66,11 +68,30 @@ import type { ReadKeys } from '@jbrowse/alignments-core'
 const SUPP_FWD = 1
 const SUPP_REV = 2
 
-// What a region's segments say about one chain, folded into the union across
-// regions by `foldSummary`. `primaryRank` orders which primary answers for the
-// chain's frame and pair orientation: the first-in-pair primary, else any
-// primary, else none (0), so the answer does not depend on which region landed
-// first.
+// `ChainSummaries.bits`: the chain carries a supplementary, is paired, and each
+// mate's supplementary strands (two bits each).
+const HAS_SUPP = 1
+const PAIRED = 2
+const MATE0_SUPP_SHIFT = 2
+const MATE1_SUPP_SHIFT = 4
+
+// What a region's segments say about each of its chains, a slot per chain.
+// Arrays rather than an object per chain, since at depth most chains are plain
+// pairs whose answer is zero, and the objects were the larger part of a
+// region's cost. `primaryRank` orders which primary answers for the chain's
+// frame and pair orientation: the first-in-pair primary, else any primary,
+// else none (0), so the answer does not depend on which region landed first.
+interface ChainSummaries {
+  bits: Uint8Array
+  primaryRank: Uint8Array
+  primaryStrand: Int8Array
+  primaryPairOrientation: Uint8Array
+  mate0Primary: Int8Array
+  mate1Primary: Int8Array
+}
+
+// One chain's slot as an object, for the chains more than one region holds,
+// which `foldSummary` unions.
 interface ChainSummary {
   hasSupp: boolean
   paired: boolean
@@ -90,6 +111,12 @@ interface ChainUnion extends ChainSummary {
   mate1SplitKind: number
 }
 
+// The two per-read answers the union settles.
+interface ReadAnswers {
+  readChainHasSupp: Uint8Array
+  readPairOrientations: Uint8Array
+}
+
 interface RegionChains {
   readChainIndices: Uint32Array
   chainNames: string[]
@@ -97,7 +124,13 @@ interface RegionChains {
   chainAbsMaxEnds: Uint32Array
   chainDistances: Uint32Array
   chainFirstReadIndices: Uint32Array
-  summaries: ChainSummary[]
+  summaries: ChainSummaries
+  // The region's answers when no other region shares one of its chains, which
+  // is the whole answer for most regions and the base the rest copy from.
+  alone: ReadAnswers | undefined
+  // The attached region built from `alone`, reused while the same object wraps
+  // the region, so a region sharing no chain keeps its identity across landings.
+  aloneAttached: { source: WorkerPileupData; out: ChainPileupData } | undefined
   // Chain index → the ids of its reads here. Built on first request: the
   // hover highlight is the only reader, and each id is a string per read.
   readIdsByChain: string[][] | undefined
@@ -114,50 +147,48 @@ function regionChainsOf(data: WorkerPileupData) {
   return chains
 }
 
-function emptySummary(): ChainSummary {
-  return {
-    hasSupp: false,
-    paired: false,
-    primaryRank: 0,
-    primaryStrand: 0,
-    primaryPairOrientation: 0,
-    mate0Primary: 0,
-    mate1Primary: 0,
-    mate0SuppStrands: 0,
-    mate1SuppStrands: 0,
-  }
-}
-
 function addRead(
-  s: ChainSummary,
+  s: ChainSummaries,
+  c: number,
   flags: number,
   strand: number,
   pairOrientation: number,
 ) {
   const first = (flags & SAM_FLAG_FIRST_IN_PAIR) !== 0
   if (flags & SAM_FLAG_PAIRED) {
-    s.paired = true
+    s.bits[c]! |= PAIRED
   }
   if (flags & SAM_FLAG_SUPPLEMENTARY) {
-    s.hasSupp = true
     const bit = strand === -1 ? SUPP_REV : strand === 1 ? SUPP_FWD : 0
-    if (first) {
-      s.mate0SuppStrands |= bit
-    } else {
-      s.mate1SuppStrands |= bit
-    }
+    s.bits[c]! |=
+      HAS_SUPP | (bit << (first ? MATE0_SUPP_SHIFT : MATE1_SUPP_SHIFT))
     return
   }
   const rank = first ? 2 : 1
-  if (rank > s.primaryRank) {
-    s.primaryRank = rank
-    s.primaryStrand = strand
-    s.primaryPairOrientation = pairOrientation
+  if (rank > s.primaryRank[c]!) {
+    s.primaryRank[c] = rank
+    s.primaryStrand[c] = strand
+    s.primaryPairOrientation[c] = pairOrientation
   }
   if (first) {
-    s.mate0Primary = strand
+    s.mate0Primary[c] = strand
   } else {
-    s.mate1Primary = strand
+    s.mate1Primary[c] = strand
+  }
+}
+
+function summaryAt(s: ChainSummaries, c: number): ChainSummary {
+  const bits = s.bits[c]!
+  return {
+    hasSupp: (bits & HAS_SUPP) !== 0,
+    paired: (bits & PAIRED) !== 0,
+    primaryRank: s.primaryRank[c]!,
+    primaryStrand: s.primaryStrand[c]!,
+    primaryPairOrientation: s.primaryPairOrientation[c]!,
+    mate0Primary: s.mate0Primary[c]!,
+    mate1Primary: s.mate1Primary[c]!,
+    mate0SuppStrands: (bits >> MATE0_SUPP_SHIFT) & 3,
+    mate1SuppStrands: (bits >> MATE1_SUPP_SHIFT) & 3,
   }
 }
 
@@ -188,11 +219,19 @@ function buildRegionChains(data: WorkerPileupData): RegionChains {
   const readChainIndices = new Uint32Array(numReads)
   const chainNames: string[] = []
   const indexByName = new Map<string, number>()
-  const summaries: ChainSummary[] = []
-  const minStarts: number[] = []
-  const maxEnds: number[] = []
-  const firstReads: number[] = []
-  const readCounts: number[] = []
+  // Sized for one chain per read, the most a region can hold.
+  const summaries: ChainSummaries = {
+    bits: new Uint8Array(numReads),
+    primaryRank: new Uint8Array(numReads),
+    primaryStrand: new Int8Array(numReads),
+    primaryPairOrientation: new Uint8Array(numReads),
+    mate0Primary: new Int8Array(numReads),
+    mate1Primary: new Int8Array(numReads),
+  }
+  const minStarts = new Uint32Array(numReads)
+  const maxEnds = new Uint32Array(numReads)
+  const firstReads = new Uint32Array(numReads)
+  const readCounts = new Uint32Array(numReads)
   for (let i = 0; i < numReads; i++) {
     const flags = readFlags[i]!
     const name = chainGroupingKey(readNameAt(data, i), readKeys[i]!, flags)
@@ -203,11 +242,9 @@ function buildRegionChains(data: WorkerPileupData): RegionChains {
       c = chainNames.length
       indexByName.set(name, c)
       chainNames.push(name)
-      summaries.push(emptySummary())
-      minStarts.push(start)
-      maxEnds.push(end)
-      firstReads.push(i)
-      readCounts.push(0)
+      minStarts[c] = start
+      maxEnds[c] = end
+      firstReads[c] = i
     } else {
       if (start < minStarts[c]!) {
         minStarts[c] = start
@@ -218,7 +255,7 @@ function buildRegionChains(data: WorkerPileupData): RegionChains {
     }
     readCounts[c]!++
     readChainIndices[i] = c
-    addRead(summaries[c]!, flags, readStrands[i]!, readPairOrientations[i]!)
+    addRead(summaries, c, flags, readStrands[i]!, readPairOrientations[i]!)
   }
 
   const numChains = chainNames.length
@@ -233,11 +270,13 @@ function buildRegionChains(data: WorkerPileupData): RegionChains {
   return {
     readChainIndices,
     chainNames,
-    chainAbsMinStarts: Uint32Array.from(minStarts),
-    chainAbsMaxEnds: Uint32Array.from(maxEnds),
+    chainAbsMinStarts: minStarts.slice(0, numChains),
+    chainAbsMaxEnds: maxEnds.slice(0, numChains),
     chainDistances,
-    chainFirstReadIndices: Uint32Array.from(firstReads),
+    chainFirstReadIndices: firstReads.slice(0, numChains),
     summaries,
+    alone: undefined,
+    aloneAttached: undefined,
     readIdsByChain: undefined,
   }
 }
@@ -288,45 +327,108 @@ function resolveUnion(s: ChainSummary): ChainUnion {
   }
 }
 
-function attachRegion(
+// Split bits are per MATE, so both segments of a split mate stand out and the
+// normal partner keeps its pair colour; ORed onto the chain's bits, the two
+// describing different units.
+function readFill(u: ChainUnion, flags: number) {
+  return (
+    u.fill |
+    (flags & SAM_FLAG_FIRST_IN_PAIR ? u.mate0SplitKind : u.mate1SplitKind)
+  )
+}
+
+function readOrientation(u: ChainUnion, flags: number, own: number) {
+  return flags & SAM_FLAG_SUPPLEMENTARY && u.primaryPairOrientation > 0
+    ? u.primaryPairOrientation
+    : own
+}
+
+// A chain with no supplementary answers zero and keeps its orientations, so
+// only the chains carrying one are resolved.
+function aloneAnswers(data: WorkerPileupData, chains: RegionChains) {
+  if (!chains.alone) {
+    const { readFlags, readPairOrientations } = data
+    const { readChainIndices, summaries } = chains
+    const unions: ChainUnion[] = []
+    const readChainHasSupp = new Uint8Array(readChainIndices.length)
+    let corrected: Uint8Array | undefined
+    for (let i = 0; i < readChainIndices.length; i++) {
+      const c = readChainIndices[i]!
+      if (!(summaries.bits[c]! & HAS_SUPP)) {
+        continue
+      }
+      const u = (unions[c] ??= resolveUnion(summaryAt(summaries, c)))
+      const flags = readFlags[i]!
+      readChainHasSupp[i] = readFill(u, flags)
+      const own = readPairOrientations[i]!
+      const o = readOrientation(u, flags, own)
+      if (o !== own) {
+        corrected ??= new Uint8Array(readPairOrientations)
+        corrected[i] = o
+      }
+    }
+    chains.alone = {
+      readChainHasSupp,
+      readPairOrientations: corrected ?? readPairOrientations,
+    }
+  }
+  return chains.alone
+}
+
+// `alone` with the reads of the shared chains re-answered from the union.
+function sharedAnswers(
   data: WorkerPileupData,
   chains: RegionChains,
-  unionOf: ChainUnion[],
-): ChainPileupData {
+  sharedUnions: readonly (ChainUnion | undefined)[],
+): ReadAnswers {
+  const alone = aloneAnswers(data, chains)
   const { readFlags, readPairOrientations } = data
   const { readChainIndices } = chains
-  const numReads = readChainIndices.length
-  const readChainHasSupp = new Uint8Array(numReads)
+  const readChainHasSupp = new Uint8Array(alone.readChainHasSupp)
   let corrected: Uint8Array | undefined
-  for (let i = 0; i < numReads; i++) {
-    const u = unionOf[readChainIndices[i]!]!
-    const flags = readFlags[i]!
-    // Split bits are per MATE, so both segments of a split mate stand out and
-    // the normal partner keeps its pair colour; ORed onto the chain's bits, the
-    // two describing different units.
-    const split =
-      flags & SAM_FLAG_FIRST_IN_PAIR ? u.mate0SplitKind : u.mate1SplitKind
-    readChainHasSupp[i] = u.fill | split
-    if (
-      flags & SAM_FLAG_SUPPLEMENTARY &&
-      u.primaryPairOrientation > 0 &&
-      readPairOrientations[i] !== u.primaryPairOrientation
-    ) {
-      corrected ??= new Uint8Array(readPairOrientations)
-      corrected[i] = u.primaryPairOrientation
+  for (let i = 0; i < readChainIndices.length; i++) {
+    const u = sharedUnions[readChainIndices[i]!]
+    if (u) {
+      const flags = readFlags[i]!
+      readChainHasSupp[i] = readFill(u, flags)
+      const o = readOrientation(u, flags, readPairOrientations[i]!)
+      if (o !== alone.readPairOrientations[i]) {
+        corrected ??= new Uint8Array(alone.readPairOrientations)
+        corrected[i] = o
+      }
     }
   }
   return {
+    readChainHasSupp,
+    readPairOrientations: corrected ?? alone.readPairOrientations,
+  }
+}
+
+function attached(
+  data: WorkerPileupData,
+  chains: RegionChains,
+  answers: ReadAnswers,
+): ChainPileupData {
+  return {
     ...data,
-    readChainIndices,
+    readChainIndices: chains.readChainIndices,
     chainNames: chains.chainNames,
     chainAbsMinStarts: chains.chainAbsMinStarts,
     chainAbsMaxEnds: chains.chainAbsMaxEnds,
     chainDistances: chains.chainDistances,
     chainFirstReadIndices: chains.chainFirstReadIndices,
-    readChainHasSupp,
-    ...(corrected && { readPairOrientations: corrected }),
+    ...answers,
   }
+}
+
+function attachedAlone(data: WorkerPileupData, chains: RegionChains) {
+  if (chains.aloneAttached?.source !== data) {
+    chains.aloneAttached = {
+      source: data,
+      out: attached(data, chains, aloneAnswers(data, chains)),
+    }
+  }
+  return chains.aloneAttached.out
 }
 
 export type ChainedByGroup = ReadonlyMap<
@@ -341,40 +443,81 @@ export type ChainedByGroup = ReadonlyMap<
 export function attachChainFields(
   rawByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
 ): ChainedByGroup {
-  const union = new Map<string, ChainSummary>()
-  for (const regions of rawByGroup.values()) {
-    for (const data of regions.values()) {
-      const { chainNames, summaries } = regionChainsOf(data)
+  const entries: { key: string; idx: number; data: WorkerPileupData }[] = []
+  const chainsOf: RegionChains[] = []
+  const offsets: number[] = []
+  let numChains = 0
+  for (const [key, regions] of rawByGroup) {
+    for (const [idx, data] of regions) {
+      const chains = regionChainsOf(data)
+      entries.push({ key, idx, data })
+      chainsOf.push(chains)
+      offsets.push(numChains)
+      numChains += chains.chainNames.length
+    }
+  }
+
+  // Which chains more than one entry holds. A chain's first sighting is noted
+  // by its ordinal across every entry, a small integer, so the map holds no
+  // object per chain.
+  const shared = new Uint8Array(numChains)
+  const firstSeen = new Map<string, number>()
+  let anyShared = false
+  for (let e = 0; entries.length > 1 && e < entries.length; e++) {
+    const names = chainsOf[e]!.chainNames
+    const base = offsets[e]!
+    for (let c = 0; c < names.length; c++) {
+      const prev = firstSeen.get(names[c]!)
+      if (prev === undefined) {
+        firstSeen.set(names[c]!, base + c)
+      } else {
+        shared[prev] = 1
+        shared[base + c] = 1
+        anyShared = true
+      }
+    }
+  }
+
+  const folded = new Map<string, ChainSummary>()
+  if (anyShared) {
+    for (let e = 0; e < entries.length; e++) {
+      const { chainNames, summaries } = chainsOf[e]!
+      const base = offsets[e]!
       for (let c = 0; c < chainNames.length; c++) {
-        const seen = union.get(chainNames[c]!)
-        if (seen) {
-          foldSummary(seen, summaries[c]!)
-        } else {
-          union.set(chainNames[c]!, { ...summaries[c]! })
+        if (shared[base + c]) {
+          const seen = folded.get(chainNames[c]!)
+          if (seen) {
+            foldSummary(seen, summaryAt(summaries, c))
+          } else {
+            folded.set(chainNames[c]!, summaryAt(summaries, c))
+          }
         }
       }
     }
   }
   const resolved = new Map<string, ChainUnion>()
-  for (const [name, summary] of union) {
+  for (const [name, summary] of folded) {
     resolved.set(name, resolveUnion(summary))
   }
 
   const out = new Map<string, Map<number, ChainPileupData>>()
-  for (const [key, regions] of rawByGroup) {
-    const chained = new Map<number, ChainPileupData>()
-    for (const [idx, data] of regions) {
-      const chains = regionChainsOf(data)
-      chained.set(
-        idx,
-        attachRegion(
-          data,
-          chains,
-          chains.chainNames.map(name => resolved.get(name)!),
-        ),
-      )
+  for (let e = 0; e < entries.length; e++) {
+    const { key, idx, data } = entries[e]!
+    const chains = chainsOf[e]!
+    const base = offsets[e]!
+    let sharedUnions: (ChainUnion | undefined)[] | undefined
+    for (let c = 0; c < chains.chainNames.length; c++) {
+      if (shared[base + c]) {
+        sharedUnions ??= []
+        sharedUnions[c] = resolved.get(chains.chainNames[c]!)
+      }
     }
-    out.set(key, chained)
+    getOrCreate(out, key, () => new Map()).set(
+      idx,
+      sharedUnions
+        ? attached(data, chains, sharedAnswers(data, chains, sharedUnions))
+        : attachedAlone(data, chains),
+    )
   }
   return out
 }
