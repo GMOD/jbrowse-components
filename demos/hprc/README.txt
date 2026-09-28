@@ -226,13 +226,14 @@ Curated VNTRs
   hprc_kiv2_copies.vcf states every copy of that array in GRCh38 and the eight
   haplotypes of hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa, as one VCF 4.5
   <CNV:TR> record: each allele's runs of one unit in RN/RUS/RUC/RB, each copy's
-  length in RUB, and a phased GT per sample, GRCh38 a sample of its own. The
-  graph plugin's scripts/tandem-repeat-vcf.mjs wrote it from that GFA and the
-  KIV-2 row above:
+  length in RUB, and a phased GT per sample, GRCh38 a sample of its own.
+  jbrowse-plugin-tandem-repeat's scripts/tandem-repeat-vcf.mjs wrote it from
+  that GFA and the KIV-2 row above:
 
     node scripts/tandem-repeat-vcf.mjs \
       hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
       --bed hprc_curated_vntrs.bed --name KIV-2 > hprc_kiv2_copies.vcf
 
-  At its 1% divergence the 138 copies form two units about 2.3% apart. Walk
-  rows paint each copy by its unit.
+  At its 1% divergence the 138 copies form two units about 2.3% apart. The
+  config loads jbrowse-plugin-tandem-repeat, whose Show repeat copies item on
+  the record draws each copy in its unit's colour.
