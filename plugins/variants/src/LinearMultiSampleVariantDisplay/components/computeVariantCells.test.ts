@@ -934,14 +934,13 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
     ['S1', 'S2'],
   )
 
-  function run(featureColor?: () => string) {
+  function run() {
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'draw',
       colorByPhaseSet: true,
-      featureColor,
       ...genotypeArgs([feature]),
     })
     const byRow = new Map<number, { dosage: number; color: number }>()
@@ -960,18 +959,6 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
     expect(byRow.get(1)!.dosage).toBe(0) // S1 HP1 `.` — no call
     expect(byRow.get(2)!.dosage).toBe(0) // S2 HP0 `0`
     expect(byRow.get(3)!.dosage).toBe(0) // S2 HP1 `0`
-  })
-
-  test('the per-variant override reaches the alt haplotype and nothing else', async () => {
-    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const { NO_CALL_COLOR, REFERENCE_COLOR } =
-      await import('../../shared/constants.ts')
-    const override = 'rgb(1,2,3)'
-    const byRow = run(() => override)
-    expect(byRow.get(0)!.color).toBe(getCachedABGR(override))
-    // a missing call must never be painted as though it carried the variant
-    expect(byRow.get(1)!.color).toBe(getCachedABGR(NO_CALL_COLOR))
-    expect(byRow.get(2)!.color).toBe(getCachedABGR(REFERENCE_COLOR))
   })
 })
 

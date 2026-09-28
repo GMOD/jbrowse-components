@@ -1,13 +1,20 @@
+import { buildSourceSampleIndices } from '../VariantRPC/analyzeVariants.ts'
+import { ALT_HUE } from './cellFill.ts'
 import { BLACK_ABGR, NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { getAlleleColor } from './drawAlleleCount.ts'
 import {
   altDosageByte,
+  featureHasPhaseSet,
   getPhasedColor,
   isNoCall,
   isPhasedOrHaploid,
   splitPhasedAlleles,
 } from './getPhasedColor.ts'
+import { makePhaseSetReader } from './phaseSetReader.ts'
 import { getCachedABGR } from './variantWebglUtils.ts'
+
+import type { ProcessedSource } from './types.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Everything a cell loop needs to emit one cell: the packed color plus the two
@@ -105,13 +112,10 @@ export function cellCarriesAlt(genotype: string, HP: number | undefined) {
 /**
  * One genotype's style at one site, in allele-count (dosage) mode.
  *
- * Resolved per *distinct genotype string* rather than per cell. A site with
- * thousands of samples carries a handful of distinct genotypes ("0|0", "0/1",
- * "./."), so the caller memoizes this in a plain `Map` keyed by the genotype
- * string it already holds, which moves the packing, the ABGR lookup and the
- * allele counting out of the per-cell loop. `getAlleleColor` carried a
- * memo of its own for that job, keyed on a template literal; at this
- * granularity there is nothing left for it to save.
+ * Resolved per *distinct genotype* rather than per cell. A site with thousands
+ * of samples carries a handful of distinct genotypes ("0|0", "0/1", "./."), so
+ * `makeSiteStyler` memoizes this per genotype code, which moves the packing,
+ * the ABGR lookup and the allele counting out of the per-cell loop.
  *
  * `getAlleleColor` has already composed the mode's hue with the dosage, so
  * nothing re-applies either here.
@@ -123,7 +127,7 @@ export function cellCarriesAlt(genotype: string, HP: number | undefined) {
  * the paint-order bucket, and `getAlleleColor` returns that constant by
  * identity for an all-reference call.
  */
-export function buildAlleleCountStyle(
+function buildAlleleCountStyle(
   genotype: string,
   drawRef: boolean,
   altHue: string,
@@ -148,7 +152,7 @@ export function buildAlleleCountStyle(
 /**
  * One genotype's style at one site for every haplotype row, in phased mode.
  *
- * Indexed by `HP`, so the per-cell loop is a `Map` hit plus an array read. A
+ * Indexed by `HP`, so the per-cell loop is two array reads. A
  * genotype that is unphased-but-called, or a no-call, paints the same cell on
  * every haplotype row, so those fill the whole array — the mode decision is
  * made once per genotype instead of once per cell.
@@ -161,7 +165,7 @@ export function buildAlleleCountStyle(
  * Not used when coloring by phase set: PS is per-(feature, sample), so that
  * path has nothing site-wide to memoize and stays on the per-cell call.
  */
-export function buildPhasedStyles(
+function buildPhasedStyles(
   genotype: string,
   mostFrequentAlt: string,
   numHaplotypes: number,
@@ -213,14 +217,10 @@ function uncalledStyle(genotype: string) {
  * The phased cell style when coloring by phase set, which is the one mode with
  * nothing site-wide to memoize: PS is a per-(feature, sample) FORMAT field, so
  * `buildPhasedStyles`' per-genotype table cannot answer for it and the color has
- * to be resolved per cell.
- *
- * Both cell loops go through this rather than each spelling out the
- * phased/no-call/unphased branch and the allele classification again. The
- * classification is the part that must not be re-derived: `isRef`/`isAlt` come
- * from the ALLELE, never from the color, and reading them back off the color
- * string is precisely what shipped a bug once the allele-count path started
- * blending its no-call shade to a hex (see `altDosageByte`).
+ * to be resolved per cell. `isRef`/`isAlt` come from the ALLELE, never from the
+ * color: reading them back off the color string shipped a bug once the
+ * allele-count path started blending its no-call shade to a hex (see
+ * `altDosageByte`).
  *
  * A factory owning one scratch style, the same shape `makePhaseSetReader` uses
  * for the PS values themselves: this runs once per cell, so returning a fresh
@@ -228,7 +228,7 @@ function uncalledStyle(genotype: string) {
  * result is therefore valid only until the next call — every caller reads it
  * straight into its cell arrays.
  */
-export function makePhaseSetStyler() {
+function makePhaseSetStyler() {
   const scratch: VariantCellStyle = {
     abgr: 0,
     isRef: false,
@@ -242,7 +242,6 @@ export function makePhaseSetStyler() {
     mostFrequentAlt: string,
     phaseSet: string | number | undefined,
     drawRef: boolean,
-    overrideColor: string | undefined,
   ): VariantCellStyle | null {
     if (!isPhasedOrHaploid(genotype)) {
       return uncalledStyle(genotype)
@@ -260,13 +259,8 @@ export function makePhaseSetStyler() {
       return null
     }
     const isRef = allele === '0'
-    // Only alt-carrying cells take the per-variant override; ref and no-call
-    // keep their own color so a missing call is never painted as though it
-    // carried the variant.
     const isAlt = allele !== undefined && allele !== '.' && !isRef
-    scratch.abgr = getCachedABGR(
-      isAlt && overrideColor !== undefined ? overrideColor : color,
-    )
+    scratch.abgr = getCachedABGR(color)
     scratch.isRef = isRef
     scratch.isAlt = isAlt
     // per haplotype in this mode, so a drawn marker is full strength; the rows
@@ -283,7 +277,7 @@ export function makePhaseSetStyler() {
  * contributes nothing and reads back `undefined` from the table, i.e. paints
  * nothing — the same answer the per-cell `getPhasedColor` gave it.
  */
-export function countHaplotypes(sources: { HP?: number }[]) {
+function countHaplotypes(sources: { HP?: number }[]) {
   let maxHp = -1
   for (let i = 0; i < sources.length; i++) {
     const hp = sources[i]!.HP
@@ -292,4 +286,125 @@ export function countHaplotypes(sources: { HP?: number }[]) {
     }
   }
   return maxHp + 1
+}
+
+/**
+ * Each row's cell style at one site, for both cell loops: bind a site with
+ * `site`, then read row `j` with `styleAt(j)`, where `null` paints nothing.
+ *
+ * The per-genotype memos are indexed by genotype code and cleared per site,
+ * since their entries bake in that site's most frequent alt and override hue.
+ * Only the codes a site used are cleared. Phase-set coloring is the one
+ * per-cell path, because PS is per (site, sample).
+ *
+ * `styleAt` may return `makePhaseSetStyler`'s scratch, so a caller reads the
+ * style into its cell arrays before the next call.
+ */
+export function makeSiteStyler({
+  sources,
+  sampleNames,
+  genotypeDict,
+  renderingMode,
+  drawRef,
+  shadeDosage,
+  colorByPhaseSet,
+}: {
+  sources: ProcessedSource[]
+  // The canonical sample order the site's genotype codes are aligned to
+  sampleNames: string[]
+  // `genotypeDict[code - 1]` is a code's genotype; code 0 is "no genotype"
+  genotypeDict: readonly string[]
+  renderingMode: string
+  drawRef: boolean
+  shadeDosage: boolean
+  colorByPhaseSet?: boolean
+}) {
+  const sampleIndices = buildSourceSampleIndices(sources, sampleNames)
+  const hps = Int32Array.from(sources, source => source.HP ?? -1)
+  const phased = renderingMode === 'phased'
+  const numHaplotypes = countHaplotypes(sources)
+  const phaseSets = makePhaseSetReader(sampleNames)
+  const phaseSetStyle = makePhaseSetStyler()
+  const numCodes = genotypeDict.length + 1
+  const alleleCountStyles = new Array<VariantCellStyle | null | undefined>(
+    numCodes,
+  )
+  const phasedStyles = new Array<(VariantCellStyle | null)[] | undefined>(
+    numCodes,
+  )
+  const touchedCodes: number[] = []
+  let codes: Uint32Array = new Uint32Array(0)
+  let mostFrequentAlt = ''
+  let overrideColor: string | undefined
+  let byPhaseSet = false
+
+  return {
+    site(
+      feature: Feature,
+      siteCodes: Uint32Array,
+      siteMostFrequentAlt: string,
+      siteOverrideColor: string | undefined,
+    ) {
+      codes = siteCodes
+      mostFrequentAlt = siteMostFrequentAlt
+      overrideColor = siteOverrideColor
+      for (let t = 0; t < touchedCodes.length; t++) {
+        const c = touchedCodes[t]!
+        alleleCountStyles[c] = undefined
+        phasedStyles[c] = undefined
+      }
+      touchedCodes.length = 0
+      // `read` answers false for a feature that cannot report FORMAT ranges,
+      // which then paints by allele
+      byPhaseSet =
+        phased &&
+        colorByPhaseSet === true &&
+        featureHasPhaseSet(feature.get('FORMAT') as string | undefined) &&
+        phaseSets.read(feature)
+    },
+    styleAt(row: number): VariantCellStyle | null {
+      const si = sampleIndices[row]!
+      const code = si === -1 ? 0 : codes[si]!
+      if (code === 0) {
+        return null
+      }
+      if (!phased) {
+        let style = alleleCountStyles[code]
+        if (style === undefined) {
+          style = buildAlleleCountStyle(
+            genotypeDict[code - 1]!,
+            drawRef,
+            overrideColor ?? ALT_HUE,
+            shadeDosage,
+          )
+          alleleCountStyles[code] = style
+          touchedCodes.push(code)
+        }
+        return style
+      }
+      const HP = hps[row]!
+      if (byPhaseSet) {
+        return phaseSetStyle(
+          genotypeDict[code - 1]!,
+          HP,
+          mostFrequentAlt,
+          phaseSets.present[si] ? phaseSets.value[si] : undefined,
+          drawRef,
+        )
+      }
+      let byHp = phasedStyles[code]
+      if (byHp === undefined) {
+        byHp = buildPhasedStyles(
+          genotypeDict[code - 1]!,
+          mostFrequentAlt,
+          numHaplotypes,
+          drawRef,
+          overrideColor,
+        )
+        phasedStyles[code] = byHp
+        touchedCodes.push(code)
+      }
+      return byHp[HP] ?? null
+    },
+  }
 }
