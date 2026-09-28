@@ -243,7 +243,9 @@ numbers.
 
 `color` as a string paints every feature that colour, or whatever a jexl
 callback answers. As an object it binds a field to a scale, and the legend reads
-the same table the colours came from.
+the same table the colours came from. A colour written with an alpha, `rgba()`
+or `#rrggbbaa`, paints at that opacity, as a constant or as an entry of a
+`range`, which is how a dense scatter or overlapping spans stay readable.
 
 - **categorical** —
   `{ "field": "strand", "scale": "categorical", "range": ["#1f77b4", "#ff7f0e"] }`
