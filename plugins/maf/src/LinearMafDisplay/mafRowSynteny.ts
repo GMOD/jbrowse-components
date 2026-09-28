@@ -113,7 +113,7 @@ export function buildMafRowSynteny({
     if (
       !row ||
       row.chr === undefined ||
-      row.start === undefined ||
+      row.srcStart === undefined ||
       (chr !== undefined && row.chr !== chr)
     ) {
       continue

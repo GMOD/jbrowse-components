@@ -93,7 +93,7 @@ export function applyMafLine(
     if (resolved?.assemblyName) {
       out.alignments[resolved.assemblyName] = {
         chr: resolved.chr,
-        start: parsed.start,
+        srcStart: parsed.start,
         seq,
         strand: parsed.strand,
         srcSize: parsed.srcSize,
@@ -127,7 +127,7 @@ export function applyMafLine(
   if (resolved?.assemblyName && status) {
     out.empties[resolved.assemblyName] = {
       chr: resolved.chr,
-      start: Number.parseInt(parts[2]!, 10),
+      srcStart: Number.parseInt(parts[2]!, 10),
       size: Number.parseInt(parts[3]!, 10),
       strand: parseStrand(parts[4]),
       srcSize: Number.parseInt(parts[5]!, 10),

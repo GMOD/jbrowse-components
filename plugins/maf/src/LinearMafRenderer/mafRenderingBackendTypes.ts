@@ -180,7 +180,7 @@ export interface MafAlignedRow {
   // per-base color encoder and coverage code ignore them). Optional because
   // they are tooltip metadata, not needed to render.
   chr?: string
-  start?: number
+  srcStart?: number
   strand?: number
   srcSize?: number
   context?: AlignmentContext

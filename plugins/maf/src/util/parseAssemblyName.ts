@@ -258,7 +258,7 @@ export type SourceResolver = ReturnType<typeof makeSourceResolver>['resolve']
 export interface ParsedMafTabixEntry {
   assemblyName: string
   chr: string
-  start: number
+  srcStart: number
   /** +1/−1, from the entry's strand field */
   strand: number
   /** total source sequence length, or undefined if absent */
@@ -315,7 +315,7 @@ export function scanMafTabixEntry(
   return {
     assemblyName: parsed.assemblyName,
     chr: parsed.chr,
-    start: parseInt(text.slice(c0 + 1, c1), 10),
+    srcStart: parseInt(text.slice(c0 + 1, c1), 10),
     // Field 3 of six, and a single character, so read it as one rather than
     // slicing a string for `parseStrand` to compare. Same rule as
     // `parseStrand`: anything but `-` is forward.

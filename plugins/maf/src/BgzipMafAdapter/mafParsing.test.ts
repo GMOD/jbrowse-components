@@ -41,7 +41,7 @@ test('parses a tab-separated block', () => {
   expect(Object.keys(f!.alignments).sort()).toEqual(['GRCh38', 'HG002'])
   expect(f!.alignments.HG002).toEqual({
     chr: '1.chr1',
-    start: 50,
+    srcStart: 50,
     seq: 'ACGTACGTAT',
     strand: 1,
     srcSize: 1000,
@@ -95,7 +95,7 @@ test('e lines become bridged rows', () => {
   const [f] = collect(withExtras)
   expect(f!.empties.HG003).toEqual({
     chr: '1.chr1',
-    start: 10,
+    srcStart: 10,
     size: 5,
     strand: 1,
     srcSize: 1000,
@@ -208,8 +208,8 @@ describe('a minus-strand reference row', () => {
 
   test('re-expresses each row through its own srcSize and strand', () => {
     const [f] = collect(minusRef)
-    expect(f!.alignments.hg38).toMatchObject({ start: 990, strand: 1 })
-    expect(f!.alignments.mm10).toMatchObject({ start: 440, strand: -1 })
+    expect(f!.alignments.hg38).toMatchObject({ srcStart: 990, strand: 1 })
+    expect(f!.alignments.mm10).toMatchObject({ srcStart: 440, strand: -1 })
   })
 
   test('swaps each row left/right context, which the flip exchanges', () => {
@@ -239,10 +239,10 @@ describe('a minus-strand reference row', () => {
         '',
       ].join('\n'),
     )
-    expect(f!.empties.mm10).toMatchObject({ start: 485, strand: -1 })
+    expect(f!.empties.mm10).toMatchObject({ srcStart: 485, strand: -1 })
   })
 
-  // A row shorter than the block is the realistic shape, and its own `start`
+  // A row shorter than the block is the realistic shape, and its own `srcStart`
   // has to re-express through its aligned base count, not the block's width.
   test('a gapped row re-expresses through its own aligned length', () => {
     const [f] = collect(
@@ -256,7 +256,7 @@ describe('a minus-strand reference row', () => {
     // 6 aligned bases (which is what its own `size` field states), so
     // 500 - 50 - 6
     expect(f!.alignments.mm10).toMatchObject({
-      start: 444,
+      srcStart: 444,
       strand: -1,
       seq: 'ATAC----GT',
     })
@@ -266,7 +266,7 @@ describe('a minus-strand reference row', () => {
     const [f] = collect(tabbed)
     expect([f!.start, f!.end]).toEqual([100, 110])
     expect(f!.seq).toBe('ACGTACGTAC')
-    expect(f!.alignments.HG002).toMatchObject({ start: 50, strand: 1 })
+    expect(f!.alignments.HG002).toMatchObject({ srcStart: 50, strand: 1 })
   })
 })
 

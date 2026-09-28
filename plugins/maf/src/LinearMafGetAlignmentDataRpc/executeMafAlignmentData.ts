@@ -208,7 +208,7 @@ export async function executeMafAlignmentData({
             sampleId,
             seq: a.seq,
             chr: a.chr,
-            start: a.start,
+            srcStart: a.srcStart,
             strand: a.strand ?? 1,
             srcSize: a.srcSize,
             context: a.context,

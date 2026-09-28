@@ -97,8 +97,8 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
           }
           const entry = scanMafTabixEntry(encoded, from, to, resolver.resolve)
           if (entry) {
-            const { assemblyName, chr, start, strand, srcSize, seq } = entry
-            alignments[assemblyName] = { chr, start, strand, srcSize, seq }
+            const { assemblyName, chr, srcStart, strand, srcSize, seq } = entry
+            alignments[assemblyName] = { chr, srcStart, strand, srcSize, seq }
           }
           if (from === 0) {
             firstEntrySeq = (

@@ -35,14 +35,14 @@ const BLOCKS: TestWireBlock[] = [
         sampleId: 'hg38',
         seq: 'ACGT-ACGTA',
         chr: 'chr1',
-        start: 5,
+        srcStart: 5,
         srcSize: 99,
       },
       {
         sampleId: 'mm39',
         seq: 'ACGTTAC--A',
         chr: 'chr7',
-        start: 60,
+        srcStart: 60,
         strand: -1,
         srcSize: 700,
         context: {
@@ -56,7 +56,7 @@ const BLOCKS: TestWireBlock[] = [
         sampleId: 'rn7',
         seq: 'A-GTTACGTA',
         chr: 'chr1',
-        start: 12,
+        srcStart: 12,
         srcSize: 42,
       },
     ],
@@ -65,7 +65,7 @@ const BLOCKS: TestWireBlock[] = [
         sampleId: 'galGal6',
         status: 'I',
         chr: 'chrZ',
-        start: 3,
+        srcStart: 3,
         size: 11,
         strand: 1,
         srcSize: 55,
@@ -77,8 +77,14 @@ const BLOCKS: TestWireBlock[] = [
     refSeq: 'TTTTTT',
     // mm39 absent here; rn7 truncated short of the reference
     rows: [
-      { sampleId: 'hg38', seq: 'TTTTTT', chr: 'chr1', start: 900, srcSize: 99 },
-      { sampleId: 'rn7', seq: 'TTT', chr: 'chr1', start: 901, srcSize: 42 },
+      {
+        sampleId: 'hg38',
+        seq: 'TTTTTT',
+        chr: 'chr1',
+        srcStart: 900,
+        srcSize: 99,
+      },
+      { sampleId: 'rn7', seq: 'TTT', chr: 'chr1', srcStart: 901, srcSize: 42 },
     ],
   },
   {
@@ -89,7 +95,7 @@ const BLOCKS: TestWireBlock[] = [
         sampleId: 'mm39',
         seq: 'GGTTGG',
         chr: 'chr7',
-        start: 77,
+        srcStart: 77,
         strand: -1,
         srcSize: 700,
       },
@@ -99,7 +105,7 @@ const BLOCKS: TestWireBlock[] = [
         sampleId: 'galGal6',
         status: 'n',
         chr: 'chrZ',
-        start: 8,
+        srcStart: 8,
         size: 2,
         strand: -1,
         srcSize: 55,
@@ -108,7 +114,7 @@ const BLOCKS: TestWireBlock[] = [
         sampleId: 'hg38',
         status: 'M',
         chr: 'chr1',
-        start: 950,
+        srcStart: 950,
         size: 4,
         strand: 1,
         srcSize: 99,
@@ -149,7 +155,7 @@ test('pack then place round-trips every aligned row field', () => {
       expect(row.rowIndex).toBe(rowIndexBySrc.get(want.sampleId))
       expect(decoder.decode(row.alignmentBytes)).toBe(want.seq)
       expect(row.chr).toBe(want.chr)
-      expect(row.start).toBe(want.start)
+      expect(row.srcStart).toBe(want.srcStart)
       expect(row.strand).toBe(want.strand ?? 1)
       expect(row.srcSize).toBe(want.srcSize)
       expect(row.context).toEqual(want.context)
@@ -169,7 +175,7 @@ test('pack then place round-trips every e-line row field', () => {
       expect(empty.rowIndex).toBe(rowIndexBySrc.get(expected.sampleId))
       expect(empty.status).toBe(expected.status)
       expect(empty.chr).toBe(expected.chr)
-      expect(empty.start).toBe(expected.start)
+      expect(empty.srcStart).toBe(expected.srcStart)
       expect(empty.size).toBe(expected.size)
       expect(empty.strand).toBe(expected.strand)
       expect(empty.srcSize).toBe(expected.srcSize)

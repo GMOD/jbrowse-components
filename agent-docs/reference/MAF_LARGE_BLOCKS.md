@@ -116,7 +116,7 @@ And clipping only pays off *after* the expensive layers:
   (`MultiRegionDisplayMixin.ts:451`) can no longer reuse a loaded region across
   zoom. Today zooming within a loaded region costs nothing; clipping makes it
   refetch.
-- Tooltips and FASTA export read per-species `chr`/`start`/`strand` off the
+- Tooltips and FASTA export read per-species `chr`/`srcStart`/`strand` off the
   block; clipped blocks silently report wrong coordinates unless those are
   re-derived — which is, again, the splitter's arithmetic.
 

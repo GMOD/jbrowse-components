@@ -11,9 +11,9 @@ import type { AlignmentRecord, EmptyRecord } from '../types.ts'
  *
  * The whole block turns over, not just the coordinate: flipping that alone
  * would leave the columns running backwards across a correctly placed span. So
- * every sequence reverse-complements, every strand negates, every row's `start`
- * re-expresses through its own `srcSize`, and each `i`-line context swaps left
- * for right — the standard MAF strand transform, applied uniformly.
+ * every sequence reverse-complements, every strand negates, every row's
+ * `srcStart` re-expresses through its own `srcSize`, and each `i`-line context
+ * swaps left for right — the standard MAF strand transform, applied uniformly.
  *
  * A `.tai` written against such a file indexes whatever frame its writer chose,
  * which this cannot know; what it guarantees is that the blocks a read does
@@ -39,7 +39,7 @@ export function flipBlockToForwardStrand({
 }) {
   for (const rec of Object.values(alignments)) {
     if (rec.srcSize !== undefined) {
-      rec.start = rec.srcSize - rec.start - alignedBaseCount(rec.seq)
+      rec.srcStart = rec.srcSize - rec.srcStart - alignedBaseCount(rec.seq)
     }
     rec.seq = revcom(rec.seq)
     rec.strand = rec.strand === undefined ? undefined : -rec.strand
@@ -53,7 +53,7 @@ export function flipBlockToForwardStrand({
     }
   }
   for (const rec of Object.values(empties ?? {})) {
-    rec.start = rec.srcSize - rec.start - rec.size
+    rec.srcStart = rec.srcSize - rec.srcStart - rec.size
     rec.strand = -rec.strand
   }
   const start = refSrcSize - refStart - refSize

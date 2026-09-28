@@ -70,8 +70,11 @@ export interface AlignmentContext {
 export interface AlignmentRecord {
   /** Chromosome/contig name */
   chr: string
-  /** Start position in the organism's coordinate system */
-  start: number
+  /**
+   * Start in the species' own sequence, not the reference: the `s` line's
+   * `start`, counted from the reverse complement on a `-` row
+   */
+  srcStart: number
   /** The aligned sequence (including gaps as '-') */
   seq: string
   /** +1/-1; from the `s` line strand field (not all adapters supply it) */
@@ -90,8 +93,8 @@ export interface AlignmentRecord {
 export interface EmptyRecord {
   /** Chromosome/contig name */
   chr: string
-  /** Start of the non-aligning region in the source sequence */
-  start: number
+  /** Start of the non-aligning region in the species' own sequence */
+  srcStart: number
   /** Size in bp of the non-aligning region */
   size: number
   /** +1/-1 */

@@ -157,7 +157,7 @@ function HoverContents({
       <Row label="Status" value={describeMafStatus(hover.status)} />
       <Row
         label="Location"
-        value={`${hover.chr}:${toLocale(hover.start + 1)} (${strandStr(hover.strand)}), ${toLocale(hover.size)} bp`}
+        value={`${hover.chr}:${toLocale(hover.srcStart + 1)} (${strandStr(hover.strand)}), ${toLocale(hover.size)} bp`}
       />
     </TableShell>
   )

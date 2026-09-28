@@ -30,7 +30,7 @@ test('returns cell hit with base + forward-strand position', () => {
           rowIndex: 0,
           alignmentBytes: enc.encode('acgta'),
           chr: 'chrX',
-          start: 100,
+          srcStart: 100,
           strand: 1,
         },
       ],
@@ -59,7 +59,7 @@ test('resolves an insertion (reference-gap columns) over the abutting base', () 
           rowIndex: 0,
           alignmentBytes: enc.encode('accA'),
           chr: 'chrX',
-          start: 100,
+          srcStart: 100,
           strand: 1,
         },
       ],
@@ -72,7 +72,7 @@ test('resolves an insertion (reference-gap columns) over the abutting base', () 
     length: 2,
     sequence: 'cc',
     chr: 'chrX',
-    // first inserted base is the 2nd non-gap base of the sample → start + 1
+    // first inserted base is the 2nd non-gap base of the sample → srcStart + 1
     pos: 101,
   })
   // cursor a full bp away from the marker → falls back to the plain base
@@ -95,7 +95,7 @@ test('a minus-row insertion runs leftward from the reported position', () => {
           rowIndex: 0,
           alignmentBytes: enc.encode('accA'),
           chr: 'chrY',
-          start: 100,
+          srcStart: 100,
           strand: -1,
           srcSize: 1000,
         },
@@ -108,7 +108,7 @@ test('a minus-row insertion runs leftward from the reported position', () => {
     kind: 'insertion',
     length: 2,
     sequence: 'cc',
-    // srcSize - 1 - start - baseOffset = 1000 - 1 - 100 - 1
+    // srcSize - 1 - srcStart - baseOffset = 1000 - 1 - 100 - 1
     pos: 898,
     strand: -1,
   })
@@ -127,7 +127,7 @@ test('mirrors position through srcSize for reverse-strand rows', () => {
           rowIndex: 0,
           alignmentBytes: enc.encode('acg'),
           chr: 'chrY',
-          start: 100,
+          srcStart: 100,
           strand: -1,
           srcSize: 1000,
         },
@@ -135,7 +135,7 @@ test('mirrors position through srcSize for reverse-strand rows', () => {
       empties: [],
     },
   ])
-  // baseOffset 0 → srcSize - 1 - start - 0 = 1000 - 1 - 100 = 899
+  // baseOffset 0 → srcSize - 1 - srcStart - 0 = 1000 - 1 - 100 = 899
   expect(findRowHoverAtBp(r, at(100), 0, false, 1, true)).toMatchObject({
     pos: 899,
   })
@@ -169,7 +169,7 @@ test('returns empty hit when the row is bridged (e line) at this block', () => {
           rowIndex: 1,
           status: 'I',
           chr: 'mm.chr1',
-          start: 5,
+          srcStart: 5,
           size: 13,
           strand: 1,
           srcSize: 999,
@@ -181,7 +181,7 @@ test('returns empty hit when the row is bridged (e line) at this block', () => {
     kind: 'empty',
     status: 'I',
     chr: 'mm.chr1',
-    start: 5,
+    srcStart: 5,
     size: 13,
     strand: 1,
   })

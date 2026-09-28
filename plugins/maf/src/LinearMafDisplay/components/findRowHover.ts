@@ -55,7 +55,7 @@ export interface EmptyHit {
   kind: 'empty'
   status: MafStatus
   chr: string
-  start: number
+  srcStart: number
   size: number
   strand: number
 }
@@ -87,17 +87,17 @@ export interface HoverBp {
 }
 
 // Forward-strand coordinate of the base `baseOffset` non-gap bases into the row.
-// For '-' rows the MAF start is relative to the reverse complement, so we mirror
+// For '-' rows `srcStart` is relative to the reverse complement, so we mirror
 // through srcSize (the standard MAF coordinate transform).
 export function forwardPos(row: MafAlignedRow, baseOffset: number) {
-  if (row.start === undefined) {
+  if (row.srcStart === undefined) {
     return undefined
   }
   return row.strand === -1
     ? row.srcSize === undefined
       ? undefined
-      : row.srcSize - 1 - row.start - baseOffset
-    : row.start + baseOffset
+      : row.srcSize - 1 - row.srcStart - baseOffset
+    : row.srcStart + baseOffset
 }
 
 // Lowest forward coordinate of an insertion's bases. `InsertionHit.pos` is the
@@ -271,7 +271,7 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
     kind: 'empty',
     status: e.status,
     chr: e.chr,
-    start: e.start,
+    srcStart: e.srcStart,
     size: e.size,
     strand: e.strand,
   }

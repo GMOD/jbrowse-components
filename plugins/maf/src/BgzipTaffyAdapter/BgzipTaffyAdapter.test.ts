@@ -1020,7 +1020,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
 
     const firstOrganism = alignments[organismNames[0]!]
     expect(firstOrganism).toHaveProperty('chr')
-    expect(firstOrganism).toHaveProperty('start')
+    expect(firstOrganism).toHaveProperty('srcStart')
     expect(firstOrganism).toHaveProperty('seq')
   })
 })
@@ -1231,9 +1231,9 @@ describe('blockToFeature places a minus-strand reference row forward', () => {
   test('turns the whole block over, not just the coordinate', () => {
     const feature = blockToFeature(block, splitResolve)!
     expect(feature.seq).toBe('GTACGTACGT')
-    expect(feature.alignments.hg38).toMatchObject({ start: 990, strand: 1 })
+    expect(feature.alignments.hg38).toMatchObject({ srcStart: 990, strand: 1 })
     expect(feature.alignments.mm10).toMatchObject({
-      start: 1990,
+      srcStart: 1990,
       strand: -1,
       seq: 'ATACGTACGT',
     })

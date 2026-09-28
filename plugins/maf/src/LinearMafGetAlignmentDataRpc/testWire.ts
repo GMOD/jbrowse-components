@@ -18,7 +18,7 @@ export interface TestWireRow {
   sampleId: string
   seq: string
   chr?: string
-  start?: number
+  srcStart?: number
   strand?: number
   srcSize?: number
   context?: AlignmentContext

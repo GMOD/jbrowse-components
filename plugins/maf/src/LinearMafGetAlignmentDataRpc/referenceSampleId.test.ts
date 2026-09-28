@@ -3,7 +3,7 @@ import { referenceSampleId } from './executeMafAlignmentData.ts'
 import type { AlignmentRecord } from '../types.ts'
 
 function aln(seq: string): AlignmentRecord {
-  return { chr: 'chr1', start: 0, seq }
+  return { chr: 'chr1', srcStart: 0, seq }
 }
 
 test('names the row whose sequence is the block reference', () => {

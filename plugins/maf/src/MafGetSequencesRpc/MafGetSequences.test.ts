@@ -18,7 +18,7 @@ const FEATURE = {
     ({
       start: 0,
       seq: 'ACGT',
-      alignments: { mm10: { chr: 'chr1', start: 0, seq: 'ACGA' } },
+      alignments: { mm10: { chr: 'chr1', srcStart: 0, seq: 'ACGA' } },
     })[field],
 } as unknown as Feature
 

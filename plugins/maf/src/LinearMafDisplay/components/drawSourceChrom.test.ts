@@ -21,7 +21,7 @@ function region(
         rowIndex,
         chr,
         alignmentBytes: new Uint8Array(),
-        start: 0,
+        srcStart: 0,
         strand: 1,
       })),
       empties: [],

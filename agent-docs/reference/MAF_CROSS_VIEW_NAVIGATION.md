@@ -7,7 +7,7 @@ kind: spec
 
 # MAF row → other genome navigation
 
-A MAF row already knows the aligned species' own coordinates (`chr`, `start`,
+A MAF row already knows the aligned species' own coordinates (`chr`, `srcStart`,
 `strand`, `srcSize`). If that species is a genome the session can load, the row
 is a navigable link: right-click a row, open `SPRET_EiJ chr2:…` in a new
 LinearGenomeView. Written 2026-07-30 after surveying `~/src/jb2hubs` for what a

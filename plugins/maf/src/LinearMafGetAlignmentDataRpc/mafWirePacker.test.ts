@@ -232,7 +232,7 @@ test('empties are ranged per block alongside rows', () => {
           sampleId: 'b',
           status: 'C',
           chr: 'chrX',
-          start: 5,
+          srcStart: 5,
           size: 9,
           strand: -1,
           srcSize: 1000,
@@ -255,7 +255,7 @@ test('columns and arena grow correctly when nothing is reserved', () => {
   const n = 500
   for (let b = 0; b < n; b++) {
     packer.startBlock(b * 10, 'ACGT')
-    packer.addRow({ sampleId: `sp${b % 7}`, seq: 'ACGT', start: b })
+    packer.addRow({ sampleId: `sp${b % 7}`, seq: 'ACGT', srcStart: b })
   }
   const packed = packer.finishBlocks()
   expect(packed.blockStartBp).toHaveLength(n)

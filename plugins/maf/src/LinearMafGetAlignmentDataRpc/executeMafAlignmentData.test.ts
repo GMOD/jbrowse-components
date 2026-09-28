@@ -38,8 +38,8 @@ function feature(
   return { get: (field: string) => data[field] } as unknown as Feature
 }
 
-function row(seq: string, start = 0): AlignmentRecord {
-  return { chr: 'chr1', start, strand: 1, srcSize: 1000, seq }
+function row(seq: string, srcStart = 0): AlignmentRecord {
+  return { chr: 'chr1', srcStart, strand: 1, srcSize: 1000, seq }
 }
 
 // This suite never passes a `byteLimit`, so the executor measures nothing and
@@ -163,7 +163,7 @@ test('a species seen only on an e line is discovered and packed as an empty', as
       {
         canFam: {
           chr: 'chr5',
-          start: 7,
+          srcStart: 7,
           size: 3,
           strand: -1,
           srcSize: 90,

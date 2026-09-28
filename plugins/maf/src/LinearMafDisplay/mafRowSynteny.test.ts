@@ -23,7 +23,7 @@ function block(
       rowIndex,
       alignmentBytes: enc.encode(aln),
       chr: 'chr2',
-      start: 1000,
+      srcStart: 1000,
       strand: 1,
       srcSize: 5000,
       ...rest,
@@ -88,7 +88,7 @@ test('a minus-strand row is a minus-strand feature with a forward mate span', ()
   const out = build(
     region(
       block(100, 'ACGT', [
-        { aln: 'ACGT', strand: -1, start: 10, srcSize: 100 },
+        { aln: 'ACGT', strand: -1, srcStart: 10, srcSize: 100 },
       ]),
     ),
     0,
@@ -108,7 +108,7 @@ test('one feature per block, and a block where the row is all gap yields none', 
     region(
       block(100, 'AC', [{ aln: 'AC' }]),
       block(200, 'GG', [{ aln: '--' }]),
-      block(300, 'TT', [{ aln: 'TT', start: 2000 }]),
+      block(300, 'TT', [{ aln: 'TT', srcStart: 2000 }]),
     ),
     0,
     1000,
@@ -122,7 +122,11 @@ test('one feature per block, and a block where the row is all gap yields none', 
 
 test('a row with no coordinates, or none in range, is nothing to launch', () => {
   expect(
-    build(region(block(100, 'AC', [{ aln: 'AC', start: undefined }])), 0, 1000),
+    build(
+      region(block(100, 'AC', [{ aln: 'AC', srcStart: undefined }])),
+      0,
+      1000,
+    ),
   ).toBeUndefined()
   expect(
     build(region(block(100, 'AC', [{ aln: 'AC' }])), 500, 600),

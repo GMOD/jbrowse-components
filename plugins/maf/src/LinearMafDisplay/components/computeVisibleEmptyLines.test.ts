@@ -16,7 +16,7 @@ function emptyRow(
     rowIndex,
     status,
     chr: 'c',
-    start: 0,
+    srcStart: 0,
     size: 10,
     strand: 1,
     srcSize: 1,

@@ -95,7 +95,7 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
     // color-by-source-chromosome and the inversion consensus key on
     expect(alignments.simvolvox).toEqual({
       chr: 'chrA',
-      start: 4700,
+      srcStart: 4700,
       strand: 1,
       srcSize: 47000,
       seq: expect.stringContaining('cATtgTaGCGGAGTTgaaCAaCGG'),

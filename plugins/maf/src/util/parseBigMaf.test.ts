@@ -20,7 +20,7 @@ test('parses s lines with strand + srcSize, first as reference', () => {
   expect(referenceSeq).toBe('gcagctgaaaaca')
   expect(alignments.hg18).toEqual({
     chr: 'chr7',
-    start: 27707221,
+    srcStart: 27707221,
     seq: 'gcagctgaaaaca',
     strand: 1,
     srcSize: 158545518,
@@ -82,7 +82,7 @@ test('parses e lines into empties, not alignments', () => {
   expect(alignments.mm4).toBeUndefined()
   expect(empties.mm4).toEqual({
     chr: 'chr6',
-    start: 53310102,
+    srcStart: 53310102,
     size: 13,
     strand: 1,
     srcSize: 151104725,
@@ -111,7 +111,7 @@ test('a haplotype-suffixed genome keeps its suffix in the sample id', () => {
     's HG002.1.chr7 200 4 + 900 acgt',
   ].join(';')
   const { alignments } = parseBigMafStanza(s, parseAssemblyAndChr)
-  expect(alignments['HG002.1']).toMatchObject({ chr: 'chr7', start: 200 })
+  expect(alignments['HG002.1']).toMatchObject({ chr: 'chr7', srcStart: 200 })
 })
 
 test('drops rows the resolver rejects', () => {

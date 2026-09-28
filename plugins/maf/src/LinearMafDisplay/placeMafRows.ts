@@ -84,7 +84,7 @@ export function placeMafRegionData(
           sampleId: sampleIds[rowSample[i]!],
           alignmentBytes: arena.subarray(offset, offset + rowLength[i]!),
           chr: chrNames[rowChr[i]!],
-          start: rowStart[i]!,
+          srcStart: rowStart[i]!,
           strand: rowStrand[i]!,
           // 0 is the wire's "the adapter supplied none" — a source sequence of
           // length 0 is not a thing, so the sentinel can't collide with a real
@@ -122,7 +122,7 @@ export function placeMafRegionData(
           sampleId: sampleIds[emptySample[i]!],
           status,
           chr: chrNames[emptyChr[i]!] ?? '',
-          start: emptyStart[i]!,
+          srcStart: emptyStart[i]!,
           size: emptySize[i]!,
           strand: emptyStrand[i]!,
           srcSize: emptySrcSize[i]!,

@@ -30,7 +30,7 @@ export function blockHasRefGap(block: MafBlock) {
  *   reference base after the run).
  * - `length`: number of inserted (non-gap) bases in this sample.
  * - `baseOffset`: count of this sample's non-gap bases before the run (its own
- *   coordinate of the first inserted base, via the row's start/strand).
+ *   coordinate of the first inserted base, via the row's `srcStart`/strand).
  * - `[byteStart, byteEnd)`: span of the run in `alnBytes`, for callers that
  *   need the inserted sequence (gaps within the span are skipped).
  */

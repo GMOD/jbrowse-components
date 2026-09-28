@@ -32,7 +32,7 @@ describe('scanMafTabixEntry over a comma-joined column', () => {
       {
         assemblyName: 'ce11',
         chr: 'chrI',
-        start: 100,
+        srcStart: 100,
         strand: 1,
         srcSize: 15072434,
         seq: 'GAATTC',
@@ -40,7 +40,7 @@ describe('scanMafTabixEntry over a comma-joined column', () => {
       {
         assemblyName: 'caeRem4',
         chr: 'Crem_Contig89',
-        start: 203343,
+        srcStart: 203343,
         strand: -1,
         srcSize: 273340,
         seq: 'gaattc',
@@ -84,7 +84,7 @@ describe('parseMafTabixEntry', () => {
     ).toEqual({
       assemblyName: 'ce11',
       chr: 'chrI',
-      start: 2996373,
+      srcStart: 2996373,
       strand: 1,
       srcSize: 15072434,
       seq: 'GAATTC',
@@ -96,7 +96,7 @@ describe('parseMafTabixEntry', () => {
       'caeRem4.Crem_Contig89:203343:79:-:273340:gaaatc',
       samples,
     )
-    expect(e).toMatchObject({ strand: -1, srcSize: 273340, start: 203343 })
+    expect(e).toMatchObject({ strand: -1, srcSize: 273340, srcStart: 203343 })
   })
 
   test('returns undefined for an unknown sample or malformed entry', () => {

@@ -300,7 +300,7 @@ export class MafWirePacker {
     sampleId: string
     seq: string | Uint8Array
     chr?: string
-    start?: number
+    srcStart?: number
     strand?: number
     srcSize?: number
     context?: AlignmentContext
@@ -311,7 +311,7 @@ export class MafWirePacker {
     this.rowLength.set(i, length)
     this.rowSample.set(i, this.samples.indexOf(row.sampleId))
     this.rowChr.set(i, this.chrs.indexOf(row.chr ?? ''))
-    this.rowStart.set(i, row.start ?? 0)
+    this.rowStart.set(i, row.srcStart ?? 0)
     this.rowStrand.set(i, row.strand ?? 1)
     this.rowSrcSize.set(i, row.srcSize ?? 0)
     if (row.context) {
@@ -336,7 +336,7 @@ export class MafWirePacker {
     this.emptySample.set(i, this.samples.indexOf(sampleId))
     this.emptyChr.set(i, this.chrs.indexOf(empty.chr))
     this.emptyStatus.set(i, encodeMafStatus(empty.status))
-    this.emptyStart.set(i, empty.start)
+    this.emptyStart.set(i, empty.srcStart)
     this.emptySize.set(i, empty.size)
     this.emptyStrand.set(i, empty.strand)
     this.emptySrcSize.set(i, empty.srcSize)

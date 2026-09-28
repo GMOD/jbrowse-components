@@ -11,13 +11,13 @@ const mockFeature = new SimpleFeature({
   alignments: {
     assembly1: {
       chr: 'chr1',
-      start: 100,
+      srcStart: 100,
       seq: 'ACGTACGTAC',
       strand: 1,
     },
     assembly2: {
       chr: 'chr2',
-      start: 200,
+      srcStart: 200,
       seq: 'AC-TTCGTAC',
       strand: 1,
     },
@@ -75,13 +75,13 @@ test('gap in assembly1', () => {
     alignments: {
       assembly1: {
         chr: 'chr1',
-        start: 100,
+        srcStart: 100,
         seq: 'AC-TACGTAC',
         strand: 1,
       },
       assembly2: {
         chr: 'chr2',
-        start: 200,
+        srcStart: 200,
         seq: 'ACGTTCGTAC',
         strand: 1,
       },
@@ -120,13 +120,13 @@ test('includeInsertions - single insertion in one sample', () => {
     alignments: {
       assembly1: {
         chr: 'chr1',
-        start: 100,
+        srcStart: 100,
         seq: 'AC--GTAC',
         strand: 1,
       },
       assembly2: {
         chr: 'chr2',
-        start: 200,
+        srcStart: 200,
         seq: 'ACTTGTAC',
         strand: 1,
       },
@@ -169,13 +169,13 @@ test('includeInsertions - insertions in multiple samples with different lengths'
     alignments: {
       assembly1: {
         chr: 'chr1',
-        start: 100,
+        srcStart: 100,
         seq: 'AC-T-GTAC',
         strand: 1,
       },
       assembly2: {
         chr: 'chr2',
-        start: 200,
+        srcStart: 200,
         seq: 'ACTTTGTAC',
         strand: 1,
       },
@@ -218,13 +218,13 @@ test('includeInsertions - insertions at multiple positions', () => {
     alignments: {
       assembly1: {
         chr: 'chr1',
-        start: 100,
+        srcStart: 100,
         seq: 'ATCGGTAC',
         strand: 1,
       },
       assembly2: {
         chr: 'chr2',
-        start: 200,
+        srcStart: 200,
         seq: 'A-CG-TAC',
         strand: 1,
       },
@@ -261,13 +261,13 @@ test('includeInsertions=false ignores insertions', () => {
     alignments: {
       assembly1: {
         chr: 'chr1',
-        start: 100,
+        srcStart: 100,
         seq: 'AC--GTAC',
         strand: 1,
       },
       assembly2: {
         chr: 'chr2',
-        start: 200,
+        srcStart: 200,
         seq: 'ACTTGTAC',
         strand: 1,
       },
@@ -341,19 +341,19 @@ test('includeInsertions - insertion only in non-visible sample should not add ga
     alignments: {
       assembly1: {
         chr: 'chr1',
-        start: 100,
+        srcStart: 100,
         seq: 'AC--GTAC',
         strand: 1,
       },
       assembly2: {
         chr: 'chr2',
-        start: 200,
+        srcStart: 200,
         seq: 'AC--GTAC',
         strand: 1,
       },
       assembly3: {
         chr: 'chr3',
-        start: 300,
+        srcStart: 300,
         seq: 'ACTTGTAC',
         strand: 1,
       },
@@ -406,19 +406,19 @@ test('includeInsertions - mixed visible/non-visible insertions', () => {
     alignments: {
       assembly1: {
         chr: 'chr1',
-        start: 100,
+        srcStart: 100,
         seq: 'AC-T-GTAC',
         strand: 1,
       },
       assembly2: {
         chr: 'chr2',
-        start: 200,
+        srcStart: 200,
         seq: 'AC---GTAC',
         strand: 1,
       },
       assembly3: {
         chr: 'chr3',
-        start: 300,
+        srcStart: 300,
         seq: 'ACTTTGTAC',
         strand: 1,
       },
@@ -472,8 +472,8 @@ test('includeInsertions - insertion trailing the last reference base', () => {
     end: 104,
     seq: 'ACGT--',
     alignments: {
-      assembly1: { chr: 'chr1', start: 100, seq: 'ACGTTT', strand: 1 },
-      assembly2: { chr: 'chr2', start: 200, seq: 'ACGT--', strand: 1 },
+      assembly1: { chr: 'chr1', srcStart: 100, seq: 'ACGTTT', strand: 1 },
+      assembly2: { chr: 'chr2', srcStart: 200, seq: 'ACGT--', strand: 1 },
     },
   })
 

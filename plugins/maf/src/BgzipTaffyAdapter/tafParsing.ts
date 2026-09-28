@@ -225,7 +225,7 @@ export function blockToFeature(
     if (parsed?.assemblyName) {
       alignments[parsed.assemblyName] = {
         chr: parsed.chr,
-        start: row.start,
+        srcStart: row.start,
         seq: row.bases,
         strand: row.strand,
         srcSize: row.sequenceLength,
