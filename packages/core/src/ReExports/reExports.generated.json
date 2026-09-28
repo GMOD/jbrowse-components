@@ -972,8 +972,7 @@
         "adapterConfigCacheKey",
         "clearAdapterCache",
         "freeAdapterResources",
-        "getAdapter",
-        "readsReference"
+        "getAdapter"
       ],
       "worker": "real"
     },
@@ -3595,6 +3594,7 @@
         "getBlobMap",
         "getConfAssemblyNames",
         "getConfAssemblyNamesOrNone",
+        "getConfRpcSessionId",
         "getFileFromCache",
         "getFileName",
         "getRpcSessionId",
