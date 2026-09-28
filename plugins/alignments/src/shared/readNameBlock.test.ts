@@ -44,8 +44,9 @@ async function bamFeatures() {
       index: { location: localPath('../../test_data/volvox-sorted.bam.bai') },
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    sequenceAdapterConfig,
   )
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
 
@@ -56,8 +57,9 @@ async function cramFeatures() {
       craiLocation: localPath('../../test_data/volvox-sorted.cram.crai'),
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    sequenceAdapterConfig,
   )
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
 

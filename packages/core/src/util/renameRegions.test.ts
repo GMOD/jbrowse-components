@@ -1,4 +1,8 @@
-import { renameRegionIfNeeded, renameRegionsIfNeeded } from './renameRegions.ts'
+import {
+  renameComparativeRegions,
+  renameRegionIfNeeded,
+  renameRegionsIfNeeded,
+} from './renameRegions.ts'
 
 import type { AssemblyManager, Region } from './types/index.ts'
 
@@ -146,4 +150,48 @@ test('renameRegionsIfNeeded allows `region` mirrored into a populated `regions`'
     } as unknown as Parameters<typeof renameRegionsIfNeeded>[1],
   )
   expect(result.regions[0]!.refName).toBe('1')
+})
+
+// The one field a call names its genome in, and the reference derivation reads
+test("renameRegionsIfNeeded names the regions' genome as the call's assemblyName", async () => {
+  const result = await renameRegionsIfNeeded(
+    mockAssemblyManager({ refNameMap: { chr1: '1' } }),
+    { adapterConfig: {}, sessionId: 'test', regions: [region] },
+  )
+  expect(result.assemblyName).toBe('hg38')
+})
+
+test("renameRegionsIfNeeded keeps a caller's assemblyName when it sends no regions", async () => {
+  const result = await renameRegionsIfNeeded(
+    mockAssemblyManager({ refNameMap: {} }),
+    {
+      adapterConfig: {},
+      sessionId: 'test',
+      assemblyName: 'hg38',
+    },
+  )
+  expect(result.assemblyName).toBe('hg38')
+})
+
+test('renameRegionsIfNeeded refuses regions on two genomes', async () => {
+  await expect(
+    renameRegionsIfNeeded(mockAssemblyManager({ refNameMap: {} }), {
+      adapterConfig: {},
+      sessionId: 'test',
+      regions: [region, { ...region, assemblyName: 'mm10' }],
+    }),
+  ).rejects.toThrow(/regions on hg38, mm10 in one request/)
+})
+
+test('renameComparativeRegions renames a region per assembly and names no genome', async () => {
+  const result = await renameComparativeRegions(
+    mockAssemblyManager({ refNameMap: { chr1: '1' } }),
+    {
+      adapterConfig: {},
+      sessionId: 'test',
+      regions: [region, { ...region, assemblyName: 'mm10' }],
+    },
+  )
+  expect(result.regions.map(r => r.refName)).toEqual(['1', '1'])
+  expect('assemblyName' in result).toBe(false)
 })

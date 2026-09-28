@@ -130,7 +130,7 @@ export function createDisplayWithSession({
     // what a lane layer's template names: GC content's capability
     TestSequenceScoreAdapter: {
       slots: {},
-      capabilities: ['derivesFromSequence'],
+      capabilities: ['readsReference'],
     },
   }
   for (const [name, { slots, capabilities }] of Object.entries(adapterSlots)) {

@@ -33,7 +33,6 @@ async function run(args: Partial<CoreGetEncodedLayersArgs>) {
       getFeatures: () => {},
       getFeaturesArray: async () => features,
       getZoomRange: async () => undefined,
-      setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const method = new CoreGetEncodedLayers({
@@ -75,7 +74,6 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
       getFeatures: () => {},
       getFeaturesArray,
       getZoomRange,
-      setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const method = new CoreGetEncodedLayers({
@@ -104,7 +102,6 @@ test("the request's adapter options reach the adapter, under the zoom and signal
       getFeatures: () => {},
       getFeaturesArray,
       getZoomRange: async () => undefined,
-      setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   await new CoreGetEncodedLayers({
@@ -139,7 +136,6 @@ test('a facet runs every layer per section and stacks the sections', async () =>
       getFeatures: () => {},
       getFeaturesArray: async () => reads,
       getZoomRange: async () => undefined,
-      setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const method = new CoreGetEncodedLayers({
@@ -197,7 +193,6 @@ describe('a layer stands in the row its encoding names, stacked per section unde
         getFeatures: () => {},
         getFeaturesArray: async () => reads,
         getZoomRange: async () => undefined,
-        setSequenceAdapterConfig: () => {},
       },
     } as unknown as Awaited<ReturnType<typeof getAdapter>>)
     const method = new CoreGetEncodedLayers({
@@ -287,7 +282,6 @@ describe("a facet's own pileup packs per section, the display's across every sec
         getFeatures: () => {},
         getFeaturesArray: async () => reads,
         getZoomRange: async () => undefined,
-        setSequenceAdapterConfig: () => {},
       },
     } as unknown as Awaited<ReturnType<typeof getAdapter>>)
     const method = new CoreGetEncodedLayers({
@@ -340,7 +334,6 @@ test("a layer's own transform runs after the shared one, and the other layer see
       getFeatures: () => {},
       getFeaturesArray: async () => features,
       getZoomRange: async () => undefined,
-      setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const method = new CoreGetEncodedLayers({

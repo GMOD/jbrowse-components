@@ -56,8 +56,8 @@ function makeAdapter() {
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
+    { type: 'TestSequenceAdapter' },
   )
-  adapter.setSequenceAdapterConfig({ type: 'TestSequenceAdapter' })
   return adapter
 }
 

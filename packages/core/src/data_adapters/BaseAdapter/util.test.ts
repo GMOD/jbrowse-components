@@ -11,7 +11,6 @@ const refNameOnly = {
 const featureish = {
   getRefNames: async () => ['chr1'],
   getFeatures: () => {},
-  setSequenceAdapterConfig: () => {},
 } as unknown as AnyDataAdapter
 
 const neither = { getSequence: () => {} } as unknown as AnyDataAdapter

@@ -1,3 +1,4 @@
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchema, { normalizeSnapshot } from './configSchema.ts'
@@ -8,6 +9,7 @@ export default function SamAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'SamAdapter',
+      adapterCapabilities: [READS_REFERENCE],
       displayName: 'SAM adapter',
       normalizeSnapshot,
       configSchema,

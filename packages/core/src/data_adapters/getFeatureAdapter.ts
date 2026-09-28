@@ -12,10 +12,10 @@ export interface GetFeatureAdapterArgs {
 }
 
 /**
- * Resolve a feature data adapter and prime its reference-sequence adapter
- * config in one step — the single resolution path for every RPC that reads
- * features. An RPC passes its whole args (`{ ...args, pluginManager }`) so the
- * `sequenceAdapter` renaming added reaches the adapter without being named.
+ * Resolve a feature data adapter — the single resolution path for every RPC
+ * that reads features. An RPC passes its whole args (`{ ...args, pluginManager
+ * }`) so the `sequenceAdapter` serialization attached reaches the cache without
+ * being named, and a reference-reading type comes back built for that genome.
  * Returns undefined when the config resolves to a non-feature adapter, so
  * callers that can degrade (e.g. getRefNames → []) decide how; use
  * {@link getFeatureAdapterOrThrow} when a feature adapter is required.
@@ -32,9 +32,7 @@ export async function getFeatureAdapter({
     adapterConfig,
     sequenceAdapter,
   )
-  const featureAdapter = isFeatureAdapter(dataAdapter) ? dataAdapter : undefined
-  featureAdapter?.setSequenceAdapterConfig(sequenceAdapter)
-  return featureAdapter
+  return isFeatureAdapter(dataAdapter) ? dataAdapter : undefined
 }
 
 /**

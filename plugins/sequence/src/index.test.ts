@@ -1,6 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { DERIVES_FROM_SEQUENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { ReferenceScanAdapter } from './ReferenceScanAdapter.ts'
@@ -50,7 +50,7 @@ test('every reference-scan adapter declares that it derives from the sequence', 
     const AdapterClass = await type.getAdapterClass()
     if (AdapterClass.prototype instanceof ReferenceScanAdapter) {
       scans.push(type.name)
-      expect(type.adapterCapabilities).toContain(DERIVES_FROM_SEQUENCE)
+      expect(type.adapterCapabilities).toContain(READS_REFERENCE)
     }
   }
   expect(scans.toSorted()).toEqual([

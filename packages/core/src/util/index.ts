@@ -264,7 +264,11 @@ export {
   notifyLocalStorageKey,
   subscribeToLocalStorageKey,
 } from './localStorage.ts'
-export { renameRegionIfNeeded, renameRegionsIfNeeded } from './renameRegions.ts'
+export {
+  renameComparativeRegions,
+  renameRegionIfNeeded,
+  renameRegionsIfNeeded,
+} from './renameRegions.ts'
 export { addAndShowTrack } from './addAndShowTrack.ts'
 export {
   addTrackFromWidget,

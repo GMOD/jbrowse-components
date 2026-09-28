@@ -77,8 +77,9 @@ function makeAdapter() {
   const adapter = new Adapter(
     configSchema.create({ samText: SAM }),
     getSequenceSubAdapter,
+    undefined,
+    { type: 'TestSequenceAdapter' },
   )
-  adapter.setSequenceAdapterConfig({ type: 'TestSequenceAdapter' })
   return adapter
 }
 

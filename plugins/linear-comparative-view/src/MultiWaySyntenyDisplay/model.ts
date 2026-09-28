@@ -4,7 +4,7 @@ import {
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
-import { DERIVES_FROM_SEQUENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
@@ -2231,7 +2231,7 @@ export function stateModelFactory(
             pluginManager.hasAdapterType(adapter.type) &&
             pluginManager
               .getAdapterType(adapter.type)
-              .adapterCapabilities.includes(DERIVES_FROM_SEQUENCE)
+              .adapterCapabilities.includes(READS_REFERENCE)
             ? adapter
             : undefined
         })

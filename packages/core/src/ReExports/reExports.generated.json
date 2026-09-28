@@ -968,11 +968,12 @@
     "@jbrowse/core/data_adapters/dataAdapterCache": {
       "package": "@jbrowse/core",
       "names": [
-        "DERIVES_FROM_SEQUENCE",
+        "READS_REFERENCE",
         "adapterConfigCacheKey",
         "clearAdapterCache",
         "freeAdapterResources",
-        "getAdapter"
+        "getAdapter",
+        "readsReference"
       ],
       "worker": "real"
     },
@@ -2383,6 +2384,7 @@
         "radToDeg",
         "readSessionFromDynamo",
         "reducePrecision",
+        "renameComparativeRegions",
         "renameRegionIfNeeded",
         "renameRegionsIfNeeded",
         "reorder",

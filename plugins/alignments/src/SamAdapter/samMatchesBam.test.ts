@@ -71,8 +71,9 @@ const bamFeatures = async (file: string) => {
       index: { location: { localPath: require.resolve(`${file}.bai`) } },
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    sequenceAdapterConfig,
   )
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
 
@@ -84,8 +85,9 @@ const samFeatures = async (features: Feature[]) => {
       ),
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    sequenceAdapterConfig,
   )
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
 

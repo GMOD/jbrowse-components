@@ -1,7 +1,4 @@
-import {
-  isFeatureAdapter,
-  isRefNameSource,
-} from '../../data_adapters/BaseAdapter/util.ts'
+import { isRefNameSource } from '../../data_adapters/BaseAdapter/util.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
@@ -18,14 +15,6 @@ export default class CoreGetRefNames extends RpcMethodType<'CoreGetRefNames'> {
       adapterConfig,
       sequenceAdapter,
     )
-
-    // Primes BEFORE it asks: a ReferenceScanAdapter answers `getRefNames` by
-    // asking the reference, and this line is what tells it where that is.
-    // Pinned by sequenceAdapterPriming.test.ts, because reversing the two left
-    // 3,015 tests green.
-    if (isFeatureAdapter(dataAdapter)) {
-      dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
-    }
 
     // Gated on isRefNameSource rather than isFeatureAdapter: any adapter that
     // can name its own contigs needs them reconciled with the assembly's,

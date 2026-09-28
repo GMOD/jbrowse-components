@@ -42,7 +42,7 @@ export interface ScanWindow {
  * `emit` applies both, so a subclass reports every hit it finds and never
  * repeats the bookkeeping.
  *
- * A subclass's registration declares `DERIVES_FROM_SEQUENCE` itself: the
+ * A subclass's registration declares `READS_REFERENCE` itself: the
  * capability lives on the adapter type, not the class, so it is not inherited,
  * and a scan registered without it answers every genome from the first one's
  * sequence.

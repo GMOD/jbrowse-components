@@ -21,7 +21,7 @@ class FakeSequenceAdapter {
 }
 
 // resolves whichever sequence the requested config names, so a test can tell
-// the configured slot apart from the RPC-primed config
+// the configured slot apart from the reference the adapter was built with
 const sequences: Record<string, string> = {
   fromSlot: 'GAATTC',
   fromAssembly: 'TTTTTTGAATTCTTTTTT',
@@ -32,10 +32,15 @@ const getSubAdapter = (async (conf: { type: string }) => ({
   sessionIds: new Set<string>(),
 })) as unknown as getSubAdapterType
 
-function makeAdapter(conf: Record<string, unknown>) {
+function makeAdapter(
+  conf: Record<string, unknown>,
+  reference?: Record<string, unknown>,
+) {
   return new MotifListAdapter(
     configSchema.create({ motifs: 'EcoRI\tG^AATTC', ...conf }),
     getSubAdapter,
+    undefined,
+    reference,
   )
 }
 
@@ -50,18 +55,19 @@ function scan(adapter: MotifListAdapter, end: number) {
   )
 }
 
-test('scans the RPC-primed assembly sequence when no slot is configured', async () => {
-  const adapter = makeAdapter({})
-  adapter.setSequenceAdapterConfig({ type: 'fromAssembly' })
+test('scans the assembly sequence it was built with when no slot is configured', async () => {
+  const adapter = makeAdapter({}, { type: 'fromAssembly' })
 
   const features = await scan(adapter, 18)
   expect(features).toHaveLength(1)
   expect(features[0]!.get('start')).toBe(6)
 })
 
-test('an explicitly configured slot wins over the primed config', async () => {
-  const adapter = makeAdapter({ sequenceAdapter: { type: 'fromSlot' } })
-  adapter.setSequenceAdapterConfig({ type: 'fromAssembly' })
+test('an explicitly configured slot wins over the built-with reference', async () => {
+  const adapter = makeAdapter(
+    { sequenceAdapter: { type: 'fromSlot' } },
+    { type: 'fromAssembly' },
+  )
 
   const features = await scan(adapter, 18)
   expect(features).toHaveLength(1)
@@ -71,7 +77,7 @@ test('an explicitly configured slot wins over the primed config', async () => {
 
 test('throws a directive error when neither source is available', async () => {
   await expect(scan(makeAdapter({}), 18)).rejects.toThrow(
-    /No sequence adapter available/,
+    /built with no reference: the request that created it named no assembly/,
   )
 })
 
@@ -84,8 +90,9 @@ test('names the offending adapter when the assembly carries no residues', async 
       dataAdapter: { getRefNames: async () => ['chr1'] },
       sessionIds: new Set<string>(),
     })) as unknown as getSubAdapterType,
+    undefined,
+    { type: 'ChromSizesAdapter' },
   )
-  adapter.setSequenceAdapterConfig({ type: 'ChromSizesAdapter' })
 
   await expect(scan(adapter, 18)).rejects.toThrow(
     /adapter "ChromSizesAdapter" provides no sequence/,

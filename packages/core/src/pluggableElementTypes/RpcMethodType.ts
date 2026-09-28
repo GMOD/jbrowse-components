@@ -267,9 +267,10 @@ export default abstract class RpcMethodType<
    * The reference sequence of the genome a call names in `assemblyName`, as a
    * sibling of `adapterConfig`. The worker keys and builds a reference-reading
    * adapter with it (dataAdapterCache), and this is the one place it comes
-   * from: a renaming method's regions have already become its `assemblyName`
-   * by the time super is reached, and a header call names its own. Ahead of
-   * the location walk, which converts and authorizes what the worker opens.
+   * from: a per-genome renaming method's regions have already become its
+   * `assemblyName` by the time super is reached, a header call names its own,
+   * and a comparative method names none. Ahead of the location walk, which
+   * converts and authorizes what the worker opens.
    */
   private attachReference(args: Record<string, unknown>) {
     const { assemblyName } = args as { assemblyName?: string }

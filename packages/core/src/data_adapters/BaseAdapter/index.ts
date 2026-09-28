@@ -51,6 +51,7 @@ export type AdapterClassFor<SCHEMA> = new (
   config: SCHEMA extends AnyConfigurationSchemaType ? Instance<SCHEMA> : any,
   getSubAdapter?: getSubAdapterType,
   pluginManager?: PluginManager,
+  sequenceAdapterConfig?: Record<string, unknown>,
 ) => AnyDataAdapter
 
 /**

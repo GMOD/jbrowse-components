@@ -1,4 +1,4 @@
-import { DERIVES_FROM_SEQUENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchema from './configSchema.ts'
@@ -9,7 +9,7 @@ export default function SequenceSearchAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'SequenceSearchAdapter',
-      adapterCapabilities: [DERIVES_FROM_SEQUENCE],
+      adapterCapabilities: [READS_REFERENCE],
       displayName: 'Sequence search adapter',
       adapterMetadata: {
         hiddenFromGUI: true,

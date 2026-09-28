@@ -4,12 +4,12 @@ import type { BaseAdapter, BaseSequenceAdapter } from './BaseAdapter/index.ts'
  * Resolves the reference sequence an adapter reads from.
  *
  * **The assembly is the source, and a hand-written `sequenceAdapter` slot is an
- * anti-pattern.** `getFeatureAdapter` and `CoreGetRefNames` prime every feature
- * adapter's `sequenceAdapterConfig` from the assembly the track is displayed
- * against, so no config has to copy a sequence adapter into a track. The slot
- * survives as an escape hatch for reading some *other* sequence, and setting it
- * pins the track to that source even when the assembly's own sequence changes —
- * so it wins only when explicitly present, and `jbrowse validate` warns about it.
+ * anti-pattern.** A reference-reading adapter is built with the sequence of the
+ * assembly the request that created it named (dataAdapterCache), so no config
+ * has to copy a sequence adapter into a track. The slot survives as an escape
+ * hatch for reading some *other* sequence, and setting it pins the track to
+ * that source even when the assembly's own sequence changes — so it wins only
+ * when explicitly present, and `jbrowse validate` warns about it.
  *
  * In core rather than beside one of its callers because the field it reads is
  * `BaseAdapter`'s.
@@ -24,7 +24,7 @@ export async function getSequenceSubAdapter(
   const config = configured ?? adapter.sequenceAdapterConfig
   if (!config) {
     throw new Error(
-      'No sequence adapter available: either set the `sequenceAdapter` slot or display this track against an assembly that has one',
+      `${adapter.config.type} was built with no reference: the request that created it named no assembly, and no \`sequenceAdapter\` slot is set`,
     )
   }
   const result = await adapter.getSubAdapter?.(config)

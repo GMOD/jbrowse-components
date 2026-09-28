@@ -35,26 +35,24 @@ describe('CoreGetRefNames', () => {
     ])
   })
 
-  // toHaveBeenCalledWith, not toHaveBeenCalled: `run` used to pass no
-  // sequenceAdapter, so the assertion was satisfied by a call carrying
-  // undefined — which `setSequenceAdapterConfig` discards. It passed with the
-  // arg replaced by a literal undefined, and only failed if the call was
-  // deleted outright. What it means to wire the sequence adapter is that THIS
-  // config arrives, and only the argument says so.
-  it('returns refNames from a feature adapter, and wires its sequence adapter', async () => {
-    const setSequenceAdapterConfig = jest.fn()
+  // A scan adapter answers getRefNames by asking the reference it was built
+  // with, so the call's sequence has to reach the cache that builds it. The
+  // assertion names THIS config: a call carrying undefined would resolve a
+  // reference-less instance, and only the argument says otherwise.
+  it("returns refNames from a feature adapter, resolved for the call's genome", async () => {
     const sequenceAdapter = { type: 'TestSequenceAdapter' }
     await expect(
       run(
-        {
-          getRefNames: async () => ['chr1'],
-          getFeatures: () => {},
-          setSequenceAdapterConfig,
-        },
+        { getRefNames: async () => ['chr1'], getFeatures: () => {} },
         { sequenceAdapter },
       ),
     ).resolves.toEqual(['chr1'])
-    expect(setSequenceAdapterConfig).toHaveBeenCalledWith(sequenceAdapter)
+    expect(mockGetAdapter).toHaveBeenCalledWith(
+      expect.anything(),
+      's',
+      { type: 'AnyAdapter' },
+      sequenceAdapter,
+    )
   })
 
   it('returns nothing for an adapter that cannot name its contigs', async () => {

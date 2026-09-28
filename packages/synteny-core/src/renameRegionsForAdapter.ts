@@ -1,4 +1,4 @@
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+import { renameComparativeRegions } from '@jbrowse/core/util'
 
 import {
   adapterAssemblyNames,
@@ -18,7 +18,7 @@ import type { AssemblyManager, Region } from '@jbrowse/core/util'
  * RPC call: callers rename every region they hand the worker with this, and
  * the worker reads feature refNames straight back against the (already
  * adapter-space) index. Returns the renamed regions directly, unlike the
- * lower-level renameRegionsIfNeeded which returns the whole args object.
+ * lower-level renameComparativeRegions which returns the whole args object.
  */
 export async function renameRegionsForAdapter({
   assemblyManager,
@@ -31,7 +31,7 @@ export async function renameRegionsForAdapter({
   adapterConfig: Record<string, unknown>
   regions: Region[]
 }): Promise<Region[]> {
-  const { regions: renamed } = await renameRegionsIfNeeded(assemblyManager, {
+  const { regions: renamed } = await renameComparativeRegions(assemblyManager, {
     sessionId,
     adapterConfig,
     regions: regionsInAssemblyNamespace(

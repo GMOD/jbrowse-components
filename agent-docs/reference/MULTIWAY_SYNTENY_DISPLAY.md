@@ -277,7 +277,7 @@ draws only through the aliases.
 its header and its genes, each on one value scale shared by every lane
 (`laneLayerDomains`, clipped at the 99th percentile each side). A lane reads a
 layer from the `tracks` entry on its genome, else from the layer's `adapter`,
-a template of a type declaring `DERIVES_FROM_SEQUENCE` that the adapter cache
+a template of a type declaring `READS_REFERENCE` that the adapter cache
 keys per genome's sequence. A template reads a lane only while each region it
 asks for is under `LANE_TEMPLATE_MAX_BP`, since that region is the sequence it
 downloads; past it the band's title says to zoom in. An adapter type that

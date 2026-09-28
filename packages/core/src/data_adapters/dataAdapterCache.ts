@@ -1,5 +1,4 @@
 import idMaker from '../util/idMaker.ts'
-import { isFeatureAdapter } from './BaseAdapter/util.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
@@ -15,27 +14,28 @@ export function adapterConfigCacheKey(conf: Record<string, unknown> = {}) {
 
 /**
  * #api
- * The `adapterCapabilities` entry of an adapter that computes what it answers
- * from the assembly's sequence and holds no file of its own — GC content, a
- * motif scan. One config on two genomes is then two instances, each primed
- * with its own genome's sequence, where a config alone would key one instance
- * and the first genome to prime it would answer for both. Every other adapter
- * keys on its config alone: a BAM keyed on its reference would parse its index
- * again for each creator that passes no sequence, and a synteny adapter is
- * primed from each of its assemblies by design.
+ * The `adapterCapabilities` entry of an adapter that reads the reference
+ * sequence of the assembly it is displayed against: BAM and SAM for mismatches
+ * without an MD tag, CRAM to rebuild bases, GC content and the reference scans
+ * for everything they answer. Such an adapter is built with that reference and
+ * keyed on it as well as on its config, so one config shown on two genomes is
+ * two instances, each reading its own, and an instance never changes reference
+ * for its life. Every other adapter keys on its config alone: a synteny adapter
+ * is fetched from each of its assemblies and reads no reference.
  */
-export const DERIVES_FROM_SEQUENCE = 'derivesFromSequence'
+export const READS_REFERENCE = 'readsReference'
 
-function derivesFromSequence(
+export function readsReference(
   pluginManager: PluginManager,
-  adapterConfigSnapshot: ConfigSnap,
+  adapterConfig: ConfigSnap | undefined,
 ) {
-  const type: unknown = adapterConfigSnapshot?.type
+  const type: unknown = adapterConfig?.type
   return (
     typeof type === 'string' &&
+    pluginManager.hasAdapterType(type) &&
     pluginManager
       .getAdapterType(type)
-      .adapterCapabilities.includes(DERIVES_FROM_SEQUENCE)
+      .adapterCapabilities.includes(READS_REFERENCE)
   )
 }
 
@@ -83,13 +83,16 @@ async function getAdapterPre(
     { pluginManager },
   )
 
+  // a sub-adapter reads the reference its parent was built with
   const getSubAdapter: getSubAdapterType = conf =>
-    getAdapter(pluginManager, sessionId, conf)
+    getAdapter(pluginManager, sessionId, conf, keyedSequence)
   const CLASS = await dataAdapterType.getAdapterClass()
-  const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
-  if (keyedSequence && isFeatureAdapter(dataAdapter)) {
-    dataAdapter.setSequenceAdapterConfig(keyedSequence)
-  }
+  const dataAdapter = new CLASS(
+    adapterConfig,
+    getSubAdapter,
+    pluginManager,
+    keyedSequence,
+  )
 
   return {
     dataAdapter,
@@ -108,7 +111,7 @@ function getOrCreateEntry(
   sequenceAdapter: Record<string, unknown> | undefined,
 ) {
   const keyedSequence =
-    sequenceAdapter && derivesFromSequence(pluginManager, adapterConfigSnapshot)
+    sequenceAdapter && readsReference(pluginManager, adapterConfigSnapshot)
       ? sequenceAdapter
       : undefined
   const configKey = adapterConfigCacheKey(adapterConfigSnapshot)
@@ -131,8 +134,9 @@ function getOrCreateEntry(
 
 /**
  * instantiate a data adapter, or return a cached one with the same config.
- * `sequenceAdapter` is the assembly sequence the caller already holds; it
- * keys and primes the instance only for a {@link DERIVES_FROM_SEQUENCE} type
+ * `sequenceAdapter` is the reference of the genome the request names; a
+ * {@link READS_REFERENCE} type is keyed on it and built with it, any other
+ * type ignores it
  */
 export async function getAdapter(
   pluginManager: PluginManager,

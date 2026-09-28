@@ -39,8 +39,9 @@ async function bamFeatures() {
       },
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    { type: 'TestSequenceAdapter' },
   )
-  adapter.setSequenceAdapterConfig({ type: 'TestSequenceAdapter' })
   return firstValueFrom(
     adapter
       .getFeatures({
@@ -66,8 +67,9 @@ async function cramFeatures() {
       },
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    { type: 'TestSequenceAdapter' },
   )
-  adapter.setSequenceAdapterConfig({ type: 'TestSequenceAdapter' })
   return firstValueFrom(
     adapter
       .getFeatures({

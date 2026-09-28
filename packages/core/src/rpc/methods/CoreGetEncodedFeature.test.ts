@@ -42,7 +42,6 @@ function request(args: Partial<CoreGetEncodedLayersArgs>) {
       getFeatures: () => {},
       getFeaturesArray: async () => reads,
       getZoomRange: async () => undefined,
-      setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   return {

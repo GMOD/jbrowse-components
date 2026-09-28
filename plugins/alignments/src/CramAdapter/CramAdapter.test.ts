@@ -41,13 +41,12 @@ function makeAdapter(arg: string) {
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
+    sequenceAdapterConfig,
   )
 }
 
 test('adapter can fetch features from volvox-sorted.cram', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
@@ -73,7 +72,6 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
 // "Downloading index" — it only downloads alignments.
 test('emits "Downloading index" on first fetch only, not once cached', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   const query = {
     assemblyName: 'volvox',
     refName: 'ctgA',
@@ -104,8 +102,6 @@ test('emits "Downloading index" on first fetch only, not once cached', async () 
 
 test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
@@ -124,7 +120,6 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
 
 test('clipLengthAtStartOfRead matches getClip(CIGAR) for every record', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',
@@ -154,7 +149,6 @@ test('clipLengthAtStartOfRead matches getClip(CIGAR) for every record', async ()
 // missing and the part a refactor would silently drop again.
 test('getFeatures threads its signal into the cram read as a signal', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
   // The read is held open so the signal can be stopped while it is genuinely in
   // flight. That is the only window in which the signal is live: the signal
@@ -215,7 +209,6 @@ test('getFeatures threads its signal into the cram read as a signal', async () =
 // tag filter has to read it the way the details panel does
 test('a read-group tag filter keeps only that group', async () => {
   const adapter = makeAdapter('../../../../test_data/volvox/volvox-rg.cram')
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   const reads = (tagFilters?: { tag: string; value: string }[]) =>
     firstValueFrom(
       adapter
@@ -239,7 +232,6 @@ test('a read-group tag filter keeps only that group', async () => {
 // falls through to the tag block, where it found the same override again
 test('an RG tag filter on a CRAM with no read groups keeps no read', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   const reads = await firstValueFrom(
     adapter
       .getFeatures(

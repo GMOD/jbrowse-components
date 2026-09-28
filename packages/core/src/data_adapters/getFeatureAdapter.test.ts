@@ -40,16 +40,17 @@ for (const [name, AdapterClass] of [
 pluginManager.createPluggableElements()
 pluginManager.configure()
 
-test('resolves a feature adapter and primes its sequence adapter config', async () => {
-  const sequenceAdapter = { type: 'SeqAdapter' }
+// the reference rides on every call; a type that does not declare it reads the
+// reference is built without one (adapterReference.test.ts has the declared case)
+test('resolves a feature adapter, and an undeclared type ignores the sequence', async () => {
   const dataAdapter = await getFeatureAdapter({
     pluginManager,
     sessionId: 'test',
     adapterConfig: { type: 'FeatureAdapter' },
-    sequenceAdapter,
+    sequenceAdapter: { type: 'SeqAdapter' },
   })
   expect(dataAdapter).toBeInstanceOf(FeatureAdapter)
-  expect(dataAdapter?.sequenceAdapterConfig).toEqual(sequenceAdapter)
+  expect(dataAdapter?.sequenceAdapterConfig).toBeUndefined()
 })
 
 test('returns undefined for a non-feature adapter', async () => {

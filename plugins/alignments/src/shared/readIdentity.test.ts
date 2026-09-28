@@ -44,8 +44,9 @@ async function bamFeatures() {
       index: { location: localPath('../../test_data/volvox-sorted.bam.bai') },
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    sequenceAdapterConfig,
   )
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
 
@@ -56,8 +57,9 @@ async function cramFeatures() {
       craiLocation: localPath('../../test_data/volvox-sorted.cram.crai'),
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    sequenceAdapterConfig,
   )
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
 
@@ -88,8 +90,9 @@ async function samFeatures() {
       samText: ['@SQ\tSN:ctgA\tLN:50001', ...lines, ''].join('\n'),
     }),
     getVolvoxSequenceSubAdapter,
+    undefined,
+    sequenceAdapterConfig,
   )
-  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
 

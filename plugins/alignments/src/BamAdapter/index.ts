@@ -1,3 +1,4 @@
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchema, { normalizeSnapshot } from './configSchema.ts'
@@ -8,6 +9,7 @@ export default function BamAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'BamAdapter',
+      adapterCapabilities: [READS_REFERENCE],
       displayName: 'BAM adapter',
       normalizeSnapshot,
       configSchema,

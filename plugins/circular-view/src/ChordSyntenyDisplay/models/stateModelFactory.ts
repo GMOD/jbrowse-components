@@ -702,15 +702,22 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
               adapterConfig,
               regions,
             })
-            // a ribbon draws no CIGAR, and a PIF's coarse tier is the same
-            // rows with the CIGAR folded: a twentieth of the bytes on a chain
-            return dedupeRibbons(
-              await ctx.callRpc('CoreGetFeatures', {
-                adapterConfig,
-                regions: renamed,
-                opts: { lodMode: 'coarse' },
-              }),
+            // One fetch per assembly, since a CoreGetFeatures request is
+            // about one genome; a chord found from either side is the same
+            // ribbon, which dedupeRibbons folds. A ribbon draws no CIGAR, and
+            // a PIF's coarse tier is the same rows with the CIGAR folded: a
+            // twentieth of the bytes on a chain
+            const perAssembly = Map.groupBy(renamed, r => r.assemblyName)
+            const fetched = await Promise.all(
+              [...perAssembly.values()].map(regionsOfOne =>
+                ctx.callRpc('CoreGetFeatures', {
+                  adapterConfig,
+                  regions: regionsOfOne,
+                  opts: { lodMode: 'coarse' },
+                }),
+              ),
             )
+            return dedupeRibbons(fetched.flat())
           },
         })
       },

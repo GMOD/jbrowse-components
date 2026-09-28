@@ -84,8 +84,9 @@ function makeAdapter() {
       },
     }),
     getSequenceSubAdapter,
+    undefined,
+    { type: 'TestSequenceAdapter' },
   )
-  adapter.setSequenceAdapterConfig({ type: 'TestSequenceAdapter' })
   return adapter
 }
 

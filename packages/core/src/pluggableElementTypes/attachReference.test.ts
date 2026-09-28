@@ -101,16 +101,14 @@ test("a renaming call carries its regions' genome, and an alias spells the same 
   ).resolves.toBe('peach')
 })
 
-test('regions on two genomes name none', async () => {
+test('a per-genome call with regions on two genomes is refused', async () => {
   await expect(
-    reference(
-      new Plural(pluginManager).serializeArguments({
-        sessionId: 's',
-        adapterConfig,
-        regions: [region('volvox'), region('peach')],
-      }),
-    ),
-  ).resolves.toBeUndefined()
+    new Plural(pluginManager).serializeArguments({
+      sessionId: 's',
+      adapterConfig,
+      regions: [region('volvox'), region('peach')],
+    }),
+  ).rejects.toThrow(/regions on volvox, peach in one request/)
 })
 
 test('a call naming no genome, or one the session lacks, carries nothing', async () => {

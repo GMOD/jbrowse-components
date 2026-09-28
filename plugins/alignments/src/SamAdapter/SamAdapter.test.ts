@@ -68,8 +68,9 @@ function makeAdapter(samText: string) {
   const adapter = new Adapter(
     configSchema.create({ samText }),
     getSequenceSubAdapter,
+    undefined,
+    { type: 'TestSequenceAdapter' },
   )
-  adapter.setSequenceAdapterConfig({ type: 'TestSequenceAdapter' })
   return adapter
 }
 

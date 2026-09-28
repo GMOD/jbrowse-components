@@ -51,13 +51,12 @@ test('getRefNames delegates to the sequence subadapter', async () => {
   expect(await makeAdapter('ACGT').getRefNames()).toEqual(['ctgA'])
 })
 
-// The shape a config should be written in: no `sequenceAdapter` at all. The RPCs
-// prime `sequenceAdapterConfig` from the assembly the track is displayed
-// against, and this adapter reads it through `getSequenceSubAdapter` like every
-// other one that scans the reference. Before that it read its own slot and
-// nothing else, so a GC track had to copy the assembly's sequence adapter into
-// itself — five configs in this repo did, two of them repeating the assembly's
-// own FASTA urls.
+// The shape a config should be written in: no `sequenceAdapter` at all. The
+// adapter is built with the sequence of the assembly the request named, and
+// reads it through `getSequenceSubAdapter` like every other one that scans the
+// reference. Before that it read its own slot and nothing else, so a GC track
+// had to copy the assembly's sequence adapter into itself — five configs in
+// this repo did, two of them repeating the assembly's own FASTA urls.
 test('scores off the assembly when no sequenceAdapter is configured', async () => {
   const adapter = new GCContentAdapter(
     configSchema.create({
@@ -72,8 +71,9 @@ test('scores off the assembly when no sequenceAdapter is configured', async () =
       } as unknown as BaseSequenceAdapter,
       sessionIds: new Set<string>(),
     }),
+    undefined,
+    { type: 'FromTheAssembly' },
   )
-  adapter.setSequenceAdapterConfig({ type: 'FromTheAssembly' })
   expect(await getScores(adapter)).not.toHaveLength(0)
   expect(new Set(await getScores(adapter))).toEqual(new Set([1]))
 })
@@ -89,7 +89,7 @@ test('says what is missing when neither the assembly nor the slot supplies one',
     }),
   )
   await expect(adapter.getRefNames()).rejects.toThrow(
-    /No sequence adapter available/,
+    /built with no reference: the request that created it named no assembly/,
   )
 })
 

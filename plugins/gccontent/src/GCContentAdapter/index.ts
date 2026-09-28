@@ -1,4 +1,4 @@
-import { DERIVES_FROM_SEQUENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import configSchemaF from './configSchema.ts'
@@ -10,7 +10,7 @@ export default function GCContentAdapterF(pluginManager: PluginManager) {
     () =>
       new AdapterType({
         name: 'GCContentAdapter',
-        adapterCapabilities: [DERIVES_FROM_SEQUENCE],
+        adapterCapabilities: [READS_REFERENCE],
         displayName: 'GC content adapter',
         adapterMetadata: {
           hiddenFromGUI: true,
