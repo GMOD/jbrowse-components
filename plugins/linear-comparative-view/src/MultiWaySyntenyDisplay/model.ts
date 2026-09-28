@@ -28,6 +28,7 @@ import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import { measureText } from '@jbrowse/core/util/measureText'
 import {
   allSessionTracks,
+  getConfAssemblyNamesOrNone,
   getTrackAssemblyNames,
   isSameAssemblyName,
   openAssemblyInLinearView,
@@ -1185,7 +1186,7 @@ export function stateModelFactory(
           { rank: number; track: AnyConfigurationModel }
         >()
         for (const track of allSessionTracks(session)) {
-          const names = readConfObject(track, 'assemblyNames') as string[]
+          const names = getConfAssemblyNamesOrNone(track)
           const type: unknown = readConfObject(track, ['adapter', 'type'])
           const rank = named.has(readConfObject(track, 'trackId') as string)
             ? -1
@@ -1711,9 +1712,7 @@ export function stateModelFactory(
           const out = new Map<string, LaneLayerSource>()
           for (const trackId of layer.tracks) {
             const track = byId.get(trackId)
-            const names = track
-              ? (readConfObject(track, 'assemblyNames') as string[])
-              : []
+            const names = track ? getConfAssemblyNamesOrNone(track) : []
             for (const lane of lanes) {
               if (
                 track &&
