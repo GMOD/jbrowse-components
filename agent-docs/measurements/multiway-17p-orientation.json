@@ -78,11 +78,26 @@
   "rows": [
     {
       "values": {
+        "lane": "panTro6",
+        "contig": "chr17",
+        "drawn": "[rev]",
+        "fallback": "[rev]",
+        "against": "lane above",
+        "shared": 4,
+        "allPairsBackwards": "1.000",
+        "neighbourBackwards": "0.971",
+        "forwardBp": 27123,
+        "reverseBp": 1168258,
+        "majority": "- 0.977"
+      }
+    },
+    {
+      "values": {
         "lane": "calJac4",
         "contig": "chr5",
         "drawn": "forward",
         "fallback": "[rev]",
-        "against": "lane above",
+        "against": "anchor",
         "shared": 46,
         "allPairsBackwards": "0.019",
         "neighbourBackwards": "0.688",
@@ -93,32 +108,17 @@
     },
     {
       "values": {
-        "lane": "panTro6",
-        "contig": "chr17",
-        "drawn": "[rev]",
-        "fallback": "[rev]",
+        "lane": "rheMac10",
+        "contig": "chr16",
+        "drawn": "forward",
+        "fallback": "forward",
         "against": "anchor",
-        "shared": 6,
-        "allPairsBackwards": "0.912",
-        "neighbourBackwards": "0.795",
-        "forwardBp": 27123,
-        "reverseBp": 1168258,
-        "majority": "- 0.977"
-      }
-    },
-    {
-      "values": {
-        "lane": "gorGor6",
-        "contig": "chr5",
-        "drawn": "[rev]",
-        "fallback": "[rev]",
-        "against": "anchor",
-        "shared": 1,
-        "allPairsBackwards": "abstains",
-        "neighbourBackwards": "abstains",
-        "forwardBp": 0,
-        "reverseBp": 644668,
-        "majority": "- 1.000"
+        "shared": 12,
+        "allPairsBackwards": "0.075",
+        "neighbourBackwards": "0.270",
+        "forwardBp": 583055,
+        "reverseBp": 593900,
+        "majority": "- 0.505"
       }
     },
     {
@@ -138,29 +138,14 @@
     },
     {
       "values": {
-        "lane": "rheMac10",
-        "contig": "chr16",
-        "drawn": "forward",
-        "fallback": "forward",
-        "against": "anchor",
-        "shared": 14,
-        "allPairsBackwards": "0.099",
-        "neighbourBackwards": "0.281",
-        "forwardBp": 583055,
-        "reverseBp": 593900,
-        "majority": "- 0.505"
-      }
-    },
-    {
-      "values": {
         "lane": "canFam6",
         "contig": "chr5",
         "drawn": "forward",
         "fallback": "[rev]",
         "against": "anchor",
-        "shared": 12,
-        "allPairsBackwards": "0.119",
-        "neighbourBackwards": "0.960",
+        "shared": 11,
+        "allPairsBackwards": "0.105",
+        "neighbourBackwards": "0.792",
         "forwardBp": 527509,
         "reverseBp": 576664,
         "majority": "- 0.522"
@@ -173,9 +158,9 @@
         "drawn": "forward",
         "fallback": "[rev]",
         "against": "anchor",
-        "shared": 13,
-        "allPairsBackwards": "0.164",
-        "neighbourBackwards": "0.561",
+        "shared": 11,
+        "allPairsBackwards": "0.153",
+        "neighbourBackwards": "0.340",
         "forwardBp": 480205,
         "reverseBp": 523228,
         "majority": "- 0.521"
@@ -194,6 +179,21 @@
         "forwardBp": 440288,
         "reverseBp": 487063,
         "majority": "- 0.525"
+      }
+    },
+    {
+      "values": {
+        "lane": "gorGor6",
+        "contig": "chr5",
+        "drawn": "[rev]",
+        "fallback": "[rev]",
+        "against": "anchor",
+        "shared": 1,
+        "allPairsBackwards": "abstains",
+        "neighbourBackwards": "abstains",
+        "forwardBp": 0,
+        "reverseBp": 644668,
+        "majority": "- 1.000"
       }
     }
   ]
