@@ -56,10 +56,18 @@
 // computes for its band, and encode every base where the display samples one
 // per window once a base is under half a pixel: both favour the other arms.
 //
+// `--parse --shape=<index>` times the parse instead, one shape per process
+// and with `node --expose-gc` for a collection before each arm: the adapter
+// read and each worker's work after it, over MafFeatures and straight into the
+// sink (`readBlocks`), for the MAF display's pack and coverage and for the
+// mark display's table, steps and encode, beside the BED read alone. The
+// direct path must pack and encode what the features do before any timing.
+//
 // Interleaved round-robin with the order rotated each round, MIN across rounds
 // (agent-docs/reference/BENCHMARKING.md). Each arm's instance count prints
 // beside its time, since a cheaper arm that draws less is not cheaper.
 import { performance } from 'node:perf_hooks'
+import { isDeepStrictEqual } from 'node:util'
 
 import {
   facetLayers,
@@ -91,21 +99,36 @@ import {
   sectionRows,
   spanHitsInRow,
 } from '../../../packages/core/benches/columnSteps.ts'
+import BigBedAdapter from '../../bed/src/BigBedAdapter/BigBedAdapter.ts'
+import BigBedConfigSchema from '../../bed/src/BigBedAdapter/configSchema.ts'
+import BigMafAdapter from '../src/BigMafAdapter/BigMafAdapter.ts'
+import BigMafConfigSchema from '../src/BigMafAdapter/configSchema.ts'
 import { EMPTY_MAF_COVERAGE } from '../src/LinearMafDisplay/encodeMafRows.ts'
 import { placeMafRegionData } from '../src/LinearMafDisplay/placeMafRows.ts'
+import { buildMafCoverageRegion } from '../src/LinearMafGetAlignmentDataRpc/buildMafCoverageRegion.ts'
+import { MafRegionSink } from '../src/LinearMafGetAlignmentDataRpc/mafRegionSink.ts'
 import { MafWirePacker } from '../src/LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
 import { buildIdentityRuns } from '../src/LinearMafRenderer/identity.ts'
 import { buildMafChannels } from '../src/LinearMafRenderer/mafChannels.ts'
 import MafTabixAdapter from '../src/MafTabixAdapter/MafTabixAdapter.ts'
 import MafTabixConfigSchema from '../src/MafTabixAdapter/configSchema.ts'
-import { mafFeatureTableOf } from '../src/util/mafFeatureTable.ts'
-import { DEFAULT_SPEC, ensureMafTabixFixture } from './mafTabixFixture.ts'
+import { featureBlocks } from '../src/util/mafBlockSink.ts'
+import {
+  mafFeatureTable,
+  mafFeatureTableOf,
+} from '../src/util/mafFeatureTable.ts'
+import {
+  DEFAULT_SPEC,
+  ensureBigMafFixture,
+  ensureMafTabixFixture,
+} from './mafTabixFixture.ts'
 
 import type { MafWireRegionData } from '../src/LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { AlignmentRecord } from '../src/types.ts'
+import type { MafAdapterBase } from '../src/util/MafAdapterBase.ts'
 import type { MafFixtureSpec } from './mafTabixFixture.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type {
   LaneName,
   MarkEncodingInput,
@@ -120,6 +143,7 @@ const rounds = num('rounds', 7)
 const binBp = num('binBp', 64)
 const stages =
   process.argv.includes('--stages') || process.argv.includes('--column-stages')
+const parse = process.argv.includes('--parse')
 
 // The first shape is MAF_WORKER_PIPELINE.md's profile, the second the narrow
 // blocks MAF_LARGE_BLOCKS.md measures real files at, and the third a 470-way
@@ -340,7 +364,7 @@ function armMarksIdentity(features: readonly Feature[]) {
   }).count
 }
 
-async function fetchRegion(spec: MafFixtureSpec) {
+function openRegion(spec: MafFixtureSpec) {
   const fixture = ensureMafTabixFixture(undefined, spec)
   const adapter = new MafTabixAdapter(
     MafTabixConfigSchema.create({
@@ -363,17 +387,18 @@ async function fetchRegion(spec: MafFixtureSpec) {
         sessionIds: new Set<string>(),
       }),
   )
-  const features = await firstValueFrom(
-    adapter
-      .getFeatures({
-        refName: fixture.refName,
-        start: fixture.start,
-        end: fixture.end,
-        assemblyName: 'bench',
-      })
-      .pipe(toArray()),
-  )
-  return features
+  const region = {
+    refName: fixture.refName,
+    start: fixture.start,
+    end: fixture.end,
+    assemblyName: 'bench',
+  }
+  return { adapter, region }
+}
+
+async function fetchRegion(spec: MafFixtureSpec) {
+  const { adapter, region } = openRegion(spec)
+  return firstValueFrom(adapter.getFeatures(region).pipe(toArray()))
 }
 
 function tuplesOf(
@@ -603,7 +628,7 @@ function time(fn: () => number) {
 
 const asJson = process.argv.includes('--json')
 const results = []
-for (const { name, spec } of stages ? [] : SHAPES) {
+for (const { name, spec } of stages || parse ? [] : SHAPES) {
   const features = await fetchRegion(spec)
   const species = Object.keys(
     features[0]!.get('alignments') as Record<string, unknown>,
@@ -677,7 +702,7 @@ for (const { name, spec } of stages ? [] : SHAPES) {
     )
   }
 }
-if (asJson) {
+if (asJson && results.length) {
   console.log(JSON.stringify({ rounds, binBp, results }, null, 2))
 }
 
@@ -763,6 +788,246 @@ if (process.argv.includes('--column-stages')) {
       Object.fromEntries(
         Object.entries(best).map(([k, v]) => [k, v.toFixed(1)]),
       ),
+    )
+  }
+}
+
+// The worker's half of each display with the parse inside the timing: the
+// region read off the adapter, then for the MAF display the pack and its
+// coverage, and for the mark display the table, the span's steps and the
+// encode. `-features` reads MafFeatures, as every adapter did before
+// `readBlocks`; `-direct` is MafTabixAdapter's parse straight into the sink.
+// Written out per arm, the control included.
+async function parseMafFeatures(adapter: MafAdapterBase, region: Region) {
+  const sink = new MafRegionSink(undefined)
+  await featureBlocks(adapter.getFeatures(region), sink)
+  const packed = sink.packer.finishBlocks()
+  const coverage = buildMafCoverageRegion(
+    packed,
+    region.start,
+    region.end,
+    sink.refSampleId ?? region.assemblyName,
+  )
+  return { packed, coverage, sink }
+}
+async function parseMafControl(adapter: MafAdapterBase, region: Region) {
+  const sink = new MafRegionSink(undefined)
+  await featureBlocks(adapter.getFeatures(region), sink)
+  const packed = sink.packer.finishBlocks()
+  const coverage = buildMafCoverageRegion(
+    packed,
+    region.start,
+    region.end,
+    sink.refSampleId ?? region.assemblyName,
+  )
+  return { packed, coverage, sink }
+}
+async function parseMafDirect(adapter: MafAdapterBase, region: Region) {
+  const sink = new MafRegionSink(undefined)
+  await adapter.readBlocks(region, sink)
+  const packed = sink.packer.finishBlocks()
+  const coverage = buildMafCoverageRegion(
+    packed,
+    region.start,
+    region.end,
+    sink.refSampleId ?? region.assemblyName,
+  )
+  return { packed, coverage, sink }
+}
+async function parseTypedFeatures(adapter: MafAdapterBase, region: Region) {
+  const table = await mafFeatureTable(
+    adapter.getFeatures(region),
+    region.refName,
+  )
+  const { layers } = layerTables(
+    table,
+    { transform: SHARED, facet: FACET, layers: [{}] },
+    jexl,
+  )
+  const { table: cells, row } = layers[0]!
+  return encodeFeatures(
+    cells,
+    { ...CELLS_ENCODING, row },
+    SPAN_LANES_NO_INDEX,
+    { jexl },
+  )
+}
+async function parseTypedDirect(adapter: MafAdapterBase, region: Region) {
+  const table = await adapter.getFeatureTable(region)
+  const { layers } = layerTables(
+    table,
+    { transform: SHARED, facet: FACET, layers: [{}] },
+    jexl,
+  )
+  const { table: cells, row } = layers[0]!
+  return encodeFeatures(
+    cells,
+    { ...CELLS_ENCODING, row },
+    SPAN_LANES_NO_INDEX,
+    { jexl },
+  )
+}
+async function parseBed(bed: BaseFeatureDataAdapter, region: Region) {
+  const features = await firstValueFrom(bed.getFeatures(region).pipe(toArray()))
+  return features.length
+}
+
+function wireOf({
+  packed,
+  coverage,
+  sink,
+}: Awaited<ReturnType<typeof parseMafDirect>>) {
+  return {
+    ...packed,
+    coverage,
+    refSampleId: sink.refSampleId,
+    discovered: [...sink.discovered],
+  }
+}
+
+function firstDifference(a: object, b: object) {
+  const x = a as Record<string, unknown>
+  const y = b as Record<string, unknown>
+  return Object.keys(x).find(k => !isDeepStrictEqual(x[k], y[k]))
+}
+
+// One shape per process (`--shape=<index>`), since arms looped over several
+// fixtures carry one fixture's feedback into the next; a collection before
+// every arm, where node runs with --expose-gc, so no arm pays for the
+// garbage of the one before it.
+// The same blocks as a bigMaf, read through BigMafAdapter and its BigBed.
+function openBigMaf(spec: MafFixtureSpec) {
+  const fixture = ensureBigMafFixture(undefined, spec)
+  const bigBedLocation = {
+    localPath: fixture.bbPath,
+    locationType: 'LocalPathLocation' as const,
+  }
+  const raw = new BigBedAdapter(BigBedConfigSchema.create({ bigBedLocation }))
+  const adapter = new BigMafAdapter(
+    BigMafConfigSchema.create({ bigBedLocation }),
+    () =>
+      Promise.resolve({
+        dataAdapter: raw as BaseFeatureDataAdapter,
+        sessionIds: new Set<string>(),
+      }),
+  )
+  const region = {
+    refName: fixture.refName,
+    start: fixture.start,
+    end: fixture.end,
+    assemblyName: 'bench',
+  }
+  return { adapter, region, raw }
+}
+
+function openTabix(spec: MafFixtureSpec) {
+  const { adapter, region } = openRegion(spec)
+  const fixture = ensureMafTabixFixture(undefined, spec)
+  const raw = new BedTabixAdapter(
+    BedTabixConfigSchema.create({
+      bedGzLocation: {
+        localPath: fixture.bedGzPath,
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: fixture.tbiPath,
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+  return { adapter, region, raw }
+}
+
+if (parse) {
+  const { name, spec } = SHAPES[num('shape', 0)]!
+  const format = flag('adapter') ?? 'tabix'
+  const opened = format === 'bigmaf' ? openBigMaf(spec) : openTabix(spec)
+  const { adapter, region } = opened
+  const bed = opened.raw as BaseFeatureDataAdapter
+
+  const wireDiff = firstDifference(
+    wireOf(await parseMafFeatures(adapter, region)),
+    wireOf(await parseMafDirect(adapter, region)),
+  )
+  if (wireDiff !== undefined) {
+    throw new Error(`the direct parse packs a different ${wireDiff}`)
+  }
+  const spanDiff = firstDifference(
+    await parseTypedFeatures(adapter, region),
+    await parseTypedDirect(adapter, region),
+  )
+  if (spanDiff !== undefined) {
+    throw new Error(`the direct table encodes a different ${spanDiff}`)
+  }
+
+  const gc = (globalThis as { gc?: () => void }).gc
+  const arms: Record<string, () => Promise<number>> = {
+    'maf-features': async () =>
+      (await parseMafFeatures(adapter, region)).packed.rowOffset.length,
+    'maf-control': async () =>
+      (await parseMafControl(adapter, region)).packed.rowOffset.length,
+    'maf-direct': async () =>
+      (await parseMafDirect(adapter, region)).packed.rowOffset.length,
+    'typed-features': async () =>
+      (await parseTypedFeatures(adapter, region)).count,
+    'typed-direct': async () => (await parseTypedDirect(adapter, region)).count,
+    bed: () => parseBed(bed, region),
+  }
+  const best: Record<string, number> = {}
+  const counts: Record<string, number> = {}
+  const only = flag('arms')?.split(',')
+  const order = Object.keys(arms).filter(arm => !only || only.includes(arm))
+  for (let r = 0; r < rounds; r++) {
+    const rotated = [
+      ...order.slice(r % order.length),
+      ...order.slice(0, r % order.length),
+    ]
+    for (const arm of rotated) {
+      gc?.()
+      const t0 = performance.now()
+      const n = await arms[arm]!()
+      best[arm] = Math.min(best[arm] ?? Infinity, performance.now() - t0)
+      counts[arm] = n
+    }
+  }
+  const ms = (arm: string) => Math.round(best[arm]! * 10) / 10
+  if (asJson) {
+    console.log(
+      JSON.stringify(
+        {
+          shape: name,
+          adapter: format,
+          rounds,
+          gc: Boolean(gc),
+          rows: counts['maf-direct'],
+          runs: counts['typed-direct'],
+          mafFeaturesMs: ms('maf-features'),
+          mafControlMs: ms('maf-control'),
+          mafDirectMs: ms('maf-direct'),
+          typedFeaturesMs: ms('typed-features'),
+          typedDirectMs: ms('typed-direct'),
+          bedMs: ms('bed'),
+        },
+        null,
+        2,
+      ),
+    )
+  } else {
+    console.log(
+      `\n${name}, ${format}: parse included, min of ${rounds}, gc ${Boolean(gc)}`,
+    )
+    console.table(
+      order.map(arm => ({
+        arm,
+        ms: ms(arm),
+        count: counts[arm],
+        'vs features': (
+          best[arm]! /
+          best[arm.startsWith('typed') ? 'typed-features' : 'maf-features']!
+        ).toFixed(2),
+      })),
     )
   }
 }

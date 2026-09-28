@@ -64,8 +64,13 @@ has the MAF adapters answer the MAF worker's arena as the rows and the encoder
 fill a lane at a time. The `marks_maf_cells` span now runs at
 1.26x<!--m:typed-sources-maf-display.470-species-200-blocks-of-250-columns.typedVsMaf-->
 the MAF display's path at 470 species. Items 5 to 11 are open again.
+[ADR-195](../architecture-decision-records/adr-195-a-maf-adapter-parses-its-blocks-into-the-packer.md)
+then had MAF-tabix and bigMaf parse straight into the packer, which takes the
+span over narrow MAF-tabix blocks to
+0.78x<!--m:maf-parse-into-packer.26-species-20000-blocks-of-8-columns-maftabixadapter.typedDirectVsFeatures-->
+of its time and leaves wide blocks and 470 species level.
 
-Two levers are left on the data path, both measured:
+One lever is left on the data path, measured:
 
 - **The `cells` walk** is 133 ms of the 220 ms request on ada, a byte kernel
   the MAF display's `buildMafChannels` also pays. A `cells` that bins as it
@@ -75,15 +80,6 @@ Two levers are left on the data path, both measured:
   859.9ms<!--m:maf-on-marks-identity.470-species-200-blocks-of-250-columns.columnsIdentityMs-->
   against
   430.1ms<!--m:maf-on-marks-identity.470-species-200-blocks-of-250-columns.mafIdentityMs-->.
-- **The pack** (32 ms on ada): the MAF adapters build a `MafFeature` with a
-  record and a string per species, and `mafFeatureTable` then packs them into
-  the arena. Parsing straight into the packer spares both, for the MAF display
-  too; MAF_WORKER_PIPELINE.md measured that restructure at 1.18x on narrow
-  blocks. Today the typed table is level with the features it packs at 470
-  species
-  (1.08x<!--m:typed-sources-maf-display.470-species-200-blocks-of-250-columns.typedVsFeatures-->)
-  and ahead over narrow blocks
-  (0.82x<!--m:typed-sources-maf-display.26-species-20000-blocks-of-8-columns.typedVsFeatures-->).
 
 ## What the mark display must gain, ranked
 

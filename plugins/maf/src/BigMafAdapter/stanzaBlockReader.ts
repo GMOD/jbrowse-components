@@ -1,0 +1,95 @@
+import { applyMafLine } from '../util/mafLines.ts'
+import { makeSourceResolver } from '../util/parseAssemblyName.ts'
+import { RecordSlots } from '../util/recordSlots.ts'
+
+import type { AlignmentContext, EmptyRecord } from '../types.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
+import type { MafLineTarget, MafSourceLine } from '../util/mafLines.ts'
+
+/**
+ * A bigMaf stanza into a {@link MafBlockSink}: the rows and empties
+ * `parseBigMafStanza` files in its records, in their order, with no record per
+ * species. `applyMafLine` is the line grammar both follow.
+ */
+export class BigMafBlockReader implements MafLineTarget {
+  private resolver
+  private rows = new RecordSlots()
+  private empties = new RecordSlots()
+
+  private seq: string[] = []
+  private chr: string[] = []
+  private srcStart: number[] = []
+  private strand: number[] = []
+  private srcSize: number[] = []
+  private rowContext: (AlignmentContext | undefined)[] = []
+  private emptyRecord: EmptyRecord[] = []
+
+  constructor(sampleIds: Set<string> | undefined) {
+    this.resolver = makeSourceResolver(sampleIds)
+  }
+
+  row(sampleId: string, chr: string, line: MafSourceLine) {
+    const slot = this.rows.slot(this.rows.key(sampleId))
+    this.seq[slot] = line.seq
+    this.chr[slot] = chr
+    this.srcStart[slot] = line.start
+    this.strand[slot] = line.strand
+    this.srcSize[slot] = line.srcSize
+    this.rowContext[slot] = undefined
+  }
+
+  context(sampleId: string, context: AlignmentContext) {
+    const slot = this.rows.slotOf(sampleId)
+    if (slot !== -1) {
+      this.rowContext[slot] = context
+    }
+  }
+
+  empty(sampleId: string, empty: EmptyRecord) {
+    this.emptyRecord[this.empties.slot(this.empties.key(sampleId))] = empty
+  }
+
+  read(
+    sink: MafBlockSink,
+    id: string,
+    start: number,
+    end: number,
+    stanza: string,
+  ) {
+    const { rows, empties } = this
+    rows.startBlock()
+    empties.startBlock()
+    let ref: string | undefined
+    for (const line of stanza.split(';')) {
+      const s = applyMafLine(line, this.resolver.resolve, this)
+      ref ??= s?.seq
+    }
+    ref ??= ''
+    sink.startBlock(id, start, end, 0, ref, 0, ref.length)
+    const rowOrder = rows.order()
+    for (let j = 0; j < rows.count; j++) {
+      const slot = rowOrder[j]!
+      const seq = this.seq[slot]!
+      sink.addRow(
+        rows.nameAt(slot),
+        seq,
+        0,
+        seq.length,
+        this.chr[slot]!,
+        this.srcStart[slot]!,
+        this.strand[slot]!,
+        this.srcSize[slot],
+        this.rowContext[slot],
+      )
+    }
+    const emptyOrder = empties.order()
+    for (let j = 0; j < empties.count; j++) {
+      const slot = emptyOrder[j]!
+      sink.addEmpty(empties.nameAt(slot), this.emptyRecord[slot]!)
+    }
+  }
+
+  reportUnmatched() {
+    this.resolver.reportUnmatched()
+  }
+}

@@ -1,7 +1,7 @@
 import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
-import { applyMafLine } from '../util/mafLines.ts'
+import { MafStanzaRows, applyMafLine } from '../util/mafLines.ts'
 
-import type { AlignmentRecord, EmptyRecord } from '../types.ts'
+import type { EmptyRecord } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { TaiBlockFeature } from '../util/taiBlockFeatures.ts'
 
@@ -39,10 +39,7 @@ export function* parseMafBlocks(
   const endsClean = text.endsWith('\n')
   const lines = text.split('\n')
 
-  let rows: {
-    alignments: Record<string, AlignmentRecord>
-    empties: Record<string, EmptyRecord>
-  } = { alignments: {}, empties: {} }
+  let rows = new MafStanzaRows()
   let refSrc: string | undefined
   let refStart = 0
   let refSize = 0
@@ -83,7 +80,7 @@ export function* parseMafBlocks(
         seq: placed.seq,
       }
     }
-    rows = { alignments: {}, empties: {} }
+    rows = new MafStanzaRows()
     refSrc = undefined
     refStart = 0
     refSize = 0

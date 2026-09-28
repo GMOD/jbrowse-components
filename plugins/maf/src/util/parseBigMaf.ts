@@ -1,4 +1,4 @@
-import { applyMafLine } from './mafLines.ts'
+import { MafStanzaRows, applyMafLine } from './mafLines.ts'
 
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
 import type { SourceResolver } from './parseAssemblyName.ts'
@@ -26,7 +26,7 @@ export function parseBigMafStanza(
   maf: string,
   resolve: SourceResolver,
 ): ParsedMafStanza {
-  const rows = { alignments: {}, empties: {} }
+  const rows = new MafStanzaRows()
   let referenceSeq: string | undefined
   for (const line of maf.split(';')) {
     // Called unconditionally, then the reference taken from the result: folding
@@ -35,5 +35,9 @@ export function parseBigMafStanza(
     const s = applyMafLine(line, resolve, rows)
     referenceSeq ??= s?.seq
   }
-  return { ...rows, referenceSeq: referenceSeq ?? '' }
+  return {
+    alignments: rows.alignments,
+    empties: rows.empties,
+    referenceSeq: referenceSeq ?? '',
+  }
 }

@@ -9,9 +9,12 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import { MafRegionSink } from '../LinearMafGetAlignmentDataRpc/mafRegionSink.ts'
+import { featureBlocks } from '../util/mafBlockSink.ts'
 import MafTabixAdapter from './MafTabixAdapter.ts'
 import MafTabixConfigSchema from './configSchema.ts'
 
+import type { MafAdapterOptions } from '../types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { FeatureTable } from '@jbrowse/core/util/featureTable'
@@ -111,6 +114,36 @@ test("the adapter's table answers the species cells its features do", async () =
   const view = (t: FeatureTable) =>
     tableFeatures(t).map(f => [f.id(), f.toJSON()])
   expect(view(packed.table)).toEqual(view(fromFeatures.table))
+})
+
+test('the direct parse packs the region and answers the table its MafFeatures do', async () => {
+  const region = {
+    refName: 'ctgA',
+    start: 0,
+    end: 50000,
+    assemblyName: 'volvox',
+  }
+  const optsList: (MafAdapterOptions | undefined)[] = [
+    undefined,
+    { samples: ['volvox', 'nanovolvox'].map(id => ({ id, label: id })) },
+  ]
+  for (const opts of optsList) {
+    const direct = new MafRegionSink(undefined)
+    await adapter.readBlocks(region, direct, opts)
+    const features = new MafRegionSink(undefined)
+    await featureBlocks(adapter.getFeatures(region, opts), features)
+    expect(direct.packer.finishBlocks()).toEqual(features.packer.finishBlocks())
+    expect(direct.refSampleId).toBe(features.refSampleId)
+    expect([...direct.discovered]).toEqual([...features.discovered])
+
+    const blocks = await adapter.getFeaturesArray(region, opts)
+    const table = await adapter.getFeatureTable(region, opts)
+    expect(table.length).toBe(blocks.length)
+    for (const [i, block] of blocks.entries()) {
+      expect(table.row(i).id()).toBe(block.id())
+      expect(table.row(i).toJSON()).toEqual(block.toJSON())
+    }
+  }
 })
 
 function rows_(features: readonly Feature[]) {

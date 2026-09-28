@@ -1,0 +1,172 @@
+{
+  "id": "maf-parse-into-packer",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/maf/benches/mafOnMarks.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafOnMarks.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && for a in tabix bigmaf; do for s in 0 1 2; do node --expose-gc --max-old-space-size=12000 /tmp/mafOnMarks.mjs --parse --adapter=$a --shape=$s --rounds=20 --json; done; done",
+    "notes": "On ada (24 cores, load 3-21 across the runs), one process per shape and adapter, two passes, MIN across both passes' rounds. Every arm reads the region off the adapter over a warm chunk cache, parse included. The MAF display's arms are the worker's half of LinearMafGetAlignmentData: the blocks into a MafRegionSink, finishBlocks and buildMafCoverageRegion. Features reads MafFeatures (getFeatures into the sink, as every adapter did before readBlocks); control is the same declared again; direct is the adapter's readBlocks. The mark display's arms are marks_maf_cells: the adapter's table (over MafFeatures, or getFeatureTable's direct parse), layerTables and the columnar encoder with no hit index. Read is the BED or bigBed read alone. A collection before each arm (--expose-gc), interleaved round-robin with the order rotated, and the direct packed wire and encoded lanes checked equal to the features' before timing. The bigMaf fixture is the MAF-tabix one's blocks as s lines, built with bedToBigBed."
+  },
+  "columns": [
+    {
+      "key": "shape",
+      "label": "region"
+    },
+    {
+      "key": "adapter",
+      "label": "adapter"
+    },
+    {
+      "key": "rows",
+      "label": "rows",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "readMs",
+      "label": "read",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "featuresMs",
+      "label": "MAF display, features",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "directMs",
+      "label": "MAF display, direct",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "typedFeaturesMs",
+      "label": "marks, features",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "typedDirectMs",
+      "label": "marks, direct",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlVsFeatures",
+      "label": "control vs features",
+      "format": "x",
+      "precision": 2,
+      "derived": "controlMs / featuresMs",
+      "align": "right"
+    },
+    {
+      "key": "directVsFeatures",
+      "label": "MAF display direct vs features",
+      "format": "x",
+      "precision": 2,
+      "derived": "directMs / featuresMs",
+      "align": "right"
+    },
+    {
+      "key": "typedDirectVsFeatures",
+      "label": "marks direct vs features",
+      "format": "x",
+      "precision": 2,
+      "derived": "typedDirectMs / typedFeaturesMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "shape": "26 species, 1600 blocks of 250 columns",
+        "adapter": "MafTabixAdapter",
+        "rows": 41600,
+        "featuresMs": 178.8,
+        "controlMs": 178.2,
+        "directMs": 171.2,
+        "typedFeaturesMs": 150.8,
+        "typedDirectMs": 150.1,
+        "readMs": 8.5
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 1600 blocks of 250 columns",
+        "adapter": "BigMafAdapter",
+        "rows": 41600,
+        "featuresMs": 182.3,
+        "controlMs": 179.4,
+        "directMs": 176.3,
+        "typedFeaturesMs": 158.1,
+        "typedDirectMs": 158,
+        "readMs": 17.4
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "adapter": "MafTabixAdapter",
+        "rows": 520000,
+        "featuresMs": 221.1,
+        "controlMs": 223.7,
+        "directMs": 176.6,
+        "typedFeaturesMs": 267.5,
+        "typedDirectMs": 209.6,
+        "readMs": 17.2
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "adapter": "BigMafAdapter",
+        "rows": 520000,
+        "featuresMs": 320.4,
+        "controlMs": 319.4,
+        "directMs": 288.5,
+        "typedFeaturesMs": 358,
+        "typedDirectMs": 338.9,
+        "readMs": 30.5
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "adapter": "MafTabixAdapter",
+        "rows": 94000,
+        "featuresMs": 286.1,
+        "controlMs": 287.4,
+        "directMs": 281.8,
+        "typedFeaturesMs": 321.5,
+        "typedDirectMs": 324.4,
+        "readMs": 22.6
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "adapter": "BigMafAdapter",
+        "rows": 94000,
+        "featuresMs": 338.9,
+        "controlMs": 328.6,
+        "directMs": 326.6,
+        "typedFeaturesMs": 367.2,
+        "typedDirectMs": 365.9,
+        "readMs": 42
+      }
+    }
+  ]
+}

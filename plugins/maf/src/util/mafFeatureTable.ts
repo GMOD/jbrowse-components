@@ -1,15 +1,12 @@
 import { ColumnTable } from '@jbrowse/core/util/featureTable'
-import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { MafWirePacker } from '../LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
+import { addFeatureBlock, featureBlocks } from './mafBlockSink.ts'
 import { decodeMafStatus } from './mafStatus.ts'
 
 import type { MafWirePacked } from '../LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
-import type {
-  AlignmentContext,
-  AlignmentRecord,
-  EmptyRecord,
-} from '../types.ts'
+import type { AlignmentContext, EmptyRecord } from '../types.ts'
+import type { MafBlockSink } from './mafBlockSink.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Column } from '@jbrowse/core/util/featureTable'
 import type { Observable } from 'rxjs'
@@ -29,16 +26,72 @@ interface Blocks {
  * arena, so a `flatten` over `alignments` and the `cells` walk behind it read
  * packed bytes and make no record or string.
  */
+export class MafTableSink implements MafBlockSink {
+  private packer = new MafWirePacker()
+
+  private blocks: Blocks
+
+  constructor(refName: string) {
+    this.blocks = { ids: [], start: [], end: [], strand: [], refName }
+  }
+
+  startBlock(
+    id: string,
+    start: number,
+    end: number,
+    strand: number,
+    ref: string,
+    refFrom: number,
+    refTo: number,
+  ) {
+    this.blocks.ids.push(id)
+    this.blocks.start.push(start)
+    this.blocks.end.push(end)
+    this.blocks.strand.push(strand)
+    this.packer.startBlockText(start, ref, refFrom, refTo)
+  }
+
+  addRow(
+    sampleId: string,
+    text: string,
+    from: number,
+    to: number,
+    chr: string,
+    srcStart: number,
+    strand: number,
+    srcSize: number | undefined,
+    context: AlignmentContext | undefined,
+  ) {
+    this.packer.addRowText(
+      sampleId,
+      text,
+      from,
+      to,
+      chr,
+      srcStart,
+      strand,
+      srcSize,
+      context,
+    )
+  }
+
+  addEmpty(sampleId: string, empty: EmptyRecord) {
+    this.packer.addEmpty(sampleId, empty)
+  }
+
+  table() {
+    return tableOfPacked(this.packer.finishBlocks(), this.blocks)
+  }
+}
+
+/** {@link MafTableSink} over blocks as `MafFeature`s. */
 export async function mafFeatureTable(
   features: Observable<Feature>,
   refName: string,
 ) {
-  const packer = new MafWirePacker()
-  const blocks: Blocks = { ids: [], start: [], end: [], strand: [], refName }
-  await subscribeToObservable(features, feature => {
-    addBlock(packer, blocks, feature)
-  })
-  return tableOfPacked(packer.finishBlocks(), blocks)
+  const sink = new MafTableSink(refName)
+  await featureBlocks(features, sink)
+  return sink.table()
 }
 
 /** {@link mafFeatureTable} over blocks already fetched. */
@@ -46,33 +99,11 @@ export function mafFeatureTableOf(
   features: Iterable<Feature>,
   refName: string,
 ) {
-  const packer = new MafWirePacker()
-  const blocks: Blocks = { ids: [], start: [], end: [], strand: [], refName }
+  const sink = new MafTableSink(refName)
   for (const feature of features) {
-    addBlock(packer, blocks, feature)
+    addFeatureBlock(sink, feature)
   }
-  return tableOfPacked(packer.finishBlocks(), blocks)
-}
-
-function addBlock(packer: MafWirePacker, blocks: Blocks, feature: Feature) {
-  const alignments = feature.get('alignments') as Record<
-    string,
-    AlignmentRecord
-  >
-  const empties = feature.get('empties') as
-    | Record<string, EmptyRecord>
-    | undefined
-  blocks.ids.push(feature.id())
-  blocks.start.push(feature.get('start'))
-  blocks.end.push(feature.get('end'))
-  blocks.strand.push(feature.get('strand') ?? 0)
-  packer.startBlock(feature.get('start'), feature.get('seq') as string)
-  for (const sampleId in alignments) {
-    packer.addRow({ sampleId, ...alignments[sampleId]! })
-  }
-  for (const sampleId in empties) {
-    packer.addEmpty(sampleId, empties[sampleId]!)
-  }
+  return sink.table()
 }
 
 function contextOf(packed: MafWirePacked, i: number) {

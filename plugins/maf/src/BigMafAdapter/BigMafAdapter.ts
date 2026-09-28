@@ -10,9 +10,11 @@ import { buildSampleFilter } from '../util/getSamples.ts'
 import { loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { parseBigMafStanza } from '../util/parseBigMaf.ts'
+import { BigMafBlockReader } from './stanzaBlockReader.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { BigMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -88,6 +90,25 @@ export default class BigMafAdapter extends MafAdapterBase<BigMafAdapterConfig> {
       resolver.reportUnmatched()
       observer.complete()
     }, opts?.signal)
+  }
+
+  override async readBlocks(
+    query: Region,
+    sink: MafBlockSink,
+    opts?: MafAdapterOptions,
+  ) {
+    const { adapter } = await this.configure(opts)
+    const reader = new BigMafBlockReader(buildSampleFilter(opts))
+    await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
+      reader.read(
+        sink,
+        feature.id(),
+        feature.get('start'),
+        feature.get('end'),
+        mafBlockField(feature),
+      )
+    })
+    reader.reportUnmatched()
   }
 
   // Compressed download-size estimate from the bigMaf.bb R-tree index, delegated

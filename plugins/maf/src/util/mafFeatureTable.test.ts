@@ -163,3 +163,25 @@ test('a row stating no strand reads +1, as the MAF display draws it', async () =
   }).layers[0]!.table
   expect(rows.row(0).get('strand')).toBe(1)
 })
+
+test('a species named like an array index lists first, as the record does', async () => {
+  const block = new MafFeature(
+    'b',
+    0,
+    2,
+    'chr1',
+    0,
+    {
+      hg38: { chr: 'chr1', srcStart: 0, strand: 1, seq: 'AC' },
+      '7': { chr: 'chr2', srcStart: 5, strand: 1, seq: 'AG' },
+    },
+    'AC',
+  )
+  const table = await mafFeatureTable(from([block]), 'chr1')
+  expect(table.row(0).toJSON()).toEqual(block.toJSON())
+  const species = layerTables(table, {
+    transform: [{ type: 'flatten', field: 'alignments', key: 'species' }],
+    layers: [{}],
+  }).layers[0]!.table
+  expect([0, 1].map(i => species.row(i).get('species'))).toEqual(['7', 'hg38'])
+})

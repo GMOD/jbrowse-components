@@ -152,7 +152,7 @@ export interface MafWireRegionData {
   coverage: MafCoverageRegion
   /**
    * The sample whose row the reference sequence came from, resolved by the
-   * worker (`referenceSampleId`) rather than assumed to be the view's assembly
+   * worker (`MafRegionSink`) rather than assumed to be the view's assembly
    * name. Shipped because the conservation metric excludes the reference's
    * trivial self-match, and the two bands compute that metric in different
    * places — the per-base one in the worker, the codon one on the client — so

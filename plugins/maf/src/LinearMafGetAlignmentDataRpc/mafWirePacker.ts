@@ -210,18 +210,11 @@ export class MafWirePacker {
     this.emptySrcSize = u32(empties)
   }
 
-  /**
-   * Appends `seq` to the arena and returns its `[offset, length]`.
-   *
-   * Takes bytes as readily as a string, because an adapter that can hand over
-   * bytes should never have to build the string first. `MafTabixAdapter` reads
-   * its alignment column straight out of the decompressed bgzf buffer, so its
-   * sequence is copied exactly once — here — where going through a string would
-   * mean a UTF-16 decode, several substrings, and a re-encode.
-   */
-  private write(seq: string | Uint8Array) {
+  /** Appends `text[from..to)` to the arena and returns its `[offset, length]`. */
+  private write(text: string, from: number, to: number) {
     const offset = this.arenaLength
-    const needed = offset + seq.length
+    const length = to - from
+    const needed = offset + length
     if (needed > this.arena.length) {
       let capacity = Math.max(1024, this.arena.length)
       while (capacity < needed) {
@@ -231,28 +224,24 @@ export class MafWirePacker {
       next.set(this.arena.subarray(0, offset))
       this.arena = next
     }
-    let written: number
-    if (typeof seq === 'string') {
-      written =
-        seq.length <= ASCII_COPY_MAX_LENGTH ? this.writeAscii(seq, offset) : -1
-      if (written < 0) {
-        written = this.encoder.encodeInto(
-          seq,
-          this.arena.subarray(offset, offset + seq.length),
-        ).written
-      }
-    } else {
-      this.arena.set(seq, offset)
-      written = seq.length
+    let written =
+      length <= ASCII_COPY_MAX_LENGTH
+        ? this.writeAscii(text, from, to, offset)
+        : -1
+    if (written < 0) {
+      written = this.encoder.encodeInto(
+        from === 0 && to === text.length ? text : text.slice(from, to),
+        this.arena.subarray(offset, offset + length),
+      ).written
     }
     this.arenaLength = offset + written
     return { offset, length: written }
   }
 
   /**
-   * Copy an ASCII `seq` into the arena a char at a time, or return -1 if it
-   * isn't ASCII (leaving the caller to redo it with `encodeInto`, which
-   * overwrites from the same offset, so the partial write costs nothing).
+   * Copy an ASCII `text[from..to)` into the arena a char at a time, or return
+   * -1 if it isn't ASCII (leaving the caller to redo it with `encodeInto`,
+   * which overwrites from the same offset, so the partial write costs nothing).
    *
    * Worth having only for short rows, hence `ASCII_COPY_MAX_LENGTH`.
    * `encodeInto` is a C++ call that needs a `Uint8Array` destination, so every
@@ -264,17 +253,16 @@ export class MafWirePacker {
    * vectorizes and this cannot, so the threshold is what keeps a
    * few-large-blocks region on the fast path for its shape.
    */
-  private writeAscii(seq: string, offset: number) {
+  private writeAscii(text: string, from: number, to: number, offset: number) {
     const arena = this.arena
-    const len = seq.length
-    for (let i = 0; i < len; i++) {
-      const code = seq.charCodeAt(i)
+    for (let i = from; i < to; i++) {
+      const code = text.charCodeAt(i)
       if (code > 0x7f) {
         return -1
       }
-      arena[offset + i] = code
+      arena[offset + i - from] = code
     }
-    return len
+    return to - from
   }
 
   /**
@@ -282,9 +270,14 @@ export class MafWirePacker {
    * derived here from the reference's non-dash byte count — the block's genomic
    * extent — so no consumer has to re-walk the reference to learn it.
    */
-  startBlock(startBp: number, refSeq: string | Uint8Array) {
+  startBlock(startBp: number, refSeq: string) {
+    this.startBlockText(startBp, refSeq, 0, refSeq.length)
+  }
+
+  /** {@link startBlock} with the reference as `text[from..to)`. */
+  startBlockText(startBp: number, text: string, from: number, to: number) {
     const block = this.blockCount++
-    const { offset, length } = this.write(refSeq)
+    const { offset, length } = this.write(text, from, to)
     let refLen = 0
     for (let i = offset; i < offset + length; i++) {
       if (this.arena[i] !== DASH) {
@@ -301,23 +294,48 @@ export class MafWirePacker {
 
   addRow(row: {
     sampleId: string
-    seq: string | Uint8Array
+    seq: string
     chr?: string
     srcStart?: number
     strand?: number
     srcSize?: number
     context?: AlignmentContext
   }) {
+    this.addRowText(
+      row.sampleId,
+      row.seq,
+      0,
+      row.seq.length,
+      row.chr ?? '',
+      row.srcStart ?? 0,
+      row.strand ?? 1,
+      row.srcSize,
+      row.context,
+    )
+  }
+
+  /** {@link addRow} with the row's sequence as `text[from..to)`. */
+  addRowText(
+    sampleId: string,
+    text: string,
+    from: number,
+    to: number,
+    chr: string,
+    srcStart: number,
+    strand: number,
+    srcSize: number | undefined,
+    context: AlignmentContext | undefined,
+  ) {
     const i = this.rowCount++
-    const { offset, length } = this.write(row.seq)
+    const { offset, length } = this.write(text, from, to)
     this.rowOffset.set(i, offset)
     this.rowLength.set(i, length)
-    this.rowSample.set(i, this.samples.indexOf(row.sampleId))
-    this.rowChr.set(i, this.chrs.indexOf(row.chr ?? ''))
-    this.rowStart.set(i, row.srcStart ?? 0)
-    this.rowStrand.set(i, row.strand ?? 1)
-    this.rowSrcSize.set(i, row.srcSize ?? 0)
-    if (row.context) {
+    this.rowSample.set(i, this.samples.indexOf(sampleId))
+    this.rowChr.set(i, this.chrs.indexOf(chr))
+    this.rowStart.set(i, srcStart)
+    this.rowStrand.set(i, strand)
+    this.rowSrcSize.set(i, srcSize ?? 0)
+    if (context) {
       this.context ??= {
         has: u8(0),
         leftStatus: u8(0),
@@ -325,7 +343,7 @@ export class MafWirePacker {
         rightStatus: u8(0),
         rightCount: u32(0),
       }
-      const { leftStatus, leftCount, rightStatus, rightCount } = row.context
+      const { leftStatus, leftCount, rightStatus, rightCount } = context
       this.context.has.set(i, 1)
       this.context.leftStatus.set(i, encodeMafStatus(leftStatus))
       this.context.leftCount.set(i, leftCount ?? 0)

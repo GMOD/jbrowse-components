@@ -129,6 +129,24 @@ rows to retain.
 The restructure shipped on its own (`packer fed from the subscription`, below);
 the PR was closed with this measurement as GMOD/tabix-js ADR 0006.
 
+## The adapter parses into the packer
+
+The packer fed from the subscription still read each block out of a
+`MafFeature`: a record and a string per species, a dictionary per block, and a
+`for...in` over it. `readBlocks`
+([ADR-195](../architecture-decision-records/adr-195-a-maf-adapter-parses-its-blocks-into-the-packer.md))
+has `MafTabixAdapter` and `BigMafAdapter` hand the packer each sequence as a
+range of the line they parsed. `plugins/maf/benches/mafOnMarks.bench.ts
+--parse` times it with the read inside, one process per shape, and the ADR
+has the table. It pays per row, so it pays on the narrow shape and not on the
+wide one, the same split as the ranking above: the MAF-tabix worker takes
+0.80x<!--m:maf-parse-into-packer.26-species-20000-blocks-of-8-columns-maftabixadapter.directVsFeatures-->
+its time over 20,000 blocks of 8 columns and
+0.96x<!--m:maf-parse-into-packer.26-species-1600-blocks-of-250-columns-maftabixadapter.directVsFeatures-->
+over 1,600 blocks of 250. The BED read alone is under a tenth of the
+MAF-tabix worker on every shape, so what is left upstream of coverage is the
+reader's own scan.
+
 ## Two things that look like wins and are not
 
 Both are also written into the comment on `computeMafCoverage`, because that is
@@ -231,6 +249,7 @@ Eight commits, all output-identical except where noted:
 | `4177979cca` | coverage's `col >= len` test hoisted to a per-block scan | 1.13-1.24x |
 | `4a8d7d8f7f` | the same arm for coverage's insertion loop | ~1.05x at a 33% gap rate, 1.00x below that |
 | `b42613b0da` | the packer fed from the subscription, and the buffered sizing pass dropped | 1.18x and 491 → 263 MB on narrow blocks |
+| ADR-195 | MAF-tabix and bigMaf parse into the packer, with no `MafFeature` | 0.80x<!--m:maf-parse-into-packer.26-species-20000-blocks-of-8-columns-maftabixadapter.directVsFeatures--> MAF-tabix and 0.90x<!--m:maf-parse-into-packer.26-species-20000-blocks-of-8-columns-bigmafadapter.directVsFeatures--> bigMaf on narrow blocks, level on wide |
 
 `57e26565a4` is in `packages/alignments-core`, so the alignments coverage
 pipeline gets it too. It is the one behavioral difference in the set: SNP

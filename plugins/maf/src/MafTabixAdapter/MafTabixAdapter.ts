@@ -13,9 +13,11 @@ import {
   scanMafTabixEntry,
   selectReferenceSequenceString,
 } from '../util/parseAssemblyName.ts'
+import { MafTabixBlockReader } from './tabixBlockReader.ts'
 
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
 import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { MafTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -129,6 +131,29 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
       resolver.reportUnmatched()
       observer.complete()
     }, opts?.signal)
+  }
+
+  override async readBlocks(
+    query: Region,
+    sink: MafBlockSink,
+    opts?: MafAdapterOptions,
+  ) {
+    const { adapter } = await this.configure(opts)
+    const reader = new MafTabixBlockReader(
+      buildSampleFilter(opts),
+      this.getConf('refAssemblyName'),
+      query.assemblyName,
+    )
+    await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
+      reader.read(
+        sink,
+        feature.id(),
+        feature.get('start'),
+        feature.get('end'),
+        alignmentColumn(feature),
+      )
+    })
+    reader.reportUnmatched()
   }
 
   // Byte budget for the fetch gate comes straight from the tabix index (the

@@ -134,6 +134,58 @@ export function ensureMafTabixFixture(
   return { bedGzPath, tbiPath, refName: 'chr1', start: 0, end: span }
 }
 
+const BIG_MAF_AS = `table bedMaf
+"Bed3 with MAF block"
+    (
+    string chrom;      "Reference sequence chromosome or scaffold"
+    uint   chromStart; "Start position in chromosome"
+    uint   chromEnd;   "End position in chromosome"
+    lstring mafBlock;  "MAF block"
+    )
+`
+
+/**
+ * The same blocks as a bigMaf, each stanza its `s` lines `;`-joined. Needs
+ * `bedToBigBed` on PATH.
+ */
+export function ensureBigMafFixture(
+  dir = join(tmpdir(), 'maf-tabix-bench'),
+  spec: MafFixtureSpec = DEFAULT_SPEC,
+) {
+  mkdirSync(dir, { recursive: true })
+  const name = `bigmaf-${spec.blocks}x${spec.species}x${spec.columns}-sp${spec.spacing}-s${spec.seed}`
+  const bbPath = join(dir, `${name}.bb`)
+  const span = spec.blocks * spec.spacing
+  if (!existsSync(bbPath)) {
+    const bed = generateMafBed(spec)
+      .text.trimEnd()
+      .split('\n')
+      .map(line => {
+        const [chr, start, end, , , entries] = line.split('\t')
+        const stanza = entries!.split(',').map(entry => {
+          const [src, from, size, strand, srcSize, seq] = entry.split(':')
+          return `s ${src} ${from} ${size} ${strand} ${srcSize} ${seq}`
+        })
+        return `${chr}\t${start}\t${end}\t${['a score=0', ...stanza].join(';')}`
+      })
+    const bedPath = join(dir, `${name}.bed`)
+    const asPath = join(dir, 'bigMaf.as')
+    const sizesPath = join(dir, `${name}.sizes`)
+    writeFileSync(bedPath, `${bed.join('\n')}\n`)
+    writeFileSync(asPath, BIG_MAF_AS)
+    writeFileSync(sizesPath, `chr1\t${span + spec.columns * 2}\n`)
+    execFileSync('bedToBigBed', [
+      '-type=bed3+1',
+      `-as=${asPath}`,
+      '-tab',
+      bedPath,
+      sizesPath,
+      bbPath,
+    ])
+  }
+  return { bbPath, refName: 'chr1', start: 0, end: span }
+}
+
 if (process.argv[1]?.endsWith('mafTabixFixture.ts')) {
   const dirArg = process.argv.find(a => a.startsWith('--dir='))?.slice(6)
   const fixture = ensureMafTabixFixture(

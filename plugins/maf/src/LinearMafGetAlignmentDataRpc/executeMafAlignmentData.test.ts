@@ -2,6 +2,7 @@ import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { of } from 'rxjs'
 
+import { MafAdapterBase } from '../util/MafAdapterBase.ts'
 import { executeMafAlignmentData } from './executeMafAlignmentData.ts'
 
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
@@ -35,7 +36,10 @@ function feature(
     alignments,
     empties,
   }
-  return { get: (field: string) => data[field] } as unknown as Feature
+  return {
+    id: () => `b${startBp}`,
+    get: (field: string) => data[field],
+  } as unknown as Feature
 }
 
 function row(seq: string, srcStart = 0): AlignmentRecord {
@@ -58,7 +62,10 @@ async function run(
   samples: { id: string; label: string }[] = [],
 ) {
   mockLoadAdapter.mockResolvedValue({
-    adapter: { getFeatures: () => of(...features) },
+    adapter: {
+      getFeatures: () => of(...features),
+      readBlocks: MafAdapterBase.prototype.readBlocks,
+    },
     samples,
     treeNewick: undefined,
   })

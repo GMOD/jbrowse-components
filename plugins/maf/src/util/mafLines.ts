@@ -1,7 +1,11 @@
 import { toMafStatus } from './mafStatus.ts'
 import { parseStrand } from './parseStrand.ts'
 
-import type { AlignmentRecord, EmptyRecord } from '../types.ts'
+import type {
+  AlignmentContext,
+  AlignmentRecord,
+  EmptyRecord,
+} from '../types.ts'
 import type { SourceResolver } from './parseAssemblyName.ts'
 
 /**
@@ -39,10 +43,38 @@ export interface MafSourceLine {
   seq: string
 }
 
-/** The rows a stanza accumulates, keyed by resolved sample id. */
-export interface MafStanzaRows {
-  alignments: Record<string, AlignmentRecord>
-  empties: Record<string, EmptyRecord>
+/** Where {@link applyMafLine} files a line's row, by resolved sample id. */
+export interface MafLineTarget {
+  row(sampleId: string, chr: string, line: MafSourceLine): void
+  context(sampleId: string, context: AlignmentContext): void
+  empty(sampleId: string, empty: EmptyRecord): void
+}
+
+/** The rows a stanza accumulates as records, keyed by resolved sample id. */
+export class MafStanzaRows implements MafLineTarget {
+  alignments: Record<string, AlignmentRecord> = {}
+  empties: Record<string, EmptyRecord> = {}
+
+  row(sampleId: string, chr: string, line: MafSourceLine) {
+    this.alignments[sampleId] = {
+      chr,
+      srcStart: line.start,
+      seq: line.seq,
+      strand: line.strand,
+      srcSize: line.srcSize,
+    }
+  }
+
+  context(sampleId: string, context: AlignmentContext) {
+    const rec = this.alignments[sampleId]
+    if (rec) {
+      rec.context = context
+    }
+  }
+
+  empty(sampleId: string, empty: EmptyRecord) {
+    this.empties[sampleId] = empty
+  }
 }
 
 /**
@@ -60,7 +92,7 @@ export interface MafStanzaRows {
 export function applyMafLine(
   line: string,
   resolve: SourceResolver,
-  out: MafStanzaRows,
+  out: MafLineTarget,
 ): MafSourceLine | undefined {
   const trimmed = line.trim()
   const type = trimmed[0]
@@ -91,13 +123,7 @@ export function applyMafLine(
     }
     const resolved = resolve(src)
     if (resolved?.assemblyName) {
-      out.alignments[resolved.assemblyName] = {
-        chr: resolved.chr,
-        srcStart: parsed.start,
-        seq,
-        strand: parsed.strand,
-        srcSize: parsed.srcSize,
-      }
+      out.row(resolved.assemblyName, resolved.chr, parsed)
     }
     return parsed
   }
@@ -110,14 +136,13 @@ export function applyMafLine(
     // or lists them apart from their `s` lines. The `i` line names its own src,
     // so there is nothing to infer from order.
     const assemblyName = resolve(src)?.assemblyName
-    const rec = assemblyName ? out.alignments[assemblyName] : undefined
-    if (rec) {
-      rec.context = {
+    if (assemblyName) {
+      out.context(assemblyName, {
         leftStatus: toMafStatus(parts[2]),
         leftCount: Number.parseInt(parts[3]!, 10),
         rightStatus: toMafStatus(parts[4]),
         rightCount: Number.parseInt(parts[5]!, 10),
-      }
+      })
     }
     return undefined
   }
@@ -125,14 +150,14 @@ export function applyMafLine(
   const status = toMafStatus(parts[6])
   const resolved = resolve(src)
   if (resolved?.assemblyName && status) {
-    out.empties[resolved.assemblyName] = {
+    out.empty(resolved.assemblyName, {
       chr: resolved.chr,
       srcStart: Number.parseInt(parts[2]!, 10),
       size: Number.parseInt(parts[3]!, 10),
       strand: parseStrand(parts[4]),
       srcSize: Number.parseInt(parts[5]!, 10),
       status,
-    }
+    })
   }
   return undefined
 }

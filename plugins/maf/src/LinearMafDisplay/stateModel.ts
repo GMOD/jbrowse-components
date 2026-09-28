@@ -620,7 +620,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Which sample row is the reference, as resolved by the worker
-         * (`referenceSampleId`, from the block whose sequence the row carries),
+         * (`MafRegionSink`, from the block whose sequence the row carries),
          * with the view's assembly name as the fallback before any region has
          * loaded.
          *
