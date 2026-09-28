@@ -1,6 +1,6 @@
 ---
 name: tutorial-grammar-followups
-description: What the tutorial grammar passes of 2026-09-27 left open - the calls waiting on Colin, the figures whose config still comes from a copy the page does not print, and the defects seen in the figures and not fixed. Read before another sweep of the tutorials for keys, scales, axis titles or figure configs.
+description: What the tutorial grammar passes of 2026-09-27 left open - the calls Colin settled, the figures whose config still comes from a copy the page does not print, and the defects seen in the figures and not fixed. Read before another sweep of the tutorials for keys, scales, axis titles or figure configs.
 ---
 
 # Tutorial grammar pass: follow-ups
@@ -16,15 +16,20 @@ page's `json addtrack` fence, and `check-specs` fails a session track the
 spec's config already holds, which `addSessionTrackConf` drops. The history is
 in git; what follows is what is left.
 
-## Waiting on Colin
+## Settled by Colin, 2026-09-27
 
-- **CNV reference lines** (population_cnv ladder, BIC-seq2 "two copies", cgiab
-  BAF). He said "i might not do reference lines for cnv". Ask before adding.
-- **The rGFA rank colour is still a jexl ternary**
-  (`rank==0 ? blue : orange`) in `demos/hprc/config.json`,
-  `demos/arabidopsis_pangenome/config.json` and the graph fixtures. As a
-  threshold scale it would draw a key on every graph figure, so it is a
-  picture call.
+- **No CNV reference lines** (population_cnv ladder, BIC-seq2 "two copies",
+  cgiab BAF): the copy-number keys and the diverging scale already name the
+  diploid level, so a line would restate the key.
+- **The rGFA rank colour is a threshold scale** with a key ("reference" /
+  "other assemblies") in `demos/hprc`, `demos/arabidopsis_pangenome`, the
+  graphgenomeview fixtures and `specs/graph-ecoli.ts`. Only a lane opened as
+  `LinearBasicDisplay` reads it, since `LinearGraphDisplay` colours through
+  its own `colorScheme`, so five figures took the key rather than every graph
+  figure. The portal configs under `jb2hubs/website/pangenome-config` keep
+  the ternary: they have to load in older releases. Colin's standing
+  preference is the reference-position rainbow for graph panes; the rank
+  scale is a demo colouring for the linear lane.
 
 ## Figures whose config is still a copy
 
@@ -80,7 +85,5 @@ in git; what follows is what is left.
 
 ## Traps
 
-- **Don't deploy `demos/cgiab/config.json`** until someone signs off the
-  pending move from `defaultRendering` to `mark` on three wiggle lanes in it.
 - **A synteny colour takes no `scale: "linear"`**; a numeric column is a ramp
   already, and `domainMin`/`domainMax` still pin it.

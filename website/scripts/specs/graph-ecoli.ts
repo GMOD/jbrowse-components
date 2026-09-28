@@ -45,10 +45,18 @@ const ECOLI_SEGMENTS_TRACK = 'ecoli_minigraph_segments'
 // feature as `rank`, and the plugin's scheme is rank 0 -> rgb(52,152,219), then a
 // ramp from rgb(237,137,44) at rank 1 to rgb(158,42,122) at the subgraph's max
 // rank. Only rank 0 has reference coordinates, so a reference LGV only ever draws
-// the blue backbone; the else branch is the ramp's rank-1 end, for a linear view
-// opened on one of the other assemblies.
+// the blue backbone; the second interval is the ramp's rank-1 end, for a linear
+// view opened on one of the other assemblies. The same scale is in
+// demos/hprc, demos/arabidopsis_pangenome and the graphgenomeview fixtures.
 const RANK_COLOR_DEFAULTS = {
-  color: "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'",
+  color: {
+    field: 'rank',
+    scale: 'threshold',
+    domain: ['1'],
+    range: ['rgb(52,152,219)', 'rgb(237,137,44)'],
+    labels: ['reference', 'other assemblies'],
+    title: 'Segment rank',
+  },
 }
 
 // The tutorial's own four-strain minigraph graph as an ordinary FeatureTrack,
