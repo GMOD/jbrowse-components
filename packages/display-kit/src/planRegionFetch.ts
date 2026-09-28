@@ -38,34 +38,17 @@ export function isBlockCovered(
 }
 
 /**
- * The visible blocks on the track's own assemblies. A view drawing several
- * genomes (a two-genome circle) shows a single-genome track on its genome's
- * regions only, and leaves the rest blank rather than failing the track.
- */
-export function blocksOnTrackAssemblies<T extends { assemblyName: string }>(
-  blocks: readonly T[],
-  trackAssemblyNames: string[],
-  hasAssemblyName: RegionFetchSources['hasAssemblyName'],
-) {
-  return blocks.filter(
-    ({ assemblyName }) =>
-      trackAssemblyNames.includes(assemblyName) ||
-      trackAssemblyNames.some(name => hasAssemblyName(name, assemblyName)),
-  )
-}
-
-/**
  * Everything the plan needs once the cheap bail-outs are past: the track's
  * assemblies, the two region lists, and the two per-region lookups.
  */
 export interface RegionFetchSources {
-  /** the assemblies the containing track declares */
+  /** the assemblies the containing track declares, for the mismatch banner */
   trackAssemblyNames: string[]
-  /** whether a track assembly knows `regionAssemblyName` as an alias */
-  hasAssemblyName: (
-    trackAssemblyName: string,
-    regionAssemblyName: string,
-  ) => boolean
+  /**
+   * whether a block on this assembly is on the track's genomes
+   * (`onTrackAssembly`); a view of several genomes leaves the rest blank
+   */
+  onTrackAssembly: (assemblyName: string) => boolean
   /** what is on screen — the blocks the plan judges */
   visibleRegions: VisibleBlock[]
   /**
@@ -265,18 +248,14 @@ export function planRegionFetch({
 
   const {
     trackAssemblyNames,
-    hasAssemblyName,
+    onTrackAssembly,
     visibleRegions,
     bufferedVisibleRegions,
     loadedRegion,
     isCacheValid,
   } = sources()
 
-  const drawn = blocksOnTrackAssemblies(
-    visibleRegions,
-    trackAssemblyNames,
-    hasAssemblyName,
-  )
+  const drawn = visibleRegions.filter(b => onTrackAssembly(b.assemblyName))
   const [foreign] = visibleRegions
   if (drawn.length === 0 && foreign) {
     return {

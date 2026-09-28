@@ -45,6 +45,7 @@ import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
+import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
@@ -1769,7 +1770,7 @@ export function stateModelFactory(
          * scan a newer one aborted answers with the newer one's fields.
          */
         ensurePlotFields() {
-          const regions = plotScanRegions(self.host)
+          const regions = plotScanRegions(self.host, onTrackAssembly(self))
           const held = self.plotFieldsPromise
           if (
             held &&

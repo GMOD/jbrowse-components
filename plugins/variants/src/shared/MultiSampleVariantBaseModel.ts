@@ -38,6 +38,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
+import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -222,25 +223,28 @@ function warnUnknownArrangementAttributes(
 // lines to off-screen genomic positions — use the visible regions only.
 function fetchRegionsForMode(
   view: RegionHost,
+  onTrack: (assemblyName: string) => boolean,
   mode: CellDataMode,
 ): IndexedRegion[] {
   if (mode === 'matrix') {
-    return view.visibleRegions.map(vr => ({
-      region: {
-        refName: vr.refName,
-        start: Math.floor(vr.start),
-        end: Math.ceil(vr.end),
-        assemblyName: vr.assemblyName,
-        // carried, not dropped: matrix columns are laid out in the order the
-        // worker returns features, and inside a reversed region screen x rises
-        // as bp falls, so the worker cannot put the columns in screen order
-        // without it (orderByScreenPosition).
-        reversed: vr.reversed,
-      },
-      displayedRegionIndex: vr.displayedRegionIndex,
-    }))
+    return view.visibleRegions
+      .filter(vr => onTrack(vr.assemblyName))
+      .map(vr => ({
+        region: {
+          refName: vr.refName,
+          start: Math.floor(vr.start),
+          end: Math.ceil(vr.end),
+          assemblyName: vr.assemblyName,
+          // carried, not dropped: matrix columns are laid out in the order the
+          // worker returns features, and inside a reversed region screen x rises
+          // as bp falls, so the worker cannot put the columns in screen order
+          // without it (orderByScreenPosition).
+          reversed: vr.reversed,
+        },
+        displayedRegionIndex: vr.displayedRegionIndex,
+      }))
   }
-  return view.bufferedVisibleRegions
+  return view.bufferedVisibleRegions.filter(b => onTrack(b.region.assemblyName))
 }
 
 /**
@@ -1635,7 +1639,7 @@ export default function MultiSampleVariantBaseModelF(
           }
           const view = self.host
           const mode = self.cellDataMode
-          const regions = fetchRegionsForMode(view, mode)
+          const regions = fetchRegionsForMode(view, onTrackAssembly(self), mode)
           if (regions.length === 0) {
             return
           }

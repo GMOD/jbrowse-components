@@ -17,7 +17,7 @@ import {
   coarseTierSvgReady,
 } from './coarseTierPhase.ts'
 import { onDisplayedRegionsChange } from './displayAutoruns.ts'
-import { containingHost } from './foundationView.ts'
+import { containingHost, onTrackAssembly } from './foundationView.ts'
 import { measurementOf, openGateCommit } from './gateCommit.ts'
 
 import type { ByteGateAdapterPath } from './RegionTooLargeMixin.ts'
@@ -370,19 +370,29 @@ export default function CoarseTierMixin<P extends object>() {
           gate: () => self.coarseTierActive && !host(self).isMinimized,
           prepare: () => {
             const v = view(self)
-            return v.initialized
-              ? {
-                  regions: v.bufferedVisibleRegions,
-                  key: self.coarseTierIssueKey,
-                }
+            if (!v.initialized) {
+              return undefined
+            }
+            const onTrack = onTrackAssembly(self)
+            const regions = v.bufferedVisibleRegions.filter(b =>
+              onTrack(b.region.assemblyName),
+            )
+            return regions.length
+              ? { regions, key: self.coarseTierIssueKey }
               : undefined
           },
+          // judged against the same genomes `prepare` reads, or the other
+          // genome's blocks are never covered and every commit re-fetches
           heldAnswers: read => {
             const held = self.coarseTierRead
+            const onTrack = onTrackAssembly(self)
             return (
               held !== undefined &&
               isDataCurrent(held.key, read.key) &&
-              coarseTierCovers(held.regions, view(self).visibleRegions)
+              coarseTierCovers(
+                held.regions,
+                view(self).visibleRegions.filter(b => onTrack(b.assemblyName)),
+              )
             )
           },
           run: async (read, ctx) => {

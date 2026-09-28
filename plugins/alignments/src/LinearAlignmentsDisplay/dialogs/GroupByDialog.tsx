@@ -10,7 +10,6 @@ import {
 import { statusProgressLabel } from '@jbrowse/core/util'
 import { useDebounce } from '@jbrowse/core/util/hooks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -130,7 +129,6 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       getUniqueTags({
         self: model,
         tag: debouncedTag,
-        blocks: containingLgv(model).staticBlocks,
         opts: { signal, statusCallback },
       }),
   )

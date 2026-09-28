@@ -1,6 +1,5 @@
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
-import { getContainingTrack, getSession } from '@jbrowse/core/util/mstUtils'
-import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
+import { getSession } from '@jbrowse/core/util/mstUtils'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -12,9 +11,13 @@ import { makeFetchInputs } from './fetchInputs.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
-import { containingHost, foundationCanRender } from './foundationView.ts'
+import {
+  containingHost,
+  foundationCanRender,
+  onTrackAssembly,
+} from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
-import { blocksOnTrackAssemblies, isBlockCovered } from './planRegionFetch.ts'
+import { isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks, payloadServesZoom } from './regionCommit.ts'
 import { subPixelBinBp } from './subPixelBinBp.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
@@ -171,19 +174,8 @@ export default function MultiRegionDisplayMixin() {
          * leaves a single-genome track's other regions blank.
          */
         get trackVisibleRegions() {
-          const { visibleRegions } = this.host
-          const names = getConfAssemblyNamesOrNone(
-            getContainingTrack(self).configuration,
-          )
-          const { assemblyManager } = getSession(self)
-          return names.length
-            ? blocksOnTrackAssemblies(
-                visibleRegions,
-                names,
-                (track, region) =>
-                  !!assemblyManager.get(track)?.hasName(region),
-              )
-            : visibleRegions
+          const onTrack = onTrackAssembly(self)
+          return this.host.visibleRegions.filter(b => onTrack(b.assemblyName))
         },
 
         /**
@@ -776,8 +768,9 @@ export default function MultiRegionDisplayMixin() {
          * #action
          * Overridable hook (no-op base): override to call one of the three
          * helpers in `fetchEachRegion.ts` — `fetchEachRegion` (one RPC per
-         * region), `fetchAllRegions` (one RPC, one result per region) or
-         * `fetchRegionsBatched` (one RPC, one payload covering all of them).
+         * region), `fetchAllRegions` (one RPC per genome, one result per
+         * region) or `fetchRegionsBatched` (one RPC, one payload covering all
+         * of them).
          */
         fetchNeeded(_needed: IndexedRegion[]) {
           // no-op base

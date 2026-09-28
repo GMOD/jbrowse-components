@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
@@ -153,17 +154,18 @@ export function setupRunClusteringAutorun(
   )
 }
 
-// The declared locus if there is one, else what is on screen. Resolved on the
-// client because the assembly is what turns a locstring into a region, and only
-// the client has one.
+// The declared locus if there is one, else what is on screen, both on the
+// track's genome. Resolved on the client because the assembly is what turns a
+// locstring into a region, and only the client has one.
 async function clusterRegions(
   self: IStateTreeNode & { clusterRegion?: string },
   view: LinearGenomeViewModel,
 ): Promise<Region[]> {
   const { clusterRegion } = self
-  const assemblyName = view.assemblyNames[0]
+  const onTrack = onTrackAssembly(self)
+  const assemblyName = view.assemblyNames.find(onTrack)
   if (!clusterRegion || !assemblyName) {
-    return view.dynamicBlocks.contentBlocks
+    return view.dynamicBlocks.contentBlocks.filter(b => onTrack(b.assemblyName))
   }
   // waitForAssembly, not `get`: the autorun can fire on the first ready tick,
   // before the assembly manager has finished loading refNames, and a locstring

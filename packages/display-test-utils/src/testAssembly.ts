@@ -78,6 +78,8 @@ export function testAssemblyManager(
   const get = (name: string) => (name === assemblyName ? assembly : undefined)
   return {
     get,
+    getCanonicalAssemblyName: (name: string) =>
+      name === assemblyName ? name : undefined,
     waitForAssembly: () => Promise.resolve(assembly),
     isValidRefName: () => true,
     getRefNameMapForAdapter: (

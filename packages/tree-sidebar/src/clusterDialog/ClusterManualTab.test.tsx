@@ -8,6 +8,12 @@ import ClusterManualTab from './ClusterManualTab.tsx'
 import type { ClusterMatrix } from '../clusterMatrix.ts'
 import type { ClusterDialogProps } from './types.ts'
 
+// the stand-in display sits under no track
+jest.mock('@jbrowse/display-kit/foundationView', () => ({
+  ...jest.requireActual('@jbrowse/display-kit/foundationView'),
+  onTrackAssembly: () => () => true,
+}))
+
 // `isViewModel` duck-types on `width` + `setWidth`, so a containing view this
 // small is enough for `getContainingView` — the tab reads only the region key
 // off it.

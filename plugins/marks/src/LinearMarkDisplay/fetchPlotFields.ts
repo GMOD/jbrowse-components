@@ -16,9 +16,17 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  */
 export const PLOT_SCAN_MAX_BP = 20_000
 
-/** The window the field scan reads, from the left edge of what is on screen. */
-export function plotScanRegions(host: RegionHost): Region[] {
-  const block = host.staticBlocks.contentBlocks[0]
+/**
+ * The window the field scan reads, from the left edge of what is on screen on
+ * the track's genomes.
+ */
+export function plotScanRegions(
+  host: RegionHost,
+  onTrack: (assemblyName: string) => boolean,
+): Region[] {
+  const block = host.staticBlocks.contentBlocks.find(b =>
+    onTrack(b.assemblyName),
+  )
   return block
     ? [
         {

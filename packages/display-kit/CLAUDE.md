@@ -276,6 +276,13 @@ buys nothing: a second derivation misses the field the args gain next, latches
   production has no reason to. Marking a region loaded that holds nothing for
   that span is what froze canvas displays until a page reload:
   REGION_TOO_LARGE.md, and `RegionFetchContext`.
+- **A fetch reads the host's lists through `onTrackAssembly`**
+  (`foundationView.ts`). A view can show genomes the track does not have — a
+  two-genome circle — and keeps their blocks so the track draws blank there, so
+  a site that fetches from `visibleRegions`, `staticBlocks` or `dynamicBlocks`
+  filters them: another genome's regions in one request throw, and one alone
+  reads this track's file for the wrong genome. A cover check filters the same
+  way, or the other genome is never covered and every commit refetches.
 - `bufferedVisibleRegions` carries `reversed` alongside the widened bounds, and
   that is load-bearing — canvas stamps it onto `rpcDataMap`, and unit tests hand
   `setRpcData` a region by hand, so it went missing once uncaught.

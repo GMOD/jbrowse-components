@@ -21,6 +21,11 @@ jest.mock('@jbrowse/core/util/tracks', () => ({
   getRpcSessionId: () => 'sessionId',
 }))
 
+// the stand-in display sits under no track
+jest.mock('@jbrowse/display-kit/foundationView', () => ({
+  onTrackAssembly: () => () => true,
+}))
+
 const Display = types
   .model('TestClusteringDisplay', {
     runClustering: types.maybe(types.boolean),

@@ -1,3 +1,4 @@
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { autorun, when } from 'mobx'
 
@@ -210,6 +211,128 @@ test("a single-genome track draws on its genome's arcs of a two-genome circle", 
   expect(display.error).toBeUndefined()
   // judged on its own genome's arcs, so the other genome's never hold it loading
   expect(display.viewportWithinLoadedData).toBe(true)
+}, 30000)
+
+// A request is about one genome, so a site reading the strip's blocks takes
+// only this track's: the group-by scan read every slice, and threw on the
+// other genome's.
+test("a single-genome ring's group-by scan reads its own genome's blocks", async () => {
+  const { display } = await ringTestSession(
+    {
+      type: 'FeatureTrack',
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: [
+          {
+            uniqueId: 'g1',
+            refName: 'ctgA',
+            start: 100,
+            end: 900,
+            biotype: 'coding',
+          },
+          {
+            uniqueId: 'g2',
+            refName: 'ctgB',
+            start: 100,
+            end: 900,
+            biotype: 'noncoding',
+          },
+        ],
+      },
+    },
+    'LinearBasicDisplay',
+    ['volvox', 'volvox2'],
+  )
+  await when(() => display.loadedRegions.size === 2, { timeout: 20000 })
+  const scan = await (
+    display as unknown as {
+      scanGroupByCandidates: (opts: {
+        signal: AbortSignal
+        statusCallback: () => void
+      }) => Promise<{ field: string; values: string[] }[]>
+    }
+  ).scanGroupByCandidates({
+    signal: new AbortController().signal,
+    statusCallback: () => {},
+  })
+  expect(scan.find(c => c.field === 'biotype')?.values).toEqual([
+    'coding',
+    'noncoding',
+  ])
+}, 30000)
+
+// The density tier's read and its covered check both take this track's
+// genome: a read over every slice threw, and a check over every slice never
+// found the other genome covered, so each commit fetched again.
+test("a single-genome ring's density tier reads its own genome and settles", async () => {
+  const { session, display } = await ringTestSession(
+    {
+      type: 'FeatureTrack',
+      adapter: {
+        type: 'BedTabixAdapter',
+        bedGzLocation: {
+          localPath:
+            require.resolve('../../../../test_data/volvox/volvox-bed12.bed.gz'),
+        },
+        index: {
+          location: {
+            localPath:
+              require.resolve('../../../../test_data/volvox/volvox-bed12.bed.gz.tbi'),
+          },
+        },
+        densityAdapter: {
+          type: 'FromConfigAdapter',
+          features: scores('ctgA', CTG_A_BP, 1000),
+        },
+      },
+      displays: [
+        {
+          type: 'LinearBasicDisplay',
+          displayId: 'ring-LinearBasicDisplay',
+          densityTier: 'density',
+        },
+      ],
+    },
+    'LinearBasicDisplay',
+    ['volvox', 'volvox2'],
+  )
+  const tier = display as unknown as {
+    host: { bpPerPx: number; coarseBpPerPx: number }
+    coarseTierIssueKey: unknown
+    coarseTierRead:
+      | { key: unknown; regions: { region: { assemblyName: string } }[] }
+      | undefined
+  }
+  // the first read can go out before the view's coarse bp/px settles, and the
+  // settled zoom reads again
+  await when(
+    () =>
+      tier.host.coarseBpPerPx === tier.host.bpPerPx &&
+      tier.coarseTierRead !== undefined &&
+      isDataCurrent(tier.coarseTierRead.key, tier.coarseTierIssueKey),
+    { timeout: 20000 },
+  )
+  expect(display.error).toBeUndefined()
+  expect(
+    new Set(tier.coarseTierRead!.regions.map(r => r.region.assemblyName)),
+  ).toEqual(new Set(['volvox']))
+
+  // a check over every slice refetched every debounce, 300ms
+  const rpc = session.rpcManager as unknown as {
+    call: (sessionId: string, method: string, args: unknown) => unknown
+  }
+  const call = rpc.call.bind(rpc)
+  let refetches = 0
+  rpc.call = (sessionId, method, args) => {
+    if (method === 'CoreGetFeatureDensity') {
+      refetches++
+    }
+    return call(sessionId, method, args)
+  }
+  await new Promise(resolve => {
+    setTimeout(resolve, 1500)
+  })
+  expect(refetches).toBe(0)
 }, 30000)
 
 test("a ring's track menu is under the view menu's Tracks item", async () => {

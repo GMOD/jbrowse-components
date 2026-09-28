@@ -55,9 +55,10 @@ function loadedMap(...entries: [number, number, number][]) {
 
 function sources(over: Partial<RegionFetchSources> = {}): RegionFetchSources {
   const visibleRegions = over.visibleRegions ?? [visible(0, 0, 10000)]
+  const trackAssemblyNames = over.trackAssemblyNames ?? ['test']
   return {
-    trackAssemblyNames: ['test'],
-    hasAssemblyName: () => false,
+    trackAssemblyNames,
+    onTrackAssembly: name => trackAssemblyNames.includes(name),
     visibleRegions,
     bufferedVisibleRegions: visibleRegions.map(b => buffered(b)),
     loadedRegion: () => undefined,
@@ -404,14 +405,14 @@ describe('assembly mismatch', () => {
     ).toMatchObject({ kind: 'fetch' })
   })
 
-  test('accepts a region the track assembly knows by alias', () => {
+  // the names only label the banner; an alias is onTrackAssembly's to resolve
+  test('judges a region by onTrackAssembly, not by the names', () => {
     expect(
       plan({
         sources: () =>
           sources({
             trackAssemblyNames: ['hg38'],
-            hasAssemblyName: (track, region) =>
-              track === 'hg38' && region === 'test',
+            onTrackAssembly: name => name === 'test',
           }),
       }),
     ).toMatchObject({ kind: 'fetch' })

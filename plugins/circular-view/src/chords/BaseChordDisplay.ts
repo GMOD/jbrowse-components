@@ -4,18 +4,14 @@ import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
-  getContainingTrack,
   getContainingView,
   getDialogHost,
   getSession,
   isFeature,
 } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
-import {
-  getConfAssemblyNamesOrNone,
-  getRpcSessionId,
-  isSameAssemblyName,
-} from '@jbrowse/core/util/tracks'
+import { getRpcSessionId, isSameAssemblyName } from '@jbrowse/core/util/tracks'
+import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -87,13 +83,7 @@ export function BaseChordDisplay() {
        * order the circle lays them out
        */
       get trackAssemblyNames() {
-        const { assemblyManager } = getSession(self)
-        const names = getConfAssemblyNamesOrNone(
-          getContainingTrack(self).configuration,
-        )
-        return this.view.assemblyNames.filter(name =>
-          names.some(t => isSameAssemblyName(t, name, assemblyManager)),
-        )
+        return this.view.assemblyNames.filter(onTrackAssembly(self))
       },
       /**
        * #getter

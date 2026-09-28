@@ -4234,7 +4234,8 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "containingHost",
-        "foundationCanRender"
+        "foundationCanRender",
+        "onTrackAssembly"
       ],
       "worker": "real"
     },
@@ -4419,7 +4420,6 @@
     "@jbrowse/display-kit/planRegionFetch": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "blocksOnTrackAssemblies",
         "isBlockCovered",
         "planRegionFetch",
         "regionAssemblyMismatchMessage",

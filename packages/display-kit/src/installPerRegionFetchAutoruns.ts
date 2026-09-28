@@ -3,8 +3,8 @@ import {
   makeRetryContractCheck,
   takeFetchStarted,
 } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
-import { getContainingTrack, getSession } from '@jbrowse/core/util/mstUtils'
-import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
+import { getContainingTrack } from '@jbrowse/core/util/mstUtils'
+import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
@@ -13,6 +13,7 @@ import {
   makeSettingsLoopGuard,
   onDisplayedRegionsChange,
 } from './displayAutoruns.ts'
+import { onTrackAssembly } from './foundationView.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
 import {
   planRegionFetch,
@@ -216,18 +217,16 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
         // the fetch resumes — while a minimized track stays off the viewport's
         // dependency set below and so does not wake on every pan.
         minimized: () => getContainingTrack(self).minimized,
-        sources: () => {
-          const { assemblyManager } = getSession(self)
-          return {
-            trackAssemblyNames: getTrackAssemblyNames(getContainingTrack(self)),
-            hasAssemblyName: (trackName, regionName) =>
-              !!assemblyManager.get(trackName)?.hasName(regionName),
-            visibleRegions: view.visibleRegions,
-            bufferedVisibleRegions: view.bufferedVisibleRegions,
-            loadedRegion: idx => self.loadedRegions.get(idx),
-            isCacheValid: idx => self.isCacheValid(idx),
-          }
-        },
+        sources: () => ({
+          trackAssemblyNames: getConfAssemblyNamesOrNone(
+            getContainingTrack(self).configuration,
+          ),
+          onTrackAssembly: onTrackAssembly(self),
+          visibleRegions: view.visibleRegions,
+          bufferedVisibleRegions: view.bufferedVisibleRegions,
+          loadedRegion: idx => self.loadedRegions.get(idx),
+          isCacheValid: idx => self.isCacheValid(idx),
+        }),
       })
 
       // A fetch is the one plan whose retry answer the plan cannot give:

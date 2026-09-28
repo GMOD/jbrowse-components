@@ -1,4 +1,12 @@
-import { getContainingView } from '@jbrowse/core/util/mstUtils'
+import {
+  getContainingTrack,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util/mstUtils'
+import {
+  getConfAssemblyNamesOrNone,
+  isSameAssemblyName,
+} from '@jbrowse/core/util/tracks'
 
 import type { RegionHost } from './regionHost.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -25,6 +33,22 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export function containingHost(self: IStateTreeNode): RegionHost {
   const view = getContainingView(self)
   return (view.regionHost ?? view) as RegionHost
+}
+
+/**
+ * Whether a block on `assemblyName` is on one of the containing track's
+ * genomes. A view can show genomes the track lacks and keeps their blocks for
+ * drawing, so a site fetching from a host list filters it through this. A track
+ * naming no genome admits every block.
+ */
+export function onTrackAssembly(self: IStateTreeNode) {
+  const names = getConfAssemblyNamesOrNone(
+    getContainingTrack(self).configuration,
+  )
+  const { assemblyManager } = getSession(self)
+  return (assemblyName: string) =>
+    names.length === 0 ||
+    names.some(name => isSameAssemblyName(name, assemblyName, assemblyManager))
 }
 
 /**

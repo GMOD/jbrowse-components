@@ -1,5 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
 import type { GetGroupByCandidatesArgs } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -25,13 +26,15 @@ export interface GroupByScanOptions {
 }
 
 // The attributes the features in view carry and the sections each would
-// make, read off the render fetch's own download over the visible blocks.
+// make, read off the render fetch's own download over the visible blocks on
+// the track's genomes.
 export function scanGroupByCandidates(
   self: GroupByScanModel,
   opts: GroupByScanOptions,
 ) {
   const { displayConfig, showOnlyGenes, soloFeatureIds, hiddenFeatureIds } =
     self.rpcProps()
+  const onTrack = onTrackAssembly(self)
   return getSession(self).rpcManager.call(
     getRpcSessionId(self),
     'GetCanvasGroupByCandidates',
@@ -42,7 +45,9 @@ export function scanGroupByCandidates(
       soloFeatureIds,
       hiddenFeatureIds,
       byteLimit: self.resolvedByteLimit(),
-      regions: containingLgv(self).staticBlocks.contentBlocks,
+      regions: containingLgv(self).staticBlocks.contentBlocks.filter(b =>
+        onTrack(b.assemblyName),
+      ),
       ...opts,
     },
   )
