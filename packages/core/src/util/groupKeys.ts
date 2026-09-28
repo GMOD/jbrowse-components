@@ -138,20 +138,19 @@ export function overflowLabel(count: number) {
 
 /**
  * Which section each key stacks into once the cap applies: the first
- * `MAX_GROUPS` keys in natural order keep their own and the rest fold into
- * the overflow section. The catch-all `''` is held out of the merge, since
- * "lacking the value" is an answer users look for. A domain orders the
+ * `limit` keys (`MAX_GROUPS` by default) in natural order keep their own and
+ * the rest fold into the overflow section; `Infinity` folds none. The
+ * catch-all `''` is held out of the merge, since "lacking the value" is an
+ * answer users look for. A domain orders the
  * sections and never decides which exist, so reordering them changes no
  * key's section.
  */
-export function capGroupKeys(keys: Iterable<string>) {
+export function capGroupKeys(keys: Iterable<string>, limit = MAX_GROUPS) {
   const ordered = [...new Set(keys)].sort(compareGroupKeys)
   const hasUntagged = ordered.includes('')
   const named = ordered.filter(key => key !== '')
   const merged =
-    ordered.length > MAX_GROUPS
-      ? named.slice(MAX_GROUPS - (hasUntagged ? 2 : 1))
-      : []
+    ordered.length > limit ? named.slice(limit - (hasUntagged ? 2 : 1)) : []
   const mergedSet = new Set(merged)
   return {
     mergedCount: merged.length,

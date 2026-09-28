@@ -529,8 +529,7 @@ first, the display's own `transform` runs before the split:
 
 Sections order a name holding a number by that number, so chr2 before chr10, and
 the rest by code point. `domain` sets the order: listed values first, the rest
-sorted after. Past forty sections the tail merges into one, so a domain orders
-the sections and never changes which exist.
+sorted after. A domain orders the sections and never changes which exist.
 
 **Sections** in the track menu lists the sections drawn, each with **Move up**,
 **Move down** and **Hide section**; a move writes the drawn order back as the

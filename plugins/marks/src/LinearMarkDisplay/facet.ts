@@ -59,7 +59,7 @@ export function facetLayout(
       heights.set(key, Math.max(heights.get(key) ?? 0, rowCount))
     }
   }
-  const { sectionOf, mergedCount } = capGroupKeys(heights.keys())
+  const { sectionOf, mergedCount } = capGroupKeys(heights.keys(), Infinity)
   const members = new Map<string, string[]>()
   for (const key of [...heights.keys()].sort(compareGroupKeys)) {
     const section = sectionOf(key)

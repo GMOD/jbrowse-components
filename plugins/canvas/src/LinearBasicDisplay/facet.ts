@@ -58,7 +58,7 @@ export function sectionIdsOf(
       keys.add(featureGroupId(item, field).key)
     }
   }
-  const { sectionOf, mergedCount } = capGroupKeys(keys)
+  const { sectionOf, mergedCount } = capGroupKeys(keys, Infinity)
   const merged: GroupId = {
     key: OVERFLOW_GROUP_KEY,
     label: overflowLabel(mergedCount),

@@ -143,7 +143,7 @@ test('a domain stacks the sections it lists first, the rest sorted behind', () =
   expect(tops.get('b')).toBeLessThan(tops.get('a')!)
 })
 
-test('past the cap the tail of values merges into one overflow section', () => {
+test('past the old cap every value keeps a section of its own', () => {
   const facet = { field: 'id', domain: [] }
   const n = MAX_GROUPS + 5
   const raw = new Map([
@@ -159,11 +159,8 @@ test('past the cap the tail of values merges into one overflow section', () => {
   ])
   const out = computeLaidOutData(raw, { ...base, facet })
   const sections = featureGroupSections(out, facet, GROUP_LABEL_HEIGHT)
-  expect(sections).toHaveLength(MAX_GROUPS)
-  expect(sections.at(-1)).toMatchObject({
-    key: OVERFLOW_GROUP_KEY,
-    label: '6 merged values',
-  })
+  expect(sections).toHaveLength(n)
+  expect(sections.some(s => s.key === OVERFLOW_GROUP_KEY)).toBe(false)
 })
 
 test('the fit scale squeezes the rows and leaves every chip row its height', () => {

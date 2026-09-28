@@ -9,7 +9,7 @@ import {
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
-import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
+import { MAX_GROUPS } from '@jbrowse/core/util/groupKeys'
 import {
   DEFAULT_MARK_COLOR,
   NO_VALUE_ABGR,
@@ -2343,7 +2343,7 @@ test('two regions fold into one row space, the deeper pack setting each band', (
   expect(rowsOf(display, 1)).toEqual([0, 1])
 })
 
-test('the cap reads every region, and the merged values keep bands of their own', () => {
+test('past the old cap every key keeps a band of its own, across regions', () => {
   const { display } = facetedEnvironment().createDisplay()
   const keys = Array.from({ length: MAX_GROUPS + 1 }, (_, i) => `v${i}`)
   const table = (of: string[]) =>
@@ -2360,12 +2360,11 @@ test('the cap reads every region, and the merged values keep bands of their own'
     REGION,
   )
   const { sections } = display.facetLayout
-  expect(sections).toHaveLength(MAX_GROUPS)
-  expect(sections.at(-1)).toEqual({
-    key: OVERFLOW_GROUP_KEY,
-    label: '2 merged values',
-    firstRow: MAX_GROUPS - 1,
-    rowCount: 2,
+  expect(sections).toHaveLength(MAX_GROUPS + 1)
+  expect(sections.at(-1)).toMatchObject({
+    key: `v${MAX_GROUPS}`,
+    firstRow: MAX_GROUPS,
+    rowCount: 1,
   })
   expect(rowsOf(display, 0).slice(-2)).toEqual([MAX_GROUPS - 1, MAX_GROUPS])
   expect(rowsOf(display, 1)).toEqual([MAX_GROUPS - 1, MAX_GROUPS])
