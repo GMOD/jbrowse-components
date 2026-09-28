@@ -264,6 +264,14 @@ export const hostedConfigs: Record<string, RawConfig & { absent: string[] }> = {
     ],
     "tracks": [
       {
+        "trackId": "hg38-ncbiRefSeq",
+        "name": "NCBI RefSeq - RefSeq All",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "Gff3TabixAdapter"
+        }
+      },
+      {
         "trackId": "hg38_liftOver_multiway",
         "name": "hg38 vs 240 genomes (liftOver, multi-way)",
         "type": "SyntenyTrack",
@@ -486,6 +494,43 @@ export const hostedConfigs: Record<string, RawConfig & { absent: string[] }> = {
         "adapter": {
           "type": "PairwiseIndexedPAFAdapter"
         }
+      }
+    ],
+    "absent": []
+  },
+  "https://jbrowse.org/ucsc/mm39/config-staging.json": {
+    "assemblies": [
+      {
+        "name": "mm39",
+        "sequence": {
+          "trackId": "mm39-refseq",
+          "adapter": {
+            "type": "TwoBitAdapter"
+          }
+        }
+      }
+    ],
+    "tracks": [
+      {
+        "trackId": "mm39-ncbiRefSeq",
+        "name": "NCBI RefSeq - RefSeq All",
+        "type": "FeatureTrack",
+        "adapter": {
+          "type": "Gff3TabixAdapter"
+        }
+      },
+      {
+        "trackId": "mm39_liftOver_multiway",
+        "name": "mm39 vs 76 genomes (liftOver, multi-way)",
+        "type": "SyntenyTrack",
+        "adapter": {
+          "type": "MultiPairwiseSyntenyAdapter"
+        },
+        "displays": [
+          {
+            "type": "MultiWaySyntenyDisplay"
+          }
+        ]
       }
     ],
     "absent": []
