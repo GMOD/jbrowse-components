@@ -237,41 +237,35 @@ export async function fetchAllRegions<R>(
   const gate = openGateCommit(self)
   await self.fetchRegions(needed, async ctx => {
     const genomes = [
-      ...Map.groupBy(
-        needed.keys(),
-        i => needed[i]!.region.assemblyName,
-      ).values(),
+      ...Map.groupBy(needed, n => n.region.assemblyName).values(),
     ]
     const perGenome =
       genomes.length === 1 ? [ctx] : fanOutStatus(ctx, genomes.length)
-    const results = new Array<R | RegionTooLargeResult>(needed.length)
-    await Promise.all(
-      genomes.map(async (indices, g) => {
-        const got = await opts.call(
-          indices.map(i => needed[i]!.region),
+    const answered = await Promise.all(
+      genomes.map(async (group, g) => {
+        const results = await opts.call(
+          group.map(n => n.region),
           perGenome[g]!,
         )
-        if (got.length !== indices.length) {
+        if (results.length !== group.length) {
           throw new Error(
-            `fetchAllRegions: adapter returned ${got.length} results for ${indices.length} regions`,
+            `fetchAllRegions: adapter returned ${results.length} results for ${group.length} regions`,
           )
         }
-        indices.forEach((i, j) => {
-          results[i] = got[j]!
-        })
+        return group.map((n, i) => ({ ...n, result: results[i]! }))
       }),
     )
     if (!ctx.isStale()) {
-      needed.forEach(({ displayedRegionIndex }, i) => {
-        const result = results[i]!
+      const all = answered.flat()
+      for (const { displayedRegionIndex, result } of all) {
         if (!isRegionRefused(result)) {
           ctx.commitRegion(
             displayedRegionIndex,
             opts.onResult(displayedRegionIndex, result),
           )
         }
-      })
-      gate.commit(measurementOfEach(results))
+      }
+      gate.commit(measurementOfEach(all.map(a => a.result)))
       opts.onComplete?.(gate.issued)
     }
   })

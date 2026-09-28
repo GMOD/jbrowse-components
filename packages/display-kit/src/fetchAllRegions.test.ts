@@ -16,10 +16,10 @@
  * either: frozen until reload, with nothing going red. See `regionCommit.ts`
  * for the whole rule.
  *
- * Both of this helper's callers are wiggle and `RenderWiggleData` has no
- * refusal path, so that branch is unreachable in the tree today. That is
- * exactly why it needs a test rather than why it does not: an edit hoisting the
- * commit out of the guard breaks nothing anyone can see.
+ * Its one caller is wiggle and `RenderMultiWiggleData` has no refusal path, so
+ * that branch is unreachable in the tree today. That is exactly why it needs a
+ * test rather than why it does not: an edit hoisting the commit out of the
+ * guard breaks nothing anyone can see.
  */
 import { fetchAllRegions } from './fetchEachRegion.ts'
 
@@ -166,12 +166,14 @@ test('makes one call per genome, each on its own status slot', async () => {
   expect(asked).toEqual([['volvox:ctgA', 'volvox:ctgB'], ['other:chr1']])
   expect(new Set(slots).size).toBe(2)
   expect(slots).not.toContain(ctx.statusCallback)
-  expect(results).toEqual([
+  // each result paired with its own region; the store is keyed by index, so
+  // the commit order carries nothing
+  expect(results.toSorted(([a], [b]) => a - b)).toEqual([
     [2, 'data:ctgA'],
     [3, 'data:chr1'],
     [5, 'data:ctgB'],
   ])
-  expect(loaded).toEqual([2, 3, 5])
+  expect(loaded.toSorted((a, b) => a - b)).toEqual([2, 3, 5])
 })
 
 // One guard, not one per region — deliberately, and it is why this helper is
