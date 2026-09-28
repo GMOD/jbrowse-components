@@ -206,8 +206,9 @@ describe('computeVariantCells haploid genotypes in phased mode', () => {
 
   test('haploid calls color by allele, never the unphased fill', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const { BLACK_ABGR, NO_CALL_COLOR, PRIMARY_ALT_COLOR, REFERENCE_COLOR } =
+    const { BLACK_ABGR, NO_CALL_COLOR, REFERENCE_COLOR } =
       await import('../../shared/constants.ts')
+    const { ALT_HUE } = await import('../../shared/cellFill.ts')
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
@@ -219,9 +220,9 @@ describe('computeVariantCells haploid genotypes in phased mode', () => {
     for (let i = 0; i < result.numCells; i++) {
       byRow.set(result.cellRowIndices[i]!, result.cellColors[i]!)
     }
-    expect(byRow.get(0)).toBe(getCachedABGR(PRIMARY_ALT_COLOR)) // S1 HP0: 1|0
+    expect(byRow.get(0)).toBe(getCachedABGR(ALT_HUE)) // S1 HP0: 1|0
     expect(byRow.get(1)).toBe(getCachedABGR(REFERENCE_COLOR)) // S1 HP1: 1|0
-    expect(byRow.get(2)).toBe(getCachedABGR(PRIMARY_ALT_COLOR)) // S2: 1
+    expect(byRow.get(2)).toBe(getCachedABGR(ALT_HUE)) // S2: 1
     expect(byRow.get(3)).toBe(getCachedABGR(REFERENCE_COLOR)) // S3: 0
     expect(byRow.get(4)).toBe(getCachedABGR(NO_CALL_COLOR)) // S4: .
     expect([...byRow.values()]).not.toContain(BLACK_ABGR)
@@ -642,11 +643,11 @@ describe('phase-set coloring is opt-in', () => {
 
   test('a PS-carrying feature keeps allele coloring when not asked for', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const { PRIMARY_ALT_COLOR } = await import('../../shared/constants.ts')
-    // Without the flag the alt cell is the ordinary primary-alt color, even
-    // though this feature declares PS — that is the implicit trigger being gone.
-    expect(altColors(false)).toEqual([getCachedABGR(PRIMARY_ALT_COLOR)])
-    expect(altColors(true)).not.toEqual([getCachedABGR(PRIMARY_ALT_COLOR)])
+    const { ALT_HUE } = await import('../../shared/cellFill.ts')
+    // Without the flag the alt cell is the ordinary alt hue, even though this
+    // feature declares PS — that is the implicit trigger being gone.
+    expect(altColors(false)).toEqual([getCachedABGR(ALT_HUE)])
+    expect(altColors(true)).not.toEqual([getCachedABGR(ALT_HUE)])
   })
 
   test('the hue is derived from the PS id, not the allele', () => {
@@ -1118,12 +1119,11 @@ describe('the painted record reports what this pass emitted', () => {
   })
 })
 
-// The lane mark takes the hue of the cells under it. Under phase-set coloring
-// those cells are PS hues, so the primary-alt teal would name nothing.
-test('the lane falls back to the plain alt hue under phase-set coloring', async () => {
+// The lane mark takes the alt hue whether the cells under it paint by allele
+// or by phase set, so it names "alt" in every phased coloring.
+test('the lane takes the alt hue in phased mode, phase sets or not', async () => {
   const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
   const { ALT_HUE } = await import('../../shared/cellFill.ts')
-  const { PRIMARY_ALT_COLOR } = await import('../../shared/constants.ts')
   const sources: ProcessedSource[] = [
     { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
     { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
@@ -1142,5 +1142,5 @@ test('the lane falls back to the plain alt hue under phase-set coloring', async 
     }).featureColors[0]
 
   expect(run(true)).toBe(getCachedABGR(ALT_HUE))
-  expect(run(false)).toBe(getCachedABGR(PRIMARY_ALT_COLOR))
+  expect(run(false)).toBe(getCachedABGR(ALT_HUE))
 })

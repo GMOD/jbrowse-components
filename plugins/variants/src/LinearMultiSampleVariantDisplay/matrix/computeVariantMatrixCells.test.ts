@@ -132,8 +132,9 @@ describe('computeVariantMatrixCells phased genotypes', () => {
 describe('computeVariantMatrixCells phased mode ploidy', () => {
   test('haploid calls color by allele, never the unphased fill', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const { BLACK_ABGR, PRIMARY_ALT_COLOR, REFERENCE_COLOR } =
+    const { BLACK_ABGR, REFERENCE_COLOR } =
       await import('../../shared/constants.ts')
+    const { ALT_HUE } = await import('../../shared/cellFill.ts')
     const feature = makeFeature({
       genotypes: { S1: '1|0', S2: '1', S3: '0' },
       FORMAT: [],
@@ -159,7 +160,7 @@ describe('computeVariantMatrixCells phased mode ploidy', () => {
     for (let i = 0; i < result.numCells; i++) {
       byRow.set(result.cellRowIndices[i]!, result.cellColors[i]!)
     }
-    expect(byRow.get(2)).toBe(getCachedABGR(PRIMARY_ALT_COLOR)) // S2: 1
+    expect(byRow.get(2)).toBe(getCachedABGR(ALT_HUE)) // S2: 1
     expect(byRow.get(3)).toBe(getCachedABGR(REFERENCE_COLOR)) // S3: 0
     expect([...byRow.values()]).not.toContain(BLACK_ABGR)
   })
@@ -346,8 +347,8 @@ describe('phase-set coloring', () => {
 
   test('the alt cell takes its hue from PS, not from the allele', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const { PRIMARY_ALT_COLOR } = await import('../../shared/constants.ts')
-    const primary = getCachedABGR(PRIMARY_ALT_COLOR)
+    const { ALT_HUE } = await import('../../shared/cellFill.ts')
+    const primary = getCachedABGR(ALT_HUE)
     expect(run(false).cellColors[3]).toBe(primary)
     expect(run(true).cellColors[3]).not.toBe(primary)
   })

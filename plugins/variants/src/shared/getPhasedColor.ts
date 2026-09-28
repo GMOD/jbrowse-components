@@ -1,6 +1,6 @@
+import { ALT_HUE } from './cellFill.ts'
 import {
   NO_CALL_COLOR,
-  PRIMARY_ALT_COLOR,
   REFERENCE_COLOR,
   SECONDARY_ALT_COLOR,
 } from './constants.ts'
@@ -187,5 +187,5 @@ export function getPhasedColor(
     const hue = Number.isFinite(ps) ? Math.round((ps * 137.508) % 360) : 0
     return `hsl(${hue}, ${PS_SATURATION}%, ${PS_LIGHTNESS}%)`
   }
-  return allele === mostFrequentAlt ? PRIMARY_ALT_COLOR : SECONDARY_ALT_COLOR
+  return allele === mostFrequentAlt ? ALT_HUE : SECONDARY_ALT_COLOR
 }

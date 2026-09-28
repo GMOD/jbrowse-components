@@ -11,7 +11,6 @@ import { ALT_HUE, shadeByDosage } from './cellFill.ts'
 import { cellHueField, recordHueField, recordKeyColor } from './cellHue.ts'
 import {
   NO_CALL_COLOR,
-  PRIMARY_ALT_COLOR,
   REFERENCE_COLOR,
   SECONDARY_ALT_COLOR,
   UNPHASED_COLOR,
@@ -118,26 +117,25 @@ function altEntries(hue: string, inputs: VariantLegendInputs) {
   ]
 }
 
-// The genotype scale: the constant alt hue, a plain CSS color from
-// `color`, or — in phased mode — the two allele identities.
+// The genotype scale: the constant alt hue or a plain CSS color from `color`,
+// plus, in phased mode, the fill for an alt other than the site's most
+// frequent. An override paints every alt, so that entry never keys beside one,
+// even while the flags are still the previous colouring's.
 export function getGenotypeEntries(
   inputs: VariantLegendInputs,
   altColorOverride?: string,
 ): CategoricalEntry[] {
-  const hue = altColorOverride || ALT_HUE
-  if (inputs.renderingMode === 'phased' && !altColorOverride) {
-    return [
-      entry('Reference', REFERENCE_COLOR),
-      entry('Alt allele', PRIMARY_ALT_COLOR),
-      ...(inputs.hasSecondaryAlt
-        ? [entry('Other alt allele', SECONDARY_ALT_COLOR)]
-        : []),
-      ...(inputs.hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
-      ...(inputs.hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
-    ]
-  }
   const [reference, ...rest] = absentDataEntries(inputs)
-  return [reference!, ...altEntries(hue, inputs), ...rest]
+  const secondary =
+    inputs.renderingMode === 'phased' &&
+    !altColorOverride &&
+    inputs.hasSecondaryAlt
+  return [
+    reference!,
+    ...altEntries(altColorOverride || ALT_HUE, inputs),
+    ...(secondary ? [entry('Other alt allele', SECONDARY_ALT_COLOR)] : []),
+    ...rest,
+  ]
 }
 
 // The sample-grouping scale (the per-row sidebar colouring): one entry per
