@@ -32,6 +32,7 @@ export {
 } from './markRamp.ts'
 export { HIDDEN_ROW, NO_ROW_COLOR, RowKeys, buildRowTable } from './rowTable.ts'
 export { keySlot, rowColor, rowSlot } from './rowLane.ts'
+export { rowSpanIndex, spansInRow } from './rowSpanIndex.ts'
 
 export type { MarkPlan } from './markPlan.ts'
 export type { MarkInstance } from './markInk.ts'
@@ -67,4 +68,5 @@ export type {
   LinkSizeScale,
 } from './linkMark.ts'
 export type { RowTable } from './rowTable.ts'
+export type { RowSpanIndex } from './rowSpanIndex.ts'
 export type { ColorChannel } from './markRamp.ts'

@@ -95,6 +95,8 @@ interface Scenario {
   facet?: string
   encoding: Record<string, unknown>
   lanes: LaneName[]
+  /** The lanes the working tree's display asks for, where they differ from the ref's. */
+  headLanes?: LaneName[]
 }
 
 // The layer a faceted request encodes: its rows in section order under
@@ -149,7 +151,14 @@ function headDriver(p: Pipeline, s: Scenario) {
       jexl,
     )
     const { table, row } = layers[0]!
-    return p.encodeFeatures(table, { ...s.encoding, row }, s.lanes, { jexl })
+    return p.encodeFeatures(
+      table,
+      { ...s.encoding, row },
+      s.headLanes ?? s.lanes,
+      {
+        jexl,
+      },
+    )
   }
 }
 
@@ -249,7 +258,10 @@ const BIN: TransformStep[] = [
   { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
 ]
 const BAR: LaneName[] = ['y', 'color']
+// A span asked main's worker for the hit index; since the row lookup it asks
+// for none, and the display finds a hovered span by its row.
 const SPAN: LaneName[] = ['row', 'color', 'index']
+const SPAN_BY_ROW: LaneName[] = ['row', 'color']
 
 const scenarios: Scenario[] = [
   {
@@ -336,6 +348,7 @@ const scenarios: Scenario[] = [
     facet: 'sample',
     encoding: { color: 'red' },
     lanes: SPAN,
+    headLanes: SPAN_BY_ROW,
   },
 ]
 
@@ -357,6 +370,7 @@ if (withMaf) {
       },
     },
     lanes: SPAN,
+    headLanes: SPAN_BY_ROW,
   })
 }
 

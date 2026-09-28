@@ -189,3 +189,26 @@ test('the track menu offers the row height beside the other row items', () => {
   expect(labels(loaded(PINNED))).toContain('Row height')
   expect(labels(loaded({ height: 90 }))).not.toContain('Row height')
 })
+
+// A span is found through the rows near the cursor, read back through the row
+// table, so a reorder that moves every key to another slot is what the hover
+// follows.
+test('a hover over spans follows a reorder of the rows', () => {
+  const display = loaded(PINNED)
+  display.setRowOrder([
+    { name: 'd' },
+    { name: 'c' },
+    { name: 'b' },
+    { name: 'a' },
+  ])
+  expect(rowAt(display, 20)?.name).toBe('d')
+  expect(rowAt(display, 60)?.name).toBe('c')
+  display.setScrollTop(80)
+  expect(rowAt(display, 60)?.name).toBe('a')
+})
+
+test('a span layer asks the worker for no hit index', () => {
+  const display = loaded(PINNED)
+  expect(display.rpcProps().layers[0]!.lanes).not.toContain('index')
+  expect(display.rpcDataMap.get(0)!.layers[0]!.flatbush).toBeUndefined()
+})

@@ -1,0 +1,71 @@
+{
+  "id": "span-row-lookup",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --max-old-space-size=14000 packages/core/benches/tablePipeline.bench.ts --rounds=7 --maf --only=rows,MAF --json",
+    "notes": "main (base, and control: main extracted a second time) is the table pipeline of ADR-191, whose span asks the worker for the hit index; the working tree's span asks for none. rows by sample is a million synthetic features split into 26 rows and drawn as spans; the MAF row is marks_maf_cells over the synthetic MAF-tabix fixture at 470 species, 5.5M runs. Interleaved round-robin with the order rotated, MIN across rounds, lanes other than the index checked equal before timing. The row index a hover builds on the main thread is not in these times: at 5.5M runs rowSpanIndex took 169 ms where the Flatbush took 1390 ms, measured apart."
+  },
+  "columns": [
+    {
+      "key": "scenario",
+      "label": "scenario"
+    },
+    {
+      "key": "baseMs",
+      "label": "hit index",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "headMs",
+      "label": "row lookup",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "controlVsBase",
+      "label": "control vs index",
+      "format": "x",
+      "precision": 2,
+      "derived": "controlMs / baseMs",
+      "align": "right"
+    },
+    {
+      "key": "headVsBase",
+      "label": "row lookup vs index",
+      "format": "x",
+      "precision": 2,
+      "derived": "headMs / baseMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "rows by sample",
+        "baseMs": 768.6,
+        "controlMs": 942.8,
+        "headMs": 459.3
+      }
+    },
+    {
+      "values": {
+        "scenario": "MAF cells, 470 species",
+        "baseMs": 4726.6,
+        "controlMs": 4607.9,
+        "headMs": 2311.8
+      }
+    }
+  ]
+}

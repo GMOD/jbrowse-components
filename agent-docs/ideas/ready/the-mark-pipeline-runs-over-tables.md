@@ -1,6 +1,6 @@
 ---
 name: the-mark-pipeline-runs-over-tables
-description: The mark display's worker pipeline over tables rather than one Feature per piece - a table with provenance, a column resolved once per step by its kind, every step one kernel, the facet a partition split as early as the steps allow, the encoder reading lanes, and a row becoming a Feature only for a jexl expression or the hover. The pipeline itself landed as ADR-191 on 2026-09-28; what is left is the row lookup that spares a span under rows its hit index, which at 470 MAF species costs more than the rest of the request, and typed sources.
+description: The mark display's worker pipeline over tables rather than one Feature per piece - a table with provenance, a column resolved once per step by its kind, every step one kernel, the facet a partition split as early as the steps allow, the encoder reading lanes, and a row becoming a Feature only for a jexl expression or the hover. The pipeline landed as ADR-191 and the row lookup that spares a span its hit index as ADR-192, both 2026-09-28; what is left is typed sources (the BigWig adapter's arrays, the MAF worker's arena) and declining featureIndex where it is the identity.
 ---
 
 # The mark pipeline runs over tables
@@ -139,10 +139,10 @@ one the first needs.
 ## The hover and the hit test
 
 `CoreGetEncodedFeature` runs the request again and answers
-`row(featureIndex).toJSON()`. A span under `rows` answers the pointer from
-where each row's pieces start plus a binary search, as the spike's
-`spanHitsInRow` does, and ships no hit index; a mark whose pieces overlap in a
-row, or that stands at a value, keeps the Flatbush.
+`row(featureIndex).toJSON()`. A span answers the pointer by the row it stands
+in and ships no hit index
+([ADR-192](../../architecture-decision-records/adr-192-a-span-answers-a-hover-by-its-row.md));
+a mark that stands at a value, or a link across rows, keeps the Flatbush.
 
 ## What it breaks
 
@@ -161,11 +161,9 @@ Each landing below clears the same gate: the suites over the pipeline green,
 and `tablePipeline.bench.ts` and `mafOnMarks.bench.ts` at the path it replaces
 or better on their largest inputs.
 
-1. **The row lookup** for a span under `rows`, and no hit index for it. Over a
-   470-species MAF region the Flatbush costs more than the rest of the
-   request, and the main thread rebuilds it whenever a species is hidden
-   (`facetLayer` in `plugins/marks/src/LinearMarkDisplay/facet.ts`).
-2. **Typed sources**: the BigWig and MAF tables, and `featureIndex` declined
+The row lookup landed as ADR-192.
+
+1. **Typed sources**: the BigWig and MAF tables, and `featureIndex` declined
    where it is the identity.
 
 ## Calls that stay open

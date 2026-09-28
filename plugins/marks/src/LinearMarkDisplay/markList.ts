@@ -11,9 +11,11 @@ import {
   withPassId,
 } from '@jbrowse/render-core/marks'
 
+import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_LINE_INTERPOLATE } from './markVocabulary.ts'
 
 import type { MarkType } from './configSchema.ts'
+import type { MarkSpec } from './markSpecs.ts'
 import type { LineInterpolation, LinkShape } from './markVocabulary.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type {
@@ -133,6 +135,8 @@ export interface MarkRenderState extends MarkFrame {
  */
 export interface DisplayMark extends Mark<MarkRegionData, MarkRenderState> {
   markIndex: number
+  /** How the mark answers a hover: its layer's hit index, or its rows. */
+  hitBy: MarkSpec['hit']
 }
 
 /** A `marks` entry's type and zoom range in bp per px, 0 for no bound. */
@@ -250,8 +254,9 @@ function rampLut(scale: MarkColorScale | undefined) {
 function withMarkIndex(
   mark: Mark<MarkRegionData, MarkRenderState>,
   markIndex: number,
+  type: MarkType,
 ): DisplayMark {
-  return Object.assign(mark, { markIndex })
+  return Object.assign(mark, { markIndex, hitBy: MARK_SPECS[type].hit })
 }
 
 /**
@@ -261,7 +266,7 @@ function withMarkIndex(
 export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
   return entries.flatMap((entry, i) => {
     const mark = shapeMark(entry, i)
-    return mark ? [withMarkIndex(mark, i)] : []
+    return mark ? [withMarkIndex(mark, i, entry.type)] : []
   })
 }
 

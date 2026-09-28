@@ -214,7 +214,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
             domainQuantile: 1,
           },
         },
-        lanes: ['row', 'color', 'colorValue', 'index'],
+        lanes: ['row', 'color', 'colorValue'],
       },
     ],
   })
@@ -1091,7 +1091,7 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
       row: 'sampleIndex',
       color: DEFAULT_MARK_COLOR,
     },
-    lanes: ['row', 'color', 'colorValue', 'index'],
+    lanes: ['row', 'color', 'colorValue'],
   })
   display.setRpcData(0, result([{ y: [0, 0, 0], row: [0, 2, 1] }]), REGION)
   expect(display.rowCount).toBe(3)

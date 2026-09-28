@@ -30,8 +30,13 @@ export interface MarkSpec {
    * colours, per region.
    */
   readonly ramp: 'display' | 'worker'
-  /** Whether the mark answers a hover, and so asks the worker for the hit index. */
-  readonly hit: boolean
+  /**
+   * How the mark answers a hover: `index` searches a spatial index the worker
+   * builds over its instances, `rows` finds them by the row they stand in and
+   * their bp (a span only ever stands in its own row), and `false` answers
+   * none. Only `index` asks the worker for a lane.
+   */
+  readonly hit: 'index' | 'rows' | false
   /**
    * Whether the mark's `x2` may lie on another sequence, and so asks for the
    * lane naming which.
@@ -60,34 +65,34 @@ export const MARK_SPECS = {
     channels: ['y', 'row', 'color'],
     value: 'required',
     ramp: 'display',
-    hit: true,
+    hit: 'index',
   },
   point: {
     channels: ['y', 'row', 'color', 'shape'],
     value: 'required',
     ramp: 'display',
-    hit: true,
+    hit: 'index',
     size: 'constant',
   },
   rule: {
     channels: ['y', 'row', 'color'],
     value: 'required',
     ramp: 'display',
-    hit: true,
+    hit: 'index',
     size: 'constant',
   },
   line: {
     channels: ['y', 'row', 'color'],
     value: 'required',
     ramp: 'display',
-    hit: true,
+    hit: 'index',
     size: 'constant',
   },
   span: {
     channels: ['row', 'color'],
     value: 'none',
     ramp: 'display',
-    hit: true,
+    hit: 'rows',
   },
   text: {
     channels: ['y', 'row', 'color', 'text'],
@@ -99,7 +104,7 @@ export const MARK_SPECS = {
     channels: ['y', 'row', 'color', 'size'],
     value: 'optional',
     ramp: 'display',
-    hit: true,
+    hit: 'index',
     farFoot: true,
     size: 'channel',
   },
@@ -127,7 +132,7 @@ export function rampResolvesPerRegion(type: MarkType) {
 /**
  * The lanes a mark asks the worker to fill: its type's channels, a ramp's raw
  * values beside the colour where the display resolves the ramp, and the hit
- * index where the mark answers a hover. The encoder fills whichever of
+ * index where the mark answers a hover through one. The encoder fills whichever of
  * `color` and `colorValue` the colour declaration calls for.
  */
 export function markLanes(type: MarkType): MarkLane[] {
@@ -141,6 +146,6 @@ export function markLanes(type: MarkType): MarkLane[] {
           : [channel],
     ),
     ...(spec.farFoot ? (['x2Ref'] as const) : []),
-    ...(spec.hit ? (['index'] as const) : []),
+    ...(spec.hit === 'index' ? (['index'] as const) : []),
   ]
 }

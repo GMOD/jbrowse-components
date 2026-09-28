@@ -1,12 +1,19 @@
 import { clamp } from '@jbrowse/core/util/numericUtils'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
-import { nearestMarkHit } from '@jbrowse/render-core/marks'
+import {
+  HIDDEN_ROW,
+  nearestMarkHit,
+  rowSpanIndex,
+  spansInRow,
+} from '@jbrowse/render-core/marks'
 
 import type {
   DisplayMark,
   MarkRegionData,
   MarkRenderState,
+  StoredLayer,
 } from './markList.ts'
+import type { RowSpanIndex } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface MarkHitInfo {
@@ -39,11 +46,48 @@ export interface MarkHitInfo {
 
 const HIT_RADIUS_PX = 8
 
+const rowIndexes = new WeakMap<StoredLayer, RowSpanIndex>()
+
+// A span layer's spans by row, built the first time a hover asks it: a span
+// only ever stands in its own row, so no index over every span is needed.
+function rowIndexOf(layer: StoredLayer) {
+  let index = rowIndexes.get(layer)
+  if (!index) {
+    index = rowSpanIndex(layer.x, layer.x2, layer.row, layer.count)
+    rowIndexes.set(layer, index)
+  }
+  return index
+}
+
+// The `row` keys whose bands lie within the hit radius of `yPx`: the slots
+// the radius reaches, read back through the row table where one binds keys to
+// slots.
+function rowKeysNear(yPx: number, state: MarkRenderState, radiusPx: number) {
+  const { rowHeight, scrollTop, rowTable } = state
+  const first = Math.max(
+    0,
+    Math.floor((yPx - radiusPx + scrollTop) / rowHeight) - 1,
+  )
+  const last = Math.floor((yPx + radiusPx + scrollTop) / rowHeight) + 1
+  if (!rowTable) {
+    return Array.from({ length: last - first + 1 }, (_, k) => first + k)
+  }
+  const keys: number[] = []
+  for (let key = 0; key < rowTable.keys; key++) {
+    const slot = rowTable.slot[key]!
+    if (slot !== HIDDEN_ROW && slot >= first && slot <= last) {
+      keys.push(key)
+    }
+  }
+  return keys
+}
+
 /**
  * The mark instance nearest the cursor, marks on top asked first: each
- * mark's own hit test runs over the candidates its layer's Flatbush answers,
- * and only a strictly nearer instance from a mark underneath replaces one from
- * a mark above.
+ * mark's own hit test runs over the candidates its layer answers — a span's
+ * from the rows near the cursor, any other's from the Flatbush the worker
+ * built — and only a strictly nearer instance from a mark underneath replaces
+ * one from a mark above.
  */
 export function findMarkHit(
   mouseX: number,
@@ -54,6 +98,7 @@ export function findMarkHit(
   state: MarkRenderState,
   displayedRegions: readonly { refName: string }[],
 ): MarkHitInfo | undefined {
+  let nearRows: number[] | undefined
   const hit = nearestMarkHit(
     marks,
     blocks,
@@ -64,13 +109,23 @@ export function findMarkHit(
     {
       radiusPx: HIT_RADIUS_PX,
       regionKeys: regionData.keys(),
-      candidates: (data, m, { bpMin, bpMax, valueMin, valueMax }) =>
-        data.layers[marks[m]!.markIndex]?.flatbush?.search(
-          bpMin,
-          valueMin,
-          bpMax,
-          valueMax,
-        ),
+      candidates: (data, m, { bpMin, bpMax, valueMin, valueMax }) => {
+        const mark = marks[m]!
+        const layer = data.layers[mark.markIndex]
+        if (!layer) {
+          return undefined
+        }
+        if (mark.hitBy === 'rows') {
+          const index = rowIndexOf(layer)
+          nearRows ??= rowKeysNear(mouseY, state, HIT_RADIUS_PX)
+          const out: number[] = []
+          for (const key of nearRows) {
+            spansInRow(index, layer.x, layer.x2, key, bpMin, bpMax, out)
+          }
+          return out
+        }
+        return layer.flatbush?.search(bpMin, valueMin, bpMax, valueMax)
+      },
     },
   )
   if (!hit) {

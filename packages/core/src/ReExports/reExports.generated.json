@@ -5025,9 +5025,11 @@
         "recordPath",
         "rowColor",
         "rowSlot",
+        "rowSpanIndex",
         "ruleMark",
         "shiftInk",
         "spanMark",
+        "spansInRow",
         "thresholdBandOf",
         "valueWindow",
         "withPassId"
