@@ -6,6 +6,7 @@ import { render, screen } from '@testing-library/react'
 
 import MarkTooltip from './components/MarkTooltip.tsx'
 import { findMarkHit } from './findMarkHit.ts'
+import { listingNamesRows } from './rowTable.ts'
 import {
   REGION,
   createTestEnvironment,
@@ -352,4 +353,16 @@ test('rows beside a facet bind no table, and the facet offsets its rows', () => 
       .filter(c => c.args[4] === 'rowTable')
       .map(c => c.args.slice(2)),
   ).toEqual([[256, 1, 'rowTable']])
+})
+
+test('a listing names the rows on its field, or on the key a flatten wrote over it', () => {
+  const flat = [{ type: 'flatten', field: 'alignments', key: 'species' }]
+  expect(listingNamesRows('source', 'source', [])).toBe(true)
+  expect(listingNamesRows('species', 'alignments', flat)).toBe(true)
+  expect(listingNamesRows('species', 'alignments', [])).toBe(false)
+  expect(listingNamesRows('seq', 'alignments', flat)).toBe(false)
+  expect(listingNamesRows('alignments', 'alignments', flat)).toBe(true)
+  expect(
+    listingNamesRows('i', 'subfeatures', [{ type: 'flatten', key: 'i' }]),
+  ).toBe(true)
 })

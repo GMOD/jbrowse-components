@@ -180,8 +180,10 @@ const suite: TestSuite = {
     // A MAF block is one feature with an `alignments` record per species; a
     // flatten with `key` fans it out into a row each (ADR-186), and a span
     // coloured by `chr` is the MAF display's colour-by-source-chromosome.
+    // The adapter lists the species in tree order with the guide tree
+    // beside them (ADR-189).
     lgvSnapshotTest({
-      name: 'a MAF fanned out into a row per species, each span coloured by its source chromosome',
+      name: 'a MAF fanned out into a row per species in tree order, each span coloured by its source chromosome',
       snapshot: 'mark-maf-species-rows',
       loc: 'ctgA:1-2000',
       tracks: ['marks_maf'],

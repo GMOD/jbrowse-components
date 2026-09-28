@@ -128,6 +128,7 @@ import {
   drawnKeysOf,
   drawnRegion,
   keyRegion,
+  listingNamesRows,
   markRowTable,
 } from './rowTable.ts'
 import { stepChannels } from './stepChannels.ts'
@@ -675,12 +676,39 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The adapter's row listing where it names the rows drawn: its field
+         * is `rows.field`, or the key a `flatten` in the shared steps wrote
+         * over its field. Undefined for an adapter that lists none, one that
+         * lists another field, and until the current adapter config's
+         * listing lands.
+         */
+        get rowListing(): RowSourceListing | undefined {
+          const listing = readFor(self, self.sourceListing)
+          return listing &&
+            listingNamesRows(self.rowsField, listing.field, [
+              ...self.conf.transform,
+              ...self.conf.facet.transform,
+            ])
+            ? listing
+            : undefined
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * The sources the adapter lists whatever a region holds, a
-         * multi-BigWig's files; undefined for an adapter that lists none, and
-         * until the current adapter config's listing lands.
+         * multi-BigWig's files or a MAF's species, in the adapter's order.
          */
         get adapterSources(): ListedRowSource[] | undefined {
-          return readFor(self, self.sourceListing)?.sources
+          return self.rowListing?.sources
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the guide tree the adapter lists over
+         * the rows, a MAF's species tree.
+         */
+        get guideTreeNewick(): string | undefined {
+          return self.rowListing?.tree
         },
       }))
       .views(self => {
@@ -692,9 +720,7 @@ export function stateModelFactory(
           }
           const field = categoricalField(self.rowsField)
           const listed = new Map(
-            self.rowsField === 'source'
-              ? self.adapterSources?.map(source => [source.name, source])
-              : undefined,
+            self.adapterSources?.map(source => [source.name, source]),
           )
           const found = new Set<string>()
           for (const region of self.featurePayloads.values()) {
@@ -719,8 +745,8 @@ export function stateModelFactory(
         return {
           /**
            * #getter
-           * `TreeSidebarMixin`'s hook: under `rows: 'source'`, every source the
-           * adapter lists, in its order and with its label and colour, so a
+           * `TreeSidebarMixin`'s hook: every row the adapter lists over the
+           * rows' field, in its order and with its label and colour, so a
            * source with nothing in the loaded regions keeps its row; then the
            * other values the worker split the loaded regions on, in the order
            * the field's sections stack.
@@ -1843,7 +1869,7 @@ export function stateModelFactory(
             name: 'MarkRowSources',
             delay: 0,
             report: { setStatusMessage: () => {} },
-            gate: () => self.drawsRows && self.rowsField === 'source',
+            gate: () => self.drawsRows,
             run: (adapterConfig, ctx) =>
               ctx.callRpc('MarkGetRowSources', { adapterConfig }),
             commit: read => {

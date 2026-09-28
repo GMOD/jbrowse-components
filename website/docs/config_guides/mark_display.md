@@ -574,9 +574,12 @@ A row per species over a MAF is the same `rows`, once a `flatten` has fanned
 each alignment block out. A MAF block is one feature with an `alignments` record
 keyed by species, and `flatten` over a record writes each entry's key to the
 field `key` names, so `rows: "species"` finds a row per species in the features
-themselves. Each row keeps its block's reference span and carries the species'
-`chr`, `srcStart`, `strand`, `srcSize` and `seq`; a span coloured by `chr` is
-the MAF display's colour by source chromosome:
+themselves. The adapter lists its species too, so every species has a row
+whether or not the loaded regions align it, in the guide tree's order with the
+tree drawn beside the rows, as on the MAF display. Each row keeps its block's
+reference span and carries the species' `chr`, `srcStart`, `strand`, `srcSize`
+and `seq`; a span coloured by `chr` is the MAF display's colour by source
+chromosome:
 
 ```json addtrack
 {

@@ -2,6 +2,7 @@ import { HIDDEN_ROW, buildRowTable } from '@jbrowse/render-core/marks'
 
 import { drawnScales } from './drawnScales.ts'
 import { sectionsOn } from './facet.ts'
+import { DEFAULT_FLATTEN_FIELD } from './markVocabulary.ts'
 
 import type { MarkRegionData } from './markList.ts'
 import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
@@ -89,4 +90,26 @@ export function drawnRegion(
     ...region,
     layers: region.layers.map(layer => drawnScales(layer, drawnKeys)),
   }
+}
+
+/**
+ * Whether an adapter's row listing over `field` names the rows on
+ * `rowsField`: the rows are on the field itself (`rows: "source"`), or on the
+ * key a `flatten` among `steps` wrote over it (`rows: "species"` behind a
+ * flatten over a MAF block's `alignments`).
+ */
+export function listingNamesRows(
+  rowsField: string,
+  field: string,
+  steps: readonly { type: string; field?: string; key?: string }[],
+) {
+  return (
+    rowsField === field ||
+    steps.some(
+      step =>
+        step.type === 'flatten' &&
+        (step.field || DEFAULT_FLATTEN_FIELD) === field &&
+        step.key === rowsField,
+    )
+  )
 }

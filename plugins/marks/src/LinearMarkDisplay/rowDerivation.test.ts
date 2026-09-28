@@ -285,6 +285,75 @@ async function listingSources(
   return model
 }
 
+const BLOCKS = features([
+  { start: 500, end: 900, score: 4, alignments: { s10: { seq: 'A' }, s2: {} } },
+  { start: 0, end: 400, score: 7, alignments: { mom: { seq: 'G' }, dad: {} } },
+])
+const SPECIES_ROWS = {
+  transform: [{ type: 'flatten', field: 'alignments', key: 'species' }],
+  rows: 'species',
+}
+const SPECIES_TREE = '((s10,mom),(dad,s99));'
+const SPECIES_LISTING = {
+  field: 'alignments',
+  sources: [{ name: 's10' }, { name: 'mom' }, { name: 'dad' }, { name: 's99' }],
+  tree: SPECIES_TREE,
+}
+
+async function listingOf(
+  display: Record<string, unknown>,
+  listing: { field: string; sources: { name: string }[]; tree?: string },
+  feats = FAMILY,
+) {
+  const env = createTestEnvironment({ marks: BARS, ...display })
+  env.mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
+    method === 'MarkGetRowSources'
+      ? Promise.resolve(listing)
+      : new Promise(() => {}),
+  )
+  const { display: model } = env.createDisplay()
+  model.setRpcData(0, workerResult(model, feats), REGION)
+  await waitFor(() => {
+    expect(model.sourceListing?.value).toBe(listing)
+  })
+  return model
+}
+
+test('a listing over the field a flatten keyed the rows by names them, in its order, and its tree draws', async () => {
+  const display = await listingOf(SPECIES_ROWS, SPECIES_LISTING, BLOCKS)
+  expect(display.sources.map(row => row.name)).toEqual([
+    's10',
+    'mom',
+    'dad',
+    's99',
+    's2',
+  ])
+  expect(display.guideTreeNewick).toBe(SPECIES_TREE)
+  expect(display.rowTree).toBe(SPECIES_TREE)
+  display.setRowOrder(['dad', 's99', 's10', 'mom'].map(name => ({ name })))
+  expect(display.rowTree).toBe(SPECIES_TREE)
+  display.setRowOrder(['s10', 'dad', 'mom', 's99'].map(name => ({ name })))
+  expect(display.rowTree).toBeUndefined()
+})
+
+test('a listing over a field the rows are not on, directly or through a flatten, is ignored', async () => {
+  const bySource = await listingOf({ rows: 'source' }, SPECIES_LISTING)
+  expect(bySource.adapterSources).toBeUndefined()
+  expect(bySource.guideTreeNewick).toBeUndefined()
+  expect(bySource.sources.map(row => row.name)).toEqual([
+    'dad',
+    'mom',
+    's2',
+    's10',
+  ])
+  const byOtherKey = await listingOf(
+    { ...SPECIES_ROWS, rows: 'seq' },
+    SPECIES_LISTING,
+    BLOCKS,
+  )
+  expect(byOtherKey.adapterSources).toBeUndefined()
+})
+
 test("under rows: 'source' every source the adapter lists has a row, with its label and colour", async () => {
   const display = await listingSources({ rows: 'source' })
   expect(
