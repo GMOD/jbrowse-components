@@ -668,18 +668,18 @@ out of the viewport. The pick does not draw at all: `pickRibbonAt` walks
 `createSyntenyPicker` the pairwise display uses, so it stabs a 1D flatbush index
 of x-hulls and tests what comes back exactly ([SYNTENY_PICKING.md](SYNTENY_PICKING.md)).
 
-**A gutter paints the strongest ribbon over a pixel, not the sum.** The
-multi-way marks pass `overlapsStack: false`, so the fill leaves pre-blended over
-the band's ground and opaque, under a `min` blend on a light ground and `max` on
-a dark one; Canvas2D and the SVG export paint weakest first. At hg38 chr17:15.2–
-16.4 Mb an inversion's ~150 one-pixel tiles cross near one point, and stacked at
-the default 0.3 alpha that point went black — the "starburst" the 17p figure
-carried. Merging the tiles into a band per record misplaces genes, since a
-liftOver record there is 20 Mb of marmoset against 5.7 Mb of human, and merging
-indels under 3 px or putting every lane at the anchor's scale left the
-starbursts in place. What it costs is multiplicity: two copies on one pixel
-draw like one. The pairwise band keeps stacking, where the sum is the density
-picture.
+**A gutter stacks its ribbons' alpha.** A pixel several ribbons cover is darker
+than one ribbon over it, so overlap density reads as shading, as in the pairwise
+band. At hg38 chr17:15.2–16.4 Mb an inversion's ~150 one-pixel tiles cross near
+one point, and at the default 0.3 alpha that point goes black: a "starburst".
+`overlapsStack: false` on the marks switches a gutter to painting the strongest
+ribbon over a pixel (min blend on a light ground, max on a dark one, weakest
+first on Canvas2D). That mode removes the starbursts and also removes the
+shading: every ribbon draws at one flat grey wherever the others overlap. The
+multi-way marks leave it off. Merging the tiles into a band per record misplaces
+genes, since a liftOver record there is 20 Mb of marmoset against 5.7 Mb of
+human, and merging indels under 3 px or putting every lane at the anchor's scale
+left the starbursts in place.
 
 ### 3.4 Pixels
 

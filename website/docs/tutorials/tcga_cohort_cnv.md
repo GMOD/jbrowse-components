@@ -71,7 +71,7 @@ jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz 
 The segments themselves are a `FeatureTrack` whose
 `LinearMultiRowFeatureDisplay` carries the row and color settings:
 
-```json addtrack config=test_data/tcga_cnv/config.json loc=17:37,500,000-41,500,000
+```json addtrack config=test_data/tcga_cnv/config.json loc=17:36,500,000-42,500,000
 {
   "type": "FeatureTrack",
   "trackId": "tcga_brca_cnv",
@@ -136,7 +136,7 @@ cohort into its copy-number classes there.
 
 Every figure below is in the sorted state.
 
-<Figure caption="chr17:37.5-41.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="chr17:36.5-42.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 At this row count each row is well under a pixel tall, so the saturated colors
 crowd out the neutral ones. The stack maps where the events are; the track below

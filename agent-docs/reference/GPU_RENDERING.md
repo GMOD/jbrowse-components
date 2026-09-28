@@ -577,7 +577,7 @@ negative heights skip on both, a band off either canvas edge draws nothing on
 both, a band taller than the canvas clamps on both — so this is the one row
 where a band mid-height-drag can differ.
 
-Where ribbons do not stack (`overlapsStack: false`, the multi-way gutters), the
+Where ribbons do not stack (`overlapsStack: false`, which no display sets today), the
 GPU keeps the strongest per channel under `min` or `max`, while Canvas2D and the
 SVG export, which have no such blend, paint the pre-blended ribbons weakest
 first so the strongest whole colour lands last. The two agree wherever the

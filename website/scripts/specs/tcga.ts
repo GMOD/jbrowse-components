@@ -426,7 +426,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     ),
   },
 
-  // chr17:37.5-41.5Mb, spanning ERBB2 (39.69-39.73Mb), the HER2 of HER2-positive
+  // chr17:36.5-42.5Mb, spanning ERBB2 (39.69-39.73Mb), the HER2 of HER2-positive
   // breast cancer. Clustering runs on the visible window only, so the cohort
   // sorts into its copy-number classes at this locus rather than genome-wide.
   //
@@ -453,7 +453,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '17:37,500,000-41,500,000',
+          loc: '17:36,500,000-42,500,000',
           // band over ERBB2 itself (ncbiRefSeq chr17:39,688,094-39,728,658), so
           // the amplified column is tied to the gene rather than left for the
           // reader to locate against the ruler
