@@ -177,8 +177,8 @@ test('the reorder is not offered without both halves', async () => {
 }, 40000)
 
 // The reorder orders from the ribbons' own fetch, and moving regions does not
-// refetch them, so a launch that reorders reads the file once
-test('a reordering launch reads the alignments once', async () => {
+// refetch them, so a launch that reorders reads the file once per genome
+test('a reordering launch reads the alignments once per genome', async () => {
   const calls: string[] = []
   const view = await launch(true, session => {
     const call = session.rpcManager.call.bind(session.rpcManager)
@@ -192,8 +192,8 @@ test('a reordering launch reads the alignments once', async () => {
   expect(view.displayedRegions.some(r => r.reversed)).toBe(true)
   // a refetch would follow the reorder by the fetch's 300ms debounce, and
   // nothing observable says it declined, so wait out several of those
-  await expect(when(() => reads() > 1, { timeout: 1500 })).rejects.toThrow(
+  await expect(when(() => reads() > 2, { timeout: 1500 })).rejects.toThrow(
     'WHEN_TIMEOUT',
   )
-  expect(reads()).toBe(1)
+  expect(reads()).toBe(2)
 }, 40000)
