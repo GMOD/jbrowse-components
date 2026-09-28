@@ -9,14 +9,14 @@
       "tags": ["plug-and-play", "alignment"],
       "license": "Apache License 2.0",
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.9.0/dist/jbrowse-plugin-msaview.umd.production.min.js",
-      "integrity": "sha384-SYcWzMw+RRmODVQ3rCNgJaatSdy6OSwbppDiO/5neLaHBhk0eMP3hHgO6LqeYNwe",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.10.0/dist/jbrowse-plugin-msaview.umd.production.min.js",
+      "integrity": "sha384-WAykbbye5/4xhZdWtmnruYS1RH2I5pOz0yUZWZG7lzqj2nIwduc+s/7vVFS+BNNp",
       "versions": [
         {
-          "pluginVersion": "3.9.0",
+          "pluginVersion": "3.10.0",
           "jbrowseRange": "*",
-          "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.9.0/dist/jbrowse-plugin-msaview.umd.production.min.js",
-          "integrity": "sha384-SYcWzMw+RRmODVQ3rCNgJaatSdy6OSwbppDiO/5neLaHBhk0eMP3hHgO6LqeYNwe"
+          "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/3.10.0/dist/jbrowse-plugin-msaview.umd.production.min.js",
+          "integrity": "sha384-WAykbbye5/4xhZdWtmnruYS1RH2I5pOz0yUZWZG7lzqj2nIwduc+s/7vVFS+BNNp"
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.umd.production.min.js"
@@ -197,14 +197,14 @@
       "tags": ["needs-setup", "protein", "structure"],
       "license": "MIT",
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/protein3d-fs8.png",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/0.15.0/dist/jbrowse-plugin-protein3d.umd.production.min.js",
-      "integrity": "sha384-BI0K7iQWCDwVmLz7nX1E/x85GucKrf4fe0vsu/MZ4FU0EZEOEHM4VnU1rspZ8R/9",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/0.15.2/dist/jbrowse-plugin-protein3d.umd.production.min.js",
+      "integrity": "sha384-NpkyUPzVjQaMkCZrLxms6gZzOH61c4BzfTdfzOBXmXvum1DTDJf8HnbF/TiBhyna",
       "versions": [
         {
-          "pluginVersion": "0.15.0",
+          "pluginVersion": "0.15.2",
           "jbrowseRange": "*",
-          "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/0.15.0/dist/jbrowse-plugin-protein3d.umd.production.min.js",
-          "integrity": "sha384-BI0K7iQWCDwVmLz7nX1E/x85GucKrf4fe0vsu/MZ4FU0EZEOEHM4VnU1rspZ8R/9"
+          "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/0.15.2/dist/jbrowse-plugin-protein3d.umd.production.min.js",
+          "integrity": "sha384-NpkyUPzVjQaMkCZrLxms6gZzOH61c4BzfTdfzOBXmXvum1DTDJf8HnbF/TiBhyna"
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/latest/dist/jbrowse-plugin-protein3d.umd.production.min.js"
@@ -217,14 +217,14 @@
       "location": "https://github.com/cmdcolin/jbrowse-plugin-hubs",
       "tags": ["needs-setup", "track-hubs"],
       "license": "MIT",
-      "url": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/1.0.15/dist/jbrowse-plugin-hubs.umd.production.min.js",
-      "integrity": "sha384-EejcKQHiUnODZTDnuFYkTjKR5clC9LlqQj3zz4riO+aJ5j6hbu4Cws4Thux5ZsyU",
+      "url": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/1.0.16/dist/jbrowse-plugin-hubs.umd.production.min.js",
+      "integrity": "sha384-epsq51WRJeQazSXujU86K2cuYCBQYmVL0cKanIU/1/rSlzBZX2mUUdCB4c1EJPLm",
       "versions": [
         {
-          "pluginVersion": "1.0.15",
+          "pluginVersion": "1.0.16",
           "jbrowseRange": "*",
-          "url": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/1.0.15/dist/jbrowse-plugin-hubs.umd.production.min.js",
-          "integrity": "sha384-EejcKQHiUnODZTDnuFYkTjKR5clC9LlqQj3zz4riO+aJ5j6hbu4Cws4Thux5ZsyU"
+          "url": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/1.0.16/dist/jbrowse-plugin-hubs.umd.production.min.js",
+          "integrity": "sha384-epsq51WRJeQazSXujU86K2cuYCBQYmVL0cKanIU/1/rSlzBZX2mUUdCB4c1EJPLm"
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/@cmdcolin/jbrowse-plugin-hubs/latest/dist/jbrowse-plugin-hubs.umd.production.min.js"
@@ -276,6 +276,44 @@
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-tview/latest/dist/jbrowse-plugin-tview.umd.production.min.js"
+    },
+    {
+      "name": "GraphGenomeView",
+      "packageName": "jbrowse-plugin-graphgenomeviewer",
+      "authors": ["Colin Diesh"],
+      "description": "Graph genome (pangenome) view: rGFA reference-anchored layouts, the Bandage force-directed engine, and haplotype lanes read from a gbz-base database",
+      "location": "https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer",
+      "tags": ["bring-your-own-data", "pangenome"],
+      "license": "GPL-3.0-or-later",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/graphgenomeview.png",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/4.0.19/dist/jbrowse-plugin-graphgenomeviewer.esm.js",
+      "versions": [
+        {
+          "pluginVersion": "4.0.19",
+          "jbrowseRange": ">=5.0.0",
+          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/4.0.19/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
+        }
+      ],
+      "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
+    },
+    {
+      "name": "TandemRepeat",
+      "packageName": "jbrowse-plugin-tandem-repeat",
+      "authors": ["Colin Diesh"],
+      "description": "A tandem repeat's alleles, one bar per haplotype with each copy coloured by its repeat unit, from VCF 4.5 <CNV:TR> records",
+      "location": "https://github.com/GMOD/jbrowse-plugin-tandem-repeat",
+      "tags": ["bring-your-own-data", "variants", "view"],
+      "license": "MIT",
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/tandemrepeat-fs8.png",
+      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-tandem-repeat/0.1.1/dist/jbrowse-plugin-tandem-repeat.esm.js",
+      "versions": [
+        {
+          "pluginVersion": "0.1.1",
+          "jbrowseRange": ">=5.0.0",
+          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-tandem-repeat/0.1.1/dist/jbrowse-plugin-tandem-repeat.esm.js"
+        }
+      ],
+      "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-tandem-repeat/latest/dist/jbrowse-plugin-tandem-repeat.esm.js"
     }
   ]
 }

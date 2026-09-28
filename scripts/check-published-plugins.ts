@@ -87,7 +87,13 @@ interface StorePlugin {
   packageName?: string
   url?: string
   umdUrl?: string
-  versions?: { pluginVersion?: string; jbrowseRange?: string; url?: string }[]
+  esmUrl?: string
+  versions?: {
+    pluginVersion?: string
+    jbrowseRange?: string
+    url?: string
+    esmUrl?: string
+  }[]
 }
 
 const read = (f: string) =>
@@ -206,6 +212,34 @@ function evaluateInWorkerRealm(
   }
 }
 
+// An ES module plugin's entry and every chunk it reaches, joined: esbuild's
+// code splitting puts each host lookup in whichever chunk reads it, and the
+// entry alone would hide the view a menu item lazy-loads.
+async function esmSource(url: string) {
+  const seen = new Set<string>()
+  const texts: string[] = []
+  const queue = [url]
+  while (queue.length > 0) {
+    const next = queue.pop()!
+    if (seen.has(next)) {
+      continue
+    }
+    seen.add(next)
+    const r = await fetch(next)
+    if (!r.ok) {
+      throw new Error(`HTTP ${r.status} fetching ${next}`)
+    }
+    const text = await r.text()
+    texts.push(text)
+    for (const m of text.matchAll(
+      /(?:\bfrom|\bimport\s*\(?)\s*["'](\.{1,2}\/[^"']+)["']/g,
+    )) {
+      queue.push(new URL(m[1]!, next).href)
+    }
+  }
+  return texts.join('\n')
+}
+
 const removed = removedNames()
 const served = new Set(reExportsList)
 const worker = await workerExports()
@@ -223,7 +257,8 @@ const report: {
 
 for (const p of plugins) {
   const url = p.url ?? p.umdUrl ?? p.versions?.at(-1)?.url
-  if (!url) {
+  const esmUrl = p.esmUrl ?? p.versions?.at(-1)?.esmUrl
+  if (!url && !esmUrl) {
     report.push({
       plugin: p.name,
       ranges: [],
@@ -231,16 +266,30 @@ for (const p of plugins) {
     })
     continue
   }
-  const r = await fetch(url)
-  if (!r.ok) {
-    report.push({
-      plugin: p.name,
-      ranges: [],
-      breaks: [`HTTP ${r.status} fetching bundle`],
-    })
-    continue
+  let src: string
+  if (url) {
+    const r = await fetch(url)
+    if (!r.ok) {
+      report.push({
+        plugin: p.name,
+        ranges: [],
+        breaks: [`HTTP ${r.status} fetching bundle`],
+      })
+      continue
+    }
+    src = await r.text()
+  } else {
+    try {
+      src = await esmSource(esmUrl!)
+    } catch (e) {
+      report.push({
+        plugin: p.name,
+        ranges: [],
+        breaks: [e instanceof Error ? e.message : String(e)],
+      })
+      continue
+    }
   }
-  const src = await r.text()
   const breaks: string[] = []
 
   // a module the host does not serve at all: the lookup throws naming it, so
@@ -261,7 +310,9 @@ for (const p of plugins) {
       }
     }
   }
-  const evalError = evaluateInWorkerRealm(src, worker)
+  // A UMD bundle is what the worker's importScripts runs; an ES module is
+  // imported instead, which this script realm cannot do, so only its text is read
+  const evalError = url ? evaluateInWorkerRealm(src, worker) : undefined
   if (evalError) {
     breaks.push(evalError)
   }

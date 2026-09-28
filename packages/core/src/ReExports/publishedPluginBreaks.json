@@ -16,6 +16,10 @@
     "breaks": []
   },
   {
+    "plugin": "GraphGenomeView",
+    "breaks": []
+  },
+  {
     "plugin": "Hubs",
     "breaks": []
   },
@@ -41,6 +45,10 @@
   },
   {
     "plugin": "RefGet",
+    "breaks": []
+  },
+  {
+    "plugin": "TandemRepeat",
     "breaks": []
   },
   {
