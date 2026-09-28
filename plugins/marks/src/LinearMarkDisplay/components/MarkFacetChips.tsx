@@ -1,8 +1,6 @@
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
 import { observer } from 'mobx-react'
 
-import { markRowHeightPx } from '../markList.ts'
-
 import type { MarkDisplayModel } from './markDisplayTypes.ts'
 
 /**
@@ -19,11 +17,11 @@ const MarkFacetChips = observer(function MarkFacetChips({
   model: MarkDisplayModel
   plotHeight: number
 }) {
-  const { sections, rowCount, rows } = model.facetLayout
+  const { sections, rows } = model.facetLayout
   if (rows || sections.length === 0) {
     return null
   }
-  const rowHeight = markRowHeightPx(plotHeight, rowCount)
+  const rowHeight = model.effectiveRowHeight
   const canHide = sections.length > 1
   return (
     <GroupLabelChips

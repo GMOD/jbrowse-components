@@ -14,6 +14,7 @@ import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
+import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import {
   retiredAxisSpellings,
@@ -491,6 +492,20 @@ export function configSchemaFactory() {
         tree: 'show the cluster tree beside the rows',
         rowLabels: 'draw the row value over the left of each row',
       }),
+      ...rowHeightConfigSchemaFields({
+        rowHeight:
+          'per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them',
+      }),
+      /**
+       * #slot rowProportion
+       * The fraction of its row's height a span fills, centred in the row, so
+       * below 1 the rows stand apart. Value marks keep the whole row.
+       */
+      rowProportion: {
+        type: 'number',
+        defaultValue: 1,
+        description: 'fraction of the row height each span fills',
+      },
       /**
        * #slot scales
        * The scales the marks are read through, owned by the display rather

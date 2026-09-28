@@ -12,7 +12,6 @@ import {
 import { rowLabelOffset } from '@jbrowse/wiggle-core'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
-import { markRowHeightPx } from './markList.ts'
 import { TEXT_HALO_PX, TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
 
 import type { MarkDisplayModel } from './components/markDisplayTypes.ts'
@@ -75,8 +74,8 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
   const { model, view, canvasWidth, height, overlays, opts, renderBlocks } =
     props
   const { yTop, plotHeight } = axisPlotBox(height)
-  const { sections, rowCount, rows } = model.facetLayout
-  const rowHeight = markRowHeightPx(plotHeight, rowCount)
+  const { sections, rows } = model.facetLayout
+  const rowHeight = model.effectiveRowHeight
   return (
     <ScorePlotSvgFrame
       {...props}
@@ -121,6 +120,7 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
                 treeSidebarOffset(model),
                 Math.max(-view.offsetPx, 0),
               )}
+              scrollTop={model.scrollTop}
               availableHeight={plotHeight}
             />
           ) : null}
@@ -131,6 +131,8 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             sources={[]}
             rowHeight={model.effectiveRowHeight}
             treeAreaWidth={model.treeAreaWidth}
+            scrollTop={model.scrollTop}
+            availableHeight={plotHeight}
           />
         </g>
       ) : null}

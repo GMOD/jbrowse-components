@@ -1,6 +1,6 @@
 ---
 name: maf-onto-marks
-description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - and the rest stays ranked here, with the identity-through-bin gap the cells step left.
+description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height, and the rest stays ranked here, with the identity-through-bin gap the cells step left.
 ---
 
 # The MAF display onto the mark display
@@ -61,9 +61,14 @@ file pointers to re-read.
    cross-block flank (`rowFlank.ts`) are the other two things the MAF
    painters do that the step does not. `bin: auto`'s 1-2-5 ladder differs
    from MAF's power-of-two `binBp`.
-3. Per-display row geometry: a fixed px `rowHeight` with virtual scroll,
-   `rowProportion`, and per-mark `minWidthPx`/`seamPx`, which `spanMark`
-   already takes and `markList.ts` hardwires.
+3. ~~Per-display row geometry: a fixed px `rowHeight` with virtual scroll,
+   and `rowProportion`.~~ Landed: the mark display composes `RowHeightMixin`,
+   pins a row under `rows` and fits it elsewhere, and scrolls the rows past
+   the plot, the span through its `scrollTop` and the value shapes through
+   `rowOffsetPx`; the `marks_maf_cells_pinned` track and the
+   `mark-maf-rows-pinned` scene show it. Still open: per-mark
+   `minWidthPx`/`seamPx`, which `spanMark` takes and `markList.ts` still
+   hardwires to the display's one `minWidthPx` and a seam of 0.
 4. ~~A row set and guide tree declared by the adapter.~~ Landed, ADR-189:
    `listRowSources` on the adapter, the mark display taking it through the
    flatten's key, the guide tree through the mixin. Still open: the

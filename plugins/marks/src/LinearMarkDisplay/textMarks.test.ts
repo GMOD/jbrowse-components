@@ -77,7 +77,9 @@ const STATE: MarkRenderState = {
   sizeScales: [],
   linkRegions: [],
   valueInsetPx: 0,
-  rowCount: 1,
+  rowHeight: 100,
+  rowProportion: 1,
+  scrollTop: 0,
 }
 
 // The value's px in the one 100 px band, as the marks place it.
@@ -140,7 +142,7 @@ test('a mark naming no y sits in the middle of its row band, whatever a y lane h
         y: Float32Array.from([0]),
       }),
     ],
-    { ...STATE, rowCount: 2 },
+    { ...STATE, rowHeight: 50 },
   )
   // row 1 of two 50 px bands: its middle is 75, and the baseline sits a
   // little under the middle so the glyphs centre on it
@@ -192,7 +194,7 @@ test('labels on different rows do not cull each other', () => {
         { row: Uint32Array.from([0, 1]) },
       ),
     ],
-    { ...STATE, rowCount: 2 },
+    { ...STATE, rowHeight: 50 },
   )
   expect(labels).toHaveLength(2)
 })
@@ -228,7 +230,7 @@ test('a label the plot cannot hold whole is left out, at its sides and at its to
         { row: Uint32Array.from([0, 10, 19]) },
       ),
     ],
-    { ...STATE, rowCount: 20 },
+    { ...STATE, rowHeight: 5 },
   )
   expect(banded.map(l => l.text)).toEqual(['middle'])
 })

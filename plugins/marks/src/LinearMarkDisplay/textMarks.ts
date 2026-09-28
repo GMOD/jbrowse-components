@@ -6,7 +6,7 @@ import { rowColor, rowSlot } from '@jbrowse/render-core/marks'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { pointYPx } from '@jbrowse/render-core/shaders/pointMark'
 
-import { markDrawsAt, markRowHeightPx } from './markList.ts'
+import { markDrawsAt } from './markList.ts'
 
 import type {
   MarkRegionData,
@@ -86,7 +86,7 @@ export function placeTextMarks(
   defaultColor: string,
 ): PlacedText[] {
   const candidates: Candidate[] = []
-  const band = markRowHeightPx(state.canvasHeight, state.rowCount)
+  const band = state.rowHeight
   const [domainMin, domainMax] = state.domainY
   const scaleType = scaleTypeCode(state.scaleTypeY)
   const ascent = font.size * TEXT_BASELINE_RATIO
@@ -121,7 +121,7 @@ export function placeTextMarks(
           continue
         }
         const value = values?.[i]
-        const bandTop = band * slot
+        const bandTop = band * slot - state.scrollTop
         const baseline =
           value !== undefined && Number.isFinite(value)
             ? baselineAt(

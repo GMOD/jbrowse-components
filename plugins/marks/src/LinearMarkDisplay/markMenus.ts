@@ -11,6 +11,7 @@ import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
+  rowHeightMenuItem,
   showRowLabelsMenuItem,
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
@@ -26,6 +27,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { RowHeightPreset } from '@jbrowse/tree-sidebar'
 
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 const MarkRowArrangementDialog = lazy(
@@ -35,8 +37,14 @@ const MarkClusterDialog = lazy(
   () => import('./components/MarkClusterDialog.tsx'),
 )
 
+const ROW_HEIGHT_PRESETS: RowHeightPreset[] = [
+  { label: 'Normal', rowHeight: 15, rowProportion: 0.8 },
+  { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
+]
+
 function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   return [
+    rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
     rowArrangementMenuItem({
       ready: self.editableSources.length > 0,
       onOpen: () => {

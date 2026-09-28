@@ -240,7 +240,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   },
 
   valueWindow(yPx, radiusPx, frame, params) {
-    return params.rowOffsetPx === undefined && params.rowBandPx === undefined
+    return params.rowBandPx === undefined
       ? valueWindow(yPx, radiusPx, frame, params)
       : [-Infinity, Infinity]
   },

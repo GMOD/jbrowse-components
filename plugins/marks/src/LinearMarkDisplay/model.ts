@@ -30,6 +30,7 @@ import {
   liftRetiredFilterSetting,
 } from '@jbrowse/core/util/jexlFilters'
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
+import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -65,6 +66,7 @@ import {
   pointInsetPx,
 } from '@jbrowse/render-core/marks'
 import {
+  RowHeightMixin,
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
@@ -270,6 +272,7 @@ export function stateModelFactory(
           TrackHeightMixin(),
           MultiRegionDisplayMixin(),
           TreeSidebarMixin(),
+          RowHeightMixin(),
         ),
         // Where the byte gate refuses the features, a mark declaring
         // `source: 'density'` draws the adapter's sidecar in the banner's place
@@ -548,6 +551,12 @@ export function stateModelFactory(
          */
         get rowsField(): string {
           return getConf(self, ['rows', 'field'])
+        },
+        /**
+         * #getter
+         */
+        get rowProportion(): number {
+          return getConf(self, 'rowProportion')
         },
       }))
       .views(self => ({
@@ -1053,19 +1062,20 @@ export function stateModelFactory(
           const { minimalTicks } = self
           const height = self.height
           const pointInset = this.valueInsetPx
-          // One band per row where the marks stand in rows, the scale ruling
-          // each on its own the way the multi-wiggle display's does; the whole
-          // plot box otherwise.
-          const { rowCount, effectiveRowHeight: rowHeight } = this
-          const yTop = this.rowsTopOffset
+          // One band per row where the marks stand in rows or a pinned
+          // `rowHeight` sizes them, the scale ruling each on its own the way
+          // the multi-wiggle display's does; the whole plot box otherwise.
+          const { rowCount } = this
+          const rowHeight = self.effectiveRowHeight
+          const rowsTop = this.rowsTopOffset - self.scrollTop
           const band =
-            rowCount > 1
+            rowCount > 1 || (self.drawsKeyedRows && self.rowHeight > 0)
               ? {
                   height: rowHeight,
                   offset: pointInset,
                   bandTops: Array.from(
                     { length: rowCount },
-                    (_, row) => yTop + row * rowHeight,
+                    (_, row) => rowsTop + row * rowHeight,
                   ),
                 }
               : {
@@ -1142,9 +1152,17 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The px each row is drawn in, the band every shape gets.
+         * `rowCount`, under the name `useRowVirtualScroll`'s shift+wheel
+         * resize divides the plot by.
          */
-        get effectiveRowHeight(): number {
+        get nrow(): number {
+          return this.rowCount
+        },
+        /**
+         * #getter
+         * `RowHeightMixin`'s hook: the plot split between the rows.
+         */
+        get autoRowHeight(): number {
           return markRowHeightPx(
             axisPlotBox(self.height).plotHeight,
             this.rowCount,
@@ -1268,7 +1286,9 @@ export function stateModelFactory(
             sizeScales: this.sizeScales,
             linkRegions: this.linkRegions,
             valueInsetPx: this.valueInsetPx,
-            rowCount: this.rowCount,
+            rowHeight: self.effectiveRowHeight,
+            rowProportion: self.rowProportion,
+            scrollTop: self.scrollTop,
             rowTable: self.rowTable,
           }))
         },
@@ -1504,6 +1524,55 @@ export function stateModelFactory(
                   })
                 : undefined,
           )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The px each row is drawn in, the band every shape gets:
+         * `RowHeightMixin`'s under `rows`, pinned or fit. Elsewhere the bands
+         * fit the plot whatever `rowHeight` holds, since a facet's rows and
+         * the density sidecar's one band have no scroll to reach past the
+         * plot's foot.
+         */
+        get effectiveRowHeight(): number {
+          return resolveRowHeight(
+            self.drawsKeyedRows ? self.rowHeight : 0,
+            self.autoRowHeight,
+          )
+        },
+        /**
+         * #getter
+         * `TrackHeightMixin`'s hook: the rows under `rows`, taller than the
+         * plot wherever a pinned `rowHeight` asks for more than it holds.
+         */
+        get scrollContentHeight(): number {
+          return self.drawsKeyedRows
+            ? self.rowCount * self.effectiveRowHeight
+            : 0
+        },
+        /**
+         * #getter
+         * `TrackHeightMixin`'s hook: the plot the rows scroll behind.
+         */
+        get scrollViewportHeight(): number {
+          return axisPlotBox(self.height).plotHeight
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         */
+        setRowProportion(n: number) {
+          setConf(self, 'rowProportion', n)
+        },
+        /**
+         * #action
+         * Fit the rows to the plot. The `height` getter is the slot itself,
+         * so nothing needs seeding on the way in.
+         */
+        setFitToHeight() {
+          setConf(self, 'rowHeight', 0)
         },
       }))
       .views(self => ({

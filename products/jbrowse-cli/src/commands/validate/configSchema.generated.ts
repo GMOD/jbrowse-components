@@ -8444,6 +8444,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 80
         },
+        "rowHeight": {
+          "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
+          "type": "number",
+          "default": 0
+        },
+        "rowProportion": {
+          "description": "fraction of the row height each span fills.",
+          "type": "number",
+          "default": 1
+        },
         "scales": {
           "$ref": "#/$defs/Scales3"
         },
@@ -8579,6 +8589,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
           "type": "number",
           "default": 80
+        },
+        "rowHeight": {
+          "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
+          "type": "number",
+          "default": 0
+        },
+        "rowProportion": {
+          "description": "fraction of the row height each span fills.",
+          "type": "number",
+          "default": 1
         },
         "scales": {
           "$ref": "#/$defs/Scales3"
@@ -9264,10 +9284,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "rowHeight": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+                }
+              ]
             },
             "rowProportion": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowProportion"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
+                }
+              ]
             },
             "showRowSeparators": {
               "anyOf": [
@@ -9799,6 +9839,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
             },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+            },
+            "rowProportion": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
+            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
@@ -10262,7 +10308,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/lineZoneHeight"
             },
             "rowHeight": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowHeight"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+                }
+              ]
             },
             "showTree": {
               "anyOf": [
@@ -10362,6 +10415,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "rowProportion": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
             },
             "scales": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
@@ -10804,6 +10860,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+            },
+            "rowProportion": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
+            },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
@@ -11097,6 +11159,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+            },
+            "rowProportion": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
@@ -11432,10 +11500,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/mouseover"
             },
             "rowHeight": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
+                }
+              ]
             },
             "rowProportion": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowProportion"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowProportion"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
+                }
+              ]
             },
             "showAllLetters": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAllLetters"
@@ -12233,6 +12315,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/treeAreaWidth"
+            },
+            "rowHeight": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
+            },
+            "rowProportion": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowProportion"
             },
             "scales": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"

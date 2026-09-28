@@ -116,8 +116,12 @@ export interface MarkRenderState extends MarkFrame {
   linkRegions: readonly LinkRegion[]
   /** The px the y scale stands in from both ends of its band, the axis's own. */
   valueInsetPx: number
-  /** The bands the plot is split into: the facet's, or the highest `row` any loaded layer carries plus one. */
-  rowCount: number
+  /** The px each row band is drawn in, the display's `effectiveRowHeight`. */
+  rowHeight: number
+  /** The fraction of its band a span fills. */
+  rowProportion: number
+  /** The px the rows are scrolled up by, 0 wherever they fit the plot. */
+  scrollTop: number
   /** What each `row` key draws on under `rows`; absent, `row` is the band. */
   rowTable?: RowTable
 }
@@ -185,11 +189,6 @@ export function rowValuesAt(
   return values
 }
 
-/**
- * The px each row band gets: the plot split by the row count, in whole px
- * while every row has one, and a fraction of one past that, so the rows
- * squash to fit the plot rather than run off its foot.
- */
 /** The highest `row` any visible layer carries, 0 where none packs. */
 export function highestRow(
   layers: readonly StoredLayer[],
@@ -208,6 +207,11 @@ export function highestRow(
   return highest
 }
 
+/**
+ * The px each row band gets when the rows fit the plot: the plot split by the
+ * row count, in whole px while every row has one, and a fraction of one past
+ * that, so the rows squash to fit the plot rather than run off its foot.
+ */
 export function markRowHeightPx(canvasHeight: number, rowCount: number) {
   return rowCount > canvasHeight
     ? canvasHeight / rowCount
@@ -282,7 +286,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           origin: s.origin,
           minWidthPx: s.minWidthPx,
           seamPx: CANVAS_SEAM_PX,
-          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowHeight: s.rowHeight,
+          rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({
@@ -303,7 +308,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           colorScale: s.colorScales[i],
           diameterPx: s.markSizes[i]!,
           insetPx: s.valueInsetPx,
-          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowHeight: s.rowHeight,
+          rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({
@@ -325,7 +331,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           sizePx: s.markSizes[i]!,
           minWidthPx: s.minWidthPx,
           insetPx: s.valueInsetPx,
-          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowHeight: s.rowHeight,
+          rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({
@@ -349,7 +356,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           colorScale: s.colorScales[i],
           origin: s.origin,
           lineWidth: s.markSizes[i]!,
-          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowHeight: s.rowHeight,
+          rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({
@@ -365,11 +373,11 @@ function shapeMark(entry: MarkEntry, i: number) {
           withLanes(d.layers[i], MARK_VALUE_LANES.span),
         params: (s: MarkRenderState) => ({
           colorScale: s.colorScales[i],
-          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
-          rowProportion: 1,
+          rowHeight: s.rowHeight,
+          rowProportion: s.rowProportion,
           minWidthPx: s.minWidthPx,
           seamPx: 0,
-          scrollTop: 0,
+          scrollTop: s.scrollTop,
           rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({
@@ -394,7 +402,8 @@ function shapeMark(entry: MarkEntry, i: number) {
           sizePx: s.markSizes[i]!,
           sizeScale: s.sizeScales[i],
           insetPx: s.valueInsetPx,
-          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowHeight: s.rowHeight,
+          rowOffsetPx: -s.scrollTop,
           rowTable: s.rowTable,
         }),
         textures: (s: MarkRenderState) => ({

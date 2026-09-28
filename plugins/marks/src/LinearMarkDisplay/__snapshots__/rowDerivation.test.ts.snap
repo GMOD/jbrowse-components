@@ -150,7 +150,7 @@ exports[`a facet domain leads the bands and the key 1`] = `
       },
     ],
   ],
-  "renderRowCount": 4,
+  "renderRowHeight": 35,
   "request": {
     "field": "source",
   },
@@ -291,7 +291,7 @@ exports[`bars faceted by source draw a band per source under its chip 1`] = `
       },
     ],
   ],
-  "renderRowCount": 4,
+  "renderRowHeight": 35,
   "request": {
     "field": "source",
   },

@@ -47,7 +47,12 @@ export interface MarkDisplayModel
   drawsKeyedRows: boolean
   sources: RowSource[]
   effectiveRowHeight: number
+  nrow: number
   rowsTopOffset: number
+  scrollTop: number
+  scrollableHeight: number
+  scrollViewportHeight: number
+  setRowHeight: (n: number) => void
   showRowLabels: boolean
   rowTreeProvenance?: ClusterProvenance
   hiddenGroups: { size: number }

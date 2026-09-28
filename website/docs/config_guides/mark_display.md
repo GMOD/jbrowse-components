@@ -562,6 +562,14 @@ order too — `{ "field": "source", "domain": ["tumor", "normal"] }` — and a
 reorder, a clustering run or a clade off the tree is written there, so undo,
 **Reset row order** and a share link all reach it.
 
+The rows divide the plot between them by default, so every row shows.
+`"rowHeight": 20` pins each row at 20 px instead, and the rows that do not fit
+scroll: a wheel over the rows or the scrollbar at the right reaches them, and
+shift+wheel resizes them. `0`, the default, fits them to the plot again, which
+is what **Row height → Squeeze to fit view** writes. The menu's Normal and
+Compact presets also set `rowProportion`, the fraction of its row a span fills,
+1 by default, so below it the rows stand apart.
+
 `facet` and `rows` both split the features on a field, and differ in what a
 value gets: a facet section is as deep as its packing and wears a chip, where a
 row is one row. Beside a facet the facet draws: on the same field that is the

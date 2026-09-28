@@ -84,7 +84,9 @@ const state: MarkRenderState = {
   sizeScales: [],
   linkRegions: [],
   valueInsetPx: pointInsetPx(4),
-  rowCount: 1,
+  rowHeight: 400,
+  rowProportion: 1,
+  scrollTop: 0,
 }
 
 const block = {
@@ -202,7 +204,7 @@ test('a layer without the lanes its type reads packs nothing', () => {
   expect(span!.pass.pack(withRow).byteLength).toBeGreaterThan(0)
 })
 
-test('a bar and a point take the row lane, each band the plot split by rowCount', () => {
+test('a bar and a point take the row lane, each band `rowHeight` px', () => {
   const [bar, point] = buildMarkList(entries('bar', 'point'))
   const hal = new MockHal([bar!.pass, point!.pass])
   const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
@@ -219,7 +221,7 @@ test('a bar and a point take the row lane, each band the plot split by rowCount'
       }),
     ],
   }
-  const stacked = { ...state, rowCount: 2 }
+  const stacked = { ...state, rowHeight: 200 }
   bar!.drawRegion(
     hal,
     new ArrayBuffer(bar!.pass.uniformByteSize),
@@ -263,7 +265,7 @@ test('a bar and a point take the row lane, each band the plot split by rowCount'
   ).toBe(state.canvasHeight)
 })
 
-test('a span mark stacks on the row lane, the bands dividing the plot by rowCount', () => {
+test('a span mark stacks on the row lane, each band `rowHeight` px', () => {
   const [mark] = buildMarkList(entries('span'))
   const hal = new MockHal([mark!.pass])
   const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)
@@ -279,7 +281,7 @@ test('a span mark stacks on the row lane, the bands dividing the plot by rowCoun
       }),
     ],
   }
-  const stacked = { ...state, rowCount: 2 }
+  const stacked = { ...state, rowHeight: 200 }
   mark!.drawRegion(hal, scratch, block, clip, data, stacked, 0)
   expect(
     hal.getLastUniformsF32()![spanShader.UNIFORM_OFFSET_F32.rowHeight],
@@ -487,7 +489,7 @@ describe('findMarkHit', () => {
   test('a row lane bands the plot, and each band is hovered on its own scale', () => {
     // two 200 px bands: the bar on row 0 grows from its origin at y=200 up to
     // y=100, and the point on row 1 sits at y=242
-    const stacked = { ...state, rowCount: 2 }
+    const stacked = { ...state, rowHeight: 200 }
     const banded = new Map<number, MarkRegionData>([
       [
         0,

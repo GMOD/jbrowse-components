@@ -32,8 +32,8 @@ The slot and the three members over it are **one mixin**, not a per-display
 spelling: `rowHeightConfigSchemaFields()` and `RowHeightMixin()`, both in
 `packages/tree-sidebar/src/rowHeight/` beside the menu and dialog that read
 them. A display composes both halves or neither. What it still owes the mixin is
-`autoRowHeight`; what it may still override is `effectiveRowHeight`, and one
-display does (below).
+`autoRowHeight`; what it may still override is `effectiveRowHeight`, and two
+displays do (below).
 
 The menu row and the "Custom..." dialog are **shared**, not per display:
 `packages/tree-sidebar/src/rowHeight/` holds `rowHeightMenuItem(model, presets)`
@@ -68,7 +68,7 @@ rather than one they compose.
 
 Displays implementing this: `variants/MultiSampleVariantBaseModel` (both the
 regular and matrix multi-sample variant displays), `maf/LinearMafDisplay`,
-`canvas/LinearMultiRowFeatureDisplay`. `wiggle/LinearWiggleDisplay` is
+`canvas/LinearMultiRowFeatureDisplay`, `marks/LinearMarkDisplay`. `wiggle/LinearWiggleDisplay` is
 always-fit — it has no fixed-height setting and therefore no `rowHeight`
 sentinel — but exposes `effectiveRowHeight` under the same name.
 `alignments/LinearAlignmentsDisplay`'s `rowHeight` is a per-read pitch, an
@@ -135,13 +135,17 @@ height, and `setHeight` re-fixes it at `newHeight / nrow` deliberately. Adopting
 rule above would mean giving canvas a scroll viewport, which is a different
 change.
 
-The same structure is why canvas is the one display overriding
-`RowHeightMixin`'s `effectiveRowHeight`: nothing downstream bounds a stack that
-sizes its own canvas, so the `maxCanvasHeight / nrow` cap has to land on the
-resolved row height. The mixin's `resolveRowHeight` call stays inside the
-override.
+The same structure is why canvas overrides `RowHeightMixin`'s
+`effectiveRowHeight`: nothing downstream bounds a stack that sizes its own
+canvas, so the `maxCanvasHeight / nrow` cap has to land on the resolved row
+height. The mixin's `resolveRowHeight` call stays inside the override.
 
-### The rows viewport has three names
+The mark display overrides it for a different reason: its bands are rows only
+under `rows`. A facet's rows and the density sidecar's single band have no
+scroll to reach past the plot, so there the resolved height is the fit
+whatever `rowHeight` holds.
+
+### The rows viewport has a name per display
 
 `autoRowHeight` divides the height actually available to rows, and each display
 subtracts different chrome to get it:
@@ -151,6 +155,8 @@ subtracts different chrome to get it:
   bands, bounded by `maxRowsHeight`
 - variants — `availableHeight`, `height - lineZoneHeight` (the matrix display's
   connector zone)
+- marks — `scrollViewportHeight`, the plot box `axisPlotBox(height)` leaves
+  inside the axis insets
 
 These are genuinely different quantities, so they keep separate names, and
 `autoRowHeight` is exactly the member each display still owes the mixin.

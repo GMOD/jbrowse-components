@@ -215,6 +215,14 @@ describe('valueWindow', () => {
     expect(rounded(valueWindow(55, 3, banded, rows))).toEqual([84, 96])
   })
 
+  test('a scroll moves every band up by its offset, and the rows below the plot come into reach', () => {
+    const scrolled = { ...rows, rowOffsetPx: -25 }
+    expect(rounded(valueWindow(0, 8, banded, scrolled))).toEqual([34, 66])
+    expect(rounded(valueWindow(50, 8, banded, scrolled))).toEqual([34, 66])
+    expect(rounded(valueWindow(140, 8, banded, scrolled))).toEqual([54, 86])
+    expect(valueWindow(25, 8, banded, scrolled)).toEqual([-Infinity, Infinity])
+  })
+
   test('a bar opens away from its origin on the cursor side', () => {
     expect(valueWindow(20, 5, frame, { domain: [0, 10], origin: 0 })).toEqual([
       7.5,

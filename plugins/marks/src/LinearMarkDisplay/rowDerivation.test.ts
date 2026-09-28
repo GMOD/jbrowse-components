@@ -64,7 +64,7 @@ function drawn(display: LinearMarkDisplayModel) {
   return {
     request: display.rpcProps().facet,
     rowCount: display.rowCount,
-    renderRowCount: display.renderState.rowCount,
+    renderRowHeight: display.renderState.rowHeight,
     domain: display.domain,
     layers: drawnLayers(display),
     valueScales: display.valueScales.map(

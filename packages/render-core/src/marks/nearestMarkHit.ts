@@ -170,8 +170,9 @@ class ReverseRange implements Iterable<number>, Iterator<number> {
 /**
  * A value-scaled shape's `valueWindow`, read back through `denormalizeScore`
  * inside each `rowHeight` band the radius touches — the whole canvas for a
- * shape with no rows. An end within reach of a band edge opens to infinity,
- * where an out-of-domain value clamps, so a cursor near the seam reaches the
+ * shape with no rows — the bands starting `rowOffsetPx` down, as the shapes
+ * place them. An end within reach of a band edge opens to infinity, where an
+ * out-of-domain value clamps, so a cursor near the seam reaches the
  * neighbouring band too. A point passes its `insetPx`; a bar passes its
  * `origin`, and its window opens away from the origin on the cursor's side.
  */
@@ -188,15 +189,18 @@ export function valueWindow(
   const { domain, insetPx = 0, origin } = scale
   const { valueScaleType, valueSymlogConstant } = valueScaleUniforms(scale)
   const height = scale.rowHeight ?? canvasHeight
+  const offset = scale.rowOffsetPx ?? 0
   const inset = Math.min(insetPx, height / 2)
-  const bands = height > 0 ? Math.ceil(canvasHeight / height) : 1
+  const bands = height > 0 ? Math.ceil((canvasHeight - offset) / height) : 1
   const bandAt = (y: number) =>
-    bands > 1 ? Math.max(0, Math.min(bands - 1, Math.floor(y / height))) : 0
+    bands > 1
+      ? Math.max(0, Math.min(bands - 1, Math.floor((y - offset) / height)))
+      : 0
   const lastBand = bandAt(yPx + radiusPx)
   let valueMin = Infinity
   let valueMax = -Infinity
   for (let b = bandAt(yPx - radiusPx); b <= lastBand; b++) {
-    const top = b * height
+    const top = offset + b * height
     const valueAt = (y: number) =>
       denormalizeScore(
         1 - (y - top - inset) / (height - 2 * inset),

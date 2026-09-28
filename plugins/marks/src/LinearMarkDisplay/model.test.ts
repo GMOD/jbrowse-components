@@ -1095,7 +1095,9 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
   })
   display.setRpcData(0, result([{ y: [0, 0, 0], row: [0, 2, 1] }]), REGION)
   expect(display.rowCount).toBe(3)
-  expect(display.renderState.rowCount).toBe(3)
+  expect(display.renderState.rowHeight).toBe(
+    Math.floor(axisPlotBox(display.height).plotHeight / 3),
+  )
 })
 
 test('rows deeper than the plot squash into it, and rows that fit keep whole px', () => {
@@ -2210,7 +2212,7 @@ test('bars faceted by a field stand in a band each, the axis ruling every band',
   expect(display.rowCount).toBe(3)
   const { plotHeight, yTop } = axisPlotBox(display.height)
   const rowHeight = Math.floor(plotHeight / 3)
-  expect(display.renderState.rowCount).toBe(3)
+  expect(display.renderState.rowHeight).toBe(rowHeight)
   const [axis] = display.valueScales
   expect(axis).toMatchObject({
     height: rowHeight,
@@ -2581,6 +2583,7 @@ test('moving the facet field drops what was hidden, the keys having meant that f
 test('the chip row names each section at the top of the rows it labels', () => {
   const { display } = facetedEnvironment().createDisplay()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
+  display.setHeight(60 + 2 * YSCALEBAR_LABEL_OFFSET)
   render(createElement(MarkFacetChips, { model: display, plotHeight: 60 }))
   expect(
     screen.getAllByTestId('group-label-text').map(e => e.textContent),

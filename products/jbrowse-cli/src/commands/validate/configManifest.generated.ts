@@ -6333,6 +6333,14 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
+          "name": "rowHeight",
+          "type": "number"
+        },
+        {
+          "name": "rowProportion",
+          "type": "number"
+        },
+        {
           "name": "scales",
           "type": "ScalesConfigurationSchema",
           "subSlots": [
@@ -6810,6 +6818,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "treeAreaWidth",
+          "type": "number"
+        },
+        {
+          "name": "rowHeight",
+          "type": "number"
+        },
+        {
+          "name": "rowProportion",
           "type": "number"
         },
         {
