@@ -51,8 +51,8 @@ transcript's translation.
 [Open the three structures of TP53](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%2C%22colorScheme%22%3A%22mapped-chain%22%7D%5D%7D).
 The link is a session spec naming the gene's locus, its RefSeq transcript
 `NM_000546.6`, and three structures by id. The plugin superposes them with
-TM-align, and **Color → Mapped chain** paints the chain the transcript encodes
-blue and everything else grey.
+TM-align. The **Color** menu is set to Mapped chain, which paints the chain the
+transcript encodes blue and everything else grey.
 
 The arrow beside a structure's header line opens its alignment panel: the
 transcript's translation on the GENOME row, the structure's sequence on the

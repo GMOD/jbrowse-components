@@ -137,8 +137,14 @@ bigWigToBedGraph -chrom=chr5 -start=70049000 -end=70077000 \
 
 T2T-CHM13 is a finished assembly of this chromosome, so a reader might expect
 reads to place better there. UCSC's hg38 to CHM13 liftOver chains do not resolve
-the block to one correspondence: they overlap each other on both sides, and some
-run backwards.
+the block to one correspondence:
+
+```bash
+tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
+  tchr5:69200000-71700000
+```
+
+The chains it returns overlap each other on both sides, and some run backwards.
 
 <Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
 
