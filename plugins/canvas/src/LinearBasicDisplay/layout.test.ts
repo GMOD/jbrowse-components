@@ -951,6 +951,56 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
   expect(rLeft.topPx).not.toBe(rLabel.topPx)
 })
 
+// RBM33 beside AC009403.2 in GENCODE: the neighbour's isoform stack ends a
+// pixel before RBM33 starts and reaches down past RBM33's one row, so the name
+// under that row sat a pixel from the neighbour's exons.
+describe.each([
+  ['forward', new Set<number>(), { startBp: 100, endBp: 199 }],
+  ['flipped', new Set([0]), { startBp: 401, endBp: 500 }],
+])('in a %s region, a name', (_label, reversedRegions, neighbourSpan) => {
+  const laidOut = (neighbourHeight: number) => {
+    const data = makeFeatureData({
+      features: [
+        { featureId: 'neighbour', ...neighbourSpan, height: neighbourHeight },
+        { featureId: 'named', startBp: 200, endBp: 400, height: 10 },
+      ],
+    })
+    data.floatingLabelsData = labelsMap({
+      named: {
+        featureId: 'named',
+        minX: 200,
+        maxX: 400,
+        topY: 0,
+        featureHeight: 10,
+        nameLabel: { text: 'RBM33', relativeY: 0, textWidth: 40 },
+      },
+    })
+    const [neighbour, named] = layout(
+      new Map([[0, data]]),
+      1,
+      true,
+      false,
+      reversedRegions,
+    ).get(0)!.flatbushItems
+    return { neighbour: neighbour!, named: named! }
+  }
+
+  it('sits in no row the neighbour beside it draws in', () => {
+    const { neighbour, named } = laidOut(40)
+    const nameTop = named.topPx + 10
+    const nameBottom = nameTop + LABEL_FONT_SIZE
+    const neighbourBottom = neighbour.topPx + 40
+    expect(nameBottom <= neighbour.topPx || nameTop >= neighbourBottom).toBe(
+      true,
+    )
+  })
+
+  it('still lets the bodies share a row when the neighbour is no taller', () => {
+    const { neighbour, named } = laidOut(10)
+    expect([neighbour.topPx, named.topPx]).toEqual([0, 0])
+  })
+})
+
 describe('gene names claim the height first', () => {
   // EDEN's shape in volvox's gene track at ctgA:1050-9000: a gene sharing its
   // start with two EST alignments, and a remark with the room after them.

@@ -111,3 +111,41 @@ test('a very wide feature still stacks the features it does reach', () => {
   expect(l.addRect('wide', 11_307_000, 11_391_000, 150)).toBe(0)
   expect(l.addRect('under', 11_350_000, 11_351_000, 30)).toBe(150)
 })
+
+test('a lower span keeps its rows clear where the rows above may abut', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
+
+  expect(l.addRect('tall', 0, 100, 30)).toBe(0)
+  // The two top rows may sit flush against the tall rect, and the two under
+  // them reach back over its end, so they must clear it. A hit in the lower
+  // span at row 2 still leaves top 1 to try, where row 2 falls in the top rows.
+  expect(
+    l.addRect('labeled', 101, 200, 40, { top: 20, left: 95, right: 200 }),
+  ).toBe(10)
+})
+
+test('a lower span may be narrower than the rows above it', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
+
+  expect(l.addRect('a', 0, 100, 20, { top: 10, left: 40, right: 60 })).toBe(0)
+  expect(l.addRect('b', 0, 10, 10)).toBe(10)
+})
+
+test('a lower span starts at the first row wholly past its top', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
+
+  expect(l.addRect('beside', 0, 95, 20)).toBe(0)
+  expect(l.addRect('a', 100, 200, 30, { top: 12, left: 90, right: 200 })).toBe(
+    0,
+  )
+})
+
+test('a later rect clears the lower span, not just the rect', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 10 })
+
+  expect(l.addRect('a', 100, 200, 30, { top: 10, left: 90, right: 200 })).toBe(
+    0,
+  )
+  expect(l.addRect('beside', 0, 95, 10)).toBe(0)
+  expect(l.addRect('under', 0, 95, 10)).toBe(30)
+})

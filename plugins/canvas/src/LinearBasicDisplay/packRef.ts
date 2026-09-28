@@ -1,5 +1,9 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
+import {
+  LABEL_LEAD_PX,
+  LABEL_TOP_GAP_PX,
+} from '../RenderFeatureDataRPC/constants.ts'
 import { createMoreIsoformsLabel } from '../RenderFeatureDataRPC/floatingLabels.ts'
 import {
   PILE_RESERVATION_ID,
@@ -59,6 +63,13 @@ interface PackedExtent {
   layoutStartBp: number
   layoutEndBp: number
   height: number
+  labelBand?: LabelBand
+}
+
+interface LabelBand {
+  topPx: number
+  startBp: number
+  endBp: number
 }
 
 interface LabelInfo {
@@ -413,9 +424,38 @@ function decideLabelReservations(
           ? Math.max(span.layoutEndBp, reach.high)
           : span.layoutEndBp,
       height: bodyHeightPx + rowPadding + labelLines * labelFontPx,
+      labelBand:
+        labelLines * labelFontPx > 0
+          ? { topPx: bodyHeightPx, startBp, endBp }
+          : undefined,
     })
   }
   return { packed, droppedLabelIds }
+}
+
+// A name starts flush with its body's edge, the right one in a flipped region,
+// so its rows keep LABEL_LEAD_PX clear there that the body's rows need not.
+// They start where the text does, and the layout counts only the grid rows
+// wholly below that: the row the text starts in also holds the row padding of
+// whatever sits beside the body, and counting it would stop two abutting genes
+// sharing a row.
+function labelRowsSpan(
+  band: LabelBand,
+  geom: FeatureGeometry,
+  leftPx: number,
+  rightPx: number,
+  bpPerPx: number,
+) {
+  const [bodyLeftPx, bodyRightPx] = renderedSpanPx(band, bpPerPx)
+  return {
+    top: band.topPx + LABEL_TOP_GAP_PX,
+    left: geom.hasNonReversed
+      ? Math.min(leftPx, bodyLeftPx - LABEL_LEAD_PX)
+      : leftPx,
+    right: geom.hasReversed
+      ? Math.max(rightPx, bodyRightPx + LABEL_LEAD_PX)
+      : rightPx,
+  }
 }
 
 // Sorts after every real row, so a new feature fills gaps rather than
@@ -529,7 +569,14 @@ export function packPreparedRef(
     // A null top means the stack passed GranularRectLayout's own 10000px
     // `maxHeight`, not the display's slot; `countTruncatedFeatures` owns up
     // to it.
-    const top = layout.addRect(id, leftPx, rightPx, ext.height)
+    const top = layout.addRect(
+      id,
+      leftPx,
+      rightPx,
+      ext.height,
+      ext.labelBand &&
+        labelRowsSpan(ext.labelBand, geom, leftPx, rightPx, bpPerPx),
+    )
     layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
     layoutHeights.set(id, ext.height)
   }

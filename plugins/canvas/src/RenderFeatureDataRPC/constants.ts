@@ -20,6 +20,14 @@ export function renderedTextWidth(textWidth: number, fontSize: number) {
 // between measureText's Helvetica width table and the rendered font.
 export const LABEL_PADDING_PX = 6
 
+// Clear track kept before a label, which starts flush with its feature's edge.
+// Smaller than LABEL_PADDING_PX, which also absorbs width drift that an
+// anchored edge has none of; two labels side by side pay both.
+export const LABEL_LEAD_PX = 3
+
+// From a feature's bottom to the top of its first label line.
+export const LABEL_TOP_GAP_PX = 2
+
 // Enforced by truncating at creation, so the stored textWidth is bounded by
 // construction.
 export const MAX_DESCRIPTION_LABEL_WIDTH_PX = 200

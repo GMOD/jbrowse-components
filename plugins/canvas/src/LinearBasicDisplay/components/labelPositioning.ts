@@ -3,6 +3,7 @@ import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import {
   LABEL_EDGE_GUTTER_PX,
   LABEL_PADDING_PX,
+  LABEL_TOP_GAP_PX,
   renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
 
@@ -15,8 +16,6 @@ import type {
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LabelColors } from './labelColors.ts'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
-
-const LABEL_TOP_GAP_PX = 2
 
 // Quantizing the cull band decouples the label build from per-frame scrolling:
 // the overlay observes a bucket index rather than raw scrollTop, so a scroll tick

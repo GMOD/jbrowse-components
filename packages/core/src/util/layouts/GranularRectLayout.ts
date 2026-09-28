@@ -87,6 +87,10 @@ export default class GranularRectLayout {
   }
 
   /**
+   * `lower` gives the rows lying wholly at or past `lower.top` px below the
+   * rect's top a span of their own, for a label that needs clear track beside
+   * it where the feature body above does not.
+   *
    * @returns top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
    */
@@ -95,6 +99,7 @@ export default class GranularRectLayout {
     left: number,
     right: number,
     height: number,
+    lower?: { top: number; left: number; right: number },
   ): number | null {
     const pitchX = this.pitchX
     const pitchY = this.pitchY
@@ -110,6 +115,7 @@ export default class GranularRectLayout {
     const pLeft = Math.trunc(left / pitchX)
     const pRight = Math.trunc(right / pitchX)
     const pHeight = Math.ceil(height / pitchY)
+    const pLowerTop = lower ? Math.ceil(lower.top / pitchY) : pHeight
 
     const rectangle: Rectangle = {
       l: pLeft,
@@ -117,6 +123,12 @@ export default class GranularRectLayout {
       top: null,
       h: pHeight,
     }
+    const lowerSpan = lower
+      ? {
+          l: Math.trunc(lower.left / pitchX),
+          r: Math.trunc(lower.right / pitchX),
+        }
+      : rectangle
 
     // Allow features to start at any position up to maxHeight
     // Features starting at maxHeight or beyond are filtered out, but features
@@ -133,7 +145,10 @@ export default class GranularRectLayout {
     // between them still spans y, because y < top + pHeight — so nothing between
     // can fit. `top = y` plus the loop's own increment is that jump, and it turns
     // the scan from O(rows * pHeight) into O(rows): without it, a rect pHeight
-    // rows tall re-tests the row that blocked it pHeight times over.
+    // rows tall re-tests the row that blocked it pHeight times over. Moving
+    // the rect down only moves y up within it, so a hit above the lower span
+    // blocks every top to y, and a hit in the lower span blocks just the tops
+    // keeping y there: the jump goes to the first top putting y above it.
     outer: for (; top <= maxTop; top += 1) {
       // Check all rows that this rectangle would occupy
       const maxY = top + pHeight
@@ -149,13 +164,17 @@ export default class GranularRectLayout {
         const len = intervals.length
 
         if (len > 0) {
+          const inLower = y - top >= pLowerTop
+          const l = inLower ? lowerSpan.l : pLeft
+          const r = inLower ? lowerSpan.r : pRight
+          const blockedTop = inLower ? y - pLowerTop : y
           if (len < 40) {
             // Linear scan for small arrays
             for (let i = 0; i < len; i += 2) {
               const start = intervals[i]!
               const end = intervals[i + 1]!
-              if (end > pLeft && start < pRight) {
-                top = y
+              if (end > l && start < r) {
+                top = blockedTop
                 continue outer
               }
             }
@@ -167,7 +186,7 @@ export default class GranularRectLayout {
             while (low < high) {
               const mid = (low + high) >>> 1
               const midIdx = mid << 1
-              if (intervals[midIdx + 1]! <= pLeft) {
+              if (intervals[midIdx + 1]! <= l) {
                 low = mid + 1
               } else {
                 high = mid
@@ -177,8 +196,8 @@ export default class GranularRectLayout {
             const idx = low << 1
             if (idx < len) {
               const start = intervals[idx]!
-              if (start < pRight) {
-                top = y
+              if (start < r) {
+                top = blockedTop
                 continue outer
               }
             }
@@ -198,7 +217,9 @@ export default class GranularRectLayout {
     rectangle.top = top
     const yEnd = top + pHeight
     for (let y = top; y < yEnd; y += 1) {
-      this.getOrCreateRow(y).addRect(rectangle)
+      this.getOrCreateRow(y).addRect(
+        y - top >= pLowerTop ? lowerSpan : rectangle,
+      )
     }
     return top * pitchY
   }
