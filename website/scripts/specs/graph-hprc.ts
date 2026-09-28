@@ -1560,7 +1560,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               trackId: SEGMENTS_TRACK,
               type: 'LinearBasicDisplay',
               showLabels: 'none',
-              heightMode: 'grow',
+              // three rows of segments and the rank key beside them; grown to
+              // the rows alone, the key clipped against the lane's bottom edge
+              height: 110,
             },
           ],
         },
@@ -1570,8 +1572,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // track name the header prints before anything draws.
     readyText: 'C4A',
     readyTimeout: 180000,
-    // 700 left 297 css px of blank under a two-lane view
-    viewportHeight: 404,
+    // 700 left 297 css px of blank under a two-lane view; 404 held the lane
+    // grown to its rows, and the fixed 110 px lane takes 50 more
+    viewportHeight: 454,
   },
   // The five amylase lanes pangenome_hprc_haplotypes chooses, cut from the gbz-base
   // track for those lanes and drawn in walk rows, in the lanes' place: each
