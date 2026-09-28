@@ -2,9 +2,10 @@
 title: 'Pangenome (HPRC): repeat lengths across haplotypes'
 sidebar_label: Pangenome (HPRC, repeat lengths)
 description:
-  Count kringle copies in LPA and measure the ABCA7 VNTR in HPRC haplotypes
-  straight from the graph's walks, then set TRGT's read-based genotypes on the
-  same bars and find the samples where reads and assemblies disagree
+  Count kringle copies in LPA and tell their two repeat types apart, measure the
+  ABCA7 VNTR in HPRC haplotypes straight from the graph's walks, then set TRGT's
+  read-based genotypes on the same bars and find the samples where reads and
+  assemblies disagree
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
@@ -15,7 +16,8 @@ person carries varies. An assembled haplotype spans the whole array, so the
 Human Pangenome Reference Consortium's release 2 graph holds each haplotype's
 repeat at its full length. We read two repeats off it, one bar per haplotype:
 
-- at _LPA_, count copies of the kringle IV type 2 repeat
+- at _LPA_, count copies of the kringle IV type 2 repeat and tell its two repeat
+  types apart
 - at _ABCA7_, measure an intronic VNTR and set PacBio's read-based TRGT
   genotypes on the same bars
 - find the samples where the assemblies and the reads disagree
@@ -35,6 +37,9 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
   config the sessions below open already load;
   [hosting your own graph](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
   loads it into your own JBrowse
+- the TandemRepeat plugin for [Which copy is which](#which-copy-is-which), which
+  the hosted HPRC config also loads; the plugin store lists it for your own
+  JBrowse
 - for your own samples: [TRGT](https://github.com/PacificBiosciences/trgt) and
   `bcftools`
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
@@ -106,6 +111,35 @@ Click the KIV-2 bubble boxed in the bubbles lane. Its details give
 `shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
 routes the rGFA holds there. Every bar in walk rows falls between them, and
 GRCh38's, with no purple, is the shortest of the nine.
+
+## Which copy is which
+
+Walk rows count copies, but they cannot say which copy is which. At KIV-2 each
+extra copy is new nodes rather than a loop back through the reference, and the
+GRCh38 copy the graph threads a copy through is the aligner's pick among
+near-identical sequences. A record that states each haplotype's copies can tell
+them apart.
+
+The hosted config carries one. The **LPA KIV-2 copies by unit, eight HPRC
+haplotypes** track holds a single VCF 4.5 `<CNV:TR>` record at the array: each
+allele lists its runs of one unit and every copy's length, and a phased genotype
+puts each allele on its haplotype. Turn the track on, right-click the record and
+choose **Show repeat copies**. The TandemRepeat plugin, which the hosted config
+loads beside the graph plugin, opens a view with one bar per haplotype on its
+own bp axis, each copy coloured by its unit.
+
+<Figure caption="The KIV-2 record under LPA, and the view its right-click item opens: one bar per haplotype, each copy coloured by its unit. GRCh38 carries six copies, the fourth of unit 2; HG00133 carries 27, all of unit 1. The dashed line marks GRCh38's length." src="/img/pangenome/hprc_kiv2_copies_by_unit.png" />
+
+The 138 copies across the nine arrays form two units: copies of one unit differ
+by under 0.5%, and the two units by about 2.3%. Unit 2 opens five of the eight
+HPRC arrays and sits fourth in GRCh38's. The counts agree with walk rows: 27
+copies in HG00133's 147 kb.
+
+The record came from the same graph cut.
+[`tandem-repeat-vcf.mjs`](https://github.com/GMOD/jbrowse-plugin-tandem-repeat/blob/main/scripts/tandem-repeat-vcf.mjs)
+splits each walk into copies wherever the reference array's first 24 bases
+recur, and groups copies within 1% of each other into a unit. A repeat finder's
+output draws the same way once it is written in those fields.
 
 ## The ABCA7 VNTR
 

@@ -547,7 +547,7 @@ export const hprcVideoFixtures = {
   launchedZoomOutButton: LAUNCHED_ZOOM_OUT,
 }
 
-const ABCA7_CONFIG = encodeURIComponent(
+const HOSTED_HPRC_CONFIG = encodeURIComponent(
   'https://jbrowse.org/demos/hprc/config.json',
 )
 const ABCA7_REPEAT_KEY = 'chr19:1049406-1050096'
@@ -1485,10 +1485,61 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // The KIV-2 record's copies by unit, opened the way a reader opens it: the
+  // record's right-click item, which the TandemRepeat plugin the hosted config
+  // loads adds to a variant track.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_kiv2_copies_by_unit',
+    url: sessionSpec(HOSTED_HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:160,596,000-160,666,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              displayMode: 'compact',
+              height: 40,
+            },
+            {
+              trackId: 'hprc_kiv2_copies',
+              type: 'LinearVariantDisplay',
+              height: 40,
+            },
+          ],
+        },
+      ],
+    }),
+    viewportWidth: 1400,
+    viewportHeight: 640,
+    hideTooltip: true,
+    actions: [
+      { type: 'waitForAppSettled', timeout: 120000 },
+      {
+        type: 'rightclick',
+        anchor: {
+          locus: 'chr6:160,631,000',
+          track: 'hprc_kiv2_copies',
+          fracY: 0.2,
+        },
+      },
+      { type: 'waitForText', text: 'Show repeat copies' },
+      { type: 'click', text: 'Show repeat copies' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="tandem-repeat-view"]',
+      },
+      { type: 'delay', ms: 500 },
+    ],
+  },
   {
     mode: 'url',
     name: 'pangenome/hprc_abca7_repeat_units',
-    url: sessionSpec(ABCA7_CONFIG, {
+    url: sessionSpec(HOSTED_HPRC_CONFIG, {
       sessionTracks: [ABCA7_VNTR_TRACK],
       views: [abca7View()],
     }),
@@ -1502,7 +1553,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/hprc_abca7_disagreements',
-    url: sessionSpec(ABCA7_CONFIG, {
+    url: sessionSpec(HOSTED_HPRC_CONFIG, {
       sessionTracks: [ABCA7_VNTR_TRACK],
       views: [
         abca7View({

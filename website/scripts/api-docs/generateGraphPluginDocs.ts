@@ -19,21 +19,25 @@ interface PluginEntry {
   esmUrl: string
 }
 
-// Both demos declare the plugin, and the docs carry ONE fence for both, so they
-// have to agree. They diverge for a real reason — one demo pinned to a build
-// hash while the other tracks the rolling URL — and that is the case where a
-// single fence stops being true for one of the pages using it.
+const GRAPH_PLUGIN = 'GraphGenomeView'
+
+// Both demos declare the plugin, and the docs carry ONE fence for both, so their
+// entries for it have to agree. They diverge for a real reason — one demo pinned
+// to a build hash while the other tracks the rolling URL — and that is the case
+// where a single fence stops being true for one of the pages using it. Other
+// plugins a demo loads beside it (HPRC's TandemRepeat) are not the fence's.
 export function collectGraphPlugin(): PluginEntry[] {
   const seen = CONFIGS.map(file => {
     const { plugins } = JSON.parse(fs.readFileSync(file, 'utf8')) as {
       plugins?: PluginEntry[]
     }
-    if (!plugins?.length) {
+    const graph = plugins?.filter(p => p.name === GRAPH_PLUGIN)
+    if (!graph?.length) {
       throw new Error(
-        `${file}: no \`plugins\` array, which is where the graph plugin fence in the pangenome docs comes from`,
+        `${file}: no ${GRAPH_PLUGIN} in \`plugins\`, which is where the graph plugin fence in the pangenome docs comes from`,
       )
     }
-    return { file, plugins }
+    return { file, plugins: graph }
   })
 
   const [first, ...rest] = seen
@@ -41,7 +45,7 @@ export function collectGraphPlugin(): PluginEntry[] {
   for (const other of rest) {
     if (JSON.stringify(other.plugins) !== canonical) {
       throw new Error(
-        `${first!.file} and ${other.file} declare different plugins, so no single fence is true for both pages that install from them:\n  ${canonical}\n  ${JSON.stringify(other.plugins)}`,
+        `${first!.file} and ${other.file} declare ${GRAPH_PLUGIN} differently, so no single fence is true for both pages that install from them:\n  ${canonical}\n  ${JSON.stringify(other.plugins)}`,
       )
     }
   }
