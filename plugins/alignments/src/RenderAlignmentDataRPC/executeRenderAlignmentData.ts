@@ -132,7 +132,7 @@ interface GroupContext {
   showCoverage: boolean
   // Which modification coverage the band stacks: modBAM calls over a read-base
   // pileup, or bisulfite's C->T-derived methylation level. Undefined outside the
-  // modification colour modes, and in chain mode.
+  // modification colour modes.
   modCoverage: ModCoverageKind | undefined
   // The region's reference bases, for the junctions' splice motifs. Fetched
   // once for the whole fetch and only when some group carries a skip gap.
@@ -331,8 +331,8 @@ async function buildGroupResult(
 // Single worker entry for both the pileup and chain (linked-reads) displays.
 // The shared spine — fetch, per-read/gap/mismatch arrays, coverage pipeline,
 // result assembly — is identical; `isChain` gates the few divergent steps:
-// chain pre-filters into chains and emits chain metadata; pileup fetches the
-// reference sequence for modification coloring and computes sort-tag values.
+// chain pre-filters into chains and emits chain metadata, and drops the soft
+// clipping and sort-tag values its layout never reads.
 //
 // When `groupBy` is set, the single fetch is partitioned into N ordered groups
 // and the spine runs once per group, returning one WorkerPileupData per group.
@@ -408,7 +408,7 @@ export async function executeRenderAlignmentData({
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
   const inputFeatures = filterChainFeatures(featuresArray, filterBy)
-  if (!isChain && baseLayer?.type === 'bisulfite' && sequenceAdapter) {
+  if (baseLayer?.type === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,
       sessionId,
@@ -482,9 +482,8 @@ export async function executeRenderAlignmentData({
 
   checkAbortSignal(signal)
 
-  // Modification color modes (pileup only) draw mod coverage; chain omits it.
   const modCoverage: ModCoverageKind | undefined =
-    isChain || !baseLayer || !isModificationScheme(baseLayer.type)
+    !baseLayer || !isModificationScheme(baseLayer.type)
       ? undefined
       : baseLayer.type === 'bisulfite'
         ? 'bisulfite'

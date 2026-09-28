@@ -23,6 +23,7 @@ jest.mock('../features/modCoverage/readBaseCounts.ts', () => {
 })
 
 const MODIFICATIONS: BaseLayer = { type: 'modifications' }
+const BISULFITE: BaseLayer = { type: 'bisulfite' }
 
 const region = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 400 }
 
@@ -41,7 +42,11 @@ const spliced = [0, 1].map(
     }),
 )
 
-function run(settings: { showCoverage: boolean; baseLayer?: BaseLayer }) {
+function run(settings: {
+  showCoverage: boolean
+  baseLayer?: BaseLayer
+  linkedReads?: 'off' | 'normal'
+}) {
   jest
     .mocked(fetchFeaturesFromAdapter)
     .mockResolvedValue({ featuresArray: spliced } as unknown as Awaited<
@@ -93,5 +98,25 @@ test.each([
   async (baseLayer, showCoverage, calls) => {
     await run({ baseLayer, showCoverage })
     expect(computeReadBaseCounts).toHaveBeenCalledTimes(calls)
+  },
+)
+
+// Both modification layers stay offered in chain mode (menus/colorBy.ts), so
+// the fetch serves them there too: bisulfite reads the reference its C->T calls
+// are against, and modBAM tallies the read-base pileup its coverage bar divides
+// by. With the band off, the reference has no other reader.
+test.each(['off', 'normal'] as const)(
+  'bisulfite fetches the reference with linkedReads %s',
+  async linkedReads => {
+    await run({ showCoverage: false, baseLayer: BISULFITE, linkedReads })
+    expect(fetchReferenceSequence).toHaveBeenCalledTimes(1)
+  },
+)
+
+test.each(['off', 'normal'] as const)(
+  'the modBAM read-base pileup runs with linkedReads %s',
+  async linkedReads => {
+    await run({ showCoverage: true, baseLayer: MODIFICATIONS, linkedReads })
+    expect(computeReadBaseCounts).toHaveBeenCalledTimes(1)
   },
 )
