@@ -10,6 +10,7 @@ import MafTabixAdapter from './MafTabixAdapter.ts'
 import MafTabixConfigSchema from './configSchema.ts'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Feature } from '@jbrowse/core/util'
 
 const fixture = (name: string) =>
   require.resolve(`../../../../test_data/volvox/${name}`)
@@ -73,4 +74,19 @@ test('a flatten over alignments answers one row per species on the reference spa
   expect(sim.get('srcStart')).toBe(4700)
   expect(new Set(rows.map(r => r.get('species'))).size).toBe(10)
   expect(rows[10]!.id()).toBe(`${blocks[1]!.id()}#volvox`)
+  const cells = runTransforms(rows, [{ type: 'cells' }])
+  const reference = cells.filter(c => c.get('species') === 'volvox')
+  expect(rows_(reference)).toEqual([
+    [0, 100, 'match'],
+    [100, 200, 'match'],
+  ])
+  const simCells = cells.filter(c => c.get('species') === 'simvolvox')
+  expect(simCells.every(c => c.get('start') >= 0 && c.get('end') <= 200)).toBe(
+    true,
+  )
+  expect(simCells.some(c => c.get('state') === 'mismatch')).toBe(true)
 })
+
+function rows_(features: readonly Feature[]) {
+  return features.map(f => [f.get('start'), f.get('end'), f.get('state')])
+}

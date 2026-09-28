@@ -505,6 +505,22 @@ export interface FlattenStep {
 
 /**
  * #api
+ * Replace each aligned row with its cells against the reference: one feature
+ * per run of columns in one `state` — `match`, `mismatch` or `gap` — on the
+ * row's own reference span, a mismatch run carrying its `base` and a match or
+ * mismatch run `match` as 1 or 0. The row's `field` (`seq`) is the aligned
+ * text, and the reference's is the same field on the feature the row was
+ * fanned out of, so a `flatten` over a MAF block's `alignments` stands in
+ * front. A reference gap is no cell, a gap run reaching either end of the row
+ * is no cell, and a feature with no parent answers none.
+ */
+export interface CellsStep {
+  type: 'cells'
+  field?: FieldRef
+}
+
+/**
+ * #api
  * Assign every feature the lowest row on which it overlaps nothing already
  * there — greedy first fit in start order, the packing a pileup is — and
  * write it to the field `as` (`row`). `fields` names the interval read
@@ -544,6 +560,7 @@ export type TransformStep =
   | FilterStep
   | FormulaStep
   | FlattenStep
+  | CellsStep
   | BinStep
   | AggregateStep
   | CoverageStep

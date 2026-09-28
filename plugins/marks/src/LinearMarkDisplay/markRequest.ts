@@ -17,6 +17,7 @@ import { MARK_SPECS, markLanes, plotsValue, readsValue } from './markSpecs.ts'
 import {
   DEFAULT_BIN_AS,
   DEFAULT_BIN_FIELD,
+  DEFAULT_CELLS_FIELD,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FLATTEN_FIELD,
   DEFAULT_FORMULA_AS,
@@ -145,6 +146,7 @@ export function positionSource(
     if (
       step.type === 'coverage' ||
       step.type === 'flatten' ||
+      step.type === 'cells' ||
       (step.type === 'formula' && step.as === field)
     ) {
       return field
@@ -216,6 +218,8 @@ export function stepsOf(
           key: step.key,
           keepEmpty: step.keepEmpty,
         }
+      case 'cells':
+        return { type: 'cells', field: step.field || DEFAULT_CELLS_FIELD }
       case 'pileup':
         return {
           type: 'pileup',

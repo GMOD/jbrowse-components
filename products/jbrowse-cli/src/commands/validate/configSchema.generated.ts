@@ -6433,6 +6433,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MarkTransform.cells": {
+      "title": "MarkTransform.cells",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "cells"
+        },
+        "field": {
+          "description": "aligned text field.",
+          "$ref": "#/$defs/PlainString",
+          "default": "seq"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MarkTransform.pileup": {
       "title": "MarkTransform.pileup",
       "type": "object",
@@ -6494,6 +6513,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "aggregate",
             "coverage",
             "flatten",
+            "cells",
             "pileup",
             "mate"
           ]
@@ -6597,6 +6617,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/MarkTransform.flatten"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "cells"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.cells"
           }
         },
         {

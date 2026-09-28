@@ -11,6 +11,7 @@ import type {
   AggregateOp,
   AggregateStep,
   BinStep,
+  CellsStep,
   CoverageStep,
   FacetSection,
   FacetSpec,
@@ -24,6 +25,7 @@ import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
 export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_BIN_AS: [string, string] = ['start', 'end']
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
+export const DEFAULT_CELLS_FIELD = 'seq'
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
@@ -281,6 +283,98 @@ function flatten(features: readonly Feature[], step: FlattenStep) {
             })
           : flat,
       )
+    }
+  }
+  return out
+}
+
+const DASH = 45
+const SPACE = 32
+const LOWER_BIT = 0x20
+
+// What a row's column is against the reference's: both bases equal ignoring
+// case, the row's base differing, or the row's gap. A reference gap holds no
+// genomic position and is no cell.
+function cellState(refByte: number, rowByte: number) {
+  return rowByte === DASH || rowByte === SPACE
+    ? 'gap'
+    : (refByte | LOWER_BIT) === (rowByte | LOWER_BIT)
+      ? 'match'
+      : 'mismatch'
+}
+
+// The columns carrying the row's own sequence: a gap run reaching either end
+// of the row measures where the block was cut, not the alignment, so it is no
+// cell either.
+function alignedColumns(row: string): [number, number] {
+  let first = 0
+  while (
+    first < row.length &&
+    (row.charCodeAt(first) === DASH || row.charCodeAt(first) === SPACE)
+  ) {
+    first++
+  }
+  let last = row.length - 1
+  while (
+    last > first &&
+    (row.charCodeAt(last) === DASH || row.charCodeAt(last) === SPACE)
+  ) {
+    last--
+  }
+  return [first, last]
+}
+
+function cells(features: readonly Feature[], step: CellsStep) {
+  const { field = DEFAULT_CELLS_FIELD } = step
+  const out: Feature[] = []
+  for (const f of features) {
+    const ref = f.parent?.()?.get(field)
+    const row = f.get(field)
+    if (typeof ref !== 'string' || typeof row !== 'string') {
+      continue
+    }
+    const start = numericValue(f.get('start'))
+    const [first, last] = alignedColumns(row)
+    let pos = start
+    let runStart = -1
+    let runState = ''
+    let runBase = ''
+    let n = 0
+    const emit = (to: number) => {
+      const fields: Record<string, unknown> = {
+        start: runStart,
+        end: to,
+        state: runState,
+      }
+      if (runState === 'mismatch') {
+        fields.base = runBase
+      }
+      if (runState !== 'gap') {
+        fields.match = runState === 'match' ? 1 : 0
+      }
+      out.push(new DerivedFeature(f, fields, `${f.id()}#${n++}`))
+    }
+    for (let col = 0; col < ref.length; col++) {
+      const refByte = ref.charCodeAt(col)
+      if (refByte === DASH) {
+        continue
+      }
+      const rowByte = row.charCodeAt(col)
+      const drawn = col >= first && col <= last && col < row.length
+      const state = drawn ? cellState(refByte, rowByte) : ''
+      const base = state === 'mismatch' ? row[col]! : ''
+      if (state !== runState || base !== runBase) {
+        if (runStart >= 0) {
+          emit(pos)
+        }
+        runStart = state ? pos : -1
+        runState = state
+        runBase = base
+      }
+      pos++
+    }
+    if (runStart >= 0) {
+      emit(pos)
     }
   }
   return out
@@ -835,6 +929,10 @@ export function runTransforms(
       }
       case 'flatten': {
         current = flatten(current, step)
+        break
+      }
+      case 'cells': {
+        current = cells(current, step)
         break
       }
       case 'bin': {

@@ -3,7 +3,9 @@ import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { AUTO_BIN } from './autoBin.ts'
 import {
   AGGREGATE_OPS,
+  CELLS_FIELDS,
   DEFAULT_AGGREGATE_OP,
+  DEFAULT_CELLS_FIELD,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
@@ -257,6 +259,9 @@ export function stepSummary(step: StepSnapshot): string {
     case 'flatten': {
       return `one per ${step.field || 'subfeature'}`
     }
+    case 'cells': {
+      return `cells of ${step.field || DEFAULT_CELLS_FIELD}`
+    }
     case 'mate': {
       return 'other end of each pair'
     }
@@ -287,6 +292,9 @@ export function stepWrittenFields(steps: readonly StepSnapshot[]): string[] {
       }
       case 'flatten': {
         return [step.index, step.key].filter((f): f is string => !!f)
+      }
+      case 'cells': {
+        return [...CELLS_FIELDS]
       }
       default: {
         return []

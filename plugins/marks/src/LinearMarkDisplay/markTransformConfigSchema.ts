@@ -10,6 +10,7 @@ import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
   DEFAULT_BIN_FIELD,
+  DEFAULT_CELLS_FIELD,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FLATTEN_FIELD,
   DEFAULT_FORMULA_AS,
@@ -228,6 +229,23 @@ const flatten = ConfigurationSchema(
   STEP,
 )
 
+const cells = ConfigurationSchema(
+  'cells',
+  {
+    /**
+     * #slot cells.field
+     * The field holding each row's aligned text, gaps as `-`; the reference's
+     * is the same field on the feature the row was fanned out of.
+     */
+    field: {
+      type: 'string',
+      defaultValue: DEFAULT_CELLS_FIELD,
+      description: 'aligned text field',
+    },
+  },
+  STEP,
+)
+
 // One feature per other end a record states, with the mate's locus written
 // beside it, which a `link` mark's unwritten `x2` reads. It has no settings.
 const mate = ConfigurationSchema('mate', {}, STEP)
@@ -281,7 +299,9 @@ const pileup = ConfigurationSchema(
  * genome-aligned bin; `aggregate` folds each group into one feature carrying
  * its summaries; `coverage` replaces the features with runs of how many
  * overlap each stretch; `flatten` fans out an array or a record field;
- * `pileup` writes
+ * `cells` replaces each aligned row with its runs of match, mismatch and gap
+ * against the reference it was fanned out of, with `state`, `base` and
+ * `match` written; `pileup` writes
  * each feature's row in a greedy first-fit packing; `mate` answers one
  * feature per other end a record states, the `mate` a paired adapter fills
  * in (BEDPE, STAR-Fusion) or each VCF `ALT` naming a locus, with
@@ -305,6 +325,7 @@ export const markTransformStep = ConfigurationSchemaUnion('MarkTransform', {
   aggregate,
   coverage,
   flatten,
+  cells,
   pileup,
   mate,
 } satisfies Record<StepSnapshot['type'], AnyConfigurationSchemaType>)

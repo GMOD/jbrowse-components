@@ -1020,7 +1020,7 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
       { mark: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
     ]).createDisplay(),
   ).toThrow(
-    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten, pileup and mate, and names none',
+    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten, cells, pileup and mate, and names none',
   )
   expect(() =>
     createTestEnvironment([

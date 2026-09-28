@@ -609,6 +609,52 @@ the MAF display's colour by source chromosome:
 }
 ```
 
+A `cells` step behind the flatten replaces each species row with its runs of
+columns against the reference: one feature per run in one `state`, `match`,
+`mismatch` or `gap`, a mismatch run carrying its `base`. A span coloured by
+`state` is the MAF display's mismatch view, and a `text` over `base` letters
+each mismatch once the zoom shows a base:
+
+```json addtrack
+{
+  "type": "MafTrack",
+  "trackId": "multiz470way_cells",
+  "name": "Multiz 470-way, cells against the reference",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigMafAdapter",
+    "bigBedLocation": {
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470way.bigMaf"
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "multiz470way_cells-LinearMarkDisplay",
+      "transform": [
+        { "type": "flatten", "field": "alignments", "key": "species" },
+        { "type": "cells" }
+      ],
+      "rows": "species",
+      "marks": [
+        {
+          "mark": "span",
+          "encoding": {
+            "color": {
+              "field": "state",
+              "scale": "categorical",
+              "domain": ["match", "mismatch", "gap"],
+              "range": ["#d9d9d9", "#e41a1c", "#404040"]
+            }
+          }
+        },
+        { "mark": "text", "encoding": { "text": "base" }, "maxBpPerPx": 0.5 }
+      ]
+    }
+  ]
+}
+```
+
 A VCF's samples fan out the same way, `flatten` over `samples` with
 `key: "sample"`, for `rows: "sample"` and a colour over `GT`.
 
@@ -629,6 +675,7 @@ belonging to another step is refused where the config is read:
 | `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's                                                                    |
 | `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                                                                                            |
 | `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), each reading its parent for what it lacks, with its position in the field `index` names and its key in the field `key` names; `keepEmpty` holds on to a feature whose field is empty |
+| `cells`     | replaces each aligned row with its runs of columns in one `state` — `match`, `mismatch` or `gap` — against the reference, reading the row's `field` (`seq`) and the same field on the feature the row was fanned out of; a mismatch run carries its `base`, and a match or mismatch run `match` as 1 or 0                                                   |
 | `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                                                                                          |
 
 A field a step reads is a name or a dotted path into a structured field, so a

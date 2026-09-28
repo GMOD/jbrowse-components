@@ -2848,6 +2848,7 @@
       "names": [
         "DEFAULT_BIN_AS",
         "DEFAULT_BIN_FIELD",
+        "DEFAULT_CELLS_FIELD",
         "DEFAULT_COVERAGE_AS",
         "DEFAULT_FLATTEN_FIELD",
         "DEFAULT_PILEUP_AS",

@@ -29,7 +29,9 @@ expression's value into a field; `bin` snaps each feature to a
 genome-aligned bin; `aggregate` folds each group into one feature carrying
 its summaries; `coverage` replaces the features with runs of how many
 overlap each stretch; `flatten` fans out an array or a record field;
-`pileup` writes
+`cells` replaces each aligned row with its runs of match, mismatch and gap
+against the reference it was fanned out of, with `state`, `base` and
+`match` written; `pileup` writes
 each feature's row in a greedy first-fit packing; `mate` answers one
 feature per other end a record states, the `mate` a paired adapter fills
 in (BEDPE, STAR-Fusion) or each VCF `ALT` naming a locus, with
@@ -60,6 +62,7 @@ A MarkTransform is one of the types its rows begin with, named by its `type`, an
 | <span id="slot-flattenindex">**flatten.index**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The field each element's position in its array is written to. Empty writes none. |
 | <span id="slot-flattenkey">**flatten.key**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The field each entry's key is written to where the field is a record: the sample of a VCF `samples` entry, the species of a MAF block's `alignments` entry. Empty writes none. |
 | <span id="slot-flattenkeepempty">**flatten.keepEmpty**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Keep a feature whose field holds nothing, which is otherwise dropped. |
+| <span id="slot-cellsfield">**cells.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'seq'</code> | The field holding each row's aligned text, gaps as `-`; the reference's is the same field on the feature the row was fanned out of. |
 | <span id="slot-pileupas">**pileup.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'row'</code> | The field each feature's row is written to, which a `span` encoding `row` then reads. |
 | <span id="slot-pileupfields">**pileup.fields**</span><br>`stringArray` = <code>DEFAULT_PILEUP_FIELDS</code> | The two fields giving the interval it packs. |
 | <span id="slot-pileuppadding">**pileup.padding**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | bp of clearance kept between two features sharing a row, so a pileup does not butt its reads together. |

@@ -6133,6 +6133,25 @@
       },
       "additionalProperties": false
     },
+    "MarkTransform.cells": {
+      "title": "MarkTransform.cells",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "cells"
+        },
+        "field": {
+          "description": "aligned text field.",
+          "$ref": "#/$defs/PlainString",
+          "default": "seq"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MarkTransform.pileup": {
       "title": "MarkTransform.pileup",
       "type": "object",
@@ -6191,6 +6210,7 @@
             "aggregate",
             "coverage",
             "flatten",
+            "cells",
             "pileup",
             "mate"
           ]
@@ -6280,6 +6300,20 @@
           },
           "then": {
             "$ref": "#/$defs/MarkTransform.flatten"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "cells"
+              }
+            },
+            "required": ["type"]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.cells"
           }
         },
         {

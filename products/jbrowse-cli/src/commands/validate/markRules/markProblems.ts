@@ -21,6 +21,7 @@ import {
   DEFAULT_LINE_INTERPOLATE,
   DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
+  CELLS_FIELDS,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_TEXT_FIELD,
@@ -151,6 +152,7 @@ export type StepSnapshot =
       key?: string
       keepEmpty?: boolean
     }
+  | { type: 'cells'; field?: string }
   | { type: 'pileup'; as?: string; fields?: string[]; padding?: number }
   | { type: 'mate' }
 
@@ -370,6 +372,7 @@ function fieldRefs(step: StepSnapshot): [string, string | undefined][] {
   switch (step.type) {
     case 'bin':
     case 'flatten':
+    case 'cells':
       return [['field', step.field]]
     case 'pileup':
       return list('fields', step.fields)
@@ -496,6 +499,10 @@ function madeFields(steps: readonly StepSnapshot[]) {
       }
     } else if (step.type === 'mate') {
       for (const field of MATE_FIELDS) {
+        fields.add(field)
+      }
+    } else if (step.type === 'cells') {
+      for (const field of CELLS_FIELDS) {
         fields.add(field)
       }
     } else if (step.type === 'bin') {

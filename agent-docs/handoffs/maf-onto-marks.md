@@ -1,13 +1,14 @@
 ---
 name: maf-onto-marks
-description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. The first item landed the same day as ADR-186 - flatten fans out a record, so a MafTrack takes the mark display with a row per species - and the rest stays ranked here.
+description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. The first two items landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference - and the rest stays ranked here, with the identity-through-bin gap the cells step left.
 ---
 
 # The MAF display onto the mark display
 
 Colin, 2026-09-28, after the span gained its colour scale: "we can try to make
-maf leverage the new wiggle display marks". The first item below landed that
-evening as [ADR-186](../architecture-decision-records/adr-186-flatten-fans-out-a-record-keyed-by-name.md).
+maf leverage the new wiggle display marks". The first two items below landed that
+evening as [ADR-186](../architecture-decision-records/adr-186-flatten-fans-out-a-record-keyed-by-name.md)
+and [ADR-187](../architecture-decision-records/adr-187-a-cells-step-reads-a-row-against-the-block-it-came-from.md).
 The wiggle port's own state is in [grammar-next-steps](grammar-next-steps.md).
 An Opus inventory the same day read `plugins/maf/src` against
 `plugins/marks/src/LinearMarkDisplay`; what follows is its findings with the
@@ -50,11 +51,16 @@ file pointers to re-read.
    ADR-186. One cost to watch: a species row's hover JSON is its block's, so
    it carries every species' sequence (`FlattenedFeature.toJSON` merges the
    container's).
-2. A per-base cell step with the reference comparison (match, gap, base),
-   run-merged and sub-pixel sampled as `binning.ts` and `rowFlank.ts` do; a
-   per-base `match` field then gives the identity heatmap and X-Y plot through
-   `bin` and `aggregate mean`. `bin: auto`'s 1-2-5 ladder differs from MAF's
-   power-of-two `binBp`.
+2. ~~A per-base cell step with the reference comparison.~~ Landed, ADR-187:
+   `cells` writes `state`, `base` and `match` per run, walking every column.
+   Still open from it: **the identity heatmap and X-Y plot**, because `bin`
+   snaps a run to the bin its start falls in, so `aggregate mean` over
+   `match` weighs a 500 bp match run as one cell. A `bin` that splits an
+   interval at its edges (the length-weighted mean `buildIdentityRuns`
+   takes) is the missing piece; sub-pixel sampling (`binBp`) and the
+   cross-block flank (`rowFlank.ts`) are the other two things the MAF
+   painters do that the step does not. `bin: auto`'s 1-2-5 ladder differs
+   from MAF's power-of-two `binBp`.
 3. Per-display row geometry: a fixed px `rowHeight` with virtual scroll,
    `rowProportion`, and per-mark `minWidthPx`/`seamPx`, which `spanMark`
    already takes and `markList.ts` hardwires.

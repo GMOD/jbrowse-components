@@ -1259,6 +1259,79 @@
           ]
         }
       ]
+    },
+    {
+      "type": "MafTrack",
+      "trackId": "marks_maf_cells",
+      "name": "Mark cells by species over a MAF",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "samples": [
+          "volvox",
+          "simvolvox",
+          "minivolvox",
+          "microvolvox",
+          "nanovolvox",
+          "megavolvox",
+          "ultravolvox",
+          "picovolvox",
+          "hypervolvox",
+          "metavolvox"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox.maf.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "nhLocation": {
+          "uri": "volvox.maf.nh",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "volvox.maf.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_maf_cells-LinearMarkDisplay",
+          "transform": [
+            {
+              "type": "flatten",
+              "field": "alignments",
+              "key": "species"
+            },
+            {
+              "type": "cells"
+            }
+          ],
+          "rows": "species",
+          "marks": [
+            {
+              "mark": "span",
+              "encoding": {
+                "color": {
+                  "field": "state",
+                  "scale": "categorical",
+                  "domain": ["match", "mismatch", "gap"],
+                  "range": ["#d9d9d9", "#e41a1c", "#404040"]
+                }
+              }
+            },
+            {
+              "mark": "text",
+              "encoding": {
+                "text": "base"
+              },
+              "maxBpPerPx": 0.5
+            }
+          ]
+        }
+      ]
     }
   ]
 }

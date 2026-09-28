@@ -253,6 +253,41 @@ test('flatten fans out a record keyed by name, and key names each entry', () => 
   ).toEqual([])
 })
 
+test('cells answers each row’s runs against the block it was fanned out of', () => {
+  const block = feature(100, 108, {
+    seq: 'ACG-TACGT',
+    alignments: {
+      ref: { seq: 'ACG-TACGT' },
+      near: { seq: 'AcGGT-CTT' },
+      cut: { seq: '--GGTACG-' },
+      blank: { seq: '---------' },
+    },
+  })
+  const out = runTransforms(
+    [block],
+    [
+      { type: 'flatten', field: 'alignments', key: 'species' },
+      { type: 'cells' },
+    ],
+  )
+  expect(
+    rows(out, 'species', 'start', 'end', 'state', 'base', 'match'),
+  ).toEqual([
+    ['ref', 100, 108, 'match', undefined, 1],
+    ['near', 100, 104, 'match', undefined, 1],
+    ['near', 104, 105, 'gap', undefined, undefined],
+    ['near', 105, 106, 'match', undefined, 1],
+    ['near', 106, 107, 'mismatch', 'T', 0],
+    ['near', 107, 108, 'match', undefined, 1],
+    ['cut', 102, 107, 'match', undefined, 1],
+  ])
+  expect(out[1]!.id()).toBe('100-108#near#0')
+  expect(out[1]!.get('refName')).toBe('ctgA')
+  expect(
+    runTransforms([feature(0, 4, { seq: 'ACGT' })], [{ type: 'cells' }]),
+  ).toEqual([])
+})
+
 test('flatten twice reaches a gene’s exons, and a bin then counts them', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene1',
