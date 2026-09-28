@@ -182,9 +182,10 @@ hg38's star holds both haplotypes of the H9 T2T assembly, so a stack can put one
 person's two chromosomes under the reference. At 17q21.31 the H2 haplotype is a
 900 kb inversion (Stefansson et al. 2005), and H9 carries one of each. Open
 hg38's star at `chr17:45,300,000-46,800,000` and choose the two H9 haplotypes,
-the HG002 maternal assembly and the NA24631 maternal assembly as lanes.
+the HG002 maternal assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1)
+as lanes.
 
-<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over four T2T haplotypes. The H9 hap2 lane crosses the lane above it across the inversion and runs straight either side of it; the other three haplotypes run straight throughout." />
+<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes. The H9 hap2 lane crosses the lane above it across the inversion and runs straight either side of it; the other four haplotypes run straight throughout." />
 
 ## See also
 

@@ -4455,12 +4455,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
       'GCA_054883265.1',
       'GCA_018852615.2',
       'GCA_018506965.1',
+      'hs1',
     ]),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1300,
     viewportHeight: 620,
-    liveLabel: 'Open the four haplotypes at 17q21.31',
+    liveLabel: 'Open the five haplotypes at 17q21.31',
   },
 
   // Both haplotypes of HG008T v3.2 against GRCh38, one dotplot each, tiled
