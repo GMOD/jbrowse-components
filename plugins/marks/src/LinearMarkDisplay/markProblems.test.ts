@@ -238,6 +238,13 @@ test('an interpolate on a mark that draws no line waits unread', () => {
   expect(found([{ mark: 'line', encoding: { y: 'score' } }])).toEqual([])
 })
 
+test('a rowProportion on a mark that draws no span waits unread', () => {
+  expect(
+    found([{ mark: 'bar', encoding: { y: 'score' }, rowProportion: 0.8 }]),
+  ).toEqual(['warning unread-row-proportion mark 0 rowProportion'])
+  expect(found([{ mark: 'span', rowProportion: 0.8 }])).toEqual([])
+})
+
 test('a linkShape on a mark that draws no link waits unread', () => {
   expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
     'warning unread-link-shape mark 0 linkShape',

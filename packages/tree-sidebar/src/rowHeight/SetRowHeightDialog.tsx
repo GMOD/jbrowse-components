@@ -22,9 +22,8 @@ import type { RowHeightModel } from './rowHeightMenu.ts'
  *   writing it raw made the track jump on submit.
  *
  * `rowProportion` is the per-consumer opt-out: a display whose glyphs occupy
- * only part of the row band (maf) exposes the pair and gets a second field, and
- * one whose rows fill their band (multi-row features, variants) exposes neither
- * and gets one. The optional pair is what kept this from being shared before.
+ * part of the row band exposes the pair and gets a second field, and one whose
+ * rows fill their band answers `undefined` or exposes neither and gets one.
  */
 const SetRowHeightDialog = observer(function SetRowHeightDialog({
   model,

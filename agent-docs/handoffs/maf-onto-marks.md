@@ -108,7 +108,8 @@ Two levers are left on the data path, both measured:
    pins a row under `rows` and fits it elsewhere, and scrolls the rows past
    the plot, the span through its `scrollTop` and the value shapes through
    `rowOffsetPx`; the `marks_maf_cells_pinned` track and the
-   `mark-maf-rows-pinned` scene show it. Still open: per-mark
+   `mark-maf-rows-pinned` scene show it. `rowProportion` is each span's
+   own since ADR-194. Still open: per-mark
    `minWidthPx`/`seamPx`, which `spanMark` takes and `markList.ts` still
    hardwires to the display's one `minWidthPx` and a seam of 0.
 4. ~~A row set and guide tree declared by the adapter.~~ Landed, ADR-189:

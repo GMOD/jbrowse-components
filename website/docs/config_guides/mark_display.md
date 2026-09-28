@@ -72,6 +72,7 @@ one.
 | a line through the values | `geom_step()`, `geom_line()` | `"mark": "line"`, `"interpolate": "step-after"` or `"linear"` | `"mark": "line"`, `interpolate` `step` or `linear`, `encoding.size` its width |
 | a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
 | a heatmap strip, its colour the value | `geom_tile(aes(fill = score))` | `"mark": "rect"` with a quantitative `color` | `"mark": "span"` with a colour scale over the field |
+| a band thinner than its row | `geom_tile(height = 0.8)` | `"mark": {"type": "rect", "height": {"band": 0.8}}` | `"mark": "span"`, `"rowProportion": 0.8` |
 | the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
 | a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
 | a colour per category | `aes(fill = strand)` | `"color": {"field": "strand", "type": "nominal"}` | `"color": {"field": "strand", "scale": "categorical"}` |
@@ -96,6 +97,7 @@ one.
 | one row per element of a list field, or per entry of a keyed record | `tidyr::unnest()` | `{"flatten": [field]}` | `{"type": "flatten", "field"}`, with the entry's key in `key` |
 | how many features overlap each position | | GenomeSpy `{"type": "coverage"}` | `{"type": "coverage"}` |
 | overlapping features stacked into rows | | GenomeSpy `{"type": "pileup", "as": "lane"}` | `{"type": "pileup"}`, read by the mark's `row` |
+| a fixed px height per row | | `"height": {"step": 20}` on the view | the display's `rowHeight`, under `rows` |
 | a label at each feature | `geom_text(aes(label = name), check_overlap = TRUE)` | `"mark": "text"`, `"text": {"field": "name"}` | `"mark": "text"`, `"encoding": {"text": "name"}` |
 | a curve between two positions | `geom_curve(aes(x, xend))` | GenomeSpy `"mark": "link"`, `"x2"` | `"mark": "link"`, `x` to `x2` |
 | a stroke width per feature | `aes(linewidth = score)` | `"size": {"field": "score"}` | `"encoding": {"size": {"field": "score"}}` on a link |
@@ -367,6 +369,10 @@ paints each interval by its value, and a diverging `range` with `domainMid`
 fades through the middle colour at that value, which is how a signed signal
 reads white at zero.
 
+`rowProportion` is the fraction of its band a span fills, centred, 1 by default.
+It sits on the mark, so two spans over the same rows can differ, one drawn thick
+at `0.8` and one thin at `0.3`.
+
 ## Labels
 
 A `text` mark prints a field at each feature: over the middle of its `x` to
@@ -567,8 +573,7 @@ The rows divide the plot between them by default, so every row shows.
 scroll: a wheel over the rows or the scrollbar at the right reaches them, and
 shift+wheel resizes them. `0`, the default, fits them to the plot again, which
 is what **Row height → Squeeze to fit view** writes. The menu's Normal and
-Compact presets also set `rowProportion`, the fraction of its row a span fills,
-1 by default, so below it the rows stand apart.
+Compact presets also set every span's `rowProportion`, so the rows stand apart.
 
 `facet` and `rows` both split the features on a field, and differ in what a
 value gets: a facet section is as deep as its packing and wears a chip, where a
@@ -864,6 +869,7 @@ each reported under its id:
 | `unread-size` | warning | An `encoding.size` on a mark that draws no point or rule and strokes no link. |
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
 | `unread-interpolate` | warning | An `interpolate` on a mark that draws no line. |
+| `unread-row-proportion` | warning | A `rowProportion` on a mark that draws no span. |
 | `span-density-source` | warning | `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold colour naming no cut, so every value paints one colour. |

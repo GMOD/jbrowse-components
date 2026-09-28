@@ -90,6 +90,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-markview">**markView**</span><br><code>MarkView</code> | The marks at the view's zoom: whether each draws, inside its `minBpPerPx`..`maxBpPerPx` range where 0 is no bound, and the first drawing mark the density sidecar stands in for, -1 where none does. | LinearMarkDisplay |
 | <span id="getter-densitymarkindex">**densityMarkIndex**</span><br><code>number</code> | The mark the density sidecar stands in for, or -1. | LinearMarkDisplay |
 | <span id="getter-marksizes">**markSizes**</span><br><code>number[]</code> | Each mark's `encoding.size` number in px, its type's default where none is written, which a bar or span leaves unread. | LinearMarkDisplay |
+| <span id="getter-markrowproportions">**markRowProportions**</span><br><code>number[]</code> | Each mark's `rowProportion`, which a span alone reads. | LinearMarkDisplay |
+| <span id="getter-rowproportion">**rowProportion**</span><br><code>number &#124; undefined</code> | The proportion the Row height dialog shows: the first span's, or undefined where no mark is a span, so the dialog asks for none. | LinearMarkDisplay |
 | <span id="getter-haslinkmark">**hasLinkMark**</span><br><code>boolean</code> | Whether any mark is a link, whose feet place through the view's regions rather than the block's own range. | LinearMarkDisplay |
 | <span id="getter-pointsize">**pointSize**</span><br><code>number</code> | The size the Point size menu shows: the first point mark's, or the default where no mark is a point. | LinearMarkDisplay |
 | <span id="getter-encodings">**encodings**</span><br><code>MarkEncoding[]</code> | The declared marks' encodings, as the worker takes them. | LinearMarkDisplay |
@@ -102,7 +104,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-minwidthpx">**minWidthPx**</span><br><code>number</code> |  | LinearMarkDisplay |
 | <span id="getter-configuredfilters">**configuredFilters**</span><br><code>() =&gt; string[]</code> | the `filter` slot | LinearMarkDisplay |
 | <span id="getter-rowsfield">**rowsField**</span><br><code>string</code> | `rows.field` as written: the field each value of which takes a row. | LinearMarkDisplay |
-| <span id="getter-rowproportion">**rowProportion**</span><br><code>number</code> |  | LinearMarkDisplay |
 | <span id="getter-drawsrows">**drawsRows**</span><br><code>boolean</code> | Whether the display draws one row per value: a `rows` field and no `facet`, which draws in its place until bands of rows land. | LinearMarkDisplay |
 | <span id="getter-drawskeyedrows">**drawsKeyedRows**</span><br><code>boolean</code> | Whether each `row` lane holds a key the row table places: under `rows`, except while the density sidecar stands in, whose bins count every row's features and draw as one band. | LinearMarkDisplay |
 | <span id="getter-splitfield">**splitField**</span><br><code>string &#124; undefined</code> | The field the worker splits the features on: the facet's, else the rows'. One split serves both, so `rows` sends it as `facet`. | LinearMarkDisplay |
@@ -329,7 +330,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-setsourcelisting">**setSourceListing**</span><br><code>(read: AdapterRead&lt;RowSourceListing &#124; undefined&gt;) =&gt; void</code> |  | LinearMarkDisplay |
-| <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> |  | LinearMarkDisplay |
+| <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> | Write every span mark's `rowProportion`. | LinearMarkDisplay |
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Fit the rows to the plot. The `height` getter is the slot itself, so nothing needs seeding on the way in. | LinearMarkDisplay |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(hit: MarkHitInfo) =&gt; void</code> | Open the feature widget on the read, the bin or the run a hit drew, inside its facet section, through `selectEncodedFeature`. A bin of the density sidecar opens nothing, its region holding no request — the read-back is the download the gate refused. | LinearMarkDisplay |
 | <span id="action-setrpcdata">**setRpcData**</span><br><code>(idx: number, data: EncodedLayersResult, region: Region) =&gt; void</code> | Stage a region as fetched, with this display's payload layout. | LinearMarkDisplay |

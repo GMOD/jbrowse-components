@@ -4608,6 +4608,10 @@ export const configManifest: ConfigManifest = {
                   "type": "LinkShape"
                 },
                 {
+                  "name": "rowProportion",
+                  "type": "number"
+                },
+                {
                   "name": "encoding",
                   "type": "MarkEncodingConfigurationSchema",
                   "subSlots": [
@@ -5998,6 +6002,10 @@ export const configManifest: ConfigManifest = {
               "type": "LinkShape"
             },
             {
+              "name": "rowProportion",
+              "type": "number"
+            },
+            {
               "name": "encoding",
               "type": "MarkEncodingConfigurationSchema",
               "subSlots": [
@@ -6337,10 +6345,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "rowProportion",
-          "type": "number"
-        },
-        {
           "name": "scales",
           "type": "ScalesConfigurationSchema",
           "subSlots": [
@@ -6492,6 +6496,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "linkShape",
               "type": "LinkShape"
+            },
+            {
+              "name": "rowProportion",
+              "type": "number"
             },
             {
               "name": "encoding",
@@ -6822,10 +6830,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowHeight",
-          "type": "number"
-        },
-        {
-          "name": "rowProportion",
           "type": "number"
         },
         {

@@ -78,7 +78,7 @@ const STATE: MarkRenderState = {
   linkRegions: [],
   valueInsetPx: 0,
   rowHeight: 100,
-  rowProportion: 1,
+  rowProportions: [1, 1],
   scrollTop: 0,
 }
 

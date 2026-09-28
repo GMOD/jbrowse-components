@@ -120,8 +120,8 @@ export interface MarkRenderState extends MarkFrame {
   valueInsetPx: number
   /** The px each row band is drawn in, the display's `effectiveRowHeight`. */
   rowHeight: number
-  /** The fraction of its band a span fills. */
-  rowProportion: number
+  /** Each mark's fraction of its band, which a span fills. */
+  rowProportions: number[]
   /** The px the rows are scrolled up by, 0 wherever they fit the plot. */
   scrollTop: number
   /** What each `row` key draws on under `rows`; absent, `row` is the band. */
@@ -379,7 +379,7 @@ function shapeMark(entry: MarkEntry, i: number) {
         params: (s: MarkRenderState) => ({
           colorScale: s.colorScales[i],
           rowHeight: s.rowHeight,
-          rowProportion: s.rowProportion,
+          rowProportion: s.rowProportions[i]!,
           minWidthPx: s.minWidthPx,
           seamPx: 0,
           scrollTop: s.scrollTop,

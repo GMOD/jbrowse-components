@@ -439,6 +439,21 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Each mark's `rowProportion`, which a span alone reads.
+         */
+        get markRowProportions(): number[] {
+          return self.conf.marks.map(m => m.rowProportion)
+        },
+        /**
+         * #getter
+         * The proportion the Row height dialog shows: the first span's, or
+         * undefined where no mark is a span, so the dialog asks for none.
+         */
+        get rowProportion(): number | undefined {
+          return self.conf.marks.find(m => m.mark === 'span')?.rowProportion
+        },
+        /**
+         * #getter
          * Whether any mark is a link, whose feet place through the view's
          * regions rather than the block's own range.
          */
@@ -552,12 +567,6 @@ export function stateModelFactory(
          */
         get rowsField(): string {
           return getConf(self, ['rows', 'field'])
-        },
-        /**
-         * #getter
-         */
-        get rowProportion(): number {
-          return getConf(self, 'rowProportion')
         },
       }))
       .views(self => ({
@@ -1288,7 +1297,7 @@ export function stateModelFactory(
             linkRegions: this.linkRegions,
             valueInsetPx: this.valueInsetPx,
             rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
+            rowProportions: self.markRowProportions,
             scrollTop: self.scrollTop,
             rowTable: self.rowTable,
           }))
@@ -1563,9 +1572,14 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
+         * Write every span mark's `rowProportion`.
          */
         setRowProportion(n: number) {
-          setConf(self, 'rowProportion', n)
+          for (const mark of self.conf.marks) {
+            if (mark.mark === 'span') {
+              setConf(mark, 'rowProportion', n)
+            }
+          }
         },
         /**
          * #action

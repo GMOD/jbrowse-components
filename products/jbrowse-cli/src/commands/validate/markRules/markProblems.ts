@@ -19,6 +19,7 @@ import {
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
   DEFAULT_LINE_INTERPOLATE,
+  DEFAULT_ROW_PROPORTION,
   DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
   CELLS_FIELDS,
@@ -63,6 +64,8 @@ export const MARK_RULES = {
   'unread-link-shape': 'warning',
   /** An `interpolate` on a mark that draws no line. */
   'unread-interpolate': 'warning',
+  /** A `rowProportion` on a mark that draws no span. */
+  'unread-row-proportion': 'warning',
   /** `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. */
   'span-density-source': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
@@ -184,6 +187,7 @@ export type MarkSnapshot = {
   mark?: MarkType
   linkShape?: LinkShape
   interpolate?: LineInterpolation
+  rowProportion?: number
   source?: MarkSourceName
   minBpPerPx?: number
   maxBpPerPx?: number
@@ -658,6 +662,19 @@ function ownProblems(
         'unread-interpolate',
         'interpolate',
         `a ${type} draws no line, so it reads no interpolate`,
+      ),
+    )
+  }
+  if (
+    mark.rowProportion !== undefined &&
+    mark.rowProportion !== DEFAULT_ROW_PROPORTION &&
+    type !== 'span'
+  ) {
+    problems.push(
+      found(
+        'unread-row-proportion',
+        'rowProportion',
+        `a ${type} draws no span, so it reads no rowProportion`,
       ),
     )
   }

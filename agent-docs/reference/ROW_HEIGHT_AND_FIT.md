@@ -39,9 +39,12 @@ The menu row and the "Custom..." dialog are **shared**, not per display:
 `packages/tree-sidebar/src/rowHeight/` holds `rowHeightMenuItem(model, presets)`
 and the one `SetRowHeightDialog`. A display passes its own preset table (maf's
 Normal is 15px, the multi-row painting's is 14) and gets fit + presets + Custom
-as one radio group. `rowProportion` is the optional second axis, and only maf
-has it: expose the `rowProportion` / `setRowProportion` pair and the dialog
-grows a second field, omit it and the dialog is one field. That optionality is
+as one radio group. `rowProportion` is the optional second axis: expose the
+`rowProportion` / `setRowProportion` pair and the dialog grows a second field,
+answer `undefined` or omit it and the dialog is one field. maf and canvas answer
+a display slot; the mark display answers its first span's
+`marks[].rowProportion`, `undefined` without a span, and its setter writes every
+span's. That optionality is
 the whole reason the three copies existed, and the copies had drifted — variants
 offered no presets and its dialog seeded from `effectiveRowHeight`, so
 "Custom..." in fit mode fixed the computed fractional height on submit.
@@ -176,6 +179,17 @@ can't be confused with the row displays' `setFitToHeight()` — those were both
 called `setFitToHeight` at one point, same name, different arity, different
 concept.
 
+## Why a flat slot, and not a member of `rows`
+
+`rowHeight` is Vega-Lite's `height: {step}`, a property of the view beside
+`height`, not of the row encoding or its scale. `rows` is the arrangement
+(ADR-157), and on three displays a channel a settings bag replaces whole, so a
+`rows.step` written through a session spec or an agent call would erase the
+order, labels, tree and focus there and merge on the other two.
+[ADR-194](../architecture-decision-records/adr-194-a-spans-row-proportion-is-the-marks-and-row-height-stays-the-displays.md)
+records the call, and why the mark display's `rowProportion` moved onto the
+span mark instead.
+
 ## Why one number with a sentinel, and not a mode enum
 
 The repo spells this same fixed-versus-fit choice two ways. Track height uses a
@@ -183,9 +197,8 @@ The repo spells this same fixed-versus-fit choice two ways. Track height uses a
 `HeightModeMixin`. Row height uses one number where `0` is the fit sentinel.
 
 The sentinel is the older of the two — it lands in `56bc6ad7a0` (2026-06-28),
-the `heightMode` enum in `b51403f9f0` (2026-07-08) — and it is what is in
-shipped configs and saved sessions, so replacing it is a migration rather than a
-rename. It also
+the `heightMode` enum in `b51403f9f0` (2026-07-08). Leaving the slot out
+already fits, so `0` is only a second spelling of that. An enum also
 buys less than it looks like: an enum removes the sentinel but not
 `effectiveRowHeight`, because fit mode still has to compute a height from the
 rows viewport, and the `resolveRowHeight` floor still has to exist for the case

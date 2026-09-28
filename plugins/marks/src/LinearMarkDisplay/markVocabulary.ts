@@ -30,6 +30,9 @@ export const DEFAULT_LINK_SHAPE: LinkShape = 'dome'
 /** The stroke a link draws at where its `size` is left unwritten. */
 export const DEFAULT_LINK_STROKE_PX = 2
 
+/** The fraction of its row a span fills where its `rowProportion` is left unwritten. */
+export const DEFAULT_ROW_PROPORTION = 1
+
 export const SIZE_SCALES = ['linear', 'log'] as const
 export type SizeScaleName = (typeof SIZE_SCALES)[number]
 

@@ -124,6 +124,41 @@ test("the span's uniforms carry the scroll and the row proportion", () => {
   expect(uniforms[spanShader.UNIFORM_OFFSET_F32.rowProportion]).toBe(0.5)
 })
 
+function spanProportionUniform(display: LinearMarkDisplayModel, i: number) {
+  const mark = display.markList[i]!
+  const hal = new MockHal([mark.pass])
+  const { canvasWidth, canvasHeight } = display.renderState
+  const block = display.renderBlocks[0]!
+  mark.drawRegion(
+    hal,
+    new ArrayBuffer(mark.pass.uniformByteSize),
+    block,
+    clipBlock(block, canvasWidth, canvasHeight, { x: 1, y: 1 })!,
+    display.rpcDataMap.get(0)!,
+    display.renderState,
+    0,
+  )
+  return hal.getLastUniformsF32()![spanShader.UNIFORM_OFFSET_F32.rowProportion]
+}
+
+test('each span reads its own rowProportion, and setRowProportion writes every span', () => {
+  const display = loaded(PINNED, [
+    { mark: 'span', rowProportion: 0.75 },
+    { mark: 'span', rowProportion: 0.25 },
+  ])
+  expect(spanProportionUniform(display, 0)).toBe(0.75)
+  expect(spanProportionUniform(display, 1)).toBe(0.25)
+  expect(display.rowProportion).toBe(0.75)
+  display.setRowProportion(0.5)
+  expect(spanProportionUniform(display, 0)).toBe(0.5)
+  expect(spanProportionUniform(display, 1)).toBe(0.5)
+})
+
+test('a display with no span answers no rowProportion, so the dialog asks for none', () => {
+  const display = loaded(PINNED, [{ mark: 'bar', encoding: { y: 'score' } }])
+  expect(display.rowProportion).toBeUndefined()
+})
+
 test('a hit and its hover ink under a scroll name the row drawn there', () => {
   const display = loaded(PINNED)
   expect(rowAt(display, 20)?.name).toBe('a')

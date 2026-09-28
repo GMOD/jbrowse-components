@@ -148,6 +148,12 @@ describe('a marks list in a config file', () => {
       `warning unread-interpolate ${DISPLAY}.marks[0].interpolate`,
     ])
     expect(
+      found([{ mark: 'bar', rowProportion: 0.8, encoding: { y: 'score' } }]),
+    ).toEqual([
+      `warning unread-row-proportion ${DISPLAY}.marks[0].rowProportion`,
+    ])
+    expect(found([{ mark: 'span', rowProportion: 0.8 }])).toEqual([])
+    expect(
       found([
         { mark: 'line', interpolate: 'linear', encoding: { y: 'score' } },
       ]),

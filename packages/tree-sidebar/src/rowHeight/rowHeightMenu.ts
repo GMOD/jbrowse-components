@@ -15,9 +15,8 @@ const SetRowHeightDialog = lazy(() => import('./SetRowHeightDialog.tsx'))
  * which is what the radios have to compare against and what the dialog has to
  * seed from.
  *
- * `rowProportion` is optional and only maf answers it: its glyphs occupy a
- * fraction of the row band, and each of its presets pairs a height with the
- * proportion that reads best at it.
+ * `rowProportion` is optional: a display whose glyphs fill a fraction of the
+ * row band answers it, and `undefined` or absent asks the dialog for none.
  */
 export interface RowHeightModel extends IStateTreeNode {
   rowHeight: number

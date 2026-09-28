@@ -32,6 +32,7 @@ import {
   DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
   DEFAULT_MARK_SOURCE,
+  DEFAULT_ROW_PROPORTION,
   DEFAULT_TEXT_FIELD,
   LINE_INTERPOLATIONS,
   LINK_SHAPES,
@@ -326,6 +327,17 @@ const markSchema = ConfigurationSchema(
       description: 'dome, arc or line',
     },
     /**
+     * #slot marks.rowProportion
+     * The fraction of its row's height a span fills, centred in the row, so
+     * below 1 the rows stand apart. Read by a span alone; the track menu's
+     * Row height presets write every span's.
+     */
+    rowProportion: {
+      type: 'number',
+      defaultValue: DEFAULT_ROW_PROPORTION,
+      description: 'fraction of its row a span fills',
+    },
+    /**
      * #slot marks.encoding
      * Which feature fields feed the mark's channels. Every channel has a
      * default, so `{}` draws a bar from `start` to `end` with no value.
@@ -496,16 +508,6 @@ export function configSchemaFactory() {
         rowHeight:
           'per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them',
       }),
-      /**
-       * #slot rowProportion
-       * The fraction of its row's height a span fills, centred in the row, so
-       * below 1 the rows stand apart. Value marks keep the whole row.
-       */
-      rowProportion: {
-        type: 'number',
-        defaultValue: 1,
-        description: 'fraction of the row height each span fills',
-      },
       /**
        * #slot scales
        * The scales the marks are read through, owned by the display rather

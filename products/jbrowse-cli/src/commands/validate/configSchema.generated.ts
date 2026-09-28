@@ -6704,6 +6704,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "dome"
         },
+        "rowProportion": {
+          "description": "fraction of its row a span fills.",
+          "type": "number",
+          "default": 1
+        },
         "encoding": {
           "$ref": "#/$defs/MarkEncoding"
         },
@@ -8449,11 +8454,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "rowProportion": {
-          "description": "fraction of the row height each span fills.",
-          "type": "number",
-          "default": 1
-        },
         "scales": {
           "$ref": "#/$defs/Scales3"
         },
@@ -8594,11 +8594,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
           "type": "number",
           "default": 0
-        },
-        "rowProportion": {
-          "description": "fraction of the row height each span fills.",
-          "type": "number",
-          "default": 1
         },
         "scales": {
           "$ref": "#/$defs/Scales3"
@@ -9297,17 +9292,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "rowProportion": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowProportion"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
             },
             "showRowSeparators": {
               "anyOf": [
@@ -9841,9 +9826,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-            },
-            "rowProportion": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -10416,9 +10398,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "rowProportion": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
-            },
             "scales": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
@@ -10863,9 +10842,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
             },
-            "rowProportion": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
-            },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
@@ -11162,9 +11138,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-            },
-            "rowProportion": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
@@ -11510,14 +11483,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "rowProportion": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowProportion"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowProportion"
-                }
-              ]
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowProportion"
             },
             "showAllLetters": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAllLetters"
@@ -12318,9 +12284,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
-            },
-            "rowProportion": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowProportion"
             },
             "scales": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scales"
