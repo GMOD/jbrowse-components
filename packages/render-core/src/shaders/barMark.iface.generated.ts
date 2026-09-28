@@ -13,7 +13,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 12
 
-export const UNIFORMS_SIZE_BYTES = 96
+export const UNIFORMS_SIZE_BYTES = 288
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -25,22 +25,65 @@ export const UNIFORM_OFFSET_F32 = {
   rampMin: 9,
   rampMax: 10,
   rampMidNorm: 11,
-  originYPx: 12,
-  rowHeight: 13,
-  rowBandPx: 14,
-  rowOffsetPx: 15,
-  zero: 16,
-  minCellDenomPx: 17,
-  minWidthPx: 18,
-  devicePixelRatio: 19,
+  originYPx: 60,
+  rowHeight: 61,
+  rowBandPx: 62,
+  rowOffsetPx: 63,
+  zero: 64,
+  minCellDenomPx: 65,
+  minWidthPx: 66,
+  devicePixelRatio: 67,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
   valueScaleType: 6,
   rampMode: 8,
-  rowTableKeys: 20,
+  colorCutCount: 12,
+  rowTableKeys: 68,
 } as const
+
+
+// Word indices of each array field’s elements, into a 4-byte-word
+// view over the uniform buffer (Uint32Array or Float32Array — the
+// field’s scalar type picks, same as UNIFORM_OFFSET_*). NOT
+// consecutive: std140 pads every array element to 16 bytes.
+export const UNIFORM_SLOT_ARRAYS = {
+  colorCuts: [16, 20] as const,
+  colorBands: [24, 28, 32, 36, 40, 44, 48, 52, 56] as const,
+} as const
+
+// Element `i` of the `colorCuts` uniform array (4 components).
+export function setUniformColorCuts(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.colorCuts[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
+
+// Element `i` of the `colorBands` uniform array (4 components).
+export function setUniformColorBands(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.colorBands[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
 
 
 export interface Uniforms {
@@ -54,6 +97,9 @@ export interface Uniforms {
   rampMin: number
   rampMax: number
   rampMidNorm: number
+  colorCutCount: number
+  colorCuts: [[number, number, number, number], [number, number, number, number]]
+  colorBands: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   originYPx: number
   rowHeight: number
   rowBandPx: number
@@ -80,15 +126,60 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[9] = uniforms.rampMin
   f32[10] = uniforms.rampMax
   f32[11] = uniforms.rampMidNorm
-  f32[12] = uniforms.originYPx
-  f32[13] = uniforms.rowHeight
-  f32[14] = uniforms.rowBandPx
-  f32[15] = uniforms.rowOffsetPx
-  f32[16] = uniforms.zero
-  f32[17] = uniforms.minCellDenomPx
-  f32[18] = uniforms.minWidthPx
-  f32[19] = uniforms.devicePixelRatio
-  i32[20] = uniforms.rowTableKeys
+  i32[12] = uniforms.colorCutCount
+  f32[16] = uniforms.colorCuts[0][0]
+  f32[17] = uniforms.colorCuts[0][1]
+  f32[18] = uniforms.colorCuts[0][2]
+  f32[19] = uniforms.colorCuts[0][3]
+  f32[20] = uniforms.colorCuts[1][0]
+  f32[21] = uniforms.colorCuts[1][1]
+  f32[22] = uniforms.colorCuts[1][2]
+  f32[23] = uniforms.colorCuts[1][3]
+  f32[24] = uniforms.colorBands[0][0]
+  f32[25] = uniforms.colorBands[0][1]
+  f32[26] = uniforms.colorBands[0][2]
+  f32[27] = uniforms.colorBands[0][3]
+  f32[28] = uniforms.colorBands[1][0]
+  f32[29] = uniforms.colorBands[1][1]
+  f32[30] = uniforms.colorBands[1][2]
+  f32[31] = uniforms.colorBands[1][3]
+  f32[32] = uniforms.colorBands[2][0]
+  f32[33] = uniforms.colorBands[2][1]
+  f32[34] = uniforms.colorBands[2][2]
+  f32[35] = uniforms.colorBands[2][3]
+  f32[36] = uniforms.colorBands[3][0]
+  f32[37] = uniforms.colorBands[3][1]
+  f32[38] = uniforms.colorBands[3][2]
+  f32[39] = uniforms.colorBands[3][3]
+  f32[40] = uniforms.colorBands[4][0]
+  f32[41] = uniforms.colorBands[4][1]
+  f32[42] = uniforms.colorBands[4][2]
+  f32[43] = uniforms.colorBands[4][3]
+  f32[44] = uniforms.colorBands[5][0]
+  f32[45] = uniforms.colorBands[5][1]
+  f32[46] = uniforms.colorBands[5][2]
+  f32[47] = uniforms.colorBands[5][3]
+  f32[48] = uniforms.colorBands[6][0]
+  f32[49] = uniforms.colorBands[6][1]
+  f32[50] = uniforms.colorBands[6][2]
+  f32[51] = uniforms.colorBands[6][3]
+  f32[52] = uniforms.colorBands[7][0]
+  f32[53] = uniforms.colorBands[7][1]
+  f32[54] = uniforms.colorBands[7][2]
+  f32[55] = uniforms.colorBands[7][3]
+  f32[56] = uniforms.colorBands[8][0]
+  f32[57] = uniforms.colorBands[8][1]
+  f32[58] = uniforms.colorBands[8][2]
+  f32[59] = uniforms.colorBands[8][3]
+  f32[60] = uniforms.originYPx
+  f32[61] = uniforms.rowHeight
+  f32[62] = uniforms.rowBandPx
+  f32[63] = uniforms.rowOffsetPx
+  f32[64] = uniforms.zero
+  f32[65] = uniforms.minCellDenomPx
+  f32[66] = uniforms.minWidthPx
+  f32[67] = uniforms.devicePixelRatio
+  i32[68] = uniforms.rowTableKeys
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

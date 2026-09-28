@@ -145,7 +145,7 @@ export const ruleMark: MarkShape<RuleChannels, RuleParams> = {
     if (count === 0) {
       return
     }
-    const color = paintColors(channels, count, params.ramp)
+    const color = paintColors(channels, count, params.colorScale)
     const g = ruleFrame(block, frame, params)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {

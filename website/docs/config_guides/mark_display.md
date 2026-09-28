@@ -272,6 +272,9 @@ or `#rrggbbaa`, paints at that opacity, as a constant or as an entry of a
   Each cut in `domain` opens an interval, so `range` carries one colour more.
   The key lists a row per interval, and a grey one for features with no value.
 
+A scale over the field `y` plots reads the plotted values themselves, so a
+change to its cuts, ends or colours redraws without refetching.
+
 `title` heads the key and has the axis `title`'s three states: unset reads the
 `field` name, text is that text, `""` draws no heading. Marks share one key only
 under one title, and share a ramp only with both ends pinned.
@@ -340,7 +343,10 @@ A `line` strokes through consecutive values on a row. `interpolate: "step"`, the
 default, holds each value across its span and steps to the next where two spans
 abut, dropping to `origin` across a gap, so a bedGraph or a BigWig tier reads as
 the data says; `"linear"` runs from one span's centre to the next, which is
-smoother where the spans are few. `encoding.size` is the width in px, 1 unset.
+smoother where the spans are few. `encoding.size` is the width in px, 1 unset. A
+colour scale over the field `y` plots colours the stroke by the value under each
+pixel, so a threshold at 0 with two colours paints a rise across zero in both,
+changing at the axis.
 
 ```json
 {

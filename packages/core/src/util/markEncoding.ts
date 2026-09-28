@@ -351,22 +351,39 @@ export function encodeFeatures<L extends LaneName>(
     (declaredScale.scale === 'linear' || declaredScale.scale === 'log')
       ? declaredScale
       : undefined
-  // Which side of the wire a ramp resolves on is the caller's lane choice: a
-  // mark that reads the ramp itself names `colorValue` and gets the raw
-  // values, and the display unions the regions' extremes into one domain.
-  // Anything else names `color` and the walk resolves per region.
+  const thresholdEncoding =
+    declaredScale?.scale === 'threshold' ? declaredScale : undefined
+  // Which side of the wire a quantitative colour resolves on is the caller's
+  // lane choice: a mark that reads the scale itself names `colorValue` and
+  // gets the raw values, so a ramp's domain unions over the regions and a
+  // threshold's cuts move as uniforms. Anything else names `color` and the
+  // walk resolves per region. A colour over the field `y` plots is the `y`
+  // lane itself, aliased rather than copied.
+  const quantitative = rampEncoding ?? thresholdEncoding
+  const colorReadsY =
+    quantitative !== undefined &&
+    has('colorValue') &&
+    y !== undefined &&
+    yEncoding !== undefined &&
+    typeof yEncoding === 'string' &&
+    quantitative.field === yEncoding
   const colorValue =
-    rampEncoding && has('colorValue') ? new Float32Array(n) : undefined
+    quantitative && has('colorValue')
+      ? colorReadsY
+        ? y
+        : new Float32Array(n)
+      : undefined
   const color = has('color') && !colorValue ? new Uint32Array(n) : undefined
   const wantColor = color !== undefined || colorValue !== undefined
   const scaled = wantColor ? declaredScale : undefined
-  const readColor = !wantColor
-    ? undefined
-    : typeof colorEncoding === 'function'
-      ? colorEncoding
-      : scaled === undefined
-        ? colorEvaluator(colorEncoding as string, jexl)
-        : channelReader(scaled.field, jexl)
+  const readColor =
+    !wantColor || colorReadsY
+      ? undefined
+      : typeof colorEncoding === 'function'
+        ? colorEncoding
+        : scaled === undefined
+          ? colorEvaluator(colorEncoding as string, jexl)
+          : channelReader(scaled.field, jexl)
   // A scaled channel resolves after the walk, once the table is known: the
   // category per admitted instance, or a ramp's raw value, kept here.
   const colorField =
@@ -380,17 +397,22 @@ export function encodeFeatures<L extends LaneName>(
     colorField && readColor
       ? categoricalChannel(readColor, colorField, n)
       : undefined
+  // The raw values of a scaled colour, where the walk fills them: a ramp's
+  // always, a threshold's where the caller resolves it; the encoder resolves
+  // a threshold into packed colours only for a caller naming `color` alone.
   const rampValues =
-    scaled && rampEncoding ? (colorValue ?? new Float32Array(n)) : undefined
+    scaled && (rampEncoding ?? (thresholdEncoding && colorValue))
+      ? (colorValue ?? new Float32Array(n))
+      : undefined
   const rampBits = rampValues
     ? new Uint32Array(rampValues.buffer, rampValues.byteOffset, n)
     : undefined
-  const thresholdEncoding = scaled?.scale === 'threshold' ? scaled : undefined
-  const cuts = thresholdEncoding
-    ? thresholdCuts(thresholdEncoding.domain ?? [])
-    : undefined
+  const cuts =
+    scaled && thresholdEncoding
+      ? thresholdCuts(thresholdEncoding.domain ?? [])
+      : undefined
   const binColors =
-    thresholdEncoding && cuts
+    scaled && thresholdEncoding && cuts && color
       ? Uint32Array.from(
           thresholdPalette(cuts.length + 1, thresholdEncoding.range),
           c => cssColorToABGR(c),
@@ -479,6 +501,8 @@ export function encodeFeatures<L extends LaneName>(
     featureIndex[count] = i
     if (colorCategories) {
       colorCategories.collect(f, count)
+    } else if (colorReadsY) {
+      // the y lane is the colour's; a skipped feature never reached here
     } else if (rampValues && rampBits && readColor) {
       const v = readColor(f)
       if (isMissing(v)) {
@@ -528,7 +552,7 @@ export function encodeFeatures<L extends LaneName>(
       ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
-  } else if (thresholdEncoding && cuts && binColors) {
+  } else if (scaled && thresholdEncoding && cuts) {
     scale = {
       kind: 'threshold',
       field: thresholdEncoding.field,
@@ -539,7 +563,7 @@ export function encodeFeatures<L extends LaneName>(
       ...(missingMet ? { missing: true } : {}),
       ...(notNumberMet ? { notNumber: true } : {}),
     }
-  } else if (rampEncoding && rampValues) {
+  } else if (scaled && rampEncoding && rampValues) {
     const extent = scaleExtent(
       rampValues,
       count,
@@ -645,7 +669,8 @@ export function encodeFeatures<L extends LaneName>(
     encoded.color = color.subarray(0, count)
   }
   if (colorValue) {
-    encoded.colorValue = colorValue.subarray(0, count)
+    // the y view itself where the colour reads y, so a reader can tell
+    encoded.colorValue = colorReadsY ? encoded.y : colorValue.subarray(0, count)
   }
   if (glyph) {
     encoded.glyph = glyph.subarray(0, count)
@@ -787,11 +812,13 @@ export function colorEvaluator(
  * list.
  */
 export function encodedChannelTransferables(c: EncodedChannels) {
-  const buffers: ArrayBufferLike[] = [
+  // A set, since `colorValue` may be the `y` lane itself and a buffer listed
+  // twice fails the transfer.
+  const buffers = new Set<ArrayBufferLike>([
     c.x.buffer,
     c.x2.buffer,
     c.featureIndex.buffer,
-  ]
+  ])
   for (const lane of [
     c.y,
     c.row,
@@ -802,11 +829,11 @@ export function encodedChannelTransferables(c: EncodedChannels) {
     c.x2Ref,
   ]) {
     if (lane) {
-      buffers.push(lane.buffer)
+      buffers.add(lane.buffer)
     }
   }
   if (c.flatbushData) {
-    buffers.push(c.flatbushData)
+    buffers.add(c.flatbushData)
   }
-  return buffers
+  return [...buffers]
 }

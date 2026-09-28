@@ -53,7 +53,7 @@ describe('a point reads back as its whole GWAS record', () => {
             layer: mark,
             featureIndex: layer.featureIndex[i]!,
           })) as SimpleFeatureSerialized)
-    return { glyph: layer.glyph![i], color: layer.color![i], feature }
+    return { glyph: layer.glyph![i], color: layer.color?.[i], feature }
   }
 
   it("carries the file's own columns and the r² to the index", async () => {

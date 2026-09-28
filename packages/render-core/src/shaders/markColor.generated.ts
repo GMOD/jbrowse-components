@@ -7,6 +7,12 @@ export const RAMP_LINEAR = 1
 
 export const RAMP_LOG = 2
 
+export const RAMP_THRESHOLD = 3
+
+export const MAX_COLOR_CUTS = 8
+
+export const MAX_COLOR_BANDS = 9
+
 export const RAMP_NO_VALUE_BITS = 2143289345
 
 export const RAMP_NO_VALUE_COLOR = 4289703855

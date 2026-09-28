@@ -38,6 +38,7 @@ import { placeTextMarks } from './textMarks.ts'
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
+import type { MarkRamp } from '@jbrowse/render-core/marks'
 
 const REGION = {
   refName: 'ctgA',
@@ -560,9 +561,9 @@ test('an unpinned ramp domain is the union of the loaded regions extremes', () =
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [3, 8], scale: ramp([3, 8]) }]), REGION)
-  expect(display.colorRamps[0]!.domain).toEqual([3, 8])
+  expect((display.paintScales[0] as MarkRamp).domain).toEqual([3, 8])
   display.setRpcData(1, result([{ y: [1, 20], scale: ramp([1, 20]) }]), REGION)
-  expect(display.colorRamps[0]!.domain).toEqual([1, 20])
+  expect((display.paintScales[0] as MarkRamp).domain).toEqual([1, 20])
   expect(display.colorScales[0]).toMatchObject({
     kind: 'ramp',
     domain: [1, 20],
@@ -595,7 +596,7 @@ test('a pinned ramp domain is every region s, whatever they hold', () => {
     result([{ y: [1, 20], scale: ramp([1, 20], [0, 100]) }]),
     REGION,
   )
-  expect(display.colorRamps[0]!.domain).toEqual([0, 100])
+  expect((display.paintScales[0] as MarkRamp).domain).toEqual([0, 100])
 })
 
 // Two marks measuring two quantities is two plots, not two axes: the display
@@ -1060,7 +1061,11 @@ test('a colour ramp pins the end it names, and a domain beside it is named as un
       /^mark 0 encoding.color.domain: a linear or log scale reads no domain/,
     ),
   ])
-  expect(display.encodings[0]!.color).toMatchObject({
+  // a colour over the plotted field is the display's own, not a fetch input
+  expect(display.encodings[0]!.color).toBe(DEFAULT_MARK_COLOR)
+  expect(display.valueColors[0]).toMatchObject({
+    field: 'score',
+    scale: 'linear',
     domainMin: 0,
     domainMax: undefined,
   })
@@ -3089,9 +3094,10 @@ test('a colour on score paints a ramp, as the feature display s does', () => {
     { mark: 'point', encoding: { y: 'score', color: { field: 'score' } } },
     { mark: 'point', encoding: { y: 'score', color: { field: 'svtype' } } },
   ]).createDisplay()
-  expect(
-    display.encodings.map(e => (e.color as { scale: string }).scale),
-  ).toEqual(['linear', 'categorical'])
+  expect(display.valueColors.map(c => c?.scale)).toEqual(['linear', undefined])
+  expect((display.encodings[1]!.color as { scale: string }).scale).toBe(
+    'categorical',
+  )
 })
 
 test('a shape key draws its glyphs in the default blue where no colour is written', () => {

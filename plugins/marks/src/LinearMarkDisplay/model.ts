@@ -14,6 +14,7 @@ import {
   pluralize,
 } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
@@ -30,6 +31,7 @@ import {
 } from '@jbrowse/core/util/jexlFilters'
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
+import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
@@ -129,6 +131,7 @@ import {
   markRowTable,
 } from './rowTable.ts'
 import { stepChannels } from './stepChannels.ts'
+import { valueColorOf, withValueColors } from './valueColor.ts'
 
 import type { ListedSource } from '../MarkRowsRPC/MarkGetRowSources.ts'
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
@@ -159,6 +162,7 @@ import type {
 } from './markProblems.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
+import type { ValueColor } from './valueColor.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
@@ -184,7 +188,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   LinkRegion,
   LinkSizeScale,
-  MarkRamp,
+  MarkColorScale,
   RowTable,
 } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -468,6 +472,19 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Each mark's colour where it is a quantitative scale over the field
+         * the mark plots, which the display resolves off the `y` lane; the
+         * declaration and not a fetch input, so an edit to it refetches
+         * nothing. Identity-stable, since the regions are re-stamped on it.
+         */
+        get valueColors(): (ValueColor | undefined)[] {
+          const { markChannels } = this
+          return self.conf.marks.map((m, i) =>
+            valueColorOf(m, markChannels[i]!),
+          )
+        },
+        /**
+         * #getter
          * The facet's own steps as the worker takes them, run over each section
          * before any mark's; with no field to split on they run over the one
          * section there is, after the display's own steps.
@@ -747,22 +764,28 @@ export function stateModelFactory(
             self.hiddenGroupKeys,
           )
         })
+        const valueColors = stableIdentityComputed(() => self.valueColors)
+        // A colour over the plotted value is stamped onto each region here,
+        // before the rows are keyed or the sections offset, so everything
+        // downstream reads the lane and the table as though the worker had
+        // filled them.
+        const colored = createEncodeMemo(
+          () => self.featurePayloads,
+          () => valueColors.get(),
+          withValueColors,
+        )
         const keyed = createEncodeMemo(
-          () => (self.drawsKeyedRows ? self.featurePayloads : NO_REGIONS),
+          () => (self.drawsKeyedRows ? colored() : NO_REGIONS),
           () => self.rowKeys,
           (region, rowKeys) => keyRegion(region, rowKeys, self.rowsField),
         )
         const faceted = createEncodeMemo(
-          () => (self.facet ? self.featurePayloads : NO_REGIONS),
+          () => (self.facet ? colored() : NO_REGIONS),
           () => layout.get(),
           facetRegion,
         )
         const drawn = () =>
-          self.drawsKeyedRows
-            ? keyed()
-            : self.facet
-              ? faceted()
-              : self.featurePayloads
+          self.drawsKeyedRows ? keyed() : self.facet ? faceted() : colored()
         const mateRegions = stableIdentityComputed((): MateRegion[] =>
           self.host.displayedRegions.map((r, index) => ({
             index,
@@ -1105,24 +1128,35 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each mark's quantitative colour scale: the ramp its regions carry,
-         * over the domain the legend already unioned across them, its middle
-         * stop a value. A pan that widens it writes uniforms and uploads no
-         * instance bytes and no table, which is what resolving the ramp here
-         * rather than per region buys.
+         * The colour scale each mark paints through where its colour is
+         * quantitative: a ramp over the domain the legend already unioned
+         * across the regions, its middle stop a value, or a threshold's cuts
+         * and the packed colour of each interval. Both ride uniforms, so a pan
+         * that widens a domain or an edit that moves a cut uploads no instance
+         * bytes and no table.
          */
-        get colorRamps(): (MarkRamp | undefined)[] {
+        get paintScales(): (MarkColorScale | undefined)[] {
           const sections = this.legendSections
           return self.conf.marks.map((_, i) => {
             const table = colorSection(sections, i)?.scale
-            return table?.kind === 'ramp'
-              ? {
-                  domain: table.domain,
-                  scale: table.scale,
-                  lut: table.lut,
-                  mid: table.domainMid,
-                }
-              : undefined
+            if (table?.kind === 'ramp') {
+              return {
+                domain: table.domain,
+                scale: table.scale,
+                lut: table.lut,
+                mid: table.domainMid,
+              }
+            }
+            if (table?.kind === 'threshold') {
+              return {
+                cuts: table.domain,
+                colors: Uint32Array.from(
+                  thresholdPalette(table.domain.length + 1, table.range),
+                  c => cssColorToABGR(c),
+                ),
+              }
+            }
+            return undefined
           })
         },
         /**
@@ -1184,7 +1218,7 @@ export function stateModelFactory(
           const { scaleType } = self
           const scaleTypeY =
             scaleType === 'log' || scaleType === 'symlog' ? scaleType : 'linear'
-          const { colorRamps } = this
+          const { paintScales: colorScales } = this
           return resolveRenderState(self.domain, domainY => ({
             domainY,
             scaleTypeY,
@@ -1193,7 +1227,7 @@ export function stateModelFactory(
               domainY[1],
               self.symlogConstant,
             ),
-            colorRamps,
+            colorScales,
             canvasWidth,
             canvasHeight,
             bpPerPx: self.host.bpPerPx,

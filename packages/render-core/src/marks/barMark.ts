@@ -24,7 +24,7 @@ import { valueScaleUniforms } from './valueScale.ts'
 
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
-import type { MarkRamp, MarkShape } from './types.ts'
+import type { MarkColorScale, MarkShape } from './types.ts'
 import type { MarkValueScale } from './valueScale.ts'
 
 /**
@@ -39,8 +39,8 @@ export interface BarChannels extends ColorChannel, RowChannel {
 }
 
 export interface BarParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a bar whose colour is a ramp. */
-  ramp?: MarkRamp
+  /** The quantitative colour scale, for a bar whose colour is a ramp or a threshold. */
+  colorScale?: MarkColorScale
   /** The value bars grow from; a bar below it hangs down. */
   origin: number
   /**
@@ -156,7 +156,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       domainMin: params.domain[0],
       domainMax: params.domain[1],
       ...yScale,
-      ...rampUniforms(params.ramp),
+      ...rampUniforms(params.colorScale),
       originYPx: originYPx(params, band, yScale),
       rowHeight: bandHeightPx(params, frame.canvasHeight),
       rowBandPx: band,
@@ -173,7 +173,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
 
   paintBlock(ctx, channels, block, frame, params) {
     const { x, x2, y, row, count } = channels
-    const color = paintColors(channels, count, params.ramp)
+    const color = paintColors(channels, count, params.colorScale)
     const bpToPx = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
     const yScale = valueScaleUniforms(params)

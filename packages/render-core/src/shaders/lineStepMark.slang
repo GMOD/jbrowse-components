@@ -47,7 +47,13 @@ struct LineStepInstance {
 
 struct VsOut {
   float4 position : SV_Position;
-  float4 color    : COLOR0;
+  nointerpolation float4 color : COLOR0;
+  // the y range the fragment's colour is read in: a rise's own span, or a
+  // level run's value placed unclamped
+  nointerpolation float2 colorLine : TEXCOORD0;
+  nointerpolation float4 cutYsLo : TEXCOORD1;
+  nointerpolation float4 cutYsHi : TEXCOORD2;
+  float yPx : TEXCOORD3;
 };
 
 // A neighbour's y: its value's, or the origin's where it is a gap.
@@ -59,10 +65,14 @@ float neighbourYPx(float neighbour, float bandTop) {
 VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
   VsOut o;
   RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
-    markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm));
+    markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands));
   if (place.hidden) {
     o.position = float4(2.0, 2.0, 0.0, 1.0);
     o.color = float4(0.0);
+    o.colorLine = float2(0.0);
+    o.cutYsLo = float4(0.0);
+    o.cutYsHi = float4(0.0);
+    o.yPx = 0.0;
     return o;
   }
   float sx1 = lineBpToClipX(inst.x, u);
@@ -78,22 +88,38 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float sx;
   float sy;
+  float2 colorLine;
   if (seg == 0u) {
     sx = lerp(sx1 - hwx, sx1 + hwx, q.x);
     sy = lerp(max(prevPx, yPx) + hw, min(prevPx, yPx) - hw, q.y);
+    colorLine = float2(min(prevPx, yPx), max(prevPx, yPx));
   } else if (seg == 1u) {
     sx = lerp(min(sx1, sx2) - hwx, max(sx1, sx2) + hwx, q.x);
     sy = lerp(yPx + hw, yPx - hw, q.y);
+    float colorYPx = lineColorYPx(inst.y, bandTop, u);
+    colorLine = float2(colorYPx, colorYPx);
   } else {
     sx = lerp(sx2 - hwx, sx2 + hwx, q.x);
     sy = lerp(max(yPx, nextPx) + hw, min(yPx, nextPx) - hw, q.y);
+    colorLine = float2(min(yPx, nextPx), max(yPx, nextPx));
   }
   o.position = float4(sx, yPxToClipY(sy, u.canvasHeight), 0.0, 1.0);
   o.color = place.color;
+  o.colorLine = colorLine;
+  o.cutYsLo = lineCutYsPx(0, bandTop, u);
+  o.cutYsHi = lineCutYsPx(4, bandTop, u);
+  o.yPx = sy;
   return o;
 }
 
+// The quads stay flat fills: a feature's three quads overlap at the joints so
+// corners fill with no gaps, and per-fragment coverage on an edge two quads
+// both cover would double-blend there. Under a threshold the colour is read at
+// the fragment's own y along a rise, so a step across a cut changes colour at
+// the cut, and at the value's y along a level run so a thick line lying on a
+// cut stays one colour.
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
-  return v.color;
+  return lineFragmentColor(
+    clamp(v.yPx, v.colorLine.x, v.colorLine.y), v.cutYsLo, v.cutYsHi, v.color, u);
 }

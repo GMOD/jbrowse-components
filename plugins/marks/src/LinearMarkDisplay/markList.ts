@@ -2,6 +2,7 @@ import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import {
   barMark,
   defineMark,
+  isThreshold,
   lineMarkOf,
   linkMark,
   pointMark,
@@ -26,8 +27,8 @@ import type {
   LinkRegion,
   LinkSizeScale,
   Mark,
+  MarkColorScale,
   MarkFrame,
-  MarkRamp,
   MarkValueScaleType,
   RowTable,
 } from '@jbrowse/render-core/marks'
@@ -99,8 +100,8 @@ export interface MarkRenderState extends MarkFrame {
   scaleTypeY: MarkValueScaleType
   /** `scales.y.symlogConstant` resolved against `domainY`, as the axis resolves it. */
   symlogConstantY: number
-  /** Mark `i`'s colour ramp, undefined where its colour is not one. */
-  colorRamps: (MarkRamp | undefined)[]
+  /** Mark `i`'s colour scale, a ramp or a threshold, undefined where its colour is neither. */
+  colorScales: (MarkColorScale | undefined)[]
   bpPerPx: number
   origin: number
   minWidthPx: number
@@ -237,6 +238,11 @@ export function zoomInRange(
   return maxBpPerPx > 0 ? Math.min(floored, maxBpPerPx) : floored
 }
 
+// The ramp's table, for the pass's sampler; a threshold binds none.
+function rampLut(scale: MarkColorScale | undefined) {
+  return scale && !isThreshold(scale) ? scale.lut : undefined
+}
+
 function withMarkIndex(
   mark: Mark<MarkRegionData, MarkRenderState>,
   markIndex: number,
@@ -272,14 +278,16 @@ function shapeMark(entry: MarkEntry, i: number) {
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          ramp: s.colorRamps[i],
+          colorScale: s.colorScales[i],
           origin: s.origin,
           minWidthPx: s.minWidthPx,
           seamPx: CANVAS_SEAM_PX,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
+        textures: (s: MarkRenderState) => ({
+          colorRamp: rampLut(s.colorScales[i]),
+        }),
         enabled,
       })
     }
@@ -292,13 +300,15 @@ function shapeMark(entry: MarkEntry, i: number) {
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          ramp: s.colorRamps[i],
+          colorScale: s.colorScales[i],
           diameterPx: s.markSizes[i]!,
           insetPx: s.valueInsetPx,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
+        textures: (s: MarkRenderState) => ({
+          colorRamp: rampLut(s.colorScales[i]),
+        }),
         enabled,
       })
     }
@@ -311,14 +321,16 @@ function shapeMark(entry: MarkEntry, i: number) {
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          ramp: s.colorRamps[i],
+          colorScale: s.colorScales[i],
           sizePx: s.markSizes[i]!,
           minWidthPx: s.minWidthPx,
           insetPx: s.valueInsetPx,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
+        textures: (s: MarkRenderState) => ({
+          colorRamp: rampLut(s.colorScales[i]),
+        }),
         enabled,
       })
     }
@@ -334,13 +346,15 @@ function shapeMark(entry: MarkEntry, i: number) {
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          ramp: s.colorRamps[i],
+          colorScale: s.colorScales[i],
           origin: s.origin,
           lineWidth: s.markSizes[i]!,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
+        textures: (s: MarkRenderState) => ({
+          colorRamp: rampLut(s.colorScales[i]),
+        }),
         enabled,
       })
     }
@@ -369,7 +383,7 @@ function shapeMark(entry: MarkEntry, i: number) {
           domain: s.domainY,
           scaleType: s.scaleTypeY,
           symlogConstant: s.symlogConstantY,
-          ramp: s.colorRamps[i],
+          colorScale: s.colorScales[i],
           regions: s.linkRegions,
           linkShape: entry.linkShape,
           valued: entry.valued,
@@ -379,7 +393,9 @@ function shapeMark(entry: MarkEntry, i: number) {
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           rowTable: s.rowTable,
         }),
-        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
+        textures: (s: MarkRenderState) => ({
+          colorRamp: rampLut(s.colorScales[i]),
+        }),
         enabled,
       })
     }

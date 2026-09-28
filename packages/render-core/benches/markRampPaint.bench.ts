@@ -94,7 +94,7 @@ function channels(ramp: boolean): BarChannels {
   }
 }
 
-const base: Omit<BarParams, 'ramp'> = {
+const base: Omit<BarParams, 'colorScale'> = {
   domain: [0, 1],
   origin: 0,
   minWidthPx: 0,
@@ -128,17 +128,23 @@ const packed = () => {
   barMark.paintBlock(ctx, packedChannels, block, frame, base)
 }
 const baked = () => {
-  barMark.paintBlock(ctx, bakedChannels, block, frame, { ...base, ramp })
+  barMark.paintBlock(ctx, bakedChannels, block, frame, {
+    ...base,
+    colorScale: ramp,
+  })
 }
 const control = () => {
-  barMark.paintBlock(ctx, controlChannels, block, frame, { ...base, ramp })
+  barMark.paintBlock(ctx, controlChannels, block, frame, {
+    ...base,
+    colorScale: ramp,
+  })
 }
 let moved = 0
 const perPaint = () => {
   moved += 1
   barMark.paintBlock(ctx, perPaintChannels, block, frame, {
     ...base,
-    ramp: { ...ramp, domain: [0, 1000 + moved] },
+    colorScale: { ...ramp, domain: [0, 1000 + moved] },
   })
 }
 
@@ -151,7 +157,7 @@ const ARMS = [
 
 // identity: the bake and the worker's own resolution answer the same colours
 const bakedOnce = channels(true)
-barMark.paintBlock(ctx, bakedOnce, block, frame, { ...base, ramp })
+barMark.paintBlock(ctx, bakedOnce, block, frame, { ...base, colorScale: ramp })
 const bakedColors = bakedOnce.rampBake!.colors
 for (let i = 0; i < n; i++) {
   if (bakedColors[i] !== packedColors[i]) {

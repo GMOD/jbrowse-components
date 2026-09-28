@@ -129,6 +129,75 @@
       ]
     },
     {
+      "type": "QuantitativeTrack",
+      "trackId": "marks_line_posneg",
+      "name": "Mark step line split at 0",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray_posneg.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_line_posneg-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "line",
+              "encoding": {
+                "y": "score",
+                "size": 2,
+                "color": {
+                  "field": "score",
+                  "scale": "threshold",
+                  "domain": [0],
+                  "range": ["red", "blue"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "marks_line_posneg_linear",
+      "name": "Mark linear line split at 0",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray_posneg.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_line_posneg_linear-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "line",
+              "interpolate": "linear",
+              "encoding": {
+                "y": "score",
+                "size": 2,
+                "color": {
+                  "field": "score",
+                  "scale": "threshold",
+                  "domain": [0],
+                  "range": ["red", "blue"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "assemblyNames": ["volvox"],
       "adapter": {

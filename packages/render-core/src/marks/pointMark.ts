@@ -23,7 +23,7 @@ import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
-import type { MarkFrame, MarkRamp, MarkShape } from './types.ts'
+import type { MarkFrame, MarkColorScale, MarkShape } from './types.ts'
 import type { MarkValueScale } from './valueScale.ts'
 
 /**
@@ -38,10 +38,10 @@ export interface PointChannels extends ColorChannel, RowChannel {
   count: number
 }
 
-/** What the point and rule shapes share: a value scale, rows and a ramp. */
+/** What the point and rule shapes share: a value scale, rows and a colour scale. */
 export interface ValuedMarkParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a mark whose colour is a ramp. */
-  ramp?: MarkRamp
+  /** The quantitative colour scale, for a mark whose colour is a ramp or a threshold. */
+  colorScale?: MarkColorScale
   /**
    * How far inside the plot the value range ends, so a mark at a domain
    * endpoint draws whole — `glyphPaint`'s `pointInsetPx`, and the same number
@@ -73,7 +73,7 @@ export function writePointUniforms(
     domainMin: params.domain[0],
     domainMax: params.domain[1],
     ...valueScaleUniforms(params),
-    ...rampUniforms(params.ramp),
+    ...rampUniforms(params.colorScale),
     zero: 0,
     // viewportWidth and radiusPx stay in CSS units to match canvasHeight:
     // mixing a DPR-scaled radius with a CSS-scaled height draws vertically
@@ -117,7 +117,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     if (count === 0) {
       return
     }
-    const color = paintColors(channels, count, params.ramp)
+    const color = paintColors(channels, count, params.colorScale)
     const {
       diameterPx,
       domain,

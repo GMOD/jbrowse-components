@@ -23,7 +23,12 @@ export {
   RAMP_NO_VALUE_BITS,
   RAMP_NO_VALUE_COLOR,
 } from '../shaders/markColor.generated.ts'
-export { keepRampValues, rampValueBits } from './markRamp.ts'
+export {
+  isThreshold,
+  keepRampValues,
+  rampValueBits,
+  thresholdBandOf,
+} from './markRamp.ts'
 export { HIDDEN_ROW, NO_ROW_COLOR, RowKeys, buildRowTable } from './rowTable.ts'
 export { keySlot, rowColor, rowSlot } from './rowLane.ts'
 
@@ -36,8 +41,10 @@ export type {
   MarkContext2D,
   MarkFrame,
   MarkImage,
+  MarkColorScale,
   MarkRamp,
   MarkTexels,
+  MarkThreshold,
   MarkTexture,
   MarkValueScaleType,
   InkRect,

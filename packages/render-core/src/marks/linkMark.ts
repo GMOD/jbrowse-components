@@ -46,7 +46,7 @@ import type { RenderBlock } from '../renderBlock.ts'
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
 import type { RowTable } from './rowTable.ts'
-import type { InkRect, MarkFrame, MarkRamp, MarkShape } from './types.ts'
+import type { InkRect, MarkFrame, MarkColorScale, MarkShape } from './types.ts'
 import type { MarkValueScale } from './valueScale.ts'
 
 /**
@@ -105,8 +105,8 @@ export interface LinkSizeScale {
 export type LinkShape = 'dome' | 'arc' | 'line'
 
 export interface LinkParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a link whose colour is a ramp. */
-  ramp?: MarkRamp
+  /** The quantitative colour scale, for a link whose colour is a ramp or a threshold. */
+  colorScale?: MarkColorScale
   /** The view's displayed regions, indexed as `x2Region` and the block's own index are. */
   regions: readonly LinkRegion[]
   /**
@@ -785,7 +785,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       domainMin: params.domain[0],
       domainMax: params.domain[1],
       ...valueScaleUniforms(params),
-      ...rampUniforms(params.ramp),
+      ...rampUniforms(params.colorScale),
       valued: params.valued ? 1 : 0,
       linkShape: linkShapeCode(params.linkShape),
       sizeMode: sizeScale ? LINK_SIZE_SCALED : LINK_SIZE_CONSTANT,
@@ -825,7 +825,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
     if (count === 0) {
       return
     }
-    const color = paintColors(channels, count, params.ramp)
+    const color = paintColors(channels, count, params.colorScale)
     const g = linkFrame(block, frame, params)
     const dash = params.strokeDash ? [...params.strokeDash] : []
     ctx.lineCap = 'butt'

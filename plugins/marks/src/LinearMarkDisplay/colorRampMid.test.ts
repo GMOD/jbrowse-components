@@ -5,6 +5,8 @@ import {
   workerResult,
 } from './testEnv.ts'
 
+import type { MarkRamp } from '@jbrowse/render-core/marks'
+
 // A backend uploads a ramp on its table's identity, so a region that widens an
 // open domain under a declared middle moves the middle's uniform, not a table.
 test('a diverging ramp widened by a region keeps its table and its middle', () => {
@@ -32,9 +34,9 @@ test('a diverging ramp widened by a region keeps its table and its middle', () =
       ),
     )
   display.setRpcData(0, region([-1, 2]), REGION)
-  const before = display.colorRamps[0]!
+  const before = display.paintScales[0] as MarkRamp
   display.setRpcData(1, region([-5, 20]), REGION)
-  const after = display.colorRamps[0]!
+  const after = display.paintScales[0] as MarkRamp
   expect(before.domain).toEqual([-1, 2])
   expect(after.domain).toEqual([-5, 20])
   expect(after.lut).toBe(before.lut)

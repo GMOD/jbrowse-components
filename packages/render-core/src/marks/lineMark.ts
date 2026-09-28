@@ -1,13 +1,19 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
-import { getDpr, makeBpMapper } from '../canvas2dUtils.ts'
+import { CappedPath, getDpr, makeBpMapper } from '../canvas2dUtils.ts'
 import * as centerShader from '../shaders/lineCenterMark.generated.ts'
 import { GAP_Y, NO_PREV_X } from '../shaders/lineCommon.generated.ts'
 import * as stepShader from '../shaders/lineStepMark.generated.ts'
 import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
+import { normalizeScoreUnclamped } from '../shaders/scoreScale.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
-import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
+import {
+  colorBits,
+  isThreshold,
+  paintColors,
+  rampUniforms,
+} from './markRamp.ts'
 import {
   bandHeightPx,
   rowColor,
@@ -25,9 +31,9 @@ import type { RowChannel, RowParams } from './rowLane.ts'
 import type { RowTable } from './rowTable.ts'
 import type {
   InkRect,
+  MarkColorScale,
   MarkContext2D,
   MarkFrame,
-  MarkRamp,
   MarkShape,
 } from './types.ts'
 import type { MarkValueScale } from './valueScale.ts'
@@ -49,8 +55,8 @@ export interface LineChannels extends ColorChannel, RowChannel {
 }
 
 export interface LineParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a line whose colour is a ramp. */
-  ramp?: MarkRamp
+  /** The quantitative colour scale, for a line whose colour is a ramp or a threshold. */
+  colorScale?: MarkColorScale
   /** The value a step drops to across a gap. */
   origin: number
   /** Stroke width in CSS px. */
@@ -134,7 +140,7 @@ function writeLineUniforms(
     domainMin: params.domain[0],
     domainMax: params.domain[1],
     ...valueScaleUniforms(params),
-    ...rampUniforms(params.ramp),
+    ...rampUniforms(params.colorScale),
     rowHeight,
     rowBandPx: params.rowBandPx ?? rowHeight,
     rowOffsetPx: params.rowOffsetPx ?? 0,
@@ -195,28 +201,294 @@ function valueYPx(g: LineFrame, value: number, slot: number) {
   )
 }
 
-// A colour change ends the stroke batch and reopens it from the pen, so a
-// segment carries the colour of the instance it belongs to, as the shader's
-// per-instance colour does.
-function restroke(
-  ctx: MarkContext2D,
-  abgr: number,
-  inRun: boolean,
-  penX: number,
-  penY: number,
-) {
-  ctx.stroke()
-  ctx.beginPath()
-  if (inRun) {
-    ctx.moveTo(penX, penY)
-  }
-  ctx.strokeStyle = abgrToCssRgba(abgr)
+// A value's y in the band for the colour test, placed UNCLAMPED where
+// `valueYPx` clamps it to draw: the cuts go through it, and so does the line a
+// threshold colours along, as the shader's `lineColorYPx` does.
+function colorYPx(g: LineFrame, value: number, slot: number) {
+  const norm = normalizeScoreUnclamped(
+    value,
+    g.domainMin,
+    g.domainMax,
+    g.scaleType,
+    g.symlogConstant,
+  )
+  return rowBandTopPx(g.rowOffsetPx, g.pitch, slot) + (1 - norm) * g.band
 }
 
-// One polyline per run of abutting instances on a row: a rise from the origin,
-// the tops, the step at each joint, and a drop to the origin at a gap. The
-// frame's fields are locals inside the loop, since a returned object is
-// reloaded field by field per instance (benches/placeWalkers.bench.ts).
+/**
+ * What the two tracers hand a pen: the polyline's points, each with the y its
+ * colour is read at where that differs from the y it is drawn at, and the
+ * instance the next points belong to.
+ */
+interface LinePen {
+  instance(i: number): void
+  moveTo(x: number, y: number, colorY?: number): void
+  lineTo(x: number, y: number, colorY?: number): void
+  /** Reads the next segment's colour from `colorY` without moving the pen. */
+  recolor(colorY: number): void
+  endRun(): void
+  end(): void
+}
+
+// One colour per instance: a change ends the stroke batch and reopens it from
+// the pen, so a segment carries the colour of the instance it belongs to, as
+// the shader's per-instance colour does.
+class InstancePen implements LinePen {
+  private lastAbgr = -1
+  private x = 0
+  private y = 0
+  private inRun = false
+
+  constructor(
+    private readonly ctx: MarkContext2D,
+    private readonly colorOf: (i: number) => number,
+  ) {
+    ctx.beginPath()
+  }
+
+  instance(i: number) {
+    const abgr = this.colorOf(i)
+    if (abgr === this.lastAbgr) {
+      return
+    }
+    this.ctx.stroke()
+    this.ctx.beginPath()
+    if (this.inRun) {
+      this.ctx.moveTo(this.x, this.y)
+    }
+    this.ctx.strokeStyle = abgrToCssRgba(abgr)
+    this.lastAbgr = abgr
+  }
+
+  moveTo(x: number, y: number) {
+    this.ctx.moveTo(x, y)
+    this.x = x
+    this.y = y
+    this.inRun = true
+  }
+
+  lineTo(x: number, y: number) {
+    this.ctx.lineTo(x, y)
+    this.x = x
+    this.y = y
+  }
+
+  recolor() {}
+
+  endRun() {
+    this.inRun = false
+  }
+
+  end() {
+    this.ctx.stroke()
+  }
+}
+
+// The part of the segment from y0 to y1, as a fraction of it, inside the band
+// top < y <= bottom; undefined where it misses. A band owns its lower edge,
+// so a line lying on a cut takes the colour above it, as the shader does.
+function bandSpan(y0: number, y1: number, top: number, bottom: number) {
+  if (y0 === y1) {
+    return top < y0 && y0 <= bottom ? ([0, 1] as const) : undefined
+  }
+  const tTop = (top - y0) / (y1 - y0)
+  const tBottom = (bottom - y0) / (y1 - y0)
+  const t0 = Math.max(0, Math.min(tTop, tBottom))
+  const t1 = Math.min(1, Math.max(tTop, tBottom))
+  return t0 < t1 || (t0 === t1 && y0 + (y1 - y0) * t0 !== top)
+    ? ([t0, t1] as const)
+    : undefined
+}
+
+// Keeps the part of each segment inside one threshold band, cut where it
+// crosses the band's edges, so a line stroked once per band changes colour
+// where the shader's fragments do. A point's colour y is where the band test
+// reads it and its y where it draws, which part where the drawn y is clamped.
+class BandPen implements LinePen {
+  private x = 0
+  private y = 0
+  private colorY = 0
+  private drawing = false
+  private readonly path: CappedPath
+
+  constructor(
+    private readonly ctx: MarkContext2D,
+    private readonly top: number,
+    private readonly bottom: number,
+  ) {
+    this.path = new CappedPath(ctx, 'stroke')
+  }
+
+  instance() {}
+
+  moveTo(x: number, y: number, colorY = y) {
+    this.x = x
+    this.y = y
+    this.colorY = colorY
+    this.drawing = false
+  }
+
+  recolor(colorY: number) {
+    this.colorY = colorY
+  }
+
+  lineTo(x: number, y: number, colorY = y) {
+    const span = bandSpan(this.colorY, colorY, this.top, this.bottom)
+    if (span) {
+      const [t0, t1] = span
+      if (this.path.add()) {
+        this.drawing = false
+      }
+      if (!this.drawing || t0 > 0) {
+        this.ctx.moveTo(this.x + (x - this.x) * t0, this.y + (y - this.y) * t0)
+      }
+      if (t0 < t1 || (t0 === 0 && t1 === 1)) {
+        this.ctx.lineTo(this.x + (x - this.x) * t1, this.y + (y - this.y) * t1)
+      }
+      this.drawing = t1 === 1
+    } else {
+      this.drawing = false
+    }
+    this.x = x
+    this.y = y
+    this.colorY = colorY
+  }
+
+  endRun() {
+    this.drawing = false
+  }
+
+  end() {
+    this.path.flush()
+  }
+}
+
+// The step polyline over `indices`, in order: a rise from the origin, the top
+// across the span, the step at each joint and a drop to the origin at a gap.
+// A rise is coloured along the y it is drawn at, a level run by its value's
+// colour y, as the shader reads them.
+function traceStep(
+  pen: LinePen,
+  c: LineChannels,
+  g: LineFrame,
+  rows: ArrayLike<number>,
+  indices: Iterable<number>,
+  origin: number,
+) {
+  const { x, x2, y, row, count } = c
+  let inRun = false
+  for (const i of indices) {
+    const slot = rowSlot(row, i, g.table)
+    if (slot === undefined) {
+      if (inRun) {
+        pen.endRun()
+        inRun = false
+      }
+      continue
+    }
+    pen.instance(i)
+    const x1 = g.bpToPx(x[i]!)
+    const xb = g.bpToPx(x2[i]!)
+    const top = valueYPx(g, y[i]!, slot)
+    const originY = valueYPx(g, origin, slot)
+    const colorTop = colorYPx(g, y[i]!, slot)
+    if (!inRun) {
+      pen.moveTo(x1, originY)
+      inRun = true
+    }
+    pen.lineTo(x1, top)
+    pen.recolor(colorTop)
+    pen.lineTo(xb, top, colorTop)
+    pen.recolor(top)
+    if (!(i < count - 1 && abutsBefore(c, rows, i + 1))) {
+      pen.lineTo(xb, originY)
+      pen.endRun()
+      inRun = false
+    }
+  }
+}
+
+// The linear polyline over `indices`: one run per stretch of linked midpoints
+// on a row, a break opening a new subpath with a zero-length segment, which
+// paints the dot the shader's collapsed capsule draws.
+function traceCenter(
+  pen: LinePen,
+  c: LineChannels,
+  g: LineFrame,
+  rows: ArrayLike<number>,
+  indices: Iterable<number>,
+) {
+  const { x, x2, y, row } = c
+  for (const i of indices) {
+    const slot = rowSlot(row, i, g.table)
+    if (slot === undefined) {
+      continue
+    }
+    pen.instance(i)
+    const cx = (g.bpToPx(x[i]!) + g.bpToPx(x2[i]!)) / 2
+    const cy = valueYPx(g, y[i]!, slot)
+    const colorY = colorYPx(g, y[i]!, slot)
+    const linked =
+      linksBefore(c, rows, i) && rowSlot(row, i - 1, g.table) !== undefined
+    if (!linked) {
+      pen.moveTo(cx, cy, colorY)
+    }
+    pen.lineTo(cx, cy, colorY)
+  }
+}
+
+type Trace = (pen: LinePen, indices: Iterable<number>) => void
+
+// Under a threshold the line is stroked once per band per row, each pass
+// keeping the parts of the polyline inside its band; otherwise once, in each
+// instance's own colour.
+function paintLine(
+  ctx: MarkContext2D,
+  c: LineChannels,
+  g: LineFrame,
+  params: LineParams,
+  trace: Trace,
+) {
+  const { row, count } = c
+  const scale = params.colorScale
+  if (scale && isThreshold(scale) && c.colorValue) {
+    const bySlot = new Map<number, number[]>()
+    for (let i = 0; i < count; i++) {
+      const slot = rowSlot(row, i, g.table)
+      if (slot !== undefined) {
+        const held = bySlot.get(slot)
+        if (held) {
+          held.push(i)
+        } else {
+          bySlot.set(slot, [i])
+        }
+      }
+    }
+    const { cuts, colors } = scale
+    for (const [slot, indices] of bySlot) {
+      const cutYs = cuts.map(cut => colorYPx(g, cut, slot))
+      for (let k = 0; k <= cuts.length; k++) {
+        ctx.strokeStyle = abgrToCssRgba(colors[k] ?? 0)
+        const pen = new BandPen(
+          ctx,
+          k < cuts.length ? cutYs[k]! : Number.NEGATIVE_INFINITY,
+          k > 0 ? cutYs[k - 1]! : Number.POSITIVE_INFINITY,
+        )
+        trace(pen, indices)
+        pen.end()
+      }
+    }
+    return
+  }
+  const color = paintColors(c, count, scale)
+  const pen = new InstancePen(ctx, i => rowColor(color[i]!, row, i, g.table))
+  trace(
+    pen,
+    Array.from({ length: count }, (_, i) => i),
+  )
+  pen.end()
+}
+
 function paintStep(
   ctx: MarkContext2D,
   c: LineChannels,
@@ -224,60 +496,17 @@ function paintStep(
   frame: MarkFrame,
   params: LineParams,
 ) {
-  const { x, x2, y, row, count } = c
-  if (count === 0) {
+  if (c.count === 0) {
     return
   }
-  const color = paintColors(c, count, params.ramp)
   const g = lineFrame(block, frame, params)
-  const { bpToPx, table } = g
-  const rows = rowLane(row, count)
+  const rows = rowLane(c.row, c.count)
   ctx.lineWidth = params.lineWidth
-  let lastAbgr = -1
-  let inRun = false
-  let penX = 0
-  let penY = 0
-  ctx.beginPath()
-  for (let i = 0; i < count; i++) {
-    const slot = rowSlot(row, i, table)
-    if (slot === undefined) {
-      if (inRun) {
-        ctx.stroke()
-        ctx.beginPath()
-        inRun = false
-      }
-      continue
-    }
-    const abgr = rowColor(color[i]!, row, i, table)
-    if (abgr !== lastAbgr) {
-      restroke(ctx, abgr, inRun, penX, penY)
-      lastAbgr = abgr
-    }
-    const x1 = bpToPx(x[i]!)
-    const xb = bpToPx(x2[i]!)
-    const top = valueYPx(g, y[i]!, slot)
-    const originY = valueYPx(g, params.origin, slot)
-    if (inRun) {
-      ctx.lineTo(x1, top)
-    } else {
-      ctx.moveTo(x1, originY)
-      ctx.lineTo(x1, top)
-      inRun = true
-    }
-    ctx.lineTo(xb, top)
-    penX = xb
-    penY = top
-    if (!(i < count - 1 && abutsBefore(c, rows, i + 1))) {
-      penY = originY
-      ctx.lineTo(xb, penY)
-      inRun = false
-    }
-  }
-  ctx.stroke()
+  paintLine(ctx, c, g, params, (pen, indices) => {
+    traceStep(pen, c, g, rows, indices, params.origin)
+  })
 }
 
-// One polyline per run of midpoints on a row, round-joined and round-capped so
-// a break paints the dot the shader's collapsed capsule draws.
 function paintCenter(
   ctx: MarkContext2D,
   c: LineChannels,
@@ -285,45 +514,18 @@ function paintCenter(
   frame: MarkFrame,
   params: LineParams,
 ) {
-  const { x, x2, y, row, count } = c
-  if (count === 0) {
+  if (c.count === 0) {
     return
   }
-  const color = paintColors(c, count, params.ramp)
   const g = lineFrame(block, frame, params)
-  const { bpToPx, table } = g
-  const rows = rowLane(row, count)
+  const rows = rowLane(c.row, c.count)
   ctx.lineWidth = params.lineWidth
+  // Round joins and caps match the GPU capsule so sharp bends do not nick.
   ctx.lineJoin = 'round'
   ctx.lineCap = 'round'
-  let lastAbgr = -1
-  let penX = 0
-  let penY = 0
-  ctx.beginPath()
-  for (let i = 0; i < count; i++) {
-    const slot = rowSlot(row, i, table)
-    if (slot === undefined) {
-      continue
-    }
-    const cx = (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2
-    const cy = valueYPx(g, y[i]!, slot)
-    const linked =
-      linksBefore(c, rows, i) && rowSlot(row, i - 1, table) !== undefined
-    const abgr = rowColor(color[i]!, row, i, table)
-    if (abgr !== lastAbgr) {
-      restroke(ctx, abgr, linked, penX, penY)
-      lastAbgr = abgr
-    }
-    if (linked) {
-      ctx.lineTo(cx, cy)
-    } else {
-      ctx.moveTo(cx, cy)
-      ctx.lineTo(cx, cy)
-    }
-    penX = cx
-    penY = cy
-  }
-  ctx.stroke()
+  paintLine(ctx, c, g, params, (pen, indices) => {
+    traceCenter(pen, c, g, rows, indices)
+  })
 }
 
 function box(

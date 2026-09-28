@@ -209,3 +209,30 @@ test('interpolate picks the variant', () => {
   expect(lineMarkOf('step')).toBe(lineStepMark)
   expect(lineMarkOf('linear')).toBe(lineCenterMark)
 })
+
+test('under a threshold a step is stroked once per band, a rise across the cut changing colour at it', () => {
+  const c = channels([
+    { x: 10, x2: 20, y: 2 },
+    { x: 20, x2: 30, y: 8 },
+  ])
+  c.colorValue = c.y
+  const { ctx, calls } = mockCtx()
+  lineStepMark.paintBlock(ctx, c, block, frame, {
+    ...params,
+    colorScale: { cuts: [5], colors: Uint32Array.of(RED, BLUE) },
+  })
+  const red = abgrToCssRgba(RED)
+  const blue = abgrToCssRgba(BLUE)
+  expect(calls.map(r => [r.fillStyle, ...px([r])[0]!])).toEqual([
+    // below the cut at y 5 (50 px): the first rise, the first top, and the
+    // lower halves of the joint's rise and the final drop
+    [red, 99, 79, 2, 22],
+    [red, 99, 79, 102, 2],
+    [red, 199, 49, 2, 32],
+    [red, 299, 49, 2, 52],
+    // above it: the upper halves and the second top
+    [blue, 199, 19, 2, 32],
+    [blue, 199, 19, 102, 2],
+    [blue, 299, 19, 2, 32],
+  ])
+})

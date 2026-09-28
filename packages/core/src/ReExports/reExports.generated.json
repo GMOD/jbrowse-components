@@ -4978,6 +4978,7 @@
         "ellipseDistance",
         "ellipseNearest",
         "inkOfInstances",
+        "isThreshold",
         "keepRampValues",
         "keySlot",
         "lineCenterMark",
@@ -4998,6 +4999,7 @@
         "ruleMark",
         "shiftInk",
         "spanMark",
+        "thresholdBandOf",
         "valueWindow",
         "withPassId"
       ],
@@ -5166,6 +5168,7 @@
         "UNIFORMS_SIZE_BYTES",
         "UNIFORM_OFFSET_F32",
         "UNIFORM_OFFSET_I32",
+        "UNIFORM_SLOT_ARRAYS",
         "VERTEX_ATTRIBUTES",
         "VERTS_PER_INSTANCE",
         "getInstanceColor",
@@ -5179,6 +5182,8 @@
         "setInstanceX",
         "setInstanceX2",
         "setInstanceY",
+        "setUniformColorBands",
+        "setUniformColorCuts",
         "writeUniforms"
       ],
       "worker": "real"
@@ -5390,6 +5395,7 @@
         "UNIFORMS_SIZE_BYTES",
         "UNIFORM_OFFSET_F32",
         "UNIFORM_OFFSET_I32",
+        "UNIFORM_SLOT_ARRAYS",
         "VERTEX_ATTRIBUTES",
         "VERTS_PER_INSTANCE",
         "getInstanceColor",
@@ -5409,6 +5415,8 @@
         "setInstanceX",
         "setInstanceX2",
         "setInstanceY",
+        "setUniformColorBands",
+        "setUniformColorCuts",
         "writeUniforms"
       ],
       "worker": "real"
@@ -5433,6 +5441,7 @@
         "UNIFORMS_SIZE_BYTES",
         "UNIFORM_OFFSET_F32",
         "UNIFORM_OFFSET_I32",
+        "UNIFORM_SLOT_ARRAYS",
         "VERTEX_ATTRIBUTES",
         "VERTS_PER_INSTANCE",
         "getInstanceColor",
@@ -5450,6 +5459,8 @@
         "setInstanceX",
         "setInstanceX2",
         "setInstanceY",
+        "setUniformColorBands",
+        "setUniformColorCuts",
         "writeUniforms"
       ],
       "worker": "real"
@@ -5490,12 +5501,15 @@
     "@jbrowse/render-core/shaders/markColorConsts": {
       "package": "@jbrowse/render-core",
       "names": [
+        "MAX_COLOR_BANDS",
+        "MAX_COLOR_CUTS",
         "RAMP_LINEAR",
         "RAMP_LOG",
         "RAMP_NONE",
         "RAMP_NOT_A_NUMBER_COLOR",
         "RAMP_NO_VALUE_BITS",
-        "RAMP_NO_VALUE_COLOR"
+        "RAMP_NO_VALUE_COLOR",
+        "RAMP_THRESHOLD"
       ],
       "worker": "real"
     },
@@ -5549,6 +5563,7 @@
         "UNIFORMS_SIZE_BYTES",
         "UNIFORM_OFFSET_F32",
         "UNIFORM_OFFSET_I32",
+        "UNIFORM_SLOT_ARRAYS",
         "VERTEX_ATTRIBUTES",
         "VERTS_PER_INSTANCE",
         "getInstanceColor",
@@ -5564,6 +5579,8 @@
         "setInstanceX",
         "setInstanceX2",
         "setInstanceY",
+        "setUniformColorBands",
+        "setUniformColorCuts",
         "writeUniforms"
       ],
       "worker": "real"

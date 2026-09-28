@@ -44,23 +44,31 @@ struct LineCenterInstance {
 
 struct VsOut {
   float4 position : SV_Position;
-  float4 color    : COLOR0;
+  nointerpolation float4 color : COLOR0;
   // signed px distance (along, across) from the segment centre, and the
   // segment's half-length, for the capsule SDF
   float2 localPos : TEXCOORD0;
   nointerpolation float segHalfLen : TEXCOORD1;
+  // the colour line's y at the segment centre and its rise per px along, so
+  // the fragment reads the value under itself
+  nointerpolation float2 colorLine : TEXCOORD2;
+  nointerpolation float4 cutYsLo : TEXCOORD3;
+  nointerpolation float4 cutYsHi : TEXCOORD4;
 };
 
 [shader("vertex")]
 VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
   VsOut o;
   RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
-    markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm));
+    markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands));
   if (place.hidden) {
     o.position = float4(2.0, 2.0, 0.0, 1.0);
     o.color = float4(0.0);
     o.localPos = float2(0.0);
     o.segHalfLen = 0.0;
+    o.colorLine = float2(0.0);
+    o.cutYsLo = float4(0.0);
+    o.cutYsHi = float4(0.0);
     return o;
   }
   float sx1 = lineBpToClipX(inst.x, u);
@@ -94,6 +102,13 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
   o.color = place.color;
   o.localPos = local;
   o.segHalfLen = len * 0.5;
+  float currColorYPx = lineColorYPx(inst.y, bandTop, u);
+  float prevColorYPx = hasPrev ? lineColorYPx(inst.prevY, bandTop, u) : currColorYPx;
+  o.colorLine = float2(
+    (prevColorYPx + currColorYPx) * 0.5,
+    len > CAPSULE_MIN_LEN_PX ? (currColorYPx - prevColorYPx) / len : 0.0);
+  o.cutYsLo = lineCutYsPx(0, bandTop, u);
+  o.cutYsHi = lineCutYsPx(4, bandTop, u);
   return o;
 }
 
@@ -104,6 +119,9 @@ float4 fs_main(VsOut v) : SV_Target {
   if (alpha <= 0.0) {
     discard;
   }
+  float along = clamp(v.localPos.x, -v.segHalfLen, v.segHalfLen);
+  float4 color = lineFragmentColor(
+    v.colorLine.x + v.colorLine.y * along, v.cutYsLo, v.cutYsHi, v.color, u);
   // premultiplied, so same-colour overlaps union under the max blend
-  return float4(v.color.rgb * alpha, v.color.a * alpha);
+  return float4(color.rgb * alpha, color.a * alpha);
 }

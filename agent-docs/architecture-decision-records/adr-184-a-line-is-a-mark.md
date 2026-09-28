@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "render-core gains a `line` shape in two modules, `lineStepMark` (28 bytes an instance: the previous and next values) and `lineCenterMark` (32 bytes: the previous span and value), over `lineCommon`'s one uniform block; the mark display draws `mark: 'line'` through them, `interpolate: 'step' | 'linear'` choosing the module and `encoding.size` the width. ADR-127 declined the same shape because wiggle was not its second consumer; Colin's 2026-09-27 decision to move wiggle onto the mark display makes it one, and the shape lands ahead of the port because the port is what it is for. Colour is per instance for now: the pos/neg split along a rise is the shader-side threshold over the value lane, which the port's next stage adds"
+summary: "render-core gains a `line` shape in two modules, `lineStepMark` (28 bytes an instance: the previous and next values) and `lineCenterMark` (32 bytes: the previous span and value), over `lineCommon`'s one uniform block; the mark display draws `mark: 'line'` through them, `interpolate: 'step' | 'linear'` choosing the module and `encoding.size` the width. ADR-127 declined the same shape because wiggle was not its second consumer; Colin's 2026-09-27 decision to move wiggle onto the mark display makes it one, and the shape lands ahead of the port because the port is what it is for. Colour is per instance for now: the pos/neg split along a rise is the shader-side threshold over the value lane, which the port's next stage adds. Amended 2026-09-28: ADR-185 lands that stage"
 ---
 
 # ADR-184: A line is a mark
@@ -68,6 +68,13 @@ rebuilt on the grammar.
 - ADR-127's bench (`git show 07de7c5cef:packages/render-core/benches/lineMark.bench.ts`)
   measured the spike; the port's own benches re-measure the shape against
   wiggle's packers at the port.
+
+### Amended 2026-09-28: the threshold landed
+
+[ADR-185](adr-185-a-colour-over-the-plotted-value-reads-the-y-lane.md) resolves
+a threshold in the shader and reads a colour over the plotted value off the
+`y` lane, so a line's rise across a cut changes colour at the cut and a
+two-colour line is one mark.
 
 ## Rejected alternatives
 

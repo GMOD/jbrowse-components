@@ -4,7 +4,8 @@ import { assembleLocString } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { SHAPE_CODES, SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
-import { keySlot } from '@jbrowse/render-core/marks'
+import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
+import { keySlot, thresholdBandOf } from '@jbrowse/render-core/marks'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -64,6 +65,20 @@ function colorRow(
   const swatch =
     color === undefined ? undefined : { color: abgrToCssRgba(color) }
   const section = colorSection(sections, hit.markIndex)
+  if (section?.scale.kind === 'threshold' && colorValue !== undefined) {
+    // the interval the value falls in, as the key names and colours it
+    const { scale } = section
+    const rows = thresholdKeyEntries(scale.domain, scale.range, scale)
+    const row = Number.isNaN(colorValue)
+      ? undefined
+      : rows[thresholdBandOf(colorValue, scale.domain)]
+    return {
+      channel: 'color',
+      field: scale.field,
+      value: `${toP(colorValue, 4)}${row ? ` (${row.label})` : ''}`,
+      swatch: row ? { color: row.color } : swatch,
+    }
+  }
   if (section) {
     return {
       channel: 'color',

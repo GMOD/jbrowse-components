@@ -48,6 +48,11 @@ struct Uniforms {
   float  rampMin;
   float  rampMax;
   float  rampMidNorm;
+  // `markColor`'s threshold: how many cuts are in use, the cuts four to a
+  // vector, and the colour of each interval between them.
+  int    colorCutCount;
+  float4 colorCuts[2];
+  float4 colorBands[MAX_COLOR_BANDS];
   float  zero;
   float  viewportWidth;
   float  radiusPx;
@@ -139,7 +144,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
 
   VsOut o;
   RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
-    markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm));
+    markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands));
   if (place.hidden) {
     o.position = float4(2.0, 2.0, 0.0, 1.0);
     o.color = float4(0.0);

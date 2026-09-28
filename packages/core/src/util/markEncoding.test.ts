@@ -593,21 +593,17 @@ test('a pinned domain says so, so the display leaves it alone', () => {
   expect(r.scale?.kind === 'ramp' && r.scale.domain).toEqual([1, 100])
 })
 
-test('a threshold colour packs one palette entry per interval', () => {
-  const palette = ['#357ebd', '#5cb85c', '#d43f3a']
-  const r = encodeFeatures(
-    features,
-    {
-      color: {
-        field: 'score',
-        scale: 'threshold',
-        domain: [20, 30],
-        range: palette,
-      },
-    },
-    [...ALL, 'colorValue'],
-    { jexl },
-  )
+const THRESHOLD_PALETTE = ['#357ebd', '#5cb85c', '#d43f3a']
+const THRESHOLD = {
+  field: 'score',
+  scale: 'threshold' as const,
+  domain: [20, 30],
+  range: THRESHOLD_PALETTE,
+}
+
+test('a threshold colour packs one palette entry per interval for a caller naming the colour lane alone', () => {
+  const palette = THRESHOLD_PALETTE
+  const r = encodeFeatures(features, { color: THRESHOLD }, ALL, { jexl })
   expect(r.colorValue).toBeUndefined()
   // scores 10, 40 and 25, then no score, then text that is no number: the
   // two keyless cases paint the greys the feature display's threshold paints
@@ -629,6 +625,67 @@ test('a threshold colour packs one palette entry per interval', () => {
     missing: true,
     notNumber: true,
   })
+})
+
+test('a threshold colour ships its raw values to a caller that resolves it, marking the keyless cases as a ramp does', () => {
+  const r = encodeFeatures(
+    features,
+    { color: THRESHOLD },
+    [...ALL, 'colorValue'],
+    { jexl },
+  )
+  expect(r.color).toBeUndefined()
+  const { colorValue } = r
+  expect([...colorValue.slice(0, 3)]).toEqual([10, 40, 25])
+  const bits = new Uint32Array(
+    colorValue.buffer,
+    colorValue.byteOffset,
+    colorValue.length,
+  )
+  expect(bits[3]).toBe(RAMP_NO_VALUE_BITS)
+  expect(Number.isNaN(colorValue[4])).toBe(true)
+  expect(r.scale).toEqual({
+    kind: 'threshold',
+    field: 'score',
+    domain: [20, 30],
+    range: THRESHOLD_PALETTE,
+    missing: true,
+    notNumber: true,
+  })
+})
+
+test('a quantitative colour over the plotted field is the y lane itself, so it costs no lane', () => {
+  const plotted = features.slice(0, 3)
+  for (const color of [
+    THRESHOLD,
+    { field: 'score', scale: 'linear' as const },
+    { field: 'score', scale: 'log' as const },
+  ]) {
+    const r = encodeFeatures(
+      plotted,
+      { y: 'score', color },
+      [...ALL, 'colorValue'],
+      { jexl },
+    )
+    expect(r.colorValue).toBe(r.y)
+    expect(r.color).toBeUndefined()
+    expect(r.scale?.field).toBe('score')
+    if (r.scale?.kind === 'ramp') {
+      expect(r.scale.extent).toEqual([10, 40])
+      expect(r.scale.missing).toBeUndefined()
+    }
+    expect(new Set(encodedChannelTransferables(r)).size).toBe(
+      encodedChannelTransferables(r).length,
+    )
+  }
+  // another field keeps its own lane
+  const own = encodeFeatures(
+    plotted,
+    { y: 'score', color: { field: 'strand', scale: 'linear' } },
+    [...ALL, 'colorValue'],
+    { jexl },
+  )
+  expect(own.colorValue).not.toBe(own.y)
 })
 
 test('a threshold table flags only the keyless cases a region met', () => {

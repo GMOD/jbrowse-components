@@ -116,6 +116,20 @@ export interface MarkRamp {
   mid?: number
 }
 
+/**
+ * A threshold a value channel's raw `colorValue`s resolve through each frame:
+ * the ascending cut points, at most `MAX_COLOR_CUTS` of them, and one packed
+ * ABGR per interval between them, `cuts.length + 1` in all. The cuts and
+ * colours ride uniforms, so an edit moves them and uploads no instance bytes.
+ */
+export interface MarkThreshold {
+  cuts: readonly number[]
+  colors: Uint32Array
+}
+
+/** The scale a quantitative colour channel resolves through: a ramp or a threshold. */
+export type MarkColorScale = MarkRamp | MarkThreshold
+
 /** A horizontal strip of the canvas, in CSS px down from its top edge. */
 export interface MarkBand {
   top: number

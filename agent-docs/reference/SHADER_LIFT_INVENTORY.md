@@ -77,12 +77,12 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 27 | `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, `covSegQuad`, … |
-| type 'ptr' is outside the supported scalar subset | 19 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 17 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
-| type 'vec4' is outside the supported scalar subset | 14 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 20 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
+| type 'vec4' is outside the supported scalar subset | 19 | `bandColorAt`, `colorCutAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, … |
+| type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'Instance' is outside the supported scalar subset | 4 | `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
-| type 'texture_2d' is outside the supported scalar subset | 4 | `markInstanceColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
+| type 'texture_2d' is outside the supported scalar subset | 4 | `markScaleColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | type 'vec3' is outside the supported scalar subset | 4 | `baseColor`, `bpRange`, `categoryPaletteColor`, `linkedReadColorByIndex` |
 | type 'VsOut' is outside the supported scalar subset | 3 | `linkDash`, `linkDashAlong`, `linkDistance` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |

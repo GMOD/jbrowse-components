@@ -24,6 +24,7 @@ import {
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_X2,
 } from './markVocabulary.ts'
+import { valueColorOf } from './valueColor.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
 import type { MarkEntry } from './markList.ts'
@@ -81,8 +82,13 @@ export function encodingOf(
     // between linear and log would refetch every region to no effect.
     y: reads('y') && y ? y : undefined,
     row: (reads('row') && row) || undefined,
-    color:
-      paintedColorEncoding(featureColorEncoding(color)) ?? DEFAULT_MARK_COLOR,
+    // A quantitative colour over the plotted field is the display's to
+    // resolve off the `y` lane (`valueColor.ts`), so it crosses as the
+    // default and an edit to its cuts, ends or colours refetches nothing.
+    color: valueColorOf(mark, filled)
+      ? DEFAULT_MARK_COLOR
+      : (paintedColorEncoding(featureColorEncoding(color)) ??
+        DEFAULT_MARK_COLOR),
     ...(reads('shape') ? { shape: shapeEncoding } : {}),
     ...(reads('text') && text ? { text } : {}),
     ...(reads('size') && size.field !== ''
@@ -264,10 +270,12 @@ export function markLayerRequest(
     zoomInRange(mark, bpPerPx),
     binEdges,
   )
+  const valueColored = valueColorOf(mark, channels) !== undefined
   const lanes = markLanes(mark.mark).filter(
     lane =>
       (lane !== 'y' || marksValue(mark, channels)) &&
-      (lane !== 'size' || mark.encoding.size.field !== ''),
+      (lane !== 'size' || mark.encoding.size.field !== '') &&
+      ((lane !== 'color' && lane !== 'colorValue') || !valueColored),
   )
   return {
     encoding: encodingOf(mark, channels),

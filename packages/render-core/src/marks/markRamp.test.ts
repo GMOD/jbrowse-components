@@ -15,14 +15,16 @@ import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import {
   colorBits,
+  isThreshold,
   keepRampValues,
   paintColors,
   rampUniforms,
   rampValueBits,
+  thresholdBandOf,
 } from './markRamp.ts'
 
 import type { BarChannels, BarParams } from './barMark.ts'
-import type { MarkRamp } from './types.ts'
+import type { MarkRamp, MarkThreshold } from './types.ts'
 
 const block = {
   displayedRegionIndex: 0,
@@ -64,7 +66,7 @@ const params: BarParams = {
   origin: 0,
   minWidthPx: 0,
   seamPx: 0,
-  ramp,
+  colorScale: ramp,
 }
 
 test('the colour lane carries the value bits, so a ramp adds no instance byte', () => {
@@ -166,21 +168,68 @@ test('a log ramp reads the domain the way the shader does', () => {
   expect((linear[1]! >>> 0) & 255).toBe(26)
 })
 
-test('the ramp reaches the shader as four uniforms and nothing else', () => {
-  expect(rampUniforms(undefined)).toEqual({
+test('the ramp reaches the shader as its mode, domain and middle, the threshold slots empty', () => {
+  expect(rampUniforms(undefined)).toMatchObject({
     rampMode: 0,
     rampMin: 0,
     rampMax: 1,
     rampMidNorm: 0.5,
+    colorCutCount: 0,
   })
-  expect(rampUniforms(ramp)).toEqual({
+  expect(rampUniforms(ramp)).toMatchObject({
     rampMode: 1,
     rampMin: 0,
     rampMax: 100,
     rampMidNorm: 0.5,
+    colorCutCount: 0,
   })
   expect(rampUniforms({ ...ramp, mid: 25 }).rampMidNorm).toBe(0.25)
   expect(rampUniforms({ ...ramp, scale: 'log' }).rampMode).toBe(2)
+})
+
+const RED = 0xff0000ff
+const GREEN = 0xff00ff00
+const BLUE = 0xffff0000
+
+const threshold: MarkThreshold = {
+  cuts: [20, 30],
+  colors: Uint32Array.of(RED, GREEN, BLUE),
+}
+
+test('a threshold reaches the shader as its cuts, four to a vector, and a colour per interval', () => {
+  const u = rampUniforms(threshold)
+  expect(u.rampMode).toBe(3)
+  expect(u.colorCutCount).toBe(2)
+  expect(u.colorCuts).toEqual([
+    [20, 30, 0, 0],
+    [0, 0, 0, 0],
+  ])
+  expect(u.colorBands.slice(0, 3)).toEqual([
+    [1, 0, 0, 1],
+    [0, 1, 0, 1],
+    [0, 0, 1, 1],
+  ])
+  expect(u.colorBands[3]).toEqual([0, 0, 0, 0])
+})
+
+test('the threshold bake paints each value the colour of its interval, as the shader does', () => {
+  const c = bars([10, 20, 25, 30, 40, Infinity, -Infinity])
+  const colors = paintColors(c, 7, threshold) as Uint32Array
+  expect([...colors]).toEqual([RED, GREEN, GREEN, BLUE, BLUE, BLUE, RED])
+  expect(thresholdBandOf(29.999, [20, 30])).toBe(1)
+  expect(isThreshold(threshold)).toBe(true)
+  expect(isThreshold(ramp)).toBe(false)
+})
+
+test('a moved cut redoes the threshold bake and an unchanged one reuses it', () => {
+  const c = bars([10, 25])
+  const first = paintColors(c, 2, threshold)
+  expect(paintColors(c, 2, { ...threshold, cuts: [20, 30] })).toBe(first)
+  const moved = paintColors(c, 2, {
+    ...threshold,
+    cuts: [5, 30],
+  }) as Uint32Array
+  expect([...moved]).toEqual([GREEN, GREEN])
 })
 
 // The table is straight; a declared middle is where the painter reads it, so
@@ -217,5 +266,5 @@ test.each([
   ['link GLSL', LINK_GLSL],
 ])('%s reads the ramp through its middle', (_name, src) => {
   expect(src).toMatch(/rampMidT_0\(normalizeScore_0\(/)
-  expect(src).toMatch(/markInstanceColor_0\([^;]*u_0\.rampMidNorm_0\)/)
+  expect(src).toMatch(/markScaleColor_0\([^;]*u_0\.rampMidNorm_0/)
 })

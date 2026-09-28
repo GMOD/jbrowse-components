@@ -35,6 +35,24 @@ const suite: TestSuite = {
       config,
       displayTestId,
     }),
+    // A threshold over the plotted value colours each fragment by the value
+    // under it, so a rise across the cut changes colour at the axis: the
+    // step's flat quads and the linear line's capsules both read it.
+    ...(
+      [
+        ['step', 'marks_line_posneg'],
+        ['linear', 'marks_line_posneg_linear'],
+      ] as const
+    ).map(([variant, track]) =>
+      lgvSnapshotTest({
+        name: `a ${variant} line over a positive and negative BigWig, split at 0 by a threshold`,
+        snapshot: `mark-line-threshold-${variant}`,
+        loc: 'ctgA:1-50000',
+        tracks: [track],
+        config,
+        displayTestId,
+      }),
+    ),
     lgvSnapshotTest({
       name: 'points with a shape scale over a field',
       snapshot: 'mark-points-glyph',

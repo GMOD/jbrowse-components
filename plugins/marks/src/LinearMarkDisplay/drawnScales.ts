@@ -139,7 +139,10 @@ export function drawnScales(
   drawnKeys?: Uint8Array,
 ): StoredLayer {
   const { count, color, colorValue, scale, shapeScale, sizeScale } = layer
-  const ramp = scale?.kind === 'ramp' && colorValue ? colorValue : undefined
+  const ramp =
+    (scale?.kind === 'ramp' || scale?.kind === 'threshold') && colorValue
+      ? colorValue
+      : undefined
   const askedColors = new Set(
     !color || ramp
       ? []
@@ -211,13 +214,15 @@ export function drawnScales(
               missing,
               notNumber,
             }
-          : (scale?.kind === 'threshold' || scale?.kind === 'ramp') && color
-            ? {
-                ...scale,
-                missing: scale.missing && colors.has(NO_VALUE_ABGR),
-                notNumber: scale.notNumber && colors.has(MISCONFIGURED_ABGR),
-              }
-            : scale,
+          : ramp && scale?.kind === 'threshold'
+            ? { ...scale, missing, notNumber }
+            : (scale?.kind === 'threshold' || scale?.kind === 'ramp') && color
+              ? {
+                  ...scale,
+                  missing: scale.missing && colors.has(NO_VALUE_ABGR),
+                  notNumber: scale.notNumber && colors.has(MISCONFIGURED_ABGR),
+                }
+              : scale,
     shapeScale: shapeScale && {
       ...shapeScale,
       entries: shapeScale.entries.filter(e => glyphs.has(SHAPE_CODES[e.shape])),

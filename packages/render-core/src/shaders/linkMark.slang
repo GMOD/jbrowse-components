@@ -113,6 +113,11 @@ struct Uniforms {
   float  rampMin;
   float  rampMax;
   float  rampMidNorm;
+  // `markColor`'s threshold: how many cuts are in use, the cuts four to a
+  // vector, and the colour of each interval between them.
+  int    colorCutCount;
+  float4 colorCuts[2];
+  float4 colorBands[MAX_COLOR_BANDS];
   // Whether the mark names a `y`: the apex is then the value's height.
   int    valued;
   int    linkShape;
@@ -356,7 +361,7 @@ LinkVertex footVertex(LinkInstance inst, LinkEnv e, uint f, uint k) {
 [shader("vertex")]
 VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
-    markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm));
+    markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands));
   LinkEnv e;
   e.strokeHalf = 0.5 * linkStrokeWidthPx(
     inst.size, u.sizeMode, u.sizeConstantPx, u.sizeDomainMin, u.sizeDomainMax,

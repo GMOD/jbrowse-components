@@ -19,6 +19,9 @@ probes come from that review and nobody has re-measured them.
 1. **Wiggle's xyplot and scatter onto render-core's `bar` and `point`**, parked
    on a call:
    [ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md).
+   Its first two landings are in: the line as a mark (ADR-184) and the pivot
+   as a shader-side threshold over the plotted value (ADR-185), both
+   2026-09-28.
 
 The 2026-09-25/26 reviews' findings all landed by 2026-09-27: the link
 mark's log floor, ring placement, hover box and alias-spelt pair, and
@@ -35,8 +38,8 @@ yet.
 
 The evening's grammar analysis (its 21 verified defects landed, 0875b9a6db..1ea5a98e9a) left five direction calls, each a question rather than work:
 
-- **A `line` mark.** ADR-127 declined the shape only because wiggle was not its second consumer; the call in
-  [wiggle-onto-bar-and-point](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md) is what would make it one.
+- **A `line` mark.** Answered: ADR-184 landed it on 2026-09-28, with ADR-185's
+  threshold over the plotted value the same day.
 - **A `y2` channel**, declined on one capture (the min-to-max range bar): it is the lane behind a stacked histogram, an area, an error bar and a rect between two values.
 - **Layer data through the adapter**: a union adapter over feature adapters stamping `source`, as `MultiWiggleAdapter` does, so two files draw in one plot through a `filter` per mark; `source: "density"` is already per-layer data.
 - **`scales.y.rules` as a `rule` layer with a constant `y`**, so a reference line takes a zoom range and a per-row value.

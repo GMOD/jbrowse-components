@@ -338,10 +338,12 @@ export interface EncodedChannels {
   y?: Float32Array
   color?: Uint32Array
   /**
-   * The raw values of a ramp colour channel, for a caller that named the
-   * `colorValue` lane: the scale then resolves on the main thread against a
-   * domain unioned over the loaded regions, and `scale.extent` is this
-   * region's contribution to it.
+   * The raw values of a quantitative colour channel — a ramp's or a
+   * threshold's — for a caller that named the `colorValue` lane: the scale
+   * then resolves on the main thread and in the shader, a ramp against a
+   * domain unioned over the loaded regions (`scale.extent` is this region's
+   * contribution) and a threshold against its cuts as uniforms. Where the
+   * colour reads the field `y` plots, this IS the `y` array, not a copy.
    */
   colorValue?: Float32Array
   /** The point painter's code for each feature's `shape`. */

@@ -67,7 +67,7 @@ const STATE: MarkRenderState = {
   domainY: [0, 100],
   scaleTypeY: 'linear',
   symlogConstantY: 1,
-  colorRamps: [],
+  colorScales: [],
   canvasWidth: 1000,
   canvasHeight: 100,
   bpPerPx: 1,
