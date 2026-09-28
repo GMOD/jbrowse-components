@@ -10,7 +10,8 @@ const layer = (color: string) => `linear-gradient(${color}, ${color})`
 // visible one rests at (`action.disabled`); a visible one then goes past that,
 // to `action.active` — the same resting/hover pair `VerticalScrollbar`'s thumb
 // uses. A `grip` bar sits on an opaque paper fill so a view's gridlines stop at
-// it, and a centred pill marks it as something to grab.
+// it, and a centred pill marks it as something to grab. `grip="hover"` draws
+// that grip only under the pointer or mid-drag.
 const useStyles = makeStyles()(theme => ({
   horizontalHandle: {
     cursor: 'row-resize',
@@ -39,6 +40,13 @@ const useStyles = makeStyles()(theme => ({
     '&:hover': {
       backgroundColor: theme.palette.background.paper,
       backgroundImage: `${layer(theme.palette.text.secondary)}, ${layer(theme.palette.text.disabled)}`,
+    },
+  },
+  gripOnHover: {
+    '&:not(:hover):not(:active)': {
+      backgroundColor: 'transparent',
+      backgroundImage: 'none',
+      borderColor: 'transparent',
     },
   },
   horizontalGrip: {
@@ -71,7 +79,7 @@ function ResizeHandle({
   vertical?: boolean
   bar?: boolean
   /** An opaque `bar` with a grip pill, for the bottom edge of a view */
-  grip?: boolean
+  grip?: boolean | 'hover'
   /**
    * How many px this handle moves per px of the value it drags — see
    * `useResizeDrag`. Pass it when the value is shared by several stacked bands
@@ -108,6 +116,7 @@ function ResizeHandle({
         grip && [
           classes.grip,
           vertical ? classes.verticalGrip : classes.horizontalGrip,
+          grip === 'hover' && classes.gripOnHover,
         ],
         bar &&
           !grip && [

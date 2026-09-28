@@ -61,16 +61,31 @@ const ResizeAllTracksHandle = observer(function ResizeAllTracksHandle({
   useScrollPortExcess(ref, model, isTopLevelView)
 
   return (
-    <div ref={ref} style={{ position: 'sticky', bottom: 0, zIndex: 300 }}>
+    <div
+      ref={ref}
+      style={
+        isTopLevelView
+          ? { position: 'sticky', bottom: 0, zIndex: 300 }
+          : { position: 'relative', height: 0, zIndex: 300 }
+      }
+    >
       <ResizeHandle
-        grip
+        grip={isTopLevelView || 'hover'}
         data-testid="resize-all-tracks"
         title={
           isTopLevelView
             ? 'Drag to resize all tracks, double-click to fit them to the window'
             : 'Drag to resize all tracks'
         }
-        style={{ height: RESIZE_ALL_HANDLE_HEIGHT }}
+        style={
+          isTopLevelView
+            ? { height: RESIZE_ALL_HANDLE_HEIGHT }
+            : {
+                height: RESIZE_ALL_HANDLE_HEIGHT,
+                position: 'absolute',
+                bottom: 0,
+              }
+        }
         onDragStart={() => {
           drag.current = { from: model.resizableTrackHeights, moved: 0 }
           for (const track of model.tracks) {

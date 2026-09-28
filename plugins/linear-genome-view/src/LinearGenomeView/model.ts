@@ -1077,7 +1077,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           this.trackHeightsWithChrome +
           this.headerHeight +
           this.scalebarHeight +
-          (self.tracks.length ? RESIZE_ALL_HANDLE_HEIGHT : 0)
+          (self.tracks.length && self.isTopLevelView
+            ? RESIZE_ALL_HANDLE_HEIGHT
+            : 0)
         )
       },
 
