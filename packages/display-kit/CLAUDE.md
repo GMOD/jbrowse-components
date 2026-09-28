@@ -249,9 +249,9 @@ buys nothing: a second derivation misses the field the args gain next, latches
 ## Fetching
 
 - **Don't hand-roll the fetch loop, and no display does any more.**
-  `fetchEachRegion` (default), `fetchAllRegions` (one RPC, one result per
-  region), `fetchRegionsBatched` (one RPC, one payload covering every region),
-  `callEachRegion` (fan-out only, MAF's alone). The first three own the
+  `fetchEachRegion` (default), `fetchAllRegions` (one RPC per genome, one result
+  per region), `fetchRegionsBatched` (one RPC, one payload covering every
+  region), `callEachRegion` (fan-out only, MAF's alone). The first three own the
   `ctx.isStale()` guard; forgetting it is a stale-data write. A batch-wide step
   after the regions land is `fetchEachRegion`'s `onComplete`, handed the gate
   state captured at issue and what the two canvas displays commit their DENSITY

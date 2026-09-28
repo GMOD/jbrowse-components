@@ -201,9 +201,11 @@ export async function fetchEachRegion<R>(
 }
 
 /**
- * Batched counterpart to {@link fetchEachRegion}: hands every needed region to
- * a single RPC `call`, which returns one result per region aligned to the input
- * order (`results[i]` ↔ `needed[i]`). Use when the adapter serves all regions in
+ * Batched counterpart to {@link fetchEachRegion}: hands every needed region on
+ * one genome to a single RPC `call`, which returns one result per region
+ * aligned to the input order. A request is about one genome
+ * (`renameRegionsIfNeeded` refuses two), so a circle over two genomes makes one
+ * call per genome. Use when the adapter serves all regions in
  * one pass more efficiently than N independent calls — e.g. BigWig coalesces
  * adjacent on-disk blocks across region boundaries (`getFeaturesAsArraysMulti`),
  * which the per-region fan-out can't exploit; collapsed-intron views (many small
@@ -234,16 +236,32 @@ export async function fetchAllRegions<R>(
 ) {
   const gate = openGateCommit(self)
   await self.fetchRegions(needed, async ctx => {
-    const results = await opts.call(
-      needed.map(n => n.region),
-      ctx,
+    const genomes = [
+      ...Map.groupBy(
+        needed.keys(),
+        i => needed[i]!.region.assemblyName,
+      ).values(),
+    ]
+    const perGenome =
+      genomes.length === 1 ? [ctx] : fanOutStatus(ctx, genomes.length)
+    const results = new Array<R | RegionTooLargeResult>(needed.length)
+    await Promise.all(
+      genomes.map(async (indices, g) => {
+        const got = await opts.call(
+          indices.map(i => needed[i]!.region),
+          perGenome[g]!,
+        )
+        if (got.length !== indices.length) {
+          throw new Error(
+            `fetchAllRegions: adapter returned ${got.length} results for ${indices.length} regions`,
+          )
+        }
+        indices.forEach((i, j) => {
+          results[i] = got[j]!
+        })
+      }),
     )
     if (!ctx.isStale()) {
-      if (results.length !== needed.length) {
-        throw new Error(
-          `fetchAllRegions: adapter returned ${results.length} results for ${needed.length} regions`,
-        )
-      }
       needed.forEach(({ displayedRegionIndex }, i) => {
         const result = results[i]!
         if (!isRegionRefused(result)) {

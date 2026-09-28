@@ -119,10 +119,10 @@ test('hands every needed region to one call, and commits each result', async () 
   expect(completed).toBe(1)
 })
 
-// The other half of "batched": `call` gets the fetch's own ctx, not a status
-// slot of its own. `fetchEachRegion` fans the status callback out because its N
-// parallel calls would otherwise clobber each other on the display's one status
-// field; one call has nothing to aggregate with.
+// The other half of "batched": a one-genome batch's `call` gets the fetch's own
+// ctx, not a status slot of its own. `fetchEachRegion` fans the status callback
+// out because its N parallel calls would otherwise clobber each other on the
+// display's one status field; one call has nothing to aggregate with.
 test('passes the fetch ctx straight through to call', async () => {
   const ctx = fresh()
   const seen: FetchContext[] = []
@@ -136,6 +136,42 @@ test('passes the fetch ctx straight through to call', async () => {
   expect(seen).toHaveLength(1)
   expect(seen[0]!.signal).toBe(ctx.signal)
   expect(seen[0]!.statusCallback).toBe(ctx.statusCallback)
+})
+
+// A request is about one genome, and `renameRegionsIfNeeded` refuses regions on
+// two: a circle over hg38 and mm39 drew an error ring until each genome got a
+// call of its own.
+test('makes one call per genome, each on its own status slot', async () => {
+  const ctx = fresh()
+  const loaded: number[] = []
+  const asked: string[][] = []
+  const slots: FetchContext['statusCallback'][] = []
+  const results: [number, string][] = []
+  const needed = [
+    NEEDED[0]!,
+    {
+      region: { refName: 'chr1', start: 0, end: 100, assemblyName: 'other' },
+      displayedRegionIndex: 3,
+    },
+    NEEDED[1]!,
+  ]
+  await fetchAllRegions(selfWith(ctx, loaded), needed, {
+    call: (regions, callCtx) => {
+      asked.push(regions.map(r => `${r.assemblyName}:${r.refName}`))
+      slots.push(callCtx.statusCallback)
+      return Promise.resolve(regions.map(r => `data:${r.refName}`))
+    },
+    onResult: (idx, result) => results.push([idx, result]),
+  })
+  expect(asked).toEqual([['volvox:ctgA', 'volvox:ctgB'], ['other:chr1']])
+  expect(new Set(slots).size).toBe(2)
+  expect(slots).not.toContain(ctx.statusCallback)
+  expect(results).toEqual([
+    [2, 'data:ctgA'],
+    [3, 'data:chr1'],
+    [5, 'data:ctgB'],
+  ])
+  expect(loaded).toEqual([2, 3, 5])
 })
 
 // One guard, not one per region — deliberately, and it is why this helper is
