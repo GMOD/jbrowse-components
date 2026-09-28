@@ -50,7 +50,8 @@ gets dark Minimal, and the colors you set under `theme` above apply in both.
 
 Sessions start on Light, so a reader reaches dark by asking for it. Picking
 Follow system puts a sun or moon in the toolbar naming the mode the OS landed
-on; clicking it settles on the other one.
+on. Clicking it switches to the other mode and holds it until the OS next
+changes; clicking again goes back to following.
 
 Most of a dark theme follows from the setting: the backgrounds, text, dividers,
 gridlines, coverage and hover colors all have dark values already. What does not

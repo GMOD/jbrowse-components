@@ -6,10 +6,11 @@ import { observer } from 'mobx-react'
 import type { ThemeSwitchSession } from './types.ts'
 
 /**
- * Which way the OS has pointed a session that follows it, and one click out.
- * A session on an explicit light or dark gets nothing, which is every session
- * that has not asked for this in Preferences, leaving the toolbar to say where
- * a dark page came from and to offer a light one no route into dark.
+ * A light/dark switch for a session that follows the OS, showing the mode
+ * drawn. A click holds the other mode, a second click follows the OS again. A
+ * session on an explicit light or dark gets nothing, which is every session
+ * that has not asked for this in Preferences, so a light reader is offered no
+ * route into dark.
  */
 const ThemeModeButton = observer(function ThemeModeButton({
   session,
@@ -26,17 +27,22 @@ const ThemeModeButton = observer(function ThemeModeButton({
   if (!followsSystem) {
     return null
   }
+  const held = session.systemThemeOverride
+  const otherMode = dark ? 'light' : 'dark'
   const Icon = dark ? DarkModeIcon : LightModeIcon
-  const label = `Following your system theme (${dark ? 'dark' : 'light'})`
+  const label = held
+    ? `${dark ? 'Dark' : 'Light'} until your system theme changes`
+    : `Following your system theme (${drawnMode})`
+  const action = held ? `to follow it (${otherMode})` : `for ${otherMode}`
   return (
-    <Tooltip title={`${label}. Click for ${dark ? 'light' : 'dark'}.`} arrow>
+    <Tooltip title={`${label}. Click ${action}.`} arrow>
       <IconButton
         data-testid="theme-mode-button"
         aria-label={label}
         color="inherit"
         size="small"
         onClick={() => {
-          session.stopFollowingSystemTheme()
+          session.setSystemThemeOverride(held ? undefined : otherMode)
         }}
       >
         <Icon fontSize="small" />

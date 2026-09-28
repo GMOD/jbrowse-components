@@ -13,7 +13,8 @@ export interface ThemeSwitchSession {
   themeMode: 'light' | 'dark' | 'system'
   effectiveThemeMode: 'light' | 'dark'
   themeIsDark: boolean
-  stopFollowingSystemTheme: () => void
+  systemThemeOverride?: 'light' | 'dark'
+  setSystemThemeOverride: (mode?: 'light' | 'dark') => void
 }
 
 // What a workspace needs of the session it drives

@@ -9,8 +9,10 @@ afterEach(cleanup)
 
 const theme = createJBrowseTheme()
 
-// The control's own contract: when it is there at all, what it names, and that
-// a click leaves the following. What each theme name resolves to is pinned in
+const Mode = types.enumeration<'light' | 'dark'>(['light', 'dark'])
+
+// The control's own contract: when it is there at all, what it names, and what
+// a click holds. How the real session resolves these is pinned in
 // product-core's Themes.test.ts.
 const Session = types
   .model({
@@ -22,22 +24,30 @@ const Session = types
       ]),
       'system',
     ),
-    effectiveThemeMode: types.optional(
-      types.enumeration<'light' | 'dark'>(['light', 'dark']),
-      'light',
-    ),
-    themeIsDark: false,
+    systemMode: types.optional(Mode, 'light'),
+    systemThemeOverride: types.maybe(Mode),
+    pinnedDark: false,
   })
+  .views(self => ({
+    get effectiveThemeMode() {
+      return self.themeMode === 'system'
+        ? (self.systemThemeOverride ?? self.systemMode)
+        : self.themeMode
+    },
+    get themeIsDark() {
+      return self.pinnedDark || this.effectiveThemeMode === 'dark'
+    },
+  }))
   .actions(self => ({
-    stopFollowingSystemTheme() {
-      self.themeMode = self.themeIsDark ? 'light' : 'dark'
+    setSystemThemeOverride(mode?: 'light' | 'dark') {
+      self.systemThemeOverride = mode
     },
   }))
 
 function renderButton(snap: {
   themeMode?: 'light' | 'dark' | 'system'
-  effectiveThemeMode?: 'light' | 'dark'
-  themeIsDark?: boolean
+  systemMode?: 'light' | 'dark'
+  pinnedDark?: boolean
 }) {
   const session = Session.create(snap)
   const utils = render(
@@ -57,36 +67,34 @@ test('an explicit mode gets no control', () => {
 })
 
 test('following the system names the mode it landed in', () => {
-  const { getByTestId } = renderButton({
-    themeIsDark: true,
-    effectiveThemeMode: 'dark',
-  })
+  const { getByTestId } = renderButton({ systemMode: 'dark' })
 
   expect(getByTestId('theme-mode-button').getAttribute('aria-label')).toBe(
     'Following your system theme (dark)',
   )
 })
 
-test('a click leaves the following, taking the control with it', () => {
-  const { getByTestId, queryByTestId, session } = renderButton({
-    themeIsDark: true,
-    effectiveThemeMode: 'dark',
-  })
+test('a click holds the other mode and the control stays for the way back', () => {
+  const { getByTestId, session } = renderButton({ systemMode: 'dark' })
 
   fireEvent.click(getByTestId('theme-mode-button'))
+  expect(session.themeMode).toBe('system')
+  expect(session.themeIsDark).toBe(false)
+  expect(getByTestId('theme-mode-button').getAttribute('aria-label')).toBe(
+    'Light until your system theme changes',
+  )
 
-  expect(session.themeMode).toBe('light')
-  expect(queryByTestId('theme-mode-button')).toBeNull()
+  fireEvent.click(getByTestId('theme-mode-button'))
+  expect(session.systemThemeOverride).toBeUndefined()
+  expect(getByTestId('theme-mode-button').getAttribute('aria-label')).toBe(
+    'Following your system theme (dark)',
+  )
 })
 
 // A palette pinned to `mode: 'dark'` draws dark whatever the OS asks, so there
 // is no following to report and nothing a click could change.
 test('a palette pinned to its own mode gets no control', () => {
-  const { queryByTestId } = renderButton({
-    themeMode: 'system',
-    effectiveThemeMode: 'light',
-    themeIsDark: true,
-  })
+  const { queryByTestId } = renderButton({ pinnedDark: true })
 
   expect(queryByTestId('theme-mode-button')).toBeNull()
 })

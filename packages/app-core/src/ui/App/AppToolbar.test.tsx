@@ -21,7 +21,7 @@ function renderToolbar(menus: Menu[]) {
     themeMode: 'light',
     effectiveThemeMode: 'light',
     themeIsDark: false,
-    stopFollowingSystemTheme: () => {},
+    setSystemThemeOverride: () => {},
   } as unknown as AppSession
   const utils = render(
     <ThemeProvider theme={theme}>

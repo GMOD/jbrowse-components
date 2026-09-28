@@ -119,21 +119,46 @@ test("a site's brand survives the dark half", () => {
   expect(session.palette.background.paper).toBe('#121212')
 })
 
-test('leaving the following lands on the mode the OS was not asking for', () => {
+test('a held mode stays in system until the OS comes round to it', () => {
   const media = installMatchMedia(true)
   const session = makeSession()
   session.setThemeName('minimal')
   session.setThemeMode('system')
 
-  session.stopFollowingSystemTheme()
-  expect(session.themeMode).toBe('light')
+  session.setSystemThemeOverride('light')
+  expect(session.themeMode).toBe('system')
+  expect(session.themeIsDark).toBe(false)
   // the palette the reader picked is not collateral
   expect(session.themeName).toBe('minimal')
 
   media.setMatches(false)
+  expect(session.systemThemeOverride).toBeUndefined()
+  media.setMatches(true)
+  expect(session.themeIsDark).toBe(true)
+})
+
+test('picking a mode in Preferences drops the held one', () => {
+  installMatchMedia(true)
+  const session = makeSession()
   session.setThemeMode('system')
-  session.stopFollowingSystemTheme()
-  expect(session.themeMode).toBe('dark')
+  session.setSystemThemeOverride('light')
+
+  session.setThemeMode('dark')
+  session.setThemeMode('system')
+  expect(session.themeIsDark).toBe(true)
+})
+
+test('a held mode survives a reload only while the OS still disagrees', () => {
+  installMatchMedia(true)
+  const session = makeSession()
+  session.setThemeMode('system')
+  session.setSystemThemeOverride('light')
+
+  expect(storedThemeArgs().mode).toBe('light')
+  expect(makeSession().themeIsDark).toBe(false)
+
+  installMatchMedia(false)
+  expect(makeSession().systemThemeOverride).toBeUndefined()
 })
 
 // An explicit pick has to survive the OS flipping under it, which is the whole

@@ -42,6 +42,19 @@ export type ThemeModeSelection = PaletteMode | 'system'
  */
 const DEFAULT_MODE: ThemeModeSelection = 'light'
 
+function systemMode(): PaletteMode {
+  return prefersDarkColorScheme() ? 'dark' : 'light'
+}
+
+// An override outlives a reload only while the OS still disagrees with it; one
+// the OS has since come round to means following again.
+function storedOverride(): PaletteMode | undefined {
+  const stored = localStorageGetItem('themeModeOverride')
+  return (stored === 'light' || stored === 'dark') && stored !== systemMode()
+    ? stored
+    : undefined
+}
+
 // A `themeName` stored before light and dark were an axis spells a mode into
 // the name. Split it once, on the way in, so the session persists the pair from
 // then on and the retired name goes away; a name this does not know — an
@@ -55,6 +68,7 @@ function storedSelection() {
   return {
     sessionThemeName: themeName,
     sessionThemeMode: storedMode ?? mode ?? DEFAULT_MODE,
+    systemThemeOverride: storedOverride(),
   }
 }
 
@@ -63,14 +77,13 @@ function storedSelection() {
  * exists, such as Desktop's start screen.
  */
 export function storedThemeArgs(): SerializableThemeArgs {
-  const { sessionThemeName, sessionThemeMode } = storedSelection()
+  const { sessionThemeName, sessionThemeMode, systemThemeOverride } =
+    storedSelection()
   return {
     themeName: sessionThemeName,
     mode:
       sessionThemeMode === 'system'
-        ? prefersDarkColorScheme()
-          ? 'dark'
-          : 'light'
+        ? (systemThemeOverride ?? systemMode())
         : sessionThemeMode,
   }
 }
@@ -115,13 +128,13 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         },
         /**
          * #getter
-         * Light or dark, with `system` resolved against the OS preference.
+         * Light or dark, with `system` resolved against the OS preference or
+         * the toolbar's hold on the other mode.
          */
         get effectiveThemeMode(): PaletteMode {
           return this.themeMode === 'system'
-            ? self.systemPrefersDark
-              ? 'dark'
-              : 'light'
+            ? (self.systemThemeOverride ??
+                (self.systemPrefersDark ? 'dark' : 'light'))
             : this.themeMode
         },
         /**
@@ -248,18 +261,21 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        * #action
        */
       setSystemPrefersDark(dark: boolean) {
+        if (dark !== self.systemPrefersDark) {
+          self.systemThemeOverride = undefined
+        }
         self.systemPrefersDark = dark
       },
       /**
        * #action
-       * Leave `system` for the mode the OS is not asking for. The toolbar
-       * shows its theme control only while the session follows the system, so
-       * this is the one click out of a dark the OS handed someone who did not
-       * want it, and the control goes away with the following. The palette is
-       * untouched: a reader on Minimal who does this keeps Minimal.
+       * Hold a session that follows the system on the mode the OS is not
+       * asking for, or `undefined` to follow it again. The toolbar's sun/moon
+       * writes this, so it stays in the toolbar after a click. The OS flipping
+       * clears it, since by then the OS has come round to the held mode. The
+       * palette is untouched: a reader on Minimal who does this keeps Minimal.
        */
-      stopFollowingSystemTheme() {
-        self.sessionThemeMode = self.themeIsDark ? 'light' : 'dark'
+      setSystemThemeOverride(mode?: PaletteMode) {
+        self.systemThemeOverride = mode
       },
       /**
        * #action
@@ -275,6 +291,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        */
       setThemeMode(mode: ThemeModeSelection) {
         self.sessionThemeMode = mode
+        self.systemThemeOverride = undefined
       },
     }))
     .actions(self => ({
@@ -293,6 +310,10 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
               // theme registered later isn't clobbered with 'default'
               localStorageSetItem('themeName', self.sessionThemeName)
               localStorageSetItem('themeMode', self.sessionThemeMode)
+              localStorageSetItem(
+                'themeModeOverride',
+                self.systemThemeOverride ?? '',
+              )
             },
             { name: 'ThemeName' },
           ),
