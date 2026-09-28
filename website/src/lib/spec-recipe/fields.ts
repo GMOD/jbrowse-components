@@ -1066,7 +1066,6 @@ const GRAPH_LAYOUTS: Record<string, string> = {
   samplerows: 'Sample rows',
   walkrows: 'Walk rows',
   ordered: 'Ordered',
-  variants: 'Variant map',
   force: 'Force-directed layout',
 }
 
@@ -1231,15 +1230,21 @@ const graphFields: Record<string, FieldRecipe> = {
           note: 'The haplotypes a gbz-base cut is for, as lane names or PanSN prefixes; empty is every haplotype the graph holds.',
         }
       : undefined,
-  // the submenu lists the cut's own walks, so the figure's value names the
-  // row a reader picks
-  highlightedPath: (value, context) =>
-    typeof value === 'string' && value
-      ? {
-          path: `${graphSurface(context, 'Graph view toolbar')} → Walk → ${value}`,
-          note: 'Lifts one walk out of the drawing and fades the rest. The menu names each walk by the shortest part of its name that tells it apart.',
-        }
-      : undefined,
+  // the menu lists the cut's own walks, so the figure's layers name the rows a
+  // reader ticks
+  walkLayers: (value, context) => {
+    if (!Array.isArray(value) || value.length === 0) {
+      return undefined
+    }
+    const menu = isGraphTrack(context)
+      ? `${TRACK_MENU} → Walk`
+      : 'Graph view toolbar → Walks'
+    const walks = value.map(layer => (layer as { walk: string }).walk)
+    return {
+      path: `${menu} → ${walks.join(', ')}`,
+      note: "Lifts each walk out of the drawing as a lane of its own and fades the rest. The Walk menu's Colour item sets what a lane's colour follows and its palette. The menu names each walk by the shortest part of its name that tells it apart.",
+    }
+  },
   showBubbles: graphCheckbox('Mark bubbles', graphSettings),
   showGenes: graphCheckbox('Genes on the backbone', graphSettings),
   showDeletionEdges: graphCheckbox('Show deletion edges', () => 'Graph view menu'),
