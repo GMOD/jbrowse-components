@@ -185,11 +185,16 @@ apt has no package for. Nothing else. The intro goes under its own `##` heading.
 
 **`## Where the data comes from` is a source list, one bullet per file**, and
 each bullet ends in the raw full URL rather than a link label, because the host
-and the path are the thing worth showing. Link the FTP or bucket folder instead
-where the reader wants the file's siblings. The prose above the list is one
-sentence naming the release and citing it; what a file means to the page belongs
-in the section that uses it. The section goes between Prerequisites and the
-intro, so a reader meets the data before the work.
+and the path are the thing worth showing. The page shows each raw URL as
+`host/…/file` behind a **Show full URLs** checkbox (`rehype-data-urls`), so
+write the bare URL and leave the shortening to the pipeline. A page whose files
+are one family, like the TCGA cohorts, can use a two-column table of file then
+what it holds instead of bullets. Data files never go under `## Prerequisites`.
+Link the FTP or bucket folder instead where the reader wants the file's
+siblings. The prose above the list is one sentence naming the release and citing
+it; what a file means to the page belongs in the section that uses it. The
+section goes between Prerequisites and the intro, so a reader meets the data
+before the work.
 
 A folder URL has to actually serve a listing. Archive directories do
 (ftp.ensembl.org, ftp.1000genomes.ebi.ac.uk, ftp.ncbi.nlm.nih.gov,
