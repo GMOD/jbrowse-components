@@ -221,7 +221,6 @@ import type {
 } from '@jbrowse/synteny-core'
 import type React from 'react'
 
-/** what the pointer is over: a gene, a placement box or a ribbon */
 export interface HoverTarget extends RibbonRef {
   label: string
   feature: Feature
@@ -254,23 +253,16 @@ function ribbonChannelNames(adapterConfig: Record<string, unknown>) {
   return [...PRESET_ATTRIBUTES, ...declaredAttributes(adapterConfig)]
 }
 
-// the widest a lane header's scale reads, so the key clears the column
-// wherever a pan or zoom takes the spans
+// the widest a lane header's scale reads, so the key clears it at any zoom
 const SCALE_COLUMN_PX =
   Math.ceil(measureText('8.88Mbp  88.8×', LABEL_FONT_SIZE)) + 4
 
 /**
  * #stateModel MultiWaySyntenyDisplay
  * #displayFoundation GlobalFetchMixin
- * draws a multi-genome ortholog track (an adapter whose features carry a
- * `mate` per other assembly, e.g. MCScanBlocksAdapter) as one lane per
- * assembly inside a plain linear genome view. The top lane is the view's own
- * assembly at genomic coordinates; every other lane is laid out in its own
- * local coordinate frame fitted to the viewport — non-anchored, the same move
- * the multi-sample variant matrix makes — with ribbons connecting each gene's
- * placements between adjacent lanes. The ribbons ride the pairwise synteny
- * display's GPU passes and the lanes the feature track's, with Canvas2D and
- * the SVG export drawing the same cells.
+ * draws a multi-genome ortholog track as one lane per assembly inside a linear
+ * genome view, with ribbons joining each gene's placements between adjacent
+ * lanes
  */
 export function stateModelFactory(
   configSchema: MultiWaySyntenyDisplayConfigModel,
@@ -284,37 +276,21 @@ export function stateModelFactory(
       LegendMixin(),
       LodTierInfoMixin(),
       types.model({
-        /**
-         * #property
-         */
+        /** #property */
         type: types.literal('MultiWaySyntenyDisplay'),
-        /**
-         * #property
-         */
+        /** #property */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * the reader's lanes, by assembly name: `only` the ones the picker
-         * ticked, or the lanes in force `except` the ones Hide lane took out.
-         * Undefined is `configuredLanes`, or every lane where there are none.
-         * Session state rather than adapter config: a choice made in front of
-         * this picture, which a shared session carries
+         * undefined means `configuredLanes`, or every lane where there are none
          */
         laneFilter: types.frozen<LaneFilter | undefined>(),
-        /**
-         * #property
-         * the lanes the reader froze, and where a drag or a side-scroll then
-         * slid each; see `lanesFrozen`. Session state beside `laneFilter`, so
-         * a shared session or an export draws the lanes where they were put
-         */
+        /** #property */
         frozenLanes: types.frozen<FrozenLanes | undefined>(),
       }),
     )
     .volatile(() => ({
-      /**
-       * #volatile
-       * the ortholog fetch's answer beside the anchor assembly it asked for
-       */
+      /** #volatile */
       fetchedFeatures: undefined as
         | {
             anchor: string
@@ -323,126 +299,47 @@ export function stateModelFactory(
             lanes?: string[]
           }
         | undefined,
-      /**
-       * #volatile
-       * per ribbon channel, the span or labels every fetch since the ribbon
-       * mode was picked has carried, labels in first-seen order; see
-       * `ribbonAttributeRanges`
-       */
+      /** #volatile */
       seenAttributeRanges: {} as Record<string, AttributeRange>,
-      /**
-       * #volatile
-       * per lane, the gene models fetched from that assembly's own gene track,
-       * beside the region key they were fetched under, and the anchor the
-       * fetch last covered a mate lane under. Merged a lane at a time
-       */
+      /** #volatile */
       laneGenes: {} as LaneFetchState<HeldLaneGenes>,
-      /**
-       * #volatile
-       * what `Core-describeAssemblies` answered for lanes whose genome the
-       * session does not hold, by lane name
-       */
+      /** #volatile */
       laneDescriptions: new Map<string, AssemblyDescription>(),
-      /**
-       * #volatile
-       * the lanes already put to `Core-describeAssemblies`, answered or not,
-       * so each is asked once until a reload
-       */
+      /** #volatile */
       describedLanes: new Set<string>(),
-      /**
-       * #volatile
-       * the lanes whose `Core-describeAssemblies` answer is still out, which
-       * holds readiness the way an outstanding lane fetch does
-       */
+      /** #volatile */
       lanesBeingDescribed: new Set<string>(),
-      /**
-       * #volatile
-       * the described lanes "Open in new view" handed back to the session,
-       * whose temporary assembly this display no longer holds
-       */
+      /** #volatile */
       releasedLanes: new Set<string>(),
       /**
        * #volatile
-       * per ADJACENT mate-lane pair, the direct records the track holds for
-       * the pair at the lanes' own coordinates, the same shape as `laneGenes`
+       * per adjacent mate-lane pair, at the lanes' own coordinates
        */
       laneLinks: {} as LaneFetchState<HeldLaneLinks>,
-      /**
-       * #volatile
-       * per lane, layer and region, what each lane layer's marks encoded from
-       * that genome's own track, the same shape as `laneGenes`
-       */
+      /** #volatile */
       laneLayerData: {} as LaneFetchState<HeldLaneLayer>,
-      /**
-       * #volatile
-       * the glyph, box or ribbon under the pointer — what a click opens and
-       * the tooltip names
-       */
+      /** #volatile */
       hoverTarget: undefined as HoverTarget | undefined,
-      /**
-       * #volatile
-       * clicked twin of the hover: the group or direct-link ribbon whose
-       * outline stays after the pointer leaves it, until a click on empty
-       * canvas. Held by key, so it outlives every relayout and refetch that
-       * still draws its ribbon — the click's own widget resizes the view
-       */
+      /** #volatile */
       clickedTarget: undefined as RibbonRef | undefined,
-      /**
-       * #volatile
-       * what the last settle decided per mate lane — contig, orientation,
-       * rung and where the lane is pinned to the anchor. Made once per
-       * settled block set by the installer in afterAttach, holding each
-       * choice until the evidence clearly moves; the frames the lanes draw in
-       * are derived from these against the live view
-       */
+      /** #volatile */
       laneDecisions: new Map<string, LaneDecision | undefined>(),
-      /**
-       * #volatile
-       * the contig the reader pinned a lane onto from its header menu, which
-       * outranks the lane's own vote while the window still places anything
-       * on it. Volatile like the decisions it steers: a pin is a choice about
-       * this window, and the lane falls back to choosing once the pinned
-       * contig explains nothing here
-       */
+      /** #volatile */
       pinnedLaneContigs: new Map<string, string>(),
-      /**
-       * #volatile
-       * per anchor, the orientation the reader pinned each lane to from its
-       * header menu; see `pinnedLaneFlips`. Keyed by the anchor because a pin
-       * is stated against its order, so re-anchoring away leaves them alone
-       * and coming back finds them
-       */
+      /** #volatile */
       laneFlipPinsByAnchor: new Map<string, ReadonlyMap<string, LaneFlipPin>>(),
       /**
        * #volatile
-       * the view's scroll offset the stack is laid out against, refreshed with
-       * the decisions. Between refreshes a pan is one translate of the whole
-       * stack (`dragOffsetPx`), not a relayout of every lane
+       * the view's `offsetPx` the stack was last laid out against
        */
       renderOriginPx: 0,
-      /**
-       * #volatile
-       * per mate lane re-decided onto the contig it already drew, the move
-       * from where it drew to its new frame; see `laneTransitionsAfter`. A
-       * transition is dropped once the clock passes its end
-       */
+      /** #volatile */
       laneTransitions: new Map<string, LaneTransition>(),
-      /**
-       * #volatile
-       * the wall clock the last drawn frame of a transition read, advanced by
-       * the chrome's frame clock
-       */
+      /** #volatile */
       laneMotionClockMs: 0,
-      /**
-       * #volatile
-       * the moving lanes past their midpoint; see `lanesPastHalfway`
-       */
+      /** #volatile */
       laneMotionHalfway: new Set<string>() as ReadonlySet<string>,
-      /**
-       * #volatile
-       * by lane, how far a drag or a side-scroll in progress has slid it, drawn
-       * through its `LaneMap` and written into its frozen decision on release
-       */
+      /** #volatile */
       laneDragPx: new Map<string, number>() as ReadonlyMap<string, number>,
     }))
     .actions(self => {
@@ -472,9 +369,7 @@ export function stateModelFactory(
         )
       }
       return {
-        /**
-         * #action
-         */
+        /** #action */
         setFeatures(
           features: Feature[],
           anchor: string = containingLgv(self).assemblyNames[0]!,
@@ -484,9 +379,7 @@ export function stateModelFactory(
           self.fetchedFeatures = { anchor, features, ops, lanes }
           observeRibbonFeatures(features)
         },
-        /**
-         * #action
-         */
+        /** #action */
         beginDescribingLanes(names: string[]) {
           self.describedLanes = new Set([...self.describedLanes, ...names])
           self.lanesBeingDescribed = new Set([
@@ -494,11 +387,7 @@ export function stateModelFactory(
             ...names,
           ])
         },
-        /**
-         * #action
-         * also what the deadline calls, with no descriptions, for a plugin
-         * that has not answered; a late answer still lands
-         */
+        /** #action */
         endDescribingLanes(
           names: string[],
           descriptions: Record<string, AssemblyDescription>,
@@ -514,10 +403,7 @@ export function stateModelFactory(
             ])
           }
         },
-        /**
-         * #action
-         * lets a reload ask again about the lanes that got no description
-         */
+        /** #action */
         forgetUndescribedLanes() {
           self.describedLanes = new Set(
             [...self.describedLanes].filter(
@@ -529,8 +415,8 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * a lane-genes commit: `specs` is every lane the run was asked for
-         * and `anchor` the one the specs were built under
+         * `specs` holds every lane the run was asked for, and `anchor` the
+         * anchor the specs were built under
          */
         setLaneGenes(
           fetched: ReadonlyMap<string, HeldLaneGenes>,
@@ -539,9 +425,7 @@ export function stateModelFactory(
         ) {
           self.laneGenes = landLaneFetch(self.laneGenes, fetched, specs, anchor)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setLaneLayerData(
           fetched: ReadonlyMap<string, HeldLaneLayer>,
           specs: LaneFetchSpec[],
@@ -554,9 +438,7 @@ export function stateModelFactory(
             anchor,
           )
         },
-        /**
-         * #action
-         */
+        /** #action */
         setLaneLinks(
           fetched: ReadonlyMap<string, HeldLaneLinks>,
           specs: LaneFetchSpec[],
@@ -569,127 +451,87 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * The whole pinned order; empty is back to densest-first. A caller
-         * that saw only some lanes merges first (`mergeDomain`).
+         * takes the whole pinned order, empty meaning densest-first; merge a
+         * partial one with `mergeDomain` first
          */
         setDomain(domain: string[]) {
           setConf(self, 'domain', domain)
         },
         /**
          * #action
-         * draw only `names`, unhiding everything; undefined puts the lanes
-         * back to `configuredLanes`, or every lane
+         * undefined restores `configuredLanes`, or every lane
          */
         setSelectedLanes(names: string[] | undefined) {
           self.laneFilter = laneFilterOf(names, [])
         },
-        /**
-         * #action
-         */
+        /** #action */
         setBridgeSkippedLanes(flag: boolean) {
           setConf(self, 'bridgeSkippedLanes', flag)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setRibbonColorField(field: string) {
           setConf(
             self,
             'ribbonColor',
             colorForField(ribbonColorSetting(), field),
           )
-          // the way back from a label order or a span one window fixed: the
-          // ribbons re-key from the features in hand
           self.seenAttributeRanges = {}
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
           for (const { links } of self.laneLinks.held?.values() ?? []) {
             observeRibbonFeatures(links)
           }
         },
-        /**
-         * #action
-         */
+        /** #action */
         setRibbonColorDomain(domain: string[]) {
           setConf(self, ['ribbonColor', 'domain'], domain)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setHideUnlabelled(flag: boolean) {
           setConf(self, 'hideUnlabelled', flag)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setDrawCurves(flag: boolean) {
           setConf(self, 'drawCurves', flag)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setShowLaneTicks(flag: boolean) {
           setConf(self, 'showLaneTicks', flag)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setSplitStrands(flag: boolean) {
           setConf(self, 'splitStrands', flag)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setShowGeneLabels(flag: boolean) {
           setConf(self, 'showGeneLabels', flag)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setGeneTextField(field: string) {
           setConf(self, 'text', field)
         },
-        /**
-         * #action
-         */
+        /** #action */
         setLodMode(mode: LodMode) {
           setConf(self, 'lodMode', mode)
         },
       }
     })
     .views(self => ({
-      /**
-       * #getter
-       * the lanes the source's header declares, read once with the tier info;
-       * undefined until the header lands or when the adapter is one whose
-       * header is never asked for
-       */
+      /** #getter */
       get declaredLanes(): DeclaredLane[] | undefined {
         const header = self.adapterHeader
         return header === undefined ? undefined : declaredLanesOf(header)
       },
-      /**
-       * #getter
-       * the anchor a star source announces in its header. A star of pairwise
-       * alignments holds no mate-vs-mate rows, so its adjacent pairs' links
-       * are composed through the anchor rather than asked for
-       */
+      /** #getter */
       get starAnchor(): string | undefined {
         return starAnchorOf(self.adapterHeader)
       },
-      /**
-       * #getter
-       * the hosting linear genome view. `GlobalFetchMixin` hands down the
-       * view-shaped `host` its own gating needs; a display reaching LGV's own
-       * geometry names it itself, the way the arc displays do
-       */
+      /** #getter */
       get lgv() {
         return containingLgv(self)
       },
       /**
        * #getter
-       * the fetched features while the view is on the anchor they were
-       * fetched for; another genome's groups read as absent, so no settle
-       * decides a lane from them
+       * undefined while the view's anchor differs from the fetch's
        */
       get features() {
         const held = self.fetchedFeatures
@@ -702,89 +544,51 @@ export function stateModelFactory(
           ? held.features
           : undefined
       },
-      /**
-       * #getter
-       * each fetched alignment piece's own ops, by feature id, beside
-       * `features`
-       */
+      /** #getter */
       get featureOps(): AlignmentOpsById {
         return (this.features && self.fetchedFeatures?.ops) ?? NO_OPS
       },
-      /**
-       * #getter
-       * the ortholog group under the pointer; every ribbon of that group
-       * highlights, so one hover reads the group across all lanes
-       */
+      /** #getter */
       get hoveredGroupKey() {
         return self.hoverTarget?.groupKey
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * the level-of-detail tier the reader pinned, or 'auto' for the
-       * adapter's own bpPerPx threshold. `lodTier` is what resolves it
-       */
+      /** #getter */
       get lodMode(): LodMode {
         return getConf(self, 'lodMode')
       },
-      /**
-       * #getter
-       * whether the track's adapter has tiered storage to switch between —
-       * gates the "Level of detail" menu, the way LGVSyntenyDisplay gates it
-       */
+      /** #getter */
       get hasLodCapableAdapter() {
         return trackHasLodTiers(self.parentTrack)
       },
       /**
        * #getter
-       * the tier the ortholog and lane-link fetches ask an indexed PIF for,
-       * resolved here on the main thread off the SETTLED zoom and folded into
-       * `viewSignature`, so a tier flip refetches and a gesture travelling
-       * through the threshold does not. 'fine' at every zoom for an adapter
-       * with no tiers, a gene table included
+       * read off the settled zoom, so a passing gesture refetches nothing
        */
       get lodTier() {
         return lodTierAt(self, self.host.coarseBpPerPx, this.lodMode)
       },
-      /**
-       * #getter
-       * the same tier off the live zoom, for `dataSuperseded`
-       */
+      /** #getter */
       get liveLodTier() {
         return lodTierAt(self, self.lgv.bpPerPx, this.lodMode)
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
+      /** #getter */
       get canvasWidth() {
         return self.lgv.width
       },
-      /**
-       * #getter
-       * staleness axes are the static-block set, same as arc — pan/zoom past a
-       * block boundary refetches, a scroll inside the loaded blocks does not —
-       * and the level-of-detail tier
-       */
+      /** #getter */
       get viewSignature() {
         const blocks = self.staticBlockSignature
         return blocks === undefined ? undefined : `${blocks}|${self.lodTier}`
       },
-      /**
-       * #getter
-       * anchor-sorted gene groups reconstructed from the pairwise features
-       */
+      /** #getter */
       get groups() {
         return self.features ? groupFeatures(self.features) : []
       },
-      /**
-       * #getter
-       * a gene-level source names its features and groups chain on the names;
-       * an alignment-level source (a multi-genome PAF) names nothing, which is
-       * what makes the per-pair link fetch worth issuing
-       */
+      /** #getter */
       get featuresAreNameless() {
         return (
           self.features !== undefined &&
@@ -792,49 +596,30 @@ export function stateModelFactory(
           !self.features.some(isNamedRecord)
         )
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get ribbonColor(): string {
         return getConf(self, ['ribbonColor', 'value'])
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get domain(): string[] {
         return getConf(self, 'domain')
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get ribbonColorField(): string {
         return paintedField({
           scale: getConf(self, ['ribbonColor', 'scale']),
           field: getConf(self, ['ribbonColor', 'field']),
         })
       },
-      /**
-       * #getter
-       * the columns the track declares, each offered as its own ribbon mode.
-       * From the config rather than the data, so the menu is right before the
-       * first fetch
-       */
+      /** #getter */
       get ribbonColorAttributes(): string[] {
         return colorableColumns(declaredAttributes(self.adapterConfig))
       },
-      /**
-       * #getter
-       * the `ribbonColor.domain` order a text column's labels take. A label's color
-       * is its position in that list, so this is the ribbons' order as much as
-       * the key's
-       */
+      /** #getter */
       get ribbonColorDomain(): string[] {
         return getConf(self, ['ribbonColor', 'domain'])
       },
-      /**
-       * #getter
-       * the ramp `ribbonColor` declares over a preset's or a column's own
-       */
+      /** #getter */
       get ribbonRamp(): DeclaredRamp {
         return {
           range: getConf(self, ['ribbonColor', 'range']),
@@ -845,12 +630,7 @@ export function stateModelFactory(
           domainMid: getConf(self, ['ribbonColor', 'domainMid']),
         }
       },
-      /**
-       * #getter
-       * what the ribbon modes paint from: each channel's span, and a text
-       * column's labels in `ribbonColorDomain` order, coloured from
-       * `ribbonColor.range`
-       */
+      /** #getter */
       get ribbonAttributeRanges(): Record<string, AttributeRange> {
         return orderAttributeLabels(
           self.seenAttributeRanges,
@@ -858,75 +638,50 @@ export function stateModelFactory(
           getConf(self, ['ribbonColor', 'range']),
         )
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get hideUnlabelled(): boolean {
         return getConf(self, 'hideUnlabelled')
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get drawCurves(): boolean {
         return getConf(self, 'drawCurves')
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get bridgeSkippedLanes(): boolean {
         return getConf(self, 'bridgeSkippedLanes')
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get showLaneTicks(): boolean {
         return getConf(self, 'showLaneTicks')
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get splitStrands(): boolean {
         return getConf(self, 'splitStrands')
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get showGeneLabels(): boolean {
         return getConf(self, 'showGeneLabels')
       },
       /**
        * #getter
-       * the `text` slot as written: a field, a jexl expression, or empty for
-       * the feature track's name-else-ID
+       * a field, a jexl expression, or empty for the name-else-ID default
        */
       get geneTextField(): string {
         return getConf(self, 'text')
       },
-      /**
-       * #getter
-       * the row under each lane's glyphs its gene names take
-       */
+      /** #getter */
       get geneLabelPx() {
         return geneLabelRowPx(getConf(self, 'showGeneLabels'))
       },
-      /**
-       * #getter
-       * each lane layer's band height, in config order
-       */
+      /** #getter */
       get laneLayerHeights(): number[] {
         return self.configuration.laneLayers.map(layer => layer.height)
       },
-      /**
-       * #getter
-       * the height every lane gives its layer bands, above its genes
-       */
+      /** #getter */
       get layerPx() {
         return laneLayersPx(this.laneLayerHeights)
       },
-      /**
-       * #getter
-       * the `color` object and `utrColor` as written, neither evaluated
-       */
+      /** #getter */
       get geneColorSettings(): GeneColorSettings {
         return {
           color: {
@@ -943,11 +698,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * the gene `color` as it paints, through the one resolver every
-       * display's colour object goes through
-       */
+      /** #getter */
       get geneColorEncoding() {
         return colorEncodingOf(self.geneColorSettings.color)
       },
@@ -955,22 +706,20 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the field the genes paint by, `''` while `color.value` paints
+       * `''` while `color.value` paints
        */
       get geneColorField(): string {
         return colorFieldOf(self.geneColorEncoding)?.field ?? ''
       },
       /**
        * #getter
-       * the scale the genes paint through, `none` while `color.value` paints
+       * `none` while `color.value` paints
        */
       get geneColorScale(): ColorScaleName {
         const encoding = self.geneColorEncoding
         return typeof encoding === 'object' ? encoding.scale : 'none'
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get geneColorDomain(): readonly string[] {
         return self.geneColorSettings.color.domain
       },
@@ -985,11 +734,7 @@ export function stateModelFactory(
         { held: HeldLaneGenes; settings: string; colors: GeneColors }
       >()
       return {
-        /**
-         * #getter
-         * the placement boxes' fills, off the groups' own records: resolved
-         * once per ortholog fetch and colour setting, so a settle runs no jexl
-         */
+        /** #getter */
         get boxColors(): GeneColors {
           const { features, geneColorSettings } = self
           const settings = JSON.stringify(geneColorSettings)
@@ -1011,12 +756,7 @@ export function stateModelFactory(
           }
           return boxes.colors
         },
-        /**
-         * #getter
-         * per lane, its genes' fills, resolved once per commit of that lane's
-         * genes and colour setting, so a settle or another lane's commit runs
-         * no jexl
-         */
+        /** #getter */
         get laneGeneColors(): ReadonlyMap<string, GeneColors> {
           const { geneColorSettings } = self
           const settings = JSON.stringify(geneColorSettings)
@@ -1048,9 +788,7 @@ export function stateModelFactory(
       }
     })
     .views(self => ({
-      /**
-       * #getter
-       */
+      /** #getter */
       get selectedFeatureId() {
         if (isAlive(self)) {
           const { selection } = getSession(self)
@@ -1060,18 +798,13 @@ export function stateModelFactory(
         }
         return undefined
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get anchorAssemblyName() {
         return self.lgv.assemblyNames[0]!
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * what the track's adapter type declares it can answer
-       */
+      /** #getter */
       get adapterCapabilities(): readonly string[] {
         const type = self.adapterConfig.type
         return typeof type === 'string'
@@ -1080,28 +813,17 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * whether the adapter type says its header declares the lane universe
-       * (`adapterCapabilities: ['headerLanes']`); an untiered adapter gets a
-       * header read only when this is true
-       */
+      /** #getter */
       get adapterDeclaresLanes(): boolean {
         return self.adapterCapabilities.includes('headerLanes')
       },
-      /**
-       * #getter
-       * whether a window of the anchor answers any two lanes aligned to each
-       * other (`adapterCapabilities: ['lanePairsOnAnchor']`), the way a
-       * pangenome graph holds every haplotype's walk inside a window cut on
-       * its reference
-       */
+      /** #getter */
       get adapterPairsOnAnchor(): boolean {
         return self.adapterCapabilities.includes('lanePairsOnAnchor')
       },
       /**
        * #method
-       * the one spelling two names for the same assembly share
+       * the canonical name, so two spellings of one assembly share a key
        */
       laneKey(assemblyName: string) {
         return (
@@ -1112,23 +834,11 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * whether the source states a record for each adjacent pair directly,
-       * which is what decides whether asking it for one is worth a fetch: a
-       * star holds none unless its adapter reads lane pairs on its anchor
-       * (`adapterPairsOnAnchor`), and the display composes its gutters through
-       * the anchor
-       */
+      /** #getter */
       get adjacentLanesAlignDirectly(): boolean {
         return self.adapterPairsOnAnchor || self.starAnchor === undefined
       },
-      /**
-       * #getter
-       * the orientation the reader pinned each lane to against the anchor the
-       * view is on, which outranks the lane's own vote while it draws the
-       * contig the pin was set on
-       */
+      /** #getter */
       get pinnedLaneFlips(): ReadonlyMap<string, LaneFlipPin> {
         return (
           self.laneFlipPinsByAnchor.get(
@@ -1140,9 +850,8 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the lanes a source declaring its own opens on: the track's assemblies
-       * beside the anchor, since a graph naming 464 haplotypes on a track
-       * naming eight means those eight. Empty for every other source
+       * the track's assemblies beside the anchor for a source that declares its
+       * own lanes, empty for every other source
        */
       get configuredLanes(): string[] {
         const anchor = self.laneKey(self.anchorAssemblyName)
@@ -1156,17 +865,12 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the lanes in force: the picker's choice, else `configuredLanes` where
-       * there are any, else undefined for every lane. A hidden lane is still
-       * in force, so hiding one refetches nothing
+       * undefined means every lane, and a hidden lane stays in force
        */
       get laneSelection(): readonly string[] | undefined {
         return lanesInForce(self.laneFilter, self.configuredLanes)
       },
-      /**
-       * #getter
-       * the lanes Hide lane took out of the drawing
-       */
+      /** #getter */
       get hiddenLanes(): readonly string[] {
         return hiddenLanesOf(self.laneFilter)
       },
@@ -1174,18 +878,8 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the lane selection an ADAPTER is asked to narrow its fetch to, which
-       * is not the same thing as the selection the stack draws. A source whose
-       * header declares the lane universe knows lanes as objects it can cut
-       * on, and is the only kind that can answer for a subset more cheaply
-       * than for all of them — `GbzBaseSyntenyAdapter` walks only the named
-       * haplotypes from an anchor rather than naming all 464 and discarding.
-       * For every other multiway source the term would be a refetch bought for
-       * a filter it ignores, so it is withheld and `rowAssemblies` narrows the
-       * drawing exactly as before. Each genome the session holds goes under
-       * every name the session knows it by: the adapter compares its own
-       * config's spelling, and the worker has no assembly manager to reconcile
-       * a track that spells a lane by an alias
+       * undefined unless the adapter declares its lanes, and lists each held
+       * genome under every name the session knows it by
        */
       get fetchLaneSelection(): string[] | undefined {
         const selection = self.adapterDeclaresLanes
@@ -1208,47 +902,25 @@ export function stateModelFactory(
     }))
     .views(self => ({
       /**
-       * The settings axis of this display's fetch key. A lane selection the
-       * adapter acts on changes what comes back, so held data fetched under a
-       * different selection is stale and has to be refetched — and the
-       * sanctioned way to say so is a field here, which `settingsFetchInputs`
-       * folds into `currentFetchKey`, rather than a term hand-folded into
-       * `viewSignature`. Reads only user-controlled state (the picker's choice,
-       * else the track's config), never anything a fetch produced, which is
-       * what the loop trap forbids.
+       * reads only user-controlled state, never a fetch's output, or it loops
        */
       rpcProps() {
         return { haplotypes: self.fetchLaneSelection }
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get anchorAssembly() {
         return getSession(self).assemblyManager.get(self.anchorAssemblyName)
       },
-      /**
-       * #getter
-       * where the anchor lane is looking, off the settled blocks where there
-       * are any, so a header reading it does not flicker through a pan
-       */
+      /** #getter */
       get anchorLocString() {
         const view = self.lgv
         return view.coarseVisibleLocStrings || view.visibleLocStrings
       },
-      /**
-       * #method
-       * whether the session holds a lane's genome under any spelling, which
-       * is what a navigation onto it needs and a lane drawn from a blocks
-       * table does not
-       */
+      /** #method */
       holdsAssembly(assemblyName: string) {
         return getSession(self).assemblyManager.has(assemblyName)
       },
-      /**
-       * #method
-       * whether the session holds a lane's genome only as a temporary
-       * assembly, the way this display holds a described one
-       */
+      /** #method */
       holdsTemporarily(assemblyName: string) {
         const { assemblyManager, temporaryAssemblies = [] } = getSession(self)
         const name =
@@ -1259,7 +931,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the labels the source's header gives its lanes, by lane key
+       * keyed by `laneKey`
        */
       get declaredLaneLabels() {
         const out = new Map<string, string>()
@@ -1270,12 +942,7 @@ export function stateModelFactory(
         }
         return out
       },
-      /**
-       * #method
-       * what a lane is called on screen: the display name the session gives a
-       * genome it holds, the way the assembly selector names it, else the
-       * label the source declares, else the name the placements carry
-       */
+      /** #method */
       laneLabel(assemblyName: string) {
         return this.holdsAssembly(assemblyName)
           ? getSession(self).assemblyManager.getDisplayName(assemblyName)
@@ -1284,10 +951,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * every lane the picker can offer: the header's declared lanes in the
-       * source's order, then the genomes the track config names, then any
-       * lane the fetched window places that neither named, each saying
-       * whether the stack draws it. The anchor is never a lane
+       * the anchor is never a lane
        */
       get laneUniverse(): LaneChoice[] {
         const anchor = self.laneKey(self.anchorAssemblyName)
@@ -1334,10 +998,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * mate assemblies densest-first, one lane each below the anchor lane,
-       * with any `domain` lanes pinned above them, narrowed to the lanes
-       * the stack draws. A paralogy record's mate is the anchor assembly
-       * itself; those draw on the anchor's own axis rather than as a lane
+       * a paralogy mate on the anchor assembly draws on its axis, not as a row
        */
       get rowAssemblies() {
         const drawn = new Set(
@@ -1349,13 +1010,7 @@ export function stateModelFactory(
           assemblyName => drawn.has(self.laneKey(assemblyName)),
         )
       },
-      /**
-       * #getter
-       * the drawn lanes `Core-describeAssemblies` has not been asked about
-       * whose genome the session does not hold, or holds only as the
-       * temporary assembly a restored session brought back without its gene
-       * adapter
-       */
+      /** #getter */
       get lanesToDescribe(): string[] {
         return this.rowAssemblies.filter(
           name =>
@@ -1363,13 +1018,7 @@ export function stateModelFactory(
             (!this.holdsAssembly(name) || this.holdsTemporarily(name)),
         )
       },
-      /**
-       * #getter
-       * per described lane, the assembly config its description gave, which
-       * the session holds as a temporary assembly while this display draws
-       * the lane. Not a lane "Open in new view" handed back, so the genome's
-       * hub can connect it as a session assembly
-       */
+      /** #getter */
       get laneAssemblyConfs() {
         const out = new Map<string, Record<string, unknown>>()
         for (const [lane, { assembly }] of self.laneDescriptions) {
@@ -1379,13 +1028,7 @@ export function stateModelFactory(
         }
         return out
       },
-      /**
-       * #getter
-       * whether a mate lane can become the anchor. A star source names its
-       * one anchor in its header, and a source declaring its lanes without
-       * the view's anchor among them answers from that anchor alone; either
-       * re-anchored on a mate draws next to nothing
-       */
+      /** #getter */
       get canReanchor() {
         const anchor = self.laneKey(self.anchorAssemblyName)
         const declared = self.declaredLanes ?? []
@@ -1395,21 +1038,14 @@ export function stateModelFactory(
             declared.some(lane => self.laneKey(lane.name) === anchor))
         )
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get visibleBpSpan() {
         const view = self.lgv
         return view.initialized ? view.width * view.bpPerPx : 0
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       * the picker's submit: `names` plus the picked lanes no window has
-       * offered here, or no choice at all where that is what the lanes come
-       * back to
-       */
+      /** #action */
       chooseLanes(names: string[]) {
         self.setSelectedLanes(
           pickedLanes(
@@ -1423,11 +1059,7 @@ export function stateModelFactory(
           ),
         )
       },
-      /**
-       * #action
-       * out of the drawing, whatever choice is in force: the lane stays
-       * fetched, so this refetches nothing
-       */
+      /** #action */
       hideLane(assemblyName: string) {
         self.laneFilter = withLaneHidden(
           self.laneFilter,
@@ -1435,11 +1067,7 @@ export function stateModelFactory(
           self.laneKey,
         )
       },
-      /**
-       * #action
-       * drawn again: unhidden, and added to the lanes in force where they
-       * leave it out
-       */
+      /** #action */
       showLane(assemblyName: string) {
         self.laneFilter = withLaneShown(
           self.laneFilter,
@@ -1448,19 +1076,13 @@ export function stateModelFactory(
           self.laneKey,
         )
       },
-      /**
-       * #action
-       * every hidden lane drawn again, keeping the picker's choice
-       */
+      /** #action */
       showHiddenLanes() {
         self.laneFilter = laneFilterOf(self.laneFilter?.only, [])
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       * the lane picker, over `laneUniverse`
-       */
+      /** #action */
       openLaneSelection() {
         getSession(self).queueDialog(handleClose => [
           LaneSelectionDialog,
@@ -1471,10 +1093,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the groups whose anchor placement is inside the settled viewport, each
-       * with the bp interval of it the viewport shows: the hull of the settled
-       * blocks the group meets, so a group reaching across a block boundary is
-       * cut at neither
+       * each with the hull, in anchor bp, of the settled blocks it meets
        */
       get visibleGroupWindows() {
         const view = self.lgv
@@ -1510,11 +1129,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the groups the viewport shows something of, WHOLE: what the picture is
-       * drawn from, since the stack is translated between settles and a group
-       * cut at the viewport edge would end mid-ribbon on the first pan. Cut,
-       * mates too, where `axisPlacement` cuts the anchor: at a displayed
-       * region's end, which no pan moves
+       * uncut at the viewport edge, cut only at a displayed region's end
        */
       get visibleGroups() {
         const view = self.lgv
@@ -1533,30 +1148,18 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the same groups cut to the viewport — the population every lane's
-       * local frame is fitted to, so panning the anchor re-lays-out the other
-       * lanes. Cut rather than merely filtered because the fetch is padded and
-       * the records come back cut to the PADDING: see `clipGroupToAnchor`
+       * the visible groups cut to the viewport, which each lane's frame fits
        */
       get fitGroups() {
         return self.visibleGroupWindows.map(({ group, start, end }) =>
           clipGroupToAnchor(group, start, end),
         )
       },
-      /**
-       * #getter
-       * the one bp interval every lane draws its ticks at, so tick spacing is
-       * readable as bp-per-pixel across lanes drawn in different frames
-       */
+      /** #getter */
       get tickIntervalBp() {
         return tickIntervalFor(self.visibleBpSpan)
       },
-      /**
-       * #getter
-       * the stack's full drawn height: the track height until a lane would
-       * fall under the minimum pitch, then fixed-pitch and taller than the
-       * viewport — what the scrollbar is sized against
-       */
+      /** #getter */
       get scrollContentHeight() {
         return laneContentHeight(
           self.height,
@@ -1567,18 +1170,11 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * per lane, the gene track it draws: the one `laneGeneTracks` names for
-       * its genome, else the session's best-ranked annotation track declared
-       * for that assembly alone (`annotationRank`). Ranked rather than first
-       * found, since a config routinely puts `hg38-rmsk` in BED beside
-       * `hg38-genes` in GFF3. One pass over the tracks against the lanes'
-       * canonical names, so a cohort of lanes costs no more than one
+       * keyed by each lane's own spelling, not by `laneKey`
        */
       get laneGeneTracks() {
         const session = getSession(self)
         const named = new Set<string>(getConf(self, 'laneGeneTracks'))
-        // two mates can spell one assembly two ways, and both lanes draw from
-        // the one track
         const lanesByKey = new Map<string, string[]>()
         for (const lane of [self.anchorAssemblyName, ...self.rowAssemblies]) {
           const key = self.laneKey(lane)
@@ -1588,8 +1184,6 @@ export function stateModelFactory(
           string,
           { rank: number; track: AnyConfigurationModel }
         >()
-        // the tracks the "Open assembly" hop brings along, connections
-        // included, so a lane annotated through one does not read as bare
         for (const track of allSessionTracks(session)) {
           const names = readConfObject(track, 'assemblyNames') as string[]
           const type: unknown = readConfObject(track, ['adapter', 'type'])
@@ -1617,10 +1211,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * the adapter config of each lane's gene track
-       */
+      /** #getter */
       get laneGeneAdapters() {
         const out = new Map<string, Record<string, unknown>>()
         for (const [lane, track] of self.laneGeneTracks) {
@@ -1635,26 +1226,13 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
+      /** #getter */
       get scrollViewportHeight() {
         return self.height
       },
       /**
        * #getter
-       * where the view draws each visible group's anchor interval, in the
-       * view's px before the scroll offset and in the anchor's own direction —
-       * start end first, so a horizontally flipped view hands the ribbons the
-       * crossed pair it is drawing — with the clipped interval's centre as the
-       * coordinate a lane decision can pin to.
-       *
-       * The view's own `bpToPx` through `axisPlacement`, which is the only
-       * honest answer: it is piecewise over the displayed regions and no
-       * `RowFrame` can stand in for it. Read both by the lane-alignment seed
-       * and by the anchor lane's own ribbons, so "the lanes line up against
-       * where the anchor actually draws" holds by construction rather than by
-       * two loops agreeing
+       * in view px before the scroll offset; a flipped view gives x1 > x2
        */
       get anchorPlacements(): Map<string, AxisPlacement> {
         const view = self.lgv
@@ -1678,19 +1256,13 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * how far the view has scrolled since the stack was laid out: the one
-       * live read a pan makes, applied as a translate over the whole stack
+       * the px the view has scrolled since the stack was laid out
        */
       get dragOffsetPx() {
         const view = self.lgv
         return view.initialized ? self.renderOriginPx - view.offsetPx : 0
       },
-      /**
-       * #getter
-       * the anchor axis reads right to left: a horizontally flipped view. A
-       * lane's decision is stated against the anchor's order, so this mirrors
-       * every lane with the anchor without a re-decision
-       */
+      /** #getter */
       get anchorReversed() {
         return self.lgv.displayedRegionsOrientation === 'reversed'
       },
@@ -1698,8 +1270,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the anchor placements in the stack's own px: what the anchor lane
-       * draws and what every ribbon out of it starts from
+       * the anchor placements in stack px, relative to `renderOriginPx`
        */
       get anchorSpans(): Map<string, Span> {
         const origin = self.renderOriginPx
@@ -1711,12 +1282,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the first link of the alignment chain: the centre of what the viewport
-       * shows of each group, and the view's px for it BEFORE the scroll
-       * offset, so a settle decision reading this does not re-run on every
-       * pan. Off `fitGroups`, the cut the lanes are aligned by: the whole
-       * record's centre sits off to the side it overhangs, and a lane holding
-       * a few long records slid by half the overhang
+       * each group's viewport-cut centre, in view px before the scroll offset
        */
       get anchorAbsX(): Map<string, { coord: AnchorCoord; x: number }> {
         const view = self.lgv
@@ -1743,8 +1309,7 @@ export function stateModelFactory(
       },
       /**
        * #method
-       * the frame a decision draws a lane in, against where the view draws
-       * its pivot now; undefined once the pivot is off the displayed regions
+       * undefined once the pivot is off the displayed regions
        */
       laneFrameOf(decision: LaneDecision): RowFrame | undefined {
         const pivot = self.lgv.bpToPx(decision.pivotAnchor)
@@ -1760,12 +1325,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * each mate lane's local coordinate frame: the settle's decision
-       * against where the view draws its pivot now, carrying the frames a
-       * running transition moves it from
-       */
+      /** #getter */
       get rowFrames(): Map<string, RowFrame | undefined> {
         const out = new Map<string, RowFrame | undefined>()
         for (const assemblyName of self.rowAssemblies) {
@@ -1787,10 +1347,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the reader froze the lanes on the anchor the view is on: each frozen
-       * lane keeps its map from the anchor's bp to its own, so it pans and
-       * zooms with the anchor and re-chooses nothing, and a drag or a
-       * side-scroll on a mate lane slides that lane alone
+       * true only when the lanes were frozen on the anchor the view is on
        */
       get lanesFrozen(): boolean {
         const frozen = self.frozenLanes
@@ -1803,8 +1360,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the frozen lanes' decisions on this anchor, empty while nothing is
-       * frozen here
+       * empty unless `lanesFrozen`
        */
       get frozenDecisions(): ReadonlyMap<string, LaneDecision> {
         return new Map(
@@ -1813,9 +1369,7 @@ export function stateModelFactory(
       },
       /**
        * #method
-       * every mate lane's decision against the view as it is now, in the px
-       * space anchored at `origin`: `previous` holds each live lane's
-       * incumbent, and a lane in `frozen` keeps its own
+       * in the px space anchored at `origin`; a lane in `frozen` keeps its own
        */
       laneDecisionsAt(
         origin: number,
@@ -1874,8 +1428,6 @@ export function stateModelFactory(
         )
       }
       function nudgeLane(assemblyName: string, dxPx: number) {
-        // what the lane draws: a frozen decision whose pivot left the
-        // displayed regions has given way to a live one
         const base = self.laneDecisions.get(assemblyName)
         if (self.lanesFrozen && base && dxPx !== 0) {
           const nudged = nudgeDecision(
@@ -1885,18 +1437,12 @@ export function stateModelFactory(
             self.anchorReversed,
           )
           setFrozenDecision(assemblyName, nudged)
-          // the object the decision autorun will find frozen, so the lane
-          // repacks here, once, rather than a frame late
           self.laneDecisions = new Map(self.laneDecisions).set(
             assemblyName,
             nudged,
           )
         }
       }
-      /**
-       * a frozen lane decided afresh against the window it shows now, the
-       * lanes above it as they draw, and frozen again where it lands
-       */
       function realign(assemblyName: string) {
         if (self.lanesFrozen) {
           const previous = new Map(self.laneDecisions)
@@ -1912,11 +1458,7 @@ export function stateModelFactory(
         }
       }
       return {
-        /**
-         * #action
-         * freeze every lane that has a frame where it draws now, or let them
-         * all choose again
-         */
+        /** #action */
         setLanesFrozen(flag: boolean) {
           self.frozenLanes = flag
             ? {
@@ -1930,34 +1472,22 @@ export function stateModelFactory(
             : undefined
           self.laneDragPx = new Map()
         },
-        /**
-         * #action
-         * a frozen lane re-fitted to what the window shows now, and frozen there
-         */
+        /** #action */
         realignLane(assemblyName: string) {
           realign(assemblyName)
         },
         /**
          * #action
-         * slide a mate lane `dxPx` screen px while the lanes are frozen, which
-         * freezes it there too
+         * slides a mate lane `dxPx` screen px, only while the lanes are frozen
          */
         nudgeLane(assemblyName: string, dxPx: number) {
           nudgeLane(assemblyName, dxPx)
         },
-        /**
-         * #action
-         * how far a drag or side-scroll in progress has slid a lane, drawn
-         * without repacking it
-         */
+        /** #action */
         setLaneDragPx(assemblyName: string, dxPx: number) {
           setLaneDragPx(assemblyName, dxPx)
         },
-        /**
-         * #action
-         * the drag or side-scroll's slide written into the lane's frozen
-         * decision
-         */
+        /** #action */
         endLaneDrag(assemblyName: string) {
           const dxPx = self.laneDragPx.get(assemblyName)
           setLaneDragPx(assemblyName, undefined)
@@ -1967,8 +1497,7 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * pin a lane onto one of its contigs, or `undefined` to let it choose
-         * again. A fresh map, so the decision autorun sees the write
+         * `undefined` lets the lane choose again
          */
         pinLaneContig(assemblyName: string, refName: string | undefined) {
           const pins = new Map(self.pinnedLaneContigs)
@@ -1980,11 +1509,7 @@ export function stateModelFactory(
           self.pinnedLaneContigs = pins
           realign(assemblyName)
         },
-        /**
-         * #action
-         * mirror a lane against its current orientation, pinned to the contig
-         * it draws
-         */
+        /** #action */
         flipLane(assemblyName: string) {
           const decision = self.laneDecisions.get(assemblyName)
           if (decision) {
@@ -1997,10 +1522,7 @@ export function stateModelFactory(
             realign(assemblyName)
           }
         },
-        /**
-         * #action
-         * let a flipped lane choose its orientation again
-         */
+        /** #action */
         unpinLaneFlip(assemblyName: string) {
           const pins = new Map(self.pinnedLaneFlips)
           pins.delete(assemblyName)
@@ -2010,8 +1532,6 @@ export function stateModelFactory(
       }
     })
     .actions(self => {
-      // replaced only when its membership changes, so what reads it recomputes
-      // once per move rather than once per frame
       function setHalfway(next: ReadonlySet<string>) {
         const held = self.laneMotionHalfway
         if (
@@ -2024,9 +1544,7 @@ export function stateModelFactory(
       return {
         /**
          * #action
-         * a settle's decisions and the offset their px space is anchored at. A
-         * lane re-decided on the contig it drew starts moving from where it drew
-         * rather than snapping, where motion is allowed
+         * `originPx` is the view offset the decisions' px space is anchored at
          */
         setLaneFrames(
           originPx: number,
@@ -2048,11 +1566,7 @@ export function stateModelFactory(
           })
           setHalfway(lanesPastHalfway(self.laneTransitions, nowMs))
         },
-        /**
-         * #action
-         * the chrome's frame clock; a transition past its end is dropped,
-         * which repacks its lane in its settled frame alone
-         */
+        /** #action */
         advanceAnimation(nowMs: number) {
           self.laneMotionClockMs = nowMs
           const running = laneTransitionsRunning(self.laneTransitions, nowMs)
@@ -2061,10 +1575,7 @@ export function stateModelFactory(
           }
           setHalfway(lanesPastHalfway(running, nowMs))
         },
-        /**
-         * #action
-         * every lane to its settled frame now
-         */
+        /** #action */
         endAnimation() {
           if (self.laneTransitions.size > 0) {
             self.laneTransitions = new Map()
@@ -2074,12 +1585,7 @@ export function stateModelFactory(
       }
     })
     .views(self => ({
-      /**
-       * #getter
-       * what the lane-genes autorun fetches: one spec per held lane with a
-       * gene track, over the quantized window each lane's frame slides in. A
-       * described lane is held once the session holds its temporary assembly
-       */
+      /** #getter */
       get laneGenesFetchSpecs(): LaneGenesFetchSpec[] {
         const view = self.lgv
         const tracks = self.laneGeneTracks
@@ -2124,18 +1630,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * one spec per ADJACENT mate-lane pair of an alignment-level source, at
-       * the settled tier. A source whose adapter reads lane pairs on its anchor
-       * (`adapterPairsOnAnchor`) is asked for each pair inside the anchor's
-       * window, the one window it can cut. Any other source naming no star
-       * anchor is asked on the upper lane's window against the lower lane's
-       * assembly, which a multi-genome adapter answers with the direct records
-       * it holds for that pair — none, for a star that did not name its
-       * anchor; one that announced itself a star holds no such rows and is not
-       * asked. That route needs the session to hold both assemblies: the fetch
-       * renames its region through the assembly manager, which refuses a PanSN
-       * sample the config never declared, and a multi-genome file routinely
-       * carries more of those than the config names
+       * one spec per adjacent mate-lane pair
        */
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
         const specs: LaneLinksFetchSpec[] = []
@@ -2186,11 +1681,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * per lane layer, the layer's `adapter` where its type computes from the
-       * sequence, else undefined
-       */
+      /** #getter */
       get laneLayerTemplates(): (Record<string, unknown> | undefined)[] {
         const { pluginManager } = getEnv(self)
         return self.configuration.laneLayers.map(layer => {
@@ -2207,12 +1698,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * per lane layer, what each lane reads it from: the layer's `tracks`
-       * entry whose assembly is the lane's, else its template, which a lane
-       * reads through its own genome
-       */
+      /** #getter */
       get laneLayerSources(): Map<string, LaneLayerSource>[] {
         const byId = new Map(
           allSessionTracks(getSession(self)).map(track => [
@@ -2260,12 +1746,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * one spec per lane, layer and region the lane layers read: the
-       * anchor's content blocks, and each held mate lane's quantized window,
-       * each at the lane's own zoom snapped to a power of two. A template
-       * reads a lane only while each of its regions is under
-       * `LANE_TEMPLATE_MAX_BP`, and `pastCap` says which layers left a lane
-       * out for it
+       * `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP`
        */
       get laneLayerReads() {
         const view = self.lgv
@@ -2337,21 +1818,13 @@ export function stateModelFactory(
         })
         return { specs, pastCap }
       },
-      /**
-       * #getter
-       */
+      /** #getter */
       get laneLayersFetchSpecs(): LaneLayerFetchSpec[] {
         return this.laneLayerReads.specs
       },
       /**
        * #getter
-       * the stack the picture is drawn from: one `Lane` per assembly, plus the
-       * geometry every layer places against. Every layer — bands, ticks,
-       * ribbons, glyphs, boxes, headers, the hover outline — is a walk over
-       * this, and the on-screen body and the SVG export walk the same one.
-       * The lane genes are not in it: only the glyph cells read them, and a
-       * stack that carried them re-uploaded every ribbon and tick, and dropped
-       * the hover, on every gene commit
+       * carries no lane genes, so a gene commit re-uploads no ribbon or tick
        */
       get laneStack(): LaneStack {
         const { assemblyManager } = getSession(self)
@@ -2392,13 +1865,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * by lane row, where each moving lane draws its cells at the frame
-       * loop's clock: both frames re-derived against the live view, so a pan
-       * or zoom mid-flight composes with the move. A lane being slid by hand
-       * draws that far over, on top of any move
-       */
+      /** #getter */
       get laneMaps(): ReadonlyMap<number, LaneMap> {
         const out = new Map<number, LaneMap>()
         if (self.laneTransitions.size > 0 || self.laneDragPx.size > 0) {
@@ -2427,12 +1894,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * what each lane's header says and where, for the on-screen headers and
-       * the export's captions alike; a moving lane's names the frame it is
-       * drawn nearer to
-       */
+      /** #getter */
       get laneHeaderRows() {
         const lanes = self.laneStack.lanes.map(lane => {
           return lane.frame?.morphFrom
@@ -2449,11 +1911,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the direct records between each adjacent mate-lane pair as the
-       * ribbons read them: the pair's fetched links where the source answered
-       * any, else the links composed through the anchor from the groups, one
-       * record per placement either lane makes. Off the fetched sets and the
-       * session's assemblies, never the frames, so a settle recomposes nothing
+       * keyed `upper|lower` per adjacent mate-lane pair
        */
       get pairLinks(): ReadonlyMap<string, LaneLinks> {
         const out = new Map<string, LaneLinks>()
@@ -2505,8 +1963,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the ribbons between each adjacent lane pair as the synteny passes'
-       * instance data, in the stack's own px, plus what each ribbon opens
+       * in the stack's own px
        */
       get ribbonGeometry() {
         return buildRibbonGeometry({
@@ -2534,12 +1991,7 @@ export function stateModelFactory(
             })
           : { cells: new Map(), layers: [] }
       },
-      /**
-       * #method
-       * the opaque bands under the lanes on a page of ground `page`, off the
-       * lane geometry rather than the stack: the stack moves on every pan and
-       * settle, the bands only when a lane comes or goes
-       */
+      /** #method */
       bandCellOn(page: string): MultiWayCell {
         return {
           kind: 'glyphs',
@@ -2558,11 +2010,7 @@ export function stateModelFactory(
           }),
         }
       },
-      /**
-       * #getter
-       * `bandCellOn` the session theme's paper, cached so an unchanged cell
-       * uploads nothing
-       */
+      /** #getter */
       get bandCell(): MultiWayCell {
         return this.bandCellOn(getPaletteHost(self).palette.background.paper)
       },
@@ -2579,16 +2027,7 @@ export function stateModelFactory(
       return {
         /**
          * #getter
-         * two cells per lane — its gene models and baseline, and its placement
-         * boxes; see `buildLaneCells`. Boxes first, so a hit test walking these
-         * in order answers the box over the gene the way the draw order does.
-         * Fills come off `laneGeneColors` and `boxColors`, so a settle re-runs
-         * no jexl slot, and neither the hover nor the selection reads these:
-         * the chrome draws both.
-         *
-         * A lane whose `Lane`, fills and ink are the ones its cells were packed
-         * from keeps those cells, so another lane's gene commit re-uploads
-         * nothing of it
+         * boxes before glyphs, so an in-order hit test finds a box over a gene
          */
         get laneCells() {
           const { laneGeneColors, boxColors } = self
@@ -2649,31 +2088,22 @@ export function stateModelFactory(
       }
     })
     .views(self => ({
-      /**
-       * #getter
-       */
+      /** #getter */
       get laneGlyphCells() {
         return self.laneCells.cells
       },
-      /**
-       * #getter
-       * per lane, the named placement boxes its cells drew
-       */
+      /** #getter */
       get laneBoxNames(): Map<string, NamedSpan[]> {
         return self.laneCells.boxNames
       },
       /**
        * #getter
-       * per lane, the group each drawn gene carries, by feature id
+       * per lane, each drawn gene's group, keyed by feature id
        */
       get laneGeneGroups(): Map<string, Map<string, string>> {
         return self.laneCells.geneGroups
       },
-      /**
-       * #getter
-       * the groups whose names every lane prints however crowded: the
-       * hovered one and the clicked one
-       */
+      /** #getter */
       get pinnedLabelGroups(): ReadonlySet<string> {
         return new Set(
           [self.hoveredGroupKey, self.clickedTarget?.groupKey].filter(
@@ -2683,11 +2113,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * a gene's label under `text`; one that does not compile falls back to
-       * the feature track's name-else-ID rather than taking the display down
-       */
+      /** #getter */
       get geneTextOf(): (feature: Feature) => string | undefined {
         const field = self.geneTextField
         if (!field) {
@@ -2718,10 +2144,7 @@ export function stateModelFactory(
       return {
         /**
          * #method
-         * the gene names each lane prints under its glyphs, placed and
-         * decimated, in the stack's px; none with `showGeneLabels` off. Each
-         * gene's text and width are read once per lane fetch, so a pan only
-         * re-places them
+         * placed in the stack's px
          */
         laneGeneLabels(
           fontFamily: string,
@@ -2775,21 +2198,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The key for the glyph colors, read off the anchor lane: it is the one
-       * lane whose color for a group runs down every chain the stack draws, and
-       * keying every lane instead would spend a row on each strain's private
-       * genes and blow the bound on the window where the chains are the point.
-       * A field keys the values it painted, a `jexl:` color its drawn colors
-       * by name, and a constant nothing.
-       *
-       * `MAX_LEGEND_ENTRIES` rather than `legendIsReadable`'s own default,
-       * because this is a derived key and that is the bound a derived key stops
-       * being one at.
-       *
-       * Over the settled window, not the live one: the cells are laid out
-       * against `renderOriginPx`, and the decision autorun restamps that at
-       * settle, so reading `dragOffsetPx` here only rebuilt the key on every
-       * pan frame.
+       * keys the anchor lane alone, over the settled window
        */
       get geneColorScales(): ColorScale[] {
         const hits = [boxesKey(0), glyphsKey(0)].flatMap(key => {
@@ -2817,11 +2226,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * `color.domain` followed by the values the gene key lists that it does
-       * not, in the key's order and less the no-value row
-       */
+      /** #getter */
       get pinnedGeneColorDomain(): string[] {
         const { domain } = self.geneColorSettings.color
         const listed = new Set(domain)
@@ -2838,8 +2243,7 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * paint the genes by `field`, or by `color.value` for `''`, by
-       * display-kit's `colorForField`
+       * `''` paints by `color.value`
        */
       setGeneColorBy(field: string) {
         setConf(
@@ -2848,23 +2252,13 @@ export function stateModelFactory(
           colorForField(self.geneColorSettings.color, field),
         )
       },
-      /**
-       * #action
-       * `pinnedGeneColorDomain` into `color.domain`, so every value the gene
-       * key lists spends its own range color
-       */
+      /** #action */
       pinGeneColorDomain() {
         setConf(self, ['color', 'domain'], [...self.pinnedGeneColorDomain])
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * `LegendMixin`'s hook: the two color vocabularies as their own scales,
-       * so each is titled and dismissed on its own, and neither claims the
-       * other's colors. The colors here are the config's to encode, and a track
-       * that paints one flat color has nothing for a key to say.
-       */
+      /** #getter */
       get colorScales(): ColorScale[] {
         const scales: ColorScale[] = [
           ...self.geneColorScales,
@@ -2883,10 +2277,7 @@ export function stateModelFactory(
         ]
         return scales.filter(scale => !colorScaleIsEmpty(scale))
       },
-      /**
-       * #getter
-       * `LegendMixin`'s hook: the key sits left of the lane headers' scales
-       */
+      /** #getter */
       get legendRight(): number {
         return SCALE_COLUMN_PX
       },
@@ -2894,10 +2285,8 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * each held lane-layer payload its lane still draws, with where: the
-       * lane's band for that layer, and the payload's region in the lane's
-       * own frame. A payload on a lane no longer drawn, or on a contig its lane
-       * has left, is not here
+       * each payload's region placed in its lane's own frame; a payload whose
+       * lane or contig no longer draws is left out
        */
       get laneLayerPlacements() {
         const view = self.lgv
@@ -2954,8 +2343,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * per lane layer, the value domain every drawn lane shares; undefined
-       * for a layer no drawn lane holds values for yet
+       * undefined for a layer no drawn lane holds values for yet
        */
       get laneLayerDomains() {
         return laneLayerDomains(
@@ -2965,12 +2353,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * each lane layer's name and the domain every lane shares, placed once
-       * on the anchor lane's band, and "zoom in" while a template leaves a
-       * lane out for its width
-       */
+      /** #getter */
       get laneLayerTitles() {
         const anchor = self.laneStack.lanes[0]
         const heights = self.laneLayerHeights
@@ -2989,12 +2372,7 @@ export function stateModelFactory(
           }
         })
       },
-      /**
-       * #getter
-       * a bar cell per mark of each drawn payload, and the layer placing it.
-       * A cell is the payload's own until the shared domain moves, so a
-       * settle re-uploads nothing
-       */
+      /** #getter */
       get laneLayerCells() {
         const cells = new Map<string, MultiWayCell>()
         const layers: BarLayer[] = []
@@ -3034,11 +2412,7 @@ export function stateModelFactory(
         }
         return { cells, layers }
       },
-      /**
-       * #getter
-       * everything the backend holds bytes for, keyed so an unchanged cell
-       * keeps its identity across a rebuild of the map and uploads nothing
-       */
+      /** #getter */
       get namedCells(): ReadonlyMap<string, MultiWayCell> {
         return new Map<string, MultiWayCell>([
           [BANDS_KEY, self.bandCell],
@@ -3050,9 +2424,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the stack back to front: bands under everything, since they exist to
-       * cover the view's gridlines; ribbons; each lane's ticks; each lane's
-       * glyphs over its own ribbons
+       * back to front, bands first to cover the view's gridlines
        */
       get namedLayers(): MultiWayLayer[] {
         const { lanes } = self.laneStack
@@ -3067,28 +2439,15 @@ export function stateModelFactory(
           ]),
         ]
       },
-      /**
-       * #getter
-       * the ribbon feature id the passes highlight: every ribbon of the
-       * hovered group shares one, so a hover over any gutter lights the group
-       * in all of them
-       */
+      /** #getter */
       get hoveredFeatureId() {
         return ribbonFeatureId(self.ribbonGeometry, self.hoverTarget)
       },
-      /**
-       * #getter
-       * the clicked twin, resolved the same way
-       */
+      /** #getter */
       get clickedFeatureId() {
         return ribbonFeatureId(self.ribbonGeometry, self.clickedTarget)
       },
-      /**
-       * #getter
-       * The hovered group's placement in every lane that places it, for the
-       * chrome's highlight. A ribbon joins ADJACENT lanes only, so a group the
-       * middle lane does not place would light nothing there without this.
-       */
+      /** #getter */
       get hoverInk(): HighlightRect[] {
         const { hoveredGroupKey, dragOffsetPx, scrollTop } = self
         const { lanes, glyphHeight } = self.laneStack
@@ -3108,12 +2467,7 @@ export function stateModelFactory(
               )
             })
       },
-      /**
-       * #getter
-       * Every gene or placement box drawing the selected feature, for the
-       * chrome's highlight — off the hit boxes the hit test reads, so what
-       * lights is what a click there would select.
-       */
+      /** #getter */
       get selectionInk(): HighlightRect[] {
         const { selectedFeatureId, dragOffsetPx, scrollTop } = self
         return selectedFeatureId === undefined
@@ -3138,30 +2492,17 @@ export function stateModelFactory(
               })
             })
       },
-      /**
-       * #getter
-       * the feature track's shade, which darkens a pale placement box as
-       * visibly as a gene
-       */
+      /** #getter */
       get highlightStyle(): HighlightStyle {
         return 'shade'
       },
-      /**
-       * #getter
-       * the band's light palette, whatever the page theme
-       */
+      /** #getter */
       get groundPalette() {
         return bandPalette
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * the clicked group's outline in every gutter that draws it — its own
-       * cell beside the gutter's, so a selection re-uploads the records the
-       * outline traces rather than the gutter's whole buffer, and a pan
-       * re-uploads nothing
-       */
+      /** #getter */
       get outlineCells(): ReadonlyMap<string, MultiWayCell> {
         const featureId = self.clickedFeatureId
         const out = new Map<string, MultiWayCell>()
@@ -3182,9 +2523,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * everything the backend holds bytes for, under the numeric region key a
-       * block names. Merged from cached maps, so a lane relayout that leaves a
-       * gutter's cell alone re-uploads nothing of it
+       * keyed by `sharedBackendKey`
        */
       get renderCells(): ReadonlyMap<number, MultiWayCell> {
         const out = new Map<number, MultiWayCell>()
@@ -3198,8 +2537,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the stack back to front under those same keys, each gutter's outline
-       * layer immediately over the gutter it traces
+       * back to front, each outline immediately over the gutter it traces
        */
       get renderLayers(): ReadonlyMap<number, MultiWayLayer> {
         const out = new Map<number, MultiWayLayer>()
@@ -3218,7 +2556,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the gutters' ribbon geometry, in draw order — what the pick walks
+       * in draw order
        */
       get ribbonRegions(): ReadonlyMap<number, SyntenyInstanceData> {
         const out = new Map<number, SyntenyInstanceData>()
@@ -3231,7 +2569,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * `ribbonGeometry.records` under the pick's region keys
+       * `ribbonGeometry.records` keyed by `sharedBackendKey`
        */
       get ribbonRecords(): ReadonlyMap<number, ReadonlyMap<number, Feature>> {
         const out = new Map<number, ReadonlyMap<number, Feature>>()
@@ -3242,11 +2580,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * what a frame draws with: the cells' layout and the live transforms,
-       * the drag and each moving lane's map
-       */
+      /** #getter */
       get renderState(): MultiWayRenderState {
         return {
           canvasWidth: self.canvasWidth,
@@ -3262,29 +2596,21 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * one block per layer, in the order the stack draws them
-       */
+      /** #getter */
       get renderBlocks() {
         return multiwayBlocks(self.renderState)
       },
-      /**
-       * #getter
-       * the render state as the synteny pick engine reads it
-       */
+      /** #getter */
       get ribbonPickState(): SyntenyRenderState {
         return ribbonPickState(self.renderState)
       },
     }))
     .views(self => {
-      // the engine's offscreen context and its per-geometry index, allocated
-      // once for the stack — the same closure the pairwise band holds
       const pick = createSyntenyPicker()
       return {
         /**
          * #method
-         * the ribbon under a container-relative point, topmost first
+         * `x` and `y` are container-relative; the topmost ribbon wins
          */
         pickRibbonAt(x: number, y: number) {
           return pick(
@@ -3300,9 +2626,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * the mate lane a drag or side-scroll at container-relative `y` slides:
-       * one with a frame whose header, genes or names are there, while the
-       * lanes are frozen. A gutter is left to pan the view
+       * `y` is container-relative; undefined unless the lanes are frozen
        */
       slidableLaneAt(y: number): string | undefined {
         const oy = y + self.scrollTop
@@ -3319,9 +2643,7 @@ export function stateModelFactory(
       },
       /**
        * #method
-       * what sits under a container-relative point: the glyph or box of the
-       * one lane whose glyph row holds it, boxes before genes since that is
-       * the order they draw, then a ribbon through the pick engine
+       * `x` and `y` are container-relative
        */
       hitTest(x: number, y: number): HoverTarget | undefined {
         const oy = y + self.scrollTop
@@ -3347,8 +2669,6 @@ export function stateModelFactory(
           }
         }
         const hit = self.pickRibbonAt(x, y)
-        // the pick answers an INSTANCE; the target is what that instance's
-        // feature index names
         const targetIdx =
           hit &&
           self.ribbonRegions.get(hit.key)?.instanceFeatureIdx[hit.instanceIndex]
@@ -3362,21 +2682,11 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * a lane is moving between two frames, which the chrome publishes for
-       * the capture waits. Its cells are culled to both frames meanwhile, so
-       * `dataSuperseded` holds the export for it too; the deadline installed
-       * in afterAttach drops every transition at its end, so neither latches
-       */
+      /** #getter */
       get animating() {
         return self.laneTransitions.size > 0
       },
-      /**
-       * #getter
-       * the three dependent fetches, each what it holds beside what it is
-       * asked for
-       */
+      /** #getter */
       get laneFetches(): {
         state: LaneFetchState<HeldLane>
         specs: LaneFetchSpec[]
@@ -3387,13 +2697,7 @@ export function stateModelFactory(
           { state: self.laneLayerData, specs: self.laneLayersFetchSpecs },
         ]
       },
-      /**
-       * #getter
-       * `FetchMixin`'s hook: the dependent fetches are part of loading until
-       * they first cover a mate lane under this anchor, so a capture never
-       * lands between the ortholog fetch and the genes and layers that fill
-       * the lanes; a later refetch runs over drawn lanes and holds nothing
-       */
+      /** #getter */
       get awaitingDependentData(): boolean {
         const anchor = self.anchorAssemblyName
         const describing = self.lanesBeingDescribed.size > 0
@@ -3401,12 +2705,7 @@ export function stateModelFactory(
           laneFetchAwaits(state, specs, anchor, describing),
         )
       },
-      /**
-       * #getter
-       * `GlobalFetchMixin`'s hook: some lane holds a result fetched under a
-       * key its frame has moved past, a description is out, the live zoom has
-       * left the settled tier, or a lane is moving. Holds the export
-       */
+      /** #getter */
       get dataSuperseded(): boolean {
         return (
           this.laneFetches.some(
@@ -3417,31 +2716,17 @@ export function stateModelFactory(
           this.animating
         )
       },
-      /**
-       * #getter
-       * `BaseDisplay`'s hook, what the view publishes to `session.hovered`
-       */
+      /** #getter */
       get hoveredFeature() {
         return self.hoverTarget?.feature
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
+      /** #action */
       selectFeature(feature: Feature) {
         openFeatureWidget(self, feature.toJSON(), { feature })
       },
-      /**
-       * #action
-       * a lane's assembly in a linear genome view of its own, at `loc`, with
-       * this track along so the new view is the same stack anchored there,
-       * and the gene track the lane draws — not every feature track the
-       * genome has, which on a hub is dozens. Keyed on the display and the
-       * lane, so following one lane twice re-navigates the view. A described
-       * lane's temporary assembly goes first, so the new view finds the
-       * genome unrecognized and its hub connects it, tracks and all
-       */
+      /** #action */
       openInNewView(assemblyName: string, loc: string) {
         const session = getSession(self)
         const described = self.laneAssemblyConfs.get(assemblyName)
@@ -3463,19 +2748,11 @@ export function stateModelFactory(
           session.notifyError(`${e}`, e)
         })
       },
-      /**
-       * #action
-       * the hosting view onto `assemblyName` at `loc`; the anchor lane reads
-       * off the view's first assembly, so the stack re-anchors on its own,
-       * and the outgoing anchor joins a selection in force so it stays drawn
-       */
+      /** #action */
       reanchor(assemblyName: string, loc: string) {
         const session = getSession(self)
         const view = self.lgv
         const outgoing = self.anchorAssemblyName
-        // the same undo the stacked view's moves offer: the navigation
-        // replaces the view's regions with another genome's, and what it
-        // discarded may be a region list built over several navigations
         const restore = captureStackViewports([view])
         view
           .navToLocString(loc, assemblyName)
@@ -3494,18 +2771,11 @@ export function stateModelFactory(
             session.notifyError(`${e}`, e)
           })
       },
-      /**
-       * #action
-       */
+      /** #action */
       setHoverTarget(target: HoverTarget | undefined) {
         self.hoverTarget = target
       },
-      /**
-       * #action
-       * the backend's cells and frame, through the one installer: a cell
-       * re-uploads when its identity changes and a frame redraws on anything
-       * the render state reads, which on a pan is the drag offset alone
-       */
+      /** #action */
       startRenderingBackend(backend: MultiWayRenderingBackend) {
         installUpload(self, backend, {
           cells: () => self.renderCells,
@@ -3523,13 +2793,7 @@ export function stateModelFactory(
     .views(self => {
       const superMenuItems = self.trackMenuItems
       return {
-        /**
-         * #method
-         * Show..., Color by..., Lanes and Level of detail, then under Launch
-         * the same multi-panel launch the view menu and the rubberband offer:
-         * every genome aligning to the visible window in a stacked linear
-         * synteny view, cut from this track's dataset
-         */
+        /** #method */
         trackMenuItems(): MenuItem[] {
           const view = self.lgv
           const items = [
@@ -3544,10 +2808,6 @@ export function stateModelFactory(
             openTracks: [self.parentTrack.configuration],
             anchorTracks: anchorPanelTracks(view.tracks),
             sourceView: containingPanelStack(view) ?? view,
-            // the panels are the lanes on screen, in the stack's order,
-            // rather than a discovery over the dataset that forgets the lanes
-            // the reader chose and, on a graph source, fetches every
-            // haplotype the window places a second time
             discoverMatesFor: (_trackId, region) => async () =>
               lanePanelsForRegion({
                 groups: self.groups,
@@ -3567,9 +2827,7 @@ export function stateModelFactory(
       }
     })
     .actions(self => ({
-      /**
-       * #action
-       */
+      /** #action */
       setPointer(state?: MouseState) {
         self.setHoverTarget(
           state && !self.isLoadingOrCanceled
@@ -3577,23 +2835,13 @@ export function stateModelFactory(
             : undefined,
         )
       },
-      /**
-       * #action
-       * `BaseDisplay`'s hook. Two clears call it, because two different things
-       * move the lanes under a stationary cursor: the foundation's
-       * viewport-change reaction, and this display's own relayout reaction (see
-       * afterAttach)
-       */
+      /** #action */
       clearHoveredFeature() {
         self.setHoverTarget(undefined)
       },
-      /**
-       * #action
-       */
+      /** #action */
       selectHovered() {
         const { hoverTarget } = self
-        // clicked-state twin of the hover: the clicked group's ribbon keeps
-        // an outline, and a click on empty canvas clears it
         self.clickedTarget = hoverTarget && {
           groupKey: hoverTarget.groupKey,
           linkId: hoverTarget.linkId,
@@ -3610,9 +2858,7 @@ export function stateModelFactory(
           async () => (await import('./afterAttach.ts')).doAfterAttach,
         )
       },
-      /**
-       * #action
-       */
+      /** #action */
       async renderSvg(
         opts?: ExportSvgDisplayOptions,
       ): Promise<React.ReactNode> {
