@@ -1108,3 +1108,34 @@ test("the encoder's threshold paints each value as thresholdField colours it", (
     values.map(v => cssColorToABGR(field.color(field.key(v)))),
   )
 })
+
+test('a position before the first base stops at 0 rather than wrapping the lane', () => {
+  const flank = feature(0, { flankStart: -400, flankEnd: 100 })
+  const enc = encodeFeatures([flank], { x: 'flankStart', x2: 'flankEnd' }, [])
+  expect([...enc.x]).toEqual([0])
+  expect([...enc.x2]).toEqual([100])
+  expect(enc.skipped).toBe(0)
+})
+
+test('a VCF missing value, `[undefined]`, files under the no-value row on every categorical channel', () => {
+  const feats = [
+    feature(0, { INFO: { X: ['a'] } }),
+    feature(1, { INFO: { X: [undefined] } }),
+    feature(2, { INFO: {} }),
+  ]
+  const enc = encodeFeatures(
+    feats,
+    {
+      color: { field: 'INFO.X', scale: 'categorical' },
+      shape: { field: 'INFO.X', scale: 'categorical' },
+      text: 'INFO.X',
+    },
+    ['color', 'glyph', 'text'],
+  )
+  const scale = enc.scale!
+  expect(
+    scale.kind === 'categorical' ? scale.entries.map(e => e.value) : [],
+  ).toEqual(['a', ''])
+  expect(enc.shapeScale!.entries.map(e => e.value)).toEqual(['a', ''])
+  expect(enc.text).toEqual(['a', '', ''])
+})

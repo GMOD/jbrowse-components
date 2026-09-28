@@ -16,14 +16,18 @@ export const MAX_GROUPS = 40
 
 /**
  * The text a field value groups, colors and labels by: a missing value is the
- * `''` catch-all, and a multi-valued attribute joins, so two features carrying
+ * `''` catch-all, a VCF's `.` among them, which `@gmod/vcf` hands over as
+ * `[undefined]`, and a multi-valued attribute joins, so two features carrying
  * the same list land together.
  */
 export function valueText(value: unknown): string {
   return value === undefined || value === null
     ? ''
     : Array.isArray(value)
-      ? value.map(String).join(',')
+      ? value
+          .filter(v => v !== undefined && v !== null)
+          .map(String)
+          .join(',')
       : String(value)
 }
 

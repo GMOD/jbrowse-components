@@ -132,3 +132,8 @@ test('a re-pick of the same field keeps the domain; a reorder or a new field doe
     field: 'biotype',
   })
 })
+
+test("a list holding only a missing value is the catch-all, as a VCF's `.` arrives", () => {
+  expect(valueText([undefined])).toBe('')
+  expect(valueText([null, 'a'])).toBe('a')
+})

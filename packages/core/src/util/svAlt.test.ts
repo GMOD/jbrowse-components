@@ -119,6 +119,12 @@ test('a record naming no other end has none', () => {
   expect(junctionEnds(paired({}))).toBeUndefined()
 })
 
+test('an insertion names no other end, whether it writes END or SVLEN', () => {
+  expect(junctionEnds(vcf(['<INS>'], { END: [1000] }))).toBeUndefined()
+  expect(junctionEnds(vcf(['<INS>'], { SVLEN: [300] }))).toBeUndefined()
+  expect(junctionEnds(vcf(['<INS:ME:ALU>'], { END: [1000] }))).toBeUndefined()
+})
+
 describe('svClassOfToken', () => {
   test.each([
     ['DEL:ME:ALU', 'DEL'],

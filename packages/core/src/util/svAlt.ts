@@ -94,6 +94,10 @@ export function parseSvAlt(
   const refName = feature.get('refName')
 
   if (alt !== undefined && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
+    // An insertion has one end: its END, where a caller writes one, is POS.
+    if (alt.startsWith('<INS')) {
+      return undefined
+    }
     const info = feature.get('INFO') as
       | Record<string, (string | number)[]>
       | undefined

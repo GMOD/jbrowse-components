@@ -856,3 +856,75 @@ test('matedBy names a second end for exactly the records the mate step keeps', (
   expect(matedBy(records[0]!)).toBe('alt')
   expect(matedBy(records[5]!)).toBe('mate')
 })
+
+test('flatten over records stating no span, or over plain values, stands each in the container', () => {
+  const vcf = new SimpleFeature({
+    uniqueId: 'v',
+    refName: 'ctgA',
+    start: 99,
+    end: 100,
+    ALT: ['C', 'G'],
+    tags: [{ key: 'a' }, { key: 'b' }],
+  })
+  expect(
+    rows(
+      runTransforms([vcf], [{ type: 'flatten', field: 'tags' }]),
+      'key',
+      'start',
+      'end',
+    ),
+  ).toEqual([
+    ['a', 99, 100],
+    ['b', 99, 100],
+  ])
+  const alts = runTransforms(
+    [vcf],
+    [{ type: 'flatten', field: 'ALT', index: 'i' }],
+  )
+  expect(rows(alts, 'ALT', 'i', 'start')).toEqual([
+    ['C', 0, 99],
+    ['G', 1, 99],
+  ])
+  expect(alts.map(f => f.id())).toEqual(['v#0', 'v#1'])
+})
+
+test('a flattened leaf holding nothing in the field answers none, never its siblings', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    refName: 'ctgA',
+    start: 0,
+    end: 1000,
+    name: 'G1',
+    subfeatures: [
+      {
+        uniqueId: 'mrna',
+        refName: 'ctgA',
+        start: 0,
+        end: 1000,
+        type: 'mRNA',
+        subfeatures: [
+          { uniqueId: 'e1', refName: 'ctgA', start: 0, end: 100, type: 'exon' },
+          {
+            uniqueId: 'e2',
+            refName: 'ctgA',
+            start: 900,
+            end: 1000,
+            type: 'exon',
+          },
+        ],
+      },
+      { uniqueId: 'nc', refName: 'ctgA', start: 200, end: 300, type: 'ncRNA' },
+    ],
+  })
+  const twice = runTransforms(
+    [gene],
+    [{ type: 'flatten' }, { type: 'flatten' }],
+  )
+  expect(twice.map(f => f.id())).toEqual(['e1', 'e2'])
+  const kept = runTransforms(
+    [gene],
+    [{ type: 'flatten' }, { type: 'flatten', keepEmpty: true }],
+  )
+  expect(kept.map(f => f.id())).toEqual(['e1', 'e2', 'nc'])
+  expect(kept[2]!.get('name')).toBe('G1')
+})

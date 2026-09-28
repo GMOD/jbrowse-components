@@ -16,11 +16,13 @@ import { zoomInRange } from './markList.ts'
 import { MARK_SPECS, markLanes, plotsValue } from './markSpecs.ts'
 import {
   DEFAULT_BIN_AS,
+  DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_X2,
 } from './markVocabulary.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
+import type { MarkSpec } from './markSpecs.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type {
   AggregateOp,
@@ -41,14 +43,19 @@ export function encodingOf(
   const { x, shape, color, text, size } = mark.encoding
   const y = mark.encoding.y || filled.y
   const row = mark.encoding.row || filled.row
-  const x2 =
-    mark.encoding.x2.pos === DEFAULT_X2 && !mark.encoding.x2.chrom
-      ? (filled.x2 ?? mark.encoding.x2)
-      : mark.encoding.x2
-  const channels = MARK_SPECS[mark.mark].channels as readonly string[]
+  const spec: MarkSpec = MARK_SPECS[mark.mark]
+  const channels = spec.channels as readonly string[]
   // The request carries only what the mark's type reads, so editing a slot it
   // draws nothing from refetches no region.
   const reads = (channel: string) => channels.includes(channel)
+  // Only a mark whose far foot may lie elsewhere reaches the other end a
+  // `mate` step found; a span or bar behind one keeps its own interval.
+  const x2 =
+    mark.encoding.x2.pos === DEFAULT_X2 &&
+    !mark.encoding.x2.chrom &&
+    spec.farFoot
+      ? (filled.x2 ?? mark.encoding.x2)
+      : mark.encoding.x2
   const shapeEncoding: ShapeEncoding =
     markShapeScale(shape) === 'none'
       ? shape.value
@@ -150,7 +157,9 @@ export function lastBinEdges(steps: readonly MarkTransformStepConfig[]) {
 }
 
 /**
- * A step list as the worker's, with an `auto` bin resolved at `bpPerPx`.
+ * A step list as the worker's, with an `auto` bin resolved at `bpPerPx` and
+ * an emptied slot left off, so the worker's default stands where the channel
+ * reader assumed it.
  * `binEdges` is what an aggregate naming no groupby groups by before any bin
  * of this list: the display's last bin's, for a mark's list.
  */
@@ -164,13 +173,17 @@ export function stepsOf(
       case 'filter':
         return { type: 'filter', expr: step.expr }
       case 'formula':
-        return { type: 'formula', expr: step.expr, as: step.as }
+        return {
+          type: 'formula',
+          expr: step.expr,
+          as: step.as || DEFAULT_FORMULA_AS,
+        }
       case 'bin':
         binEdges = binEdgesOf(step)
         return {
           type: 'bin',
           step: binStepWidth(step.step, bpPerPx),
-          field: step.field,
+          field: step.field || undefined,
           as: binEdges,
         }
       case 'aggregate':
@@ -184,18 +197,18 @@ export function stepsOf(
           }),
         }
       case 'coverage':
-        return { type: 'coverage', as: step.as }
+        return { type: 'coverage', as: step.as || undefined }
       case 'flatten':
         return {
           type: 'flatten',
-          field: step.field,
-          index: step.index,
+          field: step.field || undefined,
+          index: step.index || undefined,
           keepEmpty: step.keepEmpty,
         }
       case 'pileup':
         return {
           type: 'pileup',
-          as: step.as,
+          as: step.as || undefined,
           fields: pairOf(step.fields, DEFAULT_PILEUP_FIELDS),
           padding: step.padding,
         }

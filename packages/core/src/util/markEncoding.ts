@@ -433,8 +433,10 @@ export function encodeFeatures<L extends LaneName>(
       }
       continue
     }
-    x[count] = xv
-    x2[count] = x2v
+    // A position before the sequence's first base, a flank run off the start
+    // or an `END=0`, stops at 0 rather than wrapping the unsigned lane.
+    x[count] = xv < 0 ? 0 : xv
+    x2[count] = x2v < 0 ? 0 : x2v
     if (x2Ref) {
       const there = readX2Chrom ? valueText(readX2Chrom(f)) : f.get('refName')
       let ref = refIndex.get(there)

@@ -174,10 +174,12 @@ function formula(
 class FlattenedFeature implements Feature {
   private readonly container: Feature
   private readonly item: Feature
+  private readonly field: string
 
-  constructor(container: Feature, item: Feature) {
+  constructor(container: Feature, item: Feature, field: string) {
     this.container = container
     this.item = item
+    this.field = field
   }
 
   get(name: 'refName'): string
@@ -190,7 +192,7 @@ class FlattenedFeature implements Feature {
   get(name: string): unknown
   get(name: string): unknown {
     const v = this.item.get(name)
-    return v === undefined ? this.container.get(name) : v
+    return v === undefined && name !== this.field ? this.container.get(name) : v
   }
 
   id() {
@@ -210,6 +212,39 @@ class FlattenedFeature implements Feature {
   }
 }
 
+function isFeature(item: unknown): item is Feature {
+  return typeof (item as Feature | undefined)?.get === 'function'
+}
+
+// One element of a fanned-out field: a feature as itself, a record over the
+// container's span where it states none, and a primitive standing in the
+// field's own place.
+function flattenedElement(
+  container: Feature,
+  field: string,
+  item: unknown,
+  i: number,
+): Feature {
+  const id = `${container.id()}#${i}`
+  if (isFeature(item)) {
+    return new FlattenedFeature(container, item, field)
+  }
+  if (typeof item === 'object' && item !== null) {
+    return new FlattenedFeature(
+      container,
+      new SimpleFeature({
+        refName: container.get('refName'),
+        start: container.get('start'),
+        end: container.get('end'),
+        ...item,
+        uniqueId: id,
+      }),
+      field,
+    )
+  }
+  return new DerivedFeature(container, { [field]: item }, id)
+}
+
 function flatten(features: readonly Feature[], step: FlattenStep) {
   const { field = DEFAULT_FLATTEN_FIELD, index, keepEmpty } = step
   const out: Feature[] = []
@@ -225,14 +260,7 @@ function flatten(features: readonly Feature[], step: FlattenStep) {
       continue
     }
     for (const [i, item] of items.entries()) {
-      const child =
-        typeof (item as Feature | undefined)?.get === 'function'
-          ? (item as Feature)
-          : new SimpleFeature({
-              ...(item as Record<string, unknown>),
-              uniqueId: `${f.id()}#${i}`,
-            } as SimpleFeatureSerialized)
-      const flat = new FlattenedFeature(f, child)
+      const flat = flattenedElement(f, field, item, i)
       out.push(index ? new DerivedFeature(flat, { [index]: i }) : flat)
     }
   }
