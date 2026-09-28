@@ -25,6 +25,18 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// A CSS mask that hides the band across each gap, given as y ranges from the
+// band's top edge
+export function gapMask(gaps: { top: number; height: number }[]) {
+  const stops = gaps.flatMap(g => [
+    `#000 ${g.top}px`,
+    `transparent ${g.top}px`,
+    `transparent ${g.top + g.height}px`,
+    `#000 ${g.top + g.height}px`,
+  ])
+  return `linear-gradient(to bottom, ${stops.join(', ')})`
+}
+
 // OverviewHighlight stays separate (different bpToPx API). A non-interactive
 // colored band with an
 // optional top label; when `children` (the highlight chip) is passed it renders
@@ -33,11 +45,13 @@ export default function HighlightBand({
   coords,
   background,
   label,
+  gaps,
   children,
 }: {
   coords: { left: number; width: number }
   background: string
   label?: string
+  gaps?: { top: number; height: number }[]
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
@@ -56,6 +70,9 @@ export default function HighlightBand({
         transform: `translateX(${coords.left}px)`,
         width: coords.width,
         background,
+        ...(gaps?.length
+          ? { maskImage: gapMask(gaps), WebkitMaskImage: gapMask(gaps) }
+          : undefined),
       }}
     >
       {coords.width > 3 && content ? (
