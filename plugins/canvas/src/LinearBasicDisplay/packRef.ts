@@ -60,16 +60,12 @@ interface FeatureGeometry {
 }
 
 interface PackedExtent {
+  startBp: number
+  endBp: number
   layoutStartBp: number
   layoutEndBp: number
   height: number
-  labelBand?: LabelBand
-}
-
-interface LabelBand {
-  topPx: number
-  startBp: number
-  endBp: number
+  labelTopPx?: number
 }
 
 interface LabelInfo {
@@ -415,6 +411,8 @@ function decideLabelReservations(
     const span = overhangWidenedSpan(startBp, endBp, overhangPx * bpPerPx, geom)
     const reach = labelInfo?.partLabelReach
     packed.set(id, {
+      startBp,
+      endBp,
       layoutStartBp:
         reach && geom.hasReversed
           ? Math.min(span.layoutStartBp, reach.low)
@@ -424,38 +422,10 @@ function decideLabelReservations(
           ? Math.max(span.layoutEndBp, reach.high)
           : span.layoutEndBp,
       height: bodyHeightPx + rowPadding + labelLines * labelFontPx,
-      labelBand:
-        labelLines * labelFontPx > 0
-          ? { topPx: bodyHeightPx, startBp, endBp }
-          : undefined,
+      labelTopPx: labelLines * labelFontPx > 0 ? bodyHeightPx : undefined,
     })
   }
   return { packed, droppedLabelIds }
-}
-
-// A name starts flush with its body's edge, the right one in a flipped region,
-// so its rows keep LABEL_LEAD_PX clear there that the body's rows need not.
-// They start where the text does, and the layout counts only the grid rows
-// wholly below that: the row the text starts in also holds the row padding of
-// whatever sits beside the body, and counting it would stop two abutting genes
-// sharing a row.
-function labelRowsSpan(
-  band: LabelBand,
-  geom: FeatureGeometry,
-  leftPx: number,
-  rightPx: number,
-  bpPerPx: number,
-) {
-  const [bodyLeftPx, bodyRightPx] = renderedSpanPx(band, bpPerPx)
-  return {
-    top: band.topPx + LABEL_TOP_GAP_PX,
-    left: geom.hasNonReversed
-      ? Math.min(leftPx, bodyLeftPx - LABEL_LEAD_PX)
-      : leftPx,
-    right: geom.hasReversed
-      ? Math.max(rightPx, bodyRightPx + LABEL_LEAD_PX)
-      : rightPx,
-  }
 }
 
 // Sorts after every real row, so a new feature fills gaps rather than
@@ -552,31 +522,42 @@ export function packPreparedRef(
       layoutHeights.set(id, ext.height)
       continue
     }
-    // Only where the arrow paints: reserving one for every stranded mark
-    // packed 5000 sub-pixel marks 46 rows deep instead of 2.
-    const { left: arrowLeft, right: arrowRight } = strandArrowReachPx(
-      geom.strand,
-      (geom.endBp - geom.startBp) / bpPerPx,
-    )
     // Through `renderedSpanPx`, so the packer and the density collapse agree
     // where a sub-pixel mark sits.
     const [spanLeftPx, spanRightPx] = renderedSpanPx(
       { startBp: ext.layoutStartBp, endBp: ext.layoutEndBp },
       bpPerPx,
     )
-    const leftPx = spanLeftPx - arrowLeft
-    const rightPx = spanRightPx + arrowRight
+    const [bodyLeftPx, bodyRightPx] = renderedSpanPx(ext, bpPerPx)
+    // Only where the arrow paints, past the body's end: reserving one for
+    // every stranded mark packed 5000 sub-pixel marks 46 rows deep instead
+    // of 2, and a name reaching past it already covers it.
+    const { left: arrowLeft, right: arrowRight } = strandArrowReachPx(
+      geom.strand,
+      bodyRightPx - bodyLeftPx,
+    )
+    const leftPx = Math.min(spanLeftPx, bodyLeftPx - arrowLeft)
+    const rightPx = Math.max(spanRightPx, bodyRightPx + arrowRight)
+    // A name never starts before its body's edge, the right one in a flipped
+    // region, and its rows keep LABEL_LEAD_PX clear there. They start at the
+    // first grid row wholly below the text, so what sits beside the body can
+    // overlap the text box by at most ROW_PADDING - LABEL_TOP_GAP_PX.
+    const labelRows =
+      ext.labelTopPx === undefined
+        ? undefined
+        : {
+            top: ext.labelTopPx + LABEL_TOP_GAP_PX,
+            left: geom.hasNonReversed
+              ? Math.min(leftPx, bodyLeftPx - LABEL_LEAD_PX)
+              : leftPx,
+            right: geom.hasReversed
+              ? Math.max(rightPx, bodyRightPx + LABEL_LEAD_PX)
+              : rightPx,
+          }
     // A null top means the stack passed GranularRectLayout's own 10000px
     // `maxHeight`, not the display's slot; `countTruncatedFeatures` owns up
     // to it.
-    const top = layout.addRect(
-      id,
-      leftPx,
-      rightPx,
-      ext.height,
-      ext.labelBand &&
-        labelRowsSpan(ext.labelBand, geom, leftPx, rightPx, bpPerPx),
-    )
+    const top = layout.addRect(id, leftPx, rightPx, ext.height, labelRows)
     layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
     layoutHeights.set(id, ext.height)
   }

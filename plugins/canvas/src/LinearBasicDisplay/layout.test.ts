@@ -951,6 +951,41 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
   expect(rLeft.topPx).not.toBe(rLabel.topPx)
 })
 
+// The arrow paints past the body's end, which a longer name already covers.
+test.each([
+  ['forward', new Set<number>(), 1, { startBp: 100, endBp: 130 }, 168],
+  ['flipped', new Set([0]), -1, { startBp: 200, endBp: 230 }, 100],
+])(
+  'a %s name reaching past its arrow reserves nothing more for it',
+  (_label, reversedRegions, strand, span, neighbourStart) => {
+    const data = makeFeatureData({
+      features: [
+        { featureId: 'named', ...span, height: 10, strand },
+        {
+          featureId: 'neighbour',
+          startBp: neighbourStart,
+          endBp: neighbourStart + 62,
+          height: 10,
+        },
+      ],
+    })
+    data.floatingLabelsData = labelsMap({
+      named: {
+        featureId: 'named',
+        minX: span.startBp,
+        maxX: span.endBp,
+        topY: 0,
+        featureHeight: 10,
+        nameLabel: { text: 'named', relativeY: 0, textWidth: 60 },
+      },
+    })
+    const tops = layout(new Map([[0, data]]), 1, true, false, reversedRegions)
+      .get(0)!
+      .flatbushItems.map(f => f.topPx)
+    expect(tops).toEqual([0, 0])
+  },
+)
+
 // RBM33 beside AC009403.2 in GENCODE: the neighbour's isoform stack ends a
 // pixel before RBM33 starts and reaches down past RBM33's one row, so the name
 // under that row sat a pixel from the neighbour's exons.

@@ -88,8 +88,7 @@ export default class GranularRectLayout {
 
   /**
    * `lower` gives the rows lying wholly at or past `lower.top` px below the
-   * rect's top a span of their own, for a label that needs clear track beside
-   * it where the feature body above does not.
+   * rect's top a span of their own.
    *
    * @returns top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
