@@ -18,8 +18,7 @@ is experimental, and its config shape may change.
 ## Prerequisites
 
 - a JBrowse to open the figures' sessions in ([Web](/docs/quickstart_web) or
-  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so nothing
-  needs hosting to read along
+  [Desktop](/docs/quickstart_desktop))
 - htslib (`bgzip`, `tabix`), for the check at the end and for preparing your own
   file
 - [Node.js](https://nodejs.org/) and the [JBrowse CLI](/docs/cli), for
@@ -110,49 +109,12 @@ bar for its values; click it to open the row.
 
 ## Zooming out: copies per bin
 
-Zoomed out a bar per copy is under a pixel wide, so a second mark takes over at
-`minBpPerPx`: a `bin` step with `"step": "auto"` snaps each copy to a bin, an
+Zoomed out, a bar per copy is under a pixel wide, so a second mark takes over at
+`minBpPerPx`. Its `bin` step with `"step": "auto"` snaps each copy to a bin, an
 `aggregate` counts them, and the bar plots the count. A third mark does the same
-over the copies a `filter` admits, in AluY's colour.
-
-```json
-"marks": [
-  {
-    "mark": "bar",
-    "transform": [
-      { "type": "formula", "expr": "jexl:substring(feature.name, 0, 4)", "as": "lineage" }
-    ],
-    "encoding": {
-      "y": "milliDiv",
-      "color": { "field": "lineage", "scale": "categorical", "title": "Alu lineage" }
-    },
-    "maxBpPerPx": 100
-  },
-  {
-    "mark": "bar",
-    "transform": [
-      { "type": "bin", "step": "auto" },
-      { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
-    ],
-    "encoding": { "color": { "value": "#c0c0c0" } },
-    "minBpPerPx": 100
-  },
-  {
-    "mark": "bar",
-    "transform": [
-      { "type": "filter", "expr": "jexl:startsWith(feature.name, 'AluY')" },
-      { "type": "bin", "step": "auto" },
-      { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
-    ],
-    "encoding": { "color": { "value": "#d73027" } },
-    "minBpPerPx": 100
-  }
-]
-```
-
-The three marks share one fetch and one y-axis; only the marks in range draw.
-The AluY strip is too thin to read against a total that swings several fold, so
-the next sections plot the share instead.
+over the copies a `filter` admits, in AluY's colour. The config in the next
+section carries all three marks, which share one fetch and one y-axis, and only
+the marks in range draw.
 
 ## The whole chromosome: past the fetch budget
 
@@ -328,8 +290,10 @@ megabase, across the genome:
 | AluY share          | 2873 |       -0.688 | < 1e-300 |
 | plus-strand share   | 2873 |        0.003 |     0.87 |
 
-The young share falls as the copies rise, and the control shows no
-trend.[^perbin]
+The young share falls as the copies rise, and the plus-strand control shows no
+trend. Insertions cluster, so a per-megabase significance test that assumed
+independent copies would flag most of the genome, and the page draws no such
+conclusion for single megabases.
 
 ## Checking the bars against the rows
 
@@ -347,22 +311,6 @@ tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:151,000,000-151,030
 | AluS    |     30 |           100 |
 | FLAM    |      4 |           140 |
 | AluJ    |     12 |           150 |
-
-And count one red megabase and one blue one:
-
-```bash
-tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:191,000,001-192,000,000 |
-  awk -F'\t' '$2 >= 191000000 && $4 ~ /^Alu[JSY]/ { n++; y += ($4 ~ /^AluY/) }
-    END { print n " copies, " y " AluY" }'
-```
-
-| megabase, chr1 | Alu copies | AluY |
-| -------------- | ---------: | ---: |
-| 191 to 192 Mb  |        161 |   55 |
-| 203 to 204 Mb  |        690 |   47 |
-
-The dense megabase holds several times the copies and fewer AluY, so its young
-share is lower and its bar is blue.
 
 ## Reproduce it end to end
 
@@ -399,9 +347,3 @@ lineage.
   first described.
 - Smit, Hubley and Green (2013-2015).
   [RepeatMasker Open-4.0](https://www.repeatmasker.org)
-
-[^perbin]:
-    The page does not call individual megabases significant. Insertions cluster,
-    so the copies per megabase scatter several times more widely than
-    independent copies would, and a per-megabase test that assumed independence
-    would flag most of the genome.
