@@ -1,11 +1,13 @@
-import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import BamAdapter from '../BamAdapter/BamAdapter.ts'
 import bamConfigSchema from '../BamAdapter/configSchema.ts'
 import CramAdapter from '../CramAdapter/CramAdapter.ts'
-import { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
+import {
+  getVolvoxSequenceSubAdapter,
+  volvoxReference,
+} from '../CramAdapter/CramTestAdapters.ts'
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
 import {
   buildReadInterchrom,
@@ -14,15 +16,7 @@ import {
   nextRefsToTable,
 } from './readNextRefs.ts'
 
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
-
-const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => ({
-  dataAdapter: new SequenceAdapter(
-    new LocalFile(require.resolve('../../test_data/volvox.fa')),
-  ),
-  sessionIds: new Set(),
-})
 
 async function bamFeatures() {
   const adapter = new BamAdapter(
@@ -40,7 +34,7 @@ async function bamFeatures() {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    { type: 'TestSequenceAdapter' },
+    volvoxReference,
   )
   return firstValueFrom(
     adapter
@@ -68,7 +62,7 @@ async function cramFeatures() {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    { type: 'TestSequenceAdapter' },
+    volvoxReference,
   )
   return firstValueFrom(
     adapter

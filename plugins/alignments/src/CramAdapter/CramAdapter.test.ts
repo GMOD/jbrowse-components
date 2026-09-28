@@ -2,30 +2,17 @@ import { IndexedCramFile } from '@gmod/cram'
 import { getClip } from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { statusMessageText } from '@jbrowse/core/util'
-import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import Adapter from './CramAdapter.ts'
-import { SequenceAdapter } from './CramTestAdapters.ts'
+import {
+  getVolvoxSequenceSubAdapter,
+  volvoxReference,
+} from './CramTestAdapters.ts'
 import configSchema from './configSchema.ts'
 
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
 const pluginManager = new PluginManager()
-
-const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
-  return {
-    dataAdapter: new SequenceAdapter(
-      new LocalFile(require.resolve('../../test_data/volvox.fa')),
-    ),
-    sessionIds: new Set(),
-  }
-}
-
-// Mock sequenceAdapter config - the actual config doesn't matter since
-// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
-const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
 
 function makeAdapter(arg: string) {
   return new Adapter(
@@ -41,7 +28,7 @@ function makeAdapter(arg: string) {
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
-    sequenceAdapterConfig,
+    volvoxReference,
   )
 }
 

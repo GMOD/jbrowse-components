@@ -1,25 +1,16 @@
-import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import BamAdapter from '../BamAdapter/BamAdapter.ts'
 import bamConfigSchema from '../BamAdapter/configSchema.ts'
-import { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
+import {
+  getVolvoxSequenceSubAdapter,
+  volvoxReference,
+} from '../CramAdapter/CramTestAdapters.ts'
 import SamAdapter from './SamAdapter.ts'
 import samConfigSchema from './configSchema.ts'
 
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
-
-const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => ({
-  dataAdapter: new SequenceAdapter(
-    new LocalFile(require.resolve('../../test_data/volvox.fa')),
-  ),
-  sessionIds: new Set(),
-})
-
-// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
-const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
 
 const query = {
   assemblyName: 'volvox',
@@ -72,7 +63,7 @@ const bamFeatures = async (file: string) => {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    sequenceAdapterConfig,
+    volvoxReference,
   )
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
@@ -86,7 +77,7 @@ const samFeatures = async (features: Feature[]) => {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    sequenceAdapterConfig,
+    volvoxReference,
   )
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }

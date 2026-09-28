@@ -1,23 +1,19 @@
 import { statusMessageText } from '@jbrowse/core/util'
-import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
+import {
+  getVolvoxSequenceSubAdapter,
+  volvoxReference,
+} from '../CramAdapter/CramTestAdapters.ts'
 import Adapter from './BamAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 // the reference a fetch of MD-less reads compares against; the RPC path builds
 // the adapter with it, so a bare construction has to hand it over the same way
-const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => ({
-  dataAdapter: new SequenceAdapter(
-    new LocalFile(require.resolve('../../test_data/volvox.fa')),
-  ),
-  sessionIds: new Set(),
-})
-const reference = { type: 'TestSequenceAdapter' }
 
 // extended_cigar.bam is against hg19, which the volvox reference has no contig
 // of; its =/X operations carry the mismatches, and this is what the adapter
@@ -48,7 +44,7 @@ test('emits "Downloading index" on first fetch only, not once cached', async () 
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    reference,
+    volvoxReference,
   )
   const query = {
     assemblyName: 'volvox',
@@ -94,7 +90,7 @@ test('adapter can fetch features from volvox.bam', async () => {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    reference,
+    volvoxReference,
   )
 
   const features = adapter.getFeatures({
@@ -131,7 +127,7 @@ test('adapter can fetch features from volvox.bam', async () => {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    reference,
+    volvoxReference,
   )
 
   const featuresCSI = adapterCSI.getFeatures({
@@ -162,7 +158,7 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the widget)', async (
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    reference,
+    volvoxReference,
   )
 
   const features = adapter.getFeatures({
@@ -196,7 +192,7 @@ test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
     }),
     getReferenceWithoutContig,
     undefined,
-    reference,
+    volvoxReference,
   )
 
   const features = adapter.getFeatures({
@@ -229,7 +225,7 @@ test('the spliced filter partitions reads by a CIGAR skip', async () => {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    reference,
+    volvoxReference,
   )
   const query = {
     assemblyName: 'volvox',
@@ -272,7 +268,7 @@ test('every read carrying SA is clipped at an end', async () => {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    reference,
+    volvoxReference,
   )
   const reads = (await firstValueFrom(
     adapter

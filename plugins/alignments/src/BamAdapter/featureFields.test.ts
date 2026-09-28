@@ -1,24 +1,17 @@
 import { BamRecord } from '@gmod/bam'
-import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
+import {
+  getVolvoxSequenceSubAdapter,
+  volvoxReference,
+} from '../CramAdapter/CramTestAdapters.ts'
 import { getMappingQuality, hasPairOrientation } from '../shared/util.ts'
 import Adapter from './BamAdapter.ts'
 import configSchema from './configSchema.ts'
 
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
 // the reference a fetch of MD-less reads compares against; the RPC path builds
 // the adapter with it, so a bare construction has to hand it over the same way
-const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => ({
-  dataAdapter: new SequenceAdapter(
-    new LocalFile(require.resolve('../../test_data/volvox.fa')),
-  ),
-  sessionIds: new Set(),
-})
-const reference = { type: 'TestSequenceAdapter' }
 
 function volvoxBam(name: string) {
   const bam = require.resolve(`../../../../test_data/volvox/${name}`)
@@ -34,7 +27,7 @@ function volvoxBam(name: string) {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    reference,
+    volvoxReference,
   )
 }
 

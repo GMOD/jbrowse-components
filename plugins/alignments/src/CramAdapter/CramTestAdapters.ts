@@ -1,8 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { LocalFile } from 'generic-filehandle2'
 import { Observable } from 'rxjs'
 
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 // setup for Cram Adapter Testing
@@ -109,3 +111,17 @@ export class SequenceAdapter extends BaseSequenceAdapter {
     })
   }
 }
+
+/**
+ * The reference an alignments test builds its adapter with, the way the RPC
+ * path does: `volvoxReference` stands in for the assembly's sequence adapter
+ * config, and the sub-adapter ignores it and answers with volvox.fa.
+ */
+export const volvoxReference = { type: 'TestSequenceAdapter' }
+
+export const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => ({
+  dataAdapter: new SequenceAdapter(
+    new LocalFile(require.resolve('../../test_data/volvox.fa')),
+  ),
+  sessionIds: new Set(),
+})

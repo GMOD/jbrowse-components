@@ -1,30 +1,17 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import BamAdapter from './BamAdapter/BamAdapter.ts'
 import bamConfigSchema from './BamAdapter/configSchema.ts'
 import CramAdapter from './CramAdapter/CramAdapter.ts'
-import { SequenceAdapter } from './CramAdapter/CramTestAdapters.ts'
+import {
+  getVolvoxSequenceSubAdapter,
+  volvoxReference,
+} from './CramAdapter/CramTestAdapters.ts'
 import cramConfigSchema from './CramAdapter/configSchema.ts'
 
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
 const pluginManager = new PluginManager()
-
-const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
-  return {
-    dataAdapter: new SequenceAdapter(
-      new LocalFile(require.resolve('../test_data/volvox.fa')),
-    ),
-    sessionIds: new Set(),
-  }
-}
-
-// Mock sequenceAdapter config - the actual config doesn't matter since
-// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
-const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
 
 async function getFeats(f1: string, f2: string) {
   const cramAdapter = new CramAdapter(
@@ -38,7 +25,7 @@ async function getFeats(f1: string, f2: string) {
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
-    sequenceAdapterConfig,
+    volvoxReference,
   )
 
   const bamAdapter = new BamAdapter(
@@ -54,7 +41,7 @@ async function getFeats(f1: string, f2: string) {
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
-    sequenceAdapterConfig,
+    volvoxReference,
   )
 
   const query = {

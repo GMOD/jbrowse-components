@@ -2,16 +2,17 @@ import fs from 'node:fs'
 
 import { buildConsensusTally, computeConsensus } from '@jbrowse/alignments-core'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import CramAdapter from '../CramAdapter/CramAdapter.ts'
-import { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
+import {
+  getVolvoxSequenceSubAdapter,
+  volvoxReference,
+} from '../CramAdapter/CramTestAdapters.ts'
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
 
 import type { ConsensusFeature } from '@jbrowse/alignments-core'
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 // CRAM shares the same data as volvox-sorted.bam, so it must reproduce the
 // same samtools-verified consensus — this exercises the CRAM mismatch/inserted-
@@ -35,12 +36,6 @@ function loadCtgA() {
 }
 
 const pluginManager = new PluginManager()
-const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => ({
-  dataAdapter: new SequenceAdapter(
-    new LocalFile(require.resolve('../../test_data/volvox.fa')),
-  ),
-  sessionIds: new Set(),
-})
 
 function makeAdapter() {
   const adapter = new CramAdapter(
@@ -56,7 +51,7 @@ function makeAdapter() {
     }),
     getVolvoxSequenceSubAdapter,
     pluginManager,
-    { type: 'TestSequenceAdapter' },
+    volvoxReference,
   )
   return adapter
 }

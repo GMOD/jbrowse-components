@@ -1,23 +1,21 @@
 import { readIdAt, readIdPrefixOf, readKeyOf } from '@jbrowse/alignments-core'
-import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import BamAdapter from '../BamAdapter/BamAdapter.ts'
 import bamConfigSchema from '../BamAdapter/configSchema.ts'
 import CramAdapter from '../CramAdapter/CramAdapter.ts'
-import { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
+import {
+  getVolvoxSequenceSubAdapter,
+  volvoxReference,
+} from '../CramAdapter/CramTestAdapters.ts'
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
 import SamAdapter from '../SamAdapter/SamAdapter.ts'
 import samConfigSchema from '../SamAdapter/configSchema.ts'
 import { buildBaseFeatureData } from './buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from './buildBaseReadArrays.ts'
 
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
-
-// getVolvoxSequenceSubAdapter ignores it and returns the test adapter
-const sequenceAdapterConfig = { type: 'TestSequenceAdapter' }
 
 const query = {
   assemblyName: 'volvox',
@@ -25,13 +23,6 @@ const query = {
   start: 1,
   end: 10200,
 }
-
-const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => ({
-  dataAdapter: new SequenceAdapter(
-    new LocalFile(require.resolve('../../test_data/volvox.fa')),
-  ),
-  sessionIds: new Set(),
-})
 
 function localPath(path: string) {
   return { localPath: require.resolve(path), locationType: 'LocalPathLocation' }
@@ -45,7 +36,7 @@ async function bamFeatures() {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    sequenceAdapterConfig,
+    volvoxReference,
   )
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
@@ -58,7 +49,7 @@ async function cramFeatures() {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    sequenceAdapterConfig,
+    volvoxReference,
   )
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
@@ -91,7 +82,7 @@ async function samFeatures() {
     }),
     getVolvoxSequenceSubAdapter,
     undefined,
-    sequenceAdapterConfig,
+    volvoxReference,
   )
   return firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
 }
