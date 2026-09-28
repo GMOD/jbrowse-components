@@ -1036,7 +1036,7 @@ export const svSpecs: ScreenshotSpec[] = [
     //
     // The SETTING is named once, on the track header (reviewer: "you can note
     // clearly that the track is 'Group by->SA tag'"). `Split read (SA tag)` is
-    // the menu item's own text (`groupByLabels.ts`), so the pill is the path a
+    // the menu item's own text (`facetLabels.ts`), so the pill is the path a
     // reader retypes rather than a paraphrase of it — and it belongs on the
     // track, not on one of the two sections, since the setting made both. The
     // label row is empty from the end of the track name to the right edge.

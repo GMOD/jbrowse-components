@@ -275,7 +275,7 @@ export type ReadDimension = (typeof READ_DIMENSIONS)[number]
 // In-track stacked grouping, the `facet` object as the model and worker carry
 // it. `domain` is the section order: the keys it lists stack first, the rest
 // follow sorted. Absent means a single ungrouped section.
-export interface GroupBy {
+export interface Facet {
   field: string
   domain?: readonly string[]
 }

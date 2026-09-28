@@ -23,9 +23,9 @@ import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import {
   FIRST_OF_PAIR_STRAND_LABELS,
-  GROUP_BY_LABELS,
+  FACET_LABELS,
   facetTag,
-} from './groupByLabels.ts'
+} from './facetLabels.ts'
 import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
@@ -36,7 +36,7 @@ import {
   getStrand,
 } from './util.ts'
 
-import type { GroupBy, ReadDimension, WorkerFacet } from './types.ts'
+import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -305,7 +305,7 @@ function chainRepresentative(chain: Feature[]): Feature {
   return primary ?? chain[0]!
 }
 
-export interface GroupByDimension<K extends ReadDimension = ReadDimension> {
+export interface FacetDimension<K extends ReadDimension = ReadDimension> {
   field: K
   // Whether the dimension describes the FRAGMENT rather than the record, so a
   // chain-unit partition can key a whole chain off its representative read.
@@ -319,7 +319,7 @@ export interface GroupByDimension<K extends ReadDimension = ReadDimension> {
   // because a chain has no single answer: its two mates genuinely point opposite
   // ways and map with their own confidence.
   //
-  // Whether chain mode HONORS the dimension is `isChainGroupable`.
+  // Whether chain mode HONORS the dimension is `isChainFacetable`.
   fragmentLevel: boolean
   // Not meaningful for ordinary alignment reads, so it is kept out of the general
   // "Group by..." radios and surfaced by the display that supports it —
@@ -329,18 +329,18 @@ export interface GroupByDimension<K extends ReadDimension = ReadDimension> {
   // Key for a whole chain, for a dimension the representative read cannot answer
   // for — it answers "is the primary read1 like this", not "is any read of this
   // fragment". Supplying one is also what makes a per-read dimension groupable in
-  // chain mode (`isChainGroupable`).
+  // chain mode (`isChainFacetable`).
   chainKey?: (chain: Feature[]) => GroupKey
 }
 
 // The one registry of read dimensions. Keyed by ReadDimension, so a new member
 // is a compile error until it is classified here; each entry's `field` is
-// pinned to its own key, because `pickGroupByOptions` maps to that field and a
+// pinned to its own key, because `pickFacetOptions` maps to that field and a
 // plain Record would accept one naming a sibling. Insertion order is the menu
-// order. Labels live in the React-free groupByLabels.ts (see its header),
-// joined to this registry by `pickGroupByOptions` alone.
-export const GROUP_BY_DIMENSIONS: {
-  [K in ReadDimension]: GroupByDimension<K>
+// order. Labels live in the React-free facetLabels.ts (see its header),
+// joined to this registry by `pickFacetOptions` alone.
+export const FACET_DIMENSIONS: {
+  [K in ReadDimension]: FacetDimension<K>
 } = {
   strand: {
     field: 'strand',
@@ -381,11 +381,11 @@ export const GROUP_BY_DIMENSIONS: {
 }
 
 export function isReadDimension(field: string): field is ReadDimension {
-  return Object.hasOwn(GROUP_BY_DIMENSIONS, field)
+  return Object.hasOwn(FACET_DIMENSIONS, field)
 }
 
 function readDimension(field: string) {
-  return isReadDimension(field) ? GROUP_BY_DIMENSIONS[field] : undefined
+  return isReadDimension(field) ? FACET_DIMENSIONS[field] : undefined
 }
 
 // A field no read dimension names keys by its value, labelled the way the
@@ -395,7 +395,7 @@ function readDimension(field: string) {
 function valueKeyer(
   field: string,
   jexl: JexlInstance | undefined,
-): GroupByDimension['key'] {
+): FacetDimension['key'] {
   const tag = facetTag(field)
   const { key, sectionLabel } = categoricalField(tag ?? field)
   const read =
@@ -413,7 +413,7 @@ function valueKeyer(
 function groupKeyer(
   field: string,
   jexl?: JexlInstance,
-): Pick<GroupByDimension, 'key' | 'chainKey'> {
+): Pick<FacetDimension, 'key' | 'chainKey'> {
   return readDimension(field) ?? { key: valueKeyer(field, jexl) }
 }
 
@@ -423,7 +423,7 @@ function groupKeyer(
 // its representative read. Derived rather than asserted as a third field, so a `chainKey`
 // written without a matching flag can't sit there unreachable while the
 // dimension degrades to ungrouped.
-export function isChainGroupable(field: string | undefined) {
+export function isChainFacetable(field: string | undefined) {
   if (field === undefined) {
     return false
   }
@@ -439,19 +439,16 @@ export function isChainGroupable(field: string | undefined) {
 // old session with strand + chain, say) degrades to ungrouped rather than
 // splitting chains across sections and breaking their connecting lines.
 // See ../RenderAlignmentDataRPC/CLAUDE.md.
-export function groupByForMode(
-  groupBy: GroupBy | undefined,
-  isChainMode: boolean,
-) {
-  return isChainMode && !isChainGroupable(groupBy?.field) ? undefined : groupBy
+export function facetForMode(facet: Facet | undefined, isChainMode: boolean) {
+  return isChainMode && !isChainFacetable(facet?.field) ? undefined : facet
 }
 
 // Dimensions as menu radio options, in the given order: the one join between the
 // registry above and the label table, so no call site re-spells a label. The
 // alignments menu takes every non-hidden dimension, LGVSyntenyDisplay a curated
 // three. Mirrors pickColorOptions.
-export function pickGroupByOptions(...fields: ReadDimension[]) {
-  return fields.map(field => ({ type: field, label: GROUP_BY_LABELS[field] }))
+export function pickFacetOptions(...fields: ReadDimension[]) {
+  return fields.map(field => ({ type: field, label: FACET_LABELS[field] }))
 }
 
 /**
@@ -462,7 +459,7 @@ export function pickGroupByOptions(...fields: ReadDimension[]) {
  * either.
  */
 export function workerFacet(
-  facet: GroupBy | undefined,
+  facet: Facet | undefined,
   isChainMode: boolean,
 ): WorkerFacet | undefined {
   return facet === undefined

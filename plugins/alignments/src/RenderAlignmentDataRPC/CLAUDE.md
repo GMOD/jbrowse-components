@@ -47,7 +47,7 @@ read likewise.
 - Chain mode allows only dimensions that resolve one chain to one key —
   `fragmentLevel` (the chain's representative read answers for the fragment)
   **or** a `chainKey` that answers for the whole chain, which is why
-  `isChainGroupable` derives the answer instead of reading a third field. A tag
+  `isChainFacetable` derives the answer instead of reading a third field. A tag
   or field facet describes the fragment. `fragmentLevel` is **not** "every read
   yields the same key": a supplementary segment carries its own strand and its
   own `pair_orientation`, so it disagrees with its primary and the fragment's

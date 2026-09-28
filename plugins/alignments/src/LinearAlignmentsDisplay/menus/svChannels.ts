@@ -7,13 +7,13 @@ import {
   isSvChannelsActive,
 } from './svChannelsPreset.ts'
 
-import type { GroupBy } from '../../shared/types.ts'
+import type { Facet } from '../../shared/types.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { SvChannelsSettings, SvChannelsWrite } from './svChannelsPreset.ts'
 
 export interface SvChannelsModel extends SvChannelsSettings {
   setShowPileup: (show: boolean) => void
-  setFacet: (facet?: GroupBy) => void
+  setFacet: (facet?: Facet) => void
   setReadConnections: (mode?: ReadConnectionsMode) => void
   setDrawProperPairArcs: (draw: boolean) => void
 }

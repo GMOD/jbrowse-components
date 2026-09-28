@@ -10,7 +10,7 @@ import {
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
+import { TAG_FIELD_PREFIX, facetTag } from './facetLabels.ts'
 import { MAPQ_UNAVAILABLE } from './util.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'

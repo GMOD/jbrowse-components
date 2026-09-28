@@ -6,7 +6,7 @@ import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
 import GroupByDialog from './GroupByDialog.tsx'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
-import type { BaseLayer, ColorBy, GroupBy } from '../../shared/types.ts'
+import type { BaseLayer, ColorBy, Facet } from '../../shared/types.ts'
 import type { GroupByDialogModel } from './GroupByDialog.tsx'
 
 beforeEach(() => {
@@ -26,7 +26,7 @@ afterEach(() => {
 function renderDialog(state: {
   colorBy: ColorBy
   baseLayer?: BaseLayer
-  facet?: GroupBy
+  facet?: Facet
 }) {
   const setFacet = jest.fn()
   const setColorBy = jest.fn()

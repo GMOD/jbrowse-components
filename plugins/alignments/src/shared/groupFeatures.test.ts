@@ -3,16 +3,16 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 
 import {
-  GROUP_BY_DIMENSIONS,
+  FACET_DIMENSIONS,
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
-  groupByForMode,
-  isChainGroupable,
+  facetForMode,
+  isChainFacetable,
   partitionFeatures,
   workerFacet,
 } from './groupFeatures.ts'
 
-import type { GroupBy } from './types.ts'
+import type { Facet } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function feat(uniqueId: string, fields: Record<string, unknown>): Feature {
@@ -290,17 +290,17 @@ test('mate-assembly grouping pins features with no mate assembly last', () => {
 // `splitRead` is the second — its per-read key differs between a split mate and
 // its unsplit partner — so a reading of `fragmentLevel` alone would drop it from
 // chain mode, where it matters most.
-test('isChainGroupable allows a fragment-level key, a chainKey, a tag or a field', () => {
-  expect(isChainGroupable('tags.HP')).toBe(true)
-  expect(isChainGroupable('name')).toBe(true)
-  expect(isChainGroupable('firstOfPairStrand')).toBe(true)
-  expect(isChainGroupable('pairOrientation')).toBe(true)
-  expect(isChainGroupable('mateAssembly')).toBe(true)
-  expect(isChainGroupable('strand')).toBe(false)
-  expect(isChainGroupable('splitRead')).toBe(true)
-  expect(GROUP_BY_DIMENSIONS.splitRead.fragmentLevel).toBe(false)
-  expect(isChainGroupable('mapq')).toBe(false)
-  expect(isChainGroupable(undefined)).toBe(false)
+test('isChainFacetable allows a fragment-level key, a chainKey, a tag or a field', () => {
+  expect(isChainFacetable('tags.HP')).toBe(true)
+  expect(isChainFacetable('name')).toBe(true)
+  expect(isChainFacetable('firstOfPairStrand')).toBe(true)
+  expect(isChainFacetable('pairOrientation')).toBe(true)
+  expect(isChainFacetable('mateAssembly')).toBe(true)
+  expect(isChainFacetable('strand')).toBe(false)
+  expect(isChainFacetable('splitRead')).toBe(true)
+  expect(FACET_DIMENSIONS.splitRead.fragmentLevel).toBe(false)
+  expect(isChainFacetable('mapq')).toBe(false)
+  expect(isChainFacetable(undefined)).toBe(false)
 })
 
 // Each entry names its own registry key, which is the field the alignments menu
@@ -308,7 +308,7 @@ test('isChainGroupable allows a fragment-level key, a chainKey, a tag or a field
 // selects something else. Pinned at runtime as well as in the type because the
 // type is the part a future edit can widen.
 test('every dimension states its own registry key as its field', () => {
-  for (const [key, dimension] of Object.entries(GROUP_BY_DIMENSIONS)) {
+  for (const [key, dimension] of Object.entries(FACET_DIMENSIONS)) {
     expect(dimension.field).toBe(key)
   }
 })
@@ -506,13 +506,13 @@ test('chain mode sends the chain as the unit only when there is a facet', () => 
   expect(workerFacet(undefined, true)).toBeUndefined()
 })
 
-test('groupByForMode degrades a per-read dimension in chain mode only', () => {
+test('facetForMode degrades a per-read dimension in chain mode only', () => {
   const perRead = { field: 'strand' as const }
   const chainSafe = { field: 'tags.HP' }
-  expect(groupByForMode(perRead, false)).toBe(perRead)
-  expect(groupByForMode(perRead, true)).toBeUndefined()
-  expect(groupByForMode(chainSafe, true)).toBe(chainSafe)
-  expect(groupByForMode(undefined, true)).toBeUndefined()
+  expect(facetForMode(perRead, false)).toBe(perRead)
+  expect(facetForMode(perRead, true)).toBeUndefined()
+  expect(facetForMode(chainSafe, true)).toBe(chainSafe)
+  expect(facetForMode(undefined, true)).toBeUndefined()
 })
 
 // The collision the display's per-group volatiles are keyed against: '' is the
@@ -522,8 +522,8 @@ test('groupByForMode degrades a per-read dimension in chain mode only', () => {
 // that share nothing else.
 test("'' is the ungrouped lane's key and several dimensions' catch-all", () => {
   const untagged = feat('a', { flags: 0, strand: 1 })
-  const keyUnder = (groupBy?: GroupBy) =>
-    partitionFeatures([untagged], groupBy)[0]!.key
+  const keyUnder = (facet?: Facet) =>
+    partitionFeatures([untagged], facet)[0]!.key
   expect(keyUnder()).toBe('')
   expect(keyUnder({ field: 'tags.HP' })).toBe('')
   expect(keyUnder({ field: 'pairOrientation' })).toBe('')
@@ -531,7 +531,7 @@ test("'' is the ungrouped lane's key and several dimensions' catch-all", () => {
 })
 
 test('groupKeySpaceOf separates the groupings that share a key', () => {
-  const groupings: (GroupBy | undefined)[] = [
+  const groupings: (Facet | undefined)[] = [
     undefined,
     { field: 'tags.HP' },
     { field: 'tags.RG' },

@@ -22,9 +22,9 @@ import {
   ROW_RENDERINGS,
 } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
 import {
-  GROUP_BY_LABELS,
+  FACET_LABELS,
   facetTag,
-} from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
+} from '../../../../plugins/alignments/src/shared/facetLabels.ts'
 import {
   ARC_COLOR_OPTIONS,
   SAME_AS_READS_LABEL,
@@ -291,7 +291,7 @@ function facetField(value: unknown) {
 // displays (`strand`) reads the same on both menus.
 function namesAlignmentsFacet(value: unknown) {
   const field = facetField(value) ?? ''
-  return facetTag(field) !== undefined || Object.hasOwn(GROUP_BY_LABELS, field)
+  return facetTag(field) !== undefined || Object.hasOwn(FACET_LABELS, field)
 }
 
 function alignmentsFacetStep(value: unknown): FieldStep | undefined {
@@ -308,7 +308,7 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
   }
   // matched by key rather than indexed, so no cast into ReadDimension is needed
   // to look one up by arbitrary JSON (same reason colorByStep scans by value)
-  const label = Object.entries(GROUP_BY_LABELS).find(([k]) => k === field)?.[1]
+  const label = Object.entries(FACET_LABELS).find(([k]) => k === field)?.[1]
   return label
     ? {
         path: `${TRACK_MENU} → Group by... → ${label}`,

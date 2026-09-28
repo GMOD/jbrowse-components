@@ -86,7 +86,7 @@ import {
   workerColorBy,
 } from '../shared/colorSchemes.ts'
 import {
-  groupByForMode,
+  facetForMode,
   sectionOrder,
   workerFacet,
 } from '../shared/groupFeatures.ts'
@@ -207,7 +207,7 @@ import type {
   ArcColorField,
   BaseLayer,
   FilterBy,
-  GroupBy,
+  Facet,
   LayoutOrder,
   ReadColorBy,
   SortedBy,
@@ -770,13 +770,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The grouping the fetch will partition by, matching what the worker
-           * resolves (`executeRenderAlignmentData`). Chain mode turns a per-read
+           * The facet the fetch partitions by. Chain mode turns a per-read
            * dimension into ungrouped without changing the slot, so the slot alone
            * does not determine which sections come back.
            */
           get effectiveFacet() {
-            return groupByForMode(self.facet, self.isChainMode)
+            return facetForMode(self.facet, self.isChainMode)
           },
 
           /**
@@ -795,7 +794,7 @@ export default function stateModelFactory(
            * stacked group sections aren't hidden behind an overlapping label.
            *
            * Asks whether the grouping will be HONORED, not merely whether it is set:
-           * chain mode drops a per-read dimension (`groupByForMode`), and reserving
+           * chain mode drops a per-read dimension (`facetForMode`), and reserving
            * label room for sections that then never get drawn leaves dead space above
            * the plot. Unlike `showsGroupLabels` this can't read the fetched sections —
            * the track label is positioned before any data arrives, and flipping once
@@ -3579,7 +3578,7 @@ export default function stateModelFactory(
            * current one while the key space holds, so a re-pick from the menu
            * is not a reorder; a reorder is this action with a new domain.
            */
-          setFacet(facet?: GroupBy) {
+          setFacet(facet?: Facet) {
             setConf(self, 'facet', carryGroupDomain(facet, self.facet) ?? {})
             self.scrollTop = 0
           },

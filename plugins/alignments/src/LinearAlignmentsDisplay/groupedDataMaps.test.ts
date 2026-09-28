@@ -19,7 +19,7 @@ import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { GroupBy } from '../shared/types.ts'
+import type { Facet } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Minimal PileupDataResult stub: only the fields these scans read.
@@ -205,11 +205,11 @@ test('orderedGroups stacks the domain first across regions', () => {
 })
 
 // The labels gate reads the sections the worker actually emitted, because the
-// `groupBy` setting can be set while the fetch is ungrouped.
+// `facet` setting can be set while the fetch is ungrouped.
 test('hasNamedGroups is false for an ungrouped or degraded fetch', () => {
   // ungrouped: the worker's singleSection, keyed '' with no label
   expect(hasNamedGroups([{ key: '', label: '' }])).toBe(false)
-  // chain mode + a per-read dimension: groupBy stays set, but groupByForMode
+  // chain mode + a per-read dimension: facet stays set, but facetForMode
   // degrades the partition to that same unnamed single section
   expect(hasNamedGroups([])).toBe(false)
 })
@@ -237,10 +237,10 @@ function feat(id: string, fields: Record<string, unknown>): Feature {
 // Worker per-region partition → the RPC's grouped-result shape the merge reads.
 function partitionRegion(
   features: Feature[],
-  groupBy: GroupBy,
+  facet: Facet,
 ): GroupedAlignmentsResult {
   return {
-    groups: partitionFeatures(features, groupBy).map(g => ({
+    groups: partitionFeatures(features, facet).map(g => ({
       key: g.key,
       label: g.label,
       data: data(g.features.map(f => f.id())),
@@ -274,11 +274,11 @@ test('cross-region strand: reverse-only early region does not stack above forwar
 test('cross-region tag: untagged-only early region stays last after merge', () => {
   // Region 0 has only untagged reads (worker emits ['']); region 1 adds HP 1.
   // First-seen would pin '' first; the merge must restore untagged-last.
-  const groupBy: GroupBy = { field: 'tags.HP' }
-  const region0 = partitionRegion([feat('a', {})], groupBy)
+  const facet: Facet = { field: 'tags.HP' }
+  const region0 = partitionRegion([feat('a', {})], facet)
   const region1 = partitionRegion(
     [feat('b', { tags: { HP: 1 } }), feat('c', {})],
-    groupBy,
+    facet,
   )
   expect(region0.groups.map(g => g.key)).toEqual([''])
   expect(region1.groups.map(g => g.key)).toEqual(['1', ''])
@@ -288,7 +288,7 @@ test('cross-region tag: untagged-only early region stays last after merge', () =
       [1, region1],
     ]),
     undefined,
-    sectionOrder(groupBy.field),
+    sectionOrder(facet.field),
   )
   expect(order.map(g => g.key)).toEqual(['1', ''])
 })

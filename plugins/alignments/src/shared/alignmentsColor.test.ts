@@ -9,7 +9,7 @@ import {
   colorSnapshotFor,
   pinnedInsertSizeBand,
 } from './alignmentsColor.ts'
-import { GROUP_BY_LABELS } from './groupByLabels.ts'
+import { FACET_LABELS } from './facetLabels.ts'
 
 import type { AlignmentsColorSetting } from './alignmentsColor.ts'
 import type { ColorBy } from './types.ts'
@@ -43,7 +43,7 @@ describe('colorByOf', () => {
   test('a read dimension the facet also offers is spelt the facet’s way', () => {
     const shared = ['strand', 'firstOfPairStrand', 'pairOrientation', 'mapq']
     for (const field of shared) {
-      expect(Object.hasOwn(GROUP_BY_LABELS, field)).toBe(true)
+      expect(Object.hasOwn(FACET_LABELS, field)).toBe(true)
       expect(Object.values(COLOR_FIELDS)).toContain(field)
     }
   })

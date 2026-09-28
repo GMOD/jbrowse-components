@@ -5,19 +5,19 @@ import {
   collapseGroupRowsItems,
   groupByRadioMenuItem,
   hiddenGroupsItems,
-  pickGroupByOptions,
+  pickFacetOptions,
 } from '@jbrowse/plugin-alignments'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   CollapseGroupRowsModel,
-  GroupBy,
+  Facet,
   HiddenGroupsModel,
 } from '@jbrowse/plugin-alignments'
 
 interface GroupByModel {
-  facet?: GroupBy
-  setFacet: (facet?: GroupBy) => void
+  facet?: Facet
+  setFacet: (facet?: Facet) => void
   // A synteny track carries the inherited `linkedReads` slot, so chain layout is
   // reachable here from a config or session even though this menu offers no way
   // in. `groupByRadioMenuItem` needs it to drop the per-read dimensions the
@@ -33,7 +33,7 @@ interface GroupByModel {
 // matters here — mate assembly, which stacks each mate sample of an all-vs-all
 // track into its own section — is `hidden` there precisely so this menu can own
 // it. Labels come from the shared registry so they can't drift from the dialog.
-const GROUP_OPTIONS = pickGroupByOptions('mateAssembly', 'strand', 'mapq')
+const GROUP_OPTIONS = pickFacetOptions('mateAssembly', 'strand', 'mapq')
 
 export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   const item = groupByRadioMenuItem({

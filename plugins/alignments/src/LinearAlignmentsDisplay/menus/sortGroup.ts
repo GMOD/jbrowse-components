@@ -4,16 +4,16 @@ import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
-import { TAG_FIELD_PREFIX, facetTag } from '../../shared/groupByLabels.ts'
+import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
 import {
-  GROUP_BY_DIMENSIONS,
+  FACET_DIMENSIONS,
   isReadDimension,
-  pickGroupByOptions,
+  pickFacetOptions,
 } from '../../shared/groupFeatures.ts'
 import { isInterbaseType } from '../../shared/types.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
 
-import type { GroupBy, LayoutOrder, SortedBy } from '../../shared/types.ts'
+import type { Facet, LayoutOrder, SortedBy } from '../../shared/types.ts'
 import type { GroupByDialogModel } from '../dialogs/GroupByDialog.tsx'
 import type { RadioMenuItem } from '@jbrowse/core/ui'
 
@@ -154,10 +154,8 @@ export function getSortByMenuItem(
 // handed, so this display and LGVSyntenyDisplay can't answer it differently.
 // Built once, like the synteny menu's own list: the registry is a module
 // constant, so a menu open cannot produce a different answer.
-const GROUP_OPTIONS = pickGroupByOptions(
-  ...Object.values(GROUP_BY_DIMENSIONS).flatMap(d =>
-    d.hidden ? [] : [d.field],
-  ),
+const GROUP_OPTIONS = pickFacetOptions(
+  ...Object.values(FACET_DIMENSIONS).flatMap(d => (d.hidden ? [] : [d.field])),
 )
 
 // The dialog's surface plus what the radios themselves need. The same node is
@@ -167,9 +165,9 @@ export interface GroupByMenuModel extends GroupByDialogModel {
 }
 
 export interface SectionOrderMenuModel {
-  effectiveFacet: GroupBy | undefined
+  effectiveFacet: Facet | undefined
   groupOrder: readonly { key: string; label: string }[]
-  setFacet: (facet?: GroupBy) => void
+  setFacet: (facet?: Facet) => void
   hideGroup: (key: string) => void
 }
 

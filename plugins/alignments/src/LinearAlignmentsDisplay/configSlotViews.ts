@@ -23,7 +23,7 @@ import type {
   BaseLayer,
   ColorSchemeType,
   FilterBy,
-  GroupBy,
+  Facet,
   LayoutOrder,
   ModificationColorBy,
   ReadColorBy,
@@ -348,7 +348,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * The `facet` object as written, undefined while ungrouped. The worker
      * partitions one fetch into a section per value of its field.
      */
-    get facet(): GroupBy | undefined {
+    get facet(): Facet | undefined {
       return facetSettingOf({
         field: getConf(self, ['facet', 'field']),
         domain: getConf(self, ['facet', 'domain']),

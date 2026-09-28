@@ -575,7 +575,7 @@ describe('ordering controls in chain mode', () => {
     expect(display.rpcProps().sortTag).toBeUndefined()
   })
 
-  // Chain mode degrades a per-read grouping to none (`groupByForMode`), so it
+  // Chain mode degrades a per-read grouping to none (`facetForMode`), so it
   // has to leave the key too. The menu won't offer one in chain mode, but a
   // session or the settings editor can hold one — and then clearing or
   // changing it dropped every fetched region to re-read byte-identical data.
@@ -1673,7 +1673,7 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.facet).toEqual({ field: 'tags.HP', domain: [] })
   })
 
-  // Chain mode degrades a per-read dimension to ungrouped (`groupByForMode`)
+  // Chain mode degrades a per-read dimension to ungrouped (`facetForMode`)
   // with the slot untouched, so the fetch comes back as one '' lane while the
   // menu still reads "Group by MAPQ".
   test('entering chain mode drops the state of a grouping it degrades', () => {

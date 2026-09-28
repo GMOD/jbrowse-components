@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
-import type { GroupBy } from '../../shared/types.ts'
+import type { Facet } from '../../shared/types.ts'
 
 function makeModel() {
   return {
@@ -50,8 +50,8 @@ function makeModel() {
     setShowPileup(v: boolean) {
       this.showPileup = v
     },
-    facet: undefined as GroupBy | undefined,
-    setFacet(v?: GroupBy) {
+    facet: undefined as Facet | undefined,
+    setFacet(v?: Facet) {
       this.facet = v
     },
   }

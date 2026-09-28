@@ -75,7 +75,7 @@ export type {
 export { queueReadVsRefDialog } from './ReadVsRefDialog/index.ts'
 export type { ReadVsRefLaunchArgs } from './ReadVsRefDialog/index.ts'
 export { pickColorOptions } from './shared/colorSchemes.ts'
-export { pickGroupByOptions } from './shared/groupFeatures.ts'
+export { pickFacetOptions } from './shared/groupFeatures.ts'
 export type { ReadDimension } from './shared/types.ts'
 
 // Types that appear in the inferred shape of the exported display model. They
@@ -150,7 +150,7 @@ export type {
   ColorBy,
   ColorSchemeType,
   FilterBy,
-  GroupBy,
+  Facet,
   ModificationColorBy,
   ReadColorBy,
   SortedBy,

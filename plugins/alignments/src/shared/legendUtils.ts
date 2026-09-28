@@ -30,7 +30,7 @@ import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
-import { FIRST_OF_PAIR_STRAND_LABELS } from './groupByLabels.ts'
+import { FIRST_OF_PAIR_STRAND_LABELS } from './facetLabels.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
 import {
   BASE_QUALITY_RAMP_MAX,
@@ -276,7 +276,7 @@ export function sashimiLegendItems(
 }
 
 // The label for each fixed-swatch category, in display order — object key order
-// is the order, the same way `GROUP_BY_DIMENSIONS`' is its menu order. The
+// is the order, the same way `FACET_DIMENSIONS`' is its menu order. The
 // swatch color is resolved from the live palette (categorySwatchColor), so
 // wording is the only thing the legend hard-codes. Categories absent from
 // `SwatchCategory` are keyed by `schemeLegend` ('plain', 'tag') or by a colour

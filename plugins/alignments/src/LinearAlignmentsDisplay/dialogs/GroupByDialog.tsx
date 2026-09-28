@@ -15,14 +15,14 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
+import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
-import { TAG_FIELD_PREFIX, facetTag } from '../../shared/groupByLabels.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
 import type {
   BaseLayer,
   FilterBy,
-  GroupBy,
+  Facet,
   ReadColorBy,
 } from '../../shared/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -45,8 +45,8 @@ export interface GroupByDialogModel extends IStateTreeNode {
   resolvedByteLimit: () => number | undefined
   colorBy: ReadColorBy
   baseLayer: BaseLayer | undefined
-  facet?: GroupBy
-  setFacet: (facet?: GroupBy) => void
+  facet?: Facet
+  setFacet: (facet?: Facet) => void
   setColorBy: (colorBy: ReadColorBy) => void
 }
 

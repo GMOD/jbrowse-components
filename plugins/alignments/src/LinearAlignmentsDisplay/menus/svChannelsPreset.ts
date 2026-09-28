@@ -3,13 +3,13 @@
 // recipes, which name a figure's arrangement by its menu label. Same reason
 // compactnessPresets.ts is its own module.
 
-import type { GroupBy } from '../../shared/types.ts'
+import type { Facet } from '../../shared/types.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 
 /** What the arrangement READS, to decide whether it is in effect. */
 export interface SvChannelsSettings {
   showPileup: boolean
-  facet: GroupBy | undefined
+  facet: Facet | undefined
   readConnections: ReadConnectionsMode
   drawProperPairArcs: boolean
 }
