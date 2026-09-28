@@ -165,7 +165,6 @@ Three neighbours sit inside the same 101 bp, and the display filters them out:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "dog10k_cyp1a2_snvs-LinearMultiSampleVariantDisplay",
       "filter": ["jexl:feature.start == 38261634"]
     }
   ]

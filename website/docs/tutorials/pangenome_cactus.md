@@ -472,12 +472,10 @@ shared prefix:
   "displayDefaults": { "showLabels": "none" },
   "displays": [
     {
-      "type": "LinearGraphDisplay",
-      "displayId": "ecoli_cactus_segments-LinearGraphDisplay"
+      "type": "LinearGraphDisplay"
     },
     {
-      "type": "LinearBasicDisplay",
-      "displayId": "ecoli_cactus_segments-LinearBasicDisplay"
+      "type": "LinearBasicDisplay"
     }
   ]
 }

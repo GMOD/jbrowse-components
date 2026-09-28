@@ -20,8 +20,7 @@ and its config shape may change.
 ## Prerequisites
 
 - a JBrowse to open the figures' sessions in ([Web](/docs/quickstart_web) or
-  [Desktop](/docs/quickstart_desktop)); every file here is a URL, so nothing
-  needs hosting to read along
+  [Desktop](/docs/quickstart_desktop))
 - [samtools](https://www.htslib.org/) and htslib (`bgzip`, `tabix`), for cutting
   the pairs out of the file and for checking a window by hand
 - [bcftools](https://www.htslib.org/), for reading the callset at the end
@@ -61,17 +60,11 @@ constant depth.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "CramAdapter",
-    "cramLocation": {
-      "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
-    },
-    "craiLocation": {
-      "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
-    }
+    "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
   },
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "na12878_read_depth-LinearMarkDisplay",
       "scales": { "y": { "title": "Read depth" } },
       "marks": [
         {
@@ -109,17 +102,11 @@ draws one axis, so the insert goes on a track of its own over the same file:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "CramAdapter",
-    "cramLocation": {
-      "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
-    },
-    "craiLocation": {
-      "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
-    }
+    "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
   },
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "na12878_read_marks-LinearMarkDisplay",
       "scales": { "y": { "title": "Insert size (bp)" } },
       "marks": [
         {
@@ -196,6 +183,16 @@ would paint its longest ordinary insert red; pin the `domain` to avoid that.
 
 Fetching every read of a chromosome overruns the byte budget, so cut the long
 pairs out once, one row per pair, into a BED with a header naming its columns.
+The whole-chromosome view below also draws better with an ideogram, which the
+hg38 assembly takes as a `cytobands` file:
+
+```json addassembly
+{
+  "name": "hg38",
+  "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+  "cytobands": { "uri": "https://jbrowse.org/genomes/GRCh38/cytoBand.txt" }
+}
+```
 
 <!-- from: scripts/build_read_marks.sh -->
 
@@ -231,19 +228,11 @@ file:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "bedGzLocation": {
-      "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz.tbi"
-      }
-    }
+    "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "na12878_chr20_pairs-LinearMarkDisplay",
       "scales": { "y": { "title": "Insert size (bp)" } },
       "marks": [
         {
@@ -277,19 +266,11 @@ file:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "bedGzLocation": {
-      "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz.tbi"
-      }
-    }
+    "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
   },
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "na12878_chr20_pair_counts-LinearMarkDisplay",
       "scales": {
         "y": { "domainMin": 0, "domainMax": 60, "title": "Pairs per bin" }
       },
@@ -352,23 +333,7 @@ Pairs of 2 to 10 kb in the 100 kb window around each call:
 
 Every callset deletion in range is a bar, and the two homozygous ones are
 tallest. Five other windows hold ten or more such pairs with no call: the
-chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb; read the first window out of
-the file directly:
-
-```bash
-samtools coverage -r chr20:32937680-32941583 NA12878.final.cram | cut -f 1-3,7
-samtools coverage -r chr20:32930000-32937000 NA12878.final.cram | cut -f 1-3,7
-samtools view -q 20 NA12878.final.cram chr20:32935000-32944000 |
-  awk '{ t = $9 < 0 ? -$9 : $9; if (t > 2000) big++; else if (t > 0) norm++ }
-    END { print norm " pairs at the library insert, " big " over 2 kb" }'
-```
-
-| window                      | mean depth |
-| --------------------------- | ---------: |
-| chr20:32,937,680-32,941,583 |      15.6x |
-| chr20:32,930,000-32,937,000 |      34.1x |
-
-Around the call, 1,688 pairs sit at the library insert and 41 exceed 2 kb.
+chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb.
 
 ## Reproduce it end to end
 

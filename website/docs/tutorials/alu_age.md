@@ -73,7 +73,6 @@ the legend order and colours.
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "alu_age-LinearMarkDisplay",
       "marks": [
         {
           "mark": "bar",
@@ -180,14 +179,7 @@ The adapter gains a `densityAdapter` and the count mark gains
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "bedGzLocation": {
-      "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.tbi"
-      }
-    },
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
     "densityAdapter": {
       "type": "BigWigAdapter",
       "bigWigLocation": {
@@ -198,7 +190,6 @@ The adapter gains a `densityAdapter` and the count mark gains
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "alu_age-LinearMarkDisplay",
       "marks": [
         {
           "mark": "bar",
@@ -294,7 +285,6 @@ track menu sets the same cut, colours and key names on a track already open.
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "alu_young_share-LinearMarkDisplay",
       "scales": {
         "y": {
           "domainMin": -1.5,

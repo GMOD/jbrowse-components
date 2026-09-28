@@ -138,7 +138,6 @@ itself.
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "displayId": "hg38_liftover_multiway-MultiWaySyntenyDisplay",
       "height": 600
     }
   ]

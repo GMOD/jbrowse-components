@@ -111,8 +111,7 @@ track's `displayDefaults` apply every time the track loads, and in a served
   "assemblyNames": ["volvox"],
   "adapter": {
     "type": "CramAdapter",
-    "cramLocation": { "uri": "volvox-sv.cram" },
-    "craiLocation": { "uri": "volvox-sv.cram.crai" }
+    "uri": "volvox-sv.cram"
   },
   "displayDefaults": {
     "height": 250,

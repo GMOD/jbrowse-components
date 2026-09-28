@@ -141,7 +141,6 @@ stack, so the figure below shows every lane at once:
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
       "color": { "field": "cluster" },
       "height": 970
     }

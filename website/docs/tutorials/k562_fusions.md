@@ -173,8 +173,7 @@ breakends to hg38 and adds both as tracks:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": { "uri": "K562.10x-large-sv.vcf.gz" },
-    "index": { "location": { "uri": "K562.10x-large-sv.vcf.gz.tbi" } }
+    "uri": "K562.10x-large-sv.vcf.gz"
   }
 }
 ```

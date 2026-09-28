@@ -139,12 +139,10 @@ bubble tier the graph cuts to past `aboveBpPerPx` bp per pixel.
   "displayDefaults": { "showLabels": "none" },
   "displays": [
     {
-      "type": "LinearGraphDisplay",
-      "displayId": "hprc_graph-LinearGraphDisplay"
+      "type": "LinearGraphDisplay"
     },
     {
-      "type": "LinearBasicDisplay",
-      "displayId": "hprc_graph-LinearBasicDisplay"
+      "type": "LinearBasicDisplay"
     }
   ]
 }
@@ -334,12 +332,10 @@ The database and companion need URLs that serve range requests: the track's
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "displayId": "my_graph_lanes-MultiWaySyntenyDisplay",
       "height": 600
     },
     {
-      "type": "LinearGraphDisplay",
-      "displayId": "my_graph_lanes-LinearGraphDisplay"
+      "type": "LinearGraphDisplay"
     }
   ]
 }

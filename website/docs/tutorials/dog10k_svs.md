@@ -233,7 +233,6 @@ The window holds nine SV records, and the figure filters to this one:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "dog10k_nhej1_svs-LinearMultiSampleVariantDisplay",
       "filter": ["jexl:feature.start == 25574004"]
     }
   ]

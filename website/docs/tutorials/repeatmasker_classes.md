@@ -87,7 +87,6 @@ order the same way.
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "rmsk_hg38_rows-LinearMultiRowFeatureDisplay",
       "rows": "repClass",
       "rowColor": {
         "domain": [

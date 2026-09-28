@@ -99,14 +99,7 @@ adapter, a BigWigAdapter over the sidecar:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "gffGzLocation": {
-      "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz"
-    },
-    "index": {
-      "location": {
-        "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz.tbi"
-      }
-    },
+    "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz",
     "densityAdapter": {
       "type": "BigWigAdapter",
       "bigWigLocation": {

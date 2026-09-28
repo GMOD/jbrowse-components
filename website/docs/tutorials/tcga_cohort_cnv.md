@@ -242,7 +242,6 @@ gain above the line and its loss below:
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "tcga_brca_cnv_recurrence_by_subtype-LinearMarkDisplay",
       "height": 500,
       "transform": [
         {

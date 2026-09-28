@@ -607,12 +607,10 @@ uses `ecoli_pggb` instead:
   "displayDefaults": { "showLabels": "none" },
   "displays": [
     {
-      "type": "LinearGraphDisplay",
-      "displayId": "ecoli_pggb_segments-LinearGraphDisplay"
+      "type": "LinearGraphDisplay"
     },
     {
-      "type": "LinearBasicDisplay",
-      "displayId": "ecoli_pggb_segments-LinearBasicDisplay"
+      "type": "LinearBasicDisplay"
     }
   ]
 }
@@ -662,12 +660,10 @@ any width:
   },
   "displays": [
     {
-      "type": "LinearGraphDisplay",
-      "displayId": "ecoli_pggb_tier50-LinearGraphDisplay"
+      "type": "LinearGraphDisplay"
     },
     {
-      "type": "LinearBasicDisplay",
-      "displayId": "ecoli_pggb_tier50-LinearBasicDisplay"
+      "type": "LinearBasicDisplay"
     }
   ]
 }
@@ -720,7 +716,6 @@ haplotype list and `carriers` its length, which the color paints by:
   "displays": [
     {
       "type": "LinearBasicDisplay",
-      "displayId": "ecoli_pggb_carriage-LinearBasicDisplay",
       "displayMode": "collapsed",
       "showLabels": "none",
       "color": {

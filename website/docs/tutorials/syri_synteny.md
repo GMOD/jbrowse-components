@@ -126,7 +126,6 @@ track:
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "displayId": "syri_pangenome-MultiWaySyntenyDisplay",
       "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"],
       "ribbonColor": {
         "field": "syri",
@@ -260,7 +259,6 @@ tabix -p bed syri_regions.bed.gz
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "syri_regions_on_Col-0-LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "query",
         "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]

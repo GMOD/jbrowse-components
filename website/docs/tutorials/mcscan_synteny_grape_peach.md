@@ -195,7 +195,6 @@ the full `displays` array:
   "displays": [
     {
       "type": "LGVSyntenyDisplay",
-      "displayId": "grape_peach_anchors_simple-LGVSyntenyDisplay",
       "height": 60
     }
   ]

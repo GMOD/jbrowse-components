@@ -274,7 +274,6 @@ no index, and serves it to a variant track:
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "hg008t_nygc_sv-LinearMarkDisplay",
       "marks": [
         {
           "mark": "link",
@@ -439,7 +438,6 @@ set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "hg008t_wakhan_hifi_hic-LinearMultiRowFeatureDisplay",
       "rows": "haplotype",
       "color": {
         "field": "copynumber_state",
@@ -555,7 +553,6 @@ that subclone:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "hg008_subclonal_cnv-LinearMultiRowFeatureDisplay",
       "rows": "clone",
       "color": {
         "field": "cn",

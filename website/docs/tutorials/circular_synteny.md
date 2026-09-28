@@ -268,7 +268,6 @@ is opened as a density strip whose colour is the average over each pixel's bins:
   "displays": [
     {
       "type": "LinearWiggleDisplay",
-      "displayId": "hg38ToMm39_gene_density-LinearWiggleDisplay",
       "mark": "heatmap",
       "summaryScoreMode": "avg",
       "color": {

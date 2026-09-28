@@ -270,7 +270,6 @@ annotated flag:
   "displays": [
     {
       "type": "LinearMarkDisplay",
-      "displayId": "star_junctions-LinearMarkDisplay",
       "transform": [{ "type": "filter", "expr": "jexl:feature.score >= 3" }],
       "marks": [
         {
