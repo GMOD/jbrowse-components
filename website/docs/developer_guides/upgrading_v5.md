@@ -166,7 +166,7 @@ v5 user as compatible whatever its state here.
 
 <!-- BEGIN GENERATED ABI_PLUGIN_BREAKS -->
 
-2 of the 13 plugins in the store break against this build.
+2 of the 15 plugins in the store break against this build.
 
 <!-- prettier-ignore -->
 | Plugin | What breaks |
