@@ -1789,7 +1789,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           bubbleSpread: 'open',
           colorScheme: 'grey',
           referencePath: 'K12',
-          highlightedPath: 'Sakai#1#chr:1743580-1743789',
+          walkLayers: [{ walk: 'Sakai#1#chr:1743580-1743789' }],
           drawPaths: true,
           // No halos or route chips: the IS5 bubble carried a halo label, a
           // route chip, a node label and an arc label for one 1.2 kb event,
