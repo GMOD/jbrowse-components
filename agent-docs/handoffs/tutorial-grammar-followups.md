@@ -49,8 +49,13 @@ in git; what follows is what is left.
 
 - **Row labels sit over the first region's data** in every multi-row display
   (mark, multi-wiggle, multi-sample variant, MAF): `RowLabelsOverlay` floats
-  them over the plot on an 80% paper background. It is the house layout, so a
-  gutter is a design change for all of them, not a mark-display fix.
+  them over the plot on an 80% paper background. A display cannot shift its
+  own plot, since the view's coordinate frame is shared with the scalebar, so
+  the only fix is a view-level left gutter. Proposed to Colin on 2026-09-27
+  with the costs (every track loses the width, 61 figures reshot); his answer
+  was "i'm frankly not sure ... i dont know if we want it", and that track
+  labels overlapping the plot is a battle JBrowse has fought before. Parked:
+  don't propose it again without a new argument.
 - **The floating colour key covers data** at the top right of a lane
   (`pangenome/maf`'s genotype key over the strain rows). A lane shorter than
   its key scrolls the key rather than clipping it, which a still cannot show;
