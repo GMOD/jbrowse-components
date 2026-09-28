@@ -1,6 +1,6 @@
 ---
 name: maf-onto-marks
-description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height. A bench that evening found the Feature steps taking 8 s where the MAF display takes 0.7 at 470 species (ADR-190); ADR-191 moved the whole mark pipeline onto tables the same night, ADR-192 took the hit index off a span and ADR-193 made the MAF worker's arena the rows, so the rest of the list is open again.
+description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height. A bench that evening found the Feature steps taking 8 s where the MAF display takes 0.7 at 470 species (ADR-190); ADR-191 moved the whole mark pipeline onto tables the same night, ADR-192 took the hit index off a span and ADR-193 made the MAF worker's arena the rows, so the rest of the list is open again. ADR-199 makes the mark display MAF's destination, with the switch criteria and the MAF display held to bug fixes until then.
 ---
 
 # The MAF display onto the mark display
@@ -82,6 +82,14 @@ One lever is left on the data path, measured:
   against the MAF display's
   182.6ms<!--m:interval-bin-maf-identity.470-species-200-blocks-of-250-columns.mafIdentityMs-->.
 
+## Where it is going
+
+[ADR-199](../architecture-decision-records/adr-199-the-mark-display-is-mafs-destination.md):
+the mark display replaces the MAF display once the list below, figure parity
+with the MAF user guide, the identity and cells at 1.1x the MAF display, and
+the menu actions hold. Until then the MAF display takes bug fixes and no speed
+work on its own data path, and a new MAF capability lands here first.
+
 ## What the mark display must gain, ranked
 
 1. ~~A way onto a MafTrack, with one feature per species per block.~~ Landed,
@@ -126,6 +134,12 @@ One lever is left on the data path, measured:
 10. Cross-region derived fields: the source-chromosome rank per row, the
     inversion consensus strand.
 11. SNP and interbase coverage in the band.
+12. One parser per format: `getFeatures` rebuilt over `readBlocks`, a sink
+    assembling `MafFeature`s from the ranges it is handed, since the FASTA
+    export, clustering by identity and the feature details keep reading
+    `MafFeature`s whichever display draws (ADR-199). Clustering by identity
+    walks each sequence's bytes, and a sink of its own spares it the string
+    per species.
 
 ## What ports today with no new mark
 
