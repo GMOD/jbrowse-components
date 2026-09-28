@@ -16,31 +16,22 @@ subtype shares line up.
 
 - A JBrowse 2 instance to add tracks to (see the
   [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop), which loads these tracks by
-  URL with nothing to host) and the [JBrowse CLI](/docs/cli)
-- These files, hosted:
-
-| File                                                                                  | What                                  |
-| ------------------------------------------------------------------------------------- | ------------------------------------- |
-| `https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz`                           | the cohort's somatic mutations        |
-| `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                               | per-tumor histology, receptors, stage |
-| `https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz` | per-gene mutation rate per subtype    |
+  [desktop quickstart](/docs/quickstart_desktop)) and the
+  [JBrowse CLI](/docs/cli)
 
 ## Where the data comes from
 
 TCGA-BRCA open-access somatic mutation calls from the GDC
-([TCGA 2012](https://doi.org/10.1038/nature11412)).
+([TCGA 2012](https://doi.org/10.1038/nature11412)), rehosted so the figures and
+their live links load without the GDC round trip.
 
-- primary-tumor **Masked Somatic Mutation** MAFs, queried and downloaded through
-  the GDC API: https://api.gdc.cancer.gov/files
-- per-tumor clinical annotation, from harmonized case fields and each case's
-  clinical XML: https://api.gdc.cancer.gov/cases
-- the cohort VCF, rehosted so the figures and their live links load without the
-  GDC round trip: https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz
-- the recurrence track split by clinical group:
-  https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz
-- the clinical table those groups come from:
-  https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
+| File                                                                                | What                                                      |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz                           | the cohort's somatic mutations, one column per tumor      |
+| https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv                               | per-tumor histology, receptors and stage                  |
+| https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz | per-gene mutation rate per subtype                        |
+| https://api.gdc.cancer.gov/files                                                    | the primary-tumor Masked Somatic Mutation MAFs' GDC query |
+| https://api.gdc.cancer.gov/cases                                                    | the harmonized case fields and clinical XML               |
 
 The hg38 reference and gene track beside them are the hosted UCSC
 [hub](/docs/user_guides/hub_url)'s own entries.

@@ -119,7 +119,9 @@ graph. The sample table gives each code a breed and a lineage, so `rows.labels`
 writes the breed beside each row, `rowColor` tints the row by lineage, and
 `rows.domain` lists the cattle breeds above the wild species. Every assembly is
 one haplotype, and `renderingMode: "phased"` draws one row per assembly with a
-second alternate allele in a colour of its own:
+second alternate allele in a colour of its own. `showVariantLane` adds a lane of
+the calls themselves above the rows, so each call's span and ID show at its
+genomic position:
 
 ```json addtrack
 {
@@ -137,8 +139,8 @@ second alternate allele in a colour of its own:
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "bovine_pangenome_vcf_regular",
       "renderingMode": "phased",
+      "showVariantLane": true,
       "rows": {
         "domain": [
           "ANG",
@@ -179,8 +181,8 @@ second alternate allele in a colour of its own:
 
 In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
 graph track cuts the segments around _HSPA1A_. Turn on the callset and the
-allele inventory in the track selector; the figure shows them under the RefSeq
-genes.
+allele inventory in the track selector. The figure shows them under the RefSeq
+genes, with the callset's variant lane marking the insertion above its rows.
 
 <Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, and the allele inventory. Every row but the yak carries the insertion the inventory lists without carriers." src="/img/pangenome/bovine_bola.png" />
 

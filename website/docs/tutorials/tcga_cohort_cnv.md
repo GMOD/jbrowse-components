@@ -15,34 +15,24 @@ a recurrent event reads as a vertical stripe down the stack.
 
 - A JBrowse 2 instance to add tracks to (see the
   [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop), which loads these tracks by
-  URL with nothing to host) and the [JBrowse CLI](/docs/cli)
-- These files, hosted; the whole 1104-tumor cohort is a few MB of segment calls:
-
-| File                                                                             | What                              |
-| -------------------------------------------------------------------------------- | --------------------------------- |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz`                            | the segment stack                 |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz`            | cohort gain/loss frequencies      |
-| `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz` | the same, split by clinical group |
-| `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                          | per-tumor histology, receptors    |
+  [desktop quickstart](/docs/quickstart_desktop)) and the
+  [JBrowse CLI](/docs/cli)
 
 ## Where the data comes from
 
 TCGA-BRCA, from the GDC's open-access **Masked Copy Number Segment** files
 (Affymetrix SNP 6.0, harmonized to GRCh38), so no dbGaP application or token is
-needed.
+needed. The whole 1104-tumor cohort is a few MB of segment calls, rehosted so
+the figures and their live links load without the GDC round trip.
 
-- primary-tumor segment calls for 1104 tumors, queried and downloaded through
-  the GDC API: https://api.gdc.cancer.gov/files
-- per-tumor clinical annotation, from harmonized case fields and each case's
-  clinical XML: https://api.gdc.cancer.gov/cases
-- the segment stack, rehosted so the figures and their live links load without
-  the GDC round trip: https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz
-- the cohort recurrence track and the same split by clinical group:
-  https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz and
-  https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz
-- the clinical table the stack is grouped by:
-  https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
+| File                                                                           | What                                              |
+| ------------------------------------------------------------------------------ | ------------------------------------------------- |
+| https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz                            | the segment stack, one call per tumor and segment |
+| https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz            | cohort gain and loss frequencies                  |
+| https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz | the same, split by clinical group                 |
+| https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv                          | per-tumor histology and receptors                 |
+| https://api.gdc.cancer.gov/files                                               | the GDC query the segment calls came from         |
+| https://api.gdc.cancer.gov/cases                                               | the harmonized case fields and clinical XML       |
 
 The hg38 reference and gene track beside them are the hosted UCSC
 [hub](/docs/user_guides/hub_url)'s own entries.
@@ -81,7 +71,7 @@ jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz 
 The segments themselves are a `FeatureTrack` whose
 `LinearMultiRowFeatureDisplay` carries the row and color settings:
 
-```json addtrack config=test_data/tcga_cnv/config.json loc=17:39,000,000-40,500,000
+```json addtrack config=test_data/tcga_cnv/config.json loc=17:37,500,000-41,500,000
 {
   "type": "FeatureTrack",
   "trackId": "tcga_brca_cnv",
@@ -146,7 +136,7 @@ cohort into its copy-number classes there.
 
 Every figure below is in the sorted state.
 
-<Figure caption="chr17:39.0-40.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="chr17:37.5-41.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 At this row count each row is well under a pixel tall, so the saturated colors
 crowd out the neutral ones. The stack maps where the events are; the track below
@@ -296,16 +286,34 @@ different split. `histology` and `stage` work for any TCGA project, while
 
 ## Use your own cohort
 
-Any caller that emits per-sample segments works. The track config only needs a
-BED with a sample column and a numeric column to color by:
+Any caller that emits per-sample segments works. The track config needs a BED
+with a sample column and a numeric column to color by, one row per segment:
 
 ```text
-#chrom  start  end  name  sample  segmean
+#chrom  start     end       name    sample      segmean
+chr17   39100000  39900000  +1.82   patient_01  1.8213
+chr17   39900000  40800000  +0.02   patient_01  0.0210
+chr17   39100000  40000000  -0.61   patient_02  -0.6094
 ```
 
 [CNVkit](https://cnvkit.readthedocs.io/) `.call.cns`, ASCAT, and
 [PURPLE](https://github.com/hartwigmedical/hmftools/tree/master/purple) segments
-all reshape into that with the same concatenate-and-tag step.
+all reshape into that. For CNVkit, tag each file's rows with its sample name,
+then sort, compress and index:
+
+```bash
+printf '#chrom\tstart\tend\tname\tsample\tsegmean\n' > cohort.bed
+for f in *.call.cns; do
+  awk -v s="${f%.call.cns}" 'BEGIN { OFS = "\t" } NR > 1 { print $1, $2, $3, $5, s, $5 }' "$f"
+done | sort -k1,1 -k2,2n >> cohort.bed
+bgzip cohort.bed
+tabix -p bed cohort.bed.gz
+```
+
+Then add the track from
+[Load the segments into JBrowse](#load-the-segments-into-jbrowse) with `uri`
+pointing at `cohort.bed.gz`. Its `rows` and `color` settings already name
+`sample` and `segmean`.
 
 ## Where to go next
 
