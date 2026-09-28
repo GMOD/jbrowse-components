@@ -78,7 +78,7 @@ function mostSevereAnnotation(feature: Feature) {
 /**
  * Whether the variant carries any SnpEff/VEP annotation at all — used to gate
  * the "color cells by consequence" menu option (like phased mode is gated on
- * hasPhased) so it isn't offered when every cell would render the same
+ * hasPhasedOrHaploid) so it isn't offered when every cell would render the same
  * no-impact grey.
  */
 export function featureHasConsequence(feature: Feature) {

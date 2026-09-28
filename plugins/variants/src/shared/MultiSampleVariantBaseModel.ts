@@ -444,12 +444,10 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Whether any called genotype is phased or haploid, which gates the
-         * "Phased" rendering mode. Wider than the payload's `hasPhased`, since
-         * the painter's rule is `isPhasedOrHaploid` (no `/`), because
-         * a pangenome callset is haploid per assembly path and `vg deconstruct`
-         * writes bare `0`/`1`/`23` — a file with no `|` anywhere that phased
-         * mode renders correctly. Gating the menu on `hasPhased` left that
-         * rendering reachable only from the config slot.
+         * "Phased" rendering mode. The painter's rule, `isPhasedOrHaploid` (no
+         * `/`), rather than "any `|`": a pangenome callset is haploid per
+         * assembly path and `vg deconstruct` writes bare `0`/`1`/`23`, a file
+         * with no `|` anywhere that phased mode renders correctly.
          */
         get hasPhasedOrHaploid() {
           return self.cellData?.hasPhasedOrHaploid ?? false

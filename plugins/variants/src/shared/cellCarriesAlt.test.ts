@@ -1,4 +1,4 @@
-import { cellCarriesAlt } from './variantCellStyles.ts'
+import { cellCarriesAlt } from './getPhasedColor.ts'
 
 // The matrix tooltip's "Insertion: Nbp" row is gated on this, and the regular
 // display gates the same readout on the painter's per-cell `cellAltDosage` —
