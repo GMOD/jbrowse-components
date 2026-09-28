@@ -24,7 +24,12 @@ const SPECIES = ['ref', 'a', 'b', 'c', 'd']
 // Blocks of aligned text: reference gaps with bases inserted against them,
 // row gaps inside and at either end, case, N, rows shorter than the
 // reference, and blocks overlapping one another.
-function blocks(count: number, seed: number, field = 'seq') {
+function blocks(
+  count: number,
+  seed: number,
+  field = 'seq',
+  { species = SPECIES, spacing = 0 } = {},
+) {
   const next = random(seed)
   const pick = (s: string) => s[Math.floor(next() * s.length)]!
   return Array.from({ length: count }, (_, i) => {
@@ -34,7 +39,7 @@ function blocks(count: number, seed: number, field = 'seq') {
       ref += next() < 0.12 ? '-' : pick('ACGTNacgtn')
     }
     const alignments: Record<string, Record<string, string>> = {}
-    for (const species of SPECIES) {
+    for (const name of species) {
       if (next() < 0.15) {
         continue
       }
@@ -59,10 +64,13 @@ function blocks(count: number, seed: number, field = 'seq') {
                     : ref[c]!
                   : pick('ACGTNacgtn')
       }
-      alignments[species] = { [field]: row }
+      alignments[name] = { [field]: row }
     }
-    const start =
-      next() < 0.1 ? 64 * Math.floor(next() * 20) : Math.floor(next() * 1500)
+    const start = spacing
+      ? i * spacing
+      : next() < 0.1
+        ? 64 * Math.floor(next() * 20)
+        : Math.floor(next() * 1500)
     return new SimpleFeature({
       uniqueId: `block${i}`,
       refName: next() < 0.5 ? 'ctgA' : 'ctgB',
@@ -304,4 +312,25 @@ test('an insertion meets its bin ahead of the run still open across it', () => {
     [8, 1, 'ctgA:8-10#1'],
     [12, 1, 'ctgA:12-14#2'],
   ])
+})
+
+test('many species over a wide region take the walk, one dense index reused per section', () => {
+  const species = Array.from({ length: 120 }, (_, i) => `s${i}`)
+  const input = blocks(60, 17, 'seq', { species, spacing: 1000 })
+  const [bin, agg] = identity(10)
+  const walks = jest.spyOn(kernel, 'binnedCellMatches')
+  const fused = layerTables(input, {
+    transform: [FLATTEN, CELLS],
+    facet: { field: 'species' },
+    layers: [{ transform: [bin, agg] }],
+  })
+  expect(walks.mock.results[0]!.value).toBeDefined()
+  const apart = layerTables(input, {
+    transform: [FLATTEN, CELLS],
+    facet: { field: 'species', transform: [bin] },
+    layers: [{ transform: [agg] }],
+  })
+  expect(answers(fused.layers[0]!.table)).toEqual(
+    answers(apart.layers[0]!.table),
+  )
 })

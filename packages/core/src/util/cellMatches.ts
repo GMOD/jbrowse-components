@@ -76,8 +76,9 @@ export function fusesAfterCells(
   )
 }
 
-// Beyond this many bins over the bins the rows could reach, a dense index
-// costs more than the runs would, and the steps run as written.
+// Where the widest section spans more bins than this over the bins all the
+// rows could reach, its dense index costs more than the runs would, and the
+// steps run as written.
 const SPARSE_BINS_SLACK = 65536
 // A run's start is a Uint32 lane in the unfused `cells`.
 const MAX_POSITION = 2 ** 32
@@ -279,7 +280,7 @@ export function binnedCellMatches(
     widest = Math.max(widest, span)
     spans += span
   }
-  if (spans > 2 * reach + SPARSE_BINS_SLACK) {
+  if (widest > 2 * reach + SPARSE_BINS_SLACK) {
     return undefined
   }
   const { bytes: rowBytes, offset: rowOffset, length: rowLength } = texts.row
