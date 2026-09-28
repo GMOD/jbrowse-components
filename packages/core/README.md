@@ -235,11 +235,12 @@ lacks.
 Replace each aligned row with its cells against the reference: one feature per
 run of columns in one `state` — `match`, `mismatch` or `gap` — on the row's own
 reference span, a mismatch run carrying its `base` and a match or mismatch run
-`match` as 1 or 0. The row's `field` (`seq`) is the aligned text, and the
-reference's is the same field on the feature the row was fanned out of, so a
-`flatten` over a MAF block's `alignments` stands in front. A reference gap is no
-cell, a gap run reaching either end of the row is no cell, and a feature with no
-parent answers none.
+`match` as 1 or 0, and one interbase feature per `insertion`, standing at the
+reference base it precedes with the inserted bases in `base` and their count in
+`length`. The row's `field` (`seq`) is the aligned text, and the reference's is
+the same field on the feature the row was fanned out of, so a `flatten` over a
+MAF block's `alignments` stands in front. A gap run reaching either end of the
+row is no cell, and a feature with no parent answers none.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

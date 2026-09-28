@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `cells` transform step replaces each aligned row with its runs of columns against the reference, one feature per run in one `state` (`match`, `mismatch`, `gap`) on the row's reference span, a mismatch run carrying its `base` and a match or mismatch run `match` as 1 or 0. The reference is the same field on the feature the row was fanned out of, so the step stands behind `flatten` and names no second field. It walks every column and merges runs by state and mismatched base; a reference gap is no cell, and a gap run reaching either end of the row is no cell, as the MAF display's painters already rule. Sub-pixel sampling and an identity through `bin` stay outside it"
+summary: "A `cells` transform step replaces each aligned row with its runs of columns against the reference, one feature per run in one `state` (`match`, `mismatch`, `gap`) on the row's reference span, a mismatch run carrying its `base` and a match or mismatch run `match` as 1 or 0, and one interbase `insertion` per run of inserted bases at the reference base it precedes, with `base` and `length`. The reference is the same field on the feature the row was fanned out of, so the step stands behind `flatten` and names no second field. It walks every column and merges runs by state and mismatched base; a reference gap is no cell, and a gap run reaching either end of the row is no cell, as the MAF display's painters already rule. Sub-pixel sampling and an identity through `bin` stay outside it"
 ---
 
 # ADR-187: A `cells` step reads a row against the block it came from
@@ -37,11 +37,12 @@ one consumer.
   run is a `DerivedFeature` over the row, so `species`, `chr`, `strand` and
   the rest read through, and `rows: "species"` keys the runs as it keyed the
   rows. The fields written are `state`, `base` on a mismatch, and `match` as
-  1 or 0 where the column has a base on both sides. `CELLS_FIELDS` lists
-  them for the field pickers and the rule list.
+  1 or 0 where the column has a base on both sides, and `length` on an
+  insertion. `CELLS_FIELDS` lists them for the field pickers and the rule
+  list.
 - **The MAF painters' column rules carry over**: case folds before the
   comparison, `-` and space are gaps, a reference gap holds no genomic
-  position and is skipped, and a gap run reaching either end of the row is
+  position so the row's bases there are an insertion, and a gap run reaching either end of the row is
   the block's cut rather than the alignment and paints nothing
   (`alignedExtent`). The cross-block flank that rescues a real gap at a seam
   (`rowFlank`) needs the neighbouring block, which a step over one feature
@@ -62,5 +63,10 @@ one consumer.
   counts once, in one bin. A length-weighted mean needs a `bin` that splits
   an interval at its edges, or the cells left unmerged, before `match`'s
   mean is the identity. The handoff carries it.
-- Insertions against the reference are skipped, not emitted; an interbase
-  glyph for them is the handoff's item 8.
+- An insertion is one interbase feature, `start` and `end` both the
+  reference base it precedes (`forEachInsertion`'s `anchorBp`), with the
+  inserted bases in `base` and their count in `length`. A span paints it as
+  a sliver of the display's `minWidthPx` grown off the anchor, and a `text`
+  over `base` prints the bases; the MAF display's marker, whose width grows
+  with the length and which carries a count label, is the handoff's item 8,
+  an interbase glyph.

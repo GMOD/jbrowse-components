@@ -1317,8 +1317,8 @@
                 "color": {
                   "field": "state",
                   "scale": "categorical",
-                  "domain": ["match", "mismatch", "gap"],
-                  "range": ["#d9d9d9", "#e41a1c", "#404040"]
+                  "domain": ["match", "mismatch", "gap", "insertion"],
+                  "range": ["#d9d9d9", "#e41a1c", "#404040", "#984ea3"]
                 }
               }
             },

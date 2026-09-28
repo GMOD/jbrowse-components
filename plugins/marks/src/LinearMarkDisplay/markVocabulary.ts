@@ -43,8 +43,8 @@ export const DEFAULT_BIN_AS = ['start', 'end'] as const
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_CELLS_FIELD = 'seq'
-/** What a `cells` step writes on every run it answers, `base` on a mismatch. */
-export const CELLS_FIELDS = ['state', 'base', 'match'] as const
+/** What a `cells` step writes: `state` on every cell, `base` on a mismatch or an insertion, `match` off a gap, `length` on an insertion. */
+export const CELLS_FIELDS = ['state', 'base', 'match', 'length'] as const
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS = ['start', 'end'] as const
 export const DEFAULT_TEXT_FIELD = 'name'

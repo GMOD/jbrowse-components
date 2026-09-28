@@ -30,8 +30,9 @@ genome-aligned bin; `aggregate` folds each group into one feature carrying
 its summaries; `coverage` replaces the features with runs of how many
 overlap each stretch; `flatten` fans out an array or a record field;
 `cells` replaces each aligned row with its runs of match, mismatch and gap
-against the reference it was fanned out of, with `state`, `base` and
-`match` written; `pileup` writes
+against the reference it was fanned out of and an interbase insertion per
+run of reference gaps, with `state`, `base`, `match` and `length` written;
+`pileup` writes
 each feature's row in a greedy first-fit packing; `mate` answers one
 feature per other end a record states, the `mate` a paired adapter fills
 in (BEDPE, STAR-Fusion) or each VCF `ALT` naming a locus, with

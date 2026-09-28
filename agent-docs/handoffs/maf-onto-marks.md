@@ -71,8 +71,10 @@ file pointers to re-read.
 6. A coarse tier serving per-row records from `summaryAdapter`, where
    `DensityTierMixin` serves one row of bins from `densityAdapter`.
 7. Per-base `text` gated by row height and coloured against its cell.
-8. Interbase and texture glyphs: insertion markers, the inversion hatch,
-   e-line double lines.
+8. Interbase and texture glyphs: the MAF insertion marker, whose width
+   grows with the length and which carries a count label (`cells` emits each
+   insertion as an interbase feature a span paints as a `minWidthPx`
+   sliver), the inversion hatch, e-line double lines.
 9. A second-adapter join for the frames (codon cells, letters, conservation,
    the CDS strip).
 10. Cross-region derived fields: the source-chromosome rank per row, the

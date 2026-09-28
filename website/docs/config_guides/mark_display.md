@@ -611,9 +611,12 @@ the MAF display's colour by source chromosome:
 
 A `cells` step behind the flatten replaces each species row with its runs of
 columns against the reference: one feature per run in one `state`, `match`,
-`mismatch` or `gap`, a mismatch run carrying its `base`. A span coloured by
-`state` is the MAF display's mismatch view, and a `text` over `base` letters
-each mismatch once the zoom shows a base:
+`mismatch` or `gap`, a mismatch run carrying its `base`, and one interbase
+`insertion` per run of inserted bases, standing at the reference base it
+precedes with the bases in `base`. A span coloured by `state` is the MAF
+display's mismatch view, an insertion painting as a sliver of the display's
+`minWidthPx` at its anchor, and a `text` over `base` letters each mismatch and
+each insertion once the zoom shows a base:
 
 ```json addtrack
 {
@@ -643,8 +646,8 @@ each mismatch once the zoom shows a base:
             "color": {
               "field": "state",
               "scale": "categorical",
-              "domain": ["match", "mismatch", "gap"],
-              "range": ["#d9d9d9", "#e41a1c", "#404040"]
+              "domain": ["match", "mismatch", "gap", "insertion"],
+              "range": ["#d9d9d9", "#e41a1c", "#404040", "#984ea3"]
             }
           }
         },
@@ -667,16 +670,16 @@ Each step names its `type` and takes that step's own settings, which the
 [MarkTransform config reference](/docs/config/marktransform) lists; a key
 belonging to another step is refused where the config is read:
 
-| Step        | What it does                                                                                                                                                                                                                                                                                                                                                |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                                                                                                     |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                                                                                                            |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                                                                                                               |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's                                                                    |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                                                                                            |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), each reading its parent for what it lacks, with its position in the field `index` names and its key in the field `key` names; `keepEmpty` holds on to a feature whose field is empty |
-| `cells`     | replaces each aligned row with its runs of columns in one `state` — `match`, `mismatch` or `gap` — against the reference, reading the row's `field` (`seq`) and the same field on the feature the row was fanned out of; a mismatch run carries its `base`, and a match or mismatch run `match` as 1 or 0                                                   |
-| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                                                                                          |
+| Step        | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                                                                                                                                                                                                                       |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's                                                                                                                                                                            |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                                                                                                                                                                                                    |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`) or per entry of a record keyed by name (a VCF's `samples`, a MAF block's `alignments`), each reading its parent for what it lacks, with its position in the field `index` names and its key in the field `key` names; `keepEmpty` holds on to a feature whose field is empty                                                                                                         |
+| `cells`     | replaces each aligned row with its runs of columns in one `state` — `match`, `mismatch` or `gap` — against the reference, reading the row's `field` (`seq`) and the same field on the feature the row was fanned out of, and one interbase `insertion` per run of inserted bases, at the reference base it precedes; a mismatch run carries its `base`, an insertion its bases in `base` and their count in `length`, and a match or mismatch run `match` as 1 or 0 |
+| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                                                                                                                                                                                                  |
 
 A field a step reads is a name or a dotted path into a structured field, so a
 VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`. A

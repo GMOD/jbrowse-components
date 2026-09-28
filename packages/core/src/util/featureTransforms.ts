@@ -294,7 +294,8 @@ const LOWER_BIT = 0x20
 
 // What a row's column is against the reference's: both bases equal ignoring
 // case, the row's base differing, or the row's gap. A reference gap holds no
-// genomic position and is no cell.
+// genomic position: the row's bases there are an insertion before the next
+// reference base.
 function cellState(refByte: number, rowByte: number) {
   return rowByte === DASH || rowByte === SPACE
     ? 'gap'
@@ -354,12 +355,32 @@ function cells(features: readonly Feature[], step: CellsStep) {
       }
       out.push(new DerivedFeature(f, fields, `${f.id()}#${n++}`))
     }
+    let inserted = ''
     for (let col = 0; col < ref.length; col++) {
       const refByte = ref.charCodeAt(col)
+      const rowByte = row.charCodeAt(col)
       if (refByte === DASH) {
+        if (col < row.length && rowByte !== DASH && rowByte !== SPACE) {
+          inserted += row[col]!
+        }
         continue
       }
-      const rowByte = row.charCodeAt(col)
+      if (inserted) {
+        out.push(
+          new DerivedFeature(
+            f,
+            {
+              start: pos,
+              end: pos,
+              state: 'insertion',
+              base: inserted,
+              length: inserted.length,
+            },
+            `${f.id()}#${n++}`,
+          ),
+        )
+        inserted = ''
+      }
       const drawn = col >= first && col <= last && col < row.length
       const state = drawn ? cellState(refByte, rowByte) : ''
       const base = state === 'mismatch' ? row[col]! : ''

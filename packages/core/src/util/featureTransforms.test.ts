@@ -271,15 +271,17 @@ test('cells answers each row’s runs against the block it was fanned out of', (
     ],
   )
   expect(
-    rows(out, 'species', 'start', 'end', 'state', 'base', 'match'),
+    rows(out, 'species', 'start', 'end', 'state', 'base', 'match', 'length'),
   ).toEqual([
-    ['ref', 100, 108, 'match', undefined, 1],
-    ['near', 100, 104, 'match', undefined, 1],
-    ['near', 104, 105, 'gap', undefined, undefined],
-    ['near', 105, 106, 'match', undefined, 1],
-    ['near', 106, 107, 'mismatch', 'T', 0],
-    ['near', 107, 108, 'match', undefined, 1],
-    ['cut', 102, 107, 'match', undefined, 1],
+    ['ref', 100, 108, 'match', undefined, 1, undefined],
+    ['near', 103, 103, 'insertion', 'G', undefined, 1],
+    ['near', 100, 104, 'match', undefined, 1, undefined],
+    ['near', 104, 105, 'gap', undefined, undefined, undefined],
+    ['near', 105, 106, 'match', undefined, 1, undefined],
+    ['near', 106, 107, 'mismatch', 'T', 0, undefined],
+    ['near', 107, 108, 'match', undefined, 1, undefined],
+    ['cut', 103, 103, 'insertion', 'G', undefined, 1],
+    ['cut', 102, 107, 'match', undefined, 1, undefined],
   ])
   expect(out[1]!.id()).toBe('100-108#near#0')
   expect(out[1]!.get('refName')).toBe('ctgA')

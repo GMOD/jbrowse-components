@@ -190,12 +190,13 @@ const suite: TestSuite = {
       readySelector: '[data-testid="mark-row-labels"]',
     }),
     // A cells step behind the flatten replaces each species row with its
-    // runs against the reference (ADR-187): the span colours the state and
-    // the text prints each mismatched base at base zoom.
+    // runs against the reference (ADR-187): the span colours the state, an
+    // insertion paints as a sliver at its anchor, and the text prints each
+    // mismatched or inserted base at base zoom.
     lgvSnapshotTest({
-      name: 'a MAF fanned out into species rows of cells against the reference, mismatches lettered',
+      name: 'a MAF fanned out into species rows of cells against the reference, mismatches and insertions lettered',
       snapshot: 'mark-maf-cells',
-      loc: 'ctgA:1-300',
+      loc: 'ctgA:801-1100',
       tracks: ['marks_maf_cells'],
       config,
       snapshotSelector: withChrome,
