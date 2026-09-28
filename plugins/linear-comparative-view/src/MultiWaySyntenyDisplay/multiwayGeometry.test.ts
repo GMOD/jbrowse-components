@@ -985,7 +985,7 @@ test('the ticks stop where the lane’s baseline stops, at its contig end', () =
   ])
 })
 
-test('a band covers each mate lane, striped on alternate rows', () => {
+test('a band covers every lane, the anchor included, striped on alternate rows', () => {
   const s = stack({
     features: [
       pairFeature('g1', 100, 200),
@@ -1000,17 +1000,13 @@ test('a band covers each mate lane, striped on alternate rows', () => {
     stripe: 'rgba(0,0,0,0.04)',
     page: '#fff',
   })
-  expect(bands.rectYs.length).toBe(3)
-  expect([...bands.rectPositions]).toEqual([
-    PX_ORIGIN,
-    PX_ORIGIN + WIDTH,
-    PX_ORIGIN,
-    PX_ORIGIN + WIDTH,
-    PX_ORIGIN,
-    PX_ORIGIN + WIDTH,
-  ])
-  expect(bands.rectYs[0]).toBe(s.lanes[1]!.bandStart)
-  expect(bands.rectHeights[2]).toBe(s.lanes[2]!.bandEnd - s.lanes[2]!.bandStart)
+  expect(bands.rectYs.length).toBe(4)
+  expect([...bands.rectPositions]).toEqual(
+    Array.from({ length: 4 }, () => [PX_ORIGIN, PX_ORIGIN + WIDTH]).flat(),
+  )
+  expect(bands.rectYs[0]).toBe(0)
+  expect(bands.rectYs[1]).toBe(s.lanes[1]!.bandStart)
+  expect(bands.rectHeights[3]).toBe(s.lanes[2]!.bandEnd - s.lanes[2]!.bandStart)
 })
 
 test('off a page of the band ground, one sheet of it lies under the whole stack first', () => {

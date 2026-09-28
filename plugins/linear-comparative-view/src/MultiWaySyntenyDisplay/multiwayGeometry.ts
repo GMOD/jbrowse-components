@@ -733,12 +733,10 @@ export function buildBandCell({
     glyphs.rect(0, width, 0, bottom.bandEnd, paperColor)
   }
   bands.forEach((band, row) => {
-    if (row > 0) {
-      const height = band.bandEnd - band.bandStart
-      glyphs.rect(0, width, band.bandStart, height, paperColor)
-      if (row % 2 === 1) {
-        glyphs.rect(0, width, band.bandStart, height, stripeColor)
-      }
+    const height = band.bandEnd - band.bandStart
+    glyphs.rect(0, width, band.bandStart, height, paperColor)
+    if (row % 2 === 1) {
+      glyphs.rect(0, width, band.bandStart, height, stripeColor)
     }
   })
   return glyphs.build()
