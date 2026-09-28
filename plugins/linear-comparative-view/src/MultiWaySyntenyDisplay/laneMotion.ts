@@ -6,12 +6,6 @@ import type { LaneDecision } from './laneDecision.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
 import type { LaneMap } from './multiwayRenderTypes.ts'
 
-/**
- * A mate lane moving from where it drew to its settled decision, timed on the
- * wall clock from `startMs`. `from` is where it drew when the settle landed:
- * one decision, or, when a second settle interrupts a first, the mix of
- * decisions it was drawn between at that moment.
- */
 export interface LaneTransition {
   from: readonly { decision: LaneDecision; weight: number }[]
   startMs: number
@@ -19,16 +13,11 @@ export interface LaneTransition {
 
 type WeightedFrames = readonly { frame: RowFrame; weight: number }[]
 
-// a flip passes through zero, and a zero scale is a NaN pan in the ribbons'
-// transform
+// a flip passes through zero, and a zero scale is a NaN pan
 const MIN_SCALE = 1e-4
-// a mix entry whose share rounds to nothing is dropped, so repeated
-// interruptions cannot grow the mix without bound
+// so repeated interruptions cannot grow the mix without bound
 const MIN_WEIGHT = 1e-3
-// The new frame packs the lane at whole px, and a move that starts magnified
-// magnifies that rounding: at this scale a glyph's first frame lands up to
-// 2.5 px off the old picture. The ladder's own steps are at most 2x, so what
-// snaps is a leap of several rungs at once
+// at this scale a glyph's first frame lands up to 2.5 px off the old picture
 const MAX_START_SCALE = 4
 
 export function laneMotionEnd(t: LaneTransition) {
@@ -39,8 +28,7 @@ export function laneMotionEase(t: LaneTransition, nowMs: number) {
   return easeInOutCubic(clamp((nowMs - t.startMs) / MORPH_DURATION_MS, 0, 1))
 }
 
-// A frame's px as `slope * (bp - ref) + at`, stated about a bp near the frames
-// so no genome-scale magnitude is multiplied through.
+// about a bp near the frames, so no genome-scale magnitude multiplies through
 function lineOf(frame: RowFrame, ref: number, width: number) {
   return {
     slope: ((frame.flipped ? -1 : 1) * width) / (frame.max - frame.min),
@@ -48,8 +36,6 @@ function lineOf(frame: RowFrame, ref: number, width: number) {
   }
 }
 
-// where the lane draws each bp `e` of the way from `from` to `to`: every bp
-// travels in a straight line between its two positions
 function drawnLine(
   from: WeightedFrames,
   to: RowFrame,
@@ -67,11 +53,7 @@ function drawnLine(
   return { slope, at, target }
 }
 
-/**
- * The map from the px `to` packs a lane in to where it draws `e` of the way
- * from `from`: the old frame's picture at 0 and identity at 1. The scale is
- * held off zero about the canvas centre.
- */
+/** Maps `to`'s packed px to where the lane draws: the old picture at `e` 0. */
 export function laneMapAt(
   from: WeightedFrames,
   to: RowFrame,
@@ -88,10 +70,6 @@ export function laneMapAt(
   }
 }
 
-// Whether the move shows anything, starts no more magnified than the packing
-// can bear, and joins two pictures sharing some bp on screen. A re-decision
-// that only moved a lane's fit draws where it drew, and a jump to somewhere
-// else entirely is a relocation, which a smear across says nothing about.
 function canMove(from: WeightedFrames, to: RowFrame, width: number) {
   const { slope, at } = drawnLine(from, to, 0, width)
   const { scale, offset } = laneMapAt(from, to, 0, width)
@@ -109,8 +87,6 @@ function canMove(from: WeightedFrames, to: RowFrame, width: number) {
   return Math.max(a, b) > to.min && Math.min(a, b) < to.max
 }
 
-// the decisions a lane is drawn between `e` of the way through `running`, and
-// then `current`, which it was heading for
 function drawnMix(
   running: LaneTransition | undefined,
   current: LaneDecision,
@@ -130,14 +106,7 @@ function drawnMix(
   }))
 }
 
-/**
- * The transitions a settle leaves running. A lane whose decision is the one it
- * already had keeps whatever it was doing; a lane re-decided onto the SAME
- * contig starts moving from where it draws now, mid-flight included; every
- * other lane snaps — a contig change, a first decision, a lane with no
- * decision, a jump whose two pictures share nothing on screen, a leap of
- * several rungs at once, and every lane when motion is not allowed.
- */
+/** Only a lane re-decided onto the same contig moves; every other snaps. */
 export function laneTransitionsAfter({
   previous,
   next,
@@ -151,7 +120,7 @@ export function laneTransitionsAfter({
   previous: ReadonlyMap<string, LaneDecision | undefined>
   next: ReadonlyMap<string, LaneDecision | undefined>
   running: ReadonlyMap<string, LaneTransition>
-  /** the clock the last drawn frame read, which is where an interrupted lane is */
+  /** the clock the last drawn frame read */
   drawnAtMs: number
   nowMs: number
   allowed: boolean
@@ -185,11 +154,6 @@ export function laneTransitionsAfter({
   return out
 }
 
-/**
- * The lanes whose move is half done. A flip is edge-on at the midpoint, so what
- * a lane says of its frame — its header's [rev], which of its strand rows a
- * gene sits in — turns over there and nowhere else.
- */
 export function lanesPastHalfway(
   running: ReadonlyMap<string, LaneTransition>,
   nowMs: number,
@@ -201,7 +165,7 @@ export function lanesPastHalfway(
   )
 }
 
-/** the frame a moving lane is drawn nearer to: where it drew, until halfway */
+/** where the lane drew, until halfway */
 export function shownFrame(frame: RowFrame, pastHalfway: boolean) {
   const from = frame.morphFrom
   return from?.length && !pastHalfway
@@ -209,7 +173,6 @@ export function shownFrame(frame: RowFrame, pastHalfway: boolean) {
     : frame
 }
 
-/** the running transitions whose end the clock has not reached */
 export function laneTransitionsRunning(
   running: ReadonlyMap<string, LaneTransition>,
   nowMs: number,

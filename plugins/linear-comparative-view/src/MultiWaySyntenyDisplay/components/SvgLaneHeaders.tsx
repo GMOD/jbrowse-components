@@ -6,14 +6,6 @@ import { GENE_LABEL_HALO_PX } from '../laneLabels.ts'
 
 import type { LaneHeaderRow } from '../laneHeader.ts'
 
-/**
- * The lane headers as an exported figure wants them: the name and where the
- * lane is looking on the left, its scale on the right, and nothing else.
- *
- * No measurement, because there is nothing to place after the label — the menu
- * affordance is a control and exists only on screen. The two x positions are
- * fixed; the on-screen headers estimate them.
- */
 export function SvgLaneHeaders({
   rows,
   width,

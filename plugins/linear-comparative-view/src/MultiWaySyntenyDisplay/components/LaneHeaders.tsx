@@ -15,11 +15,7 @@ import { laneHeaderMenuItems } from '../menus.ts'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 
-// The lane being dragged, the origin its ys are measured from and where the
-// press landed — fixed for the whole gesture, so the listener effect can
-// depend on it honestly. The moving y is its own state: it changes on every
-// mousemove, and re-binding window listeners that often is what the split
-// avoids.
+// fixed per gesture; the moving y is its own state so the listeners bind once
 interface LaneDrag {
   assemblyName: string
   top: number
@@ -31,23 +27,6 @@ interface LaneMenu {
   anchor: ContextMenuAnchor
 }
 
-/**
- * The lane headers, the drag that reorders them and the menu each raises.
- *
- * HTML rather than SVG, which is the whole point of it being a component of
- * its own: the browser places the menu affordance after the label instead of a
- * character-count estimate doing it, a long label ellipsizes instead of running
- * under the scale, and the affordance is a real focusable button rather than a
- * `<text>` with a click handler. `SvgLaneHeaders` draws the caption half for an
- * exported figure, where none of that belongs.
- *
- * Press a mate lane's label, move it over another lane, release: the row under
- * the pointer is read off the lanes' band extents, and the drop writes the
- * whole order back the way the menu's Move up/down does, so the lanes the drag
- * did not touch stay where the reader saw them. A press that goes nowhere is a
- * click: it shows no drop bar and writes no order, since writing the order the
- * lanes already have would pin every lane and end the densest-first sort.
- */
 const LaneHeaders = observer(function LaneHeaders({
   model,
 }: {
@@ -77,22 +56,18 @@ const LaneHeaders = observer(function LaneHeaders({
       anchor: { clientX: event.clientX, clientY: event.clientY },
     })
   }
-  // pointer ys are viewport-relative and the lanes are laid out in the
-  // stack's own px, so every crossing between the two adds the scroll
+  // pointer ys are viewport-relative and the lanes are in stack px
   const { scrollTop } = model
   const dropRow =
     dragY === undefined ? undefined : dropRowAt(lanes, dragY + scrollTop)
-  // A drop on the ANCHOR's band lands the lane first below it — "above the
-  // anchor" cannot be granted — so the bar goes on the first mate lane
+  // a drop on the anchor's band lands the lane first below it
   const dropIndex = dropRow === undefined ? -1 : Math.max(1, dropRow)
   const dropLane = lanes[dropIndex]
   const dragIndex = lanes.findIndex(
     lane => lane.assemblyName === drag?.assemblyName,
   )
 
-  // Window-level because a drag leaves the label the moment it starts, and in
-  // an effect so a display that unmounts UNDER a held button takes them with
-  // it rather than writing the order through a destroyed node on mouseup.
+  // in an effect, so a display unmounting under a held button drops them
   useEffect(() => {
     if (!drag) {
       return
@@ -173,8 +148,7 @@ const LaneHeaders = observer(function LaneHeaders({
           style={{
             position: 'absolute',
             left: 2,
-            // `row.y` is a baseline; this converts it to the box top so the
-            // two presenters put the text on the same line
+            // `row.y` is a baseline, and the box is placed by its top
             top: labelBoxTop(row.y) - scrollTop,
             width: width - 4,
             display: 'flex',

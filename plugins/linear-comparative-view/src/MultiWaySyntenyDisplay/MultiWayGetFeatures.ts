@@ -27,8 +27,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
       args: {
         regions: RegionLike[]
         adapterConfig: Record<string, unknown>
-        // beside the regions rather than in `opts`, so the rename pass reads
-        // the star's refNames for these lanes alone
+        // outside `opts`, so the rename pass reads these lanes' refNames alone
         haplotypes?: string[]
         opts?: Record<string, unknown>
       }
@@ -38,11 +37,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-/**
- * `CoreGetFeatures` with each clipped piece's alignment ops carried beside the
- * features rather than in them, so a feature reaching the main thread is plain
- * data a details panel or a session can hold.
- */
+/** Carries alignment ops beside the features, which stay plain data. */
 export default class MultiWayGetFeatures extends RpcMethodTypeWithRenameRegions<'MultiWayGetFeatures'> {
   name = 'MultiWayGetFeatures' as const
 
@@ -80,10 +75,6 @@ export default class MultiWayGetFeatures extends RpcMethodTypeWithRenameRegions<
   }
 }
 
-/**
- * The features as plain data, and each one's alignment ops copied out of the
- * record's shared buffer into its own, keyed by feature id.
- */
 export function liftAlignmentOps(found: Feature[]): MultiWayFeaturesWire {
   const ops: [string, Uint32Array][] = []
   const features = found.map(feature => {

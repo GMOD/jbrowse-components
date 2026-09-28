@@ -16,12 +16,6 @@ export interface FetchRegion {
   end: number
 }
 
-/**
- * The view's content blocks as the regions a clipping fetch asks for: blocks
- * that abut on one refName become one region, so a record spanning two blocks
- * is cut once rather than once per block, and every edge is snapped outward to
- * a whole base, since a block is a span of screen and a clip names bases.
- */
 export function mergeContiguousRegions(blocks: FetchRegion[]) {
   const merged: FetchRegion[] = []
   for (const block of blocks) {
@@ -54,25 +48,16 @@ export interface MultiWayPlacement {
   refName: string
   start: number
   end: number
-  /** the gene the placement is, where the source names one */
   name?: string
 }
 
 /**
- * A mate placement plus how it runs against the anchor. `orientation` is the
- * PAIR's strand — the alignment strand for PAF, the product of the two BED
- * strands for an MCScan row — which a pairwise feature carries as its own
- * `strand` and a grouped feature carries per entry of `mates`. Never the
- * `strand` inside a mate object, which PAF does not set and the MCScan blocks
- * adapter fills with the mate gene's transcription strand. -1 means the two
- * ends of the pair correspond crosswise, so an inversion's ribbon twists.
+ * `orientation` is the pair's strand, never the mate object's own `strand`;
+ * -1 twists the ribbon.
  */
 export interface MatePlacement extends MultiWayPlacement {
   orientation: number
-  /**
-   * the record placing it — on a named source built from several pair files,
-   * that pair's own row rather than the group's `feature`
-   */
+  /** the pair's own row, which can differ from the group's `feature` */
   feature: Feature
 }
 
@@ -81,13 +66,7 @@ export interface MultiWayGroup {
   anchor: MultiWayPlacement
   mates: Map<string, MatePlacement[]>
   feature: Feature
-  /**
-   * What the group counts for in a contig vote: the anchor bp of an
-   * alignment record, where a 2 Mb block has to outweigh twenty repeat hits,
-   * and one per gene for a named source, where a 1.4 Mb gene is one gene.
-   * DPP10 alone otherwise carried the chimp lane onto chr2B against fifteen
-   * genes on chr2A at the human chr2 fusion.
-   */
+  /** contig-vote evidence: anchor bp for an alignment, 1 for a named gene */
   weight: number
 }
 
@@ -96,27 +75,14 @@ export interface RowFrame {
   min: number
   max: number
   flipped: boolean
-  // the extent the frame was fitted to, before the ladder rounded its span.
-  // The alignment slides the frame off its centre, so part of this can fall
-  // past either edge
+  // the fitted extent before the ladder rounded it; it can fall past min/max
   fitMin: number
   fitMax: number
-  // the lane's other contigs explaining a comparable share of the anchor
-  // window — a second homoeologous copy, most often — which the frame shows
-  // nothing of. Named so the reader can pin the lane onto one. Capped, since
-  // a fragmented assembly has as many of these as it has scaffolds; the ones
-  // past the cap are counted rather than named.
   alsoOn: string[]
   alsoOnMore: number
-  // while a transition runs, the frames the lane is moving from, each with its
-  // share of where the lane draws. The lane's cells are packed in this frame
-  // and culled to all of them, so the transition's first picture is the old
-  // one rather than the new frame's content with its edges missing
   morphFrom?: readonly { frame: RowFrame; weight: number }[]
 }
 
-// Both fetch shapes as one list: a grouped feature's `mates` carry their own
-// orientation, a pairwise feature's one `mate` takes the feature's `strand`.
 function matesOf(feature: Feature): SyntenyGroupedMate[] {
   const mates = getMates(feature)
   const mate = getMate(feature)
@@ -131,9 +97,8 @@ function nameOf(value: unknown) {
   return typeof value === 'string' && value ? value : undefined
 }
 
-// Name before syntenyId: an MCScan blocks adapter keeps the FIRST row naming a
-// gene pair, so one anchor gene surfaces under different row numbers on
-// different pairs while its name is one string everywhere.
+// Name before syntenyId, since an MCScan anchor gene carries a different
+// syntenyId on each pair.
 function groupKeyOf(feature: Feature) {
   const name = feature.get('name')
   if (name !== undefined) {
@@ -143,10 +108,6 @@ function groupKeyOf(feature: Feature) {
   return syntenyId === undefined ? feature.id() : String(syntenyId)
 }
 
-// One group per anchor gene: the anchor placement plus every mate placement the
-// features name for it, whether one feature carries them all (`mates`) or one
-// feature carries each (`mate`). A reference-anchored table repeats a mate
-// through each row that reaches it, so placements dedupe on coordinates.
 export function groupFeatures(features: Feature[]) {
   const byKey = new Map<string, MultiWayGroup>()
   const seen = new Set<string>()
@@ -198,28 +159,8 @@ export function groupFeatures(features: Feature[]) {
 }
 
 /**
- * The group as the VIEWPORT sees it: the anchor interval cut to
- * [start, end], and each mate cut by the same two fractions of its own length,
- * from whichever of its ends the anchor's cut corresponds to.
- *
- * The fetch asks for the view's STATIC blocks, which reach up to a whole block
- * past the window on either side, and `clipToRegion` cuts each record to what
- * was ASKED FOR — so a record that spans the window arrives spanning the
- * padded region too, and a lane fitted to it is fitted to the padding. A PAF
- * of small records never showed it, since one record's overhang is a few kb
- * against a window's worth of others; a graph adapter answers one record per
- * haplotype and the overhang IS the fit. The HPRC CFH window (260 kb, hg38
- * chr1:196.64-196.90 Mb, 416 kb of static blocks behind it) put every
- * matching haplotype at 2x the window and every CFHR3-CFHR1 deletion carrier
- * at 1.5x, each drawing its own gene models across sequence the anchor window
- * does not reach and no ribbon can join.
- *
- * By PROPORTION because that is all a clipped record can say: the alignment
- * strings are what made it expensive to ship and the clip drops them. Over the
- * near-identity records this matters for, the two axes run at one rate anyway,
- * and the ladder rounds what is left. A group already inside the window comes
- * back as it is, which is every group of a gene table and nearly every one of
- * a small-record PAF.
+ * Cuts each mate by the fractions of its length the anchor's cut takes, from
+ * the corresponding end.
  */
 export function clipGroupToAnchor(
   group: MultiWayGroup,
@@ -246,27 +187,11 @@ export function clipGroupToAnchor(
       }
 }
 
-// Whether a group can gather placements from several lanes — a gene keyed by
-// its name across the pair tables, or a folded record carrying several mates —
-// so a lane that places nothing for it is a lane the group is missing from. A
-// one-record alignment holds exactly its one mate: no other lane ever had it,
-// and bridging it fans the anchor to every lane over the pairs' direct links.
 export function groupSpansLanes(group: MultiWayGroup) {
   return group.mates.size > 1 || isNamedRecord(group.feature)
 }
 
-// Mate assemblies densest-first over the anchor-sorted groups: a ribbon
-// connects ADJACENT lanes only, so a near-empty lane sitting mid-stack cuts the
-// chains of every denser lane below it. A lane's density is its heaviest
-// contig's evidence, what `pickContig` votes with — one per gene on a named
-// table, anchor bp on an alignment — since a lane draws one contig, and a
-// genome scattering the window over ten scaffolds is as sparse as the one it
-// shows. Weighed over the whole fetched block set rather than the viewport, so
-// the order holds still across the pans that keep one fetch. `preferred` (the
-// display's domain) pins the lanes it names to the top, in its order — joined
-// on `keyOf`, the canonical name, because a session spec spells an assembly
-// the way the session does while a placement spells it the way the table's BED
-// did.
+// Densest lane first, after the lanes `preferred` names, in its order.
 export function rowAssembliesOf(
   groups: MultiWayGroup[],
   preferred: string[],
@@ -307,12 +232,6 @@ export function rowAssembliesOf(
   return [...pinned, ...present.filter(name => !pinned.has(name))]
 }
 
-// The one tick interval the whole track draws at, picked off the anchor's
-// visible span so it lands about six ticks across it. Every lane draws ITS
-// ticks at this same bp interval in its own frame, which is what makes the
-// spacing readable as scale: two lanes whose ticks line up are at the same
-// bp/px, and a lane whose ticks crowd together is zoomed out by exactly the
-// ratio the spacing shows.
 export function tickIntervalFor(spanBp: number) {
   const target = Math.max(spanBp, 1) / 6
   const magnitude = 10 ** Math.floor(Math.log10(target))
@@ -320,15 +239,13 @@ export function tickIntervalFor(spanBp: number) {
   return (step === undefined ? 10 : step) * magnitude
 }
 
-// past this a lane is far enough out that its ticks read as hatching rather
-// than as a scale, and the header's multiple is the legible statement
 const MAX_LANE_TICKS = 24
 
 function framesOf(frame: RowFrame) {
   return [frame, ...(frame.morphFrom ?? []).map(from => from.frame)]
 }
 
-/** the bp the lane shows: its frame, and every frame a transition moves it from */
+/** bp, over the frame and every frame a transition moves it from */
 export function frameExtent(frame: RowFrame) {
   let { min, max } = frame
   for (const from of frame.morphFrom ?? []) {
@@ -338,7 +255,6 @@ export function frameExtent(frame: RowFrame) {
   return { min, max }
 }
 
-/** the extent plus the half screen either side a pan reveals before relayout */
 export function frameReach(frame: RowFrame) {
   const { min, max } = frameExtent(frame)
   const margin = (max - min) / 2
@@ -353,17 +269,11 @@ export function frameReachPx(frame: RowFrame, width: number): Span {
   return a <= b ? [a, b] : [b, a]
 }
 
-/**
- * The most a transition magnifies the lane's packed px: a frame showing less
- * than this one draws each px wider than it was packed
- */
 export function frameMagnification(frame: RowFrame) {
   const span = frame.max - frame.min
   return Math.max(1, ...framesOf(frame).map(f => span / (f.max - f.min)))
 }
 
-// The x positions of the shared tick interval over a lane's reach, drawn while
-// any frame the lane shows would draw them.
 export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   const xs: number[] = []
   const span = Math.min(...framesOf(frame).map(f => f.max - f.min))
@@ -385,18 +295,7 @@ export function rowFrameX(frame: RowFrame, bp: number, width: number) {
   return frame.flipped ? width * (1 - t) : width * t
 }
 
-/**
- * One bp interval in a lane's own frame, as a px pair in the interval's own
- * order, or undefined when the lane's reach shows nothing of it.
- *
- * CLIPPED TO `frameReach`, not merely tested against it. `rowFrameX`
- * extrapolates, so an unclipped end maps to tens of thousands of pixels and
- * the ribbon keeping it sweeps across everything.
- *
- * Clipping in bp keeps the pair in the interval's own order and keeps a flipped
- * lane's mirroring intact, since `rowFrameX` is monotonic either way. A
- * reverse-strand walk hands the pair high end first.
- */
+/** A px pair in the interval's own order, clipped to `frameReach`. */
 export function frameSpan(
   frame: RowFrame,
   start: number,
@@ -416,19 +315,10 @@ interface PlacementRun {
   min: number
   max: number
   orientation: number
-  /** the one gene the run's placements name, if they name exactly one */
   name?: string
-  /** the record of the run's widest placement */
   feature: Feature
 }
 
-// The group's placements on one row as maximal OVERLAPPING RUNS: two hits the
-// row shows apart from each other stay two spans, and only placements that
-// actually touch merge into one, so the gap between two disjoint hits is not
-// drawn as syntenic sequence.
-//
-// Filtered to the frame, which is what keeps `computeRowFrame`'s outlier rule
-// from being undone here — see `frameSpan`.
 export function groupRunsOnRow(
   group: MultiWayGroup,
   assemblyName: string,
@@ -441,8 +331,6 @@ export function groupRunsOnRow(
         p.refName === frame.refName && doesIntersect2(min, max, p.start, p.end),
     )
     .sort((a, b) => a.start - b.start)
-  // length-weighted within a run, so a fragment aligning the other way cannot
-  // outvote the block it sits inside
   const runs: {
     min: number
     max: number
@@ -480,17 +368,8 @@ export function groupRunsOnRow(
 }
 
 /**
- * The group's px spans on one row, one per run of placements the row shows, as
- * ORDERED pairs: the end corresponding to the anchor's start first. Empty when
- * the row's frame shows nothing of the group, so the ribbon skips that row.
- *
- * Ordered, not ascending, because the order is how an inversion is drawn. `ribbonPath` joins first end to first end, so a pair reversed here
- * draws the crossed parallelogram a reverse-strand block IS, and two lanes both
- * reversed against the anchor draw an untwisted ribbon between themselves —
- * relative orientation composes without anyone multiplying it out. `flipped`
- * needs no extra handling: `rowFrameX` already mirrors a flipped lane.
- *
- * A caller drawing a BOX wants the two ends the other way round; sort there.
+ * Ordered px pairs, the end matching the anchor's start first, so a reversed
+ * pair draws the inversion's twist. A caller drawing a box sorts them.
  */
 export function groupRunSpansOnRow(
   group: MultiWayGroup,
@@ -503,7 +382,7 @@ export function groupRunSpansOnRow(
   interval: MultiWayPlacement
   feature: Feature
 }[] {
-  // every run holds a placement the frame shows, so `frameSpan` always answers
+  // every run holds a placement the frame shows, so `frameSpan` answers
   return groupRunsOnRow(group, assemblyName, frame).map(run => {
     const [a, b] = frameSpan(frame, run.min, run.max, width)!
     return {
@@ -520,9 +399,6 @@ export function groupRunSpansOnRow(
   })
 }
 
-// The frame joined with every position its span can take while covering
-// [fitMin, fitMax], so an alignment shift inside that range leaves the fetch
-// where it was, whatever the viewport width
 export function laneFetchWindow(frame: RowFrame) {
   const span = frame.max - frame.min
   return {
@@ -531,19 +407,8 @@ export function laneFetchWindow(frame: RowFrame) {
   }
 }
 
-// The region a lane's dependent fetches ask for: `laneFetchWindow` plus the
-// half screen `frameReach` draws either side of it, widened to a power-of-two
-// grid so a sub-grid pan reuses the last fetch, and never below 0, which a
-// lane whose contig starts inside the window draws as blank.
-// Keyed on the window rather than the frame because the frame moves with the
-// alignment shift and with the viewport width, and a lane must not refetch its
-// annotation because the browser window was resized.
-//
-// The grid comes off the RUNG SPAN alone. Taken off the window's own width it
-// moves with the fitted extent, and that width ranges over [span, 2*span) —
-// which straddles a power of two, so one more ortholog entering the viewport
-// could double the grid and refetch every lane for a gesture that moved no
-// frame.
+// The grid comes off the rung span alone, so a fitted-extent change cannot
+// double it and refetch every lane.
 export function laneFetchRegion(frame: RowFrame) {
   const { min, max } = laneFetchWindow(frame)
   const span = frame.max - frame.min
@@ -559,9 +424,6 @@ function laneFetchGrid(spanBp: number) {
   return 2 ** Math.ceil(Math.log2(Math.max(2 * spanBp, 1)))
 }
 
-// the widest region `laneFetchRegion` returns for a lane showing `spanBp`:
-// two grid cells, so a cap read against it is a fact of the zoom and not of
-// where a pan left the window on the grid
 export function laneFetchRegionMaxBp(spanBp: number) {
   return 2 * laneFetchGrid(spanBp)
 }

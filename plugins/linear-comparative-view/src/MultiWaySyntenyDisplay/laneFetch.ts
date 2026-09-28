@@ -9,12 +9,7 @@ export interface LaneRegion {
   end: number
 }
 
-/**
- * One lane's share of a dependent fetch. `lane` is the held map's key — the
- * lane's assembly, or the pair a link fetch joins — `key` is what the lane's
- * held result is stale against, and `assemblyName` is the genome the lane
- * draws, a pair's upper lane.
- */
+/** `lane` keys the held map; `assemblyName` is the genome the lane draws. */
 export interface LaneFetchSpec {
   lane: string
   key: string
@@ -27,10 +22,8 @@ export interface LaneGenesFetchSpec extends LaneFetchSpec {
 }
 
 /**
- * One adjacent lane pair's fetch, `assemblyName` its upper lane. `regions` is
- * the window the pair is read inside: the upper lane's own, or with
- * `onAnchor` the anchor's, for a source that holds every lane inside its
- * anchor's window
+ * `assemblyName` is the upper lane; with `onAnchor`, `regions` are the
+ * anchor's window.
  */
 export interface LaneLinksFetchSpec extends LaneFetchSpec {
   lowerAssembly: string
@@ -39,7 +32,6 @@ export interface LaneLinksFetchSpec extends LaneFetchSpec {
   lodTier: LodTier
 }
 
-/** a lane's fetched result beside the region key it was fetched under */
 export interface HeldLane {
   key: string
 }
@@ -51,26 +43,19 @@ export interface HeldLaneGenes extends HeldLane {
 export interface HeldLaneLinks extends HeldLane, LaneLinks {}
 
 /**
- * What a dependent fetch holds: each lane's result under the key it asked
- * for, and the anchor the fetch last covered a mate lane under, which is
- * what readiness reads. Stamped from the anchor the specs were built under,
- * so a run landing after a re-anchor cannot mark the new anchor covered
+ * `landedFor` stamps the specs' own anchor, so a run landing after a
+ * re-anchor cannot mark the new anchor covered.
  */
 export interface LaneFetchState<Held extends HeldLane> {
   held?: Map<string, Held>
   landedFor?: string
 }
 
-/**
- * whether a spec list frames a mate lane. Not `length > 1`: the anchor has a
- * spec only where it has a gene track, so a window framing one mate on an
- * anchor without one is a single spec that is a mate's
- */
+/** Not `length > 1`: an anchor without a gene track has no spec. */
 export function specsCoverMate(specs: LaneFetchSpec[], anchor: string) {
   return specs.some(spec => spec.assemblyName !== anchor)
 }
 
-/** the specs whose lane holds nothing fetched under their key */
 export function staleLaneSpecs<Spec extends LaneFetchSpec>(
   specs: Spec[],
   state: LaneFetchState<HeldLane>,
@@ -78,11 +63,7 @@ export function staleLaneSpecs<Spec extends LaneFetchSpec>(
   return specs.filter(spec => state.held?.get(spec.lane)?.key !== spec.key)
 }
 
-/**
- * A commit: the held results the current specs still name, the fetched ones
- * over them, and the anchor stamped once the specs cover a mate lane. A lane
- * no spec names is dropped, so a payload the view has left stops counting
- */
+/** Drops a lane no spec names. */
 export function landLaneFetch<Held extends HeldLane>(
   state: LaneFetchState<Held>,
   fetched: ReadonlyMap<string, Held>,
@@ -102,11 +83,6 @@ export function landLaneFetch<Held extends HeldLane>(
   }
 }
 
-/**
- * whether a dependent fetch is still part of loading: it has never landed
- * while asked for something, or it has not covered a mate lane under this
- * anchor while its specs name one or a description that could add one is out
- */
 export function laneFetchAwaits(
   state: LaneFetchState<HeldLane>,
   specs: LaneFetchSpec[],
@@ -120,11 +96,7 @@ export function laneFetchAwaits(
   )
 }
 
-/**
- * The anchor a star source names in its `CoreGetInfo` header
- * (MultiPairwiseSyntenyAdapter's `anchorAssemblyName`); undefined for a header
- * that names none, which is every other adapter's.
- */
+/** MultiPairwiseSyntenyAdapter's header `anchorAssemblyName` */
 export function starAnchorOf(header: unknown) {
   return typeof header === 'object' &&
     header !== null &&

@@ -18,11 +18,6 @@ function matchesFilter(lane: LaneChoice, filter: string) {
   )
 }
 
-/**
- * Lanes in the order the universe gives them, cut into runs by `group` so a
- * sample's haplotypes sit under one heading; lanes without a group form runs
- * headed by nothing.
- */
 export function laneRuns(lanes: LaneChoice[]) {
   const runs: { group: string | undefined; lanes: LaneChoice[] }[] = []
   for (const lane of lanes) {
@@ -44,12 +39,7 @@ export function laneCaption({ name, label }: LaneChoice) {
       : `${name} (${label})`
 }
 
-/**
- * Which lanes to draw, out of every lane the source offers. Opens on the lanes
- * the stack draws and hands a changed ticked set to `chooseLanes`; an
- * unchanged Submit writes nothing, so hidden lanes stay hidden rather than
- * becoming a list. Reset drops the choice.
- */
+/** An unchanged Submit writes nothing, so hidden lanes stay hidden. */
 const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model,
   handleClose,

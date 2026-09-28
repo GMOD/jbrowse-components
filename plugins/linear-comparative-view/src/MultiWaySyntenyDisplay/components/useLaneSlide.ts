@@ -6,18 +6,10 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type React from 'react'
 
-// a side-scroll arrives as a burst of events; the lane is written once the
-// burst stops, which is one undo step rather than one per event
+// one undo step per side-scroll burst, not one per event
 const WHEEL_SETTLE_MS = 250
 
-/**
- * A frozen lane slid by hand: a drag on its header, genes or names, or a
- * side-scroll over them. Each draws through the lane's `LaneMap` while it runs
- * and writes the lane's frozen decision once, at the release or the end of the
- * burst. The press is claimed before the view's own pan sees it; a lane that
- * is not frozen, the anchor lane and the gutters leave both gestures to the
- * view.
- */
+/** Claims the press before the view's own pan sees it. */
 export function useLaneSlide(
   model: MultiWaySyntenyDisplayModel,
   panel: HTMLDivElement | null,

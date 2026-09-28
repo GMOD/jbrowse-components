@@ -15,12 +15,11 @@ interface Cursor {
   k: number
   /** anchor bp left in the op at `k` */
   left: number
-  /** the lane coordinate the anchor cursor currently sits at */
+  /** lane bp the cursor sits at */
   lane: number
   dir: number
 }
 
-/** anchor bp, lane bp and kind of the op a cursor sits on */
 function opAt(c: Cursor) {
   const packed = c.ops[c.k]!
   return { len: packed >>> 4, op: packed & 0xf }
@@ -38,12 +37,7 @@ function consumesAnchor(op: number) {
   return consumesLane(op) || op === CIGAR_D || op === CIGAR_N
 }
 
-/**
- * The anchor and lane coordinates the record's ops walk from, which are the
- * feature's own and not the placement's — `addAlignmentDetail` walks a direct
- * record from exactly these, so a composed gutter and a direct one read the
- * same alignment the same way.
- */
+/** Walks from the feature's own coordinates, not the placement's. */
 function cursorAt(record: LanePlacementRecord, ops: Uint32Array) {
   const mate = record.feature.get('mate') as
     | { start: number; end: number }
@@ -61,11 +55,6 @@ function cursorAt(record: LanePlacementRecord, ops: Uint32Array) {
   return c
 }
 
-/**
- * Run the cursor forward to `anchorTarget`, an insertion at a time, without
- * emitting: the lane bp an insertion carries before the composed stretch opens
- * belongs to neither composed lane.
- */
 function seek(c: Cursor, anchorFrom: number, anchorTarget: number) {
   let at = anchorFrom
   while (c.k < c.ops.length && at < anchorTarget) {
@@ -111,23 +100,7 @@ function hasRun(ops: Uint32Array) {
   return false
 }
 
-/**
- * Where each record's walk stopped, so the next stretch of the same record
- * resumes instead of re-walking its ops from the start. One wide record against
- * 20,000 split ones took 63 s without it, because every pair sought forward
- * through the wide record's whole CIGAR; the sweep hands out stretches in anchor
- * order, so resuming makes that one pass. A stretch that opens BEFORE where the
- * cursor stopped rebuilds, which is correct and no slower than not caching.
- */
-/**
- * One entry per record, holding both answers that cost a pass over its ops: the
- * `CIGAR_RUN` test, and how far the walk has got. Without it a record is
- * re-tested and re-sought for every stretch it takes part in, so one lane left
- * whole against another cut into 10,000 runs walked its CIGAR 20,000 times.
- * The sweep hands out stretches in anchor order, so resuming makes that one
- * pass; a stretch opening BEFORE where the cursor stopped rebuilds, which is
- * correct and no slower than not caching at all.
- */
+/** per record, where its walk stopped; a stretch opening earlier rebuilds */
 export type ComposeCursors = Map<LanePlacementRecord, RecordState>
 
 interface RecordState {
@@ -171,26 +144,8 @@ export interface ComposedAlignment {
 }
 
 /**
- * The alignment between two mate lanes that a star of pairwise alignments
- * never states, composed from the two alignments it does state: over the
- * anchor stretch both records cover, a base each lane places is a match
- * between them, a base only one lane places is that lane's own insertion, and
- * a base one lane calls a mismatch while the other calls it a match is a
- * mismatch between the two lanes. Where BOTH call it a mismatch the file has
- * not said whether they carry the same alternative, so the composed op is `M`
- * — aligned, unstated — and no mismatch mark draws. An insertion both lanes
- * make at the same anchor point is the same case for the length they share,
- * and only the difference in length is an indel between them.
- *
- * Nothing here aligns anything: every op comes from an op the file already
- * carries, which is what lets a composed gutter draw the same detail a direct
- * pair draws. The affine projection it replaces is wrong by up to the largest
- * indel inside the stretch, so a composed gutter used to slide against its
- * neighbours by exactly the structure a reader came to see.
- *
- * A coarse row folds runs the two sides cannot be stepped through together, so
- * a `CIGAR_RUN` on either side declines the composition and leaves the caller
- * its affine projection — the coarse tier draws no per-base detail anyway.
+ * Undefined where either side carries a `CIGAR_RUN`. Two mismatches compose to
+ * `M`, since the file never says they share an alternative.
  */
 export function composeAlignmentOps(
   upper: LanePlacementRecord,

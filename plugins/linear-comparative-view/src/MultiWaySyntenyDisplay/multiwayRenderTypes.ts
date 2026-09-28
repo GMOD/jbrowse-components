@@ -14,10 +14,8 @@ import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRe
 import type { FrameDimensions } from '@jbrowse/render-core/renderingBackendBase'
 
 /**
- * Every cell is stated in the render-origin px space the lane stack lays out
- * in: a ribbon corner is a px, and a glyph position is a px moved up by this
- * so it fits the passes' unsigned coordinate. A layer's transform is then the
- * one number a pan changes, `dragOffsetPx`.
+ * Glyph positions sit this far up in render-origin px, which fits the passes'
+ * unsigned coordinate.
  */
 export const PX_ORIGIN = 1 << 20
 
@@ -29,7 +27,6 @@ export interface GlyphHit {
   feature: Feature
   groupKey?: string
   label: string
-  /** what the mark is filled with, which the gene key reads back */
   fill?: PaintedFill
 }
 
@@ -37,10 +34,7 @@ export interface LaneGlyphData extends RegionRenderData {
   hits: GlyphHit[]
 }
 
-/**
- * What a ribbon names, by a key that outlives a rebuild of the targets: its
- * group's key, or a direct link's own feature id
- */
+/** keys that outlive a rebuild of the targets */
 export interface RibbonRef {
   groupKey?: string
   linkId?: string
@@ -63,7 +57,6 @@ export interface RibbonLayer {
   yTop: number
   height: number
   curves: boolean
-  /** the lane rows its top and bottom edges ride, for their `LaneMap`s */
   rows: readonly [number, number]
 }
 
@@ -71,16 +64,11 @@ export interface GlyphLayer {
   kind: 'glyphs'
   key: string
   scrolled: boolean
-  /** the lane row it draws, for its `LaneMap`; none for the bands */
+  /** undefined for the bands */
   row?: number
 }
 
-/**
- * Where a lane draws its cells: packed px `x` lands at `scale * x + offset`.
- * Identity for a settled lane; while a re-alignment, a rung change or a flip
- * runs, the map carries the lane from its old frame's picture to its new one
- * without repacking anything. A mirror is a negative scale.
- */
+/** packed px `x` lands at `scale * x + offset`; a mirror is a negative scale */
 export interface LaneMap {
   scale: number
   offset: number
@@ -88,22 +76,13 @@ export interface LaneMap {
 
 const IDENTITY_LANE_MAP: LaneMap = { scale: 1, offset: 0 }
 
-/**
- * The outline of the clicked group in one gutter — its own layer beside the
- * ribbon layer it traces, so a selection re-uploads the records the outline
- * draws rather than the gutter's whole buffer.
- */
 export interface OutlineLayer {
   kind: 'outline'
   key: string
   ribbon: RibbonLayer
 }
 
-/**
- * One mark of a lane layer over one fetched region: a band `height` px tall
- * at `top`, the region's bp laid over `px`, its two ends in stack px before
- * the lane's map and the drag
- */
+/** `px` holds the ends in stack px, before the lane's map and the drag */
 export interface BarLayer {
   kind: 'bars'
   key: string
@@ -121,36 +100,18 @@ export type MultiWayLayer = RibbonLayer | GlyphLayer | OutlineLayer | BarLayer
 
 export interface MultiWayRenderState extends FrameDimensions {
   dragOffsetPx: number
-  /**
-   * how far the stack is scrolled inside the viewport — the vertical twin of
-   * `dragOffsetPx`, 0 until the lane count pushes the stack past the track
-   * height (`laneContentHeight`). Every layer subtracts it, bands included
-   */
+  /** the vertical twin of `dragOffsetPx`; every layer subtracts it */
   scrollTopPx: number
   hoveredFeatureId: number
   clickedFeatureId: number
-  /** by lane row, each moving lane's `LaneMap`; a row absent is settled */
+  /** by lane row; an absent row is settled */
   laneMaps: ReadonlyMap<number, LaneMap>
-  /**
-   * The stack's ground, which the ribbon gutters share with the linear band:
-   * `drawSyntenyTrack` blends an indel wedge against it and the shaders bake it
-   * into `u.ground`. The same `background.paper` the band cells are painted in
-   * (`bandCell`), so a gutter and the lane above it agree.
-   */
+  /** the band cells' `background.paper`, so a gutter matches the lane above */
   groundColor: string
-  /**
-   * The stack back to front, under the key each layer's cell is uploaded
-   * against — ordered, because it is also the block order, and keyed, because a
-   * mark's `params` lens picks its layer by the block's own key.
-   */
+  /** back to front, since the order is also the block order */
   layers: ReadonlyMap<number, MultiWayLayer>
 }
 
-/**
- * One canvas, a block per layer: the gutters' ribbons, the clicked outline over
- * whichever gutter carries it, and each lane's glyphs. Every cell is a region
- * of the per-region backend, keyed by `sharedBackendKey` off the layer's name.
- */
 export type MultiWayRenderingBackend = PerRegionRenderingBackend<
   MultiWayCell,
   MultiWayRenderState
@@ -196,17 +157,10 @@ export function ribbonParams(
   }
 }
 
-/**
- * How far past a canvas edge a ribbon's end may lie and still draw: the
- * pairwise view's default. The cull drops a ribbon once either end is wholly
- * outside it, so at 0 a flipped lane lost every ribbon crossing the canvas.
- */
+/** at 0, a flipped lane loses every ribbon crossing the canvas */
 export const MULTIWAY_OVERDRAW_PX = DEFAULT_OVERDRAW_PX
 
-/**
- * The stack as the synteny pick engine reads it: a numeric key per gutter,
- * topmost last, so a point over two gutters answers the one drawn over.
- */
+/** a numeric key per gutter, topmost last */
 export function ribbonPickState(
   state: MultiWayRenderState,
 ): SyntenyRenderState {
@@ -225,11 +179,7 @@ export function ribbonPickState(
   }
 }
 
-/**
- * The packed px a glyph layer's block spans over the canvas: the drag, for a
- * scrolled layer, and its lane's map, inverted — so a reversed block is a
- * lane drawn mirrored.
- */
+/** packed px; a reversed block is a lane drawn mirrored */
 export function glyphBlockRange(layer: GlyphLayer, state: MultiWayRenderState) {
   const map = laneMapOf(state, layer.row)
   const shift = layer.scrolled ? state.dragOffsetPx : 0

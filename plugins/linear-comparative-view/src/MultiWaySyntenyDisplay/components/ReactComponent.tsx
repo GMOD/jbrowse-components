@@ -79,8 +79,7 @@ const MultiWaySyntenyReactComponent = observer(
     model: MultiWaySyntenyDisplayModel
   }) {
     const { canvasWidth: width } = model
-    // a pan ends with a click on whatever the drag stopped over; only a press
-    // that stayed put opens what it pressed
+    // only a press that stayed put opens what it pressed, not a pan's end
     const pressX = useRef<number | undefined>(undefined)
     return (
       <DisplayChrome

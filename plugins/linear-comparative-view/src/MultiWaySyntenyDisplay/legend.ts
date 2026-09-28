@@ -24,20 +24,8 @@ function onScreen(hits: readonly GlyphHit[], [from, to]: Span) {
 }
 
 /**
- * The key for a `jexl:` gene color over the hits one lane packed: one row per
- * distinct fill, named by the leftmost feature carrying it. A callback has no
- * field behind it, so this reads the vocabulary back off the drawing; a
- * gene-symbol table drawn with `jexl:randomColor(feature.name)` puts one color
- * on one symbol, and the row names the symbol.
- *
- * Deduped by color as well as by name, because a row IS a color: two names on
- * one color are indistinguishable on screen. A feature with no name
- * contributes nothing — an id-labeled row names a color after a string the
- * reader has never seen.
- *
- * `span` is in the hits' own px, which the cull that packed them is half a
- * screen wider than: a key naming a gene the reader would have to pan to reach
- * does not describe this picture.
+ * One row per distinct fill, named by its leftmost feature. `span` is in the
+ * hits' own px.
  */
 export function laneColorKey(
   hits: readonly GlyphHit[],
@@ -67,10 +55,6 @@ export function laneColorKey(
   return items
 }
 
-/**
- * The key a painting field derives from one lane's hits on screen: every value
- * a mark was filed under, through the union every channel-backed key runs
- */
 export function laneFieldKey(
   hits: readonly GlyphHit[],
   span: Span,
@@ -91,14 +75,6 @@ export function laneFieldKey(
   ).map(scale => ({ ...scale, title }))
 }
 
-/**
- * What the ribbons' own colors mean as rows: a fixed pair in `strand` mode,
- * whose names are lane-relative and so this display's own; a text column's
- * mode through the one categorical swatch builder the synteny key reads,
- * including the row naming the slot color its unlabelled pairs paint; and
- * nothing otherwise, since `default` paints one color and a measurement a
- * ramp (`ribbonColorScales`).
- */
 export function ribbonColorKey(
   field: string,
   attributeRanges: Record<string, AttributeRange> = {},
@@ -140,19 +116,11 @@ export function ribbonColorKey(
 
 interface RibbonKeyOptions {
   hideUnlabelled?: boolean
-  // what a pair carrying no label paints, which its key row shows
   slotColor?: string
-  // `ribbonColor.labels`: what a text column's key names each domain label
   labels?: readonly string[]
 }
 
-/**
- * The ribbons' key in its own titled section, so a reader can tell a ribbon's
- * color from a glyph's: the synteny view's ramp where some ribbon carries the
- * value it paints, with the slot color a pair carrying none paints, else
- * `ribbonColorKey`'s rows. `title` is `ribbonColor.title` as written: unset
- * keeps the ribbons' own heading, `''` draws none.
- */
+/** `title` unset keeps the ribbons' own heading; `''` draws none. */
 export function ribbonColorScales(
   field: string,
   attributeRanges: Record<string, AttributeRange>,
@@ -190,8 +158,6 @@ export function ribbonColorScales(
       id: 'ribbons',
       title: title ?? 'Ribbon colors',
       entries: ribbonColorKey(field, attributeRanges, keyOptions),
-      // strand's pair is fixed and means what it is drawn in, so only the
-      // label rows take a declared order
       domain: labels ? domain : undefined,
     },
   ]

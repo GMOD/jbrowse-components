@@ -48,21 +48,7 @@ const DEPENDENT_FETCH_DELAY = 500
 
 const DESCRIBE_DEADLINE_MS = 20_000
 
-/**
- * The indel size at which a clipped record is cut into separate placements, so
- * an indel this size or larger does not vanish into a ribbon that says the two
- * sides run straight through. The coarse tier's default bound (`make-pif
- * --coarse`, 10 kb): that tier keeps every indel past half its bound as its own
- * op, so the cut lands the same on either tier.
- *
- * A gutter that is a direct pair leaves a record's own indels open between its
- * tiles, so for those the cut changes nothing a reader sees. Three consumers
- * still read a
- * placement as one linear mapping and keep it earning its place: composed
- * gutters interpolate within a run, `rowAssembliesOf` orders lanes by a run's
- * anchor bp, and the orientation vote weighs the same bp where the source is an
- * alignment. Lifting it belongs with moving those three onto the ops.
- */
+/** make-pif --coarse's 10 kb bound, so the cut lands alike on either tier */
 export const SPLIT_AT_GAP_BP = 10_000
 
 function fetchPhases(
@@ -82,26 +68,8 @@ function fetchPhases(
           }
         : undefined
     },
-    // no targetAssemblyName: a multi-genome adapter queried with no target
-    // answers with every pair anchored on the queried assembly, which is
-    // exactly the row set this display draws. `mateShape: 'grouped'` asks an
-    // adapter that can to fold those pairs per anchor before they cross the
-    // RPC; `groupFeatures` reads either shape, so one that cannot is
-    // unaffected. The tier is the one the key was issued at, so an indexed
-    // PIF at a whole-chromosome window serves its coarse rows. `clipToRegion`
-    // cuts each alignment record to the window on both axes before it crosses
-    // the RPC: a lane fitted to whole liftOver chains sat at 80x the window.
-    // `splitAtGapBp` cuts it again at every large indel, one placement per run,
-    // and `MultiWayGetFeatures` hands each run's own ops back beside it, which
-    // every gutter draws:
-    // the anchor's from the record itself, a lower one's composed from the two
-    // records it sits between (`composeAlignmentOps`).
-    // `haplotypes` is the lane selection where the source can cut on it, and it
-    // narrows what is FETCHED rather than what is drawn: a pangenome graph
-    // holds hundreds of haplotypes and the display usually shows eight, and
-    // without this the window comes back whole and the stack throws away the
-    // rest. Captured in `prepare` with the tier, so a landing is labelled with
-    // the selection it was asked for and not a live re-read at commit
+    // `prepare` captures `haplotypes`, so a landing carries the selection its
+    // run asked for
     run: async ({ regions, lodTier, haplotypes }, ctx) => {
       const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
         regions,
@@ -136,19 +104,7 @@ async function laneRegions(
   }))
 }
 
-/**
- * One RPC per lane, concurrently, each on its own status slot so the parallel
- * calls aggregate into one bar rather than clobbering each other.
- *
- * **One lane failing is a partial result, not a failed fetch.** That lane keeps
- * the placement boxes it already draws and is stamped with `empty` under the
- * key it asked for, so it reads as fetched rather than as owed, and every other
- * lane keeps its gene models; this resolves either way and the commit always
- * happens — which is also what settles `displayPhase` off `loading` when the
- * first one lands. The log guard is `handleFetchError`'s rule per lane: an
- * abort is the ordinary end of a superseded run, and a stale run's failure
- * belongs to whatever replaced it.
- */
+/** One lane failing is a partial result: it commits `empty` under its key. */
 async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
   label: string,
   specs: Spec[],
@@ -179,32 +135,8 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
 }
 
 /**
- * A SECOND fetch on this display: one that runs off the lane frames the
- * ortholog fetch produced, asks per lane, and commits each lane under the key
- * its own spec was built at.
- *
- * There are two of them and they differ only in what a lane asks for and where
- * the answer lands. They share the rules below, each stated once here:
- *
- * - **The delay** is the same for both because both are derived from lane
- *   frames that move on every pan, and a frame settles well inside 500ms.
- * - **The status window is the display's own, lent** rather than a channel of
- *   its own: a lane refetch runs over lanes that are already drawn, so
- *   `displayPhase` is `ready` and this reports through the corner progress chip
- *   instead of the scrim.
- * - **The freshness gate is per lane**, in the skeleton's predicate form: a run
- *   asks only the lanes whose held result was fetched under another key, so a
- *   pan that moves one lane's quantized window costs one RPC at 44 lanes
- *   rather than 44, and the other lanes' genes keep their identity. The
- *   compare is the skeleton's, not `prepare`'s, so a reload overrides it — the
- *   dead Retry this display shipped once — and a run the override lets through
- *   with nothing stale re-reads every lane, as a Retry expects.
- * - **No `contract`**: both are second fetches on a display whose global
- *   foundation already installed the two display-contract checks.
- * - **`setError` is a noop.** A lane's extra records are an enhancement over
- *   placement boxes that are already correct, so a lane failure must not reach
- *   the error slot the ortholog fetch owns — least of all through the clear it
- *   would do at the start of every run.
+ * `setError` stays a noop, so a lane failure never reaches the error slot the
+ * ortholog fetch owns.
  */
 function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
   self: MultiWaySyntenyDisplayModel,
@@ -255,13 +187,6 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
   })
 }
 
-/**
- * The settle-time lane decision. Reads the settled group set and the view's
- * scale, never its scroll offset: the px space every lane is aligned in is
- * anchored at the offset of the moment, read untracked, and the decision
- * itself is stated in anchor coordinates, so a pan moves the frames without
- * re-deciding anything.
- */
 function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
   addDisposer(
     self,
@@ -294,14 +219,7 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
   )
 }
 
-/**
- * Holds each described genome as a temporary assembly, so its lane's fetches
- * reach its sequence and aliases through renaming as a held lane's do, and
- * puts one back that another display released while this one still draws it.
- * Gives them back when the display goes, through the session captured here:
- * a display is destroyed after its view is detached, when `getSession` no
- * longer reaches one
- */
+// captures the session, since `getSession` finds none once the view detaches
 function installLaneAssemblies(self: MultiWaySyntenyDisplayModel) {
   const session = getSession(self)
   const held = new Set<string>()
@@ -329,11 +247,6 @@ function installLaneAssemblies(self: MultiWaySyntenyDisplayModel) {
   })
 }
 
-/**
- * Puts the drawn lanes the session lacks to `Core-describeAssemblies`, each
- * lane once, in one batch per change to the drawn set. A reload asks again
- * about the lanes that got no description
- */
 function installLaneDescriptions(self: MultiWaySyntenyDisplayModel) {
   const { pluginManager } = getEnv(self)
   let reloads = self.reloadCounter
@@ -380,11 +293,6 @@ function installLaneDescriptions(self: MultiWaySyntenyDisplayModel) {
 }
 
 export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
-  // The viewport clear the fetch foundation installs answers the axes the VIEW
-  // moves on. The lanes also relayout with the view still — a reorder, a hidden
-  // lane, a pinned contig, a dependent commit — which moves the ribbons out
-  // from under a stationary pointer. The click is not the pointer's, and
-  // re-resolves by key.
   installClearHoverOnSurfaceMove(self, {
     transform: () => self.ribbonGeometry.targets,
     clear: () => {
@@ -406,8 +314,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   )
   installLaneDescriptions(self)
   installLaneAssemblies(self)
-  // the header is also read for an untiered adapter that declares its lanes,
-  // so the picker can offer the whole universe before any lane is placed
   installLodTierInfoFetch(self, {
     alsoWhen: () => self.adapterDeclaresLanes,
     lanes: () => self.fetchLaneSelection,
@@ -418,8 +324,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     name: 'MultiWaySyntenyFetch',
   })
 
-  // The second fetch: once the ortholog groups have settled into lane frames,
-  // each lane's gene models out of that assembly's own gene track.
   installLaneFetch(self, {
     name: 'MultiWayLaneGenes',
     fetchSpecs: () => self.laneGenesFetchSpecs,
@@ -437,12 +341,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     },
   })
 
-  // The third, for alignment-level sources: the direct records between each
-  // ADJACENT mate-lane pair, out of the same track. The specs exist
-  // only when the source names no genes, so a gene table never issues these,
-  // and not for a star that announced its anchor, whose pairs `pairLinks`
-  // composes instead, unless its adapter reads pairs inside the anchor's
-  // window.
   installLaneFetch(self, {
     name: 'MultiWayLaneLinks',
     fetchSpecs: () => self.laneLinksFetchSpecs,

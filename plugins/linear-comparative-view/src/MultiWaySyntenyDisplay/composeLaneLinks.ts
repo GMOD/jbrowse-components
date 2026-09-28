@@ -7,11 +7,7 @@ import type { LaneLinks } from './alignmentOps.ts'
 import type { ComposeCursors } from './composeAlignmentOps.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-/**
- * One lane's placement of a record against the anchor: the anchor interval it
- * covers and the interval of the lane's own contig it maps to. `strand` is the
- * pair's orientation, -1 meaning the anchor's start maps to the lane's end.
- */
+/** `strand` -1 means the anchor's start maps to the lane's end. */
 export interface LanePlacementRecord {
   anchorRefName: string
   anchorStart: number
@@ -62,23 +58,7 @@ function stillOpen(active: LanePlacementRecord[], next: LanePlacementRecord) {
   )
 }
 
-/**
- * The links between two adjacent mate lanes that a star of pairwise
- * alignments never states directly, composed through the anchor: wherever an
- * upper-lane record and a lower-lane record cover the same stretch of the
- * anchor, that stretch is mapped into each lane and emitted as one link in the
- * shape the display's direct lane-link features have — `refName`/`start`/`end`
- * in the upper lane, `mate` in the lower, `strand` the product of the two
- * orientations. Where both records carry their own alignment the two are
- * stepped through together (`composeAlignmentOps`), which places the stretch
- * exactly and hands the link the ops a direct pair carries, so the
- * gutter draws the same indels and mismatches; otherwise the stretch is mapped
- * by linear interpolation within each record.
- *
- * A sweep over both lists in anchor order with an active set per side, so the
- * work is the sort plus one step per overlapping pair. Intersections shorter
- * than `minBp` are skipped.
- */
+/** Links in the direct lane-link shape: `refName` upper, `mate` lower. */
 export function composeLaneLinks({
   upper,
   lower,

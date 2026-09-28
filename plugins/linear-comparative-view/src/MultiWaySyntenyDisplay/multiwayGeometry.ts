@@ -62,13 +62,10 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { AttributeRange, DeclaredRamp } from '@jbrowse/synteny-core'
 
-// ribbons narrower than this on both ends are clutter at alignment-record
-// density; the boxes they connect are still drawn in the lanes
+// narrower ribbons are clutter; the boxes they join still draw in the lanes
 const MIN_RIBBON_PX = 2
 const BOX_ALPHA = 64
-// a ribbon across a lane that lacks its group crosses that lane's genes and
-// every ribbon between, so it draws under the adjacent ones rather than
-// matching them
+// a bridge crosses the skipped lane's genes, so it draws under adjacent ribbons
 const BRIDGE_ALPHA = 0.4
 
 export function ribbonsKey(row: number, toRow = row + 1) {
@@ -84,13 +81,11 @@ export function boxesKey(row: number) {
   return `boxes:${row}`
 }
 export const BANDS_KEY = 'bands'
-/** the clicked group's outline over the gutter `key` draws */
 export function outlineKey(key: string) {
   return `${key}:outline`
 }
 
-// at the widest either lane draws it, which a transition can make wider than
-// it was packed
+// magnified, since a transition can draw a span wider than it was packed
 function wideEnough(s1: Span, s2: Span, upper: Lane, lower: Lane) {
   return (
     Math.max(
@@ -131,11 +126,8 @@ function* lanePairs(lanes: Lane[], glyphHeight: number) {
 }
 
 /**
- * Ribbon corners the way the synteny passes read them: `bp1`→`bp4` is one
- * edge and `bp2`→`bp3` the other, so the two spans are ORDERED pairs joined
- * end to end. A reverse-strand placement hands its lower span reversed and
- * the parallelogram comes out crossed, which is the whole of drawing an
- * inversion.
+ * `bp1`→`bp4` is one edge and `bp2`→`bp3` the other, so a reversed span draws
+ * the crossed parallelogram of an inversion.
  */
 class RibbonBuilder {
   bp1: number[] = []
@@ -146,7 +138,6 @@ class RibbonBuilder {
   featureIdx: number[] = []
   lengths: number[] = []
   colors: number[] = []
-  /** by instance, the record it draws where that is not its group's `feature` */
   records = new Map<number, Feature>()
 
   get count() {
@@ -185,14 +176,8 @@ class RibbonBuilder {
 }
 
 /**
- * A ribbon's color from what it joins. `strand` is the two runs' strands
- * against the anchor multiplied out — the record's strand, as the synteny
- * view means it — and not the drawn twist: a lane whose every placement is
- * inverted is drawn flipped, so its ribbons run straight while every one of
- * them is an inversion. A measurement or a numeric column paints the synteny
- * view's ramp and a text column one color per label, and a pair carrying no
- * number the no-value grey every ramp paints one in. Every mode keeps the slot
- * color's alpha; an unlabelled pair the reader hid draws at none.
+ * `strand` colors by the record's strand against the anchor, not the drawn
+ * twist, since a flipped lane draws its inversions straight.
  */
 function ribbonColorer(
   field: string,
@@ -253,15 +238,11 @@ function ribbonColorer(
 export interface RibbonGeometry {
   cells: Map<string, MultiWayCell>
   layers: RibbonLayer[]
-  /** what a ribbon opens and names; a ribbon's `instanceFeatureIdx` indexes it */
+  /** indexed by a ribbon's `instanceFeatureIdx` */
   targets: RibbonTarget[]
-  /** the target every ribbon of a group shares, so one hover lights the group in every gutter */
   groupTarget: Map<string, number>
   linkTarget: Map<string, number>
-  /**
-   * by gutter key and instance, the record a ribbon draws where that is not
-   * its group's `feature`, which a click opens in place of the target's
-   */
+  /** by gutter key and instance, the record a click opens over the target's */
   records: Map<string, ReadonlyMap<number, Feature>>
 }
 
@@ -292,21 +273,7 @@ export function mismatchColor(field: string) {
   return cssColorToABGR(cigarColors.X)
 }
 
-/**
- * A record's ribbon drawn off its own alignment: one tile per matched stretch,
- * walked in each lane's own bp and merged below a px of either the way the
- * synteny view merges them, so an insertion or deletion is the gap between two
- * tiles, as the synteny view's Transparent indels draws it. Each mismatch joins
- * its base on one lane to its base on the other, fading with its width so a
- * difference you cannot yet read fades out rather than inking a whole pixel.
- * Mismatches sharing a pixel on both lanes join into one mark AS LONG AS THEIR
- * MISMATCHED BASES: an HPRC pair states about one mismatch per kb over a record
- * tens of Mb long, and marking each separately spends an instance to paint a
- * pixel that already has one.
- *
- * False where the record carries no alignment to walk, which leaves the caller
- * the whole ribbon to draw.
- */
+/** False where the record carries no alignment, so the caller draws the ribbon. */
 function addAlignmentDetail(
   builder: RibbonBuilder,
   feature: Feature,
@@ -409,13 +376,6 @@ function addAlignmentDetail(
   return false
 }
 
-/**
- * The ortholog ribbons between each adjacent lane pair, one per pair of runs
- * both lanes place, and from the second gutter down the alignment records an
- * alignment source fetched for that pair, or composed for it through the
- * anchor. A record carrying its own ops draws them; one that carries none
- * draws the ribbon alone.
- */
 export function buildRibbonGeometry({
   stack,
   anchorOps = new Map(),
@@ -433,16 +393,10 @@ export function buildRibbonGeometry({
   laneLinks: ReadonlyMap<string, LaneLinks> | undefined
   ribbonColor: string
   ribbonColorField?: string
-  /** what the ramp and label modes paint from; see the model's `ribbonAttributeRanges` */
   attributeRanges?: Record<string, AttributeRange>
   hideUnlabelled?: boolean
-  /** the ramp `ribbonColor` declares */
   ramp?: DeclaredRamp
   drawCurves: boolean
-  /**
-   * join a group across a lane that does not place it, to the next lane down
-   * that does; off, the chain breaks at every lane the group is missing from
-   */
   bridgeSkippedLanes: boolean
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
@@ -461,10 +415,6 @@ export function buildRibbonGeometry({
   const groupTarget = new Map<string, number>()
   const linkTarget = new Map<string, number>()
   const records = new Map<string, ReadonlyMap<number, Feature>>()
-  // One target per group, shared by every gutter — which is what lets one
-  // hover light the whole chain, and also what stops the label naming a lane
-  // PAIR. It names the group by the gene name its source gives, never by a key
-  // minted from a row number or a feature id, and by where the anchor puts it
   const anchor = lanes[0]
   const targetOfGroup = (key: string, group: MultiWayGroup) => {
     let idx = groupTarget.get(key)
@@ -500,14 +450,11 @@ export function buildRibbonGeometry({
         builder = bridges.get(toRow) ?? new RibbonBuilder()
         bridges.set(toRow, builder)
       }
-      // the anchor gutter's groups are the anchor's own records, each against
-      // one lane, so the first gutter carries each record's alignment too
       const direct =
         upper.isAnchor &&
         !bridged &&
         spans.length === 1 &&
         far.spans.length === 1
-      // a gutter draws the record that placed its lower lane
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
           if (wideEnough(s1, s2, upper, farLane)) {
@@ -645,12 +592,6 @@ export interface TickGeometry {
   layers: RibbonLayer[]
 }
 
-/**
- * Each lane's own ticks at one shared bp interval, over the stretch its
- * baseline draws, as the synteny passes' zero-width location markers: a
- * marker's two corners coincide per axis, so it draws as a 1px vertical line
- * at its packed alpha, hover and all.
- */
 export function buildTickGeometry({
   stack,
   tickIntervalBp,
@@ -768,15 +709,8 @@ class GlyphBuilder {
 }
 
 /**
- * An opaque band per mate lane, tiling everything below the anchor so the
- * view's gridlines — true only at the anchor's scale — stop where the anchor
- * does. Where `page`, the ground the track sits on, is not the band's, the
- * whole stack sits on one sheet of the band ground laid first: the anchor lane
- * too, which on a page of the band ground keeps the gridlines instead, and in
- * one piece, since the page showed through the bands' fractional edges as a
- * seam. Unscrolled: a band is chrome pinned to the track. Built off the lane
- * geometry alone, so a pan, a zoom or a settle that moves every other cell
- * leaves this one's identity, and its upload, where it was.
+ * Reads the lane geometry alone, so a pan, zoom or settle keeps this cell's
+ * identity and its upload.
  */
 export function buildBandCell({
   bands,
@@ -811,9 +745,7 @@ export function buildBandCell({
 }
 
 export interface LaneGlyphColors {
-  /** the lane's own genes */
   genes: GeneColors
-  /** the placement boxes, off the groups' own records */
   boxes: GeneColors
   stroke: string
   divider: string
@@ -825,8 +757,6 @@ function onCanvas(span: Span, [left, right]: Span) {
   )
 }
 
-// the anchor lane's half screen either side, and a mate lane's frame reach,
-// which a transition widens to every frame it moves between
 function laneReachPx(lane: Lane, width: number): Span {
   return lane.frame
     ? frameReachPx(lane.frame, width)
@@ -843,7 +773,6 @@ export interface LaneCells {
 interface DrawnGene {
   gene: LaneGene
   span: Span
-  /** the group the gene carries, which `cluster` paints it by */
   cluster?: string
 }
 
@@ -855,14 +784,8 @@ interface LaneBox {
 }
 
 /**
- * Which placements a lane's drawn genes stand in for. A placement one of them
- * overlaps is that gene's, the widest overlap where several do; a named
- * placement no gene overlaps is a box, since it names a gene the lane's
- * annotation lacks, while an alignment record no gene overlaps draws nothing. A gene claimed twice — a tandem array, a clipped
- * edge — carries the widest claim, the group it is mostly made of.
- *
- * In bp on the lane's own sequence, so a gene straddling the edge claims the
- * same group whatever the frame clips off it.
+ * Claims in the lane's own bp, so a gene straddling the edge claims one group
+ * whatever the frame clips off it.
  */
 function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
   const onRef = new Map<string, { spans: Span[]; drawn: DrawnGene[] }>()
@@ -906,10 +829,8 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
 }
 
 /**
- * Where a gene sits on its lane: the whole glyph row, or with the strands split
- * the half above the line for one reading rightwards on screen and the half
- * below for one reading leftwards, as gggenomes' `position_strand` stacks them.
- * A strandless gene takes the upper row.
+ * With strands split, a gene reading rightwards on screen takes the upper half
+ * and one reading leftwards the lower; a strandless gene takes the upper.
  */
 function geneRow(lane: Lane, glyphHeight: number, pxDir: number) {
   if (lane.strandRows === undefined) {
@@ -926,17 +847,8 @@ function geneRow(lane: Lane, glyphHeight: number, pxDir: number) {
 }
 
 /**
- * What one lane draws on its baseline: its gene models where it has an
- * annotation, and the table's own placement box, outlined rather than filled,
- * where it does not — per GROUP, since a table pairing genes the lane's GFF3
- * does not name is the ordinary case. Culled to half a screen either side of
- * what the lane shows, which is as far as a pan can carry the stack before it
- * re-lays out.
- *
- * TWO cells, because `outlineColor` is a per-cell uniform the rect pass applies
- * to every rect it holds: the boxes take the lane's stroke as their border,
- * so a box is distinguishable from a washed-out gene, and a
- * gene takes none, the feature track's own default.
+ * Two cells, because `outlineColor` is a per-cell uniform: the boxes take the
+ * lane's stroke and the genes none.
  */
 export function buildLaneCells({
   lane,
@@ -946,7 +858,6 @@ export function buildLaneCells({
   colors,
 }: {
   lane: Lane
-  /** the lane's own gene models, none until its fetch lands */
   genes: LaneGene[]
   glyphHeight: number
   width: number
@@ -955,9 +866,7 @@ export function buildLaneCells({
   const glyphs = new GlyphBuilder()
   const boxes = new GlyphBuilder()
   const y = lane.glyphTop
-  // rect takes the box top, line and arrow take its centre — the feature
-  // track's own split, stated at featureGlyphShapes.ts's `centeredRowVisible`
-  // and in line.slang/arrow.slang's `snapBoxCenterY`
+  // rect takes the box top, line and arrow its centre, as in the feature track
   const centerY = y + glyphHeight / 2
   const stroke = cssColorToABGR(colors.stroke)
   const reach = laneReachPx(lane, width)
@@ -1007,9 +916,7 @@ export function buildLaneCells({
     for (const [x1, x2] of full) {
       glyphs.rect(x1, x2, row.top, row.height, fill.packed)
     }
-    // no width gate here: the passes cull an arrow narrower than
-    // ARROW_MIN_FEATURE_WIDTH_PX themselves, in px, and these cells are packed
-    // at one px per bp so that gate reads the drawn width directly
+    // the passes cull an arrow below ARROW_MIN_FEATURE_WIDTH_PX themselves
     if (pxDir !== 0) {
       glyphs.arrow(
         pxDir === 1 ? right : left,
@@ -1079,7 +986,7 @@ export function buildLaneCells({
   return { glyphs: glyphs.build(), boxes: boxes.build(), boxNames, geneGroups }
 }
 
-/** the glyph hit under a render-origin px point, topmost first: boxes draw over genes */
+/** render-origin px; boxes draw over genes, so the topmost hit wins */
 export function glyphHitAt(hits: GlyphHit[], x: number, y: number) {
   for (let i = hits.length - 1; i >= 0; i--) {
     const h = hits[i]!

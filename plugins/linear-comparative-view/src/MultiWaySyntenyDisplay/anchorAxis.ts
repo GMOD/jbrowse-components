@@ -5,29 +5,16 @@ import type { Span } from './layoutMultiWay.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface AxisPlacement {
-  /** the view's px for the clipped interval's ends, before the scroll offset, in the interval's own order */
+  /**
+   * view px of the clipped ends before the scroll offset, in the interval's
+   * own order
+   */
   x1: number
   x2: number
-  /** the clipped interval's centre, which a lane decision pins to */
   centre: AnchorCoord
 }
 
-/**
- * One anchor-assembly bp interval on the view's own axis: the px of its ends
- * in the interval's OWN order — start end first, so a horizontally flipped
- * view hands the ribbons the crossed pair it is drawing — and the centre of
- * what the axis shows of it. The anchor lane's counterpart to `frameSpan`,
- * and the same clipping rule.
- *
- * CLIPPED to the displayed regions, not tested against them. `bpToPx` answers
- * only for a coord INSIDE a region, so an interval straddling a region edge
- * loses BOTH its ends and the caller drops the whole thing: the group's ribbon
- * to the lane below goes missing along with its seed for the lane alignment,
- * while the mate lanes underneath still draw the group, and a gene straddling
- * the edge draws neither half. That is `frameSpan`'s rule on the lane side and
- * `getLayoutHighlightCoords`'s for a bookmark; the anchor axis was the one that
- * still tested.
- */
+/** Clips to the displayed regions, since `bpToPx` answers only inside one. */
 export function axisPlacement(
   view: LinearGenomeViewModel,
   refName: string,
@@ -49,7 +36,7 @@ export function axisPlacement(
       }
 }
 
-/** the same interval as a px pair relative to `originPx`: what a lane's `spanOf` answers */
+/** px relative to `originPx`, as a lane's `spanOf` answers */
 export function axisSpan(
   view: LinearGenomeViewModel,
   refName: string,
@@ -61,10 +48,6 @@ export function axisSpan(
   return placement && [placement.x1 - originPx, placement.x2 - originPx]
 }
 
-/**
- * `axisSpan` of every whole displayed region, in one walk: asked region by
- * region, each call rescans the regions before it
- */
 export function displayedRegionSpans(
   view: LinearGenomeViewModel,
   originPx = view.offsetPx,

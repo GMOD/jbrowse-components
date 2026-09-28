@@ -8,26 +8,12 @@ import type { ResolvedPanel } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { LaneDecision } from './laneDecision.ts'
 import type { MultiWayGroup } from './layoutMultiWay.ts'
 
-// what a lane's decision says about where it is: its contig, the extent the
-// settle fitted to its placements, and whether it runs against the anchor
 export type LanePlacementDecision = Pick<
   LaneDecision,
   'refName' | 'fitMin' | 'fitMax' | 'flipped'
 >
 
-/**
- * The panels a launch from the multiway display opens on: one per lane the
- * stack draws, in the stack's own order, each framed on what that lane
- * places of `region` on the contig its decision chose — the same answer the
- * discovery RPC gives from the dataset, read off the lanes instead. So the
- * launch keeps the lanes the reader picked and ordered, and on a graph
- * source it is not a second fetch over every haplotype the window places.
- *
- * A lane whose placements fall outside its fitted extent (the outlier rule)
- * contributes those placements to nothing, as the lane draws them nowhere;
- * a lane the settle has not framed has no panel yet. A lane the track
- * declares no assembly for is reported rather than dropped, as the RPC does.
- */
+/** One panel per framed lane, in stack order, read off the lanes. */
 export function lanePanelsForRegion({
   groups,
   rowAssemblies,

@@ -21,28 +21,17 @@ const LABEL_HEIGHT = 12
 const MIN_GLYPH_PX = 5
 const MAX_GLYPH_PX = 18
 export const STRAND_GAP_PX = 2
-// two strand rows of a compact feature track's gene height: doubling the
-// unsplit cap instead took the gutters' height and flattened every ribbon
+// two strand rows of a compact feature track's gene height
 const MAX_SPLIT_GLYPH_PX = 2 * 10 + STRAND_GAP_PX
 const MIN_SPLIT_GLYPH_PX = 2 * MIN_GLYPH_PX + STRAND_GAP_PX
 
-// A lane pitch below this is an unreadable crush, so the stack stops dividing
-// the track height and lays out at this fixed pitch instead, scrolling inside
-// the viewport. The demo build scripts size a stack from it and the
-// gene-name row.
+// the pitch floor: below it the stack scrolls instead of dividing the height
 export const MIN_LANE_PITCH = 22
 
-/** the row under a lane's glyphs its gene names take, 0 with names off */
 export function geneLabelRowPx(showGeneLabels: boolean) {
   return showGeneLabels ? GENE_LABEL_FONT_PX + 2 * GENE_LABEL_GAP_PX : 0
 }
 
-/**
- * The stack's full drawn height: the track `height` while every lane keeps at
- * least MIN_LANE_PITCH of it, fixed-pitch — and taller than the track — below
- * that. A FLOOR, not a re-layout: at or above the floor the layout is exactly
- * the divide-the-height one.
- */
 export function laneContentHeight(
   height: number,
   rowCount: number,
@@ -55,7 +44,6 @@ export function laneContentHeight(
 export interface LaneBand {
   glyphTop: number
   bandTop: number
-  /** the top of the layer bands, between the header and the glyphs */
   layerTop: number
   bandStart: number
   bandEnd: number
@@ -64,19 +52,12 @@ export interface LaneBand {
 export interface LaneGeometry {
   glyphHeight: number
   bandHeight: number
-  /** `laneContentHeight` — what the rows tile and a scroll can reach */
   contentHeight: number
-  /** whether the genes draw in two strand rows: asked for, and room for both */
   strandRows: boolean
   rows: LaneBand[]
 }
 
-// Where each lane's header, layer bands, glyphs and opaque band sit in a stack
-// `laneContentHeight(height, rowCount)` px tall. The bands TILE — a lane owns
-// half the gutter on each side — so the view's gridlines, true on the anchor
-// lane and a lie on every other one, are covered everywhere below the anchor
-// rather than standing in the gaps. A lane too short for two strand rows of
-// `MIN_GLYPH_PX` draws one, which is every lane of a stack at the pitch floor
+// The bands tile, each lane owning half the gutter either side.
 export function laneGeometry(
   height: number,
   rowCount: number,
@@ -125,101 +106,39 @@ export function laneGeometry(
   }
 }
 
-/**
- * One lane of the stack, and the display's central noun: every layer the
- * picture is made of — bands, ticks, ribbons, glyphs, boxes, headers, the hover
- * outline — is a walk over these.
- *
- * It carries the two FUNCTIONS a lane answers with as well as its data,
- * because the answers differ by lane kind and every caller that re-derived
- * which kind it was had a chance to get it wrong: the anchor lane maps bp
- * through the view's own piecewise axis and calls a sequence whatever its
- * assembly does, a mate lane maps through its own affine frame and may be
- * looking at a genome the session does not hold at all.
- */
 export interface Lane {
   assemblyName: string
-  /** what the reader calls the lane: see the model's `laneLabel` */
   label: string
-  /** the top lane, drawn on the view's own axis rather than a frame of its own */
   isAnchor: boolean
-  /**
-   * undefined on the anchor lane, and on a mate lane the visible groups place
-   * nothing on
-   */
+  /** undefined on the anchor lane and on a lane placing nothing visible */
   frame: RowFrame | undefined
-  /**
-   * whether the SESSION holds an annotation track for this lane — a different
-   * question from whether the lane's gene fetch answered anything, which this
-   * window can answer no to over a gene desert. The genes themselves are not
-   * on the lane: only the glyph cells read them, and a stack that carried them
-   * gave the ribbons and ticks a new identity on every gene commit
-   */
+  /** the session holds an annotation track for the lane, whatever it fetched */
   hasAnnotation: boolean
-  /**
-   * The groups this lane places, keyed by group key and in the groups' own
-   * anchor-sorted order — each with the px spans it draws them at, one per run
-   * of placements the lane shows.
-   *
-   * The group rides along with its spans because every layer needs both and
-   * joining two structures was the layers' job before: the boxes want the
-   * feature to color and open, the ribbons want the same feature for the click
-   * and the far lane's spans by key, and a lane that answered only in spans
-   * could disagree with the group list it was built from.
-   */
+  /** keyed by group key, in the groups' anchor-sorted order */
   placements: Map<string, LaneGroup>
-  /**
-   * One of this lane's own bp intervals in px, or `undefined` for an interval
-   * the lane does not reach.
-   *
-   * Both kinds CLIP rather than test — see `axisSpan` and `frameSpan` — so a
-   * feature straddling the edge draws the half the lane can place instead of
-   * vanishing whole.
-   */
+  /** a bp interval of this lane in px, clipped, or undefined where it misses */
   spanOf: (refName: string, start: number, end: number) => Span | undefined
-  /** the bp one px of this lane covers */
   bpPerPx: number
-  /**
-   * What this lane calls a sequence. A placement carries whatever refName the
-   * table's BED used, a gene whatever that assembly's GFF3 used, and for a
-   * genome whose annotation names sequences by INSDC accession those are
-   * `CM028642.2` and `3L`. The assembly's own alias table closes that; raw
-   * `===` between two file spellings drops every gene.
-   */
+  /** the canonical refName; compare a BED and a GFF3 spelling through it */
   canon: (refName: string) => string
-  /**
-   * the px the baseline draws over, a screen either side at most: the
-   * displayed regions on the anchor lane, the contig on a mate lane, and all
-   * of it where a mate lane cannot say where its contig ends
-   */
+  /** px the baseline draws over, a screen either side at most */
   baseline: Span[]
   glyphTop: number
   bandTop: number
   layerTop: number
   bandStart: number
   bandEnd: number
-  /**
-   * one gene row where undefined; two either side of the line otherwise, and
-   * the sign that turns the way a gene reads in its cells into its row: -1
-   * while a flip is short of halfway, since the cells are packed in the frame
-   * the lane is flipping to
-   */
+  /** two gene rows when set; -1 while a flip is short of halfway */
   strandRows?: 1 | -1
 }
 
 export interface LaneGroup {
   group: MultiWayGroup
   spans: Span[]
-  /**
-   * per span, how that run reads against the ANCHOR: 1 on the anchor lane,
-   * and on a mate lane the run's length-weighted strand vote. Kept beside the
-   * span rather than re-derived from its px order, because a lane drawn
-   * flipped has already straightened the span of an inverted run
-   */
+  /** per span, the run's strand against the anchor, which px order hides */
   orientations: number[]
-  /** per span, the bp interval of the lane's own sequence it draws, unclipped */
+  /** per span, the unclipped bp interval of the lane's own sequence */
   intervals: MultiWayPlacement[]
-  /** per span, the record placing it: the group's own on the anchor lane */
   features: Feature[]
 }
 
@@ -233,35 +152,26 @@ export interface BuildLanesOpts {
   /** the anchor assembly first, then the mate lanes in the order they draw */
   assemblyNames: string[]
   groups: MultiWayGroup[]
-  /** where the anchor lane draws each group, off the view's own `bpToPx` */
+  /** px, off the view's own `bpToPx` */
   anchorSpans: Map<string, Span>
   rowFrames: Map<string, RowFrame | undefined>
   laneGeneAdapters: Map<string, unknown>
-  /** an interval on the anchor lane's axis, clipped — `axisSpan` bound to the view */
   axisSpanOf: (refName: string, start: number, end: number) => Span | undefined
-  /** each displayed region on the anchor lane's axis — `displayedRegionSpans` bound to the view */
   anchorRegionSpans: Span[]
   anchorBpPerPx: number
-  /**
-   * a lane's contig by canonical refName, or undefined where the session does
-   * not hold the lane's genome or has not loaded it
-   */
+  /** takes a canonical refName */
   contigOf: (
     assemblyName: string,
     refName: string,
   ) => { start: number; end: number } | undefined
-  /** the session's assembly under a lane's name, for the refName alias table */
   refNameAliasOf: (
     assemblyName: string,
   ) => ((refName: string) => string) | undefined
   width: number
   height: number
   splitStrands?: boolean
-  /** `geneLabelRowPx` — the row under each lane's glyphs its names take */
   geneLabelPx?: number
-  /** the layer bands' total height, between each lane's header and glyphs */
   layerPx?: number
-  /** the moving lanes past their midpoint, which draw their new rows */
   pastHalfway?: ReadonlySet<string>
   labelOf?: (assemblyName: string) => string
 }
@@ -272,17 +182,6 @@ function clipSpan([a, b]: Span, [lo, hi]: Span): Span[] {
   return left < right ? [[left, right]] : []
 }
 
-/**
- * The whole stack, resolved once: the lane records plus the geometry every
- * layer places against.
- *
- * Pure, and on the model rather than in the component, for the reason the
- * tests found the hard way — `layoutMultiWay.test.ts` covers the PIECES (the
- * frames, the runs, the spans, the band tiling) exhaustively, and every defect
- * this display has shipped was in the ASSEMBLY of those pieces into a lane.
- * A stack the component built inside its own render had nowhere for a test to
- * stand.
- */
 export function buildLanes({
   assemblyNames,
   groups,
@@ -317,8 +216,6 @@ export function buildLanes({
       const isAnchor = row === 0
       const frame = isAnchor ? undefined : rowFrames.get(assemblyName)
       const alias = refNameAliasOf(assemblyName)
-      // asked once per exon interval of every gene, and the alias table is a
-      // live assembly read — a lane's genes name one or two sequences
       const canonical = new Map<string, string>()
       const canon = (refName: string) => {
         let name = canonical.get(refName)
@@ -329,7 +226,6 @@ export function buildLanes({
         return name
       }
       const frameRefName = frame && canon(frame.refName)
-      // a moving lane reaches every frame it moves between
       const framed = frame && frameReachPx(frame, width)
       const clip: Span = framed
         ? [Math.min(reach[0], framed[0]), Math.max(reach[1], framed[1])]

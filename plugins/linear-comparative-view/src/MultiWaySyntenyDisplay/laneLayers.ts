@@ -10,18 +10,9 @@ import type { BarChannels } from '@jbrowse/render-core/marks'
 
 export const LANE_LAYER_GAP_PX = 2
 
-/**
- * The widest region a lane reads a template through its own genome's
- * sequence for: 1.25 MB of 2bit, so a nine-lane star at the cap reads about
- * what its nine gc5Base bigWigs do at TP53
- */
+// 1.25 MB of 2bit, about what a nine-lane star's gc5Base bigWigs read at TP53
 export const LANE_TEMPLATE_MAX_BP = 5_000_000
 
-/**
- * what one lane reads a layer from: a track's adapter, or the layer's
- * template read through the lane's own genome. `source` names it in a
- * fetch key
- */
 export interface LaneLayerSource {
   source: string
   adapterConfig: Record<string, unknown>
@@ -57,10 +48,6 @@ export function layerBandTops(layerTop: number, heights: readonly number[]) {
   return tops
 }
 
-/**
- * The zoom a lane's layer is read at, snapped to a power of two so a window
- * resize inside one refetches nothing
- */
 export function laneLayerBpPerPx(bpPerPx: number) {
   return 2 ** Math.round(Math.log2(Math.max(bpPerPx, 1e-3)))
 }
@@ -73,11 +60,6 @@ export function laneLayerSpecLane(
   return `${assemblyName}\u0000${layer}\u0000${region}`
 }
 
-/**
- * A payload's bars with every value outside `domain` squished to the end it
- * passed, so a bar the shared scale cannot hold stands full height rather than
- * wearing the clip strip: the domain is clipped by design here, not by a reader
- */
 export function barChannelsOf(
   channels: EncodedChannels,
   [lo, hi]: [number, number],
@@ -102,7 +84,7 @@ const barCells = new WeakMap<
   { lo: number; hi: number; cell: MultiWayCell | undefined }
 >()
 
-/** `barChannelsOf` as a cell, one per payload and domain, so a settle re-uploads nothing */
+/** one cell per payload and domain, so a settle re-uploads nothing */
 export function barCellOf(channels: EncodedChannels, domain: [number, number]) {
   const [lo, hi] = domain
   const held = barCells.get(channels)
@@ -117,12 +99,7 @@ export function barCellOf(channels: EncodedChannels, domain: [number, number]) {
 
 export const LANE_LAYER_DOMAIN_QUANTILE = 0.99
 
-/**
- * Each layer's value domain, one per layer and shared by every lane: what
- * every lane holds, each end clipped at the 99th percentile of its side, so a
- * genome reads against the others and no one lane's outliers set the scale.
- * Undefined for a layer holding no values yet
- */
+/** one per layer, shared by every lane; undefined for a layer with no values */
 export function laneLayerDomains(
   held: Iterable<HeldLaneLayer>,
   layerCount: number,
@@ -151,15 +128,13 @@ export function laneLayerDomains(
   })
 }
 
-/** where a bar grows from inside a domain: zero where the domain spans it, else its nearer end */
 export function laneLayerOrigin([min, max]: [number, number]) {
   return Math.min(Math.max(0, min), max)
 }
 
 /**
- * A layer payload's block, from its region's two ends in stack px through the
- * lane's map and the drag. Sorted, since a mirrored lane hands the ends
- * crossed, and a block's screen span must run left to right
+ * Stack px through the lane's map and the drag, sorted since a mirrored lane
+ * hands the ends crossed.
  */
 export function laneLayerBlockSpan(
   px: readonly [number, number],

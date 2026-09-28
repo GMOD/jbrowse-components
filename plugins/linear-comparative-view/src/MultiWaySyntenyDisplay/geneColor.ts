@@ -13,17 +13,13 @@ import type {
   FieldColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-/**
- * The structural field of the gene colour: a gene takes the ortholog group
- * it carries, and a placement box its own group, so one group is one colour
- * down the stack.
- */
+/** paints each gene and box by its ortholog group, one colour down the stack */
 export const CLUSTER_FIELD = 'cluster'
 
 export interface PaintedFill {
   css: string
   packed: number
-  /** the value a painting field filed the mark under; unset while `value` paints */
+  /** the value a painting field filed the mark under, unset under `value` */
   key?: string
 }
 
@@ -32,12 +28,7 @@ export interface GeneColorSettings {
   utrColor: unknown
 }
 
-/**
- * The fills one set of features paints, each resolved once for the object's
- * lifetime: a `jexl:` slot runs once per feature, and a field's colour once
- * per value. `cluster` is the claim the caller made, which only the cluster
- * field reads.
- */
+/** Resolves a fill once per feature or value. Only `cluster` fields read `cluster`. */
 export interface GeneColors {
   fill: (feature: Feature, cluster: string | undefined) => PaintedFill
   utr: (feature: Feature) => number
@@ -52,10 +43,7 @@ function memo<K, V>(map: Map<K, V>, key: K, make: () => V) {
   return value
 }
 
-/**
- * `encoding` is the gene `color` as it paints (`geneColorEncoding` on the
- * display), and `utrColor` the slot as written.
- */
+/** `encoding` is `geneColorEncoding`; `utrColor` is the slot as written. */
 export function geneColors(
   conf: MultiWaySyntenyDisplayConfig,
   encoding: string | undefined | FieldColorEncoding,

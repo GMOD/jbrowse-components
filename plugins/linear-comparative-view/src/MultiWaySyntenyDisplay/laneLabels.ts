@@ -24,7 +24,6 @@ export interface PlacedLaneLabel {
   left: number
   top: number
   width: number
-  /** the lane's row, whose `LaneMap` a moving lane's names ride */
   row: number
 }
 
@@ -81,11 +80,6 @@ function drawnNames(
   return out.sort((a, b) => a.left - b.left)
 }
 
-/**
- * Each lane's gene and placement-box names under its glyphs, decimated as the
- * feature track decimates (`keepFeatureLabel`, then `cullOverlappingLabels`).
- * A pinned group's names skip the room test and are placed first.
- */
 export function placeLaneLabels({
   lanes,
   genesOf,

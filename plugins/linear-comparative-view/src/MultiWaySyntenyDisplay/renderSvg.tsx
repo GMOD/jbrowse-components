@@ -16,11 +16,7 @@ import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
-// the lazy boundary for the export path: the model's renderSvg reaches this
-// through one import(). The paint layer runs the same Canvas2D draw the
-// fallback backend runs, over the same cells and render state — less the
-// hover and the click, which are the pointer's and not the figure's, and any
-// lane still moving, which the figure draws settled
+// the export path's lazy boundary: the model reaches this through one import()
 export async function renderMultiWaySvg(
   model: MultiWaySyntenyDisplayModel,
   opts?: ExportSvgDisplayOptions,

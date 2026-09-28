@@ -22,8 +22,6 @@ import type {
 } from './multiwayRenderTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// The gutter a layer draws ribbons into: its own, for a ribbon layer, and the
-// one it traces for an outline layer.
 function ribbonLayerOf(layer: MultiWayLayer | undefined) {
   return layer?.kind === 'outline'
     ? layer.ribbon
@@ -32,18 +30,7 @@ function ribbonLayerOf(layer: MultiWayLayer | undefined) {
       : undefined
 }
 
-/**
- * The stack as one mark list over one cell union: the synteny ribbons for the
- * gutters and the feature track's glyph marks for the lanes. A region key holds
- * a ribbon cell, an outline cell or a lane's glyph buffers, never two of them,
- * and each mark's `channels` lens is what says which — so the kind test is
- * stated once per mark rather than once per backend.
- *
- * A lane's gene glyphs are drawn under the stack's own axis: positions are px
- * rather than bp, so the block a layer draws over is `glyphBlockRange`, one px
- * per "bp" for a settled lane. No continuation markers — a lane is one
- * unclipped band.
- */
+/** Glyph positions are px, not bp, so a lane's block is `glyphBlockRange`. */
 export const MULTIWAY_MARKS = [
   ...syntenyRibbonMarks<MultiWayCell, MultiWayRenderState>({
     ribbons: cell => (cell.kind === 'ribbons' ? cell.data : undefined),
@@ -90,12 +77,7 @@ export const MULTIWAY_MARKS = [
   }),
 ]
 
-/**
- * One layer's block. A lane's glyphs read their x off the block's own range, so
- * theirs carries the layer transform; a gutter's ribbons read theirs off the
- * payload through `panPx`, so theirs is the canvas-wide identity every synteny
- * block is.
- */
+/** Glyphs read x off the block's range; ribbons read theirs through `panPx`. */
 function multiwayBlock(
   key: number,
   layer: MultiWayLayer,

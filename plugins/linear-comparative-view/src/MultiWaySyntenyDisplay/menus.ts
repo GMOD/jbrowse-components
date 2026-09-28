@@ -84,14 +84,6 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setLanesFrozen: (flag: boolean) => void
 }
 
-/**
- * The menu a lane's header raises, and the same menu under that lane in the
- * track menu's Lanes submenu. A mate lane offers its moves, its assembly in a
- * view of its own at the frame the lane draws, the track re-anchored on it, the
- * other contigs the anchor window touches there, and a flip. The hops are dead
- * while the lane places nothing or the session does not hold the genome, and a
- * source aligned to one anchor offers no re-anchor.
- */
 export function laneHeaderMenuItems(
   model: LaneHeaderModel,
   lane: HeaderLane,
@@ -341,10 +333,6 @@ function laneSelectionMenuItems(model: MultiWayMenuModel): MenuItem[] {
   ]
 }
 
-/**
- * Which lanes the stack draws and in what order, then each lane's own header
- * menu, the way the synteny view's Rows submenu lists each row's menu
- */
 export function lanesMenuItem(model: MultiWayMenuModel) {
   const subMenu: MenuItem[] = [
     ...laneSelectionMenuItems(model),

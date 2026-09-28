@@ -18,13 +18,8 @@ export interface AnchorCoord {
 }
 
 /**
- * What a settle decides about one mate lane, and nothing that a pan or a zoom
- * changes. The frame the lane draws in is derived from this against the live
- * view: `pivotLaneBp` sits wherever the view draws `pivotAnchor`, at `rung`
- * times the view's bp-per-pixel, so the lane translates and scales with the
- * anchor between decisions and its ribbons stay rigid. `flipped` is against
- * the anchor's ORDER, so a horizontally flipped view mirrors the lane with it
- * and decides nothing.
+ * Holds nothing a pan or zoom changes. `flipped` is against the anchor's
+ * order, not the screen.
  */
 export interface LaneDecision {
   refName: string
@@ -35,42 +30,25 @@ export interface LaneDecision {
   fitMin: number
   fitMax: number
   alsoOn: string[]
-  /** how many further contigs cleared the share and were dropped by the cap */
   alsoOnMore: number
-  /**
-   * the contig was the reader's pin rather than the vote's, so once the pin
-   * is gone it is not an incumbent and the lane decides fresh
-   */
+  /** the reader's pin chose the contig, so it is no incumbent once unpinned */
   pinned: boolean
-  /** the same for the orientation, from a `LaneFlipPin` */
   orientationPinned: boolean
 }
 
-/**
- * the orientation the reader pinned a lane to, against the anchor's order the
- * way `LaneDecision.flipped` is, holding while the lane draws `refName`
- */
+/** `flipped` is against the anchor's order, as `LaneDecision.flipped` is */
 export interface LaneFlipPin {
   refName: string
   flipped: boolean
 }
 
-/**
- * The decisions the reader froze the lanes at, against `anchor`'s coordinates.
- * A frozen lane keeps its map from the anchor's bp to its own, so it pans and
- * zooms with the anchor and never re-chooses its contig, orientation, rung or
- * offset
- */
+/** decisions in `anchor`'s coordinates */
 export interface FrozenLanes {
   anchor: string
   decisions: Record<string, LaneDecision>
 }
 
-/**
- * `d` with its content moved `dxPx` screen px right, at the lane's bp per px
- * `bpPerPx`. The pivot's anchor coordinate stays put and the lane's bp under it
- * moves, the other way on a lane drawn mirrored
- */
+/** Moves `d`'s content `dxPx` screen px right; its pivot anchor stays put. */
 export function nudgeDecision(
   d: LaneDecision,
   dxPx: number,
@@ -84,56 +62,26 @@ export function nudgeDecision(
   }
 }
 
-// The scales a lane's frame is allowed to sit at, as multiples of the anchor's
-// visible span. Fitting a lane exactly to its placements gives it an arbitrary
-// bp/px that also MOVES: one more ortholog entering the window re-fits the
-// frame, so the lane's content slides under its own ribbons on every pan. The
-// first rung is the "never zoom in past the anchor" clamp.
+// multiples of the anchor's visible span; rung 1 never zooms in past the anchor
 export const SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]
 
-// a lane drops to a lower rung only once its fit leaves this much of that rung
-// unused, so a fit hovering at a rung boundary does not rescale on every step.
-// Floored at 1, the least a need can be, or a lane at 1.5 could never return
-// to 1
+// the share of a lower rung a fit must leave unused before the lane drops to it
 const SHRINK_ROOM = 0.85
 const MIN_SHARED_FOR_ORIENTATION = 3
-// the groups a lane's mirror vote has to be measured over, since three genes
-// all reversed is one small inversion and not a lane reading backwards; the
-// share it needs is the follow's `NEARLY_ALL`
+// three reversed genes is a small inversion, not a lane reading backwards
 const MIN_SHARED_TO_SWITCH = 5
-// a contig explaining at least this share of what the drawn one explains is
-// named beside the lane rather than dropped: a genome holding two homoeologous
-// copies of the anchor window shows one, and the other is the reader's to ask
-// for. Well under the switch margin, so a copy the lane will never choose on
-// its own is still named, and low enough that the far side of a fusion
-// breakpoint is named for most of a window's walk across it while a lone
-// paralog among a dozen genes is not.
+// well under the switch margin, so a copy the lane never picks is still named
 const ALSO_ON_SHARE = 0.2
-// how many of those get named. The share alone is uncapped, and on a fragmented
-// assembly whose window scatters over a dozen scaffolds every one of them
-// clears 20% of every other, so the whole dozen lands in a header the SVG
-// export draws unclipped and in a menu of a dozen "Show X in this lane" offers.
-// Three is what both can carry: a polyploid's other copies are a couple, and
-// past three the list stops naming a second copy and becomes a scaffold dump
-// the reader cannot act on anyway. The rest are counted in the header rather
-// than dropped silently, so the caption never reads as the whole list.
+// a polyploid's other copies are a couple; past three it is a scaffold dump
 const ALSO_ON_MAX = 3
-// a lane keeps its placement while its frame still shows this share of what a
-// fresh alignment would: content that came in with the anchor is drawn where it
-// arrived, and the lane re-aligns only once what it should show has left it.
-// Relative, since a lane aligned on its median can overhang its frame from the
-// start and would otherwise re-decide on every pan
+// relative, since a lane aligned on its median can overhang its frame
 const HOLD_COVERAGE = 0.9
 
 function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
-// A rung covers a fit up to a tenth wider than itself, the overrun falling off
-// the lane's edges the way the anchor window cuts its own neighbours. Rung 1.5
-// leaves a third of the lane blank, too much to pay for the few percent more
-// sequence a mammal's liftOver places over a human window (up to 7.5% at
-// TNNT3)
+// a mammal liftOver over a human window runs up to 7.5% wider (TNNT3)
 const RUNG_TOLERANCE = 0.1
 
 const rungCovers = (rung: number, need: number) =>
@@ -179,8 +127,6 @@ function pickContig(
     incumbent !== undefined && evidence.has(incumbent)
       ? { refName: incumbent, overlap: evidence.get(incumbent)! }
       : undefined
-  // a pin is the reader's choice and outranks the vote, for as long as the
-  // window still places anything on it
   const chosen =
     pinned !== undefined && evidence.has(pinned)
       ? { refName: pinned, overlap: evidence.get(pinned)! }
@@ -222,18 +168,10 @@ function fitExtent(
     min = Math.min(min, p.start)
     max = Math.max(max, p.end)
   }
-  // The extent itself, with no margin around it. The frame is a ladder rung
-  // over this and centred on it, so the rounding up is the margin — and a 2%
-  // one, which this carried from when the frame WAS the fitted extent, is
-  // enough on its own to push a lane whose placements cover exactly the
-  // anchor's window onto the next rung up. The 1 bp is so that a lane placing
-  // one point still has an extent to rung and to slide in.
+  // no margin: rounding up to a rung is the margin
   return { lo: Math.max(0, min), hi: Math.max(max, min + 1) }
 }
 
-// which way the lane's placements run against the anchor's order, as the sign
-// sum every lane can answer on its own — the fallback where the vote against
-// the lane above abstains
 function anchorOrderSign(
   groups: MultiWayGroup[],
   assemblyName: string,
@@ -254,14 +192,7 @@ function anchorOrderSign(
   return sum
 }
 
-/**
- * A lane fitted on its own: the contig explaining the most anchor bp, the
- * extent of the placements near their median, the anchor-order orientation,
- * and a ladder rung over the extent, centred on it. `unitBp` of 0 means the
- * caller has no anchor span to scale against and the fitted extent is the
- * frame. What the settle decision starts from, and what a test or a probe
- * asks when it wants the fit without the chain.
- */
+/** `unitBp` of 0 makes the fitted extent the frame. */
 export function computeRowFrame(
   groups: MultiWayGroup[],
   assemblyName: string,
@@ -319,8 +250,6 @@ function fitLane(
   }
 }
 
-// one run of a group on a lane, weighted by its length: a group placed twice
-// is two of these under one key, not one sample over the gap between them
 interface LanePlacement {
   group: MultiWayGroup
   key: string
@@ -351,8 +280,6 @@ function sharedGroupCount(upperX: Map<string, number>, lane: LanePlacement[]) {
   return new Set(lane.filter(p => upperX.has(p.key)).map(p => p.key)).size
 }
 
-// where a lane draws each group, as the px the lane below aligns to: the
-// heaviest run where the lane places a group more than once
 function lanePlacementXs(
   placements: LanePlacement[],
   frame: RowFrame,
@@ -370,25 +297,6 @@ function lanePlacementXs(
   )
 }
 
-// how the lane's shared groups run against the lane it is read against: over
-// every pair of shared runs, the share of the paired evidence whose order on this lane
-// reads backwards from its order above, and the majority it makes. Undefined
-// on fewer than three shared groups, or a tie. Two runs of one group share an
-// x above and say nothing about order between them.
-//
-// EVERY pair, weighed by the product of the two groups' vote evidence, rather
-// than each run against its neighbour weighed by the lighter of the two. The
-// neighbour rule let a tiny record decide a lane: an alignment cut into runs
-// at its large indels arrives as several heavy forward groups with small
-// repeat hits between them, and pairing each run only with its neighbour
-// weighed every pair by the hit, so a 700 kb chain read backwards on the say
-// of a few kb. Paired all-ways, the heavy runs vote with each other, and the
-// evidence is the contig vote's own — one per gene on a named table, so a
-// gene table's vote is a plain count of concordant pairs, and anchor bp on
-// an alignment, so a block outweighs the hits inside it. Across grape chr1 no
-// lane draws fewer steps crossed against the lane above under the neighbour
-// rule, a heaviest-chain rule or a vote against the anchor (the
-// multiway-lane-stability record's notes)
 function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   const shared = lane
     .filter(p => upperX.has(p.key))
@@ -419,12 +327,7 @@ function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   }
 }
 
-// Every ordered pair of `runs` weighed by the product of the two groups'
-// weights, and the share of that weight on the pairs whose later run's center
-// lies before the earlier's. A Fenwick tree over the centers' ranks sums the
-// earlier weight at or below each run's center as it is reached, so this is
-// O(n log n) where pairing every run against every other was O(n²) per lane
-// per settle.
+// A Fenwick tree over the centers' ranks sums the earlier weight below a run.
 function weightedPairs(runs: LanePlacement[]) {
   const ranks = [...new Set(runs.map(r => r.center))].sort((a, b) => a - b)
   const rankOf = new Map(ranks.map((center, i) => [center, i + 1]))
@@ -449,9 +352,6 @@ function weightedPairs(runs: LanePlacement[]) {
   return { total, backwards }
 }
 
-// A lane keeps reading the way it did — across a contig change too, since the
-// anchor-order sum a fresh lane falls back on is the noisiest vote there is —
-// until nearly all of enough shared groups read the other way.
 function decideOrientation(
   fitted: boolean,
   vote: ReturnType<typeof orientationVote>,
@@ -471,10 +371,7 @@ function decideOrientation(
   return share >= NEARLY_ALL ? vote.backwards : incumbent
 }
 
-// the frame slid so its shared groups sit under the lane above's, by the
-// weighted median displacement. Unclamped: a fit wider than its rung, or a
-// contig starting inside the window, leaves part of the fit off an edge or
-// blank lane past the contig's end, and the homologs still line up
+// Unclamped, so part of the fit can fall off an edge and homologs line up.
 function alignFrameTo(
   upperX: Map<string, number>,
   lane: LanePlacement[],
@@ -515,12 +412,7 @@ function laneBpAt(frame: RowFrame, px: number, width: number) {
     : frame.min + px * bpPerPx
 }
 
-/**
- * The frame a decision draws in, against where the view puts its pivot now.
- * `pivotPx` is the view's px for `pivotAnchor` and `unitBp` the view's
- * visible span, both live — so the same decision answers a different frame on
- * every pan and zoom, and that difference is exactly the anchor's own motion.
- */
+/** `pivotPx` and `unitBp` are the view's live pivot px and visible span. */
 export function frameFromDecision(
   d: LaneDecision,
   pivotPx: number,
@@ -549,24 +441,16 @@ export function frameFromDecision(
 export interface DecideLaneFramesOpts {
   groups: MultiWayGroup[]
   assemblyNames: string[]
-  // where the anchor lane draws each group's centre, in the px space every
-  // lane is aligned in — the first link of the chain
+  // px of each group's centre on the anchor lane
   anchorX: Map<string, number>
   anchorCoordOf: (group: MultiWayGroup) => AnchorCoord
-  // the same px space's answer for an arbitrary anchor coordinate, which is
-  // how an incumbent's pivot is placed for comparison
   pxOfAnchor: (coord: AnchorCoord) => number | undefined
   unitBp: number
   width: number
-  // the anchor axis reads right to left: a decision's `flipped` is relative
-  // to the anchor's order, so the screen orientation is the two together
   anchorReversed?: boolean
   previous: ReadonlyMap<string, LaneDecision | undefined>
-  // the contig the reader pinned each lane onto, which outranks its vote
   pinned?: ReadonlyMap<string, string>
   pinnedFlips?: ReadonlyMap<string, LaneFlipPin>
-  // the lanes the reader froze, each kept as it is wherever its pivot is on
-  // the view's displayed regions
   frozen?: ReadonlyMap<string, LaneDecision>
 }
 
@@ -589,14 +473,8 @@ function sameDecision(a: LaneDecision, b: LaneDecision) {
 }
 
 /**
- * One settle's decision for every mate lane, top down, each aligned to the
- * lane above and each holding what it decided last time unless the evidence
- * clearly moved: the contig by the follow's switch margin, the orientation by
- * its deadband, the rung by the shrink room, and the placement by what its
- * frame still covers — the pivot across a rung change too, since a zoom is a
- * scale about it and not a relocation. A lane that held returns its previous
- * object, so a caller can tell a re-decision that changed nothing from one
- * that did.
+ * A lane that held returns its previous object, so a caller compares by
+ * identity.
  */
 export function decideLaneFrames({
   groups,
@@ -649,17 +527,11 @@ export function decideLaneFrames({
     }
     const { rung, pinned: onPin, frame: fitted } = fit
     const placements = lanePlacements(groups, assemblyName, fitted)
-    // A lane sharing too few groups with the lane above votes and aligns
-    // against the anchor, which places every group: on a star of pairwise
-    // files each record names one mate, so below the top lane the lane above
-    // shares nothing and the lane fell back on the unweighted anchor-order
-    // sign sum and was never aligned at all
     const reference =
       sharedGroupCount(upperX, placements) >= MIN_SHARED_FOR_ORIENTATION
         ? upperX
         : anchorX
-    // the vote reads screen px, so it comes back in screen terms; the
-    // decision is stated against the anchor's order
+    // the vote reads screen px; the decision is against the anchor's order
     const vote = orientationVote(reference, placements)
     const voted = decideOrientation(
       fitted.flipped,
@@ -680,10 +552,6 @@ export function decideLaneFrames({
     const aligned = alignFrameTo(reference, placements, oriented, width)
 
     let decision: LaneDecision | undefined
-    // the pivot carries across a rung change too: a zoom scales the lane
-    // about it, and only the content leaving the frame re-aligns the lane. A
-    // flip re-aligns; its move is still one fold, since a mirror and a shift
-    // are a mirror about another point
     const held =
       prev &&
       prev.refName === aligned.refName &&
@@ -747,7 +615,6 @@ export function decideLaneFrames({
       }
     }
     out.set(assemblyName, decision)
-    // the lane below aligns to where this one draws; the last lane has none
     if (i + 1 < assemblyNames.length) {
       const frame = decision
         ? frameFromDecision(
