@@ -167,10 +167,6 @@ mechanism of the
 }
 ```
 
-`domainMin` and `domainMax` pin the two ends of the axis separately, so an end
-left out keeps autoscaling. Here both are pinned, giving the axis the full 0 to
-100 percent range.
-
 ## Load the tracks
 
 TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
