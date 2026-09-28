@@ -20,7 +20,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | Piece | Where | What it owns |
 | --- | --- | --- |
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a shape that is a name, a jexl expression or a categorical scale over the shape names, an integer `row`, a `text` lane of strings for the text mark, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
-| `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `cells`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — run in order over a feature list, each step reading what the last answered |
+| `runTransforms`, `layerTables` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `cells`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — run in order over a table (`featureTable.ts`; a feature list is a source table), each step one kernel reading what the last answered and answering a table of its own ([ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)); `layerTables` runs a whole layered request, facet included |
 | `CoreGetEncodedLayers` | `packages/core/src/rpc/methods/CoreGetEncodedLayers.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `filter` list as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
 | `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ mark, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry with a shape reading `layers[markIndex]` through a lens that checks its type's lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range, a `text` entry placed as DOM by `placeTextMarks` in the entry's stead, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
@@ -186,9 +186,9 @@ resolved in the worker (`layerFeatures`) so a caller of the RPC gets the same
 row a display does. A feature is placed in one bin by one field; a feature that crosses
 a boundary counts where its `field` falls, which is what `coverage` is for
 when the question is overlap rather than count. A `formula` and a `bin`
-answer a `DerivedFeature` reading the new fields over the old ones, so no
-feature's data is copied per step; an `aggregate` or `coverage` answers a
-`MadeFeature` carrying only what it wrote, with a lazy id. A `step` of
+answer the input's rows with the new fields beside them, so no feature's data
+is copied per step; an `aggregate` or `coverage` answers typed lanes carrying
+only what it wrote, with a lazy id. A `step` of
 `"auto"` resolves before the RPC to the 1/2/5 rung above four pixels of bp and
 is keyed into the fetch, so a bin is the same width of screen at every zoom
 and only a zoom across a rung refetches
@@ -205,14 +205,18 @@ and it is what makes a read pileup declarable: a `span` reading the `row` it
 wrote is the packing canvas's `packRef` does by hand, over any adapter the
 mark display attaches to
 ([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)).
-It answers a `DerivedFeature` over the input in start order, so nothing is
-copied per feature and a later `bin` or `aggregate` still reads the original
-fields.
+It answers the input's rows in start order with a typed `row` lane beside
+them, so nothing is copied per feature and a later `bin` or `aggregate` still
+reads the original fields.
 
 **`facet` and `rows` are one split in the worker.** `CoreGetEncodedLayers`
-splits the features on the request's `facet.field` after the shared steps and
-runs each layer's steps over each section alone (`facetLayers`,
+splits the features on the request's `facet.field` and runs each layer's steps
+over each section alone (`facetLayers`,
 [ADR-130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)).
+The split is a counting sort into section order, placed as early as the
+shared steps allow (`layerTables`, ADR-191): a shared step after it must read
+a row and answer rows of it in order without writing the field, so it answers
+what it would have after the split.
 The mark display sends its `facet`, or where it has none its `rows.field`
 under the same name, so the worker never learns which it was. The main thread
 lays the answer out one of two ways: labelled sections as deep as their
@@ -259,22 +263,23 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 | arm          | features in | features out |  wall | per input feature (ns) | vs none |
 | ------------ | ----------: | -----------: | ----: | ---------------------: | ------: |
-| none         |   1,000,000 |    1,000,000 |  74ms |                     74 |   1.00x |
-| filter       |   1,000,000 |      500,000 | 223ms |                    223 |   3.03x |
-| formula      |   1,000,000 |    1,000,000 | 420ms |                    420 |   5.69x |
-| flatten      |     250,000 |    1,000,000 | 217ms |                    868 |   2.94x |
-| flatten-bin  |     250,000 |          300 | 412ms |                  1,648 |   5.58x |
-| bin-count    |   1,000,000 |          300 | 252ms |                    252 |   3.41x |
-| bin-mean     |   1,000,000 |          300 | 305ms |                    305 |   4.14x |
-| coverage     |   1,000,000 |    1,599,999 | 425ms |                    425 |   5.76x |
-| pileup       |   1,000,000 |    1,000,000 | 374ms |                    374 |   5.07x |
-| bin-then-raw |   1,000,000 |    1,000,300 | 335ms |                    335 |   4.55x |
+| none         |   1,000,000 |    1,000,000 |  94ms |                     94 |   1.00x |
+| filter       |   1,000,000 |      500,000 | 252ms |                    252 |   2.67x |
+| formula      |   1,000,000 |    1,000,000 | 265ms |                    265 |   2.81x |
+| flatten      |     250,000 |    1,000,000 | 283ms |                  1,132 |   3.00x |
+| flatten-bin  |     250,000 |          300 | 290ms |                  1,160 |   3.07x |
+| bin-count    |   1,000,000 |          300 |  89ms |                     89 |   0.95x |
+| bin-mean     |   1,000,000 |          300 | 154ms |                    154 |   1.63x |
+| coverage     |   1,000,000 |    1,200,000 | 380ms |                    380 |   4.02x |
+| pileup       |   1,000,000 |    1,000,000 | 203ms |                    203 |   2.15x |
+| bin-then-raw |   1,000,000 |    1,000,300 | 201ms |                    201 |   2.13x |
 
 <!-- END GENERATED MEASUREMENT feature-transform-steps -->
 
-A step's derived feature spells `get` as a prototype method: the class-field
-arrow it replaced allocated a closure per instance beside the object, and over
-a million features that was most of the construction:
+A table's row view (`TableRow`) spells `get` as a prototype method: the
+class-field arrow the derived features before it first used allocated a
+closure per instance beside the object, and over a million features that was
+most of the construction:
 
 <!-- BEGIN GENERATED MEASUREMENT feature-getter-prototype -->
 
@@ -289,8 +294,8 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 The jexl arms cost what the jexl channel does. The aggregate's first form
 built a string key per feature and measured 2.5x the raw-value trie it
-keys by now; its and coverage's outputs were `SimpleFeature`s and measured
-1.9x the data-backed feature they are now. What the table does not show is
+keys by now; its and coverage's outputs were `SimpleFeature`s, then a
+data-backed feature, and are typed lanes since ADR-191. What the table does not show is
 what the encode hands the GPU: `bin-count` uploads 300 instances where
 `none` uploads a million, which is the whole point of a density layer at
 wide zoom.

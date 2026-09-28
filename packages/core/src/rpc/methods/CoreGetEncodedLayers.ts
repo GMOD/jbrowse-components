@@ -57,16 +57,16 @@ export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<
       notices,
     } = await layerFeatures(dataAdapter, args, jexl)
     const layers = requested.map((request, i) => {
-      const { features, row } = layered[i]!
+      const { table, row } = layered[i]!
       return encodeFeatures(
-        features,
+        table,
         { ...request.encoding, row },
         request.lanes,
         {
           jexl,
           report: createProgressReporter({
             label: 'Processing features',
-            total: features.length,
+            total: table.length,
             statusCallback,
             signal,
           }),

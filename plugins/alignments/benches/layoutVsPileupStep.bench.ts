@@ -29,6 +29,7 @@
 //   features    materialising alone, the other half of that gap
 import { performance } from 'node:perf_hooks'
 
+import { readerOf } from '@jbrowse/core/util/featureTable'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
@@ -91,9 +92,10 @@ const prebuilt = makeFeatures()
 
 function pileupToRows(features: readonly Feature[]) {
   const out = runTransforms(features, STEPS)
+  const read = readerOf(out.column('row'))
   const rows = new Uint16Array(out.length)
   for (let i = 0; i < out.length; i++) {
-    rows[i] = out[i]!.get('row') as number
+    rows[i] = read(i) as number
   }
   return rows
 }

@@ -22,9 +22,11 @@
 //                    thread's `placeMafRegionData` and `buildMafChannels` at
 //                    one bp a cell
 //   control          the same, declared a second time
-//   marks            `layerFeatures`' steps and facet for the `marks_maf_cells`
-//                    span (`flatten` over `alignments`, `cells`, split on
-//                    `species`), then `encodeFeatures` over the span's lanes
+//   marks            the `marks_maf_cells` span (`flatten` over `alignments`,
+//                    `cells`, split on `species`) through `layerTables` as
+//                    `layerFeatures` runs it, then `encodeFeatures` over the
+//                    span's lanes. Before ADR-191 this was the Feature steps,
+//                    which ADR-190's records hold.
 //   marks-no-index   the same without the hit index, which the MAF display's
 //                    hover does without
 //   columns          the same steps over columns, the hit index included
@@ -32,10 +34,10 @@
 //                    each row's runs come out together and in order and a
 //                    hover needs only where each row starts: no hit index
 //   maf-identity     the pack, the placement and `buildIdentityRuns` at `binBp`
-//   marks-identity   the Feature steps with `bin` at `binBp` and `aggregate
-//                    mean` over `match` behind `cells`, which is what a config
-//                    can declare today and not the identity: a run counts
-//                    once, in its start's bin
+//   marks-identity   the same with `bin` at `binBp` and `aggregate mean` over
+//                    `match` behind `cells`, which is what a config can declare
+//                    today and not the identity: a run counts once, in its
+//                    start's bin
 //   columns-identity the column `cells`, then `bin` cutting each run at the
 //                    bin edges and a mean weighted by the bases each piece puts
 //                    in its bin
@@ -57,6 +59,7 @@ import { performance } from 'node:perf_hooks'
 
 import {
   facetLayers,
+  layerTables,
   runTransforms,
 } from '@jbrowse/core/util/featureTransforms'
 import createJexlInstance from '@jbrowse/core/util/jexl'
@@ -240,20 +243,26 @@ function armControl(
     .count
 }
 function armMarks(features: readonly Feature[]) {
-  const shared = runTransforms(features, SHARED, jexl)
-  const { layers } = facetLayers(shared, FACET, [{}], jexl)
-  const { features: cells, rows } = layers[0]!
-  return encodeFeatures(cells, { ...CELLS_ENCODING, row: rows }, SPAN_LANES, {
+  const { layers } = layerTables(
+    features,
+    { transform: SHARED, facet: FACET, layers: [{}] },
+    jexl,
+  )
+  const { table: cells, row } = layers[0]!
+  return encodeFeatures(cells, { ...CELLS_ENCODING, row }, SPAN_LANES, {
     jexl,
   }).count
 }
 function armMarksNoIndex(features: readonly Feature[]) {
-  const shared = runTransforms(features, SHARED, jexl)
-  const { layers } = facetLayers(shared, FACET, [{}], jexl)
-  const { features: cells, rows } = layers[0]!
+  const { layers } = layerTables(
+    features,
+    { transform: SHARED, facet: FACET, layers: [{}] },
+    jexl,
+  )
+  const { table: cells, row } = layers[0]!
   return encodeFeatures(
     cells,
-    { ...CELLS_ENCODING, row: rows },
+    { ...CELLS_ENCODING, row },
     SPAN_LANES_NO_INDEX,
     { jexl },
   ).count
@@ -293,15 +302,17 @@ function armMafIdentity(
   return buildIdentityRuns(blocks, binBp).count
 }
 function armMarksIdentity(features: readonly Feature[]) {
-  const shared = runTransforms(features, SHARED, jexl)
-  const { layers } = facetLayers(
-    shared,
-    FACET,
-    [{ transform: IDENTITY_STEPS }],
+  const { layers } = layerTables(
+    features,
+    {
+      transform: SHARED,
+      facet: FACET,
+      layers: [{ transform: IDENTITY_STEPS }],
+    },
     jexl,
   )
-  const { features: bins, rows } = layers[0]!
-  return encodeFeatures(bins, { y: 'identity', row: rows }, BAR_LANES, {
+  const { table: bins, row } = layers[0]!
+  return encodeFeatures(bins, { y: 'identity', row }, BAR_LANES, {
     jexl,
   }).count
 }
@@ -358,7 +369,7 @@ function tuplesOf(
 function checkCells(features: readonly Feature[]) {
   const shared = runTransforms(features, SHARED, jexl)
   const { layers } = facetLayers(shared, FACET, [{}], jexl)
-  const { features: cells, rows } = layers[0]!
+  const { table: cells, rows } = layers[0]!
   const want = encodeFeatures(
     cells,
     { ...CELLS_ENCODING, row: rows },
@@ -367,7 +378,7 @@ function checkCells(features: readonly Feature[]) {
   )
   const wantBase = Array.from(
     want.featureIndex,
-    (fi, k) => `${want.color[k]}/${cells[fi]!.get('base') ?? ''}`,
+    (fi, k) => `${want.color[k]}/${cells.row(fi).get('base') ?? ''}`,
   )
   const runs = cellsColumns(flattenRecords(features, 'alignments', 'species'))
   const { row } = facetRows(runs, 'species')
@@ -534,21 +545,23 @@ function checkIdentity(features: readonly Feature[]) {
     jexl,
   )
   const keyOfRow = new Map(sections.map(s => [s.firstRow, s.key]))
-  const { features: marks, rows } = layers[0]!
+  const { table: marks, rows } = layers[0]!
   let worstMarks = 0
   let sumMarks = 0
   let noValue = 0
-  marks.forEach((f, i) => {
-    const value = Number(f.get('identity'))
-    if (!Number.isFinite(value)) {
-      noValue++
-      return
-    }
-    const key = `${keyOfRow.get(rows[i]!)}:${f.get('start') / binBp}`
-    const err = Math.abs(value - (oracle.get(key) ?? 0))
-    worstMarks = Math.max(worstMarks, err)
-    sumMarks += err
-  })
+  Array.from({ length: marks.length }, (_, i) => marks.row(i)).forEach(
+    (f, i) => {
+      const value = Number(f.get('identity'))
+      if (!Number.isFinite(value)) {
+        noValue++
+        return
+      }
+      const key = `${keyOfRow.get(rows[i]!)}:${f.get('start') / binBp}`
+      const err = Math.abs(value - (oracle.get(key) ?? 0))
+      worstMarks = Math.max(worstMarks, err)
+      sumMarks += err
+    },
+  )
   return {
     bins: bins.length,
     columnsWorst: worstColumns,
@@ -657,7 +670,7 @@ if (process.argv.includes('--stages')) {
       const { layers } = facetLayers(cellRuns, FACET, [{}], jexl)
       best.facet = Math.min(best.facet ?? Infinity, performance.now() - t)
       t = performance.now()
-      const { features: fs, rows } = layers[0]!
+      const { table: fs, rows } = layers[0]!
       encodeFeatures(fs, { ...CELLS_ENCODING, row: rows }, SPAN_LANES, { jexl })
       best.encode = Math.min(best.encode ?? Infinity, performance.now() - t)
       t = performance.now()

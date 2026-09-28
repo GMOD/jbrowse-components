@@ -6,7 +6,7 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
  * The feature behind one instance of a `CoreGetEncodedLayers` answer: the same
- * request run again, and the entry of `layer`'s list the instance's
+ * request run again, and the row of `layer`'s table the instance's
  * `featureIndex` names. A display holds channels and no records, and two reads
  * sharing a span, a run counted inside one facet section or a mark whose `x` is
  * not `start` are each a feature no coordinate lookup finds.
@@ -32,6 +32,9 @@ export default class CoreGetEncodedFeature extends RpcMethodTypeWithRenameRegion
       { ...args, layers: [asked] },
       pluginManager.jexl,
     )
-    return layers[0]?.features[featureIndex]?.toJSON()
+    const table = layers[0]?.table
+    return table && featureIndex < table.length
+      ? table.row(featureIndex).toJSON()
+      : undefined
   }
 }

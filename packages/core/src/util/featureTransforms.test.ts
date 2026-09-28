@@ -1,8 +1,14 @@
-import { facetLayers, matedBy, runTransforms } from './featureTransforms.ts'
+import {
+  facetLayers as facetTables,
+  layerTables,
+  matedBy,
+  runTransforms as runTables,
+} from './featureTransforms.ts'
 import createJexlInstance from './jexl.ts'
 import { placeRect } from './layouts/placeRect.ts'
 import SimpleFeature from './simpleFeature.ts'
 
+import type { FeatureTable } from './featureTable.ts'
 import type { Feature } from './simpleFeature.ts'
 
 function feature(
@@ -24,6 +30,26 @@ function rows(features: readonly Feature[], ...fields: string[]) {
 }
 
 const jexl = createJexlInstance()
+
+// The steps answer tables; these read one back, row by row, as the feature
+// list and plain row numbers the assertions below were written against.
+function tableFeatures(table: FeatureTable) {
+  return Array.from({ length: table.length }, (_, i) => table.row(i))
+}
+function runTransforms(...args: Parameters<typeof runTables>) {
+  return tableFeatures(runTables(...args))
+}
+
+function facetLayers(...args: Parameters<typeof facetTables>) {
+  const { layers, sections } = facetTables(...args)
+  return {
+    sections,
+    layers: layers.map(({ table, rows: stacked }) => ({
+      features: tableFeatures(table),
+      rows: [...stacked],
+    })),
+  }
+}
 
 test('formula writes a field every later step reads', () => {
   const out = runTransforms(
@@ -1019,4 +1045,80 @@ test('a flattened leaf holding nothing in the field answers none, never its sibl
   )
   expect(kept.map(f => f.id())).toEqual(['e1', 'e2', 'nc'])
   expect(kept[2]!.get('name')).toBe('G1')
+})
+
+// A container a flatten kept with nothing to fan out is the row itself: its
+// reference is its own container's, so a block reads against nothing rather
+// than against its own sequence.
+test('cells over a kept container reads no reference of its own', () => {
+  const lone = feature(0, 4, { seq: 'ACGT' })
+  const kept = runTables(
+    [lone],
+    [{ type: 'flatten', field: 'alignments', keepEmpty: true }],
+  )
+  expect(kept.row(0)).toBe(lone)
+  expect(tableFeatures(runTables(kept, [{ type: 'cells' }]))).toEqual([])
+})
+
+test('a facet on a flatten key splits the runs a cells step made, per species', () => {
+  const block = feature(100, 104, {
+    seq: 'ACGT',
+    alignments: { b: { seq: 'ACGA' }, a: { seq: 'ACGT' } },
+  })
+  const shared = runTables(
+    [block],
+    [
+      { type: 'flatten', field: 'alignments', key: 'species' },
+      { type: 'cells' },
+    ],
+  )
+  expect(shared.column('species').kind).toBe('category')
+  const { layers, sections } = facetLayers(shared, { field: 'species' }, [{}])
+  expect(sections.map(s => s.key)).toEqual(['a', 'b'])
+  expect(rows(layers[0]!.features, 'species', 'start', 'end', 'state')).toEqual(
+    [
+      ['a', 100, 104, 'match'],
+      ['b', 100, 103, 'match'],
+      ['b', 103, 104, 'mismatch'],
+    ],
+  )
+  expect(layers[0]!.rows).toEqual([0, 1, 1])
+})
+
+// The split comes after the last shared step that must see every row, so a
+// cells step behind the flatten runs over rows already in section order.
+test('a request split before its row-by-row steps answers what splitting after them does', () => {
+  const block = (start: number, rowsBySpecies: Record<string, string>) =>
+    feature(start, start + 4, {
+      seq: 'ACGT',
+      alignments: Object.fromEntries(
+        Object.entries(rowsBySpecies).map(([k, seq]) => [k, { seq }]),
+      ),
+    })
+  const blocks = [
+    block(0, { b: 'ACGA', a: 'AC-T' }),
+    block(10, { a: 'ACGT', b: 'TCGT' }),
+  ]
+  const transform = [
+    { type: 'flatten' as const, field: 'alignments', key: 'species' },
+    { type: 'cells' as const },
+    { type: 'filter' as const, expr: "jexl:get(feature,'state') != 'gap'" },
+  ]
+  const facet = { field: 'species' }
+  const layers = [{}, { transform: [{ type: 'pileup' as const }], row: 'row' }]
+  const early = layerTables(blocks, { transform, facet, layers }, jexl)
+  const late = facetTables(
+    runTables(blocks, transform, jexl),
+    facet,
+    layers,
+    jexl,
+  )
+  expect(early.sections).toEqual(late.sections)
+  for (const [i, layer] of early.layers.entries()) {
+    const fields = ['species', 'start', 'end', 'state']
+    expect(rows(tableFeatures(layer.table), ...fields)).toEqual(
+      rows(tableFeatures(late.layers[i]!.table), ...fields),
+    )
+    expect([...(layer.row as Uint32Array)]).toEqual([...late.layers[i]!.rows])
+  }
 })

@@ -106,7 +106,7 @@ at random hovers. It lands at
 its identity, which cuts each run at the bin edges and weights the mean by
 bases, is exact at
 0.81-2.00x<!--m:maf-on-marks-identity.columnsIdentityVsMaf.range-->.
-[a-step-that-makes-rows-writes-typed-lanes](../ideas/ready/a-step-that-makes-rows-writes-typed-lanes.md)
+[the-mark-pipeline-runs-over-tables](../ideas/ready/the-mark-pipeline-runs-over-tables.md)
 is the proposal, with what the spike leaves open.
 
 ## Revisit if

@@ -1,7 +1,4 @@
-import {
-  facetLayers,
-  runTransforms,
-} from '@jbrowse/core/util/featureTransforms'
+import { layerTables } from '@jbrowse/core/util/featureTransforms'
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
@@ -64,23 +61,16 @@ export function workerResult(
   feats: readonly Feature[],
 ): EncodedLayersResult {
   const { layers, transform, facet } = display.rpcProps()
-  const shared = runTransforms(feats, transform)
-  const split = facet
-    ? facetLayers(
-        shared,
-        facet,
-        layers.map(l => ({ transform: l.transform, row: l.encoding.row })),
-      )
-    : undefined
+  const tables = layerTables(feats, {
+    transform,
+    facet,
+    layers: layers.map(l => ({ transform: l.transform, row: l.encoding.row })),
+  })
   return {
     layers: layers.map((request, i) => {
-      const own = split?.layers[i]
-      return encodeFeatures(
-        own?.features ?? runTransforms(shared, request.transform ?? []),
-        { ...request.encoding, row: own?.rows ?? request.encoding.row },
-        request.lanes,
-      )
+      const { table, row } = tables.layers[i]!
+      return encodeFeatures(table, { ...request.encoding, row }, request.lanes)
     }),
-    facet: split?.sections,
+    facet: tables.sections,
   }
 }

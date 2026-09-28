@@ -12,7 +12,8 @@ import { categoricalField } from './categoricalField.ts'
 import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR, packAbgr } from './colorBits.ts'
 import { rampDomain, rampLutOf } from './colorRamp.ts'
-import { fieldReader } from './fieldReader.ts'
+import { asTable, numberReaderOf, readerOf } from './featureTable.ts'
+import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { valueText } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
@@ -28,6 +29,7 @@ import {
 } from './thresholdScale.ts'
 
 import type { CategoricalField } from './categoricalField.ts'
+import type { FeatureTable } from './featureTable.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
   ColorEncoding,
@@ -153,11 +155,35 @@ function jexlExpression(ref: string, jexl: JexlInstance | undefined) {
   return stringToJexlExpression(ref, jexl)
 }
 
+// A channel read by row: a plain field straight off the table's column, a
+// path, `jexl:` expression or caller's reader over the row as a `Feature`.
+type RowReader<T = unknown> = (i: number) => T
+
 function channelReader(
+  table: FeatureTable,
   ref: FieldRef | ChannelReader,
   jexl: JexlInstance | undefined,
-): ChannelReader {
-  return typeof ref === 'function' ? ref : fieldReader(ref, jexl)
+): RowReader {
+  if (typeof ref === 'function') {
+    return i => ref(table.row(i))
+  }
+  if (isPlainFieldRef(ref)) {
+    return readerOf(table.column(ref))
+  }
+  const read = fieldReader(ref, jexl)
+  return i => read(table.row(i))
+}
+
+function numberChannelReader(
+  table: FeatureTable,
+  ref: FieldRef | ChannelReader,
+  jexl: JexlInstance | undefined,
+): RowReader<number> {
+  if (typeof ref !== 'function' && isPlainFieldRef(ref)) {
+    return numberReaderOf(table.column(ref))
+  }
+  const read = channelReader(table, ref, jexl)
+  return i => numericValue(read(i))
 }
 
 function isShapeName(shape: string): shape is ShapeName {
@@ -165,22 +191,23 @@ function isShapeName(shape: string): shape is ShapeName {
 }
 
 function shapeReader(
+  table: FeatureTable,
   shape: Exclude<ShapeEncoding, object> | ChannelReader<number> | undefined,
   jexl: JexlInstance | undefined,
-): ChannelReader<number> {
+): RowReader<number> {
   if (shape === undefined) {
     return () => GLYPH_DISC
   }
   if (typeof shape === 'function') {
-    return shape
+    return i => shape(table.row(i))
   }
   if (isShapeName(shape)) {
     const code = SHAPE_CODES[shape]
     return () => code
   }
   const expr = jexlExpression(shape, jexl)
-  return feature => {
-    const v = expr.eval(buildJexlContext({ feature }))
+  return i => {
+    const v = expr.eval(buildJexlContext({ feature: table.row(i) }))
     return typeof v === 'string' && isShapeName(v) ? SHAPE_CODES[v] : GLYPH_DISC
   }
 }
@@ -195,25 +222,51 @@ function lutColorAt(lut: Uint8Array, t: number) {
 // The categorical arm `color` and `shape` share: the walk records which
 // key each admitted instance carried, `''` for none, and `resolve` hands
 // every key met its entry in the field's order, so two regions that met
-// different key sets still agree on every key they share.
+// different key sets still agree on every key they share. Over a category
+// column a label's key is found once, and each row looks its code up.
 function categoricalChannel(
-  read: ChannelReader,
+  table: FeatureTable,
+  ref: FieldRef | ChannelReader,
+  jexl: JexlInstance | undefined,
   categories: CategoricalField,
   n: number,
 ) {
   const keys = new Map<string, number>()
   const indexOf = new Uint32Array(n)
-  return {
-    indexOf,
-    collect(f: Feature, at: number) {
-      const key = categories.key(read(f))
-      let index = keys.get(key)
-      if (index === undefined) {
-        index = keys.size
-        keys.set(key, index)
+  const keyIndex = (key: string) => {
+    let index = keys.get(key)
+    if (index === undefined) {
+      index = keys.size
+      keys.set(key, index)
+    }
+    return index
+  }
+  const column =
+    typeof ref !== 'function' && isPlainFieldRef(ref)
+      ? table.column(ref)
+      : undefined
+  let collect: (i: number, at: number) => void
+  if (column?.kind === 'category') {
+    const { codes, labels, at: rowAt } = column
+    const ofCode = new Int32Array(labels.length).fill(-1)
+    collect = (i, at) => {
+      const code = codes[rowAt ? rowAt[i]! : i]!
+      let index = ofCode[code]!
+      if (index < 0) {
+        index = keyIndex(categories.key(labels[code]))
+        ofCode[code] = index
       }
       indexOf[at] = index
-    },
+    }
+  } else {
+    const read = channelReader(table, ref, jexl)
+    collect = (i, at) => {
+      indexOf[at] = keyIndex(categories.key(read(i)))
+    }
+  }
+  return {
+    indexOf,
+    collect,
     resolve<T>(entryOf: (key: string) => T) {
       const ofIndex: T[] = Array.from({ length: keys.size })
       const entries: { value: string; entry: T }[] = []
@@ -282,22 +335,27 @@ export function withHitIndex<T extends EncodedChannels>(
  * transferables.
  */
 export function encodeFeatures<L extends LaneName>(
-  features: readonly Feature[],
+  input: readonly Feature[] | FeatureTable,
   encoding: MarkEncodingInput,
   lanes: readonly L[],
   ctx: EncodeContext = {},
 ): Encoded<L> {
   const { jexl, report } = ctx
-  const n = features.length
+  const table = asTable(input)
+  const n = table.length
   const has = (lane: LaneName) => (lanes as readonly LaneName[]).includes(lane)
-  const readX = channelReader(encoding.x ?? 'start', jexl)
+  const readX = numberChannelReader(table, encoding.x ?? 'start', jexl)
   const { x2: x2Encoding } = encoding
   const x2Locus = typeof x2Encoding === 'object' ? x2Encoding : undefined
-  const readX2 = channelReader(
+  const readX2 = numberChannelReader(
+    table,
     typeof x2Encoding === 'object' ? x2Encoding.pos : (x2Encoding ?? 'end'),
     jexl,
   )
-  const readX2Chrom = x2Locus ? channelReader(x2Locus.chrom, jexl) : undefined
+  const readX2Chrom = x2Locus
+    ? channelReader(table, x2Locus.chrom, jexl)
+    : undefined
+  const readRefName = x2Locus ? undefined : readerOf(table.column('refName'))
   const x2Ref = has('x2Ref') ? new Uint32Array(n) : undefined
   const x2RefNames: string[] = []
   const refIndex = new Map<string, number>()
@@ -311,24 +369,26 @@ export function encodeFeatures<L extends LaneName>(
         : sizeEncoding
       : undefined
   const size = sizeRef ? new Float32Array(n) : undefined
-  const readSize = sizeRef ? channelReader(sizeRef.field, jexl) : undefined
+  const readSize = sizeRef
+    ? numberChannelReader(table, sizeRef.field, jexl)
+    : undefined
   const { y: yEncoding } = encoding
   const readY =
     has('y') && yEncoding !== undefined
-      ? channelReader(yEncoding, jexl)
+      ? numberChannelReader(table, yEncoding, jexl)
       : undefined
   const { row: rowEncoding } = encoding
   const rowValues =
     has('row') && typeof rowEncoding === 'object' ? rowEncoding : undefined
   const readRow =
     has('row') && rowEncoding !== undefined && typeof rowEncoding !== 'object'
-      ? channelReader(rowEncoding, jexl)
+      ? channelReader(table, rowEncoding, jexl)
       : undefined
 
   const { text: textEncoding } = encoding
   const readText =
     has('text') && textEncoding !== undefined
-      ? channelReader(textEncoding, jexl)
+      ? channelReader(table, textEncoding, jexl)
       : undefined
 
   const x = new Uint32Array(n)
@@ -379,11 +439,13 @@ export function encodeFeatures<L extends LaneName>(
   const readColor =
     !wantColor || colorReadsY
       ? undefined
-      : typeof colorEncoding === 'function'
-        ? colorEncoding
-        : scaled === undefined
-          ? colorEvaluator(colorEncoding as string, jexl)
-          : channelReader(scaled.field, jexl)
+      : scaled
+        ? channelReader(table, scaled.field, jexl)
+        : unscaledColorReader(
+            table,
+            colorEncoding as string | ChannelReader<number>,
+            jexl,
+          )
   // A scaled channel resolves after the walk, once the table is known: the
   // category per admitted instance, or a ramp's raw value, kept here.
   const colorField =
@@ -394,8 +456,8 @@ export function encodeFeatures<L extends LaneName>(
         })
       : undefined
   const colorCategories =
-    colorField && readColor
-      ? categoricalChannel(readColor, colorField, n)
+    colorField && scaled && readColor
+      ? categoricalChannel(table, scaled.field, jexl, colorField, n)
       : undefined
   // The raw values of a scaled colour, where the walk fills them: a ramp's
   // always, a threshold's where the caller resolves it; the encoder resolves
@@ -430,14 +492,11 @@ export function encodeFeatures<L extends LaneName>(
     : undefined
   const shapeCategories =
     shapeScaled && shapeField
-      ? categoricalChannel(
-          channelReader(shapeScaled.field, jexl),
-          shapeField,
-          n,
-        )
+      ? categoricalChannel(table, shapeScaled.field, jexl, shapeField, n)
       : undefined
   const readShape = glyph
     ? shapeReader(
+        table,
         typeof shapeEncoding === 'object' ? undefined : shapeEncoding,
         jexl,
       )
@@ -445,10 +504,9 @@ export function encodeFeatures<L extends LaneName>(
 
   for (let i = 0; i < n; i++) {
     report?.(i)
-    const f = features[i]!
-    const xv = numericValue(readX(f))
-    const x2v = numericValue(readX2(f))
-    const yv = readY ? numericValue(readY(f)) : 0
+    const xv = readX(i)
+    const x2v = readX2(i)
+    const yv = readY ? readY(i) : 0
     if (!Number.isFinite(xv) || !Number.isFinite(x2v) || !Number.isFinite(yv)) {
       if (!Number.isFinite(xv) || !Number.isFinite(x2v)) {
         skippedPosition++
@@ -460,7 +518,9 @@ export function encodeFeatures<L extends LaneName>(
     x[count] = xv < 0 ? 0 : xv
     x2[count] = x2v < 0 ? 0 : x2v
     if (x2Ref) {
-      const there = readX2Chrom ? valueText(readX2Chrom(f)) : f.get('refName')
+      const there = readX2Chrom
+        ? valueText(readX2Chrom(i))
+        : (readRefName!(i) as string)
       let ref = refIndex.get(there)
       if (ref === undefined) {
         ref = x2RefNames.length
@@ -473,7 +533,7 @@ export function encodeFeatures<L extends LaneName>(
       y[count] = yv
     }
     if (size && readSize) {
-      size[count] = numericValue(readSize(f))
+      size[count] = readSize(i)
     }
     if (readY) {
       if (yv < yMin) {
@@ -484,27 +544,27 @@ export function encodeFeatures<L extends LaneName>(
       }
     }
     if (row && readRow) {
-      const rv = Number(readRow(f))
+      const rv = Number(readRow(i))
       row[count] = rv > 0 ? rv : 0
     } else if (row && rowValues) {
       const rv = rowValues[i]!
       row[count] = rv > 0 ? rv : 0
     }
     if (shapeCategories) {
-      shapeCategories.collect(f, count)
+      shapeCategories.collect(i, count)
     } else if (glyph && readShape) {
-      glyph[count] = readShape(f)
+      glyph[count] = readShape(i)
     }
     if (text) {
-      text[count] = readText ? valueText(readText(f)) : ''
+      text[count] = readText ? valueText(readText(i)) : ''
     }
     featureIndex[count] = i
     if (colorCategories) {
-      colorCategories.collect(f, count)
+      colorCategories.collect(i, count)
     } else if (colorReadsY) {
       // the y lane is the colour's; a skipped feature never reached here
     } else if (rampValues && rampBits && readColor) {
-      const v = readColor(f)
+      const v = readColor(i)
       if (isMissing(v)) {
         rampBits[count] = RAMP_NO_VALUE_BITS
         missingMet = true
@@ -513,7 +573,7 @@ export function encodeFeatures<L extends LaneName>(
         notNumberMet ||= Number.isNaN(rampValues[count])
       }
     } else if (binColors && cuts && color && readColor) {
-      const v = readColor(f)
+      const v = readColor(i)
       const bin = thresholdIndex(v, cuts)
       if (bin >= 0) {
         color[count] = binColors[bin]!
@@ -525,7 +585,7 @@ export function encodeFeatures<L extends LaneName>(
         notNumberMet = true
       }
     } else if (color && readColor) {
-      color[count] = readColor(f) as number
+      color[count] = readColor(i) as number
     }
     count++
   }
@@ -804,6 +864,24 @@ export function colorEvaluator(
   }
   const constant = cssColorToABGR(color)
   return () => constant
+}
+
+// A constant colour answers without reading the row, so a table's rows are
+// never made into features to paint every one the same.
+function unscaledColorReader(
+  table: FeatureTable,
+  color: string | ChannelReader<number>,
+  jexl: JexlInstance | undefined,
+): RowReader<number> {
+  if (typeof color === 'function') {
+    return i => color(table.row(i))
+  }
+  if (!isJexl(color)) {
+    const constant = cssColorToABGR(color)
+    return () => constant
+  }
+  const colorOf = colorEvaluator(color, jexl)
+  return i => colorOf(table.row(i))
 }
 
 /**

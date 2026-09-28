@@ -291,6 +291,7 @@ export default [
   '@jbrowse/core/util/diagonalizeRegions',
   '@jbrowse/core/util/eventPoint',
   '@jbrowse/core/util/expandLooseSearchIndex',
+  '@jbrowse/core/util/featureTable',
   '@jbrowse/core/util/featureTransforms',
   '@jbrowse/core/util/fetchContext',
   '@jbrowse/core/util/fetchHub',

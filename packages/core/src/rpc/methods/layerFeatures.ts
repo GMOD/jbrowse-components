@@ -1,24 +1,24 @@
 import { checkAbortSignal } from '../../util/aborting.ts'
-import { facetLayers, runTransforms } from '../../util/featureTransforms.ts'
+import { layerTables } from '../../util/featureTransforms.ts'
 import { updateStatus } from '../../util/progress.ts'
 
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
+import type { FeatureTable } from '../../util/featureTable.ts'
 import type { JexlInstance } from '../../util/jexlStrings.ts'
 import type {
   CoreGetEncodedLayersArgs,
   FieldRef,
 } from '../../util/markEncodingTypes.ts'
 import type { StatusCallback } from '../../util/progress.ts'
-import type { Feature } from '../../util/simpleFeature.ts'
 
 /**
- * One layer of a request as the encoder takes it: its features, and the row
- * each stands in — the field the layer reads, or under a facet each feature's
- * stacked row.
+ * One layer of a request as the encoder takes it: its rows, and the row of the
+ * plot each stands in — the field the layer reads, or under a facet each
+ * row's stacked row.
  */
 export interface LayerFeatures {
-  features: readonly Feature[]
-  row: FieldRef | readonly number[] | undefined
+  table: FeatureTable
+  row: FieldRef | ArrayLike<number> | undefined
 }
 
 /**
@@ -26,7 +26,7 @@ export interface LayerFeatures {
  * region's features through the shared steps, split by the facet where the
  * request names one, then through each layer's own steps, with each faceted
  * layer's stacked rows beside it. An instance's `featureIndex` indexes its
- * layer's list, so the same request answers which feature an instance is.
+ * layer's table, so the same request answers which row an instance is.
  */
 export async function layerFeatures(
   dataAdapter: BaseFeatureDataAdapter,
@@ -59,27 +59,17 @@ export async function layerFeatures(
   )
   checkAbortSignal(signal)
 
-  const shared = runTransforms(fetched, transform, jexl)
-  const rowFields = requested.map(r => r.encoding.row)
-  const faceted = facet
-    ? facetLayers(
-        shared,
-        facet,
-        requested.map((r, i) => ({
-          transform: r.transform,
-          row: rowFields[i],
-        })),
-        jexl,
-      )
-    : undefined
-  const layers = requested.map(({ transform: own }, i): LayerFeatures => {
-    const split = faceted?.layers[i]
-    return split
-      ? { features: split.features, row: split.rows }
-      : {
-          features: own ? runTransforms(shared, own, jexl) : shared,
-          row: rowFields[i],
-        }
-  })
-  return { layers, sections: faceted?.sections, zoomRange, notices }
+  const { layers, sections } = layerTables(
+    fetched,
+    {
+      transform,
+      facet,
+      layers: requested.map(r => ({
+        transform: r.transform,
+        row: r.encoding.row,
+      })),
+    },
+    jexl,
+  )
+  return { layers, sections, zoomRange, notices }
 }

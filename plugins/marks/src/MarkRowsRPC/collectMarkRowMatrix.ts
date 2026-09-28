@@ -1,10 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createStatusFanOut, updateStatus } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
-import {
-  facetLayers,
-  runTransforms,
-} from '@jbrowse/core/util/featureTransforms'
+import { layerTables } from '@jbrowse/core/util/featureTransforms'
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import {
   binSpan,
@@ -80,20 +77,19 @@ export async function collectMarkRowMatrix({
   const counts = new Int32Array(rows.length * width)
   for (const [regionIndex, features] of fetched.entries()) {
     checkAbortSignal(signal)
-    const { layers, sections } = facetLayers(
-      runTransforms(features, transform, jexl),
-      facet,
-      [{ transform: layer.transform, row: undefined }],
+    const { layers, sections } = layerTables(
+      features,
+      { transform, facet, layers: [{ transform: layer.transform }] },
       jexl,
     )
     const split = layers[0]!
     const { x, x2, y, row, count } = encodeFeatures(
-      split.features,
-      { ...layer.encoding, row: split.rows },
+      split.table,
+      { ...layer.encoding, row: split.row },
       ['y', 'row'],
       { jexl },
     )
-    const offsets = rowOffsets(sections, matrixRowOf, width)
+    const offsets = rowOffsets(sections ?? [], matrixRowOf, width)
     const segment = segments[regionIndex]!
     for (let i = 0; i < count; i++) {
       const offset = offsets[row[i]!] ?? -1

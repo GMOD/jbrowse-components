@@ -2850,6 +2850,25 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/featureTable": {
+      "package": "@jbrowse/core",
+      "names": [
+        "DerivedTable",
+        "NO_COLUMN",
+        "SelectTable",
+        "SourceTable",
+        "TableRow",
+        "WithTable",
+        "asTable",
+        "numberReaderOf",
+        "readerOf",
+        "selectRows",
+        "throughIndex",
+        "valueAt",
+        "withColumns"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/featureTransforms": {
       "package": "@jbrowse/core",
       "names": [
@@ -2861,6 +2880,7 @@
         "DEFAULT_PILEUP_AS",
         "DEFAULT_PILEUP_FIELDS",
         "facetLayers",
+        "layerTables",
         "matedBy",
         "runTransforms"
       ],

@@ -23,6 +23,17 @@ every `ops` entry.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## asTable
+
+A table over a feature list, or the table itself.
+
+```js
+// type signature
+(input: readonly Feature[] | FeatureTable) => FeatureTable
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
+
 ## BinStep
 
 Snap every feature to the genome-aligned bin of `step` bp its `field`
@@ -150,6 +161,12 @@ clips, below 1, else DEFAULT_CLIP_QUANTILE.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
 
+## CodeLane
+
+Codes into a list of labels, one per row.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
+
 ## COLOR_SCHEMES
 
 The named ramps a continuous colour scale's `scheme` takes, each one a stop
@@ -214,6 +231,16 @@ disagree with the painting.
 ## ColorSchemeName
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
+
+## Column
+
+A field's values over a table's rows, resolved once per step so the loop
+reading it is chosen before the loop runs: a lane a step wrote, codes into
+labels, a field read off the parser's own features, or a value a step
+computes per row. `at` is the row each of the table's rows reads, where the
+lane or the features belong to a table this one stands on.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ## continuousColorScale
 
@@ -333,32 +360,36 @@ transferables.
 
 ```js
 // type signature
-<L extends LaneName>(features: readonly Feature[], encoding: MarkEncodingInput, lanes: readonly L[], ctx?: EncodeContext) => Encoded<L>
+<L extends LaneName>(input: readonly Feature[] | FeatureTable, encoding: MarkEncodingInput, lanes: readonly L[], ctx?: EncodeContext) => Encoded<L>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ## FacetedLayer
 
-One layer of a faceted request: its features in section order, and the
-stacked row of each, index for index.
+One layer of a faceted request: its rows in section order, and the stacked
+row of each, index for index.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
 
 ## facetLayers
 
-A faceted request's layers: the features split on the facet's field, the
+A faceted request's layers: the rows split on the facet's field, the
 facet's own steps and then each layer's run over each section alone, and
 the sections stacked — a section's rows start where the one above it ends,
-and it is as tall as the tallest layer packed it. Every layer's features
-come back in section order beside their stacked rows, so a faceted display
-is the unfaceted one drawn once per section, and a feature is handed on as
-its steps left it. A layer naming no `row` field stands on each section's
-first row, the answer the unfaceted encoder gives it.
+and it is as tall as the tallest layer packed it. Every layer's rows come
+back in section order beside their stacked rows, so a faceted display is
+the unfaceted one drawn once per section, and a row is handed on as its
+steps left it. A layer naming no `row` field stands on each section's first
+row, the answer the unfaceted encoder gives it.
+
+The split is a counting sort into section order rather than a list per
+section: every step runs once over the ordered rows, keeping section order,
+and one that groups rows groups within a section.
 
 ```js
 // type signature
-(features: readonly Feature[], facet: FacetSpec, layers: readonly {…}[], jexl?: JexlInstance | undefined) => { ...; }
+(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly {…}[], jexl?: JexlInstance | undefined) => { ...; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -377,6 +408,14 @@ every layer's own steps over each section alone, and stack the sections,
 each starting on the row after the one above it ends.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## FeatureTable
+
+The rows one step of a mark's declaration hands the next: a column per
+field and a view of one row as a `Feature`, for a `jexl:` expression, a
+channel reader and the hover.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ## fieldReader
 
@@ -566,6 +605,21 @@ the lanes the display's mark reads.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## layerTables
+
+A layered request's rows: the shared steps, the facet's split where it
+names one, and each layer's own steps, with the row each layer's rows stand
+in — the field it names, or under a facet each row's stacked row. The split
+comes as early as it can: after the last shared step that must see every
+row, so the steps that follow it read the rows already in section order.
+
+```js
+// type signature
+(input: readonly Feature[] | FeatureTable, request: {…}, jexl?: JexlInstance | undefined) => { ...; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
+
 ## ListedRowSource
 
 One row an adapter lists: `name` is a value of the listing's field, and
@@ -592,6 +646,13 @@ its mate (`{ chrom: 'mate.refName', pos: 'mate.start' }`). Spelt the way
 GenomeSpy spells a genomic position over two columns.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## MadeRows
+
+A table whose rows a step made, which answers each row's identity, its
+hover JSON and the feature it hangs from.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ## MarkEncoding
 
@@ -691,6 +752,24 @@ value.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
+## NumberLane
+
+A typed lane a step wrote, one number per row.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
+
+## numberReaderOf
+
+readerOf as the number a quantitative channel or step reads,
+`NaN` where a row holds none, by `numericValue`'s rules.
+
+```js
+// type signature
+(column: Column) => (i: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ## numericDomain
 
@@ -822,6 +901,18 @@ follows the widened domain with no table baked again.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+## readerOf
+
+A reader of a column's values by row, its kind resolved here once. A
+`number` lane with no index reads straight off the lane.
+
+```js
+// type signature
+(column: Column) => (i: number) => unknown
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
+
 ## READS_REFERENCE
 
 The `adapterCapabilities` entry of an adapter that reads the reference
@@ -885,13 +976,13 @@ colour.
 
 ## runTransforms
 
-Run the transform steps over a feature list, in order, in the worker. The
-list a step answers is what the next one reads, and the last one is what
-the encoder walks.
+Run the transform steps over a feature list or a table, in order, in the
+worker. The table a step answers is what the next one reads, and the last
+one is what the encoder walks.
 
 ```js
 // type signature
-(features: readonly Feature[], steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => readonly Feature[]
+(input: readonly Feature[] | FeatureTable, steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => FeatureTable
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -973,6 +1064,19 @@ contacts arrive nearly sorted.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/quantileExtent.ts)
+
+## selectRows
+
+The table's rows `rows` names, in that order: over an adapter's features, a
+source table over those features again, so every field still reads straight
+off them; over rows a step made, a table standing on them.
+
+```js
+// type signature
+(table: FeatureTable, rows: Uint32Array<ArrayBufferLike>) => FeatureTable
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ## SessionPaletteProvider
 
@@ -1255,6 +1359,17 @@ reads what the last answered.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## valueAt
+
+A column's value at a row, whatever its kind: for a loop that reads few rows.
+
+```js
+// type signature
+(column: Column, i: number) => unknown
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
+
 ## VIRIDIS_STOPS
 
 The 256 viridis stops, fully opaque. Feed them to buildColorRampLut
@@ -1267,6 +1382,18 @@ readonly ColorRampStop[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
+## withColumns
+
+The table's rows with `written` beside them, in the order `rows` names
+where it names one.
+
+```js
+// type signature
+(table: FeatureTable, written: ReadonlyMap<string, Column>, rows?: Uint32Array<ArrayBufferLike> | undefined) => FeatureTable
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
 
 ## withHitIndex
 

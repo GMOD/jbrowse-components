@@ -1,6 +1,6 @@
 ---
 name: maf-onto-marks
-description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height. A bench that evening found the Feature steps taking 8 s where the MAF display takes 0.7 at 470 species (ADR-190), so the rest waits on typed lanes, which a spike put at the MAF display's speed and Colin said to build.
+description: Colin's 2026-09-28 ask to draw the MAF display through the mark display, opened the day the wiggle port's first three landings went in. An inventory that day found MAF already draws every GPU layer through render-core's span, bar and coverage marks and owns no shader, so the port is the data path, the row geometry, the band stack and the overlays. Items 1, 2 and 4 landed the same day - ADR-186's flatten over a record puts a row per species on the mark display, ADR-187's cells step turns each row into its runs against the reference with each insertion an interbase feature, ADR-189's adapter listing gives the rows the tree's order and the guide tree - then item 3's pinned, scrolling row height. A bench that evening found the Feature steps taking 8 s where the MAF display takes 0.7 at 470 species (ADR-190); ADR-191 moved the whole mark pipeline onto tables the same night, which leaves the hit index as the one cost the MAF display does not pay, and the rest of the list waits on that.
 ---
 
 # The MAF display onto the mark display
@@ -54,10 +54,14 @@ identity through `bin` and `aggregate mean` answers the wrong mean;
 [ADR-190](../architecture-decision-records/adr-190-the-maf-display-stays-off-the-feature-steps.md)
 records it. A bench-only spike running the same steps over typed lanes, with a
 row lookup in place of the hit index, lands at about the MAF display's speed
-and draws an exact identity:
-[a-step-that-makes-rows-writes-typed-lanes](../ideas/ready/a-step-that-makes-rows-writes-typed-lanes.md).
-Items 5 to 11 wait on that call, since each would add a layer to a path that
-already fails rule 3.
+and draws an exact identity, and
+[ADR-191](../architecture-decision-records/adr-191-the-mark-pipeline-runs-over-tables.md)
+built the tables into the pipeline itself. What
+[the-mark-pipeline-runs-over-tables](../ideas/ready/the-mark-pipeline-runs-over-tables.md)
+lands next is the row lookup: over a 470-species region the hit index costs
+more than the rest of the request, and the main thread rebuilds it whenever a
+species is hidden (`facet.ts` `facetLayer`). Items 5 to 11 wait on it, since
+each would add a layer to a path that still pays it.
 
 ## What the mark display must gain, ranked
 

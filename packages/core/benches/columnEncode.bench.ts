@@ -100,6 +100,7 @@ import {
   processFeaturesFromArrays,
 } from '../../../plugins/wiggle/src/util.ts'
 import { barMark } from '../../render-core/src/marks/barMark.ts'
+import { readerOf } from '../src/util/featureTable.ts'
 import { runTransforms } from '../src/util/featureTransforms.ts'
 import createJexlInstance from '../src/util/jexl.ts'
 import { DEFAULT_MARK_COLOR, encodeFeatures } from '../src/util/markEncoding.ts'
@@ -718,9 +719,10 @@ function runPileupScenario() {
   const prebuilt = makeFeatures()
   const pileupToRows = (features: readonly Feature[]) => {
     const out = runTransforms(features, STEPS)
+    const read = readerOf(out.column('row'))
     const rows = new Uint16Array(out.length)
     for (let i = 0; i < out.length; i++) {
-      rows[i] = out[i]!.get('row') as number
+      rows[i] = read(i) as number
     }
     return rows
   }

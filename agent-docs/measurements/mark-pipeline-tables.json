@@ -1,0 +1,151 @@
+{
+  "id": "mark-pipeline-tables",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --max-old-space-size=14000 packages/core/benches/tablePipeline.bench.ts --rounds=7 --maf --json",
+    "notes": "The mark pipeline at main (base, and control: main extracted a second time) against the working tree (head), in one process, interleaved round-robin with the order rotated, MIN across rounds, lanes checked equal before timing. Every scenario but the last runs over a million synthetic features (start, end, score, strand, and a sample among 26): the steps, the facet where one is named, and the encode, as layerFeatures and CoreGetEncodedLayers run them. head runs a request through layerTables. The last row is the marks_maf_cells declaration (flatten over alignments keyed by species, cells, rows by species, a span coloured by state, with the hit index) over the synthetic MAF-tabix fixture at 470 species, 200 blocks of 250 columns, 5.5M runs. rows by sample and the MAF row ask for the hit index, which both sides build the same way."
+  },
+  "columns": [
+    {
+      "key": "scenario",
+      "label": "scenario"
+    },
+    {
+      "key": "baseMs",
+      "label": "main",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "headMs",
+      "label": "tables",
+      "format": "ms",
+      "precision": 0,
+      "align": "right"
+    },
+    {
+      "key": "controlVsBase",
+      "label": "control vs main",
+      "format": "x",
+      "precision": 2,
+      "derived": "controlMs / baseMs",
+      "align": "right"
+    },
+    {
+      "key": "headVsBase",
+      "label": "tables vs main",
+      "format": "x",
+      "precision": 2,
+      "derived": "headMs / baseMs",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "encode, y and a colour",
+        "baseMs": 317.9,
+        "controlMs": 342.3,
+        "headMs": 313
+      }
+    },
+    {
+      "values": {
+        "scenario": "encode, categorical colour",
+        "baseMs": 134.1,
+        "controlMs": 138.5,
+        "headMs": 127.7
+      }
+    },
+    {
+      "values": {
+        "scenario": "encode, jexl y",
+        "baseMs": 502.6,
+        "controlMs": 255.3,
+        "headMs": 249
+      }
+    },
+    {
+      "values": {
+        "scenario": "filter",
+        "baseMs": 277.6,
+        "controlMs": 268.4,
+        "headMs": 246.6
+      }
+    },
+    {
+      "values": {
+        "scenario": "formula",
+        "baseMs": 410.4,
+        "controlMs": 446.6,
+        "headMs": 243.2
+      }
+    },
+    {
+      "values": {
+        "scenario": "flatten",
+        "baseMs": 422.6,
+        "controlMs": 376.3,
+        "headMs": 304.8
+      }
+    },
+    {
+      "values": {
+        "scenario": "bin, count",
+        "baseMs": 299.7,
+        "controlMs": 293.7,
+        "headMs": 99.3
+      }
+    },
+    {
+      "values": {
+        "scenario": "bin, mean",
+        "baseMs": 350.2,
+        "controlMs": 337.3,
+        "headMs": 114.2
+      }
+    },
+    {
+      "values": {
+        "scenario": "coverage",
+        "baseMs": 371,
+        "controlMs": 349.1,
+        "headMs": 411.4
+      }
+    },
+    {
+      "values": {
+        "scenario": "pileup",
+        "baseMs": 304.1,
+        "controlMs": 329.1,
+        "headMs": 333.7
+      }
+    },
+    {
+      "values": {
+        "scenario": "rows by sample",
+        "baseMs": 494.6,
+        "controlMs": 514.8,
+        "headMs": 692.5
+      }
+    },
+    {
+      "values": {
+        "scenario": "MAF cells, 470 species",
+        "baseMs": 7832.3,
+        "controlMs": 6858.4,
+        "headMs": 2783
+      }
+    }
+  ]
+}
