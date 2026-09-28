@@ -80,7 +80,9 @@ test('spanMark inherits nearest from the module that demands it', async () => {
       'packages/render-core/src/shaders/spanMark.iface.generated.ts',
     )
   )
-  expect(mod.TEXTURES.map(t => t.filter)).toEqual(['nearest'])
+  expect(Object.fromEntries(mod.TEXTURES.map(t => [t.name, t.filter]))).toEqual(
+    { colorRamp: 'linear', rowTable: 'nearest' },
+  )
 })
 
 test.each(shaders)('%s loads its text through SOURCE alone', async file => {
