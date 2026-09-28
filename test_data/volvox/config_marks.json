@@ -198,6 +198,38 @@
       ]
     },
     {
+      "type": "QuantitativeTrack",
+      "trackId": "marks_heatmap",
+      "name": "Mark heatmap over a positive and negative BigWig",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray_posneg.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_heatmap-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "span",
+              "encoding": {
+                "color": {
+                  "field": "score",
+                  "scale": "linear",
+                  "range": ["blue", "white", "red"],
+                  "domainMid": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "assemblyNames": ["volvox"],
       "adapter": {

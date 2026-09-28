@@ -91,6 +91,7 @@ test('drawPlannedPasses issues the plan and nothing else, off the caller uniform
   uploadMarks(hal, 0, MARKS, REGION)
   for (const id of ['first', 'borrower']) {
     hal.uploadTexture(id, new Uint8Array(4), 1, 1, 'rowTable')
+    hal.uploadTexture(id, new Uint8Array(4), 1, 1, 'colorRamp')
   }
   hal.beginFrame(0, 0, 0, 0)
   hal.writeUniforms(new ArrayBuffer(hal.uniformByteSize))
@@ -109,6 +110,7 @@ test('drawMarks gates on enabled the way a plan does', () => {
   uploadMarks(hal, 0, MARKS, REGION)
   for (const id of ['first', 'borrower']) {
     hal.uploadTexture(id, new Uint8Array(4), 1, 1, 'rowTable')
+    hal.uploadTexture(id, new Uint8Array(4), 1, 1, 'colorRamp')
   }
   hal.beginFrame(0, 0, 0, 0)
   drawMarks(

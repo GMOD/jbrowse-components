@@ -7,10 +7,16 @@
 // its drawn slot and colour, or collapsed to a zero-area quad off clip space
 // where the table hides it. A pass binding no table (`rowTableKeys` −1) draws
 // `row` as the slot, which is what every consumer did before the table.
+//
+// The colour slot is `markColor`'s: a packed ABGR, or under a ramp or a
+// threshold the value's bits resolved here through the uniforms, which is
+// what makes a span coloured by a field a heatmap whose domain moves as a
+// uniform.
 //! targets: wgsl, glsl
 //! instance-writer
 
 import colorPack;
+import markColor;
 import rowRect;
 import rowTable;
 
@@ -26,15 +32,25 @@ struct SpanMarkUniforms {
   float  rowProportion;
   float  scrollTop;
   int    rowTableKeys;
+  // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
+  // value through the ramp, 3 through the threshold below.
+  int    rampMode;
+  float  rampMin;
+  float  rampMax;
+  float  rampMidNorm;
+  int    colorCutCount;
+  float4 colorCuts[2];
+  float4 colorBands[MAX_COLOR_BANDS];
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<SpanMarkUniforms> u;
-[[vk::binding(2, 0)]] Sampler2D<float4> rowTable;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
+[[vk::binding(4, 0)]] Sampler2D<float4> rowTable;
 
 [shader("vertex")]
 RowRectVsOut vs_main(RowRectInstance inst, uint vid : SV_VertexID) {
-  RowPlacement p = rowTableLookup(
-    rowTable, inst.row, u.rowTableKeys, unpackRGBA(inst.color));
+  RowPlacement p = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
+    markScaleColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax, u.rampMidNorm, u.colorCutCount, u.colorCuts[0], u.colorCuts[1], u.colorBands));
   RowRectVsOut o;
   if (p.hidden) {
     o.position = float4(2.0, 2.0, 0.0, 1.0);

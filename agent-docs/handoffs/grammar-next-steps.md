@@ -19,9 +19,14 @@ probes come from that review and nobody has re-measured them.
 1. **Wiggle's xyplot and scatter onto render-core's `bar` and `point`**, parked
    on a call:
    [ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md](../ideas/waiting-on-a-call/wiggle-onto-bar-and-point.md).
-   Its first two landings are in: the line as a mark (ADR-184) and the pivot
-   as a shader-side threshold over the plotted value (ADR-185), both
-   2026-09-28.
+   Its first three landings are in, all 2026-09-28: the line as a mark
+   (ADR-184), the pivot as a shader-side threshold over the plotted value
+   (ADR-185), and the density heatmap as a `span` under a colour scale
+   (ADR-113's amendment). Still to build, ranked by how much of the wiggle
+   display leans on each: per-source colour on the plot through the row
+   table's colour plane, summary modes and the min–max band (a `y2` channel),
+   the layout-dependent colour default and the cut-at-origin default, and the
+   typed-array fetch (ADR-152's conditions).
 
 The 2026-09-25/26 reviews' findings all landed by 2026-09-27: the link
 mark's log floor, ring placement, hover box and alias-spelt pair, and

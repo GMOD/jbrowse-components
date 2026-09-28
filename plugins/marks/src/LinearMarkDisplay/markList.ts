@@ -50,7 +50,7 @@ const MARK_VALUE_LANES = {
   point: ['y', 'glyph'],
   rule: ['y'],
   line: ['y'],
-  span: ['row', 'color'],
+  span: ['row'],
   link: ['x2Region'],
 } as const satisfies Record<Exclude<MarkType, 'text'>, readonly ChannelLane[]>
 
@@ -364,12 +364,16 @@ function shapeMark(entry: MarkEntry, i: number) {
         channels: (d: MarkRegionData) =>
           withLanes(d.layers[i], MARK_VALUE_LANES.span),
         params: (s: MarkRenderState) => ({
+          colorScale: s.colorScales[i],
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           rowProportion: 1,
           minWidthPx: s.minWidthPx,
           seamPx: 0,
           scrollTop: 0,
           rowTable: s.rowTable,
+        }),
+        textures: (s: MarkRenderState) => ({
+          colorRamp: rampLut(s.colorScales[i]),
         }),
         enabled,
       })

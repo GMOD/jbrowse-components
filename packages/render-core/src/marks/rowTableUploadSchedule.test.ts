@@ -77,7 +77,9 @@ test('a reorder, a focus and a recolour each upload the table once and no instan
     frames(listed, listed, reordered, reordered, focused, recoloured),
   ).toEqual({
     buffers: 1,
+    // the ramp sampler nothing names binds the inert table once
     textures: [
+      [1024, 256, 1, 'colorRamp'],
       [24, 3, 2, 'rowTable'],
       [24, 3, 2, 'rowTable'],
       [24, 3, 2, 'rowTable'],
@@ -90,7 +92,10 @@ test('a reorder, a focus and a recolour each upload the table once and no instan
 test('a pass drawn with no table binds the inert table once and keeps drawing', () => {
   expect(frames(undefined, undefined)).toEqual({
     buffers: 1,
-    textures: [[1024, 256, 1, 'rowTable']],
+    textures: [
+      [1024, 256, 1, 'colorRamp'],
+      [1024, 256, 1, 'rowTable'],
+    ],
     draws: 2,
   })
 })

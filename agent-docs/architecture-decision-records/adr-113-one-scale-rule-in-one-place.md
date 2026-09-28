@@ -221,3 +221,14 @@ table says `pinned`, and a pinned ramp is every region's whatever they hold.
   nothing in this ADR changes what a fetch is keyed on — and taken in
   [ADR-117](adr-117-the-density-tier-is-a-mark-layer.md), which does: the
   resolved width is a term of `rpcProps()`.
+
+### Amended 2026-09-28: `span` reads the scale too
+
+The wiggle port's density heatmap is a span coloured by its value, so `span`
+gained the arm this ADR left it without: its shader reads `markScaleColor`
+over the same ramp and threshold uniforms as `bar`, its packer writes
+`colorBits` and its painter bakes `paintColors`, and the mark display resolves
+a span's ramp on the main thread as it resolves the others'. `rowRect`'s
+shared instance struct is untouched, since the value rides the colour slot
+reinterpreted. `text` alone keeps the worker-resolved lane, and
+`unpinned-span-ramp` is `unpinned-text-ramp`.

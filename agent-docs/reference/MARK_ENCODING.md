@@ -91,8 +91,9 @@ ABGR or the value's float32 bits, `colorBits` on the packing side and
 `markColor.slang`'s `asfloat` on the shader's — so the ramp costs no instance
 byte. The Canvas2D painters, which are also the SVG export, bake the packed
 colours once per domain change (`paintColors`, memoized on the payload). A
-`span` keeps the worker-resolved lane: its geometry is `rowRect`'s, whose
-uniform struct four other displays share. `domainMin` and `domainMax` each pin
+`span` reads the same uniforms (ADR-113's amendment of 2026-09-28), which is
+what makes it a heatmap; `text` alone keeps the worker-resolved lane, since its
+labels are DOM the display places. `domainMin` and `domainMax` each pin
 one end and leave the other to that union (`rampDomain`,
 `@jbrowse/core/util/colorRamp`), so a pinned floor holds across a pan while the
 ceiling follows the data; both pinned is what fixes a legend for a figure. The

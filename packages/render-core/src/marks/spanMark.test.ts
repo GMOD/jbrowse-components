@@ -52,6 +52,41 @@ function channels(
   }
 }
 
+// A span under a colour scale carries the value, and the painter bakes it as
+// the shader resolves it: the interval's colour under a threshold, the LUT
+// entry under a ramp.
+test('a span coloured by a value paints through the frame s colour scale', () => {
+  const valued = (values: number[]): SpanChannels => ({
+    x: Uint32Array.from(values.map((_, i) => i * 10)),
+    x2: Uint32Array.from(values.map((_, i) => i * 10 + 10)),
+    row: new Uint32Array(values.length),
+    colorValue: Float32Array.from(values),
+    count: values.length,
+  })
+  const threshold = mockCtx()
+  spanMark.paintBlock(threshold.ctx, valued([2, 8]), block, frame, {
+    ...params,
+    colorScale: { cuts: [5], colors: Uint32Array.of(RED, BLUE) },
+  })
+  expect(threshold.calls.map(c => c.fillStyle)).toEqual([
+    abgrToCssRgba(RED),
+    abgrToCssRgba(BLUE),
+  ])
+  const ramp = mockCtx()
+  spanMark.paintBlock(ramp.ctx, valued([0, 10]), block, frame, {
+    ...params,
+    colorScale: {
+      domain: [0, 10],
+      scale: 'linear',
+      lut: Uint8Array.of(255, 0, 0, 255, 0, 0, 255, 255),
+    },
+  })
+  expect(ramp.calls.map(c => c.fillStyle)).toEqual([
+    abgrToCssRgba(RED),
+    abgrToCssRgba(BLUE),
+  ])
+})
+
 test('paints one rect per instance at its row band, genomic span and colour', () => {
   const { ctx, calls } = mockCtx()
   spanMark.paintBlock(
@@ -212,7 +247,7 @@ const retiredSpan: Required<
       const xa = bpToPx(x[i]!)
       const xb = bpToPx(x2[i]!)
       const width = Math.max(minWidthPx, Math.abs(xb - xa))
-      setFill(color[i]!)
+      setFill(color![i]!)
       ctx.fillRect(
         spanLeft(xa, xb, width),
         offset + rowHeight * row[i]! - scrollTop,
@@ -428,7 +463,9 @@ describe('a row table between the instance key and the band it draws on', () => 
   test('the pass samples the table as its texture, nearest, and the uniforms say how many keys', () => {
     expect(spanMark.textures!(withTable).rowTable).toBe(table.texture)
     expect(spanMark.textures!(params).rowTable).toBeUndefined()
-    expect(spanMark.pass.textures?.[0].filter).toBe('nearest')
+    expect(
+      spanMark.pass.textures?.find(t => t.name === 'rowTable')?.filter,
+    ).toBe('nearest')
     const clip = clipBlock(block, tall.canvasWidth, tall.canvasHeight, {
       x: 1,
       y: 1,

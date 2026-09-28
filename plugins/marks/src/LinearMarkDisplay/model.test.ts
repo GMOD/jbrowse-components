@@ -214,7 +214,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
             domainQuantile: 1,
           },
         },
-        lanes: ['row', 'color', 'index'],
+        lanes: ['row', 'color', 'colorValue', 'index'],
       },
     ],
   })
@@ -928,26 +928,23 @@ test.each([
   },
 )
 
-// A span's ramp resolves in the worker (ADR-113), one table per region, under
-// a legend that unions their extents.
-test('a span painting an unpinned colour ramp says its colours differ by region, and a pinned one says nothing', () => {
+// A text's ramp resolves in the worker, one table per region, under a legend
+// that unions their extents; a span's resolves on the display since ADR-113's
+// 2026-09-28 amendment, so its open end says nothing.
+test('a text painting an unpinned colour ramp says its colours differ by region, and a span or a pinned one says nothing', () => {
+  const ramp = { field: 'score', scale: 'linear', range: ['white', 'red'] }
   expect(
-    noticesOf([
-      {
-        mark: 'span',
-        encoding: {
-          color: { field: 'score', scale: 'linear', range: ['white', 'red'] },
-        },
-      },
-    ]),
+    noticesOf([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),
   ).toEqual([
-    expect.stringMatching(/^mark 0 encoding.color.domainMin: a span's ramp/),
+    expect.stringMatching(/^mark 0 encoding.color.domainMin: a text's ramp/),
   ])
+  expect(noticesOf([{ mark: 'span', encoding: { color: ramp } }])).toEqual([])
   expect(
     noticesOf([
       {
-        mark: 'span',
+        mark: 'text',
         encoding: {
+          text: 'name',
           color: {
             field: 'score',
             scale: 'log',
@@ -1094,7 +1091,7 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
       row: 'sampleIndex',
       color: DEFAULT_MARK_COLOR,
     },
-    lanes: ['row', 'color', 'index'],
+    lanes: ['row', 'color', 'colorValue', 'index'],
   })
   display.setRpcData(0, result([{ y: [0, 0, 0], row: [0, 2, 1] }]), REGION)
   expect(display.rowCount).toBe(3)

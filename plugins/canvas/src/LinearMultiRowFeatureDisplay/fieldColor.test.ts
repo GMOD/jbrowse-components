@@ -75,10 +75,10 @@ describe('a colour field on the multi-row display', () => {
       void d.encodedChannels
     })
     const { color, count } = [...d.encodedChannels.values()][0]!
-    expect([...color.subarray(0, count)]).toEqual(
+    expect([...color!.subarray(0, count)]).toEqual(
       ['#0000ff', '#eeeeee', '#ff0000']
         .map(c => cssColorToABGR(c))
-        .concat(color[3]!),
+        .concat(color![3]!),
     )
     held()
   })

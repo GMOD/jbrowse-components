@@ -79,8 +79,8 @@ export const MARK_RULES = {
   'field-spells-constant': 'warning',
   /** A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
   'labels-domain': 'warning',
-  /** A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. */
-  'unpinned-span-ramp': 'warning',
+  /** A text's colour ramp with an open end, whose colours then differ from one region to the next. */
+  'unpinned-text-ramp': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
   /** A `filter` or `formula` whose `expr` is not a `jexl:` expression. */
@@ -687,7 +687,7 @@ function ownProblems(
     ) {
       problems.push(
         found(
-          'unpinned-span-ramp',
+          'unpinned-text-ramp',
           `encoding.color.${domainMin === undefined ? 'domainMin' : 'domainMax'}`,
           `a ${type}'s ramp resolves an open end against each region's own extremes, so its colours agree across regions only with domainMin and domainMax both pinned`,
         ),

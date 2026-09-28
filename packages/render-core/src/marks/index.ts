@@ -26,6 +26,7 @@ export {
 export {
   isThreshold,
   keepRampValues,
+  rampUniforms,
   rampValueBits,
   thresholdBandOf,
 } from './markRamp.ts'

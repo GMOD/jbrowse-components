@@ -26,7 +26,11 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { HIDDEN_ROW, buildRowTable } from '@jbrowse/render-core/marks'
+import {
+  HIDDEN_ROW,
+  buildRowTable,
+  rampUniforms,
+} from '@jbrowse/render-core/marks'
 import puppeteer from 'puppeteer'
 
 import * as shader from '../../../packages/render-core/src/shaders/spanMark.generated.ts'
@@ -59,6 +63,7 @@ function uniformsFor(rowTableKeys: number) {
   const buf = new ArrayBuffer(shader.UNIFORMS_SIZE_BYTES)
   shader.writeUniforms(buf, {
     bpRangeX: [0, 0, lengthBp],
+    ...rampUniforms(undefined),
     canvasHeight: CANVAS_H,
     minCellDenomPx: CANVAS_W,
     minCellPx: 2,

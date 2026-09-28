@@ -5,13 +5,15 @@ import type { VertexAttributeLayout, ShaderBinding, TextureBinding } from '@jbro
 
 export const BINDINGS: readonly ShaderBinding[] = [
   { index: 1, kind: 'uniform', name: 'u', stages: ['vertex'] },
-  { index: 2, kind: 'texture', name: 'rowTable', stages: ['vertex'] },
-  { index: 3, kind: 'sampler', name: 'rowTable', stages: ['vertex'] },
+  { index: 2, kind: 'texture', name: 'colorRamp', stages: ['vertex'] },
+  { index: 3, kind: 'sampler', name: 'colorRamp', stages: ['vertex'] },
+  { index: 4, kind: 'texture', name: 'rowTable', stages: ['vertex'] },
+  { index: 5, kind: 'sampler', name: 'rowTable', stages: ['vertex'] },
 ]
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 48
+export const UNIFORMS_SIZE_BYTES = 240
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -23,12 +25,59 @@ export const UNIFORM_OFFSET_F32 = {
   rowHeight: 7,
   rowProportion: 8,
   scrollTop: 9,
+  rampMin: 12,
+  rampMax: 13,
+  rampMidNorm: 14,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
   rowTableKeys: 10,
+  rampMode: 11,
+  colorCutCount: 15,
 } as const
+
+
+// Word indices of each array field’s elements, into a 4-byte-word
+// view over the uniform buffer (Uint32Array or Float32Array — the
+// field’s scalar type picks, same as UNIFORM_OFFSET_*). NOT
+// consecutive: std140 pads every array element to 16 bytes.
+export const UNIFORM_SLOT_ARRAYS = {
+  colorCuts: [16, 20] as const,
+  colorBands: [24, 28, 32, 36, 40, 44, 48, 52, 56] as const,
+} as const
+
+// Element `i` of the `colorCuts` uniform array (4 components).
+export function setUniformColorCuts(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.colorCuts[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
+
+// Element `i` of the `colorBands` uniform array (4 components).
+export function setUniformColorBands(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.colorBands[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
 
 
 export interface Uniforms {
@@ -41,6 +90,13 @@ export interface Uniforms {
   rowProportion: number
   scrollTop: number
   rowTableKeys: number
+  rampMode: number
+  rampMin: number
+  rampMax: number
+  rampMidNorm: number
+  colorCutCount: number
+  colorCuts: [[number, number, number, number], [number, number, number, number]]
+  colorBands: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -57,6 +113,55 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[8] = uniforms.rowProportion
   f32[9] = uniforms.scrollTop
   i32[10] = uniforms.rowTableKeys
+  i32[11] = uniforms.rampMode
+  f32[12] = uniforms.rampMin
+  f32[13] = uniforms.rampMax
+  f32[14] = uniforms.rampMidNorm
+  i32[15] = uniforms.colorCutCount
+  f32[16] = uniforms.colorCuts[0][0]
+  f32[17] = uniforms.colorCuts[0][1]
+  f32[18] = uniforms.colorCuts[0][2]
+  f32[19] = uniforms.colorCuts[0][3]
+  f32[20] = uniforms.colorCuts[1][0]
+  f32[21] = uniforms.colorCuts[1][1]
+  f32[22] = uniforms.colorCuts[1][2]
+  f32[23] = uniforms.colorCuts[1][3]
+  f32[24] = uniforms.colorBands[0][0]
+  f32[25] = uniforms.colorBands[0][1]
+  f32[26] = uniforms.colorBands[0][2]
+  f32[27] = uniforms.colorBands[0][3]
+  f32[28] = uniforms.colorBands[1][0]
+  f32[29] = uniforms.colorBands[1][1]
+  f32[30] = uniforms.colorBands[1][2]
+  f32[31] = uniforms.colorBands[1][3]
+  f32[32] = uniforms.colorBands[2][0]
+  f32[33] = uniforms.colorBands[2][1]
+  f32[34] = uniforms.colorBands[2][2]
+  f32[35] = uniforms.colorBands[2][3]
+  f32[36] = uniforms.colorBands[3][0]
+  f32[37] = uniforms.colorBands[3][1]
+  f32[38] = uniforms.colorBands[3][2]
+  f32[39] = uniforms.colorBands[3][3]
+  f32[40] = uniforms.colorBands[4][0]
+  f32[41] = uniforms.colorBands[4][1]
+  f32[42] = uniforms.colorBands[4][2]
+  f32[43] = uniforms.colorBands[4][3]
+  f32[44] = uniforms.colorBands[5][0]
+  f32[45] = uniforms.colorBands[5][1]
+  f32[46] = uniforms.colorBands[5][2]
+  f32[47] = uniforms.colorBands[5][3]
+  f32[48] = uniforms.colorBands[6][0]
+  f32[49] = uniforms.colorBands[6][1]
+  f32[50] = uniforms.colorBands[6][2]
+  f32[51] = uniforms.colorBands[6][3]
+  f32[52] = uniforms.colorBands[7][0]
+  f32[53] = uniforms.colorBands[7][1]
+  f32[54] = uniforms.colorBands[7][2]
+  f32[55] = uniforms.colorBands[7][3]
+  f32[56] = uniforms.colorBands[8][0]
+  f32[57] = uniforms.colorBands[8][1]
+  f32[58] = uniforms.colorBands[8][2]
+  f32[59] = uniforms.colorBands[8][3]
 }
 
 export const INSTANCE_STRIDE_BYTES = 16
@@ -179,5 +284,6 @@ export class InstanceWriter {
 
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [
-  { name: 'rowTable', glTextureUnit: 0, glUniformName: 'u_rowTable', filter: 'nearest' },
+  { name: 'colorRamp', glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },
+  { name: 'rowTable', glTextureUnit: 1, glUniformName: 'u_rowTable', filter: 'nearest' },
 ]

@@ -98,7 +98,7 @@ describe('span through a row table: every drawn rect answers its own hit, in bot
     x: c.x.subarray(i, i + 1),
     x2: c.x2.subarray(i, i + 1),
     row: c.row.subarray(i, i + 1),
-    color: c.color.subarray(i, i + 1),
+    color: c.color!.subarray(i, i + 1),
     count: 1,
   })
   test.each([false, true])('reversed %s', reversed => {
@@ -123,7 +123,7 @@ describe('containment: a rule in place of the painted box', () => {
     x: c.x.subarray(i, i + 1),
     x2: c.x2.subarray(i, i + 1),
     row: c.row.subarray(i, i + 1),
-    color: c.color.subarray(i, i + 1),
+    color: c.color!.subarray(i, i + 1),
     count: 1,
   })
   const onInk =

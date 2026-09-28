@@ -17,7 +17,8 @@ and the row's f32-against-u32 is about an hour. Since then the line landed as
 a mark (ADR-184), and the bicolor pivot is a threshold over `y` resolved in the
 shader (ADR-185): a rise across the pivot changes colour at it, the colour
 costs no lane because it reads the `y` lane, and a pivot edit refetches
-nothing.
+nothing. The density heatmap is a `span` under a colour scale (ADR-113's
+2026-09-28 amendment), the white fade a diverging `range` with `domainMid`.
 
 ## What is still real
 

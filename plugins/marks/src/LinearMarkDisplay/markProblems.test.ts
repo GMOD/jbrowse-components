@@ -657,16 +657,28 @@ test('a ramp reads its ends, not a domain, and a span wants both ends pinned', (
   expect(found(ramp('bar', { domainQuantile: 99 }))).toEqual([
     'warning domain-quantile mark 0 encoding.color.domainQuantile',
   ])
-  expect(found(ramp('span', { domainMin: 0 }))).toEqual([
-    'warning unpinned-span-ramp mark 0 encoding.color.domainMax',
+  expect(found(ramp('span', {}))).toEqual([])
+  const text = (color: Record<string, unknown>) => [
+    {
+      mark: 'text',
+      encoding: {
+        text: 'name',
+        color: { field: 'score', scale: 'linear', ...color },
+      },
+    },
+  ]
+  expect(found(text({ domainMin: 0 }))).toEqual([
+    'warning unpinned-text-ramp mark 0 encoding.color.domainMax',
   ])
-  expect(found(ramp('span', {}))).toEqual([
-    'warning unpinned-span-ramp mark 0 encoding.color.domainMin',
+  expect(found(text({}))).toEqual([
+    'warning unpinned-text-ramp mark 0 encoding.color.domainMin',
   ])
   expect(
-    found([{ mark: 'span', encoding: { color: { field: 'score' } } }]),
-  ).toEqual(['warning unpinned-span-ramp mark 0 encoding.color.domainMin'])
-  expect(found(ramp('span', { domainMin: 0, domainMax: 10 }))).toEqual([])
+    found([
+      { mark: 'text', encoding: { text: 'name', color: { field: 'score' } } },
+    ]),
+  ).toEqual(['warning unpinned-text-ramp mark 0 encoding.color.domainMin'])
+  expect(found(text({ domainMin: 0, domainMax: 10 }))).toEqual([])
 })
 
 test("scales.y and a width read their ends by the colour ramp's one rule", () => {

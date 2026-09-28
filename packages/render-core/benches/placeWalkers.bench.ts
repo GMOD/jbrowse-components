@@ -698,7 +698,7 @@ const retiredSpan: Pick<MarkShape<SpanChannels, SpanParams>, 'paintBlock'> = {
       const xa = bpToPx(x[i]!)
       const xb = bpToPx(x2[i]!)
       const width = Math.max(minWidthPx, Math.abs(xb - xa))
-      setFill(color[i]!)
+      setFill(color![i]!)
       ctx.fillRect(
         spanLeft(xa, xb, width),
         offset + rowHeight * row[i]! - scrollTop,
@@ -721,7 +721,7 @@ const controlSpan: Pick<MarkShape<SpanChannels, SpanParams>, 'paintBlock'> = {
       const xa = bpToPx(x[i]!)
       const xb = bpToPx(x2[i]!)
       const width = Math.max(minWidthPx, Math.abs(xb - xa))
-      setFill(color[i]!)
+      setFill(color![i]!)
       ctx.fillRect(
         spanLeft(xa, xb, width),
         offset + rowHeight * row[i]! - scrollTop,

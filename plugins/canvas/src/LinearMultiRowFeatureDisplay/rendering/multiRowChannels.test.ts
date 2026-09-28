@@ -20,7 +20,7 @@ function decode(c: SpanChannels): DecodedInstance[] {
       startBp: c.x[i]!,
       endBp: c.x2[i]!,
       key: c.row[i]!,
-      color: c.color[i]!,
+      color: c.color![i]!,
     })
   }
   return out

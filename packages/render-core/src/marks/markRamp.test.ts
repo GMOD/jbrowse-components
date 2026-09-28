@@ -10,6 +10,8 @@ import {
 } from '../shaders/markColor.generated.ts'
 import { GLSL_VERTEX as POINT_GLSL } from '../shaders/pointMark.glsl.generated.ts'
 import { WGSL_SOURCE as POINT_WGSL } from '../shaders/pointMark.wgsl.generated.ts'
+import { GLSL_VERTEX as SPAN_GLSL } from '../shaders/spanMark.glsl.generated.ts'
+import { WGSL_SOURCE as SPAN_WGSL } from '../shaders/spanMark.wgsl.generated.ts'
 import { barMark } from './barMark.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
@@ -264,6 +266,8 @@ test.each([
   ['point GLSL', POINT_GLSL],
   ['link WGSL', LINK_WGSL],
   ['link GLSL', LINK_GLSL],
+  ['span WGSL', SPAN_WGSL],
+  ['span GLSL', SPAN_GLSL],
 ])('%s reads the ramp through its middle', (_name, src) => {
   expect(src).toMatch(/rampMidT_0\(normalizeScore_0\(/)
   expect(src).toMatch(/markScaleColor_0\([^;]*u_0\.rampMidNorm_0/)

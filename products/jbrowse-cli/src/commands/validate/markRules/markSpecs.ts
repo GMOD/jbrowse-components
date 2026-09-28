@@ -86,7 +86,7 @@ export const MARK_SPECS = {
   span: {
     channels: ['row', 'color'],
     value: 'none',
-    ramp: 'worker',
+    ramp: 'display',
     hit: true,
   },
   text: {

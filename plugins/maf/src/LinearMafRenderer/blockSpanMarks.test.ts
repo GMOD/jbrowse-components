@@ -168,7 +168,7 @@ describe('color by source chromosome, as a span mark', () => {
       RANKS,
     )
     expect([...row]).toEqual([0, 2])
-    expect([...color].map(abgrToCssRgba)).toEqual([RANK_RGBA[0], RANK_RGBA[4]])
+    expect([...color!].map(abgrToCssRgba)).toEqual([RANK_RGBA[0], RANK_RGBA[4]])
   })
 
   test('each palette entry packs to its CSS conversion', () => {
@@ -182,7 +182,7 @@ describe('color by source chromosome, as a span mark', () => {
       ],
       new Map(SOURCE_CHROM_PALETTE.map((_, r) => [r, new Map([['c', r]])])),
     )
-    expect([...color].map(abgrToCssRgba)).toEqual(RANK_RGBA)
+    expect([...color!].map(abgrToCssRgba)).toEqual(RANK_RGBA)
   })
 
   test('a block narrower than a pixel still paints one', () => {

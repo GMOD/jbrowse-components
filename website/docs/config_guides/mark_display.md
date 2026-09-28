@@ -71,6 +71,7 @@ one.
 | a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `encoding.size` a number as its thickness |
 | a line through the values | `geom_step()`, `geom_line()` | `"mark": "line"`, `"interpolate": "step-after"` or `"linear"` | `"mark": "line"`, `interpolate` `step` or `linear`, `encoding.size` its width |
 | a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
+| a heatmap strip, its colour the value | `geom_tile(aes(fill = score))` | `"mark": "rect"` with a quantitative `color` | `"mark": "span"` with a colour scale over the field |
 | the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
 | a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
 | a colour per category | `aes(fill = strand)` | `"color": {"field": "strand", "type": "nominal"}` | `"color": {"field": "strand", "scale": "categorical"}` |
@@ -359,7 +360,12 @@ changing at the axis.
 A `span` has no `y`: it paints a band from `x` to `x2` in its colour, for an
 interval whose extent is the point. With no `row` every span shares one band;
 with one — `{ "mark": "span", "encoding": { "row": "sampleIndex" } }` — the plot
-divides into as many bands as the highest row on screen needs.
+divides into as many bands as the highest row on screen needs. A colour scale
+over a field makes the span a heatmap:
+`{ "mark": "span", "encoding": { "color": { "field": "score", "scale": "linear", "range": ["white", "red"] } } }`
+paints each interval by its value, and a diverging `range` with `domainMid`
+fades through the middle colour at that value, which is how a signed signal
+reads white at zero.
 
 ## Labels
 
@@ -764,7 +770,7 @@ each reported under its id:
 | `domain-quantile` | warning | A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
 | `field-spells-constant` | warning | A colour's or a shape's `field` spelling a CSS colour or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
-| `unpinned-span-ramp` | warning | A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. |
+| `unpinned-text-ramp` | warning | A text's colour ramp with an open end, whose colours then differ from one region to the next. |
 | `step-pair` | warning | A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. |
 | `value-beside-rows` | warning | A mark other than a span drawn beside one that stacks rows, standing in the first of them. |
 | `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |

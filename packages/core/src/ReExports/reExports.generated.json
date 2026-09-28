@@ -4992,6 +4992,7 @@
         "planMarks",
         "pointInsetPx",
         "pointMark",
+        "rampUniforms",
         "rampValueBits",
         "recordPath",
         "rowColor",
@@ -5621,6 +5622,7 @@
         "UNIFORMS_SIZE_BYTES",
         "UNIFORM_OFFSET_F32",
         "UNIFORM_OFFSET_I32",
+        "UNIFORM_SLOT_ARRAYS",
         "VERTEX_ATTRIBUTES",
         "VERTS_PER_INSTANCE",
         "getInstanceColor",
@@ -5632,6 +5634,8 @@
         "setInstanceRow",
         "setInstanceX",
         "setInstanceX2",
+        "setUniformColorBands",
+        "setUniformColorCuts",
         "writeUniforms"
       ],
       "worker": "real"

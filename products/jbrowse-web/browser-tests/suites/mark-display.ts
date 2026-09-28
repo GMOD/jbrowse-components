@@ -53,6 +53,16 @@ const suite: TestSuite = {
         displayTestId,
       }),
     ),
+    // A span coloured by its value is a heatmap: the ramp resolves in the
+    // shader off the value lane, a diverging range white at 0.
+    lgvSnapshotTest({
+      name: 'a heatmap over a positive and negative BigWig, white at 0',
+      snapshot: 'mark-heatmap',
+      loc: 'ctgA:1-50000',
+      tracks: ['marks_heatmap'],
+      config,
+      snapshotSelector: withChrome,
+    }),
     lgvSnapshotTest({
       name: 'points with a shape scale over a field',
       snapshot: 'mark-points-glyph',

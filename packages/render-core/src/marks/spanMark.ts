@@ -7,28 +7,31 @@ import {
 import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
+import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { rowColor, rowSlot, rowTableKeys, rowTableTextures } from './rowLane.ts'
 
 import type { BpProjection } from '../canvas2dUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
+import type { ColorChannel } from './markRamp.ts'
 import type { RowTable } from './rowTable.ts'
-import type { MarkShape } from './types.ts'
+import type { MarkColorScale, MarkShape } from './types.ts'
 
 /**
  * The `span` shape's channels: a coloured rectangle from `x` to `x2` on the
- * band belonging to `row`.
+ * band belonging to `row`, its colour packed or, under a colour scale, the
+ * value it resolves from.
  */
-export interface SpanChannels {
+export interface SpanChannels extends ColorChannel {
   x: Uint32Array
   x2: Uint32Array
   /** The band's slot, or its key where the params bind a `rowTable`. */
   row: Uint32Array
-  /** Packed ABGR, resolved in the worker: a span has no ramp arm (ADR-113). */
-  color: Uint32Array
   count: number
 }
 
 export interface SpanParams {
+  /** The quantitative colour scale, for a span whose colour is a ramp or a threshold. */
+  colorScale?: MarkColorScale
   /** CSS px per row. */
   rowHeight: number
   /** Fraction of the row the rect fills, leaving inter-row gaps. */
@@ -63,7 +66,6 @@ interface SpanFrame extends BpProjection {
   top: number
   width: number
   height: number
-  color: number
 }
 
 function spanFrame(block: RenderBlock, params: SpanParams): SpanFrame {
@@ -83,7 +85,6 @@ function spanFrame(block: RenderBlock, params: SpanParams): SpanFrame {
     top: 0,
     width: 0,
     height: drawnRowHeightPx(rowHeight, rowProportion),
-    color: 0,
   }
 }
 
@@ -98,7 +99,6 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number) {
   g.left = spanLeft(xa, xb, width)
   g.top = g.bandOffsetPx + g.rowHeight * slot - g.scrollTop
   g.width = width
-  g.color = rowColor(c.color[i]!, c.row, i, g.table)
   return true
 }
 
@@ -106,7 +106,7 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
   id: 'span',
   pass: {
     ...slangPass({ id: 'span', mod: shader }),
-    pack: c => shader.packInstances(c, c.count),
+    pack: c => shader.packInstances({ ...c, color: colorBits(c) }, c.count),
   },
 
   writeUniforms(scratch, clip, block, frame, params) {
@@ -120,19 +120,21 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
       rowProportion: params.rowProportion,
       scrollTop: params.scrollTop,
       rowTableKeys: rowTableKeys(params),
+      ...rampUniforms(params.colorScale),
     })
   },
 
   textures: rowTableTextures,
 
   paintBlock(ctx, channels, block, _frame, params) {
-    const { count } = channels
+    const { count, row } = channels
     const { seamPx } = params
+    const color = paintColors(channels, count, params.colorScale)
     const g = spanFrame(block, params)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
       if (placeSpan(channels, g, i)) {
-        setFill(g.color)
+        setFill(rowColor(color[i]!, row, i, g.table))
         ctx.fillRect(g.left, g.top, g.width + seamPx, g.height)
       }
     }
