@@ -91,7 +91,7 @@ test('every SV kind draws its chord between the loci it names, a breakend pair o
     del_svlen: '0:10000|0:10500',
     del_seq: '0:11000|0:11020',
     tra: '0:12000|1:6000',
-    ins: '0:13000|0:13000',
+    ins: '0:13000|0:13001',
     single: '0:14000|0:14001',
     snv: '0:15000|0:15001',
   })
