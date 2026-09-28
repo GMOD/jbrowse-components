@@ -28,8 +28,8 @@ index counted both, so three hubs with two mates were listed and got no
 config.
 
 A GenArk star opens on its first nine mates by accession, since GenArk carries
-no curated species list, and names itself by accession ("GCA_028858775.2 vs 10
-genomes"). A common name in the track name is the obvious next polish.
+no curated species list, and names its anchor by common name and accession
+("chimpanzee (GCA_028858775.2) vs 10 genomes", jb2hubs `80999581704`).
 
 ## Arabidopsis knob: parked
 
