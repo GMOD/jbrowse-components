@@ -29,9 +29,10 @@ elsewhere.
 - **`NaN` is the only missing marker.** A value-scale sentinel made samples
   cluster by missingness.
 - The `"<sampleName> HP<n>"` convention lives in `getSources.ts` alone:
-  `haplotypeRow` writes it, a haploid sample's one row keeping the sample's
-  name, and `parseRowName` reads it back, a current sample's own name winning.
-  `buildGenotypeMatrix.ts` alone picks a matrix.
+  `haplotypeRow` writes it, a haploid sample's one row taking the sample's name
+  as its label but never as its name, and `parseRowName` reads it back, a
+  current sample's own name winning. `buildGenotypeMatrix.ts` alone picks a
+  matrix.
 
 ## Cells
 

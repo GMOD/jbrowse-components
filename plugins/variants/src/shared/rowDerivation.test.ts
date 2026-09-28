@@ -298,7 +298,7 @@ describe('phased', () => {
       await cluster(
         display,
         [4, 5, 0, 1, 6, 2, 3],
-        '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3,(S1 HP0,S1 HP1)));',
+        '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3 HP0,(S1 HP0,S1 HP1)));',
       )
       return display
     }

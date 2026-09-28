@@ -45,16 +45,20 @@ describe('expandSourcesToHaplotypes', () => {
     })
   })
 
-  test('a haploid sample keeps its own name', () => {
+  test("a haploid sample's row is labelled with its own name", () => {
     const sources = [{ name: 'CFT073' }, { name: 'HG001' }]
     const samplePloidy = {
       CFT073: 1,
       HG001: 2,
     }
 
-    expect(
-      expandSourcesToHaplotypes({ sources, samplePloidy }).map(s => s.name),
-    ).toEqual(['CFT073', 'HG001 HP0', 'HG001 HP1'])
+    const rows = expandSourcesToHaplotypes({ sources, samplePloidy })
+    expect(rows.map(s => s.name)).toEqual([
+      'CFT073 HP0',
+      'HG001 HP0',
+      'HG001 HP1',
+    ])
+    expect(rows.map(s => s.label)).toEqual(['CFT073', undefined, undefined])
   })
 
   test('defaults to ploidy 2 when samplePloidy missing', () => {
@@ -151,8 +155,9 @@ describe('expandPhasedRows', () => {
       'HG001 HP1',
       'HG002 HP0',
       'HG002 HP1',
-      'HG003',
+      'HG003 HP0',
     ])
+    expect(out[4]).toMatchObject({ label: 'HG003' })
     expect(out[1]).toMatchObject({
       sampleName: 'HG001',
       HP: 1,
@@ -171,6 +176,21 @@ describe('expandPhasedRows', () => {
       domain: ['HG002 HP1', 'HG002 HP0', 'HG001'],
     })
     expect(names(out)).toEqual(['HG001', 'HG002 HP0', 'HG002 HP1', 'HG003'])
+  })
+
+  // 1000G chrX: a male is diploid in the PAR and haploid past it, so a pan
+  // across the boundary changes his ploidy under an arrangement naming both
+  // haplotypes. The HP0 row keeps the name the arrangement holds.
+  test("a sample's rows keep their names when its ploidy drops", () => {
+    const domain = ['HG003 HP0', 'HG003 HP1']
+    const diploid = expandPhasedRows({
+      rows,
+      ploidy: { ...ploidy, HG003: 2 },
+      domain,
+    })
+    const haploid = expandPhasedRows({ rows, ploidy, domain })
+    expect(names(diploid).slice(-2)).toEqual(['HG003 HP0', 'HG003 HP1'])
+    expect(names(haploid).slice(-2)).toEqual(['HG003 HP0', 'HG003 HP1'])
   })
 
   test('the rows themselves while no sample expands', () => {

@@ -60,7 +60,7 @@ describe('buildCanonicalRows', () => {
     expect(rows.map(s => s.name)).toEqual([
       'HG001 HP0',
       'HG001 HP1',
-      'HG002',
+      'HG002 HP0',
       'HG003 HP0',
       'HG003 HP1',
     ])

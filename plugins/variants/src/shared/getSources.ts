@@ -17,16 +17,20 @@ export type HaplotypeSource = ProcessedSource & { HP: number }
 
 const HAPLOTYPE_ROW_NAME = /^(.*) HP(\d+)$/
 
-// A haploid sample's one haplotype is the sample, so its row keeps the
-// sample's name.
+// A haploid sample's one haplotype is the sample, so its row reads as the
+// sample. Only the label says so: the name stays `HP0` whatever the window's
+// ploidy, or a sample haploid on chrX non-PAR and diploid in the PAR renames
+// its row out of the arrangement on a pan.
 function haplotypeRow(
   source: Source,
   sampleName: string,
   HP: number,
   ploidy: number | undefined,
 ): HaplotypeSource {
-  const name = ploidy === 1 && HP === 0 ? sampleName : `${sampleName} HP${HP}`
-  return { ...source, name, sampleName, HP }
+  const row = { ...source, name: `${sampleName} HP${HP}`, sampleName, HP }
+  return ploidy === 1 && HP === 0
+    ? { ...row, label: source.label ?? sampleName }
+    : row
 }
 
 function makeHaplotypeSources(
