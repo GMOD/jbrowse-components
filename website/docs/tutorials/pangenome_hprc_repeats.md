@@ -347,8 +347,7 @@ its readout marks that walk partial.
 ## Check it against TRGT's genotypes
 
 Click the TRGT record: its sample table gives `AL`, the allele lengths behind
-each tick, and `SD`, the reads spanning each allele. HG02559's second allele has
-none, which is why its tick is grey.
+each tick, and `SD`, the reads spanning each allele.
 
 ## Reproduce it end to end
 

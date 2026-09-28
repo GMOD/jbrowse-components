@@ -889,7 +889,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'LOC607460 is AMY2B.\nPresence or absence,\nnot copy number.',
+        text: 'LOC607460 is AMY2B.',
         fontSize: 22,
         maxWidth: 300,
         // `textAlign: 'end'` so the offset places the pill's RIGHT edge, which

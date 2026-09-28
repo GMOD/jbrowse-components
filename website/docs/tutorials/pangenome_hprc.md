@@ -22,7 +22,7 @@ the view. We:
 - follow one allele back to the haplotype that carries it
 
 Three more pages start from the same HPRC page:
-[who carries each allele](/docs/tutorials/pangenome_hprc_carriers),
+[allele carriers](/docs/tutorials/pangenome_hprc_carriers),
 [haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) and
 [repeat lengths](/docs/tutorials/pangenome_hprc_repeats).
 
