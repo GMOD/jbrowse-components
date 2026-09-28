@@ -100,6 +100,14 @@ sample has no allele for HP2 in a triploid file** and that **haploid is phased**
 (`isPhasedOrHaploid`, not `includes('|')`). **A new fixture for anything phased
 should mix ploidies.** `readAltDosages` is the fifth and is ploidy-invariant.
 
+**Phased mode shows what the file phased.** A call written with `/` is unphased
+whatever its alleles, so a homozygous `1/1` or `0/0` fills every haplotype row
+black like `0/1`, and is missing to the phased matrix and the anchored sort.
+WhatsHap and HiPhase leave homozygous calls unphased, so on their output that is
+a large share of the cells (41% of the NA12878 WhatsHap demo's records in
+chr1:1-3Mb are `1/1`); reading their haplotypes off the alleles was proposed and
+declined (2026-09-28).
+
 ## The unphased matrix is one column per ALT, not one per site
 
 A dosage class made `0/1/1` and `0/0/1` identical and couldn't say which alt was

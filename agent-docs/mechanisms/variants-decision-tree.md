@@ -54,15 +54,17 @@ never reaches a reference or no-call cell.
 The GPU path, the Canvas2D path, the SVG export and the legend all read the
 packed colours it produces.
 
-- **Phased mode**: a row is one haplotype. Phase-set colouring wins where it is
-  on and the record declares PS; otherwise the allele on that haplotype picks
-  the fill — reference, no-call, the most frequent alt, or any other alt. A
-  genotype that is neither phased nor haploid paints one fill across every
-  haplotype row of that sample.
-- **Allele-count mode**: a row is one sample. An all-reference call takes the
-  reference fill; anything else takes the override if one resolved, then the
-  flat other-alt fill if a non-primary alt is carried, then a shade mixed toward
-  no-call, then the dosage shade.
+- **Phased mode**: a row is one haplotype. Phase-set colouring wins on an alt
+  where it is on and the sample has a PS; otherwise the allele on that haplotype
+  picks the fill — reference, no-call, or an alt, which takes the override if
+  one resolved, else the alt hue for the site's most frequent alt and the
+  secondary fill for any other. A genotype written with `/` paints one fill
+  across every haplotype row of that sample, `1/1` included: phased mode draws
+  what the file phased, not what its alleles imply.
+- **Allele-count mode**: a row is one sample. A call with nothing called takes
+  the no-call fill and an all-reference call the reference fill; anything else
+  is `shade(hue, dosage)`, the hue being the override or the alt hue and the
+  dosage the alt fraction of the called alleles.
 - **Reference cells** are drawn or skipped by `referenceDrawingMode`. Skipped,
   the row background stands in for them.
 - **Every branch classifies from the allele**, and carries `isRef` / `isAlt` /
@@ -92,12 +94,13 @@ packed colours it produces.
 - **A haplotype the sample does not have draws nothing.** Phased expansion gives
   every sample the file's maximum ploidy in rows; reading past the end painted a
   phantom "other alt" on a haplotype a diploid sample does not carry.
-- **The override is flat and alt-only.** Dosage-shading a class colour washed
-  out the majority tier, and applying it to a no-call painted a missing genotype
-  as though it carried the variant.
-- **A non-primary alt is flagged, not shaded.** Blending it by dosage made one
-  signal render at several strengths — faint when mixed with a primary alt,
-  solid when homozygous.
+- **The override is alt-only.** Applying it to a no-call painted a missing
+  genotype as though it carried the variant. Its shade is bounded by a pale
+  ceiling (`shared/cellFill.ts`), so a het in a class colour still reads as that
+  class.
+- **Which alt is carried is on the hue in phased mode only.** Allele-count mode
+  paints `1/2` as a full dose of the one alt hue; a haplotype carries one allele,
+  so phased mode can say which.
 - **SV type has two spellings** because the two displays need different things
   from it: a pure jexl function with a fixed class palette for the single-record
   display, a worker-assigned present-only palette for the multi-sample ones.

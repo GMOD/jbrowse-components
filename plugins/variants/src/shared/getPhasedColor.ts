@@ -64,6 +64,9 @@ export function splitPhasedAlleles(genotype: string) {
 // chrM — carries both. Gating on `includes('|')` painted every haploid call with
 // the black "Unphased" fill, which the legend did not even claim: `hasUnphased`
 // counts only a *called* `/` genotype, so those cells had no key entry at all.
+//
+// A homozygous `1/1` is unphased too: phased mode draws what the file phased,
+// not what the alleles imply (plugins/variants/src/CLAUDE.md).
 export function isPhasedOrHaploid(genotype: string) {
   return !genotype.includes('/')
 }

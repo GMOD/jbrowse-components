@@ -77,15 +77,23 @@ shaded by how many alternate alleles the call carries:
 - homozygous alternate (`1/1`) → the darkest shade
 
 so the cell color reads directly as allele dosage (0, 1, or 2 alt alleles) and
-runs of homozygous-alt samples stand out as the darkest blocks. Genotypes mixing
-two _different_ non-reference alleles (e.g. `1/2`) get a distinct color from a
-simple homozygous-alt call, and uncalled genotypes (`./.`) are left blank.
+runs of homozygous-alt samples stand out as the darkest blocks. The dosage
+counts every non-reference allele, so `1/2` draws as dark as `1/1`, and an
+uncalled genotype (`./.`) takes the no-call color.
 
 In **phased** mode (`renderingMode: 'phased'`), each sample is split into one
 row per haplotype and every haplotype cell is colored reference vs alt on its
 own, rather than collapsed to a dosage, so inherited haplotype blocks line up as
-the contiguous vertical bands in the trio matrix above. Phased mode requires
-phased genotypes (`|`-separated) in the VCF.
+the contiguous vertical bands in the trio matrix above. A haplotype carrying the
+site's most frequent alt takes the same blue as a homozygous-alt cell in
+allele-dosage mode, and any other alt draws red.
+
+Phased mode draws only what the VCF phases: `|`-separated genotypes, and haploid
+calls, which have nothing to phase. A genotype written with `/` fills every
+haplotype row of its sample black, homozygous ones included, since the file does
+not assign its alleles to haplotypes. Read-backed phasers such as WhatsHap leave
+homozygous calls unphased, so on their output the black marks every call the
+phaser left alone, homozygous ones among them.
 
 You can switch modes from the track menu, or set `renderingMode` in the display
 configuration.
