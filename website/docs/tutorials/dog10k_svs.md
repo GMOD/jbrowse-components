@@ -324,9 +324,9 @@ wolf-derived blocks on. Every wolf carrying the insertion is heterozygous. Three
 of the six Iranian wolves carry the amylase duplication and none the
 ribonuclease insertion, while the Greek and Swedish wolves do the reverse.
 
-A genotype column does not carry copy number: four copies and twenty are both
-`1/1`. [The CYP1A2 tutorial](/docs/tutorials/dog10k_lof) builds that measurement
-from the SNV callset's per-sample `DP`, and `dog10k_slc28a3_breed_cn` and
+A genotype column reads `1/1` for four copies and for twenty.
+[The CYP1A2 tutorial](/docs/tutorials/dog10k_lof) builds that measurement from
+the SNV callset's per-sample `DP`, and `dog10k_slc28a3_breed_cn` and
 `dog10k_slc28a3_cohort_cn` in this tutorial's config are the same pair of lanes
 over a second duplication.
 
@@ -339,8 +339,8 @@ breed-defining short legs to an expressed _FGF4_ retrogene, a processed copy of
 the _FGF4_ transcript reinserted elsewhere. Processed means it was made from the
 spliced mRNA, so it has no introns: short reads from the retrocopy map to the
 parent's exons and stop at each splice site, and a short-read caller reads that
-pileup as a deletion of each intron. The callset cannot tell a retrocopy's
-footprint from a real deletion.
+pileup as a deletion of each intron. The callset therefore records a retrocopy's
+footprint as a deletion.
 
 ### Checking the records against the FGF4 introns
 
