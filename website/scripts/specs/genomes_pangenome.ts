@@ -128,7 +128,7 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
     url: portalGraphLaunch(),
     readySelector: GRAPH_DRAWN,
     readyTimeout: 120000,
-    viewportHeight: 1040,
+    viewportHeight: 968,
     hideTooltip: true,
   },
 ]

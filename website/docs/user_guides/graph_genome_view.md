@@ -282,10 +282,15 @@ graph lines up under the other tracks and pans and zooms with them. **Ordered**
 and **Force-directed layout** give x another meaning, so the track draws them in
 coordinates of their own, fitted to it, the way a variant matrix does, and adds
 **Zoom in**, **Zoom out** and **Zoom to fit** to its menu; moving the view still
-cuts the new window. Force-directed is the picture of a locus for when the shape
-matters. An anchored drawing flattens both routes through a locus onto the
-reference axis, and an allele then looks like a stub hanging under a line. A
-graph opened from a file starts in the force layout.
+cuts the new window. A strip along the top of such a track draws each reference
+segment at its bp in the view, in the colour its node has below, so under the
+**Reference position** scheme a hue on the strip finds its node in the drawing.
+A triangle at either end of the strip marks reference the graph draws past that
+edge of the window, and **Reference strip at bp** in the track menu turns the
+strip off. Force-directed is the picture of a locus for when the shape matters.
+An anchored drawing flattens both routes through a locus onto the reference
+axis, and an allele then looks like a stub hanging under a line. A graph opened
+from a file starts in the force layout.
 
 Anchored and Sample rows both need a backbone, from rGFA tags or from a
 reference path. A graph with neither greys them out. Force-directed is then the
@@ -319,13 +324,15 @@ attaches, with its size in the tooltip.
 
 ## Bubbles, genes and walks on the drawing
 
-Every node layout draws the graph's bubbles. Each bubble is a halo along the
-bubble's nodes, with a label naming its type. The bubbles come from the bubble
-index beside an rGFA where there is one. Otherwise the graph derives them from
-the drawing's layering, which covers a GBZ cut, a plain GFA and the inside of an
-opened bubble. Click a label to open that bubble alone inside the track, with a
-button back. An opened bubble derives the bubbles inside it, so a superbubble
-opens level by level. **Mark bubbles** in the track menu turns the halos off.
+**Mark bubbles** in the track menu draws the graph's bubbles on every node
+layout. Each bubble is a halo along the bubble's nodes, coloured by its type,
+with a label naming the type, and the legend names each colour. The option
+starts off, because on a base-level cut every SNP's halo is a blob. The bubbles
+come from the bubble index beside an rGFA where there is one. Otherwise the
+graph derives them from the drawing's layering, which covers a GBZ cut, a plain
+GFA and the inside of an opened bubble. Click a label to open that bubble alone
+inside the track, with a button back. An opened bubble derives the bubbles
+inside it, so a superbubble opens level by level.
 
 <Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and clicking a halo label opens its bubble." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
@@ -340,11 +347,13 @@ A graph with walks, such as a GBZ cut or a GFA with P or W lines, supports three
 more displays. **Node width** in the track menu's **Settings** draws a node
 thicker the more walks carry it, scaled by the square root of its depth against
 the mean, which is Bandage's rule. **Uniform** turns that off. In a bubble with
-a route over a kilobase, every route carries a chip at the far point of its
-loop. The chip names the walks that take the route and gives the route's length.
-The track menu's **Walk** submenu highlights one walk. Its nodes keep their
-colour, its links draw dark, and everything else fades. A readout beside the
-legend compares the walk's length with the reference walk's.
+a route over a kilobase, every route carries a chip at the far point of its loop
+while **Mark bubbles** is on. The chip names the walks that take the route and
+gives the route's length. The track menu's **Walk** submenu highlights one walk.
+Its nodes keep their colour, its links draw dark, and everything else fades, on
+the reference strip too, so the stretches of reference the walk skips read at
+their bp. A readout beside the legend compares the walk's length with the
+reference walk's.
 
 A gbz-base track draws one lane per haplotype, and **Display types → Graph** in
 its track menu draws the same track as a graph of the haplotypes' walks. The
@@ -461,9 +470,11 @@ jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'
 ## Hover sync between the graph and the lanes {#hovering-one-panel-highlights-the-other}
 
 Hover a node, and the lanes above it highlight the reference interval the node
-occupies. Hover a lane, and the graph highlights the segment under the cursor.
-Hover sync needs no configuration. It is the only way to locate a rank>0 allele,
-because those alleles have no reference coordinates.
+occupies; above a force-directed or ordered drawing, the reference strip boxes
+the same interval and draws a line to the node. Hovering a bubble's label does
+the same for the bubble's span. Hover a lane, and the graph highlights the
+segment under the cursor. Hover sync needs no configuration. It is the only way
+to locate a rank>0 allele, because those alleles have no reference coordinates.
 
 The reverse direction works from any track. A gene gives a coordinate, and that
 is enough, because rGFA segments do not overlap on a stable sequence and one

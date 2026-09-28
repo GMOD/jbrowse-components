@@ -80,9 +80,9 @@ handover its adapter names, it cuts the segments.
 ## Nnt: a deletion that appears as an insertion
 
 Start at _Nnt_. Type `chr13:119,440,000-119,600,000`, and the graph track cuts
-the segments there. Pick **Layout → Force-directed layout** from its track menu.
-Turn on the bubbles track in the track selector to read the window lane by lane,
-as the figure does.
+the segments there. Pick **Layout → Force-directed layout** from its track menu
+and tick **Mark bubbles**. Turn on the bubbles track in the track selector to
+read the window lane by lane, as the figure does.
 
 C57BL/6J carries a well-known multi-exon deletion at _Nnt_ that abolishes the
 protein and makes B6J mice glucose intolerant. **GRCm39 is C57BL/6J**, so the
@@ -107,7 +107,7 @@ megabases wide. _Dock2_'s row is the densest bubble that still fits in one cut,
 inside one intron at `chr11:34,516,044-34,560,497`. Click its **graph** link.
 The window opens with the genes, the bubbles and the allele inventory as lanes,
 and the graph track under them. Pick **Layout → Force-directed layout** from its
-track menu:
+track menu and tick **Mark bubbles**:
 
 <Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane shows only intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and every charcoal stretch is sequence it lacks, so each loop is a place where other strains depart from the reference." src="/img/pangenome/mouse_dock2.png" />
 

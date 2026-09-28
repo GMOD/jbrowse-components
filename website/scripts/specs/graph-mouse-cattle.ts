@@ -112,6 +112,7 @@ const dock2Spec: ScreenshotSpec = {
             layoutMode: 'force',
             paneHeight: 600,
             colorScheme: 'reference-position',
+            showBubbles: true,
           }),
         ],
       },

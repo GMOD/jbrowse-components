@@ -1216,7 +1216,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               layoutMode: 'force',
               paneHeight: 600,
               colorScheme: 'reference-position',
-              showDeletionEdges: true,
+              showBubbles: true,
               maxRegionBp: cutNear(130_000),
             }),
           ],
@@ -1417,7 +1417,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 180000,
     viewportWidth: 1100,
-    viewportHeight: 1330,
+    viewportHeight: 1232,
     hideTooltip: true,
     stages: [
       {

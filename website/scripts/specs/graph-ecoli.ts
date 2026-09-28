@@ -769,7 +769,8 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
       alignY: 'top',
     },
     dx: 12,
-    dy: 26,
+    // under the reference strip along the top of the track
+    dy: 44,
     fontSize: 18,
     color: LABEL_COLOR,
   })
@@ -835,7 +836,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
     viewportWidth: 750,
     // the gene lane over the graph track (the 1 hop cut is the taller drawing
     // of the two, so it sets this); re-measure at the reshoot
-    viewportHeight: 880,
+    viewportHeight: 912,
     hideTooltip: true,
     annotations: [
       ...(

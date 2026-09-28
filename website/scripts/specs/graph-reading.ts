@@ -155,7 +155,8 @@ const kiv2WalksSpec: ScreenshotSpec = {
       leader: true,
       anchor: { graphNode: '165812967' },
       dx: 120,
-      dy: 0,
+      // under the legend stack, whose strip rows push the readout down
+      dy: 80,
     },
   ],
 }
@@ -255,6 +256,7 @@ const nntHalosSpec: ScreenshotSpec = {
             layoutMode: 'force',
             colorScheme: 'reference-position',
             paneHeight: 420,
+            showBubbles: true,
           }),
         ],
       },

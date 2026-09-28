@@ -33,6 +33,7 @@ const deletionGraphSpec: ScreenshotSpec = {
         referencePath: 'GRCh38',
         colorScheme: 'depth',
         bubbleSpread: 'open',
+        showBubbles: true,
         paneHeight: 420,
       },
     ],

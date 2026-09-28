@@ -65,7 +65,10 @@ _LPA_ carries a tandem array of kringle IV type 2 (KIV-2) copies, tied to
 lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). Open
 the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and press
 **graph** on the LPA row. JBrowse opens on `chr6:160,525,000-160,655,000`. Pick
-**Layout → Force-directed layout** from the graph track's menu.
+**Layout → Force-directed layout** from the graph track's menu and tick **Mark
+bubbles**. The strip along the top of the track draws each reference segment at
+its bp in the colour its node has below, which ties the drawing back to the
+ruler.
 
 <Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
@@ -88,9 +91,8 @@ and pick **Layout → Force-directed layout**.
 
 A node draws thicker the more walks carry it (Bandage's depth as width), so the
 shared backbone is the thick line and one haplotype's own copies are the thin
-loops. Untick **Mark bubbles** so the per-route chips stop stacking, then pick
-`HG00133` under **Walk**: its route keeps its ink while everything else fades,
-and a readout gives its length against the reference walk.
+loops. Pick `HG00133` under **Walk**: its route keeps its ink while everything
+else fades, and a readout gives its length against the reference walk.
 
 <Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
