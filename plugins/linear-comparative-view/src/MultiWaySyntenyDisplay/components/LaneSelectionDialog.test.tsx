@@ -61,7 +61,6 @@ test('lanes run under their group, and a lane without one heads no run', () => {
 test('opens on the lanes the stack draws, and hands over the ticked set', () => {
   const { chosen, closes } = renderDialog()
   expect(screen.getByText('4 of 4 lanes chosen', { exact: false })).toBeTruthy()
-  // the assembly name first, the source's own label beside it
   const hg1 = screen.getByLabelText('HG1.1 (HG1#1)')
   expect(hg1).toBeChecked()
   fireEvent.click(hg1)
@@ -71,8 +70,6 @@ test('opens on the lanes the stack draws, and hands over the ticked set', () => 
   expect(closes).toHaveLength(1)
 })
 
-// An unchanged submit handed over would turn hidden lanes into a list that
-// shuts out every lane placed later
 test('an unchanged submit hands over nothing, and Reset says where it goes', () => {
   const { chosen, resets } = renderDialog(['HG2#1'], ['HG2#1'])
   expect(screen.getByLabelText('HG2#1')).toBeChecked()

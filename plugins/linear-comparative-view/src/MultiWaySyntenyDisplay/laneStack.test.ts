@@ -59,8 +59,7 @@ const peachFrame: RowFrame = {
   fitMax: 1400,
 }
 
-// the anchor lane's axis, standing in for the view's piecewise `bpToPx`: a
-// linear map over chr1:0-1000 that CLIPS, the way `axisSpan` does
+// stands in for the view's axisSpan: a clipping linear map over chr1:0-1000
 const axisSpanOf = (refName: string, start: number, end: number) =>
   refName === 'chr1'
     ? ([
@@ -110,9 +109,6 @@ test('each lane places the groups in its own coordinates', () => {
   expect([...peach!.placements.keys()]).toEqual(['g1', 'g2'])
 })
 
-// A lane the visible groups place nothing on does not break the stack — the
-// header, the band and the ticks still draw, and the next lane down still lines
-// up against the last lane that had a frame.
 test('a mate lane with no frame gets a lane and no spans', () => {
   const { lanes } = stack({ rowFrames: new Map() })
   expect(lanes).toHaveLength(2)
@@ -136,9 +132,6 @@ describe('the map a lane answers intervals with', () => {
     expect(peach!.spanOf('Pp2', 1100, 1200)).toBeUndefined()
   })
 
-  // A placement carries whatever refName the table's BED used and a gene
-  // whatever that assembly's GFF3 used; for a genome whose annotation names
-  // sequences by INSDC accession those are `CM028642.2` and `3L`.
   test('goes through the lane assembly own alias table', () => {
     const [, peach] = stack({
       refNameAliasOf: name =>
@@ -150,9 +143,6 @@ describe('the map a lane answers intervals with', () => {
     expect(peach!.canon('CM1.2')).toBe('Pp1')
   })
 
-  // The common case for a mate lane: the ortholog table names a genome the
-  // session never loaded, so there is no alias table and the file's own
-  // spelling has to pass through rather than resolving to nothing.
   test('passes a refName through for an assembly the session does not hold', () => {
     const [, peach] = stack().lanes
     expect(peach!.canon('Pp1')).toBe('Pp1')
@@ -515,9 +505,6 @@ describe('the baseline', () => {
   })
 })
 
-// `no annotation` in the header is a claim about the SESSION, read off the
-// tracks it holds. Asked of this window's genes instead it would blink on and
-// off as a lane panned across a gene desert.
 test('whether a lane has an annotation is whether the session holds one for it', () => {
   const { lanes } = stack()
   expect(lanes[0]!.hasAnnotation).toBe(true)
@@ -525,10 +512,6 @@ test('whether a lane has an annotation is whether the session holds one for it',
 })
 
 describe('lane geometry', () => {
-  // The bands are what stops the view's gridlines — true on the anchor lane
-  // and a lie on every other one — at the anchor. A band covering only its own
-  // header and glyphs left them standing in the gutters, which is most of the
-  // ink in a tall track.
   test('split strands, two compact gene rows that leave the gutter its height', () => {
     const one = laneGeometry(600, 9, false, 12)
     const split = laneGeometry(600, 9, true, 12)
@@ -570,8 +553,6 @@ describe('lane geometry', () => {
     }
   })
 
-  // The floor is a FLOOR, not a re-layout: at or above MIN_LANE_PITCH per lane
-  // the stack is exactly the divide-the-height one and nothing scrolls.
   test('the pitch floor engages exactly where a lane falls under it', () => {
     expect(laneGeometry(10 * MIN_LANE_PITCH, 10).contentHeight).toBe(
       10 * MIN_LANE_PITCH,

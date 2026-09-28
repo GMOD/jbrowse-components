@@ -79,8 +79,6 @@ function changedKeys(
   return [...after.keys()].filter(key => after.get(key) !== before.get(key))
 }
 
-// Forty-four lanes of thirty genes, one ortholog group per lane stacking five
-// placements, with both colour slots per-feature jexl
 async function stackWithGenes() {
   const { display } = createDisplayWithSession({
     trackAssemblyNames: ['volvox', ...laneNames],
@@ -137,11 +135,6 @@ function rowOf(display: MultiWaySyntenyDisplayModel, assemblyName: string) {
   )
 }
 
-// One lane's gene commit re-created every lane's glyph and box cells and ran
-// both colour slots over every lane's genes: 90 of 90 cells and 1,325 `color`
-// evaluations at this size. The stack reads no genes, so the commit leaves
-// every other `Lane` as it was, and a cell keeps its identity, and so its
-// upload, while its lane, fills and ink do
 test("one lane's gene commit repacks that lane alone", async () => {
   const { display, cells, stop, specs } = await stackWithGenes()
   const lane = laneNames[7]!
@@ -166,8 +159,6 @@ test("one lane's gene commit repacks that lane alone", async () => {
   stop()
 })
 
-// A settle hands every lane a new `Lane`, so every cell is repacked, against
-// the fills its lane already resolved
 test('a settle repacks every lane and evaluates no colour slot', async () => {
   const { display, cells, stop } = await stackWithGenes()
   const before = glyphCellsOf(cells())
@@ -183,8 +174,6 @@ test('a settle repacks every lane and evaluates no colour slot', async () => {
   stop()
 })
 
-// The fills are keyed on the colour setting's raw values, so a new setting
-// repacks every lane under it
 test('a colour setting repacks every lane', async () => {
   const { display, cells, stop } = await stackWithGenes()
   const before = glyphCellsOf(cells())

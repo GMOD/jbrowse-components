@@ -8,11 +8,6 @@ import { createDisplay, heldSpecs } from './testEnv.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// The lanes relayout on four things no viewport clear can see: a reorder, a
-// hidden lane, a pinned contig and a dependent fetch commit. Each moves the
-// ribbons out from under a stationary pointer, so each drops the hover. The
-// click names its ribbon by key — a group's, or a direct link's own id — and
-// follows that ribbon through the rebuilt targets instead of holding a slot.
 const MATES = ['volvox_random', 'volvox_other']
 const LINK_PAIR = `${MATES[0]}|${MATES[1]}`
 
@@ -42,14 +37,10 @@ function link(uniqueId: string, start: number, end: number) {
   })
 }
 
-/**
- * Three lanes, because the direct records only draw from the SECOND gutter
- * down. The wait is for the harness's own ortholog fetch to answer with nothing
- * — `afterAttach` reaches its installers through a dynamic import, and a commit
- * landing after these features were put in by hand would wipe them.
- */
+// Three lanes, since direct records draw from the second gutter down.
 async function stackedDisplay(links: Feature[]) {
   const display = createDisplay()
+  // the harness's empty fetch would wipe features set before it lands
   await when(() => display.features !== undefined, { timeout: 5000 })
   display.setFeatures([
     ...orthologFeatures('g1', 100, 200),
@@ -106,17 +97,11 @@ test('a lane-links commit drops a direct-link hover rather than moving it', asyn
   expect(display.hoverTarget).toBeUndefined()
   expect(display.hoveredFeatureId).toBe(0)
 
-  // the click follows L1 to its new slot rather than lighting what now
-  // sits in the old one
   expect(display.ribbonGeometry.targets[before - 1]?.feature.id()).toBe('L0')
   expect(display.clickedFeatureId).toBe(linkFeatureId(display, 'L1'))
   expect(display.clickedFeatureId).not.toBe(before)
 })
 
-// Move up / Move down / Hide lane carry `keepMenuOpen`, so they fire
-// repeatedly with the pointer nowhere near the canvas they are relaying out.
-// The link's pair is no longer adjacent after the swap, so its outline is gone
-// while the lanes are swapped and back once they are not.
 test('a lane reorder drops the hover and keeps a direct-link click', async () => {
   const display = await stackedDisplay([link('L1', 110, 210)])
   hoverDirectLink(display)
@@ -145,8 +130,6 @@ test('a hidden lane drops the hover', async () => {
   expect(display.hoverTarget).toBeUndefined()
 })
 
-// A gene commit changes what the lanes draw on their baselines and no ribbon;
-// the hover the reader is holding over a ribbon has no reason to go
 test('a lane-genes commit keeps a direct-link hover', async () => {
   const display = await stackedDisplay([link('L1', 110, 210)])
   hoverDirectLink(display)

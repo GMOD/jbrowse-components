@@ -20,10 +20,7 @@ function unpack(packed: Uint32Array) {
   return [...packed].map(v => [v >>> 4, v & 0xf] as [number, number])
 }
 
-/**
- * A lane's record against the anchor, in the shape the display's own fetch
- * hands it: the feature is the ANCHOR's record and its mate is the lane.
- */
+// The feature is the anchor's record and its mate is the lane.
 function rec(
   id: string,
   laneRef: string,
@@ -89,8 +86,6 @@ test('a base only one lane calls a mismatch is a mismatch between the lanes', ()
   ])
 })
 
-// the file states that each lane differs from the anchor, and nothing about
-// whether they carry the same alternative — so `M`, which draws no mark
 test('a base both lanes call a mismatch is left unstated between them', () => {
   const differs = ops([40, CIGAR_EQ], [1, CIGAR_X], [59, CIGAR_EQ])
   const c = composeAlignmentOps(
@@ -148,8 +143,6 @@ test('bases the upper lane holds that the anchor lacks are a deletion against th
   expect([c.upperEnd, c.lowerEnd]).toEqual([1110, 5100])
 })
 
-// the common case in a star against a reference carrying the minor allele:
-// two lanes on one graph path make the same insertion against it
 test('an insertion both lanes make at one anchor point is left unstated between them', () => {
   const inserts = ops([40, CIGAR_EQ], [10, CIGAR_I], [60, CIGAR_EQ])
   const c = composeAlignmentOps(
@@ -197,9 +190,7 @@ test('the longer of two insertions at one anchor point keeps its excess', () => 
   ])
 })
 
-// the composed stretch opens 20 bp past a 10 bp deletion, so the exact walk
-// puts it at 1050 where interpolating the record's overall ratio puts it at
-// 1054 — the slide a composed gutter used to draw against its neighbours
+// The exact walk puts it at 1050; the record's overall ratio, at 1054.
 test('the stretch lands where the alignment puts it, not where the ratio does', () => {
   const upper = rec(
     'u',

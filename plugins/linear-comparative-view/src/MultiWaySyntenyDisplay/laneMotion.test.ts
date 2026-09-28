@@ -38,7 +38,6 @@ const frameOf = (d: LaneDecision) => frameFromDecision(d, PIVOT_PX, UNIT, W)
 
 const SAMPLES = [996_500, 999_000, 1_000_000, 1_002_000, 1_004_900]
 
-// where the transition draws each sample bp, `e` of the way from `from` to `to`
 function drawnAt(from: RowFrame, to: RowFrame, e: number) {
   const map = laneMapAt([{ frame: from, weight: 1 }], to, e, W)
   return SAMPLES.map(bp => drawnPx(map, rowFrameX(to, bp, W)))
@@ -164,8 +163,6 @@ test('an unchanged decision keeps the transition it is running', () => {
   expect(t.get('lane')).toBe(running)
 })
 
-// canvas's morph re-seeds from `captureFeatureTops` at the drawn progress;
-// this one from the mix of frames the lane was drawn between
 test('a second settle mid-flight starts from where the lane is drawn, without a snap', () => {
   const first = decision()
   const second = decision({ pivotLaneBp: 1_002_000, rung: 2 })

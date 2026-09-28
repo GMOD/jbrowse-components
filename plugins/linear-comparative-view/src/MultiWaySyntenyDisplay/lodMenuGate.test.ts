@@ -1,11 +1,5 @@
 import { createDisplayWithSession } from './testEnv.ts'
 
-// `trackHasLodTiers` reads the THRESHOLD SLOT, which MultiPairwiseSyntenyAdapter
-// declares whether or not its children carry a coarse tier, so the hg38
-// vertebrates star — five headerless liftOver PIFs — offered a Level of detail
-// entry that switched nothing. The header's `hasCoarseTier` is what says
-// whether there is a second tier to reach; the slot stays the threshold.
-
 const menuLabels = (
   display: ReturnType<typeof createDisplayWithSession>['display'],
 ) => display.trackMenuItems().map(i => ('label' in i ? i.label : undefined))

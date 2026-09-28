@@ -55,23 +55,6 @@ const namedGene = (
     }),
   )
 
-// The lane genes and lane links are a SECOND fetch, dependent on the ortholog
-// fetch that draws the placement boxes.
-//
-// The retry rule those two used to break is NOT here any more, and that is the
-// point: the committed key was compared by hand in `prepare` with no `reload()`
-// override to match, so Retry re-ran both bodies into the same decline forever.
-// It is `installFetch`'s key gate now — the skeleton stamps the key at commit,
-// owns the compare and the reload that overrides it — so what pins it is
-// `installFetch.test.ts`, once, for every fetch rather than for this display.
-// What is left here is what stays this display's own.
-
-// A dependent fetch that holds `displayPhase` at `loading` for every refetch
-// puts the striped scrim over lanes that are already drawn: the fetch is
-// debounced 500ms and the overlay's anti-flash delay is 250ms, so the scrim
-// always won that race on any pan that moved a quantized lane window. Before
-// the first commit there is nothing on screen to flash over and a capture
-// would shoot placement boxes, which is what the gate is for.
 test('the text slot picks what a gene label prints, name-else-ID unset', () => {
   const display = createDisplay()
   const gene = new SimpleFeature({
@@ -123,7 +106,7 @@ test('the lane fetch is part of loading only until it first lands', () => {
   )
   expect(display.displayPhase).toBe('ready')
 
-  // the pan's refetch: the lanes are already drawn, and the phase says so
+  // the pan's refetch
   display.setLaneGenes(
     new Map([[anchor!.lane, { key: 'a-later-window', genes: [] }]]),
     display.laneGenesFetchSpecs,
@@ -132,15 +115,9 @@ test('the lane fetch is part of loading only until it first lands', () => {
   expect(display.displayPhase).toBe('ready')
 })
 
-// The anchor's gene spec exists before the ortholog fetch has framed a single
-// mate, so the first commit can be the anchor alone; a phase reading `ready`
-// off that one shot the primate amylase figure as placement boxes with every
-// mate lane still downloading. The commit that counts is the first covering a
-// mate lane, which the fetch states off its own spec list.
 test('a spec list covers a mate lane when one of its specs is a mate lane', () => {
   const spec = (lane: string) => ({ lane, key: lane, assemblyName: lane })
-  // an anchor without a gene track has no spec of its own, so a window
-  // framing one mate is a single spec that is a mate's
+  // an anchor without a gene track has no spec of its own
   expect(specsCoverMate([spec('peach')], 'grape')).toBe(true)
   expect(specsCoverMate([spec('grape')], 'grape')).toBe(false)
   expect(specsCoverMate([spec('grape'), spec('peach')], 'grape')).toBe(true)
@@ -156,14 +133,10 @@ test('the first landing that counts is the one covering a mate lane', () => {
   expect(display.laneGenes.landedFor).toBeUndefined()
   display.setLaneGenes(new Map(), [own, mate], anchor)
   expect(display.laneGenes.landedFor).toBe(anchor)
-  // covered once is covered: a later anchor-only refetch does not lower it
   display.setLaneGenes(new Map(), [own], anchor)
   expect(display.laneGenes.landedFor).toBe(anchor)
 })
 
-// A lane run issued under one anchor can land after a re-anchor: the debounce
-// keeps the old run current until the new one starts. The commit stamps the
-// anchor its specs were built under, so the new anchor stays uncovered
 test('a run landing after a re-anchor covers the anchor it was asked under', () => {
   const display = createDisplay()
   const specs = [{ lane: 'cacao', key: 'k', assemblyName: 'cacao' }]
@@ -183,11 +156,6 @@ test('a commit keeps only the lanes its specs still name', () => {
   expect([...state.held!.keys()]).toEqual(['peach'])
 })
 
-// The genes wait again on a new anchor, and a re-anchor frames other pairs, so
-// the links do too
-// A lane run issued under one anchor lands after a re-anchor, since the
-// debounce keeps it current until the next run starts; its commit stamps the
-// anchor its specs were built under, so the new anchor waits for its own
 test('a lane run landing after a re-anchor leaves the new anchor uncovered', async () => {
   const pair = (i: number, mate: string, anchor: string) =>
     new SimpleFeature({
@@ -304,10 +272,6 @@ test('a re-anchor waits for its lane links again', () => {
   expect(display.awaitingDependentData).toBe(false)
 })
 
-// An all-vs-all file carries samples the config never declared, and those draw
-// as lanes off the anchor fetch. The per-pair link fetch renames its region
-// through the assembly manager, which refuses an assembly the session does not
-// hold — so a spec naming one failed per pan and its ribbons never drew.
 test('lane links are asked for only between lanes the session holds', () => {
   const display = createDisplay()
   const nameless = (id: string, mateAssembly: string) =>
@@ -392,11 +356,6 @@ test('the track menu ends with the stacked-synteny launcher under Launch', () =>
   ])
 })
 
-// Nothing on screen says what a glyph color means: the display draws no labels,
-// and the ecoli stack is forty-four lanes of them. The color is the CONFIG's
-// encoding — `randomColor(feature.name)` over an ortholog table puts one color
-// on one gene symbol — so the key reads the vocabulary back off the drawing
-// rather than claiming one of its own.
 test('the key names the anchor lane genes a name-hashed color slot draws', () => {
   const display = createDisplay()
   setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
@@ -423,9 +382,6 @@ test('the key names the anchor lane genes a name-hashed color slot draws', () =>
   expect(display.hasLegendKey).toBe(true)
 })
 
-// The default `color` slot is one color for every gene, which keys nothing: a
-// box of identical swatches spends the reader's attention to say the display
-// has a color, so `hasLegendKey` takes the Show legend row off with it.
 test('a flat color slot has nothing to key', () => {
   const display = createDisplay()
   display.setLaneGenes(
@@ -463,8 +419,6 @@ function anchorGeneFills(display: MultiWaySyntenyDisplayModel) {
     : []
 }
 
-// The color object's shorthand: a bare string, `jexl:` included, is its
-// `value`, and an unset `value` still paints the goldenrod the plain slot had
 test('a color string paints through the channel, and unset is goldenrod', () => {
   const display = createDisplay()
   anchorGenes(display, [namedGene('g1', 'atpA', 100, 300)])
@@ -475,9 +429,6 @@ test('a color string paints through the channel, and unset is goldenrod', () => 
   expect(anchorGeneFills(display)).toEqual([['g1', 'red']])
 })
 
-// `cluster` is the group a gene stands in for, decided before its fill is
-// packed; a gene no placement overlaps carries no group and paints the
-// channel's no-value grey, and the key lists both
 test('cluster paints a gene by the group it carries', () => {
   const display = createDisplay()
   display.setFeatures([mateRecord('own1', 'volvox_random', 'gene1')])
@@ -498,8 +449,6 @@ test('cluster paints a gene by the group it carries', () => {
   ])
 })
 
-// Default goes back to the configured value and keeps the field for the way
-// back; re-picking the field keeps the order it had
 test('Default keeps the field, and the field keeps its order', () => {
   const display = createDisplay()
   setConf(display, 'color', { value: 'red', field: 'name', domain: ['atpA'] })
@@ -568,8 +517,6 @@ test('a ribbon colour pick keeps the ramp the config declares', () => {
   expect(display.ribbonRamp).toMatchObject(ramp)
 })
 
-// The ribbons are the other color vocabulary, and only `strand` gives it rows:
-// a section of its own, so the connector colors are not read as glyph fills.
 test('the strand ribbon mode adds its own section', () => {
   const display = createDisplay()
   setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
@@ -595,9 +542,6 @@ test('the strand ribbon mode adds its own section', () => {
   expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
 })
 
-// The two drawing settings were config-only, and a menu toggle that writes
-// anywhere but the slot the getter reads is a checkbox that ticks and does
-// nothing.
 test('the drawing toggles write the slots the display reads back', () => {
   const display = createDisplay()
   expect(display.drawCurves).toBe(false)
@@ -609,12 +553,6 @@ test('the drawing toggles write the slots the display reads back', () => {
   expect(display.showLaneTicks).toBe(false)
 })
 
-// `anchorSpans` is one of several producers of a ribbon endpoint pair, and the
-// pair is ORDERED — the anchor's start first — not ascending. `ribbonPath`
-// joins first end to first end, so sorting it here drew every
-// anchor-to-lane-1 ribbon twisted where it should be straight (and straight
-// where it should twist) on any reversed displayed region, which a `[rev]`
-// locstring and a reversed panel of a synteny stack both produce.
 describe('the anchor lane pair stays ordered', () => {
   function withGroup() {
     const display = createDisplay()
@@ -669,14 +607,10 @@ describe('the anchor lane pair stays ordered', () => {
     ])
     const { span, atStart, atEnd } = spanOf(display)
     expect(span).toEqual([atStart, atEnd])
-    // the pair descends, and that descent is the orientation the ribbon draws
     expect(span[0]).toBeGreaterThan(span[1])
   })
 })
 
-// Re-anchoring replaces the hosting view's regions with another genome's, and
-// what it discarded may be a region list built over several navigations, so
-// the snackbar carries the same Undo the stacked view's moves offer.
 test('re-anchoring offers an undo that puts the view back where it was', async () => {
   const { display, session } = createDisplayWithSession()
   const view = display.lgv
@@ -705,9 +639,6 @@ test('re-anchoring on a lane drawn [rev] reverses the view', async () => {
   expect(display.anchorReversed).toBe(true)
 })
 
-// rowAssemblies narrows to the selection and the anchor is never a lane, so
-// the genome a re-anchor moves out of the anchor lane fell outside a selection
-// that had no reason to name it, and vanished from the stack
 test('re-anchoring under a lane selection keeps the outgoing anchor drawn', async () => {
   const { display, session } = createDisplayWithSession()
   display.setSelectedLanes(['volvox_random'])
@@ -731,8 +662,6 @@ test('with every lane drawn, re-anchoring writes no selection', async () => {
   expect(display.laneFilter).toBeUndefined()
 })
 
-// A genome hidden as a mate lane stays hidden while it is the anchor, so
-// re-anchoring away from it has to unhide it
 test('re-anchoring unhides the outgoing anchor', async () => {
   const { display, session } = createDisplayWithSession()
   display.hideLane('volvox')
@@ -746,9 +675,6 @@ test('re-anchoring unhides the outgoing anchor', async () => {
   expect(display.laneFilter).toBeUndefined()
 })
 
-// The clicked ribbon keeps an outline the way the pairwise view's does: the
-// click records the hover's target by key, and only an empty-canvas click lets
-// it go. hoverRelayout.test.ts pins what the key resolves to.
 test('a ribbon click holds its key until a click on empty canvas', () => {
   const display = createDisplay()
   const feature = new SimpleFeature({
@@ -761,26 +687,19 @@ test('a ribbon click holds its key until a click on empty canvas', () => {
   display.selectHovered()
   expect(display.clickedTarget).toEqual({ groupKey: undefined, linkId: 'f1' })
 
-  // the pointer leaving does not release it
   display.setHoverTarget(undefined)
   expect(display.clickedTarget?.linkId).toBe('f1')
 
-  // a stationary click on empty canvas does
   display.selectHovered()
   expect(display.clickedTarget).toBeUndefined()
 
-  // a refetch does not, since the click's own widget resizes the view and
-  // that refetches
+  // the click's own widget resizes the view, and that refetches
   display.setHoverTarget({ label: 'g', feature, groupKey: 'g1' })
   display.selectHovered()
   display.setFeatures([])
   expect(display.clickedTarget).toEqual({ groupKey: 'g1', linkId: undefined })
 })
 
-// A stack past ~8 lanes used to divide whatever height there was and crush;
-// the fixed lane pitch and the scroll viewport are what replaced that. The
-// floor rule itself is laneStack.test.ts's; here is what the display derives
-// from it and what a scroll has to undo.
 describe('the lane stack scrolls once lanes would crush', () => {
   const MATES = 20
   function stageManyMates(display: ReturnType<typeof createDisplay>) {
@@ -862,10 +781,6 @@ describe('the lane stack scrolls once lanes would crush', () => {
   })
 })
 
-// A selection recoloured its glyph through `laneGlyphCells`, so a click
-// repacked and re-uploaded every lane. The chrome draws it now, off the cells'
-// hit boxes, and no selection — this display's or another track's — touches
-// the cells.
 test('a selection lights the chrome and leaves the lane glyph cells alone', () => {
   const { display, session } = createDisplayWithSession()
   display.setFeatures([
@@ -884,8 +799,7 @@ test('a selection lights the chrome and leaves the lane glyph cells alone', () =
       },
     }),
   ])
-  // keep the computed hot: outside a reaction it re-evaluates on every read
-  // and identity says nothing
+  // keep the computed hot: outside a reaction each read re-evaluates it
   const stop = autorun(() => display.laneGlyphCells)
   const before = display.laneGlyphCells
   session.setSelection(
@@ -905,10 +819,6 @@ test('a selection lights the chrome and leaves the lane glyph cells alone', () =
   stop()
 })
 
-// The lane genes fed `buildLanes`, so every gene commit — one per pan that
-// moved a lane's fetch window — gave the stack a new identity, and with it the
-// ribbon and tick cells: all re-uploaded, and the hover cleared under a
-// stationary pointer, for a commit that changed no ribbon
 test('a lane-genes commit leaves the stack and the ribbons where they were', () => {
   const display = createDisplay()
   display.setFeatures([
@@ -927,8 +837,7 @@ test('a lane-genes commit leaves the stack and the ribbons where they were', () 
       },
     }),
   ])
-  // keep the computeds hot: outside a reaction they re-evaluate on every
-  // read and identity says nothing
+  // keep the computeds hot: outside a reaction each read re-evaluates them
   const stop = autorun(() => [
     display.laneStack,
     display.ribbonGeometry,
@@ -963,7 +872,6 @@ test('a lane-genes commit leaves the stack and the ribbons where they were', () 
   expect(display.laneStack).toBe(stack)
   expect(display.ribbonGeometry).toBe(ribbons)
   expect(display.tickGeometry).toBe(ticks)
-  // the glyph cells are what a gene commit is for
   expect(display.laneGlyphCells).not.toBe(glyphs)
   expect(display.laneStack.lanes[0]!.hasAnnotation).toBe(true)
   stop()
@@ -1005,10 +913,6 @@ async function until(condition: () => boolean) {
   expect(condition()).toBe(true)
 }
 
-// The ortholog fetch asked an indexed PIF for its fine tier at every zoom, so
-// a whole-chromosome window was a genome-wide fine fetch. The tier is
-// resolved here off the settled zoom and rides the fetch key, the way the
-// synteny view, the dotplot and LGVSyntenyDisplay already do it.
 describe('the level-of-detail tier', () => {
   test('rides the fetch key and offers its menu on a tiered adapter', () => {
     const { display } = createDisplayWithSession({
@@ -1099,10 +1003,6 @@ describe('the level-of-detail tier', () => {
     expect(opts(linkCall()!).clipToRegion).toBe(true)
   })
 
-  // A liftOver chain spans tens of Mb, and a lane fitted to whole records sat
-  // at 80x a 300 kb window: the fetch asks for the records cut to the window,
-  // and asks over the view's blocks merged, so a record spanning two of them
-  // is cut once rather than once per block.
   test('the ortholog fetch asks for records clipped to the merged blocks', async () => {
     const calls: { name: string; args: Record<string, unknown> }[] = []
     const { display } = createDisplayWithSession({
@@ -1131,9 +1031,6 @@ describe('the level-of-detail tier', () => {
   })
 })
 
-// `laneGenesFetchSpecs` folded every lane into one key and the fetch reissued
-// every spec when it moved, so at 44 lanes a pan that moved one lane's
-// quantized window cost 44 tabix RPCs and a commit that waited on all of them.
 test('one lane’s window change refetches that lane alone', async () => {
   const calls: Record<string, unknown>[] = []
   const { display } = createDisplayWithSession({
@@ -1189,9 +1086,6 @@ test('one lane’s window change refetches that lane alone', async () => {
   )
 })
 
-// `laneGlyphCells` resolved the `color` and `utrColor` jexl slots per gene on
-// every lane whenever the stack changed, which is every settle. The colour
-// depends on the feature and the config, never on the frame.
 test('a settle rebuilds the lane cells against the same fills', () => {
   const display = createDisplay()
   display.setFeatures([mateRecord('own1', 'volvox_random', 'gene1')])
@@ -1232,8 +1126,7 @@ test('a settle rebuilds the lane cells against the same fills', () => {
   expect(display.laneGeneColors.get('volvox')).toBe(genes)
   expect(display.boxColors).toBe(boxes)
 
-  // a gene commit is what a lane's fills are keyed on, and an ortholog
-  // commit the boxes'
+  // a lane's fills key on its gene commit, the boxes' on the ortholog commit
   display.setLaneGenes(
     new Map([['volvox', { key: 'later', genes: [] }]]),
     display.laneGenesFetchSpecs,
@@ -1245,9 +1138,6 @@ test('a settle rebuilds the lane cells against the same fills', () => {
   stop()
 })
 
-// `laneGeneAdapters` walked `session.tracks` while the "Open assembly" hop
-// walked `allSessionTracks`, so a lane annotated through a connection read
-// "no annotation" although the hop brought the track along.
 test('a lane annotated through a connection has an annotation', () => {
   const { display } = createDisplayWithSession({
     connectionGeneTracks: [
@@ -1268,8 +1158,6 @@ test('a lane annotated through a connection has an annotation', () => {
   ).toBe(true)
 })
 
-// A hub config carries several gene sets per genome in one adapter format, so
-// the rank ties and declaration order picked `hg38-ccdsGene` over RefSeq.
 test('a lane draws the gene track the display names for its genome', () => {
   const { display, session } = createDisplayWithSession({
     geneTracks: [
@@ -1304,9 +1192,6 @@ test('a lane draws the gene track the display names for its genome', () => {
   ])
 })
 
-// The adapter compares its config's own spelling of a lane, and the worker
-// has no assembly manager, so a track naming a lane by an alias asked for a
-// lane the source never heard of
 test('a lane selection reaches the adapter under every name the session knows the genome by', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
@@ -1343,10 +1228,6 @@ test('two mates spelling one assembly two ways both draw from its one gene track
   ])
 })
 
-// A star of pairwise alignments — the HPRC vs-GRCh38 PAF, a
-// MultiPairwiseSyntenyAdapter — holds no mate-vs-mate rows, so the second
-// gutter down had nothing to draw. Wherever two lanes cover one stretch of the
-// anchor, the link between them is composed through it.
 describe('a star source composes its adjacent-pair links through the anchor', () => {
   const ribbonsBetweenMates = (display: ReturnType<typeof createDisplay>) => {
     const { cells } = display.ribbonGeometry
@@ -1395,7 +1276,6 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     display.setFeatures(starRecords())
     display.setLaneFrames(0, frames)
     expect(display.laneLinksFetchSpecs.map(s => s.lane)).toEqual([pair])
-    // nothing composed until the file has been asked
     expect(display.pairLinks.has(pair)).toBe(false)
 
     display.setLaneLinks(
@@ -1415,9 +1295,7 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     const composed = display.pairLinks.get(pair)!.links
     expect(composed).toHaveLength(1)
     const [link] = composed
-    // the anchor overlap is ctgA:200-300; forward in the upper lane, reversed
-    // in the lower, so the link runs crosswise and the lower span is the
-    // record's far end
+    // forward upper, reversed lower: the link runs crosswise over ctgA:200-300
     expect(link!.get('refName')).toBe('ctgB')
     expect([link!.get('start'), link!.get('end')]).toEqual([200, 300])
     expect(link!.get('strand')).toBe(-1)
@@ -1434,7 +1312,6 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     const [x1, x2] = lower.spanOf('ctgC', 1200, 1300)!
     expect(Math.min(data.bp3[0]!, data.bp4[0]!)).toBe(Math.min(x1, x2))
     expect(Math.max(data.bp3[0]!, data.bp4[0]!)).toBe(Math.max(x1, x2))
-    // the composed links owe the export nothing: the pair is fetched
     expect(
       staleLaneSpecs(display.laneLinksFetchSpecs, display.laneLinks),
     ).toEqual([])
@@ -1573,11 +1450,6 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
   })
 })
 
-// A pangenome graph holds hundreds of haplotypes, and the display learnt its
-// lanes from the fetched window alone, so the picker had nothing to offer
-// until every lane had been placed at least once. An adapter that declares its
-// lanes in its header is read once, like a tiered file's tiers, and its whole
-// universe is on offer before any fetch lands; the anchor is never a lane.
 test('an adapter declaring its lanes has its header read once, and the universe lists them before any is placed', async () => {
   const calls: { name: string; args: Record<string, unknown> }[] = []
   const { display } = createDisplayWithSession({
@@ -1619,8 +1491,7 @@ test('an adapter declaring its lanes has its header read once, and the universe 
     'volvox',
     display.fetchLaneSelection,
   )
-  // the fetch asked only for the track's lane, so the window says nothing of
-  // HG1#1, which a picker would otherwise grey as placing nothing
+  // the fetch asked only for the track's lane, so the window says nothing of HG1#1
   expect(display.laneUniverse.map(l => [l.name, l.placed])).toEqual([
     ['HG1#1', undefined],
     ['HG1#2', true],
@@ -1649,8 +1520,6 @@ test('an adapter that neither tiers nor declares lanes is never asked for a head
   ])
 })
 
-// A hide with no choice in force takes one lane out and nothing else, so a lane
-// no config or header names still draws when a pan first places it
 test('hiding a lane leaves every other lane drawn, including ones placed later', () => {
   const display = createDisplay()
   display.setFeatures([
@@ -1673,8 +1542,6 @@ test('hiding a lane leaves every other lane drawn, including ones placed later',
   expect(display.laneFilter).toBeUndefined()
 })
 
-// A graph refetch walks the haplotypes over the network, and a hide changes
-// only what is drawn
 test('hiding a lane on a graph track refetches nothing', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
@@ -1690,8 +1557,6 @@ test('hiding a lane on a graph track refetches nothing', () => {
   expect(display.settingsFetchInputs).toEqual(key)
 })
 
-// A picker choice in force is also what a graph track fetches, so a hide has
-// to leave it alone: it takes the lane out of the drawing only
 test('hiding a lane under a picker choice keeps the choice and refetches nothing', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
@@ -1735,8 +1600,6 @@ describe('the picker submit', () => {
     expect(display.laneFilter).toEqual({ only: ['sample#1#a'] })
   })
 
-  // No choice over a track naming its own lanes means those lanes, so every
-  // lane ticked has to be written out, and ticking exactly those writes none
   test("over a track naming its lanes, every lane is written out and the track's own are no choice", () => {
     const { display } = createDisplayWithSession({
       syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
@@ -1761,9 +1624,6 @@ describe('the picker submit', () => {
   })
 })
 
-// A star's mate lanes are aligned to its anchor only, and a graph source
-// declaring its haplotypes without the reference answers from the reference
-// alone: re-anchored on a mate, either draws next to nothing
 test('a mate lane can become the anchor only on a source that aligns lanes to each other', () => {
   const plain = createDisplay()
   expect(plain.canReanchor).toBe(true)
@@ -1786,8 +1646,6 @@ test('a mate lane can become the anchor only on a source that aligns lanes to ea
   expect(graph.canReanchor).toBe(true)
 })
 
-// The selection is the reader's picture, so it is display state: it narrows
-// the stack the same way after every refetch and a snapshot carries it.
 test('a lane selection narrows the stack and survives a refetch', () => {
   const display = createDisplay()
   const window = () => [
@@ -1810,8 +1668,6 @@ test('a lane selection narrows the stack and survives a refetch', () => {
   expect(getSnapshot(display).laneFilter).toEqual({
     only: ['sample#1#a', 'volvox_random'],
   })
-  // pins apply inside the selection, and a hide takes a lane out of the
-  // drawing without rewriting the choice
   display.setDomain(['sample#1#a'])
   expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
   display.hideLane('volvox_random')
@@ -1826,8 +1682,6 @@ test('a lane selection narrows the stack and survives a refetch', () => {
   expect(getSnapshot(display).laneFilter).toBeUndefined()
 })
 
-// A graph names 464 haplotypes and its track names the eight the session
-// loads, so a GBZ config lists its lanes once, in the track's assemblyNames.
 test('a graph track opens on its own assemblies beside the anchor', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
@@ -1841,10 +1695,6 @@ test('a graph track opens on its own assemblies beside the anchor', () => {
   expect(laneResetLabel(display)).toBe("Show the track's lanes (2)")
 })
 
-// A 241-child hub star answers its header's tier facts and its refNames from
-// each child's index, so the header read and the fetch, whose rename pass loads
-// the refNames, both say which lanes they are for. Beside the regions rather
-// than inside `opts`, since the rename pass reads the call's own arguments.
 test('the header read and the fetch name the lanes a lane-declaring source reads', async () => {
   const calls: { name: string; args: Record<string, unknown> }[] = []
   const { display } = createDisplayWithSession({
@@ -1867,24 +1717,15 @@ test('the header read and the fetch name the lanes a lane-declaring source reads
   expect(display.fetchLaneSelection).toEqual(lanes)
 })
 
-// The bug this locks down: `laneSelection` existed and narrowed the DRAWING,
-// and nothing passed it to the adapter — so a graph track showing eight lanes
-// still fetched all 464 haplotypes and threw away 456 of them. The two halves
-// are the term reaching the fetch at all, and the fetch key moving when it
-// does, since held data fetched for a different selection is stale.
 test('a lane selection reaches the fetch only where the adapter can cut on it', () => {
-  // MCScanBlocksAdapter declares no lane universe. A source that cannot answer
-  // for a subset more cheaply than for all of it must not be made to refetch
-  // for a filter it would ignore, so the selection stays a drawing concern.
+  // MCScanBlocksAdapter declares no lane universe
   const plain = createDisplay()
   plain.setSelectedLanes(['sample#1#a'])
   expect(plain.laneSelection).toEqual(['sample#1#a'])
   expect(plain.fetchLaneSelection).toBeUndefined()
   expect(plain.rpcProps()).toEqual({ haplotypes: undefined })
 
-  // the graph adapter declares its lanes in its header, which is what earns it
-  // the term: it walks the named haplotypes from an anchor instead of naming
-  // every one and discarding
+  // the graph adapter declares its lanes in its header
   const { display: graph } = createDisplayWithSession({
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
     trackAssemblyNames: ['volvox'],
@@ -1900,8 +1741,6 @@ test('a lane selection reaches the fetch only where the adapter can cut on it', 
   const eightLanes = graph.settingsFetchInputs
   expect(eightLanes).not.toEqual(everyLane)
 
-  // a different set is a different fetch, and clearing it comes back to the key
-  // the unfiltered window was fetched under rather than to a third state
   graph.setSelectedLanes(['HG00097.1'])
   expect(graph.settingsFetchInputs).not.toEqual(eightLanes)
   graph.setSelectedLanes(undefined)
@@ -1933,9 +1772,6 @@ test('declaredLanesOf reads a header that names lanes and nothing else', () => {
   ).toEqual([{ name: 'HG1#1', label: undefined, group: 'HG1' }])
 })
 
-// The label table an `attribute:` ribbon mode paints from accumulates across
-// fetches in first-seen order, so a pan that brings new labels appends them
-// and recolors nothing; picking the mode again re-keys from what is loaded.
 test('the ribbon label table accumulates across fetches and re-keys on a mode pick', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
@@ -1978,8 +1814,6 @@ test('the ribbon label table accumulates across fetches and re-keys on a mode pi
   expect(group()).toEqual({ labels: ['C1', 'A1a'], colors: {} })
 })
 
-// A label's color is its position in the table, so the domain has to move the
-// table itself: the key and the ribbons then read the same order.
 test('a ribbonColorDomain moves the label table, and the key with it', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
@@ -2019,9 +1853,6 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   ).toEqual(['C1', 'A1a', 'B1'])
 })
 
-// ribbonColor's range paints a text column's domain in order, its labels rename
-// the key's rows and its title heads the ribbons' key; re-picking the column
-// keeps all three.
 test("ribbonColor's range paints the domain, and labels and title name its key", () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
@@ -2065,10 +1896,6 @@ test("ribbonColor's range paints the domain, and labels and title name its key",
   expect(getSnapshot(display.configuration.ribbonColor)).toEqual(color)
 })
 
-// The Color by menu picks a synteny mode; the config holds the object. A
-// scheme lands as its scale with the column and its order kept unread, so
-// picking the column again finds them; re-picking the same column keeps its
-// order, and a new one starts from none.
 test('a picked ribbon mode is written as the ribbonColor object', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: {
@@ -2165,12 +1992,6 @@ test('identity ribbons key their ramp only when a record carries an identity', (
   ])
 })
 
-// The fetch asks for the view's static blocks, which reach past the window,
-// and `clipToRegion` cuts each record to what was ASKED FOR — so an adapter
-// answering one record per lane hands the fit a placement the width of the
-// padding. The picture is still drawn from the whole record, since the stack
-// is translated between settles and a ribbon cut at the viewport edge would
-// end in mid-air on the first pan.
 test('the fit sees a record cut to the viewport, the picture sees it whole', () => {
   const display = createDisplay()
   const overhang = new SimpleFeature({
@@ -2202,10 +2023,6 @@ test('the fit sees a record cut to the viewport, the picture sees it whole', () 
   ])
 })
 
-// The seed a lane aligns on is the centre of what the viewport shows, the same
-// cut the lane's own runs are: seeded at the whole record's centre, ctgA:500,
-// against the lane's cut centre, ctgB:5400, a lane of one long record — a
-// haplotype off a graph — slid 100px toward its overhang
 test('a record running off the viewport aligns its lane on the part it shows', () => {
   const display = createDisplay()
   display.setFeatures([
@@ -2244,11 +2061,7 @@ test('a record running off the viewport aligns its lane on the part it shows', (
   expect(frame.min).toBeCloseTo(5000)
 })
 
-// A sliced displayed region — a bookmark, a launched panel, one region of
-// several — ends on screen, and the anchor cannot draw past it. The lane side
-// is cut by the same fraction, so the ribbon does not fan out under blank
-// anchor space: ctgA:300-700 against a region ending at ctgA:500 draws the
-// half that maps to ctgA:300-500.
+// ctgA:300-700 against a region ending at ctgA:500 draws the half over ctgA:300-500
 describe('a record crossing a displayed region’s end', () => {
   test.each([
     ['forward', 1, [1300, 1500], undefined],

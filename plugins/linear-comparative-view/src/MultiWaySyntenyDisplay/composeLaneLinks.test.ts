@@ -249,9 +249,6 @@ describe('composeLaneLinks', () => {
   })
 })
 
-// A record cut at a large indel reaches the composer as one placement per
-// run, each with its own anchor interval, so a link is interpolated within a
-// run and nothing is composed across the gap the record skips.
 test('runs of one record compose within themselves and never across the gap', () => {
   const upper = [
     record('u/0', [1000, 2000], ['B1', 5000, 6000]),
@@ -287,10 +284,6 @@ test('runs of one record compose within themselves and never across the gap', ()
   ])
 })
 
-// A star states each haplotype against the reference and never states one
-// haplotype against another, so this gutter's alignment is the only one there
-// will ever be — and it draws the same indels and mismatches a directly
-// fetched pair draws.
 test('a gutter a star never states carries the alignment composed through it', () => {
   const upper = record(
     'u',
@@ -334,12 +327,7 @@ test('a gutter whose records state no alignment keeps the interpolated span', ()
   expect([link!.get('start'), link!.get('end')]).toEqual([1000, 1090])
 })
 
-// One lane left whole against another cut into many runs is the shape that made
-// composing quadratic: each stretch re-tested the wide record's CIGAR for a
-// coarse run and re-sought through it from the start. Counted rather than
-// timed, because the count separates the two by three orders of magnitude and a
-// loaded box cannot blur it — 500 runs read ~1.6k slots resumed against ~125k
-// restarted.
+// Counted, not timed: 500 runs resume ~1.6k slots against ~125k restarted.
 test('composing one wide record against many split ones walks it once', () => {
   const n = 500
   let reads = 0

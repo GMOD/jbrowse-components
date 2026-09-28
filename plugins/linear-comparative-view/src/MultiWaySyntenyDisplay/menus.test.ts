@@ -215,7 +215,6 @@ test('Color by offers the synteny view modes a lane stack paints', () => {
   ])
 })
 
-// One menu, the genes' channel over the ribbons', each under its own heading
 test('Color by heads the gene modes and the ribbon modes', () => {
   const { model, calls } = trackModel()
   const colorBy = subMenuOf(multiWayTrackMenuItems(model)[1])
@@ -245,8 +244,6 @@ test('Color by heads the gene modes and the ribbon modes', () => {
   expect(calls).toEqual(['gene color cluster'])
 })
 
-// A field the config names that no row writes is still the checked one, and a
-// painting field offers its pin
 test('the gene modes name a configured field and offer the pin under it', () => {
   const { model, calls } = trackModel({ geneColorField: 'biotype' })
   const genes = geneColorMenuItems(model)
@@ -387,9 +384,6 @@ test('the last lane drawn cannot be hidden', () => {
   ).toEqual([true, true, true])
 })
 
-// The frame shows the contig explaining most of the window, and a genome with
-// two homoeologous copies of it shows one: the other is named and offered, and
-// a pin is undone from the same menu.
 test('a lane names its other contigs and offers each, and a pin offers its release', () => {
   const twoCopies = {
     ...peach,
@@ -464,8 +458,6 @@ test('a lane drawn [rev] opens and re-anchors its assembly reversed', () => {
   ])
 })
 
-// A star aligns every lane to its one anchor, so a mate made the anchor
-// places next to nothing: the row is left out rather than offered dead
 test('a source aligned to one anchor offers no re-anchor', () => {
   expect(
     labelsOf(
@@ -480,8 +472,6 @@ test('a source aligned to one anchor offers no re-anchor', () => {
   ])
 })
 
-// A lane in a window whose blocks split about evenly reads the way its vote
-// fell; the reader turns it round, and hands the choice back from the same menu
 test('a lane flips from its menu, and a flip pin offers its release', () => {
   const { model, calls } = headerModel()
   click(laneHeaderMenuItems(model, peach)[5])

@@ -12,8 +12,7 @@ import type { Span } from './layoutMultiWay.ts'
 
 const CANVAS = 800
 
-// Two exons with an intron between them, and the whole thing mapped 1:1 from bp
-// to px so a fixture reads as pixels.
+// Two exons around an intron, bp mapped 1:1 to px.
 function gene(opts: Parameters<typeof geneFeature>[0]) {
   return new LaneGene(geneFeature(opts))
 }
@@ -269,7 +268,7 @@ test('geneGlyphShape implies a CDS-only annotation’s UTRs from its own bounds'
       { uniqueId: 'c2', refName: 'chr1', start: 170, end: 200, type: 'CDS' },
     ],
   })
-  // the ends only — 150..170 is an intron between two CDS pieces, not UTR
+  // 150..170 is an intron between two CDS pieces, not UTR
   expect(geneGlyphShape(gene)).toEqual({
     full: [
       [100, 150],
@@ -282,10 +281,6 @@ test('geneGlyphShape implies a CDS-only annotation’s UTRs from its own bounds'
   })
 })
 
-// The subpart rules are the feature track's own (`isCDS`/`isExon`/`isUTR`),
-// which is what these two cover: matching `type === 'CDS'` exactly drew the
-// first as one flat full-height box, and a transcript naming its UTRs rather
-// than its exons lost them entirely in the second.
 test('geneGlyphShape reads a lowercase cds the way the feature track does', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene4',
@@ -339,10 +334,6 @@ test('geneGlyphShape draws explicit UTR rows where a transcript names no exons',
   })
 })
 
-// One rule per transcript, the feature track's: a transcript naming its UTRs
-// implies none, one naming exons implies its overhang, and a region coding in
-// either reads full. Read gene-wide, the explicit UTRs of the first transcript
-// used to switch implication off for the second.
 test('geneGlyphShape lets each transcript decide its own UTRs', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene7',
@@ -442,9 +433,6 @@ test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => 
   ])
 })
 
-// The anchor lane's genes are fetched over the view's static blocks, so a gene
-// straddling a block boundary comes back once per block it touches — two
-// glyphs, and two React children under one key.
 test('lane genes arriving once per static block draw once', () => {
   const gene = (uniqueId: string) =>
     new SimpleFeature({
@@ -457,10 +445,6 @@ test('lane genes arriving once per static block draw once', () => {
   expect(laneGeneFeatures([gene('g1'), gene('g1'), gene('g2')])).toHaveLength(2)
 })
 
-// The lane draws its annotation where it has one and the table's placement box
-// where it does not, and the choice is per GROUP. Made per lane — one drawn
-// gene anywhere suppressing every box — a table naming genes the lane's GFF3
-// does not left those groups' ribbons hanging off nothing.
 describe('a placement box beside the lane annotation', () => {
   const coveringGene = (annotated: Span[], span: Span) =>
     annotatedSpans(annotated)(span)
@@ -479,9 +463,6 @@ describe('a placement box beside the lane annotation', () => {
     expect(coveringGene([[10, 40]], [40, 80])).toBeUndefined()
   })
 
-  // which gene, not whether one exists: the covering gene inherits the group
-  // key the box would have carried, so two genes over one placement have to
-  // resolve to one of them rather than to `true`
   test('names the gene the placement is mostly under', () => {
     const wide = coveringGene(
       [
@@ -494,8 +475,6 @@ describe('a placement box beside the lane annotation', () => {
     expect(wide?.overlap).toBe(60)
   })
 
-  // the index answers exactly what a scan of every gene answered, nested and
-  // reversed spans included, and the first drawn gene on a tied overlap
   test('answers the same as a scan over a gene-dense lane', () => {
     const scan = (annotated: Span[], span: Span) => {
       const lo = Math.min(span[0], span[1])

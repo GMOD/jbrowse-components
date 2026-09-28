@@ -108,9 +108,6 @@ describe('the label', () => {
   })
 })
 
-// The span, because a range makes the reader subtract two eight-digit numbers
-// to answer "how zoomed is this lane", and the multiple only where it is not
-// 1, so a stack at the anchor's own scale says so by staying quiet
 describe('the scale', () => {
   test('is the visible span on the anchor lane', () => {
     expect(rowOf(anchorLane, 2000).scale).toBe('2Kbp')

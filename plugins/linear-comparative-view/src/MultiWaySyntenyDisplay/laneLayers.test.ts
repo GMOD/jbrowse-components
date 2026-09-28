@@ -304,8 +304,7 @@ describe('a template layer', () => {
     expect(display.laneLayerTitles[0]!.text).toMatch(/ · zoom in$/)
   })
 
-  // the title sits on the band, which is white in every theme; the session
-  // palette's text is white on a dark theme
+  // The band is white in every theme, and a dark theme's palette text is white.
   test('the title is band ink, whatever the theme', async () => {
     const display = await templateDisplay(GC)
     const { getAllByTestId } = render(

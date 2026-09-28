@@ -82,9 +82,7 @@ export function configSchemaFactory() {
        * #slot color
        * The gene glyphs' fill: a CSS color or `jexl:` callback, goldenrod
        * unset, or `{ field }` to paint each value its own palette color with
-       * a key. `{ field: "cluster" }` paints a gene by the ortholog group it
-       * carries and a placement box by its own, so a group is one color down
-       * the stack; a gene no group claims is the no-value grey.
+       * a key.
        */
       color: geneColorConfigSchema,
       /**
@@ -180,8 +178,7 @@ export function configSchemaFactory() {
       /**
        * #slot
        * The feature field, or jexl expression over `feature`, each lane's
-       * gene labels print. Unset, the feature track's own: the gene's name,
-       * else its ID. A gene with nothing there prints nothing
+       * gene labels print; unset, the gene's name, else its ID.
        */
       text: {
         type: 'featureField',
@@ -214,8 +211,6 @@ export function configSchemaFactory() {
       },
       /**
        * #slot
-       * overrides the base schema's 100, which divides into a lane stack at
-       * the glyph-height floor with the headers colliding into the glyphs
        */
       height: {
         type: 'number',

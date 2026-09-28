@@ -80,10 +80,9 @@ export const laneLayerConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot marks
-     * The mark display's marks, drawn over each lane's features. A lane is
-     * drawn at up to 80 times the anchor's bp per px, so a `count` or `sum`
-     * over an `auto` bin covers more bp on a zoomed-out lane and reads denser
-     * under the shared scale; a mean such as a bigWig's `score` compares
+     * The mark display's marks, drawn over each lane's features; a mean such
+     * as a bigWig's `score` compares across lanes, where a `count` or `sum`
+     * reads denser on a zoomed-out lane.
      */
     marks: markListSchema([{ mark: 'bar', encoding: { y: 'score' } }]),
   },

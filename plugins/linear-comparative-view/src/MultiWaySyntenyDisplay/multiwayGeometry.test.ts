@@ -216,8 +216,6 @@ describe('the ribbons', () => {
     expect(data.base0).toBe(0)
     expect(abgrAlpha(data.colors[0]!)).toBe(Math.round(0.3 * 255))
     expect(targets.map(t => t.groupKey)).toEqual(['g1', 'g2'])
-    // one target per group is shared by every gutter, so the label names the
-    // group rather than a lane pair: its gene name and where the anchor puts it
     expect(targets[0]!.label).toBe('g1\ngrape chr1:101..200')
     expect([...data.instanceFeatureIdx]).toEqual([
       groupTarget.get('g1'),
@@ -248,12 +246,6 @@ describe('the ribbons', () => {
     expect(ribbonData(cells, 'ribbons:1').instanceFeatureIdx[0]).toBe(0)
   })
 
-  // g1 is on grape and cacao and not on peach, so the chain through the
-  // stack broke at peach: bridging joins grape to cacao across peach's band,
-  // in a layer of its own since the pick reads a ribbon's y extent off its
-  // layer. Same color as a pair ribbon: half opacity over a 0.3 base was
-  // invisible against the band, and a ribbon crossing a band with no glyph
-  // at either edge of it already reads as passing through
   test('bridge a group across a lane that places nothing for it', () => {
     const s = stack({
       features: [
@@ -285,12 +277,9 @@ describe('the ribbons', () => {
     const bridge = ribbonData(cells, 'ribbons:0>2')
     expect(bridge.instanceCount).toBe(1)
     expect(bridge.instanceFeatureIdx[0]).toBe(groupTarget.get('g1'))
-    // under the adjacent ribbons' alpha, which it crosses a lane of
     const adjacent = abgrAlpha(ribbonData(cells, 'ribbons:0').colors[0]!)
     expect(adjacent).toBe(Math.round(0.4 * 255))
     expect(abgrAlpha(bridge.colors[0]!)).toBeLessThan(adjacent / 2)
-    // the near end is the anchor's span and the far end is CACAO's span for
-    // the group, not peach's: a bridge lands on the lane that places it
     const [anchorSpan] = s.lanes[0]!.placements.get('g1')!.spans
     const [cacaoSpan] = s.lanes[2]!.placements.get('g1')!.spans
     expect(s.lanes[1]!.placements.has('g1')).toBe(false)
@@ -302,10 +291,6 @@ describe('the ribbons', () => {
     expect(layer.height).toBe(s.lanes[2]!.glyphTop - layer.yTop)
   })
 
-  // An alignment-level source groups per record, and a record has exactly one
-  // mate: the skipped lane never held it, and the anchor's record to the third
-  // lane bridged over the direct peach|cacao link the pair fetched for itself,
-  // so every mate lane fanned out of the anchor
   test('do not bridge a nameless record: its group has one mate and no lane it is missing from', () => {
     const nameless = (
       id: string,
@@ -441,8 +426,7 @@ describe('the ribbons', () => {
     expect(data.colors[mark]).toBe(mismatchColor(''))
   })
 
-  // 25 bp/px on both lanes, so each cluster of three mismatches below spans
-  // under a pixel while the ribbon carrying them is 80 px wide
+  // 25 bp/px on both lanes, so each cluster of three mismatches spans under a pixel
   test('mismatches sharing a pixel draw as one mark, and a later pixel starts another', () => {
     const wide = { min: 1000, max: 21_000 }
     const s = stack({
@@ -491,9 +475,7 @@ describe('the ribbons', () => {
       bridgeSkippedLanes: false,
     })
     const data = ribbonData(cells, 'ribbons:1')
-    // one mark per cluster, each 3 bp long — the mismatched bases of its
-    // cluster, not the 21 bp they are spread over, so the width fade lays down
-    // the ink the three separate marks composited to
+    // each mark is its cluster's 3 mismatched bp, not the 21 bp they spread over
     const marks = [...data.kinds].flatMap((k, i) =>
       k === KIND_BASE_TILE ? [i] : [],
     )
@@ -507,8 +489,6 @@ describe('the ribbons', () => {
     )
   })
 
-  // the walk starts at the mate's end and runs back along it, as a '-' PAF
-  // record's CIGAR does
   test('a reverse anchor record’s insertion lands on the mate walked backwards', () => {
     const record = new SimpleFeature({
       uniqueId: 'r1',
@@ -531,15 +511,12 @@ describe('the ribbons', () => {
     })
     const data = ribbonData(cells, 'ribbons:0')
     expect([...data.kinds]).toEqual([KIND_BASE, KIND_BASE])
-    // the anchor meets itself at chr1:150 while the mate opens 20 bp between
-    // the two tiles, walked backwards from its end
+    // the anchor meets itself at chr1:150; the mate opens 20 bp between the tiles
     expect([data.bp2[0], data.bp1[1]]).toEqual([120, 120])
     expect(Math.abs(data.bp3[0]! - data.bp4[1]!)).toBe(16)
   })
 
-  // Peach's reach is Pp1:500-2500 and the record's mate is Pp1:300-1100, so the
-  // tile reaching Pp1:300 is cut at Pp1:500 (x=-400, or 1200 flipped). A
-  // reverse record walks the mate high end first.
+  // peach reaches Pp1:500-2500, so the tile reaching Pp1:300 is cut at Pp1:500
   test.each([
     [
       'forward',
@@ -615,8 +592,7 @@ describe('the ribbons', () => {
     },
   )
 
-  // g2's record is reverse against the anchor, so its ribbon takes the reverse
-  // color; g1 the forward one
+  // g2's record is reverse against the anchor, g1's forward
   test('color by strand reads the record’s strand, at the slot color’s alpha', () => {
     const s = stack({
       features: [
@@ -638,10 +614,7 @@ describe('the ribbons', () => {
     expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR('#00f'), alpha))
   })
 
-  // A lane whose placements are inverted is drawn flipped, which straightens
-  // its ribbons on screen: the color still says what the record is. g2 is an
-  // inversion drawn uncrossed and takes the reverse color; g1 runs forward,
-  // is drawn crossed under the flipped frame, and takes the forward color
+  // g2 is an inversion drawn uncrossed; g1 runs forward, drawn crossed
   test('color by strand reads the record, not the drawn twist, on a flipped lane', () => {
     const s = stack({
       features: [
@@ -695,9 +668,6 @@ describe('the ribbons', () => {
     expect(data.colors[0]).not.toBe(data.colors[1])
   })
 
-  // A text column paints one color per label from the table the display
-  // accumulated, the file's own color where it gave one, and a row whose label
-  // is not in the table keeps the slot color like a pair without identity does.
   test('color by a text column reads the label table, at the slot color’s alpha', () => {
     const s = stack({
       features: [
@@ -751,8 +721,6 @@ describe('the ribbons', () => {
     expect(abgrAlpha(hidden.colors[2]!)).toBe(0)
   })
 
-  // dN/dS derives from two columns and a declared numeric column ramps over
-  // the span seen, so neither reads a feature attribute of the mode's own name
   test('color by dN/dS or a numeric column ramps it, and a pair without one keeps the slot color', () => {
     const s = stack({
       features: [
@@ -796,9 +764,7 @@ describe('the ribbons', () => {
     }
   })
 
-  // One gene named across two pair files folds into one group whose `feature`
-  // is whichever row arrived first; each gutter still paints, and opens, the
-  // row that placed its lower lane
+  // the gene's two pair rows fold into one group whose feature is the first to arrive
   test.each([
     ['peach row first', true],
     ['cacao row first', false],
@@ -909,9 +875,6 @@ describe('the ribbons', () => {
     expect(targets[data.instanceFeatureIdx[1]!]!.label).toContain('peach')
   })
 
-  // A star states no mate-vs-mate pair, so below the first gutter every
-  // ribbon is interpolated through the anchor, and its tooltip read exactly
-  // like an alignment's
   test('say a composed link was composed, and through which anchor span', () => {
     const s = stack({
       features: [
@@ -945,9 +908,7 @@ describe('the ribbons', () => {
   })
 })
 
-// One alignment record cut at a 25 kb indel arrives as two runs keyed by the
-// same syntenyId numbered per run, and the gutter draws one ribbon per run
-// rather than one across the gap
+// a record cut at an indel arrives as runs sharing one syntenyId, numbered per run
 test('the runs of one clipped record draw one ribbon each', () => {
   const run = (i: number, anchor: [number, number], mate: [number, number]) =>
     new SimpleFeature({
@@ -1052,9 +1013,6 @@ test('a band covers each mate lane, striped on alternate rows', () => {
   expect(bands.rectHeights[2]).toBe(s.lanes[2]!.bandEnd - s.lanes[2]!.bandStart)
 })
 
-// On a page of the band ground the anchor lane keeps the view's gridlines; on
-// any other the stack sits on one sheet of the band ground, anchor lane
-// included, under the same bands
 test('off a page of the band ground, one sheet of it lies under the whole stack first', () => {
   const s = stack({ features: [pairFeature('g1', 100, 200)] })
   const bandsOn = (page: string) =>
@@ -1118,19 +1076,13 @@ describe('a lane cell', () => {
     })
     // the lane's divider, then the gene's own line reading backwards
     expect([...cell.lineDirections]).toEqual([0, -1])
-    // rect takes the box top and line/arrow its CENTRE — the feature track's
-    // own split. Passing the top to all three drew every intron line and
-    // arrowhead half a glyph high
+    // rects take the box top, lines and arrows its centre
     const centre = lane.glyphTop + s.glyphHeight / 2
     expect([...cell.lineYs]).toEqual([centre, centre])
     expect([...cell.arrowYs]).toEqual([centre])
     expect(cell.rectYs[2]).toBe(lane.glyphTop)
-    // the feature track outlines a box only where its own slot asks; this cell
-    // holds gene glyphs, so it never does
     expect(cell.outlineColor).toBe(0)
-    // one line per GAP, the way the feature track emits them — the exons cover
-    // 80..112 and 144..160, so the connector is the 112..144 between them.
-    // Spanning the whole gene instead marches the chevron pass over the exons
+    // one line per gap: the exons cover 80..112 and 144..160
     expect([...cell.linePositions].slice(2)).toEqual([
       PX_ORIGIN + 112,
       PX_ORIGIN + 144,
@@ -1230,9 +1182,7 @@ describe('a lane cell', () => {
     expect(abgrAlpha(boxes.rectColors[0]!)).toBe(64)
     expect(boxes.outlineColor).toBe(cssColorToABGR(colors.stroke))
     expect(glyphs.outlineColor).toBe(0)
-    // g1 has no box — the gene covers it — so the GENE carries its key, and a
-    // hover over the drawn gene lights the same group the box would have. g2
-    // reaches no gene, so it stays a box and its key rides that
+    // g1's gene covers its span, so the gene carries its key; g2 reaches none
     expect(glyphs.hits.map(h => h.groupKey)).toEqual(['g1'])
     expect(boxes.hits.map(h => h.groupKey)).toEqual(['g2'])
     expect(
@@ -1243,9 +1193,7 @@ describe('a lane cell', () => {
     ).toBe('g1')
   })
 
-  // The peach frame reaches 500..2500, so the gene's last 400 bp are clipped
-  // off. Inside the reach `a` overlaps it more (600 bp against 501); in bp
-  // `b` does (901 against 600), and a pan moving the reach cannot flip it
+  // in the reach `a` overlaps more (600 to 501 bp); in bp, `b` does (901 to 600)
   test('a gene straddling the reach is claimed by its widest overlap in bp', () => {
     const record = (name: string, anchor: number, start: number, end: number) =>
       new SimpleFeature({

@@ -7,8 +7,7 @@ import {
   withLaneShown,
 } from './laneSelection.ts'
 
-// the display keys through the assembly manager; here a lowercase spelling
-// stands in for an alias
+// a lowercase spelling stands in for an assembly alias
 const keyOf = (name: string) => name.toLowerCase()
 
 test('a filter that says nothing is undefined, and an empty except drops out', () => {
@@ -25,8 +24,6 @@ test('the lanes in force are the choice, else the configured lanes, else every l
   expect(lanesInForce({ except: ['a'] }, ['c'])).toEqual(['c'])
 })
 
-// a choice in force is also what a declaring adapter fetches, so a hide
-// leaves it alone and only takes the lane out of the drawing
 test('a hide appends to except under any choice and never rewrites it', () => {
   expect(withLaneHidden(undefined, 'a', keyOf)).toEqual({ except: ['a'] })
   expect(withLaneHidden({ only: ['a', 'b'] }, 'a', keyOf)).toEqual({

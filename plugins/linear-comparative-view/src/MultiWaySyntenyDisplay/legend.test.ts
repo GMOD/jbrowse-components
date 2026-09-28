@@ -50,8 +50,6 @@ test('the key names the drawn colors left to right', () => {
   ])
 })
 
-// A row is a color, so two names on one color cannot both be rows: the reader
-// cannot tell them apart in the picture either.
 test('a second name on a color already keyed is dropped', () => {
   expect(
     laneColorKey(
@@ -70,9 +68,6 @@ test('an unnamed feature names no color', () => {
   ).toEqual([{ value: 'atpB', label: 'atpB', color: '#0f0' }])
 })
 
-// The cull that packs the hits runs half a screen wider than the window, and a
-// key naming a gene the reader would have to pan to reach describes some other
-// picture.
 test('a hit off the window is not named', () => {
   expect(
     laneColorKey(
@@ -91,8 +86,6 @@ test('a gene straddling the left edge is still named', () => {
   ])
 })
 
-// A painting field keys the values its marks were filed under, in the field's
-// own order, and the gene no cluster claims as the no-value row.
 test('a field keys the values on screen through the channel', () => {
   const field = categoricalField('cluster', { domain: ['rbcL'] })
   const [scale] = laneFieldKey(
@@ -139,14 +132,11 @@ test('the ribbon key is the strand pair, in two colors', () => {
   expect(new Set(ribbonColorKey('strand').map(i => i.color)).size).toBe(2)
 })
 
-// One flat color keys nothing, and a continuous ramp is not a row list.
 test('the other two ribbon modes key no rows', () => {
   expect(ribbonColorKey('default')).toEqual([])
   expect(ribbonColorKey('identity')).toEqual([])
 })
 
-// A ramp mode keys the synteny view's ramp under the ribbons' own title, and
-// keys nothing where no loaded pair carries the value it paints
 test('a measurement keys the ramp it paints, and nothing where no ribbon carries one', () => {
   const [scale] = ribbonColorScales('identity', {
     identity: { min: 0.5, max: 1 },
@@ -176,9 +166,6 @@ test("the ribbons' declared ramp keys its pinned end", () => {
   expect(scale!.kind === 'ramp' && scale!.domain).toEqual([0.9, 1])
 })
 
-// A pair with no number paints the no-value grey beside a ramp, and a pair
-// with no label keeps the slot color among the labels; each row names the
-// color its pairs paint.
 test('a pair with no value is keyed in the color it paints', () => {
   const slot = 'rgba(130,130,130,0.3)'
   const [, noValue] = ribbonColorScales(
@@ -197,9 +184,6 @@ test('a pair with no value is keyed in the color it paints', () => {
   expect(rows.at(-1)!.color).toBe(slot)
 })
 
-// A text column keys one row per label, with the file color where the file
-// gave one, the grey its unlabelled rows paint last where some pair carried no
-// label, and past the readable cap a row saying how many labels it left out.
 test('an attribute ribbon mode keys a row per label', () => {
   const rows = ribbonColorKey('group', {
     group: {
@@ -231,8 +215,6 @@ test('an attribute ribbon mode keys a row per label', () => {
   expect(many[30]).toEqual({ value: '', label: '+3 more' })
 })
 
-// ribbonColor's title heads the ribbons' key in place of its own, `''` heads
-// it with nothing, and its labels rename the domain's rows.
 test("ribbonColor's title and labels head and name the ribbons' key", () => {
   const ranges = {
     group: { labels: ['C1', 'B1'], colors: {}, domain: ['C1'] },
@@ -256,8 +238,6 @@ test("ribbonColor's title and labels head and name the ribbons' key", () => {
   ).toBe('Percent identity')
 })
 
-// The mode that draws the unlabelled rows at zero alpha names no grey: there
-// is none on screen for the row to point at.
 test('hiding the unlabelled rows drops the no-value row', () => {
   const ranges = { group: { labels: ['B1'], colors: {}, missing: true } }
   expect(

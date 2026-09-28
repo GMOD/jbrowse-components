@@ -6,8 +6,7 @@ import { createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 
-// testAssembly() answers every name as volvox, so `reanchor` does not move the
-// anchor here; these navigate the view onto the other genome directly
+// testAssembly() answers every name as volvox, so these navigate directly.
 
 const A = 'volvox'
 const B = 'volvox_random'
@@ -106,8 +105,7 @@ test('the lanes line up under the new anchor where both genomes spell the contig
   expect(slip.every(d => d === 0)).toBe(true)
 })
 
-// four shared groups are under the five the deadband needs to mirror a lane,
-// so an old genome's forward reading held through the settle would stick
+// four shared groups are under the five the deadband needs to mirror a lane
 test('an inverted lane flips under the new anchor rather than keeping the old reading', async () => {
   const starts = [100, 250, 400, 550]
   const display = setup()
@@ -134,9 +132,7 @@ test('an inverted lane flips under the new anchor rather than keeping the old re
   expect(flippedOf(display, C)).toBe(true)
 })
 
-// B places a fifth gene on C, enough to mirror the lane there even against an
-// incumbent; back on A the four shared groups cannot mirror it again, so B's
-// reading carried through the Undo would stick
+// B's fifth gene on C is enough to mirror the lane; A's four shared groups are not
 test('Undo back onto the first genome decides from its own groups again', async () => {
   const display = setup()
   const aFeatures = [100, 250, 400, 550].flatMap((s, i) => [
@@ -165,8 +161,6 @@ test('Undo back onto the first genome decides from its own groups again', async 
   expect(flippedOf(display, C)).toBe(false)
 })
 
-// a flip pin is stated against the anchor's order, which another genome
-// does not share even where the lane draws the same contig
 test('Flip lane holds on its anchor, lapses on another, and is back on return', async () => {
   const starts = [100, 250, 400, 550, 700]
   const display = setup()
@@ -195,8 +189,6 @@ test('Flip lane holds on its anchor, lapses on another, and is back on return', 
   expect(flippedOf(display, C)).toBe(true)
 })
 
-// a fetch issued before the navigation can still land after it, before the
-// debounced refetch supersedes it
 test('a fetch landing after the navigation is labelled with the anchor it asked on', async () => {
   const landings: ((features: SimpleFeature[]) => void)[] = []
   const { display } = createDisplayWithSession({

@@ -90,8 +90,7 @@ function settle(
   return decide(groups, { previous }).get('peach')!
 }
 
-// four orthologs, anchor and lane spaced alike, so the lane sits at rung 1
-// and its ribbons go straight down
+// four orthologs spaced alike on anchor and lane, so the lane sits at rung 1
 const collinear = groupFeatures(
   [100, 300, 500, 700].map((start, i) =>
     pair(`${i}`, `g${i}`, start, { start: 500_000 + start }),
@@ -169,15 +168,10 @@ describe('the ladder rung', () => {
     expect(pickRung(1, 2)).toBe(1)
     expect(pickRung(1.3, 3)).toBe(1.5)
   })
-  // a need is never under 1, so SHRINK_ROOM's 0.85 alone never let a lane
-  // back down from 1.5
   test('drops to 1x once the fit fits the window', () => {
     expect(pickRung(1, 1.5)).toBe(1)
   })
 
-  // Rung 1.5 leaves a third of the lane blank. HG00133 at the HPRC CFH cluster
-  // overruns the window by 0.2%, a 541 bp insertion in 260 kb; the primate
-  // liftOver lanes at TNNT3 by 1.6-7.5%. Gibbon's 28% still buys the step.
   test('a fit up to a tenth over a rung still sits on that rung', () => {
     expect(pickRung(260_607 / 260_066)).toBe(1)
     expect(pickRung(1.04)).toBe(1)
@@ -187,8 +181,6 @@ describe('the ladder rung', () => {
     expect(pickRung(2.25)).toBe(3)
   })
 
-  // what the tolerance costs, stated: the lane is the window and the overrun
-  // is outside it, half at either edge
   test('the overrun a tolerated rung leaves out falls outside the frame', () => {
     const window = 260_066
     const longer = groupFeatures([
@@ -213,9 +205,6 @@ describe('the ladder rung', () => {
     expect(frame.min - frame.fitMin).toBeCloseTo(270.5)
   })
 
-  // the fit is the extent itself: a margin around it, which this had from when
-  // the frame WAS the fitted extent, is enough on its own to round a lane that
-  // corresponds to the window exactly onto the rung above
   test('a lane covering exactly the anchor window sits at 1x', () => {
     const exact = groupFeatures([
       new SimpleFeature({
@@ -306,8 +295,6 @@ describe('the contig', () => {
     expect(settle(genesOn(2, 3)).refName).toBe('Pp2')
   })
 
-  // DPP10 spans 1.4 Mb; the fifteen genes on the other side of the human chr2
-  // fusion span 0.4 Mb between them, and they are fifteen orthologs
   test('one long gene does not outvote many short ones', () => {
     const groups = groupFeatures([
       ...Array.from({ length: 6 }, (_, i) =>
@@ -342,10 +329,6 @@ describe('the contig', () => {
     expect(settle(twoContigs(100, 160), previous).refName).toBe('Pp2')
   })
 
-  // a second homoeologous copy is a contig the lane will never choose on its
-  // own once the first clearly wins, and the reader has to be told it exists;
-  // so is the far side of a fusion breakpoint, which holds a quarter of the
-  // window's genes for most of a walk across it
   test('names a contig explaining a comparable share, and not a repeat hit', () => {
     expect(settle(twoContigs(200, 130)).alsoOn).toEqual(['Pp2'])
     expect(settle(twoContigs(200, 30)).alsoOn).toEqual([])
@@ -353,10 +336,6 @@ describe('the contig', () => {
     expect(settle(genesOn(12, 1)).alsoOn).toEqual([])
   })
 
-  // A fragmented assembly scatters one window over its scaffolds, and each of
-  // them clears the share against every other, so the uncapped list was as
-  // long as the assembly. The header draws unclipped in an SVG export and the
-  // menu offers one item per entry, so the list is capped and the rest counted
   test('names only the strongest few of a window scattered over many scaffolds', () => {
     let n = 0
     const scattered = groupFeatures(
@@ -383,9 +362,6 @@ describe('the contig', () => {
     expect(decision.alsoOn).toEqual(['Pp1'])
   })
 
-  // The case a pin exists for is two comparable copies, and comparable is
-  // inside the switch margin: a released pin that stayed the incumbent was
-  // held there by the margin, so "let the lane choose" chose nothing
   test('releasing a pin lets the lane vote fresh rather than hold the pinned contig', () => {
     const groups = twoContigs(180, 130)
     const pinned = decide(groups, { pinned: new Map([['peach', 'Pp2']]) })
@@ -395,7 +371,6 @@ describe('the contig', () => {
     expect(released.refName).toBe('Pp1')
     expect(released.pinned).toBe(false)
 
-    // and once it has voted, the vote holds the way any decision does
     const held = decide(groups, {
       previous: new Map([['peach', released]]),
     }).get('peach')!
@@ -450,10 +425,6 @@ describe('the orientation', () => {
     expect(settle(fewBackwards, previous).flipped).toBe(false)
   })
 
-  // An alignment cut into runs at its large indels: four heavy forward runs
-  // of one chain with small reversed repeat hits between them. Paired only
-  // with its neighbours, every pair was weighed by the hit and the chain read
-  // backwards on a few hundred bp
   test('heavy forward runs are not outvoted by the small reversed hits between them', () => {
     const chainRun = (i: number, start: number) =>
       new SimpleFeature({
@@ -566,8 +537,6 @@ describe('the orientation', () => {
     expect(moved.orientationPinned).toBe(false)
   })
 
-  // the deadband would hold the pinned reading against a mixed window, and
-  // "let the lane choose" would then choose nothing
   test('releasing a flip pin lets the lane vote fresh rather than hold it', () => {
     const pinned = decide(mostlyBackwards, { pinnedFlips: flipOnPp1(false) })
     expect(pinned.get('peach')!.flipped).toBe(false)
@@ -602,13 +571,11 @@ describe('the placement', () => {
       SPAN_BP,
       WIDTH,
     )
-    // lined up again: the ortholog under the pivot draws at the anchor's x
     expect(rowFrameX(frame, 500_000 + 530 + 700, WIDTH)).toBeCloseTo(px(530))
   })
 
   test('a zoom that changes the rung keeps the pivot while the frame still shows the content', () => {
-    // ten collinear genes: at an 850 bp window the fit needs rung 1.5, and
-    // the frame pinned at the old pivot still covers every one of them
+    // at an 850 bp window these ten genes need rung 1.5
     const dense = groupFeatures(
       Array.from({ length: 10 }, (_, i) =>
         pair(`${i}`, `g${i}`, 50 + 100 * i, { start: 500_050 + 100 * i }),
@@ -653,11 +620,6 @@ function frameOf(decision: LaneDecision, anchorReversed = false) {
   )
 }
 
-// The alignment slides a lane by the weighted-median displacement of its
-// placements from the anchor's, however much of the fit that leaves off an
-// edge. Clamped to keep the fit inside the frame, a 1x lane whose fit was
-// about the window had no room to move, and its ribbons slanted by the whole
-// skew: 60-150 px of 1288 across the TNNT3 primates.
 describe('a lane aligned past its fit', () => {
   const anchors = [100, 200, 300, 400, 500, 600, 700, 800, 900]
   // a 150 bp insertion on the lane after its third gene
@@ -682,10 +644,7 @@ describe('a lane aligned past its fit', () => {
     expect(frame.min).toBeGreaterThan(decision.fitMin)
   })
 
-  // the fresh alignment leaves the lane's first gene outside the frame, under
-  // 90% of the lane's weight from the start; measured against all of it, the
-  // hold would fail on every pan and hop the pivot to whichever gene sat
-  // nearest the middle
+  // the fresh alignment leaves the lane's first gene outside the frame
   test('holds its decision across a pan', () => {
     const first = decide(inserted)
     const panned = decide(inserted, { previous: first, panBp: 90 })
@@ -708,10 +667,6 @@ describe('a lane aligned past its fit', () => {
   })
 })
 
-// A group the lane places twice was one sample over the two copies' bounding
-// box, weighted by its width: two copies 300 bp apart in a 1000 bp frame
-// outweighed the four collinear genes together and slid the lane to put the
-// gap between the copies under the anchor gene
 describe('a group placed twice on a lane', () => {
   const twoCopies = groupFeatures([
     ...[100, 300, 500, 700].map((start, i) =>
@@ -785,9 +740,7 @@ describe('a stack of two mate lanes', () => {
 
   test('the lower lane lines up under the lane above, not under the anchor', () => {
     const first = decide(bothCollinear, { assemblyNames: lanes })
-    // peach's content drifts 60 bp and its hold keeps it drawn where it was,
-    // so its genes now sit 48 px right of the anchor's; a fresh cacao
-    // follows peach there rather than the anchor
+    // after a 60 bp drift peach's hold draws it 48 px right of the anchor
     const drifted = stacked(
       anchors.map(start => start + 60),
       anchors,
@@ -807,9 +760,7 @@ describe('a stack of two mate lanes', () => {
   })
 
   test('orientation composes across a flipped middle lane', () => {
-    // peach reads backwards against the anchor; cacao collinear with PEACH
-    // is backwards against the anchor too, and cacao collinear with the
-    // anchor reads backwards against peach's mirrored frame
+    // cacao collinear with peach reads backwards against the anchor
     const withPeach = decide(stacked(reversed, reversed, -1), {
       assemblyNames: lanes,
     })
@@ -844,8 +795,7 @@ describe('a stack of two mate lanes', () => {
   })
 })
 
-// A pairwise star's records each name one mate, so a lane shares no group
-// with the lane above and votes against the anchor, which places every group.
+// each record names one mate, so a lane shares no group with the lane above
 describe('a star of pairwise records', () => {
   const record = (
     id: string,
@@ -867,9 +817,7 @@ describe('a star of pairwise records', () => {
         end: mateEnd,
       },
     })
-  // two heavy blocks in reversed order with four short hits between them in
-  // forward order: the anchor-order sign sum reads +1, forward, while nearly
-  // all the paired anchor bp reads backwards
+  // a sign sum reads forward, yet nearly all the paired anchor bp reads backwards
   const peach = [
     record('heavy1', 'peach', [50, 400], [10_000, 10_350]),
     ...[0, 1, 2, 3].map(i =>

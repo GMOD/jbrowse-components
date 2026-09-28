@@ -31,7 +31,6 @@ import type {
 import type { AnimationMode } from '@jbrowse/core/util'
 import type { TestAssembly } from '@jbrowse/display-test-utils'
 
-/** specs naming each held lane, a pair or layer lane by its first assembly */
 export function heldSpecs(
   held: ReadonlyMap<string, HeldLane>,
 ): LaneFetchSpec[] {
@@ -42,19 +41,7 @@ export function heldSpecs(
   }))
 }
 
-/**
- * A real MultiWaySyntenyDisplay on a SyntenyTrack, in a real LGV, beside a
- * GFF3 gene track for the anchor assembly. The gene track lets
- * `laneGeneAdapters` find a lane adapter, which gives `laneGenesFetchSpecs` a
- * non-empty spec list. Everything the phase and the
- * reload gate are about is downstream of that list being non-empty, so a mock
- * would be reimplementing the thing under test.
- *
- * **Read the display synchronously.** `afterAttach` reaches its installers
- * through a dynamic import, so nothing is in flight until the microtask
- * queue runs, so these helpers drive the committed keys by hand without racing
- * a fetch that has no worker behind it.
- */
+// read it synchronously: no fetch starts until afterAttach's dynamic import lands
 export function createDisplay() {
   return createDisplayWithSession().display
 }
@@ -71,14 +58,6 @@ export type RpcCall = (
   args: Record<string, unknown>,
 ) => Promise<unknown>
 
-/**
- * The same display, with the harness session it lives in for its snackbars.
- * The synteny track's adapter, the gene tracks beside it — in the session and
- * behind a connection — and what the RPC answers are the harness's knobs: a
- * tiered adapter is what gives the display a level-of-detail tier to resolve,
- * a mate lane's gene track is what gives the lane fetch a second spec, and a
- * recording RPC is how a test sees what a fetch asked for.
- */
 export function createDisplayWithSession({
   syntenyAdapter = { type: 'MCScanBlocksAdapter' },
   trackAssemblyNames = ['volvox', 'volvox_random'],
@@ -116,12 +95,7 @@ export function createDisplayWithSession({
   }
   const configSchema = configSchemaFactory()
 
-  // Config-only: `laneGeneAdapters` matches on the adapter's TYPE NAME, and an
-  // unregistered one reads back as an empty config rather than failing. The
-  // indexed PAF adapter declares the threshold slot `trackHasLodTiers` tests
-  // for, which is the whole of what makes a track tiered to the display
-  // The graph adapter declares its lanes in its header, the other way a track
-  // earns a header read
+  // config-only: an unregistered adapter type reads back as an empty config
   const adapterSlots: Record<
     string,
     { slots: ConfigurationSchemaDefinition; capabilities?: string[] }
@@ -139,7 +113,7 @@ export function createDisplayWithSession({
       slots: {},
       capabilities: ['headerLanes', 'lanePairsOnAnchor'],
     },
-    // what a lane layer's template names: GC content's capability
+    // stands in for GCContentAdapter's readsReference capability
     TestSequenceScoreAdapter: {
       slots: {},
       capabilities: ['readsReference'],
@@ -179,14 +153,7 @@ export function createDisplayWithSession({
       }),
   )
 
-  // FeatureTrack as well as the synteny one: `laneGeneAdapters` picks a lane's
-  // annotation out of the session's tracks, so the gene track has to be a real
-  // config of a real type for it to find.
-  //
-  // Built INSIDE the callback, the way a plugin does it: `createBaseTrackConfig`
-  // resolves the adapter union at the moment it runs, and run eagerly out here
-  // that union is still empty — every adapter config then reads back as `{}`
-  // and no lane ever finds a gene track.
+  // inside the callback: createBaseTrackConfig reads the adapter union as it runs
   for (const name of ['SyntenyTrack', 'FeatureTrack']) {
     pluginManager.addTrackType(() => {
       const trackConfigSchema = ConfigurationSchema(
@@ -217,15 +184,12 @@ export function createDisplayWithSession({
         stateModel: stateModelFactory(configSchema),
         trackType: 'SyntenyTrack',
         viewType: 'LinearGenomeView',
-        // never rendered here; this harness exercises the model
         ReactComponent: () => null,
       }),
   )
   pluginManager.createPluggableElements()
   pluginManager.configure()
 
-  // what `addTemporaryAssembly` holds, which `has` answers for as the real
-  // assembly manager does
   const temporaryAssemblies = observable.array<{
     name: string
     displayName?: unknown
@@ -243,8 +207,6 @@ export function createDisplayWithSession({
     },
     { pluginManager },
   )
-  // a lane's own gene track: one assembly, a Gff3 adapter — the two things
-  // `laneGeneAdapters` matches on
   const geneTrackConf = ({ trackId, assemblyNames }: GeneTrackSpec) =>
     trackSchema.create(
       {
@@ -265,8 +227,6 @@ export function createDisplayWithSession({
     'MultiWaySyntenyTestSession',
     displayTestSessionModel({
       viewModel: LinearGenomeModel,
-      // the installers reach a real RPC once the microtask queue runs; these
-      // read the display synchronously, so this only has to exist
       rpcManager: {
         call: (
           _sessionId: string,
@@ -281,9 +241,7 @@ export function createDisplayWithSession({
       },
       assemblyManager: {
         get: assemblyOf,
-        // the dependent lane fetches canonicalize their regions through this
-        // before the RPC; without it a test that commits features watches them
-        // fail on a TypeError a lane's own error handling then swallows
+        // without this a lane fetch fails on a TypeError its own error handling swallows
         waitForAssembly: () => Promise.resolve(testAssembly()),
         getCanonicalAssemblyName: (name: string) => assemblyAliases[name],
         getDisplayName: (name: string) => {
@@ -292,14 +250,11 @@ export function createDisplayWithSession({
             ? String(temporary.displayName ?? name)
             : assemblyOf(name).displayName || name
         },
-        // a multi-genome file's other samples are lanes the session cannot
-        // navigate or fetch against
+        // any other name is a multi-genome file's sample the session does not hold
         has: (name: string) =>
           HELD_ASSEMBLIES.has(name) ||
           temporaryAssemblies.some(a => a.name === name),
-        // a re-anchor is `navToLocString` on the hosting view, which asks
-        // this to tell a refName from a locstring; always-true reads every
-        // locstring as ambiguous
+        // always-true would read every re-anchor locstring as ambiguous
         isValidRefName: (refName: string) => refName === 'ctgA',
       },
       getTrackById: (id: string) =>
@@ -312,7 +267,6 @@ export function createDisplayWithSession({
         connectionInstances,
         animationMode,
         views: [] as { id: string }[],
-        // what a lane's "Open" hop asked for, each view's type and init
         addedViews: [] as { type: string; init: Record<string, unknown> }[],
         temporaryAssemblies,
       }))

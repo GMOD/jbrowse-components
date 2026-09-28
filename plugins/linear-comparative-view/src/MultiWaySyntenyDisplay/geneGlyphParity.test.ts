@@ -10,23 +10,7 @@ import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 import type { Lane } from './laneStack.ts'
 import type { DisplayConfig } from '@jbrowse/plugin-canvas'
 
-/**
- * A lane draws the FEATURE TRACK's gene glyph, through that track's own passes
- * and painters — so this asks the feature track itself what it would emit and
- * compares, rather than restating its geometry as expected numbers here. Every
- * rule that has drifted between the two was a constant one side had a copy of:
- * the UTR height fraction, the CDS/exon type test, which y is a top and which a
- * centre, whether the connector spans the gene or each intron.
- *
- * ONE transcript, so the feature track's per-transcript row and the lane's
- * merged-across-transcripts shape describe the same gene — the merge is the one
- * thing the lane does that the feature track has no counterpart for, and it is
- * not what this pins.
- *
- * The lane's px map is identity, so the two coordinate systems are comparable
- * directly: the feature track emits bp, and a lane cell emits px offset by
- * `PX_ORIGIN`.
- */
+// An identity px map: a lane's px less PX_ORIGIN is the feature track's bp.
 const HEIGHT = 10
 const GENE_START = 100
 const GENE_END = 900
@@ -105,13 +89,7 @@ const { glyphs: lane } = buildLaneCells({
 
 const round = (n: number) => Number(n.toFixed(3))
 
-/**
- * One row per primitive, each carrying its span WITH its y offset and height —
- * three sorted lists compared separately let a box keep the wrong one of the
- * two heights, which is the only mistake the UTR fraction can make. Each side
- * measures y against its OWN row top, since the two lay their rows out
- * differently; what has to agree is the offset within the row.
- */
+// Each side measures y from its own row top; the two lay rows out differently.
 function boxes(
   positions: ArrayLike<number>,
   ys: Float32Array,
@@ -131,7 +109,6 @@ function boxes(
   return out.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2])
 }
 
-// The line lane carries no height, so its boxes are a span and a centre row.
 function lines(
   positions: ArrayLike<number>,
   ys: Float32Array,
@@ -170,7 +147,7 @@ test('a lane connects the introns the feature track connects, on the box centre'
   expect(laneIntrons).toEqual(
     lines(track.linePositions, track.lineYs, 0, trackTop),
   )
-  // `rectYs` is a box top and `lineYs` its centre — half a height apart
+  // rectYs is a box top and lineYs its centre, half a height below
   expect(laneIntrons.map(l => l[2])).toContain(HEIGHT / 2)
 })
 

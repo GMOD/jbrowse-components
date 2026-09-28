@@ -48,11 +48,7 @@ const ribbon: SyntenyInstanceData = {
   colors: Uint32Array.of(0xff808080),
 }
 
-// One lane's glyph cell: a CDS box at px 500..560 with its top at y 120, plus
-// the intron line and arrowhead that ride the box's CENTRE at y 129. The two
-// y families differ by design — see `centeredRowVisible` in the feature track's
-// Canvas2D renderer — so a fixture carrying only rects cannot see a backend
-// reading one of them the other way.
+// a CDS box topped at y 120, and its intron line and arrowhead on its centre at y 129
 const GLYPH_TOP = 120
 const GLYPH_H = 18
 const GLYPH_CENTRE = GLYPH_TOP + GLYPH_H / 2
@@ -115,7 +111,6 @@ interface Call {
   args: number[]
 }
 
-// a 2D context that records every call and accepts every style assignment
 function recordingCtx() {
   const calls: Call[] = []
   const ctx = new Proxy(
@@ -152,9 +147,7 @@ test('a glyph lands at the same px on both backends: the drag rides the layer tr
   expect(fill.args[0]).toBe(500 + DRAG)
   expect(fill.args[1]).toBe(120)
 
-  // the intron line and the arrowhead ride the box's centre, and Canvas2D
-  // snaps that to a crisp half-pixel — so they land a half glyph BELOW the
-  // rect's top rather than on it
+  // the line rides the box's centre, snapped to a half pixel
   const stroke = ctx.calls.find(
     c => c.method === 'moveTo' && Math.abs(c.args[1]! - GLYPH_CENTRE) <= 1,
   )!
@@ -164,13 +157,10 @@ test('a glyph lands at the same px on both backends: the drag rides the layer tr
   const { hal } = gpuFrame()
   const rectDraw = hal.draws().find(d => d.passId === 'rect')!
   const u = hal.uniformsOf(rectDraw)!
-  // bpRangeX is the hp split of the layer's range start, so the px the shader
-  // puts a position at is (position − hi − lo): the Canvas2D `toX`
+  // u[0] + u[1] is bpRangeX's hp split of the range start
   const rangeStart = u[0]! + u[1]!
   expect(PX_ORIGIN + 500 - rangeStart).toBe(500 + DRAG)
   expect(u[2]).toBe(WIDTH)
-  // both y families reach the GPU as the cell states them; the passes are the
-  // feature track's own and each reads its own convention
   const lineDraw = hal.draws().find(d => d.passId === 'line')!
   expect(hal.uniformsOf(lineDraw)![0]! + hal.uniformsOf(lineDraw)![1]!).toBe(
     rangeStart,
@@ -269,10 +259,6 @@ function polygonPickCtx(): PickCanvasLike {
   }
 }
 
-// The lane-stack scroll is the vertical twin of the drag: one number in the
-// render state, subtracted by every layer on both backends — the ribbon
-// through its yTop, the glyphs through the passes' own scrollY — and by the
-// pick, which reads its y bounds off the same shifted params.
 describe('a scrolled stack shifts every layer by the same offset', () => {
   const SCROLL = 50
   const scrolled = { ...state, scrollTopPx: SCROLL }
@@ -309,12 +295,8 @@ describe('a scrolled stack shifts every layer by the same offset', () => {
   })
 })
 
-// A flipped lane's ribbons run from one side of the canvas to the other, so
-// one end of each lies wholly off it; the cull keeps any ribbon whose ends lie
-// within the overdraw, on the GPU, on Canvas2D and in the pick alike.
 describe('a ribbon with one end off the canvas', () => {
-  // the top lane slid 500px left: its end at -400..-300, the bottom's at
-  // 300..400
+  // the top lane slid 500px left: its end at -400..-300, the bottom's at 300..400
   const offLeft: MultiWayRenderState = {
     ...state,
     dragOffsetPx: 0,
@@ -357,16 +339,11 @@ test('a pick over the drawn ribbon answers its instance through the same transfo
     key: RIBBON_KEY,
     instanceIndex: 0,
   })
-  // and the model reads the target off the instance the hit names
   expect(ribbon.instanceFeatureIdx[0]).toBe(7)
   expect(pick(150, 70)).toBeUndefined()
   expect(pick(250 + DRAG, 20)).toBeUndefined()
 })
 
-// A moving lane's map rides the same two transforms as the drag: the ribbon
-// edge through its scale and pan, the glyph block through its range and
-// `reversed`. Neither backend is handed anything else, so both put the lane at
-// `scale * px + offset` and nothing is re-uploaded for it.
 describe.each([
   ['a slide', { scale: 1, offset: 120 }],
   ['a rescale', { scale: 0.5, offset: 200 }],
@@ -388,8 +365,7 @@ describe.each([
 
     const { hal } = gpuFrame(moving)
     const u = hal.uniformsOf(hal.draws().find(d => d.passId === 'rect')!)!
-    // the hp split of the block's leading end and its signed length, which
-    // is the far end and a negative length for a reversed block
+    // u: the hp split of the block's leading end, then its signed length
     const lead = u[0]! + u[1]!
     const gpuX = (px: number) => (WIDTH * (PX_ORIGIN + px - lead)) / u[2]!
     expect(gpuX(500)).toBeCloseTo(drawn(500), 3)
@@ -415,8 +391,7 @@ describe.each([
   test('the pick answers the ribbon where the map draws it', () => {
     const pick = createSyntenyPicker(polygonPickCtx)
     const regions = new Map([[RIBBON_KEY, ribbon]])
-    // a quarter of the way down the gutter, clear of the pinch a mirrored
-    // edge makes at mid-height
+    // a quarter down the gutter, clear of a mirrored edge's mid-height pinch
     const x = 150 + DRAG + (drawn(350) - 150 - DRAG) / 4
     expect(pick(regions, ribbonPickState(moving), WIDTH, x, 50)).toEqual({
       key: RIBBON_KEY,
@@ -425,10 +400,7 @@ describe.each([
   })
 })
 
-// An inversion's tiles all cross near one point, and stacked at the ribbon
-// alpha that crossing went black. A gutter keeps the strongest ribbon over a
-// pixel instead: the fill leaves pre-blended and opaque, under min on a light
-// band and max on a dark one.
+// A gutter keeps the strongest ribbon over a pixel rather than stacking alpha.
 test.each([
   ['#fff', 'fillStraightDarkest', 'min'],
   ['#121212', 'fillStraightLightest', 'max'],

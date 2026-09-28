@@ -22,9 +22,6 @@ test('a y lands on the band that holds it, and nowhere past the stack', () => {
   expect(dropRowAt(lanes, -1)).toBeUndefined()
 })
 
-// A plain click on a label is a press and a release on the lane's own row, and
-// the drop it makes moves nothing. Writing the order anyway pinned every lane,
-// stopped the densest-first sort, dirtied the session and rebuilt every cell
 test('a drop that leaves the lanes where they are writes nothing', () => {
   expect(laneOrderAfterDrop(['a', 'b', 'c'], 'b', 2)).toBeUndefined()
   expect(laneOrderAfterDrop(['a', 'b', 'c'], 'a', 1)).toBeUndefined()

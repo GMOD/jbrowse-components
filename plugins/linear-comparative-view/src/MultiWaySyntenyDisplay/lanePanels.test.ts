@@ -100,8 +100,6 @@ test('one panel per lane in the stack order, framed on what the lane places of t
   expect(unconfigured).toEqual(['cow'])
 })
 
-// the region cuts through a placement: the mate side is taken in proportion,
-// the way the ribbon is drawn, and from the far end of a reversed record
 test('a region inside a placement takes the matching slice of the mate, from the far end when reversed', () => {
   const { mates } = lanePanelsForRegion({
     groups,

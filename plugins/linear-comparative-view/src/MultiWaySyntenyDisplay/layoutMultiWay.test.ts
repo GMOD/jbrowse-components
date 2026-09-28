@@ -26,8 +26,7 @@ import {
 import type { LaneDecision } from './laneDecision.ts'
 import type { MultiWayGroup, RowFrame } from './layoutMultiWay.ts'
 
-// the run spans without their orientation, which most placement tests here
-// compare — production reads the oriented form
+// the run spans without orientation; production reads the oriented form
 const groupSpansOnRow = (
   group: MultiWayGroup,
   assemblyName: string,
@@ -57,10 +56,7 @@ function pairFeature({
     name?: string
   }
 }) {
-  // No `strand` inside `mate`: the PAF adapters never write one, and the
-  // MCScan blocks adapter writes the mate gene's TRANSCRIPTION strand there.
-  // The pair's orientation is the feature's own top-level `strand`, which both
-  // adapters do emit — so that is the only one a fixture may state.
+  // no strand inside mate: the pair's orientation is the feature's own strand
   return new SimpleFeature({
     uniqueId,
     refName: 'chr1',
@@ -73,12 +69,7 @@ function pairFeature({
   })
 }
 
-// The seed `alignRowFrames` takes: where the anchor lane actually draws each
-// group, in canvas px. The model builds it from the view's own `bpToPx`; these
-// tests build it from a linear map over `spanBp`, which is what the hand-built
-// anchor `RowFrame` they used to pass was standing in for. Written as a
-// function of the anchor coordinates so a test can say what the anchor lane
-// shows without owning a frame for it.
+// alignRowFrames's seed: each group's anchor-lane px, off a linear map over spanBp
 function anchorSeed(
   groups: ReturnType<typeof groupFeatures>,
   width: number,
@@ -96,8 +87,6 @@ function anchorSeedX(bp: number, width: number, spanBp = 1000) {
   return (bp / spanBp) * width
 }
 
-// The display's settle over one linear anchor axis, `spanBp` wide — `previous`
-// carries a decision in
 function settleLanes(
   groups: ReturnType<typeof groupFeatures>,
   assemblyNames: string[],
@@ -243,11 +232,6 @@ test('row assemblies come out densest lane first, domain pinning over that', () 
   ])
 })
 
-// `domain` is authored in a track's config or a session spec, so it spells an
-// assembly the way the session does, while the lane it has to match
-// is spelled the way the synteny table's BED did. Comparing those raw is the
-// `===` the assembly-name rule forbids, and it fails by silently pinning
-// nothing.
 test('domain pins a lane it names through an alias', () => {
   const canonical = (name: string) =>
     name === 'Theobroma_cacao' ? 'cacao' : name
@@ -256,8 +240,6 @@ test('domain pins a lane it names through an alias', () => {
   ).toEqual(['cacao', 'peach'])
 })
 
-// A ribbon connects ADJACENT lanes only, so a lane holding one placement sitting
-// above a lane holding four cuts every chain that would have run through it.
 test('a sparse lane sorts below a denser one that appears after it', () => {
   const sparseFirst = [
     pairFeature({
@@ -295,11 +277,6 @@ test('a sparse lane sorts below a denser one that appears after it', () => {
   ])
 })
 
-// An alignment source makes every record its own group with one placement, so
-// a lane whose alignment BREAKS in the window holds more placements than one
-// that runs through it. Counting placements sorted the broken lane on top; the
-// group weight is anchor bp for a nameless record, and summing it puts the lane
-// that explains more of the window first.
 test('a lane placing two short alignment records sorts below one placing a single record over more anchor bp', () => {
   const brokenAboveWhole = [
     pairFeature({
@@ -326,9 +303,6 @@ test('a lane placing two short alignment records sorts below one placing a singl
   expect(rowAssembliesOf(groups, [])).toEqual(['whole', 'broken'])
 })
 
-// A lane draws one contig. Platypus at TNNT3 places 96 records over ten
-// contigs and the one its lane draws holds four, and summed over every contig
-// it ranked above baboon, whose one contig holds the window.
 test('a lane scattered over many contigs sorts by the one it draws', () => {
   const record = (
     uniqueId: string,
@@ -362,10 +336,6 @@ test('a lane scattered over many contigs sorts by the one it draws', () => {
   expect(rowAssembliesOf(groups, ['platypus'])).toEqual(['platypus', 'baboon'])
 })
 
-// The clip cuts a record at every large indel into runs numbered after the
-// window on both ids, so each run is its own group with its own anchor and
-// mate intervals — the shape every ribbon and composed link reads — and the
-// lane's weight is what the runs cover, not the gap between them.
 test('the runs of one clipped record are sibling groups, weighed by the anchor bp they cover', () => {
   const run = (i: number, anchor: [number, number], mate: [number, number]) =>
     new SimpleFeature({
@@ -431,9 +401,6 @@ test('a lane frame snaps to a multiple of the anchor span', () => {
   expect((frame.max - frame.min) / 1000).toBeCloseTo(1)
 })
 
-// The whole point of the ladder and the incumbent: a settle that does not
-// change which rung a lane sits on, and moves its fit by a hair, leaves the
-// lane's decision where it was instead of sliding it under its own ribbons.
 test('a small change in the placements leaves a settled lane alone', () => {
   const peachPair = (uniqueId: string, name: string, mateStart: number) =>
     pairFeature({
@@ -489,9 +456,6 @@ test('the shared tick interval is a 1/2/5 step landing a few ticks per span', ()
   expect(tickIntervalFor(1000)).toBe(200)
 })
 
-// Two lanes drawn at the same bp/px put their ticks at the same spacing, and a
-// lane zoomed out by 2x puts them at half of it. That spacing IS the scale
-// statement the headers otherwise make a reader compute.
 test('tick spacing across lanes reports the ratio of their scales', () => {
   const tight = frameTickXs(
     {
@@ -586,8 +550,6 @@ test('features carrying syntenyId group on it even with no names', () => {
   expect([...groups[0]!.mates.keys()]).toEqual(['peach', 'cacao'])
 })
 
-// The pieces one record leaves in two fetch regions come back with the window
-// in both ids, so they are two groups, each weighing what it shows of the anchor
 test('the clipped pieces of one record are one group each, weighed by the clipped anchor bp', () => {
   const piece = (window: string, start: number, end: number) =>
     new SimpleFeature({
@@ -688,10 +650,6 @@ test('a far-flung repeat placement does not stretch the frame', () => {
   expect(frame.max).toBeLessThan(10000)
 })
 
-// A repeat hit megabases away is thrown out of the FRAME by computeRowFrame's
-// median filter, and used to come straight back as a drawn span: rowFrameX
-// extrapolates, so the group's px span ran tens of thousands of pixels wide and
-// the ribbon on it swept the page.
 test('a placement outside the frame does not reach the drawn span', () => {
   const groups = groupFeatures([
     pairFeature({
@@ -736,15 +694,10 @@ test('a placement outside the frame does not reach the drawn span', () => {
   ])
   const frame = computeRowFrame(groups, 'peach', 1000)!
   const spans = groupSpansOnRow(groups[0]!, 'peach', frame, 800)
-  // the repeat hit is not a second run either — it is not drawn at all
   expect(spans).toHaveLength(1)
   expect(spans[0]![1] - spans[0]![0]).toBeLessThan(800)
 })
 
-// The lane's scale comes off the ladder and its offset comes off the ribbons:
-// with both lanes at the same rung and the same gene spacing, the offset pass
-// should put every ortholog at the same x as the anchor, and the ribbons
-// between them go vertical.
 test('a lane slides to line its orthologs up with the lane above', () => {
   const groups = groupFeatures(
     [100, 300, 500, 700].map((start, i) =>
@@ -783,9 +736,6 @@ test('a lane slides to line its orthologs up with the lane above', () => {
   expect(Math.max(...offsets)).toBeLessThanOrEqual(8)
 })
 
-// Aligned on the median, a lane whose sequence runs longer than the anchor's
-// leaves the far end of its fit off the frame's edge rather than slanting
-// every ribbon to keep it on
 test('the aligned frame lines up the median placement even past its fit', () => {
   const groups = groupFeatures(
     [
@@ -820,10 +770,7 @@ test('the aligned frame lines up the median placement even past its fit', () => 
   expect(frame.max).toBeLessThan(frame.fitMax)
 })
 
-// The center snap can move a frame by half a grid step, which is more than the
-// rung leaves over a fit that nearly fills it. A frame that misses its own fit
-// misses it silently: the placement at that edge stops being drawn, the ribbon
-// skips the lane, and `laneFetchWindow` stops asking for the genes there.
+// a centre snap moves a frame up to half a grid step, more than this rung leaves
 test('a fit that nearly fills its rung is still covered by the snapped frame', () => {
   const mateLane = (mateStart: number, mateEnd: number) =>
     groupFeatures([
@@ -877,8 +824,6 @@ test('a fit that nearly fills its rung is still covered by the snapped frame', (
   }
 })
 
-// A mate lane whose gene order runs backwards against the lane above is
-// mirrored, which is the worst zigzag available: every ribbon crosses.
 test('a lane running against the lane above comes out flipped', () => {
   const groups = groupFeatures(
     [100, 300, 500, 700].map((start, i) =>
@@ -904,8 +849,6 @@ test('a lane running against the lane above comes out flipped', () => {
   ).toBe(true)
 })
 
-// The fetch window has to survive the alignment shift and the viewport width,
-// or a lane refetches its annotation because the browser window was resized.
 test('the lane fetch window covers every position the frame can slide to', () => {
   const groups = groupFeatures(
     [100, 300, 500].map((start, i) =>
@@ -943,10 +886,6 @@ test('the lane fetch window covers every position the frame can slide to', () =>
   }
 })
 
-// A frame centred on a fit near a contig start reaches below zero, where the
-// lane draws blank the way the anchor's window does past a chromosome end.
-// What the lane states and asks for stops at zero: the header's region
-// (`laneRegion`), the ticks and the gene fetch.
 describe('a lane frame near a contig start', () => {
   function nearZeroGroups(start: number) {
     return groupFeatures([
@@ -1002,10 +941,6 @@ describe('a lane frame near a contig start', () => {
   })
 })
 
-// The pair's orientation is the pairwise feature's own strand. `mate.strand` is
-// a different quantity where it exists at all — the MCScan blocks adapter fills
-// it with the mate gene's transcription strand, and the PAF adapters never
-// write it — so reading it read a field with two meanings or none.
 test('a placement takes its orientation from the feature, not from the mate', () => {
   const groups = groupFeatures([
     pairFeature({
@@ -1041,10 +976,6 @@ test('a placement takes its orientation from the feature, not from the mate', ()
   ])
 })
 
-// A reverse-strand block's two ends correspond crosswise, so the span it hands
-// the ribbon comes back reversed and the parallelogram drawn from it crosses.
-// Nothing in the tree exercised this: the MCScan blocks format carries no CIGAR
-// and volvox_all_vs_all.paf is three `+` records.
 describe('a reverse-strand block', () => {
   function orientedGroups(strand: number) {
     return groupFeatures([
@@ -1097,9 +1028,6 @@ describe('a reverse-strand block', () => {
   })
 })
 
-// A lane the layout mirrored draws a forward block reversed, because the
-// mirroring is what a ribbon reaching it has to cross. The lane-level `[rev]`
-// tag states the mirroring; the ribbon states the block.
 test('a flipped lane reverses the ends of a forward block', () => {
   const groups = groupFeatures([
     pairFeature({
@@ -1128,8 +1056,6 @@ test('a flipped lane reverses the ends of a forward block', () => {
   expect(mirrored[0]).toBeGreaterThan(mirrored[1])
 })
 
-// Two placements of one anchor gene on one lane — what a blocks table's copy
-// columns produce, and what an `--iter=2` jcvi run writes routinely.
 describe('a group placed twice on one lane', () => {
   function twiceGroups(secondStart: number, secondStrand = 1) {
     return groupFeatures([
@@ -1177,9 +1103,6 @@ describe('a group placed twice on one lane', () => {
     ])
   }
 
-  // Min-of-starts to max-of-ends across the pair drew the GAP between them as
-  // syntenic sequence: one block where the truth is two, most of it aligning to
-  // nothing.
   test('draws its two disjoint hits as two spans, not one over the gap', () => {
     const groups = twiceGroups(1700)
     const frame = computeRowFrame(groups, 'peach', 1000)!
@@ -1195,13 +1118,10 @@ describe('a group placed twice on one lane', () => {
     )
     const ends = [...first, ...second]
     const merged = Math.max(...ends) - Math.min(...ends)
-    // the 100bp between the two hits, at the frame's 0.8 px/bp, is now unpainted
+    // the 100 bp between the two hits, at the frame's 0.8 px/bp
     expect(merged - drawn).toBeCloseTo(80, 6)
   })
 
-  // Placements that really do touch are one block, and the run they form takes
-  // the length-weighted sign: a short fragment aligning the other way cannot
-  // flip the block it sits inside.
   test('merges the hits that touch, under the length-weighted sign', () => {
     const groups = twiceGroups(1550)
     const frame = computeRowFrame(groups, 'peach', 1000)!
@@ -1211,9 +1131,6 @@ describe('a group placed twice on one lane', () => {
   })
 })
 
-// The alignment shift is unclamped, so a lane whose contig starts inside the
-// anchor window slides below zero to put its genes under their homologs, and
-// the fetch still asks for nothing there
 test('the alignment shift slides a lane below zero to line it up', () => {
   const groups = groupFeatures([
     pairFeature({
@@ -1274,12 +1191,6 @@ test('a span outside the lane reach has no px pair to draw from', () => {
   expect(frameSpan(frame, region.end, reach.max + 10, 800)).toBeUndefined()
 })
 
-// A lane's own contig is whichever explains the most of the ANCHOR window, the
-// vote `resolvePanel` runs on the same axis for the panel this lane launches.
-// Counting an alignment's records instead let a cluster of short repeat hits
-// outvote the syntenic blocks that are the lane, and put the launch and the
-// lane it launched from on different contigs. Nameless, because a named
-// source is a gene table and a gene is one vote whatever its length.
 test('a lane sits on the contig explaining the most anchor bp, not the most hits', () => {
   const groups = groupFeatures([
     // three short repeat hits...
@@ -1314,12 +1225,7 @@ test('a lane sits on the contig explaining the most anchor bp, not the most hits
   expect(computeRowFrame(groups, 'peach')!.refName).toBe('Pp1')
 })
 
-// ...and it has to be the SAME vote, on the same axis: a lane's contig and the
-// contig the panel launched off it opens on come from two functions over one
-// dataset, and a reader who launches a lane expects the panel to be the lane.
-// This fixture is built so the two axes disagree — long anchor genes against
-// short mate fragments on one contig, the reverse on the other — so weighing
-// mate bp on either side would split them.
+// built so the anchor and mate axes disagree on which contig weighs more
 test('the lane and the panel launched off it pick the same contig', () => {
   const mixed = [
     ...['a', 'b', 'c'].map((suffix, i) =>
@@ -1358,12 +1264,6 @@ test('the lane and the panel launched off it pick the same contig', () => {
   )
 })
 
-// A lane refetches when the region it asks for moves, and the fitted extent
-// moves whenever a group enters or leaves the settled viewport. Taking the
-// quantum off the fetch WINDOW's width tied the two together: that width runs
-// over [span, 2*span), which straddles a power of two, so one ortholog arriving
-// could halve the grid and refetch every lane for a gesture that moved no
-// frame. Off the rung span it cannot.
 test('a lane fetches the same region as its fitted extent wobbles', () => {
   const frame = (fitMax: number) => ({
     refName: 'Pp1',
@@ -1379,10 +1279,6 @@ test('a lane fetches the same region as its fitted extent wobbles', () => {
   expect(laneFetchRegion(frame(68900))).toEqual(laneFetchRegion(frame(69000)))
 })
 
-// A window straddling a grid line asks for two cells and one inside a cell for
-// one, so a cap read against the region a pan lands on toggled a template
-// layer along a pan at one zoom. The bound is the widest region the span can
-// ask for, the same at every offset
 test('the fetch region bound is a fact of the span alone', () => {
   const span = 1_100_000
   const widths = new Set<number>()
@@ -1403,14 +1299,8 @@ test('the fetch region bound is a fact of the span alone', () => {
   expect(widths.size).toBe(2)
 })
 
-// The lane-above vote and the anchor-order one are separate evidence, and only
-// the first can come out balanced — an inverted duplication puts as much weight
-// each way. Read as forwards it asserted an orientation over the other vote's
-// answer, which is the one thing a lane with no evidence of its own has.
 test('a lane whose shared order votes both ways keeps the anchor-order flip', () => {
-  // the two votes are weighted differently, which is what lets them disagree:
-  // the anchor-order one counts steps, this one weights each by the shorter of
-  // the pair, so one long step balances two short ones it outweighs
+  // the anchor-order vote counts steps; this one weights each by the shorter of the pair
   const mates = [
     { start: 970, end: 1030 },
     { start: 770, end: 830 },
@@ -1441,10 +1331,6 @@ test('a lane whose shared order votes both ways keeps the anchor-order flip', ()
   ).toBe(true)
 })
 
-// The grouped fetch shape (`mates: [...]`, one feature per anchor gene) has to
-// group exactly as its pairwise expansion does: the same placements per lane,
-// each with the orientation its own pair carried, the same dedupe of a
-// placement two rows repeat, the same weight, the same sort.
 describe('a grouped feature groups as its pairwise expansion', () => {
   const groupedMates = [
     {
@@ -1575,8 +1461,7 @@ describe('a grouped feature groups as its pairwise expansion', () => {
     ])
   })
 
-  // the group's own strand is the anchor gene's transcription strand on the
-  // grouped shape, and must not leak into any mate's orientation
+  // on the grouped shape the group strand is the anchor gene's transcription strand
   test('the group strand does not stand in for a mate orientation', () => {
     const [g1] = groupFeatures([groupedFeature])
     expect(g1!.feature.get('strand')).toBe(-1)
@@ -1597,15 +1482,7 @@ describe('a grouped feature groups as its pairwise expansion', () => {
   })
 })
 
-// The fetch asks for the view's STATIC blocks, so a record clipped to what was
-// asked for reaches past the window; a lane fitted to it is fitted to that
-// padding. The HPRC CFH figure is the case that made it visible: hg38
-// chr1:196,640,000-196,900,000 at the 1500px capture width sits inside three
-// 800px static blocks, chr1:196,540,734-196,956,840, and the graph adapter
-// answers one alignment record per haplotype covering all of it. Every
-// haplotype matching the reference then drew at 520,132bp (2x the window) and
-// every CFHR3-CFHR1 deletion carrier at 390,099bp (1.5x), each with its own
-// gene models over sequence the window does not reach and no ribbon can join.
+// the fetch asks for the view's static blocks, so a clipped record reaches past the window
 describe('a lane fitted to one record clipped to the padded fetch region', () => {
   const WINDOW = { start: 196_640_000, end: 196_900_066 }
   const FETCHED = { start: 196_540_734, end: 196_956_840 }
@@ -1614,8 +1491,7 @@ describe('a lane fitted to one record clipped to the padded fetch region', () =>
   // the CFHR3-CFHR1 deletion, the one thing a carrier's record is short by
   const DELETION = 84_552
 
-  // `lengthDelta` is how much of its own sequence the haplotype has over the
-  // reference across the FETCHED region, so a carrier is negative
+  // lengthDelta: the haplotype's own sequence over the reference's across FETCHED
   const haplotype = (lane: string, lengthDelta: number, strand = 1) =>
     groupFeatures([
       pairFeature({
@@ -1649,9 +1525,7 @@ describe('a lane fitted to one record clipped to the padded fetch region', () =>
     expect(laneSpan(haplotype('hg005', -DELETION), 'hg005')).toBe(SPAN_BP)
   })
 
-  // HG00133's class: an insertion makes the lane's own sequence LONGER than
-  // the window it corresponds to, which no clip can take off. `RUNG_TOLERANCE`
-  // is what keeps a fraction of a percent of it off the rung above
+  // RUNG_TOLERANCE keeps a fraction of a percent over the window off the rung above
   test('a haplotype longer than the window by an insertion draws the window', () => {
     const insertion = 541
     const groups = haplotype(
@@ -1667,7 +1541,6 @@ describe('a lane fitted to one record clipped to the padded fetch region', () =>
     expect(laneSpan(groups, 'hg00133')).toBe(SPAN_BP)
   })
 
-  // the anchor's low end is the mate's high end, so the two cuts swap ends
   test('the cuts swap ends on a reverse-strand mate', () => {
     const head = WINDOW.start - FETCHED.start
     const tail = FETCHED.end - WINDOW.end

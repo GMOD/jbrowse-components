@@ -6,11 +6,7 @@ import { createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 
-// A star of pairwise alignments with three mates: B runs with the anchor, C and
-// D against it. The mates share no record, so every gutter below the first is
-// composed through the anchor, and each lane's orientation comes from its own
-// placements. Relative strand has to compose down the chain — B|C inverted,
-// C|D not — while the two flipped lanes straighten every ribbon on screen.
+// Three mates sharing no record: B runs with the anchor, C and D against it.
 const A = 'volvox'
 const B = 'volvox_random'
 const C = 'volvox_ins'

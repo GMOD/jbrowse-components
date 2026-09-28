@@ -8,10 +8,6 @@ import { renderToString } from 'react-dom/server'
 
 import { createDisplay } from './testEnv.ts'
 
-// The export paints the same cells the screen does, less the pointer: a figure
-// saved with a ribbon under the cursor came out with that group lit in every
-// lane, and one saved after a click carried the selected group's boxes in the
-// highlight colour. Both are the chrome's ink, which no export reads.
 test('the SVG export carries no hover and no selection; the chrome ink does', async () => {
   const display = createDisplay()
   await when(() => display.features !== undefined, { timeout: 5000 })
@@ -35,9 +31,6 @@ test('the SVG export carries no hover and no selection; the chrome ink does', as
     ),
   )
   await when(() => display.svgReady, { timeout: 5000 })
-  // each render is its own document, as `wrapSvgExport` makes it in production
-  // — the clip ids the mark path's per-block clips mint are document-global, so
-  // without this the second export differs from the first by numbering alone
   const exported = async () => {
     const node = await display.renderSvg()
     return withFreshSvgClipIds(() => renderToString(<svg>{node}</svg>))
@@ -68,9 +61,7 @@ test('the SVG export carries no hover and no selection; the chrome ink does', as
   expect(await exported()).toBe(quiet)
 })
 
-// A pan that moves no block key leaves the stack translated rather than laid
-// out again, and the export's paint applies that translate; the names it
-// prints beside the glyphs have to as well
+// A pan that moves no block key translates the stack instead of laying it out.
 test('the export prints gene names where the panned glyphs are', async () => {
   const display = createDisplay()
   const view = display.lgv
@@ -150,8 +141,6 @@ test('the export carries the color key where the colors key something', async ()
   )
 })
 
-// Each named placement with no gene over it is a box naming the table's gene,
-// and the export prints that name in the lane's name row, as the screen does.
 test('the export prints the lane names, and none with names off', async () => {
   const display = createDisplay()
   await when(() => display.features !== undefined, { timeout: 5000 })
@@ -184,9 +173,6 @@ test('the export prints the lane names, and none with names off', async () => {
   )
 })
 
-// The band keeps a light ground in every theme, so text on it takes the band's
-// ink and a band-ground halo where it crosses a ribbon end, whatever the
-// export's theme says text and paper are.
 test('the export draws lane headers and names in band ink over a band-ground halo, in a dark theme too', async () => {
   const display = createDisplay()
   await when(() => display.features !== undefined, { timeout: 5000 })

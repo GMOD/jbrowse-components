@@ -15,7 +15,7 @@ import { SYNTENY_COLOR_SCALES } from '@jbrowse/synteny-core'
  * #config RibbonColor
  * #category display
  * The multi-way synteny display's `ribbonColor` setting: one colour for every
- * ribbon, or a field each ribbon carries — the record's strand, a measurement
+ * ribbon, or a field each ribbon carries: the record's strand, a measurement
  * on its preset ramp (`identity`, `mapq`, `dnds`), or a column the
  * table declares in `attributeColumns`. A string is the constant.
  *
@@ -39,8 +39,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     /**
      * #slot value
      * The colour of every ribbon under the `none` scale, and of a pair
-     * carrying no value under a field. Writing `ribbonColor: "grey"` lands
-     * here. Every field keeps its opacity.
+     * carrying no value under a field.
      */
     value: {
       type: 'color',

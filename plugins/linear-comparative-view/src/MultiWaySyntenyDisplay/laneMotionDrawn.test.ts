@@ -42,9 +42,7 @@ function record(id: string, name: string, anchor: string, mateStart: number) {
 const groupsOn = (anchor: string) =>
   STARTS.map((s, i) => record(`${anchor}${i}`, `g${i}`, anchor, 20_000 + s))
 
-// gene models across a long stretch of the lane's contig either side of the
-// placements, so a frame showing more of it than the next one does has genes
-// on screen that the next frame's own cull would drop
+// genes past the placements, so a wider frame draws some a narrower one culls
 const genes = Array.from({ length: 70 }, (_, i) => 16_000 + 150 * i)
   .filter(start => start + 50 < 20_000 || start > 21_100)
   .map(
@@ -123,8 +121,7 @@ function picture(display: MultiWaySyntenyDisplayModel) {
       const x2 = Math.min(width, x + w)
       return x2 > x1 ? [[x1, x2, y, h]] : []
     })
-  // a ribbon is a closed four-corner path and a strand arrow's head a
-  // three-corner one, corners in draw order
+  // a ribbon is a closed four-corner path, an arrowhead a three-corner one
   const ribbons: number[][] = []
   const heads: number[][] = []
   let path: number[] = []
@@ -147,8 +144,7 @@ function picture(display: MultiWaySyntenyDisplayModel) {
   return { rects, ribbons, heads }
 }
 
-// what one list draws that the other does not, to a pixel: the cells are
-// packed at whole px in each frame, so the same bp can round a px apart
+// within a px: each frame packs cells at whole px, so one bp can round a px apart
 function unmatched(a: number[][], b: number[][]) {
   const pool = [...b]
   return a.filter(item => {
@@ -174,9 +170,7 @@ function expectSamePicture(
   expect(unmatched(b.heads, a.heads)).toEqual([])
 }
 
-// the cells are packed in the NEW frame and culled to both, so frame 0 of the
-// move is the old picture — not the new frame's content with its edges
-// missing, which is what a slide or a rung drop showed before the union cull
+// cells pack in the new frame and cull to both, so frame 0 is the old picture
 describe.each([
   [
     'a broken hold re-aligning',
@@ -236,9 +230,6 @@ describe.each([
   })
 })
 
-// an arrow is a fixed px long, so it has to hang off a point the lane map
-// carries: anchored a stem's length inside the end, a 3x rescale drew its
-// first frame 4.7 px off the gene it marks
 test("a strand arrow rides its gene's end through a rescale", async () => {
   const { display } = await settledDisplay()
   redecide(display, () => ({ rung: 3 }))
@@ -272,7 +263,6 @@ test('mid-flight the hit test, the hover ink and the selection ink sit on the dr
   })!
   const x = drawnPx(map, (hit.x1 + hit.x2) / 2) + display.dragOffsetPx
   const y = hit.y1 + 2 - display.scrollTop
-  // the narrowest rect the frame drew there, over the lane's band
   const rect = drawn
     .filter(
       ([x1, x2, top, h]) => x >= x1! && x <= x2! && y >= top! && y <= top! + h!,
@@ -280,7 +270,6 @@ test('mid-flight the hit test, the hover ink and the selection ink sit on the dr
     .sort((a, b) => a[1]! - a[0]! - (b[1]! - b[0]!))[0]!
   expect(rect).toBeDefined()
   expect(display.hitTest(x, y)?.feature.id()).toBe(hit.feature.id())
-  // where the settled frame would put the gene is no longer what answers
   expect(
     display.hitTest((hit.x1 + hit.x2) / 2 + display.dragOffsetPx, y)?.feature,
   ).not.toBe(hit.feature)
@@ -389,8 +378,6 @@ test('a Flip lane moves the lane rather than snapping it', async () => {
   expect(display.laneMaps.get(1)?.scale).toBeCloseTo(-1, 6)
 })
 
-// the frame loop is the component's; a display whose loop never runs — not
-// mounted, a hidden tab — must still stop animating at the end time
 test('the published signal is idle after the end time even if no frame advanced', async () => {
   const { display } = await settledDisplay()
   jest.useFakeTimers()
@@ -410,8 +397,6 @@ test('the published signal is idle after the end time even if no frame advanced'
   }
 })
 
-// a ribbon too thin to draw in the new frame can be several px wide in the old
-// one, where the move starts; the width gate reads it at its widest
 test('a ribbon the old frame drew wide is kept for a move that starts magnified', () => {
   const frame = (refName: string): RowFrame => ({
     refName,

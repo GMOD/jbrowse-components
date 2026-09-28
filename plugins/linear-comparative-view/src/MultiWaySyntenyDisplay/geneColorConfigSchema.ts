@@ -27,7 +27,7 @@ export const geneColorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot value
-     * A CSS colour, or a jexl callback over `feature` returning one. Unset,
+     * A CSS colour, or a jexl callback over `feature` returning one; unset,
      * goldenrod.
      */
     value: {
