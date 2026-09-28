@@ -61,7 +61,7 @@ writes a track config for them, as [](/docs/tutorials/pangenome_prepare_graph)
 describes. Then **Add track** with that config, whose adapter is
 `RgfaTabixAdapter`, and the track opens as the graph.
 [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the index. Skip to
-[Six layouts](#three-layouts) if you just need to know what the track menu's
+[Seven layouts](#three-layouts) if you just need to know what the track menu's
 items do.
 
 The graph opens in the **Anchored** layout, on the view's own coordinates, so
@@ -257,9 +257,9 @@ Desktop starts a session only by opening a genome, so pick a genome before
 looking for the **Add** menu. Any genome works, because the view lays out a GFA
 opened this way from the GFA's P/W lines.
 
-## Six layouts {#three-layouts}
+## Seven layouts {#three-layouts}
 
-The track menu's **Layout** submenu draws the same subgraph six ways, and the
+The track menu's **Layout** submenu draws the same subgraph seven ways, and the
 axes mean something different in each:
 
 | Layout                    | x                  | y                       |
@@ -268,14 +268,15 @@ axes mean something different in each:
 | Sample rows               | reference bp       | one row per assembly    |
 | Walk rows                 | each walk's own bp | one bar per haplotype   |
 | Ordered                   | reference order    | a lane per allele       |
-| Variant map               | reference bp       | one glyph per bubble    |
+| Tube map                  | node order         | a tube per path         |
+| Tube map on reference     | reference bp       | a tube per path         |
 | **Force-directed layout** | nothing (FMMM)     | nothing                 |
 
 **Ordered** keeps x monotone in reference order, ignoring bp. A SNP allele gets
 the same room as the kilobase segment beside it, and a bubble draws as a lens.
-**Variant map** draws only the reference line with one typed glyph per bubble on
-it. Clicking a glyph opens the bubble as a graph. **Walk rows** needs a graph
-with walks, and draws each haplotype's route as a bar.
+**Walk rows** needs a graph with walks, and draws each haplotype's route as a
+bar. **Tube map** and **Tube map on reference** need P or W lines, and draw each
+path as a coloured tube through boxed nodes.
 
 The track opens in **Anchored**, whose x is the view's own coordinate, so the
 graph lines up under the other tracks and pans and zooms with them. **Ordered**
