@@ -1,6 +1,6 @@
 ---
 name: lane-layers
-description: "ADR-180's lane layers after the spike: template layers and described lanes as temporary assemblies are built and the Hubs plugin's assembly answer is released; left is a GC cost measurement (and a twobit index over-read) before jb2hubs writes GC into every star."
+description: "ADR-180's lane layers after the spike: template layers and described lanes as temporary assemblies are built and the Hubs plugin's assembly answer is released; left is a GC cost measurement before jb2hubs writes GC into every star, once the twobit index fix ships."
 ---
 
 The spike is `laneLayers` on `MultiWaySyntenyDisplay`: a row of data per lane
@@ -21,11 +21,11 @@ connection without losing it.
 1. **Measure before jb2hubs writes GC into every star.** Cold at TP53, a
    chromosome-level lane reads 2.4-2.9 MB of 2bit, mostly its chromosome's
    soft-mask block list, against about 1 MB for a gc5Base bigWig. A
-   scaffold-level lane reads far more: `@gmod/twobit` 6.0.12 `getIndex`
-   reads `sequenceCount * (1 + 255 + offsetSize)` bytes, so bisBis1's 315k
-   scaffolds cost 118 MB and dasNov3's 12.6 MB. That over-read hits every
-   2bit read on such a genome, the reference sequence track's too; fix it in
-   twobit-js first. Then the star builder
+   scaffold-level lane read far more under `@gmod/twobit` 6.0.12, whose
+   `getIndex` read `sequenceCount * (1 + 255 + offsetSize)` bytes: bisBis1's
+   315k scaffolds cost 118 MB. twobit-js main `e908bff` sizes that read by
+   typical names (a few MB for bisBis1); release it and take it with
+   `pnpm update @gmod/twobit`, then measure bisBis1 again. Then the star builder
    (`ucsc2jbrowse/src/multiwayStarTrack.ts`) writes the layer and sizes each
    lane at 22 + 12 (gene names) + the band + 2; its 22 is already short by
    the gene-name row, and the gene-page link's pitch (34) grows by the band.
