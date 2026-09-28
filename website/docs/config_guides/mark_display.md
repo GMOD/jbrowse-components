@@ -578,17 +578,22 @@ themselves. Each row keeps its block's reference span and carries the species'
 `chr`, `srcStart`, `strand`, `srcSize` and `seq`; a span coloured by `chr` is
 the MAF display's colour by source chromosome:
 
-```json
+```json addtrack
 {
   "type": "MafTrack",
-  "trackId": "hg38_100way_species",
+  "trackId": "multiz470way_species",
+  "name": "Multiz 470-way, a row per species",
+  "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BigMafAdapter",
-    "bigBedLocation": { "uri": "hg38.100way.bb" }
+    "bigBedLocation": {
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470way.bigMaf"
+    }
   },
   "displays": [
     {
       "type": "LinearMarkDisplay",
+      "displayId": "multiz470way_species-LinearMarkDisplay",
       "transform": [
         { "type": "flatten", "field": "alignments", "key": "species" }
       ],
