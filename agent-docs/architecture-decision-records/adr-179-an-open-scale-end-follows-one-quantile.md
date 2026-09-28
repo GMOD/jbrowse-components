@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An unpinned end of a value scale or a colour ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of the values on each end's side of 0, through one exact rule (`quantileExtent`, a nearest-rank quickselect). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C colour at 0.95; everything else at 1. Amended 2026-09-26: the coverage band starts at 0.99 too. The Score menu's Autoscale type radio is a Clip outliers checkbox. Amended 2026-09-27: below 1 each end clips its own tail, and 0 is the axis's to add"
+summary: "An unpinned end of a value scale or a colour ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of the values on each end's side of 0, through one exact rule (`quantileExtent`, a nearest-rank quickselect). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C colour at 0.95; everything else at 1. Amended 2026-09-26: the coverage band starts at 0.99 too, and on 2026-09-27 returns to 1, since the quantile cut plain coverage in most views and missed any pile-up wider than 1% of them. The Score menu's Autoscale type radio is a Clip outliers checkbox. Amended 2026-09-27: below 1 each end clips its own tail, and 0 is the axis's to add"
 ---
 
 # ADR-179: An open scale end follows one quantile
@@ -74,6 +74,31 @@ the covered bins' peaks, so a sparse window does not clip to nothing. The mark
 display, and Manhattan with it, keeps 1: a plot built on purpose is often
 about its outliers, a genome-wide hit or a high-QUAL call, and a point clipped
 to the top edge reads as a value sitting there. Colin agreed on 2026-09-26.
+
+### Amended 2026-09-27: the coverage band returns to 1
+
+The 0.99 start cut the top of plain coverage in every view. A quantile
+removes its share of whatever is in view whether or not anything there is
+unusual, and depth is autocorrelated along the genome, so the 1% it removes
+is one stretch: the tallest hump. The red strip
+([ADR-183](adr-183-a-bar-the-axis-cut-wears-a-red-strip.md)) made the cut
+visible, and on volvox-sorted, which holds no pile-up, it stood on 24% of
+300 bp views, 52-65% of 1-10 kb views and the whole contig.
+
+The start also missed what it was for. It cuts a pile-up only while the
+pile-up covers under 1% of the covered bases in view: a 150 bp collapse at
++775 reads went uncut in every view under 15 kb, and a 1 kb collapse went
+uncut even across the whole 50 kb contig. v4's SNPCoverage display followed
+the max (`autoscale: 'local'`), as IGV and pyGenomeTracks do, and the
+Coverage menu's Clip outliers still writes 0.99 for a reader who wants the
+cut.
+
+Two other rules were measured on the same data and declined. A Tukey fence,
+Q3 + 3·IQR, spared plain coverage and caught the pile-up at every width, but
+cut nearly every peak of ChIP-like coverage, where the tall values are the
+signal. `min(max, 2 × the 0.99 quantile)` drew no strip on either, but keeps
+the quantile's blind spot and adds a constant. The wiggle plot keeps 0.99
+until a ChIP BigWig is captured both ways. Colin agreed on 2026-09-27.
 
 ### Amended 2026-09-27: 0 belongs to the axis, not the quantile
 

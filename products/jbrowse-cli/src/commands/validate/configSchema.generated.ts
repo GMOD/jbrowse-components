@@ -4515,7 +4515,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domainQuantile": {
           "description": "the quantile an unpinned end follows: 1 the extremes, 0.99 drops the outermost 1% at each end, each sign measured on its own.",
           "type": "number",
-          "default": 0.99
+          "default": 1
         },
         "grid": {
           "description": "rule the plot at the tick positions.",

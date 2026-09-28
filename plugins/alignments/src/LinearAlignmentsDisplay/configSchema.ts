@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
@@ -228,13 +227,13 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * against an axis, the pileup having no value and the arcs their own
        * `arcBandYScale`. `symlogConstant` starts at 1 rather than the wiggle
        * family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at
-       * one read, the smallest depth there is. `domainQuantile` starts at 0.99,
-       * as the wiggle plot's does, so one collapsed-repeat pile-up does not
-       * flatten every other bar.
+       * one read, the smallest depth there is. `domainQuantile` stays at 1, the
+       * deepest base in view: 0.99, which Clip outliers writes, cuts the
+       * tallest stretch of even flat coverage in every view, and misses a
+       * collapsed-repeat pile-up once it covers more than 1% of the view.
        */
       scales: scalesSchema(
         valueScaleSchema({
-          domainQuantile: DEFAULT_CLIP_QUANTILE,
           symlogConstant: 1,
         }),
       ),

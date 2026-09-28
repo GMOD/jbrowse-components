@@ -1,13 +1,15 @@
 ---
 name: scales-and-colour-keys
-description: "What the 2026-09-26 scales.y and colour-key round left open: the coverage and wiggle figures the clip strip (ADR-183) changes, and one spec wait the submenu fix of 2026-09-27 should let go of."
+description: "What the 2026-09-26 scales.y and colour-key round left open: the wiggle figures the clip strip (ADR-183) changes, and one spec wait the submenu fix of 2026-09-27 should let go of."
 ---
 
 ## Open
 
-- **Reshoot the coverage and wiggle figures with a cut bar.** The clip strip
-  (ADR-183) marks every bin the 0.99 quantile cut, so any figure with a spike
-  in view gained a red strip on it; nothing was reshot, ada being down.
+- **Reshoot the wiggle figures with a cut bar.** The clip strip (ADR-183)
+  marks every bin the 0.99 quantile cut, so any wiggle figure with a spike in
+  view gained a red strip on it; nothing was reshot, ada being down. The
+  coverage band autoscales to its max again (ADR-179, amended 2026-09-27), so
+  its figures draw as they were shot.
 - **Drop `alignments_sort_by_base`'s `waitForAppSettled` and confirm the
   submenu stays.** The spec waits for the read's rows before opening
   "SNP/Mismatch" because the panel shut when they landed. The 2026-09-27

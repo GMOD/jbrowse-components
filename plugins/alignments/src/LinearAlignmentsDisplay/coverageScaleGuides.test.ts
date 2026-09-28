@@ -108,9 +108,9 @@ test('the Coverage menu toggles the grid', () => {
   expect(coverageAxis(display).grid).toBe(true)
 })
 
-test('one pile-up does not set the autoscaled top, unless the quantile is 1', () => {
+test('the autoscaled top reaches a pile-up until outliers are clipped', () => {
   const display = coverageDisplay(10, 1000)
-  expect(coverageAxis(display).domain[1]).toBeLessThan(100)
-  display.setDomainQuantile(1)
   expect(coverageAxis(display).domain[1]).toBeGreaterThanOrEqual(1000)
+  display.setDomainQuantile(display.clipQuantile)
+  expect(coverageAxis(display).domain[1]).toBeLessThan(100)
 })

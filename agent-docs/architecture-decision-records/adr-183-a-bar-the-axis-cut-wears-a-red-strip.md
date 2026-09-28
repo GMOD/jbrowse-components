@@ -52,9 +52,11 @@ is then its ink.
 
 ## Consequences
 
-- Every default coverage band and wiggle plot at 0.99 shows the strip on the
-  bins the quantile cut, which is what the quantile does; the figures with a
-  spike in view change and want a reshoot.
+- Every default wiggle plot at 0.99 shows the strip on the bins the quantile
+  cut, which is what the quantile does; the figures with a spike in view
+  change and want a reshoot. The coverage band showed it too, on the tallest
+  stretch of plain 30x coverage in most views, and returned to 1 the same day
+  (ADR-179).
 - `coverageBandMarks` wires the layer for both displays that draw the band,
   so MAF gained it with alignments.
 - `barCutCoverage.test.ts` pins twelve vertices; `clipStrip.test.ts`,
