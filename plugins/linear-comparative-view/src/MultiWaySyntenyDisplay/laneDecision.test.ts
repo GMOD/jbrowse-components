@@ -471,6 +471,37 @@ describe('the orientation', () => {
     expect(settle(interleaved).flipped).toBe(false)
   })
 
+  test('a fresh lane sharing three groups is not set backwards by one reversed scrap', () => {
+    const record = (
+      id: string,
+      start: number,
+      end: number,
+      mateStart: number,
+      strand: 1 | -1,
+    ) =>
+      new SimpleFeature({
+        uniqueId: id,
+        syntenyId: id,
+        refName: 'chr1',
+        start,
+        end,
+        strand,
+        assemblyName: 'anchor',
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: mateStart,
+          end: mateStart + end - start,
+        },
+      })
+    const oneChainTwoScraps = groupFeatures([
+      record('scrap', 110, 112, 500_200, 1),
+      record('chain', 100, 900, 500_100, 1),
+      record('reversed', 850, 854, 500_300, -1),
+    ])
+    expect(settle(oneChainTwoScraps).flipped).toBe(false)
+  })
+
   test('carries across a contig change rather than re-guessing', () => {
     const previous = new Map([['peach', settle(backwards)]])
     const mixed = [250, 100, 400, 550, 850, 700]

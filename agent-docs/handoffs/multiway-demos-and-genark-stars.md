@@ -56,7 +56,5 @@ done the knob page is buildable; the layer config generator is in the
 
 ## Also open
 
-- **The hs1 orientation vote**, `multiway-orientation-few-groups.md`: the
-  human figure leaves hs1 out until the fix there is measured.
 - Drosophila's bithorax split on dm6 and the Bovini stack on bosTau9 were
   surveyed (both hosted in their stars) and not started.

@@ -357,15 +357,16 @@ function decideOrientation(
   vote: ReturnType<typeof orientationVote>,
   incumbent: boolean | undefined,
 ) {
-  if (incumbent === undefined) {
-    return vote?.backwards ?? fitted
-  }
+  const held = incumbent ?? fitted
   if (
     vote?.backwards === undefined ||
-    vote.backwards === incumbent ||
+    vote.backwards === held ||
     vote.shared < MIN_SHARED_TO_SWITCH
   ) {
-    return incumbent
+    return held
+  }
+  if (incumbent === undefined) {
+    return vote.backwards
   }
   const share = vote.backwards ? vote.share : 1 - vote.share
   return share >= NEARLY_ALL ? vote.backwards : incumbent

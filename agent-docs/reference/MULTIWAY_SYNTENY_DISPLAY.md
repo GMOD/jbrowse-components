@@ -183,8 +183,9 @@ margin (`JC/plugins/linear-comparative-view/src/syntenyHysteresis.ts`), extent
 by `keepNearMedian` (`OUTLIER_REACH = 1.5` window spans), rung off
 `SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]` with a 10% tolerance
 (`RUNG_TOLERANCE`) and an 0.85 shrink room floored at 1 (`pickRung`),
-orientation by a 0.9 deadband over ≥5 shared groups against the lane *above*
-(`orientationVote`, `decideOrientation`), offset by the weighted-median
+orientation by a vote over ≥5 shared groups against the lane *above*, with a
+0.9 deadband against an incumbent and the anchor-order sign for a fresh lane
+sharing fewer (`orientationVote`, `decideOrientation`), offset by the weighted-median
 displacement to the lane above, unclamped, so part of the fit can fall past an
 edge and a frame can start below zero (`alignFrameTo`) — both read against the
 anchor instead where the lane above shares fewer than three groups, which on a
