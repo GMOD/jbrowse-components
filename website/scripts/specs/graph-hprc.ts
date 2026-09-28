@@ -1538,8 +1538,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // EVERYTHING IN THIS FRAME IS BLUE, and deliberately. An rGFA tags an
   // off-reference segment with the sample contig it came from, so a query on
   // `GRCh38#0#chr6` returns rank 0 and nothing else; checked against the
-  // hosted index, the C4 window is 13 rows, all rank 0. The jexl's orange
-  // branch fires on a sample's own lane. So the picture's subject is the
+  // hosted index, the C4 window is 13 rows, all rank 0. The config's rank
+  // scale paints its orange interval on a sample's own lane, and its key names
+  // both intervals here. So the picture's subject is the
   // TILING -- one row of segments covering the window, broken where the graph
   // branches -- and the short segments bunched at the C4 repeat are the
   // negative against the long quiet ones either side. The bubble file in the
@@ -1560,8 +1561,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               showLabels: 'none',
               heightMode: 'grow',
-              color:
-                "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'",
             },
           ],
         },

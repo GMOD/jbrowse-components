@@ -249,7 +249,14 @@
         "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph"
       },
       "displayDefaults": {
-        "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+        "color": {
+          "field": "rank",
+          "scale": "threshold",
+          "domain": ["1"],
+          "range": ["rgb(52,152,219)", "rgb(237,137,44)"],
+          "labels": ["reference", "other assemblies"],
+          "title": "Segment rank"
+        }
       },
       "displays": [
         {
