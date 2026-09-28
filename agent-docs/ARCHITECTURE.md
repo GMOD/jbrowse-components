@@ -156,10 +156,10 @@ is declared in `STATES_NO_RULES`.
   is a silent RPC cache key, and most of them are inherited from a schema in
   another package. A slot present only to invalidate gets its own named field.
   See [pick the payload](reference/FETCH_KEYS.md#pick-the-payload-out-of-the-snapshot-never-subtract-from-it).
-- Don't pass `sequenceAdapter` from a display or a dialog. `renameRegionsIfNeeded`
-  derives it from the assembly it already resolved, so a hand-written one is the
-  same two lines every other caller deleted. See [the sequence adapter is
-  derived](#the-sequence-adapter-is-derived-not-passed).
+- Don't pass `sequenceAdapter` from a display or a dialog. Name the call's
+  genome in `assemblyName` (a renaming method's regions already do) and
+  serialization attaches the reference. See [the reference is part of the
+  adapter's identity](#the-reference-is-part-of-the-adapters-identity).
 - Don't override `adapterConfig` to *annotate* it; only to change what the
   adapter is. The cache keys on the config object, so a key the adapter never
   reads still forks the cache into a second instance and a second parse of the
@@ -589,14 +589,15 @@ where a tier or a density axis applies. Canvas adds the density axis via
 `MultiRegionDisplayMixin()`. Full detail:
 [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md).
 
-### The sequence adapter is derived, not passed
+### The reference is part of the adapter's identity
 
-BAM/CRAM decode against the reference, but a track's adapter config doesn't
-carry it — the assembly does. The config rides **alongside** `adapterConfig` as
-a sibling RPC arg, and **no caller passes it**: `renameRegionsIfNeeded` already
-resolved the assembly, so it supplies one to every renaming RPC for free.
-`CoreGetRefNames` is the one exception, because it is what renaming calls.
-[reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md#the-rename-also-carries-the-sequence-adapter-and-that-is-why-it-is-derived).
+BAM/CRAM, GC content and the reference scans read the reference, but a track's
+adapter config doesn't carry it — the assembly does. A call names its genome in
+`assemblyName` (a renaming method's regions become that), serialization turns
+the name into the assembly's sequence adapter config as a sibling of
+`adapterConfig`, and the worker builds a `READS_REFERENCE` adapter with it and
+keys the instance on it. **No caller passes it, and nothing sets it later.**
+[reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md#the-reference-is-part-of-the-adapters-identity).
 
 ## `rpcProps()` / `gpuProps()` pattern
 

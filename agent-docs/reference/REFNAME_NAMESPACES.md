@@ -81,49 +81,49 @@ above, and canonicalizing an operand compared in the worker breaks exactly the
 aliased tracks the rule exists for. Check which side a comparison runs on;
 alignments layout looks worker-side and is not (ADR-053).
 
-## The rename also carries the sequence adapter, and that is why it is derived
+## The reference is part of the adapter's identity
 
 BAM/CRAM decode against the reference (CRAM to reconstruct bases, BAM to compute
-mismatches without an MD tag), but a track's adapter config doesn't carry the
-reference — it belongs to the assembly. So the assembly's sequence adapter config
-rides **alongside** `adapterConfig` as a sibling RPC arg, never spliced into it,
-and is stashed on the resolved adapter instance by `setSequenceAdapterConfig`;
-the adapter lazily builds it through `getSubAdapter` on first
-`getSequenceAdapter()`. `CramAdapter` binds its `seqFetch` into the
-`IndexedCramFile` at construction, which is why the config lives on the instance
-rather than travelling per call.
+mismatches without an MD tag), GC content and the reference scans compute from
+it, but a track's adapter config doesn't carry the reference — it belongs to
+the assembly. So the assembly's sequence adapter config rides **alongside**
+`adapterConfig` as a sibling RPC arg, never spliced into it, and the worker
+builds a reference-reading adapter with it: `dataAdapterCache` keys any type
+declaring `READS_REFERENCE` on its config AND that sequence, hands the sequence
+to the constructor, and never changes it. One BAM shown on two genomes is two
+instances, each reading its own; two assemblies over one FASTA, or an alias
+spelling, hash to one. `CramAdapter` binds its `seqFetch` into the
+`IndexedCramFile` at construction, inside @gmod/cram's slice cache, which is
+why the reference is instance state rather than a per-call argument.
 
-**No caller passes it.** `renameRegionsIfNeeded` already resolves the assembly a
-fetch is against — the same handle `originalRefName` is a name into — so it
-supplies the config, and every renaming RPC gets one for free. That makes it a
-property of the *call* rather than of any method's payload, like `sessionId` and
-the handles; `RpcRegistry` documents why that distinction is worth keeping.
+**No caller passes it.** A call names its genome in one field, `assemblyName`,
+and `RpcMethodType.serializeArguments` turns that name into the sequence
+adapter config, ahead of the location walk that converts file handles and adds
+auth. A per-genome renaming method (`RpcMethodTypeWithRenameRegions` and its
+singular and filters variants) gets `assemblyName` from its regions:
+`renameRegionsIfNeeded` requires every region on one assembly and names it. A
+header call (`CoreGetRefNames` from the About dialog and the warm-up,
+`CoreGetInfo`) names its own. That makes the reference a property of the
+*call* rather than of any method's payload, like `sessionId` and the handles;
+`RpcRegistry` documents why that distinction is worth keeping.
 
-It was a rule until 2026-08-19, and the rule did not hold: `CoreGetExportData`,
-`BreakpointGetFeatures` and `fetchTrackData`'s `CoreGetFeatures` all omitted it
-and worked only because `CoreGetRefNames` had primed the instance first.
-Forgetting was silent — a CRAM throws mid-decode, a BAM just reports no
-mismatches — so deriving it beats documenting it.
+A comparative request (synteny, dotplot, chords) renames a region per assembly
+and names no genome. That is `renameComparativeRegions`, reached through
+synteny-core's `renameRegionsForAdapter` on the main thread before the RPC;
+the comparative fetch RPCs are plain `RpcMethodType` and rename nothing
+themselves. A synteny adapter reads no reference, so nothing rides on those
+calls. The chord display, which fetches through `CoreGetFeatures`, sends one
+request per assembly.
 
-`CoreGetRefNames` is the one exception and still passes its own, because it is
-what renaming CALLS and cannot be fed by it. Its priming is not vestigial: a
-`ReferenceScanAdapter` resolves its sequence *inside its own `getRefNames`*, so
-that call must arrive already primed. What no longer holds is any LATER call
-depending on it — delete the priming outright and `SaveTrackData`'s CRAM case
-stays green, where it used to be the only test in the repo that saw it.
-
-Two tests hold this down. `data_adapters/sequenceAdapterPriming.test.ts` pins
-the priming contract directly — prime through `CoreGetRefNames`, fetch with
-nothing, read the reference back — and the alignments adapters' own suites (20
-tests over 10 files) pin the consumer half, that an adapter uses the config it
-was handed.
-
-`setSequenceAdapterConfig` is set-once: one `??=`, which both refuses to clear
-the field and refuses to replace it. A multi-assembly fetch can therefore prime
-one instance twice with two different configs, and the first wins. That is
-harmless rather than fixed — the adapters fetched across two assemblies are the
-comparative ones, which never read the field. Both the compound cache key and a
-loud conflict were costed and declined.
+An instance built for a request that named no genome answers header and
+metadata calls, and throws on its first reference read, naming the adapter
+type. Before 2026-09-27 the reference was a set-once field on a config-keyed
+instance, primed by whichever request arrived first, and the About dialog's
+sequence-less `CoreGetRefNames` threw on GC and scan tracks while the launch
+warm-up primed a shared CRAM from the config's first assembly rather than the
+view's. `data_adapters/adapterReference.test.ts` pins the per-genome
+construction and `pluggableElementTypes/attachReference.test.ts` the
+derivation.
 
 ## Six plugins hit it; six invented a different fix
 

@@ -163,10 +163,12 @@ For an API instead of a file, only the callback body changes: `fetch` with
 
 To wrap another adapter, resolve it lazily with `this.getSubAdapter` — it is
 `async`, so it cannot be called from a constructor. For the reference sequence
-specifically, don't ask the config for it: JBrowse primes every feature
-adapter's `sequenceAdapterConfig` from the assembly the track is displayed
-against, and `getSequenceSubAdapter` reads that, falling back to a configured
-slot only when one is set. A track then needs no `sequenceAdapter` of its own:
+specifically, don't ask the config for it: declare `READS_REFERENCE` in the
+adapter's `adapterCapabilities`, and JBrowse builds each instance with the
+sequence adapter config of the assembly it is displayed against, one instance
+per genome, in `sequenceAdapterConfig`. `getSequenceSubAdapter` reads that,
+falling back to a configured slot only when one is set. A track then needs no
+`sequenceAdapter` of its own:
 
 <!-- include: plugins/gccontent/src/GCContentAdapter/GCContentAdapter.ts#subAdapter -->
 
