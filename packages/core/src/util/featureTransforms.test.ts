@@ -231,6 +231,19 @@ test('flatten fans out a record keyed by name, and key names each entry', () => 
     ['panTro6', 1, 100, 160, 9, -1, 'AC-T'],
   ])
   expect(species.map(f => f.id())).toEqual(['100-160#hg38', '100-160#panTro6'])
+  expect(species[1]!.toJSON()).toEqual({
+    uniqueId: '100-160#panTro6',
+    refName: 'ctgA',
+    start: 100,
+    end: 160,
+    seq: 'AC-T',
+    genotypes: { HG001: '0/1', HG002: '1/1' },
+    chr: 'chr1',
+    srcStart: 9,
+    strand: -1,
+    species: 'panTro6',
+    i: 1,
+  })
   expect(
     rows(
       runTransforms(

@@ -48,9 +48,8 @@ file pointers to re-read.
 ## What the mark display must gain, ranked
 
 1. ~~A way onto a MafTrack, with one feature per species per block.~~ Landed,
-   ADR-186. One cost to watch: a species row's hover JSON is its block's, so
-   it carries every species' sequence (`FlattenedFeature.toJSON` merges the
-   container's).
+   ADR-186. A species row's hover JSON is its block's minus the fanned-out
+   `alignments`, so it carries its own sequence and no sibling's.
 2. ~~A per-base cell step with the reference comparison.~~ Landed, ADR-187:
    `cells` writes `state`, `base` and `match` per run, walking every column.
    Still open from it: **the identity heatmap and X-Y plot**, because `bin`
@@ -71,8 +70,9 @@ file pointers to re-read.
    hardwires to the display's one `minWidthPx` and a seam of 0.
 4. ~~A row set and guide tree declared by the adapter.~~ Landed, ADR-189:
    `listRowSources` on the adapter, the mark display taking it through the
-   flatten's key, the guide tree through the mixin. Still open: the
-   reference row (the worker's `refSampleId`), which nothing marks yet.
+   flatten's key, the guide tree through the mixin. The reference row is a
+   species row like any other, so hiding it is a `filter` step or the rows'
+   `kept` focus, and the worker's `refSampleId` needs no counterpart.
 5. A band stack with its own axes above the rows, for coverage and
    conservation.
 6. A coarse tier serving per-row records from `summaryAdapter`, where

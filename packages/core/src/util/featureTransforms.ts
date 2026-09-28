@@ -209,8 +209,12 @@ class FlattenedFeature implements Feature {
     return this.item.children?.()
   }
 
+  // The container's JSON minus the field fanned out, as `get` answers it: an
+  // element's serialisation carries no sibling, so a species row's hover is
+  // not its block's every sequence.
   toJSON(): SimpleFeatureSerialized {
-    return { ...this.container.toJSON(), ...this.item.toJSON() }
+    const { [this.field]: _siblings, ...container } = this.container.toJSON()
+    return { ...container, ...this.item.toJSON() }
   }
 }
 

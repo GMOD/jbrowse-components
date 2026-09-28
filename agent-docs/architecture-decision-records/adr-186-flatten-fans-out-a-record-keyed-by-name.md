@@ -60,9 +60,8 @@ reference axis.
   `samples` with `key: "sample"`, then `rows: "sample"` and a colour over
   `GT`.
 - A `MafFeature`'s hover through `CoreGetEncodedFeature` serialises the
-  container with the entry, so a species row's JSON carries every species'
-  sequence for its block. Acceptable at block scale; a per-base cell step
-  (the handoff's item 2) is where that would need trimming.
+  container with the entry, minus the field fanned out, as `get` answers it:
+  a species row's JSON carries its own sequence and no sibling's.
 - The remaining MAF items stand: the per-base cell step with the reference
   comparison, the row geometry, the band stack, the coarse tier off
   `summaryAdapter`.
