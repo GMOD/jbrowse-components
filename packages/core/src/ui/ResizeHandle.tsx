@@ -33,22 +33,22 @@ const useStyles = makeStyles()(theme => ({
   verticalBar: { width: 4, background: theme.palette.action.disabled },
   grip: {
     backgroundColor: theme.palette.background.paper,
-    backgroundImage: `${layer(theme.palette.text.secondary)}, ${layer(theme.palette.action.disabled)}`,
+    backgroundImage: `${layer(theme.palette.text.disabled)}, ${layer(theme.palette.action.disabled)}`,
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
     '&:hover': {
       backgroundColor: theme.palette.background.paper,
-      backgroundImage: `${layer(theme.palette.text.primary)}, ${layer(theme.palette.text.disabled)}`,
+      backgroundImage: `${layer(theme.palette.text.secondary)}, ${layer(theme.palette.text.disabled)}`,
     },
   },
   horizontalGrip: {
     height: 6,
-    backgroundSize: '36px 3px, auto',
+    backgroundSize: '24px 3px, auto',
     borderTop: `1px solid ${theme.palette.text.disabled}`,
   },
   verticalGrip: {
     width: 6,
-    backgroundSize: '3px 36px, auto',
+    backgroundSize: '3px 24px, auto',
     borderLeft: `1px solid ${theme.palette.text.disabled}`,
   },
 }))
