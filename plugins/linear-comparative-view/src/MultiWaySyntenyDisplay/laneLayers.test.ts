@@ -1,8 +1,13 @@
+import { createElement } from 'react'
+
 import { setConf } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import { bandInk } from '@jbrowse/synteny-core'
+import { render } from '@testing-library/react'
 import { when } from 'mobx'
 
+import LaneLayerTitles from './components/LaneLayerTitles.tsx'
 import {
   LANE_TEMPLATE_MAX_BP,
   barCellOf,
@@ -161,17 +166,19 @@ test('bands stack from the lane layer top, a gap apart', () => {
 test('a commit drops held payloads its specs no longer name, so a region the view left stops drawing', () => {
   const display = createDisplay()
   const kept = held(0, [40])
+  const anchor = display.anchorAssemblyName
+  const spec = (lane: string) => ({ lane, key: 'k', assemblyName: 'a' })
   display.setLaneLayerData(
     new Map([
       ['a\u00000\u00000', kept],
       ['a\u00000\u00001', held(0, [90])],
     ]),
-    undefined,
-    new Set(['a\u00000\u00000', 'a\u00000\u00001']),
+    [spec('a\u00000\u00000'), spec('a\u00000\u00001')],
+    anchor,
   )
-  display.setLaneLayerData(new Map(), undefined, new Set(['a\u00000\u00000']))
-  expect([...display.laneLayerData!.keys()]).toEqual(['a\u00000\u00000'])
-  expect(display.laneLayerData!.get('a\u00000\u00000')).toBe(kept)
+  display.setLaneLayerData(new Map(), [spec('a\u00000\u00000')], anchor)
+  expect([...display.laneLayerData.held!.keys()]).toEqual(['a\u00000\u00000'])
+  expect(display.laneLayerData.held!.get('a\u00000\u00000')).toBe(kept)
 })
 
 describe('a template layer', () => {
@@ -295,5 +302,16 @@ describe('a template layer', () => {
     display.lgv.showAllRegions()
     expect(reads(display)).toEqual([])
     expect(display.laneLayerTitles[0]!.text).toMatch(/ · zoom in$/)
+  })
+
+  // the title sits on the band, which is white in every theme; the session
+  // palette's text is white on a dark theme
+  test('the title is band ink, whatever the theme', async () => {
+    const display = await templateDisplay(GC)
+    const { getAllByTestId } = render(
+      createElement(LaneLayerTitles, { model: display }),
+    )
+    const [title] = getAllByTestId('multiway-layer-title')
+    expect(title!.style.color).toBe(bandInk().text)
   })
 })

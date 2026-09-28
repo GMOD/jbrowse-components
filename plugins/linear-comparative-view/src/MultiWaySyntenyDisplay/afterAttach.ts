@@ -18,12 +18,17 @@ import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { sameDecisions } from './laneDecision.ts'
-import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
+import { staleLaneSpecs } from './laneFetch.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 import { mergeContiguousRegions } from './layoutMultiWay.ts'
 
 import type { MultiWayFeatures } from './MultiWayGetFeatures.ts'
-import type { LaneFetchSpec, LaneRegion } from './laneFetch.ts'
+import type {
+  HeldLane,
+  LaneFetchSpec,
+  LaneFetchState,
+  LaneRegion,
+} from './laneFetch.ts'
 import type { HeldLaneLayer } from './laneLayers.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -201,22 +206,22 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
  *   the error slot the ortholog fetch owns — least of all through the clear it
  *   would do at the start of every run.
  */
-function installLaneFetch<Spec extends LaneFetchSpec, Result>(
+function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
   self: MultiWaySyntenyDisplayModel,
   {
     name,
     fetchSpecs,
-    held,
+    state,
     fetchOne,
     empty,
     commit,
   }: {
     name: string
     fetchSpecs: () => Spec[]
-    held: () => ReadonlyMap<string, { key: string }> | undefined
+    state: () => LaneFetchState<HeldLane>
     fetchOne: (spec: Spec, ctx: FetchContext) => Promise<Result>
     empty: (spec: Spec) => Result
-    commit: (byLane: Map<string, Result>, specs: Spec[]) => void
+    commit: (byLane: Map<string, Result>, specs: Spec[], anchor: string) => void
   },
 ) {
   installFetch(self, {
@@ -227,7 +232,11 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result>(
     prepare: () => {
       const specs = fetchSpecs()
       return specs.length > 0
-        ? { specs, stale: staleLaneSpecs(specs, held()) }
+        ? {
+            specs,
+            stale: staleLaneSpecs(specs, state()),
+            anchor: self.anchorAssemblyName,
+          }
         : undefined
     },
     heldAnswers: ({ stale }) => stale.length === 0,
@@ -239,8 +248,8 @@ function installLaneFetch<Spec extends LaneFetchSpec, Result>(
         fetchOne,
         empty,
       ),
-    commit: (byLane, { specs }) => {
-      commit(byLane, specs)
+    commit: (byLane, { specs, anchor }) => {
+      commit(byLane, specs, anchor)
     },
     setError: () => {},
   })
@@ -414,7 +423,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneGenes',
     fetchSpecs: () => self.laneGenesFetchSpecs,
-    held: () => self.laneGenes,
+    state: () => self.laneGenes,
     fetchOne: async (spec, ctx) => {
       const features = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: spec.adapterConfig,
@@ -423,15 +432,8 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       return { key: spec.key, genes: laneGeneFeatures(features) }
     },
     empty: spec => ({ key: spec.key, genes: [] }),
-    commit: (genes, specs) => {
-      // the anchor's spec exists as soon as the view does, so a commit covers
-      // a mate lane only once the ortholog fetch has framed one
-      self.setLaneGenes(
-        genes,
-        specsCoverMate(specs, self.anchorAssemblyName)
-          ? self.anchorAssemblyName
-          : undefined,
-      )
+    commit: (genes, specs, anchor) => {
+      self.setLaneGenes(genes, specs, anchor)
     },
   })
 
@@ -444,7 +446,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   installLaneFetch(self, {
     name: 'MultiWayLaneLinks',
     fetchSpecs: () => self.laneLinksFetchSpecs,
-    held: () => self.laneLinks,
+    state: () => self.laneLinks,
     fetchOne: async (spec, ctx) => {
       const haplotypes = self.fetchLaneSelection
       const { features: links, ops } = await ctx.callRpc(
@@ -456,11 +458,11 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
             ? spec.regions
             : await laneRegions(
                 getSession(self),
-                spec.upperAssembly,
+                spec.assemblyName,
                 spec.regions,
               ),
           opts: {
-            ...(spec.onAnchor ? { queryAssemblyName: spec.upperAssembly } : {}),
+            ...(spec.onAnchor ? { queryAssemblyName: spec.assemblyName } : {}),
             targetAssemblyName: spec.lowerAssembly,
             lodMode: spec.lodTier,
             clipToRegion: true,
@@ -471,15 +473,15 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       return { key: spec.key, links, ops }
     },
     empty: spec => ({ key: spec.key, links: [], ops: new Map() }),
-    commit: links => {
-      self.setLaneLinks(links)
+    commit: (links, specs, anchor) => {
+      self.setLaneLinks(links, specs, anchor)
     },
   })
 
   installLaneFetch(self, {
     name: 'MultiWayLaneLayers',
     fetchSpecs: () => self.laneLayersFetchSpecs,
-    held: () => self.laneLayerData,
+    state: () => self.laneLayerData,
     fetchOne: async (spec, ctx): Promise<HeldLaneLayer> => {
       const [region] = await laneRegions(getSession(self), spec.assemblyName, [
         spec.region,
@@ -505,14 +507,8 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       region: spec.region,
       channels: [],
     }),
-    commit: (layers, specs) => {
-      self.setLaneLayerData(
-        layers,
-        specs.some(spec => spec.assemblyName !== self.anchorAssemblyName)
-          ? self.anchorAssemblyName
-          : undefined,
-        new Set(specs.map(spec => spec.lane)),
-      )
+    commit: (layers, specs, anchor) => {
+      self.setLaneLayerData(layers, specs, anchor)
     },
   })
 }

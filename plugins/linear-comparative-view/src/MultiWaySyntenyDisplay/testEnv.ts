@@ -20,6 +20,7 @@ import { NO_OPS } from './alignmentOps.ts'
 import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
 
+import type { HeldLane, LaneFetchSpec } from './laneFetch.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
 import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
@@ -29,6 +30,17 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AnimationMode } from '@jbrowse/core/util'
 import type { TestAssembly } from '@jbrowse/display-test-utils'
+
+/** specs naming each held lane, a pair or layer lane by its first assembly */
+export function heldSpecs(
+  held: ReadonlyMap<string, HeldLane>,
+): LaneFetchSpec[] {
+  return [...held].map(([lane, { key }]) => ({
+    lane,
+    key,
+    assemblyName: lane.split(/[|\0]/)[0]!,
+  }))
+}
 
 /**
  * A real MultiWaySyntenyDisplay on a SyntenyTrack, in a real LGV, beside a

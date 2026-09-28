@@ -68,6 +68,52 @@ test('the SVG export carries no hover and no selection; the chrome ink does', as
   expect(await exported()).toBe(quiet)
 })
 
+// A pan that moves no block key leaves the stack translated rather than laid
+// out again, and the export's paint applies that translate; the names it
+// prints beside the glyphs have to as well
+test('the export prints gene names where the panned glyphs are', async () => {
+  const display = createDisplay()
+  const view = display.lgv
+  view.setNewView(100, -30)
+  view.settleCoarseBlocks()
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setShowLegend(false)
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'r1',
+      name: 'galF',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 200,
+        name: 'galF_mate',
+      },
+    }),
+  ])
+  await when(() => display.rowFrames.get('volvox_random') !== undefined, {
+    timeout: 5000,
+  })
+  await when(() => display.svgReady, { timeout: 5000 })
+  const exported = async () => {
+    const node = await display.renderSvg()
+    return withFreshSvgClipIds(() => renderToString(<svg>{node}</svg>))
+  }
+  const labelX = (svg: string) =>
+    Number(/<text[^>]* x="([^"]*)"[^>]*>galF_mate</.exec(svg)?.[1])
+  const before = labelX(await exported())
+
+  view.setNewView(100, -60)
+  view.settleCoarseBlocks()
+  expect(display.dragOffsetPx).toBe(30)
+  await when(() => display.svgReady, { timeout: 5000 })
+  expect(labelX(await exported()) - before).toBe(30)
+})
+
 test('the export carries the color key where the colors key something', async () => {
   const display = createDisplay()
   setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")

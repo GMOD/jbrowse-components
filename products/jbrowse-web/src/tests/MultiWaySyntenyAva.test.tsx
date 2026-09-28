@@ -49,7 +49,7 @@ async function openMultiWay(trackId: string) {
     () => {
       expect(display.groups.length).toBeGreaterThan(0)
       expect(
-        display.laneLinks?.get('volvox_ins|volvox_del')?.links.length,
+        display.laneLinks.held?.get('volvox_ins|volvox_del')?.links.length,
       ).toBeGreaterThan(0)
     },
     { timeout: 30000 },
@@ -65,7 +65,7 @@ test('MultiWaySyntenyDisplay on a multi-genome PAF groups per record and fetches
   // name it as a mate
   expect(display.rowAssemblies).toEqual(['volvox_ins', 'volvox_del'])
 
-  const link = display.laneLinks!.get('volvox_ins|volvox_del')!.links[0]!
+  const link = display.laneLinks.held!.get('volvox_ins|volvox_del')!.links[0]!
   expect((link.get('mate') as { assemblyName: string }).assemblyName).toBe(
     'volvox_del',
   )

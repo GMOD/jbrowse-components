@@ -84,7 +84,12 @@ import {
   frameFromDecision,
   nudgeDecision,
 } from './laneDecision.ts'
-import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
+import {
+  landLaneFetch,
+  laneFetchAwaits,
+  starAnchorOf,
+  staleLaneSpecs,
+} from './laneFetch.ts'
 import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
@@ -124,6 +129,7 @@ import {
   clipGroupToAnchor,
   groupFeatures,
   laneFetchRegion,
+  laneFetchRegionMaxBp,
   mergeContiguousRegions,
   rowAssembliesOf,
   rowFrameX,
@@ -165,8 +171,11 @@ import type {
   LaneFlipPin,
 } from './laneDecision.ts'
 import type {
+  HeldLane,
   HeldLaneGenes,
   HeldLaneLinks,
+  LaneFetchSpec,
+  LaneFetchState,
   LaneGenesFetchSpec,
   LaneLinksFetchSpec,
   LaneRegion,
@@ -324,13 +333,10 @@ export function stateModelFactory(
       /**
        * #volatile
        * per lane, the gene models fetched from that assembly's own gene track,
-       * so a lane draws real exon structure at that genome's coordinates, and
-       * the region key they were fetched under — the lane fetch's committed
-       * stamp, which its gate compares and `dataSuperseded` reads per lane.
-       * Merged a lane at a time: a pan that moves one lane's quantized window
-       * refetches that lane and leaves the others' genes as they were
+       * beside the region key they were fetched under, and the anchor the
+       * fetch last covered a mate lane under. Merged a lane at a time
        */
-      laneGenes: undefined as Map<string, HeldLaneGenes> | undefined,
+      laneGenes: {} as LaneFetchState<HeldLaneGenes>,
       /**
        * #volatile
        * what `Core-describeAssemblies` answered for lanes whose genome the
@@ -357,41 +363,16 @@ export function stateModelFactory(
       releasedLanes: new Set<string>(),
       /**
        * #volatile
-       * the anchor assembly under which a lane-gene commit has covered a MATE
-       * lane. The anchor's spec exists as soon as the view does, so the first
-       * commit can be the anchor alone, before the ortholog fetch has given
-       * any mate a frame; the lanes' first real filling is the commit after
-       * that, and it is the one a capture has to wait for. Keyed by anchor so
-       * a re-anchor onto another genome waits again
+       * per ADJACENT mate-lane pair, the direct records the track holds for
+       * the pair at the lanes' own coordinates, the same shape as `laneGenes`
        */
-      laneGenesCoverMatesFor: undefined as string | undefined,
+      laneLinks: {} as LaneFetchState<HeldLaneLinks>,
       /**
        * #volatile
-       * alignments between ADJACENT mate lanes, fetched per pair from the same
-       * track when the source is an alignment file naming no star anchor — the
-       * direct records the file holds for that pair, at the lanes' own
-       * coordinates — each beside the region key it was fetched under, merged
-       * per pair
+       * per lane, layer and region, what each lane layer's marks encoded from
+       * that genome's own track, the same shape as `laneGenes`
        */
-      laneLinks: undefined as Map<string, HeldLaneLinks> | undefined,
-      /**
-       * #volatile
-       * the anchor assembly under which lane links last landed, so a
-       * re-anchor onto another genome waits for its pairs again, as
-       * `laneGenesCoverMatesFor` does for the genes
-       */
-      laneLinksLandedFor: undefined as string | undefined,
-      /**
-       * #volatile
-       * per lane, layer and region, what each lane layer's marks encoded
-       * from that genome's own track, beside the key it was fetched under
-       */
-      laneLayerData: undefined as Map<string, HeldLaneLayer> | undefined,
-      /**
-       * #volatile
-       * the anchor under which a lane-layer commit last covered a mate lane
-       */
-      laneLayersLandedFor: undefined as string | undefined,
+      laneLayerData: {} as LaneFetchState<HeldLaneLayer>,
       /**
        * #volatile
        * the glyph, box or ribbon under the pointer — what a click opens and
@@ -548,57 +529,43 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * `coversMatesFor` is the anchor assembly when this commit framed a
-         * mate lane, else undefined
+         * a lane-genes commit: `specs` is every lane the run was asked for
+         * and `anchor` the one the specs were built under
          */
         setLaneGenes(
-          fetched: Map<string, HeldLaneGenes>,
-          coversMatesFor: string | undefined,
+          fetched: ReadonlyMap<string, HeldLaneGenes>,
+          specs: LaneFetchSpec[],
+          anchor: string,
         ) {
-          const held = new Map(self.laneGenes)
-          for (const [lane, genes] of fetched) {
-            held.set(lane, genes)
-          }
-          self.laneGenes = held
-          if (coversMatesFor !== undefined) {
-            self.laneGenesCoverMatesFor = coversMatesFor
-          }
+          self.laneGenes = landLaneFetch(self.laneGenes, fetched, specs, anchor)
         },
         /**
          * #action
          */
         setLaneLayerData(
-          fetched: Map<string, HeldLaneLayer>,
-          coversMatesFor: string | undefined,
-          current: ReadonlySet<string>,
+          fetched: ReadonlyMap<string, HeldLaneLayer>,
+          specs: LaneFetchSpec[],
+          anchor: string,
         ) {
-          const held = new Map(
-            [...(self.laneLayerData ?? [])].filter(([lane]) =>
-              current.has(lane),
-            ),
+          self.laneLayerData = landLaneFetch(
+            self.laneLayerData,
+            fetched,
+            specs,
+            anchor,
           )
-          for (const [lane, layer] of fetched) {
-            held.set(lane, layer)
-          }
-          self.laneLayerData = held
-          if (coversMatesFor !== undefined) {
-            self.laneLayersLandedFor = coversMatesFor
-          }
         },
         /**
          * #action
          */
         setLaneLinks(
-          fetched: Map<string, HeldLaneLinks>,
-          anchor: string = containingLgv(self).assemblyNames[0]!,
+          fetched: ReadonlyMap<string, HeldLaneLinks>,
+          specs: LaneFetchSpec[],
+          anchor: string,
         ) {
-          const held = new Map(self.laneLinks)
-          for (const [pair, links] of fetched) {
-            held.set(pair, links)
-            observeRibbonFeatures(links.links)
+          self.laneLinks = landLaneFetch(self.laneLinks, fetched, specs, anchor)
+          for (const { links } of fetched.values()) {
+            observeRibbonFeatures(links)
           }
-          self.laneLinks = held
-          self.laneLinksLandedFor = anchor
         },
         /**
          * #action
@@ -635,7 +602,7 @@ export function stateModelFactory(
           // ribbons re-key from the features in hand
           self.seenAttributeRanges = {}
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
-          for (const { links } of self.laneLinks?.values() ?? []) {
+          for (const { links } of self.laneLinks.held?.values() ?? []) {
             observeRibbonFeatures(links)
           }
         },
@@ -1057,7 +1024,7 @@ export function stateModelFactory(
             string,
             { held: HeldLaneGenes; settings: string; colors: GeneColors }
           >()
-          for (const [lane, held] of self.laneGenes ?? []) {
+          for (const [lane, held] of self.laneGenes.held ?? []) {
             const prev = lanes.get(lane)
             next.set(
               lane,
@@ -2134,6 +2101,7 @@ export function stateModelFactory(
             specs.push({
               lane: self.anchorAssemblyName,
               key: keyOf(self.anchorAssemblyName, regions),
+              assemblyName: self.anchorAssemblyName,
               adapterConfig: anchorAdapter,
               regions,
             })
@@ -2145,6 +2113,7 @@ export function stateModelFactory(
               specs.push({
                 lane: assemblyName,
                 key: keyOf(assemblyName, regions),
+                assemblyName,
                 adapterConfig: adapter,
                 regions,
               })
@@ -2204,7 +2173,7 @@ export function stateModelFactory(
               specs.push({
                 lane: `${upperAssembly}|${lowerAssembly}`,
                 key: `${regions.map(regionKey).join(',')}|${lodTier}`,
-                upperAssembly,
+                assemblyName: upperAssembly,
                 lowerAssembly,
                 regions,
                 onAnchor,
@@ -2311,6 +2280,7 @@ export function stateModelFactory(
           assemblyName: string,
           regions: LaneRegion[],
           lanePxBpPerPx: number,
+          spanBp: number,
         ) => {
           const from = this.laneLayerSources[layer]?.get(assemblyName)
           if (!from) {
@@ -2318,7 +2288,7 @@ export function stateModelFactory(
           }
           if (
             from.template &&
-            regions.some(r => r.end - r.start > LANE_TEMPLATE_MAX_BP)
+            laneFetchRegionMaxBp(spanBp) > LANE_TEMPLATE_MAX_BP
           ) {
             pastCap[layer] = true
             return
@@ -2345,14 +2315,22 @@ export function stateModelFactory(
           view.staticBlocks.contentBlocks,
         )
         layers.forEach((_layer, i) => {
-          add(i, self.anchorAssemblyName, anchorRegions, view.bpPerPx)
+          add(
+            i,
+            self.anchorAssemblyName,
+            anchorRegions,
+            view.bpPerPx,
+            self.visibleBpSpan,
+          )
           for (const [assemblyName, frame] of self.rowFrames) {
             if (frame && self.holdsAssembly(assemblyName)) {
+              const spanBp = frame.max - frame.min
               add(
                 i,
                 assemblyName,
                 [{ assemblyName, ...laneFetchRegion(frame) }],
-                (frame.max - frame.min) / self.canvasWidth,
+                spanBp / self.canvasWidth,
+                spanBp,
               )
             }
           }
@@ -2500,7 +2478,7 @@ export function stateModelFactory(
           const upper = rows[i]!
           const lower = rows[i + 1]!
           const pair = `${upper}|${lower}`
-          const fetched = self.laneLinks?.get(pair)
+          const fetched = self.laneLinks.held?.get(pair)
           if (fetched !== undefined && fetched.links.length > 0) {
             out.set(pair, fetched)
           } else if (
@@ -2613,7 +2591,8 @@ export function stateModelFactory(
          * nothing of it
          */
         get laneCells() {
-          const { laneGenes, laneGeneColors, boxColors } = self
+          const { laneGeneColors, boxColors } = self
+          const laneGenes = self.laneGenes.held
           const { lanes, glyphHeight } = self.laneStack
           const ink = bandInk()
           held = lanes.map((lane, row) => {
@@ -2753,7 +2732,7 @@ export function stateModelFactory(
             return []
           }
           const text = self.geneTextOf
-          const genes = self.laneGenes
+          const genes = self.laneGenes.held
           if (
             memo.text !== text ||
             memo.fontFamily !== fontFamily ||
@@ -2935,7 +2914,7 @@ export function stateModelFactory(
           height: number
           px: Span
         }[] = []
-        for (const [specLane, held] of self.laneLayerData ?? []) {
+        for (const [specLane, held] of self.laneLayerData.held ?? []) {
           const row = rowOf.get(held.assemblyName)
           const lane = row === undefined ? undefined : lanes[row]
           const height = heights[held.layer]
@@ -3395,55 +3374,44 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * the three dependent fetches, each what it holds beside what it is
+       * asked for
+       */
+      get laneFetches(): {
+        state: LaneFetchState<HeldLane>
+        specs: LaneFetchSpec[]
+      }[] {
+        return [
+          { state: self.laneGenes, specs: self.laneGenesFetchSpecs },
+          { state: self.laneLinks, specs: self.laneLinksFetchSpecs },
+          { state: self.laneLayerData, specs: self.laneLayersFetchSpecs },
+        ]
+      },
+      /**
+       * #getter
        * `FetchMixin`'s hook: the dependent fetches are part of loading until
-       * they FIRST land on this anchor, so an export or a capture never lands
-       * between the ortholog fetch and the gene models and layers that fill
-       * the lanes. A description still out holds both, since the lane it
-       * describes has neither until its assembly is held. Not for later
-       * refetches: those run over lanes that are already drawn, and holding the
-       * phase at loading puts the striped scrim over them. A failed lane fetch
-       * commits an empty result rather than hanging this (see afterAttach).
-       *
-       * The first landing is the first one that names a mate lane, not the
-       * anchor-only commit that can precede it: the anchor's spec exists
-       * before the ortholog fetch has framed any mate, so a phase that read
-       * `ready` off that commit let a capture shoot placement boxes while
-       * seven lanes were still downloading their indexes (the primate
-       * amylase figure, 2026-09-02)
+       * they first cover a mate lane under this anchor, so a capture never
+       * lands between the ortholog fetch and the genes and layers that fill
+       * the lanes; a later refetch runs over drawn lanes and holds nothing
        */
       get awaitingDependentData(): boolean {
         const anchor = self.anchorAssemblyName
-        const genes = self.laneGenesFetchSpecs
-        const layers = self.laneLayersFetchSpecs
         const describing = self.lanesBeingDescribed.size > 0
-        return (
-          (self.laneGenes === undefined && genes.length > 0) ||
-          (self.laneGenesCoverMatesFor !== anchor &&
-            (specsCoverMate(genes, anchor) || describing)) ||
-          (self.laneLinksLandedFor !== anchor &&
-            self.laneLinksFetchSpecs.length > 0) ||
-          (self.laneLayerData === undefined && layers.length > 0) ||
-          (self.laneLayersLandedFor !== anchor &&
-            (layers.some(spec => spec.assemblyName !== anchor) ||
-              (describing && self.laneLayerTemplates.some(Boolean))))
+        return this.laneFetches.some(({ state, specs }) =>
+          laneFetchAwaits(state, specs, anchor, describing),
         )
       },
       /**
        * #getter
-       * `GlobalFetchMixin`'s hook: a lane fetch is out, or some lane holds a
-       * result fetched under a key its frame has moved past, so the ortholog
-       * data the signature calls current is about to be redrawn over; or the
-       * live zoom has left the settled tier the held data was fetched at.
-       * Holds the export, where the phase above holds only the first landing's
-       * scrim. A lane fetch always commits — one failed lane is stamped with
-       * an empty result (see afterAttach) — so this cannot latch
+       * `GlobalFetchMixin`'s hook: some lane holds a result fetched under a
+       * key its frame has moved past, a description is out, the live zoom has
+       * left the settled tier, or a lane is moving. Holds the export
        */
       get dataSuperseded(): boolean {
         return (
-          staleLaneSpecs(self.laneGenesFetchSpecs, self.laneGenes).length > 0 ||
-          staleLaneSpecs(self.laneLinksFetchSpecs, self.laneLinks).length > 0 ||
-          staleLaneSpecs(self.laneLayersFetchSpecs, self.laneLayerData).length >
-            0 ||
+          this.laneFetches.some(
+            ({ state, specs }) => staleLaneSpecs(specs, state).length > 0,
+          ) ||
           self.lanesBeingDescribed.size > 0 ||
           self.lodTier !== self.liveLodTier ||
           this.animating

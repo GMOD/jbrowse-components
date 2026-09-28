@@ -3,7 +3,7 @@ import { when } from 'mobx'
 
 import { NO_OPS } from './alignmentOps.ts'
 import { outlineKey } from './multiwayGeometry.ts'
-import { createDisplay } from './testEnv.ts'
+import { createDisplay, heldSpecs } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -56,9 +56,8 @@ async function stackedDisplay(links: Feature[]) {
     ...orthologFeatures('g2', 400, 500),
     ...orthologFeatures('g3', 700, 800),
   ])
-  display.setLaneLinks(
-    new Map([[LINK_PAIR, { key: 'window-1', links, ops: NO_OPS }]]),
-  )
+  const held = new Map([[LINK_PAIR, { key: 'window-1', links, ops: NO_OPS }]])
+  display.setLaneLinks(held, heldSpecs(held), display.anchorAssemblyName)
   return display
 }
 
@@ -92,22 +91,17 @@ test('a lane-links commit drops a direct-link hover rather than moving it', asyn
   expect(display.hoveredFeatureId).toBe(before)
 
   const viewport = viewportOf(display)
-  display.setLaneLinks(
-    new Map([
-      [
-        LINK_PAIR,
-        {
-          key: 'window-2',
-          ops: NO_OPS,
-          links: [
-            link('L0', 10, 60),
-            link('L1', 110, 210),
-            link('L2', 410, 510),
-          ],
-        },
-      ],
-    ]),
-  )
+  const held = new Map([
+    [
+      LINK_PAIR,
+      {
+        key: 'window-2',
+        ops: NO_OPS,
+        links: [link('L0', 10, 60), link('L1', 110, 210), link('L2', 410, 510)],
+      },
+    ],
+  ])
+  display.setLaneLinks(held, heldSpecs(held), display.anchorAssemblyName)
   expect(viewportOf(display)).toEqual(viewport)
   expect(display.hoverTarget).toBeUndefined()
   expect(display.hoveredFeatureId).toBe(0)
@@ -158,7 +152,11 @@ test('a lane-genes commit keeps a direct-link hover', async () => {
   hoverDirectLink(display)
   expect(display.hoverTarget).toBeDefined()
 
-  display.setLaneGenes(new Map(), display.anchorAssemblyName)
+  display.setLaneGenes(
+    new Map(),
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
+  )
   expect(display.hoverTarget).toBeDefined()
   expect(display.hoverTarget?.feature.id()).toBe('L1')
 })

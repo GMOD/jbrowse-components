@@ -547,10 +547,21 @@ export function laneFetchWindow(frame: RowFrame) {
 export function laneFetchRegion(frame: RowFrame) {
   const { min, max } = laneFetchWindow(frame)
   const span = frame.max - frame.min
-  const grid = 2 ** Math.ceil(Math.log2(Math.max(2 * span, 1)))
+  const grid = laneFetchGrid(span)
   return {
     refName: frame.refName,
     start: Math.max(0, Math.floor((min - span / 2) / grid) * grid),
     end: Math.ceil((max + span / 2) / grid) * grid,
   }
+}
+
+function laneFetchGrid(spanBp: number) {
+  return 2 ** Math.ceil(Math.log2(Math.max(2 * spanBp, 1)))
+}
+
+// the widest region `laneFetchRegion` returns for a lane showing `spanBp`:
+// two grid cells, so a cap read against it is a fact of the zoom and not of
+// where a pan left the window on the grid
+export function laneFetchRegionMaxBp(spanBp: number) {
+  return 2 * laneFetchGrid(spanBp)
 }

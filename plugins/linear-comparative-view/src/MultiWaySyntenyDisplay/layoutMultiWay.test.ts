@@ -13,6 +13,7 @@ import {
   frameSpan,
   frameTickXs,
   laneFetchRegion,
+  laneFetchRegionMaxBp,
   laneFetchWindow,
   groupFeatures,
   groupRunSpansOnRow,
@@ -1376,6 +1377,30 @@ test('a lane fetches the same region as its fitted extent wobbles', () => {
   })
   // 131,072 sits between the two window widths these produce
   expect(laneFetchRegion(frame(68900))).toEqual(laneFetchRegion(frame(69000)))
+})
+
+// A window straddling a grid line asks for two cells and one inside a cell for
+// one, so a cap read against the region a pan lands on toggled a template
+// layer along a pan at one zoom. The bound is the widest region the span can
+// ask for, the same at every offset
+test('the fetch region bound is a fact of the span alone', () => {
+  const span = 1_100_000
+  const widths = new Set<number>()
+  for (let at = 4_000_000; at < 24_000_000; at += 50_000) {
+    const { start, end } = laneFetchRegion({
+      refName: 'chr1',
+      min: at,
+      max: at + span,
+      fitMin: at,
+      fitMax: at + span,
+      flipped: false,
+      alsoOn: [],
+      alsoOnMore: 0,
+    })
+    widths.add(end - start)
+    expect(end - start).toBeLessThanOrEqual(laneFetchRegionMaxBp(span))
+  }
+  expect(widths.size).toBe(2)
 })
 
 // The lane-above vote and the anchor-order one are separate evidence, and only

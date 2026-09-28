@@ -1,5 +1,5 @@
-import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { FloatingText } from '@jbrowse/display-ui'
+import { bandGroundColor, bandInk } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { GENE_LABEL_FONT_PX } from '../laneLabels.ts'
@@ -11,7 +11,6 @@ const LaneLayerTitles = observer(function LaneLayerTitles({
 }: {
   model: MultiWaySyntenyDisplayModel
 }) {
-  const { palette } = useStyleTheme()
   const { scrollTop } = model
   return model.laneLayerTitles.map(title => (
     <FloatingText
@@ -19,9 +18,9 @@ const LaneLayerTitles = observer(function LaneLayerTitles({
       data-testid="multiway-layer-title"
       x={4}
       y={title.top - scrollTop}
-      color={palette.text.secondary}
+      color={bandInk().text}
       fontSize={GENE_LABEL_FONT_PX}
-      halo={palette.background.paper}
+      halo={bandGroundColor()}
     >
       {title.text}
     </FloatingText>

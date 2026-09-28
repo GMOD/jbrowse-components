@@ -43,6 +43,7 @@ function MultiWaySvgBody({
     clickedFeatureId: 0,
     laneMaps: new Map(),
   }
+  const { dragOffsetPx } = state
   // the bands on the export theme's page, which need not be the session's
   const cells = new Map(model.renderCells)
   cells.set(
@@ -74,7 +75,7 @@ function MultiWaySvgBody({
         {model.laneGeneLabels(fontFamily, new Set(), canvasWidth).map(label => (
           <SvgHaloText
             key={label.key}
-            x={label.left}
+            x={label.left + dragOffsetPx}
             y={label.top + GENE_LABEL_FONT_PX * TEXT_BASELINE_RATIO}
             fontSize={GENE_LABEL_FONT_PX}
             fontFamily={fontFamily}

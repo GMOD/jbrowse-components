@@ -1,6 +1,6 @@
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 
-import type { LaneFetchSpec, LaneRegion } from './laneFetch.ts'
+import type { HeldLane, LaneFetchSpec, LaneRegion } from './laneFetch.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type {
   EncodedChannels,
@@ -29,7 +29,6 @@ export interface LaneLayerSource {
 }
 
 export interface LaneLayerFetchSpec extends LaneFetchSpec {
-  assemblyName: string
   layer: number
   adapterConfig: Record<string, unknown>
   region: LaneRegion
@@ -37,8 +36,7 @@ export interface LaneLayerFetchSpec extends LaneFetchSpec {
   requests: LayerRequest[]
 }
 
-export interface HeldLaneLayer {
-  key: string
+export interface HeldLaneLayer extends HeldLane {
   assemblyName: string
   layer: number
   region: LaneRegion

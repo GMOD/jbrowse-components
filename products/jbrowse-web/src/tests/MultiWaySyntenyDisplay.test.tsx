@@ -78,12 +78,12 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
 
   await waitFor(
     () => {
-      expect(display.laneGenes?.get('grape')?.genes.length).toBe(2)
+      expect(display.laneGenes.held?.get('grape')?.genes.length).toBe(2)
     },
     { timeout: 30000 },
   )
-  const gene = display
-    .laneGenes!.get('grape')!
+  const gene = display.laneGenes
+    .held!.get('grape')!
     .genes.find(g => g.feature.get('name') === 'g1')!
   const exons = gene.feature
     .get('subfeatures')![0]!

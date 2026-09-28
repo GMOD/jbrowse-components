@@ -117,14 +117,14 @@ test('a reverse-strand link between two mate lanes draws a crossed ribbon', asyn
   await waitFor(
     () => {
       expect(
-        display.laneLinks?.get('peach|cacao')?.links.length,
+        display.laneLinks.held?.get('peach|cacao')?.links.length,
       ).toBeGreaterThan(0)
     },
     { timeout: 30000 },
   )
-  expect(display.laneLinks!.get('peach|cacao')!.links[0]!.get('strand')).toBe(
-    -1,
-  )
+  expect(
+    display.laneLinks.held!.get('peach|cacao')!.links[0]!.get('strand'),
+  ).toBe(-1)
 
   const drawn = ribbons(display)
   // one group ribbon from the anchor lane down, and the link ribbon between
@@ -199,15 +199,15 @@ test('a link record outside a lane frame draws no ribbon off the canvas', async 
   // both peach/cacao records come back — the fetch window reaches the far one
   await waitFor(
     () => {
-      expect(display.laneLinks?.get('peach|cacao')?.links.length).toBe(2)
+      expect(display.laneLinks.held?.get('peach|cacao')?.links.length).toBe(2)
     },
     { timeout: 30000 },
   )
   // and it STRADDLES the frame's edge, which is the case a bare intersection
   // test lets through
   const frame = display.rowFrames.get('peach')!
-  const far = display
-    .laneLinks!.get('peach|cacao')!
+  const far = display.laneLinks
+    .held!.get('peach|cacao')!
     .links.find(f => f.get('end') - f.get('start') === 1100)!
   expect(far.get('start')).toBeLessThan(frame.min)
   expect(far.get('end')).toBeGreaterThan(frame.min)

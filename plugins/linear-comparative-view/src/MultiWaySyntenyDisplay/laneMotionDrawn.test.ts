@@ -7,7 +7,7 @@ import { groupFeatures } from './layoutMultiWay.ts'
 import { buildRibbonGeometry, glyphsKey } from './multiwayGeometry.ts'
 import { MULTIWAY_MARKS } from './multiwayMarks.ts'
 import { drawnPx, laneMapOf } from './multiwayRenderTypes.ts'
-import { createDisplayWithSession } from './testEnv.ts'
+import { createDisplayWithSession, heldSpecs } from './testEnv.ts'
 
 import type { LaneDecision } from './laneDecision.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
@@ -74,7 +74,8 @@ async function settledDisplay(animationMode: AnimationMode = 'enabled') {
     await new Promise(r => setTimeout(r, 5))
   }
   expect(display.laneDecisions.get(C)).toBeDefined()
-  display.setLaneGenes(new Map([[C, { key: 'held', genes }]]), undefined)
+  const held = new Map([[C, { key: 'held', genes }]])
+  display.setLaneGenes(held, heldSpecs(held), display.anchorAssemblyName)
   return { display, session }
 }
 

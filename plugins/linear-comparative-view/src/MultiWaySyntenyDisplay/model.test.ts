@@ -20,7 +20,12 @@ import { KIND_BASE } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
-import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
+import {
+  landLaneFetch,
+  laneFetchAwaits,
+  specsCoverMate,
+  staleLaneSpecs,
+} from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import { lanesMenuItem } from './menus.ts'
@@ -113,14 +118,16 @@ test('the lane fetch is part of loading only until it first lands', () => {
 
   display.setLaneGenes(
     new Map([[anchor!.lane, { key: anchor!.key, genes: [] }]]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
   expect(display.displayPhase).toBe('ready')
 
   // the pan's refetch: the lanes are already drawn, and the phase says so
   display.setLaneGenes(
     new Map([[anchor!.lane, { key: 'a-later-window', genes: [] }]]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
   expect(display.displayPhase).toBe('ready')
 })
@@ -131,7 +138,7 @@ test('the lane fetch is part of loading only until it first lands', () => {
 // mate lane still downloading. The commit that counts is the first covering a
 // mate lane, which the fetch states off its own spec list.
 test('a spec list covers a mate lane when one of its specs is a mate lane', () => {
-  const spec = (lane: string) => ({ lane, key: lane })
+  const spec = (lane: string) => ({ lane, key: lane, assemblyName: lane })
   // an anchor without a gene track has no spec of its own, so a window
   // framing one mate is a single spec that is a mate's
   expect(specsCoverMate([spec('peach')], 'grape')).toBe(true)
@@ -142,17 +149,112 @@ test('a spec list covers a mate lane when one of its specs is a mate lane', () =
 
 test('the first landing that counts is the one covering a mate lane', () => {
   const display = createDisplay()
-  display.setLaneGenes(new Map(), undefined)
-  expect(display.laneGenesCoverMatesFor).toBeUndefined()
-  display.setLaneGenes(new Map(), display.anchorAssemblyName)
-  expect(display.laneGenesCoverMatesFor).toBe(display.anchorAssemblyName)
+  const anchor = display.anchorAssemblyName
+  const own = { lane: anchor, key: 'k', assemblyName: anchor }
+  const mate = { lane: 'peach', key: 'k', assemblyName: 'peach' }
+  display.setLaneGenes(new Map(), [own], anchor)
+  expect(display.laneGenes.landedFor).toBeUndefined()
+  display.setLaneGenes(new Map(), [own, mate], anchor)
+  expect(display.laneGenes.landedFor).toBe(anchor)
   // covered once is covered: a later anchor-only refetch does not lower it
-  display.setLaneGenes(new Map(), undefined)
-  expect(display.laneGenesCoverMatesFor).toBe(display.anchorAssemblyName)
+  display.setLaneGenes(new Map(), [own], anchor)
+  expect(display.laneGenes.landedFor).toBe(anchor)
+})
+
+// A lane run issued under one anchor can land after a re-anchor: the debounce
+// keeps the old run current until the new one starts. The commit stamps the
+// anchor its specs were built under, so the new anchor stays uncovered
+test('a run landing after a re-anchor covers the anchor it was asked under', () => {
+  const display = createDisplay()
+  const specs = [{ lane: 'cacao', key: 'k', assemblyName: 'cacao' }]
+  display.setLaneGenes(new Map(), specs, 'grape')
+  expect(display.laneGenes.landedFor).toBe('grape')
+  expect(laneFetchAwaits(display.laneGenes, specs, 'peach', false)).toBe(true)
+  expect(laneFetchAwaits(display.laneGenes, specs, 'grape', false)).toBe(false)
+})
+
+test('a commit keeps only the lanes its specs still name', () => {
+  const state = landLaneFetch(
+    { held: new Map([['gone', { key: 'old' }]]) },
+    new Map([['peach', { key: 'k' }]]),
+    [{ lane: 'peach', key: 'k', assemblyName: 'peach' }],
+    'grape',
+  )
+  expect([...state.held!.keys()]).toEqual(['peach'])
 })
 
 // The genes wait again on a new anchor, and a re-anchor frames other pairs, so
 // the links do too
+// A lane run issued under one anchor lands after a re-anchor, since the
+// debounce keeps it current until the next run starts; its commit stamps the
+// anchor its specs were built under, so the new anchor waits for its own
+test('a lane run landing after a re-anchor leaves the new anchor uncovered', async () => {
+  const pair = (i: number, mate: string, anchor: string) =>
+    new SimpleFeature({
+      uniqueId: `${anchor}-g${i}`,
+      name: `g${i}`,
+      refName: 'ctgA',
+      start: 100 + 150 * i,
+      end: 160 + 150 * i,
+      strand: 1,
+      assemblyName: anchor,
+      mate: {
+        assemblyName: mate,
+        refName: 'ctgA',
+        start: 100 + 150 * i,
+        end: 160 + 150 * i,
+        name: `g${i}`,
+      },
+    })
+  let phase = 'first'
+  const held: ((features: unknown[]) => void)[] = []
+  const { display } = createDisplayWithSession({
+    trackAssemblyNames: ['volvox', 'volvox_random'],
+    geneTracks: [
+      { trackId: 'volvox_genes', assemblyNames: ['volvox'] },
+      { trackId: 'random_genes', assemblyNames: ['volvox_random'] },
+    ],
+    rpc: async (name, args) => {
+      if (name === 'MultiWayGetFeatures') {
+        return phase === 'first'
+          ? [0, 1, 2, 3].map(i => pair(i, 'volvox_random', 'volvox'))
+          : []
+      }
+      if (name !== 'CoreGetFeatures') {
+        return []
+      }
+      const [region] = args.regions as { assemblyName: string }[]
+      if (region!.assemblyName === 'volvox_random' && phase === 'first') {
+        return new Promise(resolve => {
+          held.push(resolve)
+        })
+      }
+      return []
+    },
+  })
+  await until(() => held.length > 0)
+  phase = 'second'
+  display.lgv.setDisplayedRegions([
+    { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox_random' },
+  ])
+  for (const resolve of held) {
+    resolve([])
+  }
+  await when(() => display.laneGenes.landedFor !== undefined, {
+    timeout: 5000,
+  })
+  expect(display.laneGenes.landedFor).toBe('volvox')
+
+  display.setFeatures(
+    [0, 1, 2, 3].map(i => pair(i, 'volvox', 'volvox_random')),
+    'volvox_random',
+  )
+  await when(() => display.rowFrames.get('volvox') !== undefined, {
+    timeout: 5000,
+  })
+  expect(display.awaitingDependentData).toBe(true)
+})
+
 test('a re-anchor waits for its lane links again', () => {
   const { display } = createDisplayWithSession({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
@@ -186,6 +288,8 @@ test('a re-anchor waits for its lane links again', () => {
     const [spec] = display.laneLinksFetchSpecs
     display.setLaneLinks(
       new Map([[spec!.lane, { key: spec!.key, links: [], ops: NO_OPS }]]),
+      display.laneLinksFetchSpecs,
+      display.anchorAssemblyName,
     )
   }
 
@@ -268,7 +372,7 @@ test('lane links are asked for only between lanes the session holds', () => {
     ]),
   )
   expect(
-    display.laneLinksFetchSpecs.map(s => [s.upperAssembly, s.lowerAssembly]),
+    display.laneLinksFetchSpecs.map(s => [s.assemblyName, s.lowerAssembly]),
   ).toEqual([['volvox_random', 'volvox_ins']])
 })
 
@@ -309,7 +413,8 @@ test('the key names the anchor lane genes a name-hashed color slot draws', () =>
         },
       ],
     ]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
   const entries = geneKeyOf(display)
   expect(entries.map(i => i.label)).toEqual(['atpA', 'atpB'])
@@ -336,7 +441,8 @@ test('a flat color slot has nothing to key', () => {
         },
       ],
     ]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
   expect(geneKeyOf(display)).toEqual([])
   expect(display.hasLegendKey).toBe(false)
@@ -345,7 +451,8 @@ test('a flat color slot has nothing to key', () => {
 function anchorGenes(display: MultiWaySyntenyDisplayModel, genes: LaneGene[]) {
   display.setLaneGenes(
     new Map([['volvox', { key: display.laneGenesFetchSpecs[0]!.key, genes }]]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
 }
 
@@ -479,7 +586,8 @@ test('the strand ribbon mode adds its own section', () => {
         },
       ],
     ]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
   expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
 
@@ -849,7 +957,8 @@ test('a lane-genes commit leaves the stack and the ribbons where they were', () 
         },
       ],
     ]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
   expect(display.laneStack).toBe(stack)
   expect(display.ribbonGeometry).toBe(ribbons)
@@ -1057,12 +1166,12 @@ test('one lane’s window change refetches that lane alone', async () => {
     'volvox',
     'volvox_random',
   ])
-  await when(() => display.laneGenes?.has('volvox_random') ?? false, {
+  await when(() => display.laneGenes.held?.has('volvox_random') ?? false, {
     timeout: 5000,
   })
   expect(display.dataSuperseded).toBe(false)
-  const anchorGenes = display.laneGenes!.get('volvox')
-  const mateGenes = display.laneGenes!.get('volvox_random')
+  const anchorGenes = display.laneGenes.held!.get('volvox')
+  const mateGenes = display.laneGenes.held!.get('volvox_random')
   const issued = geneCalls().length
 
   display.setLaneFrames(
@@ -1073,9 +1182,9 @@ test('one lane’s window change refetches that lane alone', async () => {
   await when(() => !display.dataSuperseded, { timeout: 5000 })
   const since = geneCalls().slice(issued)
   expect(since.map(laneOf)).toEqual(['volvox_random'])
-  expect(display.laneGenes!.get('volvox')).toBe(anchorGenes)
-  expect(display.laneGenes!.get('volvox_random')).not.toBe(mateGenes)
-  expect(display.laneGenes!.get('volvox_random')!.key).toBe(
+  expect(display.laneGenes.held!.get('volvox')).toBe(anchorGenes)
+  expect(display.laneGenes.held!.get('volvox_random')).not.toBe(mateGenes)
+  expect(display.laneGenes.held!.get('volvox_random')!.key).toBe(
     display.laneGenesFetchSpecs[1]!.key,
   )
 })
@@ -1103,7 +1212,8 @@ test('a settle rebuilds the lane cells against the same fills', () => {
         },
       ],
     ]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
   const stop = autorun(() => [
     display.laneGeneColors,
@@ -1126,7 +1236,8 @@ test('a settle rebuilds the lane cells against the same fills', () => {
   // commit the boxes'
   display.setLaneGenes(
     new Map([['volvox', { key: 'later', genes: [] }]]),
-    undefined,
+    display.laneGenesFetchSpecs,
+    display.anchorAssemblyName,
   )
   expect(display.laneGeneColors.get('volvox')).not.toBe(genes)
   display.setFeatures([mateRecord('own2', 'volvox_random', 'gene2')])
@@ -1298,6 +1409,8 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
           },
         ],
       ]),
+      display.laneLinksFetchSpecs,
+      display.anchorAssemblyName,
     )
     const composed = display.pairLinks.get(pair)!.links
     expect(composed).toHaveLength(1)
@@ -1359,6 +1472,8 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     })
     display.setLaneLinks(
       new Map([[pair, { key: 'k', links: [direct], ops: NO_OPS }]]),
+      display.laneLinksFetchSpecs,
+      display.anchorAssemblyName,
     )
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
   })
@@ -1404,7 +1519,7 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     expect(spec).toMatchObject({
       lane: pair,
       onAnchor: true,
-      upperAssembly: 'volvox_random',
+      assemblyName: 'volvox_random',
       lowerAssembly: 'volvox_ins',
       regions: [
         { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
@@ -1440,7 +1555,7 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     expect(
       display.pairLinks.get(pair)!.links[0]!.get('composedThrough'),
     ).toBeDefined()
-    await until(() => display.laneLinks?.has(pair) === true)
+    await until(() => display.laneLinks.held?.has(pair) === true)
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
     expect([...ribbonsBetweenMates(display).kinds]).toEqual([
       KIND_BASE,
@@ -1450,8 +1565,8 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
 
   test('an anchor-window pair the adapter answers with nothing composes', async () => {
     const { display } = await readOnAnchor([])
-    await until(() => display.laneLinks?.has(pair) === true)
-    expect(display.laneLinks!.get(pair)!.links).toEqual([])
+    await until(() => display.laneLinks.held?.has(pair) === true)
+    expect(display.laneLinks.held!.get(pair)!.links).toEqual([])
     expect(
       display.pairLinks.get(pair)!.links.map(l => l.get('composedThrough')),
     ).toEqual([{ refName: 'ctgA', start: 200, end: 300 }])

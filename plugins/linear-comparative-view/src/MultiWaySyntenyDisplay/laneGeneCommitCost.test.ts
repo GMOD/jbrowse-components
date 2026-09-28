@@ -3,7 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 
 import { LaneGene } from './geneGlyph.ts'
-import { createDisplayWithSession } from './testEnv.ts'
+import { createDisplayWithSession, heldSpecs } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 
@@ -123,13 +123,12 @@ async function stackWithGenes() {
   const stop = autorun(() => {
     cells = display.namedCells
   })
-  display.setLaneGenes(
-    new Map(
-      laneNames.map(lane => [lane, { key: 'k0', genes: laneGenes(lane) }]),
-    ),
-    display.anchorAssemblyName,
+  const held = new Map(
+    laneNames.map(lane => [lane, { key: 'k0', genes: laneGenes(lane) }]),
   )
-  return { display, cells: () => cells, stop }
+  const specs = heldSpecs(held)
+  display.setLaneGenes(held, specs, display.anchorAssemblyName)
+  return { display, cells: () => cells, stop, specs }
 }
 
 function rowOf(display: MultiWaySyntenyDisplayModel, assemblyName: string) {
@@ -144,7 +143,7 @@ function rowOf(display: MultiWaySyntenyDisplayModel, assemblyName: string) {
 // every other `Lane` as it was, and a cell keeps its identity, and so its
 // upload, while its lane, fills and ink do
 test("one lane's gene commit repacks that lane alone", async () => {
-  const { display, cells, stop } = await stackWithGenes()
+  const { display, cells, stop, specs } = await stackWithGenes()
   const lane = laneNames[7]!
   const row = rowOf(display, lane)
   const before = cells()
@@ -154,7 +153,8 @@ test("one lane's gene commit repacks that lane alone", async () => {
   evaluations.utrColor = 0
   display.setLaneGenes(
     new Map([[lane, { key: 'k1', genes: laneGenes(lane, 'x') }]]),
-    undefined,
+    specs,
+    display.anchorAssemblyName,
   )
   expect(changedKeys(before, cells()).sort()).toEqual(
     [`boxes:${row}`, `glyphs:${row}`].sort(),
