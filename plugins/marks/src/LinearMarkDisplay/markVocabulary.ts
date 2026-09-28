@@ -9,12 +9,20 @@ export const MARK_TYPES = [
   'bar',
   'point',
   'rule',
+  'line',
   'span',
   'text',
   'link',
 ] as const
 export type MarkType = (typeof MARK_TYPES)[number]
 export const DEFAULT_MARK_TYPE: MarkType = 'bar'
+
+/** How a line joins its values: held across each span, or centre to centre. */
+export const LINE_INTERPOLATIONS = ['step', 'linear'] as const
+export type LineInterpolation = (typeof LINE_INTERPOLATIONS)[number]
+export const DEFAULT_LINE_INTERPOLATE: LineInterpolation = 'step'
+/** The width a line strokes at where its `size` is left unwritten. */
+export const DEFAULT_LINE_WIDTH_PX = 1
 
 export const LINK_SHAPES = ['dome', 'arc', 'line'] as const
 export type LinkShape = (typeof LINK_SHAPES)[number]

@@ -25,6 +25,16 @@ const suite: TestSuite = {
       config,
       snapshotSelector: withChrome,
     }),
+    // The step line's flat quads and the linear line's max-blended capsules,
+    // over the same scores.
+    lgvSnapshotTest({
+      name: 'a step line and a linear line through a BED score column',
+      snapshot: 'mark-lines',
+      loc: 'ctgA:1-20000',
+      tracks: ['marks_line'],
+      config,
+      displayTestId,
+    }),
     lgvSnapshotTest({
       name: 'points with a shape scale over a field',
       snapshot: 'mark-points-glyph',

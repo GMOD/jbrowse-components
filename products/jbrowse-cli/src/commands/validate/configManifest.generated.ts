@@ -4599,6 +4599,10 @@ export const configManifest: ConfigManifest = {
                   "type": "MarkType"
                 },
                 {
+                  "name": "interpolate",
+                  "type": "LineInterpolation"
+                },
+                {
                   "name": "linkShape",
                   "type": "LinkShape"
                 },
@@ -5985,6 +5989,10 @@ export const configManifest: ConfigManifest = {
               "type": "MarkType"
             },
             {
+              "name": "interpolate",
+              "type": "LineInterpolation"
+            },
+            {
               "name": "linkShape",
               "type": "LinkShape"
             },
@@ -6467,6 +6475,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "mark",
               "type": "MarkType"
+            },
+            {
+              "name": "interpolate",
+              "type": "LineInterpolation"
             },
             {
               "name": "linkShape",

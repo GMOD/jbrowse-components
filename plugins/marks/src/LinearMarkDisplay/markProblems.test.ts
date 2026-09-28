@@ -228,6 +228,16 @@ test('a size on a mark that draws no shape waits unread, and a point or a rule r
   ).toEqual([])
 })
 
+test('an interpolate on a mark that draws no line waits unread', () => {
+  expect(
+    found([{ mark: 'bar', encoding: { y: 'score' }, interpolate: 'linear' }]),
+  ).toEqual(['warning unread-interpolate mark 0 interpolate'])
+  expect(
+    found([{ mark: 'line', encoding: { y: 'score' }, interpolate: 'linear' }]),
+  ).toEqual([])
+  expect(found([{ mark: 'line', encoding: { y: 'score' } }])).toEqual([])
+})
+
 test('a linkShape on a mark that draws no link waits unread', () => {
   expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
     'warning unread-link-shape mark 0 linkShape',

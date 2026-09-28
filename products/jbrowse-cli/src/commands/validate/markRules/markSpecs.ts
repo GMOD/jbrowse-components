@@ -76,6 +76,13 @@ export const MARK_SPECS = {
     hit: true,
     size: 'constant',
   },
+  line: {
+    channels: ['y', 'row', 'color'],
+    value: 'required',
+    ramp: 'display',
+    hit: true,
+    size: 'constant',
+  },
   span: {
     channels: ['row', 'color'],
     value: 'none',

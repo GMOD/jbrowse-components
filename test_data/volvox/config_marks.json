@@ -100,6 +100,50 @@
           }
         }
       },
+      "trackId": "marks_line",
+      "name": "Mark line",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_line-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "line",
+              "encoding": {
+                "y": "score",
+                "size": 2
+              }
+            },
+            {
+              "mark": "line",
+              "interpolate": "linear",
+              "encoding": {
+                "y": "score",
+                "color": {
+                  "value": "tomato"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "volvox-bed12.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-bed12.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
       "trackId": "marks_points",
       "name": "Mark points",
       "displays": [
@@ -200,7 +244,9 @@
                 }
               ],
               "encoding": {
-                "color": { "value": "#c8d8ee" }
+                "color": {
+                  "value": "#c8d8ee"
+                }
               },
               "minBpPerPx": 20
             },
@@ -263,7 +309,9 @@
                 }
               ],
               "encoding": {
-                "color": { "value": "#c0c0c0" }
+                "color": {
+                  "value": "#c0c0c0"
+                }
               },
               "minBpPerPx": 20
             }
@@ -541,7 +589,9 @@
               "mark": "bar",
               "encoding": {
                 "y": "score",
-                "color": { "value": "#c8d8ee" }
+                "color": {
+                  "value": "#c8d8ee"
+                }
               }
             },
             {
@@ -1034,7 +1084,9 @@
             },
             {
               "mark": "link",
-              "encoding": { "size": 6 },
+              "encoding": {
+                "size": 6
+              },
               "transform": [
                 {
                   "type": "filter",

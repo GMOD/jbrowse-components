@@ -243,6 +243,7 @@ export function markEntryOf(
     placed: !readsValue(mark.mark) || valued,
     valued,
     linkShape: mark.linkShape,
+    interpolate: mark.interpolate,
   }
 }
 

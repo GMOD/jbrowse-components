@@ -117,7 +117,10 @@ import {
   widestBinStep,
 } from './markRequest.ts'
 import { readsValue } from './markSpecs.ts'
-import { DEFAULT_LINK_STROKE_PX } from './markVocabulary.ts'
+import {
+  DEFAULT_LINE_WIDTH_PX,
+  DEFAULT_LINK_STROKE_PX,
+} from './markVocabulary.ts'
 import { defaultPlotMarks } from './plotDefault.ts'
 import {
   drawnKeysOf,
@@ -214,8 +217,8 @@ function storedRegionData(result: EncodedLayersResult): MarkRegionData {
 
 /**
  * A mark's `encoding.size` number with its type's default where none is
- * written: a point's diameter, a rule's thickness, or the 2 px a link strokes
- * at.
+ * written: a point's diameter, a rule's thickness, the 1 px a line strokes at
+ * or the 2 px a link does.
  */
 export function markSizeOf({
   mark,
@@ -223,7 +226,11 @@ export function markSizeOf({
 }: Pick<MarkConfig, 'mark' | 'encoding'>) {
   return (
     encoding.size.value ??
-    (mark === 'link' ? DEFAULT_LINK_STROKE_PX : DEFAULT_POINT_DIAMETER_PX)
+    (mark === 'link'
+      ? DEFAULT_LINK_STROKE_PX
+      : mark === 'line'
+        ? DEFAULT_LINE_WIDTH_PX
+        : DEFAULT_POINT_DIAMETER_PX)
   )
 }
 

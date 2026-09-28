@@ -7,6 +7,7 @@ export { barMark } from './barMark.ts'
 export { pointMark } from './pointMark.ts'
 export { ruleMark } from './ruleMark.ts'
 export { spanMark } from './spanMark.ts'
+export { lineCenterMark, lineMarkOf, lineStepMark } from './lineMark.ts'
 export {
   linkFeet,
   linkMark,
@@ -50,6 +51,7 @@ export type { BarChannels, BarParams } from './barMark.ts'
 export type { PointChannels, PointParams } from './pointMark.ts'
 export type { RuleChannels, RuleParams } from './ruleMark.ts'
 export type { SpanChannels, SpanParams } from './spanMark.ts'
+export type { LineChannels, LineInterpolate, LineParams } from './lineMark.ts'
 export type {
   LinkChannels,
   LinkParams,

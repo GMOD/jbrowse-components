@@ -11,9 +11,9 @@ guide_category: Track types
 Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
 rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack`, a
 `VariantTrack`, a `QuantitativeTrack` or a `MultiQuantitativeTrack`, and draws a
-`bar`, `point`, `rule`, `span`, `text` or `link` per `marks` entry, each with an
-`encoding` naming the fields that feed it, a `transform` list that can bin,
-count, pack or measure coverage, and a zoom range it draws in.
+`bar`, `point`, `rule`, `line`, `span`, `text` or `link` per `marks` entry, each
+with an `encoding` naming the fields that feed it, a `transform` list that can
+bin, count, pack or measure coverage, and a zoom range it draws in.
 
 Reach for it when a field is the picture: a BED score, a segment's log ratio, a
 peak's signal and q-value, a read's MAPQ, a variant's `QUAL`. The format-typed
@@ -69,6 +69,7 @@ one.
 | a bar from a baseline to a value | `geom_col()` | `"mark": "bar"` | `"mark": "bar"`, the display's `origin` as the baseline |
 | a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `encoding.size` a number, at the middle of `x` to `x2` |
 | a line across an interval at a value | `geom_segment(aes(xend = end, yend = score))` | `"mark": "rule"` over `x`, `x2` and `y` | `"mark": "rule"`, `encoding.size` a number as its thickness |
+| a line through the values | `geom_step()`, `geom_line()` | `"mark": "line"`, `"interpolate": "step-after"` or `"linear"` | `"mark": "line"`, `interpolate` `step` or `linear`, `encoding.size` its width |
 | a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
 | the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
 | a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
@@ -117,16 +118,16 @@ maps a link's width.
 
 Each mark's `encoding` maps feature fields to the channels its type reads:
 
-| Channel | Read by                        | Value                                                                                                                                                                                                        |
-| ------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `x`     | every mark                     | a field holding the left edge in bp; `start` by default                                                                                                                                                      |
-| `x2`    | every mark                     | the right edge; `end` by default                                                                                                                                                                             |
-| `y`     | `bar`, `point`, `rule`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand in the middle of its band |
-| `row`   | every mark                     | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
-| `color` | every mark                     | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                                              |
-| `shape` | `point`                        | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
-| `size`  | `point`, `rule`, `link`        | a number of px, a point's diameter, a rule's thickness or a link's stroke; or, on a link, a field read through a linear or log scale into a range of px (below)                                              |
-| `text`  | `text`                         | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                            |
+| Channel | Read by                                | Value                                                                                                                                                                                                        |
+| ------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `x`     | every mark                             | a field holding the left edge in bp; `start` by default                                                                                                                                                      |
+| `x2`    | every mark                             | the right edge; `end` by default                                                                                                                                                                             |
+| `y`     | `bar`, `point`, `rule`, `line`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand in the middle of its band |
+| `row`   | every mark                             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
+| `color` | every mark                             | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                                              |
+| `shape` | `point`                                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
+| `size`  | `point`, `rule`, `line`, `link`        | a number of px, a point's diameter, a rule's thickness, a line's width or a link's stroke; or, on a link, a field read through a linear or log scale into a range of px (below)                              |
+| `text`  | `text`                                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                            |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -333,6 +334,20 @@ value that belongs to an interval — a window's Fst, a segment's copy number:
 
 ```json
 { "mark": "rule", "encoding": { "y": "score", "size": 3 } }
+```
+
+A `line` strokes through consecutive values on a row. `interpolate: "step"`, the
+default, holds each value across its span and steps to the next where two spans
+abut, dropping to `origin` across a gap, so a bedGraph or a BigWig tier reads as
+the data says; `"linear"` runs from one span's centre to the next, which is
+smoother where the spans are few. `encoding.size` is the width in px, 1 unset.
+
+```json
+{
+  "mark": "line",
+  "interpolate": "linear",
+  "encoding": { "y": "score", "size": 2 }
+}
 ```
 
 A `span` has no `y`: it paints a band from `x` to `x2` in its colour, for an
@@ -733,6 +748,7 @@ each reported under its id:
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. |
 | `unread-size` | warning | An `encoding.size` on a mark that draws no point or rule and strokes no link. |
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
+| `unread-interpolate` | warning | An `interpolate` on a mark that draws no line. |
 | `span-density-source` | warning | `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold colour naming no cut, so every value paints one colour. |

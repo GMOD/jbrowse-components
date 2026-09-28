@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 44 shaders with entry points. 128 functions
+Scanned 46 shaders with entry points. 128 functions
 are inside the emitter's subset, of which **99 are exported**.
 
 ## Candidates
@@ -77,8 +77,8 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 27 | `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, `covSegQuad`, … |
-| type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 16 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
+| type 'ptr' is outside the supported scalar subset | 19 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 17 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
 | type 'vec4' is outside the supported scalar subset | 14 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
 | type 'Instance' is outside the supported scalar subset | 4 | `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |

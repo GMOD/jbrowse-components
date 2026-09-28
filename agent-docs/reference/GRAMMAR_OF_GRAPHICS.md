@@ -726,8 +726,8 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 
 | | JBrowse marks | GenomeSpy v0.88 | Gosling 1.0.5 |
 | --- | --- | --- | --- |
-| Marks | bar, point, rule, span, text, link | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
-| Channels | x, x2, y, row, color, shape, text, size (on a link) | adds y2, opacity, stroke, angle, tooltip | adds ye, opacity, stroke |
+| Marks | bar, point, rule, line, span, text, link | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
+| Channels | x, x2, y, row, color, shape, text, size (a field on a link) | adds y2, opacity, stroke, angle, tooltip | adds ye, opacity, stroke |
 | y scales | linear, log, symlog | 13 kinds, incl. symlog and sqrt | none on y |
 | Named colour ramps | 10 (`COLOR_SCHEMES`), incl. viridis and two diverging | the d3 set | — |
 | Transforms | 8 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
@@ -771,9 +771,11 @@ range, unioned over the loaded regions the way a ramp's domain is
 a point's and a rule's size is the constant in the same `encoding.size`, which
 Vega-Lite spells `mark.size` or `encoding.size.value` (ADR-163 §"Amended
 2026-09-27"); `origin` is the display's rather
-than a mark's, and no mark declares its own tooltip fields. Line and area marks stay
-out ([ADR-127](../architecture-decision-records/adr-127-line-stays-wiggles.md)),
-and so do format-specific displays rebuilt on the grammar (ADR-114, ADR-118).
+than a mark's, and no mark declares its own tooltip fields. The line landed once
+wiggle's port made it a second consumer
+([ADR-184](../architecture-decision-records/adr-184-a-line-is-a-mark.md),
+superseding ADR-127); an area mark waits on `y2`, and format-specific displays
+rebuilt on the grammar stay out (ADR-114, ADR-118).
 
 ### Spelling, checked 2026-09-27
 

@@ -144,6 +144,14 @@ describe('a marks list in a config file', () => {
     expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
       `warning unread-link-shape ${DISPLAY}.marks[0].linkShape`,
     ])
+    expect(found([{ mark: 'span', interpolate: 'linear' }])).toEqual([
+      `warning unread-interpolate ${DISPLAY}.marks[0].interpolate`,
+    ])
+    expect(
+      found([
+        { mark: 'line', interpolate: 'linear', encoding: { y: 'score' } },
+      ]),
+    ).toEqual([])
     expect(
       found([
         {

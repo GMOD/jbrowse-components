@@ -27,10 +27,12 @@ import { markLocusSchema } from './markLocusConfigSchema.ts'
 import { markSizeSchema } from './markSizeConfigSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
+  DEFAULT_LINE_INTERPOLATE,
   DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
   DEFAULT_MARK_SOURCE,
   DEFAULT_TEXT_FIELD,
+  LINE_INTERPOLATIONS,
   LINK_SHAPES,
   MARK_TYPES,
   MARK_SOURCES,
@@ -237,7 +239,7 @@ const markEncodingSchema = ConfigurationSchema(
     /**
      * #slot marks.encoding.size
      * The mark's size in px: a number is a point's diameter, a rule's
-     * thickness or a link's stroke; a field, which a link alone reads, goes
+     * thickness, a line's width or a link's stroke; a field, which a link alone reads, goes
      * through a linear or log scale into a stroke width, `range` the px at
      * each end of the domain. The track menu's Point size writes every point
      * mark's number.
@@ -280,7 +282,9 @@ const markSchema = ConfigurationSchema(
      * #slot marks.mark
      * `bar` stands between `origin` and `y`; `point` is a shape at `y` over
      * the middle of `x` to `x2`; `rule` is a line across `x` to `x2` at `y`,
-     * `encoding.size` px thick; `span` is a band across the whole plot from `x` to
+     * `encoding.size` px thick; `line` is a stroke through consecutive
+     * values, held across each span or run centre to centre as `interpolate`
+     * says, dropping to `origin` across a gap; `span` is a band across the whole plot from `x` to
      * `x2`; `text` prints a field
      * over the middle of `x` to `x2`, just above `y` where it names one and in
      * the middle of its band otherwise, and a label that would overlap one
@@ -292,7 +296,19 @@ const markSchema = ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('MarkType', [...MARK_TYPES]),
       defaultValue: DEFAULT_MARK_TYPE,
-      description: 'bar, point, rule, span, text or link',
+      description: 'bar, point, rule, line, span, text or link',
+    },
+    /**
+     * #slot marks.interpolate
+     * How a `line` joins its values: `step` holds each across its span, as
+     * the data says; `linear` runs from one span's centre to the next,
+     * smoother where the spans are few. Read by a line alone.
+     */
+    interpolate: {
+      type: 'stringEnum',
+      model: types.enumeration('LineInterpolation', [...LINE_INTERPOLATIONS]),
+      defaultValue: DEFAULT_LINE_INTERPOLATE,
+      description: 'step or linear, for a line',
     },
     /**
      * #slot marks.linkShape
@@ -375,7 +391,7 @@ export function markListSchema(defaults: SnapshotIn<typeof markSchema>[]) {
  * #config LinearMarkDisplay
  * #category display
  * A grammar of graphics over a feature, alignments or variant track: a list of
- * marks — bars, points, spans or text — each with an encoding naming which
+ * marks — bars, points, rules, lines, spans, text or links — each with an encoding naming which
  * feature fields feed its channels and a transform list run before it. One fetch per
  * region evaluates every encoding in the worker; the marks draw in order over
  * one score axis.

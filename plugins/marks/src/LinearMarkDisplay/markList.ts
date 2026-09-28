@@ -2,6 +2,7 @@ import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import {
   barMark,
   defineMark,
+  lineMarkOf,
   linkMark,
   pointMark,
   ruleMark,
@@ -9,8 +10,10 @@ import {
   withPassId,
 } from '@jbrowse/render-core/marks'
 
+import { DEFAULT_LINE_INTERPOLATE } from './markVocabulary.ts'
+
 import type { MarkType } from './configSchema.ts'
-import type { LinkShape } from './markVocabulary.ts'
+import type { LineInterpolation, LinkShape } from './markVocabulary.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type {
   CoreGetEncodedLayersArgs,
@@ -45,6 +48,7 @@ const MARK_VALUE_LANES = {
   bar: ['y'],
   point: ['y', 'glyph'],
   rule: ['y'],
+  line: ['y'],
   span: ['row', 'color'],
   link: ['x2Region'],
 } as const satisfies Record<Exclude<MarkType, 'text'>, readonly ChannelLane[]>
@@ -137,6 +141,8 @@ export interface MarkEntry {
   valued: boolean
   /** How a link naming no `y` rises. */
   linkShape: LinkShape
+  /** How a line joins its values; `step` when absent. */
+  interpolate?: LineInterpolation
 }
 
 /**
@@ -309,6 +315,28 @@ function shapeMark(entry: MarkEntry, i: number) {
           sizePx: s.markSizes[i]!,
           minWidthPx: s.minWidthPx,
           insetPx: s.valueInsetPx,
+          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowTable: s.rowTable,
+        }),
+        textures: (s: MarkRenderState) => ({ colorRamp: s.colorRamps[i]?.lut }),
+        enabled,
+      })
+    }
+    case 'line': {
+      return defineMark({
+        shape: withPassId(
+          lineMarkOf(entry.interpolate ?? DEFAULT_LINE_INTERPOLATE),
+          `${type}-${entry.interpolate ?? DEFAULT_LINE_INTERPOLATE}#${i}`,
+        ),
+        channels: (d: MarkRegionData) =>
+          withLanes(d.layers[i], MARK_VALUE_LANES.line),
+        params: (s: MarkRenderState) => ({
+          domain: s.domainY,
+          scaleType: s.scaleTypeY,
+          symlogConstant: s.symlogConstantY,
+          ramp: s.colorRamps[i],
+          origin: s.origin,
+          lineWidth: s.markSizes[i]!,
           rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           rowTable: s.rowTable,
         }),

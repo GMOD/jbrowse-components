@@ -6634,16 +6634,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "mark": {
-          "description": "bar, point, rule, span, text or link.",
+          "description": "bar, point, rule, line, span, text or link.",
           "enum": [
             "bar",
             "point",
             "rule",
+            "line",
             "span",
             "text",
             "link"
           ],
           "default": "bar"
+        },
+        "interpolate": {
+          "description": "step or linear, for a line.",
+          "enum": [
+            "step",
+            "linear"
+          ],
+          "default": "step"
         },
         "linkShape": {
           "description": "dome, arc or line.",

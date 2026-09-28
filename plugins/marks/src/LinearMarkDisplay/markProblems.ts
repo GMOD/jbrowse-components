@@ -17,6 +17,7 @@ import {
   DEFAULT_BIN_AS,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
+  DEFAULT_LINE_INTERPOLATE,
   DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
   DEFAULT_PILEUP_AS,
@@ -31,6 +32,7 @@ import type { ColorSlots, ScaleEnds } from './markRuleFacts.ts'
 import type { MarkSpec } from './markSpecs.ts'
 import type {
   AggregateOpName,
+  LineInterpolation,
   LinkShape,
   MarkSourceName,
   MarkType,
@@ -57,6 +59,8 @@ export const MARK_RULES = {
   'unread-size': 'warning',
   /** A `linkShape` on a mark that draws no link. */
   'unread-link-shape': 'warning',
+  /** An `interpolate` on a mark that draws no line. */
+  'unread-interpolate': 'warning',
   /** `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. */
   'span-density-source': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
@@ -170,6 +174,7 @@ export interface ScalesSnapshot {
 export type MarkSnapshot = {
   mark?: MarkType
   linkShape?: LinkShape
+  interpolate?: LineInterpolation
   source?: MarkSourceName
   minBpPerPx?: number
   maxBpPerPx?: number
@@ -622,6 +627,19 @@ function ownProblems(
         'unread-link-shape',
         'linkShape',
         `a ${type} draws no link, so it reads no linkShape`,
+      ),
+    )
+  }
+  if (
+    mark.interpolate !== undefined &&
+    mark.interpolate !== DEFAULT_LINE_INTERPOLATE &&
+    type !== 'line'
+  ) {
+    problems.push(
+      found(
+        'unread-interpolate',
+        'interpolate',
+        `a ${type} draws no line, so it reads no interpolate`,
       ),
     )
   }
