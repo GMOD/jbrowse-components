@@ -219,7 +219,7 @@ Every genome keeps the two dozen genes in this window.
 
 Every lane keeps the anchor's gene order except coffee, marked `[rev]`.
 
-## Grasses: a whole-genome duplication only maize has {#grasses}
+## Maize whole-genome duplication {#grasses}
 
 The `grasses` set is rice, sorghum, maize, brachypodium and foxtail millet.
 

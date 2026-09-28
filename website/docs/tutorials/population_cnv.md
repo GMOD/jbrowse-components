@@ -39,8 +39,8 @@ lab at the University of Michigan
   and
   https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw
 - the same values packed into one Zarr store for the
-  [latency comparison](#scaling-past-one-population). This is a directory of
-  chunks, so it is the `uri` an adapter takes, not something to open in a
+  [latency comparison](#all-2504-samples-in-one-zarr-store). This is a directory
+  of chunks, so it is the `uri` an adapter takes, not something to open in a
   browser: https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
 
 ## The QuicK-mer2 estimates
@@ -182,7 +182,7 @@ representation, they agree:
 
 <Figure caption="UGT2B17 on chr4, a biallelic deletion, depth flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
-## Scaling past one population
+## All 2504 samples in one Zarr store
 
 The track above stops at 104 individuals.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)

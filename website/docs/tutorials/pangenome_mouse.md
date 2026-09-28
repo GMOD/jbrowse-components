@@ -8,13 +8,11 @@ guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-A pangenome graph of nineteen mouse genomes shows where the strains differ from
-one another and by how much. This one is the GRCm39 reference plus eighteen
-inbred and wild-derived strains from the Mouse Genomes Project, aligned together
-with `minigraph`. Two things make it worth reading. The reference is itself one
-of the strains, which inverts the sign of the best-known variant in it. And
-nobody has published a locus list for this panel, so the loci have to come out
-of the graph.
+This graph holds the GRCm39 reference plus eighteen inbred and wild-derived
+strains from the Mouse Genomes Project, which we aligned together with
+`minigraph`. The reference is itself one of the strains, which inverts the sign
+of the best-known variant in it. Nobody has published a locus list for this
+panel, so the loci have to come out of the graph.
 
 The graph is hosted at
 [staging.genomes.jbrowse.org/pangenomes/mouse](https://staging.genomes.jbrowse.org/pangenomes/mouse)
@@ -35,20 +33,13 @@ describes a current limit of the view. We welcome your [feedback](/contact).
 
 ## Where the data comes from
 
-Each chromosome comes from one `minigraph` call over the reference followed by
-the strains. The reference goes first, which gives it rank 0.
+We built the graph from the GRCm39 reference and eighteen strain assemblies that
+UCSC rehosts, and hosted the projections beside it.
 
-<!-- from: scripts/build_mouse_pangenome.sh -->
-
-```bash
-# -xggs is the incremental-graph-construction preset, adding each genome onto
-# the growing graph in turn; -c adds base-level alignment, which minigraph
-# recommends for graph generation
-minigraph -cxggs -t "$THREADS" $(tr '\n' ' ' < "chrom/$c/order.txt")
-```
-
-The projections are hosted beside the graph:
-
+- the reference assembly:
+  https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
+- the strain assemblies, one GenArk folder each, for example C57BL/6J T2T:
+  https://hgdownload.soe.ucsc.edu/hubs/GCA/964/188/535/GCA_964188535.1/
 - the segment and link index:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz and
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.links.bed.gz
@@ -175,13 +166,37 @@ time the level opens, and discards them when the level closes.
 
 ## Build it yourself
 
-[](/docs/tutorials/pangenome_prepare_graph) turns a finished graph into the
-files above with one command, `build_pangenome_graph.sh`. The mouse panel needs
-its graph built first, since nobody has published one.
+No one has published a graph for these assemblies, so we ran `minigraph`
+ourselves. The steps are the ones to copy for a panel of your own.
+
+The first step extracts one sequence per chromosome from each assembly and
+renames it to a PanSN name, `sample#haplotype#chromosome`:
+
+<!-- from: scripts/build_mouse_pangenome.sh -->
+
+```bash
+samtools faidx strain.bgz.fa.gz CM000001.1 |
+  awk -v h=">C57BL_6NJ#1#chr1" 'NR==1{print h; next} {print}' > chr1/C57BL_6NJ.chr1.fa
+```
+
+The second step runs `minigraph` on one chromosome at a time. The reference goes
+first, which gives it rank 0, and each later strain is aligned onto the graph so
+far:
+
+<!-- from: scripts/build_mouse_pangenome.sh -->
+
+```bash
+# -xggs is the incremental-graph-construction preset, adding each genome onto
+# the growing graph in turn; -c adds base-level alignment, which minigraph
+# recommends for graph generation
+minigraph -cxggs -t 8 chr1/mm39.chr1.fa chr1/C57BL_6NJ.chr1.fa ... > chr1.gfa
+```
+
+Running the 21 chromosomes took about 27 hours, two at a time at 8 threads.
 [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
-downloads the assemblies, extracts one sequence per chromosome renamed to PanSN,
-runs `minigraph` per chromosome and joins the chromosomes with their segment ids
-renumbered, which is most of a day of alignment, before projecting the files.
+also joins the chromosomes with their segment ids renumbered, and projects the
+hosted files as
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) describes.
 
 The script writes a `README.txt` beside the data recording the source, the
 modifications, the tool versions and the audits that ran. Copy the audits into
