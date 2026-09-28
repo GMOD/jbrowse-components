@@ -1,0 +1,134 @@
+{
+  "id": "interval-bin-maf-identity",
+  "measured": "2026-09-28",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/maf/benches/mafOnMarks.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafOnMarks.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && node --max-old-space-size=14000 /tmp/mafOnMarks.mjs --rounds=9 --identity --json",
+    "notes": "On ada (24 cores, load ~5-7). One fetched region of the synthetic MAF-tabix fixture per shape, identity per species over 64 bp bins. MAF display is the worker's pack, placeMafRegionData and buildIdentityRuns; control is the same declared again. Lanes is the bench-only column cells and binnedMeanColumns, which encodes nothing. Fused is the declared identity - cells, bin over fields ['start', 'end'], aggregate mean of match weighted by overlap - over mafFeatureTableOf (the pack inside the timing), split on species and encoded as a bar's y; unfused is the same with the bin in the facet's steps and the aggregate in the layer's, so the piece table is built. Interleaved round-robin with the order rotated, MIN across rounds. Error is the distance from bases matched over bases compared per species and bin, counted off the text: the declared identity's, checked equal fused and unfused and over the features before timing, and the start-bin mean's, ADR-190's declaration."
+  },
+  "columns": [
+    {
+      "key": "shape",
+      "label": "region"
+    },
+    {
+      "key": "bins",
+      "label": "bins",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "mafIdentityMs",
+      "label": "MAF display",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlIdentityMs",
+      "label": "control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "columnsIdentityMs",
+      "label": "lanes",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "typedIdentityMs",
+      "label": "fused",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "unfusedIdentityMs",
+      "label": "unfused",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "fusedVsMaf",
+      "label": "fused vs MAF",
+      "format": "x",
+      "precision": 2,
+      "derived": "typedIdentityMs / mafIdentityMs",
+      "align": "right"
+    },
+    {
+      "key": "fusedVsLanes",
+      "label": "fused vs lanes",
+      "format": "x",
+      "precision": 2,
+      "derived": "typedIdentityMs / columnsIdentityMs",
+      "align": "right"
+    },
+    {
+      "key": "fusedVsUnfused",
+      "label": "fused vs unfused",
+      "format": "x",
+      "precision": 2,
+      "derived": "typedIdentityMs / unfusedIdentityMs",
+      "align": "right"
+    },
+    {
+      "key": "pipelineWorst",
+      "label": "declared, worst error",
+      "format": "ratio",
+      "align": "right"
+    },
+    {
+      "key": "startBinWorst",
+      "label": "start bin, worst error",
+      "format": "ratio",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "shape": "26 species, 1600 blocks of 250 columns",
+        "bins": 194792,
+        "mafIdentityMs": 84.3,
+        "controlIdentityMs": 80.7,
+        "columnsIdentityMs": 149,
+        "typedIdentityMs": 193,
+        "unfusedIdentityMs": 249.6,
+        "pipelineWorst": 0,
+        "startBinWorst": 0.984
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 20000 blocks of 8 columns",
+        "bins": 81250,
+        "mafIdentityMs": 103.2,
+        "controlIdentityMs": 106.3,
+        "columnsIdentityMs": 114.5,
+        "typedIdentityMs": 175.9,
+        "unfusedIdentityMs": 202.1,
+        "pipelineWorst": 0,
+        "startBinWorst": 0.386
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 200 blocks of 250 columns",
+        "bins": 440390,
+        "mafIdentityMs": 182.6,
+        "controlIdentityMs": 178.1,
+        "columnsIdentityMs": 345.9,
+        "typedIdentityMs": 468.9,
+        "unfusedIdentityMs": 611.2,
+        "pipelineWorst": 0,
+        "startBinWorst": 0.984
+      }
+    }
+  ]
+}

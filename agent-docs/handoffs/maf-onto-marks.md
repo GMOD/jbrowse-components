@@ -76,10 +76,11 @@ One lever is left on the data path, measured:
   the MAF display's `buildMafChannels` also pays. A `cells` that bins as it
   walks, where a `bin` follows it, is the obvious fusion for the identity,
   which makes runs and then bins them where `buildIdentityRuns` counts matches
-  in one walk:
-  859.9ms<!--m:maf-on-marks-identity.470-species-200-blocks-of-250-columns.columnsIdentityMs-->
-  against
-  430.1ms<!--m:maf-on-marks-identity.470-species-200-blocks-of-250-columns.mafIdentityMs-->.
+  in one walk. The declared identity, the bin and aggregate already one
+  kernel (ADR-197), takes
+  468.9ms<!--m:interval-bin-maf-identity.470-species-200-blocks-of-250-columns.typedIdentityMs-->
+  against the MAF display's
+  182.6ms<!--m:interval-bin-maf-identity.470-species-200-blocks-of-250-columns.mafIdentityMs-->.
 
 ## What the mark display must gain, ranked
 
@@ -88,17 +89,15 @@ One lever is left on the data path, measured:
    `alignments`, so it carries its own sequence and no sibling's.
 2. ~~A per-base cell step with the reference comparison.~~ Landed, ADR-187:
    `cells` writes `state`, `base` and `match` per run, walking every column.
-   Still open from it: **the identity heatmap and X-Y plot**, because `bin`
-   snaps a run to the bin its start falls in, so `aggregate mean` over
-   `match` weighs a 500 bp match run as one cell. A `bin` that splits an
-   interval at its edges (the length-weighted mean `buildIdentityRuns`
-   takes) is the missing piece; sub-pixel sampling (`binBp`) and the
-   cross-block flank (`rowFlank.ts`) are the other two things the MAF
-   painters do that the step does not. `bin: auto`'s 1-2-5 ladder differs
-   from MAF's power-of-two `binBp`. The spike's `binnedMeanColumns` is the
-   cutting `bin` and a mean weighted by bases, exact against a count off the
-   text; what it changes for a count per bin over long features is still the
-   call.
+   The identity heatmap and X-Y plot are declarable since ADR-197: `bin`
+   over `fields: ['start', 'end']` cuts each run at the bin edges and an
+   `aggregate` `mean` of `match` weighted by `overlap` is exact against a
+   count off the text, fused into one kernel (the `marks_maf_identity`
+   track). `bin` by `field` still counts starts, as the density sidecar
+   does. Still open: sub-pixel sampling (`binBp`) and the cross-block flank
+   (`rowFlank.ts`), the two things the MAF painters do that the steps do
+   not; `bin: auto`'s 1-2-5 ladder differs from MAF's power-of-two `binBp`;
+   and the time, which is the `cells` walk's (the lever below).
 3. ~~Per-display row geometry: a fixed px `rowHeight` with virtual scroll,
    and `rowProportion`.~~ Landed: the mark display composes `RowHeightMixin`,
    pins a row under `rows` and fits it elsewhere, and scrolls the rows past

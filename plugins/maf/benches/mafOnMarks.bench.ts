@@ -38,19 +38,28 @@
 //                    each row's runs come out together and in order and a
 //                    hover needs only where each row starts: no hit index
 //   maf-identity     the pack, the placement and `buildIdentityRuns` at `binBp`
-//   marks-identity   the same with `bin` at `binBp` and `aggregate mean` over
-//                    `match` behind `cells`, which is what a config can declare
-//                    today and not the identity: a run counts once, in its
-//                    start's bin
-//   columns-identity the column `cells`, then `bin` cutting each run at the
-//                    bin edges and a mean weighted by the bases each piece puts
-//                    in its bin
+//   control-identity the same, declared a second time
+//   start-bin-identity  `bin` at `binBp` by start and `aggregate mean` over
+//                    `match` behind `cells`, which is not the identity: a run
+//                    counts once, in its start's bin (ADR-190)
+//   marks-identity   `bin` over `fields` cutting each run at the bin edges and
+//                    the mean of `match` weighted by `overlap`, which one
+//                    kernel runs (ADR-197), over the fetched MafFeatures
+//   typed-identity   the same over the MAF adapters' table, as the display
+//                    runs it
+//   unfused-typed-identity  the same with the bin in the facet's steps and the
+//                    aggregate in the layer's, so the piece table is built
+//   columns-identity the bench-only lanes: the column `cells`, then
+//                    `binnedMeanColumns`
 //
-// Three checks run before any timing. The column cells must equal the Feature
+// Checks run before any timing. The column cells must equal the Feature
 // steps' run for run (extent, row, colour, the `base` a text mark reads) with
 // the same colour key; the row lookup must answer what the hit index answers
-// at random hovers; and the column identity must equal bases matched over
-// bases compared per species and bin, counted straight off the text.
+// at random hovers; the column identity and the declared one must equal bases
+// matched over bases compared per species and bin, counted straight off the
+// text; and the declared identity must answer the same rows fused and apart,
+// over the features and over the typed table. `--identity` runs the identity
+// arms and their checks alone.
 //
 // The `maf` arms leave out the worker's coverage, which the MAF display always
 // computes for its band, and encode every base where the display samples one
@@ -130,6 +139,7 @@ import type { MafAdapterBase } from '../src/util/MafAdapterBase.ts'
 import type { MafFixtureSpec } from './mafTabixFixture.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { FeatureTable } from '@jbrowse/core/util/featureTable'
 import type {
   LaneName,
   MarkEncodingInput,
@@ -145,6 +155,7 @@ const binBp = num('binBp', 64)
 const stages =
   process.argv.includes('--stages') || process.argv.includes('--column-stages')
 const parse = process.argv.includes('--parse')
+const onlyIdentity = process.argv.includes('--identity')
 
 // The first shape is MAF_WORKER_PIPELINE.md's profile, the second the narrow
 // blocks MAF_LARGE_BLOCKS.md measures real files at, and the third a 470-way
@@ -221,7 +232,22 @@ function columnIdentityRows(bins: ReturnType<typeof binnedMeanColumns>) {
   return row
 }
 
-const IDENTITY_STEPS: TransformStep[] = [
+// The identity as a config declares it: each run cut at the bin edges, and
+// the mean of `match` weighted by the bases each piece puts in its bin.
+const IDENTITY_BIN: TransformStep = {
+  type: 'bin',
+  step: binBp,
+  fields: ['start', 'end'],
+}
+const IDENTITY_MEAN: TransformStep = {
+  type: 'aggregate',
+  groupby: ['start', 'end'],
+  ops: [{ op: 'mean', field: 'match', weight: 'overlap', as: 'identity' }],
+}
+const IDENTITY_STEPS: TransformStep[] = [IDENTITY_BIN, IDENTITY_MEAN]
+// What a config could declare before `bin` took `fields`: each run in its
+// start's bin, counted once, which is ADR-190's wrong identity.
+const START_BIN_STEPS: TransformStep[] = [
   { type: 'bin', step: binBp },
   {
     type: 'aggregate',
@@ -229,6 +255,7 @@ const IDENTITY_STEPS: TransformStep[] = [
     ops: [{ op: 'mean', field: 'match', as: 'identity' }],
   },
 ]
+const IDENTITY_LANES: LaneName[] = ['y', 'row', 'color']
 
 // The wire the MAF display places, less the coverage the worker adds beside
 // the pack: placement reads none of it.
@@ -349,6 +376,29 @@ function armMafIdentity(
   const { blocks } = placeMafRegionData(packed, rowIndexBySrc)
   return buildIdentityRuns(blocks, binBp).count
 }
+function armControlIdentity(
+  features: readonly Feature[],
+  rowIndexBySrc: Map<string, number>,
+) {
+  const packed = pack(features)
+  const { blocks } = placeMafRegionData(packed, rowIndexBySrc)
+  return buildIdentityRuns(blocks, binBp).count
+}
+function armStartBinIdentity(features: readonly Feature[]) {
+  const { layers } = layerTables(
+    features,
+    {
+      transform: SHARED,
+      facet: FACET,
+      layers: [{ transform: START_BIN_STEPS }],
+    },
+    jexl,
+  )
+  const { table: bins, row } = layers[0]!
+  return encodeFeatures(bins, { y: 'identity', row }, BAR_LANES, {
+    jexl,
+  }).count
+}
 function armMarksIdentity(features: readonly Feature[]) {
   const { layers } = layerTables(
     features,
@@ -360,7 +410,39 @@ function armMarksIdentity(features: readonly Feature[]) {
     jexl,
   )
   const { table: bins, row } = layers[0]!
-  return encodeFeatures(bins, { y: 'identity', row }, BAR_LANES, {
+  return encodeFeatures(bins, { y: 'identity', row }, IDENTITY_LANES, {
+    jexl,
+  }).count
+}
+function armTypedIdentity(features: readonly Feature[]) {
+  const { layers } = layerTables(
+    mafFeatureTableOf(features, features[0]!.get('refName')),
+    {
+      transform: SHARED,
+      facet: FACET,
+      layers: [{ transform: IDENTITY_STEPS }],
+    },
+    jexl,
+  )
+  const { table: bins, row } = layers[0]!
+  return encodeFeatures(bins, { y: 'identity', row }, IDENTITY_LANES, {
+    jexl,
+  }).count
+}
+// The same steps with the bin in the facet's list and the aggregate in the
+// layer's, which no kernel fuses: the piece table, then the grouping.
+function armUnfusedTypedIdentity(features: readonly Feature[]) {
+  const { layers } = layerTables(
+    mafFeatureTableOf(features, features[0]!.get('refName')),
+    {
+      transform: SHARED,
+      facet: { ...FACET, transform: [IDENTITY_BIN] },
+      layers: [{ transform: [IDENTITY_MEAN] }],
+    },
+    jexl,
+  )
+  const { table: bins, row } = layers[0]!
+  return encodeFeatures(bins, { y: 'identity', row }, IDENTITY_LANES, {
     jexl,
   }).count
 }
@@ -601,37 +683,107 @@ function checkIdentity(features: readonly Feature[]) {
     )
   }
   const shared = runTransforms(features, SHARED, jexl)
-  const { layers, sections } = facetLayers(
-    shared,
-    FACET,
-    [{ transform: IDENTITY_STEPS }],
-    jexl,
+  const byStart = againstOracle(
+    facetLayers(shared, FACET, [{ transform: START_BIN_STEPS }], jexl),
+    oracle,
   )
-  const keyOfRow = new Map(sections.map(s => [s.firstRow, s.key]))
-  const { table: marks, rows } = layers[0]!
-  let worstMarks = 0
-  let sumMarks = 0
-  let noValue = 0
-  Array.from({ length: marks.length }, (_, i) => marks.row(i)).forEach(
-    (f, i) => {
-      const value = Number(f.get('identity'))
-      if (!Number.isFinite(value)) {
-        noValue++
-        return
-      }
-      const key = `${keyOfRow.get(rows[i]!)}:${f.get('start') / binBp}`
-      const err = Math.abs(value - (oracle.get(key) ?? 0))
-      worstMarks = Math.max(worstMarks, err)
-      sumMarks += err
-    },
-  )
+
+  // The declared identity, over the features and over the typed table, fused
+  // and apart, must be the oracle's bin for bin and one another's row for row.
+  const typed = mafFeatureTableOf(features, features[0]!.get('refName'))
+  const declared = [
+    layerTables(
+      features,
+      {
+        transform: SHARED,
+        facet: FACET,
+        layers: [{ transform: IDENTITY_STEPS }],
+      },
+      jexl,
+    ),
+    layerTables(
+      typed,
+      {
+        transform: SHARED,
+        facet: FACET,
+        layers: [{ transform: IDENTITY_STEPS }],
+      },
+      jexl,
+    ),
+    layerTables(
+      typed,
+      {
+        transform: SHARED,
+        facet: { ...FACET, transform: [IDENTITY_BIN] },
+        layers: [{ transform: [IDENTITY_MEAN] }],
+      },
+      jexl,
+    ),
+  ].map(({ layers, sections }) => ({
+    layers: [{ table: layers[0]!.table, rows: layers[0]!.row as Uint32Array }],
+    sections: sections!,
+  }))
+  const readBack = ({ layers }: (typeof declared)[number]) => {
+    const { table, rows } = layers[0]!
+    return Array.from({ length: table.length }, (_, i) => {
+      const f = table.row(i)
+      return [rows[i], f.get('start'), f.get('end'), f.get('identity'), f.id()]
+    })
+  }
+  const want = readBack(declared[1]!)
+  for (const other of [declared[0]!, declared[2]!]) {
+    if (!isDeepStrictEqual(readBack(other), want)) {
+      throw new Error('the declared identity differs between its paths')
+    }
+  }
+  const pipeline = againstOracle(declared[1]!, oracle)
+  if (pipeline.bins !== oracle.size || pipeline.worst > 1e-9) {
+    throw new Error(
+      `declared identity off the oracle: ${pipeline.bins} vs ${oracle.size} bins, worst ${pipeline.worst}`,
+    )
+  }
   return {
     bins: bins.length,
     columnsWorst: worstColumns,
-    featuresWorst: worstMarks,
-    featuresMean: sumMarks / (marks.length - noValue),
-    featuresNoValue: noValue,
+    pipelineWorst: pipeline.worst,
+    featuresWorst: byStart.worst,
+    featuresMean: byStart.mean,
+    featuresNoValue: byStart.noValue,
   }
+}
+
+// A declared identity's distance from the oracle over the bins it answers a
+// value in: the worst, the mean, and how many bins answer none.
+function againstOracle(
+  {
+    layers,
+    sections,
+  }: {
+    layers: { table: FeatureTable; rows: Uint32Array }[]
+    sections: { firstRow: number; key: string }[]
+  },
+  oracle: Map<string, number>,
+) {
+  const keyOfRow = new Map(sections.map(s => [s.firstRow, s.key]))
+  const { table, rows } = layers[0]!
+  let worst = 0
+  let sum = 0
+  let noValue = 0
+  let valued = 0
+  for (let i = 0; i < table.length; i++) {
+    const f = table.row(i)
+    const value = Number(f.get('identity'))
+    if (!Number.isFinite(value)) {
+      noValue++
+      continue
+    }
+    const key = `${keyOfRow.get(rows[i]!)}:${f.get('start') / binBp}`
+    const err = Math.abs(value - (oracle.get(key) ?? Number.NaN))
+    worst = Math.max(worst, Number.isNaN(err) ? Infinity : err)
+    sum += err
+    valued++
+  }
+  return { bins: valued, worst, mean: sum / valued, noValue }
 }
 
 function time(fn: () => number) {
@@ -659,11 +811,23 @@ for (const { name, spec } of stages || parse ? [] : SHAPES) {
     'columns-rows': () => armColumnsRows(features),
     'columns-rows-bytes': () => armColumnsRowsBytes(features),
     'maf-identity': () => armMafIdentity(features, rowIndexBySrc),
+    'control-identity': () => armControlIdentity(features, rowIndexBySrc),
+    'start-bin-identity': () => armStartBinIdentity(features),
     'marks-identity': () => armMarksIdentity(features),
+    'typed-identity': () => armTypedIdentity(features),
+    'unfused-typed-identity': () => armUnfusedTypedIdentity(features),
     'columns-identity': () => armColumnsIdentity(features),
   }
-  checkCells(features)
-  const lookup = checkRowMajor(features)
+  if (onlyIdentity) {
+    for (const arm of Object.keys(arms)) {
+      if (!arm.endsWith('identity')) {
+        delete arms[arm]
+      }
+    }
+  }
+  const lookup = onlyIdentity
+    ? { probes: 0, hits: 0 }
+    : (checkCells(features), checkRowMajor(features))
   const identity = checkIdentity(features)
   const best: Record<string, number> = {}
   const counts: Record<string, number> = {}
@@ -694,15 +858,20 @@ for (const { name, spec } of stages || parse ? [] : SHAPES) {
     rowMajorBytesMs: ms('columns-rows-bytes'),
     bins: identity.bins,
     mafIdentityMs: ms('maf-identity'),
-    featuresIdentityMs: ms('marks-identity'),
+    controlIdentityMs: ms('control-identity'),
+    featuresIdentityMs: ms('start-bin-identity'),
+    pipelineIdentityMs: ms('marks-identity'),
+    typedIdentityMs: ms('typed-identity'),
+    unfusedIdentityMs: ms('unfused-typed-identity'),
     columnsIdentityMs: ms('columns-identity'),
     featuresWorst: Math.round(identity.featuresWorst * 1000) / 1000,
     featuresMean: Math.round(identity.featuresMean * 1000) / 1000,
     columnsWorst: Number(identity.columnsWorst.toPrecision(2)),
+    pipelineWorst: Number(identity.pipelineWorst.toPrecision(2)),
   })
   if (!asJson) {
     console.log(
-      `\n${name}: ${features.length} blocks, identity bin ${binBp} bp, min of ${rounds}; row lookup agreed at ${lookup.probes} hovers; identity vs the oracle: columns worst ${identity.columnsWorst.toExponential(1)}, Feature steps worst ${identity.featuresWorst.toFixed(3)} mean ${identity.featuresMean.toFixed(3)}, ${identity.featuresNoValue} bins with no value`,
+      `\n${name}: ${features.length} blocks, identity bin ${binBp} bp, min of ${rounds}; row lookup agreed at ${lookup.probes} hovers; identity vs the oracle: columns worst ${identity.columnsWorst.toExponential(1)}, declared worst ${identity.pipelineWorst.toExponential(1)}, start bin worst ${identity.featuresWorst.toFixed(3)} mean ${identity.featuresMean.toFixed(3)}, ${identity.featuresNoValue} bins with no value`,
     )
     console.table(
       Object.keys(arms).map(arm => ({

@@ -17,10 +17,10 @@ import { join, resolve } from 'node:path'
 // the contig, which is what a display's region fetch is), --zooms=<bp/px,...>
 // (default one zoom inside each tier of the file, the raw section included),
 // --rounds (default 7), --index (the marks arms with the hit index a bar
-// asked for before ADR-196), --base=<ref> (a seventh arm, table-base: the
+// asked for before ADR-196), --base=<ref> (an eighth arm, table-base: the
 // table arm through packages/core extracted at that ref), --json.
 //
-// Six arms per zoom, interleaved round-robin with the order rotated each
+// Seven arms per zoom, interleaved round-robin with the order rotated each
 // round, MIN across rounds
 // (agent-docs/reference/BENCHMARKING.md), each a fetch plus what the RPC
 // executor does with it:
@@ -36,6 +36,8 @@ import { join, resolve } from 'node:path'
 //   table       getFeatureTable, the adapter's rows as a table over bbi's
 //               arrays, then the same encode: what CoreGetEncodedLayers runs
 //   table-mean  the same table through `bin: auto` and `aggregate: mean`
+//   table-weighted  the same table through `bin: auto` over `fields`, each row
+//               cut at the bin edges, and a mean weighted by `overlap`
 //   table-base  with --base, the table arm's encode as the ref spells it, its
 //               lanes checked equal to the table arm's first
 //
@@ -60,9 +62,9 @@ import { join, resolve } from 'node:path'
 // The error rows: for a summary tier, `aggregate: mean` over `bin: auto` is
 // a mean of tier means, unweighted, since bbi exports no validCnt. Against
 // the raw section's coverage-weighted mean over the same bins, the bench
-// reports the unweighted error and the error a span-weighted mean would have
-// had, as a percentage of the raw score range. The gap between those two is
-// the most a validCnt could buy.
+// reports the unweighted error and the table-weighted arm's, as a percentage
+// of the raw score range. The gap between those two is the most a validCnt
+// could buy.
 import { performance } from 'node:perf_hooks'
 
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
@@ -95,6 +97,7 @@ import type {
   StoredLayer,
 } from '../src/LinearMarkDisplay/markList.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { FeatureTable } from '@jbrowse/core/util/featureTable'
 import type {
   EncodedChannels,
   LaneName,
@@ -174,6 +177,19 @@ function meanSteps(bpPerPx: number): TransformStep[] {
 }
 const MEAN_FIELD = aggregateFieldName({ op: 'mean', field: 'score' })
 
+// Each tier row cut at the bin edges and its score weighted by the bases it
+// puts in each bin: a mean per base of the tier's rows.
+function weightedSteps(bpPerPx: number): TransformStep[] {
+  return [
+    { type: 'bin', step: autoBinStep(bpPerPx), fields: ['start', 'end'] },
+    {
+      type: 'aggregate',
+      groupby: ['start', 'end'],
+      ops: [{ op: 'mean', field: 'score', weight: 'overlap' }],
+    },
+  ]
+}
+
 // One driver per arm, written out rather than shared, so no call site goes
 // polymorphic across arms.
 function armWiggle(region: Region, bpPerPx: number) {
@@ -217,6 +233,14 @@ function armTableMean(region: Region, bpPerPx: number) {
     return encodeFeatures(binned, { y: MEAN_FIELD }, BAR_LANES, { jexl })
   }
 }
+function armTableWeighted(region: Region, bpPerPx: number) {
+  const steps = weightedSteps(bpPerPx)
+  return async () => {
+    const table = await adapter.getFeatureTable(region, { bpPerPx })
+    const binned = runTransforms(table, steps, jexl)
+    return encodeFeatures(binned, { y: MEAN_FIELD }, BAR_LANES, { jexl })
+  }
+}
 
 function armTableBase(region: Region, bpPerPx: number) {
   return async () => {
@@ -242,27 +266,26 @@ interface RawRows {
   count: number
 }
 
-// `aggregate: mean` over `bin: auto` against the raw section, per bin
+// `aggregate: mean` over `bin: auto` against the raw section, per bin, and
+// the declared weighted mean against it over the same bins
 function meanOfMeansError(
   tier: readonly Feature[],
+  weighted: FeatureTable,
   raw: RawRows,
   binBp: number,
 ) {
   const unweighted = new Map<number, { sum: number; n: number }>()
-  const weighted = new Map<number, { sum: number; w: number }>()
   for (const f of tier) {
-    const start = f.get('start')
-    const end = f.get('end')
-    const score = f.get('score')!
-    const b = Math.floor(start / binBp)
+    const b = Math.floor(f.get('start') / binBp)
     const u = unweighted.get(b) ?? { sum: 0, n: 0 }
-    u.sum += score
+    u.sum += f.get('score')!
     u.n += 1
     unweighted.set(b, u)
-    const w = weighted.get(b) ?? { sum: 0, w: 0 }
-    w.sum += score * (end - start)
-    w.w += end - start
-    weighted.set(b, w)
+  }
+  const declared = new Map<number, number>()
+  for (let i = 0; i < weighted.length; i++) {
+    const f = weighted.row(i)
+    declared.set(f.get('start') / binBp, f.get(MEAN_FIELD) as number)
   }
   const truth = new Map<number, { sum: number; w: number }>()
   let min = Infinity
@@ -289,14 +312,14 @@ function meanOfMeansError(
   let sumW = 0
   for (const [b, t] of truth) {
     const u = unweighted.get(b)
-    const w = weighted.get(b)
-    if (!u || !w) {
+    const w = declared.get(b)
+    if (!u || w === undefined) {
       continue
     }
     bins++
     const target = t.sum / t.w
     const errU = Math.abs(u.sum / u.n - target)
-    const errW = Math.abs(w.sum / w.w - target)
+    const errW = Math.abs(w - target)
     sumU += errU
     maxU = Math.max(maxU, errU)
     sumW += errW
@@ -457,6 +480,7 @@ for (const bpPerPx of zooms) {
     ['marks-mean', armMarksMean(region, bpPerPx)],
     ['table', armTable(region, bpPerPx)],
     ['table-mean', armTableMean(region, bpPerPx)],
+    ['table-weighted', armTableWeighted(region, bpPerPx)],
     ...(encodeBase
       ? [['table-base', armTableBase(region, bpPerPx)] as const]
       : []),
@@ -523,6 +547,11 @@ for (const bpPerPx of zooms) {
       ? undefined
       : meanOfMeansError(
           await adapter.getFeaturesArray(region, { bpPerPx }),
+          runTransforms(
+            await adapter.getFeatureTable(region, { bpPerPx }),
+            weightedSteps(bpPerPx),
+            jexl,
+          ),
           await adapter.getFeatureArrays(region, { bpPerPx: 0 }),
           binBp,
         )
@@ -537,12 +566,13 @@ for (const bpPerPx of zooms) {
     marksMeanMs: Number(best[3]!.toFixed(2)),
     tableMs: Number(best[4]!.toFixed(2)),
     tableMeanMs: Number(best[5]!.toFixed(2)),
+    tableWeightedMs: Number(best[6]!.toFixed(2)),
     binBp,
     wiggleBytesPerRow: Number((wiggleBytes / marks.count).toFixed(2)),
     tableBytesPerRow: Number((encodedBytes(table) / marks.count).toFixed(2)),
     ...(tableBase
       ? {
-          tableBaseMs: Number(best[6]!.toFixed(2)),
+          tableBaseMs: Number(best[7]!.toFixed(2)),
           tableBaseBytesPerRow: Number(
             (encodedBytes(tableBase) / marks.count).toFixed(2),
           ),
@@ -572,7 +602,7 @@ if (asJson) {
     const error =
       r.bins === undefined
         ? ''
-        : `  bin ${r.binBp}bp x${r.bins}: mean-of-means err ${r.meanErrPct}% mean, ${r.maxErrPct}% max; span-weighted ${r.weightedErrPct}%`
+        : `  bin ${r.binBp}bp x${r.bins}: mean-of-means err ${r.meanErrPct}% mean, ${r.maxErrPct}% max; declared weighted ${r.weightedErrPct}%`
     const h = r.hover
     console.log(
       `  ${String(r.bpPerPx).padStart(9)} bp/px  retained a row: wiggle ${r.wiggleBytesPerRow}B, table ${r.tableBytesPerRow}B${r.tableBaseMs === undefined ? '' : `; table-base ${r.tableBaseBytesPerRow}B in ${r.tableBaseMs}ms (${(r.tableBaseMs / r.wiggleMs).toFixed(2)}x)`}`,
@@ -581,7 +611,7 @@ if (asJson) {
       `  ${String(r.bpPerPx).padStart(9)} bp/px  hover: ${h.hits}/${h.probes} hits agree; Flatbush build ${h.flatbushMs}ms, row index ${h.rowIndexMs}ms; a hover ${h.indexHoverUs}us through the Flatbush, ${h.rowHoverUs}us by rows`,
     )
     console.log(
-      `  ${String(r.bpPerPx).padStart(9)} bp/px  tier ${r.tier.padEnd(9)} ${String(r.regionBp).padStart(10)}bp rows ${String(r.rows).padStart(7)}  wiggle ${r.wiggleMs.toFixed(2).padStart(7)}ms  control ${r.controlMs.toFixed(2).padStart(7)}ms  marks ${r.marksMs.toFixed(2).padStart(7)}ms (${(r.marksMs / r.wiggleMs).toFixed(2)}x)  marks-mean ${r.marksMeanMs.toFixed(2).padStart(7)}ms  table ${r.tableMs.toFixed(2).padStart(7)}ms (${(r.tableMs / r.wiggleMs).toFixed(2)}x)  table-mean ${r.tableMeanMs.toFixed(2).padStart(7)}ms${error}`,
+      `  ${String(r.bpPerPx).padStart(9)} bp/px  tier ${r.tier.padEnd(9)} ${String(r.regionBp).padStart(10)}bp rows ${String(r.rows).padStart(7)}  wiggle ${r.wiggleMs.toFixed(2).padStart(7)}ms  control ${r.controlMs.toFixed(2).padStart(7)}ms  marks ${r.marksMs.toFixed(2).padStart(7)}ms (${(r.marksMs / r.wiggleMs).toFixed(2)}x)  marks-mean ${r.marksMeanMs.toFixed(2).padStart(7)}ms  table ${r.tableMs.toFixed(2).padStart(7)}ms (${(r.tableMs / r.wiggleMs).toFixed(2)}x)  table-mean ${r.tableMeanMs.toFixed(2).padStart(7)}ms  table-weighted ${r.tableWeightedMs.toFixed(2).padStart(7)}ms${error}`,
     )
   }
 }
